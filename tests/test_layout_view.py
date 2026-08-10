@@ -46,3 +46,23 @@ def test_unmapped_cell_returns_empty():
     decks, tags = view._cell_decks_and_tags(("DDJ-XP2", "PAD", "Pad 99"), None)
     assert decks == set()
     assert tags == set()
+
+
+def test_linked_cell_from_other_controller_is_stored_and_rendered():
+    usage = {
+        ("DDJ-XP2", "PAD", "Pad 13"): {"1": {"codfather_st"}},
+        ("XDJ-XZ", "PAD", "Pad 5"): {"1": {"codfather_st"}},
+    }
+    linked = {("DDJ-XP2", "PAD", "Pad 13"): {("XDJ-XZ", "PAD", "Pad 5")}}
+    view = ControllerLayoutView()
+    view.set_usage(usage, linked)
+    assert view._linked_cells == linked
+    # Rebuilding must not crash with a populated split-cell (top + bottom half + divider).
+    assert len(view._scene.items()) > 0
+
+
+def test_cell_without_link_renders_placeholder_without_crashing():
+    view = ControllerLayoutView()
+    view.set_usage({("DDJ-XP2", "PAD", "Pad 1"): {"1": {"codfather_st"}}})
+    assert view._linked_cells == {}
+    assert len(view._scene.items()) > 0

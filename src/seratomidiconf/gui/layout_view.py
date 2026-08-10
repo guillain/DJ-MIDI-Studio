@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from PySide6.QtCore import QRectF, Signal
+from PySide6.QtCore import QLineF, QRectF, Signal
 from PySide6.QtGui import QBrush, QColor, QFont, QPen
 from PySide6.QtWidgets import (
     QComboBox,
+    QGraphicsLineItem,
     QGraphicsRectItem,
     QGraphicsScene,
     QGraphicsSimpleTextItem,
@@ -16,8 +17,9 @@ from PySide6.QtWidgets import (
 from seratomidiconf.gui import layout as layout_mod
 from seratomidiconf.gui.layout import CellKey
 
-_CELL_W = 150
-_CELL_H = 58
+_CELL_W = 170
+_HALF_H = 44
+_CELL_H = _HALF_H * 2
 _MARGIN = 6
 _KEY_ROLE = 0
 _ALL_DECKS = "All decks"
@@ -25,10 +27,15 @@ _ALL_DECKS = "All decks"
 # cell key -> Serato deck number -> set of Serato function tags (mapping.tag)
 # bound to that cell for that deck.
 Usage = dict[CellKey, dict[str, set[str]]]
+# cell key -> the other-controller cell key(s) that share at least one real
+# (channel, event_type, control) trigger with it in the loaded config.
+LinkedCells = dict[CellKey, set[CellKey]]
 
 _UNUSED_BRUSH = QBrush(QColor(235, 235, 235))
+_EMPTY_HALF_BRUSH = QBrush(QColor(246, 246, 246))
 _MULTI_DECK_BRUSH = QBrush(QColor(120, 200, 190))
 _BORDER_PEN = QPen(QColor(110, 110, 110))
+_DIVIDER_PEN = QPen(QColor(170, 170, 170))
 
 # One color per Serato deck number, so a glance at the layout shows which
 # deck each physical control currently drives.
@@ -72,11 +79,12 @@ class _ClickableView(QGraphicsView):
 
 class ControllerLayoutView(QWidget):
     """Schematic, clickable layout of a controller's physical buttons/pads.
-    Cells are colored per Serato deck to show which deck each physical
-    control currently drives, and labeled with the Serato function(s) it is
-    mapped to; clicking one jumps to a matching entry in the tree. An
-    optional deck filter narrows both the coloring and the shown functions
-    to a single deck, for a deck-centric view of the same data."""
+    Each cell is split in two: the top half is this controller's own view
+    (physical name, Serato function(s), deck(s)); the bottom half shows the
+    same real MIDI trigger(s) as interpreted by the *other* controller, since
+    a merged config doesn't record which physical device actually sent a
+    given channel/note — DDJ-XP2 and XDJ-XZ can disagree on what a trigger
+    means. An optional deck filter narrows both halves to a single deck."""
 
     cellActivated = Signal(tuple)  # CellKey
 
@@ -84,6 +92,7 @@ class ControllerLayoutView(QWidget):
         super().__init__(parent)
         self._controller = "DDJ-XP2"
         self._usage: Usage = {}
+        self._linked_cells: LinkedCells = {}
 
         self._controller_combo = QComboBox()
         self._controller_combo.addItems(["DDJ-XP2", "XDJ-XZ"])
@@ -113,11 +122,12 @@ class ControllerLayoutView(QWidget):
         self._controller = text
         self._rebuild()
 
-    def set_usage(self, usage: Usage) -> None:
+    def set_usage(self, usage: Usage, linked_cells: LinkedCells | None = None) -> None:
         """usage maps a layout cell to {deck_id: {Serato function tags mapped
-        on that deck}}, so the layout can show both which deck(s) use a
-        physical control and which Serato function it currently triggers."""
+        on that deck}}. linked_cells maps a cell to the other controller's
+        cell(s) sharing the same real trigger, for the split-cell view."""
         self._usage = usage
+        self._linked_cells = linked_cells or {}
         if self._deck_combo is not None:
             all_decks = sorted({d for per_deck in usage.values() for d in per_deck}, key=_deck_sort_key)
             current = self._deck_combo.currentText()
@@ -150,45 +160,88 @@ class ControllerLayoutView(QWidget):
             tags |= deck_tags
         return decks, tags
 
+    def _draw_half(
+        self,
+        x: float,
+        y: float,
+        key: CellKey,
+        header: str,
+        decks: set[str],
+        tags: set[str],
+        small_font: QFont,
+        clickable_key: CellKey,
+    ) -> None:
+        rect = QGraphicsRectItem(QRectF(0, 0, _CELL_W, _HALF_H))
+        rect.setPos(x, y)
+        rect.setBrush(_brush_for_decks(decks) if (decks or tags) else _EMPTY_HALF_BRUSH)
+        rect.setPen(_BORDER_PEN)
+        rect.setData(_KEY_ROLE, clickable_key)
+        deck_text = ", ".join(f"Deck {d}" for d in sorted(decks)) if decks else "not used"
+        tag_text = ", ".join(sorted(tags)) if tags else "no function mapped"
+        rect.setToolTip(f"{key[0]} — {key[1]} {key[2]}\n{deck_text}\nMapped to: {tag_text}")
+        self._scene.addItem(rect)
+
+        label = QGraphicsSimpleTextItem(_elide(header, 24))
+        label.setPos(x + 4, y + 2)
+        label.setData(_KEY_ROLE, clickable_key)
+        self._scene.addItem(label)
+
+        if tags:
+            tag_label = QGraphicsSimpleTextItem(_elide(", ".join(sorted(tags)), 26))
+            tag_label.setFont(small_font)
+            tag_label.setPos(x + 4, y + 18)
+            tag_label.setData(_KEY_ROLE, clickable_key)
+            self._scene.addItem(tag_label)
+
+        if decks:
+            deck_label = QGraphicsSimpleTextItem(", ".join(f"D{d}" for d in sorted(decks)))
+            deck_label.setFont(small_font)
+            deck_label.setPos(x + 4, y + _HALF_H - 14)
+            deck_label.setData(_KEY_ROLE, clickable_key)
+            self._scene.addItem(deck_label)
+
     def _rebuild(self) -> None:
         self._scene.clear()
         cells = layout_mod.build_layout(self._controller)
         deck_filter = self._selected_deck_filter()
         small_font = QFont()
         small_font.setPointSize(7)
+
         for cell in cells:
             x = cell.col * (_CELL_W + _MARGIN)
             y = cell.row * (_CELL_H + _MARGIN)
+
             decks, tags = self._cell_decks_and_tags(cell.key, deck_filter)
+            self._draw_half(x, y, cell.key, cell.label, decks, tags, small_font, cell.key)
 
-            rect = QGraphicsRectItem(QRectF(0, 0, _CELL_W, _CELL_H))
-            rect.setPos(x, y)
-            rect.setBrush(_brush_for_decks(decks))
-            rect.setPen(_BORDER_PEN)
-            rect.setData(_KEY_ROLE, cell.key)
-            deck_text = ", ".join(f"Deck {d}" for d in sorted(decks)) if decks else "not used"
-            tag_text = ", ".join(sorted(tags)) if tags else "no function mapped"
-            rect.setToolTip(f"{cell.section} — {cell.label}\n{deck_text}\nMapped to: {tag_text}")
-            self._scene.addItem(rect)
+            linked_keys = sorted(self._linked_cells.get(cell.key, set()))
+            if linked_keys:
+                other_controller = linked_keys[0][0]
+                other_labels = ", ".join(k[2] for k in linked_keys)
+                other_decks: set[str] = set()
+                other_tags: set[str] = set()
+                for linked_key in linked_keys:
+                    d, t = self._cell_decks_and_tags(linked_key, deck_filter)
+                    other_decks |= d
+                    other_tags |= t
+                header = f"{other_controller}: {other_labels}"
+                # Clicking the bottom half jumps using the *first* linked cell's key.
+                self._draw_half(x, y + _HALF_H, linked_keys[0], header, other_decks, other_tags, small_font, linked_keys[0])
+            else:
+                empty = QGraphicsRectItem(QRectF(0, 0, _CELL_W, _HALF_H))
+                empty.setPos(x, y + _HALF_H)
+                empty.setBrush(_EMPTY_HALF_BRUSH)
+                empty.setPen(_BORDER_PEN)
+                empty.setToolTip("No other controller shares this trigger in this config.")
+                self._scene.addItem(empty)
+                placeholder = QGraphicsSimpleTextItem("(other controller: n/a)")
+                placeholder.setFont(small_font)
+                placeholder.setPos(x + 4, y + _HALF_H + 15)
+                self._scene.addItem(placeholder)
 
-            label = QGraphicsSimpleTextItem(cell.label)
-            label.setPos(x + 4, y + 2)
-            label.setData(_KEY_ROLE, cell.key)
-            self._scene.addItem(label)
-
-            if tags:
-                tag_label = QGraphicsSimpleTextItem(_elide(", ".join(sorted(tags)), 22))
-                tag_label.setFont(small_font)
-                tag_label.setPos(x + 4, y + 20)
-                tag_label.setData(_KEY_ROLE, cell.key)
-                self._scene.addItem(tag_label)
-
-            if decks:
-                deck_label = QGraphicsSimpleTextItem(", ".join(f"D{d}" for d in sorted(decks)))
-                deck_label.setFont(small_font)
-                deck_label.setPos(x + 4, y + _CELL_H - 16)
-                deck_label.setData(_KEY_ROLE, cell.key)
-                self._scene.addItem(deck_label)
+            divider = QGraphicsLineItem(QLineF(x, y + _HALF_H, x + _CELL_W, y + _HALF_H))
+            divider.setPen(_DIVIDER_PEN)
+            self._scene.addItem(divider)
 
         self._scene.setSceneRect(self._scene.itemsBoundingRect().adjusted(-10, -10, 10, 10))
 

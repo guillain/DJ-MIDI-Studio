@@ -240,10 +240,20 @@ class MainWindow(QMainWindow):
     def _refresh_layout_usage(self) -> None:
         assert self.config is not None
         usage: dict[layout_mod.CellKey, dict[str, set[str]]] = {}
+        linked_cells: dict[layout_mod.CellKey, set[layout_mod.CellKey]] = {}
         for control in self.config.controls:
             hits = catalog.lookup(control.channel, control.event_type, control.control)
             if not hits:
                 continue
+            # A single raw (channel, event_type, control) trigger can match both
+            # controllers' catalogs at once (a merged config doesn't record which
+            # physical device sent it) — link those cells so the layout can show
+            # each controller's interpretation of the same trigger side by side.
+            hit_keys = {layout_mod.cell_key(hit) for hit in hits}
+            for key in hit_keys:
+                others = {other for other in hit_keys if other[0] != key[0]}
+                if others:
+                    linked_cells.setdefault(key, set()).update(others)
             for userio in control.userios:
                 for mapping in userio.mappings:
                     if not mapping.deck_id:
@@ -251,8 +261,8 @@ class MainWindow(QMainWindow):
                     for hit in hits:
                         cell = usage.setdefault(layout_mod.cell_key(hit), {})
                         cell.setdefault(mapping.deck_id, set()).add(mapping.tag)
-        self.layout_view.set_usage(usage)
-        self.deck_layout_view.set_usage(usage)
+        self.layout_view.set_usage(usage, linked_cells)
+        self.deck_layout_view.set_usage(usage, linked_cells)
 
     def _on_layout_cell_activated(self, key: tuple) -> None:
         if self.config is None:
