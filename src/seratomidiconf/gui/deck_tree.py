@@ -28,14 +28,19 @@ def _group_label(group: MappingGroup) -> str:
     return f"{group.tag} [{group.event}] — ch{group.channel} {group.event_type} #{group.control_no} -> {physical}{count}"
 
 
+def _group_by_deck_then_slot(config: MidiConfig) -> dict[str, dict[str, list[MappingGroup]]]:
+    decks: dict[str, dict[str, list[MappingGroup]]] = {}
+    for group in build_mapping_groups(config):
+        decks.setdefault(group.deck_id, {}).setdefault(group.slot_id, []).append(group)
+    return decks
+
+
 def build_deck_tree(config: MidiConfig) -> QStandardItemModel:
     model = QStandardItemModel()
     model.setHorizontalHeaderLabels(["Deck / Slot / Function -> physical control"])
     root = model.invisibleRootItem()
 
-    decks: dict[str, dict[str, list[MappingGroup]]] = {}
-    for group in build_mapping_groups(config):
-        decks.setdefault(group.deck_id, {}).setdefault(group.slot_id, []).append(group)
+    decks = _group_by_deck_then_slot(config)
 
     for deck_id in sorted(decks, key=_sort_numeric_then_text):
         deck_item = QStandardItem(f"Deck {deck_id}")
@@ -53,3 +58,28 @@ def build_deck_tree(config: MidiConfig) -> QStandardItemModel:
         root.appendRow(deck_item)
 
     return model
+
+
+def build_deck_columns(config: MidiConfig) -> list[tuple[str, QStandardItemModel]]:
+    """One tree per deck — the "By Deck" tab shows these side by side as
+    columns. Each tree is Slot -> function (MappingGroup), same as
+    build_deck_tree minus the outer Deck grouping."""
+    decks = _group_by_deck_then_slot(config)
+
+    columns: list[tuple[str, QStandardItemModel]] = []
+    for deck_id in sorted(decks, key=_sort_numeric_then_text):
+        model = QStandardItemModel()
+        model.setHorizontalHeaderLabels([f"Deck {deck_id}"])
+        root = model.invisibleRootItem()
+        slots = decks[deck_id]
+        for slot_id in sorted(slots, key=_sort_numeric_then_text):
+            slot_item = QStandardItem(f"Slot {slot_id}")
+            slot_item.setEditable(False)
+            for group in slots[slot_id]:
+                leaf = QStandardItem(_group_label(group))
+                leaf.setEditable(False)
+                leaf.setData(group, NODE_ROLE)
+                slot_item.appendRow(leaf)
+            root.appendRow(slot_item)
+        columns.append((deck_id, model))
+    return columns

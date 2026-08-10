@@ -22,11 +22,11 @@ from PySide6.QtWidgets import (
 from seratomidiconf import catalog
 from seratomidiconf.exporter import write_file
 from seratomidiconf.gui import layout as layout_mod
-from seratomidiconf.gui.deck_tree import build_deck_tree
+from seratomidiconf.gui.deck_tree import build_deck_columns
 from seratomidiconf.gui.edit_panel import EditPanel
 from seratomidiconf.gui.layout_view import ControllerLayoutView
 from seratomidiconf.gui.mapping_group import MappingGroup
-from seratomidiconf.gui.tree_model import NODE_ROLE, build_tree_model, relabel_item
+from seratomidiconf.gui.tree_model import NODE_ROLE, build_channel_columns, relabel_item
 from seratomidiconf.model import Control, MappingElement, MidiConfig
 from seratomidiconf.parser import parse_file
 from seratomidiconf.validator import ValidationIssue, validate
@@ -60,6 +60,8 @@ class MainWindow(QMainWindow):
         self.config: MidiConfig | None = None
         self.current_path: Path | None = None
         self.node_to_item: dict[int, object] = {}
+        self.channel_proxies: list[QSortFilterProxyModel] = []
+        self._channel_model_owner: dict[int, tuple[QTreeView, QSortFilterProxyModel]] = {}
 
         self.undo_stack = QUndoStack(self)
 
@@ -67,40 +69,38 @@ class MainWindow(QMainWindow):
         self.search_box.setPlaceholderText("Filter by channel, control, event type, function, deck, slot...")
         self.search_box.textChanged.connect(self._on_search_text_changed)
 
-        self.tree_view = QTreeView()
-        self.tree_view.setHeaderHidden(False)
-
-        self.tree_proxy_model = QSortFilterProxyModel(self)
-        self.tree_proxy_model.setRecursiveFilteringEnabled(True)
-        self.tree_proxy_model.setFilterCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
-        self.tree_view.setModel(self.tree_proxy_model)
-
-        tree_container = QWidget()
-        tree_layout = QVBoxLayout(tree_container)
-        tree_layout.setContentsMargins(0, 0, 0, 0)
-        tree_layout.addWidget(self.search_box)
-        tree_layout.addWidget(self.tree_view)
+        # Each representation is a row of columns (one per channel / one per
+        # deck) instead of a single tree nesting that level, so the channel or
+        # deck a row belongs to is implicit in which column it's in.
+        self.channel_columns_container = QWidget()
+        channel_layout = QVBoxLayout(self.channel_columns_container)
+        channel_layout.setContentsMargins(0, 0, 0, 0)
+        channel_layout.addWidget(self.search_box)
+        self.channel_splitter = QSplitter(Qt.Orientation.Horizontal)
+        channel_layout.addWidget(self.channel_splitter)
 
         self.layout_view = ControllerLayoutView()
         self.layout_view.cellActivated.connect(self._on_layout_cell_activated)
 
-        self.deck_tree_view = QTreeView()
-        self.deck_tree_view.setHeaderHidden(False)
-        self.deck_tree_view.doubleClicked.connect(self._on_deck_item_double_clicked)
+        self.deck_columns_container = QWidget()
+        deck_columns_layout = QVBoxLayout(self.deck_columns_container)
+        deck_columns_layout.setContentsMargins(0, 0, 0, 0)
+        self.deck_splitter = QSplitter(Qt.Orientation.Horizontal)
+        deck_columns_layout.addWidget(self.deck_splitter)
 
         self.deck_layout_view = ControllerLayoutView(show_deck_filter=True)
         self.deck_layout_view.cellActivated.connect(self._on_layout_cell_activated)
 
-        # Each representation pairs a tree (text, precise) with a schematic
+        # Each representation pairs the columns (text, precise) with a schematic
         # layout (visual, at-a-glance) of the same underlying data.
         channel_pair = QSplitter(Qt.Orientation.Vertical)
-        channel_pair.addWidget(tree_container)
+        channel_pair.addWidget(self.channel_columns_container)
         channel_pair.addWidget(self.layout_view)
         channel_pair.setStretchFactor(0, 1)
         channel_pair.setStretchFactor(1, 1)
 
         deck_pair = QSplitter(Qt.Orientation.Vertical)
-        deck_pair.addWidget(self.deck_tree_view)
+        deck_pair.addWidget(self.deck_columns_container)
         deck_pair.addWidget(self.deck_layout_view)
         deck_pair.setStretchFactor(0, 1)
         deck_pair.setStretchFactor(1, 1)
@@ -189,27 +189,66 @@ class MainWindow(QMainWindow):
 
     def _load_tree(self) -> None:
         assert self.config is not None
-        source_model, self.node_to_item = build_tree_model(self.config)
-        self.tree_proxy_model.setSourceModel(source_model)
-        self.tree_view.selectionModel().selectionChanged.connect(self._on_selection_changed)
-        self.tree_view.expandToDepth(0)
+        self._rebuild_channel_columns()
         self._refresh_layout_usage()
         self._refresh_deck_view()
 
+    def _rebuild_channel_columns(self) -> None:
+        assert self.config is not None
+        old_splitter = self.channel_splitter
+        self.channel_splitter = QSplitter(Qt.Orientation.Horizontal)
+        self.channel_columns_container.layout().replaceWidget(old_splitter, self.channel_splitter)
+        old_splitter.deleteLater()
+
+        self.node_to_item = {}
+        self._channel_model_owner = {}
+        self.channel_proxies = []
+        search_text = self.search_box.text()
+
+        for _channel, model, node_to_item in build_channel_columns(self.config):
+            self.node_to_item.update(node_to_item)
+
+            proxy = QSortFilterProxyModel(self)
+            proxy.setRecursiveFilteringEnabled(True)
+            proxy.setFilterCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+            proxy.setSourceModel(model)
+            if search_text:
+                proxy.setFilterFixedString(search_text)
+            self.channel_proxies.append(proxy)
+
+            view = QTreeView()
+            view.setHeaderHidden(False)
+            view.setModel(proxy)
+            view.expandToDepth(0)
+            view.selectionModel().selectionChanged.connect(
+                lambda *_, v=view, p=proxy: self._on_channel_selection_changed(v, p)
+            )
+            self._channel_model_owner[id(model)] = (view, proxy)
+            self.channel_splitter.addWidget(view)
+
     def _refresh_deck_view(self) -> None:
         assert self.config is not None
-        deck_model = build_deck_tree(self.config)
-        self.deck_tree_view.setModel(deck_model)
-        self.deck_tree_view.selectionModel().selectionChanged.connect(self._on_deck_selection_changed)
-        self.deck_tree_view.expandToDepth(0)
+        old_splitter = self.deck_splitter
+        self.deck_splitter = QSplitter(Qt.Orientation.Horizontal)
+        self.deck_columns_container.layout().replaceWidget(old_splitter, self.deck_splitter)
+        old_splitter.deleteLater()
 
-    def _on_deck_selection_changed(self) -> None:
-        indexes = self.deck_tree_view.selectionModel().selectedIndexes()
+        for _deck_id, model in build_deck_columns(self.config):
+            view = QTreeView()
+            view.setHeaderHidden(False)
+            view.setModel(model)
+            view.expandToDepth(0)
+            view.selectionModel().selectionChanged.connect(lambda *_, v=view: self._on_deck_column_selection_changed(v))
+            view.doubleClicked.connect(lambda index, v=view: self._on_deck_item_double_clicked(v, index))
+            self.deck_splitter.addWidget(view)
+
+    def _on_deck_column_selection_changed(self, view: QTreeView) -> None:
+        indexes = view.selectionModel().selectedIndexes()
         if not indexes:
             self.edit_panel.set_node(None)
             self._update_layout_selection(None, None, None)
             return
-        group = self.deck_tree_view.model().itemFromIndex(indexes[0]).data(NODE_ROLE)
+        group = view.model().itemFromIndex(indexes[0]).data(NODE_ROLE)
         if not isinstance(group, MappingGroup):
             self.edit_panel.set_node(None)
             self._update_layout_selection(None, None, None)
@@ -217,22 +256,18 @@ class MainWindow(QMainWindow):
         self.edit_panel.set_node(group)
         self._update_layout_selection(group.channel, group.event_type, group.control_no)
 
-    def _on_deck_item_double_clicked(self, index) -> None:
-        group = self.deck_tree_view.model().itemFromIndex(index).data(NODE_ROLE)
+    def _on_deck_item_double_clicked(self, view: QTreeView, index) -> None:
+        group = view.model().itemFromIndex(index).data(NODE_ROLE)
         if not isinstance(group, MappingGroup):
             return
         control = group.members[0][0]
-        item = self.node_to_item.get(id(control))
-        if item is not None:
-            proxy_index = self.tree_proxy_model.mapFromSource(item.index())
-            self.tree_view.setCurrentIndex(proxy_index)
-            self.tree_view.scrollTo(proxy_index)
+        self._select_control_in_channel_columns(control)
         self.left_tabs.setCurrentIndex(0)
 
     def _on_group_edit_applied(self) -> None:
-        # A group edit may touch every duplicate's deck/slot label (main tree) and
-        # can move the group to a different deck/slot (deck tree), so both need a
-        # full refresh rather than a single relabel.
+        # A group edit may touch every duplicate's deck/slot label (main columns)
+        # and can move the group to a different deck/slot column, so the deck
+        # columns need a full rebuild rather than a single relabel.
         current_group = self.edit_panel.current_node
         if isinstance(current_group, MappingGroup):
             for _, _, mapping in current_group.members:
@@ -270,6 +305,19 @@ class MainWindow(QMainWindow):
         self.layout_view.set_usage(usage, linked_cells)
         self.deck_layout_view.set_usage(usage, linked_cells)
 
+    def _select_control_in_channel_columns(self, control: Control) -> bool:
+        item = self.node_to_item.get(id(control))
+        if item is None:
+            return False
+        owner = self._channel_model_owner.get(id(item.model()))
+        if owner is None:
+            return False
+        view, proxy = owner
+        proxy_index = proxy.mapFromSource(item.index())
+        view.setCurrentIndex(proxy_index)
+        view.scrollTo(proxy_index)
+        return True
+
     def _on_layout_cell_activated(self, key: tuple) -> None:
         if self.config is None:
             return
@@ -283,15 +331,11 @@ class MainWindow(QMainWindow):
             self.statusBar().showMessage(f"No control in this file uses '{key[2]}'")
             self._update_layout_selection(None, None, None)
             return
-        item = self.node_to_item.get(id(matches[0]))
-        if item is not None:
-            proxy_index = self.tree_proxy_model.mapFromSource(item.index())
-            self.tree_view.setCurrentIndex(proxy_index)
-            self.tree_view.scrollTo(proxy_index)
+        self._select_control_in_channel_columns(matches[0])
         self.left_tabs.setCurrentIndex(0)
         self.statusBar().showMessage(f"'{key[2]}': {len(matches)} control(s) in this file, showing first")
-        # setCurrentIndex above already re-highlights via _on_selection_changed, but
-        # do it directly too in case the tree selection didn't actually change
+        # setCurrentIndex above already re-highlights via _on_channel_selection_changed,
+        # but do it directly too in case the selection didn't actually change
         # (clicking the same physical control's other half again).
         self._update_layout_selection(matches[0].channel, matches[0].event_type, matches[0].control)
 
@@ -311,24 +355,18 @@ class MainWindow(QMainWindow):
         return None
 
     def _on_search_text_changed(self, text: str) -> None:
-        self.tree_proxy_model.setFilterFixedString(text)
+        for proxy in self.channel_proxies:
+            proxy.setFilterFixedString(text)
 
-    def _current_node(self) -> object | None:
-        indexes = self.tree_view.selectionModel().selectedIndexes()
+    def _on_channel_selection_changed(self, view: QTreeView, proxy: QSortFilterProxyModel) -> None:
+        indexes = view.selectionModel().selectedIndexes()
         if not indexes:
-            return None
-        source_index = self.tree_proxy_model.mapToSource(indexes[0])
-        item = self.tree_proxy_model.sourceModel().itemFromIndex(source_index)
-        return item.data(NODE_ROLE)
-
-    def _on_selection_changed(self) -> None:
-        self.edit_panel.set_node(self._current_node())
-        indexes = self.tree_view.selectionModel().selectedIndexes()
-        if not indexes:
+            self.edit_panel.set_node(None)
             self._update_layout_selection(None, None, None)
             return
-        source_index = self.tree_proxy_model.mapToSource(indexes[0])
-        item = self.tree_proxy_model.sourceModel().itemFromIndex(source_index)
+        source_index = proxy.mapToSource(indexes[0])
+        item = proxy.sourceModel().itemFromIndex(source_index)
+        self.edit_panel.set_node(item.data(NODE_ROLE))
         control = self._find_ancestor_control(item)
         if control is not None:
             self._update_layout_selection(control.channel, control.event_type, control.control)
