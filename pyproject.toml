@@ -1,0 +1,24 @@
+[project]
+name = "seratomidiconf"
+version = "0.1.0"
+description = "Visualizer and editor for Serato DJ Pro MIDI configuration files"
+authors = [
+    { name = "guillain", email = "guillain@gmail.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "PySide6>=6.7",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.6",
+]
+
+[project.scripts]
+seratomidiconf = "seratomidiconf:main"
+
+[build-system]
+requires = ["uv_build>=0.12.3,<0.13.0"]
+build-backend = "uv_build"
