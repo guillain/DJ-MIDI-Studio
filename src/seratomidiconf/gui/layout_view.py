@@ -186,7 +186,6 @@ class ControllerLayoutView(QWidget):
         rect.setPos(x, y)
         rect.setBrush(_brush_for_decks(decks) if (decks or tags) else _EMPTY_HALF_BRUSH)
         rect.setPen(_SELECTED_PEN if clickable_key in self._selected_keys else _BORDER_PEN)
-        rect.setZValue(1 if clickable_key in self._selected_keys else 0)
         rect.setData(_KEY_ROLE, clickable_key)
         deck_text = ", ".join(f"Deck {d}" for d in sorted(decks)) if decks else "not used"
         tag_text = ", ".join(sorted(tags)) if tags else "no function mapped"
