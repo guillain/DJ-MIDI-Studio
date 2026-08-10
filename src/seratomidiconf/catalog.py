@@ -248,6 +248,16 @@ def _xz_pad_lookup(channel: str, kind: NoteOrCC, data1: str) -> ControlInfo | No
 _STATIC_ENTRIES: list[ControlInfo] = _XP2_STATIC + _XZ_STATIC
 _PAD_LOOKUPS = (_xp2_pad_lookup, _xz_pad_lookup)
 
+PAD_COUNTS = {"DDJ-XP2": 16, "XDJ-XZ": 8}
+
+
+def static_entries(controller: str) -> list[ControlInfo]:
+    if controller == "DDJ-XP2":
+        return list(_XP2_STATIC)
+    if controller == "XDJ-XZ":
+        return list(_XZ_STATIC)
+    raise ValueError(f"Unknown controller: {controller}")
+
 
 def lookup(channel: str | None, event_type: str | None, data1: str | None) -> list[ControlInfo]:
     """Returns every known physical control matching this (channel, event_type, data1)

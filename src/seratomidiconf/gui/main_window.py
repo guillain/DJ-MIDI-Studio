@@ -13,15 +13,19 @@ from PySide6.QtWidgets import (
     QStatusBar,
     QTableWidget,
     QTableWidgetItem,
+    QTabWidget,
     QTreeView,
     QVBoxLayout,
     QWidget,
 )
 
+from seratomidiconf import catalog
 from seratomidiconf.exporter import write_file
+from seratomidiconf.gui import layout as layout_mod
 from seratomidiconf.gui.edit_panel import EditPanel
+from seratomidiconf.gui.layout_view import ControllerLayoutView
 from seratomidiconf.gui.tree_model import NODE_ROLE, build_tree_model, relabel_item
-from seratomidiconf.model import MidiConfig
+from seratomidiconf.model import Control, MidiConfig
 from seratomidiconf.parser import parse_file
 from seratomidiconf.validator import ValidationIssue, validate
 
@@ -62,6 +66,13 @@ class MainWindow(QMainWindow):
         tree_layout.addWidget(self.search_box)
         tree_layout.addWidget(self.tree_view)
 
+        self.layout_view = ControllerLayoutView()
+        self.layout_view.cellActivated.connect(self._on_layout_cell_activated)
+
+        self.left_tabs = QTabWidget()
+        self.left_tabs.addTab(tree_container, "Tree")
+        self.left_tabs.addTab(self.layout_view, "Layout")
+
         self.edit_panel = EditPanel(self.undo_stack, self._on_command_applied)
 
         self.issues_table = QTableWidget(0, 3)
@@ -76,7 +87,7 @@ class MainWindow(QMainWindow):
         right_splitter.setStretchFactor(1, 1)
 
         main_splitter = QSplitter(Qt.Orientation.Horizontal)
-        main_splitter.addWidget(tree_container)
+        main_splitter.addWidget(self.left_tabs)
         main_splitter.addWidget(right_splitter)
         main_splitter.setStretchFactor(0, 1)
         main_splitter.setStretchFactor(1, 1)
@@ -137,6 +148,35 @@ class MainWindow(QMainWindow):
         self.tree_proxy_model.setSourceModel(source_model)
         self.tree_view.selectionModel().selectionChanged.connect(self._on_selection_changed)
         self.tree_view.expandToDepth(0)
+        self._refresh_layout_usage()
+
+    def _refresh_layout_usage(self) -> None:
+        assert self.config is not None
+        used_keys: set[layout_mod.CellKey] = set()
+        for control in self.config.controls:
+            for hit in catalog.lookup(control.channel, control.event_type, control.control):
+                used_keys.add(layout_mod.cell_key(hit))
+        self.layout_view.set_used_keys(used_keys)
+
+    def _on_layout_cell_activated(self, key: tuple) -> None:
+        if self.config is None:
+            return
+        matches: list[Control] = []
+        for control in self.config.controls:
+            for hit in catalog.lookup(control.channel, control.event_type, control.control):
+                if layout_mod.cell_key(hit) == key:
+                    matches.append(control)
+                    break
+        if not matches:
+            self.statusBar().showMessage(f"No control in this file uses '{key[2]}'")
+            return
+        item = self.node_to_item.get(id(matches[0]))
+        if item is not None:
+            proxy_index = self.tree_proxy_model.mapFromSource(item.index())
+            self.tree_view.setCurrentIndex(proxy_index)
+            self.tree_view.scrollTo(proxy_index)
+        self.left_tabs.setCurrentIndex(0)
+        self.statusBar().showMessage(f"'{key[2]}': {len(matches)} control(s) in this file, showing first")
 
     def _on_search_text_changed(self, text: str) -> None:
         self.tree_proxy_model.setFilterFixedString(text)
@@ -159,6 +199,8 @@ class MainWindow(QMainWindow):
         # Deferred so we never rebuild the edit panel from inside the very
         # widget signal (editingFinished/itemChanged) that triggered the edit.
         QTimer.singleShot(0, self._refresh_edit_panel)
+        if isinstance(relabel_node, Control):
+            QTimer.singleShot(0, self._refresh_layout_usage)
 
     def _refresh_edit_panel(self) -> None:
         self.edit_panel.set_node(self.edit_panel.current_node)
