@@ -19,9 +19,14 @@ from PySide6.QtWidgets import (
 from seratomidiconf import catalog
 from seratomidiconf.gui.commands import (
     AddAliasCommand,
+    AddGroupAliasCommand,
+    OnGroupApplied,
     RemoveAliasCommand,
+    RemoveGroupAliasCommand,
     SetAttrCommand,
+    SetGroupAttrCommand,
 )
+from seratomidiconf.gui.mapping_group import MappingGroup
 from seratomidiconf.model import Alias, Control, MappingElement, Translation, UserIO
 
 
@@ -33,11 +38,13 @@ class EditPanel(QWidget):
         self,
         undo_stack: QUndoStack,
         on_applied: Callable[[object], None],
+        on_group_applied: OnGroupApplied | None = None,
         parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
         self._undo_stack = undo_stack
         self._on_applied = on_applied
+        self._on_group_applied = on_group_applied or (lambda: None)
         self._node: object | None = None
         self._layout = QVBoxLayout(self)
         self._layout.addWidget(QLabel("Select a node in the tree to edit it."))
@@ -69,6 +76,8 @@ class EditPanel(QWidget):
             self._body = self._build_userio_form(node)
         elif isinstance(node, MappingElement):
             self._body = self._build_mapping_form(node)
+        elif isinstance(node, MappingGroup):
+            self._body = self._build_group_form(node)
         else:
             return
         self._layout.addWidget(self._body)
@@ -217,6 +226,153 @@ class EditPanel(QWidget):
             if 0 <= row < len(translation.aliases):
                 self._undo_stack.push(RemoveAliasCommand(translation, row, mapping, self._on_applied))
                 refresh_aliases_table()
+
+        translations_table.itemChanged.connect(on_translation_cell_changed)
+        translations_table.currentCellChanged.connect(lambda *_: refresh_aliases_table())
+        aliases_table.itemChanged.connect(on_alias_cell_changed)
+        add_alias_btn.clicked.connect(on_add_alias)
+        remove_alias_btn.clicked.connect(on_remove_alias)
+
+        refresh_translations_table()
+        refresh_aliases_table()
+
+        layout.addWidget(translations_box)
+        layout.addWidget(aliases_box)
+        return container
+
+    def _build_group_form(self, group: MappingGroup) -> QWidget:
+        """A MappingGroup bundles every Control/MappingElement that shares the same
+        trigger and deck/slot/tag/event — normally the ~10 duplicate copies Serato
+        writes for one function. Every field here edits all members at once."""
+        container = QWidget()
+        layout = QVBoxLayout(container)
+
+        mappings = [m for _, _, m in group.members]
+        translations_lists = [m.translations for m in mappings]
+
+        info_box = QGroupBox(f"<{group.tag}> [{group.event}] — {len(group.members)} linked control(s)")
+        info_form = QFormLayout(info_box)
+        info_form.addRow("Trigger", QLabel(f"ch{group.channel} {group.event_type} #{group.control_no}"))
+        hits = catalog.lookup(group.channel, group.event_type, group.control_no)
+        physical_text = "\n".join(f"{h.controller}: {h.name}" for h in hits) or "(not found in reference tables)"
+        physical_label = QLabel(physical_text)
+        physical_label.setWordWrap(True)
+        info_form.addRow("Physical control", physical_label)
+        layout.addWidget(info_box)
+
+        deck_box = QGroupBox("Target (applies to all linked controls)")
+        form = QFormLayout(deck_box)
+        deck_set = QLineEdit(group.representative.deck_set or "")
+        deck_id = QLineEdit(group.representative.deck_id or "")
+        slot_id = QLineEdit(group.representative.slot_id or "")
+
+        def push_group(attr: str, new_value: str) -> None:
+            old_values = [getattr(m, attr) for m in mappings]
+            if all(old == new_value for old in old_values):
+                return
+            self._undo_stack.push(SetGroupAttrCommand(mappings, attr, old_values, new_value, self._on_group_applied))
+
+        deck_set.editingFinished.connect(lambda: push_group("deck_set", deck_set.text()))
+        deck_id.editingFinished.connect(lambda: push_group("deck_id", deck_id.text()))
+        slot_id.editingFinished.connect(lambda: push_group("slot_id", slot_id.text()))
+
+        form.addRow("Deck set", deck_set)
+        form.addRow("Deck id", deck_id)
+        form.addRow("Slot id", slot_id)
+        layout.addWidget(deck_box)
+
+        translations_box = QGroupBox("Translations (applies to all linked controls)")
+        translations_layout = QVBoxLayout(translations_box)
+        translations_table = QTableWidget(0, 2)
+        translations_table.setHorizontalHeaderLabels(["action_on", "behaviour"])
+        translations_layout.addWidget(translations_table)
+
+        aliases_box = QGroupBox("Aliases for selected translation (applies to all linked controls)")
+        aliases_layout = QVBoxLayout(aliases_box)
+        aliases_table = QTableWidget(0, 2)
+        aliases_table.setHorizontalHeaderLabels(["name", "value"])
+        aliases_layout.addWidget(aliases_table)
+        alias_buttons = QHBoxLayout()
+        add_alias_btn = QPushButton("Add alias")
+        remove_alias_btn = QPushButton("Remove alias")
+        alias_buttons.addWidget(add_alias_btn)
+        alias_buttons.addWidget(remove_alias_btn)
+        aliases_layout.addLayout(alias_buttons)
+
+        representative_translations = group.representative.translations
+
+        def selected_row() -> int:
+            return translations_table.currentRow()
+
+        def translations_at(row: int) -> list[Translation]:
+            return [translations[row] for translations in translations_lists if row < len(translations)]
+
+        def refresh_aliases_table() -> None:
+            row = selected_row()
+            aliases_table.blockSignals(True)
+            aliases_table.setRowCount(0)
+            if 0 <= row < len(representative_translations):
+                for alias in representative_translations[row].aliases:
+                    r = aliases_table.rowCount()
+                    aliases_table.insertRow(r)
+                    aliases_table.setItem(r, 0, QTableWidgetItem(alias.name))
+                    aliases_table.setItem(r, 1, QTableWidgetItem(alias.value))
+            aliases_table.blockSignals(False)
+
+        def refresh_translations_table() -> None:
+            translations_table.blockSignals(True)
+            translations_table.setRowCount(0)
+            for translation in representative_translations:
+                row = translations_table.rowCount()
+                translations_table.insertRow(row)
+                translations_table.setItem(row, 0, QTableWidgetItem(translation.action_on or ""))
+                translations_table.setItem(row, 1, QTableWidgetItem(translation.behaviour or ""))
+            translations_table.blockSignals(False)
+
+        def on_translation_cell_changed(row: int, column: int) -> None:
+            targets = translations_at(row)
+            if not targets:
+                return
+            attr = "action_on" if column == 0 else "behaviour"
+            new_value = translations_table.item(row, column).text()
+            old_values = [getattr(t, attr) for t in targets]
+            if all(old == new_value for old in old_values):
+                return
+            self._undo_stack.push(SetGroupAttrCommand(targets, attr, old_values, new_value, self._on_group_applied))
+
+        def on_alias_cell_changed(row: int, column: int) -> None:
+            trans_row = selected_row()
+            targets = [
+                translations[trans_row].aliases[row]
+                for translations in translations_lists
+                if trans_row < len(translations) and row < len(translations[trans_row].aliases)
+            ]
+            if not targets:
+                return
+            attr = "name" if column == 0 else "value"
+            new_value = aliases_table.item(row, column).text()
+            old_values = [getattr(a, attr) for a in targets]
+            if all(old == new_value for old in old_values):
+                return
+            self._undo_stack.push(SetGroupAttrCommand(targets, attr, old_values, new_value, self._on_group_applied))
+
+        def on_add_alias() -> None:
+            trans_row = selected_row()
+            targets = translations_at(trans_row)
+            if not targets:
+                return
+            aliases = [Alias(name="new", value="0") for _ in targets]
+            self._undo_stack.push(AddGroupAliasCommand(targets, aliases, self._on_group_applied))
+            refresh_aliases_table()
+
+        def on_remove_alias() -> None:
+            trans_row = selected_row()
+            targets = translations_at(trans_row)
+            alias_row = aliases_table.currentRow()
+            if not targets or not (0 <= alias_row < len(representative_translations[trans_row].aliases)):
+                return
+            self._undo_stack.push(RemoveGroupAliasCommand(targets, alias_row, self._on_group_applied))
+            refresh_aliases_table()
 
         translations_table.itemChanged.connect(on_translation_cell_changed)
         translations_table.currentCellChanged.connect(lambda *_: refresh_aliases_table())

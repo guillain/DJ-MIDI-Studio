@@ -25,6 +25,7 @@ from seratomidiconf.gui import layout as layout_mod
 from seratomidiconf.gui.deck_tree import build_deck_tree
 from seratomidiconf.gui.edit_panel import EditPanel
 from seratomidiconf.gui.layout_view import ControllerLayoutView
+from seratomidiconf.gui.mapping_group import MappingGroup
 from seratomidiconf.gui.tree_model import NODE_ROLE, build_tree_model, relabel_item
 from seratomidiconf.model import Control, MappingElement, MidiConfig
 from seratomidiconf.parser import parse_file
@@ -72,13 +73,14 @@ class MainWindow(QMainWindow):
 
         self.deck_tree_view = QTreeView()
         self.deck_tree_view.setHeaderHidden(False)
+        self.deck_tree_view.doubleClicked.connect(self._on_deck_item_double_clicked)
 
         self.left_tabs = QTabWidget()
         self.left_tabs.addTab(tree_container, "Tree")
         self.left_tabs.addTab(self.layout_view, "Layout")
         self.left_tabs.addTab(self.deck_tree_view, "By Deck")
 
-        self.edit_panel = EditPanel(self.undo_stack, self._on_command_applied)
+        self.edit_panel = EditPanel(self.undo_stack, self._on_command_applied, self._on_group_edit_applied)
 
         self.issues_table = QTableWidget(0, 3)
         self.issues_table.setHorizontalHeaderLabels(["Severity", "Message", "Location"])
@@ -166,16 +168,39 @@ class MainWindow(QMainWindow):
     def _on_deck_selection_changed(self) -> None:
         indexes = self.deck_tree_view.selectionModel().selectedIndexes()
         if not indexes:
+            self.edit_panel.set_node(None)
             return
-        control = self.deck_tree_view.model().itemFromIndex(indexes[0]).data(NODE_ROLE)
-        if not isinstance(control, Control):
+        group = self.deck_tree_view.model().itemFromIndex(indexes[0]).data(NODE_ROLE)
+        if not isinstance(group, MappingGroup):
+            self.edit_panel.set_node(None)
             return
+        self.edit_panel.set_node(group)
+
+    def _on_deck_item_double_clicked(self, index) -> None:
+        group = self.deck_tree_view.model().itemFromIndex(index).data(NODE_ROLE)
+        if not isinstance(group, MappingGroup):
+            return
+        control = group.members[0][0]
         item = self.node_to_item.get(id(control))
         if item is not None:
             proxy_index = self.tree_proxy_model.mapFromSource(item.index())
             self.tree_view.setCurrentIndex(proxy_index)
             self.tree_view.scrollTo(proxy_index)
         self.left_tabs.setCurrentIndex(0)
+
+    def _on_group_edit_applied(self) -> None:
+        # A group edit may touch every duplicate's deck/slot label (main tree) and
+        # can move the group to a different deck/slot (deck tree), so both need a
+        # full refresh rather than a single relabel.
+        current_group = self.edit_panel.current_node
+        if isinstance(current_group, MappingGroup):
+            for _, _, mapping in current_group.members:
+                item = self.node_to_item.get(id(mapping))
+                if item is not None:
+                    relabel_item(item, mapping)
+        QTimer.singleShot(0, self._refresh_edit_panel)
+        QTimer.singleShot(0, self._refresh_layout_usage)
+        QTimer.singleShot(0, self._refresh_deck_view)
 
     def _refresh_layout_usage(self) -> None:
         assert self.config is not None
