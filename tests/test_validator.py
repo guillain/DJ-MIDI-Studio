@@ -40,7 +40,7 @@ def test_identical_duplicate_trigger_is_only_informational():
     )
     issues = validate(config)
     assert not any(i.severity == "error" for i in issues)
-    assert any(i.severity == "info" and "harmless redundancy" in i.message for i in issues)
+    assert any(i.severity == "info" and "do not deduplicate" in i.message for i in issues)
 
 
 def test_detects_missing_required_field():

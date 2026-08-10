@@ -28,9 +28,12 @@ def _mapping_location(control, userio, mapping) -> str:
 
 def _check_duplicate_triggers(config: MidiConfig) -> list[ValidationIssue]:
     """The same (channel, event_type, control) can legitimately appear more than once in
-    Serato-generated files as long as every occurrence maps to the same thing (harmless
-    redundancy). If occurrences disagree, only one will actually be honoured by Serato,
-    which is a real conflict."""
+    Serato-generated files as long as every occurrence maps to the same thing. Despite
+    looking redundant, real Serato exports rely on this exact repetition (observed: every
+    unique trigger repeated the same number of times) and deleting the "duplicates" has
+    been confirmed to break the config in Serato — so this is flagged as informational
+    only, not something to clean up. If occurrences disagree with each other, that's a
+    real conflict: only one will actually be honoured by Serato."""
     groups: dict[tuple[str, str, str], list[Control]] = {}
     for control in config.controls:
         key = (control.channel, control.event_type, control.control)
@@ -58,7 +61,8 @@ def _check_duplicate_triggers(config: MidiConfig) -> list[ValidationIssue]:
                 ValidationIssue(
                     severity="info",
                     message=f"Trigger (channel={key[0]}, event_type={key[1]}, control={key[2]}) is defined "
-                    f"{len(controls)} times with identical content (harmless redundancy).",
+                    f"{len(controls)} times with identical content. This repetition appears required by "
+                    f"Serato — do not deduplicate.",
                     location=_control_location(controls[0]),
                 )
             )
