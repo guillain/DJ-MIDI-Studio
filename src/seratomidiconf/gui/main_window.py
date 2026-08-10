@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PySide6.QtCore import QSortFilterProxyModel, Qt, QTimer
-from PySide6.QtGui import QAction, QColor, QKeySequence, QUndoStack
+from PySide6.QtCore import QSortFilterProxyModel, Qt, QTimer, QUrl
+from PySide6.QtGui import QAction, QColor, QDesktopServices, QKeySequence, QUndoStack
 from PySide6.QtWidgets import (
     QFileDialog,
     QLineEdit,
@@ -36,6 +36,19 @@ _SEVERITY_COLORS = {
     "warning": QColor(255, 235, 180),
     "info": QColor(225, 225, 225),
 }
+
+# The official docs catalog.py was transcribed from (see README.md "Technical References").
+_REFERENCE_LINKS = [
+    ("Serato MIDI Mapping Guide", "https://support.serato.com/hc/en-us/articles/209377487-MIDI-mapping-with-Serato-DJ-Pro"),
+    (
+        "XDJ-XZ MIDI Message List (PDF)",
+        "https://downloads.support.alphatheta.com/software_info/all-in-one-dj-systems/XDJ-XZ/XDJ-XZ_MIDI_Message_List_E3.pdf",
+    ),
+    (
+        "DDJ-XP2 MIDI Message List (PDF)",
+        "https://downloads.support.alphatheta.com/software_info/dj-controllers/DDJ-XP2/DDJ-XP2_MIDI_Message_List_E1.pdf",
+    ),
+]
 
 
 class MainWindow(QMainWindow):
@@ -75,10 +88,26 @@ class MainWindow(QMainWindow):
         self.deck_tree_view.setHeaderHidden(False)
         self.deck_tree_view.doubleClicked.connect(self._on_deck_item_double_clicked)
 
+        self.deck_layout_view = ControllerLayoutView(show_deck_filter=True)
+        self.deck_layout_view.cellActivated.connect(self._on_layout_cell_activated)
+
+        # Each representation pairs a tree (text, precise) with a schematic
+        # layout (visual, at-a-glance) of the same underlying data.
+        channel_pair = QSplitter(Qt.Orientation.Vertical)
+        channel_pair.addWidget(tree_container)
+        channel_pair.addWidget(self.layout_view)
+        channel_pair.setStretchFactor(0, 1)
+        channel_pair.setStretchFactor(1, 1)
+
+        deck_pair = QSplitter(Qt.Orientation.Vertical)
+        deck_pair.addWidget(self.deck_tree_view)
+        deck_pair.addWidget(self.deck_layout_view)
+        deck_pair.setStretchFactor(0, 1)
+        deck_pair.setStretchFactor(1, 1)
+
         self.left_tabs = QTabWidget()
-        self.left_tabs.addTab(tree_container, "Tree")
-        self.left_tabs.addTab(self.layout_view, "Layout")
-        self.left_tabs.addTab(self.deck_tree_view, "By Deck")
+        self.left_tabs.addTab(channel_pair, "By Channel")
+        self.left_tabs.addTab(deck_pair, "By Deck")
 
         self.edit_panel = EditPanel(self.undo_stack, self._on_command_applied, self._on_group_edit_applied)
 
@@ -133,6 +162,12 @@ class MainWindow(QMainWindow):
         validate_action = QAction("&Validate", self)
         validate_action.triggered.connect(self._on_validate)
         edit_menu.addAction(validate_action)
+
+        help_menu = self.menuBar().addMenu("&Help")
+        for title, url in _REFERENCE_LINKS:
+            action = QAction(title, self)
+            action.triggered.connect(lambda checked=False, u=url: QDesktopServices.openUrl(QUrl(u)))
+            help_menu.addAction(action)
 
     def _on_open(self) -> None:
         path_str, _ = QFileDialog.getOpenFileName(self, "Open Serato MIDI config", "", "XML files (*.xml)")
@@ -218,6 +253,7 @@ class MainWindow(QMainWindow):
             for hit in hits:
                 deck_usage.setdefault(layout_mod.cell_key(hit), set()).update(decks)
         self.layout_view.set_deck_usage(deck_usage)
+        self.deck_layout_view.set_deck_usage(deck_usage)
 
     def _on_layout_cell_activated(self, key: tuple) -> None:
         if self.config is None:
