@@ -83,9 +83,20 @@ def build_layout(controller: str) -> list[LayoutCell]:
         return (section_rank, order.index(key))
 
     cells: list[LayoutCell] = []
-    row = 0
+
+    # Pads first: they're what a real Serato config maps almost exclusively
+    # (see the empirical finding in CLAUDE.md), so lead with the section
+    # that's actually populated instead of burying it under rows of unused
+    # DECK/EFFECT/BROWSE reference cells.
+    pad_cols = _PAD_COLS[controller]
+    for n in range(1, catalog.PAD_COUNTS[controller] + 1):
+        r, c = divmod(n - 1, pad_cols)
+        key = (controller, "PAD", f"Pad {n}")
+        cells.append(LayoutCell(key, f"Pad {n}", "PAD", r, c))
+    row = -(-catalog.PAD_COUNTS[controller] // pad_cols)  # ceil division
     col = 0
     current_section: str | None = None
+
     for key in sorted(order, key=rank):
         section = key[1]
         if section != current_section:
@@ -98,14 +109,5 @@ def build_layout(controller: str) -> list[LayoutCell]:
         if col >= _COLS_PER_ROW:
             col = 0
             row += 1
-    if col != 0:
-        row += 1
-
-    pad_row0 = row
-    pad_cols = _PAD_COLS[controller]
-    for n in range(1, catalog.PAD_COUNTS[controller] + 1):
-        r, c = divmod(n - 1, pad_cols)
-        key = (controller, "PAD", f"Pad {n}")
-        cells.append(LayoutCell(key, f"Pad {n}", "PAD", pad_row0 + r, c))
 
     return cells

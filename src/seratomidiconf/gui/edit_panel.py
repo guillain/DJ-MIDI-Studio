@@ -82,10 +82,31 @@ class EditPanel(QWidget):
             return
         self._layout.addWidget(self._body)
 
+    def _build_physical_control_box(self, channel: str | None, event_type: str | None, control_no: str | None) -> QWidget:
+        """A full-width box for the catalog match(es), kept out of any QFormLayout
+        so its text isn't squeezed into the narrow field column of a form."""
+        hits = catalog.lookup(channel, event_type, control_no)
+        if hits:
+            text = "\n".join(f"{h.controller}: {h.name}" for h in hits)
+        else:
+            text = "(not found in DDJ-XP2 / XDJ-XZ reference tables)"
+        box = QGroupBox("Physical control")
+        box_layout = QVBoxLayout(box)
+        label = QLabel(text)
+        label.setWordWrap(True)
+        font = label.font()
+        font.setPointSize(font.pointSize() + 1)
+        label.setFont(font)
+        box_layout.addWidget(label)
+        return box
+
     def _build_control_form(self, control: Control) -> QWidget:
-        box = QGroupBox("Control (MIDI trigger)")
-        form = QFormLayout(box)
-        form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow)
+        container = QWidget()
+        layout = QVBoxLayout(container)
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        trigger_box = QGroupBox("Control (MIDI trigger)")
+        form = QFormLayout(trigger_box)
 
         channel = QLineEdit(control.channel or "")
         event_type = QLineEdit(control.event_type or "")
@@ -102,20 +123,10 @@ class EditPanel(QWidget):
         form.addRow("Channel", channel)
         form.addRow("Event type", event_type)
         form.addRow("Control", control_no)
+        layout.addWidget(trigger_box)
 
-        hits = catalog.lookup(control.channel, control.event_type, control.control)
-        if hits:
-            text = "\n".join(f"{h.controller}: {h.name}" for h in hits)
-        else:
-            text = "(not found in DDJ-XP2 / XDJ-XZ reference tables)"
-        physical_label = QLabel(text)
-        physical_label.setWordWrap(True)
-        physical_label.setMinimumWidth(260)
-        physical_font = physical_label.font()
-        physical_font.setPointSize(physical_font.pointSize() + 1)
-        physical_label.setFont(physical_font)
-        form.addRow("Physical control", physical_label)
-        return box
+        layout.addWidget(self._build_physical_control_box(control.channel, control.event_type, control.control))
+        return container
 
     def _build_userio_form(self, userio: UserIO) -> QWidget:
         box = QGroupBox("User I/O")
@@ -258,12 +269,9 @@ class EditPanel(QWidget):
         info_box = QGroupBox(f"<{group.tag}> [{group.event}] — {len(group.members)} linked control(s)")
         info_form = QFormLayout(info_box)
         info_form.addRow("Trigger", QLabel(f"ch{group.channel} {group.event_type} #{group.control_no}"))
-        hits = catalog.lookup(group.channel, group.event_type, group.control_no)
-        physical_text = "\n".join(f"{h.controller}: {h.name}" for h in hits) or "(not found in reference tables)"
-        physical_label = QLabel(physical_text)
-        physical_label.setWordWrap(True)
-        info_form.addRow("Physical control", physical_label)
         layout.addWidget(info_box)
+
+        layout.addWidget(self._build_physical_control_box(group.channel, group.event_type, group.control_no))
 
         deck_box = QGroupBox("Target (applies to all linked controls)")
         form = QFormLayout(deck_box)
