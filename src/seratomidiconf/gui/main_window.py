@@ -239,21 +239,20 @@ class MainWindow(QMainWindow):
 
     def _refresh_layout_usage(self) -> None:
         assert self.config is not None
-        deck_usage: dict[layout_mod.CellKey, set[str]] = {}
+        usage: dict[layout_mod.CellKey, dict[str, set[str]]] = {}
         for control in self.config.controls:
             hits = catalog.lookup(control.channel, control.event_type, control.control)
             if not hits:
                 continue
-            decks = {
-                mapping.deck_id
-                for userio in control.userios
-                for mapping in userio.mappings
-                if mapping.deck_id
-            }
-            for hit in hits:
-                deck_usage.setdefault(layout_mod.cell_key(hit), set()).update(decks)
-        self.layout_view.set_deck_usage(deck_usage)
-        self.deck_layout_view.set_deck_usage(deck_usage)
+            for userio in control.userios:
+                for mapping in userio.mappings:
+                    if not mapping.deck_id:
+                        continue
+                    for hit in hits:
+                        cell = usage.setdefault(layout_mod.cell_key(hit), {})
+                        cell.setdefault(mapping.deck_id, set()).add(mapping.tag)
+        self.layout_view.set_usage(usage)
+        self.deck_layout_view.set_usage(usage)
 
     def _on_layout_cell_activated(self, key: tuple) -> None:
         if self.config is None:

@@ -16,11 +16,15 @@ from PySide6.QtWidgets import (
 from seratomidiconf.gui import layout as layout_mod
 from seratomidiconf.gui.layout import CellKey
 
-_CELL_W = 130
-_CELL_H = 46
+_CELL_W = 150
+_CELL_H = 58
 _MARGIN = 6
 _KEY_ROLE = 0
 _ALL_DECKS = "All decks"
+
+# cell key -> Serato deck number -> set of Serato function tags (mapping.tag)
+# bound to that cell for that deck.
+Usage = dict[CellKey, dict[str, set[str]]]
 
 _UNUSED_BRUSH = QBrush(QColor(235, 235, 235))
 _MULTI_DECK_BRUSH = QBrush(QColor(120, 200, 190))
@@ -50,6 +54,10 @@ def _deck_sort_key(value: str) -> tuple[bool, int, str]:
     return (not value.isdigit(), int(value) if value.isdigit() else 0, value)
 
 
+def _elide(text: str, max_len: int) -> str:
+    return text if len(text) <= max_len else text[: max_len - 1] + "…"
+
+
 class _ClickableView(QGraphicsView):
     cellClicked = Signal(tuple)
 
@@ -65,16 +73,17 @@ class _ClickableView(QGraphicsView):
 class ControllerLayoutView(QWidget):
     """Schematic, clickable layout of a controller's physical buttons/pads.
     Cells are colored per Serato deck to show which deck each physical
-    control currently drives in the loaded config; clicking one jumps to a
-    matching entry in the tree. An optional deck filter narrows the
-    highlighting to a single deck, for a deck-centric view of the same data."""
+    control currently drives, and labeled with the Serato function(s) it is
+    mapped to; clicking one jumps to a matching entry in the tree. An
+    optional deck filter narrows both the coloring and the shown functions
+    to a single deck, for a deck-centric view of the same data."""
 
     cellActivated = Signal(tuple)  # CellKey
 
     def __init__(self, show_deck_filter: bool = False, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self._controller = "DDJ-XP2"
-        self._deck_usage: dict[CellKey, set[str]] = {}
+        self._usage: Usage = {}
 
         self._controller_combo = QComboBox()
         self._controller_combo.addItems(["DDJ-XP2", "XDJ-XZ"])
@@ -104,12 +113,13 @@ class ControllerLayoutView(QWidget):
         self._controller = text
         self._rebuild()
 
-    def set_deck_usage(self, deck_usage: dict[CellKey, set[str]]) -> None:
-        """deck_usage maps a layout cell to the set of Serato deck numbers
-        (as strings, e.g. "1"-"4") that a control bound to it targets."""
-        self._deck_usage = deck_usage
+    def set_usage(self, usage: Usage) -> None:
+        """usage maps a layout cell to {deck_id: {Serato function tags mapped
+        on that deck}}, so the layout can show both which deck(s) use a
+        physical control and which Serato function it currently triggers."""
+        self._usage = usage
         if self._deck_combo is not None:
-            all_decks = sorted({d for decks in deck_usage.values() for d in decks}, key=_deck_sort_key)
+            all_decks = sorted({d for per_deck in usage.values() for d in per_deck}, key=_deck_sort_key)
             current = self._deck_combo.currentText()
             self._deck_combo.blockSignals(True)
             self._deck_combo.clear()
@@ -128,6 +138,18 @@ class ControllerLayoutView(QWidget):
             return None
         return text.removeprefix("Deck ")
 
+    def _cell_decks_and_tags(self, cell_key: CellKey, deck_filter: str | None) -> tuple[set[str], set[str]]:
+        per_deck = self._usage.get(cell_key, {})
+        if deck_filter is not None:
+            if deck_filter not in per_deck:
+                return set(), set()
+            return {deck_filter}, set(per_deck[deck_filter])
+        decks = set(per_deck.keys())
+        tags: set[str] = set()
+        for deck_tags in per_deck.values():
+            tags |= deck_tags
+        return decks, tags
+
     def _rebuild(self) -> None:
         self._scene.clear()
         cells = layout_mod.build_layout(self._controller)
@@ -137,9 +159,7 @@ class ControllerLayoutView(QWidget):
         for cell in cells:
             x = cell.col * (_CELL_W + _MARGIN)
             y = cell.row * (_CELL_H + _MARGIN)
-            decks = self._deck_usage.get(cell.key, set())
-            if deck_filter is not None:
-                decks = decks & {deck_filter}
+            decks, tags = self._cell_decks_and_tags(cell.key, deck_filter)
 
             rect = QGraphicsRectItem(QRectF(0, 0, _CELL_W, _CELL_H))
             rect.setPos(x, y)
@@ -147,13 +167,21 @@ class ControllerLayoutView(QWidget):
             rect.setPen(_BORDER_PEN)
             rect.setData(_KEY_ROLE, cell.key)
             deck_text = ", ".join(f"Deck {d}" for d in sorted(decks)) if decks else "not used"
-            rect.setToolTip(f"{cell.section} — {cell.label} ({deck_text} in this config)")
+            tag_text = ", ".join(sorted(tags)) if tags else "no function mapped"
+            rect.setToolTip(f"{cell.section} — {cell.label}\n{deck_text}\nMapped to: {tag_text}")
             self._scene.addItem(rect)
 
             label = QGraphicsSimpleTextItem(cell.label)
-            label.setPos(x + 4, y + 3)
+            label.setPos(x + 4, y + 2)
             label.setData(_KEY_ROLE, cell.key)
             self._scene.addItem(label)
+
+            if tags:
+                tag_label = QGraphicsSimpleTextItem(_elide(", ".join(sorted(tags)), 22))
+                tag_label.setFont(small_font)
+                tag_label.setPos(x + 4, y + 20)
+                tag_label.setData(_KEY_ROLE, cell.key)
+                self._scene.addItem(tag_label)
 
             if decks:
                 deck_label = QGraphicsSimpleTextItem(", ".join(f"D{d}" for d in sorted(decks)))
