@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from seratomidiconf import catalog
 from seratomidiconf.gui.commands import (
     AddAliasCommand,
     RemoveAliasCommand,
@@ -91,6 +92,15 @@ class EditPanel(QWidget):
         form.addRow("Channel", channel)
         form.addRow("Event type", event_type)
         form.addRow("Control", control_no)
+
+        hits = catalog.lookup(control.channel, control.event_type, control.control)
+        if hits:
+            text = "\n".join(f"{h.controller}: {h.name}" for h in hits)
+        else:
+            text = "(not found in DDJ-XP2 / XDJ-XZ reference tables)"
+        physical_label = QLabel(text)
+        physical_label.setWordWrap(True)
+        form.addRow("Physical control", physical_label)
         return box
 
     def _build_userio_form(self, userio: UserIO) -> QWidget:

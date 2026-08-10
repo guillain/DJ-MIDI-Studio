@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-Core pipeline and GUI are implemented and tested against the user's real config file: `model.py` (domain dataclasses), `parser.py` (XML → model), `exporter.py` (model → XML, byte-for-byte round-trip on the sample file), `validator.py` (structural + conflict checks), `gui/` (PySide6 UI — tree view with search/filter, edit panel, validation panel, undo/redo via `QUndoStack`, export). The controller reference catalog (`catalog.py`, mapping raw channel/control numbers to physical control names for XDJ-XZ/DDJ-XP2) is not started yet — it needs an XDJ-XZ sample file the user hasn't provided. Root `main.py` is unrelated leftover PyCharm boilerplate, not part of the package. See `~/.claude/plans/sprightly-questing-bengio.md` for the full phased plan.
+All phases of the original plan are implemented and tested against the user's real config file: `model.py` (domain dataclasses), `parser.py` (XML → model), `exporter.py` (model → XML, byte-for-byte round-trip on the sample file), `validator.py` (structural + conflict checks), `catalog.py` (channel/NOTE-CC/data1 → physical control name, for DDJ-XP2 and XDJ-XZ — the user's real setup mixes both controllers in one config, so lookups always check both catalogs and can return ambiguous matches), `gui/` (PySide6 UI — tree view with search/filter, edit panel showing catalog matches, validation panel, undo/redo via `QUndoStack`, export). Root `main.py` is unrelated leftover PyCharm boilerplate, not part of the package.
+
+`catalog.py`'s scope is intentionally limited to discrete press/toggle controls (buttons, the 16×8 DDJ-XP2 pad grid and 8×8 XDJ-XZ pad grid, both encoded as verified formulas rather than static tables) — continuous controls (faders, TRIM/EQ knobs, jog wheels, TIME/TOUCH STRIP encoders) are left out since they're rarely remapped in Serato configs and don't reduce to one readable name. Extend `_XP2_STATIC`/`_XZ_STATIC` the same way to add more entries. See `~/.claude/plans/sprightly-questing-bengio.md` for the full phased plan.
 
 ## What this project is
 
