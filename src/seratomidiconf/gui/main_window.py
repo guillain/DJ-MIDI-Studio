@@ -133,6 +133,9 @@ class MainWindow(QMainWindow):
         self._build_menu()
 
     def _build_menu(self) -> None:
+        # On macOS, Qt moves the menu bar into the system-wide bar at the top of
+        # the screen by default, which is easy to miss; keep it in-window instead.
+        self.menuBar().setNativeMenuBar(False)
         file_menu = self.menuBar().addMenu("&File")
 
         open_action = QAction("&Open...", self)
@@ -204,12 +207,15 @@ class MainWindow(QMainWindow):
         indexes = self.deck_tree_view.selectionModel().selectedIndexes()
         if not indexes:
             self.edit_panel.set_node(None)
+            self._update_layout_selection(None, None, None)
             return
         group = self.deck_tree_view.model().itemFromIndex(indexes[0]).data(NODE_ROLE)
         if not isinstance(group, MappingGroup):
             self.edit_panel.set_node(None)
+            self._update_layout_selection(None, None, None)
             return
         self.edit_panel.set_node(group)
+        self._update_layout_selection(group.channel, group.event_type, group.control_no)
 
     def _on_deck_item_double_clicked(self, index) -> None:
         group = self.deck_tree_view.model().itemFromIndex(index).data(NODE_ROLE)
@@ -275,6 +281,7 @@ class MainWindow(QMainWindow):
                     break
         if not matches:
             self.statusBar().showMessage(f"No control in this file uses '{key[2]}'")
+            self._update_layout_selection(None, None, None)
             return
         item = self.node_to_item.get(id(matches[0]))
         if item is not None:
@@ -283,6 +290,25 @@ class MainWindow(QMainWindow):
             self.tree_view.scrollTo(proxy_index)
         self.left_tabs.setCurrentIndex(0)
         self.statusBar().showMessage(f"'{key[2]}': {len(matches)} control(s) in this file, showing first")
+        # setCurrentIndex above already re-highlights via _on_selection_changed, but
+        # do it directly too in case the tree selection didn't actually change
+        # (clicking the same physical control's other half again).
+        self._update_layout_selection(matches[0].channel, matches[0].event_type, matches[0].control)
+
+    def _update_layout_selection(self, channel: str | None, event_type: str | None, control_no: str | None) -> None:
+        keys: set[layout_mod.CellKey] = set()
+        if channel and event_type and control_no:
+            keys = {layout_mod.cell_key(hit) for hit in catalog.lookup(channel, event_type, control_no)}
+        self.layout_view.set_selected_keys(keys)
+        self.deck_layout_view.set_selected_keys(keys)
+
+    def _find_ancestor_control(self, item) -> Control | None:
+        while item is not None:
+            node = item.data(NODE_ROLE)
+            if isinstance(node, Control):
+                return node
+            item = item.parent()
+        return None
 
     def _on_search_text_changed(self, text: str) -> None:
         self.tree_proxy_model.setFilterFixedString(text)
@@ -297,6 +323,17 @@ class MainWindow(QMainWindow):
 
     def _on_selection_changed(self) -> None:
         self.edit_panel.set_node(self._current_node())
+        indexes = self.tree_view.selectionModel().selectedIndexes()
+        if not indexes:
+            self._update_layout_selection(None, None, None)
+            return
+        source_index = self.tree_proxy_model.mapToSource(indexes[0])
+        item = self.tree_proxy_model.sourceModel().itemFromIndex(source_index)
+        control = self._find_ancestor_control(item)
+        if control is not None:
+            self._update_layout_selection(control.channel, control.event_type, control.control)
+        else:
+            self._update_layout_selection(None, None, None)
 
     def _on_command_applied(self, relabel_node: object) -> None:
         item = self.node_to_item.get(id(relabel_node))

@@ -66,3 +66,12 @@ def test_cell_without_link_renders_placeholder_without_crashing():
     view.set_usage({("DDJ-XP2", "PAD", "Pad 1"): {"1": {"codfather_st"}}})
     assert view._linked_cells == {}
     assert len(view._scene.items()) > 0
+
+
+def test_set_selected_keys_stores_and_triggers_rebuild():
+    view = ControllerLayoutView()
+    view.set_usage(_USAGE)
+    view.set_selected_keys({("DDJ-XP2", "PAD", "Pad 1")})
+    assert view._selected_keys == {("DDJ-XP2", "PAD", "Pad 1")}
+    view.set_selected_keys(set())
+    assert view._selected_keys == set()

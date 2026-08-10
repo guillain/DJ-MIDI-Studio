@@ -36,6 +36,8 @@ _EMPTY_HALF_BRUSH = QBrush(QColor(246, 246, 246))
 _MULTI_DECK_BRUSH = QBrush(QColor(120, 200, 190))
 _BORDER_PEN = QPen(QColor(110, 110, 110))
 _DIVIDER_PEN = QPen(QColor(170, 170, 170))
+_SELECTED_PEN = QPen(QColor(220, 30, 30))
+_SELECTED_PEN.setWidth(3)
 
 # One color per Serato deck number, so a glance at the layout shows which
 # deck each physical control currently drives.
@@ -93,6 +95,7 @@ class ControllerLayoutView(QWidget):
         self._controller = "DDJ-XP2"
         self._usage: Usage = {}
         self._linked_cells: LinkedCells = {}
+        self._selected_keys: set[CellKey] = set()
 
         self._controller_combo = QComboBox()
         self._controller_combo.addItems(["DDJ-XP2", "XDJ-XZ"])
@@ -140,6 +143,14 @@ class ControllerLayoutView(QWidget):
             self._deck_combo.blockSignals(False)
         self._rebuild()
 
+    def set_selected_keys(self, keys: set[CellKey]) -> None:
+        """Highlights the cell(s) currently selected in a paired tree (or clicked
+        here), so the same selection is visible across tree <-> layout."""
+        if keys == self._selected_keys:
+            return
+        self._selected_keys = keys
+        self._rebuild()
+
     def _selected_deck_filter(self) -> str | None:
         if self._deck_combo is None:
             return None
@@ -174,7 +185,8 @@ class ControllerLayoutView(QWidget):
         rect = QGraphicsRectItem(QRectF(0, 0, _CELL_W, _HALF_H))
         rect.setPos(x, y)
         rect.setBrush(_brush_for_decks(decks) if (decks or tags) else _EMPTY_HALF_BRUSH)
-        rect.setPen(_BORDER_PEN)
+        rect.setPen(_SELECTED_PEN if clickable_key in self._selected_keys else _BORDER_PEN)
+        rect.setZValue(1 if clickable_key in self._selected_keys else 0)
         rect.setData(_KEY_ROLE, clickable_key)
         deck_text = ", ".join(f"Deck {d}" for d in sorted(decks)) if decks else "not used"
         tag_text = ", ".join(sorted(tags)) if tags else "no function mapped"

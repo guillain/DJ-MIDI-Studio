@@ -85,6 +85,7 @@ class EditPanel(QWidget):
     def _build_control_form(self, control: Control) -> QWidget:
         box = QGroupBox("Control (MIDI trigger)")
         form = QFormLayout(box)
+        form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow)
 
         channel = QLineEdit(control.channel or "")
         event_type = QLineEdit(control.event_type or "")
@@ -109,6 +110,10 @@ class EditPanel(QWidget):
             text = "(not found in DDJ-XP2 / XDJ-XZ reference tables)"
         physical_label = QLabel(text)
         physical_label.setWordWrap(True)
+        physical_label.setMinimumWidth(260)
+        physical_font = physical_label.font()
+        physical_font.setPointSize(physical_font.pointSize() + 1)
+        physical_label.setFont(physical_font)
         form.addRow("Physical control", physical_label)
         return box
 
