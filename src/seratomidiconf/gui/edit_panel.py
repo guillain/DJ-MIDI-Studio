@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from PySide6.QtCore import Signal
+from collections.abc import Callable
+
+from PySide6.QtGui import QUndoStack
 from PySide6.QtWidgets import (
     QFormLayout,
     QGroupBox,
@@ -14,20 +16,40 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from seratomidiconf.gui.commands import (
+    AddAliasCommand,
+    RemoveAliasCommand,
+    SetAttrCommand,
+)
 from seratomidiconf.model import Alias, Control, MappingElement, Translation, UserIO
 
 
 class EditPanel(QWidget):
-    """Shows editable fields for whichever tree node is currently selected."""
+    """Shows editable fields for whichever tree node is currently selected.
+    Every edit goes through `undo_stack` so it can be undone/redone."""
 
-    changed = Signal(object)  # emits the node that was edited
-
-    def __init__(self, parent: QWidget | None = None) -> None:
+    def __init__(
+        self,
+        undo_stack: QUndoStack,
+        on_applied: Callable[[object], None],
+        parent: QWidget | None = None,
+    ) -> None:
         super().__init__(parent)
+        self._undo_stack = undo_stack
+        self._on_applied = on_applied
         self._node: object | None = None
         self._layout = QVBoxLayout(self)
         self._layout.addWidget(QLabel("Select a node in the tree to edit it."))
         self._body: QWidget | None = None
+
+    @property
+    def current_node(self) -> object | None:
+        return self._node
+
+    def _push(self, target: object, attr: str, old_value: str | None, new_value: str | None, relabel_node: object) -> None:
+        if old_value == new_value:
+            return
+        self._undo_stack.push(SetAttrCommand(target, attr, old_value, new_value, relabel_node, self._on_applied))
 
     def _clear_body(self) -> None:
         if self._body is not None:
@@ -58,21 +80,13 @@ class EditPanel(QWidget):
         event_type = QLineEdit(control.event_type or "")
         control_no = QLineEdit(control.control or "")
 
-        def on_channel_changed(text: str) -> None:
-            control.channel = text
-            self.changed.emit(control)
-
-        def on_event_type_changed(text: str) -> None:
-            control.event_type = text
-            self.changed.emit(control)
-
-        def on_control_changed(text: str) -> None:
-            control.control = text
-            self.changed.emit(control)
-
-        channel.editingFinished.connect(lambda: on_channel_changed(channel.text()))
-        event_type.editingFinished.connect(lambda: on_event_type_changed(event_type.text()))
-        control_no.editingFinished.connect(lambda: on_control_changed(control_no.text()))
+        channel.editingFinished.connect(lambda: self._push(control, "channel", control.channel, channel.text(), control))
+        event_type.editingFinished.connect(
+            lambda: self._push(control, "event_type", control.event_type, event_type.text(), control)
+        )
+        control_no.editingFinished.connect(
+            lambda: self._push(control, "control", control.control, control_no.text(), control)
+        )
 
         form.addRow("Channel", channel)
         form.addRow("Event type", event_type)
@@ -84,11 +98,8 @@ class EditPanel(QWidget):
         form = QFormLayout(box)
         event = QLineEdit(userio.event or "")
 
-        def on_event_changed() -> None:
-            userio.event = event.text()
-            self.changed.emit(userio)
+        event.editingFinished.connect(lambda: self._push(userio, "event", userio.event, event.text(), userio))
 
-        event.editingFinished.connect(on_event_changed)
         form.addRow("Event (click/output)", event)
         form.addRow(QLabel(f"{len(userio.mappings)} mapping(s)"))
         return box
@@ -103,21 +114,11 @@ class EditPanel(QWidget):
         deck_id = QLineEdit(mapping.deck_id or "")
         slot_id = QLineEdit(mapping.slot_id or "")
 
-        def on_deck_set_changed() -> None:
-            mapping.deck_set = deck_set.text()
-            self.changed.emit(mapping)
-
-        def on_deck_id_changed() -> None:
-            mapping.deck_id = deck_id.text()
-            self.changed.emit(mapping)
-
-        def on_slot_id_changed() -> None:
-            mapping.slot_id = slot_id.text()
-            self.changed.emit(mapping)
-
-        deck_set.editingFinished.connect(on_deck_set_changed)
-        deck_id.editingFinished.connect(on_deck_id_changed)
-        slot_id.editingFinished.connect(on_slot_id_changed)
+        deck_set.editingFinished.connect(
+            lambda: self._push(mapping, "deck_set", mapping.deck_set, deck_set.text(), mapping)
+        )
+        deck_id.editingFinished.connect(lambda: self._push(mapping, "deck_id", mapping.deck_id, deck_id.text(), mapping))
+        slot_id.editingFinished.connect(lambda: self._push(mapping, "slot_id", mapping.slot_id, slot_id.text(), mapping))
 
         form.addRow("Deck set", deck_set)
         form.addRow("Deck id", deck_id)
@@ -176,10 +177,9 @@ class EditPanel(QWidget):
             translation = mapping.translations[row]
             text = translations_table.item(row, column).text()
             if column == 0:
-                translation.action_on = text
+                self._push(translation, "action_on", translation.action_on, text, mapping)
             else:
-                translation.behaviour = text
-            self.changed.emit(mapping)
+                self._push(translation, "behaviour", translation.behaviour, text, mapping)
 
         def on_alias_cell_changed(row: int, column: int) -> None:
             translation = selected_translation()
@@ -188,18 +188,16 @@ class EditPanel(QWidget):
             alias = translation.aliases[row]
             text = aliases_table.item(row, column).text()
             if column == 0:
-                alias.name = text
+                self._push(alias, "name", alias.name, text, mapping)
             else:
-                alias.value = text
-            self.changed.emit(mapping)
+                self._push(alias, "value", alias.value, text, mapping)
 
         def on_add_alias() -> None:
             translation = selected_translation()
             if translation is None:
                 return
-            translation.aliases.append(Alias(name="new", value="0"))
+            self._undo_stack.push(AddAliasCommand(translation, Alias(name="new", value="0"), mapping, self._on_applied))
             refresh_aliases_table()
-            self.changed.emit(mapping)
 
         def on_remove_alias() -> None:
             translation = selected_translation()
@@ -207,9 +205,8 @@ class EditPanel(QWidget):
                 return
             row = aliases_table.currentRow()
             if 0 <= row < len(translation.aliases):
-                del translation.aliases[row]
+                self._undo_stack.push(RemoveAliasCommand(translation, row, mapping, self._on_applied))
                 refresh_aliases_table()
-                self.changed.emit(mapping)
 
         translations_table.itemChanged.connect(on_translation_cell_changed)
         translations_table.currentCellChanged.connect(lambda *_: refresh_aliases_table())

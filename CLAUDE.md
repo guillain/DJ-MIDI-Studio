@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-Core pipeline and GUI v1 are implemented and tested against the user's real config file: `model.py` (domain dataclasses), `parser.py` (XML → model), `exporter.py` (model → XML, byte-for-byte round-trip on the sample file), `validator.py` (structural + conflict checks), `gui/` (PySide6 tree/edit/validate/export UI, launched via `seratomidiconf` entry point). The controller reference catalog (`catalog.py`, mapping raw channel/control numbers to physical control names for XDJ-XZ/DDJ-XP2) is not started yet — it needs an XDJ-XZ sample file the user hasn't provided. Root `main.py` is unrelated leftover PyCharm boilerplate, not part of the package. See `~/.claude/plans/sprightly-questing-bengio.md` for the full phased plan.
+Core pipeline and GUI are implemented and tested against the user's real config file: `model.py` (domain dataclasses), `parser.py` (XML → model), `exporter.py` (model → XML, byte-for-byte round-trip on the sample file), `validator.py` (structural + conflict checks), `gui/` (PySide6 UI — tree view with search/filter, edit panel, validation panel, undo/redo via `QUndoStack`, export). The controller reference catalog (`catalog.py`, mapping raw channel/control numbers to physical control names for XDJ-XZ/DDJ-XP2) is not started yet — it needs an XDJ-XZ sample file the user hasn't provided. Root `main.py` is unrelated leftover PyCharm boilerplate, not part of the package. See `~/.claude/plans/sprightly-questing-bengio.md` for the full phased plan.
 
 ## What this project is
 

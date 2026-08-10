@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QAction, QColor
+from PySide6.QtCore import QSortFilterProxyModel, Qt, QTimer
+from PySide6.QtGui import QAction, QColor, QKeySequence, QUndoStack
 from PySide6.QtWidgets import (
     QFileDialog,
+    QLineEdit,
     QMainWindow,
     QMessageBox,
     QSplitter,
@@ -13,6 +14,8 @@ from PySide6.QtWidgets import (
     QTableWidget,
     QTableWidgetItem,
     QTreeView,
+    QVBoxLayout,
+    QWidget,
 )
 
 from seratomidiconf.exporter import write_file
@@ -37,12 +40,29 @@ class MainWindow(QMainWindow):
 
         self.config: MidiConfig | None = None
         self.current_path: Path | None = None
+        self.node_to_item: dict[int, object] = {}
+
+        self.undo_stack = QUndoStack(self)
+
+        self.search_box = QLineEdit()
+        self.search_box.setPlaceholderText("Filter by channel, control, event type, function, deck, slot...")
+        self.search_box.textChanged.connect(self._on_search_text_changed)
 
         self.tree_view = QTreeView()
         self.tree_view.setHeaderHidden(False)
 
-        self.edit_panel = EditPanel()
-        self.edit_panel.changed.connect(self._on_node_changed)
+        self.tree_proxy_model = QSortFilterProxyModel(self)
+        self.tree_proxy_model.setRecursiveFilteringEnabled(True)
+        self.tree_proxy_model.setFilterCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+        self.tree_view.setModel(self.tree_proxy_model)
+
+        tree_container = QWidget()
+        tree_layout = QVBoxLayout(tree_container)
+        tree_layout.setContentsMargins(0, 0, 0, 0)
+        tree_layout.addWidget(self.search_box)
+        tree_layout.addWidget(self.tree_view)
+
+        self.edit_panel = EditPanel(self.undo_stack, self._on_command_applied)
 
         self.issues_table = QTableWidget(0, 3)
         self.issues_table.setHorizontalHeaderLabels(["Severity", "Message", "Location"])
@@ -56,7 +76,7 @@ class MainWindow(QMainWindow):
         right_splitter.setStretchFactor(1, 1)
 
         main_splitter = QSplitter(Qt.Orientation.Horizontal)
-        main_splitter.addWidget(self.tree_view)
+        main_splitter.addWidget(tree_container)
         main_splitter.addWidget(right_splitter)
         main_splitter.setStretchFactor(0, 1)
         main_splitter.setStretchFactor(1, 1)
@@ -81,6 +101,17 @@ class MainWindow(QMainWindow):
         file_menu.addAction(save_as_action)
 
         edit_menu = self.menuBar().addMenu("&Edit")
+
+        undo_action = self.undo_stack.createUndoAction(self, "&Undo")
+        undo_action.setShortcut(QKeySequence.StandardKey.Undo)
+        edit_menu.addAction(undo_action)
+
+        redo_action = self.undo_stack.createRedoAction(self, "&Redo")
+        redo_action.setShortcut(QKeySequence.StandardKey.Redo)
+        edit_menu.addAction(redo_action)
+
+        edit_menu.addSeparator()
+
         validate_action = QAction("&Validate", self)
         validate_action.triggered.connect(self._on_validate)
         edit_menu.addAction(validate_action)
@@ -95,34 +126,42 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "Failed to open file", str(exc))
             return
         self.current_path = Path(path_str)
+        self.undo_stack.clear()
         self._load_tree()
         self.issues_table.setRowCount(0)
         self.statusBar().showMessage(f"Loaded {len(self.config.controls)} controls from {self.current_path.name}")
 
     def _load_tree(self) -> None:
         assert self.config is not None
-        model = build_tree_model(self.config)
-        self.tree_view.setModel(model)
+        source_model, self.node_to_item = build_tree_model(self.config)
+        self.tree_proxy_model.setSourceModel(source_model)
         self.tree_view.selectionModel().selectionChanged.connect(self._on_selection_changed)
         self.tree_view.expandToDepth(0)
 
-    def _on_selection_changed(self) -> None:
-        indexes = self.tree_view.selectionModel().selectedIndexes()
-        if not indexes:
-            self.edit_panel.set_node(None)
-            return
-        model = self.tree_view.model()
-        item = model.itemFromIndex(indexes[0])
-        node = item.data(NODE_ROLE)
-        self.edit_panel.set_node(node)
+    def _on_search_text_changed(self, text: str) -> None:
+        self.tree_proxy_model.setFilterFixedString(text)
 
-    def _on_node_changed(self, node: object) -> None:
+    def _current_node(self) -> object | None:
         indexes = self.tree_view.selectionModel().selectedIndexes()
         if not indexes:
-            return
-        model = self.tree_view.model()
-        item = model.itemFromIndex(indexes[0])
-        relabel_item(item, node)
+            return None
+        source_index = self.tree_proxy_model.mapToSource(indexes[0])
+        item = self.tree_proxy_model.sourceModel().itemFromIndex(source_index)
+        return item.data(NODE_ROLE)
+
+    def _on_selection_changed(self) -> None:
+        self.edit_panel.set_node(self._current_node())
+
+    def _on_command_applied(self, relabel_node: object) -> None:
+        item = self.node_to_item.get(id(relabel_node))
+        if item is not None:
+            relabel_item(item, relabel_node)
+        # Deferred so we never rebuild the edit panel from inside the very
+        # widget signal (editingFinished/itemChanged) that triggered the edit.
+        QTimer.singleShot(0, self._refresh_edit_panel)
+
+    def _refresh_edit_panel(self) -> None:
+        self.edit_panel.set_node(self.edit_panel.current_node)
 
     def _on_save(self) -> None:
         if self.config is None:

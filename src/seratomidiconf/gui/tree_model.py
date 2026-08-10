@@ -45,13 +45,24 @@ def _control_item(control: Control) -> QStandardItem:
     return item
 
 
-def build_tree_model(config: MidiConfig) -> QStandardItemModel:
+def build_tree_model(config: MidiConfig) -> tuple[QStandardItemModel, dict[int, QStandardItem]]:
+    """Returns the tree model plus a lookup from id(node) to its QStandardItem,
+    so edits (including undo/redo replays) can relabel the right row directly."""
     model = QStandardItemModel()
     model.setHorizontalHeaderLabels(["Mapping"])
     root = model.invisibleRootItem()
+    node_to_item: dict[int, QStandardItem] = {}
     for control in config.controls:
-        root.appendRow(_control_item(control))
-    return model
+        control_item = _control_item(control)
+        node_to_item[id(control)] = control_item
+        root.appendRow(control_item)
+        for row in range(control_item.rowCount()):
+            userio_item = control_item.child(row)
+            node_to_item[id(userio_item.data(NODE_ROLE))] = userio_item
+            for mapping_row in range(userio_item.rowCount()):
+                mapping_item = userio_item.child(mapping_row)
+                node_to_item[id(mapping_item.data(NODE_ROLE))] = mapping_item
+    return model, node_to_item
 
 
 def relabel_item(item: QStandardItem, node: object) -> None:
