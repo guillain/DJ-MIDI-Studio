@@ -22,10 +22,11 @@ from PySide6.QtWidgets import (
 from seratomidiconf import catalog
 from seratomidiconf.exporter import write_file
 from seratomidiconf.gui import layout as layout_mod
+from seratomidiconf.gui.deck_tree import build_deck_tree
 from seratomidiconf.gui.edit_panel import EditPanel
 from seratomidiconf.gui.layout_view import ControllerLayoutView
 from seratomidiconf.gui.tree_model import NODE_ROLE, build_tree_model, relabel_item
-from seratomidiconf.model import Control, MidiConfig
+from seratomidiconf.model import Control, MappingElement, MidiConfig
 from seratomidiconf.parser import parse_file
 from seratomidiconf.validator import ValidationIssue, validate
 
@@ -69,9 +70,13 @@ class MainWindow(QMainWindow):
         self.layout_view = ControllerLayoutView()
         self.layout_view.cellActivated.connect(self._on_layout_cell_activated)
 
+        self.deck_tree_view = QTreeView()
+        self.deck_tree_view.setHeaderHidden(False)
+
         self.left_tabs = QTabWidget()
         self.left_tabs.addTab(tree_container, "Tree")
         self.left_tabs.addTab(self.layout_view, "Layout")
+        self.left_tabs.addTab(self.deck_tree_view, "By Deck")
 
         self.edit_panel = EditPanel(self.undo_stack, self._on_command_applied)
 
@@ -149,6 +154,28 @@ class MainWindow(QMainWindow):
         self.tree_view.selectionModel().selectionChanged.connect(self._on_selection_changed)
         self.tree_view.expandToDepth(0)
         self._refresh_layout_usage()
+        self._refresh_deck_view()
+
+    def _refresh_deck_view(self) -> None:
+        assert self.config is not None
+        deck_model = build_deck_tree(self.config)
+        self.deck_tree_view.setModel(deck_model)
+        self.deck_tree_view.selectionModel().selectionChanged.connect(self._on_deck_selection_changed)
+        self.deck_tree_view.expandToDepth(0)
+
+    def _on_deck_selection_changed(self) -> None:
+        indexes = self.deck_tree_view.selectionModel().selectedIndexes()
+        if not indexes:
+            return
+        control = self.deck_tree_view.model().itemFromIndex(indexes[0]).data(NODE_ROLE)
+        if not isinstance(control, Control):
+            return
+        item = self.node_to_item.get(id(control))
+        if item is not None:
+            proxy_index = self.tree_proxy_model.mapFromSource(item.index())
+            self.tree_view.setCurrentIndex(proxy_index)
+            self.tree_view.scrollTo(proxy_index)
+        self.left_tabs.setCurrentIndex(0)
 
     def _refresh_layout_usage(self) -> None:
         assert self.config is not None
@@ -208,8 +235,9 @@ class MainWindow(QMainWindow):
         # Deferred so we never rebuild the edit panel from inside the very
         # widget signal (editingFinished/itemChanged) that triggered the edit.
         QTimer.singleShot(0, self._refresh_edit_panel)
-        if isinstance(relabel_node, Control):
+        if isinstance(relabel_node, (Control, MappingElement)):
             QTimer.singleShot(0, self._refresh_layout_usage)
+            QTimer.singleShot(0, self._refresh_deck_view)
 
     def _refresh_edit_panel(self) -> None:
         self.edit_panel.set_node(self.edit_panel.current_node)
