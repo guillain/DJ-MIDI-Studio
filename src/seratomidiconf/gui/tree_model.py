@@ -45,23 +45,55 @@ def _control_item(control: Control) -> QStandardItem:
     return item
 
 
+def _numeric_sort_key(value: str) -> tuple[bool, int, str]:
+    """Sorts "2" before "10"; falls back to plain text for non-numeric values."""
+    return (not value.isdigit(), int(value) if value.isdigit() else 0, value)
+
+
+def _group_item(text: str) -> QStandardItem:
+    """A label-only row (channel/note grouping): not tied to a model object,
+    so it carries no NODE_ROLE and is never itself selected for editing."""
+    item = QStandardItem(text)
+    item.setEditable(False)
+    item.setSelectable(False)
+    return item
+
+
 def build_tree_model(config: MidiConfig) -> tuple[QStandardItemModel, dict[int, QStandardItem]]:
     """Returns the tree model plus a lookup from id(node) to its QStandardItem,
-    so edits (including undo/redo replays) can relabel the right row directly."""
+    so edits (including undo/redo replays) can relabel the right row directly.
+
+    Controls are grouped by channel, then by note/control number, before the
+    existing Control -> UserIO -> MappingElement hierarchy — the raw MIDI
+    trigger is the natural way to browse this file (a real config repeats the
+    same handful of channels hundreds of times)."""
     model = QStandardItemModel()
-    model.setHorizontalHeaderLabels(["Mapping"])
+    model.setHorizontalHeaderLabels(["Channel / Note / Mapping"])
     root = model.invisibleRootItem()
     node_to_item: dict[int, QStandardItem] = {}
+
+    by_channel: dict[str, dict[str, list[Control]]] = {}
     for control in config.controls:
-        control_item = _control_item(control)
-        node_to_item[id(control)] = control_item
-        root.appendRow(control_item)
-        for row in range(control_item.rowCount()):
-            userio_item = control_item.child(row)
-            node_to_item[id(userio_item.data(NODE_ROLE))] = userio_item
-            for mapping_row in range(userio_item.rowCount()):
-                mapping_item = userio_item.child(mapping_row)
-                node_to_item[id(mapping_item.data(NODE_ROLE))] = mapping_item
+        by_channel.setdefault(control.channel, {}).setdefault(control.control, []).append(control)
+
+    for channel in sorted(by_channel, key=_numeric_sort_key):
+        by_note = by_channel[channel]
+        channel_item = _group_item(f"Channel {channel}")
+        for note in sorted(by_note, key=_numeric_sort_key):
+            note_item = _group_item(f"Note/Control {note}")
+            for control in by_note[note]:
+                control_item = _control_item(control)
+                node_to_item[id(control)] = control_item
+                note_item.appendRow(control_item)
+                for row in range(control_item.rowCount()):
+                    userio_item = control_item.child(row)
+                    node_to_item[id(userio_item.data(NODE_ROLE))] = userio_item
+                    for mapping_row in range(userio_item.rowCount()):
+                        mapping_item = userio_item.child(mapping_row)
+                        node_to_item[id(mapping_item.data(NODE_ROLE))] = mapping_item
+            channel_item.appendRow(note_item)
+        root.appendRow(channel_item)
+
     return model, node_to_item
 
 
