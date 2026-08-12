@@ -22,6 +22,7 @@ from PySide6.QtWidgets import (
 from seratomidiconf import catalog
 from seratomidiconf.exporter import write_file
 from seratomidiconf.gui import layout as layout_mod
+from seratomidiconf.gui.controller_tree import CELL_KEY_ROLE, build_controller_columns
 from seratomidiconf.gui.deck_tree import build_deck_columns
 from seratomidiconf.gui.edit_panel import EditPanel
 from seratomidiconf.gui.layout_view import ControllerLayoutView
@@ -91,6 +92,15 @@ class MainWindow(QMainWindow):
         self.deck_layout_view = ControllerLayoutView(show_deck_filter=True)
         self.deck_layout_view.cellActivated.connect(self._on_layout_cell_activated)
 
+        self.controller_columns_container = QWidget()
+        controller_columns_layout = QVBoxLayout(self.controller_columns_container)
+        controller_columns_layout.setContentsMargins(0, 0, 0, 0)
+        self.controller_splitter = QSplitter(Qt.Orientation.Horizontal)
+        controller_columns_layout.addWidget(self.controller_splitter)
+
+        self.controller_layout_view = ControllerLayoutView()
+        self.controller_layout_view.cellActivated.connect(self._on_layout_cell_activated)
+
         # Each representation pairs the columns (text, precise) with a schematic
         # layout (visual, at-a-glance) of the same underlying data.
         channel_pair = QSplitter(Qt.Orientation.Vertical)
@@ -105,9 +115,16 @@ class MainWindow(QMainWindow):
         deck_pair.setStretchFactor(0, 1)
         deck_pair.setStretchFactor(1, 1)
 
+        controller_pair = QSplitter(Qt.Orientation.Vertical)
+        controller_pair.addWidget(self.controller_columns_container)
+        controller_pair.addWidget(self.controller_layout_view)
+        controller_pair.setStretchFactor(0, 1)
+        controller_pair.setStretchFactor(1, 1)
+
         self.left_tabs = QTabWidget()
         self.left_tabs.addTab(channel_pair, "By Channel")
         self.left_tabs.addTab(deck_pair, "By Deck")
+        self.left_tabs.addTab(controller_pair, "By Controller")
 
         self.edit_panel = EditPanel(self.undo_stack, self._on_command_applied, self._on_group_edit_applied)
 
@@ -304,6 +321,31 @@ class MainWindow(QMainWindow):
                         cell.setdefault(mapping.deck_id, set()).add(mapping.tag)
         self.layout_view.set_usage(usage, linked_cells)
         self.deck_layout_view.set_usage(usage, linked_cells)
+        self.controller_layout_view.set_usage(usage, linked_cells)
+        self._refresh_controller_columns(usage)
+
+    def _refresh_controller_columns(self, usage: dict[layout_mod.CellKey, dict[str, set[str]]]) -> None:
+        old_splitter = self.controller_splitter
+        self.controller_splitter = QSplitter(Qt.Orientation.Horizontal)
+        self.controller_columns_container.layout().replaceWidget(old_splitter, self.controller_splitter)
+        old_splitter.deleteLater()
+
+        for _controller, model, expand_flags in build_controller_columns(usage):
+            view = QTreeView()
+            view.setHeaderHidden(False)
+            view.setModel(model)
+            for row, has_used_leaf in expand_flags:
+                view.setExpanded(model.index(row, 0), has_used_leaf)
+            view.selectionModel().selectionChanged.connect(lambda *_, v=view: self._on_controller_selection_changed(v))
+            self.controller_splitter.addWidget(view)
+
+    def _on_controller_selection_changed(self, view: QTreeView) -> None:
+        indexes = view.selectionModel().selectedIndexes()
+        if not indexes:
+            return
+        cell_key = view.model().itemFromIndex(indexes[0]).data(CELL_KEY_ROLE)
+        if cell_key is not None:
+            self._on_layout_cell_activated(cell_key)
 
     def _select_control_in_channel_columns(self, control: Control) -> bool:
         item = self.node_to_item.get(id(control))
@@ -345,6 +387,7 @@ class MainWindow(QMainWindow):
             keys = {layout_mod.cell_key(hit) for hit in catalog.lookup(channel, event_type, control_no)}
         self.layout_view.set_selected_keys(keys)
         self.deck_layout_view.set_selected_keys(keys)
+        self.controller_layout_view.set_selected_keys(keys)
 
     def _find_ancestor_control(self, item) -> Control | None:
         while item is not None:
