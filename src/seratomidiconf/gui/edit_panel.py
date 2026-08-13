@@ -97,6 +97,10 @@ class EditPanel(QWidget):
         font = label.font()
         font.setPointSize(font.pointSize() + 1)
         label.setFont(font)
+        # Reserve room for several wrapped lines up front (roughly double a
+        # typical single/double-line render) so the box doesn't stay clipped
+        # to whatever the very first render happened to need.
+        label.setMinimumHeight(label.fontMetrics().lineSpacing() * 4)
         box_layout.addWidget(label)
         return box
 
