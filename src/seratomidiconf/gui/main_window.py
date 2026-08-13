@@ -3,7 +3,14 @@ from __future__ import annotations
 from pathlib import Path
 
 from PySide6.QtCore import QSortFilterProxyModel, Qt, QTimer, QUrl
-from PySide6.QtGui import QAction, QColor, QDesktopServices, QKeySequence, QUndoStack
+from PySide6.QtGui import (
+    QAction,
+    QColor,
+    QDesktopServices,
+    QKeySequence,
+    QStandardItemModel,
+    QUndoStack,
+)
 from PySide6.QtWidgets import (
     QFileDialog,
     QLineEdit,
@@ -338,10 +345,17 @@ class MainWindow(QMainWindow):
             view = QTreeView()
             view.setHeaderHidden(False)
             view.setModel(model)
-            for row, has_used_leaf in expand_flags:
-                view.setExpanded(model.index(row, 0), has_used_leaf)
             view.selectionModel().selectionChanged.connect(lambda *_, v=view: self._on_controller_selection_changed(v))
             self.controller_splitter.addWidget(view)
+            # Deferred: expanding items right after setModel(), before the view has
+            # done its first layout pass, is unreliable in some Qt/platform
+            # combinations (the row exists in the model but the view hasn't built
+            # its internal expand-state tracking for it yet).
+            QTimer.singleShot(0, lambda v=view, m=model, flags=expand_flags: self._apply_controller_expand_state(v, m, flags))
+
+    def _apply_controller_expand_state(self, view: QTreeView, model: QStandardItemModel, expand_flags: list[tuple[int, bool]]) -> None:
+        for row, has_used_leaf in expand_flags:
+            view.setExpanded(model.index(row, 0), has_used_leaf)
 
     def _on_controller_selection_changed(self, view: QTreeView) -> None:
         indexes = view.selectionModel().selectedIndexes()
