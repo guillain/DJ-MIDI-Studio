@@ -34,8 +34,10 @@ from seratomidiconf.gui.controller_tree import CELL_KEY_ROLE, build_controller_c
 from seratomidiconf.gui.deck_tree import build_deck_columns
 from seratomidiconf.gui.edit_panel import EditPanel
 from seratomidiconf.gui.layout_view import ControllerLayoutView
+from seratomidiconf.gui.live_monitor import LiveMonitorView
 from seratomidiconf.gui.mapping_group import MappingGroup
 from seratomidiconf.gui.tree_model import NODE_ROLE, build_channel_columns, relabel_item
+from seratomidiconf.midi_io import MidiEvent
 from seratomidiconf.model import Control, MappingElement, MidiConfig
 from seratomidiconf.parser import parse_file
 from seratomidiconf.validator import ValidationIssue, validate
@@ -131,11 +133,14 @@ class MainWindow(QMainWindow):
 
         self.controller_image_view = ControllerImageView()
 
+        self.live_monitor_view = LiveMonitorView(on_event=self._on_live_midi_event)
+
         self.left_tabs = QTabWidget()
         self.left_tabs.addTab(channel_pair, "By Channel")
         self.left_tabs.addTab(deck_pair, "By Deck")
         self.left_tabs.addTab(controller_pair, "By Controller")
         self.left_tabs.addTab(self.controller_image_view, "Controller Images")
+        self.left_tabs.addTab(self.live_monitor_view, "Live Monitor")
 
         self.edit_panel = EditPanel(self.undo_stack, self._on_command_applied, self._on_group_edit_applied)
 
@@ -220,6 +225,7 @@ class MainWindow(QMainWindow):
         self._rebuild_channel_columns()
         self._refresh_layout_usage()
         self._refresh_deck_view()
+        self.live_monitor_view.set_config(self.config)
 
     def _rebuild_channel_columns(self) -> None:
         assert self.config is not None
@@ -406,6 +412,13 @@ class MainWindow(QMainWindow):
         self.layout_view.set_selected_keys(keys)
         self.deck_layout_view.set_selected_keys(keys)
         self.controller_layout_view.set_selected_keys(keys)
+
+    def _on_live_midi_event(self, event: MidiEvent) -> None:
+        self._update_layout_selection(event.channel, event.event_type, event.data1)
+
+    def closeEvent(self, event) -> None:
+        self.live_monitor_view.shutdown()
+        super().closeEvent(event)
 
     def _find_ancestor_control(self, item) -> Control | None:
         while item is not None:
