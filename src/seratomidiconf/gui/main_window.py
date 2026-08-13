@@ -22,6 +22,7 @@ from PySide6.QtWidgets import (
 from seratomidiconf import catalog
 from seratomidiconf.exporter import write_file
 from seratomidiconf.gui import layout as layout_mod
+from seratomidiconf.gui.controller_image_view import ControllerImageView
 from seratomidiconf.gui.controller_tree import CELL_KEY_ROLE, build_controller_columns
 from seratomidiconf.gui.deck_tree import build_deck_columns
 from seratomidiconf.gui.edit_panel import EditPanel
@@ -121,10 +122,13 @@ class MainWindow(QMainWindow):
         controller_pair.setStretchFactor(0, 1)
         controller_pair.setStretchFactor(1, 1)
 
+        self.controller_image_view = ControllerImageView()
+
         self.left_tabs = QTabWidget()
         self.left_tabs.addTab(channel_pair, "By Channel")
         self.left_tabs.addTab(deck_pair, "By Deck")
         self.left_tabs.addTab(controller_pair, "By Controller")
+        self.left_tabs.addTab(self.controller_image_view, "Controller Images")
 
         self.edit_panel = EditPanel(self.undo_stack, self._on_command_applied, self._on_group_edit_applied)
 
