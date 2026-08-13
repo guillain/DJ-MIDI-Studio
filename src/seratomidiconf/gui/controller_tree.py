@@ -15,12 +15,13 @@ from __future__ import annotations
 
 from PySide6.QtGui import QStandardItem, QStandardItemModel
 
+from seratomidiconf import catalog
 from seratomidiconf.gui import layout as layout_mod
 from seratomidiconf.gui.layout_view import Usage
 
 CELL_KEY_ROLE = 1  # distinct from tree_model.NODE_ROLE, which holds domain objects
 
-CONTROLLERS = ("DDJ-XP2", "XDJ-XZ")
+CONTROLLERS = tuple(catalog.CONTROLLER_NAMES)
 
 
 def _leaf_text(cell: layout_mod.LayoutCell, per_deck: dict[str, set[str]]) -> str:

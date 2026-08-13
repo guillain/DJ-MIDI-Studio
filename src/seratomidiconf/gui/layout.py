@@ -27,11 +27,6 @@ _SHIFT_SUFFIXES = (
 
 _PAD_NUM_RE = re.compile(r"(?:Pad|Performance Pad) (\d+)")
 
-_SECTION_ORDER = {
-    "DDJ-XP2": ["DECK", "PAD MODE", "EFFECT", "BROWSE", "OTHER", "MIDI-OUT"],
-    "XDJ-XZ": ["DECK", "EFFECT"],
-}
-_PAD_COLS = {"DDJ-XP2": 4, "XDJ-XZ": 4}
 _COLS_PER_ROW = 4
 
 
@@ -63,7 +58,8 @@ class LayoutCell:
 
 
 def build_layout(controller: str) -> list[LayoutCell]:
-    entries = catalog.static_entries(controller)
+    definition = catalog.get_definition(controller)
+    entries = definition.static_entries
 
     labels: dict[CellKey, str] = {}
     order: list[CellKey] = []
@@ -73,7 +69,7 @@ def build_layout(controller: str) -> list[LayoutCell]:
             labels[key] = _base_name(entry.name)
             order.append(key)
 
-    section_order = _SECTION_ORDER.get(controller, [])
+    section_order = list(definition.section_order)
 
     def rank(key: CellKey) -> tuple[int, int]:
         try:
@@ -88,12 +84,12 @@ def build_layout(controller: str) -> list[LayoutCell]:
     # (see the empirical finding in CLAUDE.md), so lead with the section
     # that's actually populated instead of burying it under rows of unused
     # DECK/EFFECT/BROWSE reference cells.
-    pad_cols = _PAD_COLS[controller]
-    for n in range(1, catalog.PAD_COUNTS[controller] + 1):
+    pad_cols = definition.pad_columns
+    for n in range(1, definition.pad_count + 1):
         r, c = divmod(n - 1, pad_cols)
         key = (controller, "PAD", f"Pad {n}")
         cells.append(LayoutCell(key, f"Pad {n}", "PAD", r, c))
-    row = -(-catalog.PAD_COUNTS[controller] // pad_cols)  # ceil division
+    row = -(-definition.pad_count // pad_cols) if definition.pad_count else 0  # ceil division
     col = 0
     current_section: str | None = None
 

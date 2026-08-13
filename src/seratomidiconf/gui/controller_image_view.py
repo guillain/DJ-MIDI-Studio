@@ -21,7 +21,12 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from seratomidiconf import catalog
+
 ASSETS_DIR = Path(__file__).resolve().parents[3] / "assets" / "controllers"
+# One entry per controller with a reference image available; a controller with
+# no entry here still shows up in the combo (driven by catalog.CONTROLLER_NAMES)
+# and falls back to a "not found" placeholder — add an image whenever you have one.
 IMAGES = {"DDJ-XP2": "ddj-xp2.png", "XDJ-XZ": "xdj-xz.png"}
 
 
@@ -45,7 +50,7 @@ class ControllerImageView(QWidget):
         super().__init__(parent)
 
         self._combo = QComboBox()
-        self._combo.addItems(list(IMAGES.keys()))
+        self._combo.addItems(catalog.CONTROLLER_NAMES)
         self._combo.currentTextChanged.connect(self._load)
 
         reset_button = QPushButton("Reset zoom")

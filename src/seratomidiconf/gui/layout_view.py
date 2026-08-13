@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from seratomidiconf import catalog
 from seratomidiconf.gui import layout as layout_mod
 from seratomidiconf.gui.layout import CellKey
 
@@ -92,13 +93,13 @@ class ControllerLayoutView(QWidget):
 
     def __init__(self, show_deck_filter: bool = False, parent: QWidget | None = None) -> None:
         super().__init__(parent)
-        self._controller = "DDJ-XP2"
+        self._controller = catalog.CONTROLLER_NAMES[0]
         self._usage: Usage = {}
         self._linked_cells: LinkedCells = {}
         self._selected_keys: set[CellKey] = set()
 
         self._controller_combo = QComboBox()
-        self._controller_combo.addItems(["DDJ-XP2", "XDJ-XZ"])
+        self._controller_combo.addItems(catalog.CONTROLLER_NAMES)
         self._controller_combo.currentTextChanged.connect(self._on_controller_changed)
 
         self._deck_combo: QComboBox | None = None
