@@ -115,6 +115,12 @@ uv run seratomidiconf-send-midi --port "Your Port Name" --type note_on --channel
 uv run seratomidiconf-send-midi --port "Your Port Name" --type note_off --channel 1 --data1 27 --data2 0
 ```
 
+Equivalent one-liner using the built-in helper:
+
+```bash
+uv run seratomidiconf-send-midi --port "Your Port Name" --type note_on --channel 1 --data1 27 --data2 127 --double-click
+```
+
 Examples:
 
 ```bash
