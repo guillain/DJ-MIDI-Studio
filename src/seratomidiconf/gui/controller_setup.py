@@ -50,7 +50,12 @@ from seratomidiconf.catalog.codegen import (
     merge_by_channel,
 )
 from seratomidiconf.gui.port_list_utils import refresh_checked_port_list
-from seratomidiconf.midi_io import MidiMonitor, list_input_ports
+from seratomidiconf.midi_io import (
+    MidiMonitor,
+    list_input_ports,
+    list_output_ports,
+    send_midi_message,
+)
 from seratomidiconf.model import MidiConfig
 from seratomidiconf.parser import parse_file
 
@@ -70,6 +75,8 @@ _APPLY_HELP = (
     "Controller Images tabs. In-memory only — it's lost on restart. \"Generate catalog module…\" "
     "below is what makes it permanent."
 )
+
+_DDJ_XP2_PAD_MODE_NOTES = {1: 27, 2: 30, 3: 32, 4: 34}
 
 
 def _slugify(name: str) -> str:
@@ -145,6 +152,57 @@ class ControllerSetupView(QWidget):
         import_layout.addWidget(import_help)
         import_layout.addStretch(1)
 
+        self._output_port_list = QListWidget()
+        self._output_port_list.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        refresh_output_button = QPushButton("Refresh output ports")
+        refresh_output_button.clicked.connect(self._refresh_output_ports)
+
+        self._send_type_edit = QLineEdit("note_on")
+        self._send_channel_edit = QLineEdit("1")
+        self._send_data1_edit = QLineEdit("27")
+        self._send_data2_edit = QLineEdit("127")
+        self._send_delay_ms_edit = QLineEdit("80")
+
+        send_once_button = QPushButton("Send once")
+        send_once_button.clicked.connect(self._on_send_output_once_clicked)
+        send_double_button = QPushButton("Send double-click (NOTE)")
+        send_double_button.clicked.connect(self._on_send_output_double_clicked)
+
+        pad_row_1 = QHBoxLayout()
+        for mode in (1, 2, 3, 4):
+            button = QPushButton(f"PAD MODE {mode}")
+            button.clicked.connect(lambda _checked=False, m=mode: self._on_send_ddj_xp2_pad_mode(m))
+            pad_row_1.addWidget(button)
+
+        pad_row_2 = QHBoxLayout()
+        for mode in (5, 6, 7, 8):
+            button = QPushButton(f"PAD MODE {mode} (double)")
+            button.clicked.connect(lambda _checked=False, m=mode: self._on_send_ddj_xp2_pad_mode(m))
+            pad_row_2.addWidget(button)
+
+        self._send_status = QLabel("No MIDI output sent yet.")
+
+        output_box = QGroupBox("MIDI Output (send commands)")
+        output_layout = QVBoxLayout(output_box)
+        output_layout.addWidget(self._output_port_list)
+        output_layout.addWidget(refresh_output_button)
+        output_layout.addWidget(QLabel("Type (note_on, note_off, control_change, cc)"))
+        output_layout.addWidget(self._send_type_edit)
+        output_layout.addWidget(QLabel("Channel (1-16)"))
+        output_layout.addWidget(self._send_channel_edit)
+        output_layout.addWidget(QLabel("Data1 (note/cc number)"))
+        output_layout.addWidget(self._send_data1_edit)
+        output_layout.addWidget(QLabel("Data2 (velocity/value)"))
+        output_layout.addWidget(self._send_data2_edit)
+        output_layout.addWidget(QLabel("Double-click delay (ms)"))
+        output_layout.addWidget(self._send_delay_ms_edit)
+        output_layout.addWidget(send_once_button)
+        output_layout.addWidget(send_double_button)
+        output_layout.addLayout(pad_row_1)
+        output_layout.addLayout(pad_row_2)
+        output_layout.addWidget(self._send_status)
+        output_layout.addStretch(1)
+
         check_button = QPushButton("Check for conflicts")
         check_button.clicked.connect(self._on_check_conflicts_clicked)
         self._apply_button = QPushButton("Apply now (this session)")
@@ -165,6 +223,7 @@ class ControllerSetupView(QWidget):
         top_row.addWidget(session_box, 1)
         top_row.addWidget(capture_box, 1)
         top_row.addWidget(import_box, 1)
+        top_row.addWidget(output_box, 1)
         top_row.addWidget(export_box, 1)
 
         self._table = QTableWidget(0, 7)
@@ -194,6 +253,7 @@ class ControllerSetupView(QWidget):
         self._timer.timeout.connect(self._poll)
 
         self._refresh_ports()
+        self._refresh_output_ports()
 
     # -- controller name -------------------------------------------------
 
@@ -310,6 +370,104 @@ class ControllerSetupView(QWidget):
 
     def _refresh_ports(self) -> None:
         refresh_checked_port_list(self._port_list, list_input_ports)
+
+    def _refresh_output_ports(self) -> None:
+        current = self._output_port_list.currentItem().text() if self._output_port_list.currentItem() is not None else None
+        self._output_port_list.clear()
+        ports = list_output_ports()
+        for name in ports:
+            self._output_port_list.addItem(name)
+        if not ports:
+            return
+        if current is not None:
+            for i in range(self._output_port_list.count()):
+                if self._output_port_list.item(i).text() == current:
+                    self._output_port_list.setCurrentRow(i)
+                    return
+        self._output_port_list.setCurrentRow(0)
+
+    def _selected_output_port(self) -> str:
+        item = self._output_port_list.currentItem()
+        if item is None:
+            raise ValueError("No output port selected")
+        return item.text()
+
+    @staticmethod
+    def _parse_int(text: str, field_name: str, low: int, high: int) -> int:
+        try:
+            value = int(text.strip())
+        except ValueError as exc:
+            raise ValueError(f"{field_name} must be an integer") from exc
+        if not low <= value <= high:
+            raise ValueError(f"{field_name} must be in [{low}, {high}]")
+        return value
+
+    def _send_note_click(self, *, note: int, double_click: bool) -> None:
+        port = self._selected_output_port()
+        channel = self._parse_int(self._send_channel_edit.text(), "Channel", 1, 16)
+        velocity = self._parse_int(self._send_data2_edit.text(), "Data2", 0, 127)
+        delay_ms = self._parse_int(self._send_delay_ms_edit.text(), "Double-click delay", 0, 5_000)
+
+        def do_click() -> None:
+            send_midi_message(
+                output_port_name=port,
+                event_type="note_on",
+                channel_1_based=channel,
+                data1=note,
+                data2=velocity,
+            )
+            send_midi_message(
+                output_port_name=port,
+                event_type="note_off",
+                channel_1_based=channel,
+                data1=note,
+                data2=0,
+            )
+
+        do_click()
+        if double_click:
+            QTimer.singleShot(delay_ms, do_click)
+
+    def _on_send_output_once_clicked(self) -> None:
+        try:
+            send_midi_message(
+                output_port_name=self._selected_output_port(),
+                event_type=self._send_type_edit.text(),
+                channel_1_based=self._parse_int(self._send_channel_edit.text(), "Channel", 1, 16),
+                data1=self._parse_int(self._send_data1_edit.text(), "Data1", 0, 127),
+                data2=self._parse_int(self._send_data2_edit.text(), "Data2", 0, 127),
+            )
+        except Exception as exc:  # noqa: BLE001 - show user-facing error
+            QMessageBox.critical(self, "Failed to send MIDI", str(exc))
+            return
+        self._send_status.setText("MIDI message sent.")
+
+    def _on_send_output_double_clicked(self) -> None:
+        note = self._parse_int(self._send_data1_edit.text(), "Data1", 0, 127)
+        try:
+            self._send_note_click(note=note, double_click=True)
+        except Exception as exc:  # noqa: BLE001 - show user-facing error
+            QMessageBox.critical(self, "Failed to send MIDI", str(exc))
+            return
+        self._send_status.setText("Double-click MIDI sequence sent.")
+
+    def _on_send_ddj_xp2_pad_mode(self, mode: int) -> None:
+        if mode not in (1, 2, 3, 4, 5, 6, 7, 8):
+            QMessageBox.critical(self, "Unsupported mode", f"Unsupported DDJ-XP2 pad mode: {mode}")
+            return
+        if mode <= 4:
+            note = _DDJ_XP2_PAD_MODE_NOTES[mode]
+            double_click = False
+        else:
+            note = _DDJ_XP2_PAD_MODE_NOTES[mode - 4]
+            double_click = True
+        self._send_data1_edit.setText(str(note))
+        try:
+            self._send_note_click(note=note, double_click=double_click)
+        except Exception as exc:  # noqa: BLE001 - show user-facing error
+            QMessageBox.critical(self, "Failed to send MIDI", str(exc))
+            return
+        self._send_status.setText(f"Sent DDJ-XP2 PAD MODE {mode} trigger.")
 
     def _is_checked(self, row: int) -> bool:
         return self._port_list.item(row).checkState() == Qt.CheckState.Checked

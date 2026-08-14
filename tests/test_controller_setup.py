@@ -327,3 +327,91 @@ def test_on_apply_clicked_surfaces_unexpected_exception_instead_of_failing_silen
     assert shown.get("title") == "Failed to apply"
     assert "boom" in shown.get("text", "")
     assert "__ApplySetupTest4__" not in catalog.CONTROLLER_NAMES
+
+
+def test_refresh_output_ports_populates_list(monkeypatch):
+    import seratomidiconf.gui.controller_setup as controller_setup_mod
+
+    view = _view_with_name()
+    monkeypatch.setattr(controller_setup_mod, "list_output_ports", lambda: ["Port A", "Port B"])
+    view._refresh_output_ports()
+    assert view._output_port_list.count() == 2
+    assert view._output_port_list.item(0).text() == "Port A"
+
+
+def test_send_output_once_uses_selected_output_port_and_values(monkeypatch):
+    import seratomidiconf.gui.controller_setup as controller_setup_mod
+
+    sent = []
+    view = _view_with_name()
+    monkeypatch.setattr(controller_setup_mod, "list_output_ports", lambda: ["Port A"])
+    monkeypatch.setattr(
+        controller_setup_mod,
+        "send_midi_message",
+        lambda **kwargs: sent.append(kwargs),
+    )
+    view._refresh_output_ports()
+    view._send_type_edit.setText("note_on")
+    view._send_channel_edit.setText("1")
+    view._send_data1_edit.setText("27")
+    view._send_data2_edit.setText("127")
+    view._on_send_output_once_clicked()
+    assert len(sent) == 1
+    assert sent[0]["output_port_name"] == "Port A"
+    assert sent[0]["event_type"] == "note_on"
+
+
+def test_send_output_double_click_sends_two_clicks(monkeypatch):
+    import seratomidiconf.gui.controller_setup as controller_setup_mod
+
+    sent = []
+    view = _view_with_name()
+    monkeypatch.setattr(controller_setup_mod, "list_output_ports", lambda: ["Port A"])
+    monkeypatch.setattr(
+        controller_setup_mod,
+        "send_midi_message",
+        lambda **kwargs: sent.append(kwargs),
+    )
+
+    # Execute delayed callback immediately in tests.
+    monkeypatch.setattr(
+        controller_setup_mod.QTimer,
+        "singleShot",
+        lambda _ms, callback: callback(),
+    )
+
+    view._refresh_output_ports()
+    view._send_data1_edit.setText("27")
+    view._send_data2_edit.setText("127")
+    view._send_delay_ms_edit.setText("0")
+    view._on_send_output_double_clicked()
+    # 2 clicks = 4 messages (note_on + note_off, twice)
+    assert len(sent) == 4
+    assert sent[0]["event_type"] == "note_on"
+    assert sent[1]["event_type"] == "note_off"
+
+
+def test_ddj_xp2_pad_mode_5_uses_double_click_on_mode_1(monkeypatch):
+    import seratomidiconf.gui.controller_setup as controller_setup_mod
+
+    sent = []
+    view = _view_with_name()
+    monkeypatch.setattr(controller_setup_mod, "list_output_ports", lambda: ["Port A"])
+    monkeypatch.setattr(
+        controller_setup_mod,
+        "send_midi_message",
+        lambda **kwargs: sent.append(kwargs),
+    )
+    monkeypatch.setattr(
+        controller_setup_mod.QTimer,
+        "singleShot",
+        lambda _ms, callback: callback(),
+    )
+
+    view._refresh_output_ports()
+    view._send_data2_edit.setText("127")
+    view._send_delay_ms_edit.setText("0")
+    view._on_send_ddj_xp2_pad_mode(5)
+    assert len(sent) == 4
+    assert all(msg["data1"] == 27 for msg in sent)
+
