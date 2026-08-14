@@ -22,6 +22,19 @@ def test_registering_twice_raises():
         del catalog._registry._REGISTRY["__DuplicateTest__"]
 
 
+def test_register_replace_true_overwrites_existing():
+    first = ControllerDefinition(name="__ReplaceTest__", static_entries=[catalog.ControlInfo("__ReplaceTest__", "DECK", "PLAY", "NOTE", ("1",), "0")])
+    second = ControllerDefinition(name="__ReplaceTest__", static_entries=[catalog.ControlInfo("__ReplaceTest__", "DECK", "CUE", "NOTE", ("1",), "1")])
+    register(first)
+    try:
+        register(second, replace=True)
+        assert catalog.get_definition("__ReplaceTest__") is second
+        hits = catalog.lookup("1", "Note On", "1")
+        assert any(h.name == "CUE" for h in hits)
+    finally:
+        del catalog._registry._REGISTRY["__ReplaceTest__"]
+
+
 def test_unknown_controller_raises():
     with pytest.raises(ValueError, match="Unknown controller"):
         catalog.get_definition("__NoSuchController__")

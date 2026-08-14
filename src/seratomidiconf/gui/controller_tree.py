@@ -21,8 +21,6 @@ from seratomidiconf.gui.layout_view import Usage
 
 CELL_KEY_ROLE = 1  # distinct from tree_model.NODE_ROLE, which holds domain objects
 
-CONTROLLERS = tuple(catalog.CONTROLLER_NAMES)
-
 
 def _leaf_text(cell: layout_mod.LayoutCell, per_deck: dict[str, set[str]]) -> str:
     if not per_deck:
@@ -38,7 +36,7 @@ def build_controller_columns(
     """Returns (controller, model, [(section_row, has_any_used_leaf), ...]) so
     the caller can expand only the sections that actually have content."""
     columns: list[tuple[str, QStandardItemModel, list[tuple[int, bool]]]] = []
-    for controller in CONTROLLERS:
+    for controller in catalog.CONTROLLER_NAMES:
         model = QStandardItemModel()
         model.setHorizontalHeaderLabels([controller])
         root = model.invisibleRootItem()

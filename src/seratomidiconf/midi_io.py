@@ -38,9 +38,12 @@ class MidiEvent:
     data1: str
     data2: str
     timestamp: float
+    port: str = ""
 
 
-def mido_message_to_event(msg: mido.Message, direction: Direction, timestamp: float | None = None) -> MidiEvent | None:
+def mido_message_to_event(
+    msg: mido.Message, direction: Direction, timestamp: float | None = None, port: str = ""
+) -> MidiEvent | None:
     """Converts a mido Message to a MidiEvent, or None for message types this
     tool doesn't map (clock, sysex, pitchwheel, ...) — only the note/CC
     triggers a Serato MIDI mapping can actually bind to are meaningful here."""
@@ -59,6 +62,7 @@ def mido_message_to_event(msg: mido.Message, direction: Direction, timestamp: fl
         data1=data1,
         data2=data2,
         timestamp=timestamp if timestamp is not None else time.monotonic(),
+        port=port,
     )
 
 
@@ -105,14 +109,14 @@ class MidiMonitor:
 
     def poll(self) -> list[MidiEvent]:
         events: list[MidiEvent] = []
-        for port in self._input_ports.values():
+        for name, port in self._input_ports.items():
             for msg in port.iter_pending():
-                event = mido_message_to_event(msg, "in")
+                event = mido_message_to_event(msg, "in", port=name)
                 if event is not None:
                     events.append(event)
         if self._virtual_port is not None:
             for msg in self._virtual_port.iter_pending():
-                event = mido_message_to_event(msg, "out")
+                event = mido_message_to_event(msg, "out", port=self.VIRTUAL_MONITOR_NAME)
                 if event is not None:
                     events.append(event)
         return events

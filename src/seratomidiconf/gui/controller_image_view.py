@@ -72,6 +72,28 @@ class ControllerImageView(QWidget):
 
         self._load(self._combo.currentText())
 
+    def refresh_controllers(self) -> None:
+        """Repopulates the controller combo from the live registry — call after
+        a controller is registered mid-session (see gui/controller_setup.py's
+        "Apply now" action), since CONTROLLER_NAMES was only read once at
+        __init__ time otherwise."""
+        current = self._combo.currentText()
+        self._combo.blockSignals(True)
+        self._combo.clear()
+        self._combo.addItems(catalog.CONTROLLER_NAMES)
+        restored = self._combo.findText(current)
+        self._combo.setCurrentIndex(max(restored, 0))
+        self._combo.blockSignals(False)
+        self._load(self._combo.currentText())
+
+    def set_controller(self, name: str) -> bool:
+        """Selects a controller by name; returns False if not present."""
+        index = self._combo.findText(name)
+        if index < 0:
+            return False
+        self._combo.setCurrentIndex(index)
+        return True
+
     def _load(self, name: str) -> None:
         self._scene.clear()
         self._pixmap_item = None
@@ -81,11 +103,12 @@ class ControllerImageView(QWidget):
             placeholder = QLabel(f"Image not found: {path}")
             self._scene.addWidget(placeholder)
             return
-        self._pixmap_item = QGraphicsPixmapItem(pixmap)
-        self._scene.addItem(self._pixmap_item)
-        self._scene.setSceneRect(self._pixmap_item.boundingRect())
+        item = QGraphicsPixmapItem(pixmap)
+        self._pixmap_item = item
+        self._scene.addItem(item)
+        self._scene.setSceneRect(item.boundingRect())
         self._view.resetTransform()
-        self._view.fitInView(self._pixmap_item, Qt.AspectRatioMode.KeepAspectRatio)
+        self._view.fitInView(item, Qt.AspectRatioMode.KeepAspectRatio)
 
 
 __all__ = ["ControllerImageView"]

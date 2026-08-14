@@ -1,4 +1,18 @@
+from seratomidiconf import catalog
+from seratomidiconf.catalog._registry import ControllerDefinition, register
 from seratomidiconf.gui.controller_tree import CELL_KEY_ROLE, build_controller_columns
+
+
+def test_newly_registered_controller_gets_its_own_column_without_reimport():
+    """build_controller_columns must read catalog.CONTROLLER_NAMES live (not a
+    module-level snapshot) so a controller registered mid-session — e.g. via
+    gui/controller_setup.py's "Apply now" — shows up immediately."""
+    register(ControllerDefinition(name="__TreeLiveTest__"))
+    try:
+        columns = build_controller_columns({})
+        assert "__TreeLiveTest__" in [c for c, _model, _flags in columns]
+    finally:
+        del catalog._registry._REGISTRY["__TreeLiveTest__"]
 
 
 def test_one_column_per_controller():

@@ -58,3 +58,11 @@ def test_timestamp_defaults_to_monotonic_clock_when_not_given():
     event = mido_message_to_event(msg, "in")
     assert event is not None
     assert event.timestamp > 0
+
+
+def test_port_defaults_to_empty_and_can_be_set():
+    msg = mido.Message("note_on", channel=0, note=1, velocity=1)
+    assert mido_message_to_event(msg, "in", timestamp=0.0).port == ""
+    event = mido_message_to_event(msg, "in", timestamp=0.0, port="IAC Driver Bus 1")
+    assert event is not None
+    assert event.port == "IAC Driver Bus 1"

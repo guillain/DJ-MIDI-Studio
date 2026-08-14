@@ -55,8 +55,8 @@ def _event_kind(event_type: str | None) -> NoteOrCC | None:
 _REGISTRY: dict[str, ControllerDefinition] = {}
 
 
-def register(definition: ControllerDefinition) -> None:
-    if definition.name in _REGISTRY:
+def register(definition: ControllerDefinition, *, replace: bool = False) -> None:
+    if definition.name in _REGISTRY and not replace:
         raise ValueError(f"Controller already registered: {definition.name}")
     _REGISTRY[definition.name] = definition
 

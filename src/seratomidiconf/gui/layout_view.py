@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
     QGraphicsSimpleTextItem,
     QGraphicsView,
     QHBoxLayout,
+    QTabBar,
     QVBoxLayout,
     QWidget,
 )
@@ -98,18 +99,22 @@ class ControllerLayoutView(QWidget):
         self._linked_cells: LinkedCells = {}
         self._selected_keys: set[CellKey] = set()
 
-        self._controller_combo = QComboBox()
-        self._controller_combo.addItems(catalog.CONTROLLER_NAMES)
-        self._controller_combo.currentTextChanged.connect(self._on_controller_changed)
+        self._controller_tabs = QTabBar()
+        self._controller_tabs.setExpanding(False)
+        self._controller_tabs.setUsesScrollButtons(True)
+        for name in catalog.CONTROLLER_NAMES:
+            self._controller_tabs.addTab(name)
+        self._controller_tabs.currentChanged.connect(self._on_controller_tab_changed)
 
         self._deck_combo: QComboBox | None = None
         controls_layout = QHBoxLayout()
-        controls_layout.addWidget(self._controller_combo)
+        controls_layout.addWidget(self._controller_tabs)
         if show_deck_filter:
-            self._deck_combo = QComboBox()
-            self._deck_combo.addItem(_ALL_DECKS)
-            self._deck_combo.currentTextChanged.connect(lambda _: self._rebuild())
-            controls_layout.addWidget(self._deck_combo)
+            deck_combo = QComboBox()
+            deck_combo.addItem(_ALL_DECKS)
+            deck_combo.currentTextChanged.connect(lambda _: self._rebuild())
+            controls_layout.addWidget(deck_combo)
+            self._deck_combo = deck_combo
 
         self._scene = QGraphicsScene(self)
         self._view = _ClickableView(self._scene)
@@ -122,9 +127,39 @@ class ControllerLayoutView(QWidget):
 
         self._rebuild()
 
-    def _on_controller_changed(self, text: str) -> None:
-        self._controller = text
+    def _on_controller_tab_changed(self, index: int) -> None:
+        if index < 0:
+            return
+        self._controller = self._controller_tabs.tabText(index)
         self._rebuild()
+
+    def refresh_controllers(self) -> None:
+        """Repopulates the controller tabs from the live registry — call after
+        a controller is registered mid-session (see gui/controller_setup.py's
+        "Apply now" action), since CONTROLLER_NAMES was only read once at
+        __init__ time otherwise."""
+        current = self._controller
+        self._controller_tabs.blockSignals(True)
+        while self._controller_tabs.count() > 0:
+            self._controller_tabs.removeTab(0)
+        restored = -1
+        for name in catalog.CONTROLLER_NAMES:
+            index = self._controller_tabs.addTab(name)
+            if name == current:
+                restored = index
+        self._controller_tabs.setCurrentIndex(max(restored, 0))
+        self._controller_tabs.blockSignals(False)
+        current_index = self._controller_tabs.currentIndex()
+        self._controller = self._controller_tabs.tabText(current_index)
+        self._rebuild()
+
+    def set_controller(self, name: str) -> bool:
+        """Selects a controller tab by name; returns False if unknown."""
+        for index in range(self._controller_tabs.count()):
+            if self._controller_tabs.tabText(index) == name:
+                self._controller_tabs.setCurrentIndex(index)
+                return True
+        return False
 
     def set_usage(self, usage: Usage, linked_cells: LinkedCells | None = None) -> None:
         """usage maps a layout cell to {deck_id: {Serato function tags mapped

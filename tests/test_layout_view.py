@@ -1,6 +1,24 @@
+from seratomidiconf import catalog
+from seratomidiconf.catalog._registry import ControllerDefinition, register
 from seratomidiconf.gui.layout_view import ControllerLayoutView
 
 _USAGE = {("DDJ-XP2", "PAD", "Pad 1"): {"0": {"codfather_st"}, "2": {"auto_loop_specific_length"}}}
+
+
+def test_refresh_controllers_adds_newly_registered_controller_and_keeps_selection():
+    view = ControllerLayoutView()
+    for i in range(view._controller_tabs.count()):
+        if view._controller_tabs.tabText(i) == "XDJ-XZ":
+            view._controller_tabs.setCurrentIndex(i)
+            break
+    register(ControllerDefinition(name="__LayoutLiveTest__"))
+    try:
+        view.refresh_controllers()
+        items = [view._controller_tabs.tabText(i) for i in range(view._controller_tabs.count())]
+        assert "__LayoutLiveTest__" in items
+        assert view._controller == "XDJ-XZ"
+    finally:
+        del catalog._registry._REGISTRY["__LayoutLiveTest__"]
 
 
 def test_deck_filter_hidden_by_default():
@@ -75,3 +93,11 @@ def test_set_selected_keys_stores_and_triggers_rebuild():
     assert view._selected_keys == {("DDJ-XP2", "PAD", "Pad 1")}
     view.set_selected_keys(set())
     assert view._selected_keys == set()
+
+
+def test_set_controller_switches_tab_when_name_exists():
+    view = ControllerLayoutView()
+    assert view.set_controller("XDJ-XZ") is True
+    assert view._controller == "XDJ-XZ"
+    assert view.set_controller("__missing__") is False
+

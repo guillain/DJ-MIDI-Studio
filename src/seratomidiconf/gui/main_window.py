@@ -30,9 +30,11 @@ from seratomidiconf import catalog
 from seratomidiconf.exporter import write_file
 from seratomidiconf.gui import layout as layout_mod
 from seratomidiconf.gui.controller_image_view import ControllerImageView
+from seratomidiconf.gui.controller_setup import ControllerSetupView
 from seratomidiconf.gui.controller_tree import CELL_KEY_ROLE, build_controller_columns
 from seratomidiconf.gui.deck_tree import build_deck_columns
 from seratomidiconf.gui.edit_panel import EditPanel
+from seratomidiconf.gui.introduction_view import IntroductionView
 from seratomidiconf.gui.layout_view import ControllerLayoutView
 from seratomidiconf.gui.live_monitor import LiveMonitorView
 from seratomidiconf.gui.mapping_group import MappingGroup
@@ -73,6 +75,8 @@ class MainWindow(QMainWindow):
         self.node_to_item: dict[int, object] = {}
         self.channel_proxies: list[QSortFilterProxyModel] = []
         self._channel_model_owner: dict[int, tuple[QTreeView, QSortFilterProxyModel]] = {}
+        self._pair_splitters: list[QSplitter] = []
+        self._pair_ratio_by_id: dict[int, float] = {}
 
         self.undo_stack = QUndoStack(self)
 
@@ -116,31 +120,49 @@ class MainWindow(QMainWindow):
         channel_pair = QSplitter(Qt.Orientation.Vertical)
         channel_pair.addWidget(self.channel_columns_container)
         channel_pair.addWidget(self.layout_view)
+        channel_pair.setChildrenCollapsible(False)
         channel_pair.setStretchFactor(0, 1)
         channel_pair.setStretchFactor(1, 1)
 
         deck_pair = QSplitter(Qt.Orientation.Vertical)
         deck_pair.addWidget(self.deck_columns_container)
         deck_pair.addWidget(self.deck_layout_view)
+        deck_pair.setChildrenCollapsible(False)
         deck_pair.setStretchFactor(0, 1)
         deck_pair.setStretchFactor(1, 1)
 
         controller_pair = QSplitter(Qt.Orientation.Vertical)
         controller_pair.addWidget(self.controller_columns_container)
         controller_pair.addWidget(self.controller_layout_view)
+        controller_pair.setChildrenCollapsible(False)
         controller_pair.setStretchFactor(0, 1)
         controller_pair.setStretchFactor(1, 1)
+
+        self._pair_splitters = [channel_pair, deck_pair, controller_pair]
+        for splitter in self._pair_splitters:
+            self._pair_ratio_by_id[id(splitter)] = 0.5
+            splitter.splitterMoved.connect(lambda *_args, s=splitter: self._remember_pair_ratio(s))
 
         self.controller_image_view = ControllerImageView()
 
         self.live_monitor_view = LiveMonitorView(on_event=self._on_live_midi_event)
 
+        self.controller_setup_view = ControllerSetupView()
+        self.controller_setup_view.controllerApplied.connect(self._on_controller_applied)
+
+        self.introduction_view = IntroductionView()
+        self.introduction_view.drillDownRequested.connect(self._on_intro_drilldown_requested)
+
         self.left_tabs = QTabWidget()
-        self.left_tabs.addTab(channel_pair, "By Channel")
-        self.left_tabs.addTab(deck_pair, "By Deck")
-        self.left_tabs.addTab(controller_pair, "By Controller")
-        self.left_tabs.addTab(self.controller_image_view, "Controller Images")
-        self.left_tabs.addTab(self.live_monitor_view, "Live Monitor")
+        self._tab_indexes = {
+            "intro": self.left_tabs.addTab(self.introduction_view, "Introduction"),
+            "channel": self.left_tabs.addTab(channel_pair, "By Channel"),
+            "deck": self.left_tabs.addTab(deck_pair, "By Deck"),
+            "controller": self.left_tabs.addTab(controller_pair, "By Controller"),
+            "images": self.left_tabs.addTab(self.controller_image_view, "Controller Images"),
+            "monitor": self.left_tabs.addTab(self.live_monitor_view, "Live Monitor"),
+            "setup": self.left_tabs.addTab(self.controller_setup_view, "Controller Setup"),
+        }
 
         self.edit_panel = EditPanel(self.undo_stack, self._on_command_applied, self._on_group_edit_applied)
 
@@ -164,6 +186,40 @@ class MainWindow(QMainWindow):
 
         self.setStatusBar(QStatusBar())
         self._build_menu()
+        QTimer.singleShot(0, self._initialize_pair_splitters)
+        self.introduction_view.set_loaded_config_info(None)
+
+    def _initialize_pair_splitters(self) -> None:
+        for splitter in self._pair_splitters:
+            self._set_pair_ratio(splitter, 0.5)
+
+    def _remember_pair_ratio(self, splitter: QSplitter) -> None:
+        sizes = splitter.sizes()
+        if len(sizes) < 2:
+            return
+        total = sizes[0] + sizes[1]
+        if total <= 0:
+            return
+        ratio = sizes[0] / total
+        # Keep both panes visible even after repeated window resizes.
+        self._pair_ratio_by_id[id(splitter)] = min(max(ratio, 0.1), 0.9)
+
+    def _set_pair_ratio(self, splitter: QSplitter, ratio: float) -> None:
+        sizes = splitter.sizes()
+        total = sum(sizes)
+        if total <= 0:
+            total = splitter.height()
+        if total <= 0:
+            return
+        top = max(1, int(total * ratio))
+        bottom = max(1, total - top)
+        splitter.setSizes([top, bottom])
+
+    def resizeEvent(self, event) -> None:
+        super().resizeEvent(event)
+        for splitter in self._pair_splitters:
+            ratio = self._pair_ratio_by_id.get(id(splitter), 0.5)
+            self._set_pair_ratio(splitter, ratio)
 
     def _build_menu(self) -> None:
         # On macOS, Qt moves the menu bar into the system-wide bar at the top of
@@ -222,6 +278,7 @@ class MainWindow(QMainWindow):
 
     def _load_tree(self) -> None:
         assert self.config is not None
+        self.introduction_view.set_loaded_config_info(self.current_path, len(self.config.controls))
         self._rebuild_channel_columns()
         self._refresh_layout_usage()
         self._refresh_deck_view()
@@ -296,7 +353,7 @@ class MainWindow(QMainWindow):
             return
         control = group.members[0][0]
         self._select_control_in_channel_columns(control)
-        self.left_tabs.setCurrentIndex(0)
+        self.left_tabs.setCurrentIndex(self._tab_indexes["channel"])
 
     def _on_group_edit_applied(self) -> None:
         # A group edit may touch every duplicate's deck/slot label (main columns)
@@ -339,6 +396,7 @@ class MainWindow(QMainWindow):
         self.layout_view.set_usage(usage, linked_cells)
         self.deck_layout_view.set_usage(usage, linked_cells)
         self.controller_layout_view.set_usage(usage, linked_cells)
+        self.introduction_view.set_usage_summary(usage)
         self._refresh_controller_columns(usage)
 
     def _refresh_controller_columns(self, usage: dict[layout_mod.CellKey, dict[str, set[str]]]) -> None:
@@ -398,7 +456,7 @@ class MainWindow(QMainWindow):
             self._update_layout_selection(None, None, None)
             return
         self._select_control_in_channel_columns(matches[0])
-        self.left_tabs.setCurrentIndex(0)
+        self.left_tabs.setCurrentIndex(self._tab_indexes["channel"])
         self.statusBar().showMessage(f"'{key[2]}': {len(matches)} control(s) in this file, showing first")
         # setCurrentIndex above already re-highlights via _on_channel_selection_changed,
         # but do it directly too in case the selection didn't actually change
@@ -416,8 +474,32 @@ class MainWindow(QMainWindow):
     def _on_live_midi_event(self, event: MidiEvent) -> None:
         self._update_layout_selection(event.channel, event.event_type, event.data1)
 
+    def _on_intro_drilldown_requested(self, target: str, controller_name: str) -> None:
+        self.layout_view.set_controller(controller_name)
+        self.deck_layout_view.set_controller(controller_name)
+        self.controller_layout_view.set_controller(controller_name)
+        self.controller_image_view.set_controller(controller_name)
+        target_index = self._tab_indexes.get(target)
+        if target_index is not None:
+            self.left_tabs.setCurrentIndex(target_index)
+
+    def _on_controller_applied(self, name: str) -> None:
+        """A Controller Setup draft was registered into the live catalog registry
+        (in-memory only) — refresh every view whose controller combo/columns
+        were only ever populated once, at construction time, so it shows up
+        immediately instead of only after restarting the app."""
+        self.layout_view.refresh_controllers()
+        self.deck_layout_view.refresh_controllers()
+        self.controller_layout_view.refresh_controllers()
+        self.controller_image_view.refresh_controllers()
+        self.introduction_view.refresh_controllers()
+        if self.config is not None:
+            self._refresh_layout_usage()
+        self.statusBar().showMessage(f"'{name}' applied for this session.")
+
     def closeEvent(self, event) -> None:
         self.live_monitor_view.shutdown()
+        self.controller_setup_view.shutdown()
         super().closeEvent(event)
 
     def _find_ancestor_control(self, item) -> Control | None:
