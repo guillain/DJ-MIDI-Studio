@@ -23,6 +23,7 @@ import dataclasses
 import json
 import re
 from pathlib import Path
+from typing import cast
 
 from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtWidgets import (
@@ -42,7 +43,12 @@ from PySide6.QtWidgets import (
 )
 
 from seratomidiconf import catalog
-from seratomidiconf.catalog._registry import ControlInfo, _event_kind, register
+from seratomidiconf.catalog._registry import (
+    ControlInfo,
+    NoteOrCC,
+    _event_kind,
+    register,
+)
 from seratomidiconf.catalog.codegen import (
     build_definition,
     find_trigger_conflicts,
@@ -162,11 +168,20 @@ class ControllerSetupView(QWidget):
         self._send_data1_edit = QLineEdit("27")
         self._send_data2_edit = QLineEdit("127")
         self._send_delay_ms_edit = QLineEdit("80")
+        self._send_loop_hz_edit = QLineEdit("2.0")
 
         send_once_button = QPushButton("Send once")
         send_once_button.clicked.connect(self._on_send_output_once_clicked)
         send_double_button = QPushButton("Send double-click (NOTE)")
         send_double_button.clicked.connect(self._on_send_output_double_clicked)
+        send_selected_button = QPushButton("Play selected session row(s)")
+        send_selected_button.clicked.connect(self._on_send_selected_rows_clicked)
+        send_all_button = QPushButton("Play all session rows")
+        send_all_button.clicked.connect(self._on_send_all_rows_clicked)
+        start_loop_button = QPushButton("Start rows loop")
+        start_loop_button.clicked.connect(self._on_start_rows_loop_clicked)
+        stop_loop_button = QPushButton("Stop rows loop")
+        stop_loop_button.clicked.connect(self._on_stop_rows_loop_clicked)
 
         pad_row_1 = QHBoxLayout()
         for mode in (1, 2, 3, 4):
@@ -196,8 +211,14 @@ class ControllerSetupView(QWidget):
         output_layout.addWidget(self._send_data2_edit)
         output_layout.addWidget(QLabel("Double-click delay (ms)"))
         output_layout.addWidget(self._send_delay_ms_edit)
+        output_layout.addWidget(QLabel("Loop frequency (Hz)"))
+        output_layout.addWidget(self._send_loop_hz_edit)
         output_layout.addWidget(send_once_button)
         output_layout.addWidget(send_double_button)
+        output_layout.addWidget(send_selected_button)
+        output_layout.addWidget(send_all_button)
+        output_layout.addWidget(start_loop_button)
+        output_layout.addWidget(stop_loop_button)
         output_layout.addLayout(pad_row_1)
         output_layout.addLayout(pad_row_2)
         output_layout.addWidget(self._send_status)
@@ -252,6 +273,9 @@ class ControllerSetupView(QWidget):
         self._timer.setInterval(_POLL_INTERVAL_MS)
         self._timer.timeout.connect(self._poll)
 
+        self._send_loop_timer = QTimer(self)
+        self._send_loop_timer.timeout.connect(self._on_rows_loop_tick)
+
         self._refresh_ports()
         self._refresh_output_ports()
 
@@ -277,7 +301,8 @@ class ControllerSetupView(QWidget):
     def _maybe_add_row(self, channel: str, kind: str, data1: str, source: str, device: str = "") -> bool:
         if (channel, kind, data1) in self._existing_keys():
             return False
-        entry = ControlInfo(self._controller_name, "", "", kind, (channel,), data1)
+        typed_kind = cast(NoteOrCC, kind)
+        entry = ControlInfo(self._controller_name, "", "", typed_kind, (channel,), data1)
         self._rows.append(entry)
         self._sources.append(source)
         self._devices.append(device)
@@ -318,7 +343,8 @@ class ControllerSetupView(QWidget):
         note_or_cc = self._table.item(row, 2).text().strip().upper()
         channels = tuple(c.strip() for c in self._table.item(row, 3).text().split(",") if c.strip())
         data1 = self._table.item(row, 4).text().strip()
-        self._rows[row] = ControlInfo(self._controller_name, section, name, note_or_cc, channels, data1)
+        typed_kind = cast(NoteOrCC, note_or_cc)
+        self._rows[row] = ControlInfo(self._controller_name, section, name, typed_kind, channels, data1)
         self._mark_dirty()
 
     def _on_delete_selected_clicked(self) -> None:
@@ -468,6 +494,105 @@ class ControllerSetupView(QWidget):
             QMessageBox.critical(self, "Failed to send MIDI", str(exc))
             return
         self._send_status.setText(f"Sent DDJ-XP2 PAD MODE {mode} trigger.")
+
+    def _selected_row_indices(self) -> list[int]:
+        selected = sorted({index.row() for index in self._table.selectedIndexes()})
+        if selected:
+            return selected
+        return list(range(len(self._rows)))
+
+    def _send_row_entry(self, entry: ControlInfo, velocity_or_value: int) -> int:
+        sent = 0
+        data1 = self._parse_int(entry.data1, "Data1", 0, 127)
+        for channel_text in entry.channels:
+            channel = self._parse_int(channel_text, "Channel", 1, 16)
+            if entry.note_or_cc == "NOTE":
+                send_midi_message(
+                    output_port_name=self._selected_output_port(),
+                    event_type="note_on",
+                    channel_1_based=channel,
+                    data1=data1,
+                    data2=velocity_or_value,
+                )
+                send_midi_message(
+                    output_port_name=self._selected_output_port(),
+                    event_type="note_off",
+                    channel_1_based=channel,
+                    data1=data1,
+                    data2=0,
+                )
+                sent += 2
+            elif entry.note_or_cc == "CC":
+                send_midi_message(
+                    output_port_name=self._selected_output_port(),
+                    event_type="control_change",
+                    channel_1_based=channel,
+                    data1=data1,
+                    data2=velocity_or_value,
+                )
+                sent += 1
+            else:
+                raise ValueError(f"Unsupported row Type: {entry.note_or_cc!r}")
+        return sent
+
+    def _play_session_rows_once(self, row_indices: list[int]) -> tuple[int, int]:
+        value = self._parse_int(self._send_data2_edit.text(), "Data2", 0, 127)
+        sent = 0
+        skipped = 0
+        for row_index in row_indices:
+            if not (0 <= row_index < len(self._rows)):
+                skipped += 1
+                continue
+            entry = self._rows[row_index]
+            try:
+                sent += self._send_row_entry(entry, value)
+            except ValueError:
+                skipped += 1
+        return sent, skipped
+
+    def _on_send_selected_rows_clicked(self) -> None:
+        try:
+            sent, skipped = self._play_session_rows_once(self._selected_row_indices())
+        except Exception as exc:  # noqa: BLE001 - show user-facing error
+            QMessageBox.critical(self, "Failed to play rows", str(exc))
+            return
+        self._send_status.setText(f"Played selected rows: {sent} MIDI message(s), {skipped} row(s) skipped.")
+
+    def _on_send_all_rows_clicked(self) -> None:
+        try:
+            sent, skipped = self._play_session_rows_once(list(range(len(self._rows))))
+        except Exception as exc:  # noqa: BLE001 - show user-facing error
+            QMessageBox.critical(self, "Failed to play rows", str(exc))
+            return
+        self._send_status.setText(f"Played all rows: {sent} MIDI message(s), {skipped} row(s) skipped.")
+
+    def _on_start_rows_loop_clicked(self) -> None:
+        try:
+            hz = float(self._send_loop_hz_edit.text().strip())
+        except ValueError:
+            QMessageBox.critical(self, "Invalid frequency", "Loop frequency must be a number.")
+            return
+        if hz <= 0:
+            QMessageBox.critical(self, "Invalid frequency", "Loop frequency must be > 0.")
+            return
+        interval_ms = max(1, int(1000.0 / hz))
+        self._send_loop_timer.setInterval(interval_ms)
+        self._send_loop_timer.start()
+        self._send_status.setText(f"Rows loop started at {hz:.2f} Hz.")
+
+    def _on_stop_rows_loop_clicked(self) -> None:
+        self._send_loop_timer.stop()
+        self._send_status.setText("Rows loop stopped.")
+
+    def _on_rows_loop_tick(self) -> None:
+        row_indices = self._selected_row_indices()
+        try:
+            sent, skipped = self._play_session_rows_once(row_indices)
+        except Exception as exc:  # noqa: BLE001 - show user-facing error and stop loop
+            self._send_loop_timer.stop()
+            QMessageBox.critical(self, "Rows loop stopped", str(exc))
+            return
+        self._send_status.setText(f"Rows loop tick: {sent} MIDI message(s), {skipped} row(s) skipped.")
 
     def _is_checked(self, row: int) -> bool:
         return self._port_list.item(row).checkState() == Qt.CheckState.Checked
@@ -715,6 +840,8 @@ class ControllerSetupView(QWidget):
 
     def shutdown(self) -> None:
         """Releases MIDI ports; call when the app is closing."""
+        if self._send_loop_timer.isActive():
+            self._send_loop_timer.stop()
         if self._learning:
             self._stop_learning()
 

@@ -415,3 +415,83 @@ def test_ddj_xp2_pad_mode_5_uses_double_click_on_mode_1(monkeypatch):
     assert len(sent) == 4
     assert all(msg["data1"] == 27 for msg in sent)
 
+
+def test_play_session_rows_once_sends_note_click_and_cc(monkeypatch):
+    import seratomidiconf.gui.controller_setup as controller_setup_mod
+
+    sent = []
+    view = _view_with_name()
+    view._rows = [
+        ControlInfo("MiniPad", "PAD", "A", "NOTE", ("1",), "10"),
+        ControlInfo("MiniPad", "KNOB", "B", "CC", ("2",), "20"),
+    ]
+    view._sources = ["manual", "manual"]
+    view._devices = ["", ""]
+    monkeypatch.setattr(controller_setup_mod, "list_output_ports", lambda: ["Port A"])
+    monkeypatch.setattr(controller_setup_mod, "send_midi_message", lambda **kwargs: sent.append(kwargs))
+    view._refresh_output_ports()
+    sent_count, skipped = view._play_session_rows_once([0, 1])
+    assert sent_count == 3
+    assert skipped == 0
+    assert sent[0]["event_type"] == "note_on"
+    assert sent[1]["event_type"] == "note_off"
+    assert sent[2]["event_type"] == "control_change"
+
+
+def test_play_session_rows_once_skips_invalid_rows(monkeypatch):
+    import seratomidiconf.gui.controller_setup as controller_setup_mod
+
+    sent = []
+    view = _view_with_name()
+    view._rows = [ControlInfo("MiniPad", "PAD", "A", "NOTE", ("1",), "abc")]
+    view._sources = ["manual"]
+    view._devices = [""]
+    monkeypatch.setattr(controller_setup_mod, "list_output_ports", lambda: ["Port A"])
+    monkeypatch.setattr(controller_setup_mod, "send_midi_message", lambda **kwargs: sent.append(kwargs))
+    view._refresh_output_ports()
+    sent_count, skipped = view._play_session_rows_once([0])
+    assert sent_count == 0
+    assert skipped == 1
+    assert sent == []
+
+
+def test_send_selected_rows_uses_table_selection(monkeypatch):
+    import seratomidiconf.gui.controller_setup as controller_setup_mod
+
+    sent = []
+    view = _view_with_name()
+    view._rows = [
+        ControlInfo("MiniPad", "PAD", "A", "NOTE", ("1",), "10"),
+        ControlInfo("MiniPad", "PAD", "B", "NOTE", ("1",), "11"),
+    ]
+    view._sources = ["manual", "manual"]
+    view._devices = ["", ""]
+    view._rebuild_table()
+    view._table.clearSelection()
+    view._table.selectRow(0)
+    monkeypatch.setattr(controller_setup_mod, "list_output_ports", lambda: ["Port A"])
+    monkeypatch.setattr(controller_setup_mod, "send_midi_message", lambda **kwargs: sent.append(kwargs))
+    view._refresh_output_ports()
+    view._on_send_selected_rows_clicked()
+    assert len(sent) == 2
+    assert all(msg["data1"] == 10 for msg in sent)
+
+
+def test_rows_loop_start_and_stop(monkeypatch):
+    import seratomidiconf.gui.controller_setup as controller_setup_mod
+
+    view = _view_with_name()
+    view._rows = [ControlInfo("MiniPad", "PAD", "A", "NOTE", ("1",), "10")]
+    view._sources = ["manual"]
+    view._devices = [""]
+    view._send_loop_hz_edit.setText("5")
+    monkeypatch.setattr(controller_setup_mod, "list_output_ports", lambda: ["Port A"])
+    monkeypatch.setattr(controller_setup_mod, "send_midi_message", lambda **kwargs: None)
+    view._refresh_output_ports()
+    view._on_start_rows_loop_clicked()
+    assert view._send_loop_timer.isActive()
+    assert view._send_loop_timer.interval() == 200
+    view._on_stop_rows_loop_clicked()
+    assert not view._send_loop_timer.isActive()
+
+
