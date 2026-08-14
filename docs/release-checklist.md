@@ -1,0 +1,84 @@
+# Release Checklist
+
+## Table of Contents
+
+- [Purpose](#purpose)
+- [Pre-Release Preparation](#pre-release-preparation)
+- [Version and Changelog](#version-and-changelog)
+- [Tagging Strategy](#tagging-strategy)
+- [CI Build and Draft Release](#ci-build-and-draft-release)
+- [Manual Verification](#manual-verification)
+- [Publish Steps](#publish-steps)
+- [Rollback Plan](#rollback-plan)
+
+## Purpose
+
+This checklist defines a predictable release process for package and executable artifacts.
+
+## Pre-Release Preparation
+
+1. Ensure your branch is up to date.
+2. Run the project bootstrap once (if needed):
+
+```bash
+bash scripts/bootstrap.sh
+```
+
+3. Run quality checks:
+
+```bash
+bash scripts/test.sh all
+```
+
+## Version and Changelog
+
+1. Update `project.version` in `pyproject.toml`.
+2. Update release notes/changelog section in your preferred tracking file.
+3. Commit changes.
+
+## Tagging Strategy
+
+Releases are triggered by tags matching `v*`.
+
+```bash
+git tag -a v0.1.0 -m "Release v0.1.0"
+git push origin v0.1.0
+```
+
+## CI Build and Draft Release
+
+On tag push, workflow `.github/workflows/draft-release.yml`:
+
+- builds executable bundles on macOS, Linux, and Windows,
+- builds wheel + sdist,
+- attaches all release archives to a **draft GitHub Release**.
+
+```mermaid
+flowchart LR
+    Tag[v* tag pushed] --> BuildMatrix[Build matrix: macOS/Linux/Windows]
+    BuildMatrix --> Artifacts[Upload archives + package files]
+    Artifacts --> Draft[Create draft GitHub Release]
+```
+
+## Manual Verification
+
+Before publishing draft release:
+
+1. Download one artifact per OS and verify extraction.
+2. Smoke test app start on at least one target machine.
+3. Confirm release notes are complete.
+
+## Publish Steps
+
+1. Open GitHub Releases.
+2. Edit the generated draft notes if needed.
+3. Click **Publish release**.
+
+## Rollback Plan
+
+If a bad draft was produced:
+
+1. Delete the draft release.
+2. Delete the problematic tag locally/remotely.
+3. Fix issues and recreate a new tag.
+
