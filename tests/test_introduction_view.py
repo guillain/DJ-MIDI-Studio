@@ -42,8 +42,8 @@ def test_usage_summary_updates_card_stats():
     }
     view.set_usage_summary(usage)
     text = view._card_stats["DDJ-XP2"].text()
-    assert "2 cellule(s)" in text
+    assert "2 cell(s)" in text
     assert "2 deck(s)" in text
-    assert "3 fonction(s)" in text
+    assert "3 function(s)" in text
 
 

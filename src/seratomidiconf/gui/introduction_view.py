@@ -45,22 +45,22 @@ class IntroductionView(QWidget):
         title.setStyleSheet("font-size: 18px; font-weight: 600;")
 
         description = QLabel(
-            "Visualisez, éditez et validez vos mappings MIDI Serato. "
-            "Commencez ici puis utilisez les raccourcis ci-dessous pour explorer "
-            "les vues détaillées."
+            "Visualize, edit, and validate your Serato MIDI mappings. "
+            "Start here, then use the shortcuts below to drill down into "
+            "the detailed views."
         )
         description.setWordWrap(True)
 
-        self._loaded_file_label = QLabel("Fichier chargé: aucun")
+        self._loaded_file_label = QLabel("Loaded file: none")
         self._loaded_file_label.setWordWrap(True)
         self._loaded_file_label.setFrameShape(QFrame.Shape.StyledPanel)
 
         self._controller_combo = QComboBox()
         self._controller_combo.addItems(catalog.CONTROLLER_NAMES)
 
-        catalog_box = QGroupBox("Contrôleurs connus")
+        catalog_box = QGroupBox("Known controllers")
         catalog_layout = QVBoxLayout(catalog_box)
-        catalog_layout.addWidget(QLabel("Contrôleur actif pour le drill-down :"))
+        catalog_layout.addWidget(QLabel("Active controller for drill-down:"))
         catalog_layout.addWidget(self._controller_combo)
         self._known_count_label = QLabel()
         self._known_list_label = QLabel()
@@ -77,11 +77,11 @@ class IntroductionView(QWidget):
         cards_scroll.setWidgetResizable(True)
         cards_scroll.setWidget(cards_host)
 
-        cards_box = QGroupBox("Vue d'ensemble des contrôleurs")
+        cards_box = QGroupBox("Controller overview")
         cards_box_layout = QVBoxLayout(cards_box)
         cards_box_layout.addWidget(cards_scroll)
 
-        links_box = QGroupBox("Aller vers...")
+        links_box = QGroupBox("Go to...")
         links_layout = QGridLayout(links_box)
         links_layout.setHorizontalSpacing(10)
         links_layout.setVerticalSpacing(8)
@@ -90,22 +90,22 @@ class IntroductionView(QWidget):
             button.clicked.connect(lambda _checked=False, t=target: self._emit_drilldown(t))
             links_layout.addWidget(button, i // 2, i % 2)
 
-        help_box = QGroupBox("Aides utiles")
+        help_box = QGroupBox("Helpful notes")
         help_layout = QVBoxLayout(help_box)
         help_text = QLabel(
-            "- By Channel: édition la plus fine (raw Control/UserIO/Mapping).\n"
-            "- By Deck: édition groupée des duplications Serato (x10) via MappingGroup.\n"
-            "- By Controller: lecture physique des mappings par section de contrôleur.\n"
-            "- Live Monitor: affichage MIDI en temps réel, avec résolution catalog + fonction Serato.\n"
-            "- Controller Setup: créez un nouveau module catalog depuis du MIDI appris ou un XML."
+            "- By Channel: most granular editing (raw Control/UserIO/Mapping).\n"
+            "- By Deck: grouped editing of Serato duplicate trigger sets (x10) via MappingGroup.\n"
+            "- By Controller: physical mapping view by controller section.\n"
+            "- Live Monitor: real-time MIDI display with catalog + Serato function resolution.\n"
+            "- Controller Setup: create a new catalog module from learned MIDI or imported XML."
         )
         help_text.setTextFormat(Qt.TextFormat.PlainText)
         help_text.setWordWrap(True)
         help_layout.addWidget(help_text)
 
         info = QLabel(
-            "Astuce: après avoir appliqué un contrôleur depuis Controller Setup, "
-            "il apparaît immédiatement dans les vues de cette session."
+            "Tip: after applying a controller from Controller Setup, "
+            "it appears immediately across this session's views."
         )
         info.setWordWrap(True)
         info.setFrameShape(QFrame.Shape.StyledPanel)
@@ -133,16 +133,16 @@ class IntroductionView(QWidget):
         self._controller_combo.blockSignals(False)
 
         names = list(catalog.CONTROLLER_NAMES)
-        self._known_count_label.setText(f"{len(names)} contrôleur(s) enregistré(s)")
-        self._known_list_label.setText(", ".join(names) if names else "(aucun contrôleur enregistré)")
+        self._known_count_label.setText(f"{len(names)} registered controller(s)")
+        self._known_list_label.setText(", ".join(names) if names else "(no registered controllers)")
         self._rebuild_controller_cards(names)
 
     def set_loaded_config_info(self, path: str | Path | None, control_count: int = 0) -> None:
         if path is None:
-            self._loaded_file_label.setText("Fichier chargé: aucun")
+            self._loaded_file_label.setText("Loaded file: none")
             return
         name = Path(path).name
-        self._loaded_file_label.setText(f"Fichier chargé: {name} ({control_count} control(s))")
+        self._loaded_file_label.setText(f"Loaded file: {name} ({control_count} control(s))")
 
     def set_usage_summary(self, usage: dict[CellKey, dict[str, set[str]]]) -> None:
         summary: dict[str, tuple[int, int, int]] = {}
@@ -185,7 +185,7 @@ class IntroductionView(QWidget):
         path = ASSETS_DIR / IMAGES.get(controller, "")
         pixmap = QPixmap(str(path)) if path.exists() else QPixmap()
         if pixmap.isNull():
-            image.setText("Image indisponible")
+            image.setText("Image unavailable")
             image.setFrameShape(QFrame.Shape.Box)
         else:
             image.setPixmap(
@@ -195,12 +195,12 @@ class IntroductionView(QWidget):
 
         definition = catalog.get_definition(controller)
         catalog_info = QLabel(
-            f"Catalog: {len(definition.static_entries)} entrée(s) statiques, {definition.pad_count} pad(s)"
+            f"Catalog: {len(definition.static_entries)} static entry(ies), {definition.pad_count} pad(s)"
         )
         catalog_info.setWordWrap(True)
         layout.addWidget(catalog_info)
 
-        stats = QLabel("Dans le fichier chargé: 0 cellules, 0 deck(s), 0 fonction(s)")
+        stats = QLabel("In loaded file: 0 cell(s), 0 deck(s), 0 function(s)")
         stats.setWordWrap(True)
         self._card_stats[controller] = stats
         layout.addWidget(stats)
@@ -217,7 +217,7 @@ class IntroductionView(QWidget):
         for controller, label in self._card_stats.items():
             used_cells, deck_count, function_count = self._usage_summary.get(controller, (0, 0, 0))
             label.setText(
-                f"Dans le fichier chargé: {used_cells} cellule(s), {deck_count} deck(s), {function_count} fonction(s)"
+                f"In loaded file: {used_cells} cell(s), {deck_count} deck(s), {function_count} function(s)"
             )
 
     def _drilldown_controller(self, target: str, controller: str) -> None:
