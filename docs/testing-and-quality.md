@@ -28,6 +28,7 @@ Use `scripts/test.sh` for common flows:
 ```bash
 bash scripts/test.sh all
 bash scripts/test.sh quick
+bash scripts/test.sh quality
 bash scripts/test.sh path tests/test_main_window.py
 ```
 
@@ -38,6 +39,7 @@ Modes:
 - `lint`: lint only
 - `test`: tests only
 - `path <target>`: targeted pytest execution
+- `quality`: objective gate (coverage/smell/duplication/security)
 
 ## CI Recommendation
 

@@ -17,7 +17,6 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QListWidget,
-    QListWidgetItem,
     QPushButton,
     QTableWidget,
     QTableWidgetItem,
@@ -27,6 +26,7 @@ from PySide6.QtWidgets import (
 
 from seratomidiconf import catalog
 from seratomidiconf.gui.mapping_group import build_mapping_groups
+from seratomidiconf.gui.port_list_utils import refresh_checked_port_list
 from seratomidiconf.midi_io import MidiEvent, MidiMonitor, list_input_ports
 from seratomidiconf.model import MidiConfig
 
@@ -112,13 +112,7 @@ class LiveMonitorView(QWidget):
                 )
 
     def _refresh_ports(self) -> None:
-        checked = {self._port_list.item(i).text() for i in range(self._port_list.count()) if self._is_checked(i)}
-        self._port_list.clear()
-        for name in list_input_ports():
-            item = QListWidgetItem(name)
-            item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-            item.setCheckState(Qt.CheckState.Checked if name in checked else Qt.CheckState.Unchecked)
-            self._port_list.addItem(item)
+        refresh_checked_port_list(self._port_list, list_input_ports)
 
     def _is_checked(self, row: int) -> bool:
         return self._port_list.item(row).checkState() == Qt.CheckState.Checked

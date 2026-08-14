@@ -15,6 +15,7 @@
 
 - [Architecture](architecture.md)
 - [Testing and Quality](testing-and-quality.md)
+- [Quality Gates](quality-gates.md)
 
 ## Build and CI
 

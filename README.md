@@ -75,6 +75,7 @@ uv run pytest
 ## Build and Test Scripts
 
 - `scripts/test.sh`: lint/test entrypoint (`all`, `quick`, `lint`, `test`, `path`).
+- `scripts/quality_gate.sh`: enforces quality/security targets (coverage, smell, duplication, vulnerabilities).
 - `scripts/bootstrap.sh`: one-command local setup and pre-commit quick check hook.
 - `scripts/build.sh`: build wheel/sdist and native executable bundle for current OS.
 - `scripts/release_artifacts.sh`: archive OS-specific executable artifacts.
@@ -84,6 +85,7 @@ Examples:
 
 ```bash
 bash scripts/test.sh quick
+bash scripts/test.sh quality
 bash scripts/build.sh
 bash scripts/release_artifacts.sh
 ```
@@ -101,6 +103,7 @@ bash scripts/release_artifacts.sh
 - [User Guide](docs/user-guide.md)
 - [Architecture](docs/architecture.md)
 - [Testing and Quality](docs/testing-and-quality.md)
+- [Quality Gates](docs/quality-gates.md)
 - [Build and Release](docs/build-and-release.md)
 - [Release Checklist](docs/release-checklist.md)
 

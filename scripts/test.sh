@@ -32,6 +32,11 @@ run_tests_path() {
   uv run pytest "$target"
 }
 
+run_quality_gate() {
+  echo "==> Quality gate"
+  bash scripts/quality_gate.sh
+}
+
 case "$MODE" in
   all)
     run_lint
@@ -54,6 +59,9 @@ case "$MODE" in
     fi
     run_tests_path "$2"
     ;;
+  quality)
+    run_quality_gate
+    ;;
   *)
     cat <<'EOF'
 Usage:
@@ -62,6 +70,7 @@ Usage:
   scripts/test.sh lint          # lint only
   scripts/test.sh test          # tests only
   scripts/test.sh path <target> # custom pytest target
+  scripts/test.sh quality       # full quality/security gate
 EOF
     exit 2
     ;;

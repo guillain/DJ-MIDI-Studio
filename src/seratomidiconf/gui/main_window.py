@@ -38,6 +38,7 @@ from seratomidiconf.gui.introduction_view import IntroductionView
 from seratomidiconf.gui.layout_view import ControllerLayoutView
 from seratomidiconf.gui.live_monitor import LiveMonitorView
 from seratomidiconf.gui.mapping_group import MappingGroup
+from seratomidiconf.gui.splitter_utils import replace_splitter
 from seratomidiconf.gui.tree_model import NODE_ROLE, build_channel_columns, relabel_item
 from seratomidiconf.midi_io import MidiEvent
 from seratomidiconf.model import Control, MappingElement, MidiConfig
@@ -286,10 +287,7 @@ class MainWindow(QMainWindow):
 
     def _rebuild_channel_columns(self) -> None:
         assert self.config is not None
-        old_splitter = self.channel_splitter
-        self.channel_splitter = QSplitter(Qt.Orientation.Horizontal)
-        self.channel_columns_container.layout().replaceWidget(old_splitter, self.channel_splitter)
-        old_splitter.deleteLater()
+        self.channel_splitter = replace_splitter(self.channel_columns_container, self.channel_splitter)
 
         self.node_to_item = {}
         self._channel_model_owner = {}
@@ -319,10 +317,7 @@ class MainWindow(QMainWindow):
 
     def _refresh_deck_view(self) -> None:
         assert self.config is not None
-        old_splitter = self.deck_splitter
-        self.deck_splitter = QSplitter(Qt.Orientation.Horizontal)
-        self.deck_columns_container.layout().replaceWidget(old_splitter, self.deck_splitter)
-        old_splitter.deleteLater()
+        self.deck_splitter = replace_splitter(self.deck_columns_container, self.deck_splitter)
 
         for _deck_id, model in build_deck_columns(self.config):
             view = QTreeView()
@@ -400,10 +395,7 @@ class MainWindow(QMainWindow):
         self._refresh_controller_columns(usage)
 
     def _refresh_controller_columns(self, usage: dict[layout_mod.CellKey, dict[str, set[str]]]) -> None:
-        old_splitter = self.controller_splitter
-        self.controller_splitter = QSplitter(Qt.Orientation.Horizontal)
-        self.controller_columns_container.layout().replaceWidget(old_splitter, self.controller_splitter)
-        old_splitter.deleteLater()
+        self.controller_splitter = replace_splitter(self.controller_columns_container, self.controller_splitter)
 
         for _controller, model, expand_flags in build_controller_columns(usage):
             view = QTreeView()
