@@ -21,6 +21,8 @@
 - `By Deck`: grouped duplicate mappings (safe synchronized edits).
 - `By Controller`: physical layout/section perspective.
 - `Controller Images`: static official diagrams.
+- `Metronome`: repeat the current Controller Setup session rows at a chosen frequency.
+- `Controller Setup`: capture/import controller triggers, send one-shot session commands, and generate catalog modules.
 
 ## Edit Safely
 
@@ -68,4 +70,9 @@ So in practice:
 - double-click `PAD MODE 2` to reach `PAD MODE 6`
 - double-click `PAD MODE 3` to reach `PAD MODE 7`
 - double-click `PAD MODE 4` to reach `PAD MODE 8`
+
+Inside the GUI:
+
+- use `Controller Setup` to send one-shot commands from the current saved/loaded session to the selected MIDI output;
+- use `Metronome` when you want loop/repeat playback with a configurable frequency.
 

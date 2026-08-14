@@ -59,12 +59,34 @@ def test_log_is_capped_at_max_rows():
         live_monitor_mod._MAX_ROWS = original_max_rows
 
 
-def test_clear_log_empties_table():
+def test_clear_log_empties_table_and_event_history():
     view = LiveMonitorView()
     event = MidiEvent(direction="in", channel="1", event_type="Note On", data1="1", data2="1", timestamp=0.0)
+    view._events.append(event)
     view._append_event(event)
     view._clear_log()
     assert view._log.rowCount() == 0
+    assert view._events == []
+
+
+def test_save_log_writes_csv_with_event_fields(tmp_path, monkeypatch):
+    import seratomidiconf.gui.live_monitor as live_monitor_mod
+
+    view = LiveMonitorView()
+    view._events = [MidiEvent("out", "2", "Control Change", "10", "64", 12.5, "MIDI Out")]
+    path = tmp_path / "monitor.csv"
+    monkeypatch.setattr(
+        live_monitor_mod.QFileDialog,
+        "getSaveFileName",
+        lambda *args: (str(path), "CSV files (*.csv)"),
+    )
+
+    view._save_log()
+
+    lines = path.read_text(encoding="utf-8").splitlines()
+    assert lines[0] == "Timestamp,Direction,Port,Channel,Type,Data1,Data2"
+    assert "12.5,out,MIDI Out,2,Control Change,10,64" in lines[1]
+    assert "Saved 1 MIDI event(s)" in view._status_label.text()
 
 
 def test_shutdown_when_never_started_does_not_raise():

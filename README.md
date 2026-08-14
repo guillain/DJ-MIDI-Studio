@@ -26,10 +26,11 @@ Serato MIDI mapping files can become very large and hard to maintain. This proje
 ## Key Features
 
 - XML parse/export round-trip tooling for Serato MIDI config files.
-- Multi-view GUI: `By Channel`, `By Deck`, `By Controller`, `Controller Images`, `Live Monitor`, `Controller Setup`.
+- Multi-view GUI: `By Channel`, `By Deck`, `By Controller`, `Controller Images`, `Live Monitor`, `Metronome`, `Controller Setup`.
 - New `Introduction` dashboard with known-controller cards and drill-down navigation.
 - Dynamic plugin-style controller catalog registry.
 - Validation for structure and mapping conflicts.
+- Send saved Controller Setup session commands directly to a selected MIDI output, with a dedicated `Metronome` tab for looping/repeat playback.
 
 ## Screens and Workflow
 
@@ -40,6 +41,7 @@ flowchart LR
 	Intro --> Controller[By Controller]
 	Intro --> Images[Controller Images]
 	Intro --> Monitor[Live Monitor]
+	Intro --> Metro[Metronome]
 	Intro --> Setup[Controller Setup]
 	Channel --> Validate[Validate]
 	Deck --> Validate

@@ -6,13 +6,16 @@ ControllerLayoutViews via MainWindow.highlight_live_event()."""
 
 from __future__ import annotations
 
+import csv
 import time
 from collections.abc import Callable
+from pathlib import Path
 
 from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QCheckBox,
+    QFileDialog,
     QGroupBox,
     QHBoxLayout,
     QLabel,
@@ -50,6 +53,7 @@ class LiveMonitorView(QWidget):
         self._monitor = MidiMonitor()
         self._config: MidiConfig | None = None
         self._function_lookup: dict[tuple[str, str, str], list[str]] = {}
+        self._events: list[MidiEvent] = []
         self._running = False
 
         if on_event is not None:
@@ -72,6 +76,8 @@ class LiveMonitorView(QWidget):
         self._status_label = QLabel("Stopped")
         clear_button = QPushButton("Clear log")
         clear_button.clicked.connect(self._clear_log)
+        save_button = QPushButton("Save log…")
+        save_button.clicked.connect(self._save_log)
 
         controls_box = QGroupBox("Monitor")
         controls_layout = QVBoxLayout(controls_box)
@@ -80,6 +86,7 @@ class LiveMonitorView(QWidget):
         controls_layout.addWidget(self._start_button)
         controls_layout.addWidget(self._status_label)
         controls_layout.addWidget(clear_button)
+        controls_layout.addWidget(save_button)
         controls_layout.addStretch(1)
 
         top_row = QHBoxLayout()
@@ -143,6 +150,9 @@ class LiveMonitorView(QWidget):
 
     def _poll(self) -> None:
         for event in self._monitor.poll():
+            self._events.append(event)
+            while len(self._events) > _MAX_ROWS:
+                self._events.pop(0)
             self._append_event(event)
             self.eventReceived.emit(event)
 
@@ -171,7 +181,39 @@ class LiveMonitorView(QWidget):
             self._log.removeRow(0)
 
     def _clear_log(self) -> None:
+        self._events.clear()
         self._log.setRowCount(0)
+
+    def _save_log(self) -> None:
+        if not self._events:
+            self._status_label.setText("No MIDI events to save.")
+            return
+        path_str, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save Live Monitor log",
+            "midi-monitor-log.csv",
+            "CSV files (*.csv)",
+        )
+        if not path_str:
+            return
+        try:
+            with Path(path_str).open("w", newline="", encoding="utf-8") as handle:
+                writer = csv.writer(handle)
+                writer.writerow(["Timestamp", "Direction", "Port", "Channel", "Type", "Data1", "Data2"])
+                for event in self._events:
+                    writer.writerow([
+                        event.timestamp,
+                        event.direction,
+                        event.port,
+                        event.channel,
+                        event.event_type,
+                        event.data1,
+                        event.data2,
+                    ])
+        except OSError as exc:
+            self._status_label.setText(f"Failed to save log: {exc}")
+            return
+        self._status_label.setText(f"Saved {len(self._events)} MIDI event(s).")
 
     def shutdown(self) -> None:
         """Releases MIDI ports; call when the app is closing."""

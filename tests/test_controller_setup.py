@@ -477,21 +477,85 @@ def test_send_selected_rows_uses_table_selection(monkeypatch):
     assert all(msg["data1"] == 10 for msg in sent)
 
 
-def test_rows_loop_start_and_stop(monkeypatch):
-    import seratomidiconf.gui.controller_setup as controller_setup_mod
-
+def test_session_rows_returns_copy_of_current_rows():
     view = _view_with_name()
     view._rows = [ControlInfo("MiniPad", "PAD", "A", "NOTE", ("1",), "10")]
-    view._sources = ["manual"]
-    view._devices = [""]
-    view._send_loop_hz_edit.setText("5")
-    monkeypatch.setattr(controller_setup_mod, "list_output_ports", lambda: ["Port A"])
-    monkeypatch.setattr(controller_setup_mod, "send_midi_message", lambda **kwargs: None)
+    rows = view.session_rows()
+    assert rows == view._rows
+    assert rows is not view._rows
+
+
+def test_selected_session_rows_defaults_to_all_when_nothing_selected():
+    view = _view_with_name()
+    view._rows = [
+        ControlInfo("MiniPad", "PAD", "A", "NOTE", ("1",), "10"),
+        ControlInfo("MiniPad", "PAD", "B", "NOTE", ("1",), "11"),
+    ]
+    view._sources = ["manual", "manual"]
+    view._devices = ["", ""]
+    view._rebuild_table()
+    view._table.clearSelection()
+    assert view.selected_session_rows() == view._rows
+
+
+def test_poll_records_every_midi_event_for_exact_session_replay(monkeypatch):
+    from seratomidiconf.midi_io import MidiEvent
+
+    view = _view_with_name()
+    events = [
+        MidiEvent("in", "1", "Note On", "10", "100", 5.0, "Controller A"),
+        MidiEvent("in", "1", "Note Off", "10", "0", 5.25, "Controller A"),
+    ]
+    monkeypatch.setattr(view._monitor, "poll", lambda: events)
+
+    view._poll()
+
+    assert view.recorded_session_events() == events
+    assert len(view._rows) == 1
+
+
+def test_replay_recorded_session_uses_selected_output_and_recorded_timing(monkeypatch):
+    import seratomidiconf.gui.controller_setup as controller_setup_mod
+    from seratomidiconf.midi_io import MidiEvent
+
+    view = _view_with_name()
+    view._recorded_events = [
+        MidiEvent("in", "1", "Note On", "10", "100", 5.0, "Controller A"),
+        MidiEvent("in", "1", "Note Off", "10", "0", 5.25, "Controller A"),
+    ]
+    monkeypatch.setattr(controller_setup_mod, "list_output_ports", lambda: ["Setup MIDI Out"])
     view._refresh_output_ports()
-    view._on_start_rows_loop_clicked()
-    assert view._send_loop_timer.isActive()
-    assert view._send_loop_timer.interval() == 200
-    view._on_stop_rows_loop_clicked()
-    assert not view._send_loop_timer.isActive()
+    scheduled = []
+    replayed = []
+    monkeypatch.setattr(controller_setup_mod.QTimer, "singleShot", lambda delay, callback: scheduled.append((delay, callback)))
+    monkeypatch.setattr(
+        controller_setup_mod,
+        "replay_midi_events",
+        lambda port, events, sender=None: replayed.append((port, events[0])),
+    )
+
+    view._on_replay_recorded_session_clicked()
+    assert scheduled[0][0] == 0
+    scheduled.pop(0)[1]()
+    assert scheduled[0][0] == 250
+    scheduled.pop(0)[1]()
+
+    assert [port for port, _event in replayed] == ["Setup MIDI Out", "Setup MIDI Out"]
+    assert [event.event_type for _port, event in replayed] == ["Note On", "Note Off"]
+    assert "Recorded session replayed" in view._send_status.text()
+
+
+def test_session_save_and_load_preserves_recorded_events(tmp_path):
+    from seratomidiconf.midi_io import MidiEvent
+
+    view = _view_with_name("MiniPad")
+    view._recorded_events = [MidiEvent("in", "4", "Control Change", "12", "77", 9.5, "Controller A")]
+    session_path = tmp_path / "recorded-session.json"
+
+    view._save_session(session_path)
+    reloaded = ControllerSetupView()
+    reloaded._load_session(session_path)
+
+    assert reloaded.recorded_session_events() == view._recorded_events
 
 

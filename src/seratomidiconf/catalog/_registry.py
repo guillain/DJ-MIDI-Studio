@@ -73,6 +73,14 @@ def all_controller_names() -> list[str]:
     return list(_REGISTRY.keys())
 
 
+def _parse_midi_note(data1: str) -> int | None:
+    try:
+        note = int(data1)
+    except ValueError:
+        return None
+    return note if 0 <= note <= 127 else None
+
+
 def make_sequential_pad_lookup(
     controller: str,
     channel_to_deck: dict[str, int],
@@ -89,11 +97,8 @@ def make_sequential_pad_lookup(
     def pad_lookup(channel: str, kind: NoteOrCC, data1: str) -> ControlInfo | None:
         if kind != "NOTE" or channel not in channel_to_deck:
             return None
-        try:
-            note = int(data1)
-        except ValueError:
-            return None
-        if not 0 <= note <= 127:
+        note = _parse_midi_note(data1)
+        if note is None:
             return None
         mode_index, pad0 = divmod(note, 16)
         if mode_index >= len(modes) or pad0 >= pad_count:
@@ -111,6 +116,7 @@ __all__ = [
     "ControllerDefinition",
     "NoteOrCC",
     "PadLookup",
+    "_parse_midi_note",
     "all_controller_names",
     "get_definition",
     "make_sequential_pad_lookup",

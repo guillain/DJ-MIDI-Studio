@@ -38,6 +38,7 @@ from seratomidiconf.gui.introduction_view import IntroductionView
 from seratomidiconf.gui.layout_view import ControllerLayoutView
 from seratomidiconf.gui.live_monitor import LiveMonitorView
 from seratomidiconf.gui.mapping_group import MappingGroup
+from seratomidiconf.gui.metronome_view import MetronomeView
 from seratomidiconf.gui.splitter_utils import replace_splitter
 from seratomidiconf.gui.tree_model import NODE_ROLE, build_channel_columns, relabel_item
 from seratomidiconf.midi_io import MidiEvent
@@ -151,19 +152,27 @@ class MainWindow(QMainWindow):
         self.controller_setup_view = ControllerSetupView()
         self.controller_setup_view.controllerApplied.connect(self._on_controller_applied)
 
+        self.metronome_view = MetronomeView(
+            all_rows_provider=self.controller_setup_view.session_rows,
+            selected_rows_provider=self.controller_setup_view.selected_session_rows,
+            session_name_provider=self.controller_setup_view.session_controller_name,
+        )
+
         self.introduction_view = IntroductionView()
         self.introduction_view.drillDownRequested.connect(self._on_intro_drilldown_requested)
 
         self.left_tabs = QTabWidget()
         self._tab_indexes = {
             "intro": self.left_tabs.addTab(self.introduction_view, "Introduction"),
+            "setup": self.left_tabs.addTab(self.controller_setup_view, "Controller Setup"),
+            "images": self.left_tabs.addTab(self.controller_image_view, "Controller Images"),
             "channel": self.left_tabs.addTab(channel_pair, "By Channel"),
             "deck": self.left_tabs.addTab(deck_pair, "By Deck"),
             "controller": self.left_tabs.addTab(controller_pair, "By Controller"),
-            "images": self.left_tabs.addTab(self.controller_image_view, "Controller Images"),
             "monitor": self.left_tabs.addTab(self.live_monitor_view, "Live Monitor"),
-            "setup": self.left_tabs.addTab(self.controller_setup_view, "Controller Setup"),
+            "metronome": self.left_tabs.addTab(self.metronome_view, "Metronome"),
         }
+        self.left_tabs.currentChanged.connect(self._on_left_tab_changed)
 
         self.edit_panel = EditPanel(self.undo_stack, self._on_command_applied, self._on_group_edit_applied)
 
@@ -475,6 +484,10 @@ class MainWindow(QMainWindow):
         if target_index is not None:
             self.left_tabs.setCurrentIndex(target_index)
 
+    def _on_left_tab_changed(self, index: int) -> None:
+        if index == self._tab_indexes.get("metronome"):
+            self.metronome_view.refresh_session_summary()
+
     def _on_controller_applied(self, name: str) -> None:
         """A Controller Setup draft was registered into the live catalog registry
         (in-memory only) — refresh every view whose controller combo/columns
@@ -491,6 +504,7 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event) -> None:
         self.live_monitor_view.shutdown()
+        self.metronome_view.shutdown()
         self.controller_setup_view.shutdown()
         super().closeEvent(event)
 

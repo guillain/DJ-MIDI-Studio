@@ -21,15 +21,6 @@ from seratomidiconf import catalog
 from seratomidiconf.gui.controller_image_view import ASSETS_DIR, IMAGES
 from seratomidiconf.gui.layout import CellKey
 
-_DRILLDOWN_TARGETS = [
-    ("channel", "By Channel"),
-    ("deck", "By Deck"),
-    ("controller", "By Controller"),
-    ("images", "Controller Images"),
-    ("monitor", "Live Monitor"),
-    ("setup", "Controller Setup"),
-]
-
 
 class IntroductionView(QWidget):
     """Home tab presenting known controllers, app context, and quick navigation."""
@@ -81,15 +72,6 @@ class IntroductionView(QWidget):
         cards_box_layout = QVBoxLayout(cards_box)
         cards_box_layout.addWidget(cards_scroll)
 
-        links_box = QGroupBox("Go to...")
-        links_layout = QGridLayout(links_box)
-        links_layout.setHorizontalSpacing(10)
-        links_layout.setVerticalSpacing(8)
-        for i, (target, label) in enumerate(_DRILLDOWN_TARGETS):
-            button = QPushButton(label)
-            button.clicked.connect(lambda _checked=False, t=target: self._emit_drilldown(t))
-            links_layout.addWidget(button, i // 2, i % 2)
-
         help_box = QGroupBox("Helpful notes")
         help_layout = QVBoxLayout(help_box)
         help_text = QLabel(
@@ -97,6 +79,7 @@ class IntroductionView(QWidget):
             "- By Deck: grouped editing of Serato duplicate trigger sets (x10) via MappingGroup.\n"
             "- By Controller: physical mapping view by controller section.\n"
             "- Live Monitor: real-time MIDI display with catalog + Serato function resolution.\n"
+            "- Metronome: loop the current Controller Setup session rows at a chosen frequency.\n"
             "- Controller Setup: create a new catalog module from learned MIDI or imported XML."
         )
         help_text.setTextFormat(Qt.TextFormat.PlainText)
@@ -116,7 +99,6 @@ class IntroductionView(QWidget):
         layout.addWidget(self._loaded_file_label)
         layout.addWidget(catalog_box)
         layout.addWidget(cards_box)
-        layout.addWidget(links_box)
         layout.addWidget(help_box)
         layout.addWidget(info)
         layout.addStretch(1)

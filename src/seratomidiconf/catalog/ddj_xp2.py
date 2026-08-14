@@ -9,6 +9,7 @@ from seratomidiconf.catalog._registry import (
     ControlInfo,
     ControllerDefinition,
     NoteOrCC,
+    _parse_midi_note,
     register,
 )
 
@@ -76,11 +77,8 @@ def _pad_lookup(channel: str, kind: NoteOrCC, data1: str) -> ControlInfo | None:
     Not a case for make_sequential_pad_lookup() — the note order isn't linear."""
     if kind != "NOTE" or channel not in _PAD_CH_TO_DECK:
         return None
-    try:
-        note = int(data1)
-    except ValueError:
-        return None
-    if not 0 <= note <= 127:
+    note = _parse_midi_note(data1)
+    if note is None:
         return None
     mode = note // 16 + 1
     base = note % 16

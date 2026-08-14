@@ -35,5 +35,29 @@ def refresh_checked_port_list(
         port_list.addItem(item)
 
 
-__all__ = ["refresh_checked_port_list"]
+def refresh_selectable_port_list(
+    port_list: QListWidget,
+    get_ports: Callable[[], list[str]],
+) -> None:
+    """Clears *port_list* and repopulates it from *get_ports()*.
+
+    Preserves the current selection by port name when possible; otherwise selects
+    the first available port.
+    """
+    current = port_list.currentItem().text() if port_list.currentItem() is not None else None
+    port_list.clear()
+    ports = get_ports()
+    for name in ports:
+        port_list.addItem(name)
+    if not ports:
+        return
+    if current is not None:
+        for row in range(port_list.count()):
+            if port_list.item(row).text() == current:
+                port_list.setCurrentRow(row)
+                return
+    port_list.setCurrentRow(0)
+
+
+__all__ = ["refresh_checked_port_list", "refresh_selectable_port_list"]
 
