@@ -99,8 +99,21 @@ DDJ-XP2 known `PAD MODE` button notes (deck channels `1..4`):
 - `PAD MODE 3` -> `data1=32`
 - `PAD MODE 4` -> `data1=34`
 
-Note: `PAD MODE 5` is represented in pad lookup labels, but there is no explicit
-dedicated `PAD MODE 5` button trigger in the transcribed static table.
+On the DDJ-XP2, `PAD MODE 5..8` are reached by double-clicking `PAD MODE 1..4`:
+
+- double-click `PAD MODE 1` -> `PAD MODE 5`
+- double-click `PAD MODE 2` -> `PAD MODE 6`
+- double-click `PAD MODE 3` -> `PAD MODE 7`
+- double-click `PAD MODE 4` -> `PAD MODE 8`
+
+CLI example to emulate a double-click on `PAD MODE 1` (Deck channel `1`):
+
+```bash
+uv run seratomidiconf-send-midi --port "Your Port Name" --type note_on --channel 1 --data1 27 --data2 127
+uv run seratomidiconf-send-midi --port "Your Port Name" --type note_off --channel 1 --data1 27 --data2 0
+uv run seratomidiconf-send-midi --port "Your Port Name" --type note_on --channel 1 --data1 27 --data2 127
+uv run seratomidiconf-send-midi --port "Your Port Name" --type note_off --channel 1 --data1 27 --data2 0
+```
 
 Examples:
 

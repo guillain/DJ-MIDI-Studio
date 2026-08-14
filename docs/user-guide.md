@@ -55,6 +55,11 @@ DDJ-XP2 known pad mode button note values (channels 1..4):
 - `32` = `PAD MODE 3`
 - `34` = `PAD MODE 4`
 
-There is no dedicated static `PAD MODE 5` button trigger in the transcribed
-DDJ-XP2 static table; mode-5 pad labels come from the pad-grid lookup layer.
+On real hardware, `PAD MODE 5..8` are reached by double-clicking `PAD MODE 1..4`.
+So in practice:
+
+- double-click `PAD MODE 1` to reach `PAD MODE 5`
+- double-click `PAD MODE 2` to reach `PAD MODE 6`
+- double-click `PAD MODE 3` to reach `PAD MODE 7`
+- double-click `PAD MODE 4` to reach `PAD MODE 8`
 
