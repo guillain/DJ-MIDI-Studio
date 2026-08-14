@@ -83,6 +83,21 @@ Package OS executable directory into an archive:
 bash scripts/release_artifacts.sh
 ```
 
+Explicit target OS (useful when packaging artifacts built on CI machines and copied locally):
+
+```bash
+bash scripts/release_artifacts.sh --os macos
+```
+
+Auto-build current OS executable if missing:
+
+```bash
+bash scripts/release_artifacts.sh --build-missing
+```
+
+If the current host OS folder is missing, the script falls back to the first
+available folder under `dist/executables/` and prints which one it used.
+
 Output path:
 
 - `dist/release/`
