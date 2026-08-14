@@ -25,6 +25,7 @@ dev = [
 
 [project.scripts]
 seratomidiconf = "seratomidiconf:main"
+seratomidiconf-send-midi = "seratomidiconf.midi_send:main"
 
 [build-system]
 requires = ["uv_build>=0.12.3,<0.13.0"]

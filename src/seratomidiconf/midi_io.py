@@ -70,6 +70,64 @@ def list_input_ports() -> list[str]:
     return mido.get_input_names()
 
 
+def list_output_ports() -> list[str]:
+    return mido.get_output_names()
+
+
+def _bounded_midi_byte(value: int, *, field_name: str) -> int:
+    if not 0 <= value <= 127:
+        raise ValueError(f"{field_name} must be in [0, 127], got {value}")
+    return value
+
+
+def _bounded_channel(channel_1_based: int) -> int:
+    if not 1 <= channel_1_based <= 16:
+        raise ValueError(f"channel must be in [1, 16], got {channel_1_based}")
+    return channel_1_based - 1
+
+
+def send_midi_message(
+    *,
+    output_port_name: str,
+    event_type: str,
+    channel_1_based: int,
+    data1: int,
+    data2: int,
+) -> None:
+    """Sends a single NOTE/CC style MIDI message to a hardware/virtual output.
+
+    Parameters follow the same 1-based channel convention used elsewhere in this
+    project's model/UI. `event_type` accepts common aliases (e.g. "Note On",
+    "note_on", "Control Change", "cc").
+    """
+    event_key = event_type.strip().lower().replace("-", " ").replace("_", " ")
+    msg_type_map = {
+        "note on": "note_on",
+        "note off": "note_off",
+        "control change": "control_change",
+        "cc": "control_change",
+    }
+    msg_type = msg_type_map.get(event_key)
+    if msg_type is None:
+        raise ValueError(f"Unsupported event_type: {event_type!r}")
+
+    channel = _bounded_channel(channel_1_based)
+    d1 = _bounded_midi_byte(data1, field_name="data1")
+    d2 = _bounded_midi_byte(data2, field_name="data2")
+
+    kwargs = {"channel": channel}
+    if msg_type in ("note_on", "note_off"):
+        kwargs["note"] = d1
+        kwargs["velocity"] = d2
+    else:
+        kwargs["control"] = d1
+        kwargs["value"] = d2
+
+    message = mido.Message(msg_type, **kwargs)
+    with mido.open_output(output_port_name) as output_port:
+        output_port.send(message)
+
+
 class MidiMonitor:
     """Owns zero or more open MIDI input ports (real device sources) plus an
     optional virtual destination this app creates so Serato's *output* can be
@@ -122,4 +180,11 @@ class MidiMonitor:
         return events
 
 
-__all__ = ["MidiEvent", "MidiMonitor", "list_input_ports", "mido_message_to_event"]
+__all__ = [
+    "MidiEvent",
+    "MidiMonitor",
+    "list_input_ports",
+    "list_output_ports",
+    "mido_message_to_event",
+    "send_midi_message",
+]

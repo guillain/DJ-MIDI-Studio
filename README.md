@@ -9,6 +9,7 @@ Edit large Serato DJ Pro MIDI XML mappings with a visual workflow instead of han
 - [Screens and Workflow](#screens-and-workflow)
 - [Quickstart](#quickstart)
 - [Build and Test Scripts](#build-and-test-scripts)
+- [Send MIDI Commands](#send-midi-commands)
 - [Release Process](#release-process)
 - [Documentation Index](#documentation-index)
 - [Technical References](#technical-references)
@@ -80,6 +81,26 @@ uv run pytest
 - `scripts/build.sh`: build wheel/sdist and native executable bundle for current OS.
 - `scripts/release_artifacts.sh`: archive OS-specific executable artifacts.
 - `.github/workflows/build-executables.yml`: CI matrix build for macOS/Linux/Windows executables.
+
+## Send MIDI Commands
+
+You can send one-shot NOTE/CC commands directly to a controller output port:
+
+```bash
+uv run seratomidiconf-send-midi --list-ports
+uv run seratomidiconf-send-midi --port "Your Port Name" --type note_on --channel 1 --data1 27 --data2 127
+uv run seratomidiconf-send-midi --port "Your Port Name" --type note_off --channel 1 --data1 27 --data2 0
+```
+
+DDJ-XP2 known `PAD MODE` button notes (deck channels `1..4`):
+
+- `PAD MODE 1` -> `data1=27`
+- `PAD MODE 2` -> `data1=30`
+- `PAD MODE 3` -> `data1=32`
+- `PAD MODE 4` -> `data1=34`
+
+Note: `PAD MODE 5` is represented in pad lookup labels, but there is no explicit
+dedicated `PAD MODE 5` button trigger in the transcribed static table.
 
 Examples:
 

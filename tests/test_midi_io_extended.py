@@ -9,6 +9,8 @@ import mido
 from seratomidiconf.midi_io import (
     MidiMonitor,
     list_input_ports,
+    list_output_ports,
+    send_midi_message,
 )
 
 # ─── list_input_ports ─────────────────────────────────────────────────────────
@@ -147,4 +149,86 @@ def test_poll_yields_events_from_virtual_port():
 def test_poll_empty_when_no_ports_open():
     monitor = MidiMonitor()
     assert monitor.poll() == []
+
+
+# ─── MIDI output helpers ──────────────────────────────────────────────────────
+
+
+def test_list_output_ports_returns_list():
+    ports = list_output_ports()
+    assert isinstance(ports, list)
+
+
+def test_send_midi_message_sends_note_on_with_1_based_channel():
+    output = MagicMock()
+    output_ctx = MagicMock()
+    output_ctx.__enter__.return_value = output
+    with patch("mido.open_output", return_value=output_ctx), patch("mido.Message") as mock_message:
+        send_midi_message(
+            output_port_name="Port A",
+            event_type="Note On",
+            channel_1_based=8,
+            data1=64,
+            data2=127,
+        )
+    mock_message.assert_called_once_with("note_on", channel=7, note=64, velocity=127)
+    output.send.assert_called_once()
+
+
+def test_send_midi_message_sends_cc_alias():
+    output = MagicMock()
+    output_ctx = MagicMock()
+    output_ctx.__enter__.return_value = output
+    with patch("mido.open_output", return_value=output_ctx), patch("mido.Message") as mock_message:
+        send_midi_message(
+            output_port_name="Port A",
+            event_type="cc",
+            channel_1_based=1,
+            data1=10,
+            data2=64,
+        )
+    mock_message.assert_called_once_with("control_change", channel=0, control=10, value=64)
+
+
+def test_send_midi_message_rejects_invalid_channel():
+    try:
+        send_midi_message(
+            output_port_name="Port A",
+            event_type="note_on",
+            channel_1_based=0,
+            data1=64,
+            data2=127,
+        )
+        assert False, "Expected ValueError"
+    except ValueError as exc:
+        assert "channel" in str(exc)
+
+
+def test_send_midi_message_rejects_invalid_data_byte():
+    try:
+        send_midi_message(
+            output_port_name="Port A",
+            event_type="note_on",
+            channel_1_based=1,
+            data1=128,
+            data2=0,
+        )
+        assert False, "Expected ValueError"
+    except ValueError as exc:
+        assert "data1" in str(exc)
+
+
+def test_send_midi_message_rejects_unknown_event_type():
+    try:
+        send_midi_message(
+            output_port_name="Port A",
+            event_type="pitch_bend",
+            channel_1_based=1,
+            data1=0,
+            data2=0,
+        )
+        assert False, "Expected ValueError"
+    except ValueError as exc:
+        assert "Unsupported event_type" in str(exc)
+
 
