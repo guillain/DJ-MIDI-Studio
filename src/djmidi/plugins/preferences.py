@@ -9,13 +9,22 @@ plugin update or temporary uninstall.
 from __future__ import annotations
 
 import json
+import os
+import platform
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Literal
+
+DetectionPolicy = Literal["ask", "suggest"]
 
 
 @dataclass
 class PluginPreferences:
     enabled: dict[str, bool] = field(default_factory=dict)
+    detection_policy: DetectionPolicy = "ask"
+    routing_enabled: bool = False
+    trust_external_plugins: bool = False
+    log_level: str = "INFO"
 
     def is_enabled(self, plugin_id: str) -> bool:
         return self.enabled.get(plugin_id, True)
@@ -32,7 +41,17 @@ class PluginPreferences:
         self.set_enabled(plugin_id, True)
 
     def to_json(self) -> str:
-        return json.dumps({"enabled": self.enabled}, indent=2, sort_keys=True) + "\n"
+        return json.dumps(
+            {
+                "enabled": self.enabled,
+                "detection_policy": self.detection_policy,
+                "routing_enabled": self.routing_enabled,
+                "trust_external_plugins": self.trust_external_plugins,
+                "log_level": self.log_level,
+            },
+            indent=2,
+            sort_keys=True,
+        ) + "\n"
 
     @classmethod
     def from_json(cls, text: str) -> PluginPreferences:
@@ -44,7 +63,25 @@ class PluginPreferences:
             raise TypeError("Plugin preferences must contain an 'enabled' object")
         if not all(isinstance(key, str) and isinstance(value, bool) for key, value in raw["enabled"].items()):
             raise ValueError("Plugin preference values must be booleans")
-        return cls(enabled=dict(raw["enabled"]))
+        detection_policy = raw.get("detection_policy", "ask")
+        if detection_policy not in ("ask", "suggest"):
+            raise ValueError("detection_policy must be 'ask' or 'suggest'")
+        log_level = raw.get("log_level", "INFO")
+        if not isinstance(log_level, str) or log_level.upper() not in {
+            "DEBUG",
+            "INFO",
+            "WARNING",
+            "ERROR",
+            "CRITICAL",
+        }:
+            raise ValueError("log_level is not supported")
+        return cls(
+            enabled=dict(raw["enabled"]),
+            detection_policy=detection_policy,
+            routing_enabled=bool(raw.get("routing_enabled", False)),
+            trust_external_plugins=bool(raw.get("trust_external_plugins", False)),
+            log_level=log_level.upper(),
+        )
 
     @classmethod
     def load(cls, path: str | Path) -> PluginPreferences:
@@ -59,4 +96,15 @@ class PluginPreferences:
         target.write_text(self.to_json(), encoding="utf-8")
 
 
-__all__ = ["PluginPreferences"]
+def default_preferences_path() -> Path:
+    override = os.environ.get("DJMIDI_PREFERENCES_FILE")
+    if override:
+        return Path(override)
+    if platform.system() == "Darwin":
+        return Path.home() / "Library" / "Preferences" / "DJ-MIDI-Studio" / "preferences.json"
+    if os.name == "nt":
+        return Path(os.environ.get("APPDATA", Path.home() / "AppData/Roaming")) / "DJ-MIDI-Studio" / "preferences.json"
+    return Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "djmidi" / "preferences.json"
+
+
+__all__ = ["DetectionPolicy", "PluginPreferences", "default_preferences_path"]

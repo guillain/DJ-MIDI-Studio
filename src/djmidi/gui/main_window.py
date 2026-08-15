@@ -12,6 +12,7 @@ from PySide6.QtGui import (
     QUndoStack,
 )
 from PySide6.QtWidgets import (
+    QDialog,
     QFileDialog,
     QInputDialog,
     QLineEdit,
@@ -39,11 +40,13 @@ from djmidi.gui.layout_view import ControllerLayoutView
 from djmidi.gui.live_monitor import LiveMonitorView
 from djmidi.gui.mapping_group import MappingGroup
 from djmidi.gui.metronome_view import MetronomeView
+from djmidi.gui.preferences_dialog import PreferencesDialog
 from djmidi.gui.splitter_utils import replace_splitter
 from djmidi.gui.tree_model import NODE_ROLE, build_channel_columns, relabel_item
 from djmidi.integration_detection import detect_software_mapping
 from djmidi.midi_io import MidiEvent
 from djmidi.model import Control, MappingElement, MidiConfig
+from djmidi.plugins import PluginPreferences, default_preferences_path
 from djmidi.validator import ValidationIssue, validate
 
 _SEVERITY_COLORS = {
@@ -75,6 +78,8 @@ class MainWindow(QMainWindow):
         self.config: MidiConfig | None = None
         self.current_path: Path | None = None
         self.software_id = "serato"
+        self.preferences_path = default_preferences_path()
+        self.preferences = PluginPreferences.load(self.preferences_path)
         self.node_to_item: dict[int, object] = {}
         self.channel_proxies: list[QSortFilterProxyModel] = []
         self._channel_model_owner: dict[int, tuple[QTreeView, QSortFilterProxyModel]] = {}
@@ -272,11 +277,22 @@ class MainWindow(QMainWindow):
         validate_action.triggered.connect(self._on_validate)
         edit_menu.addAction(validate_action)
 
+        settings_menu = self.menuBar().addMenu("&Settings")
+        preferences_action = QAction("&Preferences...", self)
+        preferences_action.triggered.connect(self._on_preferences)
+        settings_menu.addAction(preferences_action)
+
         help_menu = self.menuBar().addMenu("&Help")
         for title, url in _REFERENCE_LINKS:
             action = QAction(title, self)
             action.triggered.connect(lambda checked=False, u=url: QDesktopServices.openUrl(QUrl(u)))
             help_menu.addAction(action)
+
+    def _on_preferences(self) -> None:
+        dialog = PreferencesDialog(self.preferences, self)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            self.preferences.save(self.preferences_path)
+            self.statusBar().showMessage("Preferences saved")
 
     def _on_open(self) -> None:
         path_str, _ = QFileDialog.getOpenFileName(

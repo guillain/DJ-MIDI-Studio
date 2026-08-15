@@ -92,6 +92,11 @@ intervals, and reports observed jitter. `midi_virtual.py` supplies a hardware-
 free port bus for deterministic route tests; real hardware timing diagnostics
 remain a later integration concern.
 
+`PluginPreferences` stores enabled plugin IDs and safety policies as a
+backward-compatible JSON document. `PreferencesDialog` builds its plugin list
+from the live controller and software registries, so external integrations do
+not require GUI code changes.
+
 DJ software integrations use the same plugin principle. The software registry
 exposes a parser, exporter, supported extensions, and display metadata. The
 current UI asks the user to select the plugin when opening a mapping; automatic

@@ -31,6 +31,14 @@ uv run djmidi --log-level DEBUG --log-file /tmp/djmidi.log
 
 Available levels are `DEBUG`, `INFO`, `WARNING`, `ERROR`, and `CRITICAL`.
 
+## Preferences
+
+Use `Settings -> Preferences...` to review the dynamically discovered
+controller and software plugins. The dialog persists plugin enablement,
+detection policy, routing policy, external-plugin trust, and log verbosity.
+Safe defaults require confirmation for detection, keep routing disabled, and
+do not trust external plugins automatically.
+
 The application can now produce an assisted detection result from the mapping
 file signature/extension and MIDI port names. When available, controller
 identity replies and declared MIDI capabilities add evidence to the score. The

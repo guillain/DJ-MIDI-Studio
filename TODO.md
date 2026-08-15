@@ -57,7 +57,7 @@ second, then real-time routing and clock synchronization.
 
 - [x] Add read-only software status and configuration capability declarations.
 - [ ] Add configuration updates only through backup, preview/diff, validation, and rollback.
-- [ ] Add a preferences surface for enabled plugins, detection policy, routing policy, and trust decisions.
+- [x] Add a preferences surface for enabled plugins, detection policy, routing policy, and trust decisions.
 - [ ] Support unknown devices and unsupported mapping formats through a generic MIDI profile.
 - [ ] Document plugin installation, updates, compatibility, trust, and troubleshooting.
 
