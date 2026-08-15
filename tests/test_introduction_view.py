@@ -31,6 +31,10 @@ def test_refresh_controllers_builds_controller_cards():
     view.refresh_controllers()
     assert "DDJ-XP2" in view._card_stats
     assert "XDJ-XZ" in view._card_stats
+    assert view._cards_layout.getItemPosition(0)[1] == 0
+    assert view._cards_layout.getItemPosition(1)[1] == 1
+    assert view._cards_layout.getItemPosition(2)[1] == 2
+    assert view._cards_layout.getItemPosition(3)[0] == 1
 
 
 def test_set_loaded_config_info_updates_status_label():

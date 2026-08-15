@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from PySide6.QtGui import QUndoStack
+from PySide6.QtWidgets import QLabel
 
 from djmidi.gui.edit_panel import EditPanel
 from djmidi.gui.mapping_group import MappingGroup
@@ -126,6 +127,9 @@ def test_physical_control_box_known_trigger_shows_name():
     # ch8 Note On note 64 is a known DDJ-XP2 trigger
     box = panel._build_physical_control_box("8", "Note On", "64")
     assert box is not None
+    label = box.findChild(QLabel)
+    assert label is not None
+    assert label.minimumHeight() >= label.fontMetrics().lineSpacing() * 8
 
 
 def test_physical_control_box_unknown_trigger_shows_placeholder():
@@ -141,4 +145,3 @@ def test_build_group_form_does_not_crash():
     group = _group_with_member()
     panel.set_node(group)
     assert panel.current_node is group
-

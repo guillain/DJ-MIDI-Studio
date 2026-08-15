@@ -2,7 +2,14 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PySide6.QtCore import QSortFilterProxyModel, Qt, QTimer, QUrl
+from PySide6.QtCore import (
+    QItemSelectionModel,
+    QModelIndex,
+    QSortFilterProxyModel,
+    Qt,
+    QTimer,
+    QUrl,
+)
 from PySide6.QtGui import (
     QAction,
     QColor,
@@ -93,6 +100,8 @@ class MainWindow(QMainWindow):
         self.node_to_item: dict[int, object] = {}
         self.channel_proxies: list[QSortFilterProxyModel] = []
         self._channel_model_owner: dict[int, tuple[QTreeView, QSortFilterProxyModel]] = {}
+        self._deck_tree_views: list[QTreeView] = []
+        self._controller_tree_views: list[QTreeView] = []
         self._pair_splitters: list[QSplitter] = []
         self._pair_ratio_by_id: dict[int, float] = {}
         self._last_controller_detection: tuple[str, ...] = ()
@@ -114,7 +123,7 @@ class MainWindow(QMainWindow):
         channel_layout.addWidget(self.channel_splitter)
 
         self.layout_view = ControllerLayoutView()
-        self.layout_view.cellActivated.connect(self._on_layout_cell_activated)
+        self.layout_view.cellActivated.connect(lambda key: self._on_layout_cell_activated(key, "channel"))
 
         self.deck_columns_container = QWidget()
         deck_columns_layout = QVBoxLayout(self.deck_columns_container)
@@ -123,7 +132,7 @@ class MainWindow(QMainWindow):
         deck_columns_layout.addWidget(self.deck_splitter)
 
         self.deck_layout_view = ControllerLayoutView(show_deck_filter=True)
-        self.deck_layout_view.cellActivated.connect(self._on_layout_cell_activated)
+        self.deck_layout_view.cellActivated.connect(lambda key: self._on_layout_cell_activated(key, "deck"))
 
         self.controller_columns_container = QWidget()
         controller_columns_layout = QVBoxLayout(self.controller_columns_container)
@@ -132,7 +141,7 @@ class MainWindow(QMainWindow):
         controller_columns_layout.addWidget(self.controller_splitter)
 
         self.controller_layout_view = ControllerLayoutView()
-        self.controller_layout_view.cellActivated.connect(self._on_layout_cell_activated)
+        self.controller_layout_view.cellActivated.connect(lambda key: self._on_layout_cell_activated(key, "controller"))
 
         # Each representation pairs the columns (text, precise) with a schematic
         # layout (visual, at-a-glance) of the same underlying data.
@@ -464,6 +473,7 @@ class MainWindow(QMainWindow):
     def _refresh_deck_view(self) -> None:
         assert self.config is not None
         self.deck_splitter = replace_splitter(self.deck_columns_container, self.deck_splitter)
+        self._deck_tree_views = []
 
         for _deck_id, model in build_deck_columns(self.config):
             view = QTreeView()
@@ -473,6 +483,7 @@ class MainWindow(QMainWindow):
             view.selectionModel().selectionChanged.connect(lambda *_, v=view: self._on_deck_column_selection_changed(v))
             view.doubleClicked.connect(lambda index, v=view: self._on_deck_item_double_clicked(v, index))
             self.deck_splitter.addWidget(view)
+            self._deck_tree_views.append(view)
 
     def _on_deck_column_selection_changed(self, view: QTreeView) -> None:
         indexes = view.selectionModel().selectedIndexes()
@@ -542,6 +553,7 @@ class MainWindow(QMainWindow):
 
     def _refresh_controller_columns(self, usage: dict[layout_mod.CellKey, dict[str, set[str]]]) -> None:
         self.controller_splitter = replace_splitter(self.controller_columns_container, self.controller_splitter)
+        self._controller_tree_views = []
 
         for _controller, model, expand_flags in build_controller_columns(usage):
             view = QTreeView()
@@ -549,6 +561,7 @@ class MainWindow(QMainWindow):
             view.setModel(model)
             view.selectionModel().selectionChanged.connect(lambda *_, v=view: self._on_controller_selection_changed(v))
             self.controller_splitter.addWidget(view)
+            self._controller_tree_views.append(view)
             # Deferred: expanding items right after setModel(), before the view has
             # done its first layout pass, is unreliable in some Qt/platform
             # combinations (the row exists in the model but the view hasn't built
@@ -580,7 +593,55 @@ class MainWindow(QMainWindow):
         view.scrollTo(proxy_index)
         return True
 
-    def _on_layout_cell_activated(self, key: tuple) -> None:
+    def _select_model_index(self, view: QTreeView, index: QModelIndex) -> None:
+        selection = view.selectionModel()
+        selection.clearSelection()
+        selection.select(
+            index,
+            QItemSelectionModel.SelectionFlag.ClearAndSelect | QItemSelectionModel.SelectionFlag.Rows,
+        )
+        view.setCurrentIndex(index)
+        view.scrollTo(index)
+
+    def _find_index_with_data(self, model, value: object, role: int, parent: QModelIndex | None = None) -> QModelIndex:
+        if parent is None:
+            parent = QModelIndex()
+        for row in range(model.rowCount(parent)):
+            index = model.index(row, 0, parent)
+            if index.data(role) == value:
+                return index
+            found = self._find_index_with_data(model, value, role, index)
+            if found.isValid():
+                return found
+        return QModelIndex()
+
+    def _select_controller_cell(self, key: layout_mod.CellKey) -> bool:
+        for view in self._controller_tree_views:
+            index = self._find_index_with_data(view.model(), key, CELL_KEY_ROLE)
+            if index.isValid():
+                self._select_model_index(view, index)
+                return True
+        return False
+
+    def _select_deck_group(self, key: layout_mod.CellKey) -> bool:
+        for view in self._deck_tree_views:
+            model = view.model()
+            for row in range(model.rowCount()):
+                slot_index = model.index(row, 0)
+                for child_row in range(model.rowCount(slot_index)):
+                    index = model.index(child_row, 0, slot_index)
+                    group = index.data(NODE_ROLE)
+                    if not isinstance(group, MappingGroup):
+                        continue
+                    if any(
+                        layout_mod.cell_key(hit) == key
+                        for hit in catalog.lookup(group.channel, group.event_type, group.control_no)
+                    ):
+                        self._select_model_index(view, index)
+                        return True
+        return False
+
+    def _on_layout_cell_activated(self, key: tuple, source_tab: str = "channel") -> None:
         if self.config is None:
             return
         matches: list[Control] = []
@@ -593,8 +654,14 @@ class MainWindow(QMainWindow):
             self.statusBar().showMessage(f"No control in this file uses '{key[2]}'")
             self._update_layout_selection(None, None, None)
             return
-        self._select_control_in_channel_columns(matches[0])
-        self.left_tabs.setCurrentIndex(self._tab_indexes["channel"])
+        if source_tab == "controller":
+            self._select_controller_cell(key)
+        elif source_tab == "deck":
+            if not self._select_deck_group(key):
+                self._select_control_in_channel_columns(matches[0])
+        else:
+            self._select_control_in_channel_columns(matches[0])
+        self.left_tabs.setCurrentIndex(self._tab_indexes[source_tab])
         self.statusBar().showMessage(f"'{key[2]}': {len(matches)} control(s) in this file, showing first")
         # setCurrentIndex above already re-highlights via _on_channel_selection_changed,
         # but do it directly too in case the selection didn't actually change

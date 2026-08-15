@@ -182,7 +182,7 @@ class IntroductionView(QWidget):
 
         for index, name in enumerate(names):
             card = self._build_controller_card(name)
-            self._cards_layout.addWidget(card, index // 2, index % 2)
+            self._cards_layout.addWidget(card, index // 3, index % 3)
 
         self._refresh_card_stats()
         self.refresh_midi_availability(self._midi_port_names)

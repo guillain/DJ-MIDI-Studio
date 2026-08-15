@@ -41,6 +41,8 @@ _BORDER_PEN = QPen(QColor(110, 110, 110))
 _DIVIDER_PEN = QPen(QColor(170, 170, 170))
 _SELECTED_PEN = QPen(QColor(220, 30, 30))
 _SELECTED_PEN.setWidth(3)
+_HISTORY_PEN = QPen(QColor(185, 150, 150))
+_HISTORY_PEN.setWidth(2)
 
 # One color per Serato deck number, so a glance at the layout shows which
 # deck each physical control currently drives.
@@ -99,6 +101,7 @@ class ControllerLayoutView(QWidget):
         self._usage: Usage = {}
         self._linked_cells: LinkedCells = {}
         self._selected_keys: set[CellKey] = set()
+        self._selection_history: list[set[CellKey]] = []
 
         self._controller_tabs = QTabBar()
         self._controller_tabs.setExpanding(False)
@@ -202,8 +205,23 @@ class ControllerLayoutView(QWidget):
         here), so the same selection is visible across tree <-> layout."""
         if keys == self._selected_keys:
             return
+        if self._selected_keys:
+            self._selection_history.insert(0, set(self._selected_keys))
+            self._selection_history = self._selection_history[:5]
         self._selected_keys = keys
         self._rebuild()
+
+    def clear_selection_history(self) -> None:
+        """Forget the faded selection trail while keeping the current cell."""
+        self._selection_history.clear()
+        self._rebuild()
+
+    def _selection_pen(self, key: CellKey) -> QPen:
+        if key in self._selected_keys:
+            return _SELECTED_PEN
+        if any(key in previous for previous in self._selection_history):
+            return _HISTORY_PEN
+        return _BORDER_PEN
 
     def _selected_deck_filter(self) -> str | None:
         if self._deck_combo is None:
@@ -239,7 +257,7 @@ class ControllerLayoutView(QWidget):
         rect = QGraphicsRectItem(QRectF(0, 0, _CELL_W, _HALF_H))
         rect.setPos(x, y)
         rect.setBrush(_brush_for_decks(decks) if (decks or tags) else _EMPTY_HALF_BRUSH)
-        rect.setPen(_SELECTED_PEN if clickable_key in self._selected_keys else _BORDER_PEN)
+        rect.setPen(self._selection_pen(clickable_key))
         rect.setData(_KEY_ROLE, clickable_key)
         deck_text = ", ".join(f"Deck {d}" for d in sorted(decks)) if decks else "not used"
         tag_text = ", ".join(sorted(tags)) if tags else "no function mapped"

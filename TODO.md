@@ -3,6 +3,20 @@
 This file is the project backlog. Completed work is kept below as a historical
 delivery record so that the backlog remains useful after each release.
 
+## Table of Contents
+
+- [Active innovation program](#active-innovation-program)
+- [Delivered](#delivered)
+  - [Core mapping workflow](#core-mapping-workflow)
+  - [Mapping views and navigation](#mapping-views-and-navigation)
+  - [Controller catalogs](#controller-catalogs)
+  - [MIDI tools and live workflows](#midi-tools-and-live-workflows)
+  - [Testing, documentation, and delivery](#testing-documentation-and-delivery)
+- [Open backlog](#open-backlog)
+  - [Plugin-based integrations and dynamic registries](#plugin-based-integrations-and-dynamic-registries)
+  - [MIDI API standards decision](#midi-api-standards-decision)
+  - [Candidate controller catalogues](#candidate-controller-catalogues)
+
 ## Active innovation program
 
 The following program is now the active roadmap. Work is deliberately ordered
@@ -96,6 +110,7 @@ second, then real-time routing and clock synchronization.
 ### Mapping views and navigation
 
 - [x] Add the `Dashboard` with loaded-file status, controller cards, catalog statistics, MIDI availability indicators, and drill-down shortcuts.
+- [x] Use three columns for the Dashboard Controller Overview grid.
 - [x] Add the `By Channel` view with one resizable column per MIDI channel.
 - [x] Add the `By Deck` view with one resizable column per Serato deck and slot-oriented mapping groups.
 - [x] Add the `By Controller` view with one column per controller and grouped catalog sections.
@@ -106,7 +121,9 @@ second, then real-time routing and clock synchronization.
 - [x] Display mapped Serato functions inside layout cells.
 - [x] Highlight matching layout cells from tree selections and matching tree entries from layout selections.
 - [x] Navigate from layout/controller selections back to the underlying raw control.
+- [x] Keep layout-cell navigation in the originating tab and fade the previous layout selection as a short history trail.
 - [x] Keep layout views synchronized across tabs.
+- [x] Increase the Physical control panel height to keep multiple catalog matches readable.
 - [x] Make dynamic controller selectors in all layout views horizontally scrollable.
 - [x] Add zoomable/pannable `Controller Images` diagrams with reset zoom.
 - [x] Remove the obsolete `Go to` section from the Dashboard layout.

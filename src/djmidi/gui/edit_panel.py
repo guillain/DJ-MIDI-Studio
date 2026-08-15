@@ -100,7 +100,7 @@ class EditPanel(QWidget):
         # Reserve room for several wrapped lines up front (roughly double a
         # typical single/double-line render) so the box doesn't stay clipped
         # to whatever the very first render happened to need.
-        label.setMinimumHeight(label.fontMetrics().lineSpacing() * 4)
+        label.setMinimumHeight(label.fontMetrics().lineSpacing() * 8)
         box_layout.addWidget(label)
         return box
 

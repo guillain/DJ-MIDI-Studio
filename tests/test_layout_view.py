@@ -95,6 +95,18 @@ def test_set_selected_keys_stores_and_triggers_rebuild():
     assert view._selected_keys == set()
 
 
+def test_selection_history_fades_previous_layout_selection():
+    view = ControllerLayoutView()
+    first = ("DDJ-XP2", "PAD", "Pad 1")
+    second = ("DDJ-XP2", "PAD", "Pad 2")
+    view.set_selected_keys({first})
+    view.set_selected_keys({second})
+    assert view._selected_keys == {second}
+    assert view._selection_history == [{first}]
+    view.clear_selection_history()
+    assert view._selection_history == []
+
+
 def test_set_controller_switches_tab_when_name_exists():
     view = ControllerLayoutView()
     assert view.set_controller("XDJ-XZ") is True

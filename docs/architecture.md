@@ -56,9 +56,14 @@ flowchart TD
     Intro --> Images
     Intro --> Monitor
     Intro --> Setup
+    Layout[Controller layout cell]
+    Tree[Paired mapping tree]
+    Layout -->|select matching item| Tree
+    Tree -->|synchronized current cell| Layout
+    Layout -.->|previous cells: faded history| Layout
 ```
 
-The Dashboard tab acts as an entry dashboard: it lists known controllers, shows controller cards with MIDI availability, and emits drill-down actions into the other tabs.
+The Dashboard tab acts as an entry dashboard: it lists known controllers in a three-column card grid, shows controller cards with MIDI availability, and emits drill-down actions into the other tabs. In By Channel, By Deck, and By Controller, clicking a schematic cell keeps the originating tab active and selects the corresponding tree item. The current cell is strongly highlighted while a short faded history remains visible in the layout.
 
 ## Controller Catalog Registry
 

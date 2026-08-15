@@ -64,11 +64,11 @@ either confirmed or shown as suggestions according to Preferences.
 
 ## Explore Mappings
 
-- `Dashboard`: known controllers, MIDI availability, context, and quick drill-down.
+- `Dashboard`: known controllers in a three-column overview, MIDI availability, context, and quick drill-down.
 - `By Channel`: raw model-level controls and mappings.
 - `By Deck`: grouped duplicate mappings (safe synchronized edits).
 - `By Controller`: physical layout/section perspective.
-- `Controller Images`: static official diagrams.
+- `Controller Images`: static official diagrams and bundled controller documentation.
 - `MIDI Routing`: route MIDI and Clock, and replay Controller Setup rows once or in a loop.
 - `Controller Setup`: capture/import controller triggers, send one-shot session commands, and generate catalog modules.
 
@@ -78,16 +78,16 @@ For screenshots and a visual description of each tab, see [Screens and Layouts](
 
 - Use `Dashboard` for loaded-file status, controller catalog cards, MIDI availability, and drill-down shortcuts.
 - Use `By Channel` for the raw control and mapping hierarchy.
-- Use `By Deck` for grouped per-deck editing and physical layout verification.
-- Use `By Controller` for controller/section-oriented physical mapping.
-- Use `Controller Images` for zoomable reference diagrams.
+- Use `By Deck` for grouped per-deck editing and physical layout verification; clicking a layout cell selects its matching tree group without leaving the tab.
+- Use `By Controller` for controller/section-oriented physical mapping; clicking a layout cell selects the corresponding physical-control tree item without leaving the tab.
+- Use `Controller Images` for zoomable reference diagrams and the local controller documentation button.
 - Use `Live Monitor` to inspect real-time MIDI traffic by source device.
 - Use the `Controller Setup playback` section in `MIDI Routing` to replay rows once or in a loop.
 
 ## Edit Safely
 
 - Prefer grouped edits in `By Deck` when dealing with Serato duplicate trigger sets.
-- Use the layout views to verify the physical control impacted by your edit.
+- Use the layout views to verify the physical control impacted by your edit. The current selection is strongly highlighted and the last few previous selections remain softly highlighted as navigation history. The right-side `Physical control` panel reserves extra vertical space for multiple catalog matches.
 
 ## Validate and Export
 

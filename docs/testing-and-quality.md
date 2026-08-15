@@ -11,6 +11,8 @@
 
 - Keep XML parse/export behavior stable.
 - Preserve GUI editing behavior and selection synchronization.
+- Preserve originating-tab navigation and faded layout selection history.
+- Keep Dashboard controller cards in a three-column grid and Physical control details readable.
 - Prevent regressions in catalog registration and lookup.
 
 ## Command Reference
@@ -47,4 +49,3 @@ Run at minimum:
 
 1. `bash scripts/test.sh quick` on each push.
 2. `bash scripts/test.sh all` before release tags.
-
