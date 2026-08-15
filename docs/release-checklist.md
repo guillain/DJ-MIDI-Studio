@@ -30,6 +30,26 @@ bash scripts/bootstrap.sh
 bash scripts/test.sh all
 ```
 
+## macOS Security
+
+Before publishing a macOS artifact:
+
+1. Sign it with a `Developer ID Application` certificate.
+2. Verify it with `codesign --verify --deep --strict`.
+3. Submit the generated ZIP with `xcrun notarytool submit ... --wait`.
+4. Staple the ticket with `xcrun stapler staple`.
+5. Confirm Gatekeeper accepts it with `spctl --assess --type execute --verbose`.
+
+Do not ask users to disable Gatekeeper or remove quarantine attributes as a
+release workaround.
+
+## SCM automation
+
+The repository includes both GitHub Actions and GitLab CI release definitions.
+Use `scripts/scm_release.sh` to open the PR/MR, push the annotated version tag,
+and optionally create the provider release. Configure only the SCM CLI matching
+the selected provider (`gh` or `glab`); do not store tokens in the repository.
+
 ## Version and Changelog
 
 1. Update `project.version` in `pyproject.toml`.
@@ -81,4 +101,3 @@ If a bad draft was produced:
 1. Delete the draft release.
 2. Delete the problematic tag locally/remotely.
 3. Fix issues and recreate a new tag.
-

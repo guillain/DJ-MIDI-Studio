@@ -1,0 +1,44 @@
+stages: [build, release]
+
+variables:
+  UV_CACHE_DIR: "$CI_PROJECT_DIR/.cache/uv"
+
+.build_template:
+  stage: build
+  script:
+    - bash scripts/build.sh --skip-python-package
+    - bash scripts/release_artifacts.sh --os "$TARGET_OS"
+  artifacts:
+    name: "seratomidiconf-$TARGET_OS-$CI_COMMIT_TAG"
+    paths:
+      - dist/release/
+    expire_in: 30 days
+
+build:linux:
+  extends: .build_template
+  tags: [linux]
+  variables: { TARGET_OS: linux }
+
+build:macos:
+  extends: .build_template
+  tags: [macos]
+  variables: { TARGET_OS: macos }
+
+build:windows:
+  extends: .build_template
+  tags: [windows]
+  variables: { TARGET_OS: windows }
+
+release:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/cli:latest
+  needs: [build:linux, build:macos, build:windows]
+  artifacts:
+    name: "seratomidiconf-$CI_COMMIT_TAG-all-os"
+    paths:
+      - dist/release/
+    expire_in: 30 days
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v.*/'
+  script:
+    - glab release create "$CI_COMMIT_TAG" --name "SeratoMidiConf $CI_COMMIT_TAG" --notes "Release $CI_COMMIT_TAG." --assets-link "{\"url\":\"$CI_PROJECT_URL/-/jobs/$CI_JOB_ID/artifacts/download\",\"name\":\"All OS artifacts\"}"

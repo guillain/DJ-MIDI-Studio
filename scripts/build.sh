@@ -5,6 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 APP_NAME="SeratoMidiConf"
 BUILD_PY_PACKAGE=1
 BUILD_EXECUTABLE=1
+MACOS_SIGNING_IDENTITY="${MACOS_SIGNING_IDENTITY:-}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -14,10 +15,19 @@ while [[ $# -gt 0 ]]; do
     --skip-executable)
       BUILD_EXECUTABLE=0
       ;;
+    --sign-identity)
+      if [[ $# -lt 2 ]]; then
+        echo "Missing value for --sign-identity"
+        exit 2
+      fi
+      MACOS_SIGNING_IDENTITY="$2"
+      shift
+      ;;
     --help|-h)
       cat <<'EOF'
 Usage:
   scripts/build.sh [--skip-python-package] [--skip-executable]
+                    [--sign-identity "Developer ID Application: ..."]
 
 Build outputs:
   - Python package artifacts: dist/*.whl, dist/*.tar.gz
@@ -70,8 +80,21 @@ if [[ "$BUILD_EXECUTABLE" -eq 1 ]]; then
     --specpath "$ROOT_DIR/build/pyinstaller" \
     --paths "$ROOT_DIR/src" \
     --add-data "$ROOT_DIR/assets${DATA_SEP}assets" \
+    --osx-bundle-identifier "com.guillain.seratomidiconf" \
     "$ROOT_DIR/src/seratomidiconf/gui/app.py"
+
+  if [[ "$OS_NAME" == "macos" ]]; then
+    APP_PATH="$OUT_DIR/$APP_NAME.app"
+    if [[ -n "$MACOS_SIGNING_IDENTITY" ]]; then
+      echo "==> Signing macOS app with identity: $MACOS_SIGNING_IDENTITY"
+      codesign --deep --force --verbose --options runtime --timestamp \
+        --sign "$MACOS_SIGNING_IDENTITY" "$APP_PATH"
+      codesign --verify --deep --strict --verbose=2 "$APP_PATH"
+    else
+      echo "WARNING: macOS app is unsigned (adhoc), not suitable for distribution."
+      echo "         Set MACOS_SIGNING_IDENTITY or pass --sign-identity."
+    fi
+  fi
 
   echo "Executable output: $OUT_DIR"
 fi
-

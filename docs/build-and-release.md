@@ -16,6 +16,10 @@ The project now supports:
 - Python package artifacts (`wheel` + `sdist`)
 - Native executable bundles (built on the host OS)
 
+On macOS, an unsigned PyInstaller app is expected to trigger Gatekeeper
+warnings. A distributable app must be signed with a Developer ID Application
+certificate and notarized by Apple.
+
 ## Bootstrap
 
 Run one command to prepare the local environment:
@@ -46,6 +50,20 @@ Build only executable artifacts:
 bash scripts/build.sh --skip-python-package
 ```
 
+Sign a macOS build:
+
+```bash
+bash scripts/build.sh --skip-python-package \
+  --sign-identity "Developer ID Application: Your Name (TEAMID)"
+```
+
+The identity can also be supplied with `MACOS_SIGNING_IDENTITY`. Inspect
+available identities with:
+
+```bash
+security find-identity -v -p codesigning
+```
+
 ## Executable per OS
 
 The executable build is native (PyInstaller), meaning:
@@ -57,6 +75,33 @@ The executable build is native (PyInstaller), meaning:
 Output path:
 
 - `dist/executables/<os>/`
+
+The macOS release script creates a `.zip` containing the `.app` bundle so its
+metadata is preserved for Gatekeeper and notarization. Unsigned packaging
+requires the explicit `--allow-unsigned` flag and is intended only for local
+testing.
+
+## SCM, tags, and releases
+
+The provider-neutral helper is `scripts/scm_release.sh`. It detects GitHub or
+GitLab from the `origin` URL, or can be forced with `SCM_PROVIDER`:
+
+```bash
+git switch -c release/0.1.0
+# commit the intended changes explicitly
+bash scripts/scm_release.sh pr --base main --title "Prepare 0.1.0"
+
+# after the PR/MR is merged
+bash scripts/scm_release.sh tag --version 0.1.0
+bash scripts/scm_release.sh release --version 0.1.0
+```
+
+The script uses `gh` for GitHub and `glab` for GitLab, never stages or commits
+files, and requires a clean worktree. Tag pushes trigger the checked-in CI
+configuration (`.github/workflows/release.yml` or `.gitlab-ci.yml`), which
+builds Linux, macOS, and Windows artifacts and attaches them to the release.
+The CI runners must have `uv`; macOS additionally needs a Developer ID
+certificate configured so the release job does not reject the app as unsigned.
 
 ## GitHub Actions Workflow
 
@@ -101,4 +146,3 @@ available folder under `dist/executables/` and prints which one it used.
 Output path:
 
 - `dist/release/`
-

@@ -6,6 +6,7 @@ cd "$ROOT_DIR"
 
 TARGET_OS=""
 BUILD_MISSING=0
+ALLOW_UNSIGNED=0
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -20,10 +21,14 @@ while [[ $# -gt 0 ]]; do
     --build-missing)
       BUILD_MISSING=1
       ;;
+    --allow-unsigned)
+      ALLOW_UNSIGNED=1
+      ;;
     --help|-h)
       cat <<'EOF'
 Usage:
   scripts/release_artifacts.sh [--os macos|linux|windows] [--build-missing]
+                                [--allow-unsigned]
 
 Behavior:
   - Defaults to current host OS executable directory in dist/executables/<os>
@@ -78,7 +83,26 @@ fi
 
 if [[ -d "dist/executables/$OS_NAME" ]]; then
   ARCHIVE_BASE="seratomidiconf-${VERSION}-${OS_NAME}"
-  if [[ "$OS_NAME" == "windows" ]]; then
+  if [[ "$OS_NAME" == "macos" ]]; then
+    APP_PATH="dist/executables/$OS_NAME/SeratoMidiConf.app"
+    if [[ ! -d "$APP_PATH" ]]; then
+      echo "Expected macOS app bundle not found: $APP_PATH"
+      exit 2
+    fi
+    SIGNATURE_DETAILS="$(codesign -dv --verbose=4 "$APP_PATH" 2>&1 || true)"
+    if ! codesign --verify --deep --strict "$APP_PATH" >/dev/null 2>&1 \
+      || grep -qE 'Signature=adhoc|TeamIdentifier=not set' <<<"$SIGNATURE_DETAILS"; then
+      if [[ "$ALLOW_UNSIGNED" -ne 1 ]]; then
+        echo "macOS app is unsigned or invalidly signed."
+        echo "Build with --sign-identity \"Developer ID Application: ...\"."
+        echo "Use --allow-unsigned only for local testing."
+        exit 3
+      fi
+      echo "WARNING: packaging unsigned macOS app because --allow-unsigned was supplied."
+    fi
+    ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "dist/release/${ARCHIVE_BASE}.zip"
+    echo "Created dist/release/${ARCHIVE_BASE}.zip"
+  elif [[ "$OS_NAME" == "windows" ]]; then
     (cd dist/executables && zip -r "../release/${ARCHIVE_BASE}.zip" "$OS_NAME")
     echo "Created dist/release/${ARCHIVE_BASE}.zip"
   else
@@ -91,4 +115,3 @@ else
   echo "Or rerun this command with: --build-missing"
   exit 2
 fi
-
