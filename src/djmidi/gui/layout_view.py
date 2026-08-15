@@ -368,9 +368,13 @@ class ControllerLayoutView(QWidget):
         small_font = QFont()
         small_font.setPointSize(7)
 
-        section_rows: dict[str, int] = {}
+        section_positions: dict[str, tuple[int, int]] = {}
         for cell in cells:
-            section_rows[cell.section] = min(cell.row, section_rows.get(cell.section, cell.row))
+            current = section_positions.get(cell.section)
+            if current is None:
+                section_positions[cell.section] = (cell.col, cell.row)
+            else:
+                section_positions[cell.section] = (min(current[0], cell.col), min(current[1], cell.row))
             x = cell.col * (_CELL_W + _MARGIN)
             y = cell.row * (_CELL_H + _MARGIN)
 
@@ -428,11 +432,11 @@ class ControllerLayoutView(QWidget):
             divider.setPen(_DIVIDER_PEN)
             self._scene.addItem(divider)
 
-        for section, row in section_rows.items():
+        for section, (col, row) in section_positions.items():
             title = QGraphicsSimpleTextItem(section.replace("_", " ").upper())
             title.setFont(QFont("Helvetica Neue", 8, QFont.Weight.Bold))
             title.setBrush(QColor("#6fe7d0"))
-            title.setPos(0, row * (_CELL_H + _MARGIN) - 17)
+            title.setPos(col * (_CELL_W + _MARGIN), row * (_CELL_H + _MARGIN) - 17)
             self._scene.addItem(title)
 
         self._scene.setSceneRect(self._scene.itemsBoundingRect().adjusted(-10, -10, 10, 10))

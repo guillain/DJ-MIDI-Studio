@@ -52,3 +52,17 @@ def test_dj_layouts_include_display_only_mixer_controls():
 
     xp2_cells = layout.build_layout("DDJ-XP2")
     assert any(cell.label == "Slide FX 1" and cell.visual_kind == "fader" for cell in xp2_cells)
+
+
+def test_xdj_and_xp2_use_separate_physical_zones():
+    xdj = layout.build_layout("XDJ-XZ")
+    xdj_by_section = {section: min((cell.col, cell.row) for cell in xdj if cell.section == section) for section in {cell.section for cell in xdj}}
+    assert xdj_by_section["PAD"] == (0, 1)
+    assert xdj_by_section["DECK"] == (5, 3)
+    assert xdj_by_section["EFFECT"] == (10, 3)
+    assert xdj_by_section["MIXER"] == (5, 11)
+
+    xp2 = layout.build_layout("DDJ-XP2")
+    xp2_by_section = {section: min((cell.col, cell.row) for cell in xp2 if cell.section == section) for section in {cell.section for cell in xp2}}
+    assert xp2_by_section["PAD"] == (0, 1)
+    assert xp2_by_section["PAD MODE"] == (10, 6)

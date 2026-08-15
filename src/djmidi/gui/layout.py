@@ -9,7 +9,7 @@ physical row/column arrangement (4x4 on DDJ-XP2, 4x2 on XDJ-XZ)."""
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Literal
 
 from djmidi import catalog
@@ -111,6 +111,28 @@ _DISPLAY_CONTROLS: dict[str, tuple[tuple[str, VisualKind], ...]] = {
 }
 
 
+_PRO_LAYOUTS: dict[str, dict[str, tuple[int, int]]] = {
+    # (column, row) anchors for each physical zone.  The layout remains a
+    # schematic, but these zones now read like a DJ surface instead of a
+    # catalog dump.
+    "XDJ-XZ": {
+        "PAD": (0, 1),
+        "DECK": (5, 3),
+        "EFFECT": (10, 3),
+        "MIXER": (5, 11),
+    },
+    "DDJ-XP2": {
+        "PAD": (0, 1),
+        "DECK": (5, 5),
+        "EFFECT": (0, 6),
+        "PAD MODE": (10, 6),
+        "OTHER": (0, 10),
+        "BROWSE": (5, 10),
+        "MIDI-OUT": (10, 10),
+    },
+}
+
+
 @dataclass(frozen=True)
 class LayoutCell:
     key: CellKey
@@ -186,4 +208,29 @@ def build_layout(controller: str) -> list[LayoutCell]:
                 col = 0
                 row += 1
 
-    return cells
+    anchors = _PRO_LAYOUTS.get(controller)
+    if not anchors:
+        return cells
+
+    positioned: list[LayoutCell] = []
+    section_indexes: dict[str, int] = {}
+    for cell in cells:
+        anchor = anchors.get(cell.section)
+        if anchor is None:
+            positioned.append(cell)
+            continue
+        index = section_indexes.get(cell.section, 0)
+        section_indexes[cell.section] = index + 1
+        if cell.section == "PAD":
+            # Preserve the physical pad matrix while moving the whole bank.
+            relative_row, relative_col = cell.row, cell.col
+        else:
+            relative_row, relative_col = divmod(index, _COLS_PER_ROW)
+        positioned.append(
+            replace(
+                cell,
+                row=anchor[1] + relative_row,
+                col=anchor[0] + relative_col,
+            )
+        )
+    return positioned

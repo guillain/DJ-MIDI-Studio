@@ -74,7 +74,7 @@ By Channel is the most granular editing view. It presents the raw MIDI controls 
 
 ### By Deck
 
-By Deck groups duplicate Serato trigger sets by deck and slot. The upper area contains one tree per deck, while the lower layout area shows the physical controls for the selected controller. Layout cells use DJ-oriented glyphs: square pads, buttons, rotary knobs, vertical faders, and jog wheels. The glyph is inferred from catalog vocabulary and does not alter the underlying MIDI mapping. Clicking a lower layout cell selects the matching group in the tree and keeps the By Deck tab active. The horizontally scrollable controller selector and deck filter allow the physical view to be narrowed to a specific device or deck, even when many controller plugins are installed.
+By Deck groups duplicate Serato trigger sets by deck and slot. The upper area contains one tree per deck, while the lower layout area shows the physical controls for the selected controller. Layout cells use DJ-oriented glyphs: square pads, buttons, rotary knobs, vertical faders, and jog wheels. The XDJ-XZ and DDJ-XP2 use dedicated zones for pads, decks, effects, mixer, browse, and pad modes; other controllers use the generic flow. The glyph is inferred from catalog vocabulary and does not alter the underlying MIDI mapping. Clicking a lower layout cell selects the matching group in the tree and keeps the By Deck tab active. The horizontally scrollable controller selector and deck filter allow the physical view to be narrowed to a specific device or deck, even when many controller plugins are installed.
 
 ![By Deck mapping view](images/layout/by-deck.png)
 
