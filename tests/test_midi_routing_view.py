@@ -47,6 +47,30 @@ def test_routing_view_exposes_virtual_serato_clock_source():
     assert view._clock_source.findText(SERATO_CLOCK_INPUT_NAME) < 0
 
 
+def test_routing_view_exposes_clock_waiting_indicator_when_not_started():
+    view = MidiRoutingView()
+    view._clock_source.addItem(SERATO_CLOCK_INPUT_NAME)
+    view._clock_destination.addItem("MIDI4x4 Midi Out 1")
+    view._clock_source.setCurrentText(SERATO_CLOCK_INPUT_NAME)
+    view._clock_destination.setCurrentText("MIDI4x4 Midi Out 1")
+    view._clock_enabled.setChecked(True)
+    view._refresh_clock_status()
+    assert "disabled in Preferences" in view._clock_status.text()
+
+
+def test_routing_view_reports_clock_inactive_after_session_starts_without_ticks():
+    view = MidiRoutingView()
+    view._clock_source.addItem("clock-in")
+    view._clock_destination.addItem("clock-out")
+    view._clock_source.setCurrentText("clock-in")
+    view._clock_destination.setCurrentText("clock-out")
+    view._clock_enabled.setChecked(True)
+    view.set_routing_enabled(True)
+    view._routing_session.running = True
+    view._refresh_clock_status()
+    assert "CLOCK INACTIVE" in view._clock_status.text()
+
+
 def test_routing_view_contains_controller_setup_playback_controls():
     entries = [ControlInfo("Test", "PAD", "Pad 1", "NOTE", ("1",), "10")]
     view = MidiRoutingView(

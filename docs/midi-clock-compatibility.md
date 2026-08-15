@@ -13,6 +13,12 @@ Clock route in the reverse direction from creating a feedback loop. A Clock
 source must have at least one distinct destination, and destination names
 cannot be duplicated.
 
+The MIDI Routing panel reports four distinct states: policy disabled, routing
+configured but blocked by the Preferences safety gate, waiting for source
+ticks, and `CLOCK ACTIVE` after recent Clock ticks have actually been received.
+`CLOCK INACTIVE` after starting the session means the port is open but no
+realtime Clock tick has arrived from the selected source.
+
 ## Serato DJ
 
 Serato's MIDI setup must route its MIDI Clock output to a destination that the
@@ -36,6 +42,12 @@ the virtual input exists only while the routing session is running. Configure
 Serato after starting the session, and stop the session before removing or
 changing that virtual endpoint. Do not use the same port as both the Serato
 Clock input and a destination in a return route.
+
+For Serato, `CLOCK INACTIVE` usually means one of these steps is missing:
+start routing in DJ MIDI Studio, select `DJ MIDI Studio Serato Clock In` as
+Serato's MIDI Clock output destination, and enable Serato's Clock/Sync output
+for the active deck/session. The virtual port is not created before the
+routing session starts.
 
 ## Traktor
 

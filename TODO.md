@@ -55,6 +55,8 @@ second, then real-time routing and clock synchronization.
 - [x] Reject Clock destinations that are empty, duplicated, or equal to their source.
 - [x] Reject feedback loops that combine regular MIDI routes with Clock routes.
 - [x] Reset Clock jitter measurement at Start/Continue/Stop boundaries so Serato pauses and restarts do not create false jitter samples.
+- [x] Add a live Clock source indicator distinguishing configured, waiting, inactive, and actively receiving states.
+- [x] Document the Serato virtual-port troubleshooting path for `CLOCK INACTIVE`.
 
 ### Phase 4 — safe software/controller operations — IN PROGRESS
 

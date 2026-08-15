@@ -38,7 +38,7 @@ def test_clock_mirror_drops_impossible_jitter_and_reports_timing():
     assert mirror.forward(MidiMessage(b"\xf8", 1.011, "clock-in"), send) == 1
     assert mirror.stats.jitter_dropped == 1
     assert mirror.stats.jitter_samples == 1
-    assert mirror.stats.last_interval_ms == 11.0
+    assert mirror.stats.last_interval_ms == 10.0
     assert sent == [1.0, 1.011]
 
 
@@ -53,3 +53,11 @@ def test_clock_transport_boundaries_reset_jitter_measurement():
     mirror.forward(MidiMessage(b"\xf8", 3.001, "clock-in"), send)
     assert mirror.stats.jitter_samples == 1
     assert sent[-1] == b"\xf8"
+
+
+def test_clock_mirror_reports_recent_source_activity():
+    mirror = MidiClockMirror("clock-in", ["out"])
+    assert not mirror.clock_active(10.0)
+    mirror.forward(MidiMessage(b"\xf8", 10.0, "clock-in"), lambda *_: None)
+    assert mirror.clock_active(10.4)
+    assert not mirror.clock_active(10.6)

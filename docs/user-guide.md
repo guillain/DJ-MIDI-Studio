@@ -111,6 +111,12 @@ For screenshots and a visual description of each tab, see [Screens and Layouts](
   MIDI Clock destination. For Traktor, select its MIDI output as the physical
   Clock source and configure Traktor's external Clock mode.
 
+  The Clock status label is a live diagnostic: `CLOCK ACTIVE` confirms that
+  ticks are arriving from the selected source; `CLOCK INACTIVE` means the
+  session is running but no recent ticks were received. With Serato, configure
+  Serato's MIDI Clock destination only after DJ MIDI Studio has started the
+  routing session and has created `DJ MIDI Studio Serato Clock In`.
+
 Use the `MIDI Routing` tab to configure one-way source/destination routes and an
 opt-in Clock policy. Add several Clock source/destination lines when needed;
 the policy is inactive until routing is enabled in

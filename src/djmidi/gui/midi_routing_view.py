@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from collections.abc import Callable
 
 from PySide6.QtCore import QTimer, Signal
@@ -94,6 +95,7 @@ class MidiRoutingView(QWidget):
         self._serato_virtual_checkbox = QCheckBox("Create virtual input for Serato Clock")
         self._serato_virtual_checkbox.toggled.connect(self._toggle_serato_virtual_input)
         self._clock_status = QLabel("Clock mirror disabled")
+        self._clock_status.setStyleSheet("color: #666;")
         add_clock_button = QPushButton("Add Clock route")
         add_clock_button.clicked.connect(self._add_clock_route)
         remove_clock_button = QPushButton("Remove selected")
@@ -140,6 +142,7 @@ class MidiRoutingView(QWidget):
             self._routing_button.setToolTip("Enable MIDI routing in Preferences first")
         else:
             self._routing_button.setToolTip("")
+        self._refresh_clock_status()
 
     def _toggle_routing(self) -> None:
         if not self._routing_enabled:
@@ -154,15 +157,18 @@ class MidiRoutingView(QWidget):
             return
         self._routing_button.setText("Stop routing")
         self._routing_timer.start()
+        self._refresh_clock_status()
 
     def _stop_routing(self) -> None:
         self._routing_timer.stop()
         self._routing_session.stop()
         self._routing_button.setText("Start routing")
+        self._refresh_clock_status()
 
     def _poll_routing(self) -> None:
         try:
             self._routing_session.poll()
+            self._refresh_clock_status()
         except Exception as exc:  # noqa: BLE001 - stop unsafe hardware execution
             self._stop_routing()
             QMessageBox.warning(self, "MIDI routing stopped", str(exc))
@@ -353,6 +359,7 @@ class MidiRoutingView(QWidget):
             self._refresh_clock_table()
             self._routing_session.set_clock_mirrors(())
             self._clock_status.setText("Clock mirror disabled")
+            self._refresh_clock_status()
             return
         if self._clocks:
             self._update_clock_session()
@@ -430,9 +437,30 @@ class MidiRoutingView(QWidget):
         self._routing_session.set_virtual_input_ids(virtual_ids)
         self._routing_session.set_clock_mirrors(self._clocks)
         if self._clocks:
-            self._clock_status.setText(f"{len(self._clocks)} Clock route(s) ready")
+            self._refresh_clock_status()
         else:
-            self._clock_status.setText("Clock mirror enabled; add a source and destination")
+            self._refresh_clock_status()
+
+    def _refresh_clock_status(self) -> None:
+        """Show configured, waiting, active, or stopped Clock state."""
+        if not self._clock_enabled.isChecked():
+            text, color = "Clock mirror disabled", "#666"
+        elif not self._clocks:
+            text, color = "Clock policy enabled; add a source and destination", "#b26a00"
+        elif not self._routing_enabled:
+            text, color = "Clock configured but routing is disabled in Preferences", "#b26a00"
+        elif not self._routing_session.running:
+            text, color = "Clock configured; press Start routing", "#b26a00"
+        else:
+            active = [clock for clock in self._clocks if clock.clock_active(time.monotonic())]
+            if active:
+                sources = ", ".join(sorted({clock.source_port_id for clock in active}))
+                text, color = f"CLOCK ACTIVE — receiving ticks from {sources}", "#16803c"
+            else:
+                sources = ", ".join(sorted({clock.source_port_id for clock in self._clocks}))
+                text, color = f"CLOCK INACTIVE — no ticks received from {sources}", "#b00020"
+        self._clock_status.setText(text)
+        self._clock_status.setStyleSheet(f"color: {color}; font-weight: 600;")
 
 
 __all__ = ["MidiRoutingView"]
