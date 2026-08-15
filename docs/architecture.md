@@ -73,3 +73,7 @@ exposes a parser, exporter, supported extensions, and display metadata. The
 current UI asks the user to select the plugin when opening a mapping; automatic
 detection is intentionally deferred until the mapping formats are sufficiently
 distinct and reliable.
+
+## MIDI API compatibility
+
+The MIDI engine follows the concepts of the [W3C Web MIDI API](https://github.com/WebAudio/web-midi-api): access to named input/output ports, timestamped message events, explicit SysEx capability, and separate input/output operations. The desktop implementation remains native MIDI 1.0 through `mido/rtmidi`; the Web MIDI API is a compatibility model, not a browser runtime dependency. MIDI 2.0/UMP is reserved for a later adapter.

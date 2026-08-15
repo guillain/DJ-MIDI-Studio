@@ -38,6 +38,13 @@ def test_non_pioneer_controller_plugins_resolve_pad_controls():
     assert any(hit.controller == "Hercules DJControl Inpulse 500" and hit.name == "Deck 2 Pad 8" for hit in hercules_hits)
 
 
+def test_controller_detection_ranks_matching_port_name():
+    matches = catalog.detect_controller("USB DDJ-XP2 MIDI 1")
+    assert matches
+    assert matches[0].controller.name == "DDJ-XP2"
+    assert matches[0].score == 100
+
+
 def test_builtin_controller_plugins_are_discovered_without_central_import_list():
     catalog.discover_plugins()
     assert set(catalog.CONTROLLER_NAMES) >= {"DDJ-XP2", "XDJ-XZ", "DDJ-1000"}

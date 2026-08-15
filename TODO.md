@@ -33,6 +33,10 @@ second, then real-time routing and clock synchronization.
 
 ### Phase 3 — multi-device MIDI engine — PLANNED
 
+- [x] Adopt the W3C [Web MIDI API](https://github.com/WebAudio/web-midi-api) as the conceptual compatibility model for access, input/output ports, events, and SysEx opt-in.
+- [x] Keep the native implementation on MIDI 1.0 byte messages through `mido/rtmidi`; do not make a browser API dependency part of the desktop runtime.
+- [ ] Define an internal normalized MIDI message/port API aligned with Web MIDI naming while preserving realtime messages and timestamps.
+- [ ] Specify MIDI 2.0/UMP as a future extension instead of mixing it into the initial MIDI 1.0 router.
 - [ ] Add a one-way MIDI router with port/channel/message filters and loop prevention.
 - [ ] Add monitoring/status for routes, dropped messages, latency, and errors.
 - [ ] Add MIDI Clock mirror with Start/Stop/Continue handling, 24 PPQN forwarding, source selection, and jitter safeguards.
@@ -153,6 +157,15 @@ list or the GUI.
 - [x] Support explicit plugin discovery from built-in modules and external Python package entry points.
 - [ ] Add plugin lifecycle operations: discover, validate manifest, register, enable/disable, reload, and report compatibility errors.
 - [ ] Add a plugin manifest/version format with API compatibility, plugin version, vendor, license, and required application version.
+
+### MIDI API standards decision
+
+The W3C Web MIDI API is the reference for public concepts and naming, not the
+native transport implementation. The desktop engine must remain usable
+without a browser and must expose MIDI 1.0 channel voice messages, system
+realtime messages, timestamps, port identity, and explicit SysEx permissions.
+MIDI 2.0 Universal MIDI Packets (UMP) will be handled by a later adapter once
+the MIDI 1.0 router and Clock mirror are stable.
 - [ ] Add a preferences/settings surface for choosing enabled controller and software plugins.
 - [ ] Resolve the active controller/software integration from a connected MIDI device, imported mapping file, or explicit user selection.
 - [ ] Keep unknown devices and unsupported mapping formats usable through a generic MIDI profile instead of failing application startup.

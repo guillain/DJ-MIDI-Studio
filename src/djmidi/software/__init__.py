@@ -9,6 +9,7 @@ import pkgutil
 from djmidi.software._registry import (
     SoftwareDefinition,
     all_definitions,
+    detect_from_text,
     get_definition,
 )
 
@@ -35,4 +36,4 @@ def plugin_names() -> list[str]:
     return [definition.name for definition in all_definitions()]
 
 
-__all__ = ["SoftwareDefinition", "all_definitions", "discover_plugins", "get_definition", "plugin_names"]
+__all__ = ["SoftwareDefinition", "all_definitions", "detect_from_text", "discover_plugins", "get_definition", "plugin_names"]

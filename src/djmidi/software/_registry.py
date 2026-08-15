@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import xml.etree.ElementTree as ET
 from collections.abc import Callable
 from dataclasses import dataclass
 from os import PathLike
@@ -28,6 +29,12 @@ class SoftwareDefinition:
     def write_file(self, config: MidiConfig, path: str | PathLike[str]) -> None:
         Path(path).write_text(self.exporter(config), encoding="utf-8")
 
+    def can_parse(self, root_tag: str, suffix: str) -> bool:
+        normalized_suffix = suffix.lower() if suffix else ""
+        return normalized_suffix in self.extensions or (
+            self.plugin_id == "serato" and root_tag == "midi"
+        ) or (self.plugin_id == "traktor" and root_tag == "NML")
+
 
 _REGISTRY: dict[str, SoftwareDefinition] = {}
 
@@ -49,4 +56,21 @@ def all_definitions() -> list[SoftwareDefinition]:
     return sorted(_REGISTRY.values(), key=lambda definition: (definition.display_order, definition.name))
 
 
-__all__ = ["SoftwareDefinition", "all_definitions", "get_definition", "register"]
+def detect_from_text(text: str, suffix: str = "") -> list[SoftwareDefinition]:
+    """Returns software plugins compatible with an XML root and extension."""
+    try:
+        root_tag = ET.fromstring(text).tag
+    except ET.ParseError:
+        return []
+    signature_matches = [
+        definition
+        for definition in all_definitions()
+        if (definition.plugin_id == "serato" and root_tag == "midi")
+        or (definition.plugin_id == "traktor" and root_tag == "NML")
+    ]
+    if signature_matches:
+        return signature_matches
+    return [definition for definition in all_definitions() if definition.can_parse(root_tag, suffix)]
+
+
+__all__ = ["SoftwareDefinition", "all_definitions", "detect_from_text", "get_definition", "register"]

@@ -33,3 +33,8 @@ def test_traktor_plugin_exports_nml():
     assert "<NML" in exported
     assert "<MAPPING NAME=\"Play\">" in exported
     assert "<NOTE NOTE=\"60\"" in exported
+
+
+def test_software_detection_uses_xml_signature():
+    assert [plugin.plugin_id for plugin in software.detect_from_text("<NML />", ".xml")] == ["traktor"]
+    assert [plugin.plugin_id for plugin in software.detect_from_text("<midi />", ".xml")] == ["serato"]

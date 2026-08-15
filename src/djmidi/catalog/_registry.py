@@ -46,6 +46,13 @@ class ControllerDefinition:
     section_order: tuple[str, ...] = ()
 
 
+@dataclass(frozen=True)
+class ControllerMatch:
+    controller: ControllerDefinition
+    score: int
+    reason: str
+
+
 def _event_kind(event_type: str | None) -> NoteOrCC | None:
     if not event_type:
         return None
@@ -81,6 +88,24 @@ def all_controller_names() -> list[str]:
 def all_controller_definitions() -> list[ControllerDefinition]:
     """Returns all registered controller plugins in display order."""
     return sorted(_REGISTRY.values(), key=lambda definition: (definition.display_order, definition.name))
+
+
+def detect_controller(port_name: str) -> list[ControllerMatch]:
+    """Ranks controller plugins using a MIDI port name, without auto-enabling one."""
+    haystack = port_name.casefold()
+    matches: list[ControllerMatch] = []
+    for definition in all_controller_definitions():
+        candidates = [definition.name, definition.manufacturer or "", definition.plugin_id or ""]
+        matched = next((candidate for candidate in candidates if candidate and candidate.casefold() in haystack), None)
+        if matched is not None:
+            matches.append(
+                ControllerMatch(
+                    definition,
+                    100 if matched == definition.name else 75,
+                    f"port name contains {matched!r}",
+                )
+            )
+    return sorted(matches, key=lambda match: (-match.score, match.controller.display_order, match.controller.name))
 
 
 def _parse_midi_note(data1: str) -> int | None:
@@ -124,10 +149,12 @@ def make_sequential_pad_lookup(
 __all__ = [
     "ControlInfo",
     "ControllerDefinition",
+    "ControllerMatch",
     "NoteOrCC",
     "PadLookup",
     "all_controller_definitions",
     "all_controller_names",
+    "detect_controller",
     "get_definition",
     "make_sequential_pad_lookup",
     "register",
