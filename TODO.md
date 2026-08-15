@@ -187,9 +187,9 @@ the MIDI 1.0 router and Clock mirror are stable.
 - [ ] Add a preferences/settings surface for choosing enabled controller and software plugins.
 - [ ] Resolve the active controller/software integration from a connected MIDI device, imported mapping file, or explicit user selection.
 - [x] Keep unknown devices and unsupported mapping formats usable through a generic MIDI profile instead of failing application startup.
-- [ ] Add isolation and trust checks before loading third-party plugins, with clear diagnostics for rejected or unavailable plugins.
-- [ ] Add plugin contract tests and discovery tests that run without MIDI hardware.
-- [ ] Document how to create, install, update, and troubleshoot a third-party controller or software plugin.
+- [x] Add trust checks before loading third-party plugins, with clear diagnostics for rejected or unavailable plugins; document that Python entry points remain in-process.
+- [x] Add plugin contract tests and discovery tests that run without MIDI hardware.
+- [x] Document how to create, install, update, and troubleshoot a third-party controller or software plugin.
 
 ### Candidate controller catalogues
 

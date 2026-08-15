@@ -82,6 +82,8 @@ class MainWindow(QMainWindow):
         self.software_id = "serato"
         self.preferences_path = default_preferences_path()
         self.preferences = PluginPreferences.load(self.preferences_path)
+        catalog.discover_plugins(trust_external=self.preferences.trust_external_plugins)
+        software.discover_plugins(trust_external=self.preferences.trust_external_plugins)
         self._last_save_plan = None
         self.node_to_item: dict[int, object] = {}
         self.channel_proxies: list[QSortFilterProxyModel] = []

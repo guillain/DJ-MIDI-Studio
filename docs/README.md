@@ -8,6 +8,7 @@
 - [Plugin Manifest](#plugin-manifest)
 - [Controller Profiles](#controller-profiles)
 - [MIDI Clock Compatibility](#midi-clock-compatibility)
+- [Plugins](#plugins)
 - [Build and CI](#build-and-ci)
 
 ## Getting Started
@@ -36,6 +37,10 @@
 ## MIDI Clock Compatibility
 
 - [MIDI Clock compatibility notes](midi-clock-compatibility.md)
+
+## Plugins
+
+- [Plugin installation and trust](plugins.md)
 
 ## Build and CI
 
