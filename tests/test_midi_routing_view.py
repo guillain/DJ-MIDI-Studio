@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from djmidi.catalog._registry import ControlInfo
 from djmidi.gui.midi_routing_view import MidiRoutingView
 from djmidi.midi_routing_session import SERATO_CLOCK_INPUT_NAME
@@ -12,6 +14,20 @@ def test_routing_view_configures_one_way_route_without_hardware():
     view._add_route()
     assert len(view.router.routes) == 1
     assert view._routes_table.item(0, 0).text() == "in"
+
+
+def test_refresh_ports_separates_midi_inputs_and_outputs():
+    view = MidiRoutingView()
+    with (
+        patch("djmidi.gui.midi_routing_view.list_input_ports", return_value=["MIDI4x4 Midi In 1"]),
+        patch("djmidi.gui.midi_routing_view.list_output_ports", return_value=["MIDI4x4 Midi Out 1"]),
+    ):
+        view.refresh_ports()
+    assert view._source_combo.itemText(0) == "MIDI4x4 Midi In 1"
+    assert view._destination_combo.itemText(0) == "MIDI4x4 Midi Out 1"
+    assert view._clock_source.itemText(0) == "MIDI4x4 Midi In 1"
+    assert view._clock_destination.itemText(0) == "MIDI4x4 Midi Out 1"
+    assert view._destination_combo.findText("MIDI4x4 Midi In 1") < 0
 
 
 def test_routing_view_rejects_same_clock_source_and_destination():

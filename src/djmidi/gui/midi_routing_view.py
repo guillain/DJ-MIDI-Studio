@@ -69,9 +69,9 @@ class MidiRoutingView(QWidget):
         self._routing_button.setEnabled(False)
 
         route_controls = QHBoxLayout()
-        route_controls.addWidget(QLabel("Source:"))
+        route_controls.addWidget(QLabel("Source (MIDI in):"))
         route_controls.addWidget(self._source_combo)
-        route_controls.addWidget(QLabel("Destination:"))
+        route_controls.addWidget(QLabel("Destination (MIDI out):"))
         route_controls.addWidget(self._destination_combo)
         route_controls.addWidget(add_button)
         route_controls.addWidget(remove_button)
@@ -101,9 +101,9 @@ class MidiRoutingView(QWidget):
         remove_clock_button = QPushButton("Remove selected")
         remove_clock_button.clicked.connect(self._remove_clock_route)
         clock_controls = QHBoxLayout()
-        clock_controls.addWidget(QLabel("Clock source:"))
+        clock_controls.addWidget(QLabel("Clock source (MIDI in):"))
         clock_controls.addWidget(self._clock_source)
-        clock_controls.addWidget(QLabel("Clock destination:"))
+        clock_controls.addWidget(QLabel("Clock destination (MIDI out):"))
         clock_controls.addWidget(self._clock_destination)
         clock_controls.addWidget(self._clock_enabled)
         clock_controls.addWidget(self._serato_virtual_checkbox)
@@ -310,17 +310,24 @@ class MidiRoutingView(QWidget):
         return self._clock
 
     def refresh_ports(self) -> None:
-        names = sorted(set(list_input_ports()) | set(list_output_ports()))
-        for combo in (self._source_combo, self._destination_combo, self._clock_source, self._clock_destination):
-            current = combo.currentText()
-            combo_names = names
-            if combo is self._clock_source and self._serato_virtual_checkbox.isChecked():
-                combo_names = [*names, SERATO_CLOCK_INPUT_NAME]
-            combo.blockSignals(True)
-            combo.clear()
-            combo.addItems(combo_names)
-            combo.setCurrentText(current)
-            combo.blockSignals(False)
+        input_names = sorted(set(list_input_ports()))
+        output_names = sorted(set(list_output_ports()))
+        self._replace_port_combo(self._source_combo, input_names)
+        self._replace_port_combo(self._destination_combo, output_names)
+        clock_inputs = input_names
+        if self._serato_virtual_checkbox.isChecked():
+            clock_inputs = [*clock_inputs, SERATO_CLOCK_INPUT_NAME]
+        self._replace_port_combo(self._clock_source, clock_inputs)
+        self._replace_port_combo(self._clock_destination, output_names)
+
+    @staticmethod
+    def _replace_port_combo(combo: QComboBox, names: list[str]) -> None:
+        current = combo.currentText()
+        combo.blockSignals(True)
+        combo.clear()
+        combo.addItems(names)
+        combo.setCurrentText(current)
+        combo.blockSignals(False)
 
     def _add_route(self) -> None:
         source = self._source_combo.currentText()

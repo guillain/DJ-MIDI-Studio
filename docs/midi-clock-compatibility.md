@@ -19,6 +19,10 @@ ticks, and `CLOCK ACTIVE` after recent Clock ticks have actually been received.
 `CLOCK INACTIVE` after starting the session reports whether the source port is
 not open, open without ticks, or has sent transport without any Clock ticks.
 
+The source selectors contain MIDI input ports and the destination selectors
+contain MIDI output ports. For example, a `MIDI4x4 Midi In 1` port cannot be a
+destination; choose `MIDI4x4 Midi Out 1` instead.
+
 ## Serato DJ
 
 Serato's MIDI setup must route its MIDI Clock output to a destination that the
