@@ -47,6 +47,7 @@ _VIRTUAL_MONITOR_HELP = (
 
 class LiveMonitorView(QWidget):
     eventReceived = Signal(object)  # MidiEvent
+    portNamesChanged = Signal(list)
 
     def __init__(self, on_event: Callable[[MidiEvent], None] | None = None, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -124,6 +125,13 @@ class LiveMonitorView(QWidget):
 
     def _refresh_ports(self) -> None:
         refresh_checked_port_list(self._port_list, list_input_ports)
+        self.portNamesChanged.emit(self.input_port_names())
+
+    def input_port_names(self) -> list[str]:
+        return [
+            self._port_list.item(row).text()
+            for row in range(self._port_list.count())
+        ]
 
     def _select_all_sources(self) -> None:
         """Checks every currently available MIDI input source."""

@@ -159,11 +159,17 @@ class MainWindow(QMainWindow):
         )
 
         self.introduction_view = IntroductionView()
+        self.live_monitor_view.portNamesChanged.connect(
+            self.introduction_view.refresh_midi_availability
+        )
+        self.introduction_view.refresh_midi_availability(
+            self.live_monitor_view.input_port_names()
+        )
         self.introduction_view.drillDownRequested.connect(self._on_intro_drilldown_requested)
 
         self.left_tabs = QTabWidget()
         self._tab_indexes = {
-            "intro": self.left_tabs.addTab(self.introduction_view, "Introduction"),
+            "intro": self.left_tabs.addTab(self.introduction_view, "Dashboard"),
             "setup": self.left_tabs.addTab(self.controller_setup_view, "Controller Setup"),
             "images": self.left_tabs.addTab(self.controller_image_view, "Controller Images"),
             "channel": self.left_tabs.addTab(channel_pair, "By Channel"),

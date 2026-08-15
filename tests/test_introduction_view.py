@@ -47,3 +47,9 @@ def test_usage_summary_updates_card_stats():
     assert "3 function(s)" in text
 
 
+def test_refresh_midi_availability_marks_matching_controller():
+    view = IntroductionView()
+    view.refresh_midi_availability(["USB DDJ-XP2 MIDI 1"])
+    assert view._availability_labels["DDJ-XP2"].text() == "MIDI: available"
+    assert view._availability_labels["XDJ-XZ"].text() == "MIDI: not detected"
+

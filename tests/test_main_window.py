@@ -61,6 +61,12 @@ def test_intro_drilldown_switches_tab_and_controller():
     window.close()
 
 
+def test_intro_tab_is_named_dashboard():
+    window = MainWindow()
+    assert window.left_tabs.tabText(window._tab_indexes["intro"]) == "Dashboard"
+    window.close()
+
+
 def test_intro_drilldown_can_open_metronome_tab():
     window = MainWindow()
     window.show()
@@ -298,5 +304,4 @@ def test_on_group_edit_applied_does_not_crash():
     window._on_group_edit_applied()
     QApplication.processEvents()
     window.close()
-
 

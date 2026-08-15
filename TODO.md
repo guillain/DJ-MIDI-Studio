@@ -71,7 +71,7 @@ second, then real-time routing and clock synchronization.
 
 ### Mapping views and navigation
 
-- [x] Add the `Introduction` dashboard with loaded-file status, controller cards, catalog statistics, and drill-down shortcuts.
+- [x] Add the `Dashboard` with loaded-file status, controller cards, catalog statistics, MIDI availability indicators, and drill-down shortcuts.
 - [x] Add the `By Channel` view with one resizable column per MIDI channel.
 - [x] Add the `By Deck` view with one resizable column per Serato deck and slot-oriented mapping groups.
 - [x] Add the `By Controller` view with one column per controller and grouped catalog sections.
@@ -84,7 +84,7 @@ second, then real-time routing and clock synchronization.
 - [x] Navigate from layout/controller selections back to the underlying raw control.
 - [x] Keep layout views synchronized across tabs.
 - [x] Add zoomable/pannable `Controller Images` diagrams with reset zoom.
-- [x] Remove the obsolete `Go to` section from the Introduction layout.
+- [x] Remove the obsolete `Go to` section from the Dashboard layout.
 
 ### Controller catalogs
 
@@ -127,7 +127,7 @@ second, then real-time routing and clock synchronization.
 - [x] Add provider-neutral SCM release orchestration for GitHub/GitLab.
 - [x] Add the documentation portal, quickstart, user guide, architecture, testing, quality, build, and release documentation.
 - [x] Add the visual [Screens and Layouts](docs/screens-and-layouts.md) documentation with application screenshots.
-- [x] Translate the Introduction UI and its tests to English.
+- [x] Translate the Dashboard UI and its tests to English.
 - [x] Rename the project to DJ MIDI Studio.
 
 ## Open backlog
@@ -153,7 +153,7 @@ list or the GUI.
 - [ ] Define a stable plugin contract for MIDI controller integrations, including identifier, display name, manufacturer, supported software, MIDI capabilities, catalog definition, layout metadata, reference images, and documentation links.
 - [ ] Define a stable plugin contract for DJ software integrations, including identifier, display name, mapping-file format, parser, exporter, validation rules, and supported mapping features.
 - [ ] Split the current controller registry API from the future software registry API while sharing common plugin metadata and discovery mechanisms.
-- [ ] Move controller and software lists to registry-backed/dynamically discovered sources throughout the GUI, Introduction dashboard, filters, and documentation helpers.
+- [ ] Move controller and software lists to registry-backed/dynamically discovered sources throughout the GUI, Dashboard, filters, and documentation helpers.
 - [x] Support explicit plugin discovery from built-in modules and external Python package entry points.
 - [ ] Add plugin lifecycle operations: discover, validate manifest, register, enable/disable, reload, and report compatibility errors.
 - [ ] Add a plugin manifest/version format with API compatibility, plugin version, vendor, license, and required application version.

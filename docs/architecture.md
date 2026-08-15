@@ -40,7 +40,7 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    Intro[Introduction tab]
+    Intro[Dashboard tab]
     Channel[By Channel]
     Deck[By Deck]
     Controller[By Controller]
@@ -56,7 +56,7 @@ flowchart TD
     Intro --> Setup
 ```
 
-The Introduction tab now acts as an entry dashboard: it lists known controllers, shows controller cards, and emits drill-down actions into the other tabs.
+The Dashboard tab acts as an entry dashboard: it lists known controllers, shows controller cards with MIDI availability, and emits drill-down actions into the other tabs.
 
 ## Controller Catalog Registry
 

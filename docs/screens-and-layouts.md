@@ -3,7 +3,7 @@
 ## Table of Contents
 
 - [Application Navigation](#application-navigation)
-- [Introduction](#introduction)
+- [Dashboard](#dashboard)
 - [Mapping Views](#mapping-views)
 - [Controller Setup](#controller-setup)
 - [Controller Images](#controller-images)
@@ -14,15 +14,15 @@
 
 The application is organized as tabs across the top of the main window:
 
-`Introduction`, `Controller Setup`, `Controller Images`, `By Channel`, `By Deck`, `By Controller`, `Live Monitor`, and `Metronome`.
+`Dashboard`, `Controller Setup`, `Controller Images`, `By Channel`, `By Deck`, `By Controller`, `Live Monitor`, and `Metronome`.
 
 The right-hand panel remains available from every tab for the current selection and validation messages. Selecting a mapping or a layout cell keeps the related views synchronized.
 
-![Introduction and application tab navigation](images/layout/introduction.png)
+![Dashboard and application tab navigation](images/layout/introduction.png)
 
-## Introduction
+## Dashboard
 
-The Introduction tab is the dashboard. It shows the loaded Serato file, the registered controllers, catalog statistics, and shortcuts into the detailed views. A controller card can open its channel tree, controller layout, or reference image. The active controller selector controls those drill-down actions.
+The Dashboard shows the loaded Serato file, the registered controllers, catalog statistics, MIDI availability indicators, and shortcuts into the detailed views. A controller card can open its channel tree, controller layout, or reference image. The active controller selector controls those drill-down actions. Availability is detected from the currently listed MIDI input ports; `MIDI: available` means a port name matches the controller catalog, while `MIDI: not detected` means no match was found.
 
 The current catalog contains DDJ-XP2, XDJ-XZ, DDJ-1000, Numark Mixtrack Pro FX, and Hercules DJControl Inpulse 500. Controller Setup definitions applied during the current session also appear here immediately.
 

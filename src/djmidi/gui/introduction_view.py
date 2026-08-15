@@ -31,6 +31,8 @@ class IntroductionView(QWidget):
         super().__init__(parent)
         self._usage_summary: dict[str, tuple[int, int, int]] = {}
         self._card_stats: dict[str, QLabel] = {}
+        self._availability_labels: dict[str, QLabel] = {}
+        self._midi_port_names: list[str] = []
 
         title = QLabel("DJ MIDI Studio")
         title.setStyleSheet("font-size: 18px; font-weight: 600;")
@@ -119,6 +121,25 @@ class IntroductionView(QWidget):
         self._known_list_label.setText(", ".join(names) if names else "(no registered controllers)")
         self._rebuild_controller_cards(names)
 
+    def refresh_midi_availability(self, port_names: list[str]) -> None:
+        """Update the presence indicator for each registered controller."""
+        self._midi_port_names = list(port_names)
+        detected = {
+            match.controller.name
+            for port_name in port_names
+            for match in catalog.detect_controller(port_name)
+        }
+        for controller, label in self._availability_labels.items():
+            if not port_names:
+                label.setText("MIDI: not checked")
+                label.setStyleSheet("color: #777; font-weight: 600;")
+            elif controller in detected:
+                label.setText("MIDI: available")
+                label.setStyleSheet("color: #16803c; font-weight: 600;")
+            else:
+                label.setText("MIDI: not detected")
+                label.setStyleSheet("color: #777; font-weight: 600;")
+
     def set_loaded_config_info(self, path: str | Path | None, control_count: int = 0) -> None:
         if path is None:
             self._loaded_file_label.setText("Loaded file: none")
@@ -150,12 +171,14 @@ class IntroductionView(QWidget):
             if widget is not None:
                 widget.deleteLater()
         self._card_stats = {}
+        self._availability_labels = {}
 
         for index, name in enumerate(names):
             card = self._build_controller_card(name)
             self._cards_layout.addWidget(card, index // 2, index % 2)
 
         self._refresh_card_stats()
+        self.refresh_midi_availability(self._midi_port_names)
 
     def _build_controller_card(self, controller: str) -> QWidget:
         card = QGroupBox(controller)
@@ -182,6 +205,11 @@ class IntroductionView(QWidget):
         )
         catalog_info.setWordWrap(True)
         layout.addWidget(catalog_info)
+
+        availability = QLabel("MIDI: not checked")
+        availability.setStyleSheet("color: #777; font-weight: 600;")
+        self._availability_labels[controller] = availability
+        layout.addWidget(availability)
 
         stats = QLabel("In loaded file: 0 cell(s), 0 deck(s), 0 function(s)")
         stats.setWordWrap(True)

@@ -19,7 +19,7 @@ Traktor mappings use NML/XML files. Automatic software detection is not enabled 
 
 ## Explore Mappings
 
-- `Introduction`: known controllers, context, and quick drill-down.
+- `Dashboard`: known controllers, MIDI availability, context, and quick drill-down.
 - `By Channel`: raw model-level controls and mappings.
 - `By Deck`: grouped duplicate mappings (safe synchronized edits).
 - `By Controller`: physical layout/section perspective.
@@ -31,7 +31,7 @@ For screenshots and a visual description of each tab, see [Screens and Layouts](
 
 ## Screens and Layouts
 
-- Use `Introduction` as the dashboard for loaded-file status, controller catalog cards, and drill-down shortcuts.
+- Use `Dashboard` for loaded-file status, controller catalog cards, MIDI availability, and drill-down shortcuts.
 - Use `By Channel` for the raw control and mapping hierarchy.
 - Use `By Deck` for grouped per-deck editing and physical layout verification.
 - Use `By Controller` for controller/section-oriented physical mapping.
