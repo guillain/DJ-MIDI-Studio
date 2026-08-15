@@ -19,6 +19,18 @@ Traktor mappings use NML/XML files. Automatic plugin selection is not enabled
 yet; selecting the plugin explicitly prevents an ambiguous XML extension from
 choosing the wrong parser.
 
+## Execution logs
+
+DJ MIDI Studio writes a rotating execution log in the platform user log
+directory. For troubleshooting, start it with a more verbose level and an
+explicit destination:
+
+```bash
+uv run djmidi --log-level DEBUG --log-file /tmp/djmidi.log
+```
+
+Available levels are `DEBUG`, `INFO`, `WARNING`, `ERROR`, and `CRITICAL`.
+
 The application can now produce an assisted detection result from the mapping
 file signature/extension and MIDI port names. When available, controller
 identity replies and declared MIDI capabilities add evidence to the score. The

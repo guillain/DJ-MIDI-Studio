@@ -61,6 +61,10 @@ second, then real-time routing and clock synchronization.
 - [ ] Support unknown devices and unsupported mapping formats through a generic MIDI profile.
 - [ ] Document plugin installation, updates, compatibility, trust, and troubleshooting.
 
+### Cross-cutting diagnostics
+
+- [x] Add a rotating execution log with configurable DEBUG/INFO/WARNING/ERROR/CRITICAL verbosity and CLI path override.
+
 ### Tracking rules
 
 - Every phase produces a focused commit and annotated tag.

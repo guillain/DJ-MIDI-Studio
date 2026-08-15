@@ -74,7 +74,12 @@ Run the app:
 
 ```bash
 uv run djmidi
+uv run djmidi --log-level DEBUG --log-file /tmp/djmidi.log
 ```
+
+The application writes a rotating execution log by default to the platform's
+user log directory. Use `--log-level` (`DEBUG`, `INFO`, `WARNING`, `ERROR`, or
+`CRITICAL`) and `--log-file` to control verbosity and destination.
 
 Run tests:
 
