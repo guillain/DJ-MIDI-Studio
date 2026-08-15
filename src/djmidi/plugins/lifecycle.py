@@ -23,12 +23,36 @@ class PluginManager:
     is deliberately safe to use in CLI and hardware-free tests.
     """
 
-    def __init__(self, preferences: PluginPreferences | None = None) -> None:
+    def __init__(
+        self,
+        preferences: PluginPreferences | None = None,
+        *,
+        application_version: str = "0.1.0",
+        api_version: str = "1",
+    ) -> None:
         self.preferences = preferences or PluginPreferences()
+        self.application_version = application_version
+        self.api_version = api_version
         self._manifests: dict[str, PluginManifest] = {}
         self.diagnostics: list[PluginDiagnostic] = []
 
     def register(self, manifest: PluginManifest, *, source: str = "built-in") -> bool:
+        if manifest.api_version != self.api_version:
+            self.diagnostics.append(
+                PluginDiagnostic(
+                    source,
+                    f"incompatible API version {manifest.api_version!r}; expected {self.api_version!r}",
+                )
+            )
+            return False
+        if _version_tuple(manifest.min_app_version) > _version_tuple(self.application_version):
+            self.diagnostics.append(
+                PluginDiagnostic(
+                    source,
+                    f"requires application {manifest.min_app_version}+; current is {self.application_version}",
+                )
+            )
+            return False
         if manifest.plugin_id in self._manifests:
             self.diagnostics.append(
                 PluginDiagnostic(source, f"duplicate plugin_id: {manifest.plugin_id}")
@@ -78,6 +102,14 @@ class PluginManager:
             return self._manifests[plugin_id]
         except KeyError:
             raise ValueError(f"Unknown plugin: {plugin_id}") from None
+
+
+def _version_tuple(version: str) -> tuple[int, ...]:
+    parts: list[int] = []
+    for part in version.split("."):
+        number = "".join(character for character in part if character.isdigit())
+        parts.append(int(number or 0))
+    return tuple(parts)
 
 
 __all__ = ["PluginDiagnostic", "PluginManager"]

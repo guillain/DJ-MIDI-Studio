@@ -168,13 +168,13 @@ step is to make both hardware and DJ software integrations discoverable
 plugins, so adding an integration does not require editing a central hardcoded
 list or the GUI.
 
-- [ ] Define a stable plugin contract for MIDI controller integrations, including identifier, display name, manufacturer, supported software, MIDI capabilities, catalog definition, layout metadata, reference images, and documentation links.
-- [ ] Define a stable plugin contract for DJ software integrations, including identifier, display name, mapping-file format, parser, exporter, validation rules, and supported mapping features.
-- [ ] Split the current controller registry API from the future software registry API while sharing common plugin metadata and discovery mechanisms.
-- [ ] Move controller and software lists to registry-backed/dynamically discovered sources throughout the GUI, Dashboard, filters, and documentation helpers.
+- [x] Define a stable plugin contract for MIDI controller integrations, including identifier, display name, manufacturer, supported software, MIDI capabilities, catalog definition, layout metadata, reference images, and documentation links.
+- [x] Define a stable plugin contract for DJ software integrations, including identifier, display name, mapping-file format, parser, exporter, validation rules, and supported mapping features.
+- [x] Split the current controller registry API from the future software registry API while sharing common plugin metadata and discovery mechanisms.
+- [x] Move controller and software lists to registry-backed/dynamically discovered sources throughout the GUI, Dashboard, filters, and documentation helpers.
 - [x] Support explicit plugin discovery from built-in modules and external Python package entry points.
 - [x] Add plugin lifecycle operations: discover, validate manifest, register, enable/disable, reload, and report compatibility errors.
-- [ ] Add a plugin manifest/version format with API compatibility, plugin version, vendor, license, and required application version.
+- [x] Add a plugin manifest/version format with API compatibility, plugin version, vendor, license, and required application version.
 
 ### MIDI API standards decision
 
@@ -184,8 +184,8 @@ without a browser and must expose MIDI 1.0 channel voice messages, system
 realtime messages, timestamps, port identity, and explicit SysEx permissions.
 MIDI 2.0 Universal MIDI Packets (UMP) will be handled by a later adapter once
 the MIDI 1.0 router and Clock mirror are stable.
-- [ ] Add a preferences/settings surface for choosing enabled controller and software plugins.
-- [ ] Resolve the active controller/software integration from a connected MIDI device, imported mapping file, or explicit user selection.
+- [x] Add a preferences/settings surface for choosing enabled controller and software plugins.
+- [x] Resolve the active controller/software integration from a connected MIDI device, imported mapping file, or explicit user selection.
 - [x] Keep unknown devices and unsupported mapping formats usable through a generic MIDI profile instead of failing application startup.
 - [x] Add trust checks before loading third-party plugins, with clear diagnostics for rejected or unavailable plugins; document that Python entry points remain in-process.
 - [x] Add plugin contract tests and discovery tests that run without MIDI hardware.
