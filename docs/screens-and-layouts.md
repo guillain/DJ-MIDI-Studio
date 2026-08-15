@@ -34,13 +34,13 @@ By Channel is the most granular editing view. It presents the raw MIDI controls 
 
 ### By Deck
 
-By Deck groups duplicate Serato trigger sets by deck and slot. The upper area contains one tree per deck, while the lower layout area shows the physical controls for the selected controller. The controller selector and deck filter allow the physical view to be narrowed to a specific device or deck.
+By Deck groups duplicate Serato trigger sets by deck and slot. The upper area contains one tree per deck, while the lower layout area shows the physical controls for the selected controller. The horizontally scrollable controller selector and deck filter allow the physical view to be narrowed to a specific device or deck, even when many controller plugins are installed.
 
 ![By Deck mapping view](images/layout/by-deck.png)
 
 ### By Controller
 
-By Controller groups catalog entries by physical controller and section, such as `PAD`, `DECK`, or `EFFECT`. The lower schematic maps the selected controller's controls and shows the associated mappings. Selecting a physical control highlights the corresponding entries across the mapping views.
+By Controller groups catalog entries by physical controller and section, such as `PAD`, `DECK`, or `EFFECT`. The lower schematic maps the selected controller's controls and shows the associated mappings. Its controller selector scrolls horizontally as the dynamic catalog grows. Selecting a physical control highlights the corresponding entries across the mapping views.
 
 ![By Controller mapping view](images/layout/by-controller.png)
 

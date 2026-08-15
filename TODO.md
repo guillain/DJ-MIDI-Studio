@@ -92,6 +92,7 @@ second, then real-time routing and clock synchronization.
 - [x] Highlight matching layout cells from tree selections and matching tree entries from layout selections.
 - [x] Navigate from layout/controller selections back to the underlying raw control.
 - [x] Keep layout views synchronized across tabs.
+- [x] Make dynamic controller selectors in all layout views horizontally scrollable.
 - [x] Add zoomable/pannable `Controller Images` diagrams with reset zoom.
 - [x] Remove the obsolete `Go to` section from the Dashboard layout.
 

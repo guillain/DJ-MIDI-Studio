@@ -99,5 +99,11 @@ def test_set_controller_switches_tab_when_name_exists():
     view = ControllerLayoutView()
     assert view.set_controller("XDJ-XZ") is True
     assert view._controller == "XDJ-XZ"
-    assert view.set_controller("__missing__") is False
 
+
+def test_controller_selector_is_horizontal_scrollable():
+    view = ControllerLayoutView()
+    assert view._controller_scroll.widget() is view._controller_tabs
+    assert view._controller_scroll.horizontalScrollBarPolicy().name == "ScrollBarAsNeeded"
+    assert view._controller_scroll.verticalScrollBarPolicy().name == "ScrollBarAlwaysOff"
+    assert view.set_controller("__missing__") is False

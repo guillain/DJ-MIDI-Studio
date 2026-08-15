@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from PySide6.QtCore import QLineF, QRectF, Signal
+from PySide6.QtCore import QLineF, QRectF, Qt, Signal
 from PySide6.QtGui import QBrush, QColor, QFont, QPen
 from PySide6.QtWidgets import (
     QComboBox,
@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
     QGraphicsSimpleTextItem,
     QGraphicsView,
     QHBoxLayout,
+    QScrollArea,
     QTabBar,
     QVBoxLayout,
     QWidget,
@@ -101,14 +102,24 @@ class ControllerLayoutView(QWidget):
 
         self._controller_tabs = QTabBar()
         self._controller_tabs.setExpanding(False)
-        self._controller_tabs.setUsesScrollButtons(True)
+        self._controller_tabs.setUsesScrollButtons(False)
         for name in catalog.CONTROLLER_NAMES:
             self._controller_tabs.addTab(name)
+
+        self._controller_scroll = QScrollArea()
+        self._controller_scroll.setWidgetResizable(False)
+        self._controller_scroll.setFrameShape(QScrollArea.Shape.NoFrame)
+        self._controller_scroll.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAsNeeded
+        )
+        self._controller_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self._controller_scroll.setWidget(self._controller_tabs)
+        self._resize_controller_selector()
         self._controller_tabs.currentChanged.connect(self._on_controller_tab_changed)
 
         self._deck_combo: QComboBox | None = None
         controls_layout = QHBoxLayout()
-        controls_layout.addWidget(self._controller_tabs)
+        controls_layout.addWidget(self._controller_scroll, 1)
         if show_deck_filter:
             deck_combo = QComboBox()
             deck_combo.addItem(_ALL_DECKS)
@@ -149,9 +160,16 @@ class ControllerLayoutView(QWidget):
                 restored = index
         self._controller_tabs.setCurrentIndex(max(restored, 0))
         self._controller_tabs.blockSignals(False)
+        self._resize_controller_selector()
         current_index = self._controller_tabs.currentIndex()
         self._controller = self._controller_tabs.tabText(current_index)
         self._rebuild()
+
+    def _resize_controller_selector(self) -> None:
+        """Keep the tab strip wide while letting its container scroll."""
+        self._controller_tabs.adjustSize()
+        self._controller_tabs.setMinimumWidth(self._controller_tabs.sizeHint().width())
+        self._controller_scroll.setFixedHeight(self._controller_tabs.sizeHint().height() + 2)
 
     def set_controller(self, name: str) -> bool:
         """Selects a controller tab by name; returns False if unknown."""
