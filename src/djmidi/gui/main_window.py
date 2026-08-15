@@ -41,6 +41,7 @@ from djmidi.gui.mapping_group import MappingGroup
 from djmidi.gui.metronome_view import MetronomeView
 from djmidi.gui.splitter_utils import replace_splitter
 from djmidi.gui.tree_model import NODE_ROLE, build_channel_columns, relabel_item
+from djmidi.integration_detection import detect_software_mapping
 from djmidi.midi_io import MidiEvent
 from djmidi.model import Control, MappingElement, MidiConfig
 from djmidi.validator import ValidationIssue, validate
@@ -286,13 +287,35 @@ class MainWindow(QMainWindow):
         )
         if not path_str:
             return
+        path = Path(path_str)
+        try:
+            mapping_text = path.read_text(encoding="utf-8")
+        except OSError as exc:
+            QMessageBox.critical(self, "Failed to open file", str(exc))
+            return
         definitions = software.all_definitions()
         names = [definition.name for definition in definitions]
-        current = next((index for index, definition in enumerate(definitions) if definition.plugin_id == self.software_id), 0)
+        detection = detect_software_mapping(mapping_text, path.suffix)
+        detected = detection.best
+        detected_index = next(
+            (
+                index
+                for index, definition in enumerate(definitions)
+                if detected is not None and definition.plugin_id == detected.plugin_id
+            ),
+            -1,
+        )
+        current = detected_index if detected_index >= 0 else next(
+            (index for index, definition in enumerate(definitions) if definition.plugin_id == self.software_id),
+            0,
+        )
+        prompt = "Mapping software:"
+        if detected is not None:
+            prompt = f"Mapping software (detected: {detected.name}, {detected.score}% — {detected.reasons[0]}):"
         software_name, accepted = QInputDialog.getItem(
             self,
             "Open DJ mapping",
-            "Mapping software:",
+            prompt,
             names,
             current,
             False,
@@ -301,11 +324,11 @@ class MainWindow(QMainWindow):
             return
         selected = definitions[names.index(software_name)]
         try:
-            self.config = selected.parse_file(path_str)
+            self.config = selected.parser(mapping_text)
         except Exception as exc:  # noqa: BLE001 - surface any parse error to the user
             QMessageBox.critical(self, "Failed to open file", str(exc))
             return
-        self.current_path = Path(path_str)
+        self.current_path = path
         self.software_id = selected.plugin_id
         self.undo_stack.clear()
         self._load_tree()

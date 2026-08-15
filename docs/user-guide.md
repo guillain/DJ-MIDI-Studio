@@ -22,7 +22,8 @@ choosing the wrong parser.
 The application can now produce an assisted detection result from the mapping
 file signature/extension and MIDI port names. The result includes its reason
 and confidence; ambiguous or unknown results leave explicit plugin selection to
-the user.
+the user. When opening a file, the detected software is presented as the
+preselected choice in the confirmation dialog; the user remains in control.
 
 ## Explore Mappings
 
