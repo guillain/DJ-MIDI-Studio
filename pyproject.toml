@@ -1,6 +1,6 @@
 [project]
 name = "djmidi"
-version = "0.1.0"
+version = "0.43.1"
 description = "DJ MIDI mapping visualizer, editor, and controller toolkit"
 authors = [
     { name = "guillain", email = "guillain@gmail.com" }

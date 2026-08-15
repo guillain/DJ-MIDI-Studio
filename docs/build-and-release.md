@@ -21,6 +21,12 @@ On macOS, an unsigned PyInstaller app is expected to trigger Gatekeeper
 warnings. A distributable app must be signed with a Developer ID Application
 certificate and notarized by Apple.
 
+The first public CI release uses `--allow-unsigned` because the repository does
+not yet have an Apple signing secret configured. Its macOS archive is therefore
+for testing and will trigger the expected Gatekeeper warning. Configure a
+Developer ID certificate and update the CI secret before treating macOS
+artifacts as production-distributable.
+
 ## Bootstrap
 
 Run one command to prepare the local environment:

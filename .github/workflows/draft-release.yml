@@ -97,7 +97,10 @@ jobs:
       - name: Create executable archive
         shell: bash
         run: |
-          scripts/release_artifacts.sh
+          # A Developer ID identity is not available on the public runner.
+          # Keep the first release publishable while clearly documenting the
+          # resulting Gatekeeper warning in the release documentation.
+          scripts/release_artifacts.sh --allow-unsigned
 
       - name: Upload executable archive
         uses: actions/upload-artifact@v4
