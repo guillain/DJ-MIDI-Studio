@@ -1,4 +1,5 @@
 from djmidi.gui.midi_routing_view import MidiRoutingView
+from djmidi.midi_routing_session import SERATO_CLOCK_INPUT_NAME
 
 
 def test_routing_view_configures_one_way_route_without_hardware():
@@ -34,3 +35,12 @@ def test_routing_view_supports_multiple_clock_lines():
     view._add_clock_route()
     assert len(view._clocks) == 2
     assert view._clock_table.rowCount() == 2
+
+
+def test_routing_view_exposes_virtual_serato_clock_source():
+    view = MidiRoutingView()
+    view._serato_virtual_checkbox.setChecked(True)
+    assert view._clock_source.currentText() == SERATO_CLOCK_INPUT_NAME
+    assert view._routing_session._virtual_input_ids == frozenset({SERATO_CLOCK_INPUT_NAME})
+    view._serato_virtual_checkbox.setChecked(False)
+    assert view._clock_source.findText(SERATO_CLOCK_INPUT_NAME) < 0

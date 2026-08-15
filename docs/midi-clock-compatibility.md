@@ -2,18 +2,27 @@
 
 ## Current safety policy
 
-DJ MIDI Studio currently exposes MIDI Clock as a tested engine primitive, not
-as an enabled GUI routing mode. The mirror forwards Start, Continue, Stop, and
-24 PPQN Clock messages from one selected source, rejects implausibly short
-intervals, and reports observed timing jitter.
+DJ MIDI Studio exposes MIDI Clock as an opt-in GUI routing mode. The mirror
+forwards Start, Continue, Stop, and 24 PPQN Clock messages from one or more
+configured sources, rejects implausibly short intervals, and reports observed
+timing jitter.
 
 ## Serato DJ
 
-Serato's MIDI setup can route output to the application's virtual monitor when
-the user adds that destination explicitly. This is the supported way to
-observe Serato output. Clock behavior depends on the Serato version, hardware
-MIDI configuration, and whether the selected device exposes Clock messages;
-the application must not assume that a mapping file implies Clock support.
+Serato's MIDI setup must route its MIDI Clock output to a destination that the
+application can receive. In `MIDI Routing`, enable `Create virtual input for
+Serato Clock`, select the generated `DJ MIDI Studio Serato Clock In` source,
+add its destination controller, then start routing. In Serato's MIDI setup,
+select that virtual port as the MIDI Clock output destination and enable the
+Clock/Sync output option for the active deck or session. The virtual port is
+created only while routing is running, so Serato should be configured after
+DJ MIDI Studio has started the session.
+
+Serato may emit transport messages only when its Clock/Sync mode and version
+support them. If the controller receives Clock ticks but does not start or
+stop, verify Serato's MIDI Clock transport/start-stop options and test the
+controller's external-sync mode; a mapping file alone does not imply Clock
+support.
 
 ## Rekordbox
 

@@ -18,7 +18,7 @@ from PySide6.QtWidgets import (
 from djmidi.midi_clock import MidiClockMirror
 from djmidi.midi_io import list_input_ports, list_output_ports
 from djmidi.midi_router import MidiRoute, MidiRouter
-from djmidi.midi_routing_session import MidiRoutingSession
+from djmidi.midi_routing_session import SERATO_CLOCK_INPUT_NAME, MidiRoutingSession
 
 
 class MidiRoutingView(QWidget):
@@ -73,6 +73,8 @@ class MidiRoutingView(QWidget):
         self._clock_destination = QComboBox()
         self._clock_enabled = QCheckBox("Enable Clock mirror policy")
         self._clock_enabled.toggled.connect(self._update_clock_policy)
+        self._serato_virtual_checkbox = QCheckBox("Create virtual input for Serato Clock")
+        self._serato_virtual_checkbox.toggled.connect(self._toggle_serato_virtual_input)
         self._clock_status = QLabel("Clock mirror disabled")
         add_clock_button = QPushButton("Add Clock route")
         add_clock_button.clicked.connect(self._add_clock_route)
@@ -84,6 +86,7 @@ class MidiRoutingView(QWidget):
         clock_controls.addWidget(QLabel("Clock destination:"))
         clock_controls.addWidget(self._clock_destination)
         clock_controls.addWidget(self._clock_enabled)
+        clock_controls.addWidget(self._serato_virtual_checkbox)
         clock_controls.addWidget(add_clock_button)
         clock_controls.addWidget(remove_clock_button)
         clock_box = QGroupBox("MIDI Clock")
@@ -161,9 +164,12 @@ class MidiRoutingView(QWidget):
         names = sorted(set(list_input_ports()) | set(list_output_ports()))
         for combo in (self._source_combo, self._destination_combo, self._clock_source, self._clock_destination):
             current = combo.currentText()
+            combo_names = names
+            if combo is self._clock_source and self._serato_virtual_checkbox.isChecked():
+                combo_names = [*names, SERATO_CLOCK_INPUT_NAME]
             combo.blockSignals(True)
             combo.clear()
-            combo.addItems(names)
+            combo.addItems(combo_names)
             combo.setCurrentText(current)
             combo.blockSignals(False)
 
@@ -210,6 +216,27 @@ class MidiRoutingView(QWidget):
             return
         self._add_clock_route()
 
+    def _toggle_serato_virtual_input(self, enabled: bool) -> None:
+        if self._routing_session.running:
+            self._stop_routing()
+        if enabled:
+            if self._clock_source.findText(SERATO_CLOCK_INPUT_NAME) < 0:
+                self._clock_source.addItem(SERATO_CLOCK_INPUT_NAME)
+            self._clock_source.setCurrentText(SERATO_CLOCK_INPUT_NAME)
+            self._clock_status.setText(
+                "Virtual Serato Clock input ready; select it as Serato's MIDI Clock destination"
+            )
+        else:
+            for index in range(self._clock_source.count() - 1, -1, -1):
+                if self._clock_source.itemText(index) == SERATO_CLOCK_INPUT_NAME:
+                    self._clock_source.removeItem(index)
+            self._clocks[:] = [
+                clock for clock in self._clocks if clock.source_port_id != SERATO_CLOCK_INPUT_NAME
+            ]
+            self._clock = self._clocks[0] if self._clocks else None
+            self._refresh_clock_table()
+        self._update_clock_session()
+
     def _add_clock_route(self) -> None:
         if not self._clock_enabled.isChecked():
             return
@@ -252,6 +279,12 @@ class MidiRoutingView(QWidget):
                     self._clock_table.setItem(row, column, QTableWidgetItem(value))
 
     def _update_clock_session(self) -> None:
+        virtual_ids = (
+            (SERATO_CLOCK_INPUT_NAME,)
+            if self._serato_virtual_checkbox.isChecked()
+            else ()
+        )
+        self._routing_session.set_virtual_input_ids(virtual_ids)
         self._routing_session.set_clock_mirrors(self._clocks)
         if self._clocks:
             self._clock_status.setText(f"{len(self._clocks)} Clock route(s) ready")

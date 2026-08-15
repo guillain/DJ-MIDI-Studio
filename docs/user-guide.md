@@ -103,6 +103,9 @@ For screenshots and a visual description of each tab, see [Screens and Layouts](
   When a Clock policy is enabled, each configured source → destination line is
   opened by the same session and realtime Start/Continue/Stop/Clock messages
   are forwarded with the configured jitter safeguards.
+  For Serato output, enable `Create virtual input for Serato Clock`, select the
+  generated source, start the session, then configure that port as Serato's
+  MIDI Clock destination.
 
 Use the `MIDI Routing` tab to configure one-way source/destination routes and an
 opt-in Clock policy. Add several Clock source/destination lines when needed;

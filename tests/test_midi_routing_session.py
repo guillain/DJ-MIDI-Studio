@@ -90,3 +90,23 @@ def test_session_forwards_clock_to_multiple_independent_destinations():
     assert session.poll() == 3
     assert all(port.sent == [mido.Message("start")] for port in outputs.values())
     session.stop()
+
+
+def test_session_opens_configured_clock_source_as_virtual_input():
+    router = MidiRouter()
+    input_port = _FakePort([mido.Message("start")])
+    output_port = _FakePort()
+    virtual_names = []
+    session = MidiRoutingSession(
+        router,
+        input_opener=lambda name: (_ for _ in ()).throw(AssertionError("physical opener used")),
+        virtual_input_ids=("serato-clock",),
+        virtual_input_opener=lambda name: (virtual_names.append(name) or input_port),
+        output_opener=lambda name: output_port,
+        clock_mirror=MidiClockMirror("serato-clock", ["controller"]),
+    )
+
+    session.start()
+    assert virtual_names == ["serato-clock"]
+    assert session.poll() == 1
+    session.stop()

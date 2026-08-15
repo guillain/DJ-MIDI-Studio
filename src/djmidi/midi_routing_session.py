@@ -14,6 +14,7 @@ from djmidi.midi_router import MidiRouter
 
 InputOpener = Callable[[str], Any]
 OutputOpener = Callable[[str], Any]
+SERATO_CLOCK_INPUT_NAME = "DJ MIDI Studio Serato Clock In"
 
 
 class MidiRoutingSession:
@@ -32,10 +33,16 @@ class MidiRoutingSession:
         output_opener: OutputOpener = mido.open_output,
         clock_mirror: MidiClockMirror | None = None,
         clock_mirrors: Iterable[MidiClockMirror] | None = None,
+        virtual_input_ids: Iterable[str] = (),
+        virtual_input_opener: InputOpener | None = None,
     ) -> None:
         self.router = router
         self._input_opener = input_opener
         self._output_opener = output_opener
+        self._virtual_input_opener = virtual_input_opener or (
+            lambda name: mido.open_input(name, virtual=True)
+        )
+        self._virtual_input_ids = frozenset(virtual_input_ids)
         if clock_mirror is not None and clock_mirrors is not None:
             raise ValueError("use clock_mirror or clock_mirrors, not both")
         self._clock_mirrors = tuple(clock_mirrors or ((clock_mirror,) if clock_mirror else ()))
@@ -59,6 +66,11 @@ class MidiRoutingSession:
             raise RuntimeError("stop the routing session before changing the Clock policy")
         self._clock_mirrors = tuple(clock_mirrors)
 
+    def set_virtual_input_ids(self, input_ids: Iterable[str]) -> None:
+        if self.running:
+            raise RuntimeError("stop the routing session before changing virtual MIDI inputs")
+        self._virtual_input_ids = frozenset(input_ids)
+
     def start(self) -> None:
         routes = tuple(route for route in self.router.routes if route.enabled)
         if not routes and not self._clock_mirrors:
@@ -71,7 +83,12 @@ class MidiRoutingSession:
             output_ids.update(clock_mirror.destination_port_ids)
         try:
             for port_id in sorted(input_ids):
-                self._inputs[port_id] = self._input_opener(port_id)
+                opener = (
+                    self._virtual_input_opener
+                    if port_id in self._virtual_input_ids
+                    else self._input_opener
+                )
+                self._inputs[port_id] = opener(port_id)
             for port_id in sorted(output_ids):
                 self._outputs[port_id] = self._output_opener(port_id)
         except Exception:
@@ -113,4 +130,4 @@ class MidiRoutingSession:
         self._outputs[destination_id].send(mido.Message.from_bytes(list(message.data)))
 
 
-__all__ = ["MidiRoutingSession"]
+__all__ = ["SERATO_CLOCK_INPUT_NAME", "MidiRoutingSession"]
