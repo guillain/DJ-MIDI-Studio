@@ -242,7 +242,7 @@ class IntroductionView(QWidget):
         layout.addWidget(stats)
 
         buttons = QHBoxLayout()
-        for target, label in (("channel", "By Channel"), ("controller", "By Controller"), ("images", "Images")):
+        for target, label in (("channel", "Channel"), ("controller", "Controller"), ("images", "Images")):
             btn = QPushButton(label)
             btn.clicked.connect(lambda _checked=False, t=target, c=controller: self._drilldown_controller(t, c))
             buttons.addWidget(btn)

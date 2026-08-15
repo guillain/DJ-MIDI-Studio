@@ -72,6 +72,14 @@ def test_dashboard_exposes_independent_midi_tool_buttons():
     assert requested == ["monitor", "routing"]
 
 
+def test_controller_cards_use_compact_drilldown_labels():
+    view = IntroductionView()
+    labels = {button.text() for button in view.findChildren(QPushButton)}
+    assert {"Channel", "Controller", "Images"}.issubset(labels)
+    assert "By Channel" not in labels
+    assert "By Controller" not in labels
+
+
 def test_refresh_midi_availability_marks_matching_controller():
     view = IntroductionView()
     view.refresh_midi_availability(["USB DDJ-XP2 MIDI 1"])
