@@ -32,7 +32,7 @@ second, then real-time routing and clock synchronization.
 - [x] Preserve raw bytes, timestamps, port identity, realtime messages, and SysEx in the normalized message contract.
 - [x] Add deterministic hardware-free tests for ports, messages, SysEx, and plugin detection adapters.
 
-### Phase 2 — assisted integration detection — IN PROGRESS
+### Phase 2 — assisted integration detection — COMPLETE
 
 - [x] Detect the mapping software from file signature and extension; return a reason and ask for confirmation when ambiguous.
 - [x] Detect the controller from MIDI port names and return ranked plugin candidates.
@@ -40,7 +40,7 @@ second, then real-time routing and clock synchronization.
 - [x] Keep explicit user selection as the fallback for unknown or ambiguous hardware/software.
 - [x] Add MIDI Identity Reply/SysEx parsing, identity metadata hooks, and capability scoring where hardware permits it.
 
-### Phase 3 — multi-device MIDI engine — PLANNED
+### Phase 3 — multi-device MIDI engine — IN PROGRESS
 
 - [x] Adopt the W3C [Web MIDI API](https://github.com/WebAudio/web-midi-api) as the conceptual compatibility model for access, input/output ports, events, and SysEx opt-in.
 - [x] Keep the native implementation on MIDI 1.0 byte messages through `mido/rtmidi`; do not make a browser API dependency part of the desktop runtime.
