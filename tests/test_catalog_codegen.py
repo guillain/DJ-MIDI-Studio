@@ -108,6 +108,18 @@ def test_generate_module_source_produces_valid_python():
     ast.parse(source)
 
 
+def test_generate_module_source_escapes_quotes_in_controller_name():
+    """controller_name is free-form, user-typed text (via the Controller Setup
+    tab's name field) — unlike the other fields, which are embedded via !r as
+    complete standalone literals, it lands in the middle of the generated
+    module's already-open triple-double-quoted docstring, so a literal '\"\"\"'
+    in the name must not be able to prematurely close it."""
+    entries = [ControlInfo('Weird"""Name', "DECK", "PLAY", "NOTE", ("1",), "0")]
+    source = generate_module_source('Weird"""Name', entries)
+    ast.parse(source)  # must not raise SyntaxError
+    assert 'name=\'Weird"""Name\',' in source
+
+
 def test_generate_module_source_smoke_content():
     entries = [ControlInfo("MiniPad", "DECK", "PLAY", "NOTE", ("1",), "0")]
     source = generate_module_source("MiniPad", entries)

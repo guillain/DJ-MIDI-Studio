@@ -116,7 +116,6 @@ __all__ = [
     "ControllerDefinition",
     "NoteOrCC",
     "PadLookup",
-    "_parse_midi_note",
     "all_controller_names",
     "get_definition",
     "make_sequential_pad_lookup",

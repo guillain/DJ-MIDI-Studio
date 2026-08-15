@@ -17,7 +17,7 @@ from PySide6.QtGui import QStandardItem, QStandardItemModel
 
 from seratomidiconf import catalog
 from seratomidiconf.gui import layout as layout_mod
-from seratomidiconf.gui.layout_view import Usage
+from seratomidiconf.gui.layout_view import Usage, _deck_sort_key
 
 CELL_KEY_ROLE = 1  # distinct from tree_model.NODE_ROLE, which holds domain objects
 
@@ -25,7 +25,7 @@ CELL_KEY_ROLE = 1  # distinct from tree_model.NODE_ROLE, which holds domain obje
 def _leaf_text(cell: layout_mod.LayoutCell, per_deck: dict[str, set[str]]) -> str:
     if not per_deck:
         return f"{cell.label} (not used)"
-    decks = ", ".join(f"D{d}" for d in sorted(per_deck, key=lambda d: (not d.isdigit(), int(d) if d.isdigit() else 0, d)))
+    decks = ", ".join(f"D{d}" for d in sorted(per_deck, key=_deck_sort_key))
     tags = sorted({tag for tags in per_deck.values() for tag in tags})
     return f"{cell.label} — {', '.join(tags)} ({decks})"
 

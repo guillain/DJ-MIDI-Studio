@@ -8,7 +8,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QPixmap
+from PySide6.QtGui import QPainter, QPixmap
 from PySide6.QtWidgets import (
     QComboBox,
     QGraphicsPixmapItem,
@@ -35,7 +35,8 @@ class _ZoomableView(QGraphicsView):
         super().__init__(scene)
         self.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
         self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
-        self.setRenderHint(self.renderHints())
+        self.setRenderHint(QPainter.RenderHint.Antialiasing)
+        self.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
 
     def wheelEvent(self, event) -> None:
         factor = 1.15 if event.angleDelta().y() > 0 else 1 / 1.15
@@ -97,17 +98,19 @@ class ControllerImageView(QWidget):
     def _load(self, name: str) -> None:
         self._scene.clear()
         self._pixmap_item = None
-        path = ASSETS_DIR / IMAGES.get(name, "")
-        pixmap = QPixmap(str(path)) if path.exists() else QPixmap()
+        self._view.resetTransform()
+        image_name = IMAGES.get(name)
+        path = ASSETS_DIR / image_name if image_name else None
+        pixmap = QPixmap(str(path)) if path is not None and path.exists() else QPixmap()
         if pixmap.isNull():
-            placeholder = QLabel(f"Image not found: {path}")
+            placeholder = QLabel(f"Image not found: {path if path is not None else name}")
             self._scene.addWidget(placeholder)
+            self._scene.setSceneRect(self._scene.itemsBoundingRect())
             return
         item = QGraphicsPixmapItem(pixmap)
         self._pixmap_item = item
         self._scene.addItem(item)
         self._scene.setSceneRect(item.boundingRect())
-        self._view.resetTransform()
         self._view.fitInView(item, Qt.AspectRatioMode.KeepAspectRatio)
 
 

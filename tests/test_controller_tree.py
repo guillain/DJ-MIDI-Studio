@@ -17,13 +17,13 @@ def test_newly_registered_controller_gets_its_own_column_without_reimport():
 
 def test_one_column_per_controller():
     columns = build_controller_columns({})
-    assert [c for c, _model, _flags in columns] == ["DDJ-XP2", "XDJ-XZ"]
+    assert [c for c, _model, _flags in columns] == catalog.CONTROLLER_NAMES
 
 
 def test_pad_section_first_and_flagged_used_when_usage_present():
     usage = {("DDJ-XP2", "PAD", "Pad 1"): {"0": {"codfather_st"}}}
     columns = build_controller_columns(usage)
-    _controller, model, flags = columns[0]
+    _controller, model, flags = next(c for c in columns if c[0] == "DDJ-XP2")
     assert model.item(0).text() == "PAD"
     pad_row, pad_used = flags[0]
     assert pad_row == 0
@@ -39,7 +39,7 @@ def test_sections_without_usage_are_flagged_unused():
 def test_leaf_carries_cell_key_and_reflects_usage_in_text():
     usage = {("DDJ-XP2", "PAD", "Pad 1"): {"2": {"codfather_st"}}}
     columns = build_controller_columns(usage)
-    _controller, model, _flags = columns[0]
+    _controller, model, _flags = next(c for c in columns if c[0] == "DDJ-XP2")
     pad_section = model.item(0)
     pad1_leaf = pad_section.child(0)
     assert pad1_leaf.data(CELL_KEY_ROLE) == ("DDJ-XP2", "PAD", "Pad 1")

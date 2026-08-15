@@ -292,6 +292,105 @@ def test_apply_allows_reapplying_a_name_this_same_draft_already_applied(monkeypa
         catalog._registry._REGISTRY.pop("__ApplySetupTest5__", None)
 
 
+def test_new_session_forgets_names_this_draft_previously_applied(monkeypatch):
+    """A stale self._applied_names must not survive "New session": otherwise a
+    later, unrelated draft that happens to reuse an earlier draft's name would
+    sail past the hard-block and silently replace it in the live registry —
+    exactly the bug _applied_names exists to prevent, just reached via a
+    different path (New session) than test_on_apply_clicked_blocks_overwriting_
+    a_controller_it_never_applied covers."""
+    import seratomidiconf.gui.controller_setup as controller_setup_mod
+
+    monkeypatch.setattr(controller_setup_mod.QMessageBox, "information", lambda *a: None)
+    shown = {}
+    monkeypatch.setattr(
+        controller_setup_mod.QMessageBox,
+        "critical",
+        lambda parent, title, text: shown.update(title=title, text=text),
+    )
+
+    view = _view_with_name("__StaleAppliedNamesTest__")
+    view._rows = [ControlInfo("__StaleAppliedNamesTest__", "DECK", "PLAY", "NOTE", ("1",), "0")]
+    view._sources = ["manual"]
+    view._devices = [""]
+    try:
+        view._apply()
+        assert "__StaleAppliedNamesTest__" in view._applied_names
+
+        # Simulate clicking "New session": the old draft is gone, so its
+        # applied-name permission must go with it.
+        view._reset(clear_name=True)
+        assert view._applied_names == set()
+
+        # A brand-new, unrelated draft happens to reuse the same name.
+        view._name_edit.setText("__StaleAppliedNamesTest__")
+        view._rows = [
+            ControlInfo("__StaleAppliedNamesTest__", "DECK", "TOTALLY_DIFFERENT", "NOTE", ("5",), "99")
+        ]
+        view._sources = ["manual"]
+        view._devices = [""]
+        view._on_apply_clicked()
+
+        assert shown.get("title") == "Cannot apply"
+        hits = catalog.lookup("1", "Note On", "0")
+        assert any(h.name == "PLAY" for h in hits), "original draft's definition must survive"
+    finally:
+        catalog._registry._REGISTRY.pop("__StaleAppliedNamesTest__", None)
+
+
+def test_load_session_forgets_names_this_draft_previously_applied(monkeypatch, tmp_path):
+    """Same hazard as above, reached via "Load session…" instead of "New
+    session": the loaded draft has never itself applied anything in this
+    process, even if its name collides with one this widget applied earlier."""
+    import seratomidiconf.gui.controller_setup as controller_setup_mod
+
+    monkeypatch.setattr(controller_setup_mod.QMessageBox, "information", lambda *a: None)
+    shown = {}
+    monkeypatch.setattr(
+        controller_setup_mod.QMessageBox,
+        "critical",
+        lambda parent, title, text: shown.update(title=title, text=text),
+    )
+
+    view = _view_with_name("__StaleAppliedNamesTest2__")
+    view._rows = [ControlInfo("__StaleAppliedNamesTest2__", "DECK", "PLAY", "NOTE", ("1",), "0")]
+    view._sources = ["manual"]
+    view._devices = [""]
+    try:
+        view._apply()
+        assert "__StaleAppliedNamesTest2__" in view._applied_names
+
+        other_session = tmp_path / "other.json"
+        other_session.write_text(
+            json.dumps(
+                {
+                    "version": 1,
+                    "controller_name": "__StaleAppliedNamesTest2__",
+                    "rows": [
+                        {
+                            "section": "DECK",
+                            "name": "TOTALLY_DIFFERENT",
+                            "note_or_cc": "NOTE",
+                            "channels": ["5"],
+                            "data1": "99",
+                            "source": "manual",
+                            "device": "",
+                        }
+                    ],
+                }
+            )
+        )
+        view._load_session(other_session)
+        assert view._applied_names == set()
+
+        view._on_apply_clicked()
+        assert shown.get("title") == "Cannot apply"
+        hits = catalog.lookup("1", "Note On", "0")
+        assert any(h.name == "PLAY" for h in hits), "original draft's definition must survive"
+    finally:
+        catalog._registry._REGISTRY.pop("__StaleAppliedNamesTest2__", None)
+
+
 def test_on_apply_clicked_blocks_on_validation_errors(monkeypatch):
     import seratomidiconf.gui.controller_setup as controller_setup_mod
 
@@ -389,6 +488,28 @@ def test_send_output_double_click_sends_two_clicks(monkeypatch):
     assert len(sent) == 4
     assert sent[0]["event_type"] == "note_on"
     assert sent[1]["event_type"] == "note_off"
+
+
+def test_send_output_double_click_reports_invalid_data1_instead_of_raising(monkeypatch):
+    """Every sibling send/apply/export handler in this file wraps its work in
+    try/except so a bad user input surfaces as a QMessageBox instead of an
+    uncaught exception escaping the Qt slot; double-click must behave the same
+    way for an invalid Data1 field."""
+    import seratomidiconf.gui.controller_setup as controller_setup_mod
+
+    view = _view_with_name()
+    monkeypatch.setattr(controller_setup_mod, "list_output_ports", lambda: ["Port A"])
+    view._refresh_output_ports()
+    view._send_data1_edit.setText("not-a-number")
+
+    shown = {}
+    monkeypatch.setattr(
+        controller_setup_mod.QMessageBox,
+        "critical",
+        lambda parent, title, text: shown.update(title=title, text=text),
+    )
+    view._on_send_output_double_clicked()  # must not raise
+    assert shown.get("title") == "Failed to send MIDI"
 
 
 def test_ddj_xp2_pad_mode_5_uses_double_click_on_mode_1(monkeypatch):

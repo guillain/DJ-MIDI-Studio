@@ -1,3 +1,5 @@
+from PySide6.QtGui import QPainter, QTransform
+
 from seratomidiconf import catalog
 from seratomidiconf.catalog._registry import ControllerDefinition, register
 from seratomidiconf.gui.controller_image_view import (
@@ -42,4 +44,34 @@ def test_set_controller_selects_known_name():
     assert view.set_controller("XDJ-XZ") is True
     assert view._combo.currentText() == "XDJ-XZ"
     assert view.set_controller("__missing__") is False
+
+
+def test_zoomable_view_enables_antialiasing_and_smooth_pixmap_transform():
+    """setRenderHint(self.renderHints()) is a self-referential no-op (it sets
+    the hint bits already present in the *current* hints back onto themselves)
+    — the viewer must actually request Antialiasing/SmoothPixmapTransform for
+    a zoomed Pioneer diagram to render smoothly rather than pixelated."""
+    view = ControllerImageView()
+    hints = view._view.renderHints()
+    assert hints & QPainter.RenderHint.Antialiasing
+    assert hints & QPainter.RenderHint.SmoothPixmapTransform
+
+
+def test_switching_to_controller_without_image_resets_leftover_zoom():
+    """Reachable in practice via Controller Setup's "Apply now", which adds a
+    freshly-applied controller (no reference image yet) to this combo mid-
+    session: if the user had zoomed into the previously-shown image, the
+    "Image not found" placeholder must not inherit that pan/zoom transform."""
+    register(ControllerDefinition(name="__NoImageCtrl__"))
+    try:
+        view = ControllerImageView()
+        view.refresh_controllers()  # settles _load() on the still-selected default controller
+        view._view.scale(5.0, 5.0)
+        zoomed = view._view.transform()
+        assert zoomed != QTransform()
+
+        assert view.set_controller("__NoImageCtrl__") is True
+        assert view._view.transform() == QTransform()
+    finally:
+        catalog._registry._REGISTRY.pop("__NoImageCtrl__", None)
 

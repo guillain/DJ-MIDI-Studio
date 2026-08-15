@@ -56,7 +56,6 @@ from seratomidiconf.catalog.codegen import (
     build_definition,
     find_trigger_conflicts,
     generate_module_source,
-    merge_by_channel,
 )
 from seratomidiconf.gui.port_list_utils import (
     refresh_checked_port_list,
@@ -192,18 +191,6 @@ class ControllerSetupView(QWidget):
         send_all_button.clicked.connect(self._on_send_all_rows_clicked)
         replay_button = QPushButton("Replay recorded session")
         replay_button.clicked.connect(self._on_replay_recorded_session_clicked)
-
-        pad_row_1 = QHBoxLayout()
-        for mode in (1, 2, 3, 4):
-            button = QPushButton(f"PAD MODE {mode}")
-            button.clicked.connect(lambda _checked=False, m=mode: self._on_send_ddj_xp2_pad_mode(m))
-            pad_row_1.addWidget(button)
-
-        pad_row_2 = QHBoxLayout()
-        for mode in (5, 6, 7, 8):
-            button = QPushButton(f"PAD MODE {mode} (double)")
-            button.clicked.connect(lambda _checked=False, m=mode: self._on_send_ddj_xp2_pad_mode(m))
-            pad_row_2.addWidget(button)
 
         self._send_status = QLabel("No MIDI output sent yet.")
 
@@ -397,6 +384,10 @@ class ControllerSetupView(QWidget):
         if clear_name:
             self._controller_name = ""
             self._name_edit.setText("")
+            # This draft's identity ends here — any name(s) it applied earlier
+            # must not grant a future, unrelated draft permission to silently
+            # re-replace them (see _on_apply_clicked's hard-block).
+            self._applied_names = set()
         self._rebuild_table()
         self._dirty = False
 
@@ -465,8 +456,8 @@ class ControllerSetupView(QWidget):
         self._send_status.setText("MIDI message sent.")
 
     def _on_send_output_double_clicked(self) -> None:
-        note = _parse_int(self._send_data1_edit.text(), "Data1", 0, 127)
         try:
+            note = _parse_int(self._send_data1_edit.text(), "Data1", 0, 127)
             self._send_note_click(note=note, double_click=True)
         except Exception as exc:  # noqa: BLE001 - show user-facing error
             QMessageBox.critical(self, "Failed to send MIDI", str(exc))
@@ -689,6 +680,11 @@ class ControllerSetupView(QWidget):
         self._recorded_events = recorded_events
         self._sources = sources
         self._devices = devices
+        # A loaded session is a different draft as far as this run is concerned
+        # (the JSON format doesn't record what this process previously applied),
+        # so it must not inherit another draft's "already applied" permission —
+        # see _on_apply_clicked's hard-block and _reset's matching reset.
+        self._applied_names = set()
         self._rebuild_table()
         self._dirty = False
 
@@ -754,8 +750,11 @@ class ControllerSetupView(QWidget):
         return errors
 
     def _export_module(self, path: str | Path) -> None:
-        merged = merge_by_channel(self._rows)
-        source = generate_module_source(self._controller_name, merged)
+        # Routed through build_definition (the same call "Apply now" makes) rather
+        # than calling merge_by_channel directly, so apply and export always derive
+        # from one shared transformation instead of two that merely happen to agree.
+        definition = build_definition(self._controller_name, self._rows)
+        source = generate_module_source(self._controller_name, definition.static_entries)
         Path(path).write_text(source)
 
     def _on_check_conflicts_clicked(self) -> None:
