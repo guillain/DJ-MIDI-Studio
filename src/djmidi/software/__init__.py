@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib
+import importlib.metadata
 import pkgutil
 
 from djmidi.software._registry import (
@@ -23,6 +24,8 @@ def discover_plugins() -> None:
         if module_info.name.startswith("_"):
             continue
         importlib.import_module(f"{__name__}.{module_info.name}")
+    for entry_point in importlib.metadata.entry_points(group="djmidi.software"):
+        entry_point.load()
 
 
 discover_plugins()
