@@ -8,6 +8,7 @@ from typing import Any
 
 import mido
 
+from djmidi.ableton_link import LinkClockFollower
 from djmidi.midi_api import MidiMessage
 from djmidi.midi_clock import MidiClockMirror
 from djmidi.midi_router import MidiRouter
@@ -35,6 +36,7 @@ class MidiRoutingSession:
         clock_mirrors: Iterable[MidiClockMirror] | None = None,
         virtual_input_ids: Iterable[str] = (),
         virtual_input_opener: InputOpener | None = None,
+        link_followers: Iterable[LinkClockFollower] = (),
     ) -> None:
         self.router = router
         self._input_opener = input_opener
@@ -46,6 +48,7 @@ class MidiRoutingSession:
         if clock_mirror is not None and clock_mirrors is not None:
             raise ValueError("use clock_mirror or clock_mirrors, not both")
         self._clock_mirrors = tuple(clock_mirrors or ((clock_mirror,) if clock_mirror else ()))
+        self._link_followers = tuple(link_followers)
         self._inputs: dict[str, Any] = {}
         self._outputs: dict[str, Any] = {}
         self.running = False
@@ -66,6 +69,11 @@ class MidiRoutingSession:
             raise RuntimeError("stop the routing session before changing the Clock policy")
         self._clock_mirrors = tuple(clock_mirrors)
 
+    def set_link_followers(self, followers: Iterable[LinkClockFollower]) -> None:
+        if self.running:
+            raise RuntimeError("stop the routing session before changing the Link policy")
+        self._link_followers = tuple(followers)
+
     def set_virtual_input_ids(self, input_ids: Iterable[str]) -> None:
         if self.running:
             raise RuntimeError("stop the routing session before changing virtual MIDI inputs")
@@ -73,7 +81,7 @@ class MidiRoutingSession:
 
     def start(self) -> None:
         routes = tuple(route for route in self.router.routes if route.enabled)
-        if not routes and not self._clock_mirrors:
+        if not routes and not self._clock_mirrors and not self._link_followers:
             raise ValueError("at least one enabled MIDI route or Clock policy is required")
         self._validate_topology(routes)
         self.stop()
@@ -82,6 +90,8 @@ class MidiRoutingSession:
         for clock_mirror in self._clock_mirrors:
             input_ids.add(clock_mirror.source_port_id)
             output_ids.update(clock_mirror.destination_port_ids)
+        for follower in self._link_followers:
+            output_ids.update(follower.destination_port_ids)
         try:
             for port_id in sorted(input_ids):
                 opener = (
@@ -105,6 +115,8 @@ class MidiRoutingSession:
                 close()
         self._inputs.clear()
         self._outputs.clear()
+        for follower in self._link_followers:
+            follower.reset()
 
     def poll(self) -> int:
         """Drain each input once and return the number of forwarded messages."""
@@ -121,6 +133,8 @@ class MidiRoutingSession:
                 forwarded += self.router.route_message(source_id, normalized, self._send)
                 for clock_mirror in self._clock_mirrors:
                     forwarded += clock_mirror.forward(normalized, self._send)
+        for follower in self._link_followers:
+            forwarded += follower.poll(self._send)
         return forwarded
 
     @staticmethod
@@ -143,6 +157,9 @@ class MidiRoutingSession:
         for mirror in self._clock_mirrors:
             for destination in mirror.destination_port_ids:
                 graph.setdefault(mirror.source_port_id, set()).add(destination)
+        for follower in self._link_followers:
+            for destination in follower.destination_port_ids:
+                graph.setdefault(follower.source_port_id, set()).add(destination)
 
         visiting: set[str] = set()
         visited: set[str] = set()

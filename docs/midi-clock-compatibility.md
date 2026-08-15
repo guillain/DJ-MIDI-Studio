@@ -50,10 +50,15 @@ is:
    (it appears as an input to DJ MIDI Studio), select the actual hardware MIDI
    output as the destination, and start routing.
 
-In this topology, do not enable `Create virtual input for Serato Clock`; Serato
-is the Link tempo master, while the bridge is the MIDI Clock producer. The
-XDJ-XZ and DDJ-XP2 remain control surfaces; this project does not claim either
-one as a verified Serato MIDI Clock generator.
+DJ MIDI Studio can now replace the Live/bridge step when the optional `aalink`
+binding is installed. Select `Ableton Link (DJ MIDI Studio)` as the Clock
+source, keep `Create virtual input for Serato Clock` disabled, and route it to
+the physical MIDI output. DJ MIDI Studio follows Link's tempo and phase and
+emits MIDI Clock; it never sets Link's tempo. Install the binding with
+`uv add aalink` before selecting the Link source. If it is missing, the UI
+reports the dependency instead of silently creating a dead route.
+The XDJ-XZ and DDJ-XP2 remain control surfaces; this project does not claim
+either one as a verified Serato MIDI Clock generator.
 
 If an external bridge is intentionally writing into `DJ MIDI Studio Serato
 Clock In`, start DJ MIDI Studio first so the virtual input exists, select that

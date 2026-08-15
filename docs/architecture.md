@@ -36,6 +36,8 @@ flowchart LR
     E --> F[Issues table]
     C --> G[exporter.py]
     G --> H[Selected software XML output]
+    L[Ableton Link follower] --> M[24 PPQN MIDI Clock generator]
+    M --> R[MIDI routing session]
 ```
 
 ## GUI Navigation Model

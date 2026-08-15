@@ -21,6 +21,12 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from djmidi.ableton_link import (
+    ABLETON_LINK_CLOCK_SOURCE_NAME,
+    AalinkStateProvider,
+    LinkBackendUnavailable,
+    LinkClockFollower,
+)
 from djmidi.catalog._registry import ControlInfo
 from djmidi.gui.port_list_utils import refresh_selectable_port_list
 from djmidi.midi_clock import MidiClockMirror
@@ -46,6 +52,7 @@ class MidiRoutingView(QWidget):
         self._router = MidiRouter()
         self._clock: MidiClockMirror | None = None
         self._clocks: list[MidiClockMirror] = []
+        self._link_followers: list[LinkClockFollower] = []
         self._routing_enabled = False
         self._routing_session = MidiRoutingSession(self._router)
         self._all_rows_provider = all_rows_provider or list
@@ -101,7 +108,7 @@ class MidiRoutingView(QWidget):
         remove_clock_button = QPushButton("Remove selected")
         remove_clock_button.clicked.connect(self._remove_clock_route)
         clock_controls = QHBoxLayout()
-        clock_controls.addWidget(QLabel("Clock source (MIDI in):"))
+        clock_controls.addWidget(QLabel("Clock source:"))
         clock_controls.addWidget(self._clock_source)
         clock_controls.addWidget(QLabel("Clock destination (MIDI out):"))
         clock_controls.addWidget(self._clock_destination)
@@ -122,8 +129,8 @@ class MidiRoutingView(QWidget):
         help_label = QLabel(
             "Routes are configured here but remain inactive until MIDI routing is enabled in Preferences. "
             "Clock synchronization is intentionally opt-in and must be validated per software/version. "
-            "Serato DJ Pro does not emit standard MIDI Clock directly: its virtual Serato Clock input "
-            "is useful only when an external Link-to-MIDI or Clock bridge sends ticks into it."
+            "Serato DJ Pro does not emit standard MIDI Clock directly. Enable Ableton Link in Serato "
+            "and choose 'Ableton Link (DJ MIDI Studio)' to follow Link and generate MIDI Clock here."
         )
         help_label.setWordWrap(True)
 
@@ -316,7 +323,7 @@ class MidiRoutingView(QWidget):
         output_names = sorted(set(list_output_ports()))
         self._replace_port_combo(self._source_combo, input_names)
         self._replace_port_combo(self._destination_combo, output_names)
-        clock_inputs = input_names
+        clock_inputs = [*input_names, ABLETON_LINK_CLOCK_SOURCE_NAME]
         if self._serato_virtual_checkbox.isChecked():
             clock_inputs = [*clock_inputs, SERATO_CLOCK_INPUT_NAME]
         self._replace_port_combo(self._clock_source, clock_inputs)
@@ -365,6 +372,9 @@ class MidiRoutingView(QWidget):
         if not enabled:
             self._clock = None
             self._clocks.clear()
+            for follower in self._link_followers:
+                follower.close()
+            self._link_followers.clear()
             self._refresh_clock_table()
             self._routing_session.set_clock_mirrors(())
             self._clock_status.setText("Clock mirror disabled")
@@ -407,23 +417,38 @@ class MidiRoutingView(QWidget):
             self._clock_enabled.blockSignals(False)
             self._clock_status.setText("Select different Clock source and destination ports")
             return
-        if any(clock.source_port_id == source and destination in clock.destination_port_ids for clock in self._clocks):
+        if any(
+            clock.source_port_id == source and destination in clock.destination_port_ids
+            for clock in (*self._clocks, *self._link_followers)
+        ):
             self._clock_status.setText("This Clock route is already configured")
             return
         if self._routing_session.running:
             self._stop_routing()
-        self._clocks.append(MidiClockMirror(source, [destination]))
-        self._clock = self._clocks[0]
+        if source == ABLETON_LINK_CLOCK_SOURCE_NAME:
+            try:
+                follower = LinkClockFollower([destination], AalinkStateProvider())
+            except LinkBackendUnavailable as exc:
+                self._clock_status.setText(str(exc))
+                return
+            self._link_followers.append(follower)
+        else:
+            self._clocks.append(MidiClockMirror(source, [destination]))
+            self._clock = self._clocks[0]
         self._refresh_clock_table()
         self._update_clock_session()
 
     def _remove_clock_route(self) -> None:
         row = self._clock_table.currentRow()
-        if row < 0 or row >= len(self._clocks):
+        if row < 0 or row >= len(self._clocks) + len(self._link_followers):
             return
         if self._routing_session.running:
             self._stop_routing()
-        self._clocks.pop(row)
+        if row < len(self._clocks):
+            self._clocks.pop(row)
+        else:
+            follower = self._link_followers.pop(row - len(self._clocks))
+            follower.close()
         self._clock = self._clocks[0] if self._clocks else None
         self._refresh_clock_table()
         self._update_clock_session()
@@ -436,6 +461,12 @@ class MidiRoutingView(QWidget):
                 self._clock_table.insertRow(row)
                 for column, value in enumerate((clock.source_port_id, destination, "Enabled")):
                     self._clock_table.setItem(row, column, QTableWidgetItem(value))
+        for follower in self._link_followers:
+            for destination in follower.destination_port_ids:
+                row = self._clock_table.rowCount()
+                self._clock_table.insertRow(row)
+                for column, value in enumerate((follower.source_port_id, destination, "Enabled")):
+                    self._clock_table.setItem(row, column, QTableWidgetItem(value))
 
     def _update_clock_session(self) -> None:
         virtual_ids = (
@@ -445,6 +476,7 @@ class MidiRoutingView(QWidget):
         )
         self._routing_session.set_virtual_input_ids(virtual_ids)
         self._routing_session.set_clock_mirrors(self._clocks)
+        self._routing_session.set_link_followers(self._link_followers)
         if self._clocks:
             self._refresh_clock_status()
         else:
@@ -464,11 +496,13 @@ class MidiRoutingView(QWidget):
         else:
             now = time.monotonic()
             active = [clock for clock in self._clocks if clock.clock_active(now)]
-            if active:
-                sources = ", ".join(sorted({clock.source_port_id for clock in active}))
+            active_link = [follower for follower in self._link_followers if follower.clock_active(now)]
+            if active or active_link:
+                sources = ", ".join(sorted({clock.source_port_id for clock in (*active, *active_link)}))
                 text, color = f"CLOCK ACTIVE — receiving ticks from {sources}", "#16803c"
             else:
-                sources = ", ".join(sorted({clock.source_port_id for clock in self._clocks}))
+                configured = (*self._clocks, *self._link_followers)
+                sources = ", ".join(sorted({clock.source_port_id for clock in configured}))
                 transport = [clock for clock in self._clocks if clock.message_active(now)]
                 if transport:
                     text = f"CLOCK INACTIVE — transport received, no Clock ticks from {sources}"

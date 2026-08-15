@@ -74,6 +74,9 @@ second, then real-time routing and clock synchronization.
 - [x] Document that Serato DJ Pro is not a native MIDI Clock producer and describe Link-to-MIDI bridge alternatives.
 - [x] Distinguish an unopened Clock source, a source open without ticks, and transport-only input in the live diagnostic.
 - [x] Separate MIDI input and output port selectors so an input such as `MIDI4x4 Midi In 1` cannot be configured as a Clock destination.
+- [x] Add a direct Ableton Link follower that generates Start/Continue/Stop and 24 PPQN MIDI Clock without changing Link tempo.
+- [x] Add deterministic Link scheduler tests and a clear missing-optional-binding diagnostic.
+- [ ] Verify the direct Ableton Link → CoreMIDI output path with Serato, XDJ-XZ, DDJ-XP2, and a real MIDI destination on macOS.
 - [ ] Verify the complete Serato → CoreMIDI virtual-port path on a real macOS/Serato setup, including port discovery, Clock output selection, Start/Stop, and sustained 24 PPQN ticks; virtual-port tests alone are not sufficient evidence.
 
 ### Phase 4 — safe software/controller operations — IN PROGRESS

@@ -106,11 +106,12 @@ For screenshots and a visual description of each tab, see [Screens and Layouts](
   When a Clock policy is enabled, each configured source → destination line is
   opened by the same session and realtime Start/Continue/Stop/Clock messages
   are forwarded with the configured jitter safeguards.
-  Serato DJ Pro does not emit standard MIDI Clock directly, so
-  `Create virtual input for Serato Clock` is only useful when an external
-  Link-to-MIDI/Clock bridge sends ticks into that virtual port. For the usual
-  Serato workflow, enable Serato Link, let Ableton Live or another bridge
-  generate MIDI Clock, then select the bridge's output as the Clock source.
+  Serato DJ Pro does not emit standard MIDI Clock directly. For a direct
+  workflow, install the optional `aalink` binding, enable Link in Serato, and
+  select `Ableton Link (DJ MIDI Studio)` as the Clock source. DJ MIDI Studio
+  follows Link and emits 24 PPQN MIDI Clock without changing Link's tempo.
+  `Create virtual input for Serato Clock` remains for an external bridge that
+  explicitly sends ticks into that virtual port.
   For Traktor, select its MIDI output as the physical Clock source and
   configure Traktor's external Clock mode.
 
