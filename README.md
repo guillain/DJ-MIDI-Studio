@@ -13,6 +13,7 @@ Edit DJ software MIDI mappings with a visual workflow instead of hand-editing th
 - [Send MIDI Commands](#send-midi-commands)
 - [Release Process](#release-process)
 - [Documentation Index](#documentation-index)
+- [End-to-End Examples](#end-to-end-examples)
 - [Technical References](#technical-references)
 
 ## Why This Project
@@ -150,6 +151,11 @@ bash scripts/release_artifacts.sh
 - Workflow `.github/workflows/draft-release.yml` builds package + executables and creates a **draft GitHub release** with attached artifacts.
 - Final checklist: see `docs/release-checklist.md`.
 
+## End-to-End Examples
+
+See the [end-to-end examples](docs/examples.md) for controller detection,
+mapping parsing, Live Monitor, MIDI routing, and unknown-device workflows.
+
 ## Documentation Index
 
 - [Documentation Home](docs/README.md)
@@ -157,6 +163,7 @@ bash scripts/release_artifacts.sh
 - [User Guide](docs/user-guide.md)
 - [Screens and Layouts](docs/screens-and-layouts.md)
 - [Architecture](docs/architecture.md)
+- [End-to-End Examples](docs/examples.md)
 - [Testing and Quality](docs/testing-and-quality.md)
 - [Quality Gates](docs/quality-gates.md)
 - [Build and Release](docs/build-and-release.md)

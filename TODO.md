@@ -161,8 +161,8 @@ Ordered by current priority:
 - [x] Add the GUI configuration surface for MIDI routes and opt-in Clock policies.
 - [x] Add controlled physical route execution behind the Preferences routing flag, with fake-port integration tests.
 - [x] Execute the configured MIDI Clock mirror through the same opt-in physical routing session, with fake-port tests.
-- [ ] Add more end-to-end examples and use cases to the documentation.
-- [ ] Extend the advanced user guide with deeper vendor-specific workflows and troubleshooting.
+- [x] Add more end-to-end examples and use cases to the documentation.
+- [x] Extend the advanced user guide with deeper vendor-specific workflows and troubleshooting.
 
 ### Plugin-based integrations and dynamic registries
 
