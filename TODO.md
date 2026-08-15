@@ -57,6 +57,7 @@ second, then real-time routing and clock synchronization.
 - [x] Reset Clock jitter measurement at Start/Continue/Stop boundaries so Serato pauses and restarts do not create false jitter samples.
 - [x] Add a live Clock source indicator distinguishing configured, waiting, inactive, and actively receiving states.
 - [x] Document the Serato virtual-port troubleshooting path for `CLOCK INACTIVE`.
+- [x] Distinguish an unopened Clock source, a source open without ticks, and transport-only input in the live diagnostic.
 
 ### Phase 4 — safe software/controller operations — IN PROGRESS
 

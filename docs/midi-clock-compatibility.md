@@ -16,8 +16,8 @@ cannot be duplicated.
 The MIDI Routing panel reports four distinct states: policy disabled, routing
 configured but blocked by the Preferences safety gate, waiting for source
 ticks, and `CLOCK ACTIVE` after recent Clock ticks have actually been received.
-`CLOCK INACTIVE` after starting the session means the port is open but no
-realtime Clock tick has arrived from the selected source.
+`CLOCK INACTIVE` after starting the session reports whether the source port is
+not open, open without ticks, or has sent transport without any Clock ticks.
 
 ## Serato DJ
 
@@ -47,7 +47,7 @@ For Serato, `CLOCK INACTIVE` usually means one of these steps is missing:
 start routing in DJ MIDI Studio, select `DJ MIDI Studio Serato Clock In` as
 Serato's MIDI Clock output destination, and enable Serato's Clock/Sync output
 for the active deck/session. The virtual port is not created before the
-routing session starts.
+routing session starts. Hover the status label for the same actionable hint.
 
 ## Traktor
 

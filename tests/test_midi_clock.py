@@ -61,3 +61,10 @@ def test_clock_mirror_reports_recent_source_activity():
     mirror.forward(MidiMessage(b"\xf8", 10.0, "clock-in"), lambda *_: None)
     assert mirror.clock_active(10.4)
     assert not mirror.clock_active(10.6)
+
+
+def test_clock_mirror_reports_transport_without_clock_ticks():
+    mirror = MidiClockMirror("clock-in", ["out"])
+    mirror.forward(MidiMessage(b"\xfa", 10.0, "clock-in"), lambda *_: None)
+    assert mirror.message_active(10.4)
+    assert not mirror.clock_active(10.4)

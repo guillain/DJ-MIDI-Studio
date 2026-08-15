@@ -106,5 +106,12 @@ class MidiClockMirror:
         last_clock = self.stats.last_clock_time
         return last_clock is not None and now - last_clock <= timeout_s
 
+    def message_active(self, now: float, *, timeout_s: float = 0.5) -> bool:
+        """Return whether any accepted realtime message recently arrived."""
+        if timeout_s <= 0:
+            raise ValueError("Clock activity timeout must be positive")
+        last_message = self.stats.last_message_time
+        return last_message is not None and now - last_message <= timeout_s
+
 
 __all__ = ["ClockStats", "MidiClockMirror"]

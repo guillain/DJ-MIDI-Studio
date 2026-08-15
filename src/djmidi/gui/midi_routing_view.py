@@ -443,6 +443,7 @@ class MidiRoutingView(QWidget):
 
     def _refresh_clock_status(self) -> None:
         """Show configured, waiting, active, or stopped Clock state."""
+        self._clock_status.setToolTip("")
         if not self._clock_enabled.isChecked():
             text, color = "Clock mirror disabled", "#666"
         elif not self._clocks:
@@ -452,13 +453,34 @@ class MidiRoutingView(QWidget):
         elif not self._routing_session.running:
             text, color = "Clock configured; press Start routing", "#b26a00"
         else:
-            active = [clock for clock in self._clocks if clock.clock_active(time.monotonic())]
+            now = time.monotonic()
+            active = [clock for clock in self._clocks if clock.clock_active(now)]
             if active:
                 sources = ", ".join(sorted({clock.source_port_id for clock in active}))
                 text, color = f"CLOCK ACTIVE — receiving ticks from {sources}", "#16803c"
             else:
                 sources = ", ".join(sorted({clock.source_port_id for clock in self._clocks}))
-                text, color = f"CLOCK INACTIVE — no ticks received from {sources}", "#b00020"
+                transport = [clock for clock in self._clocks if clock.message_active(now)]
+                if transport:
+                    text = f"CLOCK INACTIVE — transport received, no Clock ticks from {sources}"
+                elif any(
+                    clock.source_port_id in self._routing_session.input_port_ids
+                    for clock in self._clocks
+                ):
+                    text = f"CLOCK INACTIVE — source port open, no ticks received from {sources}"
+                else:
+                    text = f"CLOCK INACTIVE — source port not open: {sources}"
+                color = "#b00020"
+                if SERATO_CLOCK_INPUT_NAME in sources:
+                    self._clock_status.setToolTip(
+                        "Serato diagnostic: start routing, then select this virtual port "
+                        "as Serato's MIDI Clock output destination and enable Clock/Sync."
+                    )
+                else:
+                    self._clock_status.setToolTip("")
+                self._clock_status.setText(text)
+                self._clock_status.setStyleSheet(f"color: {color}; font-weight: 600;")
+                return
         self._clock_status.setText(text)
         self._clock_status.setStyleSheet(f"color: {color}; font-weight: 600;")
 
