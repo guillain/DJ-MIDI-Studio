@@ -3,6 +3,55 @@
 This file is the project backlog. Completed work is kept below as a historical
 delivery record so that the backlog remains useful after each release.
 
+## Active innovation program
+
+The following program is now the active roadmap. Work is deliberately ordered
+by dependency: plugin contracts and declarative profiles first, detection
+second, then real-time routing and clock synchronization.
+
+### Phase 0 — baseline plugin architecture
+
+- [x] Controller and DJ software registries discover built-in modules and Python entry points.
+- [x] Controller and software lists are consumed dynamically by the current GUI.
+- [x] Serato and Traktor are exposed as software plugins.
+
+### Phase 1 — plugin contracts and declarative profiles — IN PROGRESS
+
+- [ ] Define and validate a versioned plugin manifest for controllers and DJ software.
+- [ ] Add plugin capabilities and permissions to the manifest.
+- [ ] Support controller profiles from JSON first; evaluate YAML after the schema stabilizes.
+- [ ] Define schema validation, duplicate-ID handling, enable/disable state, and useful diagnostics.
+- [ ] Add profile fixtures and contract tests that require no MIDI hardware.
+
+### Phase 2 — assisted integration detection — NEXT
+
+- [ ] Detect the mapping software from file signature, extension, and plugin probes; ask for confirmation when ambiguous.
+- [ ] Detect the controller from MIDI port name, identity/SysEx where available, and plugin capability scores.
+- [ ] Show the confidence and reason for a detection result before enabling an integration.
+- [ ] Keep explicit user selection as the fallback for unknown or ambiguous hardware/software.
+
+### Phase 3 — multi-device MIDI engine — PLANNED
+
+- [ ] Add a one-way MIDI router with port/channel/message filters and loop prevention.
+- [ ] Add monitoring/status for routes, dropped messages, latency, and errors.
+- [ ] Add MIDI Clock mirror with Start/Stop/Continue handling, 24 PPQN forwarding, source selection, and jitter safeguards.
+- [ ] Document Serato and Rekordbox clock-specific behavior before enabling cross-software clock sync.
+- [ ] Add integration tests with virtual MIDI ports and deterministic fake clocks.
+
+### Phase 4 — safe software/controller operations — PLANNED
+
+- [ ] Add read-only software status and configuration capability declarations.
+- [ ] Add configuration updates only through backup, preview/diff, validation, and rollback.
+- [ ] Add a preferences surface for enabled plugins, detection policy, routing policy, and trust decisions.
+- [ ] Support unknown devices and unsupported mapping formats through a generic MIDI profile.
+- [ ] Document plugin installation, updates, compatibility, trust, and troubleshooting.
+
+### Tracking rules
+
+- Every phase produces a focused commit and annotated tag.
+- A phase is complete only when its contract tests, documentation, and failure diagnostics are present.
+- Automatic detection and Clock/routing remain disabled until their safety tests pass.
+
 ## Delivered
 
 ### Core mapping workflow
