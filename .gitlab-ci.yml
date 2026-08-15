@@ -1,7 +1,25 @@
-stages: [build, release]
+stages: [quality, screenshots, build, release]
 
 variables:
   UV_CACHE_DIR: "$CI_PROJECT_DIR/.cache/uv"
+
+quality:
+  stage: quality
+  tags: [linux]
+  script:
+    - bash scripts/quality_gate.sh
+
+screenshots:
+  stage: screenshots
+  tags: [linux]
+  script:
+    - uv sync --group dev
+    - QT_QPA_PLATFORM=offscreen uv run python scripts/capture_docs_screenshots.py
+  artifacts:
+    name: "djmidi-studio-documentation-screenshots-$CI_COMMIT_TAG"
+    paths:
+      - docs/images/layout/*.png
+    expire_in: 30 days
 
 .build_template:
   stage: build
@@ -32,7 +50,7 @@ build:windows:
 release:
   stage: release
   image: registry.gitlab.com/gitlab-org/cli:latest
-  needs: [build:linux, build:macos, build:windows]
+  needs: [build:linux, build:macos, build:windows, screenshots]
   artifacts:
     name: "djmidi-studio-$CI_COMMIT_TAG-all-os"
     paths:

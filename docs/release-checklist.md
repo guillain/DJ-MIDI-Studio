@@ -69,14 +69,20 @@ git push origin v0.1.0
 
 On tag push, workflow `.github/workflows/draft-release.yml`:
 
+- runs the quality gate before packaging,
 - builds executable bundles on macOS, Linux, and Windows,
 - builds wheel + sdist,
+- regenerates the documentation screenshots from
+  `data/ddj-xp2-custom-4-decks.xml`,
 - attaches all release archives to a **draft GitHub Release**.
 
 ```mermaid
 flowchart LR
-    Tag[v* tag pushed] --> BuildMatrix[Build matrix: macOS/Linux/Windows]
+    Tag[v* tag pushed] --> Quality[Quality gate]
+    Quality --> Screenshots[Generate screenshots from reference XML]
+    Quality --> BuildMatrix[Build matrix: macOS/Linux/Windows]
     BuildMatrix --> Artifacts[Upload archives + package files]
+    Screenshots --> Artifacts
     Artifacts --> Draft[Create draft GitHub Release]
 ```
 

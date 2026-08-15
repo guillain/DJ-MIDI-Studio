@@ -4,5 +4,4 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-uv run python tools/quality_gate.py "$@"
-
+uv run python scripts/quality_gate.py "$@"

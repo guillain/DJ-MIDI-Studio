@@ -101,7 +101,8 @@ uv run pytest
 ## Build and Test Scripts
 
 - `scripts/test.sh`: lint/test entrypoint (`all`, `quick`, `lint`, `test`, `path`).
-- `scripts/quality_gate.sh`: enforces quality/security targets (coverage, smell, duplication, vulnerabilities).
+- `scripts/quality_gate.py` / `scripts/quality_gate.sh`: coverage, maintainability, duplication, and security gate.
+- `scripts/capture_docs_screenshots.py`: regenerates UI screenshots from the reference XML without MIDI hardware.
 - `scripts/bootstrap.sh`: one-command local setup and pre-commit quick check hook.
 - `scripts/build.sh`: build wheel/sdist and native executable bundle for current OS.
 - `scripts/release_artifacts.sh`: archive OS-specific executable artifacts.

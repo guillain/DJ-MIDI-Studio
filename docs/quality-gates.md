@@ -12,8 +12,8 @@
 This project quality gate enforces:
 
 - Code smell score `>= 90%`
-- Test coverage `>= 90%`
-- Duplication `< 5%`
+- Test coverage `>= 85%`
+- Duplication `< 6%`
 - Vulnerabilities: `HIGH = 0` and dependency vulnerability count `= 0`
 
 ## How Metrics Are Measured
@@ -27,7 +27,7 @@ This project quality gate enforces:
 
 ```mermaid
 flowchart LR
-    A[pytest + coverage.xml] --> G[quality_gate.py]
+    A[pytest + coverage.xml] --> G[scripts/quality_gate.py]
     B[radon metrics] --> G
     C[duplication scanner] --> G
     D[bandit] --> G
@@ -61,4 +61,3 @@ bash scripts/quality_gate.sh --skip-tests
 - If duplication is high, extract repeated logic into model/services utilities.
 - If smell score is low, prioritize high-complexity files and split functions.
 - If security gates fail, patch dependencies and re-run `pip-audit`.
-

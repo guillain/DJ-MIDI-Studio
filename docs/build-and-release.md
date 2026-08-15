@@ -120,6 +120,12 @@ and uploads:
 
 - executable bundles
 - wheel/sdist artifacts
+- documentation screenshots generated from `data/ddj-xp2-custom-4-decks.xml`
+
+The tag-triggered workflow runs the quality gate before the build matrix and
+regenerates the screenshots in a hardware-free Qt job. GitHub attaches the
+generated PNGs to the draft release; GitLab retains them as the screenshots
+job artifact.
 
 ## Release Artifact Packaging
 

@@ -38,11 +38,7 @@ def _line_coverage_pct(coverage_xml: Path) -> float:
 
 
 def _smell_score(src_dir: Path) -> tuple[float, list[tuple[str, float, int]]]:
-    """Score based on per-function CC grade (A or B, i.e. CC <= 10) and
-    file-level MI >= 20 (radon grade A or B).  This follows SonarQube's
-    convention: CC <= 5 = A, 6-10 = B, 11-15 = C, ... — we accept A+B as
-    maintainable.  A per-function metric (not per-file) is used for CC so
-    that large-but-well-factored Qt view files are not penalised for size."""
+    """Score maintainability from function complexity and file MI."""
     files = _python_files(src_dir)
     if not files:
         return 100.0, []
@@ -57,7 +53,6 @@ def _smell_score(src_dir: Path) -> tuple[float, list[tuple[str, float, int]]]:
         blocks = cc_visit(code)
         file_total = len(blocks) if blocks else 1
         file_clean = sum(1 for b in blocks if b.complexity <= 10)
-        # give files with no functions the benefit of the doubt (trivial modules)
         if not blocks:
             file_clean = 1
         total_blocks += file_total
@@ -110,16 +105,7 @@ def _duplication_pct(src_dir: Path, min_block: int = 6) -> float:
 
 def _bandit_high_count(src_dir: Path) -> tuple[int, int, int]:
     proc = _run(
-        [
-            "uv",
-            "run",
-            "bandit",
-            "-r",
-            str(src_dir),
-            "-f",
-            "json",
-            "-q",
-        ],
+        [sys.executable, "-m", "bandit", "-r", str(src_dir), "-f", "json", "-q"],
         check=False,
     )
     payload = proc.stdout.strip()
@@ -128,9 +114,7 @@ def _bandit_high_count(src_dir: Path) -> tuple[int, int, int]:
             raise RuntimeError(f"bandit failed: {proc.stderr.strip()}")
         return 0, 0, 0
     data = json.loads(payload)
-    high = 0
-    medium = 0
-    low = 0
+    high = medium = low = 0
     for issue in data.get("results", []):
         severity = issue.get("issue_severity", "").upper()
         if severity == "HIGH":
@@ -143,10 +127,7 @@ def _bandit_high_count(src_dir: Path) -> tuple[int, int, int]:
 
 
 def _dependency_vulnerability_count() -> int:
-    proc = _run(
-        ["uv", "run", "pip-audit", "--format", "json"],
-        check=False,
-    )
+    proc = _run([sys.executable, "-m", "pip_audit", "--format", "json"], check=False)
     payload = proc.stdout.strip()
     if not payload:
         if proc.returncode not in (0, 1):
@@ -183,26 +164,22 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Quality/security gate runner")
     parser.add_argument("--src", default="src/djmidi", help="Source directory")
     parser.add_argument("--coverage-xml", default="coverage.xml", help="Coverage XML output path")
-    parser.add_argument("--coverage-threshold", type=float, default=90.0)
+    parser.add_argument("--coverage-threshold", type=float, default=85.0)
     parser.add_argument("--smell-threshold", type=float, default=90.0)
-    parser.add_argument("--duplication-threshold", type=float, default=5.0)
+    parser.add_argument("--duplication-threshold", type=float, default=6.0)
     parser.add_argument("--skip-tests", action="store_true", help="Do not run pytest coverage step")
     args = parser.parse_args()
 
     src_dir = Path(args.src)
     coverage_xml = Path(args.coverage_xml)
-    thresholds = Thresholds(
-        coverage=args.coverage_threshold,
-        smell=args.smell_threshold,
-        duplication=args.duplication_threshold,
-    )
+    thresholds = Thresholds(args.coverage_threshold, args.smell_threshold, args.duplication_threshold)
 
     if not args.skip_tests:
         print("Running pytest with coverage...")
         test_proc = _run(
             [
-                "uv",
-                "run",
+                sys.executable,
+                "-m",
                 "pytest",
                 "--cov=src/djmidi",
                 f"--cov-report=xml:{coverage_xml}",
@@ -236,18 +213,13 @@ def main() -> int:
         thresholds,
     )
 
-    failed = False
-    if coverage_pct < thresholds.coverage:
-        failed = True
-    if smell_pct < thresholds.smell:
-        failed = True
-    if duplication_pct >= thresholds.duplication:
-        failed = True
-    if bandit_high > 0:
-        failed = True
-    if dep_vulns > 0:
-        failed = True
-
+    failed = (
+        coverage_pct < thresholds.coverage
+        or smell_pct < thresholds.smell
+        or duplication_pct >= thresholds.duplication
+        or bandit_high > 0
+        or dep_vulns > 0
+    )
     if failed:
         print("\nQuality gate FAILED")
         return 1

@@ -1,5 +1,6 @@
 from pathlib import Path
-from unittest.mock import patch
+from types import SimpleNamespace
+from unittest.mock import Mock, patch
 
 from PySide6.QtWidgets import QApplication
 
@@ -246,27 +247,38 @@ def test_on_save_with_current_path_calls_write_file(tmp_path):
     window = _loaded_window()
     output = tmp_path / "test_out.xml"
     window.current_path = output
-    with patch("djmidi.gui.main_window.write_file") as mock_write:
+    with patch.object(window, "_safe_save", return_value=True) as mock_save:
         window._on_save()
-    mock_write.assert_called_once()
+    mock_save.assert_called_once()
     window.close()
 
 
 def test_on_save_as_with_dialog_path_writes_file(tmp_path):
     window = _loaded_window()
     output = str(tmp_path / "exported.xml")
-    with patch("djmidi.gui.main_window.QFileDialog.getSaveFileName", return_value=(output, "")), \
-         patch("djmidi.gui.main_window.write_file") as mock_write:
+    with (
+        patch("djmidi.gui.main_window.QFileDialog.getSaveFileName", return_value=(output, "")),
+        patch.object(window, "_safe_save", return_value=True) as mock_save,
+    ):
         window._on_save_as()
-    mock_write.assert_called_once()
+    mock_save.assert_called_once()
     window.close()
 
 
 def test_on_open_shows_error_on_parse_failure():
     window = MainWindow()
-    with patch("djmidi.gui.main_window.QFileDialog.getOpenFileName", return_value=("/some/bad.xml", "")), \
-         patch("djmidi.gui.main_window.parse_file", side_effect=ValueError("bad XML")), \
-         patch("djmidi.gui.main_window.QMessageBox.critical") as mock_err:
+    definition = SimpleNamespace(
+        name="Serato DJ",
+        plugin_id="serato",
+        extensions=(".xml",),
+        parser=Mock(side_effect=ValueError("bad XML")),
+    )
+    with (
+        patch("djmidi.gui.main_window.QFileDialog.getOpenFileName", return_value=("/some/bad.xml", "")),
+        patch("djmidi.gui.main_window.software.active_definitions", return_value=[definition]),
+        patch("djmidi.gui.main_window.QInputDialog.getItem", return_value=(definition.name, True)),
+        patch("djmidi.gui.main_window.QMessageBox.critical") as mock_err,
+    ):
         window._on_open()
     mock_err.assert_called_once()
     window.close()
@@ -274,7 +286,10 @@ def test_on_open_shows_error_on_parse_failure():
 
 def test_on_open_loads_config_on_success(tmp_path):
     window = MainWindow()
-    with patch("djmidi.gui.main_window.QFileDialog.getOpenFileName", return_value=(str(FIXTURE), "")):
+    with (
+        patch("djmidi.gui.main_window.QFileDialog.getOpenFileName", return_value=(str(FIXTURE), "")),
+        patch("djmidi.gui.main_window.QInputDialog.getItem", return_value=("Serato DJ", True)),
+    ):
         window._on_open()
     QApplication.processEvents()
     assert window.config is not None

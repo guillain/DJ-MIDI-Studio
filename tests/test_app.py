@@ -6,7 +6,8 @@ from unittest.mock import patch
 
 def test_run_creates_window_and_calls_exec():
     with patch("djmidi.gui.app.QApplication") as mock_qapp, \
-         patch("djmidi.gui.app.MainWindow") as mock_window:
+         patch("djmidi.gui.app.MainWindow") as mock_window, \
+         patch("djmidi.gui.app.configure_logging"):
         mock_qapp.return_value.exec.return_value = 0
         from djmidi.gui.app import run
         result = run()
@@ -22,7 +23,8 @@ def test_main_entrypoint_calls_run_and_exits():
 
 def test_run_propagates_exec_return_code():
     with patch("djmidi.gui.app.QApplication") as mock_qapp, \
-         patch("djmidi.gui.app.MainWindow"):
+         patch("djmidi.gui.app.MainWindow"), \
+         patch("djmidi.gui.app.configure_logging"):
         mock_qapp.return_value.exec.return_value = 42
         from djmidi.gui.app import run
         assert run() == 42
@@ -36,6 +38,5 @@ def test_djmidi_main_calls_gui_run():
         except SystemExit:
             pass
     mock_run.assert_called_once()
-
 
 

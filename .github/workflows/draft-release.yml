@@ -9,8 +9,61 @@ permissions:
   contents: write
 
 jobs:
+  quality:
+    name: Quality gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install dependencies
+        run: uv sync --group dev
+
+      - name: Run quality gate
+        shell: bash
+        run: bash scripts/quality_gate.sh
+
+  screenshots:
+    name: Documentation screenshots
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install dependencies
+        run: uv sync --group dev
+
+      - name: Generate screenshots from the reference mapping
+        shell: bash
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: uv run python scripts/capture_docs_screenshots.py
+
+      - name: Upload documentation screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: djmidi-studio-documentation-screenshots
+          path: docs/images/layout/*.png
+
   build:
     name: Build (${{ matrix.os }})
+    needs: [quality, screenshots]
     strategy:
       fail-fast: false
       matrix:
@@ -62,7 +115,7 @@ jobs:
 
   draft:
     name: Create Draft Release
-    needs: build
+    needs: [build, screenshots]
     runs-on: ubuntu-latest
 
     steps:
@@ -86,3 +139,4 @@ jobs:
             release-assets/**/*.zip
             release-assets/**/*.tar.gz
             release-assets/**/*.whl
+            release-assets/**/*.png
