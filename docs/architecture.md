@@ -87,9 +87,10 @@ so their safety policies can evolve independently of detection.
 The initial `midi_router.py` implementation provides one-way route graphs with
 channel/message/SysEx filters, cycle prevention, and forwarding/error/drop
 statistics. `midi_clock.py` separately mirrors Start, Continue, Stop, and 24
-PPQN Clock realtime messages from a selected source. Jitter safeguards and
-hardware-backed timing diagnostics remain disabled until their deterministic
-tests are defined.
+PPQN Clock realtime messages from a selected source, rejects implausibly short
+intervals, and reports observed jitter. `midi_virtual.py` supplies a hardware-
+free port bus for deterministic route tests; real hardware timing diagnostics
+remain a later integration concern.
 
 DJ software integrations use the same plugin principle. The software registry
 exposes a parser, exporter, supported extensions, and display metadata. The

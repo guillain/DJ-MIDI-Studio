@@ -49,9 +49,9 @@ second, then real-time routing and clock synchronization.
 - [x] Add a one-way MIDI router with port/channel/message filters and loop prevention.
 - [x] Add monitoring/status for routes, dropped messages, latency, and errors.
 - [x] Add the initial MIDI Clock mirror with Start/Stop/Continue handling, 24 PPQN forwarding, and source selection.
-- [ ] Add Clock mirror jitter safeguards and timing diagnostics.
+- [x] Add Clock mirror jitter safeguards and timing diagnostics.
 - [ ] Document Serato and Rekordbox clock-specific behavior before enabling cross-software clock sync.
-- [ ] Add integration tests with virtual MIDI ports and deterministic fake clocks.
+- [x] Add integration tests with virtual MIDI ports and deterministic fake clocks.
 
 ### Phase 4 — safe software/controller operations — PLANNED
 

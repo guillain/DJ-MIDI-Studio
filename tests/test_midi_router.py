@@ -2,6 +2,7 @@ import pytest
 
 from djmidi.midi_api import MidiMessage
 from djmidi.midi_router import MidiRoute, MidiRouter
+from djmidi.midi_virtual import VirtualMidiBus
 
 
 def _note(port_id: str = "in") -> MidiMessage:
@@ -24,3 +25,14 @@ def test_router_drops_filtered_messages_and_rejects_cycles():
     assert router.stats.dropped == 1
     with pytest.raises(ValueError, match="routing loop"):
         router.add_route(MidiRoute("out", "in"))
+
+
+def test_router_integrates_with_virtual_midi_bus():
+    bus = VirtualMidiBus(["in", "out"])
+    router = MidiRouter()
+    router.add_route(MidiRoute("in", "out"))
+    message = _note()
+    bus.send("in", message)
+    for received in bus.receive("in"):
+        router.route_message("in", received, bus.send)
+    assert bus.receive("out") == [message]
