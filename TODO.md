@@ -50,12 +50,12 @@ second, then real-time routing and clock synchronization.
 - [x] Add monitoring/status for routes, dropped messages, latency, and errors.
 - [x] Add the initial MIDI Clock mirror with Start/Stop/Continue handling, 24 PPQN forwarding, and source selection.
 - [x] Add Clock mirror jitter safeguards and timing diagnostics.
-- [ ] Document Serato and Rekordbox clock-specific behavior before enabling cross-software clock sync.
+- [x] Document Serato and Rekordbox clock-specific behavior before enabling cross-software clock sync.
 - [x] Add integration tests with virtual MIDI ports and deterministic fake clocks.
 
-### Phase 4 — safe software/controller operations — PLANNED
+### Phase 4 — safe software/controller operations — IN PROGRESS
 
-- [ ] Add read-only software status and configuration capability declarations.
+- [x] Add read-only software status and configuration capability declarations.
 - [ ] Add configuration updates only through backup, preview/diff, validation, and rollback.
 - [ ] Add a preferences surface for enabled plugins, detection policy, routing policy, and trust decisions.
 - [ ] Support unknown devices and unsupported mapping formats through a generic MIDI profile.

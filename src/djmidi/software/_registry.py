@@ -22,12 +22,24 @@ class SoftwareDefinition:
     parser: Parser
     exporter: Exporter
     display_order: int = 100
+    capabilities: tuple[str, ...] = ()
+    permissions: tuple[str, ...] = ()
 
     def parse_file(self, path: str | PathLike[str]) -> MidiConfig:
         return self.parser(Path(path).read_text(encoding="utf-8"))
 
     def write_file(self, config: MidiConfig, path: str | PathLike[str]) -> None:
         Path(path).write_text(self.exporter(config), encoding="utf-8")
+
+    def capability_report(self) -> dict[str, object]:
+        """Return read-only metadata suitable for a preferences/status UI."""
+        return {
+            "plugin_id": self.plugin_id,
+            "name": self.name,
+            "extensions": self.extensions,
+            "capabilities": self.capabilities,
+            "permissions": self.permissions,
+        }
 
     def can_parse(self, root_tag: str, suffix: str) -> bool:
         normalized_suffix = suffix.lower() if suffix else ""

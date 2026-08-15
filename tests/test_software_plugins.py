@@ -38,3 +38,10 @@ def test_traktor_plugin_exports_nml():
 def test_software_detection_uses_xml_signature():
     assert [plugin.plugin_id for plugin in software.detect_from_text("<NML />", ".xml")] == ["traktor"]
     assert [plugin.plugin_id for plugin in software.detect_from_text("<midi />", ".xml")] == ["serato"]
+
+
+def test_software_plugins_expose_read_only_capability_reports():
+    report = software.get_definition("serato").capability_report()
+    assert report["plugin_id"] == "serato"
+    assert "mapping.parse" in report["capabilities"]
+    assert "mapping.write" in report["permissions"]

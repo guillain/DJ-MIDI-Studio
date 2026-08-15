@@ -7,6 +7,7 @@
 - [Screens and Layouts](#screens-and-layouts)
 - [Plugin Manifest](#plugin-manifest)
 - [Controller Profiles](#controller-profiles)
+- [MIDI Clock Compatibility](#midi-clock-compatibility)
 - [Build and CI](#build-and-ci)
 
 ## Getting Started
@@ -31,6 +32,10 @@
 ## Controller Profiles
 
 - [Controller Profiles](controller-profiles.md)
+
+## MIDI Clock Compatibility
+
+- [MIDI Clock compatibility notes](midi-clock-compatibility.md)
 
 ## Build and CI
 

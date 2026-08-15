@@ -12,5 +12,7 @@ register(
         parser=parse_string,
         exporter=to_xml_string,
         display_order=10,
+        capabilities=("mapping.parse", "mapping.export", "mapping.validate"),
+        permissions=("mapping.read", "mapping.write"),
     )
 )
