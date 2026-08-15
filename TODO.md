@@ -125,6 +125,7 @@ Implemented contract, runtime, test, and documentation work:
 - [x] Add clickable schematic controller layouts, catalog interpretations, Serato deck coloring, and mapped function labels.
 - [x] Add DJ-oriented layout glyphs for pads, buttons, knobs, faders, and jog wheels while preserving the generic fallback.
 - [x] Add a dark performance-oriented layout theme with deck colors, section labels, and high-contrast selection accents.
+- [x] Add display-only mixer controls for XDJ-XZ and DDJ-XP2 so trim, EQ, volume, crossfader, and Slide FX surfaces are visible before continuous MIDI cataloging.
 - [x] Synchronize tree/layout selections, preserve the originating tab, and fade recent selection history.
 - [x] Increase the Physical control panel height and make dynamic controller selectors horizontally scrollable.
 - [x] Add zoomable/pannable Controller Images diagrams with reset zoom.

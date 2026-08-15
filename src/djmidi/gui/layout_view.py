@@ -49,6 +49,7 @@ _CONTROL_PEN = QPen(QColor(55, 65, 80))
 _CONTROL_BRUSH = QBrush(QColor(215, 225, 238))
 _PAD_BRUSH = QBrush(QColor(95, 125, 170))
 _KNOB_BRUSH = QBrush(QColor(235, 190, 90))
+_KNOB_RING_BRUSH = QBrush(QColor(47, 57, 73))
 _FADER_PEN = QPen(QColor(55, 65, 80))
 _FADER_PEN.setWidth(3)
 
@@ -78,6 +79,21 @@ def _deck_sort_key(value: str) -> tuple[bool, int, str]:
 
 def _elide(text: str, max_len: int) -> str:
     return text if len(text) <= max_len else text[: max_len - 1] + "…"
+
+
+def _button_brush(label: str) -> QBrush:
+    lowered = label.casefold()
+    if "play" in lowered:
+        return QBrush(QColor(53, 166, 113))
+    if "cue" in lowered:
+        return QBrush(QColor(207, 72, 91))
+    if "sync" in lowered:
+        return QBrush(QColor(51, 173, 190))
+    if "shift" in lowered:
+        return QBrush(QColor(132, 87, 196))
+    if "effect" in lowered or "fx" in lowered:
+        return QBrush(QColor(181, 77, 176))
+    return _CONTROL_BRUSH
 
 
 class _ClickableView(QGraphicsView):
@@ -311,28 +327,33 @@ class ControllerLayoutView(QWidget):
         left = x + 8
         top = y + 8
         if visual_kind in ("pad", "button"):
-            size = 28 if visual_kind == "pad" else 24
+            size = 30 if visual_kind == "pad" else 28
             shape = QGraphicsRectItem(QRectF(left, top, size, size))
-            shape.setBrush(_PAD_BRUSH if visual_kind == "pad" else _CONTROL_BRUSH)
+            shape.setBrush(_PAD_BRUSH if visual_kind == "pad" else _button_brush(key[2]))
             shape.setPen(_CONTROL_PEN)
         elif visual_kind == "knob":
-            shape = QGraphicsEllipseItem(QRectF(left, top, 28, 28))
+            ring = QGraphicsEllipseItem(QRectF(left, top, 32, 32))
+            ring.setBrush(_KNOB_RING_BRUSH)
+            ring.setPen(_CONTROL_PEN)
+            ring.setData(_KEY_ROLE, key)
+            self._scene.addItem(ring)
+            shape = QGraphicsEllipseItem(QRectF(left + 4, top + 4, 24, 24))
             shape.setBrush(_KNOB_BRUSH)
             shape.setPen(_CONTROL_PEN)
-            marker = QGraphicsLineItem(QLineF(left + 14, top + 14, left + 14, top + 4))
+            marker = QGraphicsLineItem(QLineF(left + 16, top + 16, left + 16, top + 5))
             marker.setPen(_CONTROL_PEN)
             marker.setData(_KEY_ROLE, key)
             self._scene.addItem(marker)
         elif visual_kind == "jog":
-            shape = QGraphicsEllipseItem(QRectF(left, top, 28, 28))
+            shape = QGraphicsEllipseItem(QRectF(left, top, 32, 32))
             shape.setBrush(_CONTROL_BRUSH)
             shape.setPen(_CONTROL_PEN)
         else:  # fader
-            track = QGraphicsLineItem(QLineF(left + 14, top, left + 14, top + 28))
+            track = QGraphicsLineItem(QLineF(left + 16, top, left + 16, top + 32))
             track.setPen(_FADER_PEN)
             track.setData(_KEY_ROLE, key)
             self._scene.addItem(track)
-            shape = QGraphicsRectItem(QRectF(left + 7, top + 13, 14, 7))
+            shape = QGraphicsRectItem(QRectF(left + 7, top + 14, 18, 8))
             shape.setBrush(_CONTROL_BRUSH)
             shape.setPen(_CONTROL_PEN)
         shape.setData(_KEY_ROLE, key)

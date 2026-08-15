@@ -41,3 +41,14 @@ def test_layout_cells_expose_visual_kind_for_dj_rendering():
     cells = layout.build_layout("DDJ-XP2")
     assert all(cell.visual_kind in {"button", "pad", "knob", "fader", "jog"} for cell in cells)
     assert all(cell.visual_kind == "pad" for cell in cells if cell.section == "PAD")
+
+
+def test_dj_layouts_include_display_only_mixer_controls():
+    xdj_cells = layout.build_layout("XDJ-XZ")
+    mixer = {cell.label: cell.visual_kind for cell in xdj_cells if cell.section == "MIXER"}
+    assert mixer["Channel 1 Trim"] == "knob"
+    assert mixer["Channel 1 Volume"] == "fader"
+    assert mixer["Crossfader"] == "fader"
+
+    xp2_cells = layout.build_layout("DDJ-XP2")
+    assert any(cell.label == "Slide FX 1" and cell.visual_kind == "fader" for cell in xp2_cells)

@@ -59,19 +59,56 @@ def visual_kind_for(section: str, name: str) -> VisualKind:
     if section.upper() == "PAD" or _PAD_NUM_RE.search(name):
         return "pad"
     lowered = name.casefold()
-    if "jog" in lowered or "wheel" in lowered:
+    if "jog" in lowered or "wheel" in lowered or "rotary" in lowered:
         return "jog"
     if any(
         word in lowered
-        for word in ("fader", "volume", "level", "pitch", "crossfader", "tempo")
+        for word in ("fader", "volume", "level", "crossfader", "master level", "booth")
     ):
         return "fader"
     if any(
         word in lowered
-        for word in ("trim", "gain", "eq", "filter", "parameter", "effect", "color", "mix")
+        for word in (
+            "trim",
+            "gain",
+            "eq",
+            "filter",
+            "frequency",
+            "parameter",
+            "effect",
+            "color",
+            "sound color",
+            "mix",
+        )
     ):
         return "knob"
     return "button"
+
+
+_DISPLAY_CONTROLS: dict[str, tuple[tuple[str, VisualKind], ...]] = {
+    "XDJ-XZ": (
+        ("Channel 1 Trim", "knob"),
+        ("Channel 1 EQ High", "knob"),
+        ("Channel 1 EQ Mid", "knob"),
+        ("Channel 1 EQ Low", "knob"),
+        ("Channel 1 Volume", "fader"),
+        ("Channel 2 Trim", "knob"),
+        ("Channel 2 EQ High", "knob"),
+        ("Channel 2 EQ Mid", "knob"),
+        ("Channel 2 EQ Low", "knob"),
+        ("Channel 2 Volume", "fader"),
+        ("Master Level", "knob"),
+        ("Booth Level", "knob"),
+        ("Crossfader", "fader"),
+    ),
+    "DDJ-XP2": (
+        ("Slide FX 1", "fader"),
+        ("Slide FX 2", "fader"),
+        ("Effect 1 Depth", "knob"),
+        ("Effect 2 Depth", "knob"),
+        ("Effect 3 Depth", "knob"),
+    ),
+}
 
 
 @dataclass(frozen=True)
@@ -132,5 +169,21 @@ def build_layout(controller: str) -> list[LayoutCell]:
         if col >= _COLS_PER_ROW:
             col = 0
             row += 1
+
+    # Continuous controls are intentionally not part of the discrete MIDI
+    # catalog yet, but they still deserve a visual place in a DJ layout. These
+    # display-only cells make the mixer legible without pretending they have a
+    # mapping; their key can never resolve to a catalog hit by accident.
+    display_controls = _DISPLAY_CONTROLS.get(controller, ())
+    if display_controls:
+        row += 1
+        col = 0
+        for label, kind in display_controls:
+            key = (controller, "MIXER", label)
+            cells.append(LayoutCell(key, label, "MIXER", row, col, kind))
+            col += 1
+            if col >= _COLS_PER_ROW:
+                col = 0
+                row += 1
 
     return cells
