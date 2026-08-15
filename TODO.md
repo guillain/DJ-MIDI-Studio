@@ -58,7 +58,7 @@ second, then real-time routing and clock synchronization.
 - [x] Add read-only software status and configuration capability declarations.
 - [ ] Add configuration updates only through backup, preview/diff, validation, and rollback.
 - [x] Add a preferences surface for enabled plugins, detection policy, routing policy, and trust decisions.
-- [ ] Support unknown devices and unsupported mapping formats through a generic MIDI profile.
+- [x] Support unknown devices and unsupported mapping formats through a generic MIDI profile.
 - [ ] Document plugin installation, updates, compatibility, trust, and troubleshooting.
 
 ### Cross-cutting diagnostics
@@ -184,7 +184,7 @@ MIDI 2.0 Universal MIDI Packets (UMP) will be handled by a later adapter once
 the MIDI 1.0 router and Clock mirror are stable.
 - [ ] Add a preferences/settings surface for choosing enabled controller and software plugins.
 - [ ] Resolve the active controller/software integration from a connected MIDI device, imported mapping file, or explicit user selection.
-- [ ] Keep unknown devices and unsupported mapping formats usable through a generic MIDI profile instead of failing application startup.
+- [x] Keep unknown devices and unsupported mapping formats usable through a generic MIDI profile instead of failing application startup.
 - [ ] Add isolation and trust checks before loading third-party plugins, with clear diagnostics for rejected or unavailable plugins.
 - [ ] Add plugin contract tests and discovery tests that run without MIDI hardware.
 - [ ] Document how to create, install, update, and troubleshoot a third-party controller or software plugin.

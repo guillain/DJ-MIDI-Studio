@@ -39,6 +39,10 @@ detection policy, routing policy, external-plugin trust, and log verbosity.
 Safe defaults require confirmation for detection, keep routing disabled, and
 do not trust external plugins automatically.
 
+Unknown MIDI hardware can be kept usable through the generic MIDI profile. It
+records the learned channel, event type, and data value without claiming that
+the device matches a known controller catalog.
+
 The application can now produce an assisted detection result from the mapping
 file signature/extension and MIDI port names. When available, controller
 identity replies and declared MIDI capabilities add evidence to the score. The

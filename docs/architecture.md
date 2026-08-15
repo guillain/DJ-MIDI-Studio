@@ -97,6 +97,11 @@ backward-compatible JSON document. `PreferencesDialog` builds its plugin list
 from the live controller and software registries, so external integrations do
 not require GUI code changes.
 
+`generic_profile.py` preserves learned channel/type/data values for an unknown
+controller without assigning a guessed vendor layout. The resulting definition
+can be registered explicitly for the current session when the user chooses to
+work with that device.
+
 DJ software integrations use the same plugin principle. The software registry
 exposes a parser, exporter, supported extensions, and display metadata. The
 current UI asks the user to select the plugin when opening a mapping; automatic
