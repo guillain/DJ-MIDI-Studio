@@ -76,3 +76,5 @@ changing it, and emits 24 PPQN MIDI Clock. The route engine prevents cycles
 and the Clock policy rejects invalid source/destination pairs. Physical
 routing remains disabled unless enabled in Preferences, and cross-software
 Clock use must meet the [compatibility notes](midi-clock-compatibility.md).
+
+![MIDI Routing with direct Ableton Link source](images/layout/midi-routing.png)
