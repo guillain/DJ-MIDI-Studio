@@ -80,6 +80,7 @@ if [[ "$BUILD_EXECUTABLE" -eq 1 ]]; then
     --specpath "$ROOT_DIR/build/pyinstaller" \
     --paths "$ROOT_DIR/src" \
     --add-data "$ROOT_DIR/assets${DATA_SEP}assets" \
+    --add-data "$ROOT_DIR/docs/controllers${DATA_SEP}docs/controllers" \
     --osx-bundle-identifier "com.guillain.djmidi" \
     "$ROOT_DIR/src/djmidi/gui/app.py"
 

@@ -4,8 +4,11 @@ from djmidi import catalog
 from djmidi.catalog._registry import ControllerDefinition, register
 from djmidi.gui.controller_image_view import (
     ASSETS_DIR,
+    DOCUMENTS,
+    DOCUMENTS_DIR,
     IMAGES,
     ControllerImageView,
+    documentation_for_controller,
 )
 
 
@@ -23,6 +26,25 @@ def test_refresh_controllers_adds_newly_registered_controller():
 def test_asset_files_exist():
     for filename in IMAGES.values():
         assert (ASSETS_DIR / filename).exists()
+
+
+def test_bundled_controller_documents_exist():
+    assert set(DOCUMENTS) == {
+        "DDJ-XP2",
+        "XDJ-XZ",
+        "DDJ-1000",
+        "DDJ-REV1",
+        "DDJ-FLX10",
+        "Numark Mixtrack Pro FX",
+        "Hercules DJControl Inpulse 500",
+    }
+    for filename in DOCUMENTS.values():
+        assert (DOCUMENTS_DIR / filename).exists()
+
+
+def test_documentation_for_controller_returns_none_when_not_bundled():
+    assert documentation_for_controller("DDJ-FLX4") is None
+    assert documentation_for_controller("DDJ-XP2") == DOCUMENTS_DIR / DOCUMENTS["DDJ-XP2"]
 
 
 def test_ddj_1000_order_and_reference_image():

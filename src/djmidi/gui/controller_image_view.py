@@ -5,10 +5,11 @@ interaction with the loaded config, unlike the other paired tree+layout tabs."""
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QPainter, QPixmap
+from PySide6.QtGui import QDesktopServices, QPainter, QPixmap
 from PySide6.QtWidgets import (
     QComboBox,
     QGraphicsPixmapItem,
@@ -23,7 +24,21 @@ from PySide6.QtWidgets import (
 
 from djmidi import catalog
 
-ASSETS_DIR = Path(__file__).resolve().parents[3] / "assets" / "controllers"
+if getattr(sys, "frozen", False):
+    _RESOURCE_ROOT = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parents[3]))
+else:
+    _RESOURCE_ROOT = Path(__file__).resolve().parents[3]
+ASSETS_DIR = _RESOURCE_ROOT / "assets" / "controllers"
+DOCUMENTS_DIR = _RESOURCE_ROOT / "docs" / "controllers"
+DOCUMENTS = {
+    "DDJ-XP2": "ddj-xp2-midi-message-list-e1.pdf",
+    "XDJ-XZ": "xdj-xz-midi-message-list-e3.pdf",
+    "DDJ-1000": "ddj-1000-midi-message-list-e1.pdf",
+    "DDJ-REV1": "ddj-rev1-midi-message-list-e1.pdf",
+    "DDJ-FLX10": "ddj-flx10-midi-message-list-e1.pdf",
+    "Numark Mixtrack Pro FX": "numark-mixtrack-pro-fx-user-guide-v1.2.pdf",
+    "Hercules DJControl Inpulse 500": "hercules-djcontrol-inpulse-500-product-sheet-fr.pdf",
+}
 # Compatibility snapshot for callers that need to enumerate known image assets.
 # New plugins provide this metadata through ControllerDefinition.reference_image.
 IMAGES = {
@@ -36,6 +51,13 @@ IMAGES = {
 def image_for_controller(name: str) -> str | None:
     """Returns the reference image declared by the current controller plugin."""
     return catalog.get_definition(name).reference_image
+
+
+def documentation_for_controller(name: str) -> Path | None:
+    """Return the bundled local document for a controller, when available."""
+    filename = DOCUMENTS.get(name)
+    path = DOCUMENTS_DIR / filename if filename else None
+    return path if path is not None and path.exists() else None
 
 
 class _ZoomableView(QGraphicsView):
@@ -64,10 +86,13 @@ class ControllerImageView(QWidget):
 
         reset_button = QPushButton("Reset zoom")
         reset_button.clicked.connect(lambda: self._load(self._combo.currentText()))
+        self._documentation_button = QPushButton("Open documentation")
+        self._documentation_button.clicked.connect(self._open_documentation)
 
         controls = QHBoxLayout()
         controls.addWidget(self._combo)
         controls.addWidget(reset_button)
+        controls.addWidget(self._documentation_button)
         controls.addStretch(1)
 
         self._scene = QGraphicsScene(self)
@@ -104,6 +129,11 @@ class ControllerImageView(QWidget):
         return True
 
     def _load(self, name: str) -> None:
+        documentation = documentation_for_controller(name)
+        self._documentation_button.setEnabled(documentation is not None)
+        self._documentation_button.setToolTip(
+            str(documentation) if documentation is not None else "No local controller document bundled"
+        )
         self._scene.clear()
         self._pixmap_item = None
         self._view.resetTransform()
@@ -125,5 +155,18 @@ class ControllerImageView(QWidget):
         self._scene.setSceneRect(item.boundingRect())
         self._view.fitInView(item, Qt.AspectRatioMode.KeepAspectRatio)
 
+    def _open_documentation(self) -> None:
+        documentation = documentation_for_controller(self._combo.currentText())
+        if documentation is not None:
+            QDesktopServices.openUrl(documentation.as_uri())
 
-__all__ = ["ASSETS_DIR", "IMAGES", "ControllerImageView", "image_for_controller"]
+
+__all__ = [
+    "ASSETS_DIR",
+    "DOCUMENTS",
+    "DOCUMENTS_DIR",
+    "IMAGES",
+    "ControllerImageView",
+    "documentation_for_controller",
+    "image_for_controller",
+]
