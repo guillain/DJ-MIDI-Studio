@@ -118,8 +118,10 @@ For screenshots and a visual description of each tab, see [Screens and Layouts](
   The Clock status label is a live diagnostic: `CLOCK ACTIVE` confirms that
   ticks are arriving from the selected source; `CLOCK INACTIVE` means the
   session is running but no recent ticks were received. With Serato, this
-  normally means that no external bridge is producing MIDI Clock; Serato's
-  Link tempo and MIDI Clock production are separate steps.
+  normally means that the Link binding is missing, Serato is not connected to
+  the Link session, or no external bridge is producing MIDI Clock. In direct
+  mode, Link tempo/phase reception and MIDI Clock generation happen inside DJ
+  MIDI Studio; in bridge mode they remain separate steps.
 
 Use the `MIDI Routing` tab to configure one-way source/destination routes and an
 opt-in Clock policy. Add several Clock source/destination lines when needed;

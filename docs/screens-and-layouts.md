@@ -69,7 +69,10 @@ The event table contains the timestamp, direction, source device, MIDI channel a
 ## MIDI Routing
 
 MIDI Routing configures one-way source/destination routes and the opt-in Clock
-destination policy, and Controller Setup playback. The route engine prevents
-cycles and the Clock policy rejects invalid source/destination pairs. Physical
+destination policy, and Controller Setup playback. The Clock source selector
+contains physical MIDI inputs plus `Ableton Link (DJ MIDI Studio)`. The latter
+requires the optional `aalink` binding, follows Link tempo/phase without
+changing it, and emits 24 PPQN MIDI Clock. The route engine prevents cycles
+and the Clock policy rejects invalid source/destination pairs. Physical
 routing remains disabled unless enabled in Preferences, and cross-software
 Clock use must meet the [compatibility notes](midi-clock-compatibility.md).

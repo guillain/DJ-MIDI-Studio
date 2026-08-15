@@ -22,6 +22,9 @@ conflicts, and exports the selected software format back to disk.
 - `src/djmidi/validator.py`: structural checks + mapping conflict checks.
 - `src/djmidi/catalog/`: controller registry and controller lookup definitions.
 - `src/djmidi/software/`: discoverable DJ software plugins, including Serato and Traktor parsers/exporters.
+- `src/djmidi/ableton_link.py`: optional Link state adapter and read-only 24 PPQN Clock follower.
+- `src/djmidi/midi_clock.py`: physical MIDI Clock mirror and timing diagnostics.
+- `src/djmidi/midi_routing_session.py`: opt-in physical MIDI route and Clock execution.
 - `src/djmidi/gui/`: PySide6 UI.
 
 ## Data Flow
@@ -36,8 +39,9 @@ flowchart LR
     E --> F[Issues table]
     C --> G[exporter.py]
     G --> H[Selected software XML output]
-    L[Ableton Link follower] --> M[24 PPQN MIDI Clock generator]
-    M --> R[MIDI routing session]
+    L[Serato / Ableton Link session] --> M[Ableton Link follower]
+    M --> N[24 PPQN MIDI Clock generator]
+    N --> R[MIDI routing session]
 ```
 
 ## GUI Navigation Model
@@ -102,10 +106,12 @@ so their safety policies can evolve independently of detection.
 The initial `midi_router.py` implementation provides one-way route graphs with
 channel/message/SysEx filters, cycle prevention, and forwarding/error/drop
 statistics. `midi_clock.py` separately mirrors Start, Continue, Stop, and 24
-PPQN Clock realtime messages from a selected source, rejects implausibly short
-intervals, and reports observed jitter. `midi_virtual.py` supplies a hardware-
-free port bus for deterministic route tests; real hardware timing diagnostics
-remain a later integration concern.
+PPQN Clock realtime messages from a selected physical source, rejects
+implausibly short intervals, and reports observed jitter. `ableton_link.py` is
+an optional read-only follower: it reads Link tempo/phase, never writes Link
+tempo, and generates the same MIDI realtime transport and 24 PPQN ticks.
+`midi_virtual.py` supplies a hardware-free port bus for deterministic route
+tests; real hardware timing diagnostics remain a later integration concern.
 
 `PluginPreferences` stores enabled plugin IDs and safety policies as a
 backward-compatible JSON document. `PreferencesDialog` builds its plugin list

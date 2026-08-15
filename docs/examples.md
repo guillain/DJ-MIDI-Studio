@@ -55,11 +55,16 @@ the device name is intentionally kept in its dedicated column.
 1. Enable `Enable MIDI routing policies` in Preferences.
 2. Open `MIDI Routing`, select a source and destination, then click `Add route`.
 3. Optionally enable the Clock policy and add one or more source/destination lines.
+   For a direct Serato workflow, enable Link in Serato, install `aalink`, and
+   choose `Ableton Link (DJ MIDI Studio)` as the source; otherwise choose a
+   physical MIDI Clock input or an external bridge output.
 4. Click `Start routing` only after checking the selected ports.
 
 Routing is opt-in, opens only the ports used by enabled routes and Clock policy,
 and closes them with `Stop routing`. The route graph rejects direct cycles;
-Clock messages are subject to the configured minimum interval safeguard.
+Clock messages are subject to the configured minimum interval safeguard. The
+direct Link follower is read-only with respect to Link tempo and emits
+Start/Continue/Stop plus 24 PPQN ticks to the selected MIDI output.
 
 ## Work with an unknown controller
 

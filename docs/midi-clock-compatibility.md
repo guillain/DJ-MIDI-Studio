@@ -23,6 +23,14 @@ The source selectors contain MIDI input ports and the destination selectors
 contain MIDI output ports. For example, a `MIDI4x4 Midi In 1` port cannot be a
 destination; choose `MIDI4x4 Midi Out 1` instead.
 
+```mermaid
+flowchart LR
+    Serato[Serato DJ Pro] -->|Ableton Link tempo + phase| Follower[DJ MIDI Studio Link follower]
+    Follower -->|Start / Continue / Stop + 24 PPQN F8| MIDI[MIDI output port]
+    Bridge[External Link-to-MIDI bridge] -. optional alternative .-> MIDI
+    Serato -. does not emit native MIDI Clock .-> SeratoClock[Serato Clock virtual input]
+```
+
 ## Serato DJ
 
 Serato DJ Pro does not emit standard MIDI Clock directly. Consequently,
@@ -39,16 +47,16 @@ hardware that generates Clock from Serato tempo information. This is
 consistent with the behavior observed in DJ MIDI Studio: no `F8` ticks can be
 forwarded until one of those producers is present.
 
-For a macOS setup with Serato, XDJ-XZ, and DDJ-XP2, the most controllable path
-is:
+For a macOS setup with Serato, XDJ-XZ, and DDJ-XP2, the direct path is:
 
 1. Enable Ableton Link in Serato DJ Pro.
-2. Enable Link in Ableton Live (or another Link-to-MIDI bridge).
-3. Enable MIDI Clock/Sync for the bridge's MIDI output and select the target
-   hardware/interface output.
-4. In DJ MIDI Studio, select that bridge MIDI output as the Clock source
-   (it appears as an input to DJ MIDI Studio), select the actual hardware MIDI
-   output as the destination, and start routing.
+2. Install the optional `aalink` binding in DJ MIDI Studio.
+3. Select `Ableton Link (DJ MIDI Studio)` as the Clock source, select the
+   actual hardware/interface MIDI output as destination, and start routing.
+
+An external Link-to-MIDI bridge remains a valid alternative: select its MIDI
+output as a physical source in DJ MIDI Studio and do not enable the virtual
+Serato Clock input unless the bridge is deliberately targeting that port.
 
 DJ MIDI Studio can now replace the Live/bridge step when the optional `aalink`
 binding is installed. Select `Ableton Link (DJ MIDI Studio)` as the Clock

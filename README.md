@@ -35,6 +35,7 @@ DJ MIDI mapping files can become very large and hard to maintain. DJ MIDI Studio
 - Plugin-discovered DJ software integrations for Serato DJ and Native Instruments Traktor.
 - Validation for structure and mapping conflicts.
 - Send saved Controller Setup session commands directly to a selected MIDI output, with looping/repeat playback integrated into `MIDI Routing`.
+- Follow Ableton Link as a read-only tempo/phase source and generate standard 24 PPQN MIDI Clock without requiring Ableton Live.
 
 ## Screens and Workflow
 
@@ -51,6 +52,8 @@ flowchart LR
 	Deck --> Validate
 	Controller --> Validate
 	Validate --> Export[Export XML]
+	Link[Serato / Ableton Link] --> Routing[MIDI Routing]
+	Routing --> Clock[24 PPQN MIDI Clock output]
 ```
 
 ### Screens and Layouts
@@ -69,6 +72,13 @@ or manually:
 
 ```bash
 uv sync --group dev
+```
+
+Direct Ableton Link following is optional. Install its native binding when
+using `Ableton Link (DJ MIDI Studio)` as a Clock source:
+
+```bash
+uv add aalink
 ```
 
 Run the app:
