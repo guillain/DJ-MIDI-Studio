@@ -2,7 +2,7 @@
 
 ## Table of Contents
 
-- [Open a Serato XML File](#open-a-serato-xml-file)
+- [Open a Mapping File](#open-a-mapping-file)
 - [Explore Mappings](#explore-mappings)
 - [Screens and Layouts](#screens-and-layouts)
 - [Edit Safely](#edit-safely)
@@ -10,10 +10,12 @@
 - [Live Monitor Notes](#live-monitor-notes)
 - [Send MIDI Commands](#send-midi-commands)
 
-## Open a Serato XML File
+## Open a Mapping File
 
 1. Start the app.
-2. Use `File -> Open...` and choose your Serato MIDI XML.
+2. Use `File -> Open...`, choose your mapping file, then select the matching mapping software plugin (`Serato DJ` or `Native Instruments Traktor`).
+
+Traktor mappings use NML/XML files. Automatic software detection is not enabled yet; selecting the plugin explicitly prevents an ambiguous XML extension from choosing the wrong parser.
 
 ## Explore Mappings
 

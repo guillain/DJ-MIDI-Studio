@@ -8,8 +8,12 @@ production mapping.
 
 from __future__ import annotations
 
-from djmidi.catalog._registry import ControlInfo, ControllerDefinition, NoteOrCC, register
-
+from djmidi.catalog._registry import (
+    ControlInfo,
+    ControllerDefinition,
+    NoteOrCC,
+    register,
+)
 
 _DECK_CHANNELS = ("1", "2")
 _STATIC = [

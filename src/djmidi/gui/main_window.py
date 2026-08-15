@@ -13,6 +13,7 @@ from PySide6.QtGui import (
 )
 from PySide6.QtWidgets import (
     QFileDialog,
+    QInputDialog,
     QLineEdit,
     QMainWindow,
     QMessageBox,
@@ -26,8 +27,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from djmidi import catalog
-from djmidi.exporter import write_file
+from djmidi import catalog, software
 from djmidi.gui import layout as layout_mod
 from djmidi.gui.controller_image_view import ControllerImageView
 from djmidi.gui.controller_setup import ControllerSetupView
@@ -43,7 +43,6 @@ from djmidi.gui.splitter_utils import replace_splitter
 from djmidi.gui.tree_model import NODE_ROLE, build_channel_columns, relabel_item
 from djmidi.midi_io import MidiEvent
 from djmidi.model import Control, MappingElement, MidiConfig
-from djmidi.parser import parse_file
 from djmidi.validator import ValidationIssue, validate
 
 _SEVERITY_COLORS = {
@@ -74,6 +73,7 @@ class MainWindow(QMainWindow):
 
         self.config: MidiConfig | None = None
         self.current_path: Path | None = None
+        self.software_id = "serato"
         self.node_to_item: dict[int, object] = {}
         self.channel_proxies: list[QSortFilterProxyModel] = []
         self._channel_model_owner: dict[int, tuple[QTreeView, QSortFilterProxyModel]] = {}
@@ -272,15 +272,35 @@ class MainWindow(QMainWindow):
             help_menu.addAction(action)
 
     def _on_open(self) -> None:
-        path_str, _ = QFileDialog.getOpenFileName(self, "Open Serato MIDI config", "", "XML files (*.xml)")
+        path_str, _ = QFileDialog.getOpenFileName(
+            self,
+            "Open DJ mapping",
+            "",
+            "Supported mapping files (*.xml *.nml *.tsi);;All files (*)",
+        )
         if not path_str:
             return
+        definitions = software.all_definitions()
+        names = [definition.name for definition in definitions]
+        current = next((index for index, definition in enumerate(definitions) if definition.plugin_id == self.software_id), 0)
+        software_name, accepted = QInputDialog.getItem(
+            self,
+            "Open DJ mapping",
+            "Mapping software:",
+            names,
+            current,
+            False,
+        )
+        if not accepted:
+            return
+        selected = definitions[names.index(software_name)]
         try:
-            self.config = parse_file(path_str)
+            self.config = selected.parse_file(path_str)
         except Exception as exc:  # noqa: BLE001 - surface any parse error to the user
             QMessageBox.critical(self, "Failed to open file", str(exc))
             return
         self.current_path = Path(path_str)
+        self.software_id = selected.plugin_id
         self.undo_stack.clear()
         self._load_tree()
         self.issues_table.setRowCount(0)
@@ -555,17 +575,23 @@ class MainWindow(QMainWindow):
         if self.current_path is None:
             self._on_save_as()
             return
-        write_file(self.config, self.current_path)
+        software.get_definition(self.software_id).write_file(self.config, self.current_path)
         self.statusBar().showMessage(f"Saved to {self.current_path}")
 
     def _on_save_as(self) -> None:
         if self.config is None:
             return
-        path_str, _ = QFileDialog.getSaveFileName(self, "Export Serato MIDI config", "", "XML files (*.xml)")
+        definition = software.get_definition(self.software_id)
+        path_str, _ = QFileDialog.getSaveFileName(
+            self,
+            f"Export {definition.name} mapping",
+            "",
+            f"{definition.name} files (*{' *'.join(definition.extensions)})",
+        )
         if not path_str:
             return
         self.current_path = Path(path_str)
-        write_file(self.config, self.current_path)
+        definition.write_file(self.config, self.current_path)
         self.statusBar().showMessage(f"Saved to {self.current_path}")
 
     def _on_validate(self) -> None:

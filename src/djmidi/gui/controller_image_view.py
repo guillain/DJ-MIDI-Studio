@@ -16,7 +16,6 @@ from PySide6.QtWidgets import (
     QGraphicsTextItem,
     QGraphicsView,
     QHBoxLayout,
-    QLabel,
     QPushButton,
     QVBoxLayout,
     QWidget,

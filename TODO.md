@@ -135,3 +135,12 @@ list or the GUI.
 - [ ] Add the reference mapping image and a representative fixture/configuration.
 - [ ] Add catalog lookup, layout, image-view, and Live Monitor tests.
 - [ ] Document the supported software, firmware assumptions, MIDI channels, and known limitations.
+
+#### Innovations
+
+- [ ] Add MIDI API support for:
+  - [ ] MIDI controller configuration updates, monitoring/status, and advanced features (e.g., mirroring, routing, clock/sync).
+  - [ ] DJ software configuration updates, monitoring/status, and advanced features (e.g., multi-deck, multi-controller, and multi-software setups).
+- [ ] Add a plugin-based architecture for controller and software integrations, with dynamic discovery, registration, and versioning.
+- [ ] Add automatic detection of the DJ software and enable the correct mapping parser.
+- [ ] Add Clock mirror and MIDI routing support for multi-device setups (/!\ Serato & Rekordbox clock! /!\).

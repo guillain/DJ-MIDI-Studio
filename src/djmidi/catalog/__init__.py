@@ -49,7 +49,6 @@ from djmidi.catalog._registry import (
     register,
 )
 
-
 _DISCOVERED = False
 
 

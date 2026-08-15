@@ -19,6 +19,7 @@ The application parses Serato MIDI XML into a typed model, lets users edit mappi
 - `src/djmidi/exporter.py`: model -> XML writer.
 - `src/djmidi/validator.py`: structural checks + mapping conflict checks.
 - `src/djmidi/catalog/`: controller registry and controller lookup definitions.
+- `src/djmidi/software/`: discoverable DJ software plugins, including Serato and Traktor parsers/exporters.
 - `src/djmidi/gui/`: PySide6 UI.
 
 ## Data Flow
@@ -66,3 +67,9 @@ The catalog is plugin-style:
 - `catalog/__init__.py` exposes the live API (`lookup`, `CONTROLLER_NAMES`, etc.).
 
 Registration is dynamic, so newly applied definitions (from Controller Setup) can be used immediately in the current session.
+
+DJ software integrations use the same plugin principle. The software registry
+exposes a parser, exporter, supported extensions, and display metadata. The
+current UI asks the user to select the plugin when opening a mapping; automatic
+detection is intentionally deferred until the mapping formats are sufficiently
+distinct and reliable.
