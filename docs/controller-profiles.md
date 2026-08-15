@@ -36,3 +36,8 @@ Profiles currently support static controls only. Pad formulas, dynamic
 software behavior, MIDI routing, and device detection remain Python plugin
 capabilities. Every profile must be verified against an official MIDI message
 list or a hardware capture before being used for a production mapping.
+
+The DDJ-FLX10 currently ships as a conservative Python profile covering common
+discrete deck and pad triggers. Its official MIDI message list is archived in
+`docs/controllers/`; firmware capture and reference artwork are still required
+before treating the profile as production-verified.

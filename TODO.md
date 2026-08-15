@@ -202,7 +202,7 @@ the MIDI 1.0 router and Clock mirror are stable.
 #### Priority 1 — Pioneer DJ ecosystem
 
 - [ ] **DDJ-FLX4** — highly widespread entry-level Rekordbox/Serato controller; strong first addition for broad user coverage.
-- [ ] **DDJ-FLX10** — current four-deck professional controller; an official MIDI message list is already present in `docs/controllers/`.
+- [x] **DDJ-FLX10** — initial conservative four-deck profile delivered; the official MIDI message list is archived in `docs/controllers/`. Firmware capture and reference artwork remain verification work.
 - [ ] **DDJ-REV1** — popular Serato-oriented entry-level battle controller with a layout distinct from the DDJ-FLX range.
 - [ ] **DDJ-REV5** — current two-deck battle controller with substantial Serato usage and a distinct pad/deck layout.
 - [ ] **DDJ-800** — established two-channel Rekordbox controller, useful for users between entry-level and flagship hardware.
