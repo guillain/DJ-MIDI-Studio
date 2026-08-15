@@ -92,6 +92,7 @@ Implemented contract, runtime, test, and documentation work:
 - [x] Separate MIDI input and output selectors so an input cannot be configured as a Clock destination.
 - [x] Add the direct Ableton Link follower that emits Start/Continue/Stop and 24 PPQN MIDI Clock without changing Link tempo.
 - [x] Add deterministic Link scheduler tests and a clear missing-optional-binding diagnostic.
+- [x] Publish the optional `link` dependency extra so `aalink` can be installed reproducibly with `uv sync --extra link`.
 
 ### Phase 4 — safe software/controller operations — COMPLETE
 

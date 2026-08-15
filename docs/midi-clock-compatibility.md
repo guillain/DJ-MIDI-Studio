@@ -63,7 +63,7 @@ binding is installed. Select `Ableton Link (DJ MIDI Studio)` as the Clock
 source, keep `Create virtual input for Serato Clock` disabled, and route it to
 the physical MIDI output. DJ MIDI Studio follows Link's tempo and phase and
 emits MIDI Clock; it never sets Link's tempo. Install the binding with
-`uv add aalink` before selecting the Link source. If it is missing, the UI
+`uv sync --extra link` before selecting the Link source. If it is missing, the UI
 reports the dependency instead of silently creating a dead route.
 The XDJ-XZ and DDJ-XP2 remain control surfaces; this project does not claim
 either one as a verified Serato MIDI Clock generator.

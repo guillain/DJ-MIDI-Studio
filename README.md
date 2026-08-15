@@ -78,7 +78,7 @@ Direct Ableton Link following is optional. Install its native binding when
 using `Ableton Link (DJ MIDI Studio)` as a Clock source:
 
 ```bash
-uv add aalink
+uv sync --extra link
 ```
 
 Run the app:
