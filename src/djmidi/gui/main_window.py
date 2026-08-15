@@ -40,6 +40,7 @@ from djmidi.gui.layout_view import ControllerLayoutView
 from djmidi.gui.live_monitor import LiveMonitorView
 from djmidi.gui.mapping_group import MappingGroup
 from djmidi.gui.metronome_view import MetronomeView
+from djmidi.gui.midi_routing_view import MidiRoutingView
 from djmidi.gui.preferences_dialog import PreferencesDialog
 from djmidi.gui.safe_update_dialog import SafeUpdateDialog
 from djmidi.gui.splitter_utils import replace_splitter
@@ -168,6 +169,7 @@ class MainWindow(QMainWindow):
             selected_rows_provider=self.controller_setup_view.selected_session_rows,
             session_name_provider=self.controller_setup_view.session_controller_name,
         )
+        self.midi_routing_view = MidiRoutingView()
 
         self.introduction_view = IntroductionView()
         self.live_monitor_view.portNamesChanged.connect(
@@ -188,6 +190,7 @@ class MainWindow(QMainWindow):
             "controller": self.left_tabs.addTab(controller_pair, "By Controller"),
             "monitor": self.left_tabs.addTab(self.live_monitor_view, "Live Monitor"),
             "metronome": self.left_tabs.addTab(self.metronome_view, "Metronome"),
+            "routing": self.left_tabs.addTab(self.midi_routing_view, "MIDI Routing"),
         }
         self.left_tabs.currentChanged.connect(self._on_left_tab_changed)
 

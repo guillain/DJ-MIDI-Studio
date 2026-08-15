@@ -158,6 +158,7 @@ Ordered by current priority:
 - [ ] Automatically detect the connected controller and enable the correct catalog module.
 - [ ] Add automatic detection of the DJ software and enable the correct mapping parser.
 - [ ] Add Clock mirror and MIDI routing support for multi-device setups.
+- [x] Add the GUI configuration surface for MIDI routes and opt-in Clock policies.
 - [ ] Add more end-to-end examples and use cases to the documentation.
 - [ ] Extend the advanced user guide with deeper vendor-specific workflows and troubleshooting.
 

@@ -9,12 +9,13 @@
 - [Controller Images](#controller-images)
 - [Live Monitor](#live-monitor)
 - [Metronome](#metronome)
+- [MIDI Routing](#midi-routing)
 
 ## Application Navigation
 
 The application is organized as tabs across the top of the main window:
 
-`Dashboard`, `Controller Setup`, `Controller Images`, `By Channel`, `By Deck`, `By Controller`, `Live Monitor`, and `Metronome`.
+`Dashboard`, `Controller Setup`, `Controller Images`, `By Channel`, `By Deck`, `By Controller`, `Live Monitor`, `Metronome`, and `MIDI Routing`.
 
 The right-hand panel remains available from every tab for the current selection and validation messages. Selecting a mapping or a layout cell keeps the related views synchronized.
 
@@ -71,3 +72,11 @@ The event table contains the timestamp, direction, source device, MIDI channel a
 Metronome replays the current Controller Setup session through a selected MIDI output. It supports one-shot playback of selected or all setup rows, loop playback of selected or all rows, configurable value/velocity, loop frequency, and stopping the loop.
 
 ![Metronome](images/layout/metronome.png)
+
+## MIDI Routing
+
+MIDI Routing configures one-way source/destination routes and the opt-in Clock
+source/destination policy. The route engine prevents cycles and the Clock
+policy rejects invalid source/destination pairs. Physical routing remains
+disabled unless enabled in Preferences, and cross-software Clock use must meet
+the [compatibility notes](midi-clock-compatibility.md).

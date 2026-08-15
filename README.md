@@ -27,7 +27,7 @@ DJ MIDI mapping files can become very large and hard to maintain. DJ MIDI Studio
 ## Key Features
 
 - XML parse/export round-trip tooling for Serato MIDI config files.
-- Multi-view GUI: `By Channel`, `By Deck`, `By Controller`, `Controller Images`, `Live Monitor`, `Metronome`, `Controller Setup`.
+- Multi-view GUI: `By Channel`, `By Deck`, `By Controller`, `Controller Images`, `Live Monitor`, `Metronome`, `MIDI Routing`, `Controller Setup`.
 - New `Dashboard` with known-controller cards, MIDI availability indicators, and drill-down navigation.
 - Dynamic plugin-style controller catalog registry.
 - Plugin-discovered MIDI catalogs for DDJ-XP2, XDJ-XZ, DDJ-1000, Numark Mixtrack Pro FX, and Hercules DJControl Inpulse 500.

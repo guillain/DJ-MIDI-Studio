@@ -97,6 +97,11 @@ For screenshots and a visual description of each tab, see [Screens and Layouts](
 - The MIDI engine now exposes a one-way routing core and an initial Clock mirror;
   hardware routing controls and jitter safeguards are not enabled in the GUI yet.
 
+Use the `MIDI Routing` tab to configure one-way source/destination routes and an
+opt-in Clock policy. The policy is inactive until routing is enabled in
+Preferences, and Clock synchronization remains subject to the documented
+Serato/Rekordbox compatibility checks.
+
 ## Send MIDI Commands
 
 Use the CLI helper to send direct NOTE/CC output to a controller:

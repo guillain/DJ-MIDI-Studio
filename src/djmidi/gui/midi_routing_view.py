@@ -1,0 +1,152 @@
+from __future__ import annotations
+
+from PySide6.QtCore import Signal
+from PySide6.QtWidgets import (
+    QCheckBox,
+    QComboBox,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QMessageBox,
+    QPushButton,
+    QTableWidget,
+    QTableWidgetItem,
+    QVBoxLayout,
+    QWidget,
+)
+
+from djmidi.midi_clock import MidiClockMirror
+from djmidi.midi_io import list_input_ports, list_output_ports
+from djmidi.midi_router import MidiRoute, MidiRouter
+
+
+class MidiRoutingView(QWidget):
+    """Safe configuration surface for the MIDI router and Clock mirror."""
+
+    routesChanged = Signal()
+
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        self._router = MidiRouter()
+        self._clock: MidiClockMirror | None = None
+
+        self._source_combo = QComboBox()
+        self._destination_combo = QComboBox()
+        refresh_button = QPushButton("Refresh MIDI ports")
+        refresh_button.clicked.connect(self.refresh_ports)
+        add_button = QPushButton("Add route")
+        add_button.clicked.connect(self._add_route)
+        remove_button = QPushButton("Remove selected")
+        remove_button.clicked.connect(self._remove_selected)
+
+        route_controls = QHBoxLayout()
+        route_controls.addWidget(QLabel("Source:"))
+        route_controls.addWidget(self._source_combo)
+        route_controls.addWidget(QLabel("Destination:"))
+        route_controls.addWidget(self._destination_combo)
+        route_controls.addWidget(add_button)
+        route_controls.addWidget(remove_button)
+        route_controls.addWidget(refresh_button)
+
+        self._routes_table = QTableWidget(0, 3)
+        self._routes_table.setHorizontalHeaderLabels(["Source", "Destination", "State"])
+        self._routes_table.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
+        self._routes_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+
+        routes_box = QGroupBox("One-way MIDI routes")
+        routes_layout = QVBoxLayout(routes_box)
+        routes_layout.addLayout(route_controls)
+        routes_layout.addWidget(self._routes_table)
+
+        self._clock_source = QComboBox()
+        self._clock_destination = QComboBox()
+        self._clock_enabled = QCheckBox("Enable Clock mirror policy")
+        self._clock_enabled.toggled.connect(self._update_clock_policy)
+        self._clock_status = QLabel("Clock mirror disabled")
+        clock_controls = QHBoxLayout()
+        clock_controls.addWidget(QLabel("Clock source:"))
+        clock_controls.addWidget(self._clock_source)
+        clock_controls.addWidget(QLabel("Clock destination:"))
+        clock_controls.addWidget(self._clock_destination)
+        clock_controls.addWidget(self._clock_enabled)
+        clock_box = QGroupBox("MIDI Clock")
+        clock_layout = QVBoxLayout(clock_box)
+        clock_layout.addLayout(clock_controls)
+        clock_layout.addWidget(self._clock_status)
+
+        help_label = QLabel(
+            "Routes are configured here but remain inactive until MIDI routing is enabled in Preferences. "
+            "Clock synchronization is intentionally opt-in and must be validated per software/version."
+        )
+        help_label.setWordWrap(True)
+
+        layout = QVBoxLayout(self)
+        layout.addWidget(help_label)
+        layout.addWidget(routes_box)
+        layout.addWidget(clock_box)
+        layout.addStretch(1)
+
+    @property
+    def router(self) -> MidiRouter:
+        return self._router
+
+    @property
+    def clock_mirror(self) -> MidiClockMirror | None:
+        return self._clock
+
+    def refresh_ports(self) -> None:
+        names = sorted(set(list_input_ports()) | set(list_output_ports()))
+        for combo in (self._source_combo, self._destination_combo, self._clock_source, self._clock_destination):
+            current = combo.currentText()
+            combo.blockSignals(True)
+            combo.clear()
+            combo.addItems(names)
+            combo.setCurrentText(current)
+            combo.blockSignals(False)
+
+    def _add_route(self) -> None:
+        source = self._source_combo.currentText()
+        destination = self._destination_combo.currentText()
+        try:
+            self._router.add_route(MidiRoute(source, destination))
+        except ValueError as exc:
+            QMessageBox.warning(self, "Cannot add route", str(exc))
+            return
+        self._refresh_routes_table()
+        self.routesChanged.emit()
+
+    def _remove_selected(self) -> None:
+        row = self._routes_table.currentRow()
+        if row < 0 or row >= len(self._router.routes):
+            return
+        self._router.remove_route(self._router.routes[row])
+        self._refresh_routes_table()
+        self.routesChanged.emit()
+
+    def _refresh_routes_table(self) -> None:
+        self._routes_table.setRowCount(0)
+        for route in self._router.routes:
+            row = self._routes_table.rowCount()
+            self._routes_table.insertRow(row)
+            values = [route.source_port_id, route.destination_port_id, "Enabled" if route.enabled else "Disabled"]
+            for column, value in enumerate(values):
+                self._routes_table.setItem(row, column, QTableWidgetItem(value))
+
+    def _update_clock_policy(self, enabled: bool) -> None:
+        if not enabled:
+            self._clock = None
+            self._clock_status.setText("Clock mirror disabled")
+            return
+        source = self._clock_source.currentText()
+        destination = self._clock_destination.currentText()
+        if not source or not destination or source == destination:
+            self._clock_enabled.blockSignals(True)
+            self._clock_enabled.setChecked(False)
+            self._clock_enabled.blockSignals(False)
+            self._clock_status.setText("Select different Clock source and destination ports")
+            return
+        self._clock = MidiClockMirror(source, [destination])
+        self._clock_status.setText(f"Clock policy ready: {source} → {destination}")
+
+
+__all__ = ["MidiRoutingView"]
