@@ -70,3 +70,23 @@ def test_session_forwards_clock_messages_without_a_regular_route():
     assert session.poll() == 1
     assert output_port.sent == [mido.Message("clock")]
     session.stop()
+
+
+def test_session_forwards_clock_to_multiple_independent_destinations():
+    router = MidiRouter()
+    input_port = _FakePort([mido.Message("start")])
+    outputs = {name: _FakePort() for name in ("clock-a", "clock-b", "clock-c")}
+    session = MidiRoutingSession(
+        router,
+        input_opener=lambda name: input_port,
+        output_opener=lambda name: outputs[name],
+        clock_mirrors=(
+            MidiClockMirror("clock-in", ["clock-a", "clock-b"]),
+            MidiClockMirror("clock-in", ["clock-c"]),
+        ),
+    )
+
+    session.start()
+    assert session.poll() == 3
+    assert all(port.sent == [mido.Message("start")] for port in outputs.values())
+    session.stop()

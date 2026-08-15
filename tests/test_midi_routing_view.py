@@ -21,3 +21,16 @@ def test_routing_view_rejects_same_clock_source_and_destination():
     view._clock_enabled.setChecked(True)
     assert view.clock_mirror is None
     assert "different" in view._clock_status.text()
+
+
+def test_routing_view_supports_multiple_clock_lines():
+    view = MidiRoutingView()
+    view._clock_source.addItems(["clock-in", "other-in"])
+    view._clock_destination.addItems(["clock-out", "other-out"])
+    view._clock_enabled.setChecked(True)
+    assert len(view._clocks) == 1
+    view._clock_source.setCurrentText("other-in")
+    view._clock_destination.setCurrentText("other-out")
+    view._add_clock_route()
+    assert len(view._clocks) == 2
+    assert view._clock_table.rowCount() == 2

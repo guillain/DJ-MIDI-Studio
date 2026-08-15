@@ -51,7 +51,7 @@ the device name is intentionally kept in its dedicated column.
 
 1. Enable `Enable MIDI routing policies` in Preferences.
 2. Open `MIDI Routing`, select a source and destination, then click `Add route`.
-3. Optionally enable a Clock source/destination policy.
+3. Optionally enable the Clock policy and add one or more source/destination lines.
 4. Click `Start routing` only after checking the selected ports.
 
 Routing is opt-in, opens only the ports used by enabled routes and Clock policy,

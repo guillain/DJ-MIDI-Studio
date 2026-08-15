@@ -100,12 +100,13 @@ For screenshots and a visual description of each tab, see [Screens and Layouts](
   MIDI routing in Preferences, add at least one route, then use `Start routing`
   to open the selected physical MIDI ports. `Stop routing` closes them again;
   routing remains disabled by default and port failures stop the session safely.
-  When a Clock policy is enabled, its source and destinations are opened by the
-  same session and realtime Start/Continue/Stop/Clock messages are forwarded
-  with the configured jitter safeguards.
+  When a Clock policy is enabled, each configured source → destination line is
+  opened by the same session and realtime Start/Continue/Stop/Clock messages
+  are forwarded with the configured jitter safeguards.
 
 Use the `MIDI Routing` tab to configure one-way source/destination routes and an
-opt-in Clock policy. The policy is inactive until routing is enabled in
+opt-in Clock policy. Add several Clock source/destination lines when needed;
+the policy is inactive until routing is enabled in
 Preferences, and Clock synchronization remains subject to the documented
 Serato/Rekordbox compatibility checks.
 

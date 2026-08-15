@@ -30,6 +30,7 @@ class MidiRoutingView(QWidget):
         super().__init__(parent)
         self._router = MidiRouter()
         self._clock: MidiClockMirror | None = None
+        self._clocks: list[MidiClockMirror] = []
         self._routing_enabled = False
         self._routing_session = MidiRoutingSession(self._router)
         self._routing_timer = QTimer(self)
@@ -73,15 +74,26 @@ class MidiRoutingView(QWidget):
         self._clock_enabled = QCheckBox("Enable Clock mirror policy")
         self._clock_enabled.toggled.connect(self._update_clock_policy)
         self._clock_status = QLabel("Clock mirror disabled")
+        add_clock_button = QPushButton("Add Clock route")
+        add_clock_button.clicked.connect(self._add_clock_route)
+        remove_clock_button = QPushButton("Remove selected")
+        remove_clock_button.clicked.connect(self._remove_clock_route)
         clock_controls = QHBoxLayout()
         clock_controls.addWidget(QLabel("Clock source:"))
         clock_controls.addWidget(self._clock_source)
         clock_controls.addWidget(QLabel("Clock destination:"))
         clock_controls.addWidget(self._clock_destination)
         clock_controls.addWidget(self._clock_enabled)
+        clock_controls.addWidget(add_clock_button)
+        clock_controls.addWidget(remove_clock_button)
         clock_box = QGroupBox("MIDI Clock")
         clock_layout = QVBoxLayout(clock_box)
         clock_layout.addLayout(clock_controls)
+        self._clock_table = QTableWidget(0, 3)
+        self._clock_table.setHorizontalHeaderLabels(["Source", "Destination", "State"])
+        self._clock_table.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
+        self._clock_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        clock_layout.addWidget(self._clock_table)
         clock_layout.addWidget(self._clock_status)
 
         help_label = QLabel(
@@ -188,8 +200,18 @@ class MidiRoutingView(QWidget):
             self._stop_routing()
         if not enabled:
             self._clock = None
-            self._routing_session.set_clock_mirror(None)
+            self._clocks.clear()
+            self._refresh_clock_table()
+            self._routing_session.set_clock_mirrors(())
             self._clock_status.setText("Clock mirror disabled")
+            return
+        if self._clocks:
+            self._update_clock_session()
+            return
+        self._add_clock_route()
+
+    def _add_clock_route(self) -> None:
+        if not self._clock_enabled.isChecked():
             return
         source = self._clock_source.currentText()
         destination = self._clock_destination.currentText()
@@ -199,9 +221,42 @@ class MidiRoutingView(QWidget):
             self._clock_enabled.blockSignals(False)
             self._clock_status.setText("Select different Clock source and destination ports")
             return
-        self._clock = MidiClockMirror(source, [destination])
-        self._routing_session.set_clock_mirror(self._clock)
-        self._clock_status.setText(f"Clock policy ready: {source} → {destination}")
+        if any(clock.source_port_id == source and destination in clock.destination_port_ids for clock in self._clocks):
+            self._clock_status.setText("This Clock route is already configured")
+            return
+        if self._routing_session.running:
+            self._stop_routing()
+        self._clocks.append(MidiClockMirror(source, [destination]))
+        self._clock = self._clocks[0]
+        self._refresh_clock_table()
+        self._update_clock_session()
+
+    def _remove_clock_route(self) -> None:
+        row = self._clock_table.currentRow()
+        if row < 0 or row >= len(self._clocks):
+            return
+        if self._routing_session.running:
+            self._stop_routing()
+        self._clocks.pop(row)
+        self._clock = self._clocks[0] if self._clocks else None
+        self._refresh_clock_table()
+        self._update_clock_session()
+
+    def _refresh_clock_table(self) -> None:
+        self._clock_table.setRowCount(0)
+        for clock in self._clocks:
+            for destination in clock.destination_port_ids:
+                row = self._clock_table.rowCount()
+                self._clock_table.insertRow(row)
+                for column, value in enumerate((clock.source_port_id, destination, "Enabled")):
+                    self._clock_table.setItem(row, column, QTableWidgetItem(value))
+
+    def _update_clock_session(self) -> None:
+        self._routing_session.set_clock_mirrors(self._clocks)
+        if self._clocks:
+            self._clock_status.setText(f"{len(self._clocks)} Clock route(s) ready")
+        else:
+            self._clock_status.setText("Clock mirror enabled; add a source and destination")
 
 
 __all__ = ["MidiRoutingView"]
