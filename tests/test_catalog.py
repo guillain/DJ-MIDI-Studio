@@ -24,6 +24,19 @@ def test_ddj_xp2_deck_button():
     assert any(h.name == "4 BEAT LOOP" for h in hits)
 
 
+def test_ddj_xp2_double_click_second_note_resolves_pad_mode_5():
+    hits = catalog.lookup("1", "Note On", "28")
+    names = [h.name for h in hits if h.controller == "DDJ-XP2"]
+    assert names == ["PAD MODE 5"]
+
+
+def test_ddj_xp2_double_click_notes_resolve_pad_modes_6_to_8():
+    expected = {"31": "PAD MODE 6", "33": "PAD MODE 7", "35": "PAD MODE 8"}
+    for note, name in expected.items():
+        hits = catalog.lookup("1", "Note On", note)
+        assert any(h.controller == "DDJ-XP2" and h.name == name for h in hits)
+
+
 def test_xdj_xz_pad_note():
     hits = catalog.lookup("6", "Note On", "0")
     names = [h.name for h in hits if h.controller == "XDJ-XZ"]

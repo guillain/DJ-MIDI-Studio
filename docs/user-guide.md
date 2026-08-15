@@ -146,6 +146,14 @@ DDJ-XP2 known pad mode button note values (channels 1..4):
 - `32` = `PAD MODE 3`
 - `34` = `PAD MODE 4`
 
+The second physical click is emitted as a distinct NOTE, rather than a second
+`27/30/32/34` event:
+
+- `28` = `PAD MODE 5`
+- `31` = `PAD MODE 6`
+- `33` = `PAD MODE 7`
+- `35` = `PAD MODE 8`
+
 On real hardware, `PAD MODE 5..8` are reached by double-clicking `PAD MODE 1..4`.
 So in practice:
 

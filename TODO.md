@@ -140,6 +140,7 @@ second, then real-time routing and clock synchronization.
 - [x] Record the source and device for learned/imported Controller Setup rows.
 - [x] Send one-shot MIDI NOTE/CC commands from Controller Setup.
 - [x] Send DDJ-XP2 pad-mode double-click commands.
+- [x] Recognize DDJ-XP2's captured second-click NOTE values for PAD MODE 5-8 (28, 31, 33, 35), including shifted variants.
 - [x] Replay selected or all Controller Setup rows once.
 - [x] Move configurable repeated Controller Setup playback into the `MIDI Routing` view and remove the standalone `Metronome` tab.
 - [x] Add the `djmidi-send-midi` CLI command and `--double-click` helper.

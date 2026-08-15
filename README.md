@@ -114,6 +114,14 @@ DDJ-XP2 known `PAD MODE` button notes (deck channels `1..4`):
 - `PAD MODE 3` -> `data1=32`
 - `PAD MODE 4` -> `data1=34`
 
+The second physical click is a different NOTE, which is what the Live Monitor
+will display:
+
+- `PAD MODE 5` -> `data1=28`
+- `PAD MODE 6` -> `data1=31`
+- `PAD MODE 7` -> `data1=33`
+- `PAD MODE 8` -> `data1=35`
+
 On the DDJ-XP2, `PAD MODE 5..8` are reached by double-clicking `PAD MODE 1..4`:
 
 - double-click `PAD MODE 1` -> `PAD MODE 5`
