@@ -6,6 +6,7 @@
 - [Core Documentation](#core-documentation)
 - [Screens and Layouts](#screens-and-layouts)
 - [Plugin Manifest](#plugin-manifest)
+- [Controller Profiles](#controller-profiles)
 - [Build and CI](#build-and-ci)
 
 ## Getting Started
@@ -26,6 +27,10 @@
 ## Plugin Manifest
 
 - [Plugin Manifest](plugin-manifest.md)
+
+## Controller Profiles
+
+- [Controller Profiles](controller-profiles.md)
 
 ## Build and CI
 
