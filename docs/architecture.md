@@ -62,8 +62,7 @@ The Introduction tab now acts as an entry dashboard: it lists known controllers,
 The catalog is plugin-style:
 
 - `_registry.py` stores `ControllerDefinition` and dynamic registration.
-- One file per controller (`ddj_xp2.py`, `xdj_xz.py`, etc.).
+- One file per controller (`ddj_xp2.py`, `xdj_xz.py`, `ddj_1000.py`, etc.).
 - `catalog/__init__.py` exposes the live API (`lookup`, `CONTROLLER_NAMES`, etc.).
 
 Registration is dynamic, so newly applied definitions (from Controller Setup) can be used immediately in the current session.
-

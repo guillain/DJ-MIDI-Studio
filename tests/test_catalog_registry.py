@@ -5,10 +5,11 @@ from seratomidiconf.catalog import make_sequential_pad_lookup
 from seratomidiconf.catalog._registry import ControllerDefinition, register
 
 
-def test_ddj_xp2_and_xdj_xz_are_registered_at_import():
+def test_builtin_controllers_are_registered_at_import():
     assert "DDJ-XP2" in catalog.CONTROLLER_NAMES
     assert "XDJ-XZ" in catalog.CONTROLLER_NAMES
-    assert catalog.PAD_COUNTS == {"DDJ-XP2": 16, "XDJ-XZ": 8}
+    assert "DDJ-1000" in catalog.CONTROLLER_NAMES
+    assert catalog.PAD_COUNTS == {"DDJ-XP2": 16, "XDJ-XZ": 8, "DDJ-1000": 16}
 
 
 def test_registering_twice_raises():
