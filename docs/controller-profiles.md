@@ -65,6 +65,14 @@ and eight-pad layout used by the DDJ-400 family and includes an official
 Pioneer product view. Its MIDI values remain provisional until confirmed with
 an FLX4 hardware capture or an FLX4-specific MIDI message list.
 
+All six Pioneer pad-grid profiles (`DDJ-XP2`, `XDJ-XZ`, `DDJ-1000`, `DDJ-FLX4`,
+`DDJ-REV1`, and `DDJ-FLX10`) resolve pad modes 1 through 8. The DDJ-XP2 also
+has dedicated `PAD MODE 1..8` button entries; on hardware, modes 5 through 8
+are emitted by the second NOTE in the double-click sequence. The Numark and
+Hercules profiles currently expose their verified eight-pad bank only: their
+mode-switch messages are not yet documented by a vendor MIDI list or a local
+hardware capture, so they are intentionally not guessed.
+
 Reference sources:
 
 - [Controller documentation index and official PDF URLs](controllers/README.md)

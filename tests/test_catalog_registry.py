@@ -67,6 +67,39 @@ def test_ddj_rev1_resolves_serato_transport_and_shifted_pad_controls():
     assert any(hit.controller == "DDJ-REV1" and hit.name == "Deck 1 Pad 8 (PAD MODE 2) (+SHIFT)" for hit in pad_hits)
 
 
+@pytest.mark.parametrize(
+    ("controller", "channel", "note"),
+    [
+        ("DDJ-XP2", "8", 12),
+        ("XDJ-XZ", "6", 0),
+        ("DDJ-1000", "6", 0),
+        ("DDJ-FLX4", "6", 0),
+        ("DDJ-REV1", "8", 0),
+        ("DDJ-FLX10", "6", 0),
+    ],
+)
+def test_pioneer_pad_grids_resolve_all_eight_modes(controller, channel, note):
+    """Every Pioneer profile with pad banks must decode modes 1 through 8."""
+    xdj_mode_names = (
+        "HOT CUE mode",
+        "BEAT LOOP mode",
+        "SLIP LOOP mode",
+        "BEAT JUMP mode",
+        "EXTENSION1 mode",
+        "EXTENSION2 mode",
+        "EXTENSION3 mode",
+        "EXTENSION4 mode",
+    )
+    for mode in range(1, 9):
+        hits = catalog.lookup(channel, "Note On", str(note + (mode - 1) * 16))
+        matching = [hit for hit in hits if hit.controller == controller]
+        assert matching, (controller, mode)
+        if controller == "XDJ-XZ":
+            assert xdj_mode_names[mode - 1] in matching[0].name
+        else:
+            assert f"PAD MODE {mode}" in matching[0].name
+
+
 def test_non_pioneer_controller_plugins_resolve_pad_controls():
     numark_hits = catalog.lookup("1", "Note On", "36")
     assert any(hit.controller == "Numark Mixtrack Pro FX" and hit.name == "Deck 1 Pad 1" for hit in numark_hits)
