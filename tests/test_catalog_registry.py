@@ -28,6 +28,9 @@ def test_builtin_controller_plugins_expose_metadata():
     assert definitions["DDJ-XP2"].manufacturer == "Pioneer DJ"
     assert definitions["DDJ-XP2"].supported_software == ("serato",)
     assert definitions["DDJ-XP2"].reference_image == "ddj-xp2.png"
+    assert definitions["DDJ-FLX10"].reference_image == "ddj-flx10.png"
+    assert definitions["Numark Mixtrack Pro FX"].reference_image == "numark-mixtrack-pro-fx.png"
+    assert definitions["Hercules DJControl Inpulse 500"].reference_image == "hercules-djcontrol-inpulse-500.png"
     assert definitions["Numark Mixtrack Pro FX"].manufacturer == "Numark"
     assert definitions["Hercules DJControl Inpulse 500"].manufacturer == "Hercules"
     assert definitions["DDJ-FLX10"].plugin_id == "pioneer.ddj-flx10"

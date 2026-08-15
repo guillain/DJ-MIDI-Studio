@@ -3,8 +3,8 @@
 This conservative profile covers the discrete deck controls and performance
 pad banks used by common Rekordbox/Serato mappings. Continuous controls are
 intentionally omitted. Verify the profile against the installed firmware or a
-hardware capture before using it for a production remap; no unverified
-reference image is declared yet.
+hardware capture before using it for a production remap. The bundled image is
+the annotated first page of Pioneer DJ's official MIDI message list.
 """
 
 from __future__ import annotations
@@ -61,6 +61,7 @@ register(
         plugin_id="pioneer.ddj-flx10",
         manufacturer="Pioneer DJ",
         supported_software=("rekordbox", "serato"),
+        reference_image="ddj-flx10.png",
         display_order=35,
         static_entries=_STATIC,
         pad_lookup=_pad_lookup,

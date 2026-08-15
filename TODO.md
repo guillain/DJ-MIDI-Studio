@@ -115,7 +115,7 @@ second, then real-time routing and clock synchronization.
 - [x] Apply a generated controller catalog immediately for the current session.
 - [x] Refresh controller-dependent views after applying a catalog.
 - [x] Add DDJ-1000 reference mapping artwork to the controller image assets.
-- [ ] Add verified reference images for Numark Mixtrack Pro FX and Hercules DJControl Inpulse 500, then declare them in their controller plugins.
+- [x] Add official reference images for Numark Mixtrack Pro FX and Hercules DJControl Inpulse 500, then declare them in their controller plugins. These are physical product views; a complete annotated MIDI map still requires vendor documentation or hardware capture.
 
 ### MIDI tools and live workflows
 
@@ -202,7 +202,7 @@ the MIDI 1.0 router and Clock mirror are stable.
 #### Priority 1 — Pioneer DJ ecosystem
 
 - [ ] **DDJ-FLX4** — highly widespread entry-level Rekordbox/Serato controller; strong first addition for broad user coverage.
-- [x] **DDJ-FLX10** — initial conservative four-deck profile delivered; the official MIDI message list is archived in `docs/controllers/`. Firmware capture and reference artwork remain verification work.
+- [x] **DDJ-FLX10** — initial conservative four-deck profile delivered; the official MIDI message list and annotated reference artwork are archived in `docs/controllers/` and `assets/controllers/`. Firmware capture remains verification work.
 - [ ] **DDJ-REV1** — popular Serato-oriented entry-level battle controller with a layout distinct from the DDJ-FLX range.
 - [ ] **DDJ-REV5** — current two-deck battle controller with substantial Serato usage and a distinct pad/deck layout.
 - [ ] **DDJ-800** — established two-channel Rekordbox controller, useful for users between entry-level and flagship hardware.
