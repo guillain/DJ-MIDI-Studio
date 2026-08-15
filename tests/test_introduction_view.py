@@ -37,6 +37,8 @@ def test_refresh_controllers_builds_controller_cards():
     assert view._cards_layout.getItemPosition(1)[1] == 1
     assert view._cards_layout.getItemPosition(2)[1] == 2
     assert view._cards_layout.getItemPosition(3)[0] == 1
+    first_card = view._cards_layout.itemAt(0).widget()
+    assert first_card.width() == view._CONTROLLER_CARD_WIDTH
 
 
 def test_set_loaded_config_info_updates_status_label():

@@ -115,6 +115,7 @@ second, then real-time routing and clock synchronization.
 
 - [x] Add the `Dashboard` with loaded-file status, controller cards, catalog statistics, MIDI availability indicators, and drill-down shortcuts.
 - [x] Use three columns for the Dashboard Controller Overview grid.
+- [x] Constrain Controller Overview cards to a compact fixed width so the three-column grid does not dominate the Dashboard.
 - [x] Add the `By Channel` view with one resizable column per MIDI channel.
 - [x] Add the `By Deck` view with one resizable column per Serato deck and slot-oriented mapping groups.
 - [x] Add the `By Controller` view with one column per controller and grouped catalog sections.
