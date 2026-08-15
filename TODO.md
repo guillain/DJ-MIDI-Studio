@@ -162,6 +162,7 @@ Ordered by current priority:
 - [x] Automatically detect the connected controller and enable the correct catalog module.
 - [x] Add automatic detection of the DJ software and enable the correct mapping parser.
 - [x] Cover Serato and Traktor Clock-specific routing behavior and safeguards; Rekordbox compatibility remains separately constrained by vendor/version verification.
+- [x] Keep the Clock roadmap wording aligned with the implemented Serato/Traktor compatibility documentation.
 - [x] Add Clock mirror and MIDI routing support for multi-device setups.
 - [x] Add the GUI configuration surface for MIDI routes and opt-in Clock policies.
 - [x] Add controlled physical route execution behind the Preferences routing flag, with fake-port integration tests.
