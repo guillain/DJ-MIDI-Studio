@@ -45,7 +45,7 @@ second, then real-time routing and clock synchronization.
 - [x] Adopt the W3C [Web MIDI API](https://github.com/WebAudio/web-midi-api) as the conceptual compatibility model for access, input/output ports, events, and SysEx opt-in.
 - [x] Keep the native implementation on MIDI 1.0 byte messages through `mido/rtmidi`; do not make a browser API dependency part of the desktop runtime.
 - [x] Define an internal normalized MIDI message/port API aligned with Web MIDI naming while preserving realtime messages and timestamps.
-- [ ] Specify MIDI 2.0/UMP as a future extension instead of mixing it into the initial MIDI 1.0 router.
+- [x] Specify MIDI 2.0/UMP as a future extension instead of mixing it into the initial MIDI 1.0 router.
 - [x] Add a one-way MIDI router with port/channel/message filters and loop prevention.
 - [x] Add monitoring/status for routes, dropped messages, latency, and errors.
 - [x] Add the initial MIDI Clock mirror with Start/Stop/Continue handling, 24 PPQN forwarding, and source selection.
@@ -61,7 +61,7 @@ second, then real-time routing and clock synchronization.
 - [x] Route GUI Save and Save As through validation, backup, and atomic safe-update writes.
 - [x] Add a preferences surface for enabled plugins, detection policy, routing policy, and trust decisions.
 - [x] Support unknown devices and unsupported mapping formats through a generic MIDI profile.
-- [ ] Document plugin installation, updates, compatibility, trust, and troubleshooting.
+- [x] Document plugin installation, updates, compatibility, trust, and troubleshooting.
 
 ### Cross-cutting diagnostics
 
@@ -226,4 +226,4 @@ the MIDI 1.0 router and Clock mirror are stable.
 - [ ] Add automatic detection of the DJ software and enable the correct mapping parser.
 - [ ] Add Clock mirror and MIDI routing support for multi-device setups (/!\ Serato & Rekordbox clock specificities! /!\).
 - [ ] Controlleur and Software plugins can be added by external configuration file (yaml/json)
-- [ ] Add a plugin manifest/version format with API compatibility, plugin version, vendor, license, and required application version.
+- [x] Add a plugin manifest/version format with API compatibility, plugin version, vendor, license, and required application version.
