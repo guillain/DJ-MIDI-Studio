@@ -80,7 +80,8 @@ delivery record so that the backlog remains useful after each release.
 
 Ordered by current priority:
 
-- [ ] Add support for additional controller models beyond DDJ-XP2, XDJ-XZ, and DDJ-1000. The initial shortlist below is ordered by a combination of market reach, availability of official MIDI documentation, and fit with the current catalog architecture.
+- [x] Add the first non-Pioneer controller plugins: Numark Mixtrack Pro FX and Hercules DJControl Inpulse 500. Their initial discrete-control profiles are conservative and must be verified against specific hardware/firmware captures before production use.
+- [ ] Continue adding controller models beyond DDJ-XP2, XDJ-XZ, DDJ-1000, Numark Mixtrack Pro FX, and Hercules DJControl Inpulse 500. The shortlist below is ordered by a combination of market reach, availability of official MIDI documentation, and fit with the current catalog architecture.
 - [ ] Add support for additional DJ software vendors, such as Traktor, Rekordbox, and VirtualDJ.
 - [ ] Automatically detect the connected controller and enable the correct catalog module.
 - [ ] Add automatic detection of the DJ software and enable the correct mapping parser.
@@ -122,8 +123,8 @@ list or the GUI.
 #### Priority 2 — other widely used ecosystems
 
 - [ ] **Native Instruments Traktor Kontrol S2 MK3** — common Traktor entry point and a representative non-Pioneer catalog.
-- [ ] **Numark Mixtrack Pro FX** — widely available budget controller with strong Serato/VirtualDJ usage.
-- [ ] **Hercules DJControl Inpulse 500** — popular beginner/intermediate controller and a representative Hercules device.
+- [x] **Numark Mixtrack Pro FX** — initial discrete-control plugin profile added; verify against the target firmware/software combination.
+- [x] **Hercules DJControl Inpulse 500** — initial discrete-control plugin profile added; verify against the target firmware/software combination.
 - [ ] **RANE FOUR** — established four-channel Serato controller with a distinct professional layout.
 - [ ] **Denon DJ Prime 4+** — widely used standalone four-deck system and a useful Engine DJ/Serato comparison point.
 

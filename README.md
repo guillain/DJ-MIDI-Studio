@@ -30,7 +30,7 @@ DJ MIDI mapping files can become very large and hard to maintain. DJ MIDI Studio
 - Multi-view GUI: `By Channel`, `By Deck`, `By Controller`, `Controller Images`, `Live Monitor`, `Metronome`, `Controller Setup`.
 - New `Introduction` dashboard with known-controller cards and drill-down navigation.
 - Dynamic plugin-style controller catalog registry.
-- Built-in MIDI catalogs for DDJ-XP2, XDJ-XZ, and DDJ-1000.
+- Plugin-discovered MIDI catalogs for DDJ-XP2, XDJ-XZ, DDJ-1000, Numark Mixtrack Pro FX, and Hercules DJControl Inpulse 500.
 - Validation for structure and mapping conflicts.
 - Send saved Controller Setup session commands directly to a selected MIDI output, with a dedicated `Metronome` tab for looping/repeat playback.
 

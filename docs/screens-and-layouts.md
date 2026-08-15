@@ -24,7 +24,7 @@ The right-hand panel remains available from every tab for the current selection 
 
 The Introduction tab is the dashboard. It shows the loaded Serato file, the registered controllers, catalog statistics, and shortcuts into the detailed views. A controller card can open its channel tree, controller layout, or reference image. The active controller selector controls those drill-down actions.
 
-The current catalog contains DDJ-XP2, XDJ-XZ, and DDJ-1000. Controller Setup definitions applied during the current session also appear here immediately.
+The current catalog contains DDJ-XP2, XDJ-XZ, DDJ-1000, Numark Mixtrack Pro FX, and Hercules DJControl Inpulse 500. Controller Setup definitions applied during the current session also appear here immediately.
 
 ## Mapping Views
 
@@ -71,4 +71,3 @@ The event table contains the timestamp, direction, source device, MIDI channel a
 Metronome replays the current Controller Setup session through a selected MIDI output. It supports one-shot playback of selected or all setup rows, loop playback of selected or all rows, configurable value/velocity, loop frequency, and stopping the loop.
 
 ![Metronome](images/layout/metronome.png)
-

@@ -9,7 +9,15 @@ def test_builtin_controllers_are_registered_at_import():
     assert "DDJ-XP2" in catalog.CONTROLLER_NAMES
     assert "XDJ-XZ" in catalog.CONTROLLER_NAMES
     assert "DDJ-1000" in catalog.CONTROLLER_NAMES
-    assert catalog.PAD_COUNTS == {"DDJ-XP2": 16, "XDJ-XZ": 8, "DDJ-1000": 16}
+    assert "Numark Mixtrack Pro FX" in catalog.CONTROLLER_NAMES
+    assert "Hercules DJControl Inpulse 500" in catalog.CONTROLLER_NAMES
+    assert catalog.PAD_COUNTS == {
+        "DDJ-XP2": 16,
+        "XDJ-XZ": 8,
+        "DDJ-1000": 16,
+        "Numark Mixtrack Pro FX": 8,
+        "Hercules DJControl Inpulse 500": 8,
+    }
 
 
 def test_builtin_controller_plugins_expose_metadata():
@@ -18,6 +26,16 @@ def test_builtin_controller_plugins_expose_metadata():
     assert definitions["DDJ-XP2"].manufacturer == "Pioneer DJ"
     assert definitions["DDJ-XP2"].supported_software == ("serato",)
     assert definitions["DDJ-XP2"].reference_image == "ddj-xp2.png"
+    assert definitions["Numark Mixtrack Pro FX"].manufacturer == "Numark"
+    assert definitions["Hercules DJControl Inpulse 500"].manufacturer == "Hercules"
+
+
+def test_non_pioneer_controller_plugins_resolve_pad_controls():
+    numark_hits = catalog.lookup("1", "Note On", "36")
+    assert any(hit.controller == "Numark Mixtrack Pro FX" and hit.name == "Deck 1 Pad 1" for hit in numark_hits)
+
+    hercules_hits = catalog.lookup("2", "Note On", "47")
+    assert any(hit.controller == "Hercules DJControl Inpulse 500" and hit.name == "Deck 2 Pad 8" for hit in hercules_hits)
 
 
 def test_builtin_controller_plugins_are_discovered_without_central_import_list():
