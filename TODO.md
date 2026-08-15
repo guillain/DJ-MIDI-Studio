@@ -117,7 +117,7 @@ Implemented contract, runtime, test, and documentation work:
 ### Mapping views and navigation
 
 - [x] Add the Dashboard with loaded-file status, controller cards, catalog statistics, MIDI availability indicators, and drill-down shortcuts.
-- [x] Use three compact columns for the Dashboard Controller Overview grid.
+- [x] Use three equal-width columns that fill the Dashboard Controller Overview grid.
 - [x] Shorten Dashboard Controller Overview drill-down buttons to compact labels.
 - [x] Add By Channel, By Deck, and By Controller views with resizable trees and physical layout views.
 - [x] Add clickable schematic controller layouts, catalog interpretations, Serato deck coloring, and mapped function labels.

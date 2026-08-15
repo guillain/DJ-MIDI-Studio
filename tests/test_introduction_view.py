@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QPushButton
+from PySide6.QtWidgets import QPushButton, QSizePolicy
 
 from djmidi.gui.introduction_view import IntroductionView
 
@@ -38,7 +38,8 @@ def test_refresh_controllers_builds_controller_cards():
     assert view._cards_layout.getItemPosition(2)[1] == 2
     assert view._cards_layout.getItemPosition(3)[0] == 1
     first_card = view._cards_layout.itemAt(0).widget()
-    assert first_card.width() == view._CONTROLLER_CARD_WIDTH
+    assert first_card.sizePolicy().horizontalPolicy() == QSizePolicy.Policy.Expanding
+    assert [view._cards_layout.columnStretch(column) for column in range(3)] == [1, 1, 1]
 
 
 def test_set_loaded_config_info_updates_status_label():

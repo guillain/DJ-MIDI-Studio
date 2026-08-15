@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QPushButton,
     QScrollArea,
+    QSizePolicy,
     QVBoxLayout,
     QWidget,
 )
@@ -24,8 +25,6 @@ from djmidi.gui.layout import CellKey
 
 class IntroductionView(QWidget):
     """Home tab presenting known controllers, app context, and quick navigation."""
-
-    _CONTROLLER_CARD_WIDTH = 250
 
     drillDownRequested = Signal(str, str)  # target tab key, controller name
     toolRequested = Signal(str)  # independent tool dock key
@@ -67,7 +66,8 @@ class IntroductionView(QWidget):
         self._cards_layout = QGridLayout()
         self._cards_layout.setHorizontalSpacing(10)
         self._cards_layout.setVerticalSpacing(10)
-        self._cards_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+        for column in range(3):
+            self._cards_layout.setColumnStretch(column, 1)
         cards_host = QWidget()
         cards_host.setLayout(self._cards_layout)
         cards_scroll = QScrollArea()
@@ -203,10 +203,9 @@ class IntroductionView(QWidget):
 
     def _build_controller_card(self, controller: str) -> QWidget:
         card = QGroupBox(controller)
-        # Keep the three-column overview readable on wide displays.  The
-        # surrounding scroll area handles narrow windows without letting the
-        # cards grow to half of the Dashboard.
-        card.setFixedWidth(self._CONTROLLER_CARD_WIDTH)
+        # Let the three equal grid columns use the available overview width;
+        # the surrounding scroll area still handles narrow windows.
+        card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         layout = QVBoxLayout(card)
 
         image = QLabel()
