@@ -27,13 +27,23 @@ def test_set_config_none_clears_function_lookup():
 def test_append_event_populates_log_row_with_catalog_and_function_info():
     view = LiveMonitorView()
     view.set_config(parse_file(FIXTURE))
-    event = MidiEvent(direction="in", channel="8", event_type="Note On", data1="64", data2="127", timestamp=0.0)
+    event = MidiEvent(
+        direction="in",
+        channel="8",
+        event_type="Note On",
+        data1="64",
+        data2="127",
+        timestamp=0.0,
+        port="DDJ-XP2",
+    )
     view._append_event(event)
     assert view._log.rowCount() == 1
     assert view._log.item(0, 1).text() == "IN"
-    assert view._log.item(0, 2).text() == "8"
-    detail = view._log.item(0, 6).text()
-    assert "DDJ-XP2" in detail
+    assert view._log.item(0, 2).text() == "DDJ-XP2"
+    assert view._log.item(0, 3).text() == "8"
+    detail = view._log.item(0, 7).text()
+    assert "PAD" in detail
+    assert "DDJ-1000" not in detail
     assert "codfather_st" in detail
 
 
@@ -41,7 +51,7 @@ def test_append_event_unknown_control_shows_placeholder():
     view = LiveMonitorView()
     event = MidiEvent(direction="in", channel="99", event_type="Note On", data1="99", data2="1", timestamp=0.0)
     view._append_event(event)
-    assert view._log.item(0, 6).text() == "(unknown)"
+    assert view._log.item(0, 7).text() == "(unknown)"
 
 
 def test_log_is_capped_at_max_rows():

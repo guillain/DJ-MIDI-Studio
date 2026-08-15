@@ -7,6 +7,7 @@ Edit DJ software MIDI mappings with a visual workflow instead of hand-editing th
 - [Why This Project](#why-this-project)
 - [Key Features](#key-features)
 - [Screens and Workflow](#screens-and-workflow)
+- [Screens and Layouts](#screens-and-layouts)
 - [Quickstart](#quickstart)
 - [Build and Test Scripts](#build-and-test-scripts)
 - [Send MIDI Commands](#send-midi-commands)
@@ -49,6 +50,10 @@ flowchart LR
 	Controller --> Validate
 	Validate --> Export[Export XML]
 ```
+
+### Screens and Layouts
+
+For annotated screenshots of the main tabs, see [Screens and Layouts](docs/screens-and-layouts.md).
 
 ## Quickstart
 
@@ -144,6 +149,7 @@ bash scripts/release_artifacts.sh
 - [Documentation Home](docs/README.md)
 - [Quickstart](docs/quickstart.md)
 - [User Guide](docs/user-guide.md)
+- [Screens and Layouts](docs/screens-and-layouts.md)
 - [Architecture](docs/architecture.md)
 - [Testing and Quality](docs/testing-and-quality.md)
 - [Quality Gates](docs/quality-gates.md)

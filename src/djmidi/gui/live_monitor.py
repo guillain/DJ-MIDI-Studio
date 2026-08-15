@@ -63,10 +63,13 @@ class LiveMonitorView(QWidget):
         self._port_list.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
         refresh_button = QPushButton("Refresh ports")
         refresh_button.clicked.connect(self._refresh_ports)
+        select_all_button = QPushButton("Select all sources")
+        select_all_button.clicked.connect(self._select_all_sources)
         ports_box = QGroupBox("Input sources (check to monitor)")
         ports_layout = QVBoxLayout(ports_box)
         ports_layout.addWidget(self._port_list)
         ports_layout.addWidget(refresh_button)
+        ports_layout.addWidget(select_all_button)
 
         self._virtual_checkbox = QCheckBox("Create virtual monitor destination (for Serato output)")
         virtual_help = QLabel(_VIRTUAL_MONITOR_HELP)
@@ -93,9 +96,10 @@ class LiveMonitorView(QWidget):
         top_row.addWidget(ports_box, 1)
         top_row.addWidget(controls_box, 1)
 
-        self._log = QTableWidget(0, 7)
-        self._log.setHorizontalHeaderLabels(["Time", "Dir", "Channel", "Type", "Data1", "Data2", "Physical / Serato"])
+        self._log = QTableWidget(0, 8)
+        self._log.setHorizontalHeaderLabels(["Time", "Dir", "Source device", "Channel", "Type", "Data1", "Data2", "Physical / Serato"])
         self._log.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        self._log.setColumnWidth(2, 180)
         self._log.horizontalHeader().setStretchLastSection(True)
 
         layout = QVBoxLayout(self)
@@ -120,6 +124,11 @@ class LiveMonitorView(QWidget):
 
     def _refresh_ports(self) -> None:
         refresh_checked_port_list(self._port_list, list_input_ports)
+
+    def _select_all_sources(self) -> None:
+        """Checks every currently available MIDI input source."""
+        for row in range(self._port_list.count()):
+            self._port_list.item(row).setCheckState(Qt.CheckState.Checked)
 
     def _is_checked(self, row: int) -> bool:
         return self._port_list.item(row).checkState() == Qt.CheckState.Checked
@@ -158,7 +167,15 @@ class LiveMonitorView(QWidget):
 
     def _append_event(self, event: MidiEvent) -> None:
         hits = catalog.lookup(event.channel, event.event_type, event.data1)
-        physical = "; ".join(f"{h.controller}: {h.name}" for h in hits)
+        if event.port:
+            # catalog.lookup() is intentionally controller-agnostic because a
+            # config does not identify the hardware that sent an event.  The
+            # live monitor does know the source port, so avoid showing a
+            # matching control from another controller (e.g. DDJ-1000 when a
+            # DDJ-XP2 sent the event).
+            source = event.port.casefold()
+            hits = [hit for hit in hits if hit.controller.casefold() in source]
+        physical = "; ".join(h.name for h in hits)
         functions = self._function_lookup.get((event.channel, event.event_type, event.data1), [])
         detail = " | ".join(part for part in (physical, "; ".join(functions)) if part) or "(unknown)"
 
@@ -167,6 +184,7 @@ class LiveMonitorView(QWidget):
         values = [
             time.strftime("%H:%M:%S", time.localtime()),
             event.direction.upper(),
+            event.port or "(unknown)",
             event.channel,
             event.event_type,
             event.data1,

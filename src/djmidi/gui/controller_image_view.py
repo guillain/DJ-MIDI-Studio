@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (
     QComboBox,
     QGraphicsPixmapItem,
     QGraphicsScene,
+    QGraphicsTextItem,
     QGraphicsView,
     QHBoxLayout,
     QLabel,
@@ -27,7 +28,11 @@ ASSETS_DIR = Path(__file__).resolve().parents[3] / "assets" / "controllers"
 # One entry per controller with a reference image available; a controller with
 # no entry here still shows up in the combo (driven by catalog.CONTROLLER_NAMES)
 # and falls back to a "not found" placeholder — add an image whenever you have one.
-IMAGES = {"DDJ-XP2": "ddj-xp2.png", "XDJ-XZ": "xdj-xz.png"}
+IMAGES = {
+    "DDJ-XP2": "ddj-xp2.png",
+    "XDJ-XZ": "xdj-xz.png",
+    "DDJ-1000": "ddj-1000.png",
+}
 
 
 class _ZoomableView(QGraphicsView):
@@ -103,8 +108,12 @@ class ControllerImageView(QWidget):
         path = ASSETS_DIR / image_name if image_name else None
         pixmap = QPixmap(str(path)) if path is not None and path.exists() else QPixmap()
         if pixmap.isNull():
-            placeholder = QLabel(f"Image not found: {path if path is not None else name}")
-            self._scene.addWidget(placeholder)
+            # Keep the placeholder inside the graphics scene.  Embedding a
+            # QWidget here (via addWidget) can leave a deleted QLabel proxy
+            # behind when the scene is cleared during a controller switch.
+            placeholder = QGraphicsTextItem(f"Image not found: {path if path is not None else name}")
+            placeholder.setDefaultTextColor(Qt.GlobalColor.darkGray)
+            self._scene.addItem(placeholder)
             self._scene.setSceneRect(self._scene.itemsBoundingRect())
             return
         item = QGraphicsPixmapItem(pixmap)

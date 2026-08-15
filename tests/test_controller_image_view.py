@@ -25,6 +25,11 @@ def test_asset_files_exist():
         assert (ASSETS_DIR / filename).exists()
 
 
+def test_ddj_1000_is_last_and_has_reference_image():
+    assert catalog.CONTROLLER_NAMES[-1] == "DDJ-1000"
+    assert IMAGES["DDJ-1000"] == "ddj-1000.png"
+
+
 def test_loads_pixmap_for_default_controller():
     view = ControllerImageView()
     assert view._pixmap_item is not None
@@ -74,4 +79,3 @@ def test_switching_to_controller_without_image_resets_leftover_zoom():
         assert view._view.transform() == QTransform()
     finally:
         catalog._registry._REGISTRY.pop("__NoImageCtrl__", None)
-

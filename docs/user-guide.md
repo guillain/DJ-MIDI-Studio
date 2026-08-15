@@ -4,6 +4,7 @@
 
 - [Open a Serato XML File](#open-a-serato-xml-file)
 - [Explore Mappings](#explore-mappings)
+- [Screens and Layouts](#screens-and-layouts)
 - [Edit Safely](#edit-safely)
 - [Validate and Export](#validate-and-export)
 - [Live Monitor Notes](#live-monitor-notes)
@@ -23,6 +24,18 @@
 - `Controller Images`: static official diagrams.
 - `Metronome`: repeat the current Controller Setup session rows at a chosen frequency.
 - `Controller Setup`: capture/import controller triggers, send one-shot session commands, and generate catalog modules.
+
+For screenshots and a visual description of each tab, see [Screens and Layouts](screens-and-layouts.md).
+
+## Screens and Layouts
+
+- Use `Introduction` as the dashboard for loaded-file status, controller catalog cards, and drill-down shortcuts.
+- Use `By Channel` for the raw control and mapping hierarchy.
+- Use `By Deck` for grouped per-deck editing and physical layout verification.
+- Use `By Controller` for controller/section-oriented physical mapping.
+- Use `Controller Images` for zoomable reference diagrams.
+- Use `Live Monitor` to inspect real-time MIDI traffic by source device.
+- Use `Metronome` to replay Controller Setup rows once or in a loop.
 
 ## Edit Safely
 
@@ -75,4 +88,3 @@ Inside the GUI:
 
 - use `Controller Setup` to send one-shot commands from the current saved/loaded session to the selected MIDI output;
 - use `Metronome` when you want loop/repeat playback with a configurable frequency.
-

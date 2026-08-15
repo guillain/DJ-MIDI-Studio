@@ -39,6 +39,15 @@ def test_refresh_ports_empty_when_no_ports():
     assert view._port_list.count() == 0
 
 
+def test_select_all_sources_checks_every_port():
+    view = _view()
+    with patch("djmidi.gui.live_monitor.list_input_ports", return_value=["Port A", "Port B", "Port C"]):
+        view._refresh_ports()
+    view._select_all_sources()
+    from PySide6.QtCore import Qt
+    assert all(view._port_list.item(row).checkState() == Qt.CheckState.Checked for row in range(3))
+
+
 # ─── _start / _stop / _toggle_running ─────────────────────────────────────────
 
 def test_start_sets_running_flag_and_updates_label():
@@ -109,4 +118,3 @@ def test_poll_with_virtual_checkbox_start():
          patch.object(view._monitor, "open_input"):
         view._start()
     mock_virtual.assert_called_once()
-
