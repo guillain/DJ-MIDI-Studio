@@ -50,8 +50,11 @@ second, then real-time routing and clock synchronization.
 - [x] Add monitoring/status for routes, dropped messages, latency, and errors.
 - [x] Add the initial MIDI Clock mirror with Start/Stop/Continue handling, 24 PPQN forwarding, and source selection.
 - [x] Add Clock mirror jitter safeguards and timing diagnostics.
-- [x] Document Serato and Rekordbox clock-specific behavior before enabling cross-software clock sync.
+- [x] Document Serato, Traktor, and Rekordbox clock-specific behavior before enabling cross-software clock sync.
 - [x] Add integration tests with virtual MIDI ports and deterministic fake clocks.
+- [x] Reject Clock destinations that are empty, duplicated, or equal to their source.
+- [x] Reject feedback loops that combine regular MIDI routes with Clock routes.
+- [x] Reset Clock jitter measurement at Start/Continue/Stop boundaries so Serato pauses and restarts do not create false jitter samples.
 
 ### Phase 4 — safe software/controller operations — IN PROGRESS
 
@@ -158,6 +161,7 @@ Ordered by current priority:
 - [x] Add support for Traktor through the Native Instruments Traktor software plugin; keep Rekordbox and VirtualDJ open. The plugin now has a dedicated guide documenting NML/TSI detection, NOTE/CC normalization, export behavior, and unsupported advanced Traktor features.
 - [x] Automatically detect the connected controller and enable the correct catalog module.
 - [x] Add automatic detection of the DJ software and enable the correct mapping parser.
+- [x] Cover Serato and Traktor Clock-specific routing behavior and safeguards; Rekordbox compatibility remains separately constrained by vendor/version verification.
 - [x] Add Clock mirror and MIDI routing support for multi-device setups.
 - [x] Add the GUI configuration surface for MIDI routes and opt-in Clock policies.
 - [x] Add controlled physical route execution behind the Preferences routing flag, with fake-port integration tests.

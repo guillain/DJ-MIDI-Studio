@@ -2,6 +2,16 @@ from djmidi.midi_api import MidiMessage
 from djmidi.midi_clock import MidiClockMirror
 
 
+def test_clock_mirror_rejects_invalid_destinations():
+    for destinations in ([], ["clock-in"], ["out", "out"]):
+        try:
+            MidiClockMirror("clock-in", destinations)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("invalid Clock destinations must be rejected")
+
+
 def test_clock_mirror_tracks_transport_and_forwards_destinations():
     mirror = MidiClockMirror("clock-in", ["a", "b"])
     sent: list[str] = []
@@ -30,3 +40,16 @@ def test_clock_mirror_drops_impossible_jitter_and_reports_timing():
     assert mirror.stats.jitter_samples == 1
     assert mirror.stats.last_interval_ms == 11.0
     assert sent == [1.0, 1.011]
+
+
+def test_clock_transport_boundaries_reset_jitter_measurement():
+    mirror = MidiClockMirror("clock-in", ["out"], expected_interval_ms=10.0)
+    sent: list[bytes] = []
+    send = lambda _destination, message: sent.append(message.data)
+    mirror.forward(MidiMessage(b"\xf8", 1.000, "clock-in"), send)
+    mirror.forward(MidiMessage(b"\xf8", 1.010, "clock-in"), send)
+    mirror.forward(MidiMessage(b"\xfc", 2.000, "clock-in"), send)
+    mirror.forward(MidiMessage(b"\xfa", 3.000, "clock-in"), send)
+    mirror.forward(MidiMessage(b"\xf8", 3.001, "clock-in"), send)
+    assert mirror.stats.jitter_samples == 1
+    assert sent[-1] == b"\xf8"

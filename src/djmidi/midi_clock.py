@@ -39,6 +39,12 @@ class MidiClockMirror:
             raise ValueError("minimum Clock interval cannot be negative")
         if expected_interval_ms is not None and expected_interval_ms <= 0:
             raise ValueError("expected Clock interval must be positive")
+        if not destination_port_ids:
+            raise ValueError("at least one Clock destination is required")
+        if source_port_id in destination_port_ids:
+            raise ValueError("Clock source cannot target itself")
+        if len(set(destination_port_ids)) != len(destination_port_ids):
+            raise ValueError("Clock destinations must be unique")
         self.source_port_id = source_port_id
         self.destination_port_ids = tuple(destination_port_ids)
         self.min_clock_interval_ms = min_clock_interval_ms
@@ -58,8 +64,12 @@ class MidiClockMirror:
             return 0
         if message.status in {_START, _CONTINUE}:
             self.running = True
+            # START begins a new song position; CONTINUE resumes after an
+            # arbitrary pause. Neither gap is a Clock-jitter sample.
+            self._last_clock_time = None
         elif message.status == _STOP:
             self.running = False
+            self._last_clock_time = None
         if message.status == _CLOCK:
             if self._last_clock_time is not None:
                 interval_ms = round((message.received_time - self._last_clock_time) * 1000, 6)

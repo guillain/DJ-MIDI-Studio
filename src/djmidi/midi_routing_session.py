@@ -75,6 +75,7 @@ class MidiRoutingSession:
         routes = tuple(route for route in self.router.routes if route.enabled)
         if not routes and not self._clock_mirrors:
             raise ValueError("at least one enabled MIDI route or Clock policy is required")
+        self._validate_topology(routes)
         self.stop()
         input_ids = {route.source_port_id for route in routes}
         output_ids = {route.destination_port_id for route in routes}
@@ -128,6 +129,38 @@ class MidiRoutingSession:
 
     def _send(self, destination_id: str, message: MidiMessage) -> None:
         self._outputs[destination_id].send(mido.Message.from_bytes(list(message.data)))
+
+    def _validate_topology(self, routes: tuple) -> None:
+        """Reject cycles formed by regular routes and Clock routes together.
+
+        Clock edges are physical connections too. Treating them separately
+        from ``MidiRouter`` would allow A -> B through a regular route and
+        B -> A through Clock, which can create an uncontrolled feedback loop.
+        """
+        graph: dict[str, set[str]] = {}
+        for route in routes:
+            graph.setdefault(route.source_port_id, set()).add(route.destination_port_id)
+        for mirror in self._clock_mirrors:
+            for destination in mirror.destination_port_ids:
+                graph.setdefault(mirror.source_port_id, set()).add(destination)
+
+        visiting: set[str] = set()
+        visited: set[str] = set()
+
+        def visit(node: str) -> bool:
+            if node in visiting:
+                return True
+            if node in visited:
+                return False
+            visiting.add(node)
+            if any(visit(child) for child in graph.get(node, ())):
+                return True
+            visiting.remove(node)
+            visited.add(node)
+            return False
+
+        if any(visit(node) for node in graph if node not in visited):
+            raise ValueError("combined MIDI and Clock routes would create a feedback loop")
 
 
 __all__ = ["SERATO_CLOCK_INPUT_NAME", "MidiRoutingSession"]

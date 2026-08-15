@@ -108,13 +108,14 @@ For screenshots and a visual description of each tab, see [Screens and Layouts](
   are forwarded with the configured jitter safeguards.
   For Serato output, enable `Create virtual input for Serato Clock`, select the
   generated source, start the session, then configure that port as Serato's
-  MIDI Clock destination.
+  MIDI Clock destination. For Traktor, select its MIDI output as the physical
+  Clock source and configure Traktor's external Clock mode.
 
 Use the `MIDI Routing` tab to configure one-way source/destination routes and an
 opt-in Clock policy. Add several Clock source/destination lines when needed;
 the policy is inactive until routing is enabled in
 Preferences, and Clock synchronization remains subject to the documented
-Serato/Rekordbox compatibility checks.
+Serato/Traktor/Rekordbox compatibility checks.
 
 ## Send MIDI Commands
 

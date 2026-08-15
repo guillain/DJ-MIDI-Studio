@@ -92,6 +92,21 @@ def test_session_forwards_clock_to_multiple_independent_destinations():
     session.stop()
 
 
+def test_session_rejects_cycle_that_combines_regular_and_clock_routes():
+    router = MidiRouter()
+    router.add_route(MidiRoute("controller", "software"))
+    session = MidiRoutingSession(
+        router,
+        clock_mirror=MidiClockMirror("software", ["controller"]),
+    )
+    try:
+        session.start()
+    except ValueError as exc:
+        assert "feedback loop" in str(exc)
+    else:
+        raise AssertionError("combined MIDI and Clock cycle must be rejected")
+
+
 def test_session_opens_configured_clock_source_as_virtual_input():
     router = MidiRouter()
     input_port = _FakePort([mido.Message("start")])
@@ -109,4 +124,24 @@ def test_session_opens_configured_clock_source_as_virtual_input():
     session.start()
     assert virtual_names == ["serato-clock"]
     assert session.poll() == 1
+    session.stop()
+
+
+def test_serato_virtual_clock_forwards_transport_and_ticks():
+    router = MidiRouter()
+    input_port = _FakePort(
+        [mido.Message("start"), mido.Message("clock"), mido.Message("stop")]
+    )
+    output_port = _FakePort()
+    session = MidiRoutingSession(
+        router,
+        input_opener=lambda name: (_ for _ in ()).throw(AssertionError("physical opener used")),
+        virtual_input_ids=("DJ MIDI Studio Serato Clock In",),
+        virtual_input_opener=lambda name: input_port,
+        output_opener=lambda name: output_port,
+        clock_mirror=MidiClockMirror("DJ MIDI Studio Serato Clock In", ["traktor-clock-in"]),
+    )
+    session.start()
+    assert session.poll() == 3
+    assert [message.type for message in output_port.sent] == ["start", "clock", "stop"]
     session.stop()
