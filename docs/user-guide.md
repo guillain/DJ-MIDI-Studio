@@ -45,7 +45,9 @@ the device matches a known controller catalog.
 
 Configuration-writing integrations follow a safe-update policy: validate the
 candidate, inspect its diff, create a backup, apply atomically, and retain an
-explicit rollback path.
+explicit rollback path. `File -> Save` and `File -> Save As...` show the diff
+before applying it; `File -> Rollback Last Save` restores the backup created by
+the last successful save.
 
 The application can now produce an assisted detection result from the mapping
 file signature/extension and MIDI port names. When available, controller

@@ -41,6 +41,7 @@ from djmidi.gui.live_monitor import LiveMonitorView
 from djmidi.gui.mapping_group import MappingGroup
 from djmidi.gui.metronome_view import MetronomeView
 from djmidi.gui.preferences_dialog import PreferencesDialog
+from djmidi.gui.safe_update_dialog import SafeUpdateDialog
 from djmidi.gui.splitter_utils import replace_splitter
 from djmidi.gui.tree_model import NODE_ROLE, build_channel_columns, relabel_item
 from djmidi.integration_detection import detect_software_mapping
@@ -81,6 +82,7 @@ class MainWindow(QMainWindow):
         self.software_id = "serato"
         self.preferences_path = default_preferences_path()
         self.preferences = PluginPreferences.load(self.preferences_path)
+        self._last_save_plan = None
         self.node_to_item: dict[int, object] = {}
         self.channel_proxies: list[QSortFilterProxyModel] = []
         self._channel_model_owner: dict[int, tuple[QTreeView, QSortFilterProxyModel]] = {}
@@ -261,6 +263,11 @@ class MainWindow(QMainWindow):
         save_as_action = QAction("Save &As...", self)
         save_as_action.triggered.connect(self._on_save_as)
         file_menu.addAction(save_as_action)
+
+        self._rollback_action = QAction("Rollback Last Save", self)
+        self._rollback_action.setEnabled(False)
+        self._rollback_action.triggered.connect(self._on_rollback_last_save)
+        file_menu.addAction(self._rollback_action)
 
         edit_menu = self.menuBar().addMenu("&Edit")
 
@@ -622,17 +629,7 @@ class MainWindow(QMainWindow):
             self._on_save_as()
             return
         definition = software.get_definition(self.software_id)
-        try:
-            plan = prepare_update(
-                self.current_path,
-                definition.exporter(self.config),
-                definition.parser,
-            )
-            plan.apply()
-        except (OSError, TypeError, ValueError) as exc:
-            QMessageBox.critical(self, "Failed to save mapping", str(exc))
-            return
-        self.statusBar().showMessage(f"Saved to {self.current_path}")
+        self._safe_save(self.current_path, definition)
 
     def _on_save_as(self) -> None:
         if self.config is None:
@@ -647,18 +644,43 @@ class MainWindow(QMainWindow):
         if not path_str:
             return
         target = Path(path_str)
+        if self._safe_save(target, definition):
+            self.current_path = target
+            self.statusBar().showMessage(f"Saved to {self.current_path}")
+
+    def _safe_save(self, target: Path, definition) -> bool:
         try:
             plan = prepare_update(
                 target,
                 definition.exporter(self.config),
                 definition.parser,
             )
-            plan.apply()
         except (OSError, TypeError, ValueError) as exc:
             QMessageBox.critical(self, "Failed to save mapping", str(exc))
+            return False
+        dialog = SafeUpdateDialog(str(target), plan.diff, self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return False
+        try:
+            plan.apply()
+        except OSError as exc:
+            QMessageBox.critical(self, "Failed to save mapping", str(exc))
+            return False
+        self._last_save_plan = plan
+        self._rollback_action.setEnabled(plan.backup_path.exists())
+        self.statusBar().showMessage(f"Saved to {target}")
+        return True
+
+    def _on_rollback_last_save(self) -> None:
+        if self._last_save_plan is None:
             return
-        self.current_path = target
-        self.statusBar().showMessage(f"Saved to {self.current_path}")
+        try:
+            self._last_save_plan.rollback()
+        except OSError as exc:
+            QMessageBox.critical(self, "Failed to rollback save", str(exc))
+            return
+        self._rollback_action.setEnabled(False)
+        self.statusBar().showMessage(f"Rolled back {self._last_save_plan.path}")
 
     def _on_validate(self) -> None:
         if self.config is None:

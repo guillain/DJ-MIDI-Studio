@@ -56,7 +56,7 @@ second, then real-time routing and clock synchronization.
 ### Phase 4 — safe software/controller operations — IN PROGRESS
 
 - [x] Add read-only software status and configuration capability declarations.
-- [ ] Add configuration updates only through backup, preview/diff, validation, and rollback.
+- [x] Add configuration updates only through backup, preview/diff, validation, and rollback.
 - [x] Add the hardware-free safe-update engine with backup, preview/diff, validation, atomic apply, and rollback primitives.
 - [x] Route GUI Save and Save As through validation, backup, and atomic safe-update writes.
 - [x] Add a preferences surface for enabled plugins, detection policy, routing policy, and trust decisions.
