@@ -170,6 +170,7 @@ class MainWindow(QMainWindow):
             session_name_provider=self.controller_setup_view.session_controller_name,
         )
         self.midi_routing_view = MidiRoutingView()
+        self.midi_routing_view.set_routing_enabled(self.preferences.routing_enabled)
 
         self.introduction_view = IntroductionView()
         self.live_monitor_view.portNamesChanged.connect(
@@ -305,6 +306,7 @@ class MainWindow(QMainWindow):
         dialog = PreferencesDialog(self.preferences, self)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             self.preferences.save(self.preferences_path)
+            self.midi_routing_view.set_routing_enabled(self.preferences.routing_enabled)
             self.statusBar().showMessage("Preferences saved")
 
     def _on_open(self) -> None:

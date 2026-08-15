@@ -94,8 +94,10 @@ For screenshots and a visual description of each tab, see [Screens and Layouts](
 
 - Input monitoring works from selected MIDI input ports.
 - Output-direction monitoring from Serato requires adding the app virtual destination in Serato MIDI setup.
-- The MIDI engine now exposes a one-way routing core and an initial Clock mirror;
-  hardware routing controls and jitter safeguards are not enabled in the GUI yet.
+- The MIDI engine exposes one-way routing and an initial Clock mirror. Enable
+  MIDI routing in Preferences, add at least one route, then use `Start routing`
+  to open the selected physical MIDI ports. `Stop routing` closes them again;
+  routing remains disabled by default and port failures stop the session safely.
 
 Use the `MIDI Routing` tab to configure one-way source/destination routes and an
 opt-in Clock policy. The policy is inactive until routing is enabled in

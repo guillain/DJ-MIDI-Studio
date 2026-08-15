@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from PySide6.QtCore import Signal
+from PySide6.QtCore import QTimer, Signal
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -18,6 +18,7 @@ from PySide6.QtWidgets import (
 from djmidi.midi_clock import MidiClockMirror
 from djmidi.midi_io import list_input_ports, list_output_ports
 from djmidi.midi_router import MidiRoute, MidiRouter
+from djmidi.midi_routing_session import MidiRoutingSession
 
 
 class MidiRoutingView(QWidget):
@@ -29,6 +30,11 @@ class MidiRoutingView(QWidget):
         super().__init__(parent)
         self._router = MidiRouter()
         self._clock: MidiClockMirror | None = None
+        self._routing_enabled = False
+        self._routing_session = MidiRoutingSession(self._router)
+        self._routing_timer = QTimer(self)
+        self._routing_timer.setInterval(10)
+        self._routing_timer.timeout.connect(self._poll_routing)
 
         self._source_combo = QComboBox()
         self._destination_combo = QComboBox()
@@ -38,6 +44,9 @@ class MidiRoutingView(QWidget):
         add_button.clicked.connect(self._add_route)
         remove_button = QPushButton("Remove selected")
         remove_button.clicked.connect(self._remove_selected)
+        self._routing_button = QPushButton("Start routing")
+        self._routing_button.clicked.connect(self._toggle_routing)
+        self._routing_button.setEnabled(False)
 
         route_controls = QHBoxLayout()
         route_controls.addWidget(QLabel("Source:"))
@@ -47,6 +56,7 @@ class MidiRoutingView(QWidget):
         route_controls.addWidget(add_button)
         route_controls.addWidget(remove_button)
         route_controls.addWidget(refresh_button)
+        route_controls.addWidget(self._routing_button)
 
         self._routes_table = QTableWidget(0, 3)
         self._routes_table.setHorizontalHeaderLabels(["Source", "Destination", "State"])
@@ -85,6 +95,47 @@ class MidiRoutingView(QWidget):
         layout.addWidget(routes_box)
         layout.addWidget(clock_box)
         layout.addStretch(1)
+
+    def set_routing_enabled(self, enabled: bool) -> None:
+        """Apply the Preferences safety gate for physical route execution."""
+        self._routing_enabled = enabled
+        if not enabled:
+            self._stop_routing()
+        self._routing_button.setEnabled(enabled)
+        if not enabled:
+            self._routing_button.setToolTip("Enable MIDI routing in Preferences first")
+        else:
+            self._routing_button.setToolTip("")
+
+    def _toggle_routing(self) -> None:
+        if not self._routing_enabled:
+            return
+        if self._routing_session.running:
+            self._stop_routing()
+            return
+        try:
+            self._routing_session.start()
+        except Exception as exc:  # noqa: BLE001 - surface port failures in the GUI
+            QMessageBox.warning(self, "Cannot start MIDI routing", str(exc))
+            return
+        self._routing_button.setText("Stop routing")
+        self._routing_timer.start()
+
+    def _stop_routing(self) -> None:
+        self._routing_timer.stop()
+        self._routing_session.stop()
+        self._routing_button.setText("Start routing")
+
+    def _poll_routing(self) -> None:
+        try:
+            self._routing_session.poll()
+        except Exception as exc:  # noqa: BLE001 - stop unsafe hardware execution
+            self._stop_routing()
+            QMessageBox.warning(self, "MIDI routing stopped", str(exc))
+
+    def closeEvent(self, event) -> None:
+        self._stop_routing()
+        super().closeEvent(event)
 
     @property
     def router(self) -> MidiRouter:

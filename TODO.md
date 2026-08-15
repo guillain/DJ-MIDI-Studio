@@ -159,6 +159,7 @@ Ordered by current priority:
 - [ ] Add automatic detection of the DJ software and enable the correct mapping parser.
 - [ ] Add Clock mirror and MIDI routing support for multi-device setups.
 - [x] Add the GUI configuration surface for MIDI routes and opt-in Clock policies.
+- [x] Add controlled physical route execution behind the Preferences routing flag, with fake-port integration tests.
 - [ ] Add more end-to-end examples and use cases to the documentation.
 - [ ] Extend the advanced user guide with deeper vendor-specific workflows and troubleshooting.
 
