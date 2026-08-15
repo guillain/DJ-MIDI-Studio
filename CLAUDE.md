@@ -20,7 +20,7 @@ In the user's real file, every unique `(channel, event_type, control)` trigger i
 
 ### GUI structure (`gui/`)
 
-`left_tabs` has six tabs. The first three pair a tree (one resizable column per channel/deck/controller — implemented via `QSplitter(Horizontal)`, not a single nested tree) with a `layout_view.py` `ControllerLayoutView` schematic of the same underlying data:
+`left_tabs` has six tabs. The first three pair a tree (one resizable column per channel/deck/controller — implemented via `QSplitter(Horizontal)`, not a single nested tree) with a `layout_view.py` `ControllerLayoutView` DJ-oriented layout of the same underlying data. The renderer uses compact pad, button, knob, fader, and jog glyphs inferred from catalog vocabulary, with a generic fallback for unknown controls:
 - **By Channel**: `tree_model.build_channel_columns()` (one column per MIDI channel, each Note/Control → Control → UserIO → Mapping) + a plain `ControllerLayoutView` colored by which Serato deck(s) use each control.
 - **By Deck**: `deck_tree.build_deck_columns()` (one column per Serato deck, each Slot → function) + `ControllerLayoutView(show_deck_filter=True)`, whose combo narrows the coloring to one selected deck.
 - **By Controller**: `controller_tree.build_controller_columns()` (one column per controller — DDJ-XP2, XDJ-XZ — grouped by catalog section; sections with no used entries stay collapsed) + a third plain `ControllerLayoutView`. A leaf here can represent dozens of real `<control>` elements at once (a whole pad-mode grid cell), so clicking one reuses `MainWindow._on_layout_cell_activated` rather than feeding the edit panel directly.

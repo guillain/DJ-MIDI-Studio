@@ -92,7 +92,7 @@ For screenshots and a visual description of each tab, see [Screens and Layouts](
 ## Edit Safely
 
 - Prefer grouped edits in `By Deck` when dealing with Serato duplicate trigger sets.
-- Use the layout views to verify the physical control impacted by your edit. The current selection is strongly highlighted and the last few previous selections remain softly highlighted as navigation history. The right-side `Physical control` panel reserves extra vertical space for multiple catalog matches.
+- Use the DJ-oriented layout views to verify the physical control impacted by your edit. Pads, buttons, knobs, faders, and jog wheels are shown with distinct glyphs inferred from the catalog; the generic grid remains available for unknown controls. The current selection is strongly highlighted and the last few previous selections remain softly highlighted as navigation history. The right-side `Physical control` panel reserves extra vertical space for multiple catalog matches.
 
 ## Validate and Export
 

@@ -4,6 +4,7 @@ from PySide6.QtCore import QLineF, QRectF, Qt, Signal
 from PySide6.QtGui import QBrush, QColor, QFont, QPen
 from PySide6.QtWidgets import (
     QComboBox,
+    QGraphicsEllipseItem,
     QGraphicsLineItem,
     QGraphicsRectItem,
     QGraphicsScene,
@@ -43,6 +44,12 @@ _SELECTED_PEN = QPen(QColor(220, 30, 30))
 _SELECTED_PEN.setWidth(3)
 _HISTORY_PEN = QPen(QColor(185, 150, 150))
 _HISTORY_PEN.setWidth(2)
+_CONTROL_PEN = QPen(QColor(55, 65, 80))
+_CONTROL_BRUSH = QBrush(QColor(215, 225, 238))
+_PAD_BRUSH = QBrush(QColor(95, 125, 170))
+_KNOB_BRUSH = QBrush(QColor(235, 190, 90))
+_FADER_PEN = QPen(QColor(55, 65, 80))
+_FADER_PEN.setWidth(3)
 
 # One color per Serato deck number, so a glance at the layout shows which
 # deck each physical control currently drives.
@@ -259,6 +266,7 @@ class ControllerLayoutView(QWidget):
         tags: set[str],
         small_font: QFont,
         clickable_key: CellKey,
+        visual_kind: layout_mod.VisualKind = "button",
     ) -> None:
         rect = QGraphicsRectItem(QRectF(0, 0, _CELL_W, _HALF_H))
         rect.setPos(x, y)
@@ -269,25 +277,61 @@ class ControllerLayoutView(QWidget):
         tag_text = ", ".join(sorted(tags)) if tags else "no function mapped"
         rect.setToolTip(f"{key[0]} — {key[1]} {key[2]}\n{deck_text}\nMapped to: {tag_text}")
         self._scene.addItem(rect)
+        self._draw_control_shape(x, y, visual_kind, clickable_key)
 
         label = QGraphicsSimpleTextItem(_elide(header, 24))
-        label.setPos(x + 4, y + 2)
+        label.setPos(x + 42, y + 2)
         label.setData(_KEY_ROLE, clickable_key)
         self._scene.addItem(label)
 
         if tags:
             tag_label = QGraphicsSimpleTextItem(_elide(", ".join(sorted(tags)), 26))
             tag_label.setFont(small_font)
-            tag_label.setPos(x + 4, y + 18)
+            tag_label.setPos(x + 42, y + 18)
             tag_label.setData(_KEY_ROLE, clickable_key)
             self._scene.addItem(tag_label)
 
         if decks:
             deck_label = QGraphicsSimpleTextItem(", ".join(f"D{d}" for d in sorted(decks)))
             deck_label.setFont(small_font)
-            deck_label.setPos(x + 4, y + _HALF_H - 14)
+            deck_label.setPos(x + 42, y + _HALF_H - 14)
             deck_label.setData(_KEY_ROLE, clickable_key)
             self._scene.addItem(deck_label)
+
+    def _draw_control_shape(
+        self, x: float, y: float, visual_kind: layout_mod.VisualKind, key: CellKey
+    ) -> None:
+        """Draw a compact DJ control glyph inside a layout half."""
+        left = x + 8
+        top = y + 8
+        if visual_kind in ("pad", "button"):
+            size = 28 if visual_kind == "pad" else 24
+            shape = QGraphicsRectItem(QRectF(left, top, size, size))
+            shape.setBrush(_PAD_BRUSH if visual_kind == "pad" else _CONTROL_BRUSH)
+            shape.setPen(_CONTROL_PEN)
+        elif visual_kind == "knob":
+            shape = QGraphicsEllipseItem(QRectF(left, top, 28, 28))
+            shape.setBrush(_KNOB_BRUSH)
+            shape.setPen(_CONTROL_PEN)
+            marker = QGraphicsLineItem(QLineF(left + 14, top + 14, left + 14, top + 4))
+            marker.setPen(_CONTROL_PEN)
+            marker.setData(_KEY_ROLE, key)
+            self._scene.addItem(marker)
+        elif visual_kind == "jog":
+            shape = QGraphicsEllipseItem(QRectF(left, top, 28, 28))
+            shape.setBrush(_CONTROL_BRUSH)
+            shape.setPen(_CONTROL_PEN)
+        else:  # fader
+            track = QGraphicsLineItem(QLineF(left + 14, top, left + 14, top + 28))
+            track.setPen(_FADER_PEN)
+            track.setData(_KEY_ROLE, key)
+            self._scene.addItem(track)
+            shape = QGraphicsRectItem(QRectF(left + 7, top + 13, 14, 7))
+            shape.setBrush(_CONTROL_BRUSH)
+            shape.setPen(_CONTROL_PEN)
+        shape.setData(_KEY_ROLE, key)
+        shape.setToolTip(f"{key[0]} — {key[1]} {key[2]}")
+        self._scene.addItem(shape)
 
     def _rebuild(self) -> None:
         self._scene.clear()
@@ -301,7 +345,17 @@ class ControllerLayoutView(QWidget):
             y = cell.row * (_CELL_H + _MARGIN)
 
             decks, tags = self._cell_decks_and_tags(cell.key, deck_filter)
-            self._draw_half(x, y, cell.key, cell.label, decks, tags, small_font, cell.key)
+            self._draw_half(
+                x,
+                y,
+                cell.key,
+                cell.label,
+                decks,
+                tags,
+                small_font,
+                cell.key,
+                cell.visual_kind,
+            )
 
             linked_keys = sorted(self._linked_cells.get(cell.key, set()))
             if linked_keys:
@@ -315,7 +369,18 @@ class ControllerLayoutView(QWidget):
                     other_tags |= t
                 header = f"{other_controller}: {other_labels}"
                 # Clicking the bottom half jumps using the *first* linked cell's key.
-                self._draw_half(x, y + _HALF_H, linked_keys[0], header, other_decks, other_tags, small_font, linked_keys[0])
+                linked_key = linked_keys[0]
+                self._draw_half(
+                    x,
+                    y + _HALF_H,
+                    linked_key,
+                    header,
+                    other_decks,
+                    other_tags,
+                    small_font,
+                    linked_key,
+                    layout_mod.visual_kind_for(linked_key[1], linked_key[2]),
+                )
             else:
                 empty = QGraphicsRectItem(QRectF(0, 0, _CELL_W, _HALF_H))
                 empty.setPos(x, y + _HALF_H)

@@ -27,3 +27,17 @@ def test_no_two_cells_share_a_row_col_within_same_controller():
         cells = layout.build_layout(controller)
         positions = [(c.row, c.col) for c in cells]
         assert len(positions) == len(set(positions)), controller
+
+
+def test_dj_visual_kinds_are_inferred_without_changing_mapping_keys():
+    assert layout.visual_kind_for("PAD", "Pad 1") == "pad"
+    assert layout.visual_kind_for("DECK", "PLAY") == "button"
+    assert layout.visual_kind_for("MIXER", "Channel 1 Volume") == "fader"
+    assert layout.visual_kind_for("MIXER", "Channel 1 EQ High") == "knob"
+    assert layout.visual_kind_for("DECK", "Jog Wheel") == "jog"
+
+
+def test_layout_cells_expose_visual_kind_for_dj_rendering():
+    cells = layout.build_layout("DDJ-XP2")
+    assert all(cell.visual_kind in {"button", "pad", "knob", "fader", "jog"} for cell in cells)
+    assert all(cell.visual_kind == "pad" for cell in cells if cell.section == "PAD")

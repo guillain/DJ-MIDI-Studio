@@ -123,6 +123,7 @@ Implemented contract, runtime, test, and documentation work:
 - [x] Shorten Dashboard Controller Overview drill-down buttons to compact labels.
 - [x] Add By Channel, By Deck, and By Controller views with resizable trees and physical layout views.
 - [x] Add clickable schematic controller layouts, catalog interpretations, Serato deck coloring, and mapped function labels.
+- [x] Add DJ-oriented layout glyphs for pads, buttons, knobs, faders, and jog wheels while preserving the generic fallback.
 - [x] Synchronize tree/layout selections, preserve the originating tab, and fade recent selection history.
 - [x] Increase the Physical control panel height and make dynamic controller selectors horizontally scrollable.
 - [x] Add zoomable/pannable Controller Images diagrams with reset zoom.
@@ -200,6 +201,12 @@ documentation index.
 - [ ] Add MIDI 2.0/UMP support through a separate adapter after the MIDI 1.0 routing and Clock validation is complete.
 - [ ] Revisit external YAML profile support only if JSON profiles cannot express an agreed requirement.
 - [ ] Define a future plugin API for advanced DJ software features such as multi-deck, multi-controller, and multi-software operations.
+
+### DJ layout visual fidelity
+
+- [ ] Add controller-specific geometry and proportions for XDJ-XZ and DDJ-XP2.
+- [ ] Add MIDI-value animation for knobs, faders, pads, jog wheels, and VU meters.
+- [ ] Add an optional performance mode with larger controls and reduced mapping detail.
 
 ### Next phases to define
 

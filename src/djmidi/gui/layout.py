@@ -10,10 +10,12 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from typing import Literal
 
 from djmidi import catalog
 
 CellKey = tuple[str, str, str]  # (controller, section, label)
+VisualKind = Literal["button", "pad", "knob", "fader", "jog"]
 
 _SHIFT_SUFFIXES = (
     " (+SHIFT press)",
@@ -48,6 +50,30 @@ def cell_key(hit: catalog.ControlInfo) -> CellKey:
     return (hit.controller, hit.section, label)
 
 
+def visual_kind_for(section: str, name: str) -> VisualKind:
+    """Infer a DJ-oriented control shape from catalog vocabulary.
+
+    This is deliberately presentation-only: MIDI mappings remain entirely
+    defined by the catalog/XML. Unknown controls safely fall back to buttons.
+    """
+    if section.upper() == "PAD" or _PAD_NUM_RE.search(name):
+        return "pad"
+    lowered = name.casefold()
+    if "jog" in lowered or "wheel" in lowered:
+        return "jog"
+    if any(
+        word in lowered
+        for word in ("fader", "volume", "level", "pitch", "crossfader", "tempo")
+    ):
+        return "fader"
+    if any(
+        word in lowered
+        for word in ("trim", "gain", "eq", "filter", "parameter", "effect", "color", "mix")
+    ):
+        return "knob"
+    return "button"
+
+
 @dataclass(frozen=True)
 class LayoutCell:
     key: CellKey
@@ -55,6 +81,7 @@ class LayoutCell:
     section: str
     row: int
     col: int
+    visual_kind: VisualKind = "button"
 
 
 def build_layout(controller: str) -> list[LayoutCell]:
@@ -88,7 +115,7 @@ def build_layout(controller: str) -> list[LayoutCell]:
     for n in range(1, definition.pad_count + 1):
         r, c = divmod(n - 1, pad_cols)
         key = (controller, "PAD", f"Pad {n}")
-        cells.append(LayoutCell(key, f"Pad {n}", "PAD", r, c))
+        cells.append(LayoutCell(key, f"Pad {n}", "PAD", r, c, "pad"))
     row = -(-definition.pad_count // pad_cols) if definition.pad_count else 0  # ceil division
     col = 0
     current_section: str | None = None
@@ -100,7 +127,7 @@ def build_layout(controller: str) -> list[LayoutCell]:
                 row += 1
             current_section = section
             col = 0
-        cells.append(LayoutCell(key, labels[key], section, row, col))
+        cells.append(LayoutCell(key, labels[key], section, row, col, visual_kind_for(section, labels[key])))
         col += 1
         if col >= _COLS_PER_ROW:
             col = 0

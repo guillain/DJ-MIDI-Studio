@@ -74,13 +74,13 @@ By Channel is the most granular editing view. It presents the raw MIDI controls 
 
 ### By Deck
 
-By Deck groups duplicate Serato trigger sets by deck and slot. The upper area contains one tree per deck, while the lower layout area shows the physical controls for the selected controller. Clicking a lower layout cell selects the matching group in the tree and keeps the By Deck tab active. The horizontally scrollable controller selector and deck filter allow the physical view to be narrowed to a specific device or deck, even when many controller plugins are installed.
+By Deck groups duplicate Serato trigger sets by deck and slot. The upper area contains one tree per deck, while the lower layout area shows the physical controls for the selected controller. Layout cells use DJ-oriented glyphs: square pads, buttons, rotary knobs, vertical faders, and jog wheels. The glyph is inferred from catalog vocabulary and does not alter the underlying MIDI mapping. Clicking a lower layout cell selects the matching group in the tree and keeps the By Deck tab active. The horizontally scrollable controller selector and deck filter allow the physical view to be narrowed to a specific device or deck, even when many controller plugins are installed.
 
 ![By Deck mapping view](images/layout/by-deck.png)
 
 ### By Controller
 
-By Controller groups catalog entries by physical controller and section, such as `PAD`, `DECK`, or `EFFECT`. The lower schematic maps the selected controller's controls and shows the associated mappings. Its controller selector scrolls horizontally as the dynamic catalog grows. Clicking a schematic cell selects the matching physical-control item in the upper tree and keeps the By Controller tab active. Current selections use a strong highlight; recent previous selections remain visible with a faded highlight, making navigation history easier to follow.
+By Controller groups catalog entries by physical controller and section, such as `PAD`, `DECK`, or `EFFECT`. The lower DJ layout maps the selected controller's controls and shows the associated mappings. Pads, buttons, knobs, faders, and jog wheels are rendered as compact interactive controls; controllers without dedicated geometry use the same generic grid and remain fully usable. Its controller selector scrolls horizontally as the dynamic catalog grows. Clicking a layout control selects the matching physical-control item in the upper tree and keeps the By Controller tab active. Current selections use a strong highlight; recent previous selections remain visible with a faded highlight, making navigation history easier to follow.
 
 ![By Controller mapping view](images/layout/by-controller.png)
 
