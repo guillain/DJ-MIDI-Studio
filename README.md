@@ -31,7 +31,7 @@ DJ MIDI mapping files can become very large and hard to maintain. DJ MIDI Studio
 - Multi-view GUI: `By Channel`, `By Deck`, `By Controller`, `Controller Images`, `Live Monitor`, `MIDI Routing`, `Controller Setup`.
 - New `Dashboard` with known-controller cards, MIDI availability indicators, and drill-down navigation.
 - Dynamic plugin-style controller catalog registry.
-- Plugin-discovered MIDI catalogs for DDJ-XP2, XDJ-XZ, DDJ-1000, DDJ-FLX4, DDJ-FLX10, Numark Mixtrack Pro FX, and Hercules DJControl Inpulse 500.
+- Plugin-discovered MIDI catalogs for DDJ-XP2, XDJ-XZ, DDJ-1000, DDJ-FLX4, DDJ-FLX10, DDJ-REV1, Numark Mixtrack Pro FX, and Hercules DJControl Inpulse 500.
 - Plugin-discovered DJ software integrations for Serato DJ and Native Instruments Traktor.
 - Validation for structure and mapping conflicts.
 - Send saved Controller Setup session commands directly to a selected MIDI output, with looping/repeat playback integrated into `MIDI Routing`.
@@ -178,3 +178,4 @@ mapping parsing, Live Monitor, MIDI routing, and unknown-device workflows.
 - [Pioneer DJ DDJ-XP2 MIDI Message List](https://downloads.support.alphatheta.com/software_info/dj-controllers/DDJ-XP2/DDJ-XP2_MIDI_Message_List_E1.pdf)
 - [Pioneer DJ DDJ-FLX10 MIDI Message List](docs/controllers/ddj-flx10-midi-message-list-e1.pdf)
 - [Pioneer DJ DDJ-FLX4 product page](https://www.pioneerdj.com/en/product/dj-controllers/ddj-flx4/)
+- [Pioneer DJ DDJ-REV1 MIDI Message List](docs/controllers/ddj-rev1-midi-message-list-e1.pdf)

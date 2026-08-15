@@ -157,7 +157,7 @@ second, then real-time routing and clock synchronization.
 Ordered by current priority:
 
 - [x] Add the first non-Pioneer controller plugins: Numark Mixtrack Pro FX and Hercules DJControl Inpulse 500. Their initial discrete-control profiles are conservative and must be verified against specific hardware/firmware captures before production use.
-- [ ] Continue adding controller models beyond DDJ-XP2, XDJ-XZ, DDJ-1000, Numark Mixtrack Pro FX, and Hercules DJControl Inpulse 500. The shortlist below is ordered by a combination of market reach, availability of official MIDI documentation, and fit with the current catalog architecture.
+- [ ] Continue adding controller models beyond the current DDJ-XP2, XDJ-XZ, DDJ-1000, DDJ-FLX4, DDJ-FLX10, DDJ-REV1, Numark Mixtrack Pro FX, and Hercules DJControl Inpulse 500 catalog. The shortlist below is ordered by a combination of market reach, availability of official MIDI documentation, and fit with the current catalog architecture.
 - [x] Add support for Traktor through the Native Instruments Traktor software plugin; keep Rekordbox and VirtualDJ open. The plugin now has a dedicated guide documenting NML/TSI detection, NOTE/CC normalization, export behavior, and unsupported advanced Traktor features.
 - [x] Automatically detect the connected controller and enable the correct catalog module.
 - [x] Add automatic detection of the DJ software and enable the correct mapping parser.
@@ -208,7 +208,7 @@ the MIDI 1.0 router and Clock mirror are stable.
 
 - [x] **DDJ-FLX4** — initial conservative two-deck/eight-pad profile and official product reference image delivered; MIDI values remain provisional pending an FLX4-specific message list or hardware capture.
 - [x] **DDJ-FLX10** — initial conservative four-deck profile delivered; the official MIDI message list and annotated reference artwork are archived in `docs/controllers/` and `assets/controllers/`. Firmware capture remains verification work.
-- [ ] **DDJ-REV1** — popular Serato-oriented entry-level battle controller with a layout distinct from the DDJ-FLX range.
+- [x] **DDJ-REV1** — official MIDI Message List E1 archived, conservative Serato profile delivered, and official reference artwork added; continuous controls remain outside the normalized catalog.
 - [ ] **DDJ-REV5** — current two-deck battle controller with substantial Serato usage and a distinct pad/deck layout.
 - [ ] **DDJ-800** — established two-channel Rekordbox controller, useful for users between entry-level and flagship hardware.
 
@@ -222,11 +222,12 @@ the MIDI 1.0 router and Clock mirror are stable.
 
 #### Integration checklist for each candidate
 
-- [ ] Obtain and archive the manufacturer's official MIDI message list or verify the mapping from hardware capture. DDJ-FLX4, Numark Mixtrack Pro FX, and Hercules DJControl Inpulse 500 remain open pending controller-specific evidence; see `docs/controllers/README.md`.
+- [ ] Obtain and archive the manufacturer's official MIDI message list or verify the mapping from hardware capture. DDJ-FLX4, Numark Mixtrack Pro FX, and Hercules DJControl Inpulse 500 remain open pending controller-specific evidence; see `docs/controllers/README.md`. DDJ-REV1 is archived and verified against the vendor list, but still benefits from a hardware capture.
 - [x] Add the controller module and registration entry with static controls, pad lookup, section order, and layout metadata for DDJ-FLX4.
 - [x] Add the official DDJ-FLX4 product reference image; an annotated MIDI map remains open.
 - [x] Add catalog lookup, layout, and image-view coverage for DDJ-FLX4.
 - [x] Document the supported software, firmware assumptions, MIDI channels, and known limitations for DDJ-FLX4.
+- [x] Add DDJ-REV1 catalog lookup, layout, image-view tests, official MIDI documentation, and profile limitations.
 
 #### Innovations
 

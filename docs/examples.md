@@ -21,8 +21,8 @@ The detection message includes the confidence and the MIDI port evidence. An
 ambiguous result is never silently selected.
 
 Known built-in profiles currently include DDJ-XP2, XDJ-XZ, DDJ-1000, DDJ-FLX4,
-DDJ-FLX10, Numark Mixtrack Pro FX, and Hercules DJControl Inpulse 500. The
-DDJ-FLX4, Numark, and Hercules profiles are conservative and should be checked
+DDJ-FLX10, DDJ-REV1, Numark Mixtrack Pro FX, and Hercules DJControl Inpulse
+500. The DDJ-FLX4, DDJ-REV1, Numark, and Hercules profiles are conservative and should be checked
 against the target hardware firmware before production use.
 
 ## Open a Serato or Traktor mapping

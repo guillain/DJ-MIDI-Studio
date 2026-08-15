@@ -26,8 +26,8 @@ def test_asset_files_exist():
 
 
 def test_ddj_1000_order_and_reference_image():
-    assert catalog.CONTROLLER_NAMES[2] == "DDJ-FLX4"
-    assert catalog.CONTROLLER_NAMES[3] == "DDJ-1000"
+    assert catalog.CONTROLLER_NAMES.index("DDJ-FLX4") < catalog.CONTROLLER_NAMES.index("DDJ-1000")
+    assert catalog.CONTROLLER_NAMES.index("DDJ-REV1") < catalog.CONTROLLER_NAMES.index("DDJ-1000")
     assert IMAGES["DDJ-1000"] == "ddj-1000.png"
 
 

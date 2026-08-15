@@ -10,6 +10,7 @@ def test_builtin_controllers_are_registered_at_import():
     assert "XDJ-XZ" in catalog.CONTROLLER_NAMES
     assert "DDJ-1000" in catalog.CONTROLLER_NAMES
     assert "DDJ-FLX4" in catalog.CONTROLLER_NAMES
+    assert "DDJ-REV1" in catalog.CONTROLLER_NAMES
     assert "DDJ-FLX10" in catalog.CONTROLLER_NAMES
     assert "Numark Mixtrack Pro FX" in catalog.CONTROLLER_NAMES
     assert "Hercules DJControl Inpulse 500" in catalog.CONTROLLER_NAMES
@@ -18,6 +19,7 @@ def test_builtin_controllers_are_registered_at_import():
         "XDJ-XZ": 8,
         "DDJ-1000": 16,
         "DDJ-FLX4": 8,
+        "DDJ-REV1": 8,
         "DDJ-FLX10": 16,
         "Numark Mixtrack Pro FX": 8,
         "Hercules DJControl Inpulse 500": 8,
@@ -32,6 +34,7 @@ def test_builtin_controller_plugins_expose_metadata():
     assert definitions["DDJ-XP2"].reference_image == "ddj-xp2.png"
     assert definitions["DDJ-FLX10"].reference_image == "ddj-flx10.png"
     assert definitions["DDJ-FLX4"].reference_image == "ddj-flx4.png"
+    assert definitions["DDJ-REV1"].reference_image == "ddj-rev1.png"
     assert definitions["Numark Mixtrack Pro FX"].reference_image == "numark-mixtrack-pro-fx.png"
     assert definitions["Hercules DJControl Inpulse 500"].reference_image == "hercules-djcontrol-inpulse-500.png"
     assert definitions["Numark Mixtrack Pro FX"].manufacturer == "Numark"
@@ -54,6 +57,14 @@ def test_ddj_flx4_resolves_two_deck_transport_and_pad_controls():
 
     pad_hits = catalog.lookup("7", "Note On", "23")
     assert any(hit.controller == "DDJ-FLX4" and hit.name == "Deck 2 Pad 8 (PAD MODE 2)" for hit in pad_hits)
+
+
+def test_ddj_rev1_resolves_serato_transport_and_shifted_pad_controls():
+    transport_hits = catalog.lookup("3", "Note On", "11")
+    assert any(hit.controller == "DDJ-REV1" and hit.name == "PLAY/PAUSE" for hit in transport_hits)
+
+    pad_hits = catalog.lookup("9", "Note On", "23")
+    assert any(hit.controller == "DDJ-REV1" and hit.name == "Deck 1 Pad 8 (PAD MODE 2) (+SHIFT)" for hit in pad_hits)
 
 
 def test_non_pioneer_controller_plugins_resolve_pad_controls():

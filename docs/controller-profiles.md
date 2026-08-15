@@ -55,6 +55,11 @@ include official product-view artwork for physical orientation. These images
 help identify the hardware layout but do not replace a vendor MIDI message
 list or a hardware capture.
 
+The DDJ-REV1 profile is based on Pioneer DJ's official MIDI Message List E1 and
+covers its shared deck transport controls and eight-pad modes, including the
+shifted pad channels. Jog, fader, EQ, and FX continuous controls remain out of
+the normalized catalog.
+
 The DDJ-FLX4 profile is similarly conservative. It models the common two-deck
 and eight-pad layout used by the DDJ-400 family and includes an official
 Pioneer product view. Its MIDI values remain provisional until confirmed with
@@ -65,5 +70,6 @@ Reference sources:
 - [Controller documentation index and official PDF URLs](controllers/README.md)
 - [Pioneer DDJ-FLX10 MIDI message list](controllers/ddj-flx10-midi-message-list-e1.pdf)
 - [Pioneer DDJ-FLX4 product page](https://www.pioneerdj.com/en/product/dj-controllers/ddj-flx4/)
+- [Pioneer DDJ-REV1 MIDI message list](controllers/ddj-rev1-midi-message-list-e1.pdf)
 - [Numark Mixtrack Pro FX product page](https://www.numark.com/product/mixtrack-pro-fx)
 - [Hercules DJControl Inpulse 500 product page](https://www.hercules.com/en-us/dj-controllers/djcontrol-inpulse-500/)
