@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import mido
 
+from djmidi.midi_clock import MidiClockMirror
 from djmidi.midi_router import MidiRoute, MidiRouter
 from djmidi.midi_routing_session import MidiRoutingSession
 
@@ -52,3 +53,20 @@ def test_session_requires_an_enabled_route():
         assert "enabled MIDI route" in str(exc)
     else:
         raise AssertionError("session should reject an empty route set")
+
+
+def test_session_forwards_clock_messages_without_a_regular_route():
+    router = MidiRouter()
+    input_port = _FakePort([mido.Message("clock")])
+    output_port = _FakePort()
+    session = MidiRoutingSession(
+        router,
+        input_opener=lambda name: input_port,
+        output_opener=lambda name: output_port,
+        clock_mirror=MidiClockMirror("clock-in", ["clock-out"]),
+    )
+
+    session.start()
+    assert session.poll() == 1
+    assert output_port.sent == [mido.Message("clock")]
+    session.stop()

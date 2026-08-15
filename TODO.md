@@ -40,7 +40,7 @@ second, then real-time routing and clock synchronization.
 - [x] Keep explicit user selection as the fallback for unknown or ambiguous hardware/software.
 - [x] Add MIDI Identity Reply/SysEx parsing, identity metadata hooks, and capability scoring where hardware permits it.
 
-### Phase 3 — multi-device MIDI engine — IN PROGRESS
+### Phase 3 — multi-device MIDI engine — COMPLETE
 
 - [x] Adopt the W3C [Web MIDI API](https://github.com/WebAudio/web-midi-api) as the conceptual compatibility model for access, input/output ports, events, and SysEx opt-in.
 - [x] Keep the native implementation on MIDI 1.0 byte messages through `mido/rtmidi`; do not make a browser API dependency part of the desktop runtime.
@@ -157,9 +157,10 @@ Ordered by current priority:
 - [x] Add support for Traktor through the Native Instruments Traktor software plugin; keep Rekordbox and VirtualDJ open.
 - [ ] Automatically detect the connected controller and enable the correct catalog module.
 - [ ] Add automatic detection of the DJ software and enable the correct mapping parser.
-- [ ] Add Clock mirror and MIDI routing support for multi-device setups.
+- [x] Add Clock mirror and MIDI routing support for multi-device setups.
 - [x] Add the GUI configuration surface for MIDI routes and opt-in Clock policies.
 - [x] Add controlled physical route execution behind the Preferences routing flag, with fake-port integration tests.
+- [x] Execute the configured MIDI Clock mirror through the same opt-in physical routing session, with fake-port tests.
 - [ ] Add more end-to-end examples and use cases to the documentation.
 - [ ] Extend the advanced user guide with deeper vendor-specific workflows and troubleshooting.
 
@@ -226,6 +227,6 @@ the MIDI 1.0 router and Clock mirror are stable.
   - [ ] DJ software configuration updates, monitoring/status, and advanced features (e.g., multi-deck, multi-controller, and multi-software setups).
 - [x] Add the initial plugin-based architecture for controller and software integrations, with dynamic discovery and registration; plugin manifests/versioning remain open below.
 - [ ] Add automatic detection of the DJ software and enable the correct mapping parser.
-- [ ] Add Clock mirror and MIDI routing support for multi-device setups (/!\ Serato & Rekordbox clock specificities! /!\).
+- [x] Add Clock mirror and MIDI routing support for multi-device setups (/!\ Serato & Rekordbox clock specificities! /!\).
 - [ ] Controlleur and Software plugins can be added by external configuration file (yaml/json)
 - [x] Add a plugin manifest/version format with API compatibility, plugin version, vendor, license, and required application version.

@@ -9,6 +9,7 @@ from typing import Any
 import mido
 
 from djmidi.midi_api import MidiMessage
+from djmidi.midi_clock import MidiClockMirror
 from djmidi.midi_router import MidiRouter
 
 InputOpener = Callable[[str], Any]
@@ -29,10 +30,12 @@ class MidiRoutingSession:
         *,
         input_opener: InputOpener = mido.open_input,
         output_opener: OutputOpener = mido.open_output,
+        clock_mirror: MidiClockMirror | None = None,
     ) -> None:
         self.router = router
         self._input_opener = input_opener
         self._output_opener = output_opener
+        self._clock_mirror = clock_mirror
         self._inputs: dict[str, Any] = {}
         self._outputs: dict[str, Any] = {}
         self.running = False
@@ -45,13 +48,21 @@ class MidiRoutingSession:
     def output_port_ids(self) -> tuple[str, ...]:
         return tuple(self._outputs)
 
+    def set_clock_mirror(self, clock_mirror: MidiClockMirror | None) -> None:
+        if self.running:
+            raise RuntimeError("stop the routing session before changing the Clock policy")
+        self._clock_mirror = clock_mirror
+
     def start(self) -> None:
         routes = tuple(route for route in self.router.routes if route.enabled)
-        if not routes:
-            raise ValueError("at least one enabled MIDI route is required")
+        if not routes and self._clock_mirror is None:
+            raise ValueError("at least one enabled MIDI route or Clock policy is required")
         self.stop()
         input_ids = {route.source_port_id for route in routes}
         output_ids = {route.destination_port_id for route in routes}
+        if self._clock_mirror is not None:
+            input_ids.add(self._clock_mirror.source_port_id)
+            output_ids.update(self._clock_mirror.destination_port_ids)
         try:
             for port_id in sorted(input_ids):
                 self._inputs[port_id] = self._input_opener(port_id)
@@ -84,6 +95,8 @@ class MidiRoutingSession:
                     port_id=source_id,
                 )
                 forwarded += self.router.route_message(source_id, normalized, self._send)
+                if self._clock_mirror is not None:
+                    forwarded += self._clock_mirror.forward(normalized, self._send)
         return forwarded
 
     @staticmethod

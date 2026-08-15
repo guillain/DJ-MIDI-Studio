@@ -184,8 +184,11 @@ class MidiRoutingView(QWidget):
                 self._routes_table.setItem(row, column, QTableWidgetItem(value))
 
     def _update_clock_policy(self, enabled: bool) -> None:
+        if self._routing_session.running:
+            self._stop_routing()
         if not enabled:
             self._clock = None
+            self._routing_session.set_clock_mirror(None)
             self._clock_status.setText("Clock mirror disabled")
             return
         source = self._clock_source.currentText()
@@ -197,6 +200,7 @@ class MidiRoutingView(QWidget):
             self._clock_status.setText("Select different Clock source and destination ports")
             return
         self._clock = MidiClockMirror(source, [destination])
+        self._routing_session.set_clock_mirror(self._clock)
         self._clock_status.setText(f"Clock policy ready: {source} → {destination}")
 
 
