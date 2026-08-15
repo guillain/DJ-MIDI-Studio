@@ -121,7 +121,9 @@ class MidiRoutingView(QWidget):
 
         help_label = QLabel(
             "Routes are configured here but remain inactive until MIDI routing is enabled in Preferences. "
-            "Clock synchronization is intentionally opt-in and must be validated per software/version."
+            "Clock synchronization is intentionally opt-in and must be validated per software/version. "
+            "Serato DJ Pro does not emit standard MIDI Clock directly: its virtual Serato Clock input "
+            "is useful only when an external Link-to-MIDI or Clock bridge sends ticks into it."
         )
         help_label.setWordWrap(True)
 
@@ -381,7 +383,7 @@ class MidiRoutingView(QWidget):
                 self._clock_source.addItem(SERATO_CLOCK_INPUT_NAME)
             self._clock_source.setCurrentText(SERATO_CLOCK_INPUT_NAME)
             self._clock_status.setText(
-                "Virtual Serato Clock input ready; select it as Serato's MIDI Clock destination"
+                "Virtual input ready; Serato alone will not emit MIDI Clock — use a Link/Clock bridge"
             )
         else:
             for index in range(self._clock_source.count() - 1, -1, -1):

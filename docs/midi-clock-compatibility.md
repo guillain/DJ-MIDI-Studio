@@ -25,40 +25,47 @@ destination; choose `MIDI4x4 Midi Out 1` instead.
 
 ## Serato DJ
 
-Serato's MIDI setup must route its MIDI Clock output to a destination that the
-application can receive. In `MIDI Routing`, enable `Create virtual input for
-Serato Clock`, select the generated `DJ MIDI Studio Serato Clock In` source,
-add its destination controller, then start routing. In Serato's MIDI setup,
-select that virtual port as the MIDI Clock output destination and enable the
-Clock/Sync output option for the active deck or session. The virtual port is
-created only while routing is running, so Serato should be configured after
-DJ MIDI Studio has started the session.
+Serato DJ Pro does not emit standard MIDI Clock directly. Consequently,
+`DJ MIDI Studio Serato Clock In` is not a native Serato Clock source: enabling
+it and selecting it as the source will correctly remain `CLOCK INACTIVE` when
+Serato is the only producer. The virtual port is an input endpoint, and its
+purpose is to receive ticks from an external bridge if one is deliberately
+configured.
 
-Serato may emit transport messages only when its Clock/Sync mode and version
-support them. If the controller receives Clock ticks but does not start or
-stop, verify Serato's MIDI Clock transport/start-stop options and test the
-controller's external-sync mode; a mapping file alone does not imply Clock
-support.
+The [DJ TechTools four-method overview](https://djtechtools.com/2018/06/27/serato-dj-pro-four-ways-for-syncing-with-external-gear/)
+describes the practical alternatives: Ableton Link bridged to MIDI Clock,
+an iOS Link-to-MIDI bridge, audio-to-Clock software, or selected certified
+hardware that generates Clock from Serato tempo information. This is
+consistent with the behavior observed in DJ MIDI Studio: no `F8` ticks can be
+forwarded until one of those producers is present.
 
-Serato is more complex than a direct hardware Clock source: Serato's output
-must be explicitly assigned to the application's generated virtual input, and
-the virtual input exists only while the routing session is running. Configure
-Serato after starting the session, and stop the session before removing or
-changing that virtual endpoint. Do not use the same port as both the Serato
-Clock input and a destination in a return route.
+For a macOS setup with Serato, XDJ-XZ, and DDJ-XP2, the most controllable path
+is:
 
-For Serato, `CLOCK INACTIVE` usually means one of these steps is missing:
-start routing in DJ MIDI Studio, select `DJ MIDI Studio Serato Clock In` as
-Serato's MIDI Clock output destination, and enable Serato's Clock/Sync output
-for the active deck/session. The virtual port is not created before the
-routing session starts. Hover the status label for the same actionable hint.
+1. Enable Ableton Link in Serato DJ Pro.
+2. Enable Link in Ableton Live (or another Link-to-MIDI bridge).
+3. Enable MIDI Clock/Sync for the bridge's MIDI output and select the target
+   hardware/interface output.
+4. In DJ MIDI Studio, select that bridge MIDI output as the Clock source
+   (it appears as an input to DJ MIDI Studio), select the actual hardware MIDI
+   output as the destination, and start routing.
 
-Important direction check: `DJ MIDI Studio Serato Clock In` is the destination
-that must be selected inside Serato, while it is the source selected inside DJ
-MIDI Studio. Do not select `MIDI4x4 Midi In 1` or `MIDI4x4 Midi Out 1` in DJ
-MIDI Studio as a substitute for this virtual source. If the virtual port does
-not appear in Serato after starting the session, restart or refresh Serato's
-MIDI device list and check macOS MIDI permissions.
+In this topology, do not enable `Create virtual input for Serato Clock`; Serato
+is the Link tempo master, while the bridge is the MIDI Clock producer. The
+XDJ-XZ and DDJ-XP2 remain control surfaces; this project does not claim either
+one as a verified Serato MIDI Clock generator.
+
+If an external bridge is intentionally writing into `DJ MIDI Studio Serato
+Clock In`, start DJ MIDI Studio first so the virtual input exists, select that
+source, then configure the bridge's MIDI destination to the virtual port. A
+`CLOCK INACTIVE` status then means the bridge is not sending `F8` ticks, rather
+than a missing Serato setting.
+
+Important direction check: `DJ MIDI Studio Serato Clock In` is a destination
+for an external producer and a source inside DJ MIDI Studio. It is not a magic
+Serato Clock output. Do not select `MIDI4x4 Midi In 1` or `MIDI4x4 Midi Out 1`
+as a substitute for the virtual source; use the port direction reported by the
+bridge and choose the MIDI output that is physically connected to the target.
 
 ## Traktor
 

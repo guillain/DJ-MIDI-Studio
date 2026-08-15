@@ -1,5 +1,7 @@
 from unittest.mock import patch
 
+from PySide6.QtWidgets import QLabel
+
 from djmidi.catalog._registry import ControlInfo
 from djmidi.gui.midi_routing_view import MidiRoutingView
 from djmidi.midi_routing_session import SERATO_CLOCK_INPUT_NAME
@@ -59,6 +61,7 @@ def test_routing_view_exposes_virtual_serato_clock_source():
     view._serato_virtual_checkbox.setChecked(True)
     assert view._clock_source.currentText() == SERATO_CLOCK_INPUT_NAME
     assert view._routing_session._virtual_input_ids == frozenset({SERATO_CLOCK_INPUT_NAME})
+    assert any("does not emit standard MIDI Clock" in label.text() for label in view.findChildren(QLabel))
     view._serato_virtual_checkbox.setChecked(False)
     assert view._clock_source.findText(SERATO_CLOCK_INPUT_NAME) < 0
 

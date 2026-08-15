@@ -106,16 +106,19 @@ For screenshots and a visual description of each tab, see [Screens and Layouts](
   When a Clock policy is enabled, each configured source → destination line is
   opened by the same session and realtime Start/Continue/Stop/Clock messages
   are forwarded with the configured jitter safeguards.
-  For Serato output, enable `Create virtual input for Serato Clock`, select the
-  generated source, start the session, then configure that port as Serato's
-  MIDI Clock destination. For Traktor, select its MIDI output as the physical
-  Clock source and configure Traktor's external Clock mode.
+  Serato DJ Pro does not emit standard MIDI Clock directly, so
+  `Create virtual input for Serato Clock` is only useful when an external
+  Link-to-MIDI/Clock bridge sends ticks into that virtual port. For the usual
+  Serato workflow, enable Serato Link, let Ableton Live or another bridge
+  generate MIDI Clock, then select the bridge's output as the Clock source.
+  For Traktor, select its MIDI output as the physical Clock source and
+  configure Traktor's external Clock mode.
 
   The Clock status label is a live diagnostic: `CLOCK ACTIVE` confirms that
   ticks are arriving from the selected source; `CLOCK INACTIVE` means the
-  session is running but no recent ticks were received. With Serato, configure
-  Serato's MIDI Clock destination only after DJ MIDI Studio has started the
-  routing session and has created `DJ MIDI Studio Serato Clock In`.
+  session is running but no recent ticks were received. With Serato, this
+  normally means that no external bridge is producing MIDI Clock; Serato's
+  Link tempo and MIDI Clock production are separate steps.
 
 Use the `MIDI Routing` tab to configure one-way source/destination routes and an
 opt-in Clock policy. Add several Clock source/destination lines when needed;
