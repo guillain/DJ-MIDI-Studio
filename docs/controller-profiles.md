@@ -48,8 +48,14 @@ include official product-view artwork for physical orientation. These images
 help identify the hardware layout but do not replace a vendor MIDI message
 list or a hardware capture.
 
+The DDJ-FLX4 profile is similarly conservative. It models the common two-deck
+and eight-pad layout used by the DDJ-400 family and includes an official
+Pioneer product view. Its MIDI values remain provisional until confirmed with
+an FLX4 hardware capture or an FLX4-specific MIDI message list.
+
 Reference sources:
 
 - [Pioneer DDJ-FLX10 MIDI message list](controllers/ddj-flx10-midi-message-list-e1.pdf)
+- [Pioneer DDJ-FLX4 product page](https://www.pioneerdj.com/en/product/dj-controllers/ddj-flx4/)
 - [Numark Mixtrack Pro FX product page](https://www.numark.com/product/mixtrack-pro-fx)
 - [Hercules DJControl Inpulse 500 product page](https://www.hercules.com/en-us/dj-controllers/djcontrol-inpulse-500/)

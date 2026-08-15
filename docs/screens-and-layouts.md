@@ -24,7 +24,7 @@ The right-hand panel remains available from every tab for the current selection 
 
 The Dashboard shows the loaded Serato file, the registered controllers, catalog statistics, MIDI availability indicators, and shortcuts into the detailed views. A controller card can open its channel tree, controller layout, or reference image. The active controller selector controls those drill-down actions. Availability is detected from the currently listed MIDI input ports; `MIDI: available` means a port name matches the controller catalog, while `MIDI: not detected` means no match was found.
 
-The current catalog contains DDJ-XP2, XDJ-XZ, DDJ-1000, DDJ-FLX10, Numark Mixtrack Pro FX, and Hercules DJControl Inpulse 500. Controller Setup definitions applied during the current session also appear here immediately. Reference artwork is available for all six built-in controllers. The DDJ-FLX10 image is an annotated official MIDI message-list diagram; the Numark and Hercules images are official product views used as physical-layout references, not complete MIDI message maps.
+The current catalog contains DDJ-XP2, XDJ-XZ, DDJ-1000, DDJ-FLX4, DDJ-FLX10, Numark Mixtrack Pro FX, and Hercules DJControl Inpulse 500. Controller Setup definitions applied during the current session also appear here immediately. Reference artwork is available for all seven built-in controllers. The DDJ-FLX10 image is an annotated official MIDI message-list diagram; the DDJ-FLX4, Numark, and Hercules images are official product views used as physical-layout references, not complete MIDI message maps.
 
 ## Mapping Views
 
@@ -54,7 +54,7 @@ The same tab provides MIDI output controls for sending a command once, sending a
 
 ## Controller Images
 
-Controller Images displays the official reference artwork for the selected catalog controller. The view supports zooming, panning, and resetting the zoom. The selector includes every registered controller; controllers without reference artwork show an explicit placeholder instead of an inaccurate diagram. Artwork is currently available for DDJ-XP2, XDJ-XZ, DDJ-1000, DDJ-FLX10, Numark Mixtrack Pro FX, and Hercules DJControl Inpulse 500.
+Controller Images displays the official reference artwork for the selected catalog controller. The view supports zooming, panning, and resetting the zoom. The selector includes every registered controller; controllers without reference artwork show an explicit placeholder instead of an inaccurate diagram. Artwork is currently available for DDJ-XP2, XDJ-XZ, DDJ-1000, DDJ-FLX4, DDJ-FLX10, Numark Mixtrack Pro FX, and Hercules DJControl Inpulse 500.
 
 ![Controller Images view](images/layout/controlleur-image.png)
 

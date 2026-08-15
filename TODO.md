@@ -201,7 +201,7 @@ the MIDI 1.0 router and Clock mirror are stable.
 
 #### Priority 1 — Pioneer DJ ecosystem
 
-- [ ] **DDJ-FLX4** — highly widespread entry-level Rekordbox/Serato controller; strong first addition for broad user coverage.
+- [x] **DDJ-FLX4** — initial conservative two-deck/eight-pad profile and official product reference image delivered; MIDI values remain provisional pending an FLX4-specific message list or hardware capture.
 - [x] **DDJ-FLX10** — initial conservative four-deck profile delivered; the official MIDI message list and annotated reference artwork are archived in `docs/controllers/` and `assets/controllers/`. Firmware capture remains verification work.
 - [ ] **DDJ-REV1** — popular Serato-oriented entry-level battle controller with a layout distinct from the DDJ-FLX range.
 - [ ] **DDJ-REV5** — current two-deck battle controller with substantial Serato usage and a distinct pad/deck layout.
@@ -217,11 +217,11 @@ the MIDI 1.0 router and Clock mirror are stable.
 
 #### Integration checklist for each candidate
 
-- [ ] Obtain and archive the manufacturer's official MIDI message list or verify the mapping from hardware capture.
-- [ ] Add the controller module and registration entry with static controls, pad lookup, section order, and layout metadata.
-- [ ] Add the reference mapping image and a representative fixture/configuration.
-- [ ] Add catalog lookup, layout, image-view, and Live Monitor tests.
-- [ ] Document the supported software, firmware assumptions, MIDI channels, and known limitations.
+- [ ] Obtain and archive the manufacturer's official MIDI message list or verify the mapping from hardware capture. (DDJ-FLX4 remains open pending FLX4-specific evidence.)
+- [x] Add the controller module and registration entry with static controls, pad lookup, section order, and layout metadata for DDJ-FLX4.
+- [x] Add the official DDJ-FLX4 product reference image; an annotated MIDI map remains open.
+- [x] Add catalog lookup, layout, and image-view coverage for DDJ-FLX4.
+- [x] Document the supported software, firmware assumptions, MIDI channels, and known limitations for DDJ-FLX4.
 
 #### Innovations
 
