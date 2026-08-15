@@ -47,6 +47,7 @@ from djmidi.integration_detection import detect_software_mapping
 from djmidi.midi_io import MidiEvent
 from djmidi.model import Control, MappingElement, MidiConfig
 from djmidi.plugins import PluginPreferences, default_preferences_path
+from djmidi.safe_update import prepare_update
 from djmidi.validator import ValidationIssue, validate
 
 _SEVERITY_COLORS = {
@@ -620,7 +621,17 @@ class MainWindow(QMainWindow):
         if self.current_path is None:
             self._on_save_as()
             return
-        software.get_definition(self.software_id).write_file(self.config, self.current_path)
+        definition = software.get_definition(self.software_id)
+        try:
+            plan = prepare_update(
+                self.current_path,
+                definition.exporter(self.config),
+                definition.parser,
+            )
+            plan.apply()
+        except (OSError, TypeError, ValueError) as exc:
+            QMessageBox.critical(self, "Failed to save mapping", str(exc))
+            return
         self.statusBar().showMessage(f"Saved to {self.current_path}")
 
     def _on_save_as(self) -> None:
@@ -635,8 +646,18 @@ class MainWindow(QMainWindow):
         )
         if not path_str:
             return
-        self.current_path = Path(path_str)
-        definition.write_file(self.config, self.current_path)
+        target = Path(path_str)
+        try:
+            plan = prepare_update(
+                target,
+                definition.exporter(self.config),
+                definition.parser,
+            )
+            plan.apply()
+        except (OSError, TypeError, ValueError) as exc:
+            QMessageBox.critical(self, "Failed to save mapping", str(exc))
+            return
+        self.current_path = target
         self.statusBar().showMessage(f"Saved to {self.current_path}")
 
     def _on_validate(self) -> None:
