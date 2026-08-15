@@ -2,6 +2,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
+from PySide6.QtCore import QEvent
 from PySide6.QtWidgets import QApplication, QMenu
 
 from djmidi.gui.main_window import MainWindow
@@ -104,6 +105,17 @@ def test_midi_tools_are_independent_closable_docks():
     assert window._tool_docks["monitor"].isVisible()
     window._tool_docks["monitor"].close()
     assert not window._tool_docks["monitor"].isVisible()
+    window.close()
+
+
+def test_window_state_change_schedules_surface_refresh():
+    window = MainWindow()
+    window.show()
+    QApplication.processEvents()
+    with patch.object(window, "_refresh_window_surface") as refresh:
+        window.changeEvent(QEvent(QEvent.Type.WindowStateChange))
+        QApplication.processEvents()
+    refresh.assert_called_once()
     window.close()
 
 

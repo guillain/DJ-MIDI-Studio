@@ -22,6 +22,11 @@ from the Dashboard buttons.
 
 The right-hand panel remains available from every tab for the current selection and validation messages. Selecting a mapping or a layout cell keeps the related views synchronized.
 
+On macOS, entering or leaving native full screen may briefly show the window
+surface being rebuilt. DJ MIDI Studio queues a repaint after the transition;
+if the surface still appears black, leave full screen once and re-enter it so
+macOS can recreate the window backing surface.
+
 The `Help` menu provides the complete local project documentation, bundled
 controller references, and official external links. Local Markdown and PDF
 files are opened from the application bundle, so the documentation remains

@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 
 from PySide6.QtCore import (
+    QEvent,
     QItemSelectionModel,
     QModelIndex,
     QSortFilterProxyModel,
@@ -122,6 +123,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("DJ MIDI Studio")
         self.resize(1100, 700)
         self.setStatusBar(QStatusBar())
+        self.setAutoFillBackground(True)
 
         self.config: MidiConfig | None = None
         self.current_path: Path | None = None
@@ -259,11 +261,30 @@ class MainWindow(QMainWindow):
         main_splitter.setStretchFactor(0, 1)
         main_splitter.setStretchFactor(1, 1)
         self.setCentralWidget(main_splitter)
+        main_splitter.setAutoFillBackground(True)
         self._tool_docks = self._create_tool_docks()
 
         self._build_menu()
         QTimer.singleShot(0, self._initialize_pair_splitters)
         self.introduction_view.set_loaded_config_info(None)
+
+    def changeEvent(self, event: QEvent) -> None:
+        """Refresh the backing store after native macOS window transitions."""
+        super().changeEvent(event)
+        if event.type() == QEvent.Type.WindowStateChange:
+            QTimer.singleShot(0, self._refresh_window_surface)
+
+    def _refresh_window_surface(self) -> None:
+        """Repaint the window after macOS has finished a native transition."""
+        if self.isWindow() and not self.isVisible():
+            return
+        widgets = [self, self.centralWidget(), *self._tool_docks.values()]
+        for widget in widgets:
+            if widget is not None:
+                widget.setUpdatesEnabled(False)
+                widget.setUpdatesEnabled(True)
+                widget.update()
+        self.repaint()
 
     def _on_midi_ports_changed(self, port_names: list[str]) -> None:
         """Apply a high-confidence controller plugin suggestion to all views."""
