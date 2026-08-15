@@ -82,7 +82,7 @@ Ordered by current priority:
 
 - [x] Add the first non-Pioneer controller plugins: Numark Mixtrack Pro FX and Hercules DJControl Inpulse 500. Their initial discrete-control profiles are conservative and must be verified against specific hardware/firmware captures before production use.
 - [ ] Continue adding controller models beyond DDJ-XP2, XDJ-XZ, DDJ-1000, Numark Mixtrack Pro FX, and Hercules DJControl Inpulse 500. The shortlist below is ordered by a combination of market reach, availability of official MIDI documentation, and fit with the current catalog architecture.
-- [ ] Add support for additional DJ software vendors, such as Traktor, Rekordbox, and VirtualDJ.
+- [x] Add support for Traktor through the Native Instruments Traktor software plugin; keep Rekordbox and VirtualDJ open.
 - [ ] Automatically detect the connected controller and enable the correct catalog module.
 - [ ] Add automatic detection of the DJ software and enable the correct mapping parser.
 - [ ] Add Clock mirror and MIDI routing support for multi-device setups.
@@ -100,7 +100,7 @@ list or the GUI.
 - [ ] Define a stable plugin contract for DJ software integrations, including identifier, display name, mapping-file format, parser, exporter, validation rules, and supported mapping features.
 - [ ] Split the current controller registry API from the future software registry API while sharing common plugin metadata and discovery mechanisms.
 - [ ] Move controller and software lists to registry-backed/dynamically discovered sources throughout the GUI, Introduction dashboard, filters, and documentation helpers.
-- [ ] Support explicit plugin discovery from built-in modules and external Python package entry points.
+- [x] Support explicit plugin discovery from built-in modules and external Python package entry points.
 - [ ] Add plugin lifecycle operations: discover, validate manifest, register, enable/disable, reload, and report compatibility errors.
 - [ ] Add a plugin manifest/version format with API compatibility, plugin version, vendor, license, and required application version.
 - [ ] Add a preferences/settings surface for choosing enabled controller and software plugins.
@@ -141,6 +141,8 @@ list or the GUI.
 - [ ] Add MIDI API support for:
   - [ ] MIDI controller configuration updates, monitoring/status, and advanced features (e.g., mirroring, routing, clock/sync).
   - [ ] DJ software configuration updates, monitoring/status, and advanced features (e.g., multi-deck, multi-controller, and multi-software setups).
-- [ ] Add a plugin-based architecture for controller and software integrations, with dynamic discovery, registration, and versioning.
+- [x] Add the initial plugin-based architecture for controller and software integrations, with dynamic discovery and registration; plugin manifests/versioning remain open below.
 - [ ] Add automatic detection of the DJ software and enable the correct mapping parser.
-- [ ] Add Clock mirror and MIDI routing support for multi-device setups (/!\ Serato & Rekordbox clock! /!\).
+- [ ] Add Clock mirror and MIDI routing support for multi-device setups (/!\ Serato & Rekordbox clock specificities! /!\).
+- [ ] Controlleur and Software plugins can be added by external configuration file (yaml/json)
+- [ ] Add a plugin manifest/version format with API compatibility, plugin version, vendor, license, and required application version.
