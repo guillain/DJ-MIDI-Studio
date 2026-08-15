@@ -60,6 +60,11 @@ def _pad_lookup(channel: str, kind: NoteOrCC, data1: str) -> ControlInfo | None:
 register(
     ControllerDefinition(
         name="DDJ-1000",
+        plugin_id="pioneer.ddj-1000",
+        manufacturer="Pioneer DJ",
+        supported_software=("serato",),
+        reference_image="ddj-1000.png",
+        display_order=30,
         static_entries=_STATIC,
         pad_lookup=_pad_lookup,
         pad_count=16,

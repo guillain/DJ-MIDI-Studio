@@ -18,7 +18,7 @@ from PySide6.QtWidgets import (
 )
 
 from djmidi import catalog
-from djmidi.gui.controller_image_view import ASSETS_DIR, IMAGES
+from djmidi.gui.controller_image_view import ASSETS_DIR, image_for_controller
 from djmidi.gui.layout import CellKey
 
 
@@ -164,8 +164,9 @@ class IntroductionView(QWidget):
         image = QLabel()
         image.setAlignment(Qt.AlignmentFlag.AlignCenter)
         image.setMinimumHeight(90)
-        path = ASSETS_DIR / IMAGES.get(controller, "")
-        pixmap = QPixmap(str(path)) if path.exists() else QPixmap()
+        image_name = image_for_controller(controller)
+        path = ASSETS_DIR / image_name if image_name else None
+        pixmap = QPixmap(str(path)) if path is not None and path.exists() else QPixmap()
         if pixmap.isNull():
             image.setText("Image unavailable")
             image.setFrameShape(QFrame.Shape.Box)
@@ -211,4 +212,3 @@ class IntroductionView(QWidget):
 
 
 __all__ = ["IntroductionView"]
-

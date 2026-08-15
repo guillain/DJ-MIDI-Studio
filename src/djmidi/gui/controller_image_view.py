@@ -25,14 +25,18 @@ from PySide6.QtWidgets import (
 from djmidi import catalog
 
 ASSETS_DIR = Path(__file__).resolve().parents[3] / "assets" / "controllers"
-# One entry per controller with a reference image available; a controller with
-# no entry here still shows up in the combo (driven by catalog.CONTROLLER_NAMES)
-# and falls back to a "not found" placeholder — add an image whenever you have one.
+# Compatibility snapshot for callers that need to enumerate known image assets.
+# New plugins provide this metadata through ControllerDefinition.reference_image.
 IMAGES = {
-    "DDJ-XP2": "ddj-xp2.png",
-    "XDJ-XZ": "xdj-xz.png",
-    "DDJ-1000": "ddj-1000.png",
+    definition.name: definition.reference_image
+    for definition in catalog.all_controller_definitions()
+    if definition.reference_image
 }
+
+
+def image_for_controller(name: str) -> str | None:
+    """Returns the reference image declared by the current controller plugin."""
+    return catalog.get_definition(name).reference_image
 
 
 class _ZoomableView(QGraphicsView):
@@ -104,7 +108,7 @@ class ControllerImageView(QWidget):
         self._scene.clear()
         self._pixmap_item = None
         self._view.resetTransform()
-        image_name = IMAGES.get(name)
+        image_name = image_for_controller(name)
         path = ASSETS_DIR / image_name if image_name else None
         pixmap = QPixmap(str(path)) if path is not None and path.exists() else QPixmap()
         if pixmap.isNull():
@@ -123,4 +127,4 @@ class ControllerImageView(QWidget):
         self._view.fitInView(item, Qt.AspectRatioMode.KeepAspectRatio)
 
 
-__all__ = ["ControllerImageView"]
+__all__ = ["ASSETS_DIR", "IMAGES", "ControllerImageView", "image_for_controller"]

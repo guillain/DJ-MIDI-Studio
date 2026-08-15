@@ -136,6 +136,11 @@ def _pad_lookup(channel: str, kind: NoteOrCC, data1: str) -> ControlInfo | None:
 register(
     ControllerDefinition(
         name="XDJ-XZ",
+        plugin_id="pioneer.xdj-xz",
+        manufacturer="Pioneer DJ",
+        supported_software=("serato",),
+        reference_image="xdj-xz.png",
+        display_order=20,
         static_entries=_STATIC,
         pad_lookup=_pad_lookup,
         pad_count=8,

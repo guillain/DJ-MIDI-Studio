@@ -32,6 +32,11 @@ class ControllerDefinition:
     pad grid — fine for a controller that's only faders/knobs/buttons."""
 
     name: str
+    plugin_id: str | None = None
+    manufacturer: str | None = None
+    supported_software: tuple[str, ...] = ()
+    reference_image: str | None = None
+    display_order: int = 100
     static_entries: list[ControlInfo] = field(default_factory=list)
     pad_lookup: PadLookup | None = None
     pad_count: int = 0
@@ -69,8 +74,13 @@ def get_definition(controller: str) -> ControllerDefinition:
 
 
 def all_controller_names() -> list[str]:
-    """In registration order (see catalog/__init__.py's import order)."""
-    return list(_REGISTRY.keys())
+    """In plugin-defined display order, then alphabetically."""
+    return [definition.name for definition in all_controller_definitions()]
+
+
+def all_controller_definitions() -> list[ControllerDefinition]:
+    """Returns all registered controller plugins in display order."""
+    return sorted(_REGISTRY.values(), key=lambda definition: (definition.display_order, definition.name))
 
 
 def _parse_midi_note(data1: str) -> int | None:
@@ -117,6 +127,7 @@ __all__ = [
     "NoteOrCC",
     "PadLookup",
     "all_controller_names",
+    "all_controller_definitions",
     "get_definition",
     "make_sequential_pad_lookup",
     "register",

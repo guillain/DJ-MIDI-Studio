@@ -12,6 +12,19 @@ def test_builtin_controllers_are_registered_at_import():
     assert catalog.PAD_COUNTS == {"DDJ-XP2": 16, "XDJ-XZ": 8, "DDJ-1000": 16}
 
 
+def test_builtin_controller_plugins_expose_metadata():
+    definitions = {definition.name: definition for definition in catalog.all_controller_definitions()}
+    assert definitions["DDJ-XP2"].plugin_id == "pioneer.ddj-xp2"
+    assert definitions["DDJ-XP2"].manufacturer == "Pioneer DJ"
+    assert definitions["DDJ-XP2"].supported_software == ("serato",)
+    assert definitions["DDJ-XP2"].reference_image == "ddj-xp2.png"
+
+
+def test_builtin_controller_plugins_are_discovered_without_central_import_list():
+    catalog.discover_plugins()
+    assert set(catalog.CONTROLLER_NAMES) >= {"DDJ-XP2", "XDJ-XZ", "DDJ-1000"}
+
+
 def test_registering_twice_raises():
     definition = ControllerDefinition(name="__DuplicateTest__")
     register(definition)

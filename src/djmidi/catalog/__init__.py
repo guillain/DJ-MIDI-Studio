@@ -22,31 +22,60 @@ To add a new controller (e.g. a Behringer CMD LC-1 or a generic "miniPad"):
 3. End the module with `register(ControllerDefinition(name=..., static_entries=_STATIC,
    pad_lookup=..., pad_count=..., pad_columns=..., section_order=(...)))`.
    `pad_count=0` (the default) is fine for a controller with no pad grid at all.
-4. Import that module from this file (see below) — that's the only wiring
-   needed. `CONTROLLER_NAMES`, the Layout/Controller-tree/Controller-image
-   tabs' controller combos, and `lookup()` all pick it up automatically.
-5. Optional: drop a cropped reference image at `assets/controllers/<name>.png`
-   (see controller_image_view.py — falls back to a "not found" placeholder if
-   there isn't one yet, so this step can come later).
+4. Put that module in this package or expose it through the
+   `djmidi.controllers` entry-point group. Discovery imports it automatically;
+   `CONTROLLER_NAMES`, the Layout/Controller-tree/Controller-image tabs'
+   controller combos, and `lookup()` all pick it up automatically.
+5. Optional: set `reference_image` and drop a cropped reference image at
+   `assets/controllers/<name>.png` (the image view falls back to a "not found"
+   placeholder if there isn't one yet).
 """
 
 from __future__ import annotations
 
-from djmidi.catalog import (  # noqa: F401 - imported for their registration side effect
-    ddj_1000,
-    ddj_xp2,
-    xdj_xz,
-)
+import importlib
+import importlib.metadata
+import pkgutil
+
 from djmidi.catalog._registry import (
     ControlInfo,
     ControllerDefinition,
     NoteOrCC,
     _event_kind,
+    all_controller_definitions,
     all_controller_names,
     get_definition,
     make_sequential_pad_lookup,
     register,
 )
+
+
+_DISCOVERED = False
+
+
+def discover_plugins() -> None:
+    """Discovers built-in and installed controller plugins.
+
+    Built-ins are ordinary modules in this package and register themselves on
+    import. Installed integrations may expose a module/function through the
+    ``djmidi.controllers`` entry-point group. Discovery is idempotent so GUI
+    consumers can safely refresh after installing or enabling an integration.
+    """
+    global _DISCOVERED
+    if _DISCOVERED:
+        return
+    _DISCOVERED = True
+
+    for module_info in pkgutil.iter_modules(__path__):
+        if module_info.name.startswith("_") or module_info.name in {"codegen"}:
+            continue
+        importlib.import_module(f"{__name__}.{module_info.name}")
+
+    for entry_point in importlib.metadata.entry_points(group="djmidi.controllers"):
+        entry_point.load()
+
+
+discover_plugins()
 
 
 def __getattr__(name: str) -> object:
@@ -95,6 +124,8 @@ __all__ = [
     "ControlInfo",
     "ControllerDefinition",
     "NoteOrCC",
+    "all_controller_definitions",
+    "discover_plugins",
     "get_definition",
     "lookup",
     "make_sequential_pad_lookup",
