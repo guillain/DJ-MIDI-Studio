@@ -5,7 +5,7 @@ from djmidi.gui.mapping_group import MappingGroup
 from djmidi.gui.tree_model import NODE_ROLE
 from djmidi.parser import parse_file
 
-FIXTURE = Path(__file__).parent.parent / "data" / "ddj-xp2-custom-4-decks.xml"
+FIXTURE = Path(__file__).parent.parent / "data" / "xdj_xz-ddj_xp2-4decks.xml"
 
 
 def test_deck_columns_one_per_deck_no_deck_wrapper():

@@ -3,7 +3,7 @@ from pathlib import Path
 from djmidi.parser import parse_file, parse_string
 from djmidi.validator import validate
 
-FIXTURE = Path(__file__).parent.parent / "data" / "ddj-xp2-custom-4-decks.xml"
+FIXTURE = Path(__file__).parent.parent / "data" / "xdj_xz-ddj_xp2-4decks.xml"
 
 
 def test_sample_file_has_no_structural_errors():

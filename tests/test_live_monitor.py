@@ -4,7 +4,7 @@ from djmidi.gui.live_monitor import LiveMonitorView
 from djmidi.midi_io import MidiEvent
 from djmidi.parser import parse_file
 
-FIXTURE = Path(__file__).parent.parent / "data" / "ddj-xp2-custom-4-decks.xml"
+FIXTURE = Path(__file__).parent.parent / "data" / "xdj_xz-ddj_xp2-4decks.xml"
 
 
 def test_set_config_builds_function_lookup_from_real_file():

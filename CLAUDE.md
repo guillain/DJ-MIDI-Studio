@@ -45,7 +45,7 @@ DJ MIDI Studio: a tool to simplify managing, visualizing, and modifying Serato D
 
 ## Domain model (Serato MIDI XML format)
 
-`data/ddj-xp2-custom-4-decks.xml` is the user's real, current Serato config (DDJ-XP2, 4 decks) and the best reference for the XML shape — also used as the primary test fixture:
+`data/xdj_xz-ddj_xp2-4decks.xml` is the user's real, current Serato config (XDJ-XZ/DDJ-XP2, 4 decks) and the best reference for the XML shape — also used as the primary test fixture:
 
 - Root `<midi app="...">` contains a flat list of `<control channel="..." event_type="..." control="...">` elements — these are the raw MIDI trigger (channel/note/control number).
 - Each `<control>` holds `<userio event="click">` and/or `<userio event="output">` blocks.

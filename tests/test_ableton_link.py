@@ -1,6 +1,7 @@
 from dataclasses import dataclass
+from unittest.mock import patch
 
-from djmidi.ableton_link import LinkClockFollower, LinkState
+from djmidi.ableton_link import AalinkStateProvider, LinkClockFollower, LinkState
 
 
 @dataclass
@@ -45,3 +46,20 @@ def test_link_follower_rejects_invalid_tempo():
         assert "tempo" in str(exc)
     else:
         raise AssertionError("invalid Link tempo must be rejected")
+
+
+def test_aalink_provider_uses_modern_async_backend_api():
+    class FakeLink:
+        enabled = False
+
+        def __init__(self, tempo):
+            self.tempo = tempo
+            self.beat = 3.5
+            self.playing = True
+
+    with patch.dict("sys.modules", {"aalink": type("Module", (), {"Link": FakeLink})}):
+        provider = AalinkStateProvider(128.0)
+        try:
+            assert provider.state_at(0) == LinkState(tempo=128.0, beat=3.5, playing=True)
+        finally:
+            provider.close()

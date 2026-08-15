@@ -3,7 +3,7 @@ from pathlib import Path
 from djmidi.gui.mapping_group import build_mapping_groups
 from djmidi.parser import parse_file
 
-FIXTURE = Path(__file__).parent.parent / "data" / "ddj-xp2-custom-4-decks.xml"
+FIXTURE = Path(__file__).parent.parent / "data" / "xdj_xz-ddj_xp2-4decks.xml"
 
 
 def test_groups_collapse_the_10x_duplicates_in_the_real_file():

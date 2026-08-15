@@ -2,7 +2,7 @@ from pathlib import Path
 
 from djmidi.parser import parse_file
 
-FIXTURE = Path(__file__).parent.parent / "data" / "ddj-xp2-custom-4-decks.xml"
+FIXTURE = Path(__file__).parent.parent / "data" / "xdj_xz-ddj_xp2-4decks.xml"
 
 
 def test_parses_sample_file():
@@ -35,7 +35,15 @@ def test_mapping_tags_are_preserved():
 
 def test_translation_and_alias_parsed():
     config = parse_file(FIXTURE)
-    control = config.controls[0]
+    control = next(
+        control
+        for control in config.controls
+        if any(
+            mapping.tag == "codfather_st" and mapping.deck_id == "1"
+            for userio in control.userios
+            for mapping in userio.mappings
+        )
+    )
     click = next(u for u in control.userios if u.event == "click")
     mapping = click.mappings[0]
     assert mapping.tag == "codfather_st"

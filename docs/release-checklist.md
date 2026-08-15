@@ -73,7 +73,7 @@ On tag push, workflow `.github/workflows/draft-release.yml`:
 - builds executable bundles on macOS, Linux, and Windows,
 - builds wheel + sdist,
 - regenerates the documentation screenshots from
-  `data/ddj-xp2-custom-4-decks.xml`,
+  `data/xdj_xz-ddj_xp2-4decks.xml`,
 - attaches all release archives to a **draft GitHub Release**.
 
 ```mermaid

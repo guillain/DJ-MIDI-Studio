@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QLabel
 
 from djmidi.catalog._registry import ControlInfo
 from djmidi.gui.midi_routing_view import MidiRoutingView
+from djmidi.ableton_link import ABLETON_LINK_CLOCK_SOURCE_NAME
 from djmidi.midi_routing_session import SERATO_CLOCK_INPUT_NAME
 
 
@@ -88,6 +89,26 @@ def test_routing_view_reports_clock_inactive_after_session_starts_without_ticks(
     view._routing_session.running = True
     view._refresh_clock_status()
     assert "CLOCK INACTIVE" in view._clock_status.text()
+
+
+def test_routing_view_reports_link_clock_configuration_when_link_is_selected():
+    class FakeLinkFollower:
+        source_port_id = ABLETON_LINK_CLOCK_SOURCE_NAME
+        destination_port_ids = ("MIDI4x4 Midi Out 1",)
+
+        def clock_active(self, _now):
+            return False
+
+    view = MidiRoutingView()
+    view._clock_enabled.blockSignals(True)
+    view._clock_enabled.setChecked(True)
+    view._clock_enabled.blockSignals(False)
+    view.set_routing_enabled(True)
+    view._link_followers = [FakeLinkFollower()]
+    view._routing_session.running = True
+    view._refresh_clock_status()
+    assert "CLOCK INACTIVE" in view._clock_status.text()
+    assert ABLETON_LINK_CLOCK_SOURCE_NAME in view._clock_status.text()
 
 
 def test_routing_view_contains_controller_setup_playback_controls():

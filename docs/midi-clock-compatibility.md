@@ -59,7 +59,8 @@ output as a physical source in DJ MIDI Studio and do not enable the virtual
 Serato Clock input unless the bridge is deliberately targeting that port.
 
 DJ MIDI Studio can now replace the Live/bridge step when the optional `aalink`
-binding is installed. Select `Ableton Link (DJ MIDI Studio)` as the Clock
+binding is installed. It runs in its own asyncio loop while the GUI polls Link
+state from the routing timer. Select `Ableton Link (DJ MIDI Studio)` as the Clock
 source, keep `Create virtual input for Serato Clock` disabled, and route it to
 the physical MIDI output. DJ MIDI Studio follows Link's tempo and phase and
 emits MIDI Clock; it never sets Link's tempo. Install the binding with

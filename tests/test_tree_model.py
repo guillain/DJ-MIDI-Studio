@@ -7,7 +7,7 @@ from djmidi.gui.tree_model import (
 )
 from djmidi.parser import parse_file
 
-FIXTURE = Path(__file__).parent.parent / "data" / "ddj-xp2-custom-4-decks.xml"
+FIXTURE = Path(__file__).parent.parent / "data" / "xdj_xz-ddj_xp2-4decks.xml"
 
 
 def test_top_level_is_grouped_by_channel():

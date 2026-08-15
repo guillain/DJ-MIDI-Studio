@@ -8,7 +8,7 @@ from PySide6.QtWidgets import QApplication, QMenu
 from djmidi.gui.main_window import MainWindow
 from djmidi.parser import parse_file
 
-FIXTURE = Path(__file__).parent.parent / "data" / "ddj-xp2-custom-4-decks.xml"
+FIXTURE = Path(__file__).parent.parent / "data" / "xdj_xz-ddj_xp2-4decks.xml"
 
 
 def _ratio(splitter) -> float:

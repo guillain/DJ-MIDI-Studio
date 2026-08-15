@@ -13,7 +13,7 @@ from djmidi.parser import parse_file
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "docs" / "images" / "layout"
-FIXTURE = ROOT / "data" / "ddj-xp2-custom-4-decks.xml"
+FIXTURE = ROOT / "data" / "xdj_xz-ddj_xp2-4decks.xml"
 
 
 class _OfflineMidiMonitor:

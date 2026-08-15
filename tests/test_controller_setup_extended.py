@@ -9,7 +9,7 @@ from djmidi.catalog._registry import ControlInfo
 from djmidi.gui.controller_setup import ControllerSetupView
 from djmidi.parser import parse_file
 
-FIXTURE = Path(__file__).parent.parent / "data" / "ddj-xp2-custom-4-decks.xml"
+FIXTURE = Path(__file__).parent.parent / "data" / "xdj_xz-ddj_xp2-4decks.xml"
 
 
 def _view(name: str = "TestCtrl") -> ControllerSetupView:
@@ -237,5 +237,4 @@ def test_shutdown_when_learning_calls_stop():
 def test_shutdown_when_not_learning_is_noop():
     view = _view()
     view.shutdown()  # must not raise
-
 

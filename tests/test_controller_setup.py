@@ -7,7 +7,7 @@ from djmidi.catalog.codegen import generate_module_source, merge_by_channel
 from djmidi.gui.controller_setup import ControllerSetupView, _slugify
 from djmidi.parser import parse_file
 
-FIXTURE = Path(__file__).parent.parent / "data" / "ddj-xp2-custom-4-decks.xml"
+FIXTURE = Path(__file__).parent.parent / "data" / "xdj_xz-ddj_xp2-4decks.xml"
 
 
 def _view_with_name(name: str = "MiniPad") -> ControllerSetupView:
@@ -678,5 +678,4 @@ def test_session_save_and_load_preserves_recorded_events(tmp_path):
     reloaded._load_session(session_path)
 
     assert reloaded.recorded_session_events() == view._recorded_events
-
 

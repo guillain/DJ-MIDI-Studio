@@ -7,6 +7,8 @@ optional native Link binding without making the MIDI engine depend on it.
 
 from __future__ import annotations
 
+import asyncio
+import threading
 import time
 from dataclasses import dataclass
 from math import ceil
@@ -37,7 +39,7 @@ class LinkBackendUnavailable(RuntimeError):
 
 
 class AalinkStateProvider:
-    """Small compatibility adapter for the optional ``aalink`` package."""
+    """Bridge the asyncio-based ``aalink`` package to the Qt polling thread."""
 
     def __init__(self, tempo: float = 120.0) -> None:
         try:
@@ -46,15 +48,61 @@ class AalinkStateProvider:
             raise LinkBackendUnavailable(
                 "Ableton Link support requires the optional 'aalink' package"
             ) from exc
-        self._link = Link(tempo)
-        for method in ("enable", "start"):
-            callback = getattr(self._link, method, None)
-            if callback is not None:
-                callback()
+        self._link_type = Link
+        self._link = None
+        self._error: BaseException | None = None
+        self._closed = threading.Event()
+        self._ready = threading.Event()
+        self._thread = threading.Thread(
+            target=self._run_link_loop,
+            args=(tempo,),
+            name="djmidi-aalink",
+            daemon=True,
+        )
+        self._thread.start()
+        if not self._ready.wait(timeout=5.0):
+            self.close()
+            raise LinkBackendUnavailable("aalink initialization timed out")
+        if self._error is not None:
+            error = self._error
+            self.close()
+            raise LinkBackendUnavailable(f"aalink initialization failed: {error}") from error
+
+    def _run_link_loop(self, tempo: float) -> None:
+        async def serve() -> None:
+            try:
+                self._link = self._link_type(tempo)
+                enabled = getattr(type(self._link), "enabled", None)
+                if enabled is not None or hasattr(self._link, "enabled"):
+                    self._link.enabled = True
+                else:
+                    for method in ("enable", "start"):
+                        callback = getattr(self._link, method, None)
+                        if callback is not None:
+                            callback()
+                self._ready.set()
+                await asyncio.to_thread(self._closed.wait)
+            except BaseException as exc:  # noqa: BLE001 - propagate backend diagnostics
+                self._error = exc
+                self._ready.set()
+
+        asyncio.run(serve())
 
     def state_at(self, now: float) -> LinkState:
+        link = self._link
+        if link is None:
+            raise LinkBackendUnavailable("aalink Link session is not initialized")
+        tempo = getattr(link, "tempo", None)
+        beat = getattr(link, "beat", None)
+        playing = getattr(link, "playing", None)
+        if tempo is not None and beat is not None and playing is not None:
+            return LinkState(
+                tempo=float(tempo),
+                beat=float(beat() if callable(beat) else beat),
+                playing=bool(playing() if callable(playing) else playing),
+            )
         capture = getattr(self._link, "captureSessionState", None) or getattr(
-            self._link, "capture_session_state", None
+            link, "capture_session_state", None
         )
         if capture is None:
             raise LinkBackendUnavailable("aalink does not expose session-state capture")
@@ -68,10 +116,10 @@ class AalinkStateProvider:
         return LinkState(tempo=tempo, beat=float(beat_at_time(now, 4.0)), playing=playing)
 
     def close(self) -> None:
-        for method in ("disable", "stop"):
-            callback = getattr(self._link, method, None)
-            if callback is not None:
-                callback()
+        self._closed.set()
+        thread = getattr(self, "_thread", None)
+        if thread is not None and thread.is_alive() and thread is not threading.current_thread():
+            thread.join(timeout=2.0)
 
 
 class LinkClockFollower:

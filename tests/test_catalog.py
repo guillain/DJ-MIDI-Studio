@@ -3,7 +3,7 @@ from pathlib import Path
 from djmidi import catalog
 from djmidi.parser import parse_file
 
-FIXTURE = Path(__file__).parent.parent / "data" / "ddj-xp2-custom-4-decks.xml"
+FIXTURE = Path(__file__).parent.parent / "data" / "xdj_xz-ddj_xp2-4decks.xml"
 
 
 def test_every_control_in_sample_file_resolves_via_ddj_xp2_pad_grid():
