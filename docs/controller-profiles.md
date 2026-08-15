@@ -37,6 +37,13 @@ software behavior, MIDI routing, and device detection remain Python plugin
 capabilities. Every profile must be verified against an official MIDI message
 list or a hardware capture before being used for a production mapping.
 
+The complete source and archive status for every built-in controller is
+maintained in the [controller documentation index](controllers/README.md).
+DDJ-XP2 and XDJ-XZ currently point to their official online MIDI message
+lists, while DDJ-1000 and DDJ-FLX10 also keep local PDF copies. The remaining
+profiles are explicitly marked there when only a product page, user guide, or
+product sheet is available.
+
 The DDJ-FLX10 currently ships as a conservative Python profile covering common
 discrete deck and pad triggers. Its official MIDI message list is archived in
 `docs/controllers/`, and the annotated first-page diagram is available in the
@@ -55,6 +62,7 @@ an FLX4 hardware capture or an FLX4-specific MIDI message list.
 
 Reference sources:
 
+- [Controller documentation index and official PDF URLs](controllers/README.md)
 - [Pioneer DDJ-FLX10 MIDI message list](controllers/ddj-flx10-midi-message-list-e1.pdf)
 - [Pioneer DDJ-FLX4 product page](https://www.pioneerdj.com/en/product/dj-controllers/ddj-flx4/)
 - [Numark Mixtrack Pro FX product page](https://www.numark.com/product/mixtrack-pro-fx)

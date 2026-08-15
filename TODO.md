@@ -116,6 +116,7 @@ second, then real-time routing and clock synchronization.
 - [x] Refresh controller-dependent views after applying a catalog.
 - [x] Add DDJ-1000 reference mapping artwork to the controller image assets.
 - [x] Add official reference images for Numark Mixtrack Pro FX and Hercules DJControl Inpulse 500, then declare them in their controller plugins. These are physical product views; a complete annotated MIDI map still requires vendor documentation or hardware capture.
+- [x] Add the controller documentation index with official PDF/source URLs, local archives, and an explicit distinction between MIDI message lists, user guides, product sheets, and physical reference images.
 
 ### MIDI tools and live workflows
 
@@ -217,7 +218,7 @@ the MIDI 1.0 router and Clock mirror are stable.
 
 #### Integration checklist for each candidate
 
-- [ ] Obtain and archive the manufacturer's official MIDI message list or verify the mapping from hardware capture. (DDJ-FLX4 remains open pending FLX4-specific evidence.)
+- [ ] Obtain and archive the manufacturer's official MIDI message list or verify the mapping from hardware capture. DDJ-FLX4, Numark Mixtrack Pro FX, and Hercules DJControl Inpulse 500 remain open pending controller-specific evidence; see `docs/controllers/README.md`.
 - [x] Add the controller module and registration entry with static controls, pad lookup, section order, and layout metadata for DDJ-FLX4.
 - [x] Add the official DDJ-FLX4 product reference image; an annotated MIDI map remains open.
 - [x] Add catalog lookup, layout, and image-view coverage for DDJ-FLX4.

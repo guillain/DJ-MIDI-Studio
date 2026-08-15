@@ -159,6 +159,7 @@ mapping parsing, Live Monitor, MIDI routing, and unknown-device workflows.
 ## Documentation Index
 
 - [Documentation Home](docs/README.md)
+- [Controller documentation and official PDF sources](docs/controllers/README.md)
 - [Quickstart](docs/quickstart.md)
 - [User Guide](docs/user-guide.md)
 - [Screens and Layouts](docs/screens-and-layouts.md)
