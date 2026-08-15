@@ -102,6 +102,12 @@ controller without assigning a guessed vendor layout. The resulting definition
 can be registered explicitly for the current session when the user chooses to
 work with that device.
 
+`safe_update.py` provides the write-policy primitive for future configuration
+updates: it validates the candidate text, exposes a unified diff, writes via a
+temporary file after creating a backup, and can restore that backup explicitly.
+The existing GUI save workflow will adopt it only after format-specific
+integration tests are added.
+
 DJ software integrations use the same plugin principle. The software registry
 exposes a parser, exporter, supported extensions, and display metadata. The
 current UI asks the user to select the plugin when opening a mapping; automatic
