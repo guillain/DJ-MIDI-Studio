@@ -66,7 +66,7 @@ either confirmed or shown as suggestions according to Preferences.
 - `By Deck`: grouped duplicate mappings (safe synchronized edits).
 - `By Controller`: physical layout/section perspective.
 - `Controller Images`: static official diagrams.
-- `Metronome`: repeat the current Controller Setup session rows at a chosen frequency.
+- `MIDI Routing`: route MIDI and Clock, and replay Controller Setup rows once or in a loop.
 - `Controller Setup`: capture/import controller triggers, send one-shot session commands, and generate catalog modules.
 
 For screenshots and a visual description of each tab, see [Screens and Layouts](screens-and-layouts.md).
@@ -79,7 +79,7 @@ For screenshots and a visual description of each tab, see [Screens and Layouts](
 - Use `By Controller` for controller/section-oriented physical mapping.
 - Use `Controller Images` for zoomable reference diagrams.
 - Use `Live Monitor` to inspect real-time MIDI traffic by source device.
-- Use `Metronome` to replay Controller Setup rows once or in a loop.
+- Use the `Controller Setup playback` section in `MIDI Routing` to replay rows once or in a loop.
 
 ## Edit Safely
 
@@ -147,4 +147,4 @@ So in practice:
 Inside the GUI:
 
 - use `Controller Setup` to send one-shot commands from the current saved/loaded session to the selected MIDI output;
-- use `Metronome` when you want loop/repeat playback with a configurable frequency.
+- use `Controller Setup playback` in `MIDI Routing` when you want loop/repeat playback with a configurable frequency.

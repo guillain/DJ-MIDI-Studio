@@ -81,7 +81,7 @@ class IntroductionView(QWidget):
             "- By Deck: grouped editing of Serato duplicate trigger sets (x10) via MappingGroup.\n"
             "- By Controller: physical mapping view by controller section.\n"
             "- Live Monitor: real-time MIDI display with catalog + Serato function resolution.\n"
-            "- Metronome: loop the current Controller Setup session rows at a chosen frequency.\n"
+            "- MIDI Routing: route MIDI/Clock and loop Controller Setup session rows.\n"
             "- Controller Setup: create a new catalog module from learned MIDI or imported XML."
         )
         help_text.setTextFormat(Qt.TextFormat.PlainText)

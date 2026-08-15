@@ -1,3 +1,4 @@
+from djmidi.catalog._registry import ControlInfo
 from djmidi.gui.midi_routing_view import MidiRoutingView
 from djmidi.midi_routing_session import SERATO_CLOCK_INPUT_NAME
 
@@ -44,3 +45,18 @@ def test_routing_view_exposes_virtual_serato_clock_source():
     assert view._routing_session._virtual_input_ids == frozenset({SERATO_CLOCK_INPUT_NAME})
     view._serato_virtual_checkbox.setChecked(False)
     assert view._clock_source.findText(SERATO_CLOCK_INPUT_NAME) < 0
+
+
+def test_routing_view_contains_controller_setup_playback_controls():
+    entries = [ControlInfo("Test", "PAD", "Pad 1", "NOTE", ("1",), "10")]
+    view = MidiRoutingView(
+        all_rows_provider=lambda: entries,
+        selected_rows_provider=lambda: entries,
+        session_name_provider=lambda: "Test session",
+    )
+    view.refresh_session_summary()
+    assert "Test session" in view._session_summary.text()
+    view._hz_edit.setText("4")
+    view._start_loop("selected")
+    assert view._loop_timer.isActive()
+    view._stop_loop()

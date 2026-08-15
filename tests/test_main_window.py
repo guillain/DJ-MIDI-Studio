@@ -67,15 +67,15 @@ def test_intro_tab_is_named_dashboard():
     window.close()
 
 
-def test_intro_drilldown_can_open_metronome_tab():
+def test_intro_drilldown_can_open_routing_tab():
     window = MainWindow()
     window.show()
     QApplication.processEvents()
 
-    window._on_intro_drilldown_requested("metronome", "DDJ-XP2")
+    window._on_intro_drilldown_requested("routing", "DDJ-XP2")
     QApplication.processEvents()
 
-    assert window.left_tabs.currentIndex() == window._tab_indexes["metronome"]
+    assert window.left_tabs.currentIndex() == window._tab_indexes["routing"]
     window.close()
 
 
@@ -234,11 +234,11 @@ def test_find_ancestor_control_traverses_to_control():
 def test_close_event_calls_shutdown_on_monitors():
     window = MainWindow()
     with patch.object(window.live_monitor_view, "shutdown") as mock_live, \
-         patch.object(window.metronome_view, "shutdown") as mock_metronome, \
+         patch.object(window.midi_routing_view, "shutdown") as mock_routing, \
          patch.object(window.controller_setup_view, "shutdown") as mock_setup:
         window.close()
     mock_live.assert_called_once()
-    mock_metronome.assert_called_once()
+    mock_routing.assert_called_once()
     mock_setup.assert_called_once()
 
 
@@ -304,4 +304,3 @@ def test_on_group_edit_applied_does_not_crash():
     window._on_group_edit_applied()
     QApplication.processEvents()
     window.close()
-

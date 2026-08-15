@@ -39,7 +39,6 @@ from djmidi.gui.introduction_view import IntroductionView
 from djmidi.gui.layout_view import ControllerLayoutView
 from djmidi.gui.live_monitor import LiveMonitorView
 from djmidi.gui.mapping_group import MappingGroup
-from djmidi.gui.metronome_view import MetronomeView
 from djmidi.gui.midi_routing_view import MidiRoutingView
 from djmidi.gui.preferences_dialog import PreferencesDialog
 from djmidi.gui.safe_update_dialog import SafeUpdateDialog
@@ -169,12 +168,11 @@ class MainWindow(QMainWindow):
         self.controller_setup_view = ControllerSetupView()
         self.controller_setup_view.controllerApplied.connect(self._on_controller_applied)
 
-        self.metronome_view = MetronomeView(
+        self.midi_routing_view = MidiRoutingView(
             all_rows_provider=self.controller_setup_view.session_rows,
             selected_rows_provider=self.controller_setup_view.selected_session_rows,
             session_name_provider=self.controller_setup_view.session_controller_name,
         )
-        self.midi_routing_view = MidiRoutingView()
         self.midi_routing_view.set_routing_enabled(self.preferences.routing_enabled)
 
         self.introduction_view = IntroductionView()
@@ -196,7 +194,6 @@ class MainWindow(QMainWindow):
             "deck": self.left_tabs.addTab(deck_pair, "By Deck"),
             "controller": self.left_tabs.addTab(controller_pair, "By Controller"),
             "monitor": self.left_tabs.addTab(self.live_monitor_view, "Live Monitor"),
-            "metronome": self.left_tabs.addTab(self.metronome_view, "Metronome"),
             "routing": self.left_tabs.addTab(self.midi_routing_view, "MIDI Routing"),
         }
         self.left_tabs.currentChanged.connect(self._on_left_tab_changed)
@@ -609,10 +606,6 @@ class MainWindow(QMainWindow):
         if target_index is not None:
             self.left_tabs.setCurrentIndex(target_index)
 
-    def _on_left_tab_changed(self, index: int) -> None:
-        if index == self._tab_indexes.get("metronome"):
-            self.metronome_view.refresh_session_summary()
-
     def _on_controller_applied(self, name: str) -> None:
         """A Controller Setup draft was registered into the live catalog registry
         (in-memory only) — refresh every view whose controller combo/columns
@@ -629,7 +622,7 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event) -> None:
         self.live_monitor_view.shutdown()
-        self.metronome_view.shutdown()
+        self.midi_routing_view.shutdown()
         self.controller_setup_view.shutdown()
         super().closeEvent(event)
 
