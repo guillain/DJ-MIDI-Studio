@@ -68,6 +68,19 @@ The catalog is plugin-style:
 
 Registration is dynamic, so newly applied definitions (from Controller Setup) can be used immediately in the current session.
 
+## Integration detection and MIDI API
+
+`djmidi.integration_detection` provides non-destructive, explainable
+controller and mapping-software candidates. Results include a score, reasons,
+an unknown/ambiguous/match status, and never silently change the active plugin.
+The explicit user selection remains the fallback.
+
+`djmidi.midi_api` defines the normalized desktop vocabulary: Web-MIDI-shaped
+port identity/state plus raw MIDI 1.0 bytes, timestamps, port identity, and
+SysEx visibility. `midi_io.py` adapts the native `mido/rtmidi` transport to
+that vocabulary without adding a browser dependency. Routing and Clock mirror
+remain separate future features.
+
 DJ software integrations use the same plugin principle. The software registry
 exposes a parser, exporter, supported extensions, and display metadata. The
 current UI asks the user to select the plugin when opening a mapping; automatic

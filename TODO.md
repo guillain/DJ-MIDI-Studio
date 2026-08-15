@@ -15,21 +15,30 @@ second, then real-time routing and clock synchronization.
 - [x] Controller and software lists are consumed dynamically by the current GUI.
 - [x] Serato and Traktor are exposed as software plugins.
 
-### Phase 1 — plugin contracts and declarative profiles — IN PROGRESS
+### Phase 1 — plugin contracts and declarative profiles — COMPLETE
 
 - [x] Define and validate a versioned JSON plugin manifest for controllers and DJ software.
 - [x] Add plugin capabilities and permissions to the manifest.
 - [x] Support controller profiles from JSON first; evaluate YAML after the schema stabilizes.
 - [x] Define schema validation, duplicate-ID handling, and useful diagnostics.
-- [ ] Add plugin enable/disable state and preferences.
+- [x] Add plugin enable/disable state and preferences.
 - [x] Add profile fixtures and contract tests that require no MIDI hardware.
+- [x] Add plugin lifecycle operations: discover, validate manifest, register, enable/disable, reload, and report compatibility errors.
 
-### Phase 2 — assisted integration detection — NEXT
+### MIDI Foundation — normalized MIDI 1.0 API — COMPLETE
 
-- [ ] Detect the mapping software from file signature, extension, and plugin probes; ask for confirmation when ambiguous.
-- [ ] Detect the controller from MIDI port name, identity/SysEx where available, and plugin capability scores.
-- [ ] Show the confidence and reason for a detection result before enabling an integration.
-- [ ] Keep explicit user selection as the fallback for unknown or ambiguous hardware/software.
+- [x] Define normalized port identity/state and raw MIDI message types aligned with Web MIDI concepts.
+- [x] Expose available mido ports through the normalized port API while keeping the native MIDI 1.0 transport.
+- [x] Preserve raw bytes, timestamps, port identity, realtime messages, and SysEx in the normalized message contract.
+- [x] Add deterministic hardware-free tests for ports, messages, SysEx, and plugin detection adapters.
+
+### Phase 2 — assisted integration detection — IN PROGRESS
+
+- [x] Detect the mapping software from file signature and extension; return a reason and ask for confirmation when ambiguous.
+- [x] Detect the controller from MIDI port names and return ranked plugin candidates.
+- [x] Show the confidence and reason for a detection result before enabling an integration.
+- [x] Keep explicit user selection as the fallback for unknown or ambiguous hardware/software.
+- [ ] Add MIDI identity/SysEx probes and capability scoring where hardware permits it.
 
 ### Phase 3 — multi-device MIDI engine — PLANNED
 
@@ -155,7 +164,7 @@ list or the GUI.
 - [ ] Split the current controller registry API from the future software registry API while sharing common plugin metadata and discovery mechanisms.
 - [ ] Move controller and software lists to registry-backed/dynamically discovered sources throughout the GUI, Dashboard, filters, and documentation helpers.
 - [x] Support explicit plugin discovery from built-in modules and external Python package entry points.
-- [ ] Add plugin lifecycle operations: discover, validate manifest, register, enable/disable, reload, and report compatibility errors.
+- [x] Add plugin lifecycle operations: discover, validate manifest, register, enable/disable, reload, and report compatibility errors.
 - [ ] Add a plugin manifest/version format with API compatibility, plugin version, vendor, license, and required application version.
 
 ### MIDI API standards decision

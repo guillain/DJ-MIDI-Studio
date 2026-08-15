@@ -15,7 +15,14 @@
 1. Start the app.
 2. Use `File -> Open...`, choose your mapping file, then select the matching mapping software plugin (`Serato DJ` or `Native Instruments Traktor`).
 
-Traktor mappings use NML/XML files. Automatic software detection is not enabled yet; selecting the plugin explicitly prevents an ambiguous XML extension from choosing the wrong parser.
+Traktor mappings use NML/XML files. Automatic plugin selection is not enabled
+yet; selecting the plugin explicitly prevents an ambiguous XML extension from
+choosing the wrong parser.
+
+The application can now produce an assisted detection result from the mapping
+file signature/extension and MIDI port names. The result includes its reason
+and confidence; ambiguous or unknown results leave explicit plugin selection to
+the user.
 
 ## Explore Mappings
 

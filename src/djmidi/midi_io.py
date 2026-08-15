@@ -21,6 +21,8 @@ from typing import Literal
 
 import mido
 
+from djmidi.midi_api import MidiPortInfo
+
 Direction = Literal["in", "out"]
 
 _TYPE_TO_EVENT_TYPE = {
@@ -72,6 +74,19 @@ def list_input_ports() -> list[str]:
 
 def list_output_ports() -> list[str]:
     return mido.get_output_names()
+
+
+def list_port_info() -> list[MidiPortInfo]:
+    """Expose available mido ports using the normalized MIDI API shape."""
+    inputs = [
+        MidiPortInfo(id=name, name=name, type="input")
+        for name in list_input_ports()
+    ]
+    outputs = [
+        MidiPortInfo(id=name, name=name, type="output")
+        for name in list_output_ports()
+    ]
+    return inputs + outputs
 
 
 def _bounded_midi_byte(value: int, *, field_name: str) -> int:
@@ -185,6 +200,7 @@ __all__ = [
     "MidiMonitor",
     "list_input_ports",
     "list_output_ports",
+    "list_port_info",
     "mido_message_to_event",
     "send_midi_message",
 ]
