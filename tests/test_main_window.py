@@ -2,7 +2,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QMenu
 
 from djmidi.gui.main_window import MainWindow
 from djmidi.parser import parse_file
@@ -65,6 +65,19 @@ def test_intro_drilldown_switches_tab_and_controller():
 def test_intro_tab_is_named_dashboard():
     window = MainWindow()
     assert window.left_tabs.tabText(window._tab_indexes["intro"]) == "Dashboard"
+    window.close()
+
+
+def test_help_menu_exposes_project_and_controller_documentation():
+    window = MainWindow()
+    help_menu = next(menu for menu in window.findChildren(QMenu) if menu.title() == "&Help")
+    submenu_names = {action.text() for action in help_menu.actions() if action.menu()}
+    assert "Project Documentation" in submenu_names
+    assert "Controller References" in submenu_names
+    documentation = next(
+        menu for menu in window.findChildren(QMenu) if menu.title() == "Project Documentation"
+    )
+    assert "MIDI Clock Compatibility" in {action.text() for action in documentation.actions()}
     window.close()
 
 

@@ -18,6 +18,11 @@ The application is organized as tabs across the top of the main window:
 
 The right-hand panel remains available from every tab for the current selection and validation messages. Selecting a mapping or a layout cell keeps the related views synchronized.
 
+The `Help` menu provides the complete local project documentation, bundled
+controller references, and official external links. Local Markdown and PDF
+files are opened from the application bundle, so the documentation remains
+available with a packaged release.
+
 ![Dashboard and application tab navigation](images/layout/introduction.png)
 
 ## Dashboard

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 from PySide6.QtCore import (
@@ -78,6 +79,39 @@ _REFERENCE_LINKS = [
         "DDJ-XP2 MIDI Message List (PDF)",
         "https://downloads.support.alphatheta.com/software_info/dj-controllers/DDJ-XP2/DDJ-XP2_MIDI_Message_List_E1.pdf",
     ),
+    (
+        "Ableton Link documentation",
+        "https://www.ableton.com/en/link/",
+    ),
+    (
+        "DJ TechTools: Serato external sync overview",
+        "https://djtechtools.com/2018/06/27/serato-dj-pro-four-ways-for-syncing-with-external-gear/",
+    ),
+]
+
+_LOCAL_HELP_DOCUMENTS = [
+    ("Documentation Home", "docs/README.md"),
+    ("Quickstart", "docs/quickstart.md"),
+    ("User Guide", "docs/user-guide.md"),
+    ("Screens and Layouts", "docs/screens-and-layouts.md"),
+    ("Architecture", "docs/architecture.md"),
+    ("End-to-End Examples", "docs/examples.md"),
+    ("MIDI Clock Compatibility", "docs/midi-clock-compatibility.md"),
+    ("Testing and Quality", "docs/testing-and-quality.md"),
+    ("Quality Gates", "docs/quality-gates.md"),
+    ("Build and Release", "docs/build-and-release.md"),
+    ("Release Checklist", "docs/release-checklist.md"),
+]
+
+_LOCAL_CONTROLLER_DOCUMENTS = [
+    ("Controller documentation index", "docs/controllers/README.md"),
+    ("DDJ-XP2 MIDI Message List", "docs/controllers/ddj-xp2-midi-message-list-e1.pdf"),
+    ("XDJ-XZ MIDI Message List", "docs/controllers/xdj-xz-midi-message-list-e3.pdf"),
+    ("DDJ-1000 MIDI Message List", "docs/controllers/ddj-1000-midi-message-list-e1.pdf"),
+    ("DDJ-FLX10 MIDI Message List", "docs/controllers/ddj-flx10-midi-message-list-e1.pdf"),
+    ("DDJ-REV1 MIDI Message List", "docs/controllers/ddj-rev1-midi-message-list-e1.pdf"),
+    ("Numark Mixtrack Pro FX User Guide", "docs/controllers/numark-mixtrack-pro-fx-user-guide-v1.2.pdf"),
+    ("Hercules DJControl Inpulse 500 Product Sheet", "docs/controllers/hercules-djcontrol-inpulse-500-product-sheet-fr.pdf"),
 ]
 
 
@@ -344,10 +378,41 @@ class MainWindow(QMainWindow):
         settings_menu.addAction(preferences_action)
 
         help_menu = self.menuBar().addMenu("&Help")
+        documentation_menu = help_menu.addMenu("Project Documentation")
+        for title, relative_path in _LOCAL_HELP_DOCUMENTS:
+            action = QAction(title, self)
+            action.triggered.connect(
+                lambda checked=False, p=relative_path: self._open_local_help(p)
+            )
+            documentation_menu.addAction(action)
+
+        controller_menu = help_menu.addMenu("Controller References")
+        for title, relative_path in _LOCAL_CONTROLLER_DOCUMENTS:
+            action = QAction(title, self)
+            action.triggered.connect(
+                lambda checked=False, p=relative_path: self._open_local_help(p)
+            )
+            controller_menu.addAction(action)
+
+        help_menu.addSeparator()
+        online_menu = help_menu.addMenu("Official and External References")
         for title, url in _REFERENCE_LINKS:
             action = QAction(title, self)
             action.triggered.connect(lambda checked=False, u=url: QDesktopServices.openUrl(QUrl(u)))
-            help_menu.addAction(action)
+            online_menu.addAction(action)
+
+    @staticmethod
+    def _resource_root() -> Path:
+        if getattr(sys, "frozen", False):
+            return Path(getattr(sys, "_MEIPASS", Path.cwd()))
+        return Path(__file__).resolve().parents[3]
+
+    def _open_local_help(self, relative_path: str) -> None:
+        path = self._resource_root() / relative_path
+        if not path.exists():
+            QMessageBox.warning(self, "Documentation unavailable", str(path))
+            return
+        QDesktopServices.openUrl(QUrl.fromLocalFile(str(path)))
 
     def _on_preferences(self) -> None:
         dialog = PreferencesDialog(self.preferences, self)

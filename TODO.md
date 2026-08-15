@@ -178,6 +178,7 @@ second, then real-time routing and clock synchronization.
 - [x] Add provider-neutral SCM release orchestration for GitHub/GitLab.
 - [x] Add the documentation portal, quickstart, user guide, architecture, testing, quality, build, and release documentation.
 - [x] Add the visual [Screens and Layouts](docs/screens-and-layouts.md) documentation with application screenshots.
+- [x] Complete the Help menu with bundled project documentation, controller PDFs, and official external references.
 - [x] Translate the Dashboard UI and its tests to English.
 - [x] Rename the project to DJ MIDI Studio.
 
