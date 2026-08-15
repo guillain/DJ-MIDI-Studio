@@ -113,6 +113,7 @@ second, then real-time routing and clock synchronization.
 - [x] Apply a generated controller catalog immediately for the current session.
 - [x] Refresh controller-dependent views after applying a catalog.
 - [x] Add DDJ-1000 reference mapping artwork to the controller image assets.
+- [ ] Add verified reference images for Numark Mixtrack Pro FX and Hercules DJControl Inpulse 500, then declare them in their controller plugins.
 
 ### MIDI tools and live workflows
 
