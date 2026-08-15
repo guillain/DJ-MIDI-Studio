@@ -35,14 +35,15 @@ Usage = dict[CellKey, dict[str, set[str]]]
 # (channel, event_type, control) trigger with it in the loaded config.
 LinkedCells = dict[CellKey, set[CellKey]]
 
-_UNUSED_BRUSH = QBrush(QColor(235, 235, 235))
-_EMPTY_HALF_BRUSH = QBrush(QColor(246, 246, 246))
-_MULTI_DECK_BRUSH = QBrush(QColor(120, 200, 190))
-_BORDER_PEN = QPen(QColor(110, 110, 110))
-_DIVIDER_PEN = QPen(QColor(170, 170, 170))
-_SELECTED_PEN = QPen(QColor(220, 30, 30))
+_SCENE_BRUSH = QBrush(QColor(13, 17, 25))
+_UNUSED_BRUSH = QBrush(QColor(29, 36, 49))
+_EMPTY_HALF_BRUSH = QBrush(QColor(20, 26, 37))
+_MULTI_DECK_BRUSH = QBrush(QColor(20, 91, 99))
+_BORDER_PEN = QPen(QColor(65, 78, 98))
+_DIVIDER_PEN = QPen(QColor(70, 83, 104))
+_SELECTED_PEN = QPen(QColor(255, 61, 103))
 _SELECTED_PEN.setWidth(3)
-_HISTORY_PEN = QPen(QColor(185, 150, 150))
+_HISTORY_PEN = QPen(QColor(142, 82, 98))
 _HISTORY_PEN.setWidth(2)
 _CONTROL_PEN = QPen(QColor(55, 65, 80))
 _CONTROL_BRUSH = QBrush(QColor(215, 225, 238))
@@ -54,12 +55,12 @@ _FADER_PEN.setWidth(3)
 # One color per Serato deck number, so a glance at the layout shows which
 # deck each physical control currently drives.
 _DECK_BRUSHES = {
-    "1": QBrush(QColor(140, 190, 255)),
-    "2": QBrush(QColor(150, 220, 140)),
-    "3": QBrush(QColor(255, 190, 120)),
-    "4": QBrush(QColor(230, 150, 220)),
+    "1": QBrush(QColor(35, 83, 132)),
+    "2": QBrush(QColor(35, 102, 70)),
+    "3": QBrush(QColor(126, 76, 30)),
+    "4": QBrush(QColor(105, 58, 108)),
 }
-_DECK_FALLBACK_BRUSH = QBrush(QColor(190, 190, 190))
+_DECK_FALLBACK_BRUSH = QBrush(QColor(70, 80, 98))
 
 
 def _brush_for_decks(decks: set[str]) -> QBrush:
@@ -138,7 +139,9 @@ class ControllerLayoutView(QWidget):
             self._deck_combo = deck_combo
 
         self._scene = QGraphicsScene(self)
+        self._scene.setBackgroundBrush(_SCENE_BRUSH)
         self._view = _ClickableView(self._scene)
+        self._view.setStyleSheet("background: #0d1119; border: 0px;")
         self._view.cellClicked.connect(self.cellActivated)
 
         layout = QVBoxLayout(self)
@@ -281,6 +284,7 @@ class ControllerLayoutView(QWidget):
 
         label = QGraphicsSimpleTextItem(_elide(header, 24))
         label.setPos(x + 42, y + 2)
+        label.setBrush(QColor("#f3f6fb"))
         label.setData(_KEY_ROLE, clickable_key)
         self._scene.addItem(label)
 
@@ -288,6 +292,7 @@ class ControllerLayoutView(QWidget):
             tag_label = QGraphicsSimpleTextItem(_elide(", ".join(sorted(tags)), 26))
             tag_label.setFont(small_font)
             tag_label.setPos(x + 42, y + 18)
+            tag_label.setBrush(QColor("#c5d0df"))
             tag_label.setData(_KEY_ROLE, clickable_key)
             self._scene.addItem(tag_label)
 
@@ -295,6 +300,7 @@ class ControllerLayoutView(QWidget):
             deck_label = QGraphicsSimpleTextItem(", ".join(f"D{d}" for d in sorted(decks)))
             deck_label.setFont(small_font)
             deck_label.setPos(x + 42, y + _HALF_H - 14)
+            deck_label.setBrush(QColor("#91e8d2"))
             deck_label.setData(_KEY_ROLE, clickable_key)
             self._scene.addItem(deck_label)
 
@@ -335,12 +341,15 @@ class ControllerLayoutView(QWidget):
 
     def _rebuild(self) -> None:
         self._scene.clear()
+        self._scene.setBackgroundBrush(_SCENE_BRUSH)
         cells = layout_mod.build_layout(self._controller)
         deck_filter = self._selected_deck_filter()
         small_font = QFont()
         small_font.setPointSize(7)
 
+        section_rows: dict[str, int] = {}
         for cell in cells:
+            section_rows[cell.section] = min(cell.row, section_rows.get(cell.section, cell.row))
             x = cell.col * (_CELL_W + _MARGIN)
             y = cell.row * (_CELL_H + _MARGIN)
 
@@ -391,11 +400,19 @@ class ControllerLayoutView(QWidget):
                 placeholder = QGraphicsSimpleTextItem("(other controller: n/a)")
                 placeholder.setFont(small_font)
                 placeholder.setPos(x + 4, y + _HALF_H + 15)
+                placeholder.setBrush(QColor("#78869b"))
                 self._scene.addItem(placeholder)
 
             divider = QGraphicsLineItem(QLineF(x, y + _HALF_H, x + _CELL_W, y + _HALF_H))
             divider.setPen(_DIVIDER_PEN)
             self._scene.addItem(divider)
+
+        for section, row in section_rows.items():
+            title = QGraphicsSimpleTextItem(section.replace("_", " ").upper())
+            title.setFont(QFont("Helvetica Neue", 8, QFont.Weight.Bold))
+            title.setBrush(QColor("#6fe7d0"))
+            title.setPos(0, row * (_CELL_H + _MARGIN) - 17)
+            self._scene.addItem(title)
 
         self._scene.setSceneRect(self._scene.itemsBoundingRect().adjusted(-10, -10, 10, 10))
 
