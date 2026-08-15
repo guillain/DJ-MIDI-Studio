@@ -72,8 +72,10 @@ Registration is dynamic, so newly applied definitions (from Controller Setup) ca
 
 `djmidi.integration_detection` provides non-destructive, explainable
 controller and mapping-software candidates. Results include a score, reasons,
-an unknown/ambiguous/match status, and never silently change the active plugin.
-The explicit user selection remains the fallback.
+and an unknown/ambiguous/match status. High-confidence matches can activate
+the corresponding controller views or mapping parser; ambiguous results still
+follow the persisted `ask`/`suggest` detection policy and explicit selection
+remains the fallback.
 
 `djmidi.midi_api` defines the normalized desktop vocabulary: Web-MIDI-shaped
 port identity/state plus raw MIDI 1.0 bytes, timestamps, port identity, SysEx

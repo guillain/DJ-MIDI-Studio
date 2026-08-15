@@ -140,6 +140,13 @@ class IntroductionView(QWidget):
                 label.setText("MIDI: not detected")
                 label.setStyleSheet("color: #777; font-weight: 600;")
 
+    def set_controller(self, controller: str) -> bool:
+        """Select a controller in the Dashboard without opening a drill-down."""
+        if self._controller_combo.findText(controller) < 0:
+            return False
+        self._controller_combo.setCurrentText(controller)
+        return True
+
     def set_loaded_config_info(self, path: str | Path | None, control_count: int = 0) -> None:
         if path is None:
             self._loaded_file_label.setText("Loaded file: none")

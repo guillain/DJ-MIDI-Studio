@@ -155,8 +155,8 @@ Ordered by current priority:
 - [x] Add the first non-Pioneer controller plugins: Numark Mixtrack Pro FX and Hercules DJControl Inpulse 500. Their initial discrete-control profiles are conservative and must be verified against specific hardware/firmware captures before production use.
 - [ ] Continue adding controller models beyond DDJ-XP2, XDJ-XZ, DDJ-1000, Numark Mixtrack Pro FX, and Hercules DJControl Inpulse 500. The shortlist below is ordered by a combination of market reach, availability of official MIDI documentation, and fit with the current catalog architecture.
 - [x] Add support for Traktor through the Native Instruments Traktor software plugin; keep Rekordbox and VirtualDJ open.
-- [ ] Automatically detect the connected controller and enable the correct catalog module.
-- [ ] Add automatic detection of the DJ software and enable the correct mapping parser.
+- [x] Automatically detect the connected controller and enable the correct catalog module.
+- [x] Add automatic detection of the DJ software and enable the correct mapping parser.
 - [x] Add Clock mirror and MIDI routing support for multi-device setups.
 - [x] Add the GUI configuration surface for MIDI routes and opt-in Clock policies.
 - [x] Add controlled physical route execution behind the Preferences routing flag, with fake-port integration tests.
@@ -226,7 +226,7 @@ the MIDI 1.0 router and Clock mirror are stable.
   - [ ] MIDI controller configuration updates, monitoring/status, and advanced features (e.g., mirroring, routing, clock/sync).
   - [ ] DJ software configuration updates, monitoring/status, and advanced features (e.g., multi-deck, multi-controller, and multi-software setups).
 - [x] Add the initial plugin-based architecture for controller and software integrations, with dynamic discovery and registration; plugin manifests/versioning remain open below.
-- [ ] Add automatic detection of the DJ software and enable the correct mapping parser.
+- [x] Add automatic detection of the DJ software and enable the correct mapping parser.
 - [x] Add Clock mirror and MIDI routing support for multi-device setups (/!\ Serato & Rekordbox clock specificities! /!\).
 - [ ] Controlleur and Software plugins can be added by external configuration file (yaml/json)
 - [x] Add a plugin manifest/version format with API compatibility, plugin version, vendor, license, and required application version.

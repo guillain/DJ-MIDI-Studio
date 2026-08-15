@@ -13,11 +13,13 @@
 ## Open a Mapping File
 
 1. Start the app.
-2. Use `File -> Open...`, choose your mapping file, then select the matching mapping software plugin (`Serato DJ` or `Native Instruments Traktor`).
+2. Use `File -> Open...` and choose your mapping file. With the detection policy
+   set to `Suggest detected integration`, a high-confidence Serato or Traktor
+   signature selects the parser automatically; the default `Ask before enabling`
+   policy keeps the plugin choice explicit.
 
-Traktor mappings use NML/XML files. Automatic plugin selection is not enabled
-yet; selecting the plugin explicitly prevents an ambiguous XML extension from
-choosing the wrong parser.
+Traktor mappings use NML/XML files. Ambiguous extensions still open the plugin
+selector so an XML suffix alone cannot choose the wrong parser.
 
 ## Execution logs
 
@@ -53,9 +55,9 @@ The application can now produce an assisted detection result from the mapping
 file signature/extension and MIDI port names. When available, controller
 identity replies and declared MIDI capabilities add evidence to the score. The
 result includes its reason and confidence; ambiguous or unknown results leave
-explicit plugin selection to the user. When opening a file, the detected
-software is presented as the preselected choice in the confirmation dialog; the
-user remains in control.
+explicit plugin selection to the user. A high-confidence controller match
+selects that catalog in the Dashboard and layout views; ambiguous matches are
+either confirmed or shown as suggestions according to Preferences.
 
 ## Explore Mappings
 

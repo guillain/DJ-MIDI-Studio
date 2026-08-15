@@ -19,6 +19,13 @@ def test_drilldown_signal_emits_target_and_selected_controller():
     assert captured == [("deck", "XDJ-XZ")]
 
 
+def test_set_controller_selects_dashboard_controller():
+    view = IntroductionView()
+    assert view.set_controller("XDJ-XZ")
+    assert view._controller_combo.currentText() == "XDJ-XZ"
+    assert not view.set_controller("Unknown controller")
+
+
 def test_refresh_controllers_builds_controller_cards():
     view = IntroductionView()
     view.refresh_controllers()
@@ -52,4 +59,3 @@ def test_refresh_midi_availability_marks_matching_controller():
     view.refresh_midi_availability(["USB DDJ-XP2 MIDI 1"])
     assert view._availability_labels["DDJ-XP2"].text() == "MIDI: available"
     assert view._availability_labels["XDJ-XZ"].text() == "MIDI: not detected"
-

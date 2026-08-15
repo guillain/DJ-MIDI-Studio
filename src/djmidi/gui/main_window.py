@@ -45,7 +45,10 @@ from djmidi.gui.preferences_dialog import PreferencesDialog
 from djmidi.gui.safe_update_dialog import SafeUpdateDialog
 from djmidi.gui.splitter_utils import replace_splitter
 from djmidi.gui.tree_model import NODE_ROLE, build_channel_columns, relabel_item
-from djmidi.integration_detection import detect_software_mapping
+from djmidi.integration_detection import (
+    detect_controller_ports,
+    detect_software_mapping,
+)
 from djmidi.midi_io import MidiEvent
 from djmidi.model import Control, MappingElement, MidiConfig
 from djmidi.plugins import PluginPreferences, default_preferences_path
@@ -77,6 +80,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("DJ MIDI Studio")
         self.resize(1100, 700)
+        self.setStatusBar(QStatusBar())
 
         self.config: MidiConfig | None = None
         self.current_path: Path | None = None
@@ -91,6 +95,7 @@ class MainWindow(QMainWindow):
         self._channel_model_owner: dict[int, tuple[QTreeView, QSortFilterProxyModel]] = {}
         self._pair_splitters: list[QSplitter] = []
         self._pair_ratio_by_id: dict[int, float] = {}
+        self._last_controller_detection: tuple[str, ...] = ()
 
         self.undo_stack = QUndoStack(self)
 
@@ -176,6 +181,7 @@ class MainWindow(QMainWindow):
         self.live_monitor_view.portNamesChanged.connect(
             self.introduction_view.refresh_midi_availability
         )
+        self.live_monitor_view.portNamesChanged.connect(self._on_midi_ports_changed)
         self.introduction_view.refresh_midi_availability(
             self.live_monitor_view.input_port_names()
         )
@@ -215,10 +221,46 @@ class MainWindow(QMainWindow):
         main_splitter.setStretchFactor(1, 1)
         self.setCentralWidget(main_splitter)
 
-        self.setStatusBar(QStatusBar())
         self._build_menu()
         QTimer.singleShot(0, self._initialize_pair_splitters)
         self.introduction_view.set_loaded_config_info(None)
+
+    def _on_midi_ports_changed(self, port_names: list[str]) -> None:
+        """Apply a high-confidence controller plugin suggestion to all views."""
+        signature = tuple(sorted(port_names))
+        if signature == self._last_controller_detection:
+            return
+        self._last_controller_detection = signature
+        detection = detect_controller_ports(port_names)
+        best = detection.best
+        if best is None:
+            return
+        if detection.needs_confirmation and self.preferences.detection_policy == "ask":
+            answer = QMessageBox.question(
+                self,
+                "MIDI controller detected",
+                f"Enable '{best.name}'?\n{best.score}% confidence — {best.reasons[0]}",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            )
+            if answer != QMessageBox.StandardButton.Yes:
+                return
+        elif detection.needs_confirmation:
+            self.statusBar().showMessage(
+                f"Detected controller suggestion: {best.name} ({best.score}% confidence)."
+            )
+            return
+        self._apply_detected_controller(best.name, best.score, best.reasons[0])
+
+    def _apply_detected_controller(self, name: str, score: int, reason: str) -> None:
+        selected = (
+            self.layout_view.set_controller(name)
+            and self.deck_layout_view.set_controller(name)
+            and self.controller_layout_view.set_controller(name)
+            and self.controller_image_view.set_controller(name)
+            and self.introduction_view.set_controller(name)
+        )
+        if selected:
+            self.statusBar().showMessage(f"Controller enabled: {name} ({score}% — {reason})")
 
     def _initialize_pair_splitters(self) -> None:
         for splitter in self._pair_splitters:
@@ -343,17 +385,20 @@ class MainWindow(QMainWindow):
         prompt = "Mapping software:"
         if detected is not None:
             prompt = f"Mapping software (detected: {detected.name}, {detected.score}% — {detected.reasons[0]}):"
-        software_name, accepted = QInputDialog.getItem(
-            self,
-            "Open DJ mapping",
-            prompt,
-            names,
-            current,
-            False,
-        )
-        if not accepted:
-            return
-        selected = definitions[names.index(software_name)]
+        if detected is not None and detection.status == "match" and self.preferences.detection_policy == "suggest":
+            selected = definitions[detected_index]
+        else:
+            software_name, accepted = QInputDialog.getItem(
+                self,
+                "Open DJ mapping",
+                prompt,
+                names,
+                current,
+                False,
+            )
+            if not accepted:
+                return
+            selected = definitions[names.index(software_name)]
         try:
             self.config = selected.parser(mapping_text)
         except Exception as exc:  # noqa: BLE001 - surface any parse error to the user
