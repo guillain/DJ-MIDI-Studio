@@ -16,8 +16,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from seratomidiconf import catalog
-from seratomidiconf.gui.commands import (
+from djmidi import catalog
+from djmidi.gui.commands import (
     AddAliasCommand,
     AddGroupAliasCommand,
     OnGroupApplied,
@@ -26,8 +26,8 @@ from seratomidiconf.gui.commands import (
     SetAttrCommand,
     SetGroupAttrCommand,
 )
-from seratomidiconf.gui.mapping_group import MappingGroup
-from seratomidiconf.model import Alias, Control, MappingElement, Translation, UserIO
+from djmidi.gui.mapping_group import MappingGroup
+from djmidi.model import Alias, Control, MappingElement, Translation, UserIO
 
 
 class EditPanel(QWidget):

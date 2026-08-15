@@ -21,7 +21,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from seratomidiconf import catalog
+from djmidi import catalog
 
 ASSETS_DIR = Path(__file__).resolve().parents[3] / "assets" / "controllers"
 # One entry per controller with a reference image available; a controller with

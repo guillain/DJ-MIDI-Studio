@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-APP_NAME="SeratoMidiConf"
+APP_NAME="DJMidiStudio"
 BUILD_PY_PACKAGE=1
 BUILD_EXECUTABLE=1
 MACOS_SIGNING_IDENTITY="${MACOS_SIGNING_IDENTITY:-}"
@@ -80,8 +80,8 @@ if [[ "$BUILD_EXECUTABLE" -eq 1 ]]; then
     --specpath "$ROOT_DIR/build/pyinstaller" \
     --paths "$ROOT_DIR/src" \
     --add-data "$ROOT_DIR/assets${DATA_SEP}assets" \
-    --osx-bundle-identifier "com.guillain.seratomidiconf" \
-    "$ROOT_DIR/src/seratomidiconf/gui/app.py"
+    --osx-bundle-identifier "com.guillain.djmidi" \
+    "$ROOT_DIR/src/djmidi/gui/app.py"
 
   if [[ "$OS_NAME" == "macos" ]]; then
     APP_PATH="$OUT_DIR/$APP_NAME.app"

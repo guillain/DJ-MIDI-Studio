@@ -3,8 +3,8 @@ from __future__ import annotations
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 
-from seratomidiconf.catalog._registry import ControlInfo
-from seratomidiconf.midi_io import MidiEvent, send_midi_message
+from djmidi.catalog._registry import ControlInfo
+from djmidi.midi_io import MidiEvent, send_midi_message
 
 
 @dataclass(frozen=True)

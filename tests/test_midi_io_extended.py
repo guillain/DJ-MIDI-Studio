@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 
 import mido
 
-from seratomidiconf.midi_io import (
+from djmidi.midi_io import (
     MidiMonitor,
     list_input_ports,
     list_output_ports,

@@ -45,15 +45,15 @@
 Use the CLI helper to send direct NOTE/CC output to a controller:
 
 ```bash
-uv run seratomidiconf-send-midi --list-ports
-uv run seratomidiconf-send-midi --port "Your Port Name" --type note_on --channel 1 --data1 27 --data2 127
-uv run seratomidiconf-send-midi --port "Your Port Name" --type note_off --channel 1 --data1 27 --data2 0
+uv run djmidi-send-midi --list-ports
+uv run djmidi-send-midi --port "Your Port Name" --type note_on --channel 1 --data1 27 --data2 127
+uv run djmidi-send-midi --port "Your Port Name" --type note_off --channel 1 --data1 27 --data2 0
 ```
 
 For DDJ-XP2 mode switching by double-click, you can use:
 
 ```bash
-uv run seratomidiconf-send-midi --port "Your Port Name" --type note_on --channel 1 --data1 27 --data2 127 --double-click
+uv run djmidi-send-midi --port "Your Port Name" --type note_on --channel 1 --data1 27 --data2 127 --double-click
 ```
 
 DDJ-XP2 known pad mode button note values (channels 1..4):

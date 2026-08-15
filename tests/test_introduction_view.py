@@ -1,4 +1,4 @@
-from seratomidiconf.gui.introduction_view import IntroductionView
+from djmidi.gui.introduction_view import IntroductionView
 
 
 def test_refresh_controllers_populates_known_names():

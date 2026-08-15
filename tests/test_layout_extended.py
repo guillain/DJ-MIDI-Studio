@@ -1,8 +1,8 @@
 """Extended layout.py tests covering branch edge-cases missed previously."""
 from __future__ import annotations
 
-from seratomidiconf.catalog._registry import ControlInfo
-from seratomidiconf.gui.layout import _base_name, build_layout, cell_key
+from djmidi.catalog._registry import ControlInfo
+from djmidi.gui.layout import _base_name, build_layout, cell_key
 
 # ─── _base_name ───────────────────────────────────────────────────────────────
 

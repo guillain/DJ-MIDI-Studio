@@ -2,6 +2,6 @@ import sys
 
 
 def main() -> None:
-    from seratomidiconf.gui.app import run
+    from djmidi.gui.app import run
 
     sys.exit(run())

@@ -5,7 +5,7 @@ notes (discrete press/toggle controls only) shared across all controllers.
 
 from __future__ import annotations
 
-from seratomidiconf.catalog._registry import (
+from djmidi.catalog._registry import (
     ControlInfo,
     ControllerDefinition,
     NoteOrCC,

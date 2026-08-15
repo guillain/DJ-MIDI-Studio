@@ -3,7 +3,7 @@ from __future__ import annotations
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QStandardItem, QStandardItemModel
 
-from seratomidiconf.model import Control, MappingElement, MidiConfig, UserIO
+from djmidi.model import Control, MappingElement, MidiConfig, UserIO
 
 NODE_ROLE = Qt.ItemDataRole.UserRole + 1
 

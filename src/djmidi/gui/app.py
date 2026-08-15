@@ -4,7 +4,7 @@ import sys
 
 from PySide6.QtWidgets import QApplication
 
-from seratomidiconf.gui.main_window import MainWindow
+from djmidi.gui.main_window import MainWindow
 
 
 def run() -> int:

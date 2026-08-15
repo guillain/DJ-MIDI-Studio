@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from seratomidiconf.catalog._registry import ControlInfo
-from seratomidiconf.midi_io import MidiEvent
-from seratomidiconf.session_player import (
+from djmidi.catalog._registry import ControlInfo
+from djmidi.midi_io import MidiEvent
+from djmidi.session_player import (
     play_control_info_entries,
     replay_midi_events,
     send_control_info_entry,
@@ -10,7 +10,7 @@ from seratomidiconf.session_player import (
 
 
 def test_send_control_info_entry_sends_note_click(monkeypatch):
-    import seratomidiconf.session_player as session_player_mod
+    import djmidi.session_player as session_player_mod
 
     sent = []
     entry = ControlInfo("MiniPad", "PAD", "A", "NOTE", ("1",), "10")
@@ -22,7 +22,7 @@ def test_send_control_info_entry_sends_note_click(monkeypatch):
 
 
 def test_send_control_info_entry_sends_cc(monkeypatch):
-    import seratomidiconf.session_player as session_player_mod
+    import djmidi.session_player as session_player_mod
 
     sent = []
     entry = ControlInfo("MiniPad", "KNOB", "B", "CC", ("2",), "20")
@@ -33,7 +33,7 @@ def test_send_control_info_entry_sends_cc(monkeypatch):
 
 
 def test_play_control_info_entries_counts_skipped_invalid_rows(monkeypatch):
-    import seratomidiconf.session_player as session_player_mod
+    import djmidi.session_player as session_player_mod
 
     sent = []
     entries = [

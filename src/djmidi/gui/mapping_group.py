@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from seratomidiconf.model import Control, MappingElement, MidiConfig, UserIO
+from djmidi.model import Control, MappingElement, MidiConfig, UserIO
 
 Member = tuple[Control, UserIO, MappingElement]
 

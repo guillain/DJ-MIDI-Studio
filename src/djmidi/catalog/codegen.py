@@ -5,7 +5,7 @@ independently testable and reusable outside the GUI."""
 
 from __future__ import annotations
 
-from seratomidiconf.catalog._registry import ControlInfo, ControllerDefinition
+from djmidi.catalog._registry import ControlInfo, ControllerDefinition
 
 
 def find_trigger_conflicts(entries: list[ControlInfo]) -> list[str]:
@@ -116,7 +116,7 @@ def generate_module_source(controller_name: str, entries: list[ControlInfo]) -> 
         "",
         "from __future__ import annotations",
         "",
-        "from seratomidiconf.catalog._registry import ControlInfo, ControllerDefinition, register",
+        "from djmidi.catalog._registry import ControlInfo, ControllerDefinition, register",
         "",
         "_STATIC: list[ControlInfo] = [",
     ]

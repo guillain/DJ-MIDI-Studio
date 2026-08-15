@@ -4,7 +4,7 @@ import argparse
 import sys
 import time
 
-from seratomidiconf.midi_io import list_output_ports, send_midi_message
+from djmidi.midi_io import list_output_ports, send_midi_message
 
 
 def _parser() -> argparse.ArgumentParser:

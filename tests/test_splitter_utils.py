@@ -4,7 +4,7 @@ from __future__ import annotations
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QSplitter, QVBoxLayout, QWidget
 
-from seratomidiconf.gui.splitter_utils import replace_splitter
+from djmidi.gui.splitter_utils import replace_splitter
 
 
 def _make_container_with_splitter() -> tuple[QWidget, QSplitter]:

@@ -11,10 +11,10 @@ from __future__ import annotations
 
 from PySide6.QtGui import QStandardItem, QStandardItemModel
 
-from seratomidiconf import catalog
-from seratomidiconf.gui.mapping_group import MappingGroup, build_mapping_groups
-from seratomidiconf.gui.tree_model import NODE_ROLE
-from seratomidiconf.model import MidiConfig
+from djmidi import catalog
+from djmidi.gui.mapping_group import MappingGroup, build_mapping_groups
+from djmidi.gui.tree_model import NODE_ROLE
+from djmidi.model import MidiConfig
 
 
 def _sort_numeric_then_text(value: str) -> tuple[bool, int, str]:

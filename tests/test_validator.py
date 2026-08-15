@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from seratomidiconf.parser import parse_file, parse_string
-from seratomidiconf.validator import validate
+from djmidi.parser import parse_file, parse_string
+from djmidi.validator import validate
 
 FIXTURE = Path(__file__).parent.parent / "data" / "ddj-xp2-custom-4-decks.xml"
 

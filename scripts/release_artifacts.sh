@@ -82,9 +82,9 @@ if [[ ! -d "dist/executables/$OS_NAME" ]]; then
 fi
 
 if [[ -d "dist/executables/$OS_NAME" ]]; then
-  ARCHIVE_BASE="seratomidiconf-${VERSION}-${OS_NAME}"
+  ARCHIVE_BASE="djmidi-studio-${VERSION}-${OS_NAME}"
   if [[ "$OS_NAME" == "macos" ]]; then
-    APP_PATH="dist/executables/$OS_NAME/SeratoMidiConf.app"
+    APP_PATH="dist/executables/$OS_NAME/DJMidiStudio.app"
     if [[ ! -d "$APP_PATH" ]]; then
       echo "Expected macOS app bundle not found: $APP_PATH"
       exit 2

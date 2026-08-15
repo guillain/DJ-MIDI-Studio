@@ -11,7 +11,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-from seratomidiconf import catalog
+from djmidi import catalog
 
 CellKey = tuple[str, str, str]  # (controller, section, label)
 

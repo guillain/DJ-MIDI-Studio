@@ -5,9 +5,9 @@ import json
 from pathlib import Path
 from unittest.mock import patch
 
-from seratomidiconf.catalog._registry import ControlInfo
-from seratomidiconf.gui.controller_setup import ControllerSetupView
-from seratomidiconf.parser import parse_file
+from djmidi.catalog._registry import ControlInfo
+from djmidi.gui.controller_setup import ControllerSetupView
+from djmidi.parser import parse_file
 
 FIXTURE = Path(__file__).parent.parent / "data" / "ddj-xp2-custom-4-decks.xml"
 
@@ -156,7 +156,7 @@ def test_toggle_learning_start_then_stop():
 
 def test_refresh_ports_populates_list():
     view = _view()
-    with patch("seratomidiconf.gui.controller_setup.list_input_ports", return_value=["Port X"]):
+    with patch("djmidi.gui.controller_setup.list_input_ports", return_value=["Port X"]):
         view._refresh_ports()
     assert view._port_list.count() == 1
 
@@ -165,7 +165,7 @@ def test_refresh_ports_populates_list():
 
 def test_poll_adds_learned_note_event():
     view = _view()
-    from seratomidiconf.midi_io import MidiEvent
+    from djmidi.midi_io import MidiEvent
     event = MidiEvent(direction="in", channel="1", event_type="Note On", data1="60", data2="100", timestamp=0.0)
     with patch.object(view._monitor, "poll", return_value=[event]):
         view._poll()
@@ -174,7 +174,7 @@ def test_poll_adds_learned_note_event():
 
 def test_poll_skips_unknown_event_type():
     view = _view()
-    from seratomidiconf.midi_io import MidiEvent
+    from djmidi.midi_io import MidiEvent
     event = MidiEvent(direction="in", channel="1", event_type="SysEx", data1="0", data2="0", timestamp=0.0)
     with patch.object(view._monitor, "poll", return_value=[event]):
         view._poll()
@@ -194,7 +194,7 @@ def test_on_name_changed_updates_controller_name_in_rows():
 # ─── check conflicts ──────────────────────────────────────────────────────────
 
 def test_on_check_conflicts_no_conflict(monkeypatch):
-    import seratomidiconf.gui.controller_setup as mod
+    import djmidi.gui.controller_setup as mod
     view = _view()
     view._maybe_add_row("1", "NOTE", "60", "manual")
     view._rows[0] = ControlInfo("TestCtrl", "DECK", "Play", "NOTE", ("1",), "60")
@@ -208,7 +208,7 @@ def test_on_check_conflicts_no_conflict(monkeypatch):
 
 
 def test_on_check_conflicts_with_conflict(monkeypatch):
-    import seratomidiconf.gui.controller_setup as mod
+    import djmidi.gui.controller_setup as mod
     view = _view()
     # Two rows with same trigger but different names
     view._rows = [

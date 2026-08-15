@@ -3,9 +3,9 @@ from __future__ import annotations
 
 from PySide6.QtGui import QUndoStack
 
-from seratomidiconf.gui.edit_panel import EditPanel
-from seratomidiconf.gui.mapping_group import MappingGroup
-from seratomidiconf.model import Alias, Control, MappingElement, Translation, UserIO
+from djmidi.gui.edit_panel import EditPanel
+from djmidi.gui.mapping_group import MappingGroup
+from djmidi.model import Alias, Control, MappingElement, Translation, UserIO
 
 # ─── helpers ──────────────────────────────────────────────────────────────────
 

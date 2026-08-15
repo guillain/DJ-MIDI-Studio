@@ -36,7 +36,7 @@ Selecting anything in any tab highlights the matching cell(s) (red border) in al
 
 ## What this project is
 
-Serato MIDI Config Visualizer & Editor: a tool to simplify managing, visualizing, and modifying Serato DJ Pro MIDI configuration files (XML), which can run to 16,000+ lines. Planned capabilities (see README.md):
+DJ MIDI Studio: a tool to simplify managing, visualizing, and modifying Serato DJ Pro MIDI configuration files (XML), which can run to 16,000+ lines. Planned capabilities (see README.md):
 
 - **XML Parsing & Modeling**: parse Serato MIDI config XML into a structured object-oriented model (Decks, Channels, Notes, Slots, etc.)
 - **Visual Mapping Editor**: GUI to visualize/modify MIDI mappings — object attributes (on/off values, colors) and associated events (Click, Output)
@@ -64,5 +64,5 @@ uv run pytest            # run the test suite
 uv run pytest tests/test_parser.py -k roundtrip  # run a single test
                           # tests/conftest.py auto-creates a QApplication (QT_QPA_PLATFORM=offscreen by default)
 uv run ruff check src/ tests/  # lint
-uv run seratomidiconf    # launch the PySide6 GUI
+uv run djmidi    # launch the PySide6 GUI
 ```

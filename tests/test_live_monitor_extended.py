@@ -3,8 +3,8 @@ from __future__ import annotations
 
 from unittest.mock import patch
 
-from seratomidiconf.gui.live_monitor import LiveMonitorView
-from seratomidiconf.midi_io import MidiEvent
+from djmidi.gui.live_monitor import LiveMonitorView
+from djmidi.midi_io import MidiEvent
 
 
 def _view() -> LiveMonitorView:
@@ -15,26 +15,26 @@ def _view() -> LiveMonitorView:
 
 def test_refresh_ports_populates_list():
     view = _view()
-    with patch("seratomidiconf.gui.live_monitor.list_input_ports", return_value=["Port A", "Port B"]):
+    with patch("djmidi.gui.live_monitor.list_input_ports", return_value=["Port A", "Port B"]):
         view._refresh_ports()
     assert view._port_list.count() == 2
 
 
 def test_refresh_ports_restores_checked_state():
     view = _view()
-    with patch("seratomidiconf.gui.live_monitor.list_input_ports", return_value=["Port A"]):
+    with patch("djmidi.gui.live_monitor.list_input_ports", return_value=["Port A"]):
         view._refresh_ports()
     # Manually check port A
     from PySide6.QtCore import Qt
     view._port_list.item(0).setCheckState(Qt.CheckState.Checked)
-    with patch("seratomidiconf.gui.live_monitor.list_input_ports", return_value=["Port A", "Port B"]):
+    with patch("djmidi.gui.live_monitor.list_input_ports", return_value=["Port A", "Port B"]):
         view._refresh_ports()
     assert view._port_list.item(0).checkState() == Qt.CheckState.Checked
 
 
 def test_refresh_ports_empty_when_no_ports():
     view = _view()
-    with patch("seratomidiconf.gui.live_monitor.list_input_ports", return_value=[]):
+    with patch("djmidi.gui.live_monitor.list_input_ports", return_value=[]):
         view._refresh_ports()
     assert view._port_list.count() == 0
 
@@ -43,7 +43,7 @@ def test_refresh_ports_empty_when_no_ports():
 
 def test_start_sets_running_flag_and_updates_label():
     view = _view()
-    with patch("seratomidiconf.gui.live_monitor.list_input_ports", return_value=["Port A"]):
+    with patch("djmidi.gui.live_monitor.list_input_ports", return_value=["Port A"]):
         view._refresh_ports()
     with patch.object(view._monitor, "open_input"):
         view._start()
@@ -63,7 +63,7 @@ def test_stop_clears_running_flag_and_updates_label():
 
 def test_toggle_running_starts_when_stopped():
     view = _view()
-    with patch("seratomidiconf.gui.live_monitor.list_input_ports", return_value=[]):
+    with patch("djmidi.gui.live_monitor.list_input_ports", return_value=[]):
         view._refresh_ports()
     with patch.object(view._monitor, "open_input"):
         view._toggle_running()
@@ -103,7 +103,7 @@ def test_poll_appends_event_and_emits_signal():
 def test_poll_with_virtual_checkbox_start():
     view = _view()
     view._virtual_checkbox.setChecked(True)
-    with patch("seratomidiconf.gui.live_monitor.list_input_ports", return_value=[]):
+    with patch("djmidi.gui.live_monitor.list_input_ports", return_value=[]):
         view._refresh_ports()
     with patch.object(view._monitor, "open_virtual_monitor") as mock_virtual, \
          patch.object(view._monitor, "open_input"):

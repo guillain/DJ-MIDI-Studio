@@ -20,7 +20,7 @@ This project quality gate enforces:
 
 - Coverage: `pytest` + `pytest-cov` (`coverage.xml` line-rate)
 - Code smell score: file-level maintainability (`radon` MI) + max cyclomatic complexity
-- Duplication: normalized repeated line-block detection over `src/seratomidiconf`
+- Duplication: normalized repeated line-block detection over `src/djmidi`
 - Security scan:
   - `bandit` for source-code findings (HIGH must be zero)
   - `pip-audit` for dependency vulnerabilities

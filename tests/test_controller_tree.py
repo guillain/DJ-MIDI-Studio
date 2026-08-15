@@ -1,6 +1,6 @@
-from seratomidiconf import catalog
-from seratomidiconf.catalog._registry import ControllerDefinition, register
-from seratomidiconf.gui.controller_tree import CELL_KEY_ROLE, build_controller_columns
+from djmidi import catalog
+from djmidi.catalog._registry import ControllerDefinition, register
+from djmidi.gui.controller_tree import CELL_KEY_ROLE, build_controller_columns
 
 
 def test_newly_registered_controller_gets_its_own_column_without_reimport():

@@ -45,32 +45,32 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from seratomidiconf import catalog
-from seratomidiconf.catalog._registry import (
+from djmidi import catalog
+from djmidi.catalog._registry import (
     ControlInfo,
     NoteOrCC,
     _event_kind,
     register,
 )
-from seratomidiconf.catalog.codegen import (
+from djmidi.catalog.codegen import (
     build_definition,
     find_trigger_conflicts,
     generate_module_source,
 )
-from seratomidiconf.gui.port_list_utils import (
+from djmidi.gui.port_list_utils import (
     refresh_checked_port_list,
     refresh_selectable_port_list,
 )
-from seratomidiconf.midi_io import (
+from djmidi.midi_io import (
     MidiEvent,
     MidiMonitor,
     list_input_ports,
     list_output_ports,
     send_midi_message,
 )
-from seratomidiconf.model import MidiConfig
-from seratomidiconf.parser import parse_file
-from seratomidiconf.session_player import (
+from djmidi.model import MidiConfig
+from djmidi.parser import parse_file
+from djmidi.session_player import (
     _parse_int,
     play_control_info_entries,
     replay_midi_events,
@@ -812,7 +812,7 @@ class ControllerSetupView(QWidget):
             f"'{self._controller_name}' is already a registered controller name. Export anyway?"
         ):
             return
-        default_path = str(Path("src") / "seratomidiconf" / "catalog" / f"{self._slug()}.py")
+        default_path = str(Path("src") / "djmidi" / "catalog" / f"{self._slug()}.py")
         path_str, _ = QFileDialog.getSaveFileName(self, "Generate catalog module", default_path, "Python files (*.py)")
         if not path_str:
             return

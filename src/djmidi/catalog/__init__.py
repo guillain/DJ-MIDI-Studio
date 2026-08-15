@@ -32,12 +32,12 @@ To add a new controller (e.g. a Behringer CMD LC-1 or a generic "miniPad"):
 
 from __future__ import annotations
 
-from seratomidiconf.catalog import (  # noqa: F401 - imported for their registration side effect
+from djmidi.catalog import (  # noqa: F401 - imported for their registration side effect
     ddj_1000,
     ddj_xp2,
     xdj_xz,
 )
-from seratomidiconf.catalog._registry import (
+from djmidi.catalog._registry import (
     ControlInfo,
     ControllerDefinition,
     NoteOrCC,

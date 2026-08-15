@@ -15,9 +15,9 @@ from __future__ import annotations
 
 from PySide6.QtGui import QStandardItem, QStandardItemModel
 
-from seratomidiconf import catalog
-from seratomidiconf.gui import layout as layout_mod
-from seratomidiconf.gui.layout_view import Usage, _deck_sort_key
+from djmidi import catalog
+from djmidi.gui import layout as layout_mod
+from djmidi.gui.layout_view import Usage, _deck_sort_key
 
 CELL_KEY_ROLE = 1  # distinct from tree_model.NODE_ROLE, which holds domain objects
 

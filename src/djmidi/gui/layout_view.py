@@ -15,9 +15,9 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from seratomidiconf import catalog
-from seratomidiconf.gui import layout as layout_mod
-from seratomidiconf.gui.layout import CellKey
+from djmidi import catalog
+from djmidi.gui import layout as layout_mod
+from djmidi.gui.layout import CellKey
 
 _CELL_W = 170
 _HALF_H = 44

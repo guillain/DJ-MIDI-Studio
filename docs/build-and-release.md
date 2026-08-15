@@ -6,6 +6,7 @@
 - [Bootstrap](#bootstrap)
 - [Local Build Scripts](#local-build-scripts)
 - [Executable per OS](#executable-per-os)
+- [SCM, tags, and releases](#scm-tags-and-releases)
 - [GitHub Actions Workflow](#github-actions-workflow)
 - [Release Artifact Packaging](#release-artifact-packaging)
 
@@ -98,7 +99,7 @@ bash scripts/scm_release.sh release --version 0.1.0
 
 The script uses `gh` for GitHub and `glab` for GitLab, never stages or commits
 files, and requires a clean worktree. Tag pushes trigger the checked-in CI
-configuration (`.github/workflows/release.yml` or `.gitlab-ci.yml`), which
+configuration (`.github/workflows/draft-release.yml` or `.gitlab-ci.yml`), which
 builds Linux, macOS, and Windows artifacts and attaches them to the release.
 The CI runners must have `uv`; macOS additionally needs a Developer ID
 certificate configured so the release job does not reject the app as unsigned.

@@ -135,7 +135,7 @@ class MidiMonitor:
     add it as an extra MIDI output in Serato, CoreMIDI doesn't let a third
     app silently see what another app sends to a hardware destination)."""
 
-    VIRTUAL_MONITOR_NAME = "SeratoMidiConf Monitor"
+    VIRTUAL_MONITOR_NAME = "DJMidiStudio Monitor"
 
     def __init__(self) -> None:
         self._input_ports: dict[str, mido.ports.BaseInput] = {}

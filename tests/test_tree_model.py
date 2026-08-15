@@ -1,11 +1,11 @@
 from pathlib import Path
 
-from seratomidiconf.gui.tree_model import (
+from djmidi.gui.tree_model import (
     NODE_ROLE,
     build_channel_columns,
     build_tree_model,
 )
-from seratomidiconf.parser import parse_file
+from djmidi.parser import parse_file
 
 FIXTURE = Path(__file__).parent.parent / "data" / "ddj-xp2-custom-4-decks.xml"
 

@@ -1,6 +1,6 @@
-from seratomidiconf import catalog
-from seratomidiconf.catalog._registry import ControllerDefinition, register
-from seratomidiconf.gui.layout_view import ControllerLayoutView
+from djmidi import catalog
+from djmidi.catalog._registry import ControllerDefinition, register
+from djmidi.gui.layout_view import ControllerLayoutView
 
 _USAGE = {("DDJ-XP2", "PAD", "Pad 1"): {"0": {"codfather_st"}, "2": {"auto_loop_specific_length"}}}
 

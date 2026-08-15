@@ -1,8 +1,8 @@
 from PySide6.QtGui import QPainter, QTransform
 
-from seratomidiconf import catalog
-from seratomidiconf.catalog._registry import ControllerDefinition, register
-from seratomidiconf.gui.controller_image_view import (
+from djmidi import catalog
+from djmidi.catalog._registry import ControllerDefinition, register
+from djmidi.gui.controller_image_view import (
     ASSETS_DIR,
     IMAGES,
     ControllerImageView,

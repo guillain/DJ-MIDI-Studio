@@ -4,7 +4,7 @@ from collections.abc import Callable
 
 from PySide6.QtGui import QUndoCommand
 
-from seratomidiconf.model import Alias, Translation
+from djmidi.model import Alias, Translation
 
 OnApplied = Callable[[object], None]
 

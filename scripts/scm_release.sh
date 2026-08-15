@@ -104,7 +104,7 @@ create_release() {
     gh release create "$tag" --generate-notes
   else
     command -v glab >/dev/null || die "GitLab CLI 'glab' is required."
-    glab release create "$tag" --name "SeratoMidiConf $tag" --notes "Release $tag. OS artifacts are attached by CI."
+    glab release create "$tag" --name "DJ MIDI Studio $tag" --notes "Release $tag. OS artifacts are attached by CI."
   fi
 }
 

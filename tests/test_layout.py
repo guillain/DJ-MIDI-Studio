@@ -1,4 +1,4 @@
-from seratomidiconf.gui import layout
+from djmidi.gui import layout
 
 
 def test_ddj_xp2_pad_grid_is_4x4():

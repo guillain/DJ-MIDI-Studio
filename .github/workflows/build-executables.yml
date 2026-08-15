@@ -41,14 +41,13 @@ jobs:
       - name: Upload executable artifact
         uses: actions/upload-artifact@v4
         with:
-          name: seratomidiconf-${{ matrix.os }}-executable
+          name: djmidi-studio-${{ matrix.os }}-executable
           path: dist/executables/
 
       - name: Upload wheel and sdist
         uses: actions/upload-artifact@v4
         with:
-          name: seratomidiconf-${{ matrix.os }}-python-dist
+          name: djmidi-studio-${{ matrix.os }}-python-dist
           path: |
             dist/*.whl
             dist/*.tar.gz
-

@@ -16,10 +16,10 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from seratomidiconf.catalog._registry import ControlInfo
-from seratomidiconf.gui.port_list_utils import refresh_selectable_port_list
-from seratomidiconf.midi_io import list_output_ports
-from seratomidiconf.session_player import _parse_int, play_control_info_entries
+from djmidi.catalog._registry import ControlInfo
+from djmidi.gui.port_list_utils import refresh_selectable_port_list
+from djmidi.midi_io import list_output_ports
+from djmidi.session_player import _parse_int, play_control_info_entries
 
 
 class MetronomeView(QWidget):

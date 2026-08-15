@@ -8,7 +8,7 @@ kept out of catalogs, as they cannot be represented by one useful trigger.
 
 from __future__ import annotations
 
-from seratomidiconf.catalog._registry import (
+from djmidi.catalog._registry import (
     ControlInfo,
     ControllerDefinition,
     NoteOrCC,

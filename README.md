@@ -1,6 +1,6 @@
-# Serato MIDI Config Visualizer & Editor
+# DJ MIDI Studio
 
-Edit large Serato DJ Pro MIDI XML mappings with a visual workflow instead of hand-editing thousands of XML lines.
+Edit DJ software MIDI mappings with a visual workflow instead of hand-editing thousands of XML lines.
 
 ## Table of Contents
 
@@ -16,7 +16,7 @@ Edit large Serato DJ Pro MIDI XML mappings with a visual workflow instead of han
 
 ## Why This Project
 
-Serato MIDI mapping files can become very large and hard to maintain. This project provides:
+DJ MIDI mapping files can become very large and hard to maintain. DJ MIDI Studio provides:
 
 - structured parsing into a typed model,
 - GUI views for channel/deck/controller perspectives,
@@ -67,7 +67,7 @@ uv sync --group dev
 Run the app:
 
 ```bash
-uv run seratomidiconf
+uv run djmidi
 ```
 
 Run tests:
@@ -90,9 +90,9 @@ uv run pytest
 You can send one-shot NOTE/CC commands directly to a controller output port:
 
 ```bash
-uv run seratomidiconf-send-midi --list-ports
-uv run seratomidiconf-send-midi --port "Your Port Name" --type note_on --channel 1 --data1 27 --data2 127
-uv run seratomidiconf-send-midi --port "Your Port Name" --type note_off --channel 1 --data1 27 --data2 0
+uv run djmidi-send-midi --list-ports
+uv run djmidi-send-midi --port "Your Port Name" --type note_on --channel 1 --data1 27 --data2 127
+uv run djmidi-send-midi --port "Your Port Name" --type note_off --channel 1 --data1 27 --data2 0
 ```
 
 DDJ-XP2 known `PAD MODE` button notes (deck channels `1..4`):
@@ -112,16 +112,16 @@ On the DDJ-XP2, `PAD MODE 5..8` are reached by double-clicking `PAD MODE 1..4`:
 CLI example to emulate a double-click on `PAD MODE 1` (Deck channel `1`):
 
 ```bash
-uv run seratomidiconf-send-midi --port "Your Port Name" --type note_on --channel 1 --data1 27 --data2 127
-uv run seratomidiconf-send-midi --port "Your Port Name" --type note_off --channel 1 --data1 27 --data2 0
-uv run seratomidiconf-send-midi --port "Your Port Name" --type note_on --channel 1 --data1 27 --data2 127
-uv run seratomidiconf-send-midi --port "Your Port Name" --type note_off --channel 1 --data1 27 --data2 0
+uv run djmidi-send-midi --port "Your Port Name" --type note_on --channel 1 --data1 27 --data2 127
+uv run djmidi-send-midi --port "Your Port Name" --type note_off --channel 1 --data1 27 --data2 0
+uv run djmidi-send-midi --port "Your Port Name" --type note_on --channel 1 --data1 27 --data2 127
+uv run djmidi-send-midi --port "Your Port Name" --type note_off --channel 1 --data1 27 --data2 0
 ```
 
 Equivalent one-liner using the built-in helper:
 
 ```bash
-uv run seratomidiconf-send-midi --port "Your Port Name" --type note_on --channel 1 --data1 27 --data2 127 --double-click
+uv run djmidi-send-midi --port "Your Port Name" --type note_on --channel 1 --data1 27 --data2 127 --double-click
 ```
 
 Examples:

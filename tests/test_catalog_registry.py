@@ -1,8 +1,8 @@
 import pytest
 
-from seratomidiconf import catalog
-from seratomidiconf.catalog import make_sequential_pad_lookup
-from seratomidiconf.catalog._registry import ControllerDefinition, register
+from djmidi import catalog
+from djmidi.catalog import make_sequential_pad_lookup
+from djmidi.catalog._registry import ControllerDefinition, register
 
 
 def test_builtin_controllers_are_registered_at_import():
@@ -65,7 +65,7 @@ def test_registering_a_new_controller_is_picked_up_everywhere_without_touching_g
         pad_hits = catalog.lookup("2", "Note On", "1")
         assert any(h.controller == "__TestPad__" and "Pad 2" in h.name for h in pad_hits)
 
-        from seratomidiconf.gui import layout as layout_mod
+        from djmidi.gui import layout as layout_mod
 
         cells = layout_mod.build_layout("__TestPad__")
         pad_cells = [c for c in cells if c.section == "PAD"]

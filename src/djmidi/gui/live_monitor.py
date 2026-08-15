@@ -27,11 +27,11 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from seratomidiconf import catalog
-from seratomidiconf.gui.mapping_group import build_mapping_groups
-from seratomidiconf.gui.port_list_utils import refresh_checked_port_list
-from seratomidiconf.midi_io import MidiEvent, MidiMonitor, list_input_ports
-from seratomidiconf.model import MidiConfig
+from djmidi import catalog
+from djmidi.gui.mapping_group import build_mapping_groups
+from djmidi.gui.port_list_utils import refresh_checked_port_list
+from djmidi.midi_io import MidiEvent, MidiMonitor, list_input_ports
+from djmidi.model import MidiConfig
 
 _MAX_ROWS = 500
 _POLL_INTERVAL_MS = 30

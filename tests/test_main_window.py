@@ -3,8 +3,8 @@ from unittest.mock import patch
 
 from PySide6.QtWidgets import QApplication
 
-from seratomidiconf.gui.main_window import MainWindow
-from seratomidiconf.parser import parse_file
+from djmidi.gui.main_window import MainWindow
+from djmidi.parser import parse_file
 
 FIXTURE = Path(__file__).parent.parent / "data" / "ddj-xp2-custom-4-decks.xml"
 
@@ -157,7 +157,7 @@ def test_on_save_no_config_does_nothing():
 def test_on_save_with_config_and_no_path_triggers_save_as_dialog():
     window = _loaded_window()
     window.current_path = None
-    with patch("seratomidiconf.gui.main_window.QFileDialog.getSaveFileName", return_value=("", "")):
+    with patch("djmidi.gui.main_window.QFileDialog.getSaveFileName", return_value=("", "")):
         window._on_save()
     window.close()
 
@@ -171,7 +171,7 @@ def test_on_save_as_no_config_does_nothing():
 # ─── live MIDI event propagation ──────────────────────────────────────────────
 
 def test_on_live_midi_event_updates_layout_selections():
-    from seratomidiconf.midi_io import MidiEvent
+    from djmidi.midi_io import MidiEvent
     window = _loaded_window()
     event = MidiEvent(direction="in", channel="8", event_type="Note On", data1="64", data2="127", timestamp=0.0)
     window._on_live_midi_event(event)
@@ -240,7 +240,7 @@ def test_on_save_with_current_path_calls_write_file(tmp_path):
     window = _loaded_window()
     output = tmp_path / "test_out.xml"
     window.current_path = output
-    with patch("seratomidiconf.gui.main_window.write_file") as mock_write:
+    with patch("djmidi.gui.main_window.write_file") as mock_write:
         window._on_save()
     mock_write.assert_called_once()
     window.close()
@@ -249,8 +249,8 @@ def test_on_save_with_current_path_calls_write_file(tmp_path):
 def test_on_save_as_with_dialog_path_writes_file(tmp_path):
     window = _loaded_window()
     output = str(tmp_path / "exported.xml")
-    with patch("seratomidiconf.gui.main_window.QFileDialog.getSaveFileName", return_value=(output, "")), \
-         patch("seratomidiconf.gui.main_window.write_file") as mock_write:
+    with patch("djmidi.gui.main_window.QFileDialog.getSaveFileName", return_value=(output, "")), \
+         patch("djmidi.gui.main_window.write_file") as mock_write:
         window._on_save_as()
     mock_write.assert_called_once()
     window.close()
@@ -258,9 +258,9 @@ def test_on_save_as_with_dialog_path_writes_file(tmp_path):
 
 def test_on_open_shows_error_on_parse_failure():
     window = MainWindow()
-    with patch("seratomidiconf.gui.main_window.QFileDialog.getOpenFileName", return_value=("/some/bad.xml", "")), \
-         patch("seratomidiconf.gui.main_window.parse_file", side_effect=ValueError("bad XML")), \
-         patch("seratomidiconf.gui.main_window.QMessageBox.critical") as mock_err:
+    with patch("djmidi.gui.main_window.QFileDialog.getOpenFileName", return_value=("/some/bad.xml", "")), \
+         patch("djmidi.gui.main_window.parse_file", side_effect=ValueError("bad XML")), \
+         patch("djmidi.gui.main_window.QMessageBox.critical") as mock_err:
         window._on_open()
     mock_err.assert_called_once()
     window.close()
@@ -268,7 +268,7 @@ def test_on_open_shows_error_on_parse_failure():
 
 def test_on_open_loads_config_on_success(tmp_path):
     window = MainWindow()
-    with patch("seratomidiconf.gui.main_window.QFileDialog.getOpenFileName", return_value=(str(FIXTURE), "")):
+    with patch("djmidi.gui.main_window.QFileDialog.getOpenFileName", return_value=(str(FIXTURE), "")):
         window._on_open()
     QApplication.processEvents()
     assert window.config is not None
@@ -276,7 +276,7 @@ def test_on_open_loads_config_on_success(tmp_path):
 
 
 def test_refresh_edit_panel_rerenders_current_node():
-    from seratomidiconf.model import Control
+    from djmidi.model import Control
     window = MainWindow()
     ctrl = Control(channel="1", event_type="Note On", control="60")
     window.edit_panel.set_node(ctrl)

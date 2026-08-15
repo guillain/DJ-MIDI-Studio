@@ -1,9 +1,9 @@
 import ast
 import importlib.util
 
-from seratomidiconf import catalog
-from seratomidiconf.catalog._registry import ControlInfo, register
-from seratomidiconf.catalog.codegen import (
+from djmidi import catalog
+from djmidi.catalog._registry import ControlInfo, register
+from djmidi.catalog.codegen import (
     build_definition,
     find_trigger_conflicts,
     generate_module_source,

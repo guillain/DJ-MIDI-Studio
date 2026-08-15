@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-echo "==> Bootstrap: SeratoMidiConf"
+echo "==> Bootstrap: DJ MIDI Studio"
 
 if ! command -v uv >/dev/null 2>&1; then
   cat <<'EOF'
@@ -43,5 +43,4 @@ fi
 echo "==> Bootstrap complete"
 echo "Next steps:"
 echo "  - bash scripts/test.sh quick"
-echo "  - uv run seratomidiconf"
-
+echo "  - uv run djmidi"

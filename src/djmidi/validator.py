@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Literal
 
-from seratomidiconf.model import Control, MidiConfig
+from djmidi.model import Control, MidiConfig
 
 Severity = Literal["error", "warning", "info"]
 

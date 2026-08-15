@@ -17,9 +17,9 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from seratomidiconf import catalog
-from seratomidiconf.gui.controller_image_view import ASSETS_DIR, IMAGES
-from seratomidiconf.gui.layout import CellKey
+from djmidi import catalog
+from djmidi.gui.controller_image_view import ASSETS_DIR, IMAGES
+from djmidi.gui.layout import CellKey
 
 
 class IntroductionView(QWidget):
@@ -32,7 +32,7 @@ class IntroductionView(QWidget):
         self._usage_summary: dict[str, tuple[int, int, int]] = {}
         self._card_stats: dict[str, QLabel] = {}
 
-        title = QLabel("Serato MIDI Config Visualizer & Editor")
+        title = QLabel("DJ MIDI Studio")
         title.setStyleSheet("font-size: 18px; font-weight: 600;")
 
         description = QLabel(

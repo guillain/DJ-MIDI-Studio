@@ -1,7 +1,7 @@
 import mido
 
-from seratomidiconf import catalog
-from seratomidiconf.midi_io import mido_message_to_event
+from djmidi import catalog
+from djmidi.midi_io import mido_message_to_event
 
 
 def test_note_on_converts_with_1_indexed_channel():

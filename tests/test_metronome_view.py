@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from seratomidiconf.catalog._registry import ControlInfo
-from seratomidiconf.gui.metronome_view import MetronomeView
+from djmidi.catalog._registry import ControlInfo
+from djmidi.gui.metronome_view import MetronomeView
 
 
 def _entries() -> list[ControlInfo]:
@@ -30,7 +30,7 @@ def test_refresh_session_summary_shows_current_session_info():
 
 
 def test_refresh_output_ports_populates_list(monkeypatch):
-    import seratomidiconf.gui.metronome_view as metronome_mod
+    import djmidi.gui.metronome_view as metronome_mod
 
     view = _view()
     monkeypatch.setattr(metronome_mod, "list_output_ports", lambda: ["Port A", "Port B"])
@@ -40,7 +40,7 @@ def test_refresh_output_ports_populates_list(monkeypatch):
 
 
 def test_play_selected_once_sends_messages(monkeypatch):
-    import seratomidiconf.gui.metronome_view as metronome_mod
+    import djmidi.gui.metronome_view as metronome_mod
 
     view = _view()
     monkeypatch.setattr(metronome_mod, "list_output_ports", lambda: ["Port A"])
@@ -55,7 +55,7 @@ def test_play_selected_once_sends_messages(monkeypatch):
 
 
 def test_play_all_once_reports_errors(monkeypatch):
-    import seratomidiconf.gui.metronome_view as metronome_mod
+    import djmidi.gui.metronome_view as metronome_mod
 
     view = _view()
     errors = []
@@ -72,7 +72,7 @@ def test_play_all_once_reports_errors(monkeypatch):
 
 
 def test_start_and_stop_loop(monkeypatch):
-    import seratomidiconf.gui.metronome_view as metronome_mod
+    import djmidi.gui.metronome_view as metronome_mod
 
     view = _view()
     monkeypatch.setattr(metronome_mod, "list_output_ports", lambda: ["Port A"])
@@ -91,7 +91,7 @@ def test_start_and_stop_loop(monkeypatch):
 
 
 def test_start_loop_with_no_rows_shows_warning(monkeypatch):
-    import seratomidiconf.gui.metronome_view as metronome_mod
+    import djmidi.gui.metronome_view as metronome_mod
 
     warned = {}
     view = MetronomeView(
@@ -111,7 +111,7 @@ def test_start_loop_with_no_rows_shows_warning(monkeypatch):
 
 
 def test_loop_tick_stops_and_reports_playback_errors(monkeypatch):
-    import seratomidiconf.gui.metronome_view as metronome_mod
+    import djmidi.gui.metronome_view as metronome_mod
 
     view = _view()
     errors = []
@@ -130,7 +130,7 @@ def test_loop_tick_stops_and_reports_playback_errors(monkeypatch):
 
 
 def test_shutdown_stops_active_loop(monkeypatch):
-    import seratomidiconf.gui.metronome_view as metronome_mod
+    import djmidi.gui.metronome_view as metronome_mod
 
     view = _view()
     monkeypatch.setattr(metronome_mod, "list_output_ports", lambda: ["Port A"])

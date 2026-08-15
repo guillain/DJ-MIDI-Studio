@@ -3,7 +3,7 @@ from __future__ import annotations
 import xml.etree.ElementTree as ET
 from os import PathLike
 
-from seratomidiconf.model import (
+from djmidi.model import (
     Alias,
     Control,
     MappingElement,

@@ -1,11 +1,11 @@
 import json
 from pathlib import Path
 
-from seratomidiconf import catalog
-from seratomidiconf.catalog._registry import ControlInfo
-from seratomidiconf.catalog.codegen import generate_module_source, merge_by_channel
-from seratomidiconf.gui.controller_setup import ControllerSetupView, _slugify
-from seratomidiconf.parser import parse_file
+from djmidi import catalog
+from djmidi.catalog._registry import ControlInfo
+from djmidi.catalog.codegen import generate_module_source, merge_by_channel
+from djmidi.gui.controller_setup import ControllerSetupView, _slugify
+from djmidi.parser import parse_file
 
 FIXTURE = Path(__file__).parent.parent / "data" / "ddj-xp2-custom-4-decks.xml"
 
@@ -163,7 +163,7 @@ def test_validate_reports_conflicting_hand_edited_trigger():
 
 
 def test_check_for_conflicts_button_shows_no_conflicts_for_clean_draft(monkeypatch):
-    import seratomidiconf.gui.controller_setup as controller_setup_mod
+    import djmidi.gui.controller_setup as controller_setup_mod
 
     view = _view_with_name("MiniPad")
     view._rows = [ControlInfo("MiniPad", "DECK", "PLAY", "NOTE", ("1",), "0")]
@@ -247,9 +247,9 @@ def test_on_apply_clicked_blocks_overwriting_a_controller_it_never_applied(monke
     replace the real, hand-written ~45-entry DDJ-XP2 definition in memory with the
     tiny draft, breaking every other tab until restart. A draft may only replace a
     name *it* previously applied itself, never a pre-existing/other controller."""
-    import seratomidiconf.gui.controller_setup as controller_setup_mod
-    from seratomidiconf.catalog._registry import ControllerDefinition
-    from seratomidiconf.catalog._registry import register as registry_register
+    import djmidi.gui.controller_setup as controller_setup_mod
+    from djmidi.catalog._registry import ControllerDefinition
+    from djmidi.catalog._registry import register as registry_register
 
     registry_register(ControllerDefinition(name="__PreExistingController__"))
     try:
@@ -272,7 +272,7 @@ def test_on_apply_clicked_blocks_overwriting_a_controller_it_never_applied(monke
 
 
 def test_apply_allows_reapplying_a_name_this_same_draft_already_applied(monkeypatch):
-    import seratomidiconf.gui.controller_setup as controller_setup_mod
+    import djmidi.gui.controller_setup as controller_setup_mod
 
     monkeypatch.setattr(controller_setup_mod.QMessageBox, "information", lambda *a: None)
     monkeypatch.setattr(controller_setup_mod.QMessageBox, "critical", lambda *a: None)
@@ -299,7 +299,7 @@ def test_new_session_forgets_names_this_draft_previously_applied(monkeypatch):
     exactly the bug _applied_names exists to prevent, just reached via a
     different path (New session) than test_on_apply_clicked_blocks_overwriting_
     a_controller_it_never_applied covers."""
-    import seratomidiconf.gui.controller_setup as controller_setup_mod
+    import djmidi.gui.controller_setup as controller_setup_mod
 
     monkeypatch.setattr(controller_setup_mod.QMessageBox, "information", lambda *a: None)
     shown = {}
@@ -342,7 +342,7 @@ def test_load_session_forgets_names_this_draft_previously_applied(monkeypatch, t
     """Same hazard as above, reached via "Load session…" instead of "New
     session": the loaded draft has never itself applied anything in this
     process, even if its name collides with one this widget applied earlier."""
-    import seratomidiconf.gui.controller_setup as controller_setup_mod
+    import djmidi.gui.controller_setup as controller_setup_mod
 
     monkeypatch.setattr(controller_setup_mod.QMessageBox, "information", lambda *a: None)
     shown = {}
@@ -392,7 +392,7 @@ def test_load_session_forgets_names_this_draft_previously_applied(monkeypatch, t
 
 
 def test_on_apply_clicked_blocks_on_validation_errors(monkeypatch):
-    import seratomidiconf.gui.controller_setup as controller_setup_mod
+    import djmidi.gui.controller_setup as controller_setup_mod
 
     view = _view_with_name("__ApplySetupTest3__")
     view._maybe_add_row("1", "NOTE", "0", "manual")  # missing name/section
@@ -405,7 +405,7 @@ def test_on_apply_clicked_blocks_on_validation_errors(monkeypatch):
 
 
 def test_on_apply_clicked_surfaces_unexpected_exception_instead_of_failing_silently(monkeypatch):
-    import seratomidiconf.gui.controller_setup as controller_setup_mod
+    import djmidi.gui.controller_setup as controller_setup_mod
 
     view = _view_with_name("__ApplySetupTest4__")
     view._rows = [ControlInfo("__ApplySetupTest4__", "DECK", "PLAY", "NOTE", ("1",), "0")]
@@ -429,7 +429,7 @@ def test_on_apply_clicked_surfaces_unexpected_exception_instead_of_failing_silen
 
 
 def test_refresh_output_ports_populates_list(monkeypatch):
-    import seratomidiconf.gui.controller_setup as controller_setup_mod
+    import djmidi.gui.controller_setup as controller_setup_mod
 
     view = _view_with_name()
     monkeypatch.setattr(controller_setup_mod, "list_output_ports", lambda: ["Port A", "Port B"])
@@ -439,7 +439,7 @@ def test_refresh_output_ports_populates_list(monkeypatch):
 
 
 def test_send_output_once_uses_selected_output_port_and_values(monkeypatch):
-    import seratomidiconf.gui.controller_setup as controller_setup_mod
+    import djmidi.gui.controller_setup as controller_setup_mod
 
     sent = []
     view = _view_with_name()
@@ -461,7 +461,7 @@ def test_send_output_once_uses_selected_output_port_and_values(monkeypatch):
 
 
 def test_send_output_double_click_sends_two_clicks(monkeypatch):
-    import seratomidiconf.gui.controller_setup as controller_setup_mod
+    import djmidi.gui.controller_setup as controller_setup_mod
 
     sent = []
     view = _view_with_name()
@@ -495,7 +495,7 @@ def test_send_output_double_click_reports_invalid_data1_instead_of_raising(monke
     try/except so a bad user input surfaces as a QMessageBox instead of an
     uncaught exception escaping the Qt slot; double-click must behave the same
     way for an invalid Data1 field."""
-    import seratomidiconf.gui.controller_setup as controller_setup_mod
+    import djmidi.gui.controller_setup as controller_setup_mod
 
     view = _view_with_name()
     monkeypatch.setattr(controller_setup_mod, "list_output_ports", lambda: ["Port A"])
@@ -513,7 +513,7 @@ def test_send_output_double_click_reports_invalid_data1_instead_of_raising(monke
 
 
 def test_ddj_xp2_pad_mode_5_uses_double_click_on_mode_1(monkeypatch):
-    import seratomidiconf.gui.controller_setup as controller_setup_mod
+    import djmidi.gui.controller_setup as controller_setup_mod
 
     sent = []
     view = _view_with_name()
@@ -538,7 +538,7 @@ def test_ddj_xp2_pad_mode_5_uses_double_click_on_mode_1(monkeypatch):
 
 
 def test_play_session_rows_once_sends_note_click_and_cc(monkeypatch):
-    import seratomidiconf.gui.controller_setup as controller_setup_mod
+    import djmidi.gui.controller_setup as controller_setup_mod
 
     sent = []
     view = _view_with_name()
@@ -560,7 +560,7 @@ def test_play_session_rows_once_sends_note_click_and_cc(monkeypatch):
 
 
 def test_play_session_rows_once_skips_invalid_rows(monkeypatch):
-    import seratomidiconf.gui.controller_setup as controller_setup_mod
+    import djmidi.gui.controller_setup as controller_setup_mod
 
     sent = []
     view = _view_with_name()
@@ -577,7 +577,7 @@ def test_play_session_rows_once_skips_invalid_rows(monkeypatch):
 
 
 def test_send_selected_rows_uses_table_selection(monkeypatch):
-    import seratomidiconf.gui.controller_setup as controller_setup_mod
+    import djmidi.gui.controller_setup as controller_setup_mod
 
     sent = []
     view = _view_with_name()
@@ -620,7 +620,7 @@ def test_selected_session_rows_defaults_to_all_when_nothing_selected():
 
 
 def test_poll_records_every_midi_event_for_exact_session_replay(monkeypatch):
-    from seratomidiconf.midi_io import MidiEvent
+    from djmidi.midi_io import MidiEvent
 
     view = _view_with_name()
     events = [
@@ -636,8 +636,8 @@ def test_poll_records_every_midi_event_for_exact_session_replay(monkeypatch):
 
 
 def test_replay_recorded_session_uses_selected_output_and_recorded_timing(monkeypatch):
-    import seratomidiconf.gui.controller_setup as controller_setup_mod
-    from seratomidiconf.midi_io import MidiEvent
+    import djmidi.gui.controller_setup as controller_setup_mod
+    from djmidi.midi_io import MidiEvent
 
     view = _view_with_name()
     view._recorded_events = [
@@ -667,7 +667,7 @@ def test_replay_recorded_session_uses_selected_output_and_recorded_timing(monkey
 
 
 def test_session_save_and_load_preserves_recorded_events(tmp_path):
-    from seratomidiconf.midi_io import MidiEvent
+    from djmidi.midi_io import MidiEvent
 
     view = _view_with_name("MiniPad")
     view._recorded_events = [MidiEvent("in", "4", "Control Change", "12", "77", 9.5, "Controller A")]

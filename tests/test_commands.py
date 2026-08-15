@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from PySide6.QtGui import QUndoStack
 
-from seratomidiconf.gui.commands import (
+from djmidi.gui.commands import (
     AddAliasCommand,
     AddGroupAliasCommand,
     RemoveAliasCommand,
@@ -11,7 +11,7 @@ from seratomidiconf.gui.commands import (
     SetAttrCommand,
     SetGroupAttrCommand,
 )
-from seratomidiconf.model import Alias, MappingElement, Translation
+from djmidi.model import Alias, MappingElement, Translation
 
 # ─── helpers ──────────────────────────────────────────────────────────────────
 

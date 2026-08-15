@@ -93,7 +93,7 @@ def _duplication_pct(src_dir: Path, min_block: int = 6) -> float:
         if len(lines) < min_block:
             continue
         texts = [text for _, text in lines]
-        for i in range(0, len(texts) - min_block + 1):
+        for i in range(len(texts) - min_block + 1):
             windows[tuple(texts[i : i + min_block])].append((path, i))
 
     duplicated: set[tuple[Path, int]] = set()
@@ -181,7 +181,7 @@ def _print_summary(
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Quality/security gate runner")
-    parser.add_argument("--src", default="src/seratomidiconf", help="Source directory")
+    parser.add_argument("--src", default="src/djmidi", help="Source directory")
     parser.add_argument("--coverage-xml", default="coverage.xml", help="Coverage XML output path")
     parser.add_argument("--coverage-threshold", type=float, default=90.0)
     parser.add_argument("--smell-threshold", type=float, default=90.0)
@@ -204,7 +204,7 @@ def main() -> int:
                 "uv",
                 "run",
                 "pytest",
-                "--cov=src/seratomidiconf",
+                "--cov=src/djmidi",
                 f"--cov-report=xml:{coverage_xml}",
                 "--cov-report=term-missing:skip-covered",
             ],
@@ -258,4 +258,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

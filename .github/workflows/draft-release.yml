@@ -49,13 +49,13 @@ jobs:
       - name: Upload executable archive
         uses: actions/upload-artifact@v4
         with:
-          name: release-exec-${{ matrix.os }}
+          name: djmidi-studio-${{ matrix.os }}-executable
           path: dist/release/*
 
       - name: Upload package artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: release-pkg-${{ matrix.os }}
+          name: djmidi-studio-${{ matrix.os }}-python-dist
           path: |
             dist/*.whl
             dist/*.tar.gz
@@ -86,4 +86,3 @@ jobs:
             release-assets/**/*.zip
             release-assets/**/*.tar.gz
             release-assets/**/*.whl
-

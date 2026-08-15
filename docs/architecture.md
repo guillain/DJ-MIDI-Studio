@@ -14,12 +14,12 @@ The application parses Serato MIDI XML into a typed model, lets users edit mappi
 
 ## Main Modules
 
-- `src/seratomidiconf/model.py`: dataclasses for `MidiConfig`, `Control`, `UserIO`, `MappingElement`, and translation aliases.
-- `src/seratomidiconf/parser.py`: XML -> model parser.
-- `src/seratomidiconf/exporter.py`: model -> XML writer.
-- `src/seratomidiconf/validator.py`: structural checks + mapping conflict checks.
-- `src/seratomidiconf/catalog/`: controller registry and controller lookup definitions.
-- `src/seratomidiconf/gui/`: PySide6 UI.
+- `src/djmidi/model.py`: dataclasses for `MidiConfig`, `Control`, `UserIO`, `MappingElement`, and translation aliases.
+- `src/djmidi/parser.py`: XML -> model parser.
+- `src/djmidi/exporter.py`: model -> XML writer.
+- `src/djmidi/validator.py`: structural checks + mapping conflict checks.
+- `src/djmidi/catalog/`: controller registry and controller lookup definitions.
+- `src/djmidi/gui/`: PySide6 UI.
 
 ## Data Flow
 

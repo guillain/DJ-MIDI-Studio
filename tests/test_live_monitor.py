@@ -1,8 +1,8 @@
 from pathlib import Path
 
-from seratomidiconf.gui.live_monitor import LiveMonitorView
-from seratomidiconf.midi_io import MidiEvent
-from seratomidiconf.parser import parse_file
+from djmidi.gui.live_monitor import LiveMonitorView
+from djmidi.midi_io import MidiEvent
+from djmidi.parser import parse_file
 
 FIXTURE = Path(__file__).parent.parent / "data" / "ddj-xp2-custom-4-decks.xml"
 
@@ -45,7 +45,7 @@ def test_append_event_unknown_control_shows_placeholder():
 
 
 def test_log_is_capped_at_max_rows():
-    from seratomidiconf.gui import live_monitor as live_monitor_mod
+    from djmidi.gui import live_monitor as live_monitor_mod
 
     original_max_rows = live_monitor_mod._MAX_ROWS
     live_monitor_mod._MAX_ROWS = 5
@@ -70,7 +70,7 @@ def test_clear_log_empties_table_and_event_history():
 
 
 def test_save_log_writes_csv_with_event_fields(tmp_path, monkeypatch):
-    import seratomidiconf.gui.live_monitor as live_monitor_mod
+    import djmidi.gui.live_monitor as live_monitor_mod
 
     view = LiveMonitorView()
     view._events = [MidiEvent("out", "2", "Control Change", "10", "64", 12.5, "MIDI Out")]

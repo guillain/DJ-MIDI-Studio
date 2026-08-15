@@ -30,7 +30,7 @@ uv sync --group dev
 ## Run the Application
 
 ```bash
-uv run seratomidiconf
+uv run djmidi
 ```
 
 ## Run Tests

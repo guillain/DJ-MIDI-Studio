@@ -26,25 +26,25 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from seratomidiconf import catalog
-from seratomidiconf.exporter import write_file
-from seratomidiconf.gui import layout as layout_mod
-from seratomidiconf.gui.controller_image_view import ControllerImageView
-from seratomidiconf.gui.controller_setup import ControllerSetupView
-from seratomidiconf.gui.controller_tree import CELL_KEY_ROLE, build_controller_columns
-from seratomidiconf.gui.deck_tree import build_deck_columns
-from seratomidiconf.gui.edit_panel import EditPanel
-from seratomidiconf.gui.introduction_view import IntroductionView
-from seratomidiconf.gui.layout_view import ControllerLayoutView
-from seratomidiconf.gui.live_monitor import LiveMonitorView
-from seratomidiconf.gui.mapping_group import MappingGroup
-from seratomidiconf.gui.metronome_view import MetronomeView
-from seratomidiconf.gui.splitter_utils import replace_splitter
-from seratomidiconf.gui.tree_model import NODE_ROLE, build_channel_columns, relabel_item
-from seratomidiconf.midi_io import MidiEvent
-from seratomidiconf.model import Control, MappingElement, MidiConfig
-from seratomidiconf.parser import parse_file
-from seratomidiconf.validator import ValidationIssue, validate
+from djmidi import catalog
+from djmidi.exporter import write_file
+from djmidi.gui import layout as layout_mod
+from djmidi.gui.controller_image_view import ControllerImageView
+from djmidi.gui.controller_setup import ControllerSetupView
+from djmidi.gui.controller_tree import CELL_KEY_ROLE, build_controller_columns
+from djmidi.gui.deck_tree import build_deck_columns
+from djmidi.gui.edit_panel import EditPanel
+from djmidi.gui.introduction_view import IntroductionView
+from djmidi.gui.layout_view import ControllerLayoutView
+from djmidi.gui.live_monitor import LiveMonitorView
+from djmidi.gui.mapping_group import MappingGroup
+from djmidi.gui.metronome_view import MetronomeView
+from djmidi.gui.splitter_utils import replace_splitter
+from djmidi.gui.tree_model import NODE_ROLE, build_channel_columns, relabel_item
+from djmidi.midi_io import MidiEvent
+from djmidi.model import Control, MappingElement, MidiConfig
+from djmidi.parser import parse_file
+from djmidi.validator import ValidationIssue, validate
 
 _SEVERITY_COLORS = {
     "error": QColor(255, 200, 200),
@@ -69,7 +69,7 @@ _REFERENCE_LINKS = [
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
-        self.setWindowTitle("Serato MIDI Config Editor")
+        self.setWindowTitle("DJ MIDI Studio")
         self.resize(1100, 700)
 
         self.config: MidiConfig | None = None
