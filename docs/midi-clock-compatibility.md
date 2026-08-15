@@ -53,6 +53,13 @@ Serato's MIDI Clock output destination, and enable Serato's Clock/Sync output
 for the active deck/session. The virtual port is not created before the
 routing session starts. Hover the status label for the same actionable hint.
 
+Important direction check: `DJ MIDI Studio Serato Clock In` is the destination
+that must be selected inside Serato, while it is the source selected inside DJ
+MIDI Studio. Do not select `MIDI4x4 Midi In 1` or `MIDI4x4 Midi Out 1` in DJ
+MIDI Studio as a substitute for this virtual source. If the virtual port does
+not appear in Serato after starting the session, restart or refresh Serato's
+MIDI device list and check macOS MIDI permissions.
+
 ## Traktor
 
 Traktor uses standard MIDI realtime messages for external Clock. Select the

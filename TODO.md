@@ -59,6 +59,7 @@ second, then real-time routing and clock synchronization.
 - [x] Document the Serato virtual-port troubleshooting path for `CLOCK INACTIVE`.
 - [x] Distinguish an unopened Clock source, a source open without ticks, and transport-only input in the live diagnostic.
 - [x] Separate MIDI input and output port selectors so an input such as `MIDI4x4 Midi In 1` cannot be configured as a Clock destination.
+- [ ] Verify the complete Serato → CoreMIDI virtual-port path on a real macOS/Serato setup, including port discovery, Clock output selection, Start/Stop, and sustained 24 PPQN ticks; virtual-port tests alone are not sufficient evidence.
 
 ### Phase 4 — safe software/controller operations — IN PROGRESS
 
