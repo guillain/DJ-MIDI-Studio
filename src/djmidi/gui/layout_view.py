@@ -169,9 +169,15 @@ class ControllerLayoutView(QWidget):
         self._rebuild()
 
     def _resize_controller_selector(self) -> None:
-        """Keep the tab strip wide while letting its container scroll."""
+        """Keep the tab strip wide while letting its container scroll.
+
+        The tab bar is the scroll area's content, not a constraint on the
+        layout view itself. Keeping its minimum width on the tab bar made
+        every parent splitter inherit the width of all controller tabs and
+        prevented the main or floating window from being reduced.
+        """
         self._controller_tabs.adjustSize()
-        self._controller_tabs.setMinimumWidth(self._controller_tabs.sizeHint().width())
+        self._controller_tabs.setMinimumWidth(0)
         self._controller_scroll.setFixedHeight(self._controller_tabs.sizeHint().height() + 2)
 
     def set_controller(self, name: str) -> bool:

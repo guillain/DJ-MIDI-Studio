@@ -33,6 +33,8 @@ def run(argv: list[str] | None = None) -> int:
     logger = logging.getLogger("djmidi.gui.app")
     logger.info("Starting DJ MIDI Studio")
     app = QApplication(sys.argv if argv is None else [sys.argv[0], *argv])
+    app.setOrganizationName("DJ MIDI Studio")
+    app.setApplicationName("DJ MIDI Studio")
     window = MainWindow()
     window.show()
     result = app.exec()

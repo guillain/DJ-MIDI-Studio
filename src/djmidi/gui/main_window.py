@@ -4,10 +4,12 @@ import sys
 from pathlib import Path
 
 from PySide6.QtCore import (
+    QCoreApplication,
     QEvent,
     QItemSelectionModel,
     QModelIndex,
     QSortFilterProxyModel,
+    QSettings,
     Qt,
     QTimer,
     QUrl,
@@ -15,6 +17,7 @@ from PySide6.QtCore import (
 from PySide6.QtGui import (
     QAction,
     QColor,
+    QCloseEvent,
     QDesktopServices,
     QKeySequence,
     QStandardItemModel,
@@ -122,6 +125,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("DJ MIDI Studio")
         self.resize(1100, 700)
+        self.setMinimumSize(320, 240)
         self.setStatusBar(QStatusBar())
         self.setAutoFillBackground(True)
 
@@ -265,8 +269,40 @@ class MainWindow(QMainWindow):
         self._tool_docks = self._create_tool_docks()
 
         self._build_menu()
+        self._restore_user_layout()
         QTimer.singleShot(0, self._initialize_pair_splitters)
         self.introduction_view.set_loaded_config_info(None)
+
+    @staticmethod
+    def _layout_settings() -> QSettings | None:
+        """Return persistent window settings only for the real application.
+
+        Tests and documentation capture helpers construct windows directly;
+        avoiding persistence there keeps those isolated from a user's saved
+        desktop arrangement.
+        """
+        if QCoreApplication.applicationName() != "DJ MIDI Studio":
+            return None
+        return QSettings("DJ MIDI Studio", "DJ MIDI Studio")
+
+    def _restore_user_layout(self) -> None:
+        settings = self._layout_settings()
+        if settings is None:
+            return
+        geometry = settings.value("window/geometry")
+        state = settings.value("window/state")
+        if geometry:
+            self.restoreGeometry(geometry)
+        if state:
+            self.restoreState(state, 1)
+
+    def closeEvent(self, event: QCloseEvent) -> None:
+        settings = self._layout_settings()
+        if settings is not None:
+            settings.setValue("window/geometry", self.saveGeometry())
+            settings.setValue("window/state", self.saveState(1))
+            settings.sync()
+        super().closeEvent(event)
 
     def changeEvent(self, event: QEvent) -> None:
         """Refresh the backing store after native macOS window transitions."""

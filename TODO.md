@@ -143,6 +143,7 @@ Implemented contract, runtime, test, and documentation work:
 - [x] Add the `djmidi-send-midi` CLI command and `--double-click` helper.
 - [x] Make Live Monitor and MIDI Routing independent closable dock panels with Dashboard and View-menu access.
 - [x] Allow both docked and floating MIDI tool windows without changing the mapping workspace layout.
+- [x] Allow the main and MIDI tool windows to shrink below controller-selector content width and preserve the user's window/dock arrangement between launches.
 
 ### Testing, documentation, and delivery
 
