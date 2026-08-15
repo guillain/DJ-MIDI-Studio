@@ -129,7 +129,8 @@ def test_physical_control_box_known_trigger_shows_name():
     assert box is not None
     label = box.findChild(QLabel)
     assert label is not None
-    assert label.minimumHeight() >= label.fontMetrics().lineSpacing() * 8
+    assert label.minimumHeight() >= label.fontMetrics().lineSpacing() * 12
+    assert box.minimumHeight() >= label.minimumHeight()
 
 
 def test_physical_control_box_unknown_trigger_shows_placeholder():

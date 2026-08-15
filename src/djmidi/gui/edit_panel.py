@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QLineEdit,
     QPushButton,
+    QSizePolicy,
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
@@ -97,10 +98,20 @@ class EditPanel(QWidget):
         font = label.font()
         font.setPointSize(font.pointSize() + 1)
         label.setFont(font)
-        # Reserve room for several wrapped lines up front (roughly double a
-        # typical single/double-line render) so the box doesn't stay clipped
-        # to whatever the very first render happened to need.
-        label.setMinimumHeight(label.fontMetrics().lineSpacing() * 8)
+        # Keep enough vertical room for a long multi-controller match even
+        # when the right-hand splitter is initially restored very small.
+        # The label remains vertically expanding so the user can enlarge it
+        # further with the splitter.
+        line_height = label.fontMetrics().lineSpacing()
+        label.setMinimumHeight(line_height * 12)
+        label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        box.setMinimumHeight(
+            line_height * 12
+            + box_layout.contentsMargins().top()
+            + box_layout.contentsMargins().bottom()
+            + 18
+        )
+        box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         box_layout.addWidget(label)
         return box
 

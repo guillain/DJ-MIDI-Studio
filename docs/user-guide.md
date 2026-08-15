@@ -92,7 +92,7 @@ For screenshots and a visual description of each tab, see [Screens and Layouts](
 ## Edit Safely
 
 - Prefer grouped edits in `By Deck` when dealing with Serato duplicate trigger sets.
-- Use the DJ-oriented layout views to verify the physical control impacted by your edit. The dark performance theme groups sections visually and uses deck colors plus bright selection accents. Pads, transport buttons, knobs, faders, and jog wheels are shown with distinct glyphs. XDJ-XZ and DDJ-XP2 also expose display-only mixer controls for trim, EQ, volume, crossfader, and Slide FX; these are visual references until continuous MIDI mappings are cataloged. The generic grid remains available for unknown controls. The current selection is strongly highlighted and the last few previous selections remain softly highlighted as navigation history. The right-side `Physical control` panel reserves extra vertical space for multiple catalog matches.
+- Use the DJ-oriented layout views to verify the physical control impacted by your edit. The dark performance theme groups sections visually and uses deck colors plus bright selection accents. Pads, transport buttons, knobs, faders, and jog wheels are shown with distinct glyphs. XDJ-XZ and DDJ-XP2 also expose display-only mixer controls for trim, EQ, volume, crossfader, and Slide FX; these are visual references until continuous MIDI mappings are cataloged. The generic grid remains available for unknown controls. The current selection is strongly highlighted and the last few previous selections remain softly highlighted as navigation history. The right-side `Physical control` panel reserves expanded, splitter-safe space for multiple catalog matches.
 
 ## Validate and Export
 

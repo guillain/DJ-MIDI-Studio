@@ -129,6 +129,7 @@ Implemented contract, runtime, test, and documentation work:
 - [x] Arrange XDJ-XZ and DDJ-XP2 layouts into dedicated pads, deck, effects, mixer, browse, and pad-mode zones.
 - [x] Synchronize tree/layout selections, preserve the originating tab, and fade recent selection history.
 - [x] Increase the Physical control panel height and make dynamic controller selectors horizontally scrollable.
+- [x] Keep the Physical control field expanded with a splitter-safe minimum height for long multi-controller matches.
 - [x] Add zoomable/pannable Controller Images diagrams with reset zoom.
 - [x] Remove the obsolete Dashboard Go to section.
 
