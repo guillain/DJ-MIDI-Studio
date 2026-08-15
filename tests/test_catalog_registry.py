@@ -45,6 +45,16 @@ def test_controller_detection_ranks_matching_port_name():
     assert matches[0].score == 100
 
 
+def test_disabled_controller_is_removed_from_active_lookup_and_detection():
+    catalog.set_enabled_plugin_ids({"pioneer.ddj-xp2"})
+    try:
+        assert catalog.CONTROLLER_NAMES == ["DDJ-XP2"]
+        assert catalog.lookup("1", "Note On", "36") == []
+        assert catalog.detect_controller("Numark Mixtrack Pro FX") == []
+    finally:
+        catalog.set_enabled_plugin_ids(None)
+
+
 def test_builtin_controller_plugins_are_discovered_without_central_import_list():
     catalog.discover_plugins()
     assert set(catalog.CONTROLLER_NAMES) >= {"DDJ-XP2", "XDJ-XZ", "DDJ-1000"}

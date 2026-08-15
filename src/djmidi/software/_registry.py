@@ -49,6 +49,7 @@ class SoftwareDefinition:
 
 
 _REGISTRY: dict[str, SoftwareDefinition] = {}
+_ENABLED_PLUGIN_IDS: frozenset[str] | None = None
 
 
 def register(definition: SoftwareDefinition, *, replace: bool = False) -> None:
@@ -68,6 +69,18 @@ def all_definitions() -> list[SoftwareDefinition]:
     return sorted(_REGISTRY.values(), key=lambda definition: (definition.display_order, definition.name))
 
 
+def set_enabled_plugin_ids(plugin_ids: set[str] | frozenset[str] | None) -> None:
+    global _ENABLED_PLUGIN_IDS
+    _ENABLED_PLUGIN_IDS = None if plugin_ids is None else frozenset(plugin_ids)
+
+
+def active_definitions() -> list[SoftwareDefinition]:
+    definitions = all_definitions()
+    if _ENABLED_PLUGIN_IDS is None:
+        return definitions
+    return [definition for definition in definitions if definition.plugin_id in _ENABLED_PLUGIN_IDS]
+
+
 def detect_from_text(text: str, suffix: str = "") -> list[SoftwareDefinition]:
     """Returns software plugins compatible with an XML root and extension."""
     try:
@@ -76,13 +89,21 @@ def detect_from_text(text: str, suffix: str = "") -> list[SoftwareDefinition]:
         return []
     signature_matches = [
         definition
-        for definition in all_definitions()
+        for definition in active_definitions()
         if (definition.plugin_id == "serato" and root_tag == "midi")
         or (definition.plugin_id == "traktor" and root_tag == "NML")
     ]
     if signature_matches:
         return signature_matches
-    return [definition for definition in all_definitions() if definition.can_parse(root_tag, suffix)]
+    return [definition for definition in active_definitions() if definition.can_parse(root_tag, suffix)]
 
 
-__all__ = ["SoftwareDefinition", "all_definitions", "detect_from_text", "get_definition", "register"]
+__all__ = [
+    "SoftwareDefinition",
+    "active_definitions",
+    "all_definitions",
+    "detect_from_text",
+    "get_definition",
+    "register",
+    "set_enabled_plugin_ids",
+]

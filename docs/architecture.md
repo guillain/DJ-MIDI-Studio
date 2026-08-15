@@ -67,6 +67,9 @@ The catalog is plugin-style:
 - `catalog/__init__.py` exposes the live API (`lookup`, `CONTROLLER_NAMES`, etc.).
 
 Registration is dynamic, so newly applied definitions (from Controller Setup) can be used immediately in the current session.
+The registry keeps the complete discovered set for Preferences while exposing
+an active filtered set to selectors, detection, lookup, and parser selection;
+the filter is driven by `PluginPreferences`.
 
 ## Integration detection and MIDI API
 

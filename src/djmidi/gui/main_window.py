@@ -88,6 +88,7 @@ class MainWindow(QMainWindow):
         self.preferences = PluginPreferences.load(self.preferences_path)
         catalog.discover_plugins(trust_external=self.preferences.trust_external_plugins)
         software.discover_plugins(trust_external=self.preferences.trust_external_plugins)
+        self._apply_plugin_preferences()
         self._last_save_plan = None
         self.node_to_item: dict[int, object] = {}
         self.channel_proxies: list[QSortFilterProxyModel] = []
@@ -196,8 +197,6 @@ class MainWindow(QMainWindow):
             "monitor": self.left_tabs.addTab(self.live_monitor_view, "Live Monitor"),
             "routing": self.left_tabs.addTab(self.midi_routing_view, "MIDI Routing"),
         }
-        self.left_tabs.currentChanged.connect(self._on_left_tab_changed)
-
         self.edit_panel = EditPanel(self.undo_stack, self._on_command_applied, self._on_group_edit_applied)
 
         self.issues_table = QTableWidget(0, 3)
@@ -345,8 +344,24 @@ class MainWindow(QMainWindow):
         dialog = PreferencesDialog(self.preferences, self)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             self.preferences.save(self.preferences_path)
+            self._apply_plugin_preferences()
+            self._on_controller_applied(self.introduction_view._controller_combo.currentText())
             self.midi_routing_view.set_routing_enabled(self.preferences.routing_enabled)
             self.statusBar().showMessage("Preferences saved")
+
+    def _apply_plugin_preferences(self) -> None:
+        controller_ids = {
+            definition.plugin_id or definition.name
+            for definition in catalog.all_controller_definitions()
+            if self.preferences.is_enabled(definition.plugin_id or definition.name)
+        }
+        software_ids = {
+            definition.plugin_id
+            for definition in software.all_definitions()
+            if self.preferences.is_enabled(definition.plugin_id)
+        }
+        catalog.set_enabled_plugin_ids(controller_ids)
+        software.set_enabled_plugin_ids(software_ids)
 
     def _on_open(self) -> None:
         path_str, _ = QFileDialog.getOpenFileName(
@@ -363,7 +378,7 @@ class MainWindow(QMainWindow):
         except OSError as exc:
             QMessageBox.critical(self, "Failed to open file", str(exc))
             return
-        definitions = software.all_definitions()
+        definitions = software.active_definitions()
         names = [definition.name for definition in definitions]
         detection = detect_software_mapping(mapping_text, path.suffix)
         detected = detection.best

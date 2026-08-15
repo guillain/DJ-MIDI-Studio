@@ -38,6 +38,9 @@ Available levels are `DEBUG`, `INFO`, `WARNING`, `ERROR`, and `CRITICAL`.
 Use `Settings -> Preferences...` to review the dynamically discovered
 controller and software plugins. The dialog persists plugin enablement,
 detection policy, routing policy, external-plugin trust, and log verbosity.
+Disabled plugins remain visible in this dialog for re-enablement, but are
+removed from active controller selectors, MIDI detection, catalog lookup, and
+mapping parser selection immediately after saving.
 Safe defaults require confirmation for detection, keep routing disabled, and
 do not trust external plugins automatically.
 

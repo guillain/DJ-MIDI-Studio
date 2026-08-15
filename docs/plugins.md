@@ -22,6 +22,10 @@ Python plugins run in the application process; this is an admission/trust gate,
 not a security sandbox. Do not trust an unreviewed package. A failed external
 plugin is reported and does not prevent built-in integrations from loading.
 
+Disabling a plugin removes it from active selectors, detection, catalog lookup,
+and mapping parser selection while keeping its entry visible so it can be
+enabled again without reinstalling it.
+
 ## Updating and troubleshooting
 
 Keep plugin updates pinned and review manifest/API compatibility before

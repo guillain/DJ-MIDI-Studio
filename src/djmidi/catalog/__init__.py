@@ -43,12 +43,14 @@ from djmidi.catalog._registry import (
     ControllerMatch,
     NoteOrCC,
     _event_kind,
+    active_controller_definitions,
+    active_controller_names,
     all_controller_definitions,
-    all_controller_names,
     detect_controller,
     get_definition,
     make_sequential_pad_lookup,
     register,
+    set_enabled_plugin_ids,
 )
 
 _BUILTINS_DISCOVERED = False
@@ -99,9 +101,9 @@ def __getattr__(name: str) -> object:
     # package was imported — e.g. interactively, or by a future plugin
     # mechanism — is still picked up by every consumer of these two names.
     if name == "CONTROLLER_NAMES":
-        return all_controller_names()
+        return active_controller_names()
     if name == "PAD_COUNTS":
-        return {n: get_definition(n).pad_count for n in all_controller_names()}
+        return {n: get_definition(n).pad_count for n in active_controller_names()}
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
@@ -119,7 +121,7 @@ def lookup(channel: str | None, event_type: str | None, data1: str | None) -> li
     if kind is None:
         return []
     results: list[ControlInfo] = []
-    for name in all_controller_names():
+    for name in active_controller_names():
         definition = get_definition(name)
         results.extend(
             entry
@@ -141,6 +143,8 @@ __all__ = [
     "ControllerDefinition",
     "ControllerMatch",
     "NoteOrCC",
+    "active_controller_definitions",
+    "active_controller_names",
     "all_controller_definitions",
     "detect_controller",
     "discover_plugins",
@@ -148,5 +152,6 @@ __all__ = [
     "lookup",
     "make_sequential_pad_lookup",
     "register",
+    "set_enabled_plugin_ids",
     "static_entries",
 ]

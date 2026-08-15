@@ -190,6 +190,7 @@ realtime messages, timestamps, port identity, and explicit SysEx permissions.
 MIDI 2.0 Universal MIDI Packets (UMP) will be handled by a later adapter once
 the MIDI 1.0 router and Clock mirror are stable.
 - [x] Add a preferences/settings surface for choosing enabled controller and software plugins.
+- [x] Apply enabled-plugin preferences to active controller/software lists, detection, lookup, and parser selection.
 - [x] Resolve the active controller/software integration from a connected MIDI device, imported mapping file, or explicit user selection.
 - [x] Keep unknown devices and unsupported mapping formats usable through a generic MIDI profile instead of failing application startup.
 - [x] Add trust checks before loading third-party plugins, with clear diagnostics for rejected or unavailable plugins; document that Python entry points remain in-process.

@@ -40,6 +40,15 @@ def test_software_detection_uses_xml_signature():
     assert [plugin.plugin_id for plugin in software.detect_from_text("<midi />", ".xml")] == ["serato"]
 
 
+def test_disabled_software_is_removed_from_detection():
+    software.set_enabled_plugin_ids(set())
+    try:
+        assert [plugin.plugin_id for plugin in software.detect_from_text("<midi />", ".xml")] == []
+        assert software.active_definitions() == []
+    finally:
+        software.set_enabled_plugin_ids(None)
+
+
 def test_software_plugins_expose_read_only_capability_reports():
     report = software.get_definition("serato").capability_report()
     assert report["plugin_id"] == "serato"

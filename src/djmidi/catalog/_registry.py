@@ -67,6 +67,7 @@ def _event_kind(event_type: str | None) -> NoteOrCC | None:
 
 
 _REGISTRY: dict[str, ControllerDefinition] = {}
+_ENABLED_PLUGIN_IDS: frozenset[str] | None = None
 
 
 def register(definition: ControllerDefinition, *, replace: bool = False) -> None:
@@ -92,11 +93,32 @@ def all_controller_definitions() -> list[ControllerDefinition]:
     return sorted(_REGISTRY.values(), key=lambda definition: (definition.display_order, definition.name))
 
 
+def set_enabled_plugin_ids(plugin_ids: set[str] | frozenset[str] | None) -> None:
+    """Set active controller IDs; ``None`` restores the complete registry."""
+    global _ENABLED_PLUGIN_IDS
+    _ENABLED_PLUGIN_IDS = None if plugin_ids is None else frozenset(plugin_ids)
+
+
+def active_controller_definitions() -> list[ControllerDefinition]:
+    definitions = all_controller_definitions()
+    if _ENABLED_PLUGIN_IDS is None:
+        return definitions
+    return [
+        definition
+        for definition in definitions
+        if (definition.plugin_id or definition.name) in _ENABLED_PLUGIN_IDS
+    ]
+
+
+def active_controller_names() -> list[str]:
+    return [definition.name for definition in active_controller_definitions()]
+
+
 def detect_controller(port_name: str) -> list[ControllerMatch]:
     """Ranks controller plugins using a MIDI port name, without auto-enabling one."""
     haystack = port_name.casefold()
     matches: list[ControllerMatch] = []
-    for definition in all_controller_definitions():
+    for definition in active_controller_definitions():
         candidates = [definition.name, definition.manufacturer or "", definition.plugin_id or ""]
         matched = next((candidate for candidate in candidates if candidate and candidate.casefold() in haystack), None)
         if matched is not None:
@@ -154,10 +176,13 @@ __all__ = [
     "ControllerMatch",
     "NoteOrCC",
     "PadLookup",
+    "active_controller_definitions",
+    "active_controller_names",
     "all_controller_definitions",
     "all_controller_names",
     "detect_controller",
     "get_definition",
     "make_sequential_pad_lookup",
     "register",
+    "set_enabled_plugin_ids",
 ]

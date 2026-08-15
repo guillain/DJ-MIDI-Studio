@@ -8,9 +8,11 @@ import pkgutil
 
 from djmidi.software._registry import (
     SoftwareDefinition,
+    active_definitions,
     all_definitions,
     detect_from_text,
     get_definition,
+    set_enabled_plugin_ids,
 )
 
 _BUILTINS_DISCOVERED = False
@@ -49,15 +51,17 @@ discover_plugins()
 
 
 def plugin_names() -> list[str]:
-    return [definition.name for definition in all_definitions()]
+    return [definition.name for definition in active_definitions()]
 
 
 __all__ = [
     "DISCOVERY_DIAGNOSTICS",
     "SoftwareDefinition",
+    "active_definitions",
     "all_definitions",
     "detect_from_text",
     "discover_plugins",
     "get_definition",
     "plugin_names",
+    "set_enabled_plugin_ids",
 ]
