@@ -76,10 +76,12 @@ an unknown/ambiguous/match status, and never silently change the active plugin.
 The explicit user selection remains the fallback.
 
 `djmidi.midi_api` defines the normalized desktop vocabulary: Web-MIDI-shaped
-port identity/state plus raw MIDI 1.0 bytes, timestamps, port identity, and
-SysEx visibility. `midi_io.py` adapts the native `mido/rtmidi` transport to
-that vocabulary without adding a browser dependency. Routing and Clock mirror
-remain separate future features.
+port identity/state plus raw MIDI 1.0 bytes, timestamps, port identity, SysEx
+visibility, and parsing for the Universal MIDI Identity Reply. Controller
+profiles may declare identity IDs and MIDI capabilities; the detection layer
+uses those declarations to produce an explainable score. `midi_io.py` adapts
+the native `mido/rtmidi` transport to that vocabulary without adding a browser
+dependency. Routing and Clock mirror remain separate future features.
 
 DJ software integrations use the same plugin principle. The software registry
 exposes a parser, exporter, supported extensions, and display metadata. The

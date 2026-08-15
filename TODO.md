@@ -38,13 +38,13 @@ second, then real-time routing and clock synchronization.
 - [x] Detect the controller from MIDI port names and return ranked plugin candidates.
 - [x] Show the confidence and reason for a detection result before enabling an integration.
 - [x] Keep explicit user selection as the fallback for unknown or ambiguous hardware/software.
-- [ ] Add MIDI identity/SysEx probes and capability scoring where hardware permits it.
+- [x] Add MIDI Identity Reply/SysEx parsing, identity metadata hooks, and capability scoring where hardware permits it.
 
 ### Phase 3 — multi-device MIDI engine — PLANNED
 
 - [x] Adopt the W3C [Web MIDI API](https://github.com/WebAudio/web-midi-api) as the conceptual compatibility model for access, input/output ports, events, and SysEx opt-in.
 - [x] Keep the native implementation on MIDI 1.0 byte messages through `mido/rtmidi`; do not make a browser API dependency part of the desktop runtime.
-- [ ] Define an internal normalized MIDI message/port API aligned with Web MIDI naming while preserving realtime messages and timestamps.
+- [x] Define an internal normalized MIDI message/port API aligned with Web MIDI naming while preserving realtime messages and timestamps.
 - [ ] Specify MIDI 2.0/UMP as a future extension instead of mixing it into the initial MIDI 1.0 router.
 - [ ] Add a one-way MIDI router with port/channel/message filters and loop prevention.
 - [ ] Add monitoring/status for routes, dropped messages, latency, and errors.

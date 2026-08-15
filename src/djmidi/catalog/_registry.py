@@ -35,6 +35,8 @@ class ControllerDefinition:
     plugin_id: str | None = None
     manufacturer: str | None = None
     supported_software: tuple[str, ...] = ()
+    midi_capabilities: tuple[str, ...] = ()
+    midi_identity_ids: tuple[bytes, ...] = ()
     reference_image: str | None = None
     display_order: int = 100
     static_entries: list[ControlInfo] = field(default_factory=list)

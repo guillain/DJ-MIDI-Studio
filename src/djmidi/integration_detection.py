@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Literal
 
 from djmidi import catalog, software
+from djmidi.midi_api import MidiIdentityReply
 
 IntegrationKind = Literal["controller", "software"]
 
@@ -43,18 +44,49 @@ class DetectionResult:
         return "match"
 
 
-def detect_controller_ports(port_names: list[str]) -> DetectionResult:
-    """Rank controllers from port names without enabling or changing plugins."""
+@dataclass(frozen=True)
+class ControllerEvidence:
+    """Optional evidence collected for one port, including a SysEx reply."""
+
+    port_name: str
+    manufacturer: str = ""
+    capabilities: frozenset[str] = frozenset()
+    identity: MidiIdentityReply | None = None
+
+
+def detect_controller_ports(
+    port_names: list[str], evidence: list[ControllerEvidence] | None = None
+) -> DetectionResult:
+    """Rank controllers from names and optional identity/capability evidence."""
     by_id: dict[str, DetectionCandidate] = {}
-    for port_name in port_names:
+    observed = evidence or [ControllerEvidence(port_name=name) for name in port_names]
+    for item in observed:
+        port_name = item.port_name
         for match in catalog.detect_controller(port_name):
+            definition = match.controller
+            score = match.score
+            reasons = [f"port name contains {match.reason.split(' contains ', 1)[-1]}"]
+            if (
+                item.manufacturer
+                and definition.manufacturer
+                and item.manufacturer.casefold() == definition.manufacturer.casefold()
+            ):
+                score = min(100, score + 10)
+                reasons.append("manufacturer matches plugin metadata")
+            if item.identity is not None and item.identity.identity_id in definition.midi_identity_ids:
+                score = 100
+                reasons.append("MIDI Identity Reply matches plugin metadata")
+            capability_hits = set(item.capabilities) & set(definition.midi_capabilities)
+            if capability_hits:
+                score = min(100, score + min(10, len(capability_hits) * 2))
+                reasons.append(f"capabilities match: {', '.join(sorted(capability_hits))}")
             current = by_id.get(match.controller.plugin_id or match.controller.name)
             candidate = DetectionCandidate(
                 kind="controller",
-                plugin_id=match.controller.plugin_id or match.controller.name,
-                name=match.controller.name,
-                score=match.score,
-                reasons=(f"port name contains {match.reason.split(' contains ', 1)[-1]}",),
+                plugin_id=definition.plugin_id or definition.name,
+                name=definition.name,
+                score=score,
+                reasons=tuple(reasons),
             )
             if current is None or candidate.score > current.score:
                 by_id[candidate.plugin_id] = candidate
@@ -87,6 +119,7 @@ def detect_software_mapping(text: str, suffix: str = "") -> DetectionResult:
 
 
 __all__ = [
+    "ControllerEvidence",
     "DetectionCandidate",
     "DetectionResult",
     "detect_controller_ports",
