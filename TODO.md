@@ -17,8 +17,8 @@ second, then real-time routing and clock synchronization.
 
 ### Phase 1 — plugin contracts and declarative profiles — IN PROGRESS
 
-- [ ] Define and validate a versioned plugin manifest for controllers and DJ software.
-- [ ] Add plugin capabilities and permissions to the manifest.
+- [x] Define and validate a versioned JSON plugin manifest for controllers and DJ software.
+- [x] Add plugin capabilities and permissions to the manifest.
 - [ ] Support controller profiles from JSON first; evaluate YAML after the schema stabilizes.
 - [ ] Define schema validation, duplicate-ID handling, enable/disable state, and useful diagnostics.
 - [ ] Add profile fixtures and contract tests that require no MIDI hardware.

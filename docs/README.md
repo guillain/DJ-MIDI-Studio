@@ -5,6 +5,7 @@
 - [Getting Started](#getting-started)
 - [Core Documentation](#core-documentation)
 - [Screens and Layouts](#screens-and-layouts)
+- [Plugin Manifest](#plugin-manifest)
 - [Build and CI](#build-and-ci)
 
 ## Getting Started
@@ -21,6 +22,10 @@
 ## Screens and Layouts
 
 - [Screens and Layouts](screens-and-layouts.md)
+
+## Plugin Manifest
+
+- [Plugin Manifest](plugin-manifest.md)
 
 ## Build and CI
 
