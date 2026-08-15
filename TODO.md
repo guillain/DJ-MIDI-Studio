@@ -181,6 +181,7 @@ second, then real-time routing and clock synchronization.
 - [x] Complete the Help menu with bundled project documentation, controller PDFs, and official external references.
 - [x] Make Live Monitor and MIDI Routing independent closable dock panels, with View-menu toggles and Dashboard shortcuts.
 - [x] Restore the main window surface after native macOS full-screen transitions so the UI does not remain black.
+- [x] Allow each MIDI tool to switch explicitly between a docked panel and a floating window without removing the existing workspace layout.
 - [x] Translate the Dashboard UI and its tests to English.
 - [x] Rename the project to DJ MIDI Studio.
 

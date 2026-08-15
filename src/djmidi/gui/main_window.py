@@ -396,8 +396,19 @@ class MainWindow(QMainWindow):
 
         view_menu = self.menuBar().addMenu("&View")
         tools_menu = view_menu.addMenu("MIDI Tools")
+        self._tool_float_actions: dict[str, QAction] = {}
         for key in ("monitor", "routing"):
-            tools_menu.addAction(self._tool_docks[key].toggleViewAction())
+            dock = self._tool_docks[key]
+            tools_menu.addAction(dock.toggleViewAction())
+            float_action = QAction(f"Float {dock.windowTitle()}", self)
+            float_action.setCheckable(True)
+            float_action.setChecked(dock.isFloating())
+            float_action.toggled.connect(
+                lambda floating, tool_key=key: self._set_tool_dock_floating(tool_key, floating)
+            )
+            dock.topLevelChanged.connect(float_action.setChecked)
+            tools_menu.addAction(float_action)
+            self._tool_float_actions[key] = float_action
 
         settings_menu = self.menuBar().addMenu("&Settings")
         preferences_action = QAction("&Preferences...", self)
@@ -455,6 +466,16 @@ class MainWindow(QMainWindow):
             return
         dock.show()
         dock.raise_()
+
+    def _set_tool_dock_floating(self, key: str, floating: bool) -> None:
+        """Switch a MIDI tool between the main-window dock and a free window."""
+        dock = self._tool_docks.get(key)
+        if dock is None or dock.isFloating() == floating:
+            return
+        dock.setFloating(floating)
+        if floating:
+            dock.show()
+            dock.raise_()
 
     @staticmethod
     def _resource_root() -> Path:

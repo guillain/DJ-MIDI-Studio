@@ -108,6 +108,23 @@ def test_midi_tools_are_independent_closable_docks():
     window.close()
 
 
+def test_midi_tools_can_switch_between_docked_and_floating_windows():
+    window = MainWindow()
+    window.show()
+    QApplication.processEvents()
+    float_action = window._tool_float_actions["monitor"]
+    assert not window._tool_docks["monitor"].isFloating()
+    float_action.trigger()
+    QApplication.processEvents()
+    assert window._tool_docks["monitor"].isFloating()
+    assert float_action.isChecked()
+    float_action.trigger()
+    QApplication.processEvents()
+    assert not window._tool_docks["monitor"].isFloating()
+    assert not float_action.isChecked()
+    window.close()
+
+
 def test_window_state_change_schedules_surface_refresh():
     window = MainWindow()
     window.show()

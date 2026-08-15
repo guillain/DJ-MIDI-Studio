@@ -20,6 +20,12 @@ closable Qt dock panels rather than mapping tabs. They can be shown from
 `View > MIDI Tools`, moved to another dock area, floated as windows, or opened
 from the Dashboard buttons.
 
+Each tool supports both workspace modes. Use the float button in its dock title
+bar, or choose `View > MIDI Tools > Float Live Monitor` / `Float MIDI Routing`,
+to open it as an independent window. Trigger the same menu item again to dock
+it back into the main window; closing a floating tool does not affect any
+controller mapping tab or layout splitter.
+
 The right-hand panel remains available from every tab for the current selection and validation messages. Selecting a mapping or a layout cell keeps the related views synchronized.
 
 On macOS, entering or leaving native full screen may briefly show the window
