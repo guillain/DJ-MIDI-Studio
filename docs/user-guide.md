@@ -64,6 +64,8 @@ For screenshots and a visual description of each tab, see [Screens and Layouts](
 
 - Input monitoring works from selected MIDI input ports.
 - Output-direction monitoring from Serato requires adding the app virtual destination in Serato MIDI setup.
+- The MIDI engine now exposes a one-way routing core and an initial Clock mirror;
+  hardware routing controls and jitter safeguards are not enabled in the GUI yet.
 
 ## Send MIDI Commands
 

@@ -46,9 +46,10 @@ second, then real-time routing and clock synchronization.
 - [x] Keep the native implementation on MIDI 1.0 byte messages through `mido/rtmidi`; do not make a browser API dependency part of the desktop runtime.
 - [x] Define an internal normalized MIDI message/port API aligned with Web MIDI naming while preserving realtime messages and timestamps.
 - [ ] Specify MIDI 2.0/UMP as a future extension instead of mixing it into the initial MIDI 1.0 router.
-- [ ] Add a one-way MIDI router with port/channel/message filters and loop prevention.
-- [ ] Add monitoring/status for routes, dropped messages, latency, and errors.
-- [ ] Add MIDI Clock mirror with Start/Stop/Continue handling, 24 PPQN forwarding, source selection, and jitter safeguards.
+- [x] Add a one-way MIDI router with port/channel/message filters and loop prevention.
+- [x] Add monitoring/status for routes, dropped messages, latency, and errors.
+- [x] Add the initial MIDI Clock mirror with Start/Stop/Continue handling, 24 PPQN forwarding, and source selection.
+- [ ] Add Clock mirror jitter safeguards and timing diagnostics.
 - [ ] Document Serato and Rekordbox clock-specific behavior before enabling cross-software clock sync.
 - [ ] Add integration tests with virtual MIDI ports and deterministic fake clocks.
 

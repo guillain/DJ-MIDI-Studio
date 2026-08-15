@@ -81,7 +81,15 @@ visibility, and parsing for the Universal MIDI Identity Reply. Controller
 profiles may declare identity IDs and MIDI capabilities; the detection layer
 uses those declarations to produce an explainable score. `midi_io.py` adapts
 the native `mido/rtmidi` transport to that vocabulary without adding a browser
-dependency. Routing and Clock mirror remain separate future features.
+dependency. Routing and Clock mirror are implemented as separate engine modules
+so their safety policies can evolve independently of detection.
+
+The initial `midi_router.py` implementation provides one-way route graphs with
+channel/message/SysEx filters, cycle prevention, and forwarding/error/drop
+statistics. `midi_clock.py` separately mirrors Start, Continue, Stop, and 24
+PPQN Clock realtime messages from a selected source. Jitter safeguards and
+hardware-backed timing diagnostics remain disabled until their deterministic
+tests are defined.
 
 DJ software integrations use the same plugin principle. The software registry
 exposes a parser, exporter, supported extensions, and display metadata. The
