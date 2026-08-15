@@ -1,3 +1,5 @@
+from PySide6.QtWidgets import QPushButton
+
 from djmidi.gui.introduction_view import IntroductionView
 
 
@@ -56,6 +58,16 @@ def test_usage_summary_updates_card_stats():
     assert "2 cell(s)" in text
     assert "2 deck(s)" in text
     assert "3 function(s)" in text
+
+
+def test_dashboard_exposes_independent_midi_tool_buttons():
+    view = IntroductionView()
+    requested: list[str] = []
+    view.toolRequested.connect(requested.append)
+    buttons = {button.text(): button for button in view.findChildren(QPushButton)}
+    buttons["Open Live Monitor"].click()
+    buttons["Open MIDI Routing"].click()
+    assert requested == ["monitor", "routing"]
 
 
 def test_refresh_midi_availability_marks_matching_controller():

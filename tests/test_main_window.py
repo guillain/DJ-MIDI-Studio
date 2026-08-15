@@ -89,7 +89,21 @@ def test_intro_drilldown_can_open_routing_tab():
     window._on_intro_drilldown_requested("routing", "DDJ-XP2")
     QApplication.processEvents()
 
-    assert window.left_tabs.currentIndex() == window._tab_indexes["routing"]
+    assert window._tool_docks["routing"].isVisible()
+    window.close()
+
+
+def test_midi_tools_are_independent_closable_docks():
+    window = MainWindow()
+    window.show()
+    QApplication.processEvents()
+    assert "monitor" not in window._tab_indexes
+    assert "routing" not in window._tab_indexes
+    assert not window._tool_docks["monitor"].isVisible()
+    window._show_tool_dock("monitor")
+    assert window._tool_docks["monitor"].isVisible()
+    window._tool_docks["monitor"].close()
+    assert not window._tool_docks["monitor"].isVisible()
     window.close()
 
 

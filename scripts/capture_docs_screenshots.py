@@ -61,10 +61,15 @@ def main() -> int:
         }
         OUTPUT.mkdir(parents=True, exist_ok=True)
         for key, filename in captures.items():
-            window.left_tabs.setCurrentIndex(window._tab_indexes[key])
+            if key in window._tab_indexes:
+                window.left_tabs.setCurrentIndex(window._tab_indexes[key])
+            else:
+                window._show_tool_dock(key)
             app.processEvents()
             if not window.grab().save(str(OUTPUT / filename)):
                 raise RuntimeError(f"could not save {filename}")
+            if key in window._tool_docks:
+                window._tool_docks[key].hide()
         window.close()
         app.processEvents()
     return 0

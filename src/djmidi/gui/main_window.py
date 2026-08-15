@@ -21,6 +21,7 @@ from PySide6.QtGui import (
 )
 from PySide6.QtWidgets import (
     QDialog,
+    QDockWidget,
     QFileDialog,
     QInputDialog,
     QLineEdit,
@@ -228,6 +229,7 @@ class MainWindow(QMainWindow):
             self.live_monitor_view.input_port_names()
         )
         self.introduction_view.drillDownRequested.connect(self._on_intro_drilldown_requested)
+        self.introduction_view.toolRequested.connect(self._show_tool_dock)
 
         self.left_tabs = QTabWidget()
         self._tab_indexes = {
@@ -237,8 +239,6 @@ class MainWindow(QMainWindow):
             "channel": self.left_tabs.addTab(channel_pair, "By Channel"),
             "deck": self.left_tabs.addTab(deck_pair, "By Deck"),
             "controller": self.left_tabs.addTab(controller_pair, "By Controller"),
-            "monitor": self.left_tabs.addTab(self.live_monitor_view, "Live Monitor"),
-            "routing": self.left_tabs.addTab(self.midi_routing_view, "MIDI Routing"),
         }
         self.edit_panel = EditPanel(self.undo_stack, self._on_command_applied, self._on_group_edit_applied)
 
@@ -259,6 +259,7 @@ class MainWindow(QMainWindow):
         main_splitter.setStretchFactor(0, 1)
         main_splitter.setStretchFactor(1, 1)
         self.setCentralWidget(main_splitter)
+        self._tool_docks = self._create_tool_docks()
 
         self._build_menu()
         QTimer.singleShot(0, self._initialize_pair_splitters)
@@ -372,6 +373,11 @@ class MainWindow(QMainWindow):
         validate_action.triggered.connect(self._on_validate)
         edit_menu.addAction(validate_action)
 
+        view_menu = self.menuBar().addMenu("&View")
+        tools_menu = view_menu.addMenu("MIDI Tools")
+        for key in ("monitor", "routing"):
+            tools_menu.addAction(self._tool_docks[key].toggleViewAction())
+
         settings_menu = self.menuBar().addMenu("&Settings")
         preferences_action = QAction("&Preferences...", self)
         preferences_action.triggered.connect(self._on_preferences)
@@ -400,6 +406,34 @@ class MainWindow(QMainWindow):
             action = QAction(title, self)
             action.triggered.connect(lambda checked=False, u=url: QDesktopServices.openUrl(QUrl(u)))
             online_menu.addAction(action)
+
+    def _create_tool_docks(self) -> dict[str, QDockWidget]:
+        definitions = {
+            "monitor": ("Live Monitor", self.live_monitor_view),
+            "routing": ("MIDI Routing", self.midi_routing_view),
+        }
+        docks: dict[str, QDockWidget] = {}
+        for key, (title, widget) in definitions.items():
+            dock = QDockWidget(title, self)
+            dock.setObjectName(f"{key}Dock")
+            dock.setAllowedAreas(Qt.DockWidgetArea.AllDockWidgetAreas)
+            dock.setFeatures(
+                QDockWidget.DockWidgetFeature.DockWidgetClosable
+                | QDockWidget.DockWidgetFeature.DockWidgetMovable
+                | QDockWidget.DockWidgetFeature.DockWidgetFloatable
+            )
+            dock.setWidget(widget)
+            self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, dock)
+            dock.hide()
+            docks[key] = dock
+        return docks
+
+    def _show_tool_dock(self, key: str) -> None:
+        dock = self._tool_docks.get(key)
+        if dock is None:
+            return
+        dock.show()
+        dock.raise_()
 
     @staticmethod
     def _resource_root() -> Path:
@@ -745,6 +779,9 @@ class MainWindow(QMainWindow):
         self._update_layout_selection(event.channel, event.event_type, event.data1)
 
     def _on_intro_drilldown_requested(self, target: str, controller_name: str) -> None:
+        if target in self._tool_docks:
+            self._show_tool_dock(target)
+            return
         self.layout_view.set_controller(controller_name)
         self.deck_layout_view.set_controller(controller_name)
         self.controller_layout_view.set_controller(controller_name)

@@ -179,6 +179,7 @@ second, then real-time routing and clock synchronization.
 - [x] Add the documentation portal, quickstart, user guide, architecture, testing, quality, build, and release documentation.
 - [x] Add the visual [Screens and Layouts](docs/screens-and-layouts.md) documentation with application screenshots.
 - [x] Complete the Help menu with bundled project documentation, controller PDFs, and official external references.
+- [x] Make Live Monitor and MIDI Routing independent closable dock panels, with View-menu toggles and Dashboard shortcuts.
 - [x] Translate the Dashboard UI and its tests to English.
 - [x] Rename the project to DJ MIDI Studio.
 

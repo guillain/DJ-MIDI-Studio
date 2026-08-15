@@ -12,9 +12,13 @@
 
 ## Application Navigation
 
-The application is organized as tabs across the top of the main window:
+The mapping workspace is organized as tabs across the top of the main window:
 
-`Dashboard`, `Controller Setup`, `Controller Images`, `By Channel`, `By Deck`, `By Controller`, `Live Monitor`, and `MIDI Routing`.
+`Dashboard`, `Controller Setup`, `Controller Images`, `By Channel`, `By Deck`,
+and `By Controller`. `Live Monitor` and `MIDI Routing` are independent,
+closable Qt dock panels rather than mapping tabs. They can be shown from
+`View > MIDI Tools`, moved to another dock area, floated as windows, or opened
+from the Dashboard buttons.
 
 The right-hand panel remains available from every tab for the current selection and validation messages. Selecting a mapping or a layout cell keeps the related views synchronized.
 

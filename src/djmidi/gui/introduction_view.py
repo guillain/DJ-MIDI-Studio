@@ -26,6 +26,7 @@ class IntroductionView(QWidget):
     """Home tab presenting known controllers, app context, and quick navigation."""
 
     drillDownRequested = Signal(str, str)  # target tab key, controller name
+    toolRequested = Signal(str)  # independent tool dock key
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -88,6 +89,15 @@ class IntroductionView(QWidget):
         help_text.setWordWrap(True)
         help_layout.addWidget(help_text)
 
+        tools_box = QGroupBox("MIDI tools")
+        tools_layout = QHBoxLayout(tools_box)
+        monitor_button = QPushButton("Open Live Monitor")
+        monitor_button.clicked.connect(lambda: self.toolRequested.emit("monitor"))
+        routing_button = QPushButton("Open MIDI Routing")
+        routing_button.clicked.connect(lambda: self.toolRequested.emit("routing"))
+        tools_layout.addWidget(monitor_button)
+        tools_layout.addWidget(routing_button)
+
         info = QLabel(
             "Tip: after applying a controller from Controller Setup, "
             "it appears immediately across this session's views."
@@ -102,6 +112,7 @@ class IntroductionView(QWidget):
         layout.addWidget(catalog_box)
         layout.addWidget(cards_box)
         layout.addWidget(help_box)
+        layout.addWidget(tools_box)
         layout.addWidget(info)
         layout.addStretch(1)
 
