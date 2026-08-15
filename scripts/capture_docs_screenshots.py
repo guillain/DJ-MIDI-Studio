@@ -70,6 +70,29 @@ def main() -> int:
                 raise RuntimeError(f"could not save {filename}")
             if key in window._tool_docks:
                 window._tool_docks[key].hide()
+
+        # Capture the supported workspace compositions.  Arbitrary dock
+        # positions and sizes are user-defined, so these are stable reference
+        # arrangements rather than an attempt to enumerate every possibility.
+        for key in ("monitor", "routing"):
+            window._show_tool_dock(key)
+        app.processEvents()
+        if not window.grab().save(str(OUTPUT / "midi-tools-docked.png")):
+            raise RuntimeError("could not save midi-tools-docked.png")
+
+        for key, filename in (
+            ("monitor", "live-monitor-floating.png"),
+            ("routing", "midi-routing-floating.png"),
+        ):
+            dock = window._tool_docks[key]
+            dock.setFloating(True)
+            dock.resize(900, 700)
+            dock.show()
+            app.processEvents()
+            if not dock.grab().save(str(OUTPUT / filename)):
+                raise RuntimeError(f"could not save {filename}")
+            dock.setFloating(False)
+            dock.hide()
         window.close()
         app.processEvents()
     return 0

@@ -93,6 +93,9 @@ Before publishing draft release:
 1. Download one artifact per OS and verify extraction.
 2. Smoke test app start on at least one target machine.
 3. Confirm release notes are complete.
+4. Confirm the generated screenshots include the Dashboard, mapping views,
+   Controller Setup/Images, both MIDI tools docked together, and each MIDI tool
+   in its floating reference composition.
 
 ## Publish Steps
 

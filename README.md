@@ -45,8 +45,8 @@ flowchart LR
 	Intro --> Deck[By Deck]
 	Intro --> Controller[By Controller]
 	Intro --> Images[Controller Images]
-	Intro --> Monitor[Live Monitor]
-	Intro --> Routing[MIDI Routing]
+	Intro --> Monitor[Live Monitor dock]
+	Intro --> Routing[MIDI Routing dock]
 	Intro --> Setup[Controller Setup]
 	Channel --> Validate[Validate]
 	Deck --> Validate

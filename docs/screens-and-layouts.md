@@ -3,6 +3,7 @@
 ## Table of Contents
 
 - [Application Navigation](#application-navigation)
+- [Window Compositions](#window-compositions)
 - [Dashboard](#dashboard)
 - [Mapping Views](#mapping-views)
 - [Controller Setup](#controller-setup)
@@ -30,6 +31,20 @@ The main window and dock arrangement are saved when the application closes and
 restored on the next launch. Controller selectors remain horizontally
 scrollable, so their content no longer imposes a large minimum width on the
 main window or on a floating MIDI tool.
+
+### Window Compositions
+
+The screenshot generator covers the stable reference compositions supported by
+the application: both tools docked in the main window, Live Monitor floating,
+and MIDI Routing floating. Users can still choose arbitrary dock areas,
+positions, and sizes; those combinations are intentionally not enumerated
+because they are user-specific and are persisted automatically.
+
+![Live Monitor and MIDI Routing docked together](images/layout/midi-tools-docked.png)
+
+![Live Monitor as a floating window](images/layout/live-monitor-floating.png)
+
+![MIDI Routing as a floating window](images/layout/midi-routing-floating.png)
 
 The right-hand panel remains available from every tab for the current selection and validation messages. Selecting a mapping or a layout cell keeps the related views synchronized.
 
@@ -91,6 +106,8 @@ The event table contains the timestamp, direction, source device, MIDI channel a
 
 ![Live Monitor](images/layout/live-monitor.png)
 
+The floating reference is shown in [Window Compositions](#window-compositions).
+
 ## MIDI Routing
 
 MIDI Routing configures one-way source/destination routes and the opt-in Clock
@@ -103,3 +120,5 @@ routing remains disabled unless enabled in Preferences, and cross-software
 Clock use must meet the [compatibility notes](midi-clock-compatibility.md).
 
 ![MIDI Routing with direct Ableton Link source](images/layout/midi-routing.png)
+
+The floating reference is shown in [Window Compositions](#window-compositions).

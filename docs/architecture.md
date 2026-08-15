@@ -53,7 +53,8 @@ flowchart TD
     Deck[By Deck]
     Controller[By Controller]
     Images[Controller Images]
-    Monitor[Live Monitor]
+    Monitor[Live Monitor dock]
+    Routing[MIDI Routing dock]
     Setup[Controller Setup]
 
     Intro --> Channel
@@ -61,6 +62,7 @@ flowchart TD
     Intro --> Controller
     Intro --> Images
     Intro --> Monitor
+    Intro --> Routing
     Intro --> Setup
     Layout[Controller layout cell]
     Tree[Paired mapping tree]
@@ -69,7 +71,7 @@ flowchart TD
     Layout -.->|previous cells: faded history| Layout
 ```
 
-The Dashboard tab acts as an entry dashboard: it lists known controllers in a three-column card grid, shows controller cards with MIDI availability, and emits drill-down actions into the other tabs. In By Channel, By Deck, and By Controller, clicking a schematic cell keeps the originating tab active and selects the corresponding tree item. The current cell is strongly highlighted while a short faded history remains visible in the layout.
+The Dashboard tab acts as an entry dashboard: it lists known controllers in a three-column card grid, shows controller cards with MIDI availability, and emits drill-down actions into the mapping tabs or MIDI tool docks. Live Monitor and MIDI Routing are independent closable/floating docks. In By Channel, By Deck, and By Controller, clicking a schematic cell keeps the originating tab active and selects the corresponding tree item. The current cell is strongly highlighted while a short faded history remains visible in the layout.
 
 ## Controller Catalog Registry
 

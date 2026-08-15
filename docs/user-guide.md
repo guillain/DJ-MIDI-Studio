@@ -72,6 +72,11 @@ either confirmed or shown as suggestions according to Preferences.
 - `MIDI Routing`: route MIDI and Clock, and replay Controller Setup rows once or in a loop.
 - `Controller Setup`: capture/import controller triggers, send one-shot session commands, and generate catalog modules.
 
+`Live Monitor` and `MIDI Routing` are independent MIDI tool docks, not mapping
+tabs. Open them from `View -> MIDI Tools` or the Dashboard; use the dock title
+bar or the View menu to float them, dock them again, or close them. The main
+window geometry and dock arrangement are restored on the next launch.
+
 For screenshots and a visual description of each tab, see [Screens and Layouts](screens-and-layouts.md).
 
 ## Screens and Layouts

@@ -153,6 +153,7 @@ Implemented contract, runtime, test, and documentation work:
 - [x] Add the quality gate for coverage, code smells, duplication, and security findings.
 - [x] Add bootstrap, build, executable packaging, release artifact, CI, and provider-neutral GitHub/GitLab release scripts.
 - [x] Add the documentation portal, quickstart, user guide, architecture, testing, quality, build, release, controller PDFs, and visual layout documentation.
+- [x] Generate and document canonical docked and floating MIDI-tool window compositions; arbitrary user arrangements remain persisted rather than exhaustively screenshoted.
 - [x] Complete the Help menu with bundled project documentation, controller references, and official external links.
 - [x] Restore the main window surface after native macOS full-screen transitions.
 - [x] Translate the Dashboard UI and tests to English.
