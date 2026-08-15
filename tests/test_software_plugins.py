@@ -1,5 +1,15 @@
+import pytest
+
 from djmidi import software
 from djmidi.software.traktor import parse_string, to_xml_string
+
+
+@pytest.fixture(autouse=True)
+def reset_software_plugin_filter():
+    """Keep GUI preference tests from leaking global registry state here."""
+    software.set_enabled_plugin_ids(None)
+    yield
+    software.set_enabled_plugin_ids(None)
 
 
 def test_software_plugins_are_discovered():

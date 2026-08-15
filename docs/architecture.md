@@ -71,7 +71,7 @@ flowchart TD
     Layout -.->|previous cells: faded history| Layout
 ```
 
-The Dashboard tab acts as an entry dashboard: it lists known controllers in a three-column card grid, shows controller cards with MIDI availability, and emits drill-down actions into the mapping tabs or MIDI tool docks. Live Monitor and MIDI Routing are independent closable/floating docks. In By Channel, By Deck, and By Controller, clicking a schematic cell keeps the originating tab active and selects the corresponding tree item. The current cell is strongly highlighted while a short faded history remains visible in the layout.
+The Dashboard tab acts as an entry dashboard: it lists known controllers in a three-column card grid, shows controller cards with MIDI availability, and emits drill-down actions into the mapping tabs or MIDI tool docks. Live Monitor and MIDI Routing are independent closable/floating docks. In By Channel, By Deck, and By Controller, clicking a DJ-oriented layout control keeps the originating tab active and selects the corresponding tree item when it represents a mapped control. XDJ-XZ and DDJ-XP2 use dedicated physical zones; display-only continuous controls are clearly separate from catalog mappings. The current cell is strongly highlighted while a short faded history remains visible in the layout.
 
 ## Controller Catalog Registry
 

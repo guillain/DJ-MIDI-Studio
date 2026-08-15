@@ -166,7 +166,7 @@ bash scripts/release_artifacts.sh
 
 ## Release Process
 
-- Tag format: `v*` (example: `v0.1.0`).
+- Tag format: `v*` (example: `v1.0.0`).
 - Workflow `.github/workflows/draft-release.yml` builds package + executables and creates a **draft GitHub release** with attached artifacts.
 - Final checklist: see `docs/release-checklist.md`.
 

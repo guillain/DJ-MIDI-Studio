@@ -94,13 +94,13 @@ The provider-neutral helper is `scripts/scm_release.sh`. It detects GitHub or
 GitLab from the `origin` URL, or can be forced with `SCM_PROVIDER`:
 
 ```bash
-git switch -c release/0.1.0
+git switch -c release/1.0.0
 # commit the intended changes explicitly
-bash scripts/scm_release.sh pr --base main --title "Prepare 0.1.0"
+bash scripts/scm_release.sh pr --base main --title "Prepare 1.0.0"
 
 # after the PR/MR is merged
-bash scripts/scm_release.sh tag --version 0.1.0
-bash scripts/scm_release.sh release --version 0.1.0
+bash scripts/scm_release.sh tag --version 1.0.0
+bash scripts/scm_release.sh release --version 1.0.0
 ```
 
 The script uses `gh` for GitHub and `glab` for GitLab, never stages or commits

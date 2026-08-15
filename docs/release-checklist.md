@@ -61,8 +61,8 @@ the selected provider (`gh` or `glab`); do not store tokens in the repository.
 Releases are triggered by tags matching `v*`.
 
 ```bash
-git tag -a v0.1.0 -m "Release v0.1.0"
-git push origin v0.1.0
+git tag -a v1.0.0 -m "First DJ MIDI Studio release"
+git push origin v1.0.0
 ```
 
 ## CI Build and Draft Release

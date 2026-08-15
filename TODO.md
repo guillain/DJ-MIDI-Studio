@@ -165,6 +165,7 @@ Implemented contract, runtime, test, and documentation work:
 - [x] Restore the main window surface after native macOS full-screen transitions.
 - [x] Translate the Dashboard UI and tests to English.
 - [x] Rename the project to DJ MIDI Studio.
+- [x] Prepare the first public `v1.0.0` package, multi-OS CI release, and synchronized documentation screenshots.
 
 ## Open backlog
 
