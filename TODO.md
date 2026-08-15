@@ -155,7 +155,7 @@ Ordered by current priority:
 
 - [x] Add the first non-Pioneer controller plugins: Numark Mixtrack Pro FX and Hercules DJControl Inpulse 500. Their initial discrete-control profiles are conservative and must be verified against specific hardware/firmware captures before production use.
 - [ ] Continue adding controller models beyond DDJ-XP2, XDJ-XZ, DDJ-1000, Numark Mixtrack Pro FX, and Hercules DJControl Inpulse 500. The shortlist below is ordered by a combination of market reach, availability of official MIDI documentation, and fit with the current catalog architecture.
-- [x] Add support for Traktor through the Native Instruments Traktor software plugin; keep Rekordbox and VirtualDJ open.
+- [x] Add support for Traktor through the Native Instruments Traktor software plugin; keep Rekordbox and VirtualDJ open. The plugin now has a dedicated guide documenting NML/TSI detection, NOTE/CC normalization, export behavior, and unsupported advanced Traktor features.
 - [x] Automatically detect the connected controller and enable the correct catalog module.
 - [x] Add automatic detection of the DJ software and enable the correct mapping parser.
 - [x] Add Clock mirror and MIDI routing support for multi-device setups.

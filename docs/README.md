@@ -35,6 +35,7 @@
 
 - [Controller Profiles](controller-profiles.md)
 - [Controller documentation and official PDF sources](controllers/README.md)
+- [Traktor integration](traktor.md)
 
 ## End-to-End Examples
 

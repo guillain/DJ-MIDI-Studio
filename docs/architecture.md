@@ -10,7 +10,9 @@
 
 ## Overview
 
-The application parses Serato MIDI XML into a typed model, lets users edit mappings in a Qt GUI, validates structural and mapping conflicts, and exports XML back to disk.
+The application parses Serato MIDI XML and Traktor NML/XML into a typed model,
+lets users edit mappings in a Qt GUI, validates structural and mapping
+conflicts, and exports the selected software format back to disk.
 
 ## Main Modules
 
@@ -26,14 +28,14 @@ The application parses Serato MIDI XML into a typed model, lets users edit mappi
 
 ```mermaid
 flowchart LR
-    A[Serato XML] --> B[parser.py]
+    A[Serato XML / Traktor NML] --> B[software plugin parser]
     B --> C[model.py objects]
     C --> D[GUI editors]
     C --> E[validator.py]
     D --> C
     E --> F[Issues table]
     C --> G[exporter.py]
-    G --> H[Serato XML output]
+    G --> H[Selected software XML output]
 ```
 
 ## GUI Navigation Model

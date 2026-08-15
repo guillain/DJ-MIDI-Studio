@@ -36,6 +36,9 @@ Serato XML (`<midi>`) and Traktor NML (`<NML>`) signatures are detected before
 the parser is selected. If the file is malformed, unsupported, or ambiguous,
 the software selector remains available so the user can choose explicitly.
 
+For the supported Traktor NML subset and its known limitations, see the
+[Traktor integration guide](traktor.md).
+
 ## Inspect a physical MIDI event
 
 1. Open `Live Monitor`.

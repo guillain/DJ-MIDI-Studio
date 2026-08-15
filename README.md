@@ -23,7 +23,7 @@ DJ MIDI mapping files can become very large and hard to maintain. DJ MIDI Studio
 - structured parsing into a typed model,
 - GUI views for channel/deck/controller perspectives,
 - safe grouped edits for duplicated trigger patterns,
-- validation and XML export back to Serato-compatible format.
+- validation and XML export back to Serato-compatible or Traktor NML format.
 
 ## Key Features
 
@@ -173,6 +173,7 @@ mapping parsing, Live Monitor, MIDI routing, and unknown-device workflows.
 ## Technical References
 
 - [Serato MIDI Mapping Guide](https://support.serato.com/hc/en-us/articles/209377487-MIDI-mapping-with-Serato-DJ-Pro)
+- [Traktor integration guide](docs/traktor.md)
 - [Pioneer DJ XDJ-XZ MIDI Message List](https://downloads.support.alphatheta.com/software_info/all-in-one-dj-systems/XDJ-XZ/XDJ-XZ_MIDI_Message_List_E3.pdf)
 - [Pioneer DJ DDJ-XP2 MIDI Message List](https://downloads.support.alphatheta.com/software_info/dj-controllers/DDJ-XP2/DDJ-XP2_MIDI_Message_List_E1.pdf)
 - [Pioneer DJ DDJ-FLX10 MIDI Message List](docs/controllers/ddj-flx10-midi-message-list-e1.pdf)
