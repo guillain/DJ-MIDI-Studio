@@ -125,8 +125,14 @@ execution.
 
 Additional release workflow: `.github/workflows/draft-release.yml` (tag-triggered published release with attached artifacts).
 
-Merge-to-tag workflow: `.github/workflows/tag-release-on-merge.yml` (release
-PR merge → annotated tag → artifact build → draft release).
+Merge-to-release workflow: `.github/workflows/tag-release-on-merge.yml`
+(release PR merge → annotated tag → reusable artifact build → published
+release). The direct workflow call is intentional: tags pushed by
+`GITHUB_TOKEN` do not recursively trigger another workflow.
+
+For recovery, run `Draft Release` manually with an existing tag such as
+`v1.1.0`; the workflow accepts the tag as a required input and rebuilds all
+assets.
 
 It builds artifacts on a matrix:
 

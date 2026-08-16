@@ -165,6 +165,7 @@ Implemented contract, runtime, test, and documentation work:
 - [x] Document Linux ALSA/Qt headless dependencies, Windows MSYS path handling, and the tag-only CD release flow.
 - [x] Automate release preparation with version/lock bump, release commit, generated PR description, merge-to-tag automation, and tag-triggered multi-OS assets.
 - [x] Publish the GitHub release automatically after the tag build completes, with no manual draft-release action.
+- [x] Invoke the release build directly after merge-tag creation so GitHub's GITHUB_TOKEN event suppression cannot skip the asset pipeline.
 - [x] Add the documentation portal, quickstart, user guide, architecture, testing, quality, build, release, controller PDFs, and visual layout documentation.
 - [x] Generate and document canonical docked and floating MIDI-tool window compositions; arbitrary user arrangements remain persisted rather than exhaustively screenshoted.
 - [x] Complete the Help menu with bundled project documentation, controller references, and official external links.

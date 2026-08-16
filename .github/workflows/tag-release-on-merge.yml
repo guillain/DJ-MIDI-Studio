@@ -37,6 +37,7 @@ jobs:
           echo "tag=v$version" >> "$GITHUB_OUTPUT"
 
       - name: Create and push release tag
+        id: tag
         env:
           VERSION: ${{ steps.version.outputs.version }}
           TAG: ${{ steps.version.outputs.tag }}
@@ -44,10 +45,22 @@ jobs:
         run: |
           if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
             echo "Tag $TAG already exists; nothing to do."
-            exit 0
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git tag -a "$TAG" -m "Release $TAG"
+            git push origin "$TAG"
           fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag -a "$TAG" -m "Release $TAG"
-          git push origin "$TAG"
-          echo "Pushed $TAG. The tag-triggered release workflow will build and attach all assets."
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Tag $TAG is ready for the reusable release workflow."
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+
+  build-and-publish:
+    name: Build and publish release assets
+    needs: tag-release
+    uses: ./.github/workflows/draft-release.yml
+    with:
+      tag_name: ${{ needs.tag-release.outputs.tag }}
+    permissions:
+      contents: write
