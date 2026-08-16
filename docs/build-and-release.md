@@ -91,6 +91,10 @@ metadata is preserved for Gatekeeper and notarization. Unsigned packaging
 requires the explicit `--allow-unsigned` flag and is intended only for local
 testing.
 
+Windows packaging runs under Git Bash in CI, but uses PowerShell's native
+`Compress-Archive` instead of assuming that the Unix `zip` command exists on
+the runner.
+
 ## SCM, tags, and releases
 
 The provider-neutral helper is `scripts/scm_release.sh`. It detects GitHub or

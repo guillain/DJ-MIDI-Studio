@@ -103,7 +103,13 @@ if [[ -d "dist/executables/$OS_NAME" ]]; then
     ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "dist/release/${ARCHIVE_BASE}.zip"
     echo "Created dist/release/${ARCHIVE_BASE}.zip"
   elif [[ "$OS_NAME" == "windows" ]]; then
-    (cd dist/executables && zip -r "../release/${ARCHIVE_BASE}.zip" "$OS_NAME")
+    # Git Bash is the workflow shell, but Windows runners do not necessarily
+    # include the Unix `zip` utility. Use the native PowerShell cmdlet.
+    (
+      cd dist/executables
+      powershell.exe -NoProfile -NonInteractive -Command \
+        "Compress-Archive -Path '$OS_NAME' -DestinationPath '../release/${ARCHIVE_BASE}.zip' -Force"
+    )
     echo "Created dist/release/${ARCHIVE_BASE}.zip"
   else
     (cd dist/executables && tar -czf "../release/${ARCHIVE_BASE}.tar.gz" "$OS_NAME")
