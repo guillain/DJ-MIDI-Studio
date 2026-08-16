@@ -20,6 +20,17 @@ def test_list_input_ports_returns_list():
     assert isinstance(ports, list)
 
 
+def test_list_input_ports_returns_empty_when_backend_is_unavailable(monkeypatch):
+    monkeypatch.setattr("mido.get_input_names", lambda: (_ for _ in ()).throw(RuntimeError("no MIDI")))
+    assert list_input_ports() == []
+
+
+def test_list_input_ports_can_be_disabled_for_headless_startup(monkeypatch):
+    monkeypatch.setenv("DJMIDI_DISABLE_MIDI", "1")
+    monkeypatch.setattr("mido.get_input_names", lambda: (_ for _ in ()).throw(AssertionError("not called")))
+    assert list_input_ports() == []
+
+
 # ─── MidiMonitor.open_input / close_input ─────────────────────────────────────
 
 def test_open_input_stores_port():
@@ -159,6 +170,17 @@ def test_list_output_ports_returns_list():
     assert isinstance(ports, list)
 
 
+def test_list_output_ports_returns_empty_when_backend_is_unavailable(monkeypatch):
+    monkeypatch.setattr("mido.get_output_names", lambda: (_ for _ in ()).throw(RuntimeError("no MIDI")))
+    assert list_output_ports() == []
+
+
+def test_list_output_ports_can_be_disabled_for_headless_startup(monkeypatch):
+    monkeypatch.setenv("DJMIDI_DISABLE_MIDI", "1")
+    monkeypatch.setattr("mido.get_output_names", lambda: (_ for _ in ()).throw(AssertionError("not called")))
+    assert list_output_ports() == []
+
+
 def test_send_midi_message_sends_note_on_with_1_based_channel():
     output = MagicMock()
     output_ctx = MagicMock()
@@ -230,5 +252,3 @@ def test_send_midi_message_rejects_unknown_event_type():
         assert False, "Expected ValueError"
     except ValueError as exc:
         assert "Unsupported event_type" in str(exc)
-
-

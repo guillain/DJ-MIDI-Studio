@@ -15,6 +15,8 @@ catalog.lookup() without any translation at the call site.
 
 from __future__ import annotations
 
+import logging
+import os
 import time
 from dataclasses import dataclass
 from typing import Literal
@@ -24,6 +26,12 @@ import mido
 from djmidi.midi_api import MidiPortInfo
 
 Direction = Literal["in", "out"]
+_LOGGER = logging.getLogger(__name__)
+
+
+def _midi_disabled() -> bool:
+    """Disable native MIDI probing for headless packaged smoke tests."""
+    return os.environ.get("DJMIDI_DISABLE_MIDI") == "1"
 
 _TYPE_TO_EVENT_TYPE = {
     "note_on": "Note On",
@@ -69,11 +77,23 @@ def mido_message_to_event(
 
 
 def list_input_ports() -> list[str]:
-    return mido.get_input_names()
+    if _midi_disabled():
+        return []
+    try:
+        return mido.get_input_names()
+    except Exception as exc:  # noqa: BLE001 - MIDI availability is optional at startup
+        _LOGGER.warning("Unable to enumerate MIDI input ports: %s", exc)
+        return []
 
 
 def list_output_ports() -> list[str]:
-    return mido.get_output_names()
+    if _midi_disabled():
+        return []
+    try:
+        return mido.get_output_names()
+    except Exception as exc:  # noqa: BLE001 - MIDI availability is optional at startup
+        _LOGGER.warning("Unable to enumerate MIDI output ports: %s", exc)
+        return []
 
 
 def list_port_info() -> list[MidiPortInfo]:

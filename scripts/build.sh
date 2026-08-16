@@ -93,6 +93,8 @@ if [[ "$BUILD_EXECUTABLE" -eq 1 ]]; then
     --paths "$NATIVE_ROOT_DIR/src" \
     --collect-submodules djmidi.catalog \
     --collect-submodules djmidi.software \
+    --collect-submodules mido.backends \
+    --hidden-import rtmidi \
     --add-data "$NATIVE_ROOT_DIR/assets${DATA_SEP}assets" \
     --add-data "$NATIVE_ROOT_DIR/docs/controllers${DATA_SEP}docs/controllers" \
     --osx-bundle-identifier "com.guillain.djmidi" \

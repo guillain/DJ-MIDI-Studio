@@ -28,6 +28,7 @@ Edit DJ software MIDI mappings with a visual workflow instead of hand-editing th
 - [Send MIDI Commands](#send-midi-commands)
 - [Release Process](#release-process)
 - [Documentation Index](#documentation-index)
+- [Developer and AI-Assisted Development](#developer-and-ai-assisted-development)
 - [End-to-End Examples](#end-to-end-examples)
 - [Technical References](#technical-references)
 
@@ -208,7 +209,7 @@ bash scripts/release_artifacts.sh
 📦 Releases are built by GitHub Actions and published from annotated tags.
 
 - Every push and Pull Request runs the multi-platform CI build after the quality gate.
-- Tag format: `v*` (example: `v1.0.0`).
+- Tag format: `v*` (example: `v0.44.0`).
 - Workflow `.github/workflows/draft-release.yml` builds package + executables and publishes a **GitHub release** with attached artifacts.
 - Final checklist: see `docs/release-checklist.md`.
 
@@ -234,6 +235,15 @@ mapping parsing, Live Monitor, MIDI routing, and unknown-device workflows.
 - [Quality Gates](docs/quality-gates.md)
 - [Build and Release](docs/build-and-release.md)
 - [Release Checklist](docs/release-checklist.md)
+
+## Developer and AI-Assisted Development
+
+🛠️ Contributors can start with [Developer Setup](docs/development/setup.md),
+[Development Workflow](docs/development/workflow.md), and
+[Contributing](docs/development/contributing.md). This project also documents
+its vibe-coding workflow and reusable agent assets:
+[AI-Assisted Development](docs/agents/ai-assisted-development.md) and the
+[Agent Assets Index](docs/agents/assets/README.md).
 
 ## Technical References
 
