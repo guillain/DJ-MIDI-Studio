@@ -1,6 +1,21 @@
-# DJ MIDI Studio
+# DJ MIDI Studio 🎛️
 
 Edit DJ software MIDI mappings with a visual workflow instead of hand-editing thousands of XML lines.
+
+<p align="center">
+  <strong>See the mapping. Hear the change. Keep control. 🎚️</strong><br>
+  A visual MIDI workbench for DJ controllers, Serato, Traktor, and hardware-friendly workflows.
+</p>
+
+<p align="center">
+  <a href="https://github.com/guillain/DJ-MIDI-Studio/actions/workflows/build-executables.yml"><img src="https://github.com/guillain/DJ-MIDI-Studio/actions/workflows/build-executables.yml/badge.svg" alt="CI status"></a>
+  <a href="https://github.com/guillain/DJ-MIDI-Studio/releases"><img src="https://img.shields.io/github/v/release/guillain/DJ-MIDI-Studio?include_prereleases" alt="Latest release"></a>
+  <a href="docs/README.md"><img src="https://img.shields.io/badge/docs-local%20%26%20bundled-6f42c1" alt="Documentation"></a>
+</p>
+
+<p align="center">
+  <img src="docs/images/layout/dashboard.png" alt="DJ MIDI Studio dashboard" width="900">
+</p>
 
 ## Table of Contents
 
@@ -20,22 +35,42 @@ Edit DJ software MIDI mappings with a visual workflow instead of hand-editing th
 
 DJ MIDI mapping files can become very large and hard to maintain. DJ MIDI Studio provides:
 
-- structured parsing into a typed model,
-- GUI views for channel/deck/controller perspectives,
-- safe grouped edits for duplicated trigger patterns,
-- validation and XML export back to Serato-compatible or Traktor NML format.
+- 🧩 structured parsing into a typed model,
+- 🗺️ GUI views for channel/deck/controller perspectives,
+- ✏️ safe grouped edits for duplicated trigger patterns,
+- ✅ validation and XML export back to Serato-compatible or Traktor NML format.
 
 ## Key Features
 
-- XML parse/export round-trip tooling for Serato MIDI config files.
-- Multi-view GUI: `By Channel`, `By Deck`, `By Controller`, `Controller Images`, `Live Monitor`, `MIDI Routing`, `Controller Setup`.
-- New `Dashboard` with known-controller cards, MIDI availability indicators, and drill-down navigation.
-- Dynamic plugin-style controller catalog registry.
-- Plugin-discovered MIDI catalogs for DDJ-XP2, XDJ-XZ, DDJ-1000, DDJ-FLX4, DDJ-FLX10, DDJ-REV1, Numark Mixtrack Pro FX, and Hercules DJControl Inpulse 500.
-- Plugin-discovered DJ software integrations for Serato DJ and Native Instruments Traktor.
-- Validation for structure and mapping conflicts.
-- Send saved Controller Setup session commands directly to a selected MIDI output, with looping/repeat playback integrated into `MIDI Routing`.
-- Follow Ableton Link as a read-only tempo/phase source and generate standard 24 PPQN MIDI Clock without requiring Ableton Live.
+| | What you get |
+|---|---|
+| 🎨 | Visual mapping workflow with Dashboard, controller layouts, and synchronized tree views |
+| 🎛️ | Catalogs for DDJ-XP2, XDJ-XZ, DDJ-1000, DDJ-FLX4, DDJ-FLX10, DDJ-REV1, Mixtrack Pro FX, and Inpulse 500 |
+| 🎧 | Serato DJ and Native Instruments Traktor integrations |
+| 🔎 | MIDI learning, Live Monitor, source-device tracking, and controller lookup |
+| 🔀 | Safe one-way MIDI routing with cycle prevention and error diagnostics |
+| 🕒 | MIDI Clock mirroring plus optional read-only Ableton Link → 24 PPQN output |
+| 💾 | Validation, safe updates, backups, previews, rollback, and XML round-tripping |
+
+## Screens and Layouts
+
+Here is the short visual tour. The complete annotated guide is available in
+[Screens and Layouts](docs/screens-and-layouts.md).
+
+| Dashboard | By Controller |
+|---|---|
+| ![Dashboard](docs/images/layout/dashboard.png) | ![By Controller](docs/images/layout/by-controller.png) |
+
+| By Deck | Controller Images |
+|---|---|
+| ![By Deck](docs/images/layout/by-deck.png) | ![Controller Images](docs/images/layout/controlleur-image.png) |
+
+| Live Monitor | MIDI Routing |
+|---|---|
+| ![Live Monitor](docs/images/layout/live-monitor.png) | ![MIDI Routing](docs/images/layout/midi-routing.png) |
+
+💡 The MIDI tools can stay docked, float independently, or be restored to the
+previous user arrangement.
 
 ## Screens and Workflow
 
@@ -56,11 +91,10 @@ flowchart LR
 	Routing --> Clock[24 PPQN MIDI Clock output]
 ```
 
-### Screens and Layouts
-
-For annotated screenshots of the main tabs, see [Screens and Layouts](docs/screens-and-layouts.md).
-
 ## Quickstart
+
+🚀 **Ready to explore?** The local documentation is bundled with the app, so
+the mapping references remain available when working offline.
 
 Install dependencies:
 
@@ -100,6 +134,8 @@ uv run pytest
 
 ## Build and Test Scripts
 
+🧪 The same quality gate used by CI can be run locally before opening a PR:
+
 - `scripts/test.sh`: lint/test entrypoint (`all`, `quick`, `lint`, `test`, `path`).
 - `scripts/quality_gate.py` / `scripts/quality_gate.sh`: coverage, maintainability, duplication, and security gate.
 - `scripts/capture_docs_screenshots.py`: regenerates UI screenshots from the reference XML without MIDI hardware.
@@ -109,6 +145,9 @@ uv run pytest
 - `.github/workflows/build-executables.yml`: CI matrix build for macOS/Linux/Windows executables.
 
 ## Send MIDI Commands
+
+⚡ Useful for testing a mapping without touching the GUI. Always select the
+correct MIDI output port before sending commands to hardware.
 
 You can send one-shot NOTE/CC commands directly to a controller output port:
 
@@ -166,16 +205,22 @@ bash scripts/release_artifacts.sh
 
 ## Release Process
 
-- Tag format: `v*` (example: `v0.1.0`).
+📦 Releases are built by GitHub Actions and published from annotated tags.
+
+- Tag format: `v*` (example: `v1.0.0`).
 - Workflow `.github/workflows/draft-release.yml` builds package + executables and creates a **draft GitHub release** with attached artifacts.
 - Final checklist: see `docs/release-checklist.md`.
 
 ## End-to-End Examples
 
+🧭 Follow the examples for a complete workflow from port detection to routing.
+
 See the [end-to-end examples](docs/examples.md) for controller detection,
 mapping parsing, Live Monitor, MIDI routing, and unknown-device workflows.
 
 ## Documentation Index
+
+📚 The documentation is intentionally local and bundled with the application:
 
 - [Documentation Home](docs/README.md)
 - [Controller documentation and official PDF sources](docs/controllers/README.md)
@@ -190,6 +235,8 @@ mapping parsing, Live Monitor, MIDI routing, and unknown-device workflows.
 - [Release Checklist](docs/release-checklist.md)
 
 ## Technical References
+
+🔗 Official software and controller references:
 
 - [Serato MIDI Mapping Guide](https://support.serato.com/hc/en-us/articles/209377487-MIDI-mapping-with-Serato-DJ-Pro)
 - [Traktor integration guide](docs/traktor.md)
