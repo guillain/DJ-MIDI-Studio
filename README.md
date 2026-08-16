@@ -207,6 +207,7 @@ bash scripts/release_artifacts.sh
 
 📦 Releases are built by GitHub Actions and published from annotated tags.
 
+- Every push and Pull Request runs the multi-platform CI build after the quality gate.
 - Tag format: `v*` (example: `v1.0.0`).
 - Workflow `.github/workflows/draft-release.yml` builds package + executables and creates a **draft GitHub release** with attached artifacts.
 - Final checklist: see `docs/release-checklist.md`.
