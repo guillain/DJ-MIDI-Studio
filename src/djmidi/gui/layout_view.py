@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from PySide6.QtCore import QLineF, QRectF, Qt, Signal
+from PySide6.QtCore import QLineF, QPointF, QRectF, Qt, Signal
 from PySide6.QtGui import QBrush, QColor, QFont, QPen
 from PySide6.QtWidgets import (
     QComboBox,
@@ -131,6 +131,7 @@ class ControllerLayoutView(QWidget):
         self._linked_cells: LinkedCells = {}
         self._selected_keys: set[CellKey] = set()
         self._selection_history: list[set[CellKey]] = []
+        self._pad_center: QPointF | None = None
 
         self._controller_tabs = QTabBar()
         self._controller_tabs.setStyleSheet(
@@ -408,6 +409,7 @@ class ControllerLayoutView(QWidget):
 
     def _rebuild(self) -> None:
         self._scene.clear()
+        self._pad_center = None
         self._scene.setBackgroundBrush(_SCENE_BRUSH)
         if not self._controller:
             message = QGraphicsSimpleTextItem(
@@ -495,6 +497,29 @@ class ControllerLayoutView(QWidget):
             self._scene.addItem(title)
 
         self._scene.setSceneRect(self._scene.itemsBoundingRect().adjusted(-10, -10, 10, 10))
+        pad_cells = [cell for cell in cells if cell.section == "PAD"]
+        if pad_cells:
+            self._pad_center = QPointF(
+                sum(cell.col * (_CELL_W + _MARGIN) + _CELL_W / 2 for cell in pad_cells)
+                / len(pad_cells),
+                sum(cell.row * (_CELL_H + _MARGIN) + _CELL_H / 2 for cell in pad_cells)
+                / len(pad_cells),
+            )
+            self._center_on_pad_zone()
+
+    def _center_on_pad_zone(self) -> None:
+        if self._pad_center is None:
+            return
+        scene_rect = self._scene.sceneRect()
+        half_view_width = max(320, self._view.viewport().width() / 2)
+        if self._pad_center.x() - half_view_width < scene_rect.left():
+            scene_rect.setLeft(self._pad_center.x() - half_view_width - 20)
+            self._scene.setSceneRect(scene_rect)
+        self._view.centerOn(self._pad_center)
+
+    def resizeEvent(self, event) -> None:
+        super().resizeEvent(event)
+        self._center_on_pad_zone()
 
 
 __all__ = ["ControllerLayoutView"]

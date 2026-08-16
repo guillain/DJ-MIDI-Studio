@@ -129,6 +129,7 @@ Implemented contract, runtime, test, and documentation work:
 - [x] Add a dark performance-oriented layout theme with deck colors, section labels, and high-contrast selection accents.
 - [x] Add display-only mixer controls for XDJ-XZ and DDJ-XP2 so trim, EQ, volume, crossfader, and Slide FX surfaces are visible before continuous MIDI cataloging.
 - [x] Arrange XDJ-XZ and DDJ-XP2 layouts into dedicated pads, deck, effects, mixer, browse, and pad-mode zones.
+- [x] Center the Dashboard MIDI tools beside Known controllers and center the pad bank in the layout view's initial viewport.
 - [x] Synchronize tree/layout selections, preserve the originating tab, and fade recent selection history.
 - [x] Increase the Physical control panel height and make dynamic controller selectors horizontally scrollable.
 - [x] Keep the Physical control field expanded with a splitter-safe minimum height for long multi-controller matches.

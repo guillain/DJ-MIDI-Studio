@@ -71,7 +71,7 @@ class IntroductionView(QWidget):
         cards_box_layout.addWidget(self._controller_tabs)
 
         tools_box = QGroupBox("MIDI tools")
-        tools_layout = QHBoxLayout(tools_box)
+        tools_layout = QVBoxLayout(tools_box)
         monitor_button = QPushButton("Open Live Monitor")
         monitor_button.clicked.connect(lambda: self.toolRequested.emit("monitor"))
         routing_button = QPushButton("Open MIDI Routing")
@@ -89,13 +89,17 @@ class IntroductionView(QWidget):
         info.setWordWrap(True)
         info.setFrameShape(QFrame.Shape.StyledPanel)
 
+        overview_header = QHBoxLayout()
+        overview_header.setSpacing(10)
+        overview_header.addWidget(catalog_box, 3)
+        overview_header.addWidget(tools_box, 1)
+
         layout = QVBoxLayout(self)
         layout.addWidget(title)
         layout.addWidget(description)
         layout.addWidget(self._loaded_file_label)
-        layout.addWidget(catalog_box)
+        layout.addLayout(overview_header)
         layout.addWidget(cards_box)
-        layout.addWidget(tools_box)
         layout.addWidget(info)
         layout.addStretch(1)
 

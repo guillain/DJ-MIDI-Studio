@@ -6,7 +6,7 @@ def test_ddj_xp2_pad_grid_is_4x4():
     pad_cells = [c for c in cells if c.section == "PAD"]
     assert len(pad_cells) == 16
     assert max(c.row for c in pad_cells) - min(c.row for c in pad_cells) == 3
-    assert {c.col for c in pad_cells} == {0, 1, 2, 3}
+    assert {c.col for c in pad_cells} == {4, 5, 6, 7}
 
 
 def test_xdj_xz_pad_grid_has_8_pads():
@@ -57,12 +57,12 @@ def test_dj_layouts_include_display_only_mixer_controls():
 def test_xdj_and_xp2_use_separate_physical_zones():
     xdj = layout.build_layout("XDJ-XZ")
     xdj_by_section = {section: min((cell.col, cell.row) for cell in xdj if cell.section == section) for section in {cell.section for cell in xdj}}
-    assert xdj_by_section["PAD"] == (0, 1)
+    assert xdj_by_section["PAD"] == (4, 1)
     assert xdj_by_section["DECK"] == (5, 3)
     assert xdj_by_section["EFFECT"] == (10, 3)
     assert xdj_by_section["MIXER"] == (5, 11)
 
     xp2 = layout.build_layout("DDJ-XP2")
     xp2_by_section = {section: min((cell.col, cell.row) for cell in xp2 if cell.section == section) for section in {cell.section for cell in xp2}}
-    assert xp2_by_section["PAD"] == (0, 1)
+    assert xp2_by_section["PAD"] == (4, 1)
     assert xp2_by_section["PAD MODE"] == (10, 6)
