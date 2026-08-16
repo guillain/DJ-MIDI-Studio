@@ -82,7 +82,7 @@ On tag push, workflow `.github/workflows/draft-release.yml`:
 - builds wheel + sdist,
 - regenerates the documentation screenshots from
   `data/xdj_xz-ddj_xp2-4decks.xml`,
-- attaches all release archives to a **draft GitHub Release**.
+- publishes a GitHub Release with all release archives attached.
 
 ```mermaid
 flowchart LR
@@ -107,9 +107,9 @@ Before publishing draft release:
 
 ## Publish Steps
 
-1. Open GitHub Releases.
-2. Edit the generated draft notes if needed.
-3. Click **Publish release**.
+The release is published automatically after the tag-triggered workflow
+finishes. Review the generated notes and assets in GitHub Releases; no manual
+publish action is required.
 
 ## Rollback Plan
 

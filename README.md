@@ -209,7 +209,7 @@ bash scripts/release_artifacts.sh
 
 - Every push and Pull Request runs the multi-platform CI build after the quality gate.
 - Tag format: `v*` (example: `v1.0.0`).
-- Workflow `.github/workflows/draft-release.yml` builds package + executables and creates a **draft GitHub release** with attached artifacts.
+- Workflow `.github/workflows/draft-release.yml` builds package + executables and publishes a **GitHub release** with attached artifacts.
 - Final checklist: see `docs/release-checklist.md`.
 
 ## End-to-End Examples

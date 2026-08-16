@@ -123,7 +123,7 @@ then builds the native executable and Python artifacts on Ubuntu, macOS, and
 Windows. It also remains available through **Run workflow** for a manual
 execution.
 
-Additional release workflow: `.github/workflows/draft-release.yml` (tag-triggered draft release with attached artifacts).
+Additional release workflow: `.github/workflows/draft-release.yml` (tag-triggered published release with attached artifacts).
 
 Merge-to-tag workflow: `.github/workflows/tag-release-on-merge.yml` (release
 PR merge → annotated tag → artifact build → draft release).
@@ -146,7 +146,7 @@ generated PNGs to the draft release; GitLab retains them as the screenshots
 job artifact.
 
 The CD workflow is deliberately tag-only: pushing a tag matching `v*` runs
-the release quality/build pipeline and creates a draft GitHub Release. Normal
+the release quality/build pipeline and creates a published GitHub Release. Normal
 branch pushes validate and build artifacts but never publish a release.
 
 On Ubuntu runners, `python-rtmidi` is compiled against ALSA when no compatible
