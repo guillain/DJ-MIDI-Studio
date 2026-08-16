@@ -75,7 +75,8 @@ either confirmed or shown as suggestions according to Preferences.
 - `By Controller`: physical layout/section perspective.
 - `Controller Images`: static official diagrams and bundled controller documentation.
 - `MIDI Routing`: route MIDI and replay Controller Setup rows once or in a loop.
-- `MIDI Clock`: configure Clock sources/destinations and inspect source activity.
+- `MIDI Clock`: configure Clock sources/destinations and inspect source activity;
+  both Clock and Routing device lists load at startup and offer `Refresh MIDI ports`.
 - `Controller Setup`: capture/import controller triggers, send one-shot session commands, and generate catalog modules.
 
 `Live Monitor`, `MIDI Routing`, and `MIDI Clock` are independent MIDI tool docks, not mapping

@@ -41,6 +41,20 @@ def test_refresh_ports_separates_midi_inputs_and_outputs():
     assert view._destination_combo.findText("MIDI4x4 Midi In 1") < 0
 
 
+def test_routing_and_clock_ports_are_loaded_when_view_opens():
+    with (
+        patch("djmidi.gui.midi_routing_view.list_input_ports", return_value=["Input at startup"]),
+        patch("djmidi.gui.midi_routing_view.list_output_ports", return_value=["Output at startup"]),
+    ):
+        view = MidiRoutingView()
+    assert view._source_combo.currentText() == "Input at startup"
+    assert view._destination_combo.currentText() == "Output at startup"
+    assert view._clock_source.currentText() == "Input at startup"
+    assert view._clock_destination.currentText() == "Output at startup"
+    assert view._routing_refresh_button.text() == "Refresh MIDI ports"
+    assert view._clock_refresh_button.text() == "Refresh MIDI ports"
+
+
 def test_routing_view_rejects_same_clock_source_and_destination():
     view = MidiRoutingView()
     view._clock_source.addItem("same")
@@ -56,6 +70,8 @@ def test_routing_view_supports_multiple_clock_lines():
     view = MidiRoutingView()
     view._clock_source.addItems(["clock-in", "other-in"])
     view._clock_destination.addItems(["clock-out", "other-out"])
+    view._clock_source.setCurrentText("clock-in")
+    view._clock_destination.setCurrentText("clock-out")
     view._clock_enabled.setChecked(True)
     assert len(view._clocks) == 1
     view._clock_source.setCurrentText("other-in")

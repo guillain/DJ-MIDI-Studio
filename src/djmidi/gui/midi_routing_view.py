@@ -65,8 +65,8 @@ class MidiRoutingView(QWidget):
 
         self._source_combo = QComboBox()
         self._destination_combo = QComboBox()
-        refresh_button = QPushButton("Refresh MIDI ports")
-        refresh_button.clicked.connect(self.refresh_ports)
+        self._routing_refresh_button = QPushButton("Refresh MIDI ports")
+        self._routing_refresh_button.clicked.connect(self.refresh_ports)
         add_button = QPushButton("Add route")
         add_button.clicked.connect(self._add_route)
         remove_button = QPushButton("Remove selected")
@@ -82,7 +82,7 @@ class MidiRoutingView(QWidget):
         route_controls.addWidget(self._destination_combo)
         route_controls.addWidget(add_button)
         route_controls.addWidget(remove_button)
-        route_controls.addWidget(refresh_button)
+        route_controls.addWidget(self._routing_refresh_button)
         route_controls.addWidget(self._routing_button)
 
         self._routes_table = QTableWidget(0, 3)
@@ -107,6 +107,8 @@ class MidiRoutingView(QWidget):
         add_clock_button.clicked.connect(self._add_clock_route)
         remove_clock_button = QPushButton("Remove selected")
         remove_clock_button.clicked.connect(self._remove_clock_route)
+        self._clock_refresh_button = QPushButton("Refresh MIDI ports")
+        self._clock_refresh_button.clicked.connect(self.refresh_ports)
         clock_controls = QHBoxLayout()
         clock_controls.addWidget(QLabel("Clock source:"))
         clock_controls.addWidget(self._clock_source)
@@ -116,6 +118,7 @@ class MidiRoutingView(QWidget):
         clock_controls.addWidget(self._serato_virtual_checkbox)
         clock_controls.addWidget(add_clock_button)
         clock_controls.addWidget(remove_clock_button)
+        clock_controls.addWidget(self._clock_refresh_button)
         self._clock_panel = QGroupBox("MIDI Clock")
         clock_layout = QVBoxLayout(self._clock_panel)
         clock_layout.addLayout(clock_controls)
@@ -139,6 +142,7 @@ class MidiRoutingView(QWidget):
         layout.addWidget(routes_box)
         layout.addWidget(self._build_setup_playback_box())
         layout.addStretch(1)
+        self.refresh_ports()
 
     def take_clock_panel(self) -> QWidget:
         """Detach and return the Clock controls for the independent Clock dock."""

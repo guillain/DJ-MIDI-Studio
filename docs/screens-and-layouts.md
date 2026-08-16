@@ -118,13 +118,16 @@ The floating reference is shown in [Window Compositions](#window-compositions).
 ## MIDI Routing
 
 MIDI Routing configures one-way source/destination routes and Controller Setup
-playback. Physical routing remains disabled unless enabled in Preferences.
+playback. Its source and destination lists are loaded when the view opens and
+can be refreshed independently with `Refresh MIDI ports`. Physical routing
+remains disabled unless enabled in Preferences.
 
 ## MIDI Clock
 
 MIDI Clock is an independent closable, movable, and floating tool. It contains
 the opt-in Clock destination policy, source activity indicator, and Clock route
-table. The source selector contains physical MIDI inputs plus `Ableton Link (DJ
+table. Its MIDI device lists are loaded at startup and can be refreshed with
+`Refresh MIDI ports`. The source selector contains physical MIDI inputs plus `Ableton Link (DJ
 MIDI Studio)`. The latter requires the optional `aalink` binding, follows Link
 tempo/phase without changing it, and emits 24 PPQN MIDI Clock. The route engine
 prevents cycles and the Clock policy rejects invalid source/destination pairs.
