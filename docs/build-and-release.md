@@ -114,6 +114,12 @@ certificate configured so the release job does not reject the app as unsigned.
 
 Workflow file: `.github/workflows/build-executables.yml`
 
+The CI pipeline runs automatically on every branch push and Pull Request. It
+first runs the quality gate on Ubuntu, including the ALSA build dependencies,
+then builds the native executable and Python artifacts on Ubuntu, macOS, and
+Windows. It also remains available through **Run workflow** for a manual
+execution.
+
 Additional release workflow: `.github/workflows/draft-release.yml` (tag-triggered draft release with attached artifacts).
 
 It builds artifacts on a matrix:
@@ -132,6 +138,10 @@ The tag-triggered workflow runs the quality gate before the build matrix and
 regenerates the screenshots in a hardware-free Qt job. GitHub attaches the
 generated PNGs to the draft release; GitLab retains them as the screenshots
 job artifact.
+
+The CD workflow is deliberately tag-only: pushing a tag matching `v*` runs
+the release quality/build pipeline and creates a draft GitHub Release. Normal
+branch pushes validate and build artifacts but never publish a release.
 
 On Ubuntu runners, `python-rtmidi` is compiled against ALSA when no compatible
 wheel is available. The CI workflows install `libasound2-dev` and `pkg-config`
