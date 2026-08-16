@@ -22,6 +22,7 @@ Status rules:
   - [Phase 3 — multi-device MIDI engine](#phase-3--multi-device-midi-engine)
   - [Phase 4 — safe software/controller operations](#phase-4--safe-softwarecontroller-operations)
 - [Delivered](#delivered)
+  - [Recent evolution chapters](#recent-evolution-chapters)
   - [Core mapping workflow](#core-mapping-workflow)
   - [Mapping views and navigation](#mapping-views-and-navigation)
   - [Controller catalogs](#controller-catalogs)
@@ -40,6 +41,11 @@ The implementation roadmap is complete through Phase 4. Phase 3 remains
 diagnostics are delivered, but two macOS integrations still require a real
 Serato/XDJ-XZ/DDJ-XP2 setup. No implementation item is being relabeled as
 complete until that distinction is explicit.
+
+The current release baseline is `v0.46.0`. The post-release evolution is
+implemented on the active `feature/independent-midi-clock` line and is tracked
+as focused chapters below. These chapters are software-validated; they do not
+close the open physical Serato/CoreMIDI validation items.
 
 ### Phase 0 — baseline plugin architecture — COMPLETE
 
@@ -109,6 +115,30 @@ Implemented contract, runtime, test, and documentation work:
 - [x] Add rotating execution logs with configurable levels and CLI path override.
 
 ## Delivered
+
+### Recent evolution chapters
+
+- [x] **Independent MIDI Clock tool** — move Clock configuration and diagnostics
+  into a closable/floating dock while retaining shared routing safety and
+  `Ableton Link (DJ MIDI Studio)` support. Commit `4e85483`, follow-up fixes
+  `ea00a64`, `9fb8a7c`, and `f35fe3d`; milestone tag `v0.46.1-midi-clock-tool`.
+- [x] **DJ performance visual language** — apply the dark theme across the
+  application, style mapping trees/layouts, and preserve generic fallbacks.
+  Commits `cd2bc72` and `454242c`; milestone tag
+  `v0.46.2-dj-performance-theme`.
+- [x] **Responsive controller workspace** — improve dashboard/controller setup
+  composition, center pad layouts, keep MIDI output readable, and allow
+  narrower windows. Commits `5c27d90` and `aed5aa9`; milestone tag
+  `v0.46.3-responsive-workspace`.
+- [x] **Helpful Notes onboarding** — provide a startup popup with persistent or
+  session-only dismissal and a View-menu reopen action. Commit `2fdffc`;
+  milestone tag `v0.46.4-helpful-notes`.
+- [x] **Visual documentation refresh** — regenerate canonical dashboard,
+  mapping, MIDI tool, docked, and floating screenshots from the offline fixture.
+  Commit `fc9192f`; milestone tag `v0.46.5-visual-docs`.
+- [x] **Evolution documentation** — record the architecture, user workflows,
+  validation boundaries, screenshots, and chapter-to-commit mapping in
+  [Recent Evolution Chapters](docs/development/evolution.md).
 
 ### Core mapping workflow
 
@@ -187,6 +217,10 @@ Implemented contract, runtime, test, and documentation work:
 - [x] Generate and document canonical docked and floating MIDI-tool window compositions; arbitrary user arrangements remain persisted rather than exhaustively screenshoted.
 - [x] Complete the Help menu with bundled project documentation, controller references, and official external links.
 - [x] Update the Dashboard and Controller Setup visual documentation and screenshots after the layout redesign.
+- [x] Record the post-`v0.46.0` evolution chapters with architecture diagrams,
+  screenshot references, and reproducible capture instructions.
+- [x] Keep a stable screenshot index for application views and dock/floating
+  window compositions.
 - [x] Restore the main window surface after native macOS full-screen transitions.
 - [x] Translate the Dashboard UI and tests to English.
 - [x] Rename the project to DJ MIDI Studio.

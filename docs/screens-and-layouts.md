@@ -14,6 +14,7 @@
 - [Live Monitor](#live-monitor)
 - [MIDI Routing](#midi-routing)
 - [MIDI Clock](#midi-clock)
+- [Evolution reference](#evolution-reference)
 
 ## Application Navigation
 
@@ -119,6 +120,20 @@ The event table contains the timestamp, direction, source device, MIDI channel a
 
 The floating reference is shown in [Window Compositions](#window-compositions).
 
+## Evolution reference
+
+The latest screenshots document the current post-`v0.46.0` composition:
+
+| Chapter | Primary references |
+| --- | --- |
+| Independent MIDI Clock | `midi-clock.png`, `midi-clock-floating.png` |
+| DJ performance theme | `by-deck.png`, `by-controller.png` |
+| Responsive dashboard and setup | `dashboard.png`, `controlleur-setup.png` |
+| Dock orchestration | `midi-tools-docked.png`, floating tool captures |
+
+For the implementation timeline and validation boundary, see [Recent Evolution
+Chapters](development/evolution.md).
+
 ## MIDI Routing
 
 MIDI Routing configures one-way source/destination routes and Controller Setup
@@ -133,8 +148,7 @@ the opt-in Clock destination policy, source activity indicator, and Clock route
 table. Its MIDI device lists are loaded at startup and can be refreshed with
 `Refresh MIDI ports`. The source selector contains physical MIDI inputs plus `Ableton Link (DJ
 MIDI Studio)`. The bundled `aalink` binding provides Link access, follows Link
-tempo/phase without changing it, and emits 24 PPQN MIDI Clock. The bundled
-`aalink` binding provides the Link connection. The route engine
+tempo/phase without changing it, and emits 24 PPQN MIDI Clock. The route engine
 prevents cycles and the Clock policy rejects invalid source/destination pairs.
 Cross-software Clock use must meet the [compatibility notes](midi-clock-compatibility.md).
 
