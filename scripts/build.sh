@@ -55,8 +55,12 @@ esac
 
 if [[ "$OS_NAME" == "windows" ]]; then
   DATA_SEP=';'
+  NATIVE_ROOT_DIR="$(cygpath -w "$ROOT_DIR")"
+  PYINSTALLER_COMMAND=(env MSYS_NO_PATHCONV=1 uv run pyinstaller)
 else
   DATA_SEP=':'
+  NATIVE_ROOT_DIR="$ROOT_DIR"
+  PYINSTALLER_COMMAND=(uv run pyinstaller)
 fi
 
 if [[ "$BUILD_PY_PACKAGE" -eq 1 ]]; then
@@ -67,25 +71,30 @@ fi
 if [[ "$BUILD_EXECUTABLE" -eq 1 ]]; then
   echo "==> Building native executable for $OS_NAME"
   OUT_DIR="dist/executables/$OS_NAME"
+  if [[ "$OS_NAME" == "windows" ]]; then
+    NATIVE_OUT_DIR="$(cygpath -w "$OUT_DIR")"
+  else
+    NATIVE_OUT_DIR="$OUT_DIR"
+  fi
   rm -rf "$OUT_DIR"
   mkdir -p "$OUT_DIR"
 
-  # Resource paths are relative to ROOT_DIR (the current directory). Using
-  # relative paths avoids MSYS/Git Bash converting an absolute /d/... path
-  # twice before PyInstaller receives it on Windows.
-  uv run pyinstaller \
+  # PyInstaller resolves --add-data sources relative to the generated spec
+  # directory, not the shell's current directory. Use absolute native paths;
+  # MSYS_NO_PATHCONV prevents Git Bash from converting Windows paths twice.
+  "${PYINSTALLER_COMMAND[@]}" \
     --noconfirm \
     --clean \
     --windowed \
     --name "$APP_NAME" \
-    --distpath "$OUT_DIR" \
-    --workpath "$ROOT_DIR/build/pyinstaller" \
-    --specpath "$ROOT_DIR/build/pyinstaller" \
-    --paths "$ROOT_DIR/src" \
-    --add-data "assets${DATA_SEP}assets" \
-    --add-data "docs/controllers${DATA_SEP}docs/controllers" \
+    --distpath "$NATIVE_OUT_DIR" \
+    --workpath "$NATIVE_ROOT_DIR/build/pyinstaller" \
+    --specpath "$NATIVE_ROOT_DIR/build/pyinstaller" \
+    --paths "$NATIVE_ROOT_DIR/src" \
+    --add-data "$NATIVE_ROOT_DIR/assets${DATA_SEP}assets" \
+    --add-data "$NATIVE_ROOT_DIR/docs/controllers${DATA_SEP}docs/controllers" \
     --osx-bundle-identifier "com.guillain.djmidi" \
-    "$ROOT_DIR/src/djmidi/gui/app.py"
+    "$NATIVE_ROOT_DIR/src/djmidi/gui/app.py"
 
   if [[ "$OS_NAME" == "macos" ]]; then
     APP_PATH="$OUT_DIR/$APP_NAME.app"

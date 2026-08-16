@@ -138,9 +138,10 @@ wheel is available. The CI workflows install `libasound2-dev` and `pkg-config`
 before `uv sync`; this is required for the Linux build and quality jobs.
 
 The executable build passes bundled resource directories to PyInstaller as
-paths relative to the repository root. This is intentional: Git Bash/MSYS can
-otherwise convert an absolute `/d/...` path twice on Windows and produce an
-invalid `D:\\d\\...` resource path.
+absolute native paths because PyInstaller resolves data sources relative to
+the generated spec directory. On Windows, the script converts paths with
+`cygpath` and disables Git Bash/MSYS path rewriting to avoid invalid paths such
+as `D:\\d\\...`.
 
 ## Release Artifact Packaging
 
