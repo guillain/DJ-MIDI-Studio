@@ -133,6 +133,10 @@ regenerates the screenshots in a hardware-free Qt job. GitHub attaches the
 generated PNGs to the draft release; GitLab retains them as the screenshots
 job artifact.
 
+On Ubuntu runners, `python-rtmidi` is compiled against ALSA when no compatible
+wheel is available. The CI workflows install `libasound2-dev` and `pkg-config`
+before `uv sync`; this is required for the Linux build and quality jobs.
+
 ## Release Artifact Packaging
 
 Package OS executable directory into an archive:
