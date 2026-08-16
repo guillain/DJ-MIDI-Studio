@@ -189,6 +189,9 @@ class MidiRoutingView(QWidget):
     def shutdown(self) -> None:
         self._stop_loop()
         self._stop_routing()
+        for follower in self._link_followers:
+            follower.close()
+        self._link_followers.clear()
 
     def _build_setup_playback_box(self) -> QGroupBox:
         box = QGroupBox("Controller Setup playback")

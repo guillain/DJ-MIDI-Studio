@@ -3,6 +3,7 @@ from __future__ import annotations
 import mido
 
 from djmidi.midi_clock import MidiClockMirror
+from djmidi.midi_api import MidiMessage
 from djmidi.midi_router import MidiRoute, MidiRouter
 from djmidi.midi_routing_session import MidiRoutingSession
 
@@ -22,6 +23,12 @@ class _FakePort:
 
     def close(self):
         self.closed = True
+
+
+class _CloseFailingPort(_FakePort):
+    def close(self):
+        self.closed = True
+        raise OSError("endpoint already gone")
 
 
 def test_session_forwards_messages_and_closes_ports():
@@ -145,3 +152,25 @@ def test_serato_virtual_clock_forwards_transport_and_ticks():
     assert session.poll() == 3
     assert [message.type for message in output_port.sent] == ["start", "clock", "stop"]
     session.stop()
+
+
+def test_session_stop_closes_all_ports_and_resets_clock_after_close_failure():
+    router = MidiRouter()
+    router.add_route(MidiRoute("in", "out"))
+    input_port = _CloseFailingPort()
+    output_port = _FakePort()
+    mirror = MidiClockMirror("clock-in", ["out"])
+    session = MidiRoutingSession(
+        router,
+        input_opener=lambda name: input_port,
+        output_opener=lambda name: output_port,
+        clock_mirror=mirror,
+    )
+    session.start()
+    # The mirror receives state independently of the physical input lifecycle.
+    mirror.forward(MidiMessage(b"\xf8", 1.0, "clock-in"), lambda *_: None)
+    session.stop()
+    assert input_port.closed and output_port.closed
+    assert session.input_port_ids == ()
+    assert session.output_port_ids == ()
+    assert not mirror.clock_active(1.1)

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from djmidi.midi_api import MidiMessage
 
@@ -23,6 +23,8 @@ class ClockStats:
     last_message_time: float | None = None
     last_message_status: int | None = None
     last_clock_time: float | None = None
+    send_errors: int = 0
+    error_messages: list[str] = field(default_factory=list)
 
 
 class MidiClockMirror:
@@ -94,7 +96,12 @@ class MidiClockMirror:
             self.stats.last_clock_time = message.received_time
         count = 0
         for destination in self.destination_port_ids:
-            send(destination, message)
+            try:
+                send(destination, message)
+            except Exception as exc:  # noqa: BLE001 - one failed destination must not stop the clock
+                self.stats.send_errors += 1
+                self.stats.error_messages.append(str(exc))
+                continue
             count += 1
         self.stats.forwarded += count
         return count
@@ -112,6 +119,15 @@ class MidiClockMirror:
             raise ValueError("Clock activity timeout must be positive")
         last_message = self.stats.last_message_time
         return last_message is not None and now - last_message <= timeout_s
+
+    def reset(self) -> None:
+        """Forget transport and activity state before a new routing run."""
+        self.running = False
+        self._last_clock_time = None
+        self.stats.last_interval_ms = None
+        self.stats.last_message_time = None
+        self.stats.last_message_status = None
+        self.stats.last_clock_time = None
 
 
 __all__ = ["ClockStats", "MidiClockMirror"]

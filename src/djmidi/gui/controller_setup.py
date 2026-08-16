@@ -576,8 +576,15 @@ class ControllerSetupView(QWidget):
 
     def _start_learning(self) -> None:
         selected = [self._port_list.item(i).text() for i in range(self._port_list.count()) if self._is_checked(i)]
-        for name in selected:
-            self._monitor.open_input(name)
+        try:
+            for name in selected:
+                self._monitor.open_input(name)
+        except Exception as exc:  # noqa: BLE001 - surface device-open failures without partial learning
+            self._monitor.close_all()
+            self._learn_status.setText("Stopped")
+            self._learn_button.setText("Start learning")
+            QMessageBox.warning(self, "Cannot start MIDI learning", str(exc))
+            return
         self._learning = True
         self._learn_button.setText("Stop learning")
         self._learn_status.setText(f"Listening ({len(selected)} input(s))")

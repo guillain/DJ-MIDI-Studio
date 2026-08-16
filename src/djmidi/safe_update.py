@@ -20,9 +20,12 @@ class SafeUpdatePlan:
     updated_text: str
     diff: str
     backup_path: Path
+    target_existed: bool = False
     applied: bool = False
 
     def apply(self) -> None:
+        if self.applied:
+            raise RuntimeError("safe update has already been applied")
         self.path.parent.mkdir(parents=True, exist_ok=True)
         if self.path.exists():
             shutil.copy2(self.path, self.backup_path)
@@ -43,8 +46,16 @@ class SafeUpdatePlan:
         self.applied = True
 
     def rollback(self) -> None:
+        if not self.applied:
+            return
         if self.backup_path.exists():
             shutil.copy2(self.backup_path, self.path)
+            self.applied = False
+        elif self.applied and not self.target_existed and self.path.exists():
+            # A newly-created target has no backup to restore.  Rollback must
+            # return the filesystem to its pre-apply state rather than leave
+            # the newly written file behind.
+            self.path.unlink()
             self.applied = False
 
 
@@ -67,6 +78,7 @@ def prepare_update(path: str | Path, updated_text: str, validator: Validator | N
         updated_text=updated_text,
         diff=diff,
         backup_path=target.with_name(f"{target.name}.bak"),
+        target_existed=target.exists(),
     )
 
 

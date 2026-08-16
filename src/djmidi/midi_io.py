@@ -164,7 +164,10 @@ class MidiMonitor:
     def close_input(self, name: str) -> None:
         port = self._input_ports.pop(name, None)
         if port is not None:
-            port.close()
+            try:
+                port.close()
+            except Exception:
+                pass
 
     def open_virtual_monitor(self) -> None:
         if self._virtual_port is None:
@@ -172,7 +175,10 @@ class MidiMonitor:
 
     def close_virtual_monitor(self) -> None:
         if self._virtual_port is not None:
-            self._virtual_port.close()
+            try:
+                self._virtual_port.close()
+            except Exception:
+                pass
             self._virtual_port = None
 
     def close_all(self) -> None:
