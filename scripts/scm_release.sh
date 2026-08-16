@@ -121,7 +121,7 @@ $(git log --format='- %s' "$base..HEAD")
 
 - Quality gate runs in CI.
 - Linux, macOS, and Windows artifacts are built by CI.
-- Merging this PR creates tag `v$version` automatically.
+- Merging this PR creates tag \`v$version\` automatically.
 - The tag triggers the draft release workflow with package, executable, and documentation assets."
   fi
   open_pr --base "$base" --title "$title" --body "$body"
