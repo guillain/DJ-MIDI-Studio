@@ -137,6 +137,11 @@ On Ubuntu runners, `python-rtmidi` is compiled against ALSA when no compatible
 wheel is available. The CI workflows install `libasound2-dev` and `pkg-config`
 before `uv sync`; this is required for the Linux build and quality jobs.
 
+The executable build passes bundled resource directories to PyInstaller as
+paths relative to the repository root. This is intentional: Git Bash/MSYS can
+otherwise convert an absolute `/d/...` path twice on Windows and produce an
+invalid `D:\\d\\...` resource path.
+
 ## Release Artifact Packaging
 
 Package OS executable directory into an archive:
