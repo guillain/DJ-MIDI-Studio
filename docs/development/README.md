@@ -8,6 +8,7 @@ changes, run checks, and work with the repository’s CI/CD process.
 - [Getting started](#getting-started)
 - [Contributing](#contributing)
 - [Workflow and quality](#workflow-and-quality)
+- [Evolution record](#evolution-record)
 
 ## Getting started
 
@@ -27,3 +28,8 @@ changes, run checks, and work with the repository’s CI/CD process.
 
 Run the quality checks before opening a pull request, especially after changing
 MIDI behavior, GUI state, packaging, or release automation.
+
+## Evolution record
+
+- [Recent Evolution Chapters](evolution.md) — the post-`v0.46.0` timeline,
+  architecture links, validation boundaries, and screenshot references.

@@ -69,7 +69,7 @@ either confirmed or shown as suggestions according to Preferences.
 
 ![By Controller layout](images/layout/by-controller.png)
 
-- `Dashboard`: known controllers in a three-column overview, MIDI availability, context, and quick drill-down.
+- `Dashboard`: one spacious controller overview tab per registered controller, with MIDI availability, context, and quick drill-down actions.
 - `By Channel`: raw model-level controls and mappings.
 - `By Deck`: grouped duplicate mappings (safe synchronized edits).
 - `By Controller`: physical layout/section perspective.
@@ -78,6 +78,20 @@ either confirmed or shown as suggestions according to Preferences.
 - `MIDI Clock`: configure Clock sources/destinations and inspect source activity;
   both Clock and Routing device lists load at startup and offer `Refresh MIDI ports`.
 - `Controller Setup`: capture/import controller triggers, send one-shot session commands, and generate catalog modules.
+
+The Dashboard overview gives each controller its own tab. The reference image
+uses the main area, while `Channel`, `Controller`, and `Images` remain readable
+in a vertical action column.
+
+Helpful Notes opens automatically in a separate popup at startup. Use
+`View -> Helpful Notes...` to reopen it at any time. Closing the popup asks
+whether it should stay closed on future startups; choosing `Yes` persists the
+choice, while `No` closes it for the current session only.
+
+Controller Setup keeps learning, import, and export at the top and gives MIDI
+Output its own full-width panel. The output port list, message fields,
+playback actions, and PAD MODE 1–8 buttons remain available without a cramped
+five-column layout.
 
 `Live Monitor`, `MIDI Routing`, and `MIDI Clock` are independent MIDI tool docks, not mapping
 tabs. Open them from `View -> MIDI Tools` or the Dashboard; use the dock title

@@ -249,6 +249,9 @@ its vibe-coding workflow and reusable agent assets:
 [AI-Assisted Development](docs/agents/ai-assisted-development.md) and the
 [Agent Assets Index](docs/agents/assets/README.md).
 
+The implementation timeline is captured in the [Recent Evolution Chapters](docs/development/evolution.md),
+including architecture diagrams, validation boundaries, and screenshot references.
+
 ## Technical References
 
 🔗 Official software and controller references:

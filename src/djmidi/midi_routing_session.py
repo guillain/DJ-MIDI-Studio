@@ -116,7 +116,7 @@ class MidiRoutingSession:
             if close is not None:
                 try:
                     close()
-                except Exception:
+                except Exception:  # noqa: BLE001, S110 - cleanup must close every endpoint
                     pass
         self._inputs.clear()
         self._outputs.clear()

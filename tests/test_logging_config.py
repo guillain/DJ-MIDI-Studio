@@ -1,6 +1,6 @@
 import logging
 
-import djmidi.logging_config as logging_config
+from djmidi import logging_config
 from djmidi.logging_config import configure_logging, normalize_level
 
 

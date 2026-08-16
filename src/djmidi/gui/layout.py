@@ -116,13 +116,13 @@ _PRO_LAYOUTS: dict[str, dict[str, tuple[int, int]]] = {
     # schematic, but these zones now read like a DJ surface instead of a
     # catalog dump.
     "XDJ-XZ": {
-        "PAD": (0, 1),
+        "PAD": (4, 1),
         "DECK": (5, 3),
         "EFFECT": (10, 3),
         "MIXER": (5, 11),
     },
     "DDJ-XP2": {
-        "PAD": (0, 1),
+        "PAD": (4, 1),
         "DECK": (5, 5),
         "EFFECT": (0, 6),
         "PAD MODE": (10, 6),

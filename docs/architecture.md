@@ -9,6 +9,7 @@
 - [Main Modules](#main-modules)
 - [Data Flow](#data-flow)
 - [GUI Navigation Model](#gui-navigation-model)
+- [Recent UI and tool evolution](#recent-ui-and-tool-evolution)
 - [Controller Catalog Registry](#controller-catalog-registry)
 
 ## Overview
@@ -79,6 +80,27 @@ flowchart TD
 ```
 
 The Dashboard tab acts as an entry dashboard: it lists known controllers in a three-column card grid, shows controller cards with MIDI availability, and emits drill-down actions into the mapping tabs or MIDI tool docks. Live Monitor, MIDI Routing, and MIDI Clock are independent closable/floating docks. MIDI Routing retains the shared routing session, while MIDI Clock presents its configuration and diagnostics in its own surface. In By Channel, By Deck, and By Controller, clicking a schematic cell keeps the originating tab active and selects the corresponding tree item. The current cell is strongly highlighted while a short faded history remains visible in the layout.
+
+### Recent UI and tool evolution
+
+```mermaid
+flowchart TB
+    Dashboard[Controller overview dashboard] -->|compact drill-down| Mapping[Mapping views]
+    Mapping -->|centered physical layout| Layout[DJ controller layout]
+    Setup[Responsive Controller Setup] -->|learn / import / send| MIDI[MIDI session tools]
+    MIDI --> Routing[MIDI Routing dock]
+    MIDI --> Clock[MIDI Clock dock]
+    Clock --> Link[Ableton Link follower]
+    Theme[Shared DJ performance theme] -.-> Dashboard
+    Theme -.-> Mapping
+    Theme -.-> MIDI
+    Notes[Helpful Notes popup] -.-> Dashboard
+```
+
+The three MIDI tools share safe session ownership but remain independently
+closable and floatable. The theme is applied at the application level so new
+dialogs and docks inherit the same visual language. Helpful Notes is kept out of
+the dashboard layout to preserve the workspace for mapping tasks.
 
 ## Controller Catalog Registry
 

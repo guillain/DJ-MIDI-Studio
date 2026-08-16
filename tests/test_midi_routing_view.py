@@ -2,9 +2,9 @@ from unittest.mock import patch
 
 from PySide6.QtWidgets import QLabel
 
+from djmidi.ableton_link import ABLETON_LINK_CLOCK_SOURCE_NAME
 from djmidi.catalog._registry import ControlInfo
 from djmidi.gui.midi_routing_view import MidiRoutingView
-from djmidi.ableton_link import ABLETON_LINK_CLOCK_SOURCE_NAME
 from djmidi.midi_routing_session import SERATO_CLOCK_INPUT_NAME
 
 

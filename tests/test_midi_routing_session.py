@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import mido
 
-from djmidi.midi_clock import MidiClockMirror
 from djmidi.midi_api import MidiMessage
+from djmidi.midi_clock import MidiClockMirror
 from djmidi.midi_router import MidiRoute, MidiRouter
 from djmidi.midi_routing_session import MidiRoutingSession
 

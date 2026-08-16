@@ -181,6 +181,14 @@ class ControllerSetupView(QWidget):
         self._send_data1_edit = QLineEdit("27")
         self._send_data2_edit = QLineEdit("127")
         self._send_delay_ms_edit = QLineEdit("80")
+        for field in (
+            self._send_type_edit,
+            self._send_channel_edit,
+            self._send_data1_edit,
+            self._send_data2_edit,
+            self._send_delay_ms_edit,
+        ):
+            field.setMinimumHeight(26)
         send_once_button = QPushButton("Send once")
         send_once_button.clicked.connect(self._on_send_output_once_clicked)
         send_double_button = QPushButton("Send double-click (NOTE)")
@@ -195,38 +203,52 @@ class ControllerSetupView(QWidget):
         self._send_status = QLabel("No MIDI output sent yet.")
 
         output_box = QGroupBox("MIDI Output")
-        output_layout = QVBoxLayout(output_box)
+        output_box.setMinimumHeight(300)
+        output_layout = QHBoxLayout(output_box)
         output_layout.setContentsMargins(6, 6, 6, 6)
-        output_layout.setSpacing(4)
-        output_layout.addWidget(self._output_port_list)
-        output_layout.addWidget(refresh_output_button)
+        output_layout.setSpacing(10)
+
+        output_ports = QVBoxLayout()
+        output_ports.addWidget(QLabel("Available output ports"))
+        self._output_port_list.setMinimumWidth(220)
+        self._output_port_list.setMinimumHeight(150)
+        output_ports.addWidget(self._output_port_list, 1)
+        output_ports.addWidget(refresh_output_button)
+        output_layout.addLayout(output_ports, 1)
+
+        output_controls = QVBoxLayout()
+        output_controls.addWidget(QLabel("Message and playback controls"))
 
         send_form = QFormLayout()
+        send_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow)
+        send_form.setLabelAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
         send_form.setHorizontalSpacing(6)
-        send_form.setVerticalSpacing(2)
+        send_form.setVerticalSpacing(5)
         send_form.addRow("Type", self._send_type_edit)
         send_form.addRow("Channel", self._send_channel_edit)
         send_form.addRow("Data1", self._send_data1_edit)
         send_form.addRow("Value", self._send_data2_edit)
         send_form.addRow("Delay (ms)", self._send_delay_ms_edit)
-        output_layout.addLayout(send_form)
+        output_controls.addLayout(send_form)
 
         action_grid = QGridLayout()
-        action_grid.setHorizontalSpacing(4)
-        action_grid.setVerticalSpacing(3)
+        action_grid.setHorizontalSpacing(6)
+        action_grid.setVerticalSpacing(5)
         for index, button in enumerate((send_once_button, send_double_button, send_selected_button, send_all_button, replay_button)):
-            action_grid.addWidget(button, index // 2, index % 2)
-        output_layout.addLayout(action_grid)
+            action_grid.addWidget(button, 0, index)
+        output_controls.addLayout(action_grid)
+        output_controls.addWidget(self._send_status)
 
         pad_grid = QGridLayout()
-        pad_grid.setHorizontalSpacing(3)
-        pad_grid.setVerticalSpacing(3)
+        pad_grid.setHorizontalSpacing(5)
+        pad_grid.setVerticalSpacing(5)
         for index, mode in enumerate(range(1, 9)):
             button = QPushButton(f"PAD {mode}")
             button.clicked.connect(lambda _checked=False, m=mode: self._on_send_ddj_xp2_pad_mode(m))
             pad_grid.addWidget(button, index // 4, index % 4)
-        output_layout.addLayout(pad_grid)
-        output_layout.addWidget(self._send_status)
+        output_controls.addLayout(pad_grid)
+        output_controls.addStretch(1)
+        output_layout.addLayout(output_controls, 2)
 
         check_button = QPushButton("Check for conflicts")
         check_button.clicked.connect(self._on_check_conflicts_clicked)
@@ -244,12 +266,15 @@ class ControllerSetupView(QWidget):
         export_layout.addWidget(export_button)
         export_layout.addStretch(1)
 
-        top_row = QHBoxLayout()
-        top_row.addWidget(session_box, 1)
-        top_row.addWidget(capture_box, 1)
-        top_row.addWidget(import_box, 1)
-        top_row.addWidget(output_box, 1)
-        top_row.addWidget(export_box, 1)
+        top_row = QGridLayout()
+        top_row.setHorizontalSpacing(8)
+        top_row.setVerticalSpacing(8)
+        top_row.addWidget(session_box, 0, 0)
+        top_row.addWidget(capture_box, 0, 1)
+        top_row.addWidget(import_box, 0, 2)
+        top_row.addWidget(export_box, 0, 3)
+        for column in range(4):
+            top_row.setColumnStretch(column, 1)
 
         self._table = QTableWidget(0, 7)
         self._table.setHorizontalHeaderLabels(["Section", "Name", "Type", "Channel(s)", "Data1", "Source", "Device"])
@@ -272,6 +297,7 @@ class ControllerSetupView(QWidget):
         layout = QVBoxLayout(self)
         layout.addLayout(name_row)
         layout.addLayout(top_row, 0)
+        layout.addWidget(output_box, 0)
         layout.addWidget(self._table, 1)
         layout.addLayout(row_buttons)
 

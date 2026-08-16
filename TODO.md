@@ -22,6 +22,7 @@ Status rules:
   - [Phase 3 — multi-device MIDI engine](#phase-3--multi-device-midi-engine)
   - [Phase 4 — safe software/controller operations](#phase-4--safe-softwarecontroller-operations)
 - [Delivered](#delivered)
+  - [Recent evolution chapters](#recent-evolution-chapters)
   - [Core mapping workflow](#core-mapping-workflow)
   - [Mapping views and navigation](#mapping-views-and-navigation)
   - [Controller catalogs](#controller-catalogs)
@@ -40,6 +41,11 @@ The implementation roadmap is complete through Phase 4. Phase 3 remains
 diagnostics are delivered, but two macOS integrations still require a real
 Serato/XDJ-XZ/DDJ-XP2 setup. No implementation item is being relabeled as
 complete until that distinction is explicit.
+
+The current release baseline is `v0.46.0`. The post-release evolution is
+implemented on the active `feature/independent-midi-clock` line and is tracked
+as focused chapters below. These chapters are software-validated; they do not
+close the open physical Serato/CoreMIDI validation items.
 
 ### Phase 0 — baseline plugin architecture — COMPLETE
 
@@ -110,6 +116,30 @@ Implemented contract, runtime, test, and documentation work:
 
 ## Delivered
 
+### Recent evolution chapters
+
+- [x] **Independent MIDI Clock tool** — move Clock configuration and diagnostics
+  into a closable/floating dock while retaining shared routing safety and
+  `Ableton Link (DJ MIDI Studio)` support. Commit `4e85483`, follow-up fixes
+  `ea00a64`, `9fb8a7c`, and `f35fe3d`; milestone tag `v0.46.1-midi-clock-tool`.
+- [x] **DJ performance visual language** — apply the dark theme across the
+  application, style mapping trees/layouts, and preserve generic fallbacks.
+  Commits `cd2bc72` and `454242c`; milestone tag
+  `v0.46.2-dj-performance-theme`.
+- [x] **Responsive controller workspace** — improve dashboard/controller setup
+  composition, center pad layouts, keep MIDI output readable, and allow
+  narrower windows. Commits `5c27d90` and `aed5aa9`; milestone tag
+  `v0.46.3-responsive-workspace`.
+- [x] **Helpful Notes onboarding** — provide a startup popup with persistent or
+  session-only dismissal and a View-menu reopen action. Commit `2fdffc`;
+  milestone tag `v0.46.4-helpful-notes`.
+- [x] **Visual documentation refresh** — regenerate canonical dashboard,
+  mapping, MIDI tool, docked, and floating screenshots from the offline fixture.
+  Commit `fc9192f`; milestone tag `v0.46.5-visual-docs`.
+- [x] **Evolution documentation** — record the architecture, user workflows,
+  validation boundaries, screenshots, and chapter-to-commit mapping in
+  [Recent Evolution Chapters](docs/development/evolution.md).
+
 ### Core mapping workflow
 
 - [x] Parse Serato MIDI XML into a typed domain model.
@@ -120,15 +150,16 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Mapping views and navigation
 
-- [x] Add the Dashboard with loaded-file status, controller cards, catalog statistics, MIDI availability indicators, and drill-down shortcuts.
-- [x] Use three equal-width columns that fill the Dashboard Controller Overview grid.
-- [x] Shorten Dashboard Controller Overview drill-down buttons to compact labels.
+- [x] Add the Dashboard with loaded-file status, controller overview tabs, catalog statistics, MIDI availability indicators, and drill-down shortcuts.
+- [x] Present one spacious Dashboard Controller Overview tab per controller, with an enlarged reference image and vertical drill-down actions.
+- [x] Keep Dashboard Controller Overview drill-down buttons compact and readable beside the controller image.
 - [x] Add By Channel, By Deck, and By Controller views with resizable trees and physical layout views.
 - [x] Add clickable schematic controller layouts, catalog interpretations, Serato deck coloring, and mapped function labels.
 - [x] Add DJ-oriented layout glyphs for pads, buttons, knobs, faders, and jog wheels while preserving the generic fallback.
 - [x] Add a dark performance-oriented layout theme with deck colors, section labels, and high-contrast selection accents.
 - [x] Add display-only mixer controls for XDJ-XZ and DDJ-XP2 so trim, EQ, volume, crossfader, and Slide FX surfaces are visible before continuous MIDI cataloging.
 - [x] Arrange XDJ-XZ and DDJ-XP2 layouts into dedicated pads, deck, effects, mixer, browse, and pad-mode zones.
+- [x] Center the Dashboard MIDI tools beside Known controllers and center the pad bank in the layout view's initial viewport.
 - [x] Synchronize tree/layout selections, preserve the originating tab, and fade recent selection history.
 - [x] Increase the Physical control panel height and make dynamic controller selectors horizontally scrollable.
 - [x] Keep the Physical control field expanded with a splitter-safe minimum height for long multi-controller matches.
@@ -153,6 +184,10 @@ Implemented contract, runtime, test, and documentation work:
 - [x] Add the `djmidi-send-midi` CLI command and `--double-click` helper.
 - [x] Make Live Monitor and MIDI Routing independent closable dock panels with Dashboard and View-menu access.
 - [x] Allow both docked and floating MIDI tool windows without changing the mapping workspace layout.
+- [x] Apply the DJ performance theme consistently to the main window, dialogs, menus, tabs, docks, and mapping surfaces.
+- [x] Move Helpful Notes into a startup popup accessible from the View menu, with persistent or session-only dismissal.
+- [x] Rework Controller Setup into a readable responsive layout with a full-width MIDI Output panel.
+- [x] Keep MIDI Output port selection, message fields, playback actions, and PAD MODE 1–8 controls visible without sacrificing functionality.
 - [x] Allow the main and MIDI tool windows to shrink below controller-selector content width and preserve the user's window/dock arrangement between launches.
 
 ### Testing, documentation, and delivery
@@ -181,6 +216,11 @@ Implemented contract, runtime, test, and documentation work:
 - [x] Add the documentation portal, quickstart, user guide, architecture, testing, quality, build, release, controller PDFs, and visual layout documentation.
 - [x] Generate and document canonical docked and floating MIDI-tool window compositions; arbitrary user arrangements remain persisted rather than exhaustively screenshoted.
 - [x] Complete the Help menu with bundled project documentation, controller references, and official external links.
+- [x] Update the Dashboard and Controller Setup visual documentation and screenshots after the layout redesign.
+- [x] Record the post-`v0.46.0` evolution chapters with architecture diagrams,
+  screenshot references, and reproducible capture instructions.
+- [x] Keep a stable screenshot index for application views and dock/floating
+  window compositions.
 - [x] Restore the main window surface after native macOS full-screen transitions.
 - [x] Translate the Dashboard UI and tests to English.
 - [x] Rename the project to DJ MIDI Studio.

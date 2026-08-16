@@ -43,6 +43,7 @@
 - [🛠️ Development Documentation Index](development/README.md)
 - [🧰 Developer Setup](development/setup.md)
 - [🔁 Development Workflow](development/workflow.md)
+- [📚 Recent Evolution Chapters](development/evolution.md)
 - [🏗️ Architecture](architecture.md)
 - [🧪 Testing and Quality](testing-and-quality.md)
 - [✅ Quality Gates](quality-gates.md)

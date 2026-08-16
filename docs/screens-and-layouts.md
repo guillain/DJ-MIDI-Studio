@@ -14,6 +14,7 @@
 - [Live Monitor](#live-monitor)
 - [MIDI Routing](#midi-routing)
 - [MIDI Clock](#midi-clock)
+- [Evolution reference](#evolution-reference)
 
 ## Application Navigation
 
@@ -55,6 +56,10 @@ because they are user-specific and are persisted automatically.
 
 The right-hand panel remains available from every tab for the current selection and validation messages. Selecting a mapping or a layout cell keeps the related views synchronized.
 
+Helpful Notes is intentionally a separate startup popup rather than another
+dashboard panel. It can be reopened from `View -> Helpful Notes...`; closing
+it offers a persistent or session-only choice.
+
 On macOS, entering or leaving native full screen may briefly show the window
 surface being rebuilt. DJ MIDI Studio queues a repaint after the transition;
 if the surface still appears black, leave full screen once and re-enter it so
@@ -69,7 +74,7 @@ available with a packaged release.
 
 ## Dashboard
 
-The Dashboard shows the loaded Serato file, the registered controllers, catalog statistics, MIDI availability indicators, and shortcuts into the detailed views. Controller overview cards are arranged in three equal-width columns that fill the available overview area; the overview scrolls horizontally when the window is narrower. Each card uses compact `Channel`, `Controller`, and `Images` buttons to open its detailed view. The active controller selector controls those drill-down actions. Availability is detected from the currently listed MIDI input ports; `MIDI: available` means a port name matches the controller catalog, while `MIDI: not detected` means no match was found.
+The Dashboard shows the loaded Serato file, the registered controllers, catalog statistics, MIDI availability indicators, and shortcuts into the detailed views. Controller overview is presented as one spacious tab per controller, with the reference image on the left and vertical `Channel`, `Controller`, and `Images` actions on the right. The active controller selector still controls those drill-down actions. Availability is detected from the currently listed MIDI input ports; `MIDI: available` means a port name matches the controller catalog, while `MIDI: not detected` means no match was found.
 
 The current catalog contains DDJ-XP2, XDJ-XZ, DDJ-1000, DDJ-FLX4, DDJ-FLX10, DDJ-REV1, Numark Mixtrack Pro FX, and Hercules DJControl Inpulse 500. Controller Setup definitions applied during the current session also appear here immediately. Reference artwork is available for all eight built-in controllers. The DDJ-FLX10 and DDJ-REV1 images are annotated official MIDI message-list diagrams; the DDJ-FLX4, Numark, and Hercules images are official product views used as physical-layout references, not complete MIDI message maps.
 
@@ -87,13 +92,13 @@ By Deck groups duplicate Serato trigger sets by deck and slot. The upper area co
 
 ### By Controller
 
-By Controller groups catalog entries by physical controller and section, such as `PAD`, `DECK`, or `EFFECT`. The lower DJ layout maps the selected controller's controls and shows the associated mappings. It uses a dark performance-oriented theme with section labels, deck colors, and high-contrast selection accents. Pads, color-coded transport buttons, knobs, faders, and jog wheels are rendered as compact interactive controls. The XDJ-XZ and DDJ-XP2 also show display-only mixer controls such as trim, EQ, volume, crossfader, and Slide FX faders; these make the hardware surface legible even though continuous MIDI mappings are not yet in the discrete catalog. Controllers without dedicated geometry use the same generic grid and remain fully usable. Its controller selector scrolls horizontally as the dynamic catalog grows. Clicking a mapped layout control selects the matching physical-control item in the upper tree and keeps the By Controller tab active. Current selections use a strong highlight; recent previous selections remain visible with a faded highlight, making navigation history easier to follow.
+By Controller groups catalog entries by physical controller and section, such as `PAD`, `DECK`, or `EFFECT`. The lower DJ layout maps the selected controller's controls and shows the associated mappings. It uses a dark performance-oriented theme with section labels, deck colors, and high-contrast selection accents. Pads, color-coded transport buttons, knobs, faders, and jog wheels are rendered as compact interactive controls, with the pad bank centered in the initial viewport for quicker inspection. The XDJ-XZ and DDJ-XP2 also show display-only mixer controls such as trim, EQ, volume, crossfader, and Slide FX faders; these make the hardware surface legible even though continuous MIDI mappings are not yet in the discrete catalog. Controllers without dedicated geometry use the same generic grid and remain fully usable. Its controller selector scrolls horizontally as the dynamic catalog grows. Clicking a mapped layout control selects the matching physical-control item in the upper tree and keeps the By Controller tab active. Current selections use a strong highlight; recent previous selections remain visible with a faded highlight, making navigation history easier to follow.
 
 ![By Controller mapping view](images/layout/by-controller.png)
 
 ## Controller Setup
 
-Controller Setup is used to learn MIDI triggers from hardware or import raw triggers from a Serato XML file. The captured table records the section, physical name, MIDI type, channel(s), data value, source, and device.
+Controller Setup is used to learn MIDI triggers from hardware or import raw triggers from a Serato XML file. The captured table records the section, physical name, MIDI type, channel(s), data value, source, and device. Learning, import, and export remain grouped at the top; MIDI Output now has a full-width performance panel with a dedicated port list, readable message fields, playback actions, and all eight DDJ-XP2 pad-mode buttons.
 
 The same tab provides MIDI output controls for sending a command once, sending a NOTE double-click, replaying selected/all session rows, or generating a catalog module. `Check for conflicts` should be run before applying or exporting a catalog.
 
@@ -115,6 +120,20 @@ The event table contains the timestamp, direction, source device, MIDI channel a
 
 The floating reference is shown in [Window Compositions](#window-compositions).
 
+## Evolution reference
+
+The latest screenshots document the current post-`v0.46.0` composition:
+
+| Chapter | Primary references |
+| --- | --- |
+| Independent MIDI Clock | `midi-clock.png`, `midi-clock-floating.png` |
+| DJ performance theme | `by-deck.png`, `by-controller.png` |
+| Responsive dashboard and setup | `dashboard.png`, `controlleur-setup.png` |
+| Dock orchestration | `midi-tools-docked.png`, floating tool captures |
+
+For the implementation timeline and validation boundary, see [Recent Evolution
+Chapters](development/evolution.md).
+
 ## MIDI Routing
 
 MIDI Routing configures one-way source/destination routes and Controller Setup
@@ -129,8 +148,7 @@ the opt-in Clock destination policy, source activity indicator, and Clock route
 table. Its MIDI device lists are loaded at startup and can be refreshed with
 `Refresh MIDI ports`. The source selector contains physical MIDI inputs plus `Ableton Link (DJ
 MIDI Studio)`. The bundled `aalink` binding provides Link access, follows Link
-tempo/phase without changing it, and emits 24 PPQN MIDI Clock. The bundled
-`aalink` binding provides the Link connection. The route engine
+tempo/phase without changing it, and emits 24 PPQN MIDI Clock. The route engine
 prevents cycles and the Clock policy rejects invalid source/destination pairs.
 Cross-software Clock use must meet the [compatibility notes](midi-clock-compatibility.md).
 
