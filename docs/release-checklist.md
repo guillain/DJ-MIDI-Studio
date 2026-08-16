@@ -52,11 +52,17 @@ Use `scripts/scm_release.sh` to open the PR/MR, push the annotated version tag,
 and optionally create the provider release. Configure only the SCM CLI matching
 the selected provider (`gh` or `glab`); do not store tokens in the repository.
 
+For the GitHub release path, use `scripts/scm_release.sh prepare` on a
+`release/<version>` branch. It bumps `pyproject.toml`, refreshes `uv.lock`,
+creates the release commit, pushes the branch, and opens a PR with generated
+notes. Merging that PR automatically creates the version tag; the tag then
+starts the multi-OS build and draft release workflows.
+
 ## Version and Changelog
 
-1. Update `project.version` in `pyproject.toml`.
-2. Update release notes/changelog section in your preferred tracking file.
-3. Commit changes.
+1. Run `scripts/scm_release.sh prepare --version <version>`.
+2. Review the generated version/lock diff and PR description.
+3. Let CI validate the PR before merging.
 
 ## Tagging Strategy
 
