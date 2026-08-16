@@ -109,12 +109,19 @@ class MidiRoutingSession:
 
     def stop(self) -> None:
         self.running = False
+        # Always attempt every close: a broken MIDI endpoint must not leak the
+        # remaining endpoints or mask the original start/poll failure.
         for port in (*self._inputs.values(), *self._outputs.values()):
             close = getattr(port, "close", None)
             if close is not None:
-                close()
+                try:
+                    close()
+                except Exception:
+                    pass
         self._inputs.clear()
         self._outputs.clear()
+        for clock_mirror in self._clock_mirrors:
+            clock_mirror.reset()
         for follower in self._link_followers:
             follower.reset()
 

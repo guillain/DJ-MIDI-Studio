@@ -149,10 +149,17 @@ class LiveMonitorView(QWidget):
 
     def _start(self) -> None:
         selected = [self._port_list.item(i).text() for i in range(self._port_list.count()) if self._is_checked(i)]
-        for name in selected:
-            self._monitor.open_input(name)
-        if self._virtual_checkbox.isChecked():
-            self._monitor.open_virtual_monitor()
+        try:
+            for name in selected:
+                self._monitor.open_input(name)
+            if self._virtual_checkbox.isChecked():
+                self._monitor.open_virtual_monitor()
+        except Exception as exc:  # noqa: BLE001 - surface device-open failures without a partial monitor
+            self._monitor.close_all()
+            self._status_label.setText("Stopped")
+            self._start_button.setText("Start monitoring")
+            QMessageBox.warning(self, "Cannot start monitoring", str(exc))
+            return
         self._running = True
         self._start_button.setText("Stop monitoring")
         self._status_label.setText(f"Running ({len(selected)} input(s){', virtual monitor' if self._virtual_checkbox.isChecked() else ''})")

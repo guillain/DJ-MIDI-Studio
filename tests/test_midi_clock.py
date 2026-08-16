@@ -68,3 +68,28 @@ def test_clock_mirror_reports_transport_without_clock_ticks():
     mirror.forward(MidiMessage(b"\xfa", 10.0, "clock-in"), lambda *_: None)
     assert mirror.message_active(10.4)
     assert not mirror.clock_active(10.4)
+
+
+def test_clock_mirror_continues_other_destinations_when_one_send_fails():
+    mirror = MidiClockMirror("clock-in", ["broken", "working"])
+    sent: list[str] = []
+
+    def send(destination, _message):
+        if destination == "broken":
+            raise OSError("port disappeared")
+        sent.append(destination)
+
+    assert mirror.forward(MidiMessage(b"\xf8", 1.0, "clock-in"), send) == 1
+    assert sent == ["working"]
+    assert mirror.stats.send_errors == 1
+    assert mirror.stats.error_messages == ["port disappeared"]
+
+
+def test_clock_mirror_reset_clears_activity_state():
+    mirror = MidiClockMirror("clock-in", ["out"])
+    mirror.forward(MidiMessage(b"\xfa", 1.0, "clock-in"), lambda *_: None)
+    mirror.forward(MidiMessage(b"\xf8", 1.1, "clock-in"), lambda *_: None)
+    mirror.reset()
+    assert not mirror.running
+    assert not mirror.clock_active(1.2)
+    assert not mirror.message_active(1.2)

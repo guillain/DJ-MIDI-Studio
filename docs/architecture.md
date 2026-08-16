@@ -115,6 +115,13 @@ tempo, and generates the same MIDI realtime transport and 24 PPQN ticks.
 `midi_virtual.py` supplies a hardware-free port bus for deterministic route
 tests; real hardware timing diagnostics remain a later integration concern.
 
+The runtime treats physical MIDI startup and shutdown as transactional: a
+partially opened session closes every endpoint and resets Clock activity before
+returning control, while one unavailable Clock destination does not interrupt
+healthy destinations. GUI monitoring and learning likewise clean up partial
+starts. Safe configuration updates refuse a second apply and correctly remove
+a newly created file when rolled back.
+
 `PluginPreferences` stores enabled plugin IDs and safety policies as a
 backward-compatible JSON document. `PreferencesDialog` builds its plugin list
 from the live controller and software registries, so external integrations do
