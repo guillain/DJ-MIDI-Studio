@@ -284,17 +284,13 @@ wheels = [
 
 [[package]]
 name = "djmidi"
-version = "0.45.0"
+version = "0.46.0"
 source = { editable = "." }
 dependencies = [
+    { name = "aalink" },
     { name = "mido" },
     { name = "pyside6" },
     { name = "python-rtmidi" },
-]
-
-[package.optional-dependencies]
-link = [
-    { name = "aalink" },
 ]
 
 [package.dev-dependencies]
@@ -310,12 +306,11 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "aalink", marker = "extra == 'link'", specifier = ">=0.2.3" },
+    { name = "aalink", specifier = ">=0.2.3" },
     { name = "mido", specifier = ">=1.3" },
     { name = "pyside6", specifier = ">=6.7" },
     { name = "python-rtmidi", specifier = ">=1.5" },
 ]
-provides-extras = ["link"]
 
 [package.metadata.requires-dev]
 dev = [

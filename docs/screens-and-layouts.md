@@ -13,19 +13,21 @@
 - [Controller Images](#controller-images)
 - [Live Monitor](#live-monitor)
 - [MIDI Routing](#midi-routing)
+- [MIDI Clock](#midi-clock)
 
 ## Application Navigation
 
 The mapping workspace is organized as tabs across the top of the main window:
 
 `Dashboard`, `Controller Setup`, `Controller Images`, `By Channel`, `By Deck`,
-and `By Controller`. `Live Monitor` and `MIDI Routing` are independent,
+and `By Controller`. `Live Monitor`, `MIDI Routing`, and `MIDI Clock` are independent,
 closable Qt dock panels rather than mapping tabs. They can be shown from
 `View > MIDI Tools`, moved to another dock area, floated as windows, or opened
 from the Dashboard buttons.
 
 Each tool supports both workspace modes. Use the float button in its dock title
-bar, or choose `View > MIDI Tools > Float Live Monitor` / `Float MIDI Routing`,
+bar, or choose `View > MIDI Tools > Float Live Monitor` / `Float MIDI Routing` /
+`Float MIDI Clock`,
 to open it as an independent window. Trigger the same menu item again to dock
 it back into the main window; closing a floating tool does not affect any
 controller mapping tab or layout splitter.
@@ -38,16 +40,18 @@ main window or on a floating MIDI tool.
 ### Window Compositions
 
 The screenshot generator covers the stable reference compositions supported by
-the application: both tools docked in the main window, Live Monitor floating,
-and MIDI Routing floating. Users can still choose arbitrary dock areas,
+the application: all three tools docked in the main window, and each tool
+floating. Users can still choose arbitrary dock areas,
 positions, and sizes; those combinations are intentionally not enumerated
 because they are user-specific and are persisted automatically.
 
-![Live Monitor and MIDI Routing docked together](images/layout/midi-tools-docked.png)
+![Live Monitor, MIDI Routing, and MIDI Clock docked together](images/layout/midi-tools-docked.png)
 
 ![Live Monitor as a floating window](images/layout/live-monitor-floating.png)
 
 ![MIDI Routing as a floating window](images/layout/midi-routing-floating.png)
+
+![MIDI Clock as a floating window](images/layout/midi-clock-floating.png)
 
 The right-hand panel remains available from every tab for the current selection and validation messages. Selecting a mapping or a layout cell keeps the related views synchronized.
 
@@ -113,15 +117,25 @@ The floating reference is shown in [Window Compositions](#window-compositions).
 
 ## MIDI Routing
 
-MIDI Routing configures one-way source/destination routes and the opt-in Clock
-destination policy, and Controller Setup playback. The Clock source selector
-contains physical MIDI inputs plus `Ableton Link (DJ MIDI Studio)`. The latter
-requires the optional `aalink` binding, follows Link tempo/phase without
-changing it, and emits 24 PPQN MIDI Clock. The route engine prevents cycles
-and the Clock policy rejects invalid source/destination pairs. Physical
-routing remains disabled unless enabled in Preferences, and cross-software
-Clock use must meet the [compatibility notes](midi-clock-compatibility.md).
+MIDI Routing configures one-way source/destination routes and Controller Setup
+playback. Its source and destination lists are loaded when the view opens and
+can be refreshed independently with `Refresh MIDI ports`. Physical routing
+remains disabled unless enabled in Preferences.
 
-![MIDI Routing with direct Ableton Link source](images/layout/midi-routing.png)
+## MIDI Clock
+
+MIDI Clock is an independent closable, movable, and floating tool. It contains
+the opt-in Clock destination policy, source activity indicator, and Clock route
+table. Its MIDI device lists are loaded at startup and can be refreshed with
+`Refresh MIDI ports`. The source selector contains physical MIDI inputs plus `Ableton Link (DJ
+MIDI Studio)`. The bundled `aalink` binding provides Link access, follows Link
+tempo/phase without changing it, and emits 24 PPQN MIDI Clock. The bundled
+`aalink` binding provides the Link connection. The route engine
+prevents cycles and the Clock policy rejects invalid source/destination pairs.
+Cross-software Clock use must meet the [compatibility notes](midi-clock-compatibility.md).
+
+![MIDI Routing](images/layout/midi-routing.png)
+
+![Independent MIDI Clock tool](images/layout/midi-clock.png)
 
 The floating reference is shown in [Window Compositions](#window-compositions).

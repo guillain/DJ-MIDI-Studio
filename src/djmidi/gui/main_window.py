@@ -53,6 +53,7 @@ from djmidi.gui.layout_view import ControllerLayoutView
 from djmidi.gui.live_monitor import LiveMonitorView
 from djmidi.gui.mapping_group import MappingGroup
 from djmidi.gui.midi_routing_view import MidiRoutingView
+from djmidi.gui.midi_clock_view import MidiClockView
 from djmidi.gui.preferences_dialog import PreferencesDialog
 from djmidi.gui.safe_update_dialog import SafeUpdateDialog
 from djmidi.gui.splitter_utils import replace_splitter
@@ -225,6 +226,7 @@ class MainWindow(QMainWindow):
             session_name_provider=self.controller_setup_view.session_controller_name,
         )
         self.midi_routing_view.set_routing_enabled(self.preferences.routing_enabled)
+        self.midi_clock_view = MidiClockView(self.midi_routing_view.take_clock_panel())
 
         self.introduction_view = IntroductionView()
         self.live_monitor_view.portNamesChanged.connect(
@@ -433,7 +435,7 @@ class MainWindow(QMainWindow):
         view_menu = self.menuBar().addMenu("&View")
         tools_menu = view_menu.addMenu("MIDI Tools")
         self._tool_float_actions: dict[str, QAction] = {}
-        for key in ("monitor", "routing"):
+        for key in ("monitor", "routing", "clock"):
             dock = self._tool_docks[key]
             tools_menu.addAction(dock.toggleViewAction())
             float_action = QAction(f"Float {dock.windowTitle()}", self)
@@ -479,6 +481,7 @@ class MainWindow(QMainWindow):
         definitions = {
             "monitor": ("Live Monitor", self.live_monitor_view),
             "routing": ("MIDI Routing", self.midi_routing_view),
+            "clock": ("MIDI Clock", self.midi_clock_view),
         }
         docks: dict[str, QDockWidget] = {}
         for key, (title, widget) in definitions.items():
@@ -638,6 +641,7 @@ class MainWindow(QMainWindow):
             self.channel_proxies.append(proxy)
 
             view = QTreeView()
+            self._style_mapping_tree(view)
             view.setHeaderHidden(False)
             view.setModel(proxy)
             view.expandToDepth(0)
@@ -654,6 +658,7 @@ class MainWindow(QMainWindow):
 
         for _deck_id, model in build_deck_columns(self.config):
             view = QTreeView()
+            self._style_mapping_tree(view)
             view.setHeaderHidden(False)
             view.setModel(model)
             view.expandToDepth(0)
@@ -734,6 +739,7 @@ class MainWindow(QMainWindow):
 
         for _controller, model, expand_flags in build_controller_columns(usage):
             view = QTreeView()
+            self._style_mapping_tree(view)
             view.setHeaderHidden(False)
             view.setModel(model)
             view.selectionModel().selectionChanged.connect(lambda *_, v=view: self._on_controller_selection_changed(v))
@@ -744,6 +750,59 @@ class MainWindow(QMainWindow):
             # combinations (the row exists in the model but the view hasn't built
             # its internal expand-state tracking for it yet).
             QTimer.singleShot(0, lambda v=view, m=model, flags=expand_flags: self._apply_controller_expand_state(v, m, flags))
+
+    @staticmethod
+    def _style_mapping_tree(view: QTreeView) -> None:
+        """Apply the DJ booth palette to every mapping tree consistently."""
+        view.setAlternatingRowColors(True)
+        view.setIndentation(16)
+        view.setAnimated(True)
+        view.setStyleSheet(
+            """
+            QTreeView {
+                background: #0e1724;
+                alternate-background-color: #121e2d;
+                color: #dce7f5;
+                border: 1px solid #2b3b53;
+                border-radius: 8px;
+                padding: 5px;
+                outline: none;
+            }
+            QTreeView::item {
+                padding: 6px 8px;
+                border-radius: 4px;
+            }
+            QTreeView::item:hover {
+                background: #263b56;
+                color: #ffffff;
+            }
+            QTreeView::item:selected {
+                background: #d33c72;
+                color: #ffffff;
+            }
+            QHeaderView::section {
+                background: #202d42;
+                color: #b9c9dc;
+                border: 0;
+                border-bottom: 1px solid #3a506d;
+                padding: 7px;
+                font-weight: 600;
+            }
+            QScrollBar:vertical, QScrollBar:horizontal {
+                background: #111a28;
+                border: none;
+            }
+            QScrollBar::handle:vertical, QScrollBar::handle:horizontal {
+                background: #405875;
+                border-radius: 5px;
+                min-height: 24px;
+                min-width: 24px;
+            }
+            QScrollBar::handle:hover {
+                background: #00b9d9;
+            }
+            """
+        )
 
     def _apply_controller_expand_state(self, view: QTreeView, model: QStandardItemModel, expand_flags: list[tuple[int, bool]]) -> None:
         for row, has_used_leaf in expand_flags:

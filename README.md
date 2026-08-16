@@ -50,7 +50,7 @@ DJ MIDI mapping files can become very large and hard to maintain. DJ MIDI Studio
 | 🎧 | Serato DJ and Native Instruments Traktor integrations |
 | 🔎 | MIDI learning, Live Monitor, source-device tracking, and controller lookup |
 | 🔀 | Safe one-way MIDI routing with cycle prevention and error diagnostics |
-| 🕒 | MIDI Clock mirroring plus optional read-only Ableton Link → 24 PPQN output |
+| 🕒 | MIDI Clock mirroring plus read-only Ableton Link → 24 PPQN output |
 | 💾 | Validation, safe updates, backups, previews, rollback, and XML round-tripping |
 
 ## Screens and Layouts
@@ -70,6 +70,10 @@ Here is the short visual tour. The complete annotated guide is available in
 |---|---|
 | ![Live Monitor](docs/images/layout/live-monitor.png) | ![MIDI Routing](docs/images/layout/midi-routing.png) |
 
+| MIDI Clock |
+|---|
+| ![MIDI Clock](docs/images/layout/midi-clock.png) |
+
 💡 The MIDI tools can stay docked, float independently, or be restored to the
 previous user arrangement.
 
@@ -83,13 +87,14 @@ flowchart LR
 	Intro --> Images[Controller Images]
 	Intro --> Monitor[Live Monitor dock]
 	Intro --> Routing[MIDI Routing dock]
+	Intro --> Clock[MIDI Clock dock]
 	Intro --> Setup[Controller Setup]
 	Channel --> Validate[Validate]
 	Deck --> Validate
 	Controller --> Validate
 	Validate --> Export[Export XML]
-	Link[Serato / Ableton Link] --> Routing[MIDI Routing]
-	Routing --> Clock[24 PPQN MIDI Clock output]
+	Link[Serato / Ableton Link] --> Clock[MIDI Clock]
+	Clock --> Output[24 PPQN MIDI Clock output]
 ```
 
 ## Quickstart
@@ -109,11 +114,10 @@ or manually:
 uv sync --group dev
 ```
 
-Direct Ableton Link following is optional. Install its native binding when
-using `Ableton Link (DJ MIDI Studio)` as a Clock source:
+Ableton Link support is included by default with its native binding:
 
 ```bash
-uv sync --extra link
+uv sync --group dev
 ```
 
 Run the app:

@@ -85,7 +85,8 @@ class IntroductionView(QWidget):
             "- By Deck: grouped editing of Serato duplicate trigger sets (x10) via MappingGroup.\n"
             "- By Controller: physical mapping view by controller section.\n"
             "- Live Monitor: real-time MIDI display with catalog + Serato function resolution.\n"
-            "- MIDI Routing: route MIDI/Clock and loop Controller Setup session rows.\n"
+            "- MIDI Routing: route MIDI and loop Controller Setup session rows.\n"
+            "- MIDI Clock: configure Clock sources, destinations, and Link following.\n"
             "- Controller Setup: create a new catalog module from learned MIDI or imported XML."
         )
         help_text.setTextFormat(Qt.TextFormat.PlainText)
@@ -98,8 +99,11 @@ class IntroductionView(QWidget):
         monitor_button.clicked.connect(lambda: self.toolRequested.emit("monitor"))
         routing_button = QPushButton("Open MIDI Routing")
         routing_button.clicked.connect(lambda: self.toolRequested.emit("routing"))
+        clock_button = QPushButton("Open MIDI Clock")
+        clock_button.clicked.connect(lambda: self.toolRequested.emit("clock"))
         tools_layout.addWidget(monitor_button)
         tools_layout.addWidget(routing_button)
+        tools_layout.addWidget(clock_button)
 
         info = QLabel(
             "Tip: after applying a controller from Controller Setup, "

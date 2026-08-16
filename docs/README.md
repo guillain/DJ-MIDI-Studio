@@ -40,6 +40,7 @@
 
 ## 🛠️ Developer documentation
 
+- [🛠️ Development Documentation Index](development/README.md)
 - [🧰 Developer Setup](development/setup.md)
 - [🔁 Development Workflow](development/workflow.md)
 - [🏗️ Architecture](architecture.md)
@@ -50,6 +51,7 @@
 
 ## 🤖 AI-assisted development
 
+- [🤖 AI-Assisted Resources Index](agents/README.md)
 - [🤖 AI-Assisted Development](agents/ai-assisted-development.md)
 - [🗂️ Agent Assets Index](agents/assets/README.md)
 - [🧠 Project Context](agents/assets/project-context.md)
@@ -72,6 +74,7 @@ responsible for scope, hardware claims, licensing, tests, and final review.
 - [🎛️ Controller Profiles](controller-profiles.md)
 - [📚 Controller Documentation and Official PDFs](controllers/README.md)
 - [🖼️ Screens and Layouts](screens-and-layouts.md)
+- [📸 Layout Screenshot Index](images/layout/README.md)
 
 ## 🚢 Build, CI, and release
 

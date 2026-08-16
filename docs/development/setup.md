@@ -9,7 +9,7 @@
 - [Bootstrap the repository](#bootstrap-the-repository)
 - [Run the application](#run-the-application)
 - [Run checks](#run-checks)
-- [Optional Ableton Link support](#optional-ableton-link-support)
+- [Ableton Link support](#ableton-link-support)
 - [Hardware notes](#hardware-notes)
 - [Troubleshooting](#troubleshooting)
 
@@ -31,7 +31,8 @@ cd DJ-MIDI-Studio
 bash scripts/bootstrap.sh
 ```
 
-The manual equivalent is:
+The manual equivalent installs the native Ableton Link binding used by local
+and packaged runs:
 
 ```bash
 uv sync --group dev
@@ -62,14 +63,14 @@ bash scripts/test.sh path tests/test_parser.py
 Before opening a pull request, run at least `quick`; run `quality` when
 changing core behavior, dependencies, packaging, or security-sensitive code.
 
-## Optional Ableton Link support
+## Ableton Link support
 
 ```bash
-uv sync --extra link
+uv sync --group dev
 ```
 
-This extra is only needed when using `Ableton Link (DJ MIDI Studio)` as a
-Clock source. Native MIDI operation does not require it.
+The native `aalink` binding is installed by the standard development
+environment and included in packaged builds.
 
 ## Hardware notes
 

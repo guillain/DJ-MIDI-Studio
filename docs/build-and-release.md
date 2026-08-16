@@ -201,7 +201,8 @@ headless tests. The CI workflows install `libasound2-dev`, `pkg-config`,
 `libegl1`, `libgl1`, and the XKB libraries before `uv sync`; quality jobs also
 set `QT_QPA_PLATFORM=offscreen`.
 
-The executable build passes bundled resource directories to PyInstaller as
+The executable build installs the `link` extra so `aalink` is available in all
+native artifacts, and passes bundled resource directories to PyInstaller as
 absolute native paths because PyInstaller resolves data sources relative to
 the generated spec directory. On Windows, the script converts paths with
 `cygpath` and disables Git Bash/MSYS path rewriting to avoid invalid paths such

@@ -133,6 +133,28 @@ class ControllerLayoutView(QWidget):
         self._selection_history: list[set[CellKey]] = []
 
         self._controller_tabs = QTabBar()
+        self._controller_tabs.setStyleSheet(
+            """
+            QTabBar::tab {
+                background: #182437;
+                color: #aebed1;
+                border: 1px solid #30445f;
+                border-bottom: 2px solid #30445f;
+                padding: 7px 14px;
+                margin-right: 3px;
+            }
+            QTabBar::tab:selected {
+                background: #d33c72;
+                color: #ffffff;
+                border-color: #f26395;
+                border-bottom-color: #f26395;
+            }
+            QTabBar::tab:hover:!selected {
+                background: #29415f;
+                color: #ffffff;
+            }
+            """
+        )
         self._controller_tabs.setExpanding(False)
         self._controller_tabs.setUsesScrollButtons(False)
         for name in catalog.CONTROLLER_NAMES:
@@ -154,6 +176,23 @@ class ControllerLayoutView(QWidget):
         controls_layout.addWidget(self._controller_scroll, 1)
         if show_deck_filter:
             deck_combo = QComboBox()
+            deck_combo.setStyleSheet(
+                """
+                QComboBox {
+                    background: #182437;
+                    color: #e8eef7;
+                    border: 1px solid #3d5875;
+                    border-radius: 6px;
+                    padding: 6px 10px;
+                }
+                QComboBox QAbstractItemView {
+                    background: #0e1724;
+                    color: #e8eef7;
+                    selection-background-color: #d33c72;
+                    selection-color: #ffffff;
+                }
+                """
+            )
             deck_combo.addItem(_ALL_DECKS)
             deck_combo.currentTextChanged.connect(lambda _: self._rebuild())
             controls_layout.addWidget(deck_combo)
@@ -162,7 +201,9 @@ class ControllerLayoutView(QWidget):
         self._scene = QGraphicsScene(self)
         self._scene.setBackgroundBrush(_SCENE_BRUSH)
         self._view = _ClickableView(self._scene)
-        self._view.setStyleSheet("background: #0d1119; border: 0px;")
+        self._view.setStyleSheet(
+            "background: #0d1119; border: 1px solid #2b3b53; border-radius: 8px;"
+        )
         self._view.cellClicked.connect(self.cellActivated)
 
         layout = QVBoxLayout(self)

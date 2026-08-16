@@ -19,6 +19,14 @@ def test_routing_view_configures_one_way_route_without_hardware():
     assert view._routes_table.item(0, 0).text() == "in"
 
 
+def test_routing_view_exposes_clock_panel_for_independent_dock():
+    view = MidiRoutingView()
+    panel = view.take_clock_panel()
+    assert panel.title() == "MIDI Clock"
+    assert panel.parent() is None
+    assert view.layout().indexOf(panel) == -1
+
+
 def test_refresh_ports_separates_midi_inputs_and_outputs():
     view = MidiRoutingView()
     with (
@@ -31,6 +39,32 @@ def test_refresh_ports_separates_midi_inputs_and_outputs():
     assert view._clock_source.itemText(0) == "MIDI4x4 Midi In 1"
     assert view._clock_destination.itemText(0) == "MIDI4x4 Midi Out 1"
     assert view._destination_combo.findText("MIDI4x4 Midi In 1") < 0
+
+
+def test_routing_and_clock_ports_are_loaded_when_view_opens():
+    with (
+        patch("djmidi.gui.midi_routing_view.list_input_ports", return_value=["Input at startup"]),
+        patch("djmidi.gui.midi_routing_view.list_output_ports", return_value=["Output at startup"]),
+    ):
+        view = MidiRoutingView()
+    assert view._source_combo.currentText() == "Input at startup"
+    assert view._destination_combo.currentText() == "Output at startup"
+    assert view._clock_source.currentText() == "Input at startup"
+    assert view._clock_destination.currentText() == "Output at startup"
+    assert view._routing_refresh_button.text() == "Refresh MIDI ports"
+    assert view._clock_refresh_button.text() == "Refresh MIDI ports"
+
+
+def test_clock_start_stop_controls_share_routing_session_state():
+    view = MidiRoutingView()
+    view.set_routing_enabled(True)
+    assert view._routing_button.isEnabled()
+    assert view._clock_routing_button.isEnabled()
+    assert view._clock_routing_button.text() == "Start routing"
+    view._routing_session.running = True
+    view._stop_routing()
+    assert view._routing_button.text() == "Start routing"
+    assert view._clock_routing_button.text() == "Start routing"
 
 
 def test_routing_view_rejects_same_clock_source_and_destination():
@@ -48,6 +82,8 @@ def test_routing_view_supports_multiple_clock_lines():
     view = MidiRoutingView()
     view._clock_source.addItems(["clock-in", "other-in"])
     view._clock_destination.addItems(["clock-out", "other-out"])
+    view._clock_source.setCurrentText("clock-in")
+    view._clock_destination.setCurrentText("clock-out")
     view._clock_enabled.setChecked(True)
     assert len(view._clocks) == 1
     view._clock_source.setCurrentText("other-in")
@@ -109,6 +145,8 @@ def test_routing_view_reports_link_clock_configuration_when_link_is_selected():
     view._refresh_clock_status()
     assert "CLOCK INACTIVE" in view._clock_status.text()
     assert ABLETON_LINK_CLOCK_SOURCE_NAME in view._clock_status.text()
+    assert "source port not open" not in view._clock_status.text()
+    assert "start playback" in view._clock_status.toolTip()
 
 
 def test_routing_view_contains_controller_setup_playback_controls():

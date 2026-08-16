@@ -101,10 +101,24 @@ def test_midi_tools_are_independent_closable_docks():
     assert "monitor" not in window._tab_indexes
     assert "routing" not in window._tab_indexes
     assert not window._tool_docks["monitor"].isVisible()
+    assert "clock" in window._tool_docks
+    assert not window._tool_docks["clock"].isVisible()
     window._show_tool_dock("monitor")
     assert window._tool_docks["monitor"].isVisible()
     window._tool_docks["monitor"].close()
     assert not window._tool_docks["monitor"].isVisible()
+    window.close()
+
+
+def test_midi_clock_can_be_shown_and_floated_independently():
+    window = MainWindow()
+    window.show()
+    QApplication.processEvents()
+    window._show_tool_dock("clock")
+    assert window._tool_docks["clock"].isVisible()
+    window._set_tool_dock_floating("clock", True)
+    QApplication.processEvents()
+    assert window._tool_docks["clock"].isFloating()
     window.close()
 
 

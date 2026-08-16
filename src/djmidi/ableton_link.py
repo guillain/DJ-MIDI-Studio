@@ -1,8 +1,8 @@
 """Ableton Link follower and MIDI Clock generator.
 
 The Link transport is deliberately isolated behind ``LinkStateProvider``.  This
-keeps the scheduler deterministic in tests and lets the desktop build use an
-optional native Link binding without making the MIDI engine depend on it.
+keeps the scheduler deterministic in tests while the desktop build uses the
+native Link binding through the standard project dependency set.
 """
 
 from __future__ import annotations
@@ -35,7 +35,7 @@ class LinkStateProvider(Protocol):
 
 
 class LinkBackendUnavailable(RuntimeError):
-    """Raised when the optional native Ableton Link binding is not installed."""
+    """Raised when the native Ableton Link binding cannot be loaded."""
 
 
 class AalinkStateProvider:
@@ -46,7 +46,7 @@ class AalinkStateProvider:
             from aalink import Link  # type: ignore[import-not-found]
         except ImportError as exc:
             raise LinkBackendUnavailable(
-                "Ableton Link support requires the optional 'aalink' package"
+                "Ableton Link support requires the bundled 'aalink' package"
             ) from exc
         self._link_type = Link
         self._link = None

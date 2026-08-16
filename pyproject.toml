@@ -1,6 +1,6 @@
 [project]
 name = "djmidi"
-version = "0.45.0"
+version = "0.46.0"
 description = "DJ MIDI mapping visualizer, editor, and controller toolkit"
 authors = [
     { name = "guillain", email = "guillain@gmail.com" }
@@ -8,6 +8,7 @@ authors = [
 requires-python = ">=3.14"
 dependencies = [
     "PySide6>=6.7",
+    "aalink>=0.2.3",
     "mido>=1.3",
     "python-rtmidi>=1.5",
 ]
@@ -26,11 +27,6 @@ dev = [
 [project.scripts]
 djmidi = "djmidi:main"
 djmidi-send-midi = "djmidi.midi_send:main"
-
-[project.optional-dependencies]
-link = [
-    "aalink>=0.2.3",
-]
 
 [build-system]
 requires = ["uv_build>=0.12.3,<0.13.0"]

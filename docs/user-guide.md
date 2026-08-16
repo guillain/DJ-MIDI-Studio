@@ -74,10 +74,12 @@ either confirmed or shown as suggestions according to Preferences.
 - `By Deck`: grouped duplicate mappings (safe synchronized edits).
 - `By Controller`: physical layout/section perspective.
 - `Controller Images`: static official diagrams and bundled controller documentation.
-- `MIDI Routing`: route MIDI and Clock, and replay Controller Setup rows once or in a loop.
+- `MIDI Routing`: route MIDI and replay Controller Setup rows once or in a loop.
+- `MIDI Clock`: configure Clock sources/destinations and inspect source activity;
+  both Clock and Routing device lists load at startup and offer `Refresh MIDI ports`.
 - `Controller Setup`: capture/import controller triggers, send one-shot session commands, and generate catalog modules.
 
-`Live Monitor` and `MIDI Routing` are independent MIDI tool docks, not mapping
+`Live Monitor`, `MIDI Routing`, and `MIDI Clock` are independent MIDI tool docks, not mapping
 tabs. Open them from `View -> MIDI Tools` or the Dashboard; use the dock title
 bar or the View menu to float them, dock them again, or close them. The main
 window geometry and dock arrangement are restored on the next launch.
@@ -111,15 +113,16 @@ For screenshots and a visual description of each tab, see [Screens and Layouts](
 
 - Input monitoring works from selected MIDI input ports.
 - Output-direction monitoring from Serato requires adding the app virtual destination in Serato MIDI setup.
-- The MIDI engine exposes one-way routing and an initial Clock mirror. Enable
-  MIDI routing in Preferences, add at least one route, then use `Start routing`
+- The MIDI engine exposes one-way routing and an initial Clock mirror. Open the
+  independent `MIDI Clock` tool from `View > MIDI Tools`, enable MIDI routing
+  in Preferences, add at least one route, then use `Start routing`
   to open the selected physical MIDI ports. `Stop routing` closes them again;
   routing remains disabled by default and port failures stop the session safely.
   When a Clock policy is enabled, each configured source → destination line is
   opened by the same session and realtime Start/Continue/Stop/Clock messages
   are forwarded with the configured jitter safeguards.
   Serato DJ Pro does not emit standard MIDI Clock directly. For a direct
-  workflow, install the optional `aalink` binding, enable Link in Serato, and
+  workflow, install DJ MIDI Studio normally, enable Link in Serato, and
   select `Ableton Link (DJ MIDI Studio)` as the Clock source. DJ MIDI Studio
   follows Link and emits 24 PPQN MIDI Clock without changing Link's tempo.
   `Create virtual input for Serato Clock` remains for an external bridge that
@@ -135,8 +138,9 @@ For screenshots and a visual description of each tab, see [Screens and Layouts](
   mode, Link tempo/phase reception and MIDI Clock generation happen inside DJ
   MIDI Studio; in bridge mode they remain separate steps.
 
-Use the `MIDI Routing` tab to configure one-way source/destination routes and an
-opt-in Clock policy. Add several Clock source/destination lines when needed;
+Use the `MIDI Routing` dock to configure one-way source/destination routes and
+the `MIDI Clock` dock to configure the opt-in Clock policy. Add several Clock
+source/destination lines when needed;
 the policy is inactive until routing is enabled in
 Preferences, and Clock synchronization remains subject to the documented
 Serato/Traktor/Rekordbox compatibility checks.

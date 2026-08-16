@@ -26,7 +26,7 @@ The source selectors contain MIDI input ports and the destination selectors
 contain MIDI output ports. For example, a `MIDI4x4 Midi In 1` port cannot be a
 destination; choose `MIDI4x4 Midi Out 1` instead.
 
-![MIDI Routing Clock panel](images/layout/midi-routing.png)
+![MIDI Clock tool](images/layout/midi-clock.png)
 
 ```mermaid
 flowchart LR
@@ -55,7 +55,7 @@ forwarded until one of those producers is present.
 For a macOS setup with Serato, XDJ-XZ, and DDJ-XP2, the direct path is:
 
 1. Enable Ableton Link in Serato DJ Pro.
-2. Install the optional `aalink` binding in DJ MIDI Studio.
+2. Install DJ MIDI Studio normally; the native `aalink` binding is included.
 3. Select `Ableton Link (DJ MIDI Studio)` as the Clock source, select the
    actual hardware/interface MIDI output as destination, and start routing.
 
@@ -63,14 +63,17 @@ An external Link-to-MIDI bridge remains a valid alternative: select its MIDI
 output as a physical source in DJ MIDI Studio and do not enable the virtual
 Serato Clock input unless the bridge is deliberately targeting that port.
 
-DJ MIDI Studio can now replace the Live/bridge step when the optional `aalink`
+DJ MIDI Studio can now replace the Live/bridge step when the bundled `aalink`
 binding is installed. It runs in its own asyncio loop while the GUI polls Link
 state from the routing timer. Select `Ableton Link (DJ MIDI Studio)` as the Clock
 source, keep `Create virtual input for Serato Clock` disabled, and route it to
 the physical MIDI output. DJ MIDI Studio follows Link's tempo and phase and
-emits MIDI Clock; it never sets Link's tempo. Install the binding with
-`uv sync --extra link` before selecting the Link source. If it is missing, the UI
+emits MIDI Clock; it never sets Link's tempo. Install the application with
+`uv sync --group dev` before selecting the Link source. If it is missing, the UI
 reports the dependency instead of silently creating a dead route.
+For a Link source, `CLOCK INACTIVE` means that no playing Link transport has
+been seen yet; it does not mean that a physical MIDI input port is missing.
+Start Ableton Live playback after joining the same Link session.
 The XDJ-XZ and DDJ-XP2 remain control surfaces; this project does not claim
 either one as a verified Serato MIDI Clock generator.
 
