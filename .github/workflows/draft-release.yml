@@ -177,6 +177,24 @@ jobs:
         run: |
           find release-assets -type f | sort
 
+      - name: Generate SHA-256 checksums
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ inputs.tag_name || github.ref_name }}
+        run: |
+          set -euo pipefail
+          checksum_file="release-assets/DJ-MIDI-Studio-${RELEASE_TAG}-SHA256SUMS.txt"
+          (
+            cd release-assets
+            find . -type f \( \
+              -name '*.zip' -o \
+              -name '*.tar.gz' -o \
+              -name '*.whl' -o \
+              -name '*.png' \
+            \) -print0 | sort -z | xargs -0 sha256sum
+          ) > "$checksum_file"
+          cat "$checksum_file"
+
       - name: Create or update GitHub release with artifacts
         shell: bash
         env:
@@ -189,7 +207,8 @@ jobs:
               -name '*.zip' -o \
               -name '*.tar.gz' -o \
               -name '*.whl' -o \
-              -name '*.png' \
+              -name '*.png' -o \
+              -name '*SHA256SUMS.txt' \
             \) -print | sort
           )
           if [[ "${#assets[@]}" -eq 0 ]]; then

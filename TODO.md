@@ -169,6 +169,7 @@ Implemented contract, runtime, test, and documentation work:
 - [x] Run a six-second functional startup smoke test for every native executable before artifact upload.
 - [x] Isolate packaged startup smoke tests from unavailable host MIDI services with an explicit headless MIDI-disable mode.
 - [x] Upload Python packages once per release and make GitHub release asset uploads safely repeatable.
+- [x] Generate and publish SHA-256 checksums for every release artifact.
 - [x] Fall back to a temporary log file when an existing per-user log cannot be opened by the packaged app.
 - [x] Create a Pull Request automatically after successful multi-platform CI when a branch has no open PR.
 - [x] Document Linux ALSA/Qt headless dependencies, Windows MSYS path handling, and the tag-only CD release flow.

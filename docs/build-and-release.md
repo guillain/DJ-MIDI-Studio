@@ -148,6 +148,8 @@ Python wheel and sdist artifacts are uploaded once from the Ubuntu matrix job
 to avoid duplicate GitHub release asset names. The final GitHub release step
 uses the `gh` CLI with `--clobber`, so a rerun safely refreshes an interrupted
 release without relying on the deprecated Node 20 release action.
+Each release also includes a `DJ-MIDI-Studio-v<version>-SHA256SUMS.txt` file
+covering the executable archives, Python packages, and documentation images.
 The CI runners must have `uv`; macOS additionally needs a Developer ID
 certificate configured so the release job does not reject the app as unsigned.
 
