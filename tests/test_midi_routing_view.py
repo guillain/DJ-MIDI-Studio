@@ -145,6 +145,8 @@ def test_routing_view_reports_link_clock_configuration_when_link_is_selected():
     view._refresh_clock_status()
     assert "CLOCK INACTIVE" in view._clock_status.text()
     assert ABLETON_LINK_CLOCK_SOURCE_NAME in view._clock_status.text()
+    assert "source port not open" not in view._clock_status.text()
+    assert "start playback" in view._clock_status.toolTip()
 
 
 def test_routing_view_contains_controller_setup_playback_controls():

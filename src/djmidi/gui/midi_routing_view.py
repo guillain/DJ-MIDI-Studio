@@ -657,7 +657,13 @@ class MidiRoutingView(QWidget):
                 else:
                     sources = ", ".join(sorted({clock.source_port_id for clock in configured}))
                     transport = [clock for clock in self._clocks if clock.message_active(now)]
-                    if transport:
+                    if self._link_followers:
+                        text = f"CLOCK INACTIVE — no Link beats received from {sources}"
+                        self._clock_status.setToolTip(
+                            "Ableton Link is connected but no playing Link transport was detected. "
+                            "Enable Link in Ableton Live, join the same Link session, and start playback."
+                        )
+                    elif transport:
                         text = f"CLOCK INACTIVE — transport received, no Clock ticks from {sources}"
                     elif any(
                         clock.source_port_id in self._routing_session.input_port_ids
@@ -667,12 +673,12 @@ class MidiRoutingView(QWidget):
                     else:
                         text = f"CLOCK INACTIVE — source port not open: {sources}"
                     color = "#b00020"
-                    if SERATO_CLOCK_INPUT_NAME in sources:
+                    if SERATO_CLOCK_INPUT_NAME in sources and not self._link_followers:
                         self._clock_status.setToolTip(
                             "Serato diagnostic: start routing, then select this virtual port "
                             "as Serato's MIDI Clock output destination and enable Clock/Sync."
                         )
-                    else:
+                    elif not self._link_followers:
                         self._clock_status.setToolTip("")
         self._clock_status.setText(text)
         self._clock_status.setStyleSheet(

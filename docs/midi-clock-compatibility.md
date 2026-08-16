@@ -71,6 +71,9 @@ the physical MIDI output. DJ MIDI Studio follows Link's tempo and phase and
 emits MIDI Clock; it never sets Link's tempo. Install the application with
 `uv sync --group dev` before selecting the Link source. If it is missing, the UI
 reports the dependency instead of silently creating a dead route.
+For a Link source, `CLOCK INACTIVE` means that no playing Link transport has
+been seen yet; it does not mean that a physical MIDI input port is missing.
+Start Ableton Live playback after joining the same Link session.
 The XDJ-XZ and DDJ-XP2 remain control surfaces; this project does not claim
 either one as a verified Serato MIDI Clock generator.
 
