@@ -51,8 +51,8 @@ def main() -> int:
         window.show()
         app.processEvents()
         captures = {
-            "intro": "introduction.png",
-            "setup": "controlleur-etup.png",
+            "intro": "dashboard.png",
+            "setup": "controlleur-setup.png",
             "images": "controlleur-image.png",
             "deck": "by-deck.png",
             "controller": "by-controller.png",
