@@ -70,6 +70,9 @@ if [[ "$BUILD_EXECUTABLE" -eq 1 ]]; then
   rm -rf "$OUT_DIR"
   mkdir -p "$OUT_DIR"
 
+  # Resource paths are relative to ROOT_DIR (the current directory). Using
+  # relative paths avoids MSYS/Git Bash converting an absolute /d/... path
+  # twice before PyInstaller receives it on Windows.
   uv run pyinstaller \
     --noconfirm \
     --clean \
@@ -79,8 +82,8 @@ if [[ "$BUILD_EXECUTABLE" -eq 1 ]]; then
     --workpath "$ROOT_DIR/build/pyinstaller" \
     --specpath "$ROOT_DIR/build/pyinstaller" \
     --paths "$ROOT_DIR/src" \
-    --add-data "$ROOT_DIR/assets${DATA_SEP}assets" \
-    --add-data "$ROOT_DIR/docs/controllers${DATA_SEP}docs/controllers" \
+    --add-data "assets${DATA_SEP}assets" \
+    --add-data "docs/controllers${DATA_SEP}docs/controllers" \
     --osx-bundle-identifier "com.guillain.djmidi" \
     "$ROOT_DIR/src/djmidi/gui/app.py"
 
