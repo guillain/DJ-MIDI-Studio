@@ -215,6 +215,13 @@ class MidiRoutingView(QWidget):
             #midiToolsSurface QTableWidget:focus {
                 border: 1px solid #00c2e8;
             }
+            #midiToolsSurface QComboBox QAbstractItemView {
+                background: #0e1724;
+                color: #e8eef7;
+                border: 1px solid #334963;
+                selection-background-color: #d33c72;
+                selection-color: #ffffff;
+            }
             #midiToolsSurface QHeaderView::section {
                 background: #202d42;
                 color: #b9c9dc;

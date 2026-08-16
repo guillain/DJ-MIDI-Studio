@@ -641,6 +641,7 @@ class MainWindow(QMainWindow):
             self.channel_proxies.append(proxy)
 
             view = QTreeView()
+            self._style_mapping_tree(view)
             view.setHeaderHidden(False)
             view.setModel(proxy)
             view.expandToDepth(0)
@@ -657,6 +658,7 @@ class MainWindow(QMainWindow):
 
         for _deck_id, model in build_deck_columns(self.config):
             view = QTreeView()
+            self._style_mapping_tree(view)
             view.setHeaderHidden(False)
             view.setModel(model)
             view.expandToDepth(0)
@@ -737,6 +739,7 @@ class MainWindow(QMainWindow):
 
         for _controller, model, expand_flags in build_controller_columns(usage):
             view = QTreeView()
+            self._style_mapping_tree(view)
             view.setHeaderHidden(False)
             view.setModel(model)
             view.selectionModel().selectionChanged.connect(lambda *_, v=view: self._on_controller_selection_changed(v))
@@ -747,6 +750,59 @@ class MainWindow(QMainWindow):
             # combinations (the row exists in the model but the view hasn't built
             # its internal expand-state tracking for it yet).
             QTimer.singleShot(0, lambda v=view, m=model, flags=expand_flags: self._apply_controller_expand_state(v, m, flags))
+
+    @staticmethod
+    def _style_mapping_tree(view: QTreeView) -> None:
+        """Apply the DJ booth palette to every mapping tree consistently."""
+        view.setAlternatingRowColors(True)
+        view.setIndentation(16)
+        view.setAnimated(True)
+        view.setStyleSheet(
+            """
+            QTreeView {
+                background: #0e1724;
+                alternate-background-color: #121e2d;
+                color: #dce7f5;
+                border: 1px solid #2b3b53;
+                border-radius: 8px;
+                padding: 5px;
+                outline: none;
+            }
+            QTreeView::item {
+                padding: 6px 8px;
+                border-radius: 4px;
+            }
+            QTreeView::item:hover {
+                background: #263b56;
+                color: #ffffff;
+            }
+            QTreeView::item:selected {
+                background: #d33c72;
+                color: #ffffff;
+            }
+            QHeaderView::section {
+                background: #202d42;
+                color: #b9c9dc;
+                border: 0;
+                border-bottom: 1px solid #3a506d;
+                padding: 7px;
+                font-weight: 600;
+            }
+            QScrollBar:vertical, QScrollBar:horizontal {
+                background: #111a28;
+                border: none;
+            }
+            QScrollBar::handle:vertical, QScrollBar::handle:horizontal {
+                background: #405875;
+                border-radius: 5px;
+                min-height: 24px;
+                min-width: 24px;
+            }
+            QScrollBar::handle:hover {
+                background: #00b9d9;
+            }
+            """
+        )
 
     def _apply_controller_expand_state(self, view: QTreeView, model: QStandardItemModel, expand_flags: list[tuple[int, bool]]) -> None:
         for row, has_used_leaf in expand_flags:
