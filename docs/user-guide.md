@@ -83,6 +83,11 @@ The Dashboard overview gives each controller its own tab. The reference image
 uses the main area, while `Channel`, `Controller`, and `Images` remain readable
 in a vertical action column.
 
+Helpful Notes opens automatically in a separate popup at startup. Use
+`View -> Helpful Notes...` to reopen it at any time. Closing the popup asks
+whether it should stay closed on future startups; choosing `Yes` persists the
+choice, while `No` closes it for the current session only.
+
 Controller Setup keeps learning, import, and export at the top and gives MIDI
 Output its own full-width panel. The output port list, message fields,
 playback actions, and PAD MODE 1–8 buttons remain available without a cramped

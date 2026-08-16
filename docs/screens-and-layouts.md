@@ -55,6 +55,10 @@ because they are user-specific and are persisted automatically.
 
 The right-hand panel remains available from every tab for the current selection and validation messages. Selecting a mapping or a layout cell keeps the related views synchronized.
 
+Helpful Notes is intentionally a separate startup popup rather than another
+dashboard panel. It can be reopened from `View -> Helpful Notes...`; closing
+it offers a persistent or session-only choice.
+
 On macOS, entering or leaving native full screen may briefly show the window
 surface being rebuilt. DJ MIDI Studio queues a repaint after the transition;
 if the surface still appears black, leave full screen once and re-enter it so

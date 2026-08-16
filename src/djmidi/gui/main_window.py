@@ -8,8 +8,8 @@ from PySide6.QtCore import (
     QEvent,
     QItemSelectionModel,
     QModelIndex,
-    QSortFilterProxyModel,
     QSettings,
+    QSortFilterProxyModel,
     Qt,
     QTimer,
     QUrl,
@@ -17,15 +17,14 @@ from PySide6.QtCore import (
 from PySide6.QtGui import (
     QAction,
     QColor,
-    QCloseEvent,
     QDesktopServices,
     QKeySequence,
     QStandardItemModel,
     QUndoStack,
 )
 from PySide6.QtWidgets import (
-    QDialog,
     QApplication,
+    QDialog,
     QDockWidget,
     QFileDialog,
     QInputDialog,
@@ -49,12 +48,13 @@ from djmidi.gui.controller_setup import ControllerSetupView
 from djmidi.gui.controller_tree import CELL_KEY_ROLE, build_controller_columns
 from djmidi.gui.deck_tree import build_deck_columns
 from djmidi.gui.edit_panel import EditPanel
+from djmidi.gui.helpful_notes_dialog import HelpfulNotesDialog
 from djmidi.gui.introduction_view import IntroductionView
 from djmidi.gui.layout_view import ControllerLayoutView
 from djmidi.gui.live_monitor import LiveMonitorView
 from djmidi.gui.mapping_group import MappingGroup
-from djmidi.gui.midi_routing_view import MidiRoutingView
 from djmidi.gui.midi_clock_view import MidiClockView
+from djmidi.gui.midi_routing_view import MidiRoutingView
 from djmidi.gui.preferences_dialog import PreferencesDialog
 from djmidi.gui.safe_update_dialog import SafeUpdateDialog
 from djmidi.gui.splitter_utils import replace_splitter
@@ -276,8 +276,12 @@ class MainWindow(QMainWindow):
         self._tool_docks = self._create_tool_docks()
 
         self._build_menu()
+        self.helpful_notes_dialog = HelpfulNotesDialog(self)
+        self.helpful_notes_dialog.closedPersistently.connect(self._persist_helpful_notes_closed)
+        self.helpful_notes_dialog.closedForSession.connect(self._allow_helpful_notes_next_start)
         self._restore_user_layout()
         QTimer.singleShot(0, self._initialize_pair_splitters)
+        QTimer.singleShot(0, self._show_helpful_notes_if_enabled)
         self.introduction_view.set_loaded_config_info(None)
 
     @staticmethod
@@ -302,14 +306,6 @@ class MainWindow(QMainWindow):
             self.restoreGeometry(geometry)
         if state:
             self.restoreState(state, 1)
-
-    def closeEvent(self, event: QCloseEvent) -> None:
-        settings = self._layout_settings()
-        if settings is not None:
-            settings.setValue("window/geometry", self.saveGeometry())
-            settings.setValue("window/state", self.saveState(1))
-            settings.sync()
-        super().closeEvent(event)
 
     def changeEvent(self, event: QEvent) -> None:
         """Refresh the backing store after native macOS window transitions."""
@@ -438,6 +434,10 @@ class MainWindow(QMainWindow):
         edit_menu.addAction(validate_action)
 
         view_menu = self.menuBar().addMenu("&View")
+        helpful_notes_action = QAction("Helpful Notes...", self)
+        helpful_notes_action.triggered.connect(self._show_helpful_notes)
+        view_menu.addAction(helpful_notes_action)
+        view_menu.addSeparator()
         tools_menu = view_menu.addMenu("MIDI Tools")
         self._tool_float_actions: dict[str, QAction] = {}
         for key in ("monitor", "routing", "clock"):
@@ -481,6 +481,28 @@ class MainWindow(QMainWindow):
             action = QAction(title, self)
             action.triggered.connect(lambda checked=False, u=url: QDesktopServices.openUrl(QUrl(u)))
             online_menu.addAction(action)
+
+    def _show_helpful_notes(self) -> None:
+        self.helpful_notes_dialog.show()
+        self.helpful_notes_dialog.raise_()
+        self.helpful_notes_dialog.activateWindow()
+
+    def _show_helpful_notes_if_enabled(self) -> None:
+        settings = self._layout_settings()
+        if settings is not None and not bool(settings.value("ui/helpful_notes_closed", False)):
+            self._show_helpful_notes()
+
+    def _persist_helpful_notes_closed(self) -> None:
+        settings = self._layout_settings()
+        if settings is not None:
+            settings.setValue("ui/helpful_notes_closed", True)
+            settings.sync()
+
+    def _allow_helpful_notes_next_start(self) -> None:
+        settings = self._layout_settings()
+        if settings is not None:
+            settings.setValue("ui/helpful_notes_closed", False)
+            settings.sync()
 
     def _create_tool_docks(self) -> dict[str, QDockWidget]:
         definitions = {
@@ -947,6 +969,11 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(f"'{name}' applied for this session.")
 
     def closeEvent(self, event) -> None:
+        settings = self._layout_settings()
+        if settings is not None:
+            settings.setValue("window/geometry", self.saveGeometry())
+            settings.setValue("window/state", self.saveState(1))
+            settings.sync()
         self.live_monitor_view.shutdown()
         self.midi_routing_view.shutdown()
         self.controller_setup_view.shutdown()

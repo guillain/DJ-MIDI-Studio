@@ -70,21 +70,6 @@ class IntroductionView(QWidget):
         cards_box_layout = QVBoxLayout(cards_box)
         cards_box_layout.addWidget(self._controller_tabs)
 
-        help_box = QGroupBox("Helpful notes")
-        help_layout = QVBoxLayout(help_box)
-        help_text = QLabel(
-            "- By Channel: most granular editing (raw Control/UserIO/Mapping).\n"
-            "- By Deck: grouped editing of Serato duplicate trigger sets (x10) via MappingGroup.\n"
-            "- By Controller: physical mapping view by controller section.\n"
-            "- Live Monitor: real-time MIDI display with catalog + Serato function resolution.\n"
-            "- MIDI Routing: route MIDI and loop Controller Setup session rows.\n"
-            "- MIDI Clock: configure Clock sources, destinations, and Link following.\n"
-            "- Controller Setup: create a new catalog module from learned MIDI or imported XML."
-        )
-        help_text.setTextFormat(Qt.TextFormat.PlainText)
-        help_text.setWordWrap(True)
-        help_layout.addWidget(help_text)
-
         tools_box = QGroupBox("MIDI tools")
         tools_layout = QHBoxLayout(tools_box)
         monitor_button = QPushButton("Open Live Monitor")
@@ -110,7 +95,6 @@ class IntroductionView(QWidget):
         layout.addWidget(self._loaded_file_label)
         layout.addWidget(catalog_box)
         layout.addWidget(cards_box)
-        layout.addWidget(help_box)
         layout.addWidget(tools_box)
         layout.addWidget(info)
         layout.addStretch(1)

@@ -154,6 +154,7 @@ Implemented contract, runtime, test, and documentation work:
 - [x] Make Live Monitor and MIDI Routing independent closable dock panels with Dashboard and View-menu access.
 - [x] Allow both docked and floating MIDI tool windows without changing the mapping workspace layout.
 - [x] Apply the DJ performance theme consistently to the main window, dialogs, menus, tabs, docks, and mapping surfaces.
+- [x] Move Helpful Notes into a startup popup accessible from the View menu, with persistent or session-only dismissal.
 - [x] Rework Controller Setup into a readable responsive layout with a full-width MIDI Output panel.
 - [x] Keep MIDI Output port selection, message fields, playback actions, and PAD MODE 1–8 controls visible without sacrificing functionality.
 - [x] Allow the main and MIDI tool windows to shrink below controller-selector content width and preserve the user's window/dock arrangement between launches.
