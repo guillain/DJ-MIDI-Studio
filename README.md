@@ -50,7 +50,7 @@ DJ MIDI mapping files can become very large and hard to maintain. DJ MIDI Studio
 | 🎧 | Serato DJ and Native Instruments Traktor integrations |
 | 🔎 | MIDI learning, Live Monitor, source-device tracking, and controller lookup |
 | 🔀 | Safe one-way MIDI routing with cycle prevention and error diagnostics |
-| 🕒 | MIDI Clock mirroring plus optional read-only Ableton Link → 24 PPQN output |
+| 🕒 | MIDI Clock mirroring plus read-only Ableton Link → 24 PPQN output |
 | 💾 | Validation, safe updates, backups, previews, rollback, and XML round-tripping |
 
 ## Screens and Layouts
@@ -111,14 +111,13 @@ bash scripts/bootstrap.sh
 or manually:
 
 ```bash
-uv sync --group dev --extra link
+uv sync --group dev
 ```
 
-Direct Ableton Link following is optional. Install its native binding when
-using `Ableton Link (DJ MIDI Studio)` as a Clock source:
+Ableton Link support is included by default with its native binding:
 
 ```bash
-uv sync --group dev --extra link
+uv sync --group dev
 ```
 
 Run the app:

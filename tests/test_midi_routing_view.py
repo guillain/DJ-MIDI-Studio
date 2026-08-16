@@ -55,6 +55,18 @@ def test_routing_and_clock_ports_are_loaded_when_view_opens():
     assert view._clock_refresh_button.text() == "Refresh MIDI ports"
 
 
+def test_clock_start_stop_controls_share_routing_session_state():
+    view = MidiRoutingView()
+    view.set_routing_enabled(True)
+    assert view._routing_button.isEnabled()
+    assert view._clock_routing_button.isEnabled()
+    assert view._clock_routing_button.text() == "Start routing"
+    view._routing_session.running = True
+    view._stop_routing()
+    assert view._routing_button.text() == "Start routing"
+    assert view._clock_routing_button.text() == "Start routing"
+
+
 def test_routing_view_rejects_same_clock_source_and_destination():
     view = MidiRoutingView()
     view._clock_source.addItem("same")

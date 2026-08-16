@@ -122,7 +122,7 @@ For screenshots and a visual description of each tab, see [Screens and Layouts](
   opened by the same session and realtime Start/Continue/Stop/Clock messages
   are forwarded with the configured jitter safeguards.
   Serato DJ Pro does not emit standard MIDI Clock directly. For a direct
-  workflow, install the optional `aalink` binding, enable Link in Serato, and
+  workflow, install DJ MIDI Studio normally, enable Link in Serato, and
   select `Ableton Link (DJ MIDI Studio)` as the Clock source. DJ MIDI Studio
   follows Link and emits 24 PPQN MIDI Clock without changing Link's tempo.
   `Create virtual input for Serato Clock` remains for an external bridge that

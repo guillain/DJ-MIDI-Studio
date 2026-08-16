@@ -109,6 +109,9 @@ class MidiRoutingView(QWidget):
         remove_clock_button.clicked.connect(self._remove_clock_route)
         self._clock_refresh_button = QPushButton("Refresh MIDI ports")
         self._clock_refresh_button.clicked.connect(self.refresh_ports)
+        self._clock_routing_button = QPushButton("Start routing")
+        self._clock_routing_button.clicked.connect(self._toggle_routing)
+        self._clock_routing_button.setEnabled(False)
         clock_controls = QHBoxLayout()
         clock_controls.addWidget(QLabel("Clock source:"))
         clock_controls.addWidget(self._clock_source)
@@ -119,6 +122,7 @@ class MidiRoutingView(QWidget):
         clock_controls.addWidget(add_clock_button)
         clock_controls.addWidget(remove_clock_button)
         clock_controls.addWidget(self._clock_refresh_button)
+        clock_controls.addWidget(self._clock_routing_button)
         self._clock_panel = QGroupBox("MIDI Clock")
         clock_layout = QVBoxLayout(self._clock_panel)
         clock_layout.addLayout(clock_controls)
@@ -155,6 +159,7 @@ class MidiRoutingView(QWidget):
         if not enabled:
             self._stop_routing()
         self._routing_button.setEnabled(enabled)
+        self._clock_routing_button.setEnabled(enabled)
         if not enabled:
             self._routing_button.setToolTip("Enable MIDI routing in Preferences first")
         else:
@@ -173,6 +178,7 @@ class MidiRoutingView(QWidget):
             QMessageBox.warning(self, "Cannot start MIDI routing", str(exc))
             return
         self._routing_button.setText("Stop routing")
+        self._clock_routing_button.setText("Stop routing")
         self._routing_timer.start()
         self._refresh_clock_status()
 
@@ -180,6 +186,7 @@ class MidiRoutingView(QWidget):
         self._routing_timer.stop()
         self._routing_session.stop()
         self._routing_button.setText("Start routing")
+        self._clock_routing_button.setText("Start routing")
         self._refresh_clock_status()
 
     def _poll_routing(self) -> None:

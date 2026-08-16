@@ -59,7 +59,7 @@ Any XML parsing/modeling code should be validated against this sample file's str
 This project uses `uv` (build backend is `uv_build`, Python `>=3.14`).
 
 ```bash
-uv sync --group dev --extra link  # install dependencies, including Ableton Link
+uv sync --group dev              # install dependencies, including Ableton Link
 uv run pytest            # run the test suite
 uv run pytest tests/test_parser.py -k roundtrip  # run a single test
                           # tests/conftest.py auto-creates a QApplication (QT_QPA_PLATFORM=offscreen by default)

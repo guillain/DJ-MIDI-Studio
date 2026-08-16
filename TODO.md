@@ -92,9 +92,9 @@ Implemented contract, runtime, test, and documentation work:
 - [x] Separate MIDI input and output selectors so an input cannot be configured as a Clock destination.
 - [x] Add the direct Ableton Link follower that emits Start/Continue/Stop and 24 PPQN MIDI Clock without changing Link tempo.
 - [x] Add deterministic Link scheduler tests and a clear missing-optional-binding diagnostic.
-- [x] Publish the optional `link` dependency extra so `aalink` can be installed reproducibly with `uv sync --extra link`.
+- [x] Make `aalink` a default dependency so Link support is installed reproducibly with the standard environment.
 - [x] Bridge the asyncio-based `aalink` runtime to the Qt routing poller and report Link follower activity correctly.
-- [x] Package the optional `aalink` binding in local, CI, release, and PyInstaller builds so Ableton Link is available in native artifacts.
+- [x] Package the `aalink` binding as a default dependency in local, CI, release, and PyInstaller builds so Ableton Link is available in native artifacts.
 - [x] Move MIDI Clock configuration and diagnostics into an independent closable/floating dock while retaining the shared routing safety session.
 
 ### Phase 4 — safe software/controller operations — COMPLETE

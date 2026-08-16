@@ -61,8 +61,8 @@ the device name is intentionally kept in its dedicated column.
 2. Open `MIDI Routing`, select a source and destination, then click `Add route`.
 3. Open the independent `MIDI Clock` tool from `View > MIDI Tools`.
 4. Optionally enable the Clock policy and add one or more source/destination lines.
-   For a direct Serato workflow, install the optional `link` extra with
-   `uv sync --group dev --extra link`, enable Link in Serato, and
+   For a direct Serato workflow, install DJ MIDI Studio with
+   `uv sync --group dev`, enable Link in Serato, and
    choose `Ableton Link (DJ MIDI Studio)` as the source; otherwise choose a
    physical MIDI Clock input or an external bridge output.
 5. Click `Start routing` only after checking the selected ports.
