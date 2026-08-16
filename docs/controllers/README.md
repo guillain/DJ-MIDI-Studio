@@ -1,11 +1,18 @@
 # Controller documentation
 
+> 📖 Official references, archived locally so controller documentation remains
+> available from the packaged application and without an internet connection.
+
 This directory contains the controller-specific documentation used by the
 catalog. The local PDFs are kept as stable project references; the links below
 are the manufacturer's original sources or the official product/documentation
 pages where no MIDI message-list PDF is published.
 
 ## MIDI message lists
+
+💡 **Reading the table:** a local copy is the stable in-app reference; the
+official link is the provenance source. Product sheets and user guides are
+clearly labeled when a MIDI message list was not available.
 
 | Controller | Local copy | Official source | Status |
 | --- | --- | --- | --- |

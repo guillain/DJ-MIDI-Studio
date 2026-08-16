@@ -1,5 +1,7 @@
 # Release Checklist
 
+> 🚢 **Release mantra:** validate → build → inspect → publish → monitor.
+
 ## Table of Contents
 
 - [Purpose](#purpose)

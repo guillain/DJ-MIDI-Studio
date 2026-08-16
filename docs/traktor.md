@@ -1,5 +1,8 @@
 # Traktor integration
 
+> 🎧 Traktor mappings are normalized into the same channel/control model used
+> by the rest of DJ MIDI Studio.
+
 DJ MIDI Studio includes a discoverable `traktor` software plugin for Native
 Instruments Traktor mapping files.
 
