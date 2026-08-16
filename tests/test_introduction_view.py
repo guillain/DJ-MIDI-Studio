@@ -33,13 +33,12 @@ def test_refresh_controllers_builds_controller_cards():
     view.refresh_controllers()
     assert "DDJ-XP2" in view._card_stats
     assert "XDJ-XZ" in view._card_stats
-    assert view._cards_layout.getItemPosition(0)[1] == 0
-    assert view._cards_layout.getItemPosition(1)[1] == 1
-    assert view._cards_layout.getItemPosition(2)[1] == 2
-    assert view._cards_layout.getItemPosition(3)[0] == 1
-    first_card = view._cards_layout.itemAt(0).widget()
+    assert view._controller_tabs.count() == len(view._card_stats)
+    assert [view._controller_tabs.tabText(i) for i in range(view._controller_tabs.count())] == list(
+        view._card_stats
+    )
+    first_card = view._controller_tabs.widget(0)
     assert first_card.sizePolicy().horizontalPolicy() == QSizePolicy.Policy.Expanding
-    assert [view._cards_layout.columnStretch(column) for column in range(3)] == [1, 1, 1]
 
 
 def test_set_loaded_config_info_updates_status_label():

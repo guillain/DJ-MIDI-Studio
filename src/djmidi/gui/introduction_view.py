@@ -7,13 +7,12 @@ from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
     QComboBox,
     QFrame,
-    QGridLayout,
     QGroupBox,
     QHBoxLayout,
     QLabel,
     QPushButton,
-    QScrollArea,
     QSizePolicy,
+    QTabWidget,
     QVBoxLayout,
     QWidget,
 )
@@ -63,20 +62,13 @@ class IntroductionView(QWidget):
         catalog_layout.addWidget(self._known_count_label)
         catalog_layout.addWidget(self._known_list_label)
 
-        self._cards_layout = QGridLayout()
-        self._cards_layout.setHorizontalSpacing(10)
-        self._cards_layout.setVerticalSpacing(10)
-        for column in range(3):
-            self._cards_layout.setColumnStretch(column, 1)
-        cards_host = QWidget()
-        cards_host.setLayout(self._cards_layout)
-        cards_scroll = QScrollArea()
-        cards_scroll.setWidgetResizable(True)
-        cards_scroll.setWidget(cards_host)
+        self._controller_tabs = QTabWidget()
+        self._controller_tabs.setDocumentMode(True)
+        self._controller_tabs.setTabPosition(QTabWidget.TabPosition.North)
 
         cards_box = QGroupBox("Controller overview")
         cards_box_layout = QVBoxLayout(cards_box)
-        cards_box_layout.addWidget(cards_scroll)
+        cards_box_layout.addWidget(self._controller_tabs)
 
         help_box = QGroupBox("Helpful notes")
         help_layout = QVBoxLayout(help_box)
@@ -190,31 +182,27 @@ class IntroductionView(QWidget):
         self._refresh_card_stats()
 
     def _rebuild_controller_cards(self, names: list[str]) -> None:
-        while self._cards_layout.count() > 0:
-            item = self._cards_layout.takeAt(0)
-            widget = item.widget()
-            if widget is not None:
-                widget.deleteLater()
+        self._controller_tabs.clear()
         self._card_stats = {}
         self._availability_labels = {}
 
-        for index, name in enumerate(names):
-            card = self._build_controller_card(name)
-            self._cards_layout.addWidget(card, index // 3, index % 3)
+        for name in names:
+            self._controller_tabs.addTab(self._build_controller_card(name), name)
 
         self._refresh_card_stats()
         self.refresh_midi_availability(self._midi_port_names)
 
     def _build_controller_card(self, controller: str) -> QWidget:
         card = QGroupBox(controller)
-        # Let the three equal grid columns use the available overview width;
-        # the surrounding scroll area still handles narrow windows.
         card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        layout = QVBoxLayout(card)
+        layout = QHBoxLayout(card)
+        layout.setContentsMargins(14, 14, 14, 14)
+        layout.setSpacing(18)
 
         image = QLabel()
         image.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        image.setFixedHeight(90)
+        image.setMinimumSize(360, 220)
+        image.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         image_name = image_for_controller(controller)
         path = ASSETS_DIR / image_name if image_name else None
         pixmap = QPixmap(str(path)) if path is not None and path.exists() else QPixmap()
@@ -222,34 +210,38 @@ class IntroductionView(QWidget):
             image.setText("Image unavailable")
             image.setFrameShape(QFrame.Shape.Box)
         else:
-            image.setPixmap(
-                pixmap.scaledToHeight(75, Qt.TransformationMode.SmoothTransformation)
-            )
+            image.setPixmap(pixmap.scaled(520, 300, Qt.AspectRatioMode.KeepAspectRatio,
+                                          Qt.TransformationMode.SmoothTransformation))
+        image.setStyleSheet("background: #0a1019; border: 1px solid #30445f; border-radius: 8px;")
         layout.addWidget(image)
 
+        details = QVBoxLayout()
+        details.setSpacing(8)
         definition = catalog.get_definition(controller)
         catalog_info = QLabel(
             f"Catalog: {len(definition.static_entries)} static entry(ies), {definition.pad_count} pad(s)"
         )
         catalog_info.setWordWrap(True)
-        layout.addWidget(catalog_info)
+        details.addWidget(catalog_info)
 
         availability = QLabel("MIDI: not checked")
         availability.setStyleSheet("color: #777; font-weight: 600;")
         self._availability_labels[controller] = availability
-        layout.addWidget(availability)
+        details.addWidget(availability)
 
         stats = QLabel("In loaded file: 0 cell(s), 0 deck(s), 0 function(s)")
         stats.setWordWrap(True)
         self._card_stats[controller] = stats
-        layout.addWidget(stats)
+        details.addWidget(stats)
 
-        buttons = QHBoxLayout()
+        details.addStretch(1)
+        buttons = QVBoxLayout()
         for target, label in (("channel", "Channel"), ("controller", "Controller"), ("images", "Images")):
             btn = QPushButton(label)
             btn.clicked.connect(lambda _checked=False, t=target, c=controller: self._drilldown_controller(t, c))
             buttons.addWidget(btn)
-        layout.addLayout(buttons)
+        details.addLayout(buttons)
+        layout.addLayout(details, 0)
         return card
 
     def _refresh_card_stats(self) -> None:

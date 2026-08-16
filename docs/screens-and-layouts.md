@@ -69,7 +69,7 @@ available with a packaged release.
 
 ## Dashboard
 
-The Dashboard shows the loaded Serato file, the registered controllers, catalog statistics, MIDI availability indicators, and shortcuts into the detailed views. Controller overview cards are arranged in three equal-width columns that fill the available overview area; the overview scrolls horizontally when the window is narrower. Each card uses compact `Channel`, `Controller`, and `Images` buttons to open its detailed view. The active controller selector controls those drill-down actions. Availability is detected from the currently listed MIDI input ports; `MIDI: available` means a port name matches the controller catalog, while `MIDI: not detected` means no match was found.
+The Dashboard shows the loaded Serato file, the registered controllers, catalog statistics, MIDI availability indicators, and shortcuts into the detailed views. Controller overview is presented as one spacious tab per controller, with the reference image on the left and vertical `Channel`, `Controller`, and `Images` actions on the right. The active controller selector still controls those drill-down actions. Availability is detected from the currently listed MIDI input ports; `MIDI: available` means a port name matches the controller catalog, while `MIDI: not detected` means no match was found.
 
 The current catalog contains DDJ-XP2, XDJ-XZ, DDJ-1000, DDJ-FLX4, DDJ-FLX10, DDJ-REV1, Numark Mixtrack Pro FX, and Hercules DJControl Inpulse 500. Controller Setup definitions applied during the current session also appear here immediately. Reference artwork is available for all eight built-in controllers. The DDJ-FLX10 and DDJ-REV1 images are annotated official MIDI message-list diagrams; the DDJ-FLX4, Numark, and Hercules images are official product views used as physical-layout references, not complete MIDI message maps.
 
@@ -93,7 +93,7 @@ By Controller groups catalog entries by physical controller and section, such as
 
 ## Controller Setup
 
-Controller Setup is used to learn MIDI triggers from hardware or import raw triggers from a Serato XML file. The captured table records the section, physical name, MIDI type, channel(s), data value, source, and device.
+Controller Setup is used to learn MIDI triggers from hardware or import raw triggers from a Serato XML file. The captured table records the section, physical name, MIDI type, channel(s), data value, source, and device. Learning, import, and export remain grouped at the top; MIDI Output now has a full-width performance panel with a dedicated port list, readable message fields, playback actions, and all eight DDJ-XP2 pad-mode buttons.
 
 The same tab provides MIDI output controls for sending a command once, sending a NOTE double-click, replaying selected/all session rows, or generating a catalog module. `Check for conflicts` should be run before applying or exporting a catalog.
 
