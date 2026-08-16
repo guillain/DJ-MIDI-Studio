@@ -144,6 +144,10 @@ pushes the current branch. The script uses `gh` for GitHub and `glab` for
 GitLab, and requires a clean worktree. Tag pushes trigger the checked-in CI
 configuration (`.github/workflows/draft-release.yml` or `.gitlab-ci.yml`), which
 builds Linux, macOS, and Windows artifacts and attaches them to the release.
+Python wheel and sdist artifacts are uploaded once from the Ubuntu matrix job
+to avoid duplicate GitHub release asset names. The final GitHub release step
+uses the `gh` CLI with `--clobber`, so a rerun safely refreshes an interrupted
+release without relying on the deprecated Node 20 release action.
 The CI runners must have `uv`; macOS additionally needs a Developer ID
 certificate configured so the release job does not reject the app as unsigned.
 

@@ -168,6 +168,7 @@ Implemented contract, runtime, test, and documentation work:
 - [x] Collect the dynamic Mido/rtmidi backend required when the packaged Live Monitor enumerates MIDI ports.
 - [x] Run a six-second functional startup smoke test for every native executable before artifact upload.
 - [x] Isolate packaged startup smoke tests from unavailable host MIDI services with an explicit headless MIDI-disable mode.
+- [x] Upload Python packages once per release and make GitHub release asset uploads safely repeatable.
 - [x] Fall back to a temporary log file when an existing per-user log cannot be opened by the packaged app.
 - [x] Create a Pull Request automatically after successful multi-platform CI when a branch has no open PR.
 - [x] Document Linux ALSA/Qt headless dependencies, Windows MSYS path handling, and the tag-only CD release flow.
