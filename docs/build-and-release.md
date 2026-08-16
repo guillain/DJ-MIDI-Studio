@@ -1,5 +1,8 @@
 # Build and Release
 
+> 📦 **Delivery guide:** build locally, validate continuously, then publish
+> reproducible artifacts from an annotated release tag.
+
 ## Table of Contents
 
 - [Build Targets](#build-targets)
@@ -94,17 +97,17 @@ The provider-neutral helper is `scripts/scm_release.sh`. It detects GitHub or
 GitLab from the `origin` URL, or can be forced with `SCM_PROVIDER`:
 
 ```bash
-git switch -c release/1.0.0
-# commit the intended changes explicitly
-bash scripts/scm_release.sh pr --base main --title "Prepare 1.0.0"
+git switch -c release/1.1.0
+bash scripts/scm_release.sh prepare --version 1.1.0 --base main
 
-# after the PR/MR is merged
-bash scripts/scm_release.sh tag --version 1.0.0
-bash scripts/scm_release.sh release --version 1.0.0
+# For an already prepared branch, open only the PR/MR:
+bash scripts/scm_release.sh pr --base main --title "Prepare 1.1.0"
 ```
 
-The script uses `gh` for GitHub and `glab` for GitLab, never stages or commits
-files, and requires a clean worktree. Tag pushes trigger the checked-in CI
+The `prepare` command updates `pyproject.toml` and `uv.lock`, creates the
+release commit, generates a PR/MR description from the included commits, and
+pushes the current branch. The script uses `gh` for GitHub and `glab` for
+GitLab, and requires a clean worktree. Tag pushes trigger the checked-in CI
 configuration (`.github/workflows/draft-release.yml` or `.gitlab-ci.yml`), which
 builds Linux, macOS, and Windows artifacts and attaches them to the release.
 The CI runners must have `uv`; macOS additionally needs a Developer ID
@@ -120,7 +123,10 @@ then builds the native executable and Python artifacts on Ubuntu, macOS, and
 Windows. It also remains available through **Run workflow** for a manual
 execution.
 
-Additional release workflow: `.github/workflows/draft-release.yml` (tag-triggered draft release with attached artifacts).
+Additional release workflow: `.github/workflows/draft-release.yml` (tag-triggered published release with attached artifacts).
+
+Merge-to-tag workflow: `.github/workflows/tag-release-on-merge.yml` (release
+PR merge → annotated tag → artifact build → draft release).
 
 It builds artifacts on a matrix:
 
@@ -140,12 +146,14 @@ generated PNGs to the draft release; GitLab retains them as the screenshots
 job artifact.
 
 The CD workflow is deliberately tag-only: pushing a tag matching `v*` runs
-the release quality/build pipeline and creates a draft GitHub Release. Normal
+the release quality/build pipeline and creates a published GitHub Release. Normal
 branch pushes validate and build artifacts but never publish a release.
 
 On Ubuntu runners, `python-rtmidi` is compiled against ALSA when no compatible
-wheel is available. The CI workflows install `libasound2-dev` and `pkg-config`
-before `uv sync`; this is required for the Linux build and quality jobs.
+wheel is available, and PySide6 needs the system EGL/GL libraries even for
+headless tests. The CI workflows install `libasound2-dev`, `pkg-config`,
+`libegl1`, `libgl1`, and the XKB libraries before `uv sync`; quality jobs also
+set `QT_QPA_PLATFORM=offscreen`.
 
 The executable build passes bundled resource directories to PyInstaller as
 absolute native paths because PyInstaller resolves data sources relative to

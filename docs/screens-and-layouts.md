@@ -1,5 +1,8 @@
 # Screens and Layouts
 
+> 🖥️ A visual tour of the mapping workspace, DJ-oriented controller layouts,
+> and docked or floating MIDI tools.
+
 ## Table of Contents
 
 - [Application Navigation](#application-navigation)
@@ -58,7 +61,7 @@ controller references, and official external links. Local Markdown and PDF
 files are opened from the application bundle, so the documentation remains
 available with a packaged release.
 
-![Dashboard and application tab navigation](images/layout/introduction.png)
+![Dashboard and application tab navigation](images/layout/dashboard.png)
 
 ## Dashboard
 
@@ -90,7 +93,7 @@ Controller Setup is used to learn MIDI triggers from hardware or import raw trig
 
 The same tab provides MIDI output controls for sending a command once, sending a NOTE double-click, replaying selected/all session rows, or generating a catalog module. `Check for conflicts` should be run before applying or exporting a catalog.
 
-![Controller Setup](images/layout/controlleur-etup.png)
+![Controller Setup](images/layout/controlleur-setup.png)
 
 ## Controller Images
 

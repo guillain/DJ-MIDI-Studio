@@ -1,5 +1,8 @@
 # Quality Gates
 
+> ✅ The quality gate is the project release guardrail: tests, coverage,
+> maintainability, duplication, and dependency security must all stay healthy.
+
 ## Table of Contents
 
 - [Targets](#targets)

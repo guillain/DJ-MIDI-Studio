@@ -1,5 +1,7 @@
 # Release Checklist
 
+> 🚢 **Release mantra:** validate → build → inspect → publish → monitor.
+
 ## Table of Contents
 
 - [Purpose](#purpose)
@@ -50,11 +52,17 @@ Use `scripts/scm_release.sh` to open the PR/MR, push the annotated version tag,
 and optionally create the provider release. Configure only the SCM CLI matching
 the selected provider (`gh` or `glab`); do not store tokens in the repository.
 
+For the GitHub release path, use `scripts/scm_release.sh prepare` on a
+`release/<version>` branch. It bumps `pyproject.toml`, refreshes `uv.lock`,
+creates the release commit, pushes the branch, and opens a PR with generated
+notes. Merging that PR automatically creates the version tag; the tag then
+starts the multi-OS build and draft release workflows.
+
 ## Version and Changelog
 
-1. Update `project.version` in `pyproject.toml`.
-2. Update release notes/changelog section in your preferred tracking file.
-3. Commit changes.
+1. Run `scripts/scm_release.sh prepare --version <version>`.
+2. Review the generated version/lock diff and PR description.
+3. Let CI validate the PR before merging.
 
 ## Tagging Strategy
 
@@ -74,7 +82,7 @@ On tag push, workflow `.github/workflows/draft-release.yml`:
 - builds wheel + sdist,
 - regenerates the documentation screenshots from
   `data/xdj_xz-ddj_xp2-4decks.xml`,
-- attaches all release archives to a **draft GitHub Release**.
+- publishes a GitHub Release with all release archives attached.
 
 ```mermaid
 flowchart LR
@@ -99,9 +107,9 @@ Before publishing draft release:
 
 ## Publish Steps
 
-1. Open GitHub Releases.
-2. Edit the generated draft notes if needed.
-3. Click **Publish release**.
+The release is published automatically after the tag-triggered workflow
+finishes. Review the generated notes and assets in GitHub Releases; no manual
+publish action is required.
 
 ## Rollback Plan
 

@@ -1,5 +1,8 @@
 # Testing and Quality
 
+> 🧪 Fast feedback locally, the same quality gate in CI, and hardware checks
+> kept explicit when they cannot be simulated reliably.
+
 ## Table of Contents
 
 - [Quality Goals](#quality-goals)
@@ -45,7 +48,18 @@ Modes:
 
 ## CI Recommendation
 
-Run at minimum:
+Run locally before opening a Pull Request:
 
-1. `bash scripts/test.sh quick` on each push.
-2. `bash scripts/test.sh all` before release tags.
+1. `bash scripts/test.sh quick` for fast feedback.
+2. `bash scripts/test.sh quality` for the complete local gate.
+
+GitHub Actions runs the quality gate automatically on every branch push and
+Pull Request, then builds the native executable and Python artifacts on
+Ubuntu, macOS, and Windows. The release workflow is intentionally separate:
+only annotated tags matching `v*` create draft releases.
+
+The Ubuntu jobs install ALSA and Qt/OpenGL runtime packages and set
+`QT_QPA_PLATFORM=offscreen`, so the PySide6 test suite can run without a
+display server. The GitHub setup actions use their Node.js 24-compatible
+versions; this changes the Actions runtime only and does not add Node.js to
+the DJ MIDI Studio application.

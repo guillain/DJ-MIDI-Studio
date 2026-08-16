@@ -1,5 +1,8 @@
 # Plugin installation and trust
 
+> 🛡️ External plugins run in the application process. Review their source and
+> permissions before enabling trust.
+
 DJ MIDI Studio discovers built-in modules automatically. External integrations
 are Python packages exposing one of these entry-point groups:
 

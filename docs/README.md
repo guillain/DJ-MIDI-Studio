@@ -1,5 +1,10 @@
 # Documentation Index
 
+> 📚 **DJ MIDI Studio Docs** — a practical guide from first launch to MIDI
+> routing, controller profiles, testing, and release delivery.
+
+![DJ MIDI Studio dashboard](images/layout/dashboard.png)
+
 ## Table of Contents
 
 - [Getting Started](#getting-started)
@@ -13,6 +18,8 @@
 - [Build and CI](#build-and-ci)
 
 ## Getting Started
+
+🚀 Start here if you are discovering the project or setting up a new machine.
 
 - [Quickstart](quickstart.md)
 - [User Guide](user-guide.md)

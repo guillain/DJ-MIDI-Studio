@@ -1,5 +1,8 @@
 # Declarative Controller Profiles
 
+> 🎛️ Use JSON profiles for predictable static NOTE/CC catalogs. Move to a
+> Python plugin when the controller needs custom lookup or behavior.
+
 Controller plugins may be supplied as JSON when their behavior is limited to
 static NOTE/CC entries. A profile contains a validated [plugin manifest](plugin-manifest.md)
 and a `controller` object:

@@ -160,6 +160,11 @@ Implemented contract, runtime, test, and documentation work:
 - [x] Add the quality gate for coverage, code smells, duplication, and security findings.
 - [x] Complete a runtime robustness review covering MIDI port cleanup, Clock destination isolation, restart-state reset, partial device-start recovery, and safe-update rollback semantics.
 - [x] Add bootstrap, build, executable packaging, release artifact, CI, and provider-neutral GitHub/GitLab release scripts.
+- [x] Run the multi-platform CI pipeline on every branch push and Pull Request, with a quality gate before Linux/macOS/Windows builds.
+- [x] Migrate GitHub Actions setup steps from Node.js 20-era action versions to the Node.js 24-compatible releases.
+- [x] Document Linux ALSA/Qt headless dependencies, Windows MSYS path handling, and the tag-only CD release flow.
+- [x] Automate release preparation with version/lock bump, release commit, generated PR description, merge-to-tag automation, and tag-triggered multi-OS assets.
+- [x] Publish the GitHub release automatically after the tag build completes, with no manual draft-release action.
 - [x] Add the documentation portal, quickstart, user guide, architecture, testing, quality, build, release, controller PDFs, and visual layout documentation.
 - [x] Generate and document canonical docked and floating MIDI-tool window compositions; arbitrary user arrangements remain persisted rather than exhaustively screenshoted.
 - [x] Complete the Help menu with bundled project documentation, controller references, and official external links.

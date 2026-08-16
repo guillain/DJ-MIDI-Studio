@@ -1,5 +1,7 @@
 # Quickstart
 
+> 🚀 Go from zero to the first mapping view in a few commands.
+
 ## Table of Contents
 
 - [Requirements](#requirements)
@@ -29,6 +31,8 @@ uv sync --group dev
 
 ## Run the Application
 
+![DJ MIDI Studio dashboard](images/layout/dashboard.png)
+
 ```bash
 uv run djmidi
 ```
@@ -47,4 +51,3 @@ bash scripts/test.sh all
 bash scripts/build.sh
 bash scripts/release_artifacts.sh
 ```
-
