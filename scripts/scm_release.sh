@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Provider-neutral SCM orchestration. It deliberately does not stage or
-# commit files: choosing what enters a release remains an explicit developer
-# action.
+# Provider-neutral SCM orchestration. The prepare command owns the version
+# bump and release commit; all other commands keep their narrower behavior.
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
@@ -14,6 +13,7 @@ REMOTE="${SCM_REMOTE:-origin}"
 usage() {
   cat <<'EOF'
 Usage:
+  scripts/scm_release.sh prepare --version 0.1.0 [--base main]
   scripts/scm_release.sh pr [--base main] [--title "..."]
   scripts/scm_release.sh tag [--version 0.1.0]
   scripts/scm_release.sh release [--version 0.1.0]
@@ -26,10 +26,11 @@ Requirements:
   GitHub: gh (authenticated with `gh auth login`)
   GitLab: glab (authenticated with `glab auth login`)
 
-The working tree must be clean. The script never stages or commits files.
-`pr` pushes the current branch and opens a PR/MR. `tag` creates and pushes an
-annotated v<version> tag. `release` creates the SCM release after CI has
-published the OS artifacts.
+The working tree must be clean. `prepare` updates the project version and lock
+file, creates the release commit, pushes the current branch, and opens a PR/MR
+with generated release notes. `pr` only pushes the current branch and opens a
+PR/MR. `tag` creates and pushes an annotated v<version> tag. `release` creates
+the SCM release after CI has published the OS artifacts.
 EOF
 }
 
@@ -62,11 +63,12 @@ normalise_version() {
 }
 
 open_pr() {
-  local base="main" title="Release preparation"
+  local base="main" title="Release preparation" body="Automated release preparation."
   while [[ $# -gt 0 ]]; do
     case "$1" in
       --base) base="$2"; shift 2 ;;
       --title) title="$2"; shift 2 ;;
+      --body) body="$2"; shift 2 ;;
       *) die "Unknown pr option: $1" ;;
     esac
   done
@@ -78,11 +80,51 @@ open_pr() {
   git push --set-upstream "$REMOTE" "$branch"
   if [[ "$PROVIDER" == "github" ]]; then
     command -v gh >/dev/null || die "GitHub CLI 'gh' is required."
-    gh pr create --base "$base" --head "$branch" --title "$title" --body "Automated release preparation."
+    gh pr create --base "$base" --head "$branch" --title "$title" --body "$body"
   else
     command -v glab >/dev/null || die "GitLab CLI 'glab' is required."
-    glab mr create --target-branch "$base" --source-branch "$branch" --title "$title" --description "Automated release preparation."
+    glab mr create --target-branch "$base" --source-branch "$branch" --title "$title" --description "$body"
   fi
+}
+
+prepare_release() {
+  local version="" base="main" title="" body=""
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --version) version="$2"; shift 2 ;;
+      --base) base="$2"; shift 2 ;;
+      --title) title="$2"; shift 2 ;;
+      --body) body="$2"; shift 2 ;;
+      *) die "Unknown prepare option: $1" ;;
+    esac
+  done
+  version="$(normalise_version "$version")"
+  [[ -n "$title" ]] || title="Prepare DJ MIDI Studio v$version"
+  require_clean_tree
+  local branch
+  branch="$(git branch --show-current)"
+  [[ -n "$branch" && "$branch" != "$base" ]] || die "Checkout a release branch before preparing a release."
+  command -v uv >/dev/null || die "uv is required to update the project version and lock file."
+  uv version "$version"
+  uv lock
+  git add pyproject.toml uv.lock
+  git diff --cached --quiet && die "Version and lock file produced no changes."
+  git commit -m "release: prepare v$version"
+  if [[ -z "$body" ]]; then
+    body="## Release v$version
+
+### Included
+
+$(git log --format='- %s' "$base..HEAD")
+
+### Validation
+
+- Quality gate runs in CI.
+- Linux, macOS, and Windows artifacts are built by CI.
+- Merging this PR creates tag `v$version` automatically.
+- The tag triggers the draft release workflow with package, executable, and documentation assets."
+  fi
+  open_pr --base "$base" --title "$title" --body "$body"
 }
 
 push_tag() {
@@ -111,6 +153,7 @@ create_release() {
 command_name="${1:-}"
 shift || true
 case "$command_name" in
+  prepare) prepare_release "$@" ;;
   pr) open_pr "$@" ;;
   tag) [[ "${1:-}" == "--version" ]] && shift && push_tag "${1:-}" || push_tag "" ;;
   release) [[ "${1:-}" == "--version" ]] && shift && create_release "${1:-}" || create_release "" ;;
