@@ -53,10 +53,12 @@ and optionally create the provider release. Configure only the SCM CLI matching
 the selected provider (`gh` or `glab`); do not store tokens in the repository.
 
 For the GitHub release path, use `scripts/scm_release.sh prepare` on a
-`release/<version>` branch. It bumps `pyproject.toml`, refreshes `uv.lock`,
-creates the release commit, pushes the branch, and opens a PR with generated
-notes. Merging that PR automatically creates the version tag; the tag then
-starts the multi-OS build and draft release workflows.
+dedicated branch. It bumps `pyproject.toml`, refreshes `uv.lock`, creates the
+release commit, pushes the branch, and opens a PR with generated notes. A
+`release/<version>` branch is supported; the generated `Prepare DJ MIDI Studio
+v<version>` PR title is also recognized for feature-branch workflows. Merging
+that PR automatically creates the version tag; the tag then starts the
+multi-OS build and draft release workflows.
 
 ## Version and Changelog
 
