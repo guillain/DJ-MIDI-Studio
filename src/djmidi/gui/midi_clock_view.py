@@ -13,9 +13,11 @@ class MidiClockView(QWidget):
 
     def __init__(self, clock_panel: QWidget, parent: QWidget | None = None) -> None:
         super().__init__(parent)
+        self.setObjectName("midiClockSurface")
+        self.setAutoFillBackground(True)
+        self.setStyleSheet("#midiClockSurface { background: #0d121b; }")
         layout = QVBoxLayout(self)
-        layout.addWidget(clock_panel)
-        layout.addStretch(1)
+        layout.addWidget(clock_panel, 1)
 
 
 __all__ = ["MidiClockView"]

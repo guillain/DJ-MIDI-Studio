@@ -8,13 +8,16 @@ from PySide6.QtWidgets import (
     QAbstractItemView,
     QCheckBox,
     QComboBox,
+    QGridLayout,
     QGroupBox,
     QHBoxLayout,
     QLabel,
     QLineEdit,
     QListWidget,
+    QHeaderView,
     QMessageBox,
     QPushButton,
+    QSizePolicy,
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
@@ -75,22 +78,26 @@ class MidiRoutingView(QWidget):
         self._routing_button.clicked.connect(self._toggle_routing)
         self._routing_button.setEnabled(False)
 
-        route_controls = QHBoxLayout()
-        route_controls.addWidget(QLabel("Source (MIDI in):"))
-        route_controls.addWidget(self._source_combo)
-        route_controls.addWidget(QLabel("Destination (MIDI out):"))
-        route_controls.addWidget(self._destination_combo)
-        route_controls.addWidget(add_button)
-        route_controls.addWidget(remove_button)
-        route_controls.addWidget(self._routing_refresh_button)
-        route_controls.addWidget(self._routing_button)
+        route_controls = QGridLayout()
+        route_controls.addWidget(QLabel("Source (MIDI in)"), 0, 0)
+        route_controls.addWidget(self._source_combo, 0, 1)
+        route_controls.addWidget(QLabel("Destination (MIDI out)"), 0, 2)
+        route_controls.addWidget(self._destination_combo, 0, 3)
+        route_controls.addWidget(add_button, 1, 0)
+        route_controls.addWidget(remove_button, 1, 1)
+        route_controls.addWidget(self._routing_refresh_button, 1, 2)
+        route_controls.addWidget(self._routing_button, 1, 3)
+        route_controls.setColumnStretch(1, 1)
+        route_controls.setColumnStretch(3, 1)
 
         self._routes_table = QTableWidget(0, 3)
         self._routes_table.setHorizontalHeaderLabels(["Source", "Destination", "State"])
         self._routes_table.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
         self._routes_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        self._routes_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
         routes_box = QGroupBox("One-way MIDI routes")
+        routes_box.setObjectName("routingCard")
         routes_layout = QVBoxLayout(routes_box)
         routes_layout.addLayout(route_controls)
         routes_layout.addWidget(self._routes_table)
@@ -112,24 +119,36 @@ class MidiRoutingView(QWidget):
         self._clock_routing_button = QPushButton("Start routing")
         self._clock_routing_button.clicked.connect(self._toggle_routing)
         self._clock_routing_button.setEnabled(False)
-        clock_controls = QHBoxLayout()
-        clock_controls.addWidget(QLabel("Clock source:"))
-        clock_controls.addWidget(self._clock_source)
-        clock_controls.addWidget(QLabel("Clock destination (MIDI out):"))
-        clock_controls.addWidget(self._clock_destination)
-        clock_controls.addWidget(self._clock_enabled)
-        clock_controls.addWidget(self._serato_virtual_checkbox)
-        clock_controls.addWidget(add_clock_button)
-        clock_controls.addWidget(remove_clock_button)
-        clock_controls.addWidget(self._clock_refresh_button)
-        clock_controls.addWidget(self._clock_routing_button)
+        clock_controls = QGridLayout()
+        clock_controls.addWidget(QLabel("Clock source"), 0, 0)
+        clock_controls.addWidget(self._clock_source, 0, 1)
+        clock_controls.addWidget(QLabel("Destination (MIDI out)"), 1, 0)
+        clock_controls.addWidget(self._clock_destination, 1, 1)
+        clock_controls.addWidget(self._clock_enabled, 2, 0, 1, 2)
+        clock_controls.addWidget(self._serato_virtual_checkbox, 3, 0, 1, 2)
+        clock_controls.addWidget(add_clock_button, 4, 0)
+        clock_controls.addWidget(remove_clock_button, 4, 1)
+        clock_controls.addWidget(self._clock_refresh_button, 5, 0)
+        clock_controls.addWidget(self._clock_routing_button, 5, 1)
+        clock_controls.setColumnStretch(1, 1)
         self._clock_panel = QGroupBox("MIDI Clock")
+        self._clock_panel.setObjectName("clockCard")
+        self._clock_panel.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
         clock_layout = QVBoxLayout(self._clock_panel)
+        clock_intro = QLabel(
+            "Build a Clock route, then start routing to send transport and 24 PPQN ticks."
+        )
+        clock_intro.setWordWrap(True)
+        clock_intro.setStyleSheet("color: #8fa7bd; padding-bottom: 4px;")
+        clock_layout.addWidget(clock_intro)
         clock_layout.addLayout(clock_controls)
         self._clock_table = QTableWidget(0, 3)
         self._clock_table.setHorizontalHeaderLabels(["Source", "Destination", "State"])
         self._clock_table.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
         self._clock_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        self._clock_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         clock_layout.addWidget(self._clock_table)
         clock_layout.addWidget(self._clock_status)
 
@@ -146,7 +165,115 @@ class MidiRoutingView(QWidget):
         layout.addWidget(routes_box)
         layout.addWidget(self._build_setup_playback_box())
         layout.addStretch(1)
+        self._apply_dj_style()
         self.refresh_ports()
+
+    def _apply_dj_style(self) -> None:
+        """Give the routing tools a compact DJ-booth visual identity."""
+        self.setObjectName("midiToolsSurface")
+        # The Clock card is reparented into its own dock after construction;
+        # give it the same visual root so the scoped theme follows it.
+        self._clock_panel.setObjectName("midiToolsSurface")
+        self._routing_button.setObjectName("primaryAction")
+        self._clock_routing_button.setObjectName("clockAction")
+        self._clock_status.setObjectName("clockStatus")
+        self.setStyleSheet(
+            """
+            #midiToolsSurface {
+                background: #0d121b;
+                color: #e8eef7;
+            }
+            #midiToolsSurface QLabel {
+                color: #c9d5e4;
+            }
+            #midiToolsSurface QGroupBox {
+                background: #151e2b;
+                border: 1px solid #2b3b53;
+                border-radius: 10px;
+                margin-top: 12px;
+                padding: 12px 10px 10px 10px;
+                font-weight: 600;
+            }
+            #midiToolsSurface QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 12px;
+                padding: 0 8px;
+                color: #8fe8ff;
+                background: #0d121b;
+            }
+            #midiToolsSurface QComboBox,
+            #midiToolsSurface QTableWidget,
+            #midiToolsSurface QLineEdit,
+            #midiToolsSurface QListWidget {
+                background: #0e1724;
+                color: #e8eef7;
+                border: 1px solid #334963;
+                border-radius: 6px;
+                padding: 5px;
+            }
+            #midiToolsSurface QComboBox:focus,
+            #midiToolsSurface QTableWidget:focus {
+                border: 1px solid #00c2e8;
+            }
+            #midiToolsSurface QHeaderView::section {
+                background: #202d42;
+                color: #b9c9dc;
+                border: 0;
+                border-bottom: 1px solid #3a506d;
+                padding: 7px;
+                font-weight: 600;
+            }
+            #midiToolsSurface QTableWidget::item:selected {
+                background: #284765;
+                color: #ffffff;
+            }
+            #midiToolsSurface QPushButton {
+                background: #26364d;
+                color: #e8eef7;
+                border: 1px solid #405875;
+                border-radius: 6px;
+                padding: 7px 11px;
+                font-weight: 600;
+            }
+            #midiToolsSurface QPushButton:hover {
+                background: #334b68;
+                border-color: #00c2e8;
+            }
+            #midiToolsSurface QPushButton#primaryAction {
+                background: #d33c72;
+                border-color: #f26395;
+            }
+            #midiToolsSurface QPushButton#clockAction {
+                background: #008eaa;
+                border-color: #28d5ef;
+            }
+            #midiToolsSurface QPushButton#primaryAction:hover,
+            #midiToolsSurface QPushButton#clockAction:hover {
+                background: #f05a8d;
+            }
+            #midiToolsSurface QPushButton:disabled {
+                background: #1a2432;
+                color: #64758b;
+                border-color: #273649;
+            }
+            #midiToolsSurface QCheckBox {
+                color: #c9d5e4;
+                spacing: 7px;
+                padding: 3px 0;
+            }
+            #midiToolsSurface QCheckBox::indicator:checked {
+                background: #00b9d9;
+                border: 1px solid #7eefff;
+            }
+            #midiToolsSurface #clockStatus {
+                background: #202d42;
+                border-left: 4px solid #00c2e8;
+                border-radius: 5px;
+                padding: 9px;
+            }
+            """
+        )
+        self._clock_panel.setStyleSheet(self.styleSheet())
 
     def take_clock_panel(self) -> QWidget:
         """Detach and return the Clock controls for the independent Clock dock."""
@@ -541,7 +668,10 @@ class MidiRoutingView(QWidget):
                     else:
                         self._clock_status.setToolTip("")
         self._clock_status.setText(text)
-        self._clock_status.setStyleSheet(f"color: {color}; font-weight: 600;")
+        self._clock_status.setStyleSheet(
+            f"color: {color}; font-weight: 600; background: #202d42; "
+            f"border-left: 4px solid {color}; border-radius: 5px; padding: 9px;"
+        )
 
 
 __all__ = ["MidiRoutingView"]
