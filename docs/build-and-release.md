@@ -172,7 +172,7 @@ the generated spec directory. On Windows, the script converts paths with
 as `D:\\d\\...`.
 
 The GitHub setup and artifact actions use Node.js 24-compatible major versions
-(`setup-uv@v8`, `upload-artifact@v7`, and `download-artifact@v8`). This changes
+(`setup-uv@v9`, `upload-artifact@v7`, and `download-artifact@v8`). This changes
 the Actions runtime only; Node.js is not added to the DJ MIDI Studio
 application.
 
