@@ -1,5 +1,8 @@
 # End-to-End Examples
 
+> 🧭 These recipes follow real user journeys: detect hardware, inspect MIDI,
+> route messages, and keep unknown devices safe.
+
 ## Table of Contents
 
 - [Detect a connected controller](#detect-a-connected-controller)
@@ -40,6 +43,8 @@ For the supported Traktor NML subset and its known limitations, see the
 [Traktor integration guide](traktor.md).
 
 ## Inspect a physical MIDI event
+
+![Live Monitor](images/layout/live-monitor.png)
 
 1. Open `Live Monitor`.
 2. Click `Select all sources`, or check only the desired MIDI inputs.

@@ -1,5 +1,8 @@
 # User Guide
 
+> 🎚️ Learn the everyday workflow: open a mapping, explore its physical
+> controls, edit safely, validate, and export with confidence.
+
 ## Table of Contents
 
 - [Open a Mapping File](#open-a-mapping-file)
@@ -64,6 +67,8 @@ either confirmed or shown as suggestions according to Preferences.
 
 ## Explore Mappings
 
+![By Controller layout](images/layout/by-controller.png)
+
 - `Dashboard`: known controllers in a three-column overview, MIDI availability, context, and quick drill-down.
 - `By Channel`: raw model-level controls and mappings.
 - `By Deck`: grouped duplicate mappings (safe synchronized edits).
@@ -80,6 +85,8 @@ window geometry and dock arrangement are restored on the next launch.
 For screenshots and a visual description of each tab, see [Screens and Layouts](screens-and-layouts.md).
 
 ## Screens and Layouts
+
+![MIDI tools docked together](images/layout/midi-tools-docked.png)
 
 - Use `Dashboard` for loaded-file status, controller catalog cards, MIDI availability, and drill-down shortcuts.
 - Use `By Channel` for the raw control and mapping hierarchy.

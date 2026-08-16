@@ -1,5 +1,8 @@
 # Build and Release
 
+> 📦 **Delivery guide:** build locally, validate continuously, then publish
+> reproducible artifacts from an annotated release tag.
+
 ## Table of Contents
 
 - [Build Targets](#build-targets)

@@ -1,5 +1,8 @@
 # MIDI Clock compatibility notes
 
+> 🕒 **Clock rule:** configure one authoritative tempo source, one deliberate
+> routing path, and verify `CLOCK ACTIVE` before connecting downstream gear.
+
 ## Current safety policy
 
 DJ MIDI Studio exposes MIDI Clock as an opt-in GUI routing mode. The mirror
@@ -22,6 +25,8 @@ not open, open without ticks, or has sent transport without any Clock ticks.
 The source selectors contain MIDI input ports and the destination selectors
 contain MIDI output ports. For example, a `MIDI4x4 Midi In 1` port cannot be a
 destination; choose `MIDI4x4 Midi Out 1` instead.
+
+![MIDI Routing Clock panel](images/layout/midi-routing.png)
 
 ```mermaid
 flowchart LR

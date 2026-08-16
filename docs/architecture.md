@@ -1,5 +1,8 @@
 # Architecture
 
+> 🧱 **Design at a glance:** typed mapping data flows through parsers,
+> validators, GUI views, MIDI services, and safe exporters.
+
 ## Table of Contents
 
 - [Overview](#overview)
@@ -28,6 +31,8 @@ conflicts, and exports the selected software format back to disk.
 - `src/djmidi/gui/`: PySide6 UI.
 
 ## Data Flow
+
+![Dashboard navigation](images/layout/dashboard.png)
 
 ```mermaid
 flowchart LR

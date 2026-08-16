@@ -1,5 +1,8 @@
 # Testing and Quality
 
+> 🧪 Fast feedback locally, the same quality gate in CI, and hardware checks
+> kept explicit when they cannot be simulated reliably.
+
 ## Table of Contents
 
 - [Quality Goals](#quality-goals)

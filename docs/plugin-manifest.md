@@ -1,5 +1,8 @@
 # Plugin Manifest
 
+> 🧩 A manifest is the plugin's identity card: stable ID, compatibility,
+> capabilities, permissions, and versioned API contract.
+
 ## Table of Contents
 
 - [Purpose](#purpose)
