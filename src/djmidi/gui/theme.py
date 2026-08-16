@@ -2,7 +2,6 @@
 
 from PySide6.QtWidgets import QApplication
 
-
 DJ_THEME = """
 QMainWindow, QDialog, QDockWidget, QWidget {
     background: #0d121b;

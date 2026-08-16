@@ -186,7 +186,7 @@ class MidiMonitor:
         if port is not None:
             try:
                 port.close()
-            except Exception:
+            except Exception:  # noqa: BLE001, S110 - cleanup must not mask the original error
                 pass
 
     def open_virtual_monitor(self) -> None:
@@ -197,7 +197,7 @@ class MidiMonitor:
         if self._virtual_port is not None:
             try:
                 self._virtual_port.close()
-            except Exception:
+            except Exception:  # noqa: BLE001, S110 - cleanup must not mask the original error
                 pass
             self._virtual_port = None
 
