@@ -91,3 +91,50 @@ jobs:
           path: |
             dist/*.whl
             dist/*.tar.gz
+
+  create-pull-request:
+    name: Create Pull Request after successful CI
+    needs: build
+    if: github.event_name == 'push' && github.ref_type == 'branch' && github.ref_name != 'main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout branch history
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Create Pull Request when missing
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH_NAME: ${{ github.ref_name }}
+        shell: bash
+        run: |
+          open_prs="$(gh pr list --base main --head "$BRANCH_NAME" --state open --json number --jq 'length')"
+          if [[ "$open_prs" -gt 0 ]]; then
+            echo "An open Pull Request already exists for $BRANCH_NAME."
+            exit 0
+          fi
+          commits="$(git log --format='- %s' origin/main..HEAD)"
+          body="## Automated CI result
+
+          The multi-platform CI pipeline completed successfully on Linux, macOS, and Windows.
+
+          ### Included commits
+
+          $commits
+
+          ### Checks
+
+          - Quality gate passed.
+          - Native executable builds passed for all supported OS runners.
+          - Python package artifacts were built successfully.
+
+          Please review and merge this Pull Request when ready."
+          gh pr create \
+            --base main \
+            --head "$BRANCH_NAME" \
+            --title "Integrate $BRANCH_NAME" \
+            --body "$body"
