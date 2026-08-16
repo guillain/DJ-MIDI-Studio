@@ -7,6 +7,7 @@ import sys
 from PySide6.QtWidgets import QApplication
 
 from djmidi.gui.main_window import MainWindow
+from djmidi.gui.theme import apply_theme
 from djmidi.logging_config import configure_logging
 
 
@@ -35,6 +36,7 @@ def run(argv: list[str] | None = None) -> int:
     app = QApplication(sys.argv if argv is None else [sys.argv[0], *argv])
     app.setOrganizationName("DJ MIDI Studio")
     app.setApplicationName("DJ MIDI Studio")
+    apply_theme(app)
     window = MainWindow()
     window.show()
     result = app.exec()

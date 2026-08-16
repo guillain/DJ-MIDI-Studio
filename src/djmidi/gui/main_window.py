@@ -25,6 +25,7 @@ from PySide6.QtGui import (
 )
 from PySide6.QtWidgets import (
     QDialog,
+    QApplication,
     QDockWidget,
     QFileDialog,
     QInputDialog,
@@ -57,6 +58,7 @@ from djmidi.gui.midi_clock_view import MidiClockView
 from djmidi.gui.preferences_dialog import PreferencesDialog
 from djmidi.gui.safe_update_dialog import SafeUpdateDialog
 from djmidi.gui.splitter_utils import replace_splitter
+from djmidi.gui.theme import apply_theme
 from djmidi.gui.tree_model import NODE_ROLE, build_channel_columns, relabel_item
 from djmidi.integration_detection import (
     detect_controller_ports,
@@ -124,6 +126,9 @@ _LOCAL_CONTROLLER_DOCUMENTS = [
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
+        application = QApplication.instance()
+        if application is not None:
+            apply_theme(application)
         self.setWindowTitle("DJ MIDI Studio")
         self.resize(1100, 700)
         self.setMinimumSize(320, 240)
