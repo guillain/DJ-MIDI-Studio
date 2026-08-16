@@ -128,7 +128,9 @@ $(git log --format='- %s' "$base..HEAD")
 }
 
 push_tag() {
-  local version="$(normalise_version "${1:-}")" tag="v$version"
+  local version tag
+  version="$(normalise_version "${1:-}")"
+  tag="v$version"
   require_clean_tree
   detect_provider
   git rev-parse "$tag" >/dev/null 2>&1 && die "Tag already exists locally: $tag"
@@ -138,7 +140,9 @@ push_tag() {
 }
 
 create_release() {
-  local version="$(normalise_version "${1:-}")" tag="v$version"
+  local version tag
+  version="$(normalise_version "${1:-}")"
+  tag="v$version"
   detect_provider
   git rev-parse "$tag" >/dev/null 2>&1 || die "Tag does not exist locally: $tag"
   if [[ "$PROVIDER" == "github" ]]; then
