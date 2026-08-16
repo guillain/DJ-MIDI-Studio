@@ -95,6 +95,19 @@ Windows packaging runs under Git Bash in CI, but uses PowerShell's native
 `Compress-Archive` instead of assuming that the Unix `zip` command exists on
 the runner.
 
+The executable build explicitly collects the dynamically discovered
+`djmidi.catalog` and `djmidi.software` submodules.  PyInstaller cannot infer
+modules imported through `pkgutil`, so omitting these collection directives
+produces a binary whose controller registry is empty at startup.  The GUI
+also shows a diagnostic placeholder instead of crashing if a future plugin
+discovery failure leaves the registry empty.
+
+The application log path is also resilient to stale permissions: if the
+platform-specific user log cannot be opened, the executable falls back to the
+system temporary directory.  Set `DJMIDI_LOG_DIR` when a deterministic log
+location is required; an explicitly supplied log path remains strict and
+reports permission errors.
+
 ## SCM, tags, and releases
 
 The provider-neutral helper is `scripts/scm_release.sh`. It detects GitHub or

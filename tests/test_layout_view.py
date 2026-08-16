@@ -26,6 +26,14 @@ def test_deck_filter_hidden_by_default():
     assert view._deck_combo is None
 
 
+def test_empty_controller_catalog_does_not_crash(monkeypatch):
+    monkeypatch.setattr(catalog, "CONTROLLER_NAMES", [], raising=False)
+    view = ControllerLayoutView()
+    assert view._controller == ""
+    assert view._controller_tabs.count() == 0
+    assert len(view._scene.items()) == 1
+
+
 def test_deck_filter_populated_from_usage():
     view = ControllerLayoutView(show_deck_filter=True)
     view.set_usage(_USAGE)

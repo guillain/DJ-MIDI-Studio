@@ -91,6 +91,8 @@ if [[ "$BUILD_EXECUTABLE" -eq 1 ]]; then
     --workpath "$NATIVE_ROOT_DIR/build/pyinstaller" \
     --specpath "$NATIVE_ROOT_DIR/build/pyinstaller" \
     --paths "$NATIVE_ROOT_DIR/src" \
+    --collect-submodules djmidi.catalog \
+    --collect-submodules djmidi.software \
     --add-data "$NATIVE_ROOT_DIR/assets${DATA_SEP}assets" \
     --add-data "$NATIVE_ROOT_DIR/docs/controllers${DATA_SEP}docs/controllers" \
     --osx-bundle-identifier "com.guillain.djmidi" \
