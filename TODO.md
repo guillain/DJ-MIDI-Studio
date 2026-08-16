@@ -164,6 +164,7 @@ Implemented contract, runtime, test, and documentation work:
 - [x] Migrate GitHub Actions setup steps from Node.js 20-era action versions to the Node.js 24-compatible releases.
 - [x] Upgrade setup-uv, upload-artifact, and download-artifact to their Node.js 24-compatible major versions.
 - [x] Use native PowerShell archive creation for Windows release artifacts when the Git Bash `zip` utility is unavailable.
+- [x] Create a Pull Request automatically after successful multi-platform CI when a branch has no open PR.
 - [x] Document Linux ALSA/Qt headless dependencies, Windows MSYS path handling, and the tag-only CD release flow.
 - [x] Automate release preparation with version/lock bump, release commit, generated PR description, merge-to-tag automation, and tag-triggered multi-OS assets.
 - [x] Publish the GitHub release automatically after the tag build completes, with no manual draft-release action.

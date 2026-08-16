@@ -56,7 +56,12 @@ Run locally before opening a Pull Request:
 GitHub Actions runs the quality gate automatically on every branch push and
 Pull Request, then builds the native executable and Python artifacts on
 Ubuntu, macOS, and Windows. The release workflow is intentionally separate:
-only annotated tags matching `v*` create draft releases.
+only annotated tags matching `v*` create published releases.
+
+For a successful push to a non-`main` branch, the final CI job checks for an
+existing open Pull Request and creates one with the commit summary when none
+exists. Existing PRs are left untouched, so subsequent pushes only update the
+same review.
 
 The Ubuntu jobs install ALSA and Qt/OpenGL runtime packages and set
 `QT_QPA_PLATFORM=offscreen`, so the PySide6 test suite can run without a
