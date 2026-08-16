@@ -31,10 +31,11 @@ cd DJ-MIDI-Studio
 bash scripts/bootstrap.sh
 ```
 
-The manual equivalent is:
+The manual equivalent is (the `link` extra is included so packaged and local
+runs expose the same Ableton Link capability):
 
 ```bash
-uv sync --group dev
+uv sync --group dev --extra link
 ```
 
 Keep generated environments, caches, logs, and build output outside commits.
@@ -65,7 +66,7 @@ changing core behavior, dependencies, packaging, or security-sensitive code.
 ## Optional Ableton Link support
 
 ```bash
-uv sync --extra link
+uv sync --group dev --extra link
 ```
 
 This extra is only needed when using `Ableton Link (DJ MIDI Studio)` as a

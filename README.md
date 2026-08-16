@@ -70,6 +70,10 @@ Here is the short visual tour. The complete annotated guide is available in
 |---|---|
 | ![Live Monitor](docs/images/layout/live-monitor.png) | ![MIDI Routing](docs/images/layout/midi-routing.png) |
 
+| MIDI Clock |
+|---|
+| ![MIDI Clock](docs/images/layout/midi-clock.png) |
+
 💡 The MIDI tools can stay docked, float independently, or be restored to the
 previous user arrangement.
 
@@ -83,13 +87,14 @@ flowchart LR
 	Intro --> Images[Controller Images]
 	Intro --> Monitor[Live Monitor dock]
 	Intro --> Routing[MIDI Routing dock]
+	Intro --> Clock[MIDI Clock dock]
 	Intro --> Setup[Controller Setup]
 	Channel --> Validate[Validate]
 	Deck --> Validate
 	Controller --> Validate
 	Validate --> Export[Export XML]
-	Link[Serato / Ableton Link] --> Routing[MIDI Routing]
-	Routing --> Clock[24 PPQN MIDI Clock output]
+	Link[Serato / Ableton Link] --> Clock[MIDI Clock]
+	Clock --> Output[24 PPQN MIDI Clock output]
 ```
 
 ## Quickstart
@@ -106,14 +111,14 @@ bash scripts/bootstrap.sh
 or manually:
 
 ```bash
-uv sync --group dev
+uv sync --group dev --extra link
 ```
 
 Direct Ableton Link following is optional. Install its native binding when
 using `Ableton Link (DJ MIDI Studio)` as a Clock source:
 
 ```bash
-uv sync --extra link
+uv sync --group dev --extra link
 ```
 
 Run the app:

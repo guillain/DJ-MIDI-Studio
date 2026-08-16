@@ -26,7 +26,7 @@ bash scripts/bootstrap.sh
 ## Install Dependencies
 
 ```bash
-uv sync --group dev
+uv sync --group dev --extra link
 ```
 
 ## Run the Application

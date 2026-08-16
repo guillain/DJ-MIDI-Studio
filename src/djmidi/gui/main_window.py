@@ -53,6 +53,7 @@ from djmidi.gui.layout_view import ControllerLayoutView
 from djmidi.gui.live_monitor import LiveMonitorView
 from djmidi.gui.mapping_group import MappingGroup
 from djmidi.gui.midi_routing_view import MidiRoutingView
+from djmidi.gui.midi_clock_view import MidiClockView
 from djmidi.gui.preferences_dialog import PreferencesDialog
 from djmidi.gui.safe_update_dialog import SafeUpdateDialog
 from djmidi.gui.splitter_utils import replace_splitter
@@ -225,6 +226,7 @@ class MainWindow(QMainWindow):
             session_name_provider=self.controller_setup_view.session_controller_name,
         )
         self.midi_routing_view.set_routing_enabled(self.preferences.routing_enabled)
+        self.midi_clock_view = MidiClockView(self.midi_routing_view.take_clock_panel())
 
         self.introduction_view = IntroductionView()
         self.live_monitor_view.portNamesChanged.connect(
@@ -433,7 +435,7 @@ class MainWindow(QMainWindow):
         view_menu = self.menuBar().addMenu("&View")
         tools_menu = view_menu.addMenu("MIDI Tools")
         self._tool_float_actions: dict[str, QAction] = {}
-        for key in ("monitor", "routing"):
+        for key in ("monitor", "routing", "clock"):
             dock = self._tool_docks[key]
             tools_menu.addAction(dock.toggleViewAction())
             float_action = QAction(f"Float {dock.windowTitle()}", self)
@@ -479,6 +481,7 @@ class MainWindow(QMainWindow):
         definitions = {
             "monitor": ("Live Monitor", self.live_monitor_view),
             "routing": ("MIDI Routing", self.midi_routing_view),
+            "clock": ("MIDI Clock", self.midi_clock_view),
         }
         docks: dict[str, QDockWidget] = {}
         for key, (title, widget) in definitions.items():

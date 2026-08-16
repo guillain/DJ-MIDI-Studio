@@ -26,7 +26,7 @@ The source selectors contain MIDI input ports and the destination selectors
 contain MIDI output ports. For example, a `MIDI4x4 Midi In 1` port cannot be a
 destination; choose `MIDI4x4 Midi Out 1` instead.
 
-![MIDI Routing Clock panel](images/layout/midi-routing.png)
+![MIDI Clock tool](images/layout/midi-clock.png)
 
 ```mermaid
 flowchart LR
@@ -69,7 +69,7 @@ state from the routing timer. Select `Ableton Link (DJ MIDI Studio)` as the Cloc
 source, keep `Create virtual input for Serato Clock` disabled, and route it to
 the physical MIDI output. DJ MIDI Studio follows Link's tempo and phase and
 emits MIDI Clock; it never sets Link's tempo. Install the binding with
-`uv sync --extra link` before selecting the Link source. If it is missing, the UI
+`uv sync --group dev --extra link` before selecting the Link source. If it is missing, the UI
 reports the dependency instead of silently creating a dead route.
 The XDJ-XZ and DDJ-XP2 remain control surfaces; this project does not claim
 either one as a verified Serato MIDI Clock generator.

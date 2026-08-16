@@ -94,6 +94,8 @@ Implemented contract, runtime, test, and documentation work:
 - [x] Add deterministic Link scheduler tests and a clear missing-optional-binding diagnostic.
 - [x] Publish the optional `link` dependency extra so `aalink` can be installed reproducibly with `uv sync --extra link`.
 - [x] Bridge the asyncio-based `aalink` runtime to the Qt routing poller and report Link follower activity correctly.
+- [x] Package the optional `aalink` binding in local, CI, release, and PyInstaller builds so Ableton Link is available in native artifacts.
+- [x] Move MIDI Clock configuration and diagnostics into an independent closable/floating dock while retaining the shared routing safety session.
 
 ### Phase 4 — safe software/controller operations — COMPLETE
 

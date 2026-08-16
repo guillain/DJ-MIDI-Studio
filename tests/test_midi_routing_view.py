@@ -19,6 +19,14 @@ def test_routing_view_configures_one_way_route_without_hardware():
     assert view._routes_table.item(0, 0).text() == "in"
 
 
+def test_routing_view_exposes_clock_panel_for_independent_dock():
+    view = MidiRoutingView()
+    panel = view.take_clock_panel()
+    assert panel.title() == "MIDI Clock"
+    assert panel.parent() is None
+    assert view.layout().indexOf(panel) == -1
+
+
 def test_refresh_ports_separates_midi_inputs_and_outputs():
     view = MidiRoutingView()
     with (

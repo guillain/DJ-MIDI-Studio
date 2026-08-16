@@ -94,7 +94,9 @@ if [[ "$BUILD_EXECUTABLE" -eq 1 ]]; then
     --collect-submodules djmidi.catalog \
     --collect-submodules djmidi.software \
     --collect-submodules mido.backends \
+    --collect-all aalink \
     --hidden-import rtmidi \
+    --hidden-import aalink \
     --add-data "$NATIVE_ROOT_DIR/assets${DATA_SEP}assets" \
     --add-data "$NATIVE_ROOT_DIR/docs/controllers${DATA_SEP}docs/controllers" \
     --osx-bundle-identifier "com.guillain.djmidi" \

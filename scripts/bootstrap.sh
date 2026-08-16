@@ -22,7 +22,7 @@ echo "==> Python version"
 uv run python -V
 
 echo "==> Installing dependencies (including dev group)"
-uv sync --group dev
+uv sync --group dev --extra link
 
 echo "==> Ensuring script executability"
 chmod +x scripts/test.sh scripts/build.sh scripts/release_artifacts.sh scripts/quality_gate.sh scripts/bootstrap.sh

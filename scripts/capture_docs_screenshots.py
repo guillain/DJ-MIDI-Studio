@@ -58,6 +58,7 @@ def main() -> int:
             "controller": "by-controller.png",
             "monitor": "live-monitor.png",
             "routing": "midi-routing.png",
+            "clock": "midi-clock.png",
         }
         OUTPUT.mkdir(parents=True, exist_ok=True)
         for key, filename in captures.items():
@@ -74,7 +75,7 @@ def main() -> int:
         # Capture the supported workspace compositions.  Arbitrary dock
         # positions and sizes are user-defined, so these are stable reference
         # arrangements rather than an attempt to enumerate every possibility.
-        for key in ("monitor", "routing"):
+        for key in ("monitor", "routing", "clock"):
             window._show_tool_dock(key)
         app.processEvents()
         if not window.grab().save(str(OUTPUT / "midi-tools-docked.png")):
@@ -83,6 +84,7 @@ def main() -> int:
         for key, filename in (
             ("monitor", "live-monitor-floating.png"),
             ("routing", "midi-routing-floating.png"),
+            ("clock", "midi-clock-floating.png"),
         ):
             dock = window._tool_docks[key]
             dock.setFloating(True)

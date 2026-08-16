@@ -116,8 +116,8 @@ class MidiRoutingView(QWidget):
         clock_controls.addWidget(self._serato_virtual_checkbox)
         clock_controls.addWidget(add_clock_button)
         clock_controls.addWidget(remove_clock_button)
-        clock_box = QGroupBox("MIDI Clock")
-        clock_layout = QVBoxLayout(clock_box)
+        self._clock_panel = QGroupBox("MIDI Clock")
+        clock_layout = QVBoxLayout(self._clock_panel)
         clock_layout.addLayout(clock_controls)
         self._clock_table = QTableWidget(0, 3)
         self._clock_table.setHorizontalHeaderLabels(["Source", "Destination", "State"])
@@ -137,9 +137,13 @@ class MidiRoutingView(QWidget):
         layout = QVBoxLayout(self)
         layout.addWidget(help_label)
         layout.addWidget(routes_box)
-        layout.addWidget(clock_box)
         layout.addWidget(self._build_setup_playback_box())
         layout.addStretch(1)
+
+    def take_clock_panel(self) -> QWidget:
+        """Detach and return the Clock controls for the independent Clock dock."""
+        self._clock_panel.setParent(None)
+        return self._clock_panel
 
     def set_routing_enabled(self, enabled: bool) -> None:
         """Apply the Preferences safety gate for physical route execution."""
