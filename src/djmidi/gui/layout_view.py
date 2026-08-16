@@ -121,7 +121,12 @@ class ControllerLayoutView(QWidget):
 
     def __init__(self, show_deck_filter: bool = False, parent: QWidget | None = None) -> None:
         super().__init__(parent)
-        self._controller = catalog.CONTROLLER_NAMES[0]
+        # Built-in catalog modules are discovered dynamically.  A frozen
+        # application can briefly start with an empty registry if discovery
+        # failed or a future plugin package is unavailable; the layout must
+        # remain usable instead of crashing during window construction.
+        controller_names = catalog.CONTROLLER_NAMES
+        self._controller = controller_names[0] if controller_names else ""
         self._usage: Usage = {}
         self._linked_cells: LinkedCells = {}
         self._selected_keys: set[CellKey] = set()
@@ -363,6 +368,15 @@ class ControllerLayoutView(QWidget):
     def _rebuild(self) -> None:
         self._scene.clear()
         self._scene.setBackgroundBrush(_SCENE_BRUSH)
+        if not self._controller:
+            message = QGraphicsSimpleTextItem(
+                "No controller catalog is available. Check the bundled controller data."
+            )
+            message.setBrush(QColor("#c5d0df"))
+            message.setPos(16, 16)
+            self._scene.addItem(message)
+            self._scene.setSceneRect(self._scene.itemsBoundingRect().adjusted(-10, -10, 10, 10))
+            return
         cells = layout_mod.build_layout(self._controller)
         deck_filter = self._selected_deck_filter()
         small_font = QFont()

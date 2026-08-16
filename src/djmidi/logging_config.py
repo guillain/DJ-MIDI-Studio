@@ -70,12 +70,28 @@ def configure_logging(
         "%(asctime)s %(levelname)s %(name)s: %(message)s",
         datefmt="%Y-%m-%dT%H:%M:%S%z",
     )
-    file_handler = RotatingFileHandler(
-        target,
-        maxBytes=DEFAULT_MAX_BYTES,
-        backupCount=DEFAULT_BACKUP_COUNT,
-        encoding="utf-8",
-    )
+    try:
+        file_handler = RotatingFileHandler(
+            target,
+            maxBytes=DEFAULT_MAX_BYTES,
+            backupCount=DEFAULT_BACKUP_COUNT,
+            encoding="utf-8",
+        )
+    except OSError:
+        # The directory may exist while a stale log file or its permissions
+        # still prevent opening it (common after running a packaged app with
+        # another user or through sudo).  Keep an implicit default logging
+        # path non-fatal; an explicitly requested path must still fail loudly.
+        if explicit_path:
+            raise
+        target = Path(tempfile.gettempdir()) / "djmidi" / DEFAULT_LOG_FILENAME
+        target.parent.mkdir(parents=True, exist_ok=True)
+        file_handler = RotatingFileHandler(
+            target,
+            maxBytes=DEFAULT_MAX_BYTES,
+            backupCount=DEFAULT_BACKUP_COUNT,
+            encoding="utf-8",
+        )
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
     if console:
