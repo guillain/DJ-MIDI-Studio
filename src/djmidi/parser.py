@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import xml.etree.ElementTree as ET
 from os import PathLike
 
@@ -11,6 +12,8 @@ from djmidi.model import (
     Translation,
     UserIO,
 )
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def _pop_known(attrib: dict[str, str], known: tuple[str, ...]) -> tuple[dict[str, str | None], dict[str, str]]:
@@ -68,14 +71,21 @@ def _parse_control(element: ET.Element) -> Control:
 
 
 def parse_string(xml_text: str) -> MidiConfig:
-    root = ET.fromstring(xml_text)
+    try:
+        root = ET.fromstring(xml_text)
+    except ET.ParseError:
+        _LOGGER.exception("Failed to parse Serato MIDI config XML (%d bytes)", len(xml_text))
+        raise
     if root.tag != "midi":
+        _LOGGER.error("Rejecting XML: expected root element <midi>, got <%s>", root.tag)
         raise ValueError(f"Expected root element <midi>, got <{root.tag}>")
     values, extra = _pop_known(root.attrib, ("app",))
     controls = [_parse_control(child) for child in root if child.tag == "control"]
+    _LOGGER.info("Parsed Serato MIDI config: app=%s, %d <control> element(s)", values["app"], len(controls))
     return MidiConfig(app_version=values["app"], controls=controls, extra_attrs=extra)
 
 
 def parse_file(path: str | PathLike[str]) -> MidiConfig:
+    _LOGGER.info("Loading Serato MIDI config from %s", path)
     with open(path, encoding="utf-8") as f:
         return parse_string(f.read())

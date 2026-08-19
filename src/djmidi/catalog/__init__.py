@@ -35,6 +35,7 @@ from __future__ import annotations
 
 import importlib
 import importlib.metadata
+import logging
 import pkgutil
 
 from djmidi.catalog._registry import (
@@ -52,6 +53,8 @@ from djmidi.catalog._registry import (
     register,
     set_enabled_plugin_ids,
 )
+
+_LOGGER = logging.getLogger(__name__)
 
 _BUILTINS_DISCOVERED = False
 _EXTERNAL_DISCOVERED = False
@@ -73,10 +76,17 @@ def discover_plugins(*, trust_external: bool = False) -> None:
             if module_info.name.startswith("_") or module_info.name in {"codegen"}:
                 continue
             importlib.import_module(f"{__name__}.{module_info.name}")
+        _LOGGER.info("Discovered %d built-in controller catalog(s)", len(all_controller_definitions()))
     if _EXTERNAL_DISCOVERED:
         return
     entry_points = importlib.metadata.entry_points(group="djmidi.controllers")
     if not trust_external:
+        if entry_points:
+            _LOGGER.info(
+                "Blocked %d external controller plugin(s) (trust_external=False): %s",
+                len(entry_points),
+                [entry_point.name for entry_point in entry_points],
+            )
         DISCOVERY_DIAGNOSTICS.extend(
             f"blocked external controller plugin {entry_point.name!r}: trust is disabled"
             for entry_point in entry_points
@@ -85,10 +95,13 @@ def discover_plugins(*, trust_external: bool = False) -> None:
     for entry_point in entry_points:
         try:
             entry_point.load()
-        except Exception as exc:  # noqa: BLE001 - external plugin failures become diagnostics
+        except Exception as exc:
+            _LOGGER.warning("Failed to load external controller plugin %r", entry_point.name, exc_info=True)
             DISCOVERY_DIAGNOSTICS.append(
                 f"failed external controller plugin {entry_point.name!r}: {exc}"
             )
+        else:
+            _LOGGER.info("Loaded external controller plugin %r", entry_point.name)
     _EXTERNAL_DISCOVERED = True
 
 

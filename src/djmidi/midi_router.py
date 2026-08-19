@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import logging
 from collections import defaultdict, deque
 from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from djmidi.midi_api import MidiMessage
+
+_LOGGER = logging.getLogger(__name__)
 
 SendMessage = Callable[[str, MidiMessage], None]
 
@@ -60,14 +63,22 @@ class MidiRouter:
         if route.source_port_id == route.destination_port_id:
             raise ValueError("a route cannot target its own source")
         if route in self._routes:
+            _LOGGER.debug("Route already present, skipping: %s -> %s", route.source_port_id, route.destination_port_id)
             return
         if self._would_create_cycle(route):
+            _LOGGER.warning(
+                "Rejected route %s -> %s: would create a MIDI routing loop",
+                route.source_port_id,
+                route.destination_port_id,
+            )
             raise ValueError("route would create a MIDI routing loop")
         self._routes.append(route)
+        _LOGGER.info("Added MIDI route: %s -> %s (channels=%s)", route.source_port_id, route.destination_port_id, sorted(route.channels) or "all")
 
     def remove_route(self, route: MidiRoute) -> None:
         if route in self._routes:
             self._routes.remove(route)
+            _LOGGER.info("Removed MIDI route: %s -> %s", route.source_port_id, route.destination_port_id)
 
     def route_message(self, source_port_id: str, message: MidiMessage, send: SendMessage) -> int:
         """Forward one message and return the number of destinations reached."""
@@ -83,6 +94,13 @@ class MidiRouter:
             except Exception as exc:  # noqa: BLE001 - route diagnostics must not kill monitoring
                 self.stats.errors += 1
                 self.stats.error_messages.append(str(exc))
+                _LOGGER.warning(
+                    "Failed to forward message from %r to %r: %s (errors=%d)",
+                    source_port_id,
+                    route.destination_port_id,
+                    exc,
+                    self.stats.errors,
+                )
                 continue
             forwarded += 1
             self.stats.forwarded += 1

@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import logging
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 
 from djmidi.catalog._registry import ControlInfo
 from djmidi.midi_io import MidiEvent, send_midi_message
+
+_LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -83,8 +86,10 @@ def replay_midi_events(
                 data2=_parse_int(event.data2, "Data2", 0, 127),
             )
             sent += 1
-        except ValueError:
+        except ValueError as exc:
+            _LOGGER.warning("Skipped replaying event %r on %r: %s", event, output_port_name, exc)
             skipped += 1
+    _LOGGER.info("Replayed %d event(s) to %r (%d skipped)", sent, output_port_name, skipped)
     return PlaybackStats(sent_messages=sent, skipped_entries=skipped)
 
 
@@ -99,8 +104,10 @@ def play_control_info_entries(
     for entry in entries:
         try:
             sent += send_control_info_entry(output_port_name, entry, value, sender=sender)
-        except ValueError:
+        except ValueError as exc:
+            _LOGGER.warning("Skipped playing entry %r on %r: %s", entry, output_port_name, exc)
             skipped += 1
+    _LOGGER.info("Played %d row(s) (%d message(s) sent, %d skipped) to %r", len(entries), sent, skipped, output_port_name)
     return PlaybackStats(sent_messages=sent, skipped_entries=skipped)
 
 

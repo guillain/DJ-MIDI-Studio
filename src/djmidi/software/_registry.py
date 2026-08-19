@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import xml.etree.ElementTree as ET
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -9,6 +10,8 @@ from os import PathLike
 from pathlib import Path
 
 from djmidi.model import MidiConfig
+
+_LOGGER = logging.getLogger(__name__)
 
 Parser = Callable[[str], MidiConfig]
 Exporter = Callable[[MidiConfig], str]
@@ -54,14 +57,23 @@ _ENABLED_PLUGIN_IDS: frozenset[str] | None = None
 
 def register(definition: SoftwareDefinition, *, replace: bool = False) -> None:
     if definition.plugin_id in _REGISTRY and not replace:
+        _LOGGER.error("Refusing to register software plugin %r: already registered", definition.plugin_id)
         raise ValueError(f"Software plugin already registered: {definition.plugin_id}")
     _REGISTRY[definition.plugin_id] = definition
+    _LOGGER.info(
+        "%s software plugin: %s (%s, extensions=%s)",
+        "Replaced" if replace else "Registered",
+        definition.plugin_id,
+        definition.name,
+        definition.extensions,
+    )
 
 
 def get_definition(plugin_id: str) -> SoftwareDefinition:
     try:
         return _REGISTRY[plugin_id]
     except KeyError:
+        _LOGGER.warning("Unknown software plugin requested: %r", plugin_id)
         raise ValueError(f"Unknown software plugin: {plugin_id}") from None
 
 
@@ -86,6 +98,7 @@ def detect_from_text(text: str, suffix: str = "") -> list[SoftwareDefinition]:
     try:
         root_tag = ET.fromstring(text).tag
     except ET.ParseError:
+        _LOGGER.debug("Software detection: text is not valid XML (suffix=%r)", suffix)
         return []
     signature_matches = [
         definition
@@ -93,9 +106,16 @@ def detect_from_text(text: str, suffix: str = "") -> list[SoftwareDefinition]:
         if (definition.plugin_id == "serato" and root_tag == "midi")
         or (definition.plugin_id == "traktor" and root_tag == "NML")
     ]
-    if signature_matches:
-        return signature_matches
-    return [definition for definition in active_definitions() if definition.can_parse(root_tag, suffix)]
+    matches = signature_matches or [
+        definition for definition in active_definitions() if definition.can_parse(root_tag, suffix)
+    ]
+    _LOGGER.debug(
+        "Software detection for root=<%s> suffix=%r: %s",
+        root_tag,
+        suffix,
+        [definition.plugin_id for definition in matches] or "no match",
+    )
+    return matches
 
 
 __all__ = [

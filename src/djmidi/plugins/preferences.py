@@ -9,11 +9,14 @@ plugin update or temporary uninstall.
 from __future__ import annotations
 
 import json
+import logging
 import os
 import platform
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
+
+_LOGGER = logging.getLogger(__name__)
 
 DetectionPolicy = Literal["ask", "suggest"]
 
@@ -58,6 +61,7 @@ class PluginPreferences:
         try:
             raw = json.loads(text)
         except json.JSONDecodeError as exc:
+            _LOGGER.warning("Invalid plugin preferences JSON: %s", exc.msg)
             raise ValueError(f"Invalid plugin preferences JSON: {exc.msg}") from exc
         if not isinstance(raw, dict) or not isinstance(raw.get("enabled", {}), dict):
             raise TypeError("Plugin preferences must contain an 'enabled' object")
@@ -87,13 +91,23 @@ class PluginPreferences:
     def load(cls, path: str | Path) -> PluginPreferences:
         target = Path(path)
         if not target.exists():
+            _LOGGER.info("No preferences file at %s; using defaults", target)
             return cls()
+        _LOGGER.info("Loading preferences from %s", target)
         return cls.from_json(target.read_text(encoding="utf-8"))
 
     def save(self, path: str | Path) -> None:
         target = Path(path)
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(self.to_json(), encoding="utf-8")
+        _LOGGER.info(
+            "Saved preferences to %s (detection_policy=%s, routing_enabled=%s, trust_external_plugins=%s, log_level=%s)",
+            target,
+            self.detection_policy,
+            self.routing_enabled,
+            self.trust_external_plugins,
+            self.log_level,
+        )
 
 
 def default_preferences_path() -> Path:

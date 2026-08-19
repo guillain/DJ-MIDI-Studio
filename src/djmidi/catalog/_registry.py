@@ -5,9 +5,12 @@ or any GUI code — see catalog/__init__.py's module docstring for the steps."""
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Literal
+
+_LOGGER = logging.getLogger(__name__)
 
 NoteOrCC = Literal["NOTE", "CC"]
 
@@ -72,14 +75,24 @@ _ENABLED_PLUGIN_IDS: frozenset[str] | None = None
 
 def register(definition: ControllerDefinition, *, replace: bool = False) -> None:
     if definition.name in _REGISTRY and not replace:
+        _LOGGER.error("Refusing to register controller %r: already registered", definition.name)
         raise ValueError(f"Controller already registered: {definition.name}")
     _REGISTRY[definition.name] = definition
+    _LOGGER.info(
+        "%s controller catalog: %s (plugin_id=%s, %d static entries, pad_count=%d)",
+        "Replaced" if replace else "Registered",
+        definition.name,
+        definition.plugin_id,
+        len(definition.static_entries),
+        definition.pad_count,
+    )
 
 
 def get_definition(controller: str) -> ControllerDefinition:
     try:
         return _REGISTRY[controller]
     except KeyError:
+        _LOGGER.warning("Unknown controller requested: %r", controller)
         raise ValueError(f"Unknown controller: {controller}") from None
 
 
@@ -97,6 +110,7 @@ def set_enabled_plugin_ids(plugin_ids: set[str] | frozenset[str] | None) -> None
     """Set active controller IDs; ``None`` restores the complete registry."""
     global _ENABLED_PLUGIN_IDS
     _ENABLED_PLUGIN_IDS = None if plugin_ids is None else frozenset(plugin_ids)
+    _LOGGER.debug("Enabled controller plugin IDs set to: %s", "all" if plugin_ids is None else sorted(_ENABLED_PLUGIN_IDS))
 
 
 def active_controller_definitions() -> list[ControllerDefinition]:
@@ -129,7 +143,13 @@ def detect_controller(port_name: str) -> list[ControllerMatch]:
                     f"port name contains {matched!r}",
                 )
             )
-    return sorted(matches, key=lambda match: (-match.score, match.controller.display_order, match.controller.name))
+    ranked = sorted(matches, key=lambda match: (-match.score, match.controller.display_order, match.controller.name))
+    _LOGGER.debug(
+        "Controller detection for port %r: %s",
+        port_name,
+        [(match.controller.name, match.score, match.reason) for match in ranked] or "no match",
+    )
+    return ranked
 
 
 def _parse_midi_note(data1: str) -> int | None:

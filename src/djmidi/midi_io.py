@@ -78,22 +78,28 @@ def mido_message_to_event(
 
 def list_input_ports() -> list[str]:
     if _midi_disabled():
+        _LOGGER.debug("MIDI probing disabled (DJMIDI_DISABLE_MIDI=1); returning no input ports")
         return []
     try:
-        return mido.get_input_names()
+        ports = mido.get_input_names()
     except Exception as exc:  # noqa: BLE001 - MIDI availability is optional at startup
         _LOGGER.warning("Unable to enumerate MIDI input ports: %s", exc)
         return []
+    _LOGGER.debug("Found %d MIDI input port(s): %s", len(ports), ports)
+    return ports
 
 
 def list_output_ports() -> list[str]:
     if _midi_disabled():
+        _LOGGER.debug("MIDI probing disabled (DJMIDI_DISABLE_MIDI=1); returning no output ports")
         return []
     try:
-        return mido.get_output_names()
+        ports = mido.get_output_names()
     except Exception as exc:  # noqa: BLE001 - MIDI availability is optional at startup
         _LOGGER.warning("Unable to enumerate MIDI output ports: %s", exc)
         return []
+    _LOGGER.debug("Found %d MIDI output port(s): %s", len(ports), ports)
+    return ports
 
 
 def list_port_info() -> list[MidiPortInfo]:
@@ -159,8 +165,20 @@ def send_midi_message(
         kwargs["value"] = d2
 
     message = mido.Message(msg_type, **kwargs)
-    with mido.open_output(output_port_name) as output_port:
-        output_port.send(message)
+    _LOGGER.info(
+        "Sending MIDI %s to %r: channel=%d data1=%d data2=%d",
+        msg_type,
+        output_port_name,
+        channel_1_based,
+        d1,
+        d2,
+    )
+    try:
+        with mido.open_output(output_port_name) as output_port:
+            output_port.send(message)
+    except Exception:
+        _LOGGER.exception("Failed to send MIDI message to %r", output_port_name)
+        raise
 
 
 class MidiMonitor:
@@ -179,29 +197,44 @@ class MidiMonitor:
     def open_input(self, name: str) -> None:
         if name in self._input_ports:
             return
-        self._input_ports[name] = mido.open_input(name)
+        _LOGGER.info("Opening MIDI input port %r", name)
+        try:
+            self._input_ports[name] = mido.open_input(name)
+        except Exception:
+            _LOGGER.exception("Failed to open MIDI input port %r", name)
+            raise
 
     def close_input(self, name: str) -> None:
         port = self._input_ports.pop(name, None)
         if port is not None:
+            _LOGGER.info("Closing MIDI input port %r", name)
             try:
                 port.close()
-            except Exception:  # noqa: BLE001, S110 - cleanup must not mask the original error
-                pass
+            except Exception:
+                _LOGGER.warning("Failed to close MIDI input port %r", name, exc_info=True)
 
     def open_virtual_monitor(self) -> None:
         if self._virtual_port is None:
-            self._virtual_port = mido.open_input(self.VIRTUAL_MONITOR_NAME, virtual=True)
+            _LOGGER.info("Opening virtual monitor input port %r", self.VIRTUAL_MONITOR_NAME)
+            try:
+                self._virtual_port = mido.open_input(self.VIRTUAL_MONITOR_NAME, virtual=True)
+            except Exception:
+                _LOGGER.exception("Failed to open virtual monitor port %r", self.VIRTUAL_MONITOR_NAME)
+                raise
 
     def close_virtual_monitor(self) -> None:
         if self._virtual_port is not None:
+            _LOGGER.info("Closing virtual monitor input port %r", self.VIRTUAL_MONITOR_NAME)
             try:
                 self._virtual_port.close()
-            except Exception:  # noqa: BLE001, S110 - cleanup must not mask the original error
-                pass
+            except Exception:
+                _LOGGER.warning(
+                    "Failed to close virtual monitor port %r", self.VIRTUAL_MONITOR_NAME, exc_info=True
+                )
             self._virtual_port = None
 
     def close_all(self) -> None:
+        _LOGGER.debug("Closing all MidiMonitor ports (%d input, virtual=%s)", len(self._input_ports), self._virtual_port is not None)
         for name in list(self._input_ports):
             self.close_input(name)
         self.close_virtual_monitor()
@@ -218,6 +251,8 @@ class MidiMonitor:
                 event = mido_message_to_event(msg, "out", port=self.VIRTUAL_MONITOR_NAME)
                 if event is not None:
                     events.append(event)
+        if events:
+            _LOGGER.debug("MidiMonitor.poll: %d event(s) received", len(events))
         return events
 
 

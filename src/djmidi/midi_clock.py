@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, field
 
 from djmidi.midi_api import MidiMessage
+
+_LOGGER = logging.getLogger(__name__)
 
 _START = 0xFA
 _CONTINUE = 0xFB
@@ -70,12 +73,19 @@ class MidiClockMirror:
         self.stats.last_message_time = message.received_time
         self.stats.last_message_status = message.status
         if message.status in {_START, _CONTINUE}:
+            _LOGGER.debug(
+                "Clock %s from %s -> %s",
+                "Start" if message.status == _START else "Continue",
+                self.source_port_id,
+                self.destination_port_ids,
+            )
             self.running = True
             # START begins a new song position; CONTINUE resumes after an
             # arbitrary pause. Neither gap is a Clock-jitter sample.
             self._last_clock_time = None
             self.stats.last_clock_time = None
         elif message.status == _STOP:
+            _LOGGER.debug("Clock Stop from %s -> %s", self.source_port_id, self.destination_port_ids)
             self.running = False
             self._last_clock_time = None
             self.stats.last_clock_time = None
@@ -87,6 +97,13 @@ class MidiClockMirror:
                     self._last_clock_time = message.received_time
                     self.stats.last_clock_time = message.received_time
                     self.stats.jitter_dropped += 1
+                    _LOGGER.warning(
+                        "Dropped a Clock tick from %s: interval %.3fms below minimum %.3fms (jitter_dropped=%d)",
+                        self.source_port_id,
+                        interval_ms,
+                        self.min_clock_interval_ms,
+                        self.stats.jitter_dropped,
+                    )
                     return 0
                 if self.expected_interval_ms is not None:
                     jitter_ms = abs(interval_ms - self.expected_interval_ms)
@@ -101,6 +118,12 @@ class MidiClockMirror:
             except Exception as exc:  # noqa: BLE001 - one failed destination must not stop the clock
                 self.stats.send_errors += 1
                 self.stats.error_messages.append(str(exc))
+                _LOGGER.warning(
+                    "Failed to forward Clock message to %r: %s (send_errors=%d)",
+                    destination,
+                    exc,
+                    self.stats.send_errors,
+                )
                 continue
             count += 1
         self.stats.forwarded += count
@@ -122,6 +145,7 @@ class MidiClockMirror:
 
     def reset(self) -> None:
         """Forget transport and activity state before a new routing run."""
+        _LOGGER.debug("Resetting Clock mirror state for %s", self.source_port_id)
         self.running = False
         self._last_clock_time = None
         self.stats.last_interval_ms = None

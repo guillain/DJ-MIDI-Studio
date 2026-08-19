@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import xml.etree.ElementTree as ET
 from os import PathLike
 
@@ -11,6 +12,8 @@ from djmidi.model import (
     Translation,
     UserIO,
 )
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def _build_attrib(known: list[tuple[str, str | None]], extra: dict[str, str]) -> dict[str, str]:
@@ -87,5 +90,7 @@ def to_xml_string(config: MidiConfig) -> str:
 
 
 def write_file(config: MidiConfig, path: str | PathLike[str]) -> None:
+    _LOGGER.info("Exporting Serato MIDI config to %s (%d <control> element(s))", path, len(config.controls))
     with open(path, "w", encoding="utf-8") as f:
         f.write(to_xml_string(config))
+    _LOGGER.debug("Export to %s complete", path)

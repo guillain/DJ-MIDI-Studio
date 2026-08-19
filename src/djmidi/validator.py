@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+import logging
+from collections import Counter
 from dataclasses import dataclass
 from typing import Literal
 
 from djmidi.model import Control, MidiConfig
+
+_LOGGER = logging.getLogger(__name__)
 
 Severity = Literal["error", "warning", "info"]
 
@@ -167,4 +171,16 @@ def validate(config: MidiConfig) -> list[ValidationIssue]:
     issues += _check_required_fields(config)
     issues += _check_unknown_values(config)
     issues += _check_inconsistent_click_targets(config)
+    counts = Counter(issue.severity for issue in issues)
+    log = _LOGGER.warning if counts["error"] else _LOGGER.info
+    log(
+        "Validation complete: %d error(s), %d warning(s), %d info (%d control(s) checked)",
+        counts["error"],
+        counts["warning"],
+        counts["info"],
+        len(config.controls),
+    )
+    for issue in issues:
+        if issue.severity == "error":
+            _LOGGER.debug("Validation error at %s: %s", issue.location, issue.message)
     return issues
