@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import sys
 from pathlib import Path
 
@@ -64,6 +65,7 @@ from djmidi.integration_detection import (
     detect_controller_ports,
     detect_software_mapping,
 )
+from djmidi.logging_config import configure_logging, current_log_path
 from djmidi.midi_io import MidiEvent
 from djmidi.model import Control, MappingElement, MidiConfig
 from djmidi.plugins import PluginPreferences, default_preferences_path
@@ -121,6 +123,9 @@ _LOCAL_CONTROLLER_DOCUMENTS = [
     ("Numark Mixtrack Pro FX User Guide", "docs/controllers/numark-mixtrack-pro-fx-user-guide-v1.2.pdf"),
     ("Hercules DJControl Inpulse 500 Product Sheet", "docs/controllers/hercules-djcontrol-inpulse-500-product-sheet-fr.pdf"),
 ]
+
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class MainWindow(QMainWindow):
@@ -450,6 +455,9 @@ class MainWindow(QMainWindow):
                 lambda floating, tool_key=key: self._set_tool_dock_floating(tool_key, floating)
             )
             dock.topLevelChanged.connect(float_action.setChecked)
+            dock.visibilityChanged.connect(
+                lambda visible, tool_key=key: self._sync_tool_float_action(tool_key, visible)
+            )
             tools_menu.addAction(float_action)
             self._tool_float_actions[key] = float_action
 
@@ -533,6 +541,20 @@ class MainWindow(QMainWindow):
         dock.show()
         dock.raise_()
 
+    def _sync_tool_float_action(self, key: str, visible: bool) -> None:
+        """Uncheck "Float <tool>" once its dock is closed.
+
+        ``QDockWidget.isFloating()`` stays ``True`` after a floating dock is
+        closed, so without this the menu kept showing it as floating/open.
+        """
+        dock = self._tool_docks.get(key)
+        action = self._tool_float_actions.get(key)
+        if dock is None or action is None:
+            return
+        action.blockSignals(True)
+        action.setChecked(dock.isFloating() and visible)
+        action.blockSignals(False)
+
     def _set_tool_dock_floating(self, key: str, floating: bool) -> None:
         """Switch a MIDI tool between the main-window dock and a free window."""
         dock = self._tool_docks.get(key)
@@ -563,6 +585,7 @@ class MainWindow(QMainWindow):
             self._apply_plugin_preferences()
             self._on_controller_applied(self.introduction_view._controller_combo.currentText())
             self.midi_routing_view.set_routing_enabled(self.preferences.routing_enabled)
+            configure_logging(self.preferences.log_level, current_log_path())
             self.statusBar().showMessage("Preferences saved")
 
     def _apply_plugin_preferences(self) -> None:
@@ -589,9 +612,11 @@ class MainWindow(QMainWindow):
         if not path_str:
             return
         path = Path(path_str)
+        _LOGGER.info("Opening mapping file %s", path)
         try:
             mapping_text = path.read_text(encoding="utf-8")
         except OSError as exc:
+            _LOGGER.exception("Failed to read %s", path)
             QMessageBox.critical(self, "Failed to open file", str(exc))
             return
         definitions = software.active_definitions()
@@ -629,7 +654,8 @@ class MainWindow(QMainWindow):
             selected = definitions[names.index(software_name)]
         try:
             self.config = selected.parser(mapping_text)
-        except Exception as exc:  # noqa: BLE001 - surface any parse error to the user
+        except Exception as exc:
+            _LOGGER.exception("Failed to parse %s as %s", path, selected.plugin_id)
             QMessageBox.critical(self, "Failed to open file", str(exc))
             return
         self.current_path = path
@@ -638,6 +664,7 @@ class MainWindow(QMainWindow):
         self._load_tree()
         self.issues_table.setRowCount(0)
         self.statusBar().showMessage(f"Loaded {len(self.config.controls)} controls from {self.current_path.name}")
+        _LOGGER.info("Loaded %d control(s) from %s (software=%s)", len(self.config.controls), path, selected.plugin_id)
 
     def _load_tree(self) -> None:
         assert self.config is not None
@@ -1047,6 +1074,7 @@ class MainWindow(QMainWindow):
             self.statusBar().showMessage(f"Saved to {self.current_path}")
 
     def _safe_save(self, target: Path, definition) -> bool:
+        _LOGGER.info("Preparing to save %s as %s", target, definition.plugin_id)
         try:
             plan = prepare_update(
                 target,
@@ -1054,14 +1082,17 @@ class MainWindow(QMainWindow):
                 definition.parser,
             )
         except (OSError, TypeError, ValueError) as exc:
+            _LOGGER.exception("Failed to prepare save for %s", target)
             QMessageBox.critical(self, "Failed to save mapping", str(exc))
             return False
         dialog = SafeUpdateDialog(str(target), plan.diff, self)
         if dialog.exec() != QDialog.DialogCode.Accepted:
+            _LOGGER.info("Save to %s cancelled by user at the preview/diff step", target)
             return False
         try:
             plan.apply()
         except OSError as exc:
+            _LOGGER.exception("Failed to apply save to %s", target)
             QMessageBox.critical(self, "Failed to save mapping", str(exc))
             return False
         self._last_save_plan = plan
@@ -1075,6 +1106,7 @@ class MainWindow(QMainWindow):
         try:
             self._last_save_plan.rollback()
         except OSError as exc:
+            _LOGGER.exception("Failed to rollback save for %s", self._last_save_plan.path)
             QMessageBox.critical(self, "Failed to rollback save", str(exc))
             return
         self._rollback_action.setEnabled(False)

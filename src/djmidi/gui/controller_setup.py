@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import dataclasses
 import json
+import logging
 import re
 from pathlib import Path
 from typing import cast
@@ -75,6 +76,8 @@ from djmidi.session_player import (
     play_control_info_entries,
     replay_midi_events,
 )
+
+_LOGGER = logging.getLogger(__name__)
 
 _POLL_INTERVAL_MS = 30
 
@@ -146,6 +149,7 @@ class ControllerSetupView(QWidget):
 
         self._port_list = QListWidget()
         self._port_list.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
+        self._port_list.setMinimumHeight(150)
         refresh_button = QPushButton("Refresh ports")
         refresh_button.clicked.connect(self._refresh_ports)
         self._learn_button = QPushButton("Start learning")
@@ -614,6 +618,7 @@ class ControllerSetupView(QWidget):
         self._learning = True
         self._learn_button.setText("Stop learning")
         self._learn_status.setText(f"Listening ({len(selected)} input(s))")
+        _LOGGER.info("Controller Setup learning started: inputs=%s", selected)
         self._timer.start()
 
     def _stop_learning(self) -> None:
@@ -622,6 +627,7 @@ class ControllerSetupView(QWidget):
         self._learning = False
         self._learn_button.setText("Start learning")
         self._learn_status.setText("Stopped")
+        _LOGGER.info("Controller Setup learning stopped (%d row(s) captured)", len(self._rows))
 
     def _poll(self) -> None:
         for event in self._monitor.poll():
@@ -649,10 +655,12 @@ class ControllerSetupView(QWidget):
             return
         try:
             config = parse_file(path_str)
-        except Exception as exc:  # noqa: BLE001 - surface any parse error to the user
+        except Exception as exc:
+            _LOGGER.exception("Failed to import Serato XML %s into Controller Setup", path_str)
             QMessageBox.critical(self, "Failed to import file", str(exc))
             return
         added = self._import_config(config, Path(path_str).name)
+        _LOGGER.info("Imported %d new trigger(s) from %s into Controller Setup", added, path_str)
         QMessageBox.information(self, "Import complete", f"Added {added} new trigger(s) (others already present were skipped).")
 
     # -- session save / load --------------------------------------------------
@@ -729,7 +737,10 @@ class ControllerSetupView(QWidget):
         try:
             self._save_session(path_str)
         except OSError as exc:
+            _LOGGER.exception("Failed to save Controller Setup session to %s", path_str)
             QMessageBox.critical(self, "Failed to save session", str(exc))
+            return
+        _LOGGER.info("Saved Controller Setup session to %s (%d row(s))", path_str, len(self._rows))
 
     def _on_load_session_clicked(self) -> None:
         if self._dirty and not self._confirm("This will discard the current unsaved draft. Continue?"):
@@ -740,7 +751,10 @@ class ControllerSetupView(QWidget):
         try:
             self._load_session(path_str)
         except (OSError, json.JSONDecodeError, KeyError, TypeError, ValueError) as exc:
+            _LOGGER.exception("Failed to load Controller Setup session from %s", path_str)
             QMessageBox.critical(self, "Failed to load session", str(exc))
+            return
+        _LOGGER.info("Loaded Controller Setup session from %s (%d row(s))", path_str, len(self._rows))
 
     # -- validation / export ---------------------------------------------------
 
@@ -793,8 +807,10 @@ class ControllerSetupView(QWidget):
     def _on_check_conflicts_clicked(self) -> None:
         errors = self._validate()
         if errors:
+            _LOGGER.warning("Controller Setup conflict check for %r found %d issue(s): %s", self._controller_name, len(errors), errors)
             QMessageBox.warning(self, "Conflicts found", "\n".join(errors))
         else:
+            _LOGGER.info("Controller Setup conflict check for %r: no issues", self._controller_name)
             QMessageBox.information(self, "No conflicts", "No missing fields or conflicting triggers found — draft looks stable.")
 
     def _apply(self) -> None:
@@ -814,6 +830,10 @@ class ControllerSetupView(QWidget):
             # replaces e.g. DDJ-XP2's full ~45-entry definition with a 4-row draft would
             # silently break every other tab that resolves triggers through it until the
             # app is restarted. Only a name this same draft already applied can be re-applied.
+            _LOGGER.error(
+                "Refused to apply Controller Setup draft %r: name collides with an already-loaded controller",
+                self._controller_name,
+            )
             QMessageBox.critical(
                 self,
                 "Cannot apply",
@@ -825,7 +845,8 @@ class ControllerSetupView(QWidget):
             return
         try:
             self._apply()
-        except Exception as exc:  # noqa: BLE001 - surface any bug instead of failing silently
+        except Exception as exc:
+            _LOGGER.exception("Failed to apply Controller Setup draft %r", self._controller_name)
             QMessageBox.critical(self, "Failed to apply", f"{type(exc).__name__}: {exc}")
             return
         QMessageBox.information(
@@ -854,8 +875,10 @@ class ControllerSetupView(QWidget):
         try:
             self._export_module(path_str)
         except OSError as exc:
+            _LOGGER.exception("Failed to write generated catalog module to %s", path_str)
             QMessageBox.critical(self, "Failed to write file", str(exc))
             return
+        _LOGGER.info("Generated catalog module for %r at %s", self._controller_name, path_str)
         slug = Path(path_str).stem
         QMessageBox.information(
             self,

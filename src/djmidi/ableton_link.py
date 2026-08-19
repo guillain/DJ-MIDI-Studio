@@ -8,6 +8,7 @@ native Link binding through the standard project dependency set.
 from __future__ import annotations
 
 import asyncio
+import logging
 import threading
 import time
 from dataclasses import dataclass
@@ -16,6 +17,8 @@ from typing import Protocol
 
 from djmidi.midi_api import MidiMessage
 from djmidi.midi_clock import ClockStats
+
+_LOGGER = logging.getLogger(__name__)
 
 ABLETON_LINK_CLOCK_SOURCE_NAME = "Ableton Link (DJ MIDI Studio)"
 PPQN = 24
@@ -45,6 +48,7 @@ class AalinkStateProvider:
         try:
             from aalink import Link  # type: ignore[import-not-found]
         except ImportError as exc:
+            _LOGGER.error("aalink package is not installed; Ableton Link is unavailable: %s", exc)
             raise LinkBackendUnavailable(
                 "Ableton Link support requires the bundled 'aalink' package"
             ) from exc
@@ -59,14 +63,18 @@ class AalinkStateProvider:
             name="djmidi-aalink",
             daemon=True,
         )
+        _LOGGER.debug("Starting aalink session thread (initial tempo=%s)", tempo)
         self._thread.start()
         if not self._ready.wait(timeout=5.0):
+            _LOGGER.error("aalink initialization timed out after 5.0s")
             self.close()
             raise LinkBackendUnavailable("aalink initialization timed out")
         if self._error is not None:
             error = self._error
+            _LOGGER.error("aalink initialization failed: %s", error, exc_info=error)
             self.close()
             raise LinkBackendUnavailable(f"aalink initialization failed: {error}") from error
+        _LOGGER.info("Ableton Link session ready")
 
     def _run_link_loop(self, tempo: float) -> None:
         async def serve() -> None:
@@ -105,6 +113,7 @@ class AalinkStateProvider:
             link, "capture_session_state", None
         )
         if capture is None:
+            _LOGGER.error("aalink Link object exposes neither tempo/beat nor session-state capture")
             raise LinkBackendUnavailable("aalink does not expose session-state capture")
         state = capture()
         tempo = float(state.tempo)
@@ -112,6 +121,7 @@ class AalinkStateProvider:
         playing = bool(is_playing() if callable(is_playing) else is_playing)
         beat_at_time = getattr(state, "beatAtTime", None) or getattr(state, "beat_at_time", None)
         if beat_at_time is None:
+            _LOGGER.error("aalink session state exposes no beat-at-time accessor")
             raise LinkBackendUnavailable("aalink does not expose beat-at-time")
         return LinkState(tempo=tempo, beat=float(beat_at_time(now, 4.0)), playing=playing)
 
@@ -160,6 +170,13 @@ class LinkClockFollower:
         count = 0
         if state.playing and not self._last_playing:
             status = 0xFA if self._next_tick is None else 0xFB
+            _LOGGER.debug(
+                "Link transport started (tempo=%.2f, beat=%.3f) -> emitting %s to %s",
+                state.tempo,
+                state.beat,
+                "Start" if status == 0xFA else "Continue",
+                self.destination_port_ids,
+            )
             count += self._emit(status, now, send)
             self.running = True
             # Align the first tick to Link's current beat phase.  A Link beat
@@ -170,6 +187,7 @@ class LinkClockFollower:
                 60.0 / state.tempo / PPQN
             )
         elif not state.playing and self._last_playing:
+            _LOGGER.debug("Link transport stopped -> emitting Stop to %s", self.destination_port_ids)
             count += self._emit(0xFC, now, send)
             self.running = False
             self._next_tick = None
@@ -205,6 +223,7 @@ class LinkClockFollower:
         return last is not None and now - last <= timeout_s
 
     def close(self) -> None:
+        _LOGGER.debug("Closing Link follower for %s", self.destination_port_ids)
         self.provider.close()
 
     def reset(self) -> None:

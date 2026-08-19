@@ -102,4 +102,12 @@ def configure_logging(
     return target
 
 
-__all__ = ["configure_logging", "default_log_path", "normalize_level"]
+def current_log_path() -> Path | None:
+    """Return the file path the active rotating log handler writes to, if any."""
+    for handler in logging.getLogger(LOGGER_NAME).handlers:
+        if isinstance(handler, RotatingFileHandler):
+            return Path(handler.baseFilename)
+    return None
+
+
+__all__ = ["configure_logging", "current_log_path", "default_log_path", "normalize_level"]

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import time
 from collections.abc import Callable, Iterable
 from typing import Any
@@ -12,6 +13,8 @@ from djmidi.ableton_link import LinkClockFollower
 from djmidi.midi_api import MidiMessage
 from djmidi.midi_clock import MidiClockMirror
 from djmidi.midi_router import MidiRouter
+
+_LOGGER = logging.getLogger(__name__)
 
 InputOpener = Callable[[str], Any]
 OutputOpener = Callable[[str], Any]
@@ -103,11 +106,21 @@ class MidiRoutingSession:
             for port_id in sorted(output_ids):
                 self._outputs[port_id] = self._output_opener(port_id)
         except Exception:
+            _LOGGER.exception("Failed to open MIDI ports for routing (inputs=%s, outputs=%s)", input_ids, output_ids)
             self.stop()
             raise
         self.running = True
+        _LOGGER.info(
+            "MIDI routing started: %d input(s), %d output(s), %d Clock mirror(s), %d Link follower(s)",
+            len(self._inputs),
+            len(self._outputs),
+            len(self._clock_mirrors),
+            len(self._link_followers),
+        )
 
     def stop(self) -> None:
+        if self.running:
+            _LOGGER.info("Stopping MIDI routing")
         self.running = False
         # Always attempt every close: a broken MIDI endpoint must not leak the
         # remaining endpoints or mask the original start/poll failure.
@@ -116,8 +129,8 @@ class MidiRoutingSession:
             if close is not None:
                 try:
                     close()
-                except Exception:  # noqa: BLE001, S110 - cleanup must close every endpoint
-                    pass
+                except Exception:
+                    _LOGGER.warning("Failed to close MIDI port %r during stop", port, exc_info=True)
         self._inputs.clear()
         self._outputs.clear()
         for clock_mirror in self._clock_mirrors:

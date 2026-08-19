@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import time
 from collections.abc import Callable
 
@@ -38,6 +39,8 @@ from djmidi.midi_router import MidiRoute, MidiRouter
 from djmidi.midi_routing_session import SERATO_CLOCK_INPUT_NAME, MidiRoutingSession
 from djmidi.session_player import _parse_int, play_control_info_entries
 
+_LOGGER = logging.getLogger(__name__)
+
 
 class MidiRoutingView(QWidget):
     """Safe configuration surface for the MIDI router and Clock mirror."""
@@ -57,6 +60,9 @@ class MidiRoutingView(QWidget):
         self._clocks: list[MidiClockMirror] = []
         self._link_followers: list[LinkClockFollower] = []
         self._routing_enabled = False
+        self._clock_status_category: str | None = None
+        self._clock_inactive_since: float | None = None
+        self._clock_inactive_escalated = False
         self._routing_session = MidiRoutingSession(self._router)
         self._all_rows_provider = all_rows_provider or list
         self._selected_rows_provider = selected_rows_provider or list
@@ -308,7 +314,8 @@ class MidiRoutingView(QWidget):
             return
         try:
             self._routing_session.start()
-        except Exception as exc:  # noqa: BLE001 - surface port failures in the GUI
+        except Exception as exc:
+            _LOGGER.exception("Cannot start MIDI routing")
             QMessageBox.warning(self, "Cannot start MIDI routing", str(exc))
             return
         self._routing_button.setText("Stop routing")
@@ -327,7 +334,8 @@ class MidiRoutingView(QWidget):
         try:
             self._routing_session.poll()
             self._refresh_clock_status()
-        except Exception as exc:  # noqa: BLE001 - stop unsafe hardware execution
+        except Exception as exc:
+            _LOGGER.exception("MIDI routing stopped after a poll failure")
             self._stop_routing()
             QMessageBox.warning(self, "MIDI routing stopped", str(exc))
 
@@ -581,8 +589,10 @@ class MidiRoutingView(QWidget):
             try:
                 follower = LinkClockFollower([destination], AalinkStateProvider())
             except LinkBackendUnavailable as exc:
+                _LOGGER.exception("Cannot add Ableton Link Clock route to %s", destination)
                 self._clock_status.setText(str(exc))
                 return
+            _LOGGER.info("Ableton Link Clock route added: %s -> %s", source, destination)
             self._link_followers.append(follower)
         else:
             self._clocks.append(MidiClockMirror(source, [destination]))
@@ -634,19 +644,29 @@ class MidiRoutingView(QWidget):
         else:
             self._refresh_clock_status()
 
+    # Sustained Clock inactivity (no ticks despite routing being started) is
+    # escalated from WARNING to ERROR after this many seconds so a real
+    # troubleshooting session ends up with at least one ERROR line, not just
+    # a GUI label nobody was watching at the time.
+    _CLOCK_INACTIVE_ERROR_AFTER_S = 8.0
+
     def _refresh_clock_status(self) -> None:
         """Show configured, waiting, active, or stopped Clock state."""
         self._clock_status.setToolTip("")
+        category = "disabled"
         if not self._clock_enabled.isChecked():
             text, color = "Clock mirror disabled", "#666"
         else:
             configured = (*self._clocks, *self._link_followers)
             if not configured:
                 text, color = "Clock policy enabled; add a source and destination", "#b26a00"
+                category = "unconfigured"
             elif not self._routing_enabled:
                 text, color = "Clock configured but routing is disabled in Preferences", "#b26a00"
+                category = "routing_disabled"
             elif not self._routing_session.running:
                 text, color = "Clock configured; press Start routing", "#b26a00"
+                category = "waiting_start"
             else:
                 now = time.monotonic()
                 active = [clock for clock in self._clocks if clock.clock_active(now)]
@@ -654,24 +674,29 @@ class MidiRoutingView(QWidget):
                 if active or active_link:
                     sources = ", ".join(sorted({clock.source_port_id for clock in (*active, *active_link)}))
                     text, color = f"CLOCK ACTIVE — receiving ticks from {sources}", "#16803c"
+                    category = "active"
                 else:
                     sources = ", ".join(sorted({clock.source_port_id for clock in configured}))
                     transport = [clock for clock in self._clocks if clock.message_active(now)]
                     if self._link_followers:
                         text = f"CLOCK INACTIVE — no Link beats received from {sources}"
+                        category = "inactive_link"
                         self._clock_status.setToolTip(
                             "Ableton Link is connected but no playing Link transport was detected. "
                             "Enable Link in Ableton Live, join the same Link session, and start playback."
                         )
                     elif transport:
                         text = f"CLOCK INACTIVE — transport received, no Clock ticks from {sources}"
+                        category = "inactive_transport"
                     elif any(
                         clock.source_port_id in self._routing_session.input_port_ids
                         for clock in self._clocks
                     ):
                         text = f"CLOCK INACTIVE — source port open, no ticks received from {sources}"
+                        category = "inactive_port_open"
                     else:
                         text = f"CLOCK INACTIVE — source port not open: {sources}"
+                        category = "inactive_port_closed"
                     color = "#b00020"
                     if SERATO_CLOCK_INPUT_NAME in sources and not self._link_followers:
                         self._clock_status.setToolTip(
@@ -680,11 +705,42 @@ class MidiRoutingView(QWidget):
                         )
                     elif not self._link_followers:
                         self._clock_status.setToolTip("")
+        self._log_clock_status_transition(category, text)
         self._clock_status.setText(text)
         self._clock_status.setStyleSheet(
             f"color: {color}; font-weight: 600; background: #202d42; "
             f"border-left: 4px solid {color}; border-radius: 5px; padding: 9px;"
         )
+
+    def _log_clock_status_transition(self, category: str, text: str) -> None:
+        """Log Clock status changes (not every poll) so a troubleshooting
+        session ends up with a readable trail instead of either silence or a
+        flood of one line per 10ms poll tick."""
+        now = time.monotonic()
+        if category.startswith("inactive"):
+            if self._clock_inactive_since is None:
+                self._clock_inactive_since = now
+                self._clock_inactive_escalated = False
+            elapsed = now - self._clock_inactive_since
+            if elapsed >= self._CLOCK_INACTIVE_ERROR_AFTER_S and not self._clock_inactive_escalated:
+                self._clock_inactive_escalated = True
+                _LOGGER.error(
+                    "Clock still inactive after %.1fs (%s): %s",
+                    elapsed,
+                    category,
+                    text,
+                )
+            elif category != self._clock_status_category:
+                _LOGGER.warning("Clock status: %s", text)
+        else:
+            self._clock_inactive_since = None
+            self._clock_inactive_escalated = False
+            if category != self._clock_status_category:
+                if category == "active":
+                    _LOGGER.info("Clock status: %s", text)
+                else:
+                    _LOGGER.debug("Clock status: %s", text)
+        self._clock_status_category = category
 
 
 __all__ = ["MidiRoutingView"]

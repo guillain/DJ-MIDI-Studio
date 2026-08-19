@@ -7,6 +7,7 @@ ControllerLayoutViews via MainWindow.highlight_live_event()."""
 from __future__ import annotations
 
 import csv
+import logging
 import time
 from collections.abc import Callable
 from pathlib import Path
@@ -44,6 +45,8 @@ _VIRTUAL_MONITOR_HELP = (
     "manually add this virtual port as an *additional* MIDI output in Serato's own "
     "MIDI setup (alongside your real controller)."
 )
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class LiveMonitorView(QWidget):
@@ -164,6 +167,9 @@ class LiveMonitorView(QWidget):
         self._running = True
         self._start_button.setText("Stop monitoring")
         self._status_label.setText(f"Running ({len(selected)} input(s){', virtual monitor' if self._virtual_checkbox.isChecked() else ''})")
+        _LOGGER.info(
+            "Live Monitor started: inputs=%s, virtual_monitor=%s", selected, self._virtual_checkbox.isChecked()
+        )
         self._timer.start()
 
     def _stop(self) -> None:
@@ -172,6 +178,7 @@ class LiveMonitorView(QWidget):
         self._running = False
         self._start_button.setText("Start monitoring")
         self._status_label.setText("Stopped")
+        _LOGGER.info("Live Monitor stopped")
 
     def _poll(self) -> None:
         for event in self._monitor.poll():
@@ -245,8 +252,10 @@ class LiveMonitorView(QWidget):
                         event.data2,
                     ])
         except OSError as exc:
+            _LOGGER.exception("Failed to save Live Monitor CSV log")
             self._status_label.setText(f"Failed to save log: {exc}")
             return
+        _LOGGER.info("Saved %d MIDI event(s) to CSV", len(self._events))
         self._status_label.setText(f"Saved {len(self._events)} MIDI event(s).")
 
     def shutdown(self) -> None:
