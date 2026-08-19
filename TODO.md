@@ -139,6 +139,14 @@ Implemented contract, runtime, test, and documentation work:
 - [x] **Evolution documentation** — record the architecture, user workflows,
   validation boundaries, screenshots, and chapter-to-commit mapping in
   [Recent Evolution Chapters](docs/development/evolution.md).
+- [x] **Diagnostic logging overhaul** — apply the Preferences log level live,
+  instrument Ableton Link, MIDI routing/Clock/router, MIDI I/O, safe-update,
+  XML parse/export, validation, and the controller/software plugin
+  registries with INFO/DEBUG/WARNING/ERROR logging, escalate sustained Clock
+  inactivity to an ERROR log, and fix the Controller Setup Capture port list
+  height and the MIDI Tools dock Float menu state after closing a floating
+  window. Commits `aade77d` and `1a35c6e`; milestone tag
+  `v0.47.1-diagnostics-logging`.
 
 ### Core mapping workflow
 
@@ -270,6 +278,13 @@ documentation index.
 - [ ] Add controller-specific geometry and proportions for XDJ-XZ and DDJ-XP2.
 - [ ] Add MIDI-value animation for knobs, faders, pads, jog wheels, and VU meters.
 - [ ] Add an optional performance mode with larger controls and reduced mapping detail.
+
+### MIDI controller emulation
+
+- [ ] Add a virtual controller emulator with MIDI input/output, mapping, and routing.
+- [ ] Add the capability to emulate a real controller's MIDI messages and layout for testing, training, and demonstration purposes.
+- [ ] Add a virtual controller with a configurable layout and MIDI message set for testing, training, and demonstration purposes.
+- [ ] Add the list of existing controllers to the virtual controller emulator for testing, training, and demonstration purposes.
 
 ### Next phases to define
 
