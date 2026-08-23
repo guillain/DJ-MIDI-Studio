@@ -162,6 +162,16 @@ Implemented contract, runtime, test, and documentation work:
   Tools submenu (dropping the per-dock Float actions in favor of each
   dock's native float button) into top-level toggles. Commit `f9afe85`;
   milestone tag `v0.47.3-controller-setup-density`.
+- [x] **On-demand help popups, minimal Session width, visible Dock/Undock,
+  and a revived Metronome dock** — collapse Capture/Import/Apply-Export's
+  always-visible description labels into a title-bar "?" button that
+  pops the same text up on click, cap the Session panel to its icon
+  column's minimum width instead of an equal grid share, replace each
+  tool dock's tiny native float button with an explicit "Undock"/"Dock"
+  title-bar button, and pull the loop-oriented Controller Setup session
+  player back out of MIDI Routing's "Controller Setup playback" panel
+  (merged there in `d1e1f1d`) into its own View-menu "Metronome" dock.
+  Commit `8a43e12`; milestone tag `v0.47.4-help-popups-metronome-dock`.
 
 ### Core mapping workflow
 
