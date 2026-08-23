@@ -154,6 +154,14 @@ Implemented contract, runtime, test, and documentation work:
   on Controller Setup's icon buttons, and remove hardcoded light-theme
   colors that fought the dark theme. Commit `4b64acf`; milestone tag
   `v0.47.2-log-path-and-setup-ui-fixes`.
+- [x] **Controller Setup panel density and View menu flattening** — give
+  Session/Capture/Import/Apply-Export compact icon-only title-bar actions,
+  split Message and playback controls into a readable two-column layout,
+  widen the PAD 1–8 buttons back to legible size, make the Capture
+  status indicator a distinct badge, and flatten the View menu's MIDI
+  Tools submenu (dropping the per-dock Float actions in favor of each
+  dock's native float button) into top-level toggles. Commit `f9afe85`;
+  milestone tag `v0.47.3-controller-setup-density`.
 
 ### Core mapping workflow
 
