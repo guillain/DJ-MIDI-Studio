@@ -153,18 +153,21 @@ class ControllerSetupView(QWidget):
         clear_button.setToolTip("Clear captured rows")
         clear_button.clicked.connect(self._on_clear_rows_clicked)
         session_box, session_layout = self._titled_panel("Session", [])
-        session_buttons = QVBoxLayout()
+        session_buttons = QGridLayout()
         session_buttons.setSpacing(6)
-        for button in (new_button, load_button, save_button, clear_button):
+        for index, button in enumerate((new_button, load_button, save_button, clear_button)):
             button.setFixedSize(28, 28)
-            session_buttons.addWidget(button)
-        session_buttons.addStretch(1)
+            session_buttons.addWidget(button, index // 2, index % 2)
         session_layout.addLayout(session_buttons)
         session_layout.addStretch(1)
 
         self._port_list = QListWidget()
         self._port_list.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
-        self._port_list.setMinimumHeight(110)
+        # QListWidget.sizeHint() ignores setMinimumHeight (it returns a fixed
+        # ~192px regardless), which was inflating this whole panel row far
+        # beyond its actual content; capping the height pins both ends.
+        self._port_list.setMinimumHeight(70)
+        self._port_list.setMaximumHeight(90)
         refresh_button = QPushButton(self._get_icon("refresh"), "")
         refresh_button.setToolTip("Refresh ports")
         refresh_button.clicked.connect(self._refresh_ports)
@@ -227,22 +230,23 @@ class ControllerSetupView(QWidget):
         output_box = QGroupBox("MIDI Output")
         output_box.setStyleSheet("QGroupBox { font-weight: bold; padding-top: 12px; }")
         output_layout = QHBoxLayout(output_box)
-        output_layout.setContentsMargins(10, 15, 10, 10)
+        output_layout.setContentsMargins(10, 12, 10, 10)
         output_layout.setSpacing(15)
 
         output_ports = QVBoxLayout()
+        output_ports.setSpacing(6)
         output_ports_label = QLabel("Available output ports")
         output_ports_label.setStyleSheet("QLabel { font-weight: bold; }")
         output_ports.addWidget(output_ports_label)
         self._output_port_list.setMinimumWidth(220)
-        self._output_port_list.setMinimumHeight(150)
+        self._output_port_list.setMinimumHeight(130)
         output_ports.addWidget(self._output_port_list, 1)
         refresh_output_button.setMinimumHeight(28)
         output_ports.addWidget(refresh_output_button)
         output_layout.addLayout(output_ports, 1)
 
         output_controls = QVBoxLayout()
-        output_controls.setSpacing(10)
+        output_controls.setSpacing(8)
         output_controls_label = QLabel("Message and playback controls")
         output_controls_label.setStyleSheet("QLabel { font-weight: bold; }")
         output_controls.addWidget(output_controls_label)
@@ -257,6 +261,11 @@ class ControllerSetupView(QWidget):
         send_form.addRow("Data1", self._send_data1_edit)
         send_form.addRow("Value", self._send_data2_edit)
         send_form.addRow("Delay (ms)", self._send_delay_ms_edit)
+        message_column = QVBoxLayout()
+        message_column.setSpacing(6)
+        message_column.addWidget(self._column_label("Send message"))
+        message_column.addLayout(send_form)
+        message_column.addStretch(1)
 
         action_grid = QVBoxLayout()
         action_grid.setSpacing(8)
@@ -264,28 +273,36 @@ class ControllerSetupView(QWidget):
             button.setMinimumHeight(28)
             action_grid.addWidget(button)
         action_grid.addStretch(1)
+        actions_column = QVBoxLayout()
+        actions_column.setSpacing(6)
+        actions_column.addWidget(self._column_label("Playback"))
+        actions_column.addLayout(action_grid)
 
-        send_row = QHBoxLayout()
-        send_row.setSpacing(20)
-        send_row.addLayout(send_form, 1)
-        send_row.addLayout(action_grid, 1)
-        output_controls.addLayout(send_row)
+        pad_grid = QGridLayout()
+        pad_grid.setHorizontalSpacing(6)
+        pad_grid.setVerticalSpacing(6)
+        for index, mode in enumerate(range(1, 9)):
+            button = QPushButton(f"PAD {mode}")
+            button.setMinimumWidth(90)
+            button.setMinimumHeight(28)
+            button.clicked.connect(lambda _checked=False, m=mode: self._on_send_ddj_xp2_pad_mode(m))
+            pad_grid.addWidget(button, index // 2, index % 2)
+        pads_column = QVBoxLayout()
+        pads_column.setSpacing(6)
+        pads_column.addWidget(self._column_label("Pad modes (DDJ-XP2)"))
+        pads_column.addLayout(pad_grid)
+        pads_column.addStretch(1)
+
+        controls_row = QHBoxLayout()
+        controls_row.setSpacing(20)
+        controls_row.addLayout(message_column, 1)
+        controls_row.addLayout(actions_column, 1)
+        controls_row.addLayout(pads_column, 1)
+        output_controls.addLayout(controls_row)
 
         output_controls.addSpacing(6)
         self._send_status.setStyleSheet("QLabel { padding: 6px; border-radius: 3px; }")
         output_controls.addWidget(self._send_status)
-
-        pad_grid = QGridLayout()
-        pad_grid.setHorizontalSpacing(8)
-        pad_grid.setVerticalSpacing(8)
-        for index, mode in enumerate(range(1, 9)):
-            button = QPushButton(f"PAD {mode}")
-            button.setMinimumWidth(110)
-            button.setMinimumHeight(30)
-            button.clicked.connect(lambda _checked=False, m=mode: self._on_send_ddj_xp2_pad_mode(m))
-            pad_grid.addWidget(button, index // 4, index % 4)
-        output_controls.addLayout(pad_grid)
-        output_controls.addStretch(1)
         output_layout.addLayout(output_controls, 2)
 
         check_button = QPushButton(self._get_icon("refresh"), "")
@@ -303,7 +320,7 @@ class ControllerSetupView(QWidget):
         )
         export_layout.addStretch(1)
 
-        session_box.setMaximumWidth(70)
+        session_box.setMaximumWidth(90)
 
         top_row = QGridLayout()
         top_row.setHorizontalSpacing(12)
@@ -390,8 +407,8 @@ class ControllerSetupView(QWidget):
             "QFrame { background: #151e2b; border: 1px solid #2b3b53; border-radius: 9px; }"
         )
         outer = QVBoxLayout(frame)
-        outer.setContentsMargins(10, 8, 10, 10)
-        outer.setSpacing(8)
+        outer.setContentsMargins(8, 6, 8, 8)
+        outer.setSpacing(6)
 
         header = QHBoxLayout()
         header.setSpacing(6)
@@ -408,6 +425,12 @@ class ControllerSetupView(QWidget):
         body.setSpacing(6)
         outer.addLayout(body)
         return frame, body
+
+    @staticmethod
+    def _column_label(text: str) -> QLabel:
+        label = QLabel(text)
+        label.setStyleSheet("QLabel { font-weight: bold; color: #8fa7bd; font-size: 11px; }")
+        return label
 
     # -- controller name -------------------------------------------------
 
