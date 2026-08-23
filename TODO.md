@@ -172,6 +172,14 @@ Implemented contract, runtime, test, and documentation work:
   player back out of MIDI Routing's "Controller Setup playback" panel
   (merged there in `d1e1f1d`) into its own View-menu "Metronome" dock.
   Commit `8a43e12`; milestone tag `v0.47.4-help-popups-metronome-dock`.
+- [x] **3-column Message and playback controls, fixed panel row height** —
+  arrange Send message/Playback/Pad modes as three side-by-side columns
+  instead of two columns plus a separate pad row, and fix the
+  Session/Capture/Import/Apply-Export row rendering ~100px taller than
+  any panel needed (QListWidget's `sizeHint()` ignores `setMinimumHeight`
+  and was inflating the whole shared grid row; `setMaximumHeight` on the
+  Capture port list pins it). Commit `959c768`; milestone tag
+  `v0.47.5-three-column-output-compact-row`.
 
 ### Core mapping workflow
 
