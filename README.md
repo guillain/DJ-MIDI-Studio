@@ -70,9 +70,9 @@ Here is the short visual tour. The complete annotated guide is available in
 |---|---|
 | ![Live Monitor](docs/images/layout/live-monitor.png) | ![MIDI Routing](docs/images/layout/midi-routing.png) |
 
-| MIDI Clock |
-|---|
-| ![MIDI Clock](docs/images/layout/midi-clock.png) |
+| MIDI Clock | Metronome |
+|---|---|
+| ![MIDI Clock](docs/images/layout/midi-clock.png) | ![Metronome](docs/images/layout/metronome.png) |
 
 💡 The MIDI tools can stay docked, float independently, or be restored to the
 previous user arrangement.

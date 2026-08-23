@@ -28,12 +28,16 @@ from PySide6.QtWidgets import (
     QDialog,
     QDockWidget,
     QFileDialog,
+    QHBoxLayout,
     QInputDialog,
+    QLabel,
     QLineEdit,
     QMainWindow,
     QMessageBox,
+    QPushButton,
     QSplitter,
     QStatusBar,
+    QStyle,
     QTableWidget,
     QTableWidgetItem,
     QTabWidget,
@@ -54,6 +58,7 @@ from djmidi.gui.introduction_view import IntroductionView
 from djmidi.gui.layout_view import ControllerLayoutView
 from djmidi.gui.live_monitor import LiveMonitorView
 from djmidi.gui.mapping_group import MappingGroup
+from djmidi.gui.metronome_view import MetronomeView
 from djmidi.gui.midi_clock_view import MidiClockView
 from djmidi.gui.midi_routing_view import MidiRoutingView
 from djmidi.gui.preferences_dialog import PreferencesDialog
@@ -230,13 +235,14 @@ class MainWindow(QMainWindow):
         self.controller_setup_view = ControllerSetupView()
         self.controller_setup_view.controllerApplied.connect(self._on_controller_applied)
 
-        self.midi_routing_view = MidiRoutingView(
+        self.midi_routing_view = MidiRoutingView()
+        self.midi_routing_view.set_routing_enabled(self.preferences.routing_enabled)
+        self.midi_clock_view = MidiClockView(self.midi_routing_view.take_clock_panel())
+        self.metronome_view = MetronomeView(
             all_rows_provider=self.controller_setup_view.session_rows,
             selected_rows_provider=self.controller_setup_view.selected_session_rows,
             session_name_provider=self.controller_setup_view.session_controller_name,
         )
-        self.midi_routing_view.set_routing_enabled(self.preferences.routing_enabled)
-        self.midi_clock_view = MidiClockView(self.midi_routing_view.take_clock_panel())
 
         self.introduction_view = IntroductionView()
         self.live_monitor_view.portNamesChanged.connect(
@@ -443,7 +449,7 @@ class MainWindow(QMainWindow):
         helpful_notes_action.triggered.connect(self._show_helpful_notes)
         view_menu.addAction(helpful_notes_action)
         view_menu.addSeparator()
-        for key in ("monitor", "routing", "clock"):
+        for key in ("monitor", "routing", "clock", "metronome"):
             dock = self._tool_docks[key]
             view_menu.addAction(dock.toggleViewAction())
 
@@ -503,6 +509,7 @@ class MainWindow(QMainWindow):
             "monitor": ("Live Monitor", self.live_monitor_view),
             "routing": ("MIDI Routing", self.midi_routing_view),
             "clock": ("MIDI Clock", self.midi_clock_view),
+            "metronome": ("Metronome", self.metronome_view),
         }
         docks: dict[str, QDockWidget] = {}
         for key, (title, widget) in definitions.items():
@@ -515,10 +522,52 @@ class MainWindow(QMainWindow):
                 | QDockWidget.DockWidgetFeature.DockWidgetFloatable
             )
             dock.setWidget(widget)
+            dock.setTitleBarWidget(self._build_dock_title_bar(key, title, dock))
             self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, dock)
             dock.hide()
             docks[key] = dock
         return docks
+
+    def _build_dock_title_bar(self, key: str, title: str, dock: QDockWidget) -> QWidget:
+        """A title bar with an explicit, clearly-labeled Dock/Undock button.
+
+        QDockWidget's native float button is a tiny, easy-to-miss icon; this
+        replaces it with a text button so attaching/detaching is discoverable.
+        Dragging this widget still moves/undocks the dock (Qt uses the title
+        bar widget's geometry as the drag handle regardless of its contents).
+        """
+        bar = QWidget()
+        bar_layout = QHBoxLayout(bar)
+        bar_layout.setContentsMargins(8, 3, 3, 3)
+        bar_layout.setSpacing(6)
+        label = QLabel(title)
+        label.setStyleSheet("QLabel { font-weight: bold; }")
+        bar_layout.addWidget(label)
+        bar_layout.addStretch(1)
+
+        dock_button = QPushButton()
+        dock_button.setFixedHeight(22)
+        dock_button.clicked.connect(lambda: self._set_tool_dock_floating(key, not dock.isFloating()))
+        dock.topLevelChanged.connect(lambda floating, button=dock_button: self._update_dock_button(button, floating))
+        self._update_dock_button(dock_button, dock.isFloating())
+        bar_layout.addWidget(dock_button)
+
+        close_button = QPushButton()
+        close_button.setFixedSize(22, 22)
+        close_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_TitleBarCloseButton))
+        close_button.setToolTip("Close")
+        close_button.clicked.connect(dock.close)
+        bar_layout.addWidget(close_button)
+        return bar
+
+    @staticmethod
+    def _update_dock_button(button: QPushButton, floating: bool) -> None:
+        if floating:
+            button.setText("Dock")
+            button.setToolTip("Attach back into the main window")
+        else:
+            button.setText("Undock")
+            button.setToolTip("Detach into its own window")
 
     def _show_tool_dock(self, key: str) -> None:
         dock = self._tool_docks.get(key)
@@ -976,6 +1025,7 @@ class MainWindow(QMainWindow):
             settings.sync()
         self.live_monitor_view.shutdown()
         self.midi_routing_view.shutdown()
+        self.metronome_view.shutdown()
         self.controller_setup_view.shutdown()
         super().closeEvent(event)
 

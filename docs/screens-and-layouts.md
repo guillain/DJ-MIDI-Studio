@@ -14,6 +14,7 @@
 - [Live Monitor](#live-monitor)
 - [MIDI Routing](#midi-routing)
 - [MIDI Clock](#midi-clock)
+- [Metronome](#metronome)
 - [Evolution reference](#evolution-reference)
 
 ## Application Navigation
@@ -21,10 +22,12 @@
 The mapping workspace is organized as tabs across the top of the main window:
 
 `Dashboard`, `Controller Setup`, `Controller Images`, `By Channel`, `By Deck`,
-and `By Controller`. `Live Monitor`, `MIDI Routing`, and `MIDI Clock` are independent,
-closable Qt dock panels rather than mapping tabs. They can be shown from the
-`View` menu, moved to another dock area, floated as windows, or opened
-from the Dashboard buttons.
+and `By Controller`. `Live Monitor`, `MIDI Routing`, `MIDI Clock`, and
+`Metronome` are independent, closable Qt dock panels rather than mapping
+tabs. They can be shown from the `View` menu, moved to another dock area,
+floated as windows, or opened from the Dashboard buttons (Metronome is
+reached from the `View` menu only, since it is not one of the Dashboard's
+MIDI tools shortcuts).
 
 Each tool supports both workspace modes. Use the float button in its dock title
 bar to open it as an independent window, or drag the title bar out of the main
@@ -40,18 +43,20 @@ main window or on a floating MIDI tool.
 ### Window Compositions
 
 The screenshot generator covers the stable reference compositions supported by
-the application: all three tools docked in the main window, and each tool
+the application: all four tools docked in the main window, and each tool
 floating. Users can still choose arbitrary dock areas,
 positions, and sizes; those combinations are intentionally not enumerated
 because they are user-specific and are persisted automatically.
 
-![Live Monitor, MIDI Routing, and MIDI Clock docked together](images/layout/midi-tools-docked.png)
+![Live Monitor, MIDI Routing, MIDI Clock, and Metronome docked together](images/layout/midi-tools-docked.png)
 
 ![Live Monitor as a floating window](images/layout/live-monitor-floating.png)
 
 ![MIDI Routing as a floating window](images/layout/midi-routing-floating.png)
 
 ![MIDI Clock as a floating window](images/layout/midi-clock-floating.png)
+
+![Metronome as a floating window](images/layout/metronome-floating.png)
 
 The right-hand panel remains available from every tab for the current selection and validation messages. Selecting a mapping or a layout cell keeps the related views synchronized.
 
@@ -135,10 +140,10 @@ Chapters](development/evolution.md).
 
 ## MIDI Routing
 
-MIDI Routing configures one-way source/destination routes and Controller Setup
-playback. Its source and destination lists are loaded when the view opens and
-can be refreshed independently with `Refresh MIDI ports`. Physical routing
-remains disabled unless enabled in Preferences.
+MIDI Routing configures one-way source/destination routes. Its source and
+destination lists are loaded when the view opens and can be refreshed
+independently with `Refresh MIDI ports`. Physical routing remains disabled
+unless enabled in Preferences.
 
 ## MIDI Clock
 
@@ -154,5 +159,18 @@ Cross-software Clock use must meet the [compatibility notes](midi-clock-compatib
 ![MIDI Routing](images/layout/midi-routing.png)
 
 ![Independent MIDI Clock tool](images/layout/midi-clock.png)
+
+The floating reference is shown in [Window Compositions](#window-compositions).
+
+## Metronome
+
+Metronome is a loop-oriented MIDI session player driven by the current
+Controller Setup session: it plays the selected or all captured rows once, or
+repeats them at a configurable Hz frequency to a chosen MIDI output port.
+Previously merged into MIDI Routing's "Controller Setup playback" panel, it
+was pulled back out into its own `View`-menu dock so it no longer competes
+for space with routing/Clock configuration.
+
+![Metronome](images/layout/metronome.png)
 
 The floating reference is shown in [Window Compositions](#window-compositions).

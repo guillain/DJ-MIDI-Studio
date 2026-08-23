@@ -2,20 +2,15 @@ from __future__ import annotations
 
 import logging
 import time
-from collections.abc import Callable
 
 from PySide6.QtCore import QTimer, Signal
 from PySide6.QtWidgets import (
-    QAbstractItemView,
     QCheckBox,
     QComboBox,
     QGridLayout,
     QGroupBox,
-    QHBoxLayout,
     QHeaderView,
     QLabel,
-    QLineEdit,
-    QListWidget,
     QMessageBox,
     QPushButton,
     QSizePolicy,
@@ -31,13 +26,10 @@ from djmidi.ableton_link import (
     LinkBackendUnavailable,
     LinkClockFollower,
 )
-from djmidi.catalog._registry import ControlInfo
-from djmidi.gui.port_list_utils import refresh_selectable_port_list
 from djmidi.midi_clock import MidiClockMirror
 from djmidi.midi_io import list_input_ports, list_output_ports
 from djmidi.midi_router import MidiRoute, MidiRouter
 from djmidi.midi_routing_session import SERATO_CLOCK_INPUT_NAME, MidiRoutingSession
-from djmidi.session_player import _parse_int, play_control_info_entries
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -49,9 +41,6 @@ class MidiRoutingView(QWidget):
 
     def __init__(
         self,
-        all_rows_provider: Callable[[], list[ControlInfo]] | None = None,
-        selected_rows_provider: Callable[[], list[ControlInfo]] | None = None,
-        session_name_provider: Callable[[], str] | None = None,
         parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
@@ -64,10 +53,6 @@ class MidiRoutingView(QWidget):
         self._clock_inactive_since: float | None = None
         self._clock_inactive_escalated = False
         self._routing_session = MidiRoutingSession(self._router)
-        self._all_rows_provider = all_rows_provider or list
-        self._selected_rows_provider = selected_rows_provider or list
-        self._session_name_provider = session_name_provider or (lambda: "")
-        self._loop_scope = "selected"
         self._routing_timer = QTimer(self)
         self._routing_timer.setInterval(10)
         self._routing_timer.timeout.connect(self._poll_routing)
@@ -169,7 +154,6 @@ class MidiRoutingView(QWidget):
         layout = QVBoxLayout(self)
         layout.addWidget(help_label)
         layout.addWidget(routes_box)
-        layout.addWidget(self._build_setup_playback_box())
         layout.addStretch(1)
         self._apply_dj_style()
         self.refresh_ports()
@@ -344,131 +328,10 @@ class MidiRoutingView(QWidget):
         super().closeEvent(event)
 
     def shutdown(self) -> None:
-        self._stop_loop()
         self._stop_routing()
         for follower in self._link_followers:
             follower.close()
         self._link_followers.clear()
-
-    def _build_setup_playback_box(self) -> QGroupBox:
-        box = QGroupBox("Controller Setup playback")
-        layout = QHBoxLayout(box)
-        source = QVBoxLayout()
-        self._session_summary = QLabel()
-        self._session_summary.setWordWrap(True)
-        refresh = QPushButton("Refresh session summary")
-        refresh.clicked.connect(self.refresh_session_summary)
-        source.addWidget(self._session_summary)
-        source.addWidget(refresh)
-        output = QVBoxLayout()
-        self._output_port_list = QListWidget()
-        self._output_port_list.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
-        refresh_output = QPushButton("Refresh output ports")
-        refresh_output.clicked.connect(self._refresh_output_ports)
-        output.addWidget(self._output_port_list)
-        output.addWidget(refresh_output)
-        transport = QVBoxLayout()
-        self._value_edit = QLineEdit("127")
-        self._hz_edit = QLineEdit("2.0")
-        self._playback_status = QLabel("Ready.")
-        self._playback_status.setWordWrap(True)
-        transport.addWidget(QLabel("Value / velocity (0-127)"))
-        transport.addWidget(self._value_edit)
-        transport.addWidget(QLabel("Loop frequency (Hz)"))
-        transport.addWidget(self._hz_edit)
-        for label, callback in (
-            ("Play selected setup row(s) once", self._on_play_selected_once_clicked),
-            ("Play all setup rows once", self._on_play_all_once_clicked),
-            ("Start loop (selected setup rows)", lambda: self._start_loop("selected")),
-            ("Start loop (all setup rows)", lambda: self._start_loop("all")),
-            ("Stop loop", self._stop_loop),
-        ):
-            button = QPushButton(label)
-            button.clicked.connect(callback)
-            transport.addWidget(button)
-        transport.addWidget(self._playback_status)
-        layout.addLayout(source, 1)
-        layout.addLayout(output, 1)
-        layout.addLayout(transport, 1)
-        self._loop_timer = QTimer(self)
-        self._loop_timer.timeout.connect(self._on_loop_tick)
-        self.refresh_session_summary()
-        return box
-
-    def refresh_session_summary(self) -> None:
-        name = self._session_name_provider().strip() or "(unnamed setup session)"
-        self._session_summary.setText(
-            f"Current setup session: {name}\n"
-            f"All rows: {len(self._all_rows_provider())}\n"
-            f"Selected rows in Controller Setup: {len(self._selected_rows_provider())}"
-        )
-
-    def _refresh_output_ports(self) -> None:
-        refresh_selectable_port_list(self._output_port_list, list_output_ports)
-
-    def _selected_output_port(self) -> str:
-        item = self._output_port_list.currentItem()
-        if item is None:
-            raise ValueError("No output port selected")
-        return item.text()
-
-    def _entries_for_scope(self, scope: str) -> list[ControlInfo]:
-        return self._selected_rows_provider() if scope == "selected" else self._all_rows_provider()
-
-    def _play_scope_once(self, scope: str) -> tuple[int, int]:
-        entries = self._entries_for_scope(scope)
-        if not entries:
-            return 0, 0
-        value = _parse_int(self._value_edit.text(), "Value", 0, 127)
-        stats = play_control_info_entries(self._selected_output_port(), entries, value)
-        return stats.sent_messages, stats.skipped_entries
-
-    def _on_play_selected_once_clicked(self) -> None:
-        self._play_once("selected")
-
-    def _on_play_all_once_clicked(self) -> None:
-        self._play_once("all")
-
-    def _play_once(self, scope: str) -> None:
-        try:
-            sent, skipped = self._play_scope_once(scope)
-        except Exception as exc:  # noqa: BLE001 - show user-facing error
-            QMessageBox.critical(self, "Failed to play rows", str(exc))
-            return
-        self._playback_status.setText(f"Played {scope} rows once: {sent} MIDI message(s), {skipped} skipped.")
-        self.refresh_session_summary()
-
-    def _start_loop(self, scope: str) -> None:
-        if not self._entries_for_scope(scope):
-            QMessageBox.warning(self, "No rows to loop", "The current Controller Setup session has no rows for that scope.")
-            return
-        try:
-            hz = float(self._hz_edit.text().strip())
-        except ValueError:
-            QMessageBox.critical(self, "Invalid frequency", "Loop frequency must be a number.")
-            return
-        if hz <= 0:
-            QMessageBox.critical(self, "Invalid frequency", "Loop frequency must be greater than 0.")
-            return
-        self._loop_scope = scope
-        self._loop_timer.setInterval(max(1, int(1000.0 / hz)))
-        self._loop_timer.start()
-        self._playback_status.setText(f"Loop started for {scope} rows at {hz:.2f} Hz.")
-
-    def _stop_loop(self) -> None:
-        if hasattr(self, "_loop_timer"):
-            self._loop_timer.stop()
-        if hasattr(self, "_playback_status"):
-            self._playback_status.setText("Loop stopped.")
-
-    def _on_loop_tick(self) -> None:
-        try:
-            sent, skipped = self._play_scope_once(self._loop_scope)
-        except Exception as exc:  # noqa: BLE001 - stop unsafe playback
-            self._loop_timer.stop()
-            QMessageBox.critical(self, "Loop stopped", str(exc))
-            return
-        self._playback_status.setText(f"Loop tick ({self._loop_scope}): {sent} MIDI message(s), {skipped} skipped.")
 
     @property
     def router(self) -> MidiRouter:

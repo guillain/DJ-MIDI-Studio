@@ -79,7 +79,7 @@ flowchart TD
     Layout -.->|previous cells: faded history| Layout
 ```
 
-The Dashboard tab acts as an entry dashboard: it lists known controllers in a three-column card grid, shows controller cards with MIDI availability, and emits drill-down actions into the mapping tabs or MIDI tool docks. Live Monitor, MIDI Routing, and MIDI Clock are independent closable/floating docks. MIDI Routing retains the shared routing session, while MIDI Clock presents its configuration and diagnostics in its own surface. In By Channel, By Deck, and By Controller, clicking a schematic cell keeps the originating tab active and selects the corresponding tree item. The current cell is strongly highlighted while a short faded history remains visible in the layout.
+The Dashboard tab acts as an entry dashboard: it lists known controllers in a three-column card grid, shows controller cards with MIDI availability, and emits drill-down actions into the mapping tabs or MIDI tool docks. Live Monitor, MIDI Routing, MIDI Clock, and Metronome are independent closable/floating docks. MIDI Routing retains the shared routing session, MIDI Clock presents its configuration and diagnostics in its own surface, and Metronome is a loop-oriented MIDI session player driven by the current Controller Setup session (reachable from the `View` menu only). In By Channel, By Deck, and By Controller, clicking a schematic cell keeps the originating tab active and selects the corresponding tree item. The current cell is strongly highlighted while a short faded history remains visible in the layout.
 
 ### Recent UI and tool evolution
 

@@ -17,13 +17,13 @@ and the independent MIDI tools. They are generated from
 - [By Controller](by-controller.png)
 - [Controller Setup](controlleur-setup.png)
 - [Controller Images](controlleur-image.png)
-- [Metronome](metronome.png)
 
 ## MIDI tools
 
 - [Live Monitor](live-monitor.png)
 - [MIDI Routing](midi-routing.png)
 - [MIDI Clock](midi-clock.png)
+- [Metronome](metronome.png)
 
 ## Window compositions
 
@@ -31,6 +31,7 @@ and the independent MIDI tools. They are generated from
 - [Live Monitor floating](live-monitor-floating.png)
 - [MIDI Routing floating](midi-routing-floating.png)
 - [MIDI Clock floating](midi-clock-floating.png)
+- [Metronome floating](metronome-floating.png)
 
 The screenshots are reference compositions, not an exhaustive catalogue of
 every user-defined dock position or window size. See [Screens and Layouts](../../screens-and-layouts.md)

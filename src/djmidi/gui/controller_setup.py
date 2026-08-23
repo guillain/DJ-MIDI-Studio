@@ -178,25 +178,19 @@ class ControllerSetupView(QWidget):
             " background: #202d42; border: 1px solid #3a506d; border-radius: 4px;"
             " }"
         )
-        capture_help = QLabel(_CAPTURE_HELP)
-        capture_help.setWordWrap(True)
-        capture_help.setStyleSheet("QLabel { font-size: 11px; padding: 4px; }")
+        capture_help_button = self._help_button("Capture (learn from controller)", _CAPTURE_HELP)
         capture_box, capture_layout = self._titled_panel(
-            "Capture (learn from controller)", [refresh_button, self._learn_button]
+            "Capture (learn from controller)", [refresh_button, self._learn_button, capture_help_button]
         )
         capture_layout.addWidget(self._port_list)
         capture_layout.addSpacing(6)
         capture_layout.addWidget(self._learn_status)
-        capture_layout.addWidget(capture_help)
 
         import_button = QPushButton(self._get_icon("import"), "")
         import_button.setToolTip("Import from Serato XML…")
         import_button.clicked.connect(self._on_import_xml_clicked)
-        import_help = QLabel(_IMPORT_HELP)
-        import_help.setWordWrap(True)
-        import_help.setStyleSheet("QLabel { font-size: 11px; padding: 4px; }")
-        import_box, import_layout = self._titled_panel("Import", [import_button])
-        import_layout.addWidget(import_help)
+        import_help_button = self._help_button("Import", _IMPORT_HELP)
+        import_box, import_layout = self._titled_panel("Import", [import_button, import_help_button])
         import_layout.addStretch(1)
 
         self._output_port_list = QListWidget()
@@ -300,17 +294,16 @@ class ControllerSetupView(QWidget):
         self._apply_button = QPushButton(self._get_icon("apply"), "")
         self._apply_button.setToolTip("Apply now (this session)")
         self._apply_button.clicked.connect(self._on_apply_clicked)
-        apply_help = QLabel(_APPLY_HELP)
-        apply_help.setWordWrap(True)
-        apply_help.setStyleSheet("QLabel { font-size: 11px; padding: 4px; }")
         export_button = QPushButton(self._get_icon("export"), "")
         export_button.setToolTip("Generate catalog module…")
         export_button.clicked.connect(self._on_export_clicked)
+        apply_help_button = self._help_button("Apply / Export", _APPLY_HELP)
         export_box, export_layout = self._titled_panel(
-            "Apply / Export", [check_button, self._apply_button, export_button]
+            "Apply / Export", [check_button, self._apply_button, export_button, apply_help_button]
         )
-        export_layout.addWidget(apply_help)
         export_layout.addStretch(1)
+
+        session_box.setMaximumWidth(70)
 
         top_row = QGridLayout()
         top_row.setHorizontalSpacing(12)
@@ -319,7 +312,8 @@ class ControllerSetupView(QWidget):
         top_row.addWidget(capture_box, 0, 1)
         top_row.addWidget(import_box, 0, 2)
         top_row.addWidget(export_box, 0, 3)
-        for column in range(4):
+        top_row.setColumnStretch(0, 0)
+        for column in (1, 2, 3):
             top_row.setColumnStretch(column, 1)
 
         self._table = QTableWidget(0, 7)
@@ -376,8 +370,15 @@ class ControllerSetupView(QWidget):
             "apply": QStyle.StandardPixmap.SP_DialogApplyButton,
             "export": QStyle.StandardPixmap.SP_DialogSaveButton,
             "import": QStyle.StandardPixmap.SP_ArrowDown,
+            "help": QStyle.StandardPixmap.SP_MessageBoxQuestion,
         }
         return style.standardIcon(icon_map.get(icon_type, QStyle.StandardPixmap.SP_FileIcon))
+
+    def _help_button(self, title: str, text: str) -> QPushButton:
+        button = QPushButton(self._get_icon("help"), "")
+        button.setToolTip(f"{title} help")
+        button.clicked.connect(lambda: QMessageBox.information(self, title, text))
+        return button
 
     def _titled_panel(self, title: str, header_buttons: list[QPushButton]) -> tuple[QFrame, QVBoxLayout]:
         """A QGroupBox-styled panel with icon-only action buttons in its title

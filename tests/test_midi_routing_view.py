@@ -3,7 +3,6 @@ from unittest.mock import patch
 from PySide6.QtWidgets import QLabel
 
 from djmidi.ableton_link import ABLETON_LINK_CLOCK_SOURCE_NAME
-from djmidi.catalog._registry import ControlInfo
 from djmidi.gui.midi_routing_view import MidiRoutingView
 from djmidi.midi_routing_session import SERATO_CLOCK_INPUT_NAME
 
@@ -147,18 +146,3 @@ def test_routing_view_reports_link_clock_configuration_when_link_is_selected():
     assert ABLETON_LINK_CLOCK_SOURCE_NAME in view._clock_status.text()
     assert "source port not open" not in view._clock_status.text()
     assert "start playback" in view._clock_status.toolTip()
-
-
-def test_routing_view_contains_controller_setup_playback_controls():
-    entries = [ControlInfo("Test", "PAD", "Pad 1", "NOTE", ("1",), "10")]
-    view = MidiRoutingView(
-        all_rows_provider=lambda: entries,
-        selected_rows_provider=lambda: entries,
-        session_name_provider=lambda: "Test session",
-    )
-    view.refresh_session_summary()
-    assert "Test session" in view._session_summary.text()
-    view._hz_edit.setText("4")
-    view._start_loop("selected")
-    assert view._loop_timer.isActive()
-    view._stop_loop()

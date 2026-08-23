@@ -93,10 +93,11 @@ Output its own full-width panel. The output port list, message fields,
 playback actions, and PAD MODE 1–8 buttons remain available without a cramped
 five-column layout.
 
-`Live Monitor`, `MIDI Routing`, and `MIDI Clock` are independent MIDI tool docks, not mapping
-tabs. Open them from the `View` menu or the Dashboard; use the dock title
-bar to float them, dock them again, or close them. The main
-window geometry and dock arrangement are restored on the next launch.
+`Live Monitor`, `MIDI Routing`, `MIDI Clock`, and `Metronome` are independent MIDI tool docks, not mapping
+tabs. Open Live Monitor/MIDI Routing/MIDI Clock from the `View` menu or the Dashboard, and Metronome
+from the `View` menu; use the dock title bar's `Undock`/`Dock` button to float them, dock them again,
+or the close button to close them. The main window geometry and dock arrangement are restored on the
+next launch.
 
 For screenshots and a visual description of each tab, see [Screens and Layouts](screens-and-layouts.md).
 
@@ -110,7 +111,7 @@ For screenshots and a visual description of each tab, see [Screens and Layouts](
 - Use `By Controller` for controller/section-oriented physical mapping; clicking a layout cell selects the corresponding physical-control tree item without leaving the tab.
 - Use `Controller Images` for zoomable reference diagrams and the local controller documentation button.
 - Use `Live Monitor` to inspect real-time MIDI traffic by source device.
-- Use the `Controller Setup playback` section in `MIDI Routing` to replay rows once or in a loop.
+- Use `Metronome` to replay Controller Setup session rows once or in a loop.
 
 ## Edit Safely
 
@@ -201,4 +202,4 @@ So in practice:
 Inside the GUI:
 
 - use `Controller Setup` to send one-shot commands from the current saved/loaded session to the selected MIDI output;
-- use `Controller Setup playback` in `MIDI Routing` when you want loop/repeat playback with a configurable frequency.
+- use `Metronome` (`View` menu) when you want loop/repeat playback with a configurable frequency.
