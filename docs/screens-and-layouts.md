@@ -22,16 +22,15 @@ The mapping workspace is organized as tabs across the top of the main window:
 
 `Dashboard`, `Controller Setup`, `Controller Images`, `By Channel`, `By Deck`,
 and `By Controller`. `Live Monitor`, `MIDI Routing`, and `MIDI Clock` are independent,
-closable Qt dock panels rather than mapping tabs. They can be shown from
-`View > MIDI Tools`, moved to another dock area, floated as windows, or opened
+closable Qt dock panels rather than mapping tabs. They can be shown from the
+`View` menu, moved to another dock area, floated as windows, or opened
 from the Dashboard buttons.
 
 Each tool supports both workspace modes. Use the float button in its dock title
-bar, or choose `View > MIDI Tools > Float Live Monitor` / `Float MIDI Routing` /
-`Float MIDI Clock`,
-to open it as an independent window. Trigger the same menu item again to dock
-it back into the main window; closing a floating tool does not affect any
-controller mapping tab or layout splitter.
+bar to open it as an independent window, or drag the title bar out of the main
+window; drag it back onto a dock area (or use the title bar's dock button) to
+return it. Closing a floating tool does not affect any controller mapping tab
+or layout splitter.
 
 The main window and dock arrangement are saved when the application closes and
 restored on the next launch. Controller selectors remain horizontally

@@ -126,16 +126,13 @@ def test_midi_tools_can_switch_between_docked_and_floating_windows():
     window = MainWindow()
     window.show()
     QApplication.processEvents()
-    float_action = window._tool_float_actions["monitor"]
     assert not window._tool_docks["monitor"].isFloating()
-    float_action.trigger()
+    window._set_tool_dock_floating("monitor", True)
     QApplication.processEvents()
     assert window._tool_docks["monitor"].isFloating()
-    assert float_action.isChecked()
-    float_action.trigger()
+    window._set_tool_dock_floating("monitor", False)
     QApplication.processEvents()
     assert not window._tool_docks["monitor"].isFloating()
-    assert not float_action.isChecked()
     window.close()
 
 

@@ -94,8 +94,8 @@ playback actions, and PAD MODE 1–8 buttons remain available without a cramped
 five-column layout.
 
 `Live Monitor`, `MIDI Routing`, and `MIDI Clock` are independent MIDI tool docks, not mapping
-tabs. Open them from `View -> MIDI Tools` or the Dashboard; use the dock title
-bar or the View menu to float them, dock them again, or close them. The main
+tabs. Open them from the `View` menu or the Dashboard; use the dock title
+bar to float them, dock them again, or close them. The main
 window geometry and dock arrangement are restored on the next launch.
 
 For screenshots and a visual description of each tab, see [Screens and Layouts](screens-and-layouts.md).

@@ -32,6 +32,7 @@ from PySide6.QtWidgets import (
     QAbstractItemView,
     QFileDialog,
     QFormLayout,
+    QFrame,
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
@@ -139,64 +140,62 @@ class ControllerSetupView(QWidget):
         name_row.addWidget(name_label)
         name_row.addWidget(self._name_edit, 1)
 
-        session_box = QGroupBox("Session")
-        session_box.setStyleSheet("QGroupBox { font-weight: bold; padding-top: 12px; }")
-        session_layout = QVBoxLayout(session_box)
-        session_layout.setSpacing(6)
-        session_layout.setContentsMargins(10, 15, 10, 10)
-        new_button = QPushButton(self._get_icon("new"), "New session")
-        new_button.setMinimumHeight(28)
+        new_button = QPushButton(self._get_icon("new"), "")
+        new_button.setToolTip("New session")
         new_button.clicked.connect(self._on_new_session_clicked)
-        load_button = QPushButton(self._get_icon("open"), "Load session…")
-        load_button.setMinimumHeight(28)
+        load_button = QPushButton(self._get_icon("open"), "")
+        load_button.setToolTip("Load session…")
         load_button.clicked.connect(self._on_load_session_clicked)
-        save_button = QPushButton(self._get_icon("save"), "Save session…")
-        save_button.setMinimumHeight(28)
+        save_button = QPushButton(self._get_icon("save"), "")
+        save_button.setToolTip("Save session…")
         save_button.clicked.connect(self._on_save_session_clicked)
-        clear_button = QPushButton(self._get_icon("clear"), "Clear captured rows")
-        clear_button.setMinimumHeight(28)
+        clear_button = QPushButton(self._get_icon("clear"), "")
+        clear_button.setToolTip("Clear captured rows")
         clear_button.clicked.connect(self._on_clear_rows_clicked)
+        session_box, session_layout = self._titled_panel("Session", [])
+        session_buttons = QVBoxLayout()
+        session_buttons.setSpacing(6)
         for button in (new_button, load_button, save_button, clear_button):
-            session_layout.addWidget(button)
+            button.setFixedSize(28, 28)
+            session_buttons.addWidget(button)
+        session_buttons.addStretch(1)
+        session_layout.addLayout(session_buttons)
         session_layout.addStretch(1)
 
         self._port_list = QListWidget()
         self._port_list.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
-        self._port_list.setMinimumHeight(150)
-        refresh_button = QPushButton(self._get_icon("refresh"), "Refresh ports")
-        refresh_button.setMinimumHeight(28)
+        self._port_list.setMinimumHeight(110)
+        refresh_button = QPushButton(self._get_icon("refresh"), "")
+        refresh_button.setToolTip("Refresh ports")
         refresh_button.clicked.connect(self._refresh_ports)
-        self._learn_button = QPushButton(self._get_icon("start"), "Start learning")
-        self._learn_button.setMinimumHeight(28)
+        self._learn_button = QPushButton(self._get_icon("start"), "")
+        self._learn_button.setToolTip("Start learning")
         self._learn_button.clicked.connect(self._toggle_learning)
         self._learn_status = QLabel("Stopped")
-        self._learn_status.setStyleSheet("QLabel { padding: 4px; border-radius: 3px; }")
+        self._learn_status.setStyleSheet(
+            "QLabel {"
+            " font-weight: bold; padding: 6px 10px; margin-top: 4px;"
+            " background: #202d42; border: 1px solid #3a506d; border-radius: 4px;"
+            " }"
+        )
         capture_help = QLabel(_CAPTURE_HELP)
         capture_help.setWordWrap(True)
         capture_help.setStyleSheet("QLabel { font-size: 11px; padding: 4px; }")
-        capture_box = QGroupBox("Capture (learn from controller)")
-        capture_box.setStyleSheet("QGroupBox { font-weight: bold; padding-top: 12px; }")
-        capture_layout = QVBoxLayout(capture_box)
-        capture_layout.setSpacing(6)
-        capture_layout.setContentsMargins(10, 15, 10, 10)
+        capture_box, capture_layout = self._titled_panel(
+            "Capture (learn from controller)", [refresh_button, self._learn_button]
+        )
         capture_layout.addWidget(self._port_list)
-        capture_layout.addWidget(refresh_button)
-        capture_layout.addWidget(self._learn_button)
+        capture_layout.addSpacing(6)
         capture_layout.addWidget(self._learn_status)
         capture_layout.addWidget(capture_help)
 
-        import_button = QPushButton(self._get_icon("import"), "Import from Serato XML…")
-        import_button.setMinimumHeight(28)
+        import_button = QPushButton(self._get_icon("import"), "")
+        import_button.setToolTip("Import from Serato XML…")
         import_button.clicked.connect(self._on_import_xml_clicked)
         import_help = QLabel(_IMPORT_HELP)
         import_help.setWordWrap(True)
         import_help.setStyleSheet("QLabel { font-size: 11px; padding: 4px; }")
-        import_box = QGroupBox("Import")
-        import_box.setStyleSheet("QGroupBox { font-weight: bold; padding-top: 12px; }")
-        import_layout = QVBoxLayout(import_box)
-        import_layout.setSpacing(6)
-        import_layout.setContentsMargins(10, 15, 10, 10)
-        import_layout.addWidget(import_button)
+        import_box, import_layout = self._titled_panel("Import", [import_button])
         import_layout.addWidget(import_help)
         import_layout.addStretch(1)
 
@@ -217,7 +216,7 @@ class ControllerSetupView(QWidget):
             self._send_data2_edit,
             self._send_delay_ms_edit,
         ):
-            field.setMinimumHeight(26)
+            field.setMinimumHeight(28)
         send_once_button = QPushButton(self._get_icon("start"), "Send once")
         send_once_button.clicked.connect(self._on_send_output_once_clicked)
         send_double_button = QPushButton(self._get_icon("start"), "Send double-click (NOTE)")
@@ -233,7 +232,6 @@ class ControllerSetupView(QWidget):
 
         output_box = QGroupBox("MIDI Output")
         output_box.setStyleSheet("QGroupBox { font-weight: bold; padding-top: 12px; }")
-        output_box.setMinimumHeight(300)
         output_layout = QHBoxLayout(output_box)
         output_layout.setContentsMargins(10, 15, 10, 10)
         output_layout.setSpacing(15)
@@ -250,6 +248,7 @@ class ControllerSetupView(QWidget):
         output_layout.addLayout(output_ports, 1)
 
         output_controls = QVBoxLayout()
+        output_controls.setSpacing(10)
         output_controls_label = QLabel("Message and playback controls")
         output_controls_label.setStyleSheet("QLabel { font-weight: bold; }")
         output_controls.addWidget(output_controls_label)
@@ -258,59 +257,59 @@ class ControllerSetupView(QWidget):
         send_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow)
         send_form.setLabelAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
         send_form.setHorizontalSpacing(10)
-        send_form.setVerticalSpacing(8)
+        send_form.setVerticalSpacing(10)
         send_form.addRow("Type", self._send_type_edit)
         send_form.addRow("Channel", self._send_channel_edit)
         send_form.addRow("Data1", self._send_data1_edit)
         send_form.addRow("Value", self._send_data2_edit)
         send_form.addRow("Delay (ms)", self._send_delay_ms_edit)
-        output_controls.addLayout(send_form)
-        
-        output_controls.addSpacing(10)
 
         action_grid = QVBoxLayout()
-        action_grid.setSpacing(6)
+        action_grid.setSpacing(8)
         for button in (send_once_button, send_double_button, send_selected_button, send_all_button, replay_button):
             button.setMinimumHeight(28)
             action_grid.addWidget(button)
-        output_controls.addLayout(action_grid)
-        
+        action_grid.addStretch(1)
+
+        send_row = QHBoxLayout()
+        send_row.setSpacing(20)
+        send_row.addLayout(send_form, 1)
+        send_row.addLayout(action_grid, 1)
+        output_controls.addLayout(send_row)
+
         output_controls.addSpacing(6)
         self._send_status.setStyleSheet("QLabel { padding: 6px; border-radius: 3px; }")
         output_controls.addWidget(self._send_status)
 
         pad_grid = QGridLayout()
-        pad_grid.setHorizontalSpacing(5)
-        pad_grid.setVerticalSpacing(5)
+        pad_grid.setHorizontalSpacing(8)
+        pad_grid.setVerticalSpacing(8)
         for index, mode in enumerate(range(1, 9)):
             button = QPushButton(f"PAD {mode}")
+            button.setMinimumWidth(110)
+            button.setMinimumHeight(30)
             button.clicked.connect(lambda _checked=False, m=mode: self._on_send_ddj_xp2_pad_mode(m))
             pad_grid.addWidget(button, index // 4, index % 4)
         output_controls.addLayout(pad_grid)
         output_controls.addStretch(1)
         output_layout.addLayout(output_controls, 2)
 
-        check_button = QPushButton(self._get_icon("refresh"), "Check for conflicts")
-        check_button.setMinimumHeight(28)
+        check_button = QPushButton(self._get_icon("refresh"), "")
+        check_button.setToolTip("Check for conflicts")
         check_button.clicked.connect(self._on_check_conflicts_clicked)
-        self._apply_button = QPushButton(self._get_icon("apply"), "Apply now (this session)")
-        self._apply_button.setMinimumHeight(28)
+        self._apply_button = QPushButton(self._get_icon("apply"), "")
+        self._apply_button.setToolTip("Apply now (this session)")
         self._apply_button.clicked.connect(self._on_apply_clicked)
         apply_help = QLabel(_APPLY_HELP)
         apply_help.setWordWrap(True)
         apply_help.setStyleSheet("QLabel { font-size: 11px; padding: 4px; }")
-        export_button = QPushButton(self._get_icon("export"), "Generate catalog module…")
-        export_button.setMinimumHeight(28)
+        export_button = QPushButton(self._get_icon("export"), "")
+        export_button.setToolTip("Generate catalog module…")
         export_button.clicked.connect(self._on_export_clicked)
-        export_box = QGroupBox("Apply / Export")
-        export_box.setStyleSheet("QGroupBox { font-weight: bold; padding-top: 12px; }")
-        export_layout = QVBoxLayout(export_box)
-        export_layout.setSpacing(6)
-        export_layout.setContentsMargins(10, 15, 10, 10)
-        export_layout.addWidget(check_button)
-        export_layout.addWidget(self._apply_button)
+        export_box, export_layout = self._titled_panel(
+            "Apply / Export", [check_button, self._apply_button, export_button]
+        )
         export_layout.addWidget(apply_help)
-        export_layout.addWidget(export_button)
         export_layout.addStretch(1)
 
         top_row = QGridLayout()
@@ -327,7 +326,7 @@ class ControllerSetupView(QWidget):
         self._table.setHorizontalHeaderLabels(["Section", "Name", "Type", "Channel(s)", "Data1", "Source", "Device"])
         self._table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self._table.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
-        self._table.setMinimumHeight(260)
+        self._table.setMinimumHeight(160)
         self._table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self._table.horizontalHeader().setStretchLastSection(True)
         self._table.setAlternatingRowColors(True)
@@ -379,6 +378,35 @@ class ControllerSetupView(QWidget):
             "import": QStyle.StandardPixmap.SP_ArrowDown,
         }
         return style.standardIcon(icon_map.get(icon_type, QStyle.StandardPixmap.SP_FileIcon))
+
+    def _titled_panel(self, title: str, header_buttons: list[QPushButton]) -> tuple[QFrame, QVBoxLayout]:
+        """A QGroupBox-styled panel with icon-only action buttons in its title
+        row instead of stacked full-width buttons in its body — QGroupBox's
+        native title bar can't host widgets, so this is a plain QFrame styled
+        to match (see theme.py's QGroupBox rule)."""
+        frame = QFrame()
+        frame.setStyleSheet(
+            "QFrame { background: #151e2b; border: 1px solid #2b3b53; border-radius: 9px; }"
+        )
+        outer = QVBoxLayout(frame)
+        outer.setContentsMargins(10, 8, 10, 10)
+        outer.setSpacing(8)
+
+        header = QHBoxLayout()
+        header.setSpacing(6)
+        title_label = QLabel(title)
+        title_label.setStyleSheet("QLabel { font-weight: bold; color: #8fe8ff; border: none; }")
+        header.addWidget(title_label)
+        header.addStretch(1)
+        for button in header_buttons:
+            button.setFixedSize(28, 28)
+            header.addWidget(button)
+        outer.addLayout(header)
+
+        body = QVBoxLayout()
+        body.setSpacing(6)
+        outer.addLayout(body)
+        return frame, body
 
     # -- controller name -------------------------------------------------
 
@@ -680,11 +708,13 @@ class ControllerSetupView(QWidget):
         except Exception as exc:  # noqa: BLE001 - surface device-open failures without partial learning
             self._monitor.close_all()
             self._learn_status.setText("Stopped")
-            self._learn_button.setText("Start learning")
+            self._learn_button.setIcon(self._get_icon("start"))
+            self._learn_button.setToolTip("Start learning")
             QMessageBox.warning(self, "Cannot start MIDI learning", str(exc))
             return
         self._learning = True
-        self._learn_button.setText("Stop learning")
+        self._learn_button.setIcon(self._get_icon("stop"))
+        self._learn_button.setToolTip("Stop learning")
         self._learn_status.setText(f"Listening ({len(selected)} input(s))")
         _LOGGER.info("Controller Setup learning started: inputs=%s", selected)
         self._timer.start()
@@ -693,7 +723,8 @@ class ControllerSetupView(QWidget):
         self._timer.stop()
         self._monitor.close_all()
         self._learning = False
-        self._learn_button.setText("Start learning")
+        self._learn_button.setIcon(self._get_icon("start"))
+        self._learn_button.setToolTip("Start learning")
         self._learn_status.setText("Stopped")
         _LOGGER.info("Controller Setup learning stopped (%d row(s) captured)", len(self._rows))
 
