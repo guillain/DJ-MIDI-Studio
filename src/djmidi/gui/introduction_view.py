@@ -78,9 +78,12 @@ class IntroductionView(QWidget):
         routing_button.clicked.connect(lambda: self.toolRequested.emit("routing"))
         clock_button = QPushButton("Open MIDI Clock")
         clock_button.clicked.connect(lambda: self.toolRequested.emit("clock"))
+        metronome_button = QPushButton("Open Metronome")
+        metronome_button.clicked.connect(lambda: self.toolRequested.emit("metronome"))
         tools_layout.addWidget(monitor_button)
         tools_layout.addWidget(routing_button)
         tools_layout.addWidget(clock_button)
+        tools_layout.addWidget(metronome_button)
 
         info = QLabel(
             "Tip: after applying a controller from Controller Setup, "

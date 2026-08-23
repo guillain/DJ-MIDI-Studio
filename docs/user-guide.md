@@ -94,9 +94,8 @@ playback actions, and PAD MODE 1–8 buttons remain available without a cramped
 five-column layout.
 
 `Live Monitor`, `MIDI Routing`, `MIDI Clock`, and `Metronome` are independent MIDI tool docks, not mapping
-tabs. Open Live Monitor/MIDI Routing/MIDI Clock from the `View` menu or the Dashboard, and Metronome
-from the `View` menu; use the dock title bar's `Undock`/`Dock` button to float them, dock them again,
-or the close button to close them. The main window geometry and dock arrangement are restored on the
+tabs. Open them from the `View` menu or the Dashboard; use the dock title bar's `Undock`/`Dock` button
+to float them, dock them again, or the close button to close them. The main window geometry and dock arrangement are restored on the
 next launch.
 
 For screenshots and a visual description of each tab, see [Screens and Layouts](screens-and-layouts.md).
@@ -129,10 +128,14 @@ For screenshots and a visual description of each tab, see [Screens and Layouts](
 - Input monitoring works from selected MIDI input ports.
 - Output-direction monitoring from Serato requires adding the app virtual destination in Serato MIDI setup.
 - The MIDI engine exposes one-way routing and an initial Clock mirror. Open the
-  independent `MIDI Clock` tool from `View > MIDI Tools`, enable MIDI routing
+  independent `MIDI Clock` tool from the `View` menu, enable MIDI routing
   in Preferences, add at least one route, then use `Start routing`
   to open the selected physical MIDI ports. `Stop routing` closes them again;
   routing remains disabled by default and port failures stop the session safely.
+- A route can optionally carry a value transform (channel remap, note/CC
+  offset, invert value) via `Edit transform…`, applied to messages after
+  filtering and before forwarding. This is intentionally limited to value
+  remaps — no scripting, conditionals, or message-type conversion.
   When a Clock policy is enabled, each configured source → destination line is
   opened by the same session and realtime Start/Continue/Stop/Clock messages
   are forwarded with the configured jitter safeguards.

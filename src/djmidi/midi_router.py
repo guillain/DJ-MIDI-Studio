@@ -5,13 +5,42 @@ from __future__ import annotations
 import logging
 from collections import defaultdict, deque
 from collections.abc import Callable
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 from djmidi.midi_api import MidiMessage
 
 _LOGGER = logging.getLogger(__name__)
 
 SendMessage = Callable[[str, MidiMessage], None]
+
+
+@dataclass(frozen=True)
+class MidiValueTransform:
+    """A small, deterministic per-route value transform.
+
+    Deliberately scoped down from general MIDI-translator tools (e.g. Bome
+    MIDI Translator's rule engine): no conditionals, variables, or
+    message-type conversion — just the handful of value remaps that come up
+    on a DJ controller (mirror a pad to another channel, shift a note/CC
+    range, invert a fader/knob direction). Only applies to channel-voice
+    messages; SysEx and realtime messages pass through unchanged.
+    """
+
+    channel_override: int | None = None
+    data1_offset: int = 0
+    invert_data2: bool = False
+
+    def apply(self, message: MidiMessage) -> MidiMessage:
+        if message.is_sysex or not 0x80 <= message.status <= 0xEF:
+            return message
+        data = bytearray(message.data)
+        if self.channel_override is not None:
+            data[0] = (data[0] & 0xF0) | (self.channel_override - 1)
+        if self.data1_offset and len(data) > 1:
+            data[1] = max(0, min(127, data[1] + self.data1_offset))
+        if self.invert_data2 and len(data) > 2:
+            data[2] = 127 - data[2]
+        return replace(message, data=bytes(data))
 
 
 @dataclass(frozen=True)
@@ -22,6 +51,7 @@ class MidiRoute:
     status_nibbles: frozenset[int] = frozenset()
     allow_sysex: bool = False
     enabled: bool = True
+    transform: MidiValueTransform | None = None
 
     def accepts(self, message: MidiMessage) -> bool:
         if message.is_sysex:
@@ -89,8 +119,9 @@ class MidiRouter:
             if not route.accepts(message):
                 self.stats.dropped += 1
                 continue
+            outgoing = route.transform.apply(message) if route.transform else message
             try:
-                send(route.destination_port_id, message)
+                send(route.destination_port_id, outgoing)
             except Exception as exc:  # noqa: BLE001 - route diagnostics must not kill monitoring
                 self.stats.errors += 1
                 self.stats.error_messages.append(str(exc))
@@ -124,4 +155,4 @@ class MidiRouter:
         return False
 
 
-__all__ = ["MidiRoute", "MidiRouter", "RouteStats"]
+__all__ = ["MidiRoute", "MidiRouter", "MidiValueTransform", "RouteStats"]

@@ -25,9 +25,7 @@ The mapping workspace is organized as tabs across the top of the main window:
 and `By Controller`. `Live Monitor`, `MIDI Routing`, `MIDI Clock`, and
 `Metronome` are independent, closable Qt dock panels rather than mapping
 tabs. They can be shown from the `View` menu, moved to another dock area,
-floated as windows, or opened from the Dashboard buttons (Metronome is
-reached from the `View` menu only, since it is not one of the Dashboard's
-MIDI tools shortcuts).
+floated as windows, or opened from the Dashboard buttons.
 
 Each tool supports both workspace modes. Use the float button in its dock title
 bar to open it as an independent window, or drag the title bar out of the main
@@ -143,7 +141,10 @@ Chapters](development/evolution.md).
 MIDI Routing configures one-way source/destination routes. Its source and
 destination lists are loaded when the view opens and can be refreshed
 independently with `Refresh MIDI ports`. Physical routing remains disabled
-unless enabled in Preferences.
+unless enabled in Preferences. A selected route can carry an optional value
+transform — channel remap, note/CC offset, invert value — via `Edit
+transform…`; the routes table's `Transform` column summarizes it (e.g. `Ch
+3, +12, invert`) or shows `—` when a route is a plain passthrough.
 
 ## MIDI Clock
 

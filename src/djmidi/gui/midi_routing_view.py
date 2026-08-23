@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import logging
 import time
+from dataclasses import replace
 
 from PySide6.QtCore import QTimer, Signal
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
+    QDialog,
     QGridLayout,
     QGroupBox,
     QHeaderView,
@@ -26,9 +28,10 @@ from djmidi.ableton_link import (
     LinkBackendUnavailable,
     LinkClockFollower,
 )
+from djmidi.gui.midi_route_transform_dialog import MidiRouteTransformDialog
 from djmidi.midi_clock import MidiClockMirror
 from djmidi.midi_io import list_input_ports, list_output_ports
-from djmidi.midi_router import MidiRoute, MidiRouter
+from djmidi.midi_router import MidiRoute, MidiRouter, MidiValueTransform
 from djmidi.midi_routing_session import SERATO_CLOCK_INPUT_NAME, MidiRoutingSession
 
 _LOGGER = logging.getLogger(__name__)
@@ -65,6 +68,9 @@ class MidiRoutingView(QWidget):
         add_button.clicked.connect(self._add_route)
         remove_button = QPushButton("Remove selected")
         remove_button.clicked.connect(self._remove_selected)
+        self._edit_transform_button = QPushButton("Edit transform…")
+        self._edit_transform_button.setEnabled(False)
+        self._edit_transform_button.clicked.connect(self._edit_selected_transform)
         self._routing_button = QPushButton("Start routing")
         self._routing_button.clicked.connect(self._toggle_routing)
         self._routing_button.setEnabled(False)
@@ -76,16 +82,18 @@ class MidiRoutingView(QWidget):
         route_controls.addWidget(self._destination_combo, 0, 3)
         route_controls.addWidget(add_button, 1, 0)
         route_controls.addWidget(remove_button, 1, 1)
-        route_controls.addWidget(self._routing_refresh_button, 1, 2)
-        route_controls.addWidget(self._routing_button, 1, 3)
+        route_controls.addWidget(self._edit_transform_button, 1, 2)
+        route_controls.addWidget(self._routing_refresh_button, 1, 3)
+        route_controls.addWidget(self._routing_button, 1, 4)
         route_controls.setColumnStretch(1, 1)
         route_controls.setColumnStretch(3, 1)
 
-        self._routes_table = QTableWidget(0, 3)
-        self._routes_table.setHorizontalHeaderLabels(["Source", "Destination", "State"])
+        self._routes_table = QTableWidget(0, 4)
+        self._routes_table.setHorizontalHeaderLabels(["Source", "Destination", "Transform", "State"])
         self._routes_table.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
         self._routes_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self._routes_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self._routes_table.itemSelectionChanged.connect(self._on_route_selection_changed)
 
         routes_box = QGroupBox("One-way MIDI routes")
         routes_box.setObjectName("routingCard")
@@ -380,14 +388,50 @@ class MidiRoutingView(QWidget):
         self._refresh_routes_table()
         self.routesChanged.emit()
 
+    def _on_route_selection_changed(self) -> None:
+        self._edit_transform_button.setEnabled(self._routes_table.currentRow() >= 0)
+
+    def _edit_selected_transform(self) -> None:
+        row = self._routes_table.currentRow()
+        if row < 0 or row >= len(self._router.routes):
+            return
+        route = self._router.routes[row]
+        dialog = MidiRouteTransformDialog(route.transform, self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+        self._router.remove_route(route)
+        self._router.add_route(replace(route, transform=dialog.result_transform()))
+        self._refresh_routes_table()
+        self._routes_table.setCurrentCell(row, 0)
+        self.routesChanged.emit()
+
+    @staticmethod
+    def _transform_summary(transform: MidiValueTransform | None) -> str:
+        if transform is None:
+            return "—"
+        parts = []
+        if transform.channel_override is not None:
+            parts.append(f"Ch {transform.channel_override}")
+        if transform.data1_offset:
+            parts.append(f"{transform.data1_offset:+d}")
+        if transform.invert_data2:
+            parts.append("invert")
+        return ", ".join(parts) or "—"
+
     def _refresh_routes_table(self) -> None:
         self._routes_table.setRowCount(0)
         for route in self._router.routes:
             row = self._routes_table.rowCount()
             self._routes_table.insertRow(row)
-            values = [route.source_port_id, route.destination_port_id, "Enabled" if route.enabled else "Disabled"]
+            values = [
+                route.source_port_id,
+                route.destination_port_id,
+                self._transform_summary(route.transform),
+                "Enabled" if route.enabled else "Disabled",
+            ]
             for column, value in enumerate(values):
                 self._routes_table.setItem(row, column, QTableWidgetItem(value))
+        self._edit_transform_button.setEnabled(self._routes_table.currentRow() >= 0)
 
     def _update_clock_policy(self, enabled: bool) -> None:
         if self._routing_session.running:

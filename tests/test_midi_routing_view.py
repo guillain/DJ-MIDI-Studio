@@ -1,9 +1,10 @@
 from unittest.mock import patch
 
-from PySide6.QtWidgets import QLabel
+from PySide6.QtWidgets import QDialog, QLabel
 
 from djmidi.ableton_link import ABLETON_LINK_CLOCK_SOURCE_NAME
 from djmidi.gui.midi_routing_view import MidiRoutingView
+from djmidi.midi_router import MidiValueTransform
 from djmidi.midi_routing_session import SERATO_CLOCK_INPUT_NAME
 
 
@@ -146,3 +147,62 @@ def test_routing_view_reports_link_clock_configuration_when_link_is_selected():
     assert ABLETON_LINK_CLOCK_SOURCE_NAME in view._clock_status.text()
     assert "source port not open" not in view._clock_status.text()
     assert "start playback" in view._clock_status.toolTip()
+
+
+def _view_with_one_route():
+    view = MidiRoutingView()
+    view._source_combo.addItem("in")
+    view._destination_combo.addItem("out")
+    view._source_combo.setCurrentText("in")
+    view._destination_combo.setCurrentText("out")
+    view._add_route()
+    return view
+
+
+def test_edit_transform_button_disabled_without_selection():
+    view = _view_with_one_route()
+    assert not view._edit_transform_button.isEnabled()
+    view._routes_table.setCurrentCell(0, 0)
+    assert view._edit_transform_button.isEnabled()
+
+
+class _FakeTransformDialog:
+    """Plain stand-in for MidiRouteTransformDialog — avoids MagicMock's
+    auto-generated attribute graph, which was observed to outlive the test
+    and crash native Qt cleanup when combined with many later widget
+    creations (e.g. the full test_main_window.py suite)."""
+
+    def __init__(self, exec_result, transform=None):
+        self._exec_result = exec_result
+        self._transform = transform
+
+    def __call__(self, _current_transform, _parent=None):
+        return self
+
+    def exec(self):
+        return self._exec_result
+
+    def result_transform(self):
+        return self._transform
+
+
+def test_edit_transform_updates_route_and_table():
+    view = _view_with_one_route()
+    view._routes_table.setCurrentCell(0, 0)
+    transform = MidiValueTransform(channel_override=3, invert_data2=True)
+    fake_dialog = _FakeTransformDialog(QDialog.DialogCode.Accepted, transform)
+    with patch("djmidi.gui.midi_routing_view.MidiRouteTransformDialog", fake_dialog):
+        view._edit_selected_transform()
+    assert view.router.routes[0].transform == transform
+    assert view._routes_table.item(0, 2).text() == "Ch 3, invert"
+    assert view._edit_transform_button.isEnabled()
+
+
+def test_edit_transform_cancelled_leaves_route_unchanged():
+    view = _view_with_one_route()
+    view._routes_table.setCurrentCell(0, 0)
+    fake_dialog = _FakeTransformDialog(QDialog.DialogCode.Rejected)
+    with patch("djmidi.gui.midi_routing_view.MidiRouteTransformDialog", fake_dialog):
+        view._edit_selected_transform()
+    assert view.router.routes[0].transform is None
+    assert view._routes_table.item(0, 2).text() == "—"

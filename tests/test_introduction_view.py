@@ -69,7 +69,9 @@ def test_dashboard_exposes_independent_midi_tool_buttons():
     buttons = {button.text(): button for button in view.findChildren(QPushButton)}
     buttons["Open Live Monitor"].click()
     buttons["Open MIDI Routing"].click()
-    assert requested == ["monitor", "routing"]
+    buttons["Open MIDI Clock"].click()
+    buttons["Open Metronome"].click()
+    assert requested == ["monitor", "routing", "clock", "metronome"]
 
 
 def test_controller_cards_use_compact_drilldown_labels():
