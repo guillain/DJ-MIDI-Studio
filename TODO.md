@@ -180,6 +180,16 @@ Implemented contract, runtime, test, and documentation work:
   and was inflating the whole shared grid row; `setMaximumHeight` on the
   Capture port list pins it). Commit `959c768`; milestone tag
   `v0.47.5-three-column-output-compact-row`.
+- [x] **Dashboard Metronome shortcut and optional per-route MIDI transforms** —
+  add "Open Metronome" to the Dashboard's MIDI tools alongside the View
+  menu entry, and let a MIDI Routing route carry an optional
+  `MidiValueTransform` (channel override, note/CC offset, invert value)
+  applied after filtering and before forwarding, edited via a new "Edit
+  transform…" dialog and summarized in the routes table. Deliberately
+  scoped down from general MIDI-translator tools (e.g. Bome MIDI
+  Translator): value remaps only, no scripting/conditionals/non-MIDI
+  triggers/message-type conversion. Commit `87decab`; milestone tag
+  `v0.47.6-metronome-shortcut-route-transforms`.
 
 ### Core mapping workflow
 
