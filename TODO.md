@@ -147,6 +147,13 @@ Implemented contract, runtime, test, and documentation work:
   height and the MIDI Tools dock Float menu state after closing a floating
   window. Commits `aade77d` and `1a35c6e`; milestone tag
   `v0.47.1-diagnostics-logging`.
+- [x] **Custom log path preference and Controller Setup UI fixes** — add a
+  persisted log file path preference (with Browse… dialog) that a CLI
+  `--log-file` flag still overrides, preserve the active log file when
+  Preferences are saved without a custom path, restore visible text labels
+  on Controller Setup's icon buttons, and remove hardcoded light-theme
+  colors that fought the dark theme. Commit `4b64acf`; milestone tag
+  `v0.47.2-log-path-and-setup-ui-fixes`.
 
 ### Core mapping workflow
 
