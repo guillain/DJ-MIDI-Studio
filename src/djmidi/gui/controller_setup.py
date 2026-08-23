@@ -27,6 +27,7 @@ from pathlib import Path
 from typing import cast
 
 from PySide6.QtCore import Qt, QTimer, Signal
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QFileDialog,
@@ -40,6 +41,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QPushButton,
     QSizePolicy,
+    QStyle,
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
@@ -128,20 +130,31 @@ class ControllerSetupView(QWidget):
 
         self._name_edit = QLineEdit()
         self._name_edit.setPlaceholderText("Controller name, e.g. Behringer CMD LC-1")
+        self._name_edit.setMinimumHeight(30)
         self._name_edit.textChanged.connect(self._on_name_changed)
+        name_label = QLabel("Controller name:")
+        name_label.setStyleSheet("QLabel { font-weight: bold; }")
         name_row = QHBoxLayout()
-        name_row.addWidget(QLabel("Controller name:"))
+        name_row.setSpacing(10)
+        name_row.addWidget(name_label)
         name_row.addWidget(self._name_edit, 1)
 
         session_box = QGroupBox("Session")
+        session_box.setStyleSheet("QGroupBox { font-weight: bold; padding-top: 12px; }")
         session_layout = QVBoxLayout(session_box)
-        new_button = QPushButton("New session")
+        session_layout.setSpacing(6)
+        session_layout.setContentsMargins(10, 15, 10, 10)
+        new_button = QPushButton(self._get_icon("new"), "New session")
+        new_button.setMinimumHeight(28)
         new_button.clicked.connect(self._on_new_session_clicked)
-        load_button = QPushButton("Load session…")
+        load_button = QPushButton(self._get_icon("open"), "Load session…")
+        load_button.setMinimumHeight(28)
         load_button.clicked.connect(self._on_load_session_clicked)
-        save_button = QPushButton("Save session…")
+        save_button = QPushButton(self._get_icon("save"), "Save session…")
+        save_button.setMinimumHeight(28)
         save_button.clicked.connect(self._on_save_session_clicked)
-        clear_button = QPushButton("Clear captured rows")
+        clear_button = QPushButton(self._get_icon("clear"), "Clear captured rows")
+        clear_button.setMinimumHeight(28)
         clear_button.clicked.connect(self._on_clear_rows_clicked)
         for button in (new_button, load_button, save_button, clear_button):
             session_layout.addWidget(button)
@@ -150,34 +163,46 @@ class ControllerSetupView(QWidget):
         self._port_list = QListWidget()
         self._port_list.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
         self._port_list.setMinimumHeight(150)
-        refresh_button = QPushButton("Refresh ports")
+        refresh_button = QPushButton(self._get_icon("refresh"), "Refresh ports")
+        refresh_button.setMinimumHeight(28)
         refresh_button.clicked.connect(self._refresh_ports)
-        self._learn_button = QPushButton("Start learning")
+        self._learn_button = QPushButton(self._get_icon("start"), "Start learning")
+        self._learn_button.setMinimumHeight(28)
         self._learn_button.clicked.connect(self._toggle_learning)
         self._learn_status = QLabel("Stopped")
+        self._learn_status.setStyleSheet("QLabel { padding: 4px; border-radius: 3px; }")
         capture_help = QLabel(_CAPTURE_HELP)
         capture_help.setWordWrap(True)
+        capture_help.setStyleSheet("QLabel { font-size: 11px; padding: 4px; }")
         capture_box = QGroupBox("Capture (learn from controller)")
+        capture_box.setStyleSheet("QGroupBox { font-weight: bold; padding-top: 12px; }")
         capture_layout = QVBoxLayout(capture_box)
+        capture_layout.setSpacing(6)
+        capture_layout.setContentsMargins(10, 15, 10, 10)
         capture_layout.addWidget(self._port_list)
         capture_layout.addWidget(refresh_button)
         capture_layout.addWidget(self._learn_button)
         capture_layout.addWidget(self._learn_status)
         capture_layout.addWidget(capture_help)
 
-        import_button = QPushButton("Import from Serato XML…")
+        import_button = QPushButton(self._get_icon("import"), "Import from Serato XML…")
+        import_button.setMinimumHeight(28)
         import_button.clicked.connect(self._on_import_xml_clicked)
         import_help = QLabel(_IMPORT_HELP)
         import_help.setWordWrap(True)
+        import_help.setStyleSheet("QLabel { font-size: 11px; padding: 4px; }")
         import_box = QGroupBox("Import")
+        import_box.setStyleSheet("QGroupBox { font-weight: bold; padding-top: 12px; }")
         import_layout = QVBoxLayout(import_box)
+        import_layout.setSpacing(6)
+        import_layout.setContentsMargins(10, 15, 10, 10)
         import_layout.addWidget(import_button)
         import_layout.addWidget(import_help)
         import_layout.addStretch(1)
 
         self._output_port_list = QListWidget()
         self._output_port_list.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
-        refresh_output_button = QPushButton("Refresh output ports")
+        refresh_output_button = QPushButton(self._get_icon("refresh"), "Refresh output ports")
         refresh_output_button.clicked.connect(self._refresh_output_ports)
 
         self._send_type_edit = QLineEdit("note_on")
@@ -193,54 +218,65 @@ class ControllerSetupView(QWidget):
             self._send_delay_ms_edit,
         ):
             field.setMinimumHeight(26)
-        send_once_button = QPushButton("Send once")
+        send_once_button = QPushButton(self._get_icon("start"), "Send once")
         send_once_button.clicked.connect(self._on_send_output_once_clicked)
-        send_double_button = QPushButton("Send double-click (NOTE)")
+        send_double_button = QPushButton(self._get_icon("start"), "Send double-click (NOTE)")
         send_double_button.clicked.connect(self._on_send_output_double_clicked)
-        send_selected_button = QPushButton("Play selected session row(s)")
+        send_selected_button = QPushButton(self._get_icon("start"), "Play selected session row(s)")
         send_selected_button.clicked.connect(self._on_send_selected_rows_clicked)
-        send_all_button = QPushButton("Play all session rows")
+        send_all_button = QPushButton(self._get_icon("start"), "Play all session rows")
         send_all_button.clicked.connect(self._on_send_all_rows_clicked)
-        replay_button = QPushButton("Replay recorded session")
+        replay_button = QPushButton(self._get_icon("refresh"), "Replay recorded session")
         replay_button.clicked.connect(self._on_replay_recorded_session_clicked)
 
         self._send_status = QLabel("No MIDI output sent yet.")
 
         output_box = QGroupBox("MIDI Output")
+        output_box.setStyleSheet("QGroupBox { font-weight: bold; padding-top: 12px; }")
         output_box.setMinimumHeight(300)
         output_layout = QHBoxLayout(output_box)
-        output_layout.setContentsMargins(6, 6, 6, 6)
-        output_layout.setSpacing(10)
+        output_layout.setContentsMargins(10, 15, 10, 10)
+        output_layout.setSpacing(15)
 
         output_ports = QVBoxLayout()
-        output_ports.addWidget(QLabel("Available output ports"))
+        output_ports_label = QLabel("Available output ports")
+        output_ports_label.setStyleSheet("QLabel { font-weight: bold; }")
+        output_ports.addWidget(output_ports_label)
         self._output_port_list.setMinimumWidth(220)
         self._output_port_list.setMinimumHeight(150)
         output_ports.addWidget(self._output_port_list, 1)
+        refresh_output_button.setMinimumHeight(28)
         output_ports.addWidget(refresh_output_button)
         output_layout.addLayout(output_ports, 1)
 
         output_controls = QVBoxLayout()
-        output_controls.addWidget(QLabel("Message and playback controls"))
+        output_controls_label = QLabel("Message and playback controls")
+        output_controls_label.setStyleSheet("QLabel { font-weight: bold; }")
+        output_controls.addWidget(output_controls_label)
 
         send_form = QFormLayout()
         send_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow)
         send_form.setLabelAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-        send_form.setHorizontalSpacing(6)
-        send_form.setVerticalSpacing(5)
+        send_form.setHorizontalSpacing(10)
+        send_form.setVerticalSpacing(8)
         send_form.addRow("Type", self._send_type_edit)
         send_form.addRow("Channel", self._send_channel_edit)
         send_form.addRow("Data1", self._send_data1_edit)
         send_form.addRow("Value", self._send_data2_edit)
         send_form.addRow("Delay (ms)", self._send_delay_ms_edit)
         output_controls.addLayout(send_form)
+        
+        output_controls.addSpacing(10)
 
-        action_grid = QGridLayout()
-        action_grid.setHorizontalSpacing(6)
-        action_grid.setVerticalSpacing(5)
-        for index, button in enumerate((send_once_button, send_double_button, send_selected_button, send_all_button, replay_button)):
-            action_grid.addWidget(button, 0, index)
+        action_grid = QVBoxLayout()
+        action_grid.setSpacing(6)
+        for button in (send_once_button, send_double_button, send_selected_button, send_all_button, replay_button):
+            button.setMinimumHeight(28)
+            action_grid.addWidget(button)
         output_controls.addLayout(action_grid)
+        
+        output_controls.addSpacing(6)
+        self._send_status.setStyleSheet("QLabel { padding: 6px; border-radius: 3px; }")
         output_controls.addWidget(self._send_status)
 
         pad_grid = QGridLayout()
@@ -254,16 +290,23 @@ class ControllerSetupView(QWidget):
         output_controls.addStretch(1)
         output_layout.addLayout(output_controls, 2)
 
-        check_button = QPushButton("Check for conflicts")
+        check_button = QPushButton(self._get_icon("refresh"), "Check for conflicts")
+        check_button.setMinimumHeight(28)
         check_button.clicked.connect(self._on_check_conflicts_clicked)
-        self._apply_button = QPushButton("Apply now (this session)")
+        self._apply_button = QPushButton(self._get_icon("apply"), "Apply now (this session)")
+        self._apply_button.setMinimumHeight(28)
         self._apply_button.clicked.connect(self._on_apply_clicked)
         apply_help = QLabel(_APPLY_HELP)
         apply_help.setWordWrap(True)
-        export_button = QPushButton("Generate catalog module…")
+        apply_help.setStyleSheet("QLabel { font-size: 11px; padding: 4px; }")
+        export_button = QPushButton(self._get_icon("export"), "Generate catalog module…")
+        export_button.setMinimumHeight(28)
         export_button.clicked.connect(self._on_export_clicked)
         export_box = QGroupBox("Apply / Export")
+        export_box.setStyleSheet("QGroupBox { font-weight: bold; padding-top: 12px; }")
         export_layout = QVBoxLayout(export_box)
+        export_layout.setSpacing(6)
+        export_layout.setContentsMargins(10, 15, 10, 10)
         export_layout.addWidget(check_button)
         export_layout.addWidget(self._apply_button)
         export_layout.addWidget(apply_help)
@@ -271,8 +314,8 @@ class ControllerSetupView(QWidget):
         export_layout.addStretch(1)
 
         top_row = QGridLayout()
-        top_row.setHorizontalSpacing(8)
-        top_row.setVerticalSpacing(8)
+        top_row.setHorizontalSpacing(12)
+        top_row.setVerticalSpacing(12)
         top_row.addWidget(session_box, 0, 0)
         top_row.addWidget(capture_box, 0, 1)
         top_row.addWidget(import_box, 0, 2)
@@ -287,18 +330,24 @@ class ControllerSetupView(QWidget):
         self._table.setMinimumHeight(260)
         self._table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self._table.horizontalHeader().setStretchLastSection(True)
+        self._table.setAlternatingRowColors(True)
         self._table.cellChanged.connect(self._on_cell_changed)
 
-        delete_button = QPushButton("Delete selected row(s)")
+        delete_button = QPushButton(self._get_icon("delete"), "Delete selected row(s)")
+        delete_button.setMinimumHeight(28)
         delete_button.clicked.connect(self._on_delete_selected_clicked)
-        add_button = QPushButton("Add row")
+        add_button = QPushButton(self._get_icon("add"), "Add row")
+        add_button.setMinimumHeight(28)
         add_button.clicked.connect(self._on_add_row_clicked)
         row_buttons = QHBoxLayout()
+        row_buttons.setSpacing(8)
         row_buttons.addWidget(delete_button)
         row_buttons.addWidget(add_button)
         row_buttons.addStretch(1)
 
         layout = QVBoxLayout(self)
+        layout.setSpacing(12)
+        layout.setContentsMargins(10, 10, 10, 10)
         layout.addLayout(name_row)
         layout.addLayout(top_row, 0)
         layout.addWidget(output_box, 0)
@@ -311,6 +360,25 @@ class ControllerSetupView(QWidget):
 
         self._refresh_ports()
         self._refresh_output_ports()
+
+    def _get_icon(self, icon_type: str) -> QIcon:
+        """Get a standard Qt icon by type name."""
+        style = self.style()
+        icon_map = {
+            "new": QStyle.StandardPixmap.SP_FileDialogNewFolder,
+            "open": QStyle.StandardPixmap.SP_DialogOpenButton,
+            "save": QStyle.StandardPixmap.SP_DialogSaveButton,
+            "delete": QStyle.StandardPixmap.SP_TrashIcon,
+            "add": QStyle.StandardPixmap.SP_FileIcon,
+            "refresh": QStyle.StandardPixmap.SP_BrowserReload,
+            "start": QStyle.StandardPixmap.SP_MediaPlay,
+            "stop": QStyle.StandardPixmap.SP_MediaStop,
+            "clear": QStyle.StandardPixmap.SP_DialogResetButton,
+            "apply": QStyle.StandardPixmap.SP_DialogApplyButton,
+            "export": QStyle.StandardPixmap.SP_DialogSaveButton,
+            "import": QStyle.StandardPixmap.SP_ArrowDown,
+        }
+        return style.standardIcon(icon_map.get(icon_type, QStyle.StandardPixmap.SP_FileIcon))
 
     # -- controller name -------------------------------------------------
 

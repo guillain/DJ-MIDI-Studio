@@ -28,6 +28,7 @@ class PluginPreferences:
     routing_enabled: bool = False
     trust_external_plugins: bool = False
     log_level: str = "INFO"
+    log_path: str = ""
 
     def is_enabled(self, plugin_id: str) -> bool:
         return self.enabled.get(plugin_id, True)
@@ -51,6 +52,7 @@ class PluginPreferences:
                 "routing_enabled": self.routing_enabled,
                 "trust_external_plugins": self.trust_external_plugins,
                 "log_level": self.log_level,
+                "log_path": self.log_path,
             },
             indent=2,
             sort_keys=True,
@@ -85,6 +87,7 @@ class PluginPreferences:
             routing_enabled=bool(raw.get("routing_enabled", False)),
             trust_external_plugins=bool(raw.get("trust_external_plugins", False)),
             log_level=log_level.upper(),
+            log_path=str(raw.get("log_path", "")),
         )
 
     @classmethod
@@ -101,12 +104,13 @@ class PluginPreferences:
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(self.to_json(), encoding="utf-8")
         _LOGGER.info(
-            "Saved preferences to %s (detection_policy=%s, routing_enabled=%s, trust_external_plugins=%s, log_level=%s)",
+            "Saved preferences to %s (detection_policy=%s, routing_enabled=%s, trust_external_plugins=%s, log_level=%s, log_path=%s)",
             target,
             self.detection_policy,
             self.routing_enabled,
             self.trust_external_plugins,
             self.log_level,
+            self.log_path or "(default)",
         )
 
 

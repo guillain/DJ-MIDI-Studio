@@ -5,12 +5,17 @@ from PySide6.QtWidgets import (
     QComboBox,
     QDialog,
     QDialogButtonBox,
+    QFileDialog,
     QFormLayout,
     QGroupBox,
+    QHBoxLayout,
+    QLineEdit,
+    QPushButton,
     QVBoxLayout,
 )
 
 from djmidi import catalog, software
+from djmidi.logging_config import default_log_path
 from djmidi.plugins import PluginPreferences
 
 
@@ -39,11 +44,22 @@ class PreferencesDialog(QDialog):
         log_level.addItems(["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"])
         log_level.setCurrentText(preferences.log_level)
         self._log_level = log_level
+        
+        log_path = QLineEdit()
+        log_path.setText(preferences.log_path)
+        log_path.setPlaceholderText(str(default_log_path()))
+        self._log_path = log_path
+        browse_button = QPushButton("Browse...")
+        browse_button.clicked.connect(self._browse_log_path)
+        log_path_row = QHBoxLayout()
+        log_path_row.addWidget(log_path, 1)
+        log_path_row.addWidget(browse_button)
 
         policy_box = QGroupBox("Integration policy")
         policy_layout = QFormLayout(policy_box)
         policy_layout.addRow("Detection:", detection)
         policy_layout.addRow("Log level:", log_level)
+        policy_layout.addRow("Log file path:", log_path_row)
         policy_layout.addRow(routing)
         policy_layout.addRow(trust)
 
@@ -78,11 +94,22 @@ class PreferencesDialog(QDialog):
         )
         return entries
 
+    def _browse_log_path(self) -> None:
+        path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Select log file location",
+            self._log_path.text() or str(default_log_path()),
+            "Log files (*.log);;All files (*)",
+        )
+        if path:
+            self._log_path.setText(path)
+
     def _save(self) -> None:
         self._preferences.detection_policy = self._detection.currentData()
         self._preferences.routing_enabled = self._routing.isChecked()
         self._preferences.trust_external_plugins = self._trust.isChecked()
         self._preferences.log_level = self._log_level.currentText()
+        self._preferences.log_path = self._log_path.text().strip()
         for plugin_id, checkbox in self._plugin_checks.items():
             self._preferences.set_enabled(plugin_id, checkbox.isChecked())
         self.accept()

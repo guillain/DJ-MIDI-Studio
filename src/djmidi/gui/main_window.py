@@ -585,7 +585,8 @@ class MainWindow(QMainWindow):
             self._apply_plugin_preferences()
             self._on_controller_applied(self.introduction_view._controller_combo.currentText())
             self.midi_routing_view.set_routing_enabled(self.preferences.routing_enabled)
-            configure_logging(self.preferences.log_level, current_log_path())
+            log_path = self.preferences.log_path or current_log_path()
+            configure_logging(self.preferences.log_level, log_path)
             self.statusBar().showMessage("Preferences saved")
 
     def _apply_plugin_preferences(self) -> None:

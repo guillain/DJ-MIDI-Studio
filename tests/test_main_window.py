@@ -3,7 +3,7 @@ from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
 from PySide6.QtCore import QEvent
-from PySide6.QtWidgets import QApplication, QMenu
+from PySide6.QtWidgets import QApplication, QDialog, QMenu
 
 from djmidi.gui.main_window import MainWindow
 from djmidi.parser import parse_file
@@ -388,4 +388,30 @@ def test_on_group_edit_applied_does_not_crash():
     window = _loaded_window()
     window._on_group_edit_applied()
     QApplication.processEvents()
+    window.close()
+
+
+def test_on_preferences_without_custom_log_path_preserves_active_log_file():
+    window = MainWindow()
+    window.preferences.log_path = ""
+    with patch("djmidi.gui.main_window.PreferencesDialog") as mock_dialog_cls, \
+         patch("djmidi.gui.main_window.current_log_path", return_value=Path("/active/current.log")), \
+         patch("djmidi.gui.main_window.configure_logging") as mock_configure, \
+         patch.object(window.preferences, "save"):
+        mock_dialog_cls.return_value.exec.return_value = QDialog.DialogCode.Accepted
+        window._on_preferences()
+    mock_configure.assert_called_once_with(window.preferences.log_level, Path("/active/current.log"))
+    window.close()
+
+
+def test_on_preferences_with_custom_log_path_uses_it_over_active_log_file():
+    window = MainWindow()
+    window.preferences.log_path = "/custom/preference.log"
+    with patch("djmidi.gui.main_window.PreferencesDialog") as mock_dialog_cls, \
+         patch("djmidi.gui.main_window.current_log_path", return_value=Path("/active/current.log")), \
+         patch("djmidi.gui.main_window.configure_logging") as mock_configure, \
+         patch.object(window.preferences, "save"):
+        mock_dialog_cls.return_value.exec.return_value = QDialog.DialogCode.Accepted
+        window._on_preferences()
+    mock_configure.assert_called_once_with(window.preferences.log_level, "/custom/preference.log")
     window.close()
