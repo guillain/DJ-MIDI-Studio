@@ -96,7 +96,10 @@ five-column layout.
 `Live Monitor`, `MIDI Routing`, `MIDI Clock`, and `Metronome` are independent MIDI tool docks, not mapping
 tabs. Open them from the `View` menu or the Dashboard; use the dock title bar's `Undock`/`Dock` button
 to float them, dock them again, or the close button to close them. The main window geometry and dock arrangement are restored on the
-next launch.
+next launch, along with each tool's own configuration: `MIDI Routing`'s routes and port
+selections, `MIDI Clock`'s Clock mirror routes (including Ableton Link followers), the
+`Enable Clock mirror policy` and `Create virtual input for Serato Clock` checkboxes, and
+`Metronome`'s output port, value, and loop frequency.
 
 For screenshots and a visual description of each tab, see [Screens and Layouts](screens-and-layouts.md).
 
