@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import json
 import logging
 import time
-from dataclasses import replace
+from dataclasses import asdict, replace
 
-from PySide6.QtCore import QTimer, Signal
+from PySide6.QtCore import QSettings, QTimer, Signal
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -35,6 +36,62 @@ from djmidi.midi_router import MidiRoute, MidiRouter, MidiValueTransform
 from djmidi.midi_routing_session import SERATO_CLOCK_INPUT_NAME, MidiRoutingSession
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def _load_json_list(raw: object) -> list:
+    """Best-effort JSON decode of a saved settings value into a list.
+
+    QSettings can hand back `""`/`None` for a never-written key, or (on some
+    platforms/backends) an already-decoded value; treat anything that isn't
+    a valid JSON list as "nothing saved" rather than raising.
+    """
+    if not raw:
+        return []
+    if isinstance(raw, list):
+        return raw
+    try:
+        decoded = json.loads(raw)
+    except (TypeError, ValueError):
+        return []
+    return decoded if isinstance(decoded, list) else []
+
+
+def _transform_to_dict(transform: MidiValueTransform | None) -> dict | None:
+    return asdict(transform) if transform is not None else None
+
+
+def _transform_from_dict(data: object) -> MidiValueTransform | None:
+    if not isinstance(data, dict):
+        return None
+    return MidiValueTransform(
+        channel_override=data.get("channel_override"),
+        data1_offset=int(data.get("data1_offset", 0) or 0),
+        invert_data2=bool(data.get("invert_data2", False)),
+    )
+
+
+def _route_to_dict(route: MidiRoute) -> dict:
+    return {
+        "source": route.source_port_id,
+        "destination": route.destination_port_id,
+        "channels": sorted(route.channels),
+        "status_nibbles": sorted(route.status_nibbles),
+        "allow_sysex": route.allow_sysex,
+        "enabled": route.enabled,
+        "transform": _transform_to_dict(route.transform),
+    }
+
+
+def _route_from_dict(data: dict) -> MidiRoute:
+    return MidiRoute(
+        source_port_id=data["source"],
+        destination_port_id=data["destination"],
+        channels=frozenset(data.get("channels") or ()),
+        status_nibbles=frozenset(data.get("status_nibbles") or ()),
+        allow_sysex=bool(data.get("allow_sysex", False)),
+        enabled=bool(data.get("enabled", True)),
+        transform=_transform_from_dict(data.get("transform")),
+    )
 
 
 class MidiRoutingView(QWidget):
@@ -348,6 +405,98 @@ class MidiRoutingView(QWidget):
     @property
     def clock_mirror(self) -> MidiClockMirror | None:
         return self._clock
+
+    def save_state(self, settings: QSettings) -> None:
+        """Persist routes, Clock configuration, and port selections.
+
+        Nothing here was previously saved: routes/Clock mirrors/Link
+        followers only ever lived in memory, so every restart reset the
+        MIDI Routing and MIDI Clock docks to empty.
+        """
+        settings.beginGroup("midiRouting")
+        try:
+            settings.setValue("sourcePort", self._source_combo.currentText())
+            settings.setValue("destinationPort", self._destination_combo.currentText())
+            settings.setValue("routes", json.dumps([_route_to_dict(route) for route in self._router.routes]))
+            settings.setValue("clockSourcePort", self._clock_source.currentText())
+            settings.setValue("clockDestinationPort", self._clock_destination.currentText())
+            settings.setValue("clockEnabled", self._clock_enabled.isChecked())
+            settings.setValue("serotoVirtualInput", self._serato_virtual_checkbox.isChecked())
+            settings.setValue(
+                "clocks",
+                json.dumps(
+                    [
+                        {"source": clock.source_port_id, "destinations": list(clock.destination_port_ids)}
+                        for clock in self._clocks
+                    ]
+                ),
+            )
+            settings.setValue(
+                "linkFollowers",
+                json.dumps([list(follower.destination_port_ids) for follower in self._link_followers]),
+            )
+        finally:
+            settings.endGroup()
+
+    def restore_state(self, settings: QSettings) -> None:
+        """Reload routes/Clock configuration saved by `save_state`.
+
+        Called once at startup, after `refresh_ports()` has already
+        populated the combos so a saved selection can actually be found.
+        Every saved entry is applied best-effort: a port that no longer
+        exists or a Link backend that is no longer available is skipped
+        with a warning rather than aborting the whole restore.
+        """
+        settings.beginGroup("midiRouting")
+        try:
+            source_port = settings.value("sourcePort", "")
+            if source_port:
+                self._source_combo.setCurrentText(source_port)
+            destination_port = settings.value("destinationPort", "")
+            if destination_port:
+                self._destination_combo.setCurrentText(destination_port)
+
+            for entry in _load_json_list(settings.value("routes", "")):
+                try:
+                    self._router.add_route(_route_from_dict(entry))
+                except (KeyError, TypeError, ValueError) as exc:
+                    _LOGGER.warning("Skipped a saved MIDI route on restore: %s", exc)
+            self._refresh_routes_table()
+
+            self._serato_virtual_checkbox.setChecked(
+                bool(settings.value("serotoVirtualInput", False, type=bool))
+            )
+
+            clock_source = settings.value("clockSourcePort", "")
+            if clock_source:
+                self._clock_source.setCurrentText(clock_source)
+            clock_destination = settings.value("clockDestinationPort", "")
+            if clock_destination:
+                self._clock_destination.setCurrentText(clock_destination)
+
+            for entry in _load_json_list(settings.value("clocks", "")):
+                try:
+                    self._clocks.append(MidiClockMirror(entry["source"], list(entry["destinations"])))
+                except (KeyError, TypeError, ValueError) as exc:
+                    _LOGGER.warning("Skipped a saved Clock route on restore: %s", exc)
+            if self._clocks:
+                self._clock = self._clocks[0]
+
+            for destinations in _load_json_list(settings.value("linkFollowers", "")):
+                try:
+                    self._link_followers.append(LinkClockFollower(list(destinations), AalinkStateProvider()))
+                except LinkBackendUnavailable as exc:
+                    _LOGGER.info("Skipped a saved Ableton Link Clock route on restore: %s", exc)
+
+            self._refresh_clock_table()
+            self._update_clock_session()
+
+            self._clock_enabled.blockSignals(True)
+            self._clock_enabled.setChecked(bool(settings.value("clockEnabled", False, type=bool)))
+            self._clock_enabled.blockSignals(False)
+            self._refresh_clock_status()
+        finally:
+            settings.endGroup()
 
     def refresh_ports(self) -> None:
         input_names = sorted(set(list_input_ports()))
