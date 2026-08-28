@@ -34,9 +34,12 @@ return it. Closing a floating tool does not affect any controller mapping tab
 or layout splitter.
 
 The main window and dock arrangement are saved when the application closes and
-restored on the next launch. Controller selectors remain horizontally
-scrollable, so their content no longer imposes a large minimum width on the
-main window or on a floating MIDI tool.
+restored on the next launch, together with `MIDI Routing`/`MIDI Clock`'s routes,
+Clock mirror configuration (including Ableton Link followers), and port
+selections, and `Metronome`'s output port, value, and loop frequency — none of
+that view-level configuration is lost on restart. Controller selectors remain
+horizontally scrollable, so their content no longer imposes a large minimum
+width on the main window or on a floating MIDI tool.
 
 ### Window Compositions
 

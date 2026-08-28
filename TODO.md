@@ -190,6 +190,17 @@ Implemented contract, runtime, test, and documentation work:
   Translator): value remaps only, no scripting/conditionals/non-MIDI
   triggers/message-type conversion. Commit `87decab`; milestone tag
   `v0.47.6-metronome-shortcut-route-transforms`.
+- [x] **Taller Dock/Undock buttons and persisted MIDI Routing/Clock/Metronome
+  view state** — grow each tool dock's title-bar `Dock`/`Undock` and close
+  buttons from 22px to 28px so the label isn't cramped, and add
+  `save_state()`/`restore_state()` on `MidiRoutingView` and `MetronomeView`,
+  wired into `MainWindow`'s existing window geometry/state persistence.
+  Previously only the window/dock arrangement was saved: routes, Clock mirror
+  configuration (source/destination ports, Ableton Link followers, `Enable
+  Clock mirror policy`, `Create virtual input for Serato Clock`), and
+  Metronome's output port/value/Hz lived in memory only and reset on every
+  restart. Commit `70dad89`; milestone tag
+  `v0.47.7-dock-buttons-and-view-state-persistence`.
 
 ### Core mapping workflow
 
@@ -240,6 +251,7 @@ Implemented contract, runtime, test, and documentation work:
 - [x] Rework Controller Setup into a readable responsive layout with a full-width MIDI Output panel.
 - [x] Keep MIDI Output port selection, message fields, playback actions, and PAD MODE 1–8 controls visible without sacrificing functionality.
 - [x] Allow the main and MIDI tool windows to shrink below controller-selector content width and preserve the user's window/dock arrangement between launches.
+- [x] Persist MIDI Routing/Clock routes and configuration and Metronome's transport fields between launches, not just the window/dock arrangement.
 
 ### Testing, documentation, and delivery
 

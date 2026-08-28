@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from PySide6.QtCore import QTimer
+from PySide6.QtCore import QSettings, Qt, QTimer
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QGroupBox,
@@ -196,6 +196,40 @@ class MetronomeView(QWidget):
     def shutdown(self) -> None:
         if self._loop_timer.isActive():
             self._loop_timer.stop()
+
+    def save_state(self, settings: QSettings) -> None:
+        """Persist the output port and transport fields; nothing here was
+        previously saved, so every restart reset them to their defaults."""
+        settings.beginGroup("metronome")
+        try:
+            item = self._output_port_list.currentItem()
+            settings.setValue("outputPort", item.text() if item is not None else "")
+            settings.setValue("value", self._value_edit.text())
+            settings.setValue("hz", self._hz_edit.text())
+        finally:
+            settings.endGroup()
+
+    def restore_state(self, settings: QSettings) -> None:
+        """Reload the output port and transport fields saved by `save_state`.
+
+        Called after `_refresh_output_ports()` has already populated the
+        port list so a saved selection can actually be found.
+        """
+        settings.beginGroup("metronome")
+        try:
+            output_port = settings.value("outputPort", "")
+            if output_port:
+                matches = self._output_port_list.findItems(output_port, Qt.MatchFlag.MatchExactly)
+                if matches:
+                    self._output_port_list.setCurrentItem(matches[0])
+            value = settings.value("value", "")
+            if value:
+                self._value_edit.setText(value)
+            hz = settings.value("hz", "")
+            if hz:
+                self._hz_edit.setText(hz)
+        finally:
+            settings.endGroup()
 
 
 __all__ = ["MetronomeView"]

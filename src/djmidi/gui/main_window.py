@@ -317,6 +317,8 @@ class MainWindow(QMainWindow):
             self.restoreGeometry(geometry)
         if state:
             self.restoreState(state, 1)
+        self.midi_routing_view.restore_state(settings)
+        self.metronome_view.restore_state(settings)
 
     def changeEvent(self, event: QEvent) -> None:
         """Refresh the backing store after native macOS window transitions."""
@@ -538,7 +540,7 @@ class MainWindow(QMainWindow):
         """
         bar = QWidget()
         bar_layout = QHBoxLayout(bar)
-        bar_layout.setContentsMargins(8, 3, 3, 3)
+        bar_layout.setContentsMargins(8, 4, 4, 4)
         bar_layout.setSpacing(6)
         label = QLabel(title)
         label.setStyleSheet("QLabel { font-weight: bold; }")
@@ -546,14 +548,15 @@ class MainWindow(QMainWindow):
         bar_layout.addStretch(1)
 
         dock_button = QPushButton()
-        dock_button.setFixedHeight(22)
+        dock_button.setFixedHeight(28)
+        dock_button.setMinimumWidth(64)
         dock_button.clicked.connect(lambda: self._set_tool_dock_floating(key, not dock.isFloating()))
         dock.topLevelChanged.connect(lambda floating, button=dock_button: self._update_dock_button(button, floating))
         self._update_dock_button(dock_button, dock.isFloating())
         bar_layout.addWidget(dock_button)
 
         close_button = QPushButton()
-        close_button.setFixedSize(22, 22)
+        close_button.setFixedSize(28, 28)
         close_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_TitleBarCloseButton))
         close_button.setToolTip("Close")
         close_button.clicked.connect(dock.close)
@@ -1022,6 +1025,8 @@ class MainWindow(QMainWindow):
         if settings is not None:
             settings.setValue("window/geometry", self.saveGeometry())
             settings.setValue("window/state", self.saveState(1))
+            self.midi_routing_view.save_state(settings)
+            self.metronome_view.save_state(settings)
             settings.sync()
         self.live_monitor_view.shutdown()
         self.midi_routing_view.shutdown()
