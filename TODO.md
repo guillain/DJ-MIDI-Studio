@@ -211,6 +211,16 @@ Implemented contract, runtime, test, and documentation work:
   so a colliding bulk edit is flagged immediately. Resolves
   [#15](https://github.com/guillain/DJ-MIDI-Studio/issues/15); milestone tag
   `v0.47.8-bulk-section-name`.
+- [x] **Adaptive default window size** — replace the fixed first-run
+  `resize(1100, 700)` with `_default_window_size()`, derived from
+  `screen().availableGeometry()` (preferred `1280x820`, scaled down to fit
+  smaller displays, never below `1100x720`), and center the window on first
+  launch when there is no saved geometry to restore. The tiny absolute
+  minimum size from `v0.47.7` is kept so the window can still be dragged
+  narrower than the controller-selector content. Partially addresses
+  [#19](https://github.com/guillain/DJ-MIDI-Studio/issues/19) (the "default
+  size" half); a per-panel scroll-wrap pass waits on the reporter's
+  screenshot. Milestone tag `v0.47.9-adaptive-window-size`.
 
 ### Core mapping workflow
 
@@ -379,11 +389,12 @@ against the current tree and confirmed still open. Tracked as GitHub issues.
   `plugins/preferences.py` store; tabs read only enabled controllers, with a
   "show all" escape hatch.
 - [ ] **Elements cut off at the default window size on macOS**
-  ([#19](https://github.com/guillain/DJ-MIDI-Studio/issues/19)). Default
-  `1100x700` (`main_window.py:143`). Responsive work (`v0.46.3`,
-  `v0.47.3`–`v0.47.7`) improved it but the reporter confirms it still
-  reproduces. Needs the affected view + macOS version + screenshot, then a
-  larger/adaptive default or scroll-wrapped panels.
+  ([#19](https://github.com/guillain/DJ-MIDI-Studio/issues/19)). Partially
+  addressed in `v0.47.9-adaptive-window-size`: the first-run size is now
+  derived from `screen().availableGeometry()` (preferred `1280x820`, scaled
+  down for smaller screens, centered) instead of a fixed `1100x700`. Still
+  open pending the reporter's affected view + macOS version + screenshot to
+  decide whether any specific panel also needs scroll-wrapping.
 
 ### Next phases to define
 

@@ -10,6 +10,7 @@ from PySide6.QtCore import (
     QItemSelectionModel,
     QModelIndex,
     QSettings,
+    QSize,
     QSortFilterProxyModel,
     Qt,
     QTimer,
@@ -19,6 +20,7 @@ from PySide6.QtGui import (
     QAction,
     QColor,
     QDesktopServices,
+    QGuiApplication,
     QKeySequence,
     QStandardItemModel,
     QUndoStack,
@@ -140,7 +142,11 @@ class MainWindow(QMainWindow):
         if application is not None:
             apply_theme(application)
         self.setWindowTitle("DJ MIDI Studio")
-        self.resize(1100, 700)
+        self.resize(self._default_window_size())
+        # The absolute minimum stays intentionally tiny (v0.47.7: the window
+        # must be draggable smaller than the controller-selector content
+        # width); the *default* is what issue #19 was about — 1100x700 clipped
+        # panels in both dimensions on macOS.
         self.setMinimumSize(320, 240)
         self.setStatusBar(QStatusBar())
         self.setAutoFillBackground(True)
@@ -307,14 +313,52 @@ class MainWindow(QMainWindow):
             return None
         return QSettings("DJ MIDI Studio", "DJ MIDI Studio")
 
+    # Preferred first-run size; scaled down to fit smaller screens.
+    _PREFERRED_WINDOW_SIZE = QSize(1280, 820)
+    _MIN_DEFAULT_WINDOW_SIZE = QSize(1100, 720)
+
+    def _default_window_size(self) -> QSize:
+        """First-run window size, derived from the available screen area.
+
+        The old hardcoded ``1100x700`` clipped panels in both dimensions on
+        macOS (issue #19). Use a larger preferred size, but never exceed the
+        usable screen so the title bar and edges stay reachable; on a genuinely
+        small display fall back to the minimum sensible default.
+        """
+        screen = self.screen() or QGuiApplication.primaryScreen()
+        if screen is None:
+            return QSize(self._PREFERRED_WINDOW_SIZE)
+        available = screen.availableGeometry()
+        width = min(self._PREFERRED_WINDOW_SIZE.width(), int(available.width() * 0.92))
+        height = min(self._PREFERRED_WINDOW_SIZE.height(), int(available.height() * 0.90))
+        return QSize(
+            max(self._MIN_DEFAULT_WINDOW_SIZE.width(), width),
+            max(self._MIN_DEFAULT_WINDOW_SIZE.height(), height),
+        )
+
+    def _center_on_screen(self) -> None:
+        screen = self.screen() or QGuiApplication.primaryScreen()
+        if screen is None:
+            return
+        available = screen.availableGeometry()
+        frame = self.frameGeometry()
+        frame.moveCenter(available.center())
+        # Never let the top of the frame slide under the menu bar / off screen.
+        frame.moveTop(max(available.top(), frame.top()))
+        frame.moveLeft(max(available.left(), frame.left()))
+        self.move(frame.topLeft())
+
     def _restore_user_layout(self) -> None:
         settings = self._layout_settings()
         if settings is None:
+            self._center_on_screen()
             return
         geometry = settings.value("window/geometry")
         state = settings.value("window/state")
         if geometry:
             self.restoreGeometry(geometry)
+        else:
+            self._center_on_screen()
         if state:
             self.restoreState(state, 1)
         self.midi_routing_view.restore_state(settings)
