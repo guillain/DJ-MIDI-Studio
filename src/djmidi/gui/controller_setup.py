@@ -26,10 +26,12 @@ import re
 from pathlib import Path
 from typing import cast
 
-from PySide6.QtCore import QItemSelectionModel, Qt, QTimer, Signal
-from PySide6.QtGui import QIcon
+from PySide6.QtCore import QItemSelectionModel, Qt, QTimer, QUrl, Signal
+from PySide6.QtGui import QDesktopServices, QIcon
 from PySide6.QtWidgets import (
     QAbstractItemView,
+    QApplication,
+    QDialog,
     QFileDialog,
     QFormLayout,
     QFrame,
@@ -62,6 +64,13 @@ from djmidi.catalog.codegen import (
     find_trigger_conflicts,
     generate_module_source,
 )
+from djmidi.catalog.community import (
+    build_submission_payload,
+    payload_json,
+    submission_issue_url,
+    summarise_source,
+)
+from djmidi.gui.controller_submission_dialog import ControllerSubmissionDialog
 from djmidi.gui.port_list_utils import (
     refresh_checked_port_list,
     refresh_selectable_port_list,
@@ -95,9 +104,11 @@ _IMPORT_HELP = (
     "physical control names, so Section/Name must still be filled in by hand for each imported row."
 )
 _APPLY_HELP = (
-    "Registers this draft in the running app so it shows up now in the Layout, By Controller, and "
-    "Controller Images tabs. In-memory only — it's lost on restart. \"Generate catalog module…\" "
-    "below is what makes it permanent."
+    "Apply now registers this draft in the running app so it shows up in the Layout, By "
+    "Controller, and Controller Images tabs — in-memory only, lost on restart. \"Generate "
+    "catalog module…\" writes the permanent catalog/<slug>.py. \"Submit to community catalog…\" "
+    "opens a pre-filled GitHub issue with the profile JSON so it can be reviewed and shipped as "
+    "a built-in (reference images are not included)."
 )
 
 _DDJ_XP2_PAD_MODE_NOTES = {1: 27, 2: 30, 3: 32, 4: 34}
@@ -329,9 +340,13 @@ class ControllerSetupView(QWidget):
         export_button = QPushButton(self._get_icon("export"), "")
         export_button.setToolTip("Generate catalog module…")
         export_button.clicked.connect(self._on_export_clicked)
+        submit_button = QPushButton(self._get_icon("submit"), "")
+        submit_button.setToolTip("Submit to community catalog…")
+        submit_button.clicked.connect(self._on_submit_clicked)
         apply_help_button = self._help_button("Apply / Export", _APPLY_HELP)
         export_box, export_layout = self._titled_panel(
-            "Apply / Export", [check_button, self._apply_button, export_button, apply_help_button]
+            "Apply / Export",
+            [check_button, self._apply_button, export_button, submit_button, apply_help_button],
         )
         export_layout.addStretch(1)
 
@@ -414,6 +429,7 @@ class ControllerSetupView(QWidget):
             "import": QStyle.StandardPixmap.SP_ArrowDown,
             "help": QStyle.StandardPixmap.SP_MessageBoxQuestion,
             "image": QStyle.StandardPixmap.SP_FileDialogContentsView,
+            "submit": QStyle.StandardPixmap.SP_ArrowUp,
         }
         return style.standardIcon(icon_map.get(icon_type, QStyle.StandardPixmap.SP_FileIcon))
 
@@ -1066,16 +1082,62 @@ class ControllerSetupView(QWidget):
         errors.extend(find_trigger_conflicts(self._rows))
         return errors
 
-    def _export_module(self, path: str | Path) -> None:
-        # Routed through build_definition (the same call "Apply now" makes) rather
-        # than calling merge_by_channel directly, so apply and export always derive
-        # from one shared transformation instead of two that merely happen to agree.
+    def _build_definition_with_image(self):
+        """The ControllerDefinition a draft turns into, with the attached
+        reference image reduced to its basename (see `_reference_image`).
+        Shared by module export and community submission so both derive from
+        the exact same transformation "Apply now" uses."""
         image_name = Path(self._reference_image).name if self._reference_image else None
-        definition = build_definition(self._controller_name, self._rows, image_name)
+        return build_definition(self._controller_name, self._rows, image_name)
+
+    def _export_module(self, path: str | Path) -> None:
+        definition = self._build_definition_with_image()
         source = generate_module_source(
             self._controller_name, definition.static_entries, definition.reference_image
         )
         Path(path).write_text(source)
+
+    def _on_submit_clicked(self) -> None:
+        errors = self._validate()
+        if errors:
+            QMessageBox.warning(self, "Cannot submit yet", "\n".join(errors))
+            return
+        dialog = ControllerSubmissionDialog(summarise_source(self._sources), self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+        payload = build_submission_payload(self._build_definition_with_image(), dialog.metadata())
+        clipboard = QApplication.clipboard()
+        if clipboard is not None:
+            clipboard.setText(payload_json(payload))
+        url, inlined = submission_issue_url(payload)
+        opened = QDesktopServices.openUrl(QUrl(url))
+        _LOGGER.info(
+            "Controller Setup submission for %r: browser_opened=%s json_inlined=%s entries=%d",
+            self._controller_name,
+            opened,
+            inlined,
+            len(payload["static_entries"]),
+        )
+        if not opened:
+            QMessageBox.warning(
+                self,
+                "Couldn't open the browser",
+                "The submission page couldn't be opened automatically. The profile JSON is on "
+                "your clipboard — open a new issue on the project repository and paste it there.",
+            )
+            return
+        tail = (
+            "The profile JSON is already filled in on that page."
+            if inlined
+            else "The profile JSON was copied to your clipboard — paste it into the code block."
+        )
+        QMessageBox.information(
+            self,
+            "Submission opened",
+            "A pre-filled GitHub issue opened in your browser. "
+            + tail
+            + "\n\nReview it before submitting. Reference images are not included in a submission.",
+        )
 
     def _on_check_conflicts_clicked(self) -> None:
         errors = self._validate()

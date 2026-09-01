@@ -798,6 +798,118 @@ def test_export_module_emits_reference_image_basename(tmp_path):
     assert "reference_image='minipad.png'," in text
 
 
+def _accept_submission_dialog(monkeypatch, metadata=None):
+    from PySide6.QtWidgets import QDialog
+
+    import djmidi.gui.controller_setup as controller_setup_mod
+    from djmidi.catalog.community import SubmissionMetadata
+
+    class _FakeDialog:
+        def __init__(self, *_a, **_k):
+            pass
+
+        def exec(self):
+            return QDialog.DialogCode.Accepted
+
+        def metadata(self):
+            return metadata or SubmissionMetadata(contributor="dj_test", source="learned")
+
+    monkeypatch.setattr(controller_setup_mod, "ControllerSubmissionDialog", _FakeDialog)
+
+
+def test_submit_blocked_on_validation_errors(monkeypatch):
+    import djmidi.gui.controller_setup as controller_setup_mod
+
+    view = _view_with_name("MiniPad")
+    view._maybe_add_row("1", "NOTE", "0", "manual")  # missing section/name
+
+    shown = {}
+    monkeypatch.setattr(
+        controller_setup_mod.QMessageBox, "warning", lambda parent, title, text: shown.update(title=title)
+    )
+    opened = []
+    monkeypatch.setattr(controller_setup_mod.QDesktopServices, "openUrl", lambda url: opened.append(url) or True)
+    view._on_submit_clicked()
+    assert shown.get("title") == "Cannot submit yet"
+    assert opened == []
+
+
+def test_submit_copies_json_to_clipboard_and_opens_github(monkeypatch):
+    from PySide6.QtWidgets import QApplication
+
+    import djmidi.gui.controller_setup as controller_setup_mod
+
+    view = _view_with_name("MiniPad")
+    view._rows = [ControlInfo("MiniPad", "PADS", "PAD 1", "NOTE", ("1",), "36")]
+    view._sources = ["learned"]
+    view._devices = [""]
+
+    _accept_submission_dialog(monkeypatch)
+    opened = []
+    monkeypatch.setattr(
+        controller_setup_mod.QDesktopServices, "openUrl", lambda url: opened.append(url.toString()) or True
+    )
+    info = {}
+    monkeypatch.setattr(
+        controller_setup_mod.QMessageBox, "information", lambda parent, title, text: info.update(title=title)
+    )
+
+    view._on_submit_clicked()
+
+    assert len(opened) == 1
+    assert opened[0].startswith("https://github.com/")
+    assert "issues/new" in opened[0]
+    assert info.get("title") == "Submission opened"
+    clip = QApplication.clipboard().text()
+    assert '"controller_name": "MiniPad"' in clip
+    assert '"schema": "controller-submission/1"' in clip
+
+
+def test_submit_dialog_cancelled_does_nothing(monkeypatch):
+    from PySide6.QtWidgets import QDialog
+
+    import djmidi.gui.controller_setup as controller_setup_mod
+
+    view = _view_with_name("MiniPad")
+    view._rows = [ControlInfo("MiniPad", "PADS", "PAD 1", "NOTE", ("1",), "36")]
+    view._sources = ["learned"]
+    view._devices = [""]
+
+    class _RejectDialog:
+        def __init__(self, *_a, **_k):
+            pass
+
+        def exec(self):
+            return QDialog.DialogCode.Rejected
+
+        def metadata(self):
+            raise AssertionError("metadata() must not be read when the dialog is cancelled")
+
+    monkeypatch.setattr(controller_setup_mod, "ControllerSubmissionDialog", _RejectDialog)
+    opened = []
+    monkeypatch.setattr(controller_setup_mod.QDesktopServices, "openUrl", lambda url: opened.append(url) or True)
+    view._on_submit_clicked()
+    assert opened == []
+
+
+def test_submit_warns_when_browser_cannot_open(monkeypatch):
+    import djmidi.gui.controller_setup as controller_setup_mod
+
+    view = _view_with_name("MiniPad")
+    view._rows = [ControlInfo("MiniPad", "PADS", "PAD 1", "NOTE", ("1",), "36")]
+    view._sources = ["learned"]
+    view._devices = [""]
+
+    _accept_submission_dialog(monkeypatch)
+    monkeypatch.setattr(controller_setup_mod.QDesktopServices, "openUrl", lambda url: False)
+    shown = {}
+    monkeypatch.setattr(
+        controller_setup_mod.QMessageBox, "warning", lambda parent, title, text: shown.update(title=title)
+    )
+    view._on_submit_clicked()
+    assert shown.get("title") == "Couldn't open the browser"
+
+
 def test_session_rows_returns_copy_of_current_rows():
     view = _view_with_name()
     view._rows = [ControlInfo("MiniPad", "PAD", "A", "NOTE", ("1",), "10")]
