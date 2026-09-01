@@ -450,3 +450,58 @@ def test_center_on_screen_keeps_the_frame_within_the_usable_area():
     assert frame.left() >= available.left()
     assert frame.top() >= available.top()
     window.close()
+
+
+def test_show_all_controllers_toggle_overrides_disabled_controllers():
+    from djmidi import catalog
+
+    window = MainWindow()
+    try:
+        definition = catalog.all_controller_definitions()[0]
+        target = definition.name
+        # Enablement is keyed by plugin_id (falling back to name), same as
+        # _apply_plugin_preferences and the Preferences dialog.
+        window.preferences.disable(definition.plugin_id or definition.name)
+        window._show_all_controllers = False
+        window._apply_plugin_preferences()
+        assert target not in catalog.CONTROLLER_NAMES
+
+        window._on_show_all_controllers_toggled(True)
+        assert window._show_all_controllers is True
+        assert target in catalog.CONTROLLER_NAMES
+        assert catalog._registry._ENABLED_PLUGIN_IDS is None
+
+        window._on_show_all_controllers_toggled(False)
+        assert target not in catalog.CONTROLLER_NAMES
+    finally:
+        catalog.set_enabled_plugin_ids(None)
+        window.close()
+
+
+def test_show_all_controllers_toggle_persists_to_settings():
+    from unittest.mock import Mock
+
+    from djmidi import catalog
+
+    window = MainWindow()
+    fake_settings = Mock()
+    try:
+        with patch.object(window, "_layout_settings", return_value=fake_settings):
+            window._on_show_all_controllers_toggled(True)
+        fake_settings.setValue.assert_any_call("view/show_all_controllers", True)
+    finally:
+        catalog.set_enabled_plugin_ids(None)
+        window.close()
+
+
+def test_show_all_controllers_action_is_in_the_view_menu():
+    from djmidi import catalog
+
+    window = MainWindow()
+    try:
+        action = window._show_all_controllers_action
+        assert action.isCheckable()
+        assert not action.isChecked()
+    finally:
+        catalog.set_enabled_plugin_ids(None)
+        window.close()

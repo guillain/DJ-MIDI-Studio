@@ -43,7 +43,16 @@ controller and software plugins. The dialog persists plugin enablement,
 detection policy, routing policy, external-plugin trust, and log verbosity.
 Disabled plugins remain visible in this dialog for re-enablement, but are
 removed from active controller selectors, MIDI detection, catalog lookup, and
-mapping parser selection immediately after saving.
+mapping parser selection immediately after saving. `Enable all controllers` /
+`Disable all controllers` toggle every controller checkbox at once (software
+plugins are left untouched), which is the quick way for someone who owns one
+device to hide the other built-in profiles. A controller applied through
+`Controller Setup` during the session counts as enabled automatically.
+
+To see every registered controller again without changing these choices, tick
+`View -> Show all controllers`; unticking it restores exactly the enabled set
+from Preferences. The toggle is remembered between launches.
+
 Safe defaults require confirmation for detection, keep routing disabled, and
 do not trust external plugins automatically.
 

@@ -221,6 +221,17 @@ Implemented contract, runtime, test, and documentation work:
   [#19](https://github.com/guillain/DJ-MIDI-Studio/issues/19) (the "default
   size" half); a per-panel scroll-wrap pass waits on the reporter's
   screenshot. Milestone tag `v0.47.9-adaptive-window-size`.
+- [x] **"Show all controllers" escape hatch and Preferences bulk toggles** —
+  the mapping tabs, Dashboard, and Controller Images selector already honoured
+  the per-controller Preferences enablement (`catalog.set_enabled_plugin_ids`,
+  `CONTROLLER_NAMES` computed from `active_controller_names()`); add the parts
+  [#18](https://github.com/guillain/DJ-MIDI-Studio/issues/18) still asked for:
+  a persisted `View -> Show all controllers` toggle that bypasses the filter
+  without discarding the checkboxes, `Enable all` / `Disable all controllers`
+  buttons plus a hint in the Preferences dialog, and an autouse test fixture
+  that resets the global enablement filter (and a stray frozen
+  `catalog.CONTROLLER_NAMES`) between tests. Milestone tag
+  `v0.47.10-enabled-controllers`.
 
 ### Core mapping workflow
 
@@ -382,12 +393,14 @@ against the current tree and confirmed still open. Tracked as GitHub issues.
   (pre-filled GitHub PR/issue or endpoint) so the supported-device list is
   community-fed. Needs transport/format, moderation, licensing, and dedup
   decisions.
-- [ ] **Show only user-enabled controllers in the mapping tabs**
-  ([#18](https://github.com/guillain/DJ-MIDI-Studio/issues/18)). Every combo
-  and tree reads `catalog.CONTROLLER_NAMES` unfiltered (8 built-ins today).
-  Add a Preferences enable/disable UI backed by the existing unused
-  `plugins/preferences.py` store; tabs read only enabled controllers, with a
-  "show all" escape hatch.
+- [x] **Show only user-enabled controllers in the mapping tabs**
+  ([#18](https://github.com/guillain/DJ-MIDI-Studio/issues/18)). Delivered in
+  `v0.47.10-enabled-controllers`. The per-controller enable/disable already
+  existed (Preferences → *Enabled plugins*, `catalog.set_enabled_plugin_ids`,
+  `CONTROLLER_NAMES` served filtered); this adds the missing pieces —
+  `View -> Show all controllers` escape hatch (persisted), `Enable/Disable all
+  controllers` buttons in Preferences, a usage hint, and test isolation so the
+  global filter no longer leaks between tests.
 - [ ] **Elements cut off at the default window size on macOS**
   ([#19](https://github.com/guillain/DJ-MIDI-Studio/issues/19)). Partially
   addressed in `v0.47.9-adaptive-window-size`: the first-run size is now

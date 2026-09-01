@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
     QFormLayout,
     QGroupBox,
     QHBoxLayout,
+    QLabel,
     QLineEdit,
     QPushButton,
     QVBoxLayout,
@@ -27,6 +28,7 @@ class PreferencesDialog(QDialog):
         self.setWindowTitle("DJ MIDI Studio Preferences")
         self._preferences = preferences
         self._plugin_checks: dict[str, QCheckBox] = {}
+        self._controller_plugin_ids: set[str] = set()
 
         detection = QComboBox()
         detection.addItem("Ask before enabling", "ask")
@@ -63,13 +65,36 @@ class PreferencesDialog(QDialog):
         policy_layout.addRow(routing)
         policy_layout.addRow(trust)
 
+        controller_ids = {
+            definition.plugin_id or definition.name
+            for definition in catalog.all_controller_definitions()
+        }
+        self._controller_plugin_ids = controller_ids
+
         plugins_box = QGroupBox("Enabled plugins")
         plugins_layout = QVBoxLayout(plugins_box)
+        hint = QLabel(
+            "Disabled controllers are hidden from the mapping tabs, the Dashboard, "
+            "and the Controller Images selector. Use View → Show all controllers "
+            "to see every registered controller without changing these choices."
+        )
+        hint.setWordWrap(True)
+        plugins_layout.addWidget(hint)
         for label, plugin_id in self._plugin_entries():
             checkbox = QCheckBox(label)
             checkbox.setChecked(preferences.is_enabled(plugin_id))
             self._plugin_checks[plugin_id] = checkbox
             plugins_layout.addWidget(checkbox)
+
+        select_all = QPushButton("Enable all controllers")
+        select_all.clicked.connect(lambda: self._set_all_controllers(True))
+        select_none = QPushButton("Disable all controllers")
+        select_none.clicked.connect(lambda: self._set_all_controllers(False))
+        controller_buttons = QHBoxLayout()
+        controller_buttons.addWidget(select_all)
+        controller_buttons.addWidget(select_none)
+        controller_buttons.addStretch(1)
+        plugins_layout.addLayout(controller_buttons)
 
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel
@@ -93,6 +118,12 @@ class PreferencesDialog(QDialog):
             for definition in software.all_definitions()
         )
         return entries
+
+    def _set_all_controllers(self, enabled: bool) -> None:
+        for plugin_id in self._controller_plugin_ids:
+            checkbox = self._plugin_checks.get(plugin_id)
+            if checkbox is not None:
+                checkbox.setChecked(enabled)
 
     def _browse_log_path(self) -> None:
         path, _ = QFileDialog.getSaveFileName(
