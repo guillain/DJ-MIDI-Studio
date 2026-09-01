@@ -158,6 +158,11 @@ class MainWindow(QMainWindow):
         self.preferences = PluginPreferences.load(self.preferences_path)
         catalog.discover_plugins(trust_external=self.preferences.trust_external_plugins)
         software.discover_plugins(trust_external=self.preferences.trust_external_plugins)
+        # "Show all controllers" (View menu) bypasses the per-controller
+        # Preferences enablement so the mapping tabs list every registered
+        # controller again; the real state is restored from QSettings in
+        # _restore_user_layout once the menu action exists.
+        self._show_all_controllers = False
         self._apply_plugin_preferences()
         self._last_save_plan = None
         self.node_to_item: dict[int, object] = {}
@@ -361,6 +366,10 @@ class MainWindow(QMainWindow):
             self._center_on_screen()
         if state:
             self.restoreState(state, 1)
+        if settings.value("view/show_all_controllers", False, type=bool):
+            # setChecked fires _on_show_all_controllers_toggled, which flips the
+            # flag, re-applies the registry filter, and refreshes the combos.
+            self._show_all_controllers_action.setChecked(True)
         self.midi_routing_view.restore_state(settings)
         self.metronome_view.restore_state(settings)
 
@@ -498,6 +507,14 @@ class MainWindow(QMainWindow):
         for key in ("monitor", "routing", "clock", "metronome"):
             dock = self._tool_docks[key]
             view_menu.addAction(dock.toggleViewAction())
+        view_menu.addSeparator()
+        self._show_all_controllers_action = QAction("Show all controllers", self, checkable=True)
+        self._show_all_controllers_action.setChecked(self._show_all_controllers)
+        self._show_all_controllers_action.setToolTip(
+            "Ignore the per-controller Preferences enablement and list every registered controller"
+        )
+        self._show_all_controllers_action.toggled.connect(self._on_show_all_controllers_toggled)
+        view_menu.addAction(self._show_all_controllers_action)
 
         settings_menu = self.menuBar().addMenu("&Settings")
         preferences_action = QAction("&Preferences...", self)
@@ -668,8 +685,23 @@ class MainWindow(QMainWindow):
             for definition in software.all_definitions()
             if self.preferences.is_enabled(definition.plugin_id)
         }
-        catalog.set_enabled_plugin_ids(controller_ids)
         software.set_enabled_plugin_ids(software_ids)
+        # The View-menu "Show all controllers" override wins over the
+        # per-controller Preferences checkboxes without discarding them —
+        # unticking it restores exactly this enabled set.
+        catalog.set_enabled_plugin_ids(None if self._show_all_controllers else controller_ids)
+
+    def _on_show_all_controllers_toggled(self, checked: bool) -> None:
+        self._show_all_controllers = checked
+        settings = self._layout_settings()
+        if settings is not None:
+            settings.setValue("view/show_all_controllers", checked)
+        self._apply_plugin_preferences()
+        # Repopulate every controller combo/tree from the now-changed registry.
+        self._on_controller_applied(self.introduction_view._controller_combo.currentText())
+        self.statusBar().showMessage(
+            "Showing all controllers" if checked else "Showing enabled controllers only"
+        )
 
     def _on_open(self) -> None:
         path_str, _ = QFileDialog.getOpenFileName(
