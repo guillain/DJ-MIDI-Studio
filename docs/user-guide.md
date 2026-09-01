@@ -114,6 +114,13 @@ in the session file; `Generate catalog module…` records
 `reference_image=<filename>` and tells you where to drop a bundled copy.
 User-supplied images are your responsibility with respect to licensing.
 
+`Submit to community catalog…` packages the draft (validated first) as a JSON
+profile and opens a pre-filled GitHub issue in your browser, with the JSON
+also copied to your clipboard. A small dialog collects optional contributor
+context (handle, target hardware, firmware, notes). Nothing is uploaded
+automatically — you review and post the issue yourself. Only the trigger data
+and control names are submitted; reference images are not.
+
 `Live Monitor`, `MIDI Routing`, `MIDI Clock`, and `Metronome` are independent MIDI tool docks, not mapping
 tabs. Open them from the `View` menu or the Dashboard; use the dock title bar's `Undock`/`Dock` button
 to float them, dock them again, or the close button to close them. The main window geometry and dock arrangement are restored on the
