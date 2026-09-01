@@ -21,15 +21,13 @@ Edit DJ software MIDI mappings with a visual workflow instead of hand-editing th
 
 - [Why This Project](#why-this-project)
 - [Key Features](#key-features)
-- [Screens and Workflow](#screens-and-workflow)
+- [Install](#install)
 - [Screens and Layouts](#screens-and-layouts)
-- [Quickstart](#quickstart)
-- [Build and Test Scripts](#build-and-test-scripts)
-- [Send MIDI Commands](#send-midi-commands)
+- [Screens and Workflow](#screens-and-workflow)
 - [Release Process](#release-process)
+- [End-to-End Examples](#end-to-end-examples)
 - [Documentation Index](#documentation-index)
 - [Developer and AI-Assisted Development](#developer-and-ai-assisted-development)
-- [End-to-End Examples](#end-to-end-examples)
 - [Technical References](#technical-references)
 
 ## Why This Project
@@ -52,6 +50,23 @@ DJ MIDI mapping files can become very large and hard to maintain. DJ MIDI Studio
 | 🔀 | Safe one-way MIDI routing with cycle prevention and error diagnostics |
 | 🕒 | MIDI Clock mirroring plus read-only Ableton Link → 24 PPQN output |
 | 💾 | Validation, safe updates, backups, previews, rollback, and XML round-tripping |
+
+## Install
+
+📦 **Use a release build.** Download the archive for your operating system from
+the [latest release](https://github.com/guillain/DJ-MIDI-Studio/releases/latest),
+unpack it, and run the bundled `djmidi` executable — no Python or `uv`
+required. The user guide, controller references, and PDFs ship inside the
+bundle, so everything works offline.
+
+- Verify the download against the published `SHA-256` checksums.
+- macOS: the app is unsigned; on first launch use right-click → **Open** (or
+  clear the quarantine flag) to get past Gatekeeper.
+- Logs go to the platform user log directory; pass `--log-level DEBUG
+  --log-file <path>` when reporting an issue.
+
+Running from source is for contributors — see
+[Developer Setup](docs/development/setup.md).
 
 ## Screens and Layouts
 
@@ -97,117 +112,6 @@ flowchart LR
 	Clock --> Output[24 PPQN MIDI Clock output]
 ```
 
-## Quickstart
-
-🚀 **Ready to explore?** The local documentation is bundled with the app, so
-the mapping references remain available when working offline.
-
-Install dependencies:
-
-```bash
-bash scripts/bootstrap.sh
-```
-
-or manually:
-
-```bash
-uv sync --group dev
-```
-
-Ableton Link support is included by default with its native binding:
-
-```bash
-uv sync --group dev
-```
-
-Run the app:
-
-```bash
-uv run djmidi
-uv run djmidi --log-level DEBUG --log-file /tmp/djmidi.log
-```
-
-The application writes a rotating execution log by default to the platform's
-user log directory. Use `--log-level` (`DEBUG`, `INFO`, `WARNING`, `ERROR`, or
-`CRITICAL`) and `--log-file` to control verbosity and destination.
-
-Run tests:
-
-```bash
-uv run pytest
-```
-
-## Build and Test Scripts
-
-🧪 The same quality gate used by CI can be run locally before opening a PR:
-
-- `scripts/test.sh`: lint/test entrypoint (`all`, `quick`, `lint`, `test`, `path`).
-- `scripts/quality_gate.py` / `scripts/quality_gate.sh`: coverage, maintainability, duplication, and security gate.
-- `scripts/capture_docs_screenshots.py`: regenerates UI screenshots from the reference XML without MIDI hardware.
-- `scripts/bootstrap.sh`: one-command local setup and pre-commit quick check hook.
-- `scripts/build.sh`: build wheel/sdist and native executable bundle for current OS.
-- `scripts/release_artifacts.sh`: archive OS-specific executable artifacts.
-- `.github/workflows/build-executables.yml`: CI matrix build for macOS/Linux/Windows executables.
-
-## Send MIDI Commands
-
-⚡ Useful for testing a mapping without touching the GUI. Always select the
-correct MIDI output port before sending commands to hardware.
-
-You can send one-shot NOTE/CC commands directly to a controller output port:
-
-```bash
-uv run djmidi-send-midi --list-ports
-uv run djmidi-send-midi --port "Your Port Name" --type note_on --channel 1 --data1 27 --data2 127
-uv run djmidi-send-midi --port "Your Port Name" --type note_off --channel 1 --data1 27 --data2 0
-```
-
-DDJ-XP2 known `PAD MODE` button notes (deck channels `1..4`):
-
-- `PAD MODE 1` -> `data1=27`
-- `PAD MODE 2` -> `data1=30`
-- `PAD MODE 3` -> `data1=32`
-- `PAD MODE 4` -> `data1=34`
-
-The second physical click is a different NOTE, which is what the Live Monitor
-will display:
-
-- `PAD MODE 5` -> `data1=28`
-- `PAD MODE 6` -> `data1=31`
-- `PAD MODE 7` -> `data1=33`
-- `PAD MODE 8` -> `data1=35`
-
-On the DDJ-XP2, `PAD MODE 5..8` are reached by double-clicking `PAD MODE 1..4`:
-
-- double-click `PAD MODE 1` -> `PAD MODE 5`
-- double-click `PAD MODE 2` -> `PAD MODE 6`
-- double-click `PAD MODE 3` -> `PAD MODE 7`
-- double-click `PAD MODE 4` -> `PAD MODE 8`
-
-CLI example to emulate a double-click on `PAD MODE 1` (Deck channel `1`):
-
-```bash
-uv run djmidi-send-midi --port "Your Port Name" --type note_on --channel 1 --data1 27 --data2 127
-uv run djmidi-send-midi --port "Your Port Name" --type note_off --channel 1 --data1 27 --data2 0
-uv run djmidi-send-midi --port "Your Port Name" --type note_on --channel 1 --data1 27 --data2 127
-uv run djmidi-send-midi --port "Your Port Name" --type note_off --channel 1 --data1 27 --data2 0
-```
-
-Equivalent one-liner using the built-in helper:
-
-```bash
-uv run djmidi-send-midi --port "Your Port Name" --type note_on --channel 1 --data1 27 --data2 127 --double-click
-```
-
-Examples:
-
-```bash
-bash scripts/test.sh quick
-bash scripts/test.sh quality
-bash scripts/build.sh
-bash scripts/release_artifacts.sh
-```
-
 ## Release Process
 
 📦 Releases are built by GitHub Actions and published from annotated tags.
@@ -230,8 +134,7 @@ mapping parsing, Live Monitor, MIDI routing, and unknown-device workflows.
 
 - [Documentation Home](docs/README.md)
 - [Controller documentation and official PDF sources](docs/controllers/README.md)
-- [Quickstart](docs/quickstart.md)
-- [User Guide](docs/user-guide.md)
+- [User Guide](docs/user-guide.md) — everyday workflow, including sending MIDI commands from the CLI
 - [Screens and Layouts](docs/screens-and-layouts.md)
 - [Architecture](docs/architecture.md)
 - [End-to-End Examples](docs/examples.md)
@@ -240,9 +143,14 @@ mapping parsing, Live Monitor, MIDI routing, and unknown-device workflows.
 - [Build and Release](docs/build-and-release.md)
 - [Release Checklist](docs/release-checklist.md)
 
+For running from source, the quickstart and the local test/build scripts, see
+the developer docs below.
+
 ## Developer and AI-Assisted Development
 
-🛠️ Contributors can start with [Developer Setup](docs/development/setup.md),
+🛠️ Contributors can start with [Developer Setup](docs/development/setup.md)
+(prerequisites, `uv sync`, running from source, and the local `scripts/`
+lint/test/build/screenshot commands), the [Quickstart](docs/quickstart.md),
 [Development Workflow](docs/development/workflow.md), and
 [Contributing](docs/development/contributing.md). This project also documents
 its vibe-coding workflow and reusable agent assets:

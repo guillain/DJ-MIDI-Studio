@@ -63,6 +63,30 @@ bash scripts/test.sh path tests/test_parser.py
 Before opening a pull request, run at least `quick`; run `quality` when
 changing core behavior, dependencies, packaging, or security-sensitive code.
 
+The raw test runner is also available directly:
+
+```bash
+uv run pytest
+uv run pytest tests/test_parser.py -k roundtrip
+```
+
+## Build and packaging scripts
+
+All under `scripts/`, mirroring what CI runs:
+
+- `scripts/bootstrap.sh` — one-command local setup plus the pre-commit quick-check hook.
+- `scripts/test.sh` — lint/test entrypoint (`all`, `quick`, `lint`, `test`, `path`).
+- `scripts/quality_gate.py` / `scripts/quality_gate.sh` — coverage, maintainability, duplication, and security gate.
+- `scripts/capture_docs_screenshots.py` — regenerates the UI screenshots from the reference XML, no MIDI hardware needed.
+- `scripts/build.sh` — build the wheel/sdist and the native executable bundle for the current OS.
+- `scripts/release_artifacts.sh` — archive the OS-specific executable artifacts.
+- `.github/workflows/build-executables.yml` — the CI matrix build for macOS/Linux/Windows executables.
+
+```bash
+bash scripts/build.sh
+bash scripts/release_artifacts.sh
+```
+
 ## Ableton Link support
 
 ```bash
