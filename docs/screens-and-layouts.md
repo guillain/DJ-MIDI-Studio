@@ -105,6 +105,8 @@ By Controller groups catalog entries by physical controller and section, such as
 
 Controller Setup is used to learn MIDI triggers from hardware or import raw triggers from a Serato XML file. The captured table records the section, physical name, MIDI type, channel(s), data value, source, and device. Learning, import, and export remain grouped at the top; MIDI Output now has a full-width performance panel with a dedicated port list, readable message fields, playback actions, and all eight DDJ-XP2 pad-mode buttons.
 
+The captured table is multi-selectable. Beside `Delete selected row(s)` and `Add row`, `Set section for selected rows…` assigns one Section to every selected row in a single prompt, and `Set name for selected rows…` assigns a Name, optionally auto-numbered (`PAD 1`, `PAD 2`, …) across the selection. A bulk edit re-runs the trigger conflict check and warns immediately if it collides two rows.
+
 The same tab provides MIDI output controls for sending a command once, sending a NOTE double-click, replaying selected/all session rows, or generating a catalog module. `Check for conflicts` should be run before applying or exporting a catalog.
 
 ![Controller Setup](images/layout/controlleur-setup.png)

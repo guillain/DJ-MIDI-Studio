@@ -202,6 +202,15 @@ Implemented contract, runtime, test, and documentation work:
   Metronome's output port/value/Hz lived in memory only and reset on every
   restart. Commit `70dad89`; milestone tag
   `v0.47.7-dock-buttons-and-view-state-persistence`.
+- [x] **Bulk Section/Name assignment in Controller Setup** — add `Set section
+  for selected rows…` and `Set name for selected rows…` row-buttons so a whole
+  pad grid can be labelled in one step instead of one row at a time. The Name
+  action offers auto-numbering (`PAD 1`, `PAD 2`, …) across the selection.
+  Both go through one `_apply_bulk_edit` helper that resyncs the table, marks
+  the draft dirty, restores the selection, and re-runs `find_trigger_conflicts`
+  so a colliding bulk edit is flagged immediately. Resolves
+  [#15](https://github.com/guillain/DJ-MIDI-Studio/issues/15); milestone tag
+  `v0.47.8-bulk-section-name`.
 
 ### Core mapping workflow
 
@@ -347,11 +356,11 @@ documentation index.
 Raised by an external tester (@padi_04) against a pre-`v0.47` build; reviewed
 against the current tree and confirmed still open. Tracked as GitHub issues.
 
-- [ ] **Controller Setup — bulk-assign Section/Name to selected rows**
-  ([#15](https://github.com/guillain/DJ-MIDI-Studio/issues/15)). Rows are
-  multi-selectable but only *Delete* / *Play* act on the selection; add a
-  "Set section for selected rows…" action (plus optional bulk Name with
-  auto-increment).
+- [x] **Controller Setup — bulk-assign Section/Name to selected rows**
+  ([#15](https://github.com/guillain/DJ-MIDI-Studio/issues/15)). Delivered in
+  `v0.47.8-bulk-section-name`: `Set section for selected rows…` and `Set name
+  for selected rows…` (with optional auto-numbering) act on the table
+  selection and re-run the conflict check.
 - [ ] **Controller Setup — attach/upload a reference image from the UI**
   ([#16](https://github.com/guillain/DJ-MIDI-Studio/issues/16)). The
   Controller Images tab is a static bundled-PNG viewer; a custom controller
