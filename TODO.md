@@ -232,6 +232,18 @@ Implemented contract, runtime, test, and documentation work:
   that resets the global enablement filter (and a stray frozen
   `catalog.CONTROLLER_NAMES`) between tests. Milestone tag
   `v0.47.10-enabled-controllers`.
+- [x] **User-attached controller reference image** — `Attach reference
+  image…` in Controller Setup's Import panel picks a local PNG/JPG and stores
+  its absolute path in `self._reference_image`, persisted in the session JSON
+  (`reference_image` key), threaded through `codegen.build_definition` and
+  `generate_module_source` (basename only, so a bundled
+  `assets/controllers/<basename>` resolves), and rendered by the Controller
+  Images tab after `Apply now`. `controller_image_view._resolve_image_path`
+  now accepts an absolute path as well as a bare bundled filename. Images are
+  never copied into the repo — the export dialog points at
+  `assets/controllers/` and flags the licensing responsibility. Resolves
+  [#16](https://github.com/guillain/DJ-MIDI-Studio/issues/16); milestone tag
+  `v0.47.11-reference-image`.
 
 ### Core mapping workflow
 
@@ -382,11 +394,13 @@ against the current tree and confirmed still open. Tracked as GitHub issues.
   `v0.47.8-bulk-section-name`: `Set section for selected rows…` and `Set name
   for selected rows…` (with optional auto-numbering) act on the table
   selection and re-run the conflict check.
-- [ ] **Controller Setup — attach/upload a reference image from the UI**
-  ([#16](https://github.com/guillain/DJ-MIDI-Studio/issues/16)). The
-  Controller Images tab is a static bundled-PNG viewer; a custom controller
-  can never get a diagram. Let the user pick an image, persist it with the
-  session/generated module, and show it once applied.
+- [x] **Controller Setup — attach/upload a reference image from the UI**
+  ([#16](https://github.com/guillain/DJ-MIDI-Studio/issues/16)). Delivered in
+  `v0.47.11-reference-image`: `Attach reference image…` stores an absolute
+  path (not copied into the repo), persisted in the session JSON, carried
+  through `build_definition`/`generate_module_source`, and rendered by the
+  Controller Images tab after `Apply now` (the viewer now resolves absolute
+  paths as well as bundled filenames).
 - [ ] **Submit manually-created controller profiles to a community catalog**
   ([#17](https://github.com/guillain/DJ-MIDI-Studio/issues/17)). Export only
   writes a local `catalog/<slug>.py`. Add an upstream submission path
