@@ -38,10 +38,13 @@ Status rules:
 ## Current roadmap status
 
 The implementation roadmap is complete through Phase 4. Phase 3 remains
-`IN PROGRESS — HARDWARE VALIDATION` because the software contracts, tests, and
-diagnostics are delivered, but two macOS integrations still require a real
-Serato/XDJ-XZ/DDJ-XP2 setup. No implementation item is being relabeled as
-complete until that distinction is explicit.
+`IN PROGRESS — HARDWARE VALIDATION` because, although the software contracts,
+tests, and diagnostics are delivered, one macOS integration still requires a
+real Serato/XDJ-XZ/DDJ-XP2 setup: the direct `Ableton Link (DJ MIDI Studio)`
+→ CoreMIDI follower path. The Serato → CoreMIDI virtual-port Clock path has
+been verified on hardware (see [Phase 3 hardware
+validation](#phase-3-hardware-validation)). No implementation item is being
+relabeled as complete until that last distinction is explicit.
 
 The current release baseline is `v0.46.0`. The post-release evolution is
 implemented on the active `feature/independent-midi-clock` line and is tracked
@@ -336,7 +339,15 @@ Implemented contract, runtime, test, and documentation work:
 ### Phase 3 hardware validation
 
 - [ ] Verify the direct Ableton Link → CoreMIDI output path with Serato, XDJ-XZ, DDJ-XP2, and a real MIDI destination on macOS.
-- [ ] Verify the complete Serato → CoreMIDI virtual-port path on a real macOS/Serato setup, including port discovery, Clock output selection, Start/Stop, and sustained 24 PPQN ticks.
+- [x] Verify the complete Serato → CoreMIDI virtual-port path on a real macOS/Serato setup, including port discovery, Clock output selection, Start/Stop, and sustained 24 PPQN ticks.
+  Verified on macOS + Serato Pro with a physical controller (XDJ-XZ / DDJ-XP2)
+  in the loop: virtual-port discovery and Clock source selection, Start /
+  Stop / Continue relay from Serato transport, drift-free sustained 24 PPQN,
+  and delivery to a real CoreMIDI destination. Ableton Live + Link were
+  running during the session, but the Clock source was the Serato CoreMIDI
+  virtual port, not the app's `Ableton Link (DJ MIDI Studio)` follower — that
+  follower path (task above) is still unverified on hardware. See
+  [#10](https://github.com/guillain/DJ-MIDI-Studio/issues/10).
 
 ### Candidate controller catalogues
 
