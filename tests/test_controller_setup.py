@@ -598,6 +598,142 @@ def test_send_selected_rows_uses_table_selection(monkeypatch):
     assert all(msg["data1"] == 10 for msg in sent)
 
 
+def _three_pad_rows(view: ControllerSetupView) -> None:
+    view._rows = [
+        ControlInfo("MiniPad", "", "", "NOTE", ("1",), "10"),
+        ControlInfo("MiniPad", "", "", "NOTE", ("1",), "11"),
+        ControlInfo("MiniPad", "", "", "NOTE", ("1",), "12"),
+    ]
+    view._sources = ["learned", "learned", "learned"]
+    view._devices = ["", "", ""]
+    view._rebuild_table()
+
+
+def _select_table_rows(view: ControllerSetupView, rows: list[int]) -> None:
+    """QTableWidget.selectRow() replaces the selection each call under
+    ExtendedSelection, so accumulate through the selection model instead."""
+    from PySide6.QtCore import QItemSelectionModel
+
+    model = view._table.selectionModel()
+    model.clearSelection()
+    flags = QItemSelectionModel.SelectionFlag.Select | QItemSelectionModel.SelectionFlag.Rows
+    for row in rows:
+        model.select(view._table.model().index(row, 0), flags)
+
+
+def test_bulk_set_section_applies_only_to_selected_rows(monkeypatch):
+    import djmidi.gui.controller_setup as controller_setup_mod
+
+    view = _view_with_name("MiniPad")
+    _three_pad_rows(view)
+    _select_table_rows(view, [0, 2])
+
+    monkeypatch.setattr(controller_setup_mod.QInputDialog, "getText", lambda *a, **k: ("PADS", True))
+    view._on_bulk_set_section_clicked()
+
+    assert [row.section for row in view._rows] == ["PADS", "", "PADS"]
+    assert view._table.item(0, 0).text() == "PADS"
+    assert view._dirty is True
+
+
+def test_bulk_set_section_noop_without_selection(monkeypatch):
+    import djmidi.gui.controller_setup as controller_setup_mod
+
+    view = _view_with_name("MiniPad")
+    _three_pad_rows(view)
+    view._table.clearSelection()
+    view._dirty = False
+
+    shown = {}
+    monkeypatch.setattr(
+        controller_setup_mod.QMessageBox,
+        "information",
+        lambda parent, title, text: shown.update(title=title),
+    )
+    monkeypatch.setattr(
+        controller_setup_mod.QInputDialog,
+        "getText",
+        lambda *a, **k: (_ for _ in ()).throw(AssertionError("prompt must not open without a selection")),
+    )
+    view._on_bulk_set_section_clicked()
+    assert shown.get("title") == "No rows selected"
+    assert view._dirty is False
+
+
+def test_bulk_set_section_cancelled_prompt_changes_nothing(monkeypatch):
+    import djmidi.gui.controller_setup as controller_setup_mod
+
+    view = _view_with_name("MiniPad")
+    _three_pad_rows(view)
+    _select_table_rows(view, [0])
+    view._dirty = False
+
+    monkeypatch.setattr(controller_setup_mod.QInputDialog, "getText", lambda *a, **k: ("PADS", False))
+    view._on_bulk_set_section_clicked()
+    assert [row.section for row in view._rows] == ["", "", ""]
+    assert view._dirty is False
+
+
+def test_bulk_set_name_without_auto_number(monkeypatch):
+    import djmidi.gui.controller_setup as controller_setup_mod
+
+    view = _view_with_name("MiniPad")
+    _three_pad_rows(view)
+    _select_table_rows(view, [0, 1, 2])
+
+    monkeypatch.setattr(controller_setup_mod.QInputDialog, "getText", lambda *a, **k: ("HOTCUE", True))
+    monkeypatch.setattr(
+        controller_setup_mod.QMessageBox,
+        "question",
+        lambda *a, **k: controller_setup_mod.QMessageBox.StandardButton.No,
+    )
+    view._on_bulk_set_name_clicked()
+    assert [row.name for row in view._rows] == ["HOTCUE", "HOTCUE", "HOTCUE"]
+
+
+def test_bulk_set_name_with_auto_number(monkeypatch):
+    import djmidi.gui.controller_setup as controller_setup_mod
+
+    view = _view_with_name("MiniPad")
+    _three_pad_rows(view)
+    _select_table_rows(view, [0, 1, 2])
+
+    monkeypatch.setattr(controller_setup_mod.QInputDialog, "getText", lambda *a, **k: ("PAD", True))
+    monkeypatch.setattr(
+        controller_setup_mod.QMessageBox,
+        "question",
+        lambda *a, **k: controller_setup_mod.QMessageBox.StandardButton.Yes,
+    )
+    view._on_bulk_set_name_clicked()
+    assert [row.name for row in view._rows] == ["PAD 1", "PAD 2", "PAD 3"]
+
+
+def test_bulk_edit_warns_when_it_creates_a_conflict(monkeypatch):
+    import djmidi.gui.controller_setup as controller_setup_mod
+
+    view = _view_with_name("MiniPad")
+    # Same trigger (1, NOTE, 10) on two rows: harmless while their (section,
+    # name) agree (empty), but assigning different names to only one collides.
+    view._rows = [
+        ControlInfo("MiniPad", "PADS", "KEEP", "NOTE", ("1",), "10"),
+        ControlInfo("MiniPad", "", "", "NOTE", ("1",), "10"),
+    ]
+    view._sources = ["manual", "manual"]
+    view._devices = ["", ""]
+    view._rebuild_table()
+    _select_table_rows(view, [1])
+
+    monkeypatch.setattr(controller_setup_mod.QInputDialog, "getText", lambda *a, **k: ("OTHER", True))
+    shown = {}
+    monkeypatch.setattr(
+        controller_setup_mod.QMessageBox,
+        "warning",
+        lambda parent, title, text: shown.update(title=title),
+    )
+    view._on_bulk_set_name_clicked()
+    assert shown.get("title") == "Bulk edit created conflicts"
+
+
 def test_session_rows_returns_copy_of_current_rows():
     view = _view_with_name()
     view._rows = [ControlInfo("MiniPad", "PAD", "A", "NOTE", ("1",), "10")]
