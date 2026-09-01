@@ -125,6 +125,11 @@ class ControllerSetupView(QWidget):
         self._sources: list[str] = []
         self._devices: list[str] = []
         self._controller_name = ""
+        # Absolute path to a user-supplied reference image (issue #16); shown in
+        # the Controller Images tab once the draft is applied, persisted in the
+        # session JSON, and emitted as reference_image by "Generate catalog
+        # module…". "" means none attached.
+        self._reference_image = ""
         self._dirty = False
         self._rebuilding = False
         self._learning = False
@@ -193,8 +198,17 @@ class ControllerSetupView(QWidget):
         import_button = QPushButton(self._get_icon("import"), "")
         import_button.setToolTip("Import from Serato XML…")
         import_button.clicked.connect(self._on_import_xml_clicked)
+        self._attach_image_button = QPushButton(self._get_icon("image"), "")
+        self._attach_image_button.setToolTip("Attach reference image…")
+        self._attach_image_button.clicked.connect(self._on_attach_image_clicked)
         import_help_button = self._help_button("Import", _IMPORT_HELP)
-        import_box, import_layout = self._titled_panel("Import", [import_button, import_help_button])
+        import_box, import_layout = self._titled_panel(
+            "Import", [import_button, self._attach_image_button, import_help_button]
+        )
+        self._image_label = QLabel("No reference image")
+        self._image_label.setWordWrap(True)
+        self._image_label.setStyleSheet("QLabel { color: #8fa7bd; border: none; }")
+        import_layout.addWidget(self._image_label)
         import_layout.addStretch(1)
 
         self._output_port_list = QListWidget()
@@ -399,6 +413,7 @@ class ControllerSetupView(QWidget):
             "export": QStyle.StandardPixmap.SP_DialogSaveButton,
             "import": QStyle.StandardPixmap.SP_ArrowDown,
             "help": QStyle.StandardPixmap.SP_MessageBoxQuestion,
+            "image": QStyle.StandardPixmap.SP_FileDialogContentsView,
         }
         return style.standardIcon(icon_map.get(icon_type, QStyle.StandardPixmap.SP_FileIcon))
 
@@ -624,6 +639,8 @@ class ControllerSetupView(QWidget):
         self._recorded_events = []
         self._sources = []
         self._devices = []
+        self._reference_image = ""
+        self._update_image_label()
         if clear_name:
             self._controller_name = ""
             self._name_edit.setText("")
@@ -879,12 +896,47 @@ class ControllerSetupView(QWidget):
         _LOGGER.info("Imported %d new trigger(s) from %s into Controller Setup", added, path_str)
         QMessageBox.information(self, "Import complete", f"Added {added} new trigger(s) (others already present were skipped).")
 
+    # -- reference image ----------------------------------------------------
+
+    def _update_image_label(self) -> None:
+        if self._reference_image:
+            self._image_label.setText(f"Reference image: {Path(self._reference_image).name}")
+        else:
+            self._image_label.setText("No reference image")
+
+    def set_reference_image(self, path: str) -> None:
+        self._reference_image = path.strip()
+        self._update_image_label()
+        self._mark_dirty()
+
+    def _on_attach_image_clicked(self) -> None:
+        path_str, _ = QFileDialog.getOpenFileName(
+            self, "Attach controller reference image", "", "Images (*.png *.jpg *.jpeg *.webp)"
+        )
+        if not path_str:
+            # Cancelling with an image already attached is the way to remove it.
+            if self._reference_image and self._confirm("Remove the attached reference image?"):
+                self.set_reference_image("")
+            return
+        self.set_reference_image(path_str)
+        _LOGGER.info("Attached reference image %s to Controller Setup draft %r", path_str, self._controller_name)
+        QMessageBox.information(
+            self,
+            "Reference image attached",
+            "The image is referenced by its path on this machine — it is not copied into the "
+            "project. It shows in the Controller Images tab after \"Apply now\", and is saved in "
+            "the session JSON. \"Generate catalog module…\" writes reference_image=<filename>; place "
+            "a copy at assets/controllers/<filename> if you want it bundled (respecting its "
+            "licence — user-supplied images are your responsibility).",
+        )
+
     # -- session save / load --------------------------------------------------
 
     def _rows_to_session_dict(self) -> dict:
         return {
             "version": 1,
             "controller_name": self._controller_name,
+            "reference_image": self._reference_image,
             "recorded_events": [
                 {
                     "direction": event.direction,
@@ -933,6 +985,8 @@ class ControllerSetupView(QWidget):
         self._stop_replay()
         self._controller_name = name
         self._name_edit.setText(name)
+        self._reference_image = data.get("reference_image", "")
+        self._update_image_label()
         self._rows = rows
         self._recorded_events = recorded_events
         self._sources = sources
@@ -1016,8 +1070,11 @@ class ControllerSetupView(QWidget):
         # Routed through build_definition (the same call "Apply now" makes) rather
         # than calling merge_by_channel directly, so apply and export always derive
         # from one shared transformation instead of two that merely happen to agree.
-        definition = build_definition(self._controller_name, self._rows)
-        source = generate_module_source(self._controller_name, definition.static_entries)
+        image_name = Path(self._reference_image).name if self._reference_image else None
+        definition = build_definition(self._controller_name, self._rows, image_name)
+        source = generate_module_source(
+            self._controller_name, definition.static_entries, definition.reference_image
+        )
         Path(path).write_text(source)
 
     def _on_check_conflicts_clicked(self) -> None:
@@ -1030,7 +1087,10 @@ class ControllerSetupView(QWidget):
             QMessageBox.information(self, "No conflicts", "No missing fields or conflicting triggers found — draft looks stable.")
 
     def _apply(self) -> None:
-        register(build_definition(self._controller_name, self._rows), replace=True)
+        register(
+            build_definition(self._controller_name, self._rows, self._reference_image or None),
+            replace=True,
+        )
         self._applied_names.add(self._controller_name)
         self.controllerApplied.emit(self._controller_name)
 
@@ -1096,12 +1156,18 @@ class ControllerSetupView(QWidget):
             return
         _LOGGER.info("Generated catalog module for %r at %s", self._controller_name, path_str)
         slug = Path(path_str).stem
-        QMessageBox.information(
-            self,
-            "Catalog module generated",
+        message = (
             f"Wrote {path_str}.\n\nOne manual step remains: add '{slug}' to the import block in "
-            "catalog/__init__.py (kept alphabetical, matching the existing style) so it's picked up.",
+            "catalog/__init__.py (kept alphabetical, matching the existing style) so it's picked up."
         )
+        if self._reference_image:
+            image_name = Path(self._reference_image).name
+            message += (
+                f"\n\nThe module references reference_image='{image_name}'. Copy your image to "
+                f"assets/controllers/{image_name} for it to show in the Controller Images tab on a "
+                "future launch (user-supplied images are your responsibility re: licensing)."
+            )
+        QMessageBox.information(self, "Catalog module generated", message)
 
     # -- lifecycle -------------------------------------------------------------
 

@@ -102,3 +102,35 @@ def test_switching_to_controller_without_image_resets_leftover_zoom():
         assert view._view.transform() == QTransform()
     finally:
         catalog._registry._REGISTRY.pop("__NoImageCtrl__", None)
+
+
+def test_resolve_image_path_handles_absolute_and_bundled():
+    from pathlib import Path
+
+    from djmidi.gui.controller_image_view import ASSETS_DIR, _resolve_image_path
+
+    assert _resolve_image_path(None) is None
+    assert _resolve_image_path("") is None
+    assert _resolve_image_path("ddj-xp2.png") == ASSETS_DIR / "ddj-xp2.png"
+    abs_path = "/tmp/custom/minipad.png"
+    assert _resolve_image_path(abs_path) == Path(abs_path)
+
+
+def test_load_renders_an_absolute_path_reference_image(tmp_path):
+    from PySide6.QtGui import QPixmap
+
+    from djmidi.catalog._registry import ControllerDefinition, register
+    from djmidi.gui.controller_image_view import ControllerImageView
+
+    image_path = tmp_path / "abs-ref.png"
+    QPixmap(64, 32).save(str(image_path), "PNG")
+    register(ControllerDefinition(name="__AbsImageCtrl__", reference_image=str(image_path)))
+    try:
+        view = ControllerImageView()
+        assert view.set_controller("__AbsImageCtrl__") is True
+        assert view._pixmap_item is not None
+        assert not view._pixmap_item.pixmap().isNull()
+    finally:
+        import djmidi.catalog as catalog_mod
+
+        catalog_mod._registry._REGISTRY.pop("__AbsImageCtrl__", None)

@@ -53,6 +53,16 @@ def image_for_controller(name: str) -> str | None:
     return catalog.get_definition(name).reference_image
 
 
+def _resolve_image_path(reference_image: str | None) -> Path | None:
+    """A controller's ``reference_image`` is either a bare filename bundled
+    under ``assets/controllers/`` (the built-ins) or an absolute path to a
+    user-supplied image attached in Controller Setup (issue #16). Accept both."""
+    if not reference_image:
+        return None
+    candidate = Path(reference_image)
+    return candidate if candidate.is_absolute() else ASSETS_DIR / reference_image
+
+
 def documentation_for_controller(name: str) -> Path | None:
     """Return the bundled local document for a controller, when available."""
     filename = DOCUMENTS.get(name)
@@ -137,8 +147,7 @@ class ControllerImageView(QWidget):
         self._scene.clear()
         self._pixmap_item = None
         self._view.resetTransform()
-        image_name = image_for_controller(name)
-        path = ASSETS_DIR / image_name if image_name else None
+        path = _resolve_image_path(image_for_controller(name))
         pixmap = QPixmap(str(path)) if path is not None and path.exists() else QPixmap()
         if pixmap.isNull():
             # Keep the placeholder inside the graphics scene.  Embedding a

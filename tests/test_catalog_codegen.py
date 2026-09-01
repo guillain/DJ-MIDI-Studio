@@ -160,3 +160,34 @@ def test_generate_module_source_round_trips_through_registry(tmp_path):
         assert any(h.controller == "__CodegenTest__" and h.name == "PLAY" for h in hits2)
     finally:
         catalog._registry._REGISTRY.pop("__CodegenTest__", None)
+
+
+def test_build_definition_carries_reference_image():
+    entries = [ControlInfo("__ImgDefTest__", "DECK", "PLAY", "NOTE", ("1",), "0")]
+    assert build_definition("__ImgDefTest__", entries).reference_image is None
+    definition = build_definition("__ImgDefTest__", entries, "/abs/path/mypad.png")
+    assert definition.reference_image == "/abs/path/mypad.png"
+    # An empty string is normalised to None.
+    assert build_definition("__ImgDefTest__", entries, "").reference_image is None
+
+
+def test_generate_module_source_emits_reference_image_line():
+    entries = merge_by_channel([ControlInfo("MiniPad", "DECK", "PLAY", "NOTE", ("1",), "0")])
+    assert "reference_image" not in generate_module_source("MiniPad", entries)
+    with_image = generate_module_source("MiniPad", entries, "minipad.png")
+    assert "reference_image='minipad.png'," in with_image
+    ast.parse(with_image)
+
+
+def test_generated_module_with_reference_image_round_trips(tmp_path):
+    entries = merge_by_channel([ControlInfo("__ImgCodegen__", "DECK", "PLAY", "NOTE", ("1",), "0")])
+    source = generate_module_source("__ImgCodegen__", entries, "img_codegen.png")
+    module_path = tmp_path / "img_codegen_module.py"
+    module_path.write_text(source)
+    spec = importlib.util.spec_from_file_location("img_codegen_module", module_path)
+    module = importlib.util.module_from_spec(spec)
+    try:
+        spec.loader.exec_module(module)
+        assert catalog.get_definition("__ImgCodegen__").reference_image == "img_codegen.png"
+    finally:
+        catalog._registry._REGISTRY.pop("__ImgCodegen__", None)
