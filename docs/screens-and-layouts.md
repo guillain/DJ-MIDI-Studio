@@ -41,6 +41,13 @@ that view-level configuration is lost on restart. Controller selectors remain
 horizontally scrollable, so their content no longer imposes a large minimum
 width on the main window or on a floating MIDI tool.
 
+On first launch (before any saved geometry exists) the window opens at a size
+derived from the available screen area — a comfortable `1280x820` where the
+display allows it, scaled down to fit smaller screens, and centered — instead
+of the previous fixed `1100x700` that clipped panels on macOS. The absolute
+minimum window size stays small on purpose so the window can still be dragged
+narrower than the controller-selector content.
+
 ### Window Compositions
 
 The screenshot generator covers the stable reference compositions supported by
