@@ -26,7 +26,7 @@ import re
 from pathlib import Path
 from typing import cast
 
-from PySide6.QtCore import Qt, QTimer, Signal
+from PySide6.QtCore import QItemSelectionModel, Qt, QTimer, Signal
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -36,6 +36,7 @@ from PySide6.QtWidgets import (
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
+    QInputDialog,
     QLabel,
     QLineEdit,
     QListWidget,
@@ -349,10 +350,20 @@ class ControllerSetupView(QWidget):
         add_button = QPushButton(self._get_icon("add"), "Add row")
         add_button.setMinimumHeight(28)
         add_button.clicked.connect(self._on_add_row_clicked)
+        bulk_section_button = QPushButton(self._get_icon("apply"), "Set section for selected rows…")
+        bulk_section_button.setMinimumHeight(28)
+        bulk_section_button.setToolTip("Assign one Section name to every selected row")
+        bulk_section_button.clicked.connect(self._on_bulk_set_section_clicked)
+        bulk_name_button = QPushButton(self._get_icon("apply"), "Set name for selected rows…")
+        bulk_name_button.setMinimumHeight(28)
+        bulk_name_button.setToolTip("Assign a Name to every selected row, optionally auto-numbered (PAD 1, PAD 2, …)")
+        bulk_name_button.clicked.connect(self._on_bulk_set_name_clicked)
         row_buttons = QHBoxLayout()
         row_buttons.setSpacing(8)
         row_buttons.addWidget(delete_button)
         row_buttons.addWidget(add_button)
+        row_buttons.addWidget(bulk_section_button)
+        row_buttons.addWidget(bulk_name_button)
         row_buttons.addStretch(1)
 
         layout = QVBoxLayout(self)
@@ -518,6 +529,88 @@ class ControllerSetupView(QWidget):
         self._devices.append("")
         self._append_row_to_table(entry, "manual", "")
         self._mark_dirty()
+
+    # -- bulk Section / Name assignment -----------------------------------
+
+    def _selected_table_rows(self) -> list[int]:
+        """Distinct selected row indices, in ascending order. Unlike
+        _selected_row_indices() this does NOT fall back to "all rows" when
+        nothing is selected — a bulk edit with no selection is a no-op."""
+        return sorted(
+            {index.row() for index in self._table.selectedIndexes() if 0 <= index.row() < len(self._rows)}
+        )
+
+    def _apply_bulk_edit(self, indices: list[int], mutate) -> None:
+        """Replace each selected row with mutate(rank, row) (rank is the 0-based
+        position within the selection), then resync the table, mark the draft
+        dirty, restore the selection, and re-run the trigger conflict check
+        since a bad bulk edit can collide (section, name) pairs."""
+        for rank, row_index in enumerate(indices):
+            self._rows[row_index] = mutate(rank, self._rows[row_index])
+        self._rebuild_table()
+        self._mark_dirty()
+        selection_model = self._table.selectionModel()
+        selection_model.clearSelection()
+        flags = (
+            QItemSelectionModel.SelectionFlag.Select | QItemSelectionModel.SelectionFlag.Rows
+        )
+        for row_index in indices:
+            selection_model.select(self._table.model().index(row_index, 0), flags)
+        conflicts = find_trigger_conflicts(self._rows)
+        if conflicts:
+            _LOGGER.warning(
+                "Bulk edit on %r produced %d trigger conflict(s): %s",
+                self._controller_name,
+                len(conflicts),
+                conflicts,
+            )
+            QMessageBox.warning(
+                self,
+                "Bulk edit created conflicts",
+                "The bulk edit left colliding triggers:\n\n" + "\n".join(conflicts),
+            )
+
+    def _on_bulk_set_section_clicked(self) -> None:
+        indices = self._selected_table_rows()
+        if not indices:
+            QMessageBox.information(self, "No rows selected", "Select one or more rows first.")
+            return
+        text, ok = QInputDialog.getText(
+            self, "Set section", f"Section name for {len(indices)} selected row(s):"
+        )
+        section = text.strip()
+        if not ok or not section:
+            return
+        self._apply_bulk_edit(indices, lambda _rank, row: dataclasses.replace(row, section=section))
+
+    def _on_bulk_set_name_clicked(self) -> None:
+        indices = self._selected_table_rows()
+        if not indices:
+            QMessageBox.information(self, "No rows selected", "Select one or more rows first.")
+            return
+        text, ok = QInputDialog.getText(
+            self, "Set name", f"Name for {len(indices)} selected row(s):"
+        )
+        base = text.strip()
+        if not ok or not base:
+            return
+        auto_number = False
+        if len(indices) > 1:
+            reply = QMessageBox.question(
+                self,
+                "Auto-number?",
+                f"Number the name across the selected rows ('{base} 1', '{base} 2', …)?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No | QMessageBox.StandardButton.Cancel,
+            )
+            if reply == QMessageBox.StandardButton.Cancel:
+                return
+            auto_number = reply == QMessageBox.StandardButton.Yes
+
+        def mutate(rank: int, row: ControlInfo) -> ControlInfo:
+            name = f"{base} {rank + 1}" if auto_number else base
+            return dataclasses.replace(row, name=name)
+
+        self._apply_bulk_edit(indices, mutate)
 
     # -- session lifecycle --------------------------------------------------
 

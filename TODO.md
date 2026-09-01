@@ -32,6 +32,7 @@ Status rules:
   - [Phase 3 hardware validation](#phase-3-hardware-validation)
   - [Candidate controller catalogues](#candidate-controller-catalogues)
   - [Future MIDI API extensions](#future-midi-api-extensions)
+  - [External tester feedback (2026-08)](#external-tester-feedback-2026-08)
   - [Next phases to define](#next-phases-to-define)
 
 ## Current roadmap status
@@ -201,6 +202,15 @@ Implemented contract, runtime, test, and documentation work:
   Metronome's output port/value/Hz lived in memory only and reset on every
   restart. Commit `70dad89`; milestone tag
   `v0.47.7-dock-buttons-and-view-state-persistence`.
+- [x] **Bulk Section/Name assignment in Controller Setup** — add `Set section
+  for selected rows…` and `Set name for selected rows…` row-buttons so a whole
+  pad grid can be labelled in one step instead of one row at a time. The Name
+  action offers auto-numbering (`PAD 1`, `PAD 2`, …) across the selection.
+  Both go through one `_apply_bulk_edit` helper that resyncs the table, marks
+  the draft dirty, restores the selection, and re-runs `find_trigger_conflicts`
+  so a colliding bulk edit is flagged immediately. Resolves
+  [#15](https://github.com/guillain/DJ-MIDI-Studio/issues/15); milestone tag
+  `v0.47.8-bulk-section-name`.
 
 ### Core mapping workflow
 
@@ -340,6 +350,40 @@ documentation index.
 - [ ] Add the capability to emulate a real controller's MIDI messages and layout for testing, training, and demonstration purposes.
 - [ ] Add a virtual controller with a configurable layout and MIDI message set for testing, training, and demonstration purposes.
 - [ ] Add the list of existing controllers to the virtual controller emulator for testing, training, and demonstration purposes.
+
+### External tester feedback (2026-08)
+
+Raised by an external tester (@padi_04) against a pre-`v0.47` build; reviewed
+against the current tree and confirmed still open. Tracked as GitHub issues.
+
+- [x] **Controller Setup — bulk-assign Section/Name to selected rows**
+  ([#15](https://github.com/guillain/DJ-MIDI-Studio/issues/15)). Delivered in
+  `v0.47.8-bulk-section-name`: `Set section for selected rows…` and `Set name
+  for selected rows…` (with optional auto-numbering) act on the table
+  selection and re-run the conflict check.
+- [ ] **Controller Setup — attach/upload a reference image from the UI**
+  ([#16](https://github.com/guillain/DJ-MIDI-Studio/issues/16)). The
+  Controller Images tab is a static bundled-PNG viewer; a custom controller
+  can never get a diagram. Let the user pick an image, persist it with the
+  session/generated module, and show it once applied.
+- [ ] **Submit manually-created controller profiles to a community catalog**
+  ([#17](https://github.com/guillain/DJ-MIDI-Studio/issues/17)). Export only
+  writes a local `catalog/<slug>.py`. Add an upstream submission path
+  (pre-filled GitHub PR/issue or endpoint) so the supported-device list is
+  community-fed. Needs transport/format, moderation, licensing, and dedup
+  decisions.
+- [ ] **Show only user-enabled controllers in the mapping tabs**
+  ([#18](https://github.com/guillain/DJ-MIDI-Studio/issues/18)). Every combo
+  and tree reads `catalog.CONTROLLER_NAMES` unfiltered (8 built-ins today).
+  Add a Preferences enable/disable UI backed by the existing unused
+  `plugins/preferences.py` store; tabs read only enabled controllers, with a
+  "show all" escape hatch.
+- [ ] **Elements cut off at the default window size on macOS**
+  ([#19](https://github.com/guillain/DJ-MIDI-Studio/issues/19)). Default
+  `1100x700` (`main_window.py:143`). Responsive work (`v0.46.3`,
+  `v0.47.3`–`v0.47.7`) improved it but the reporter confirms it still
+  reproduces. Needs the affected view + macOS version + screenshot, then a
+  larger/adaptive default or scroll-wrapped panels.
 
 ### Next phases to define
 

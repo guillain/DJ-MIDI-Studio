@@ -93,6 +93,11 @@ Output its own full-width panel. The output port list, message fields,
 playback actions, and PAD MODE 1–8 buttons remain available without a cramped
 five-column layout.
 
+Select several rows in the captured table and use `Set section for selected
+rows…` or `Set name for selected rows…` to label a whole pad grid in one
+step; the Name prompt offers auto-numbering (`PAD 1`, `PAD 2`, …). Each bulk
+edit re-checks for colliding triggers and warns if it created one.
+
 `Live Monitor`, `MIDI Routing`, `MIDI Clock`, and `Metronome` are independent MIDI tool docks, not mapping
 tabs. Open them from the `View` menu or the Dashboard; use the dock title bar's `Undock`/`Dock` button
 to float them, dock them again, or the close button to close them. The main window geometry and dock arrangement are restored on the
