@@ -412,3 +412,41 @@ def test_on_preferences_with_custom_log_path_uses_it_over_active_log_file():
         window._on_preferences()
     mock_configure.assert_called_once_with(window.preferences.log_level, "/custom/preference.log")
     window.close()
+
+
+def test_default_window_size_is_larger_than_the_legacy_1100x700():
+    window = MainWindow()
+    size = window._default_window_size()
+    assert size.width() >= 1100
+    assert size.height() >= 720
+    assert size.width() <= MainWindow._PREFERRED_WINDOW_SIZE.width()
+    assert size.height() <= MainWindow._PREFERRED_WINDOW_SIZE.height()
+    window.close()
+
+
+def test_default_window_size_never_exceeds_the_available_screen():
+    from PySide6.QtGui import QGuiApplication
+
+    window = MainWindow()
+    screen = window.screen() or QGuiApplication.primaryScreen()
+    available = screen.availableGeometry()
+    size = window._default_window_size()
+    # Either it fits inside the usable screen, or it was floored at the
+    # minimum sensible default because the screen is smaller than that.
+    assert size.width() <= max(available.width(), MainWindow._MIN_DEFAULT_WINDOW_SIZE.width())
+    assert size.height() <= max(available.height(), MainWindow._MIN_DEFAULT_WINDOW_SIZE.height())
+    window.close()
+
+
+def test_center_on_screen_keeps_the_frame_within_the_usable_area():
+    from PySide6.QtGui import QGuiApplication
+
+    window = MainWindow()
+    window.resize(800, 600)
+    window._center_on_screen()
+    screen = window.screen() or QGuiApplication.primaryScreen()
+    available = screen.availableGeometry()
+    frame = window.frameGeometry()
+    assert frame.left() >= available.left()
+    assert frame.top() >= available.top()
+    window.close()
