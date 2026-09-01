@@ -107,6 +107,13 @@ rows…` or `Set name for selected rows…` to label a whole pad grid in one
 step; the Name prompt offers auto-numbering (`PAD 1`, `PAD 2`, …). Each bulk
 edit re-checks for colliding triggers and warns if it created one.
 
+Use `Attach reference image…` to give a custom controller a diagram: pick a
+local PNG/JPG and it shows in the `Controller Images` tab after `Apply now`.
+The image is referenced by its path (not copied into the project) and saved
+in the session file; `Generate catalog module…` records
+`reference_image=<filename>` and tells you where to drop a bundled copy.
+User-supplied images are your responsibility with respect to licensing.
+
 `Live Monitor`, `MIDI Routing`, `MIDI Clock`, and `Metronome` are independent MIDI tool docks, not mapping
 tabs. Open them from the `View` menu or the Dashboard; use the dock title bar's `Undock`/`Dock` button
 to float them, dock them again, or the close button to close them. The main window geometry and dock arrangement are restored on the

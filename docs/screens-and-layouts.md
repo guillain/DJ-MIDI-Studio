@@ -114,13 +114,15 @@ Controller Setup is used to learn MIDI triggers from hardware or import raw trig
 
 The captured table is multi-selectable. Beside `Delete selected row(s)` and `Add row`, `Set section for selected rows…` assigns one Section to every selected row in a single prompt, and `Set name for selected rows…` assigns a Name, optionally auto-numbered (`PAD 1`, `PAD 2`, …) across the selection. A bulk edit re-runs the trigger conflict check and warns immediately if it collides two rows.
 
+`Attach reference image…` (Import panel) picks a local PNG/JPG for a controller that has no bundled diagram. The image is referenced by its path on this machine — it is not copied into the project — and is saved in the session JSON. After `Apply now` it appears in the Controller Images tab like a built-in; `Generate catalog module…` writes `reference_image=<filename>`, and the completion dialog reminds you to place a copy at `assets/controllers/<filename>` if you want it bundled (user-supplied images are your responsibility with respect to licensing).
+
 The same tab provides MIDI output controls for sending a command once, sending a NOTE double-click, replaying selected/all session rows, or generating a catalog module. `Check for conflicts` should be run before applying or exporting a catalog.
 
 ![Controller Setup](images/layout/controlleur-setup.png)
 
 ## Controller Images
 
-Controller Images displays the official reference artwork for the selected catalog controller. The view supports zooming, panning, resetting the zoom, and opening the bundled local controller documentation when available. The selector includes every registered controller; controllers without reference artwork show an explicit placeholder instead of an inaccurate diagram. Artwork is currently available for DDJ-XP2, XDJ-XZ, DDJ-1000, DDJ-FLX4, DDJ-FLX10, DDJ-REV1, Numark Mixtrack Pro FX, and Hercules DJControl Inpulse 500.
+Controller Images displays the official reference artwork for the selected catalog controller. The view supports zooming, panning, resetting the zoom, and opening the bundled local controller documentation when available. The selector includes every registered controller; controllers without reference artwork show an explicit placeholder instead of an inaccurate diagram. Artwork is currently available for DDJ-XP2, XDJ-XZ, DDJ-1000, DDJ-FLX4, DDJ-FLX10, DDJ-REV1, Numark Mixtrack Pro FX, and Hercules DJControl Inpulse 500. A controller built in Controller Setup can carry a user-attached image (an absolute path), which this viewer resolves the same way as a bundled filename.
 
 ![Controller Images view](images/layout/controlleur-image.png)
 

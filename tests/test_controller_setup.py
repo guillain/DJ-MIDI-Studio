@@ -734,6 +734,70 @@ def test_bulk_edit_warns_when_it_creates_a_conflict(monkeypatch):
     assert shown.get("title") == "Bulk edit created conflicts"
 
 
+def test_set_reference_image_updates_label_and_marks_dirty():
+    view = _view_with_name("MiniPad")
+    view._dirty = False
+    view.set_reference_image("/tmp/minipad-front.png")
+    assert view._reference_image == "/tmp/minipad-front.png"
+    assert "minipad-front.png" in view._image_label.text()
+    assert view._dirty is True
+
+    view.set_reference_image("")
+    assert view._reference_image == ""
+    assert view._image_label.text() == "No reference image"
+
+
+def test_reference_image_round_trips_through_session(tmp_path):
+    view = _view_with_name("MiniPad")
+    view._rows = [ControlInfo("MiniPad", "DECK", "PLAY", "NOTE", ("1",), "0")]
+    view._sources = ["manual"]
+    view._devices = [""]
+    view.set_reference_image("/tmp/minipad.png")
+
+    session_path = tmp_path / "session.json"
+    view._save_session(session_path)
+    assert json.loads(session_path.read_text())["reference_image"] == "/tmp/minipad.png"
+
+    reloaded = ControllerSetupView()
+    reloaded._load_session(session_path)
+    assert reloaded._reference_image == "/tmp/minipad.png"
+    assert "minipad.png" in reloaded._image_label.text()
+
+
+def test_new_session_clears_reference_image():
+    view = _view_with_name("MiniPad")
+    view.set_reference_image("/tmp/x.png")
+    view._reset(clear_name=True)
+    assert view._reference_image == ""
+    assert view._image_label.text() == "No reference image"
+
+
+def test_apply_registers_definition_with_reference_image():
+    view = _view_with_name("__ApplyImageTest__")
+    view._rows = [ControlInfo("__ApplyImageTest__", "DECK", "PLAY", "NOTE", ("1",), "0")]
+    view._sources = ["manual"]
+    view._devices = [""]
+    view.set_reference_image("/tmp/apply-image-test.png")
+    try:
+        view._apply()
+        assert catalog.get_definition("__ApplyImageTest__").reference_image == "/tmp/apply-image-test.png"
+    finally:
+        catalog._registry._REGISTRY.pop("__ApplyImageTest__", None)
+
+
+def test_export_module_emits_reference_image_basename(tmp_path):
+    view = _view_with_name("MiniPad")
+    view._rows = [ControlInfo("MiniPad", "DECK", "PLAY", "NOTE", ("1",), "0")]
+    view._sources = ["manual"]
+    view._devices = [""]
+    view.set_reference_image(str(tmp_path / "some" / "dir" / "minipad.png"))
+
+    out_path = tmp_path / "minipad.py"
+    view._export_module(out_path)
+    text = out_path.read_text()
+    assert "reference_image='minipad.png'," in text
+
+
 def test_session_rows_returns_copy_of_current_rows():
     view = _view_with_name()
     view._rows = [ControlInfo("MiniPad", "PAD", "A", "NOTE", ("1",), "10")]
