@@ -1005,14 +1005,32 @@ def test_icon_button_grid_places_buttons_in_two_columns():
         assert b.size().width() == 28 and b.size().height() == 28
 
 
-def test_three_compact_panels_share_one_small_max_width():
-    from PySide6.QtWidgets import QFrame
+def test_toolbar_row_groups_are_separated():
+    from PySide6.QtWidgets import QFrame, QPushButton
+
+    groups = [[QPushButton(), QPushButton()], [QPushButton()], [QPushButton(), QPushButton()]]
+    row = ControllerSetupView._toolbar_row(groups)
+    buttons = [row.itemAt(i).widget() for i in range(row.count()) if isinstance(row.itemAt(i).widget(), QPushButton)]
+    separators = [
+        row.itemAt(i).widget()
+        for i in range(row.count())
+        if isinstance(row.itemAt(i).widget(), QFrame)
+        and row.itemAt(i).widget().frameShape() == QFrame.Shape.VLine
+    ]
+    assert len(buttons) == 5
+    assert len(separators) == 2  # one between each of the 3 groups
+    for b in buttons:
+        assert b.size().width() == 28 and b.size().height() == 28
+
+
+def test_setup_has_one_draft_panel_and_renamed_midi_input():
+    from PySide6.QtWidgets import QLabel
 
     view = _view_with_name()
-    capped = sorted(
-        box.maximumWidth()
-        for box in view.findChildren(QFrame)
-        if 0 < box.maximumWidth() <= 120
-    )
-    # Session, Import and Apply/Export are each capped to the same compact width.
-    assert capped.count(capped[0]) >= 3
+    titles = {lbl.text() for lbl in view.findChildren(QLabel)}
+    assert "Draft" in titles
+    assert "MIDI input" in titles
+    # The old separate panels are gone.
+    assert "Session" not in titles
+    assert "Import" not in titles
+    assert "Capture (learn from controller)" not in titles

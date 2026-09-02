@@ -104,10 +104,10 @@ Helpful Notes opens automatically in a separate popup at startup. Use
 whether it should stay closed on future startups; choosing `Yes` persists the
 choice, while `No` closes it for the current session only.
 
-Controller Setup keeps learning, import, and export at the top and gives MIDI
-Output its own full-width panel. The output port list, message fields,
-playback actions, and PAD MODE 1–8 buttons remain available without a cramped
-five-column layout.
+In Controller Setup the `Draft` toolbar (session / import / apply-export
+actions, grouped) runs along the top. `MIDI input` (learning) shares a row
+with `MIDI Output`; the output port list, message fields, playback actions,
+and PAD MODE 1–8 buttons stay visible without a cramped five-column layout.
 
 Select several rows in the captured table and use `Set section for selected
 rows…` or `Set name for selected rows…` to label a whole pad grid in one
