@@ -85,12 +85,12 @@ def test_build_layout_ddj_xp2_has_pads_first():
     cells = build_layout("DDJ-XP2")
     pad_cells = [c for c in cells if c.section == "PAD"]
     assert len(pad_cells) > 0
-    # Pad rows should appear at lower row indices than non-pad rows
+    # The pad grid leads the layout: no other zone starts above it. (Pad-mode
+    # buttons sit beside the pads at the same top row, which is faithful to the
+    # real DDJ-XP2, so this is a "starts no lower", not "ends above", check.)
     non_pad_cells = [c for c in cells if c.section != "PAD"]
     if non_pad_cells:
-        min_non_pad_row = min(c.row for c in non_pad_cells)
-        max_pad_row = max(c.row for c in pad_cells)
-        assert max_pad_row <= min_non_pad_row
+        assert min(c.row for c in pad_cells) <= min(c.row for c in non_pad_cells)
 
 
 def test_build_layout_returns_unique_keys():

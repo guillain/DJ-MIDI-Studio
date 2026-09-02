@@ -112,23 +112,30 @@ _DISPLAY_CONTROLS: dict[str, tuple[tuple[str, VisualKind], ...]] = {
 
 
 _PRO_LAYOUTS: dict[str, dict[str, tuple[int, int]]] = {
-    # (column, row) anchors for each physical zone.  The layout remains a
-    # schematic, but these zones now read like a DJ surface instead of a
-    # catalog dump.
+    # (column, row) anchors for each physical zone. Still a schematic, but the
+    # anchors echo each device's real topology and leave a clear vertical gap
+    # between vertically-adjacent zones so the framed zone panels (drawn in
+    # gui/layout_view.py) never overlap.
+    #
+    # XDJ-XZ — wide 2-deck standalone: performance pads over the transport on
+    # the left, the mixer strip beside them, the FX bank far right.
     "XDJ-XZ": {
         "PAD": (4, 1),
-        "DECK": (5, 3),
-        "EFFECT": (10, 3),
-        "MIXER": (5, 11),
+        "DECK": (4, 5),
+        "MIXER": (9, 5),
+        "EFFECT": (14, 1),
     },
+    # DDJ-XP2 — compact pad controller: pad-mode buttons beside the 4x4 pad
+    # grid, transport below, FX to the left, browse/other/MIDI-out along the
+    # bottom.
     "DDJ-XP2": {
         "PAD": (4, 1),
-        "DECK": (5, 5),
+        "PAD MODE": (10, 1),
         "EFFECT": (0, 6),
-        "PAD MODE": (10, 6),
-        "OTHER": (0, 10),
-        "BROWSE": (5, 10),
-        "MIDI-OUT": (10, 10),
+        "DECK": (4, 6),
+        "OTHER": (0, 9),
+        "BROWSE": (5, 9),
+        "MIDI-OUT": (10, 9),
     },
 }
 
