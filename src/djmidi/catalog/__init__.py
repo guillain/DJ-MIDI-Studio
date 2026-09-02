@@ -73,7 +73,7 @@ def discover_plugins(*, trust_external: bool = False) -> None:
     if not _BUILTINS_DISCOVERED:
         _BUILTINS_DISCOVERED = True
         for module_info in pkgutil.iter_modules(__path__):
-            if module_info.name.startswith("_") or module_info.name in {"codegen"}:
+            if module_info.name.startswith("_") or module_info.name in {"codegen", "community"}:
                 continue
             importlib.import_module(f"{__name__}.{module_info.name}")
         _LOGGER.info("Discovered %d built-in controller catalog(s)", len(all_controller_definitions()))

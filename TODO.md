@@ -247,6 +247,18 @@ Implemented contract, runtime, test, and documentation work:
   `assets/controllers/` and flags the licensing responsibility. Resolves
   [#16](https://github.com/guillain/DJ-MIDI-Studio/issues/16); milestone tag
   `v0.47.11-reference-image`.
+- [x] **Community catalog submission (minimal)** — `Submit to community
+  catalog…` in Controller Setup's Apply / Export panel. `catalog/community.py`
+  (Qt-free, tested) builds a versioned `controller-submission/1` JSON payload
+  from the draft's `ControllerDefinition` plus optional contributor metadata
+  (small dialog), then `submission_issue_url()` produces a pre-filled
+  `github.com/<repo>/issues/new` link — payload inlined in the querystring
+  when it fits under ~6 kB, otherwise a paste placeholder with the JSON put on
+  the clipboard. The handler validates first (same gate as Apply/Export),
+  always copies the JSON, opens the browser, and warns if it can't be opened.
+  Reference images are deliberately excluded from the payload. Resolves
+  [#17](https://github.com/guillain/DJ-MIDI-Studio/issues/17) (the minimal,
+  no-backend option); milestone tag `v0.47.12-controller-submission`.
 
 ### Core mapping workflow
 
@@ -412,12 +424,16 @@ against the current tree and confirmed still open. Tracked as GitHub issues.
   through `build_definition`/`generate_module_source`, and rendered by the
   Controller Images tab after `Apply now` (the viewer now resolves absolute
   paths as well as bundled filenames).
-- [ ] **Submit manually-created controller profiles to a community catalog**
-  ([#17](https://github.com/guillain/DJ-MIDI-Studio/issues/17)). Export only
-  writes a local `catalog/<slug>.py`. Add an upstream submission path
-  (pre-filled GitHub PR/issue or endpoint) so the supported-device list is
-  community-fed. Needs transport/format, moderation, licensing, and dedup
-  decisions.
+- [x] **Submit manually-created controller profiles to a community catalog**
+  ([#17](https://github.com/guillain/DJ-MIDI-Studio/issues/17)). Delivered
+  (minimal option) in `v0.47.12-controller-submission`: `Submit to community
+  catalog…` in Controller Setup validates the draft, packages it as a
+  versioned JSON profile (`catalog/community.py`, Qt-free), copies it to the
+  clipboard, and opens a pre-filled `controller-submission`-labelled GitHub
+  issue (payload inlined in the URL when short enough, else pasted from the
+  clipboard). Contributor metadata via a small dialog; reference images are
+  not submitted. A hosted endpoint, moderation pipeline, dedup, and a
+  dedicated community-profile repo remain future work.
 - [x] **Show only user-enabled controllers in the mapping tabs**
   ([#18](https://github.com/guillain/DJ-MIDI-Studio/issues/18)). Delivered in
   `v0.47.10-enabled-controllers`. The per-controller enable/disable already

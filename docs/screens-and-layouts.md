@@ -116,7 +116,7 @@ The captured table is multi-selectable. Beside `Delete selected row(s)` and `Add
 
 `Attach reference image…` (Import panel) picks a local PNG/JPG for a controller that has no bundled diagram. The image is referenced by its path on this machine — it is not copied into the project — and is saved in the session JSON. After `Apply now` it appears in the Controller Images tab like a built-in; `Generate catalog module…` writes `reference_image=<filename>`, and the completion dialog reminds you to place a copy at `assets/controllers/<filename>` if you want it bundled (user-supplied images are your responsibility with respect to licensing).
 
-The same tab provides MIDI output controls for sending a command once, sending a NOTE double-click, replaying selected/all session rows, or generating a catalog module. `Check for conflicts` should be run before applying or exporting a catalog.
+The same tab provides MIDI output controls for sending a command once, sending a NOTE double-click, replaying selected/all session rows, or generating a catalog module. `Check for conflicts` should be run before applying or exporting a catalog. `Submit to community catalog…` (Apply / Export panel) validates the draft, then opens a pre-filled GitHub issue and copies the profile JSON to the clipboard so a manually built controller can be reviewed and shipped as a built-in; reference images are not part of a submission.
 
 ![Controller Setup](images/layout/controlleur-setup.png)
 
