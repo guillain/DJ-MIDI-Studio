@@ -138,9 +138,13 @@ _LOGGER = logging.getLogger(__name__)
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
+        self.preferences_path = default_preferences_path()
+        self.preferences = PluginPreferences.load(self.preferences_path)
         application = QApplication.instance()
         if application is not None:
-            apply_theme(application)
+            apply_theme(application, self.preferences.theme)
+            # Follow the OS light/dark switch live while in "system" mode.
+            application.styleHints().colorSchemeChanged.connect(self._on_os_color_scheme_changed)
         self.setWindowTitle("DJ MIDI Studio")
         self.resize(self._default_window_size())
         # The absolute minimum stays intentionally tiny (v0.47.7: the window
@@ -154,8 +158,6 @@ class MainWindow(QMainWindow):
         self.config: MidiConfig | None = None
         self.current_path: Path | None = None
         self.software_id = "serato"
-        self.preferences_path = default_preferences_path()
-        self.preferences = PluginPreferences.load(self.preferences_path)
         catalog.discover_plugins(trust_external=self.preferences.trust_external_plugins)
         software.discover_plugins(trust_external=self.preferences.trust_external_plugins)
         # "Show all controllers" (View menu) bypasses the per-controller
@@ -672,10 +674,21 @@ class MainWindow(QMainWindow):
             return
         QDesktopServices.openUrl(QUrl.fromLocalFile(str(path)))
 
+    def _on_os_color_scheme_changed(self, _scheme: object) -> None:
+        """Re-apply the stylesheet when the OS flips light/dark, but only while
+        the user's theme preference is 'system'."""
+        if self.preferences.theme == "system":
+            application = QApplication.instance()
+            if application is not None:
+                apply_theme(application, "system")
+
     def _on_preferences(self) -> None:
         dialog = PreferencesDialog(self.preferences, self)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             self.preferences.save(self.preferences_path)
+            application = QApplication.instance()
+            if application is not None:
+                apply_theme(application, self.preferences.theme)
             self._apply_plugin_preferences()
             self._on_controller_applied(self.introduction_view._controller_combo.currentText())
             self.midi_routing_view.set_routing_enabled(self.preferences.routing_enabled)

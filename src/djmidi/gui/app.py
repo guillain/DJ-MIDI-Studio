@@ -43,7 +43,7 @@ def run(argv: list[str] | None = None) -> int:
     app = QApplication(sys.argv if argv is None else [sys.argv[0], *argv])
     app.setOrganizationName("DJ MIDI Studio")
     app.setApplicationName("DJ MIDI Studio")
-    apply_theme(app)
+    apply_theme(app, preferences.theme)
     window = MainWindow()
     window.show()
     result = app.exec()

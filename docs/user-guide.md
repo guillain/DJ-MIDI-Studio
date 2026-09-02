@@ -39,8 +39,15 @@ Available levels are `DEBUG`, `INFO`, `WARNING`, `ERROR`, and `CRITICAL`.
 ## Preferences
 
 Use `Settings -> Preferences...` to review the dynamically discovered
-controller and software plugins. The dialog persists plugin enablement,
-detection policy, routing policy, external-plugin trust, and log verbosity.
+controller and software plugins. The dialog persists the theme, plugin
+enablement, detection policy, routing policy, external-plugin trust, and log
+verbosity.
+
+`Theme` selects `Follow system` (default — track the OS light/dark setting
+live), `Light`, or `Dark`. The choice applies immediately on save and is
+restored on the next launch; it also sets Qt's colour scheme so native
+controls and icons match. The controller schematic in `By Deck` / `By
+Controller` keeps its dark performance canvas in either theme.
 Disabled plugins remain visible in this dialog for re-enablement, but are
 removed from active controller selectors, MIDI detection, catalog lookup, and
 mapping parser selection immediately after saving. `Enable all controllers` /

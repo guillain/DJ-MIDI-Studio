@@ -268,6 +268,17 @@ Implemented contract, runtime, test, and documentation work:
   (`MainWindow._right_splitter`) unless the active tab is By Channel / By
   Deck / By Controller, and drop EditPanel's "select a node…" prompt once an
   edit form is shown. Milestone tag `v0.47.13-setup-panels-and-edit-column`.
+- [x] **Selectable Light / Dark / System theme** — one QSS template with two
+  colour palettes plus a "follow the OS" mode, chosen in `Settings ->
+  Preferences` (`theme` = `system` | `light` | `dark`, persisted). Applied on
+  save and at startup, and re-applied live when the OS flips light/dark while
+  in `system` mode. `apply_theme` also drives Qt's colour scheme
+  (`setColorScheme` / `unsetColorScheme`) so native controls and `QStyle`
+  standard icons match, and the dark theme's buttons got a lighter fill and a
+  higher-contrast border so icon-only buttons stand out. A few MIDI-tool /
+  Controller Setup panels still carry hard-coded dark inline styles that a
+  follow-up will tokenise; the controller schematic canvas stays dark by
+  design. Milestone tag `v0.47.14-theme-selector`.
 
 ### Core mapping workflow
 

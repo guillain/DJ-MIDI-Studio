@@ -42,6 +42,13 @@ class PreferencesDialog(QDialog):
         trust = QCheckBox("Trust external plugins")
         trust.setChecked(preferences.trust_external_plugins)
         self._trust = trust
+        theme = QComboBox()
+        theme.addItem("Follow system", "system")
+        theme.addItem("Light", "light")
+        theme.addItem("Dark", "dark")
+        theme.setCurrentIndex(max(theme.findData(preferences.theme), 0))
+        self._theme = theme
+
         log_level = QComboBox()
         log_level.addItems(["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"])
         log_level.setCurrentText(preferences.log_level)
@@ -59,6 +66,7 @@ class PreferencesDialog(QDialog):
 
         policy_box = QGroupBox("Integration policy")
         policy_layout = QFormLayout(policy_box)
+        policy_layout.addRow("Theme:", theme)
         policy_layout.addRow("Detection:", detection)
         policy_layout.addRow("Log level:", log_level)
         policy_layout.addRow("Log file path:", log_path_row)
@@ -136,6 +144,7 @@ class PreferencesDialog(QDialog):
             self._log_path.setText(path)
 
     def _save(self) -> None:
+        self._preferences.theme = self._theme.currentData()
         self._preferences.detection_policy = self._detection.currentData()
         self._preferences.routing_enabled = self._routing.isChecked()
         self._preferences.trust_external_plugins = self._trust.isChecked()
