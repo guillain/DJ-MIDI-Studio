@@ -48,7 +48,8 @@ class EditPanel(QWidget):
         self._on_group_applied = on_group_applied or (lambda: None)
         self._node: object | None = None
         self._layout = QVBoxLayout(self)
-        self._layout.addWidget(QLabel("Select a node in the tree to edit it."))
+        self._prompt_label = QLabel("Select a node in the tree to edit it.")
+        self._layout.addWidget(self._prompt_label)
         self._body: QWidget | None = None
 
     @property
@@ -69,8 +70,6 @@ class EditPanel(QWidget):
     def set_node(self, node: object | None) -> None:
         self._clear_body()
         self._node = node
-        if node is None:
-            return
         if isinstance(node, Control):
             self._body = self._build_control_form(node)
         elif isinstance(node, UserIO):
@@ -79,9 +78,11 @@ class EditPanel(QWidget):
             self._body = self._build_mapping_form(node)
         elif isinstance(node, MappingGroup):
             self._body = self._build_group_form(node)
-        else:
-            return
-        self._layout.addWidget(self._body)
+        # The "select a node…" prompt is only useful while there is nothing to
+        # edit; once a form is shown it's just noise above the fields.
+        self._prompt_label.setVisible(self._body is None)
+        if self._body is not None:
+            self._layout.addWidget(self._body)
 
     def _build_physical_control_box(self, channel: str | None, event_type: str | None, control_no: str | None) -> QWidget:
         """A full-width box for the catalog match(es), kept out of any QFormLayout

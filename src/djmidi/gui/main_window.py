@@ -282,18 +282,27 @@ class MainWindow(QMainWindow):
         self.issues_table.horizontalHeader().setStretchLastSection(True)
         self.issues_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
 
-        right_splitter = QSplitter(Qt.Orientation.Vertical)
-        right_splitter.addWidget(self.edit_panel)
-        right_splitter.addWidget(self.issues_table)
-        right_splitter.setStretchFactor(0, 2)
-        right_splitter.setStretchFactor(1, 1)
+        self._right_splitter = QSplitter(Qt.Orientation.Vertical)
+        self._right_splitter.addWidget(self.edit_panel)
+        self._right_splitter.addWidget(self.issues_table)
+        self._right_splitter.setStretchFactor(0, 2)
+        self._right_splitter.setStretchFactor(1, 1)
+
+        # The edit / validation column only makes sense on the tree tabs; on
+        # Dashboard / Controller Setup / Controller Images there is no node to
+        # edit, so hide it there and give those tabs the full width.
+        self._editing_tab_indexes = {
+            self._tab_indexes[key] for key in ("channel", "deck", "controller")
+        }
+        self.left_tabs.currentChanged.connect(self._on_left_tab_changed)
 
         main_splitter = QSplitter(Qt.Orientation.Horizontal)
         main_splitter.addWidget(self.left_tabs)
-        main_splitter.addWidget(right_splitter)
+        main_splitter.addWidget(self._right_splitter)
         main_splitter.setStretchFactor(0, 1)
         main_splitter.setStretchFactor(1, 1)
         self.setCentralWidget(main_splitter)
+        self._on_left_tab_changed(self.left_tabs.currentIndex())
         main_splitter.setAutoFillBackground(True)
         self._tool_docks = self._create_tool_docks()
 
@@ -690,6 +699,10 @@ class MainWindow(QMainWindow):
         # per-controller Preferences checkboxes without discarding them —
         # unticking it restores exactly this enabled set.
         catalog.set_enabled_plugin_ids(None if self._show_all_controllers else controller_ids)
+
+    def _on_left_tab_changed(self, index: int) -> None:
+        """Show the edit / validation column only on the tree tabs."""
+        self._right_splitter.setVisible(index in self._editing_tab_indexes)
 
     def _on_show_all_controllers_toggled(self, checked: bool) -> None:
         self._show_all_controllers = checked
