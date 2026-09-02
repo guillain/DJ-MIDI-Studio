@@ -1005,20 +1005,23 @@ def test_icon_button_grid_places_buttons_in_two_columns():
         assert b.size().width() == 28 and b.size().height() == 28
 
 
-def test_toolbar_row_groups_are_separated():
-    from PySide6.QtWidgets import QFrame, QPushButton
+def test_toolbar_row_labels_groups_and_spreads_them():
+    from PySide6.QtWidgets import QLabel, QPushButton
 
-    groups = [[QPushButton(), QPushButton()], [QPushButton()], [QPushButton(), QPushButton()]]
-    row = ControllerSetupView._toolbar_row(groups)
-    buttons = [row.itemAt(i).widget() for i in range(row.count()) if isinstance(row.itemAt(i).widget(), QPushButton)]
-    separators = [
-        row.itemAt(i).widget()
-        for i in range(row.count())
-        if isinstance(row.itemAt(i).widget(), QFrame)
-        and row.itemAt(i).widget().frameShape() == QFrame.Shape.VLine
+    groups = [
+        ("Session", [QPushButton(), QPushButton()]),
+        ("Import", [QPushButton()]),
+        ("Apply / Export", [QPushButton(), QPushButton()]),
     ]
+    row = ControllerSetupView._toolbar_row(groups)
+    items = [row.itemAt(i) for i in range(row.count())]
+    labels = [it.widget().text() for it in items if isinstance(it.widget(), QLabel)]
+    buttons = [it.widget() for it in items if isinstance(it.widget(), QPushButton)]
+    stretches = [it for it in items if it.spacerItem() is not None and it.spacerItem().expandingDirections()]
+
+    assert labels == ["Session", "Import", "Apply / Export"]  # caption before each group
     assert len(buttons) == 5
-    assert len(separators) == 2  # one between each of the 3 groups
+    assert len(stretches) == 2  # between the 3 groups -> spread across the width
     for b in buttons:
         assert b.size().width() == 28 and b.size().height() == 28
 
@@ -1028,9 +1031,7 @@ def test_setup_has_one_draft_panel_and_renamed_midi_input():
 
     view = _view_with_name()
     titles = {lbl.text() for lbl in view.findChildren(QLabel)}
-    assert "Draft" in titles
-    assert "MIDI input" in titles
-    # The old separate panels are gone.
-    assert "Session" not in titles
-    assert "Import" not in titles
+    assert "Draft" in titles           # the merged panel
+    assert "MIDI input" in titles      # renamed from "Capture (learn from controller)"
+    assert "Session" in titles         # now a toolbar group caption, not a panel
     assert "Capture (learn from controller)" not in titles

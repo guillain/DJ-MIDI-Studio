@@ -339,9 +339,12 @@ class ControllerSetupView(QWidget):
         draft_layout.addLayout(
             self._toolbar_row(
                 [
-                    [new_button, load_button, save_button, clear_button],
-                    [import_button, self._attach_image_button, import_help_button],
-                    [check_button, self._apply_button, export_button, submit_button, apply_help_button],
+                    ("Session", [new_button, load_button, save_button, clear_button]),
+                    ("Import", [import_button, self._attach_image_button, import_help_button]),
+                    (
+                        "Apply / Export",
+                        [check_button, self._apply_button, export_button, submit_button, apply_help_button],
+                    ),
                 ]
             )
         )
@@ -473,25 +476,22 @@ class ControllerSetupView(QWidget):
         grid.setColumnStretch(columns, 1)
         return grid
 
-    @staticmethod
-    def _toolbar_row(groups: list[list[QPushButton]]) -> QHBoxLayout:
-        """One horizontal strip of 28x28 icon buttons, with a thin vertical
-        separator between each group (Session | Import | Export)."""
+    @classmethod
+    def _toolbar_row(cls, groups: list[tuple[str, list[QPushButton]]]) -> QHBoxLayout:
+        """One horizontal strip: each group is a caption followed by its
+        28x28 icon buttons, and the groups are spread across the full width
+        (first flush left, last flush right)."""
         row = QHBoxLayout()
         row.setSpacing(6)
-        for index, group in enumerate(groups):
+        for index, (caption, buttons) in enumerate(groups):
             if index:
-                separator = QFrame()
-                separator.setFrameShape(QFrame.Shape.VLine)
-                separator.setFrameShadow(QFrame.Shadow.Plain)
-                separator.setFixedWidth(2)
-                row.addSpacing(4)
-                row.addWidget(separator)
-                row.addSpacing(4)
-            for button in group:
+                row.addStretch(1)
+            label = cls._column_label(caption)
+            row.addWidget(label)
+            row.addSpacing(2)
+            for button in buttons:
                 button.setFixedSize(28, 28)
                 row.addWidget(button)
-        row.addStretch(1)
         return row
 
     @staticmethod
