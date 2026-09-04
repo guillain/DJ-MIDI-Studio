@@ -1005,14 +1005,33 @@ def test_icon_button_grid_places_buttons_in_two_columns():
         assert b.size().width() == 28 and b.size().height() == 28
 
 
-def test_three_compact_panels_share_one_small_max_width():
-    from PySide6.QtWidgets import QFrame
+def test_toolbar_row_labels_groups_and_spreads_them():
+    from PySide6.QtWidgets import QLabel, QPushButton
+
+    groups = [
+        ("Session", [QPushButton(), QPushButton()]),
+        ("Import", [QPushButton()]),
+        ("Apply / Export", [QPushButton(), QPushButton()]),
+    ]
+    row = ControllerSetupView._toolbar_row(groups)
+    items = [row.itemAt(i) for i in range(row.count())]
+    labels = [it.widget().text() for it in items if isinstance(it.widget(), QLabel)]
+    buttons = [it.widget() for it in items if isinstance(it.widget(), QPushButton)]
+    stretches = [it for it in items if it.spacerItem() is not None and it.spacerItem().expandingDirections()]
+
+    assert labels == ["Session", "Import", "Apply / Export"]  # caption before each group
+    assert len(buttons) == 5
+    assert len(stretches) == 2  # between the 3 groups -> spread across the width
+    for b in buttons:
+        assert b.size().width() == 28 and b.size().height() == 28
+
+
+def test_setup_has_one_draft_panel_and_renamed_midi_input():
+    from PySide6.QtWidgets import QLabel
 
     view = _view_with_name()
-    capped = sorted(
-        box.maximumWidth()
-        for box in view.findChildren(QFrame)
-        if 0 < box.maximumWidth() <= 120
-    )
-    # Session, Import and Apply/Export are each capped to the same compact width.
-    assert capped.count(capped[0]) >= 3
+    titles = {lbl.text() for lbl in view.findChildren(QLabel)}
+    assert "Draft" in titles           # the merged panel
+    assert "MIDI input" in titles      # renamed from "Capture (learn from controller)"
+    assert "Session" in titles         # now a toolbar group caption, not a panel
+    assert "Capture (learn from controller)" not in titles

@@ -169,11 +169,6 @@ class ControllerSetupView(QWidget):
         clear_button = QPushButton(self._get_icon("clear"), "")
         clear_button.setToolTip("Clear captured rows")
         clear_button.clicked.connect(self._on_clear_rows_clicked)
-        session_box, session_layout = self._titled_panel("Session", [])
-        session_layout.addLayout(
-            self._icon_button_grid([new_button, load_button, save_button, clear_button])
-        )
-        session_layout.addStretch(1)
 
         self._port_list = QListWidget()
         self._port_list.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
@@ -195,9 +190,9 @@ class ControllerSetupView(QWidget):
             " background: #202d42; border: 1px solid #3a506d; border-radius: 4px;"
             " }"
         )
-        capture_help_button = self._help_button("Capture (learn from controller)", _CAPTURE_HELP)
+        capture_help_button = self._help_button("MIDI input (learn from controller)", _CAPTURE_HELP)
         capture_box, capture_layout = self._titled_panel(
-            "Capture (learn from controller)", [refresh_button, self._learn_button, capture_help_button]
+            "MIDI input", [refresh_button, self._learn_button, capture_help_button]
         )
         capture_layout.addWidget(self._port_list)
         capture_layout.addSpacing(6)
@@ -210,15 +205,9 @@ class ControllerSetupView(QWidget):
         self._attach_image_button.setToolTip("Attach reference image…")
         self._attach_image_button.clicked.connect(self._on_attach_image_clicked)
         import_help_button = self._help_button("Import", _IMPORT_HELP)
-        import_box, import_layout = self._titled_panel("Import", [])
-        import_layout.addLayout(
-            self._icon_button_grid([import_button, self._attach_image_button, import_help_button])
-        )
         self._image_label = QLabel("No reference image")
         self._image_label.setWordWrap(True)
         self._image_label.setStyleSheet("QLabel { color: #8fa7bd; border: none; }")
-        import_layout.addWidget(self._image_label)
-        import_layout.addStretch(1)
 
         self._output_port_list = QListWidget()
         self._output_port_list.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
@@ -342,29 +331,32 @@ class ControllerSetupView(QWidget):
         submit_button.setToolTip("Submit to community catalog…")
         submit_button.clicked.connect(self._on_submit_clicked)
         apply_help_button = self._help_button("Apply / Export", _APPLY_HELP)
-        export_box, export_layout = self._titled_panel("Apply / Export", [])
-        export_layout.addLayout(
-            self._icon_button_grid(
-                [check_button, self._apply_button, export_button, submit_button, apply_help_button]
+
+        # Session, Import and Apply/Export are merged into one "Draft" panel: a
+        # single horizontal toolbar of icon actions with a separator between
+        # each group.
+        draft_box, draft_layout = self._titled_panel("Draft", [])
+        draft_layout.addLayout(
+            self._toolbar_row(
+                [
+                    ("Session", [new_button, load_button, save_button, clear_button]),
+                    ("Import", [import_button, self._attach_image_button, import_help_button]),
+                    (
+                        "Apply / Export",
+                        [check_button, self._apply_button, export_button, submit_button, apply_help_button],
+                    ),
+                ]
             )
         )
-        export_layout.addStretch(1)
+        draft_layout.addWidget(self._image_label)
 
-        for compact_box in (session_box, import_box, export_box):
-            compact_box.setMaximumWidth(116)
-
-        top_row = QGridLayout()
-        top_row.setHorizontalSpacing(12)
-        top_row.setVerticalSpacing(12)
-        top_row.addWidget(session_box, 0, 0)
-        top_row.addWidget(capture_box, 0, 1)
-        top_row.addWidget(import_box, 0, 2)
-        top_row.addWidget(export_box, 0, 3)
-        # Session / Import / Apply-Export are compact icon-button columns; only
-        # Capture (with the port list) grows with the window.
-        for column in (0, 2, 3):
-            top_row.setColumnStretch(column, 0)
-        top_row.setColumnStretch(1, 1)
+        # "MIDI input" (learn) sits at the start of the same row as "MIDI
+        # Output"; top-aligned so it stays as tall as its own content instead
+        # of stretching to the (taller) MIDI Output panel.
+        io_row = QHBoxLayout()
+        io_row.setSpacing(12)
+        io_row.addWidget(capture_box, 1, Qt.AlignmentFlag.AlignTop)
+        io_row.addWidget(output_box, 3)
 
         self._table = QTableWidget(0, 7)
         self._table.setHorizontalHeaderLabels(["Section", "Name", "Type", "Channel(s)", "Data1", "Source", "Device"])
@@ -402,8 +394,8 @@ class ControllerSetupView(QWidget):
         layout.setSpacing(12)
         layout.setContentsMargins(10, 10, 10, 10)
         layout.addLayout(name_row)
-        layout.addLayout(top_row, 0)
-        layout.addWidget(output_box, 0)
+        layout.addWidget(draft_box, 0)
+        layout.addLayout(io_row, 0)
         layout.addWidget(self._table, 1)
         layout.addLayout(row_buttons)
 
@@ -483,6 +475,24 @@ class ControllerSetupView(QWidget):
             grid.addWidget(button, index // columns, index % columns)
         grid.setColumnStretch(columns, 1)
         return grid
+
+    @classmethod
+    def _toolbar_row(cls, groups: list[tuple[str, list[QPushButton]]]) -> QHBoxLayout:
+        """One horizontal strip: each group is a caption followed by its
+        28x28 icon buttons, and the groups are spread across the full width
+        (first flush left, last flush right)."""
+        row = QHBoxLayout()
+        row.setSpacing(6)
+        for index, (caption, buttons) in enumerate(groups):
+            if index:
+                row.addStretch(1)
+            label = cls._column_label(caption)
+            row.addWidget(label)
+            row.addSpacing(2)
+            for button in buttons:
+                button.setFixedSize(28, 28)
+                row.addWidget(button)
+        return row
 
     @staticmethod
     def _column_label(text: str) -> QLabel:

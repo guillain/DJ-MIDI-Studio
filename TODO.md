@@ -279,6 +279,14 @@ Implemented contract, runtime, test, and documentation work:
   Controller Setup panels still carry hard-coded dark inline styles that a
   follow-up will tokenise; the controller schematic canvas stays dark by
   design. Milestone tag `v0.47.14-theme-selector`.
+- [x] **Controller Setup input/output row and merged Draft toolbar** — merge
+  the separate `Session`, `Import`, and `Apply / Export` panels into one
+  `Draft` panel: a single horizontal icon toolbar (`_toolbar_row`) with a
+  caption in front of each group (`Session`, `Import`, `Apply / Export`) and
+  the groups spread across the window width. Rename `Capture` to `MIDI input`
+  and move it (unchanged: input port list, `Start learning`, status) to the
+  start of the same row as `MIDI Output`, top-aligned so it stays as tall as
+  its content. Milestone tag `v0.47.15-controller-setup-io-layout`.
 
 ### Core mapping workflow
 
