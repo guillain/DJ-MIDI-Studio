@@ -253,6 +253,18 @@ def test_on_live_midi_event_updates_layout_selections():
     window.close()
 
 
+def test_on_live_midi_event_flashes_the_resolved_layout_cells():
+    from djmidi.midi_io import MidiEvent
+    window = _loaded_window()
+    event = MidiEvent(direction="in", channel="8", event_type="Note On", data1="64", data2="127", timestamp=0.0)
+    window._on_live_midi_event(event)
+    QApplication.processEvents()
+    assert window.layout_view._flash_keys
+    assert window.deck_layout_view._flash_keys
+    assert window.controller_layout_view._flash_keys
+    window.close()
+
+
 # ─── controller applied refresh ───────────────────────────────────────────────
 
 def test_on_controller_applied_updates_status_bar():
