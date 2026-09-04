@@ -20,6 +20,11 @@ InputOpener = Callable[[str], Any]
 OutputOpener = Callable[[str], Any]
 SERATO_CLOCK_INPUT_NAME = "DJ MIDI Studio Serato Clock In"
 
+_REALTIME_START = 0xFA
+_REALTIME_CONTINUE = 0xFB
+_REALTIME_STOP = 0xFC
+_REALTIME_CLOCK = 0xF8
+
 
 class MidiRoutingSession:
     """Poll open MIDI inputs and forward messages through a :class:`MidiRouter`.
@@ -55,6 +60,12 @@ class MidiRoutingSession:
         self._inputs: dict[str, Any] = {}
         self._outputs: dict[str, Any] = {}
         self.running = False
+        # Serato Clock -> Link transport bridge: last-known `.running` per Clock
+        # mirror sourced from SERATO_CLOCK_INPUT_NAME, so a real Start/Continue/Stop
+        # transition (not every poll tick) is what triggers a Link publish. Serato's
+        # own Link integration only ever publishes tempo, never transport (confirmed
+        # on hardware, see TODO.md), so this stands in for it.
+        self._bridge_running_state: dict[int, bool] = {}
 
     @property
     def input_port_ids(self) -> tuple[str, ...]:
@@ -137,6 +148,7 @@ class MidiRoutingSession:
             clock_mirror.reset()
         for follower in self._link_followers:
             follower.reset()
+        self._bridge_running_state.clear()
 
     def poll(self) -> int:
         """Drain each input once and return the number of forwarded messages."""
@@ -153,9 +165,46 @@ class MidiRoutingSession:
                 forwarded += self.router.route_message(source_id, normalized, self._send)
                 for clock_mirror in self._clock_mirrors:
                     forwarded += clock_mirror.forward(normalized, self._send)
+                    self._bridge_serato_transport(clock_mirror, normalized)
         for follower in self._link_followers:
             forwarded += follower.poll(self._send)
         return forwarded
+
+    def _bridge_serato_transport(self, clock_mirror: MidiClockMirror, message: MidiMessage) -> None:
+        """Republish Serato's real transport state onto every configured Link
+        follower's session as it changes (see ``_bridge_running_state``).
+
+        A bare Clock tick (0xF8) counts as "playing" too, not just an explicit
+        Start/Continue (0xFA/0xFB): joining an already-running stream (e.g.
+        DJ MIDI Studio's routing session starts after Serato/its bridge was
+        already playing) never sends a fresh Start byte, only ticks -- relying
+        on `MidiClockMirror.running` alone would then never detect it.
+        """
+        if (
+            clock_mirror.source_port_id != SERATO_CLOCK_INPUT_NAME
+            or not self._link_followers
+            or message.port_id != clock_mirror.source_port_id
+        ):
+            return
+        if message.status in (_REALTIME_START, _REALTIME_CONTINUE, _REALTIME_CLOCK):
+            is_playing = True
+        elif message.status == _REALTIME_STOP:
+            is_playing = False
+        else:
+            return
+        previous = self._bridge_running_state.get(id(clock_mirror))
+        if previous == is_playing:
+            return
+        self._bridge_running_state[id(clock_mirror)] = is_playing
+        for follower in self._link_followers:
+            try:
+                follower.publish_transport(is_playing)
+            except Exception:
+                _LOGGER.exception(
+                    "Failed to publish Serato transport (playing=%s) to Link follower %s",
+                    is_playing,
+                    follower.destination_port_ids,
+                )
 
     @staticmethod
     def _pending(port: Any) -> Iterable[Any]:

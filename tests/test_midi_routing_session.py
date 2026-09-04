@@ -5,7 +5,7 @@ import mido
 from djmidi.midi_api import MidiMessage
 from djmidi.midi_clock import MidiClockMirror
 from djmidi.midi_router import MidiRoute, MidiRouter
-from djmidi.midi_routing_session import MidiRoutingSession
+from djmidi.midi_routing_session import SERATO_CLOCK_INPUT_NAME, MidiRoutingSession
 
 
 class _FakePort:
@@ -29,6 +29,25 @@ class _CloseFailingPort(_FakePort):
     def close(self):
         self.closed = True
         raise OSError("endpoint already gone")
+
+
+class _FakeLinkFollower:
+    """Minimal double for LinkClockFollower, tracking bridged transport calls."""
+
+    def __init__(self, destination_port_ids=("link-out",)):
+        self.source_port_id = "Ableton Link (DJ MIDI Studio)"
+        self.destination_port_ids = tuple(destination_port_ids)
+        self.published = []
+        self.reset_calls = 0
+
+    def poll(self, send):
+        return 0
+
+    def publish_transport(self, is_playing):
+        self.published.append(is_playing)
+
+    def reset(self):
+        self.reset_calls += 1
 
 
 def test_session_forwards_messages_and_closes_ports():
@@ -174,3 +193,101 @@ def test_session_stop_closes_all_ports_and_resets_clock_after_close_failure():
     assert session.input_port_ids == ()
     assert session.output_port_ids == ()
     assert not mirror.clock_active(1.1)
+
+
+def test_serato_clock_bridges_start_stop_to_link_followers():
+    router = MidiRouter()
+    input_port = _FakePort(
+        [mido.Message("start"), mido.Message("clock"), mido.Message("stop")]
+    )
+    output_port = _FakePort()
+    follower = _FakeLinkFollower()
+    session = MidiRoutingSession(
+        router,
+        virtual_input_ids=(SERATO_CLOCK_INPUT_NAME,),
+        virtual_input_opener=lambda name: input_port,
+        output_opener=lambda name: output_port,
+        clock_mirror=MidiClockMirror(SERATO_CLOCK_INPUT_NAME, ["clock-out"]),
+        link_followers=(follower,),
+    )
+    session.start()
+    session.poll()
+    session.stop()
+    assert follower.published == [True, False]
+    # start() itself calls stop() first to clear any prior state, then the
+    # explicit stop() below runs a second time.
+    assert follower.reset_calls == 2
+
+
+def test_serato_clock_bridge_treats_a_bare_tick_as_playing():
+    """Joining an already-running Clock stream (e.g. routing starts after the
+    external producer was already playing) never sends a fresh Start byte,
+    only ticks -- the bridge must still detect it as playing (regression for
+    a real hardware session where Ableton Live was already playing when
+    routing started, so no Start edge was ever seen)."""
+    router = MidiRouter()
+    input_port = _FakePort([mido.Message("clock")])
+    output_port = _FakePort()
+    follower = _FakeLinkFollower()
+    session = MidiRoutingSession(
+        router,
+        virtual_input_ids=(SERATO_CLOCK_INPUT_NAME,),
+        virtual_input_opener=lambda name: input_port,
+        output_opener=lambda name: output_port,
+        clock_mirror=MidiClockMirror(SERATO_CLOCK_INPUT_NAME, ["clock-out"]),
+        link_followers=(follower,),
+    )
+    session.start()
+    session.poll()
+    assert follower.published == [True]
+
+
+def test_serato_clock_bridge_ignores_repeated_start_messages():
+    router = MidiRouter()
+    input_port = _FakePort([mido.Message("start"), mido.Message("start")])
+    output_port = _FakePort()
+    follower = _FakeLinkFollower()
+    session = MidiRoutingSession(
+        router,
+        virtual_input_ids=(SERATO_CLOCK_INPUT_NAME,),
+        virtual_input_opener=lambda name: input_port,
+        output_opener=lambda name: output_port,
+        clock_mirror=MidiClockMirror(SERATO_CLOCK_INPUT_NAME, ["clock-out"]),
+        link_followers=(follower,),
+    )
+    session.start()
+    session.poll()
+    assert follower.published == [True]
+
+
+def test_non_serato_clock_source_does_not_bridge_to_link_followers():
+    router = MidiRouter()
+    input_port = _FakePort([mido.Message("start")])
+    output_port = _FakePort()
+    follower = _FakeLinkFollower()
+    session = MidiRoutingSession(
+        router,
+        input_opener=lambda name: input_port,
+        output_opener=lambda name: output_port,
+        clock_mirror=MidiClockMirror("clock-in", ["clock-out"]),
+        link_followers=(follower,),
+    )
+    session.start()
+    session.poll()
+    assert follower.published == []
+
+
+def test_serato_clock_does_not_bridge_without_link_followers():
+    router = MidiRouter()
+    input_port = _FakePort([mido.Message("start")])
+    output_port = _FakePort()
+    session = MidiRoutingSession(
+        router,
+        virtual_input_ids=(SERATO_CLOCK_INPUT_NAME,),
+        virtual_input_opener=lambda name: input_port,
+        output_opener=lambda name: output_port,
+        clock_mirror=MidiClockMirror(SERATO_CLOCK_INPUT_NAME, ["clock-out"]),
+    )
+    session.start()
+    # No Link followers configured: forwarding must succeed without error.
+    assert session.poll() == 1

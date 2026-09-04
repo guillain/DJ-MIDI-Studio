@@ -14,6 +14,7 @@ from djmidi.gui.midi_routing_view import (
     _transform_from_dict,
     _transform_to_dict,
 )
+from djmidi.midi_clock import MidiClockMirror
 from djmidi.midi_router import MidiRoute, MidiValueTransform
 from djmidi.midi_routing_session import SERATO_CLOCK_INPUT_NAME
 
@@ -162,6 +163,38 @@ def test_routing_view_reports_link_clock_configuration_when_link_is_selected():
     assert ABLETON_LINK_CLOCK_SOURCE_NAME in view._clock_status.text()
     assert "source port not open" not in view._clock_status.text()
     assert "start playback" in view._clock_status.toolTip()
+
+
+def test_routing_view_diagnoses_serato_and_link_routes_independently():
+    """A Link follower being configured must not swallow an unrelated, genuine
+    problem with a separately-configured Serato Clock route (regression for a
+    real hardware session where the combined status only ever said "no Link
+    beats", hiding that Serato's virtual Clock port was never opened)."""
+
+    class FakeLinkFollower:
+        source_port_id = ABLETON_LINK_CLOCK_SOURCE_NAME
+        destination_port_ids = ("MIDI4x4 Midi Out 1",)
+
+        def clock_active(self, _now):
+            return False
+
+    view = MidiRoutingView()
+    view._clock_enabled.blockSignals(True)
+    view._clock_enabled.setChecked(True)
+    view._clock_enabled.blockSignals(False)
+    view.set_routing_enabled(True)
+    view._clocks = [MidiClockMirror(SERATO_CLOCK_INPUT_NAME, ["MIDI4x4 Midi Out 2"])]
+    view._link_followers = [FakeLinkFollower()]
+    view._routing_session.running = True
+    view._refresh_clock_status()
+    text = view._clock_status.text()
+    assert "CLOCK INACTIVE" in text
+    assert SERATO_CLOCK_INPUT_NAME in text
+    assert "source port not open" in text  # the Serato route's own diagnosis
+    assert ABLETON_LINK_CLOCK_SOURCE_NAME in text
+    assert "no Link beats received" in text
+    assert "Serato diagnostic" in view._clock_status.toolTip()
+    assert "press Play in Serato" in view._clock_status.toolTip()
 
 
 def _view_with_one_route():

@@ -727,40 +727,58 @@ class MidiRoutingView(QWidget):
                 now = time.monotonic()
                 active = [clock for clock in self._clocks if clock.clock_active(now)]
                 active_link = [follower for follower in self._link_followers if follower.clock_active(now)]
-                if active or active_link:
-                    sources = ", ".join(sorted({clock.source_port_id for clock in (*active, *active_link)}))
+                inactive_clocks = [clock for clock in self._clocks if clock not in active]
+                inactive_links = [follower for follower in self._link_followers if follower not in active_link]
+                if not inactive_clocks and not inactive_links:
+                    sources = ", ".join(sorted({clock.source_port_id for clock in configured}))
                     text, color = f"CLOCK ACTIVE — receiving ticks from {sources}", "#16803c"
                     category = "active"
                 else:
-                    sources = ", ".join(sorted({clock.source_port_id for clock in configured}))
-                    transport = [clock for clock in self._clocks if clock.message_active(now)]
-                    if self._link_followers:
-                        text = f"CLOCK INACTIVE — no Link beats received from {sources}"
-                        category = "inactive_link"
-                        self._clock_status.setToolTip(
-                            "Ableton Link is connected but no playing Link transport was detected. "
-                            "Enable Link in Ableton Live, join the same Link session, and start playback."
-                        )
-                    elif transport:
-                        text = f"CLOCK INACTIVE — transport received, no Clock ticks from {sources}"
-                        category = "inactive_transport"
-                    elif any(
-                        clock.source_port_id in self._routing_session.input_port_ids
-                        for clock in self._clocks
-                    ):
-                        text = f"CLOCK INACTIVE — source port open, no ticks received from {sources}"
-                        category = "inactive_port_open"
-                    else:
-                        text = f"CLOCK INACTIVE — source port not open: {sources}"
-                        category = "inactive_port_closed"
+                    # Each configured route (a plain Clock mirror, e.g. Serato's virtual
+                    # port, and a Link follower) is diagnosed independently -- a Link
+                    # follower being configured must never hide a genuinely unrelated
+                    # problem with the Serato route (or vice versa), which previously
+                    # collapsed into a single "no Link beats" message even when the
+                    # Serato route itself had never received anything.
+                    clauses = []
+                    tooltip_parts = []
+                    if active or active_link:
+                        active_sources = ", ".join(sorted({clock.source_port_id for clock in (*active, *active_link)}))
+                        clauses.append(f"ACTIVE: {active_sources}")
+                    for clock in inactive_clocks:
+                        if clock.message_active(now):
+                            clauses.append(f"{clock.source_port_id}: transport received, no Clock ticks")
+                        elif clock.source_port_id in self._routing_session.input_port_ids:
+                            clauses.append(f"{clock.source_port_id}: source port open, no ticks received")
+                        else:
+                            clauses.append(f"{clock.source_port_id}: source port not open")
+                        if clock.source_port_id == SERATO_CLOCK_INPUT_NAME:
+                            tooltip_parts.append(
+                                "Serato diagnostic: start routing, then select this virtual port as "
+                                "Serato's MIDI Clock output destination and enable Clock/Sync -- this "
+                                "has to be re-selected after every app restart, since the virtual port "
+                                "is a new CoreMIDI endpoint each time."
+                            )
+                    for follower in inactive_links:
+                        clauses.append(f"{follower.source_port_id}: no Link beats received")
+                        if any(clock.source_port_id == SERATO_CLOCK_INPUT_NAME for clock in self._clocks):
+                            tooltip_parts.append(
+                                "Ableton Link is connected, but no playing transport was detected yet. "
+                                "This app bridges Serato's own Start/Stop onto Link once the Serato "
+                                "Clock source above is itself receiving ticks -- press Play in Serato."
+                            )
+                        else:
+                            tooltip_parts.append(
+                                "Ableton Link is connected but no playing Link transport was detected. "
+                                "Serato's own Link integration only publishes tempo, never transport: "
+                                "either add a Serato Clock source above (this app bridges its Start/Stop "
+                                "onto Link automatically), or use another Link peer that supports Start "
+                                "Stop Sync (e.g. Ableton Live) and start playback there."
+                            )
+                    text = "CLOCK INACTIVE — " + "; ".join(clauses)
                     color = "#b00020"
-                    if SERATO_CLOCK_INPUT_NAME in sources and not self._link_followers:
-                        self._clock_status.setToolTip(
-                            "Serato diagnostic: start routing, then select this virtual port "
-                            "as Serato's MIDI Clock output destination and enable Clock/Sync."
-                        )
-                    elif not self._link_followers:
-                        self._clock_status.setToolTip("")
+                    category = "inactive_mixed" if (active or active_link) else "inactive"
+                    self._clock_status.setToolTip(" ".join(tooltip_parts))
         self._log_clock_status_transition(category, text)
         self._clock_status.setText(text)
         self._clock_status.setStyleSheet(
