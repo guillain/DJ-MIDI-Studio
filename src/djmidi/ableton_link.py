@@ -36,6 +36,8 @@ class LinkStateProvider(Protocol):
 
     def close(self) -> None: ...
 
+    def publish_transport(self, is_playing: bool) -> None: ...
+
 
 class LinkBackendUnavailable(RuntimeError):
     """Raised when the native Ableton Link binding cannot be loaded."""
@@ -88,6 +90,15 @@ class AalinkStateProvider:
                         callback = getattr(self._link, method, None)
                         if callback is not None:
                             callback()
+                # Start Stop Sync is a separate per-peer opt-in on top of plain
+                # Link: a peer that hasn't enabled it neither sends nor receives
+                # Start/Stop over the network, even if every other peer (e.g.
+                # Ableton Live with its own Start Stop Sync toggle on) does.
+                # Without this, `state_at().playing` can never become True from
+                # a real remote peer no matter what that peer does -- confirmed
+                # on real hardware, see TODO.md.
+                if hasattr(self._link, "start_stop_sync_enabled"):
+                    self._link.start_stop_sync_enabled = True
                 self._ready.set()
                 await asyncio.to_thread(self._closed.wait)
             except BaseException as exc:  # noqa: BLE001 - propagate backend diagnostics
@@ -124,6 +135,28 @@ class AalinkStateProvider:
             _LOGGER.error("aalink session state exposes no beat-at-time accessor")
             raise LinkBackendUnavailable("aalink does not expose beat-at-time")
         return LinkState(tempo=tempo, beat=float(beat_at_time(now, 4.0)), playing=playing)
+
+    def publish_transport(self, is_playing: bool) -> None:
+        """Publish a locally-observed transport state onto this Link session.
+
+        Used by the Serato Clock -> Link bridge: Serato's own Link integration
+        only ever publishes tempo, never Start/Stop (confirmed on real hardware
+        -- see TODO.md), so this lets Start/Stop captured from Serato's MIDI
+        Clock output stand in for it, making it visible to this session's own
+        ``playing``/``beat`` state and to every other Link peer.
+        """
+        link = self._link
+        if link is None:
+            raise LinkBackendUnavailable("aalink Link session is not initialized")
+        setter = getattr(link, "set_is_playing_and_request_beat_at_time", None)
+        if setter is None:
+            _LOGGER.error("aalink Link object exposes no way to publish transport state")
+            raise LinkBackendUnavailable("aalink does not support publishing transport state")
+        beat = getattr(link, "beat", 0.0)
+        beat = beat() if callable(beat) else beat
+        time_value = link.time
+        time_value = time_value() if callable(time_value) else time_value
+        setter(bool(is_playing), time_value, float(beat if beat is not None else 0.0))
 
     def close(self) -> None:
         self._closed.set()
@@ -221,6 +254,11 @@ class LinkClockFollower:
     def clock_active(self, now: float, *, timeout_s: float = 0.5) -> bool:
         last = self.stats.last_clock_time
         return last is not None and now - last <= timeout_s
+
+    def publish_transport(self, is_playing: bool) -> None:
+        """Forward a bridged transport state (e.g. from Serato's own MIDI
+        Clock output) to this follower's underlying Link session."""
+        self.provider.publish_transport(is_playing)
 
     def close(self) -> None:
         _LOGGER.debug("Closing Link follower for %s", self.destination_port_ids)
