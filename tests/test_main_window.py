@@ -253,6 +253,17 @@ def test_on_live_midi_event_updates_layout_selections():
     window.close()
 
 
+def test_on_live_midi_event_records_the_value_for_knob_fader_animation():
+    from djmidi.midi_io import MidiEvent
+    window = _loaded_window()
+    # DDJ-XP2 EFFECT 1 knob's real trigger; data2 is its 7-bit value.
+    event = MidiEvent(direction="in", channel="5", event_type="Note On", data1="112", data2="99", timestamp=0.0)
+    window._on_live_midi_event(event)
+    QApplication.processEvents()
+    assert 99 in window.layout_view._values.values()
+    window.close()
+
+
 def test_on_live_midi_event_flashes_the_resolved_layout_cells():
     from djmidi.midi_io import MidiEvent
     window = _loaded_window()
