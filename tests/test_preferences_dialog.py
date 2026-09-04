@@ -50,3 +50,11 @@ def test_enable_all_controllers_button_rechecks_them():
         for definition in catalog.all_controller_definitions()
     }
     assert all(preferences.is_enabled(cid) for cid in controller_ids)
+
+
+def test_preferences_dialog_saves_theme_choice():
+    preferences = PluginPreferences()
+    dialog = PreferencesDialog(preferences)
+    dialog._theme.setCurrentIndex(dialog._theme.findData("light"))
+    dialog._save()
+    assert preferences.theme == "light"

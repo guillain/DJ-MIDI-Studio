@@ -9,6 +9,7 @@ from djmidi.plugins.manifest import (
 from djmidi.plugins.preferences import (
     DetectionPolicy,
     PluginPreferences,
+    ThemeMode,
     default_preferences_path,
 )
 
@@ -19,6 +20,7 @@ __all__ = [
     "PluginManager",
     "PluginManifest",
     "PluginPreferences",
+    "ThemeMode",
     "default_preferences_path",
     "read_manifest",
 ]

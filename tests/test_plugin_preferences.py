@@ -42,3 +42,23 @@ def test_plugin_preferences_log_path_defaults_empty_and_round_trips(tmp_path):
 def test_plugin_preferences_from_json_defaults_missing_log_path_to_empty():
     restored = PluginPreferences.from_json('{"enabled": {}}')
     assert restored.log_path == ""
+
+
+def test_plugin_preferences_theme_defaults_to_system_and_round_trips(tmp_path):
+    preferences = PluginPreferences()
+    assert preferences.theme == "system"
+    preferences.theme = "light"
+    path = tmp_path / "theme.json"
+    preferences.save(path)
+    assert PluginPreferences.load(path).theme == "light"
+
+
+def test_plugin_preferences_from_json_defaults_missing_theme_to_system():
+    assert PluginPreferences.from_json('{"enabled": {}}').theme == "system"
+
+
+def test_plugin_preferences_from_json_rejects_unknown_theme():
+    import pytest
+
+    with pytest.raises(ValueError, match="theme"):
+        PluginPreferences.from_json('{"enabled": {}, "theme": "neon"}')

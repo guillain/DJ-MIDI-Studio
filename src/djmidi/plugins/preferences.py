@@ -19,6 +19,8 @@ from typing import Literal
 _LOGGER = logging.getLogger(__name__)
 
 DetectionPolicy = Literal["ask", "suggest"]
+ThemeMode = Literal["system", "light", "dark"]
+_THEME_MODES = ("system", "light", "dark")
 
 
 @dataclass
@@ -29,6 +31,7 @@ class PluginPreferences:
     trust_external_plugins: bool = False
     log_level: str = "INFO"
     log_path: str = ""
+    theme: ThemeMode = "system"
 
     def is_enabled(self, plugin_id: str) -> bool:
         return self.enabled.get(plugin_id, True)
@@ -53,6 +56,7 @@ class PluginPreferences:
                 "trust_external_plugins": self.trust_external_plugins,
                 "log_level": self.log_level,
                 "log_path": self.log_path,
+                "theme": self.theme,
             },
             indent=2,
             sort_keys=True,
@@ -81,6 +85,9 @@ class PluginPreferences:
             "CRITICAL",
         }:
             raise ValueError("log_level is not supported")
+        theme = raw.get("theme", "system")
+        if theme not in _THEME_MODES:
+            raise ValueError("theme must be 'system', 'light', or 'dark'")
         return cls(
             enabled=dict(raw["enabled"]),
             detection_policy=detection_policy,
@@ -88,6 +95,7 @@ class PluginPreferences:
             trust_external_plugins=bool(raw.get("trust_external_plugins", False)),
             log_level=log_level.upper(),
             log_path=str(raw.get("log_path", "")),
+            theme=theme,
         )
 
     @classmethod
@@ -104,13 +112,14 @@ class PluginPreferences:
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(self.to_json(), encoding="utf-8")
         _LOGGER.info(
-            "Saved preferences to %s (detection_policy=%s, routing_enabled=%s, trust_external_plugins=%s, log_level=%s, log_path=%s)",
+            "Saved preferences to %s (detection_policy=%s, routing_enabled=%s, trust_external_plugins=%s, log_level=%s, log_path=%s, theme=%s)",
             target,
             self.detection_policy,
             self.routing_enabled,
             self.trust_external_plugins,
             self.log_level,
             self.log_path or "(default)",
+            self.theme,
         )
 
 
@@ -125,4 +134,4 @@ def default_preferences_path() -> Path:
     return Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "djmidi" / "preferences.json"
 
 
-__all__ = ["DetectionPolicy", "PluginPreferences", "default_preferences_path"]
+__all__ = ["DetectionPolicy", "PluginPreferences", "ThemeMode", "default_preferences_path"]
