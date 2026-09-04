@@ -115,10 +115,12 @@ environment. See the [Layout Screenshot Index](../images/layout/README.md).
 
 ## Validation boundary
 
-These chapters are software- and fixture-validated. The Serato → CoreMIDI
-virtual-port Clock path has since been verified on real macOS/Serato hardware
-with a physical controller (see [TODO.md](../../TODO.md) → Phase 3 hardware
-validation and [#10](https://github.com/guillain/DJ-MIDI-Studio/issues/10));
-the direct `Ableton Link (DJ MIDI Studio)` → CoreMIDI follower path remains
-open. Screenshots demonstrate layout and state presentation; they are not
-evidence of hardware compatibility.
+These chapters are software- and fixture-validated. Both remaining Phase 3
+hardware items are now verified on real macOS/Serato hardware with a physical
+controller: the Serato → CoreMIDI virtual-port Clock path, and (2026-09-04)
+the direct `Ableton Link (DJ MIDI Studio)` → CoreMIDI follower path with
+Ableton Live as the Start-Stop-Sync-capable Link peer (see
+[TODO.md](../../TODO.md) → Phase 3 hardware validation and
+[#10](https://github.com/guillain/DJ-MIDI-Studio/issues/10)). Screenshots
+demonstrate layout and state presentation; they are not evidence of hardware
+compatibility.

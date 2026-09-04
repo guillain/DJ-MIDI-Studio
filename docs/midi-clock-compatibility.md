@@ -73,7 +73,16 @@ emits MIDI Clock; it never sets Link's tempo. Install the application with
 reports the dependency instead of silently creating a dead route.
 For a Link source, `CLOCK INACTIVE` means that no playing Link transport has
 been seen yet; it does not mean that a physical MIDI input port is missing.
-Start Ableton Live playback after joining the same Link session.
+Start Ableton Live playback after joining the same Link session, and make
+sure Live's own "Start Stop Sync" is enabled in its Link/Tempo preferences —
+it is a separate opt-in from plain Link and off by default. DJ MIDI Studio's
+own session enables the matching opt-in (`start_stop_sync_enabled`)
+automatically; without it, no peer's real Start/Stop could ever reach the
+follower, which is what made this path look broken on real hardware before
+it was fixed (2026-09-04, see TODO.md). Serato's own Ableton Link integration
+publishes tempo only, never transport, regardless of this setting, so Serato
+alone can never drive this path — some other genuinely Start-Stop-Sync-
+capable Link peer (Ableton Live here) is required.
 The XDJ-XZ and DDJ-XP2 remain control surfaces; this project does not claim
 either one as a verified Serato MIDI Clock generator.
 
@@ -82,6 +91,17 @@ Clock In`, start DJ MIDI Studio first so the virtual input exists, select that
 source, then configure the bridge's MIDI destination to the virtual port. A
 `CLOCK INACTIVE` status then means the bridge is not sending `F8` ticks, rather
 than a missing Serato setting.
+
+When an `Ableton Link (DJ MIDI Studio)` Clock route is also configured
+alongside that bridge, DJ MIDI Studio republishes the bridge's real
+Start/Continue/Stop transitions onto its own Link session
+(`AalinkStateProvider.publish_transport`), so other Link peers follow the
+bridge's transport too. This does not stand in for Ableton Live's Link Start
+Stop Sync: Serato is never the bridge's producer, since it exposes no MIDI
+Clock/output configuration at all (confirmed on real hardware and by the
+user directly). The bridge only relays whatever *is* actually feeding
+`DJ MIDI Studio Serato Clock In`; with no external producer configured, there
+is nothing for it to relay.
 
 Important direction check: `DJ MIDI Studio Serato Clock In` is a destination
 for an external producer and a source inside DJ MIDI Studio. It is not a magic
