@@ -1107,10 +1107,18 @@ class MainWindow(QMainWindow):
         self._update_layout_selection(event.channel, event.event_type, event.data1)
         if event.channel and event.event_type and event.data1:
             keys = {layout_mod.cell_key(hit) for hit in catalog.lookup(event.channel, event.event_type, event.data1)}
+            try:
+                value = int(event.data2)
+            except (TypeError, ValueError):
+                value = None
             for key in keys:
                 self.layout_view.flash_key(key)
                 self.deck_layout_view.flash_key(key)
                 self.controller_layout_view.flash_key(key)
+                if value is not None:
+                    self.layout_view.set_value(key, value)
+                    self.deck_layout_view.set_value(key, value)
+                    self.controller_layout_view.set_value(key, value)
 
     def _on_intro_drilldown_requested(self, target: str, controller_name: str) -> None:
         if target in self._tool_docks:
