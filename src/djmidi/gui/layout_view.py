@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 from PySide6.QtCore import QLineF, QPointF, QRectF, Qt, Signal
 from PySide6.QtGui import QBrush, QColor, QFont, QPen
 from PySide6.QtWidgets import (
@@ -21,12 +23,68 @@ from djmidi import catalog
 from djmidi.gui import layout as layout_mod
 from djmidi.gui.layout import CellKey
 
-_CELL_W = 170
-_HALF_H = 44
-_CELL_H = _HALF_H * 2
-_MARGIN = 6
 _KEY_ROLE = 0
 _ALL_DECKS = "All decks"
+
+
+@dataclass(frozen=True)
+class LayoutMetrics:
+    """Per-controller schematic proportions.
+
+    Still a schematic, not a scaled replica — but a DDJ-XP2 (a compact,
+    pad-dominant battle controller) and an XDJ-XZ (a wide 2-deck standalone
+    with a big central mixer) should not render as the same uniform grid of
+    identical boxes. Only the pixel geometry changes here; the (row, col)
+    grid from ``layout.build_layout`` is untouched.
+    """
+
+    cell_w: int = 170
+    half_h: int = 44
+    margin: int = 6
+    pad_glyph: int = 30
+    button_glyph: int = 28
+    knob_glyph: int = 32
+    jog_glyph: int = 32
+    fader_glyph_h: int = 32
+    label_x: int = 42
+
+    @property
+    def cell_h(self) -> int:
+        return self.half_h * 2
+
+
+_DEFAULT_METRICS = LayoutMetrics()
+_METRICS: dict[str, LayoutMetrics] = {
+    # Compact and pad-forward: narrower cells, tighter gaps, chunky battle pads.
+    "DDJ-XP2": LayoutMetrics(
+        cell_w=158,
+        half_h=42,
+        margin=5,
+        pad_glyph=34,
+        button_glyph=26,
+        knob_glyph=30,
+        jog_glyph=30,
+        fader_glyph_h=30,
+        label_x=46,
+    ),
+    # Wide, airy 2-deck standalone: roomy cells, taller mixer faders and jogs,
+    # slimmer performance pads.
+    "XDJ-XZ": LayoutMetrics(
+        cell_w=198,
+        half_h=46,
+        margin=9,
+        pad_glyph=26,
+        button_glyph=28,
+        knob_glyph=34,
+        jog_glyph=36,
+        fader_glyph_h=40,
+        label_x=44,
+    ),
+}
+
+
+def metrics_for(controller: str) -> LayoutMetrics:
+    return _METRICS.get(controller, _DEFAULT_METRICS)
 
 # cell key -> Serato deck number -> set of Serato function tags (mapping.tag)
 # bound to that cell for that deck.
@@ -36,6 +94,9 @@ Usage = dict[CellKey, dict[str, set[str]]]
 LinkedCells = dict[CellKey, set[CellKey]]
 
 _SCENE_BRUSH = QBrush(QColor(13, 17, 25))
+_ZONE_FILL_BRUSH = QBrush(QColor(17, 23, 34))
+_ZONE_BORDER_PEN = QPen(QColor(44, 58, 80))
+_ZONE_TITLE_COLOR = QColor("#6fe7d0")
 _UNUSED_BRUSH = QBrush(QColor(29, 36, 49))
 _EMPTY_HALF_BRUSH = QBrush(QColor(20, 26, 37))
 _MULTI_DECK_BRUSH = QBrush(QColor(20, 91, 99))
@@ -127,6 +188,7 @@ class ControllerLayoutView(QWidget):
         # remain usable instead of crashing during window construction.
         controller_names = catalog.CONTROLLER_NAMES
         self._controller = controller_names[0] if controller_names else ""
+        self._metrics = metrics_for(self._controller)
         self._usage: Usage = {}
         self._linked_cells: LinkedCells = {}
         self._selected_keys: set[CellKey] = set()
@@ -334,7 +396,8 @@ class ControllerLayoutView(QWidget):
         clickable_key: CellKey,
         visual_kind: layout_mod.VisualKind = "button",
     ) -> None:
-        rect = QGraphicsRectItem(QRectF(0, 0, _CELL_W, _HALF_H))
+        m = self._metrics
+        rect = QGraphicsRectItem(QRectF(0, 0, m.cell_w, m.half_h))
         rect.setPos(x, y)
         rect.setBrush(_brush_for_decks(decks) if (decks or tags) else _EMPTY_HALF_BRUSH)
         rect.setPen(self._selection_pen(clickable_key))
@@ -345,8 +408,9 @@ class ControllerLayoutView(QWidget):
         self._scene.addItem(rect)
         self._draw_control_shape(x, y, visual_kind, clickable_key)
 
+        text_x = x + m.label_x
         label = QGraphicsSimpleTextItem(_elide(header, 24))
-        label.setPos(x + 42, y + 2)
+        label.setPos(text_x, y + 2)
         label.setBrush(QColor("#f3f6fb"))
         label.setData(_KEY_ROLE, clickable_key)
         self._scene.addItem(label)
@@ -354,7 +418,7 @@ class ControllerLayoutView(QWidget):
         if tags:
             tag_label = QGraphicsSimpleTextItem(_elide(", ".join(sorted(tags)), 26))
             tag_label.setFont(small_font)
-            tag_label.setPos(x + 42, y + 18)
+            tag_label.setPos(text_x, y + 18)
             tag_label.setBrush(QColor("#c5d0df"))
             tag_label.setData(_KEY_ROLE, clickable_key)
             self._scene.addItem(tag_label)
@@ -362,7 +426,7 @@ class ControllerLayoutView(QWidget):
         if decks:
             deck_label = QGraphicsSimpleTextItem(", ".join(f"D{d}" for d in sorted(decks)))
             deck_label.setFont(small_font)
-            deck_label.setPos(x + 42, y + _HALF_H - 14)
+            deck_label.setPos(text_x, y + m.half_h - 14)
             deck_label.setBrush(QColor("#91e8d2"))
             deck_label.setData(_KEY_ROLE, clickable_key)
             self._scene.addItem(deck_label)
@@ -370,42 +434,85 @@ class ControllerLayoutView(QWidget):
     def _draw_control_shape(
         self, x: float, y: float, visual_kind: layout_mod.VisualKind, key: CellKey
     ) -> None:
-        """Draw a compact DJ control glyph inside a layout half."""
+        """Draw a compact DJ control glyph inside a layout half, sized by the
+        current controller's LayoutMetrics."""
+        m = self._metrics
         left = x + 8
         top = y + 8
         if visual_kind in ("pad", "button"):
-            size = 30 if visual_kind == "pad" else 28
+            size = m.pad_glyph if visual_kind == "pad" else m.button_glyph
             shape = QGraphicsRectItem(QRectF(left, top, size, size))
             shape.setBrush(_PAD_BRUSH if visual_kind == "pad" else _button_brush(key[2]))
             shape.setPen(_CONTROL_PEN)
         elif visual_kind == "knob":
-            ring = QGraphicsEllipseItem(QRectF(left, top, 32, 32))
+            d = m.knob_glyph
+            ring = QGraphicsEllipseItem(QRectF(left, top, d, d))
             ring.setBrush(_KNOB_RING_BRUSH)
             ring.setPen(_CONTROL_PEN)
             ring.setData(_KEY_ROLE, key)
             self._scene.addItem(ring)
-            shape = QGraphicsEllipseItem(QRectF(left + 4, top + 4, 24, 24))
+            inset = d / 8
+            shape = QGraphicsEllipseItem(QRectF(left + inset, top + inset, d - 2 * inset, d - 2 * inset))
             shape.setBrush(_KNOB_BRUSH)
             shape.setPen(_CONTROL_PEN)
-            marker = QGraphicsLineItem(QLineF(left + 16, top + 16, left + 16, top + 5))
+            marker = QGraphicsLineItem(QLineF(left + d / 2, top + d / 2, left + d / 2, top + d / 6))
             marker.setPen(_CONTROL_PEN)
             marker.setData(_KEY_ROLE, key)
             self._scene.addItem(marker)
         elif visual_kind == "jog":
-            shape = QGraphicsEllipseItem(QRectF(left, top, 32, 32))
+            d = m.jog_glyph
+            shape = QGraphicsEllipseItem(QRectF(left, top, d, d))
             shape.setBrush(_CONTROL_BRUSH)
             shape.setPen(_CONTROL_PEN)
         else:  # fader
-            track = QGraphicsLineItem(QLineF(left + 16, top, left + 16, top + 32))
+            h = m.fader_glyph_h
+            track = QGraphicsLineItem(QLineF(left + 16, top, left + 16, top + h))
             track.setPen(_FADER_PEN)
             track.setData(_KEY_ROLE, key)
             self._scene.addItem(track)
-            shape = QGraphicsRectItem(QRectF(left + 7, top + 14, 18, 8))
+            shape = QGraphicsRectItem(QRectF(left + 7, top + h / 2 - 4, 18, 8))
             shape.setBrush(_CONTROL_BRUSH)
             shape.setPen(_CONTROL_PEN)
         shape.setData(_KEY_ROLE, key)
         shape.setToolTip(f"{key[0]} — {key[1]} {key[2]}")
         self._scene.addItem(shape)
+
+    _ZONE_HEADER_H = 20
+
+    def _draw_zone_frames(
+        self, cells: list[layout_mod.LayoutCell], col_step: float, row_step: float
+    ) -> None:
+        """One rounded, labelled panel per section, sized to its cells' grid
+        bounds. Purely decorative — no key data, never intercepts a click."""
+        m = self._metrics
+        bounds: dict[str, list[int]] = {}
+        for cell in cells:
+            b = bounds.get(cell.section)
+            if b is None:
+                bounds[cell.section] = [cell.col, cell.row, cell.col, cell.row]
+            else:
+                b[0], b[1] = min(b[0], cell.col), min(b[1], cell.row)
+                b[2], b[3] = max(b[2], cell.col), max(b[3], cell.row)
+
+        # Horizontal padding stays under half the inter-column gap so the
+        # frames of two side-by-side zones only touch, never overlap; vertical
+        # padding is generous because zones are anchored rows apart.
+        hpad = max(1, (m.margin - 2) // 2)
+        vpad = 9
+        for section, (min_c, min_r, max_c, max_r) in bounds.items():
+            x0 = min_c * col_step - hpad
+            y0 = min_r * row_step - self._ZONE_HEADER_H
+            w = (max_c - min_c + 1) * col_step - m.margin + 2 * hpad
+            h = (max_r - min_r + 1) * row_step - m.margin + self._ZONE_HEADER_H + vpad
+            frame = QGraphicsRectItem(QRectF(x0, y0, w, h))
+            frame.setBrush(_ZONE_FILL_BRUSH)
+            frame.setPen(_ZONE_BORDER_PEN)
+            self._scene.addItem(frame)
+            title = QGraphicsSimpleTextItem(section.replace("_", " ").upper())
+            title.setFont(QFont("Helvetica Neue", 8, QFont.Weight.Bold))
+            title.setBrush(_ZONE_TITLE_COLOR)
+            title.setPos(x0 + 10, y0 + 4)
+            self._scene.addItem(title)
 
     def _rebuild(self) -> None:
         self._scene.clear()
@@ -420,20 +527,23 @@ class ControllerLayoutView(QWidget):
             self._scene.addItem(message)
             self._scene.setSceneRect(self._scene.itemsBoundingRect().adjusted(-10, -10, 10, 10))
             return
+        self._metrics = metrics_for(self._controller)
+        m = self._metrics
+        col_step = m.cell_w + m.margin
+        row_step = m.cell_h + m.margin
         cells = layout_mod.build_layout(self._controller)
         deck_filter = self._selected_deck_filter()
         small_font = QFont()
         small_font.setPointSize(7)
 
-        section_positions: dict[str, tuple[int, int]] = {}
+        # Frame each physical zone (PAD, DECK, EFFECT, MIXER, …) as a labelled
+        # panel behind its cells, so the schematic reads as grouped hardware
+        # areas instead of a flat field of boxes. Drawn first => cells on top.
+        self._draw_zone_frames(cells, col_step, row_step)
+
         for cell in cells:
-            current = section_positions.get(cell.section)
-            if current is None:
-                section_positions[cell.section] = (cell.col, cell.row)
-            else:
-                section_positions[cell.section] = (min(current[0], cell.col), min(current[1], cell.row))
-            x = cell.col * (_CELL_W + _MARGIN)
-            y = cell.row * (_CELL_H + _MARGIN)
+            x = cell.col * col_step
+            y = cell.row * row_step
 
             decks, tags = self._cell_decks_and_tags(cell.key, deck_filter)
             self._draw_half(
@@ -463,7 +573,7 @@ class ControllerLayoutView(QWidget):
                 linked_key = linked_keys[0]
                 self._draw_half(
                     x,
-                    y + _HALF_H,
+                    y + m.half_h,
                     linked_key,
                     header,
                     other_decks,
@@ -473,37 +583,28 @@ class ControllerLayoutView(QWidget):
                     layout_mod.visual_kind_for(linked_key[1], linked_key[2]),
                 )
             else:
-                empty = QGraphicsRectItem(QRectF(0, 0, _CELL_W, _HALF_H))
-                empty.setPos(x, y + _HALF_H)
+                empty = QGraphicsRectItem(QRectF(0, 0, m.cell_w, m.half_h))
+                empty.setPos(x, y + m.half_h)
                 empty.setBrush(_EMPTY_HALF_BRUSH)
                 empty.setPen(_BORDER_PEN)
                 empty.setToolTip("No other controller shares this trigger in this config.")
                 self._scene.addItem(empty)
                 placeholder = QGraphicsSimpleTextItem("(other controller: n/a)")
                 placeholder.setFont(small_font)
-                placeholder.setPos(x + 4, y + _HALF_H + 15)
+                placeholder.setPos(x + 4, y + m.half_h + 15)
                 placeholder.setBrush(QColor("#78869b"))
                 self._scene.addItem(placeholder)
 
-            divider = QGraphicsLineItem(QLineF(x, y + _HALF_H, x + _CELL_W, y + _HALF_H))
+            divider = QGraphicsLineItem(QLineF(x, y + m.half_h, x + m.cell_w, y + m.half_h))
             divider.setPen(_DIVIDER_PEN)
             self._scene.addItem(divider)
-
-        for section, (col, row) in section_positions.items():
-            title = QGraphicsSimpleTextItem(section.replace("_", " ").upper())
-            title.setFont(QFont("Helvetica Neue", 8, QFont.Weight.Bold))
-            title.setBrush(QColor("#6fe7d0"))
-            title.setPos(col * (_CELL_W + _MARGIN), row * (_CELL_H + _MARGIN) - 17)
-            self._scene.addItem(title)
 
         self._scene.setSceneRect(self._scene.itemsBoundingRect().adjusted(-10, -10, 10, 10))
         pad_cells = [cell for cell in cells if cell.section == "PAD"]
         if pad_cells:
             self._pad_center = QPointF(
-                sum(cell.col * (_CELL_W + _MARGIN) + _CELL_W / 2 for cell in pad_cells)
-                / len(pad_cells),
-                sum(cell.row * (_CELL_H + _MARGIN) + _CELL_H / 2 for cell in pad_cells)
-                / len(pad_cells),
+                sum(cell.col * col_step + m.cell_w / 2 for cell in pad_cells) / len(pad_cells),
+                sum(cell.row * row_step + m.cell_h / 2 for cell in pad_cells) / len(pad_cells),
             )
             self._center_on_pad_zone()
 

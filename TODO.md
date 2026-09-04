@@ -287,6 +287,17 @@ Implemented contract, runtime, test, and documentation work:
   and move it (unchanged: input port list, `Start learning`, status) to the
   start of the same row as `MIDI Output`, top-aligned so it stays as tall as
   its content. Milestone tag `v0.47.15-controller-setup-io-layout`.
+- [x] **Per-controller schematic proportions and framed zones** (issue
+  [#13](https://github.com/guillain/DJ-MIDI-Studio/issues/13), "DJ layout
+  visual fidelity", part 1) — a `LayoutMetrics` per controller (cell width,
+  margins, glyph sizes; default = unchanged for the six other controllers)
+  gives DDJ-XP2 a compact pad-forward look and XDJ-XZ a wide airy one. Every
+  physical zone is now drawn as a rounded, labelled panel behind its cells
+  (`_draw_zone_frames`), replacing the free-floating section titles that
+  collided with a neighbour's cells, and the `_PRO_LAYOUTS` anchors were
+  re-placed to echo each device's real topology with a row gap between
+  vertically-adjacent zones. Parts 2 (MIDI-value animation) and 3
+  (performance mode) remain. Milestone tag `v0.47.16-controller-geometry`.
 
 ### Core mapping workflow
 

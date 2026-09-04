@@ -58,11 +58,36 @@ def test_xdj_and_xp2_use_separate_physical_zones():
     xdj = layout.build_layout("XDJ-XZ")
     xdj_by_section = {section: min((cell.col, cell.row) for cell in xdj if cell.section == section) for section in {cell.section for cell in xdj}}
     assert xdj_by_section["PAD"] == (4, 1)
-    assert xdj_by_section["DECK"] == (5, 3)
-    assert xdj_by_section["EFFECT"] == (10, 3)
-    assert xdj_by_section["MIXER"] == (5, 11)
+    assert xdj_by_section["DECK"] == (4, 5)
+    assert xdj_by_section["EFFECT"] == (14, 1)
+    assert xdj_by_section["MIXER"] == (9, 5)
 
     xp2 = layout.build_layout("DDJ-XP2")
     xp2_by_section = {section: min((cell.col, cell.row) for cell in xp2 if cell.section == section) for section in {cell.section for cell in xp2}}
     assert xp2_by_section["PAD"] == (4, 1)
-    assert xp2_by_section["PAD MODE"] == (10, 6)
+    assert xp2_by_section["PAD MODE"] == (10, 1)
+
+
+def test_zone_anchors_do_not_vertically_abut():
+    """Vertically-adjacent zones must leave a row gap so the framed zone
+    panels in the layout view don't overlap their neighbour's header."""
+    for controller in ("DDJ-XP2", "XDJ-XZ"):
+        cells = layout.build_layout(controller)
+        by_col: dict[int, list] = {}
+        for cell in cells:
+            by_col.setdefault(cell.col, []).append(cell)
+        spans: dict[str, tuple[int, int]] = {}
+        for cell in cells:
+            lo, hi = spans.get(cell.section, (cell.row, cell.row))
+            spans[cell.section] = (min(lo, cell.row), max(hi, cell.row))
+        cols_by_section = {
+            s: {c.col for c in cells if c.section == s} for s in spans
+        }
+        sections = list(spans)
+        for i, a in enumerate(sections):
+            for b in sections[i + 1 :]:
+                if cols_by_section[a] & cols_by_section[b]:
+                    a_lo, a_hi = spans[a]
+                    b_lo, b_hi = spans[b]
+                    # overlapping columns => must be clearly separated in rows
+                    assert a_hi + 1 < b_lo or b_hi + 1 < a_lo, (controller, a, b)
