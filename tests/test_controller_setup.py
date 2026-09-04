@@ -103,6 +103,42 @@ def test_import_from_xml_records_source_file_as_device():
     assert all(device == FIXTURE.name for device in view._devices)
 
 
+def test_import_xml_click_offers_to_open_as_mapping_and_emits_on_yes(monkeypatch):
+    import djmidi.gui.controller_setup as controller_setup_mod
+
+    view = _view_with_name()
+    monkeypatch.setattr(
+        controller_setup_mod.QFileDialog, "getOpenFileName", lambda *a, **k: (str(FIXTURE), "")
+    )
+    monkeypatch.setattr(
+        controller_setup_mod.QMessageBox,
+        "question",
+        lambda *a, **k: controller_setup_mod.QMessageBox.StandardButton.Yes,
+    )
+    emitted = []
+    view.openMappingRequested.connect(emitted.append)
+    view._on_import_xml_clicked()
+    assert emitted == [str(FIXTURE)]
+
+
+def test_import_xml_click_does_not_emit_on_no(monkeypatch):
+    import djmidi.gui.controller_setup as controller_setup_mod
+
+    view = _view_with_name()
+    monkeypatch.setattr(
+        controller_setup_mod.QFileDialog, "getOpenFileName", lambda *a, **k: (str(FIXTURE), "")
+    )
+    monkeypatch.setattr(
+        controller_setup_mod.QMessageBox,
+        "question",
+        lambda *a, **k: controller_setup_mod.QMessageBox.StandardButton.No,
+    )
+    emitted = []
+    view.openMappingRequested.connect(emitted.append)
+    view._on_import_xml_clicked()
+    assert emitted == []
+
+
 def test_session_save_and_load_roundtrip(tmp_path):
     view = _view_with_name("MiniPad")
     view._rows = [ControlInfo("MiniPad", "DECK", "PLAY", "NOTE", ("1", "2"), "0")]

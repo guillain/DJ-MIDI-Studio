@@ -94,14 +94,28 @@ _LOGGER = logging.getLogger(__name__)
 
 _POLL_INTERVAL_MS = 30
 
+_TAB_HELP = (
+    "Controller Setup builds a *controller profile* — the map from a device's MIDI "
+    "triggers to readable physical control names — for a controller DJ MIDI Studio "
+    "doesn't know yet. It does NOT open a Serato mapping for editing; that is "
+    "File → Open.\n\n"
+    "Workflow: (1) get the triggers — learn them from the hardware under MIDI input, "
+    "or Import them from an existing Serato XML; (2) type a Section and Name for each "
+    "row; (3) Apply / Export to use the profile now or write it to disk."
+)
 _CAPTURE_HELP = (
-    "Press discrete buttons/pads one at a time. Continuous controls (faders, TRIM/EQ knobs, "
-    "jog wheels, touch strips/encoders) will be captured too but aren't in scope for this "
-    "catalog — delete those rows before exporting."
+    "MIDI input / learning: tick the input port(s), press Start learning, then press "
+    "discrete buttons/pads one at a time — each new trigger becomes a row. Continuous "
+    "controls (faders, TRIM/EQ knobs, jog wheels, touch strips) are captured too but "
+    "aren't in scope for a profile — delete those rows before exporting."
 )
 _IMPORT_HELP = (
-    "Only the raw (channel, type, control) trigger is imported — Serato function names aren't "
-    "physical control names, so Section/Name must still be filled in by hand for each imported row."
+    "Import triggers from a Serato XML: reads every <control> and adds one row per "
+    "unique (channel, type, control). It seeds the profile so you don't have to press "
+    "every button on the hardware — it does NOT open the mapping for editing (that's "
+    "File → Open). Serato function names aren't physical control names, so Section and "
+    "Name still have to be filled in by hand. After importing you're offered to open "
+    "the same file as an editable mapping too."
 )
 _APPLY_HELP = (
     "Apply now registers this draft in the running app so it shows up in the Layout, By "
@@ -126,6 +140,9 @@ def _slugify(name: str) -> str:
 
 class ControllerSetupView(QWidget):
     controllerApplied = Signal(str)
+    # Emitted with a file path when the user, after importing triggers from a
+    # Serato XML, also wants that file opened as an editable mapping.
+    openMappingRequested = Signal(str)
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -199,7 +216,7 @@ class ControllerSetupView(QWidget):
         capture_layout.addWidget(self._learn_status)
 
         import_button = QPushButton(self._get_icon("import"), "")
-        import_button.setToolTip("Import from Serato XML…")
+        import_button.setToolTip("Import triggers from a Serato XML file…")
         import_button.clicked.connect(self._on_import_xml_clicked)
         self._attach_image_button = QPushButton(self._get_icon("image"), "")
         self._attach_image_button.setToolTip("Attach reference image…")
@@ -333,9 +350,17 @@ class ControllerSetupView(QWidget):
         apply_help_button = self._help_button("Apply / Export", _APPLY_HELP)
 
         # Session, Import and Apply/Export are merged into one "Draft" panel: a
-        # single horizontal toolbar of icon actions with a separator between
-        # each group.
-        draft_box, draft_layout = self._titled_panel("Draft", [])
+        # single horizontal toolbar of icon actions with a caption per group.
+        tab_help_button = self._help_button("What is Controller Setup?", _TAB_HELP)
+        draft_box, draft_layout = self._titled_panel("Draft", [tab_help_button])
+        draft_hint = QLabel(
+            "Build a controller profile — import or learn its MIDI triggers, name each "
+            "row, then Apply / Export. This does not open a Serato mapping for editing "
+            "(that is File → Open)."
+        )
+        draft_hint.setWordWrap(True)
+        draft_hint.setStyleSheet("QLabel { color: #8fa7bd; border: none; }")
+        draft_layout.addWidget(draft_hint)
         draft_layout.addLayout(
             self._toolbar_row(
                 [
@@ -936,7 +961,17 @@ class ControllerSetupView(QWidget):
             return
         added = self._import_config(config, Path(path_str).name)
         _LOGGER.info("Imported %d new trigger(s) from %s into Controller Setup", added, path_str)
-        QMessageBox.information(self, "Import complete", f"Added {added} new trigger(s) (others already present were skipped).")
+        reply = QMessageBox.question(
+            self,
+            "Import complete",
+            f"Added {added} new trigger row(s) to the profile (duplicates skipped).\n\n"
+            "Open this same file as an editable Serato mapping too "
+            "(By Channel / By Deck / By Controller)?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+        if reply == QMessageBox.StandardButton.Yes:
+            self.openMappingRequested.emit(path_str)
 
     # -- reference image ----------------------------------------------------
 

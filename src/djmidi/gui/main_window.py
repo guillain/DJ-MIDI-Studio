@@ -247,6 +247,7 @@ class MainWindow(QMainWindow):
 
         self.controller_setup_view = ControllerSetupView()
         self.controller_setup_view.controllerApplied.connect(self._on_controller_applied)
+        self.controller_setup_view.openMappingRequested.connect(self._on_open_mapping_requested)
 
         self.midi_routing_view = MidiRoutingView()
         self.midi_routing_view.set_routing_enabled(self.preferences.routing_enabled)
@@ -738,7 +739,16 @@ class MainWindow(QMainWindow):
         )
         if not path_str:
             return
-        path = Path(path_str)
+        self._load_mapping_from_path(Path(path_str))
+
+    def _on_open_mapping_requested(self, path_str: str) -> None:
+        """Controller Setup's "open this XML for editing too" follow-up — the
+        same as File -> Open on that path."""
+        self._load_mapping_from_path(Path(path_str))
+        if self.config is not None:
+            self.left_tabs.setCurrentIndex(self._tab_indexes["channel"])
+
+    def _load_mapping_from_path(self, path: Path) -> None:
         _LOGGER.info("Opening mapping file %s", path)
         try:
             mapping_text = path.read_text(encoding="utf-8")

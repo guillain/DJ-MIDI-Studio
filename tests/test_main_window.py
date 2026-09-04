@@ -363,6 +363,20 @@ def test_on_open_loads_config_on_success(tmp_path):
     window.close()
 
 
+def test_on_open_mapping_requested_loads_config_and_switches_to_channel_tab():
+    """Controller Setup's "open this XML for editing too" follow-up (emitted
+    after an import) behaves like File -> Open on that path, and additionally
+    lands on the By Channel tab so the loaded mapping is immediately visible."""
+    window = MainWindow()
+    window.left_tabs.setCurrentIndex(window._tab_indexes["setup"])
+    with patch("djmidi.gui.main_window.QInputDialog.getItem", return_value=("Serato DJ", True)):
+        window._on_open_mapping_requested(str(FIXTURE))
+    QApplication.processEvents()
+    assert window.config is not None
+    assert window.left_tabs.currentIndex() == window._tab_indexes["channel"]
+    window.close()
+
+
 def test_refresh_edit_panel_rerenders_current_node():
     from djmidi.model import Control
     window = MainWindow()
