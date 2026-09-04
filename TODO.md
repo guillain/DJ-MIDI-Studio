@@ -259,6 +259,20 @@ Implemented contract, runtime, test, and documentation work:
   Reference images are deliberately excluded from the payload. Resolves
   [#17](https://github.com/guillain/DJ-MIDI-Studio/issues/17) (the minimal,
   no-backend option); milestone tag `v0.47.12-controller-submission`.
+- [x] **Pad/button flash on a live MIDI hit** (issue
+  [#13](https://github.com/guillain/DJ-MIDI-Studio/issues/13), "DJ layout
+  visual fidelity", part 2, pads only) — `ControllerLayoutView.flash_key(key)`
+  briefly (220ms) turns a discrete pad/button glyph white on a live MIDI hit,
+  independent of the persistent red selection border already drawn by
+  `set_selected_keys`, mimicking a real pad lighting up. Wired from
+  `MainWindow._on_live_midi_event` alongside the existing selection update, on
+  all three `ControllerLayoutView` instances. Continuous controls (knob/fader/
+  jog/VU) don't react yet — animating an actual value, not just a discrete
+  hit, is a separate follow-up. Visually verified with the app running
+  (offscreen `QApplication` + `MainWindow.grab()`, same technique as
+  `scripts/capture_docs_screenshots.py`) before delivery, per the "don't build
+  visual-polish features blind" guidance. Milestone tag
+  `v0.47.19-pad-flash-animation`.
 
 ### Core mapping workflow
 
@@ -398,6 +412,12 @@ documentation index.
 
 - [ ] Add controller-specific geometry and proportions for XDJ-XZ and DDJ-XP2.
 - [ ] Add MIDI-value animation for knobs, faders, pads, jog wheels, and VU meters.
+  Partially addressed in `v0.47.19-pad-flash-animation`: a discrete pad/button
+  glyph now briefly flashes white on a live MIDI hit (`ControllerLayoutView.flash_key`),
+  independent of the persistent red selection border. Continuous controls
+  (knob/fader/jog/VU) still don't react to their live value — that requires
+  tracking and rendering an actual value, not just a discrete hit, and remains
+  open.
 - [ ] Add an optional performance mode with larger controls and reduced mapping detail.
 
 ### MIDI controller emulation
