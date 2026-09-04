@@ -319,7 +319,7 @@ Implemented contract, runtime, test, and documentation work:
   fix that diagnoses each configured route independently instead of letting
   a Link route mask an unrelated problem elsewhere. Verified end-to-end on
   real hardware (Serato, XDJ-XZ, DDJ-XP2, MIDIface 4x4, Ableton Live 12).
-  Milestone tag `v0.47.17-link-start-stop-sync`.
+  Milestone tag `v0.47.19-link-start-stop-sync`.
 - [x] **Controller Setup import clarity** — every help affordance in the tab
   (a new per-group help button plus a persistent hint under the "Draft"
   panel) now says explicitly that Controller Setup builds a *controller
