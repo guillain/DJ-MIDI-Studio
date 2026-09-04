@@ -28,8 +28,8 @@ Status rules:
   - [Controller catalogs](#controller-catalogs)
   - [MIDI tools and live workflows](#midi-tools-and-live-workflows)
   - [Testing, documentation, and delivery](#testing-documentation-and-delivery)
-- [Open backlog](#open-backlog)
   - [Phase 3 hardware validation](#phase-3-hardware-validation)
+- [Open backlog](#open-backlog)
   - [Candidate controller catalogues](#candidate-controller-catalogues)
   - [Future MIDI API extensions](#future-midi-api-extensions)
   - [External tester feedback (2026-08)](#external-tester-feedback-2026-08)
@@ -37,14 +37,21 @@ Status rules:
 
 ## Current roadmap status
 
-The implementation roadmap is complete through Phase 4. Phase 3 remains
-`IN PROGRESS — HARDWARE VALIDATION` because, although the software contracts,
-tests, and diagnostics are delivered, one macOS integration still requires a
-real Serato/XDJ-XZ/DDJ-XP2 setup: the direct `Ableton Link (DJ MIDI Studio)`
-→ CoreMIDI follower path. The Serato → CoreMIDI virtual-port Clock path has
-been verified on hardware (see [Phase 3 hardware
-validation](#phase-3-hardware-validation)). No implementation item is being
-relabeled as complete until that last distinction is explicit.
+The implementation roadmap is complete through Phase 4, and Phase 3's
+hardware validation is now also complete (2026-09-04) — see [Recent evolution
+chapters](#recent-evolution-chapters) for the full story. In short: the direct
+`Ableton Link (DJ MIDI Studio)` → CoreMIDI follower path is verified on real
+hardware (Serato, XDJ-XZ, DDJ-XP2, MIDIface 4x4, Ableton Live 12 as the Link
+Start Stop Sync peer). The root cause of the initial failures was a real bug,
+not a hardware limitation: `AalinkStateProvider` enabled plain Link but never
+opted the app's own session into Start Stop Sync, so no peer's Start/Stop —
+Serato's or Live's — could ever reach the follower regardless of what that
+peer did. Fixed by enabling `start_stop_sync_enabled` on the app's session.
+Along the way, Serato's own Ableton Link integration was independently
+confirmed (via a raw `aalink` protocol probe) to publish tempo only, never
+transport, and to expose no Clock/MIDI-output configuration of its own — so
+Serato alone can never drive this path; some other genuinely Start-Stop-Sync-
+capable Link peer (Ableton Live here) is required.
 
 The current release baseline is `v0.46.0`. The post-release evolution is
 implemented on the active `feature/independent-midi-clock` line and is tracked
@@ -82,7 +89,7 @@ close the open physical Serato/CoreMIDI validation items.
 - [x] Keep explicit user selection as the fallback for unknown or ambiguous hardware/software.
 - [x] Add MIDI Identity Reply/SysEx parsing, identity metadata hooks, and capability scoring where hardware permits it.
 
-### Phase 3 — multi-device MIDI engine — IN PROGRESS — HARDWARE VALIDATION
+### Phase 3 — multi-device MIDI engine — COMPLETE
 
 Implemented contract, runtime, test, and documentation work:
 
@@ -106,6 +113,9 @@ Implemented contract, runtime, test, and documentation work:
 - [x] Bridge the asyncio-based `aalink` runtime to the Qt routing poller and report Link follower activity correctly.
 - [x] Package the `aalink` binding as a default dependency in local, CI, release, and PyInstaller builds so Ableton Link is available in native artifacts.
 - [x] Move MIDI Clock configuration and diagnostics into an independent closable/floating dock while retaining the shared routing safety session.
+- [x] Enable Start Stop Sync opt-in (`start_stop_sync_enabled`) on the app's own Link session, without which no peer's real Start/Stop can ever reach the follower.
+- [x] Add a Serato Clock → Link transport bridge that republishes an external Clock producer's real Start/Continue/Stop onto the app's Link session.
+- [x] Diagnose each configured Clock route (a plain Clock mirror and a Link follower) independently in the Clock status banner, so one never hides an unrelated problem with the other.
 
 ### Phase 4 — safe software/controller operations — COMPLETE
 
@@ -406,20 +416,62 @@ Implemented contract, runtime, test, and documentation work:
 - [x] Translate the Dashboard UI and tests to English.
 - [x] Rename the project to DJ MIDI Studio.
 
-## Open backlog
-
 ### Phase 3 hardware validation
 
-- [ ] Verify the direct Ableton Link → CoreMIDI output path with Serato, XDJ-XZ, DDJ-XP2, and a real MIDI destination on macOS.
+All items complete as of 2026-09-04 — full setup: Serato with Link enabled,
+XDJ-XZ, DDJ-XP2, MIDIface 4x4, Ableton Live 12. See
+[#10](https://github.com/guillain/DJ-MIDI-Studio/issues/10).
+
+- [x] Verify the direct Ableton Link → CoreMIDI output path with Serato,
+  XDJ-XZ, DDJ-XP2, and a real MIDI destination on macOS.
+  **Root cause of every earlier failure on this item:** `AalinkStateProvider`
+  enabled plain Link but never opted the app's own session into Start Stop
+  Sync (`start_stop_sync_enabled`). Without that opt-in, no peer's real
+  Start/Stop — Serato's or Ableton Live's — could ever reach the follower,
+  regardless of what that peer did; this was verified independently of the
+  app with two standalone `aalink` processes (one publishing, one only
+  reading) genuinely exchanging Start/Stop over the real network once both
+  had the flag set. Fixed by enabling it in `AalinkStateProvider`. Verified
+  end-to-end afterwards: with only the `Ableton Link (DJ MIDI Studio)` Clock
+  route configured (no Serato-side involvement at all), a fresh Stop/Start in
+  Ableton Live 12 (a genuine Start-Stop-Sync-capable Link peer) produced
+  `Link transport started` in the app and `CLOCK ACTIVE` with real ticks
+  delivered to the MIDIface.
+  Separately (and confirmed independent of the above bug): Serato's own
+  Ableton Link integration publishes tempo only, never transport — verified
+  with a raw `aalink` protocol probe showing `start_stop_sync_enabled` and
+  `playing` staying `False` even while a deck was actually playing in Serato.
+  Serato also exposes no Clock/MIDI-output configuration of its own, so
+  `SERATO_CLOCK_INPUT_NAME` never receives anything directly from Serato
+  either. Serato alone can therefore never drive this path; some other
+  genuinely Start-Stop-Sync-capable Link peer is required (Ableton Live here).
+  A Serato Clock → Link transport bridge (`AalinkStateProvider.publish_transport`,
+  wired through `MidiRoutingSession._bridge_serato_transport`) was built while
+  chasing this, on the mistaken premise that Serato's real Start/Stop could be
+  captured from its own MIDI Clock output the way the item below did — it
+  cannot, since Serato never sends anything to that virtual port either. Kept
+  as a real capability for its actual use case (relaying a genuine external
+  Clock producer's Start/Stop onto Link), not as a Serato-specific workaround,
+  along with a fix to the Clock status banner that was masking this diagnosis
+  (it always blamed "no Link beats" whenever a Link follower was configured,
+  even when the real problem was an unrelated, separately-configured route).
 - [x] Verify the complete Serato → CoreMIDI virtual-port path on a real macOS/Serato setup, including port discovery, Clock output selection, Start/Stop, and sustained 24 PPQN ticks.
   Verified on macOS + Serato Pro with a physical controller (XDJ-XZ / DDJ-XP2)
   in the loop: virtual-port discovery and Clock source selection, Start /
-  Stop / Continue relay from Serato transport, drift-free sustained 24 PPQN,
-  and delivery to a real CoreMIDI destination. Ableton Live + Link were
-  running during the session, but the Clock source was the Serato CoreMIDI
-  virtual port, not the app's `Ableton Link (DJ MIDI Studio)` follower — that
-  follower path (task above) is still unverified on hardware. See
-  [#10](https://github.com/guillain/DJ-MIDI-Studio/issues/10).
+  Stop / Continue relay, drift-free sustained 24 PPQN, and delivery to a real
+  CoreMIDI destination. **Correction (2026-09-04):** re-validated attempts
+  without Ableton Live running produced zero messages on
+  `SERATO_CLOCK_INPUT_NAME`, and `docs/midi-clock-compatibility.md` already
+  documented that this virtual port is an input meant to receive ticks from
+  an external bridge, not from Serato directly. The original wording
+  attributing this to "Serato transport" was imprecise: the actual producer
+  in that session was Ableton Live's own native MIDI Clock output (Live +
+  Link were running throughout), not Serato. The mechanics verified here
+  (virtual-port discovery, relay, jitter-free 24 PPQN, real destination
+  delivery) stand; only the attribution of *who produced the signal* is
+  corrected.
+
+## Open backlog
 
 ### Candidate controller catalogues
 

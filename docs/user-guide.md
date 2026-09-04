@@ -193,13 +193,26 @@ For screenshots and a visual description of each tab, see [Screens and Layouts](
   For Traktor, select its MIDI output as the physical Clock source and
   configure Traktor's external Clock mode.
 
-  The Clock status label is a live diagnostic: `CLOCK ACTIVE` confirms that
-  ticks are arriving from the selected source; `CLOCK INACTIVE` means the
-  session is running but no recent ticks were received. With Serato, this
-  normally means that the Link binding is missing, Serato is not connected to
-  the Link session, or no external bridge is producing MIDI Clock. In direct
-  mode, Link tempo/phase reception and MIDI Clock generation happen inside DJ
-  MIDI Studio; in bridge mode they remain separate steps.
+  When both a Clock source (e.g. the Serato virtual port fed by an external
+  bridge) and an `Ableton Link (DJ MIDI Studio)` Clock route are configured
+  together, DJ MIDI Studio republishes that source's Start/Continue/Stop onto
+  the Link session as they arrive, so every other Link peer follows the same
+  transport. This only relays a signal that is genuinely present on the
+  configured source — it does not fabricate one, and Serato itself provides
+  no MIDI Clock output by any means, so this bridge has nothing to relay
+  unless something else (e.g. an external Clock-generating device or
+  application) is actually feeding that source.
+
+  The Clock status label is a live diagnostic and, once more than one route
+  is configured, reports each one independently — a Link route being
+  configured never hides an unrelated problem with a separately-configured
+  Clock source, or vice versa. `CLOCK ACTIVE` confirms that ticks are
+  arriving from the selected source; `CLOCK INACTIVE` means the session is
+  running but no recent ticks were received. With Serato, this normally means
+  that the Link binding is missing, Serato is not connected to the Link
+  session, or no external bridge is producing MIDI Clock. In direct mode,
+  Link tempo/phase reception and MIDI Clock generation happen inside DJ MIDI
+  Studio; in bridge mode they remain separate steps.
 
 Use the `MIDI Routing` dock to configure one-way source/destination routes and
 the `MIDI Clock` dock to configure the opt-in Clock policy. Add several Clock
