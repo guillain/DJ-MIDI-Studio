@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from PySide6.QtCore import QLineF, QPointF, QRectF, Qt, Signal
+from PySide6.QtCore import QLineF, QPointF, QRectF, Qt, QTimer, Signal
 from PySide6.QtGui import QBrush, QColor, QFont, QPen
 from PySide6.QtWidgets import (
     QComboBox,
@@ -113,6 +113,8 @@ _KNOB_BRUSH = QBrush(QColor(235, 190, 90))
 _KNOB_RING_BRUSH = QBrush(QColor(47, 57, 73))
 _FADER_PEN = QPen(QColor(55, 65, 80))
 _FADER_PEN.setWidth(3)
+_FLASH_BRUSH = QBrush(QColor(255, 255, 255))
+_FLASH_DURATION_MS = 220
 
 # One color per Serato deck number, so a glance at the layout shows which
 # deck each physical control currently drives.
@@ -194,6 +196,13 @@ class ControllerLayoutView(QWidget):
         self._selected_keys: set[CellKey] = set()
         self._selection_history: list[set[CellKey]] = []
         self._pad_center: QPointF | None = None
+        # Discrete pad/button glyphs briefly flash white when a live MIDI hit
+        # resolves to them (MainWindow._on_live_midi_event), independent of
+        # the (persistent, until the next selection) red selection border --
+        # this mimics a real pad lighting up on hit. Continuous controls
+        # (knob/fader/jog) don't react yet; animating an actual value is a
+        # separate follow-up (#13 part 2 continued).
+        self._flash_keys: set[CellKey] = set()
 
         self._controller_tabs = QTabBar()
         self._controller_tabs.setStyleSheet(
@@ -352,6 +361,16 @@ class ControllerLayoutView(QWidget):
         self._selected_keys = keys
         self._rebuild()
 
+    def flash_key(self, key: CellKey) -> None:
+        """Briefly highlight a pad/button glyph in response to a live MIDI hit."""
+        self._flash_keys.add(key)
+        self._rebuild()
+        QTimer.singleShot(_FLASH_DURATION_MS, lambda k=key: self._clear_flash(k))
+
+    def _clear_flash(self, key: CellKey) -> None:
+        self._flash_keys.discard(key)
+        self._rebuild()
+
     def clear_selection_history(self) -> None:
         """Forget the faded selection trail while keeping the current cell."""
         self._selection_history.clear()
@@ -442,7 +461,10 @@ class ControllerLayoutView(QWidget):
         if visual_kind in ("pad", "button"):
             size = m.pad_glyph if visual_kind == "pad" else m.button_glyph
             shape = QGraphicsRectItem(QRectF(left, top, size, size))
-            shape.setBrush(_PAD_BRUSH if visual_kind == "pad" else _button_brush(key[2]))
+            if key in self._flash_keys:
+                shape.setBrush(_FLASH_BRUSH)
+            else:
+                shape.setBrush(_PAD_BRUSH if visual_kind == "pad" else _button_brush(key[2]))
             shape.setPen(_CONTROL_PEN)
         elif visual_kind == "knob":
             d = m.knob_glyph

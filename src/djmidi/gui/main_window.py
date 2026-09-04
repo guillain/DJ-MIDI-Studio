@@ -1105,6 +1105,12 @@ class MainWindow(QMainWindow):
 
     def _on_live_midi_event(self, event: MidiEvent) -> None:
         self._update_layout_selection(event.channel, event.event_type, event.data1)
+        if event.channel and event.event_type and event.data1:
+            keys = {layout_mod.cell_key(hit) for hit in catalog.lookup(event.channel, event.event_type, event.data1)}
+            for key in keys:
+                self.layout_view.flash_key(key)
+                self.deck_layout_view.flash_key(key)
+                self.controller_layout_view.flash_key(key)
 
     def _on_intro_drilldown_requested(self, target: str, controller_name: str) -> None:
         if target in self._tool_docks:
