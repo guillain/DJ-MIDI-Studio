@@ -108,6 +108,13 @@ In Controller Setup the `Draft` toolbar (session / import / apply-export
 actions, grouped) runs along the top. `MIDI input` (learning) shares a row
 with `MIDI Output`; the output port list, message fields, playback actions,
 and PAD MODE 1–8 buttons stay visible without a cramped five-column layout.
+Controller Setup builds a *controller profile* — the map from a device's MIDI
+triggers to readable physical control names — not a Serato mapping; it never
+opens a mapping for editing (that's `File → Open`). Importing an existing
+Serato XML seeds that profile with its raw triggers so you don't have to
+press every button by hand, and after a successful import you're offered to
+also open the same file as an editable mapping (`By Channel` / `By Deck` /
+`By Controller`).
 
 Select several rows in the captured table and use `Set section for selected
 rows…` or `Set name for selected rows…` to label a whole pad grid in one

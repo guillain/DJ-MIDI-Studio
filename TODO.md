@@ -298,6 +298,27 @@ Implemented contract, runtime, test, and documentation work:
   re-placed to echo each device's real topology with a row gap between
   vertically-adjacent zones. Parts 2 (MIDI-value animation) and 3
   (performance mode) remain. Milestone tag `v0.47.16-controller-geometry`.
+- [x] **Ableton Link Start Stop Sync fix and hardware validation** (closes
+  [#10](https://github.com/guillain/DJ-MIDI-Studio/issues/10)) —
+  `AalinkStateProvider` enabled plain Link but never opted the app's own
+  session into Start Stop Sync (`start_stop_sync_enabled`), so no peer's real
+  Start/Stop could ever reach the `LinkClockFollower`. Fixed, plus a Serato
+  Clock → Link transport bridge (`AalinkStateProvider.publish_transport`,
+  `MidiRoutingSession._bridge_serato_transport`) for relaying a genuine
+  external Clock producer's Start/Stop onto Link, and a Clock status banner
+  fix that diagnoses each configured route independently instead of letting
+  a Link route mask an unrelated problem elsewhere. Verified end-to-end on
+  real hardware (Serato, XDJ-XZ, DDJ-XP2, MIDIface 4x4, Ableton Live 12).
+  Milestone tag `v0.47.17-link-start-stop-sync`.
+- [x] **Controller Setup import clarity** — every help affordance in the tab
+  (a new per-group help button plus a persistent hint under the "Draft"
+  panel) now says explicitly that Controller Setup builds a *controller
+  profile*, never a Serato mapping for editing (`File → Open` does that).
+  Importing an existing Serato XML now offers, on success, to also open that
+  same file as an editable mapping (`openMappingRequested` signal →
+  `MainWindow._on_open_mapping_requested`, landing on `By Channel`) — the one
+  deliberate exception to the tab staying otherwise self-contained. Milestone
+  tag `v0.47.18-controller-setup-import-clarity`.
 
 ### Core mapping workflow
 
