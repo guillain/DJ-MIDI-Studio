@@ -343,6 +343,22 @@ Implemented contract, runtime, test, and documentation work:
   `scripts/capture_docs_screenshots.py`) before delivery, per the "don't build
   visual-polish features blind" guidance. Milestone tag
   `v0.47.20-pad-flash-animation`.
+- [x] **Knob rotation and fader thumb animation from live MIDI values** (issue
+  [#13](https://github.com/guillain/DJ-MIDI-Studio/issues/13), "DJ layout
+  visual fidelity", part 2 continued) — `ControllerLayoutView.set_value(key,
+  value)` records the last known 7-bit MIDI value for a knob/fader glyph: a
+  knob's marker rotates across a typical 270-degree pot sweep (-135 to +135
+  degrees), a fader's thumb moves within its track. Unlike a flash, this is a
+  level, not a pulse — it persists like a real control staying wherever it
+  was left. Wired from `MainWindow._on_live_midi_event` (`event.data2`)
+  alongside the existing flash/selection updates. Also fixes a pre-existing
+  z-order bug where the knob's marker line was always painted but the dial's
+  yellow ellipse, added after it, fully covered it — the marker was never
+  actually visible even before this chapter. Jog wheels (rotation is
+  relative, not an absolute position) and VU meters (no glyph exists yet) are
+  out of scope. Visually verified with the app running before delivery, same
+  technique as the pad-flash chapter above. Milestone tag
+  `v0.47.21-knob-fader-animation`.
 
 ### Core mapping workflow
 
@@ -526,10 +542,13 @@ documentation index.
 - [ ] Add MIDI-value animation for knobs, faders, pads, jog wheels, and VU meters.
   Partially addressed in `v0.47.20-pad-flash-animation`: a discrete pad/button
   glyph now briefly flashes white on a live MIDI hit (`ControllerLayoutView.flash_key`),
-  independent of the persistent red selection border. Continuous controls
-  (knob/fader/jog/VU) still don't react to their live value — that requires
-  tracking and rendering an actual value, not just a discrete hit, and remains
-  open.
+  independent of the persistent red selection border. Further addressed in
+  `v0.47.21-knob-fader-animation`: a knob's marker now rotates (-135 to +135
+  degrees) and a fader's thumb now moves within its track from the live 7-bit
+  MIDI value (`ControllerLayoutView.set_value`), persisting like a real
+  control staying wherever it was left. Jog wheels (rotation is relative, not
+  an absolute position) and VU meters (no glyph exists yet — an
+  output-direction feature) remain open.
 - [ ] Add an optional performance mode with larger controls and reduced mapping detail.
 
 ### MIDI controller emulation
