@@ -66,7 +66,7 @@ because they are user-specific and are persisted automatically.
 
 ![Metronome as a floating window](images/layout/metronome-floating.png)
 
-The right-hand panel remains available from every tab for the current selection and validation messages. Selecting a mapping or a layout cell keeps the related views synchronized.
+The right-hand edit / validation column is shown only on the tree tabs (`By Channel`, `By Deck`, `By Controller`), where there is a node to edit; `Dashboard`, `Controller Setup`, and `Controller Images` use the full width. On a tree tab, selecting a mapping or a layout cell keeps the related views synchronized, and the "select a node…" prompt is replaced by the edit form once a node is selected.
 
 Helpful Notes is intentionally a separate startup popup rather than another
 dashboard panel. It can be reopened from `View -> Helpful Notes...`; closing
@@ -110,7 +110,7 @@ By Controller groups catalog entries by physical controller and section, such as
 
 ## Controller Setup
 
-Controller Setup is used to learn MIDI triggers from hardware or import raw triggers from a Serato XML file. The captured table records the section, physical name, MIDI type, channel(s), data value, source, and device. Learning, import, and export remain grouped at the top; MIDI Output now has a full-width performance panel with a dedicated port list, readable message fields, playback actions, and all eight DDJ-XP2 pad-mode buttons.
+Controller Setup is used to learn MIDI triggers from hardware or import raw triggers from a Serato XML file. The captured table records the section, physical name, MIDI type, channel(s), data value, source, and device. Learning, import, and export are grouped at the top: the `Session`, `Import`, and `Apply / Export` panels each present their icon actions in a compact body grid (same style), while `Capture` keeps the port list and grows with the window. MIDI Output has a full-width performance panel with a dedicated port list, readable message fields, playback actions, and all eight DDJ-XP2 pad-mode buttons.
 
 The captured table is multi-selectable. Beside `Delete selected row(s)` and `Add row`, `Set section for selected rows…` assigns one Section to every selected row in a single prompt, and `Set name for selected rows…` assigns a Name, optionally auto-numbered (`PAD 1`, `PAD 2`, …) across the selection. A bulk edit re-runs the trigger conflict check and warns immediately if it collides two rows.
 

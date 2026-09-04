@@ -259,6 +259,15 @@ Implemented contract, runtime, test, and documentation work:
   Reference images are deliberately excluded from the payload. Resolves
   [#17](https://github.com/guillain/DJ-MIDI-Studio/issues/17) (the minimal,
   no-backend option); milestone tag `v0.47.12-controller-submission`.
+- [x] **Consistent Controller Setup panels and a context-aware edit column** —
+  route the Session, Import, and Apply/Export panels through one shared
+  `_icon_button_grid` helper so all three place their icon actions in a
+  compact body grid (Import/Apply-Export previously crammed them into the
+  panel title bar); only Capture keeps its buttons in the header and grows
+  with the window. Hide the central edit/validation column
+  (`MainWindow._right_splitter`) unless the active tab is By Channel / By
+  Deck / By Controller, and drop EditPanel's "select a node…" prompt once an
+  edit form is shown. Milestone tag `v0.47.13-setup-panels-and-edit-column`.
 
 ### Core mapping workflow
 

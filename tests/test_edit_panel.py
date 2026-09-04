@@ -58,6 +58,22 @@ def test_set_node_none_clears_body():
     assert panel.current_node is None
 
 
+def test_prompt_label_hidden_while_editing_shown_otherwise():
+    panel, _ = _panel()
+    assert panel._prompt_label.isVisibleTo(panel)  # nothing selected yet
+
+    panel.set_node(_control())
+    assert panel._body is not None
+    assert not panel._prompt_label.isVisibleTo(panel)  # a form is up
+
+    panel.set_node(None)
+    assert panel._prompt_label.isVisibleTo(panel)
+
+    panel.set_node(42)  # unknown / non-editable type
+    assert panel._body is None
+    assert panel._prompt_label.isVisibleTo(panel)
+
+
 def test_set_node_control_shows_body():
     panel, _ = _panel()
     panel.set_node(_control())

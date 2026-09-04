@@ -170,12 +170,9 @@ class ControllerSetupView(QWidget):
         clear_button.setToolTip("Clear captured rows")
         clear_button.clicked.connect(self._on_clear_rows_clicked)
         session_box, session_layout = self._titled_panel("Session", [])
-        session_buttons = QGridLayout()
-        session_buttons.setSpacing(6)
-        for index, button in enumerate((new_button, load_button, save_button, clear_button)):
-            button.setFixedSize(28, 28)
-            session_buttons.addWidget(button, index // 2, index % 2)
-        session_layout.addLayout(session_buttons)
+        session_layout.addLayout(
+            self._icon_button_grid([new_button, load_button, save_button, clear_button])
+        )
         session_layout.addStretch(1)
 
         self._port_list = QListWidget()
@@ -213,8 +210,9 @@ class ControllerSetupView(QWidget):
         self._attach_image_button.setToolTip("Attach reference image…")
         self._attach_image_button.clicked.connect(self._on_attach_image_clicked)
         import_help_button = self._help_button("Import", _IMPORT_HELP)
-        import_box, import_layout = self._titled_panel(
-            "Import", [import_button, self._attach_image_button, import_help_button]
+        import_box, import_layout = self._titled_panel("Import", [])
+        import_layout.addLayout(
+            self._icon_button_grid([import_button, self._attach_image_button, import_help_button])
         )
         self._image_label = QLabel("No reference image")
         self._image_label.setWordWrap(True)
@@ -344,13 +342,16 @@ class ControllerSetupView(QWidget):
         submit_button.setToolTip("Submit to community catalog…")
         submit_button.clicked.connect(self._on_submit_clicked)
         apply_help_button = self._help_button("Apply / Export", _APPLY_HELP)
-        export_box, export_layout = self._titled_panel(
-            "Apply / Export",
-            [check_button, self._apply_button, export_button, submit_button, apply_help_button],
+        export_box, export_layout = self._titled_panel("Apply / Export", [])
+        export_layout.addLayout(
+            self._icon_button_grid(
+                [check_button, self._apply_button, export_button, submit_button, apply_help_button]
+            )
         )
         export_layout.addStretch(1)
 
-        session_box.setMaximumWidth(90)
+        for compact_box in (session_box, import_box, export_box):
+            compact_box.setMaximumWidth(116)
 
         top_row = QGridLayout()
         top_row.setHorizontalSpacing(12)
@@ -359,9 +360,11 @@ class ControllerSetupView(QWidget):
         top_row.addWidget(capture_box, 0, 1)
         top_row.addWidget(import_box, 0, 2)
         top_row.addWidget(export_box, 0, 3)
-        top_row.setColumnStretch(0, 0)
-        for column in (1, 2, 3):
-            top_row.setColumnStretch(column, 1)
+        # Session / Import / Apply-Export are compact icon-button columns; only
+        # Capture (with the port list) grows with the window.
+        for column in (0, 2, 3):
+            top_row.setColumnStretch(column, 0)
+        top_row.setColumnStretch(1, 1)
 
         self._table = QTableWidget(0, 7)
         self._table.setHorizontalHeaderLabels(["Section", "Name", "Type", "Channel(s)", "Data1", "Source", "Device"])
@@ -467,6 +470,19 @@ class ControllerSetupView(QWidget):
         body.setSpacing(6)
         outer.addLayout(body)
         return frame, body
+
+    @staticmethod
+    def _icon_button_grid(buttons: list[QPushButton], columns: int = 2) -> QGridLayout:
+        """A compact 2-column grid of 28x28 icon buttons, so the Session,
+        Import, and Apply/Export panels all place their actions the same way
+        (in the panel body, not crammed into the title bar)."""
+        grid = QGridLayout()
+        grid.setSpacing(6)
+        for index, button in enumerate(buttons):
+            button.setFixedSize(28, 28)
+            grid.addWidget(button, index // columns, index % columns)
+        grid.setColumnStretch(columns, 1)
+        return grid
 
     @staticmethod
     def _column_label(text: str) -> QLabel:

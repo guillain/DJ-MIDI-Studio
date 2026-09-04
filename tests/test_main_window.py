@@ -505,3 +505,19 @@ def test_show_all_controllers_action_is_in_the_view_menu():
     finally:
         catalog.set_enabled_plugin_ids(None)
         window.close()
+
+
+def test_edit_column_hidden_on_non_tree_tabs():
+    from djmidi import catalog
+
+    window = MainWindow()
+    try:
+        for key in ("intro", "setup", "images"):
+            window.left_tabs.setCurrentIndex(window._tab_indexes[key])
+            assert not window._right_splitter.isVisibleTo(window), key
+        for key in ("channel", "deck", "controller"):
+            window.left_tabs.setCurrentIndex(window._tab_indexes[key])
+            assert window._right_splitter.isVisibleTo(window), key
+    finally:
+        catalog.set_enabled_plugin_ids(None)
+        window.close()

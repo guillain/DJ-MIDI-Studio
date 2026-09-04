@@ -991,3 +991,28 @@ def test_session_save_and_load_preserves_recorded_events(tmp_path):
 
     assert reloaded.recorded_session_events() == view._recorded_events
 
+
+
+def test_icon_button_grid_places_buttons_in_two_columns():
+    from PySide6.QtWidgets import QPushButton
+
+    buttons = [QPushButton() for _ in range(5)]
+    grid = ControllerSetupView._icon_button_grid(buttons)
+    assert grid.count() == 5
+    positions = {(grid.getItemPosition(i)[0], grid.getItemPosition(i)[1]) for i in range(5)}
+    assert positions == {(0, 0), (0, 1), (1, 0), (1, 1), (2, 0)}
+    for b in buttons:
+        assert b.size().width() == 28 and b.size().height() == 28
+
+
+def test_three_compact_panels_share_one_small_max_width():
+    from PySide6.QtWidgets import QFrame
+
+    view = _view_with_name()
+    capped = sorted(
+        box.maximumWidth()
+        for box in view.findChildren(QFrame)
+        if 0 < box.maximumWidth() <= 120
+    )
+    # Session, Import and Apply/Export are each capped to the same compact width.
+    assert capped.count(capped[0]) >= 3
