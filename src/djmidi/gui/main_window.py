@@ -55,6 +55,7 @@ from djmidi.gui.controller_setup import ControllerSetupView
 from djmidi.gui.controller_tree import CELL_KEY_ROLE, build_controller_columns
 from djmidi.gui.deck_tree import build_deck_columns
 from djmidi.gui.edit_panel import EditPanel
+from djmidi.gui.geometry import resolve_geometry_label
 from djmidi.gui.helpful_notes_dialog import HelpfulNotesDialog
 from djmidi.gui.introduction_view import IntroductionView
 from djmidi.gui.layout_view import ControllerLayoutView
@@ -1113,7 +1114,8 @@ class MainWindow(QMainWindow):
     def _on_live_midi_event(self, event: MidiEvent) -> None:
         self._update_layout_selection(event.channel, event.event_type, event.data1)
         if event.channel and event.event_type and event.data1:
-            keys = {layout_mod.cell_key(hit) for hit in catalog.lookup(event.channel, event.event_type, event.data1)}
+            hits = catalog.lookup(event.channel, event.event_type, event.data1)
+            keys = {layout_mod.cell_key(hit) for hit in hits}
             try:
                 value = int(event.data2)
             except (TypeError, ValueError):
@@ -1126,6 +1128,16 @@ class MainWindow(QMainWindow):
                     self.layout_view.set_value(key, value)
                     self.deck_layout_view.set_value(key, value)
                     self.controller_layout_view.set_value(key, value)
+
+            # Flash the Controller Images tab's real-photo overlay too, for
+            # whichever controller it currently shows (gui/geometry.py).
+            image_controller = self.controller_image_view.current_controller_name()
+            for hit in hits:
+                if hit.controller != image_controller:
+                    continue
+                label = resolve_geometry_label(hit.controller, hit.name)
+                if label is not None:
+                    self.controller_image_view.flash_key(label)
 
     def _on_intro_drilldown_requested(self, target: str, controller_name: str) -> None:
         if target in self._tool_docks:

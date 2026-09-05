@@ -49,8 +49,11 @@ already collapses to one cell regardless of which copy is used:
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from typing import Literal
+
+from djmidi.gui.layout import _PAD_NUM_RE, _base_name
 
 Shape = Literal["rect", "circle"]
 
@@ -139,4 +142,52 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
 }
 
 
-__all__ = ["CONTROL_GEOMETRY", "ControlGeometry", "Shape"]
+# A combined-label suffix like "PAD MODE 1/5" or "LOAD DECK 1/3" names two
+# (or more) full logical names sharing one physical marker (see the module
+# docstring); this pulls both back out so a live catalog.lookup() hit's raw
+# name -- "PAD MODE 5", never "PAD MODE 1/5" -- can find its marker.
+_COMBINED_LABEL_RE = re.compile(r"^(?P<prefix>.+ )(?P<numbers>\d+(?:/\d+)+)$")
+
+
+def _label_alternatives(label: str) -> tuple[str, ...]:
+    match = _COMBINED_LABEL_RE.match(label)
+    if match is None:
+        return (label,)
+    prefix = match.group("prefix")
+    return tuple(f"{prefix}{n}" for n in match.group("numbers").split("/"))
+
+
+_REVERSE_INDEX_CACHE: dict[str, dict[str, str]] = {}
+
+
+def _reverse_index(controller: str) -> dict[str, str]:
+    index = _REVERSE_INDEX_CACHE.get(controller)
+    if index is None:
+        index = {}
+        for label in CONTROL_GEOMETRY.get(controller, {}):
+            for alternative in _label_alternatives(label):
+                index[alternative] = label
+        _REVERSE_INDEX_CACHE[controller] = index
+    return index
+
+
+def resolve_geometry_label(controller: str, hit_name: str) -> str | None:
+    """Maps a live ``catalog.lookup()`` hit's raw ``ControlInfo.name`` (e.g.
+    ``"PLAY/PAUSE"``, ``"Deck 1 Pad 3 (PAD MODE 2)"``, ``"PAD MODE 5"``) to
+    the ``CONTROL_GEOMETRY`` label it should flash, or ``None`` if that
+    control isn't modeled yet. Used to drive a live-MIDI flash on the real
+    photo overlay, mirroring ``ControllerLayoutView.flash_key`` on the
+    schematic tabs (see ``controller_image_view.ControllerImageView.flash_key``)."""
+    index = _reverse_index(controller)
+    if hit_name in index:
+        return index[hit_name]
+    pad_match = _PAD_NUM_RE.search(hit_name)
+    if pad_match is not None:
+        candidate = f"Pad {pad_match.group(1)}"
+        if candidate in index:
+            return index[candidate]
+    base = _base_name(hit_name)
+    return index.get(base)
+
+
+__all__ = ["CONTROL_GEOMETRY", "ControlGeometry", "Shape", "resolve_geometry_label"]
