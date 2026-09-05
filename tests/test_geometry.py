@@ -42,6 +42,18 @@ def test_ddj_xp2_geometry_covers_the_expected_controls():
         "EFFECT 3",
         "TOUCH STRIP HOLD",
         "FX LEVEL",
+        "4 BEAT LOOP",
+        "1/2X",
+        "2X",
+        "QUANTIZE",
+        "BEAT SYNC",
+        "SILENT CUE",
+        "KEY -",
+        "KEY +",
+        "Rotary Selector",
+        "LOAD DECK 1/3",
+        "LOAD DECK 2/4",
+        "SHIFT",
     }
 
 
