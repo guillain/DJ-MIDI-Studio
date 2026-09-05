@@ -233,5 +233,19 @@ def test_controller_selector_is_horizontal_scrollable():
     assert view._controller_scroll.widget() is view._controller_tabs
     assert view._controller_tabs.minimumWidth() == 0
     assert view._controller_scroll.horizontalScrollBarPolicy().name == "ScrollBarAsNeeded"
+
+
+def test_set_zoom_scales_the_view_transform():
+    view = ControllerLayoutView()
+    view.set_zoom(1.6)
+    assert view._view.transform().m11() == 1.6
+    assert view._view.transform().m22() == 1.6
+
+
+def test_set_zoom_back_to_one_resets_the_transform():
+    view = ControllerLayoutView()
+    view.set_zoom(1.6)
+    view.set_zoom(1.0)
+    assert view._view.transform().isIdentity()
     assert view._controller_scroll.verticalScrollBarPolicy().name == "ScrollBarAlwaysOff"
     assert view.set_controller("__missing__") is False

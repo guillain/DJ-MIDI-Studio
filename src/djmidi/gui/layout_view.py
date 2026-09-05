@@ -409,6 +409,12 @@ class ControllerLayoutView(QWidget):
     def clear_selection_history(self) -> None:
         """Forget the faded selection trail while keeping the current cell."""
         self._selection_history.clear()
+
+    def set_zoom(self, factor: float) -> None:
+        """Scale the whole schematic uniformly (performance mode's larger glyphs)."""
+        self._view.resetTransform()
+        if factor != 1.0:
+            self._view.scale(factor, factor)
         self._rebuild()
 
     def _selection_pen(self, key: CellKey) -> QPen:
