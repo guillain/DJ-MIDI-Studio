@@ -72,10 +72,7 @@ from djmidi.catalog.community import (
     summarise_source,
 )
 from djmidi.gui.controller_submission_dialog import ControllerSubmissionDialog
-from djmidi.gui.port_list_utils import (
-    refresh_checked_port_list,
-    refresh_selectable_port_list,
-)
+from djmidi.gui.port_list_utils import refresh_checked_port_list
 from djmidi.midi_io import (
     MidiEvent,
     MidiMonitor,
@@ -228,7 +225,7 @@ class ControllerSetupView(QWidget):
         self._image_label.setStyleSheet("QLabel { color: #8fa7bd; border: none; }")
 
         self._output_port_list = QListWidget()
-        self._output_port_list.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        self._output_port_list.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
         refresh_output_button = QPushButton(self._get_icon("refresh"), "Refresh output ports")
         refresh_output_button.clicked.connect(self._refresh_output_ports)
 
@@ -749,35 +746,53 @@ class ControllerSetupView(QWidget):
         refresh_checked_port_list(self._port_list, list_input_ports)
 
     def _refresh_output_ports(self) -> None:
-        refresh_selectable_port_list(self._output_port_list, list_output_ports)
+        refresh_checked_port_list(self._output_port_list, list_output_ports)
+        checked = any(
+            self._output_port_list.item(i).checkState() == Qt.CheckState.Checked
+            for i in range(self._output_port_list.count())
+        )
+        if self._output_port_list.count() and not checked:
+            # Preserve the old single-output convenience default: the first
+            # available port starts pre-selected, unlike a fresh input port
+            # list, since sending MIDI (unlike listening) is only useful once
+            # at least one output is chosen. Re-applied on every refresh with
+            # nothing checked, including a deliberately emptied selection --
+            # "Refresh output ports" restores a sane default rather than
+            # leaving every send/replay action unusable.
+            self._output_port_list.item(0).setCheckState(Qt.CheckState.Checked)
 
-    def _selected_output_port(self) -> str:
-        item = self._output_port_list.currentItem()
-        if item is None:
+    def _selected_output_ports(self) -> list[str]:
+        ports = [
+            self._output_port_list.item(i).text()
+            for i in range(self._output_port_list.count())
+            if self._output_port_list.item(i).checkState() == Qt.CheckState.Checked
+        ]
+        if not ports:
             raise ValueError("No output port selected")
-        return item.text()
+        return ports
 
     def _send_note_click(self, *, note: int, double_click: bool) -> None:
-        port = self._selected_output_port()
+        ports = self._selected_output_ports()
         channel = _parse_int(self._send_channel_edit.text(), "Channel", 1, 16)
         velocity = _parse_int(self._send_data2_edit.text(), "Data2", 0, 127)
         delay_ms = _parse_int(self._send_delay_ms_edit.text(), "Double-click delay", 0, 5_000)
 
         def do_click() -> None:
-            send_midi_message(
-                output_port_name=port,
-                event_type="note_on",
-                channel_1_based=channel,
-                data1=note,
-                data2=velocity,
-            )
-            send_midi_message(
-                output_port_name=port,
-                event_type="note_off",
-                channel_1_based=channel,
-                data1=note,
-                data2=0,
-            )
+            for port in ports:
+                send_midi_message(
+                    output_port_name=port,
+                    event_type="note_on",
+                    channel_1_based=channel,
+                    data1=note,
+                    data2=velocity,
+                )
+                send_midi_message(
+                    output_port_name=port,
+                    event_type="note_off",
+                    channel_1_based=channel,
+                    data1=note,
+                    data2=0,
+                )
 
         do_click()
         if double_click:
@@ -785,17 +800,20 @@ class ControllerSetupView(QWidget):
 
     def _on_send_output_once_clicked(self) -> None:
         try:
-            send_midi_message(
-                output_port_name=self._selected_output_port(),
-                event_type=self._send_type_edit.text(),
-                channel_1_based=_parse_int(self._send_channel_edit.text(), "Channel", 1, 16),
-                data1=_parse_int(self._send_data1_edit.text(), "Data1", 0, 127),
-                data2=_parse_int(self._send_data2_edit.text(), "Data2", 0, 127),
-            )
+            ports = self._selected_output_ports()
+            for port in ports:
+                send_midi_message(
+                    output_port_name=port,
+                    event_type=self._send_type_edit.text(),
+                    channel_1_based=_parse_int(self._send_channel_edit.text(), "Channel", 1, 16),
+                    data1=_parse_int(self._send_data1_edit.text(), "Data1", 0, 127),
+                    data2=_parse_int(self._send_data2_edit.text(), "Data2", 0, 127),
+                )
         except Exception as exc:  # noqa: BLE001 - show user-facing error
             QMessageBox.critical(self, "Failed to send MIDI", str(exc))
             return
-        self._send_status.setText("MIDI message sent.")
+        suffix = "s" if len(ports) != 1 else ""
+        self._send_status.setText(f"MIDI message sent to {len(ports)} output{suffix}.")
 
     def _on_send_output_double_clicked(self) -> None:
         try:
@@ -846,13 +864,13 @@ class ControllerSetupView(QWidget):
         value = _parse_int(self._send_data2_edit.text(), "Data2", 0, 127)
         entries = [self._rows[i] for i in row_indices if 0 <= i < len(self._rows)]
         skipped = len(row_indices) - len(entries)
-        stats = play_control_info_entries(
-            self._selected_output_port(),
-            entries,
-            value,
-            sender=send_midi_message,
-        )
-        return stats.sent_messages, stats.skipped_entries + skipped
+        total_sent = 0
+        entries_skipped = 0
+        for port in self._selected_output_ports():
+            stats = play_control_info_entries(port, entries, value, sender=send_midi_message)
+            total_sent += stats.sent_messages
+            entries_skipped = stats.skipped_entries  # which entries are invalid doesn't depend on the port
+        return total_sent, entries_skipped + skipped
 
     def _on_send_selected_rows_clicked(self) -> None:
         try:
@@ -878,7 +896,7 @@ class ControllerSetupView(QWidget):
             QMessageBox.warning(self, "No recording", "No MIDI event has been recorded in this session.")
             return
         try:
-            port = self._selected_output_port()
+            ports = self._selected_output_ports()
         except Exception as exc:  # noqa: BLE001 - show user-facing error
             QMessageBox.critical(self, "Failed to replay session", str(exc))
             return
@@ -899,7 +917,8 @@ class ControllerSetupView(QWidget):
             def send_and_continue() -> None:
                 if generation != self._replay_generation:
                     return
-                replay_midi_events(port, [event], sender=send_midi_message)
+                for port in ports:
+                    replay_midi_events(port, [event], sender=send_midi_message)
                 schedule(index + 1, event.timestamp)
 
             QTimer.singleShot(delay_ms, send_and_continue)

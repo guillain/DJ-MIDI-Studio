@@ -1,6 +1,9 @@
 import json
 from pathlib import Path
 
+import pytest
+from PySide6.QtCore import Qt
+
 from djmidi import catalog
 from djmidi.catalog._registry import ControlInfo
 from djmidi.catalog.codegen import generate_module_source, merge_by_channel
@@ -474,6 +477,76 @@ def test_refresh_output_ports_populates_list(monkeypatch):
     assert view._output_port_list.item(0).text() == "Port A"
 
 
+def test_refresh_output_ports_auto_checks_first_port_when_none_checked(monkeypatch):
+    """Preserves the old single-output convenience default now that the list
+    is checkbox-based (multi-select) rather than single-selection."""
+    import djmidi.gui.controller_setup as controller_setup_mod
+
+    view = _view_with_name()
+    monkeypatch.setattr(controller_setup_mod, "list_output_ports", lambda: ["Port A", "Port B"])
+    view._refresh_output_ports()
+    assert view._selected_output_ports() == ["Port A"]
+
+
+def test_refresh_output_ports_preserves_multiple_checked_ports_by_name(monkeypatch):
+    import djmidi.gui.controller_setup as controller_setup_mod
+
+    view = _view_with_name()
+    monkeypatch.setattr(controller_setup_mod, "list_output_ports", lambda: ["Port A", "Port B", "Port C"])
+    view._refresh_output_ports()
+    view._output_port_list.item(1).setCheckState(Qt.CheckState.Checked)  # Port B, in addition to auto-checked A
+    view._refresh_output_ports()
+    assert set(view._selected_output_ports()) == {"Port A", "Port B"}
+
+
+def test_refresh_output_ports_restores_default_after_selection_emptied(monkeypatch):
+    """"Refresh output ports" always leaves at least one port checked when
+    ports are available -- restoring a sane default rather than leaving
+    every send/replay action unusable, even if the user had emptied the
+    selection since the last refresh."""
+    import djmidi.gui.controller_setup as controller_setup_mod
+
+    view = _view_with_name()
+    monkeypatch.setattr(controller_setup_mod, "list_output_ports", lambda: ["Port A"])
+    view._refresh_output_ports()
+    view._output_port_list.item(0).setCheckState(Qt.CheckState.Unchecked)
+    view._refresh_output_ports()
+    assert view._output_port_list.item(0).checkState() == Qt.CheckState.Checked
+
+
+def test_selected_output_ports_raises_when_none_checked(monkeypatch):
+    import djmidi.gui.controller_setup as controller_setup_mod
+
+    view = _view_with_name()
+    monkeypatch.setattr(controller_setup_mod, "list_output_ports", lambda: ["Port A"])
+    view._refresh_output_ports()
+    view._output_port_list.item(0).setCheckState(Qt.CheckState.Unchecked)
+    with pytest.raises(ValueError, match="No output port selected"):
+        view._selected_output_ports()
+
+
+def test_send_output_once_sends_to_every_checked_port(monkeypatch):
+    import djmidi.gui.controller_setup as controller_setup_mod
+
+    sent = []
+    view = _view_with_name()
+    monkeypatch.setattr(controller_setup_mod, "list_output_ports", lambda: ["Port A", "Port B", "Port C"])
+    monkeypatch.setattr(
+        controller_setup_mod,
+        "send_midi_message",
+        lambda **kwargs: sent.append(kwargs),
+    )
+    view._refresh_output_ports()
+    view._output_port_list.item(2).setCheckState(Qt.CheckState.Checked)  # Port A (auto) + Port C
+    view._send_type_edit.setText("note_on")
+    view._send_channel_edit.setText("1")
+    view._send_data1_edit.setText("27")
+    view._send_data2_edit.setText("127")
+    view._on_send_output_once_clicked()
+    assert {kwargs["output_port_name"] for kwargs in sent} == {"Port A", "Port C"}
+    assert "2 outputs" in view._send_status.text()
+
+
 def test_send_output_once_uses_selected_output_port_and_values(monkeypatch):
     import djmidi.gui.controller_setup as controller_setup_mod
 
@@ -593,6 +666,24 @@ def test_play_session_rows_once_sends_note_click_and_cc(monkeypatch):
     assert sent[0]["event_type"] == "note_on"
     assert sent[1]["event_type"] == "note_off"
     assert sent[2]["event_type"] == "control_change"
+
+
+def test_play_session_rows_once_sends_to_every_checked_port(monkeypatch):
+    import djmidi.gui.controller_setup as controller_setup_mod
+
+    sent = []
+    view = _view_with_name()
+    view._rows = [ControlInfo("MiniPad", "PAD", "A", "NOTE", ("1",), "10")]
+    view._sources = ["manual"]
+    view._devices = [""]
+    monkeypatch.setattr(controller_setup_mod, "list_output_ports", lambda: ["Port A", "Port B"])
+    monkeypatch.setattr(controller_setup_mod, "send_midi_message", lambda **kwargs: sent.append(kwargs))
+    view._refresh_output_ports()
+    view._output_port_list.item(1).setCheckState(Qt.CheckState.Checked)
+    sent_count, skipped = view._play_session_rows_once([0])
+    assert sent_count == 4  # note_on + note_off, once per port
+    assert skipped == 0
+    assert {kwargs["output_port_name"] for kwargs in sent} == {"Port A", "Port B"}
 
 
 def test_play_session_rows_once_skips_invalid_rows(monkeypatch):
@@ -1012,6 +1103,30 @@ def test_replay_recorded_session_uses_selected_output_and_recorded_timing(monkey
     assert [port for port, _event in replayed] == ["Setup MIDI Out", "Setup MIDI Out"]
     assert [event.event_type for _port, event in replayed] == ["Note On", "Note Off"]
     assert "Recorded session replayed" in view._send_status.text()
+
+
+def test_replay_recorded_session_sends_each_event_to_every_checked_port(monkeypatch):
+    import djmidi.gui.controller_setup as controller_setup_mod
+    from djmidi.midi_io import MidiEvent
+
+    view = _view_with_name()
+    view._recorded_events = [MidiEvent("in", "1", "Note On", "10", "100", 5.0, "Controller A")]
+    monkeypatch.setattr(controller_setup_mod, "list_output_ports", lambda: ["Out A", "Out B"])
+    view._refresh_output_ports()
+    view._output_port_list.item(1).setCheckState(Qt.CheckState.Checked)
+    scheduled = []
+    replayed = []
+    monkeypatch.setattr(controller_setup_mod.QTimer, "singleShot", lambda delay, callback: scheduled.append((delay, callback)))
+    monkeypatch.setattr(
+        controller_setup_mod,
+        "replay_midi_events",
+        lambda port, events, sender=None: replayed.append(port),
+    )
+
+    view._on_replay_recorded_session_clicked()
+    scheduled.pop(0)[1]()
+
+    assert set(replayed) == {"Out A", "Out B"}
 
 
 def test_session_save_and_load_preserves_recorded_events(tmp_path):
