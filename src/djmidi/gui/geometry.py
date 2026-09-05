@@ -21,23 +21,30 @@ callout numbers alone):
 - XDJ-XZ's transport cluster: PLAY/PAUSE, CUE, SYNC, jog wheel, tempo fader.
 - DDJ-XP2's pad cluster: the 16-pad grid, the 4 PAD MODE buttons, the
   SLIDE FX bank (EFFECT 1/2/3, FX LEVEL, TOUCH STRIP HOLD).
+- DDJ-XP2's DECK/BROWSE/OTHER sections: LOOP (4 BEAT LOOP, 1/2X, 2X),
+  QUANTIZE, BEAT SYNC, SILENT CUE, KEY -/+, the central Rotary Selector, the
+  two LOAD buttons, and SHIFT -- this completes every DDJ-XP2 catalog
+  section except MIDI-OUT (four output-only "Loaded (Deck N)" LEDs, not a
+  user control; left for whenever an output-direction glyph exists, same
+  status as the VU meter glyph on XDJ-XZ).
 
 Both controllers have a mirrored/repeated physical layout that the schematic
 already collapses to one cell regardless of which copy is used:
 
 - XDJ-XZ has two deck sides (left tray = deck 1, right tray = deck 2); only
   the left side's coordinates are recorded here.
-- DDJ-XP2 has two 4x4 pad grids and two SLIDE FX banks (one per side); only
-  the left grid/bank's coordinates are recorded here.
-- DDJ-XP2's 4 PAD MODE buttons are each a *single* physical button that
-  emits a different NOTE on a single vs. a double click (PAD MODE 1 and PAD
-  MODE 5 share one button, etc. -- see ``catalog/ddj_xp2.py``): one entry per
-  physical button, labelled with both logical names, avoids drawing two
-  identical markers stacked on top of each other.
-
-DDJ-XP2 has no deck transport section at all (it's a pad/FX companion
-controller: BEAT SYNC/SILENT CUE/QUANTIZE/KEY, not PLAY/CUE/SYNC), so it has
-no transport entries -- only the pad cluster.
+- DDJ-XP2 has two 4x4 pad grids, two SLIDE FX banks, and two LOOP/QUANTIZE/
+  KEY clusters (one per side); only the left copy's coordinates are recorded
+  here.
+- A physical button shared by more than one logical trigger gets *one*
+  geometry entry, labelled with every name it answers to, to avoid drawing
+  identical markers stacked on top of each other:
+  - DDJ-XP2's 4 PAD MODE buttons each emit a different NOTE on a single vs.
+    a double click (PAD MODE 1 and PAD MODE 5 share one button, etc.).
+  - DDJ-XP2 has only two physical LOAD buttons (left/right) for four
+    logical "LOAD DECK 1/2/3/4" triggers, disambiguated by SHIFT the same
+    way its pad channels are (see ``catalog/ddj_xp2.py``): left = decks
+    1/3, right = decks 2/4.
 """
 
 from __future__ import annotations
@@ -108,6 +115,26 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         "TOUCH STRIP HOLD": ControlGeometry(0.2969, 0.9038, 0.0330, 0.0320, "rect", "#8fa0b3"),
         # Display-only (continuous, not a discrete catalog trigger).
         "FX LEVEL": ControlGeometry(0.3120, 0.5698, 0.0110, 0.2791, "rect", "#6fa8c9"),
+        # Amber: loop/quantize cluster.
+        "4 BEAT LOOP": ControlGeometry(0.3393, 0.3517, 0.0289, 0.0291, "rect", "#d9954a"),
+        "1/2X": ControlGeometry(0.3271, 0.4116, 0.0247, 0.0349, "rect", "#d9954a"),
+        "2X": ControlGeometry(0.3532, 0.4116, 0.0247, 0.0349, "rect", "#d9954a"),
+        # Teal: a distinct utility accent, separate from the loop/effect/sync families.
+        "QUANTIZE": ControlGeometry(0.3869, 0.3509, 0.0151, 0.0320, "circle", "#4ab8a0"),
+        # Blue: matches XDJ-XZ's SYNC accent color -- same function family.
+        "BEAT SYNC": ControlGeometry(0.4293, 0.4145, 0.0165, 0.0291, "rect", "#4a90d9"),
+        # Amber: matches XDJ-XZ's CUE accent color -- same function family.
+        "SILENT CUE": ControlGeometry(0.3752, 0.4535, 0.0385, 0.0465, "rect", "#e0954a"),
+        "KEY -": ControlGeometry(0.4110, 0.4564, 0.0192, 0.0407, "rect", "#7a8aa0"),
+        "KEY +": ControlGeometry(0.4264, 0.4564, 0.0192, 0.0407, "rect", "#7a8aa0"),
+        # Magenta: a slate/gray marker is nearly invisible against this
+        # knob's bright chrome finish, unlike every other DDJ-XP2 button.
+        "Rotary Selector": ControlGeometry(0.4756, 0.3198, 0.0357, 0.0756, "circle", "#c9548f"),
+        # Green: matches PLAY/PAUSE's accent color -- loading leads to playback.
+        "LOAD DECK 1/3": ControlGeometry(0.4233, 0.3509, 0.0220, 0.0320, "rect", "#3ea86b"),
+        "LOAD DECK 2/4": ControlGeometry(0.5459, 0.3509, 0.0220, 0.0320, "rect", "#3ea86b"),
+        # Muted neutral: a modifier key, not a function.
+        "SHIFT": ControlGeometry(0.4781, 0.4821, 0.0323, 0.0218, "rect", "#5f6b7a"),
     },
 }
 

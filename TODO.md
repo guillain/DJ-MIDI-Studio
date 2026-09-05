@@ -557,10 +557,16 @@ documentation index.
   cropping the region of the real image it claims to describe and
   screenshotting the rendered overlay against it (not guessed from the PDF
   callout numbers alone) — this caught one real mistake (TOUCH STRIP HOLD's
-  first-pass Y coordinate landed below the actual button). Extending this to
-  the rest of each controller's physical layout (DDJ-XP2's DECK/BROWSE/OTHER
-  sections, XDJ-XZ's mixer strip and hot cue pads), and to the schematic
-  Layout tabs themselves, is future work.
+  first-pass Y coordinate landed below the actual button). Completed for
+  DDJ-XP2 in `v0.47.25-ddj-xp2-deck-geometry`, covering its remaining
+  DECK/BROWSE/OTHER controls: LOOP (4 BEAT LOOP, 1/2X, 2X), QUANTIZE, BEAT
+  SYNC, SILENT CUE, KEY -/+, the central Rotary Selector, the two LOAD
+  buttons (one marker per physical button for "LOAD DECK 1/3" and
+  "LOAD DECK 2/4", disambiguated by SHIFT the same way the pad channels
+  are), and SHIFT — every DDJ-XP2 catalog section now has real geometry
+  except MIDI-OUT (four output-only LEDs, not a user control). Extending
+  this to XDJ-XZ's mixer strip and hot cue pads, and to the schematic Layout
+  tabs themselves, is future work.
 - [ ] Add MIDI-value animation for knobs, faders, pads, jog wheels, and VU meters.
   Partially addressed in `v0.47.20-pad-flash-animation`: a discrete pad/button
   glyph now briefly flashes white on a live MIDI hit (`ControllerLayoutView.flash_key`),
