@@ -370,6 +370,21 @@ Implemented contract, runtime, test, and documentation work:
   (nothing pre-checked), `_refresh_output_ports()` auto-checks the first
   port whenever none are checked, preserving the old single-output
   convenience default. Milestone tag `v0.47.26-multi-output-selection`.
+- [x] **Auto-start Live Monitor when a mapping is loaded** — requested
+  directly by the user: pressing a controller button should update the
+  `By Channel`/`By Deck`/`By Controller` layouts without a separate
+  `Live Monitor` tab visit and manual `Start monitoring` click first.
+  `LiveMonitorView.ensure_monitoring_started()` opens every currently
+  available MIDI input and starts the poll timer, called from
+  `MainWindow._load_tree()` on every mapping load. New
+  `PluginPreferences.auto_start_live_monitor` (default `True`, a checkbox in
+  `Settings -> Preferences...` per explicit user follow-up request, not a
+  View-menu toggle) gates it off entirely for anyone who wants the old
+  manual step back. Never overrides an already-running hand-picked Live
+  Monitor session, and a port that fails to open is skipped and logged
+  rather than blocking the rest or popping a dialog — this runs silently in
+  the background, unlike the manual "Start monitoring" button. Milestone tag
+  `v0.47.27-auto-start-live-monitor`.
 
 ### Core mapping workflow
 

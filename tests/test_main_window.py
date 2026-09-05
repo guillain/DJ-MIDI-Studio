@@ -183,6 +183,29 @@ def test_load_tree_sets_live_monitor_config():
     window.close()
 
 
+def test_load_tree_auto_starts_live_monitor_by_default(monkeypatch):
+    window = MainWindow()
+    calls = []
+    monkeypatch.setattr(window.live_monitor_view, "ensure_monitoring_started", lambda: calls.append(True))
+    window.config = parse_file(FIXTURE)
+    window.current_path = FIXTURE
+    window._load_tree()
+    assert calls == [True]
+    window.close()
+
+
+def test_load_tree_does_not_auto_start_live_monitor_when_disabled(monkeypatch):
+    window = MainWindow()
+    window.preferences.auto_start_live_monitor = False
+    calls = []
+    monkeypatch.setattr(window.live_monitor_view, "ensure_monitoring_started", lambda: calls.append(True))
+    window.config = parse_file(FIXTURE)
+    window.current_path = FIXTURE
+    window._load_tree()
+    assert calls == []
+    window.close()
+
+
 # ─── search / filter ──────────────────────────────────────────────────────────
 
 def test_search_box_filters_channel_proxies():

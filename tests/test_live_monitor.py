@@ -99,6 +99,85 @@ def test_save_log_writes_csv_with_event_fields(tmp_path, monkeypatch):
     assert "Saved 1 MIDI event(s)" in view._status_label.text()
 
 
+def test_ensure_monitoring_started_opens_every_available_port(monkeypatch):
+    import djmidi.gui.live_monitor as live_monitor_mod
+
+    view = LiveMonitorView()
+    monkeypatch.setattr(live_monitor_mod, "list_input_ports", lambda: ["Port A", "Port B"])
+    opened = []
+    monkeypatch.setattr(view._monitor, "open_input", lambda name: opened.append(name))
+
+    view.ensure_monitoring_started()
+
+    assert opened == ["Port A", "Port B"]
+    assert view._running is True
+    assert "auto-started" in view._status_label.text()
+
+
+def test_ensure_monitoring_started_is_a_noop_when_already_running(monkeypatch):
+    import djmidi.gui.live_monitor as live_monitor_mod
+
+    view = LiveMonitorView()
+    monkeypatch.setattr(live_monitor_mod, "list_input_ports", lambda: ["Port A"])
+    opened = []
+    monkeypatch.setattr(view._monitor, "open_input", lambda name: opened.append(name))
+    view._running = True  # simulate an already-running, user-picked session
+
+    view.ensure_monitoring_started()
+
+    assert opened == []  # never touched the user's existing selection
+
+
+def test_ensure_monitoring_started_skips_a_port_that_fails_to_open(monkeypatch):
+    """One busy/unavailable port must not block monitoring on the rest, and
+    must not raise or pop a dialog -- this runs silently on mapping load."""
+    import djmidi.gui.live_monitor as live_monitor_mod
+
+    view = LiveMonitorView()
+    monkeypatch.setattr(live_monitor_mod, "list_input_ports", lambda: ["Bad Port", "Good Port"])
+
+    opened = []
+
+    def fake_open(name):
+        if name == "Bad Port":
+            raise RuntimeError("device busy")
+        opened.append(name)
+
+    monkeypatch.setattr(view._monitor, "open_input", fake_open)
+
+    view.ensure_monitoring_started()
+
+    assert opened == ["Good Port"]
+    assert view._running is True
+
+
+def test_ensure_monitoring_started_stays_stopped_when_every_port_fails(monkeypatch):
+    import djmidi.gui.live_monitor as live_monitor_mod
+
+    view = LiveMonitorView()
+    monkeypatch.setattr(live_monitor_mod, "list_input_ports", lambda: ["Bad Port"])
+
+    def fake_open(name):
+        raise RuntimeError("device busy")
+
+    monkeypatch.setattr(view._monitor, "open_input", fake_open)
+
+    view.ensure_monitoring_started()  # must not raise
+
+    assert view._running is False
+
+
+def test_ensure_monitoring_started_with_no_available_ports_stays_stopped(monkeypatch):
+    import djmidi.gui.live_monitor as live_monitor_mod
+
+    view = LiveMonitorView()
+    monkeypatch.setattr(live_monitor_mod, "list_input_ports", list)
+
+    view.ensure_monitoring_started()
+
+    assert view._running is False
+
+
 def test_shutdown_when_never_started_does_not_raise():
     view = LiveMonitorView()
     view.shutdown()  # should be a no-op, not raise
