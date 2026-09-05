@@ -597,9 +597,17 @@ against the current tree and confirmed still open. Tracked as GitHub issues.
   ([#19](https://github.com/guillain/DJ-MIDI-Studio/issues/19)). Partially
   addressed in `v0.47.9-adaptive-window-size`: the first-run size is now
   derived from `screen().availableGeometry()` (preferred `1280x820`, scaled
-  down for smaller screens, centered) instead of a fixed `1100x700`. Still
-  open pending the reporter's affected view + macOS version + screenshot to
-  decide whether any specific panel also needs scroll-wrapping.
+  down for smaller screens, centered) instead of a fixed `1100x700`. Further
+  addressed in `v0.47.22-controller-setup-scroll`: screenshotting the app at
+  1100x700 (macOS, `QT_QPA_PLATFORM=cocoa`) found a concrete repro on
+  **Controller Setup** — the "MIDI Output" panel's three columns (Send
+  message / Playback / Pad modes) compressed below their contents' minimum
+  size and overlapped, and the pad-mode grid clipped at the bottom. Fixed by
+  wrapping the "MIDI input" + "MIDI Output" row in a `QScrollArea`, which
+  enforces the row's real minimum size and shows a scrollbar instead of
+  letting it overlap. Still open in case another view/macOS version clips
+  differently — the reporter's affected view + macOS version + screenshot
+  would confirm whether this was the same one or a second panel remains.
 
 ### Next phases to define
 

@@ -44,6 +44,7 @@ from PySide6.QtWidgets import (
     QListWidget,
     QMessageBox,
     QPushButton,
+    QScrollArea,
     QSizePolicy,
     QStyle,
     QTableWidget,
@@ -383,6 +384,20 @@ class ControllerSetupView(QWidget):
         io_row.addWidget(capture_box, 1, Qt.AlignmentFlag.AlignTop)
         io_row.addWidget(output_box, 3)
 
+        # The "MIDI Output" panel's three side-by-side columns (Send message /
+        # Playback / Pad modes) plus "MIDI input" need more width than the
+        # app's default/minimum window size guarantees (issue #19: verified by
+        # screenshotting this tab at 1100x700, where the columns compressed
+        # below their contents' minimum size and overlapped). A QScrollArea
+        # enforces the row's real minimum size hint and shows a scrollbar
+        # instead of letting that happen again.
+        io_container = QWidget()
+        io_container.setLayout(io_row)
+        io_scroll = QScrollArea()
+        io_scroll.setWidgetResizable(True)
+        io_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        io_scroll.setWidget(io_container)
+
         self._table = QTableWidget(0, 7)
         self._table.setHorizontalHeaderLabels(["Section", "Name", "Type", "Channel(s)", "Data1", "Source", "Device"])
         self._table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
@@ -420,7 +435,7 @@ class ControllerSetupView(QWidget):
         layout.setContentsMargins(10, 10, 10, 10)
         layout.addLayout(name_row)
         layout.addWidget(draft_box, 0)
-        layout.addLayout(io_row, 0)
+        layout.addWidget(io_scroll, 0)
         layout.addWidget(self._table, 1)
         layout.addLayout(row_buttons)
 
