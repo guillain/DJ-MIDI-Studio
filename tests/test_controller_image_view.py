@@ -116,6 +116,59 @@ def test_resolve_image_path_handles_absolute_and_bundled():
     assert _resolve_image_path(abs_path) == Path(abs_path)
 
 
+def test_transport_checkbox_disabled_for_controller_without_geometry():
+    view = ControllerImageView()
+    assert view.set_controller("DDJ-XP2") is True
+    assert view._transport_checkbox.isEnabled() is False
+    assert view._overlay_items == []
+
+
+def test_transport_checkbox_enabled_for_xdj_xz_and_draws_markers():
+    view = ControllerImageView()
+    assert view.set_controller("XDJ-XZ") is True
+    assert view._transport_checkbox.isEnabled() is True
+    assert view._overlay_items == []  # unchecked by default
+
+    view._transport_checkbox.setChecked(True)
+    from djmidi.gui.geometry import TRANSPORT_GEOMETRY
+
+    assert len(view._overlay_items) == len(TRANSPORT_GEOMETRY["XDJ-XZ"])
+    for item in view._overlay_items:
+        assert item.toolTip() != ""
+
+
+def test_unchecking_transport_layer_clears_markers():
+    view = ControllerImageView()
+    view.set_controller("XDJ-XZ")
+    view._transport_checkbox.setChecked(True)
+    assert view._overlay_items
+    view._transport_checkbox.setChecked(False)
+    assert view._overlay_items == []
+
+
+def test_switching_away_from_xdj_xz_clears_transport_markers():
+    view = ControllerImageView()
+    view.set_controller("XDJ-XZ")
+    view._transport_checkbox.setChecked(True)
+    assert view._overlay_items
+    view.set_controller("DDJ-XP2")
+    assert view._overlay_items == []
+    assert view._transport_checkbox.isEnabled() is False
+
+
+def test_transport_overlay_markers_stay_within_the_image_bounds():
+    """Sanity check for gui/geometry.py's hand-measured fractions: every
+    marker must land inside the actual pixmap, not off the edge of it."""
+    view = ControllerImageView()
+    view.set_controller("XDJ-XZ")
+    view._transport_checkbox.setChecked(True)
+    pixmap = view._pixmap_item.pixmap()
+    for item in view._overlay_items:
+        rect = item.rect()
+        assert 0 <= rect.x() and rect.x() + rect.width() <= pixmap.width()
+        assert 0 <= rect.y() and rect.y() + rect.height() <= pixmap.height()
+
+
 def test_load_renders_an_absolute_path_reference_image(tmp_path):
     from PySide6.QtGui import QPixmap
 
