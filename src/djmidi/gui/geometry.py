@@ -27,6 +27,12 @@ callout numbers alone):
   section except MIDI-OUT (four output-only "Loaded (Deck N)" LEDs, not a
   user control; left for whenever an output-direction glyph exists, same
   status as the VU meter glyph on XDJ-XZ).
+- XDJ-XZ's hot cue pad cluster: the 8-pad grid and the 4 PAD MODE buttons
+  (HOT CUE, BEAT LOOP, SLIP LOOP, BEAT JUMP) that select what the grid does.
+  XDJ-XZ's mixer strip (TRIM/EQ/faders) has no catalog entries at all --
+  continuous controls are out of catalog scope entirely, see
+  ``catalog/__init__.py`` -- so there is nothing discrete left to model
+  there; a mixer overlay would have to be display-only, like Jog wheel/Tempo.
 
 Both controllers have a mirrored/repeated physical layout that the schematic
 already collapses to one cell regardless of which copy is used:
@@ -86,6 +92,21 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         # jog wheel and the tempo fader still deserve a place in the overlay.
         "Jog wheel": ControlGeometry(0.1439, 0.4268, 0.1944, 0.3185, "circle", "#586b82"),
         "Tempo": ControlGeometry(0.3560, 0.6911, 0.0156, 0.1911, "rect", "#6fa8c9"),
+        # Gray-blue: matches DDJ-XP2's PAD MODE utility accent -- these
+        # select what the 8-pad grid below does.
+        "HOT CUE": ControlGeometry(0.2071, 0.7675, 0.0214, 0.0096, "rect", "#7a8aa0"),
+        "BEAT LOOP": ControlGeometry(0.2353, 0.7675, 0.0214, 0.0096, "rect", "#7a8aa0"),
+        "SLIP LOOP": ControlGeometry(0.2635, 0.7675, 0.0214, 0.0096, "rect", "#7a8aa0"),
+        "BEAT JUMP": ControlGeometry(0.2917, 0.7675, 0.0214, 0.0096, "rect", "#7a8aa0"),
+        # Salmon-pink: matches DDJ-XP2's pad grid accent -- same physical role.
+        "Pad 1": ControlGeometry(0.2080, 0.7962, 0.0214, 0.0350, "rect", "#e0708f"),
+        "Pad 2": ControlGeometry(0.2363, 0.7962, 0.0214, 0.0350, "rect", "#e0708f"),
+        "Pad 3": ControlGeometry(0.2644, 0.7962, 0.0214, 0.0350, "rect", "#e0708f"),
+        "Pad 4": ControlGeometry(0.2927, 0.7962, 0.0214, 0.0350, "rect", "#e0708f"),
+        "Pad 5": ControlGeometry(0.2080, 0.8471, 0.0214, 0.0350, "rect", "#e0708f"),
+        "Pad 6": ControlGeometry(0.2363, 0.8471, 0.0214, 0.0350, "rect", "#e0708f"),
+        "Pad 7": ControlGeometry(0.2644, 0.8471, 0.0214, 0.0350, "rect", "#e0708f"),
+        "Pad 8": ControlGeometry(0.2927, 0.8471, 0.0214, 0.0350, "rect", "#e0708f"),
     },
     "DDJ-XP2": {
         # Salmon-pink: matches the pad grid's own highlight color in the

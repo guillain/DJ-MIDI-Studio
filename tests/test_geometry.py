@@ -32,7 +32,44 @@ def test_xdj_xz_transport_geometry_covers_the_expected_controls():
         "SYNC",
         "Jog wheel",
         "Tempo",
+        "HOT CUE",
+        "BEAT LOOP",
+        "SLIP LOOP",
+        "BEAT JUMP",
+        *(f"Pad {n}" for n in range(1, 9)),
     }
+
+
+def test_xdj_xz_hot_cue_pad_grid_is_a_non_overlapping_2x4_layout():
+    pads = {n: CONTROL_GEOMETRY["XDJ-XZ"][f"Pad {n}"] for n in range(1, 9)}
+    for row in range(2):
+        xs = [pads[row * 4 + col + 1].x for col in range(4)]
+        assert xs == sorted(xs)
+    for col in range(4):
+        ys = [pads[row * 4 + col + 1].y for row in range(2)]
+        assert ys == sorted(ys)
+    for a in range(1, 9):
+        for b in range(a + 1, 9):
+            ga, gb = pads[a], pads[b]
+            x_overlap = ga.x < gb.x + gb.w and gb.x < ga.x + ga.w
+            y_overlap = ga.y < gb.y + gb.h and gb.y < ga.y + ga.h
+            assert not (x_overlap and y_overlap), f"Pad {a} and Pad {b} overlap"
+
+
+def test_resolve_geometry_label_extracts_pad_number_from_xdj_xz_pad_names():
+    """XDJ-XZ's pad_lookup() produces names like "Deck 1 Performance Pad 3
+    (HOT CUE mode)" -- verified against the real lookup path."""
+    hit = next(
+        hit
+        for hit in catalog.lookup("6", "NOTE", "2")  # XDJ-XZ deck-1 pad channel, HOT CUE mode
+        if hit.controller == "XDJ-XZ"
+    )
+    assert resolve_geometry_label("XDJ-XZ", hit.name) == "Pad 3"
+
+
+def test_resolve_geometry_label_strips_direct_button_suffix_for_hot_cue_modes():
+    assert resolve_geometry_label("XDJ-XZ", "HOT CUE (direct button)") == "HOT CUE"
+    assert resolve_geometry_label("XDJ-XZ", "BEAT JUMP (direct button, +SHIFT)") == "BEAT JUMP"
 
 
 def test_ddj_xp2_geometry_covers_the_expected_controls():
