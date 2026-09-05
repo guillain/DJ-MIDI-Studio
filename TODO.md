@@ -542,18 +542,25 @@ documentation index.
   Started in `v0.47.23-transport-overlay`: `gui/geometry.py` records real,
   hand-measured per-control geometry (position + shape + a semantic color) as
   fractions of the official reference photo (`assets/controllers/*.png`), and
-  the Controller Images tab gained a "Show transport layer" checkbox that
+  the Controller Images tab gained a "Show real layout" checkbox that
   overlays it directly on the real photo — sidestepping the schematic
   Layout tabs' uniform fixed-size cards, which can't represent a giant jog
   wheel and a small button at their true relative scale without overlapping.
-  Only the "transport" cluster (PLAY/PAUSE, CUE, SYNC, jog wheel, tempo
-  fader) is modeled so far, for XDJ-XZ only — DDJ-XP2 has no deck transport
-  section (it's a pad/FX companion controller: BEAT SYNC/SILENT CUE/
-  QUANTIZE/KEY, not PLAY/CUE/SYNC). Each entry was verified by cropping the
-  region of the real image it claims to describe and screenshotting the
-  rendered overlay against it (not guessed from the PDF callout numbers
-  alone). Extending this to the rest of each controller's physical layout,
-  and to the schematic Layout tabs themselves, is future work.
+  XDJ-XZ's transport cluster (PLAY/PAUSE, CUE, SYNC, jog wheel, tempo fader)
+  was modeled first. Extended in `v0.47.24-ddj-xp2-geometry` to DDJ-XP2's pad
+  cluster: the 16-pad grid, the 4 PAD MODE buttons (one marker per physical
+  button, since each is shared by two logical modes via single/double-click —
+  see `catalog/ddj_xp2.py`), and the SLIDE FX bank (EFFECT 1/2/3, FX LEVEL,
+  TOUCH STRIP HOLD). DDJ-XP2 has no deck transport section at all (it's a
+  pad/FX companion controller: BEAT SYNC/SILENT CUE/QUANTIZE/KEY, not
+  PLAY/CUE/SYNC), so it has no transport entries. Each entry was verified by
+  cropping the region of the real image it claims to describe and
+  screenshotting the rendered overlay against it (not guessed from the PDF
+  callout numbers alone) — this caught one real mistake (TOUCH STRIP HOLD's
+  first-pass Y coordinate landed below the actual button). Extending this to
+  the rest of each controller's physical layout (DDJ-XP2's DECK/BROWSE/OTHER
+  sections, XDJ-XZ's mixer strip and hot cue pads), and to the schematic
+  Layout tabs themselves, is future work.
 - [ ] Add MIDI-value animation for knobs, faders, pads, jog wheels, and VU meters.
   Partially addressed in `v0.47.20-pad-flash-animation`: a discrete pad/button
   glyph now briefly flashes white on a live MIDI hit (`ControllerLayoutView.flash_key`),
