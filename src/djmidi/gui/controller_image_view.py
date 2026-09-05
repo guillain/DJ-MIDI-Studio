@@ -27,7 +27,7 @@ from PySide6.QtWidgets import (
 )
 
 from djmidi import catalog
-from djmidi.gui.geometry import TRANSPORT_GEOMETRY
+from djmidi.gui.geometry import CONTROL_GEOMETRY
 
 if getattr(sys, "frozen", False):
     _RESOURCE_ROOT = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parents[3]))
@@ -103,14 +103,14 @@ class ControllerImageView(QWidget):
         reset_button.clicked.connect(lambda: self._load(self._combo.currentText()))
         self._documentation_button = QPushButton("Open documentation")
         self._documentation_button.clicked.connect(self._open_documentation)
-        self._transport_checkbox = QCheckBox("Show transport layer")
-        self._transport_checkbox.toggled.connect(lambda _checked: self._draw_transport_overlay())
+        self._geometry_checkbox = QCheckBox("Show real layout")
+        self._geometry_checkbox.toggled.connect(lambda _checked: self._draw_geometry_overlay())
 
         controls = QHBoxLayout()
         controls.addWidget(self._combo)
         controls.addWidget(reset_button)
         controls.addWidget(self._documentation_button)
-        controls.addWidget(self._transport_checkbox)
+        controls.addWidget(self._geometry_checkbox)
         controls.addStretch(1)
 
         self._scene = QGraphicsScene(self)
@@ -167,35 +167,35 @@ class ControllerImageView(QWidget):
             placeholder.setDefaultTextColor(Qt.GlobalColor.darkGray)
             self._scene.addItem(placeholder)
             self._scene.setSceneRect(self._scene.itemsBoundingRect())
-            self._transport_checkbox.setEnabled(False)
+            self._geometry_checkbox.setEnabled(False)
             return
         item = QGraphicsPixmapItem(pixmap)
         self._pixmap_item = item
         self._scene.addItem(item)
         self._scene.setSceneRect(item.boundingRect())
         self._view.fitInView(item, Qt.AspectRatioMode.KeepAspectRatio)
-        has_transport = name in TRANSPORT_GEOMETRY
-        self._transport_checkbox.setEnabled(has_transport)
-        self._transport_checkbox.setToolTip(
+        has_geometry = name in CONTROL_GEOMETRY
+        self._geometry_checkbox.setEnabled(has_geometry)
+        self._geometry_checkbox.setToolTip(
             ""
-            if has_transport
-            else "No transport geometry modeled yet for this controller (see gui/geometry.py)"
+            if has_geometry
+            else "No control geometry modeled yet for this controller (see gui/geometry.py)"
         )
-        self._draw_transport_overlay()
+        self._draw_geometry_overlay()
 
-    def _draw_transport_overlay(self) -> None:
-        """Colored markers over the real photo at each transport control's
-        true position (gui/geometry.TRANSPORT_GEOMETRY) -- start of the DJ
-        layout visual fidelity chantier (issue #13). Decorative only, like
-        the rest of this tab: no click handling, no binding to loaded config."""
+    def _draw_geometry_overlay(self) -> None:
+        """Colored markers over the real photo at each modeled control's
+        true position (gui/geometry.CONTROL_GEOMETRY) -- the DJ layout visual
+        fidelity chantier (issue #13). Decorative only, like the rest of this
+        tab: no click handling, no binding to loaded config."""
         for item in self._overlay_items:
             self._scene.removeItem(item)
         self._overlay_items = []
-        if self._pixmap_item is None or not self._transport_checkbox.isChecked():
+        if self._pixmap_item is None or not self._geometry_checkbox.isChecked():
             return
         pixmap = self._pixmap_item.pixmap()
         image_w, image_h = pixmap.width(), pixmap.height()
-        geometry = TRANSPORT_GEOMETRY.get(self._combo.currentText(), {})
+        geometry = CONTROL_GEOMETRY.get(self._combo.currentText(), {})
         for label, geom in geometry.items():
             rect = QRectF(
                 geom.x * image_w,
