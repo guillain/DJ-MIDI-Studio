@@ -1,8 +1,8 @@
-from djmidi.gui.geometry import TRANSPORT_GEOMETRY, ControlGeometry
+from djmidi.gui.geometry import CONTROL_GEOMETRY, ControlGeometry
 
 
-def test_transport_geometry_fractions_are_within_the_unit_square():
-    for controller, entries in TRANSPORT_GEOMETRY.items():
+def test_control_geometry_fractions_are_within_the_unit_square():
+    for controller, entries in CONTROL_GEOMETRY.items():
         for label, geom in entries.items():
             assert 0.0 <= geom.x <= 1.0, f"{controller} {label} x out of range"
             assert 0.0 <= geom.y <= 1.0, f"{controller} {label} y out of range"
@@ -13,20 +13,54 @@ def test_transport_geometry_fractions_are_within_the_unit_square():
             assert geom.shape in ("rect", "circle")
 
 
-def test_ddj_xp2_has_no_transport_geometry():
+def test_ddj_xp2_has_no_transport_controls():
     """DDJ-XP2 is a pad/FX companion controller with no deck transport
     section (no PLAY/CUE/SYNC) -- see gui/geometry.py's module docstring."""
-    assert "DDJ-XP2" not in TRANSPORT_GEOMETRY
+    for label in ("PLAY/PAUSE", "CUE", "SYNC"):
+        assert label not in CONTROL_GEOMETRY["DDJ-XP2"]
 
 
 def test_xdj_xz_transport_geometry_covers_the_expected_controls():
-    assert set(TRANSPORT_GEOMETRY["XDJ-XZ"]) == {
+    assert set(CONTROL_GEOMETRY["XDJ-XZ"]) == {
         "PLAY/PAUSE",
         "CUE",
         "SYNC",
         "Jog wheel",
         "Tempo",
     }
+
+
+def test_ddj_xp2_geometry_covers_the_expected_controls():
+    assert set(CONTROL_GEOMETRY["DDJ-XP2"]) == {
+        *(f"Pad {n}" for n in range(1, 17)),
+        "PAD MODE 1/5",
+        "PAD MODE 2/6",
+        "PAD MODE 3/7",
+        "PAD MODE 4/8",
+        "EFFECT 1",
+        "EFFECT 2",
+        "EFFECT 3",
+        "TOUCH STRIP HOLD",
+        "FX LEVEL",
+    }
+
+
+def test_ddj_xp2_pad_grid_is_a_non_overlapping_4x4_layout():
+    """Sanity check the pad grid reads left-to-right, top-to-bottom like the
+    real hardware, and that no two pads' bounding boxes overlap."""
+    pads = {n: CONTROL_GEOMETRY["DDJ-XP2"][f"Pad {n}"] for n in range(1, 17)}
+    for row in range(4):
+        xs = [pads[row * 4 + col + 1].x for col in range(4)]
+        assert xs == sorted(xs)
+    for col in range(4):
+        ys = [pads[row * 4 + col + 1].y for row in range(4)]
+        assert ys == sorted(ys)
+    for a in range(1, 17):
+        for b in range(a + 1, 17):
+            ga, gb = pads[a], pads[b]
+            x_overlap = ga.x < gb.x + gb.w and gb.x < ga.x + ga.w
+            y_overlap = ga.y < gb.y + gb.h and gb.y < ga.y + ga.h
+            assert not (x_overlap and y_overlap), f"Pad {a} and Pad {b} overlap"
 
 
 def test_control_geometry_is_frozen():

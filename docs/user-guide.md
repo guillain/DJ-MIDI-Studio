@@ -89,7 +89,7 @@ either confirmed or shown as suggestions according to Preferences.
 - `By Channel`: raw model-level controls and mappings.
 - `By Deck`: grouped duplicate mappings (safe synchronized edits).
 - `By Controller`: physical layout/section perspective.
-- `Controller Images`: static official diagrams and bundled controller documentation, plus an optional transport-layer overlay for controllers with modeled geometry (XDJ-XZ so far).
+- `Controller Images`: static official diagrams and bundled controller documentation, plus an optional real-layout overlay for controllers with modeled geometry (XDJ-XZ's transport cluster, DDJ-XP2's pad cluster so far).
 - `MIDI Routing`: route MIDI and replay Controller Setup rows once or in a loop.
 - `MIDI Clock`: configure Clock sources/destinations and inspect source activity;
   both Clock and Routing device lists load at startup and offer `Refresh MIDI ports`.
