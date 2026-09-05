@@ -108,6 +108,9 @@ In Controller Setup the `Draft` toolbar (session / import / apply-export
 actions, grouped) runs along the top. `MIDI input` (learning) shares a row
 with `MIDI Output`; the output port list, message fields, playback actions,
 and PAD MODE 1–8 buttons stay visible without a cramped five-column layout.
+Like `MIDI input`, `Available output ports` is a checkbox list — check as
+many output ports as you want a message sent to at once (one port stays
+pre-checked by default so a single-output setup needs no extra step).
 Controller Setup builds a *controller profile* — the map from a device's MIDI
 triggers to readable physical control names — not a Serato mapping; it never
 opens a mapping for editing (that's `File → Open`). Importing an existing
