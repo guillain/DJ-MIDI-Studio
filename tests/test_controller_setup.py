@@ -1071,3 +1071,22 @@ def test_setup_has_one_draft_panel_and_renamed_midi_input():
     assert "MIDI input" in titles      # renamed from "Capture (learn from controller)"
     assert "Session" in titles         # now a toolbar group caption, not a panel
     assert "Capture (learn from controller)" not in titles
+
+
+def test_midi_input_and_output_row_is_wrapped_in_a_scroll_area():
+    """Issue #19: at the app's minimum/small window size, the "MIDI input" +
+    "MIDI Output" row's three columns (Send message / Playback / Pad modes)
+    need more width than is guaranteed, and used to overlap instead of
+    shrinking. A QScrollArea around that row enforces its real minimum size
+    and shows a scrollbar instead."""
+    from PySide6.QtWidgets import QGroupBox, QLabel, QScrollArea
+
+    view = _view_with_name()
+    scroll_areas = view.findChildren(QScrollArea)
+    assert len(scroll_areas) == 1
+    scroll_area = scroll_areas[0]
+    assert scroll_area.widgetResizable() is True
+    labels = {lbl.text() for lbl in scroll_area.findChildren(QLabel)}
+    assert "MIDI input" in labels
+    group_titles = {box.title() for box in scroll_area.findChildren(QGroupBox)}
+    assert "MIDI Output" in group_titles
