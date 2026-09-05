@@ -1,14 +1,17 @@
 """A static, zoomable/pannable viewer for the official Pioneer controller
 diagrams (cropped from the MIDI Message List PDFs, see assets/controllers/
-and README.md "Technical References"). Purely visual reference — no
-interaction with the loaded config, unlike the other paired tree+layout tabs."""
+and README.md "Technical References"). No interaction with the *loaded
+config*, unlike the other paired tree+layout tabs -- but a modeled control's
+marker (gui/geometry.CONTROL_GEOMETRY, "Show real layout") does flash on a
+live MIDI hit, mirroring ControllerLayoutView.flash_key on the schematic
+tabs (see MainWindow._on_live_midi_event)."""
 
 from __future__ import annotations
 
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import QRectF, Qt
+from PySide6.QtCore import QRectF, Qt, QTimer
 from PySide6.QtGui import QBrush, QColor, QDesktopServices, QPainter, QPen, QPixmap
 from PySide6.QtWidgets import (
     QAbstractGraphicsShapeItem,
@@ -28,6 +31,9 @@ from PySide6.QtWidgets import (
 
 from djmidi import catalog
 from djmidi.gui.geometry import CONTROL_GEOMETRY
+
+_FLASH_DURATION_MS = 220
+_FLASH_COLOR = "#ffffff"
 
 if getattr(sys, "frozen", False):
     _RESOURCE_ROOT = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parents[3]))
@@ -117,6 +123,7 @@ class ControllerImageView(QWidget):
         self._view = _ZoomableView(self._scene)
         self._pixmap_item: QGraphicsPixmapItem | None = None
         self._overlay_items: list[QAbstractGraphicsShapeItem] = []
+        self._overlay_items_by_label: dict[str, QAbstractGraphicsShapeItem] = {}
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -147,6 +154,9 @@ class ControllerImageView(QWidget):
         self._combo.setCurrentIndex(index)
         return True
 
+    def current_controller_name(self) -> str:
+        return self._combo.currentText()
+
     def _load(self, name: str) -> None:
         documentation = documentation_for_controller(name)
         self._documentation_button.setEnabled(documentation is not None)
@@ -156,6 +166,7 @@ class ControllerImageView(QWidget):
         self._scene.clear()
         self._pixmap_item = None
         self._overlay_items = []
+        self._overlay_items_by_label = {}
         self._view.resetTransform()
         path = _resolve_image_path(image_for_controller(name))
         pixmap = QPixmap(str(path)) if path is not None and path.exists() else QPixmap()
@@ -191,6 +202,7 @@ class ControllerImageView(QWidget):
         for item in self._overlay_items:
             self._scene.removeItem(item)
         self._overlay_items = []
+        self._overlay_items_by_label = {}
         if self._pixmap_item is None or not self._geometry_checkbox.isChecked():
             return
         pixmap = self._pixmap_item.pixmap()
@@ -215,6 +227,34 @@ class ControllerImageView(QWidget):
             shape_item.setToolTip(label)
             self._scene.addItem(shape_item)
             self._overlay_items.append(shape_item)
+            self._overlay_items_by_label[label] = shape_item
+
+    def flash_key(self, label: str) -> None:
+        """Briefly (220ms) turns a modeled control's marker white on a live
+        MIDI hit, mirroring ControllerLayoutView.flash_key on the schematic
+        tabs. A no-op if that label isn't currently drawn -- the overlay is
+        off, the control isn't modeled, or a different controller is shown."""
+        item = self._overlay_items_by_label.get(label)
+        if item is None:
+            return
+        flash_fill = QColor(_FLASH_COLOR)
+        flash_fill.setAlpha(200)
+        item.setBrush(QBrush(flash_fill))
+        controller = self._combo.currentText()
+        QTimer.singleShot(_FLASH_DURATION_MS, lambda: self._clear_flash(controller, label))
+
+    def _clear_flash(self, controller: str, label: str) -> None:
+        # The controller/overlay may have changed since the flash was
+        # scheduled; only restore the marker if it's still the same one.
+        if self._combo.currentText() != controller:
+            return
+        item = self._overlay_items_by_label.get(label)
+        geom = CONTROL_GEOMETRY.get(controller, {}).get(label)
+        if item is None or geom is None:
+            return
+        fill = QColor(geom.color)
+        fill.setAlpha(110)
+        item.setBrush(QBrush(fill))
 
     def _open_documentation(self) -> None:
         documentation = documentation_for_controller(self._combo.currentText())

@@ -3,6 +3,7 @@ from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
 from PySide6.QtCore import QEvent
+from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QApplication, QDialog, QMenu
 
 from djmidi.gui.main_window import MainWindow
@@ -296,6 +297,36 @@ def test_on_live_midi_event_flashes_the_resolved_layout_cells():
     assert window.layout_view._flash_keys
     assert window.deck_layout_view._flash_keys
     assert window.controller_layout_view._flash_keys
+    window.close()
+
+
+def test_on_live_midi_event_flashes_the_controller_image_overlay_for_the_shown_controller():
+    """channel 8 / data1 64 is DDJ-XP2 deck-1 Pad 13 (PAD MODE 5) -- see
+    catalog/ddj_xp2.py's pad_lookup note math."""
+    from djmidi.midi_io import MidiEvent
+
+    window = _loaded_window()
+    window.controller_image_view.set_controller("DDJ-XP2")
+    window.controller_image_view._geometry_checkbox.setChecked(True)
+    event = MidiEvent(direction="in", channel="8", event_type="Note On", data1="64", data2="127", timestamp=0.0)
+    window._on_live_midi_event(event)
+    QApplication.processEvents()
+    item = window.controller_image_view._overlay_items_by_label["Pad 13"]
+    assert item.brush().color() == QColor(255, 255, 255, 200)
+    window.close()
+
+
+def test_on_live_midi_event_does_not_flash_the_image_overlay_for_a_different_shown_controller():
+    from djmidi.midi_io import MidiEvent
+
+    window = _loaded_window()
+    window.controller_image_view.set_controller("XDJ-XZ")
+    window.controller_image_view._geometry_checkbox.setChecked(True)
+    event = MidiEvent(direction="in", channel="8", event_type="Note On", data1="64", data2="127", timestamp=0.0)
+    window._on_live_midi_event(event)
+    QApplication.processEvents()
+    assert window.controller_image_view._overlay_items_by_label  # markers exist
+    assert "Pad 13" not in window.controller_image_view._overlay_items_by_label  # DDJ-XP2-only label
     window.close()
 
 

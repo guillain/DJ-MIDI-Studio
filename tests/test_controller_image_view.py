@@ -1,4 +1,4 @@
-from PySide6.QtGui import QPainter, QTransform
+from PySide6.QtGui import QColor, QPainter, QTransform
 
 from djmidi import catalog
 from djmidi.catalog._registry import ControllerDefinition, register
@@ -169,6 +169,46 @@ def test_geometry_overlay_markers_stay_within_the_image_bounds():
             rect = item.rect()
             assert 0 <= rect.x() and rect.x() + rect.width() <= pixmap.width()
             assert 0 <= rect.y() and rect.y() + rect.height() <= pixmap.height()
+
+
+def test_flash_key_brightens_marker_then_reverts_to_its_color():
+    from djmidi.gui.geometry import CONTROL_GEOMETRY
+
+    view = ControllerImageView()
+    view.set_controller("XDJ-XZ")
+    view._geometry_checkbox.setChecked(True)
+    original_color = QColor(CONTROL_GEOMETRY["XDJ-XZ"]["PLAY/PAUSE"].color)
+    original_color.setAlpha(110)
+
+    view.flash_key("PLAY/PAUSE")
+    item = view._overlay_items_by_label["PLAY/PAUSE"]
+    assert item.brush().color() == QColor(255, 255, 255, 200)
+
+    view._clear_flash("XDJ-XZ", "PLAY/PAUSE")
+    assert item.brush().color() == original_color
+
+
+def test_flash_key_on_unmodeled_label_does_not_crash():
+    view = ControllerImageView()
+    view.set_controller("XDJ-XZ")
+    view._geometry_checkbox.setChecked(True)
+    view.flash_key("Not A Real Control")  # must not raise
+
+
+def test_flash_key_is_a_noop_when_overlay_is_unchecked():
+    view = ControllerImageView()
+    view.set_controller("XDJ-XZ")
+    view.flash_key("PLAY/PAUSE")  # overlay off, no items drawn -- must not raise
+    assert view._overlay_items_by_label == {}
+
+
+def test_clear_flash_ignores_a_stale_callback_after_switching_controller():
+    view = ControllerImageView()
+    view.set_controller("XDJ-XZ")
+    view._geometry_checkbox.setChecked(True)
+    view.flash_key("PLAY/PAUSE")
+    view.set_controller("DDJ-1000")  # switches away before the flash timer fires
+    view._clear_flash("XDJ-XZ", "PLAY/PAUSE")  # must not raise despite the stale label/controller
 
 
 def test_load_renders_an_absolute_path_reference_image(tmp_path):

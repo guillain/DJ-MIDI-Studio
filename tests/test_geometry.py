@@ -1,4 +1,9 @@
-from djmidi.gui.geometry import CONTROL_GEOMETRY, ControlGeometry
+from djmidi import catalog
+from djmidi.gui.geometry import (
+    CONTROL_GEOMETRY,
+    ControlGeometry,
+    resolve_geometry_label,
+)
 
 
 def test_control_geometry_fractions_are_within_the_unit_square():
@@ -82,3 +87,38 @@ def test_control_geometry_is_frozen():
         raise AssertionError("expected a FrozenInstanceError")
     except AttributeError:
         pass
+
+
+def test_resolve_geometry_label_matches_exact_catalog_names():
+    assert resolve_geometry_label("XDJ-XZ", "PLAY/PAUSE") == "PLAY/PAUSE"
+    assert resolve_geometry_label("XDJ-XZ", "SYNC") == "SYNC"
+
+
+def test_resolve_geometry_label_strips_shift_suffixes():
+    assert resolve_geometry_label("XDJ-XZ", "SYNC (long press)") == "SYNC"
+
+
+def test_resolve_geometry_label_extracts_pad_number_from_ddj_xp2_pad_names():
+    """DDJ-XP2's pad_lookup() produces names like "Deck 1 Pad 3 (PAD MODE
+    2)", never a bare "Pad 3" -- verified against the real lookup path, not
+    a hand-written string, so a future format change here is caught."""
+    hit = next(
+        hit
+        for hit in catalog.lookup("8", "NOTE", "12")  # DDJ-XP2 deck-1 pad channel
+        if hit.controller == "DDJ-XP2"
+    )
+    assert resolve_geometry_label("DDJ-XP2", hit.name) == "Pad 1"
+
+
+def test_resolve_geometry_label_finds_the_shared_marker_for_a_combined_label():
+    """PAD MODE 5 shares DDJ-XP2's PAD MODE 1 button (see catalog/ddj_xp2.py);
+    the catalog's raw name is "PAD MODE 5", never "PAD MODE 1/5"."""
+    assert resolve_geometry_label("DDJ-XP2", "PAD MODE 5") == "PAD MODE 1/5"
+    assert resolve_geometry_label("DDJ-XP2", "LOAD DECK 3") == "LOAD DECK 1/3"
+
+
+def test_resolve_geometry_label_returns_none_for_an_unmodeled_control():
+    assert resolve_geometry_label("DDJ-XP2", "SHIFT") == "SHIFT"  # sanity: this one IS modeled
+    assert resolve_geometry_label("DDJ-XP2", "Rotary Selector (+SHIFT press)") == "Rotary Selector"
+    assert resolve_geometry_label("XDJ-XZ", "LOOP IN") is None  # not modeled yet
+    assert resolve_geometry_label("__unknown_controller__", "PLAY/PAUSE") is None
