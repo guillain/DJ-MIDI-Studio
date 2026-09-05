@@ -713,6 +713,22 @@ documentation index.
   an absolute position) and VU meters (no glyph exists yet — an
   output-direction feature) remain open.
 - [ ] Add an optional performance mode with larger controls and reduced mapping detail.
+  Smallest of three scoped options delivered in `v0.47.36-performance-mode`
+  (chosen by the user after two research passes turned this vague line into
+  concrete choices — session View-menu toggle vs. a persisted
+  `PluginPreferences` field vs. a dedicated fullscreen window):
+  `View → Performance Mode`, a session-only checkable `QAction` (not
+  persisted, mirrors `Show all controllers`), shrinks each By
+  Channel/Deck/Controller tab's tree+layout `QSplitter` toward the layout
+  view (`_PERFORMANCE_TREE_RATIO`, the pane can't fully vanish —
+  non-collapsible by design, but ~3% reads as hidden) and applies a uniform
+  `QGraphicsView` zoom (`ControllerLayoutView.set_zoom`, new method) to all
+  three `ControllerLayoutView` instances. Toggling off restores the exact
+  prior splitter ratios and resets zoom to 1.0 — verified by screenshotting
+  the real `MainWindow` offscreen before/on/off and confirming "off" is
+  pixel-identical to "before". A persisted preference and a dedicated
+  fullscreen performance window remain open if this session-only slice
+  proves insufficient in practice.
 
 ### MIDI controller emulation
 
