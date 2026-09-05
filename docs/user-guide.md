@@ -40,8 +40,17 @@ Available levels are `DEBUG`, `INFO`, `WARNING`, `ERROR`, and `CRITICAL`.
 
 Use `Settings -> Preferences...` to review the dynamically discovered
 controller and software plugins. The dialog persists the theme, plugin
-enablement, detection policy, routing policy, external-plugin trust, and log
-verbosity.
+enablement, detection policy, routing policy, external-plugin trust,
+auto-start behavior for Live Monitor, and log verbosity.
+
+`Auto-start Live Monitor when a mapping is loaded` (on by default) listens on
+every available MIDI input as soon as a mapping is loaded, so `By Channel` /
+`By Deck` / `By Controller` reflect a controller's live button presses (and
+knob/fader values) without opening `Live Monitor` and clicking
+`Start monitoring` yourself. Turning it off restores that manual step. A
+session where you already picked specific ports on `Live Monitor` is never
+overridden, and a port that's busy or unavailable is skipped silently rather
+than blocking the others or popping a dialog.
 
 `Theme` selects `Follow system` (default — track the OS light/dark setting
 live), `Light`, or `Dark`. The choice applies immediately on save and is
