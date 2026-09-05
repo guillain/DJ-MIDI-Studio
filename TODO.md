@@ -602,10 +602,21 @@ documentation index.
   `"Deck 1 Pad 3 (PAD MODE 2)"`-style names, and expanding a combined label
   like `"PAD MODE 1/5"` back to the logical names it answers to — and only
   flashes when the hit's controller matches the one currently shown in
-  Controller Images. Extending this to XDJ-XZ's mixer strip and hot cue
-  pads, to continuous values (knob/fader rotation on the real photo, not
-  just a flash), and to the schematic Layout tabs' own remaining gaps
-  (jog wheels, VU meters), is future work.
+  Controller Images. XDJ-XZ's hot cue pad cluster (the 8-pad grid and the
+  HOT CUE/BEAT LOOP/SLIP LOOP/BEAT JUMP mode buttons) modeled in
+  `v0.47.29-xdj-xz-hotcue-geometry` — XDJ-XZ's mixer strip has no catalog
+  entries at all (continuous controls are out of catalog scope entirely),
+  so there is nothing discrete left to model there; a mixer overlay would
+  have to be display-only, like Jog wheel/Tempo. Extending this to
+  continuous values (knob/fader rotation on the real photo, not just a
+  flash) and to the schematic Layout tabs' own remaining gaps (jog wheels,
+  VU meters) is future work. Also being extended, one branch per controller,
+  to the app's other registered controllers with real reference photos and
+  catalog data (DDJ-1000, DDJ-REV1, DDJ-FLX4, DDJ-FLX10, Numark Mixtrack Pro
+  FX, Hercules DJControl Inpulse 500) — see the version history below for
+  progress; each batch is gated on `scripts/quality_gate.sh` (coverage,
+  code smell, duplication, bandit, pip-audit) passing, not just `pytest`/
+  `ruff`.
 - [ ] Add MIDI-value animation for knobs, faders, pads, jog wheels, and VU meters.
   Partially addressed in `v0.47.20-pad-flash-animation`: a discrete pad/button
   glyph now briefly flashes white on a live MIDI hit (`ControllerLayoutView.flash_key`),
