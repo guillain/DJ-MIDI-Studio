@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QGraphicsRectItem
+from PySide6.QtWidgets import QGraphicsLineItem, QGraphicsRectItem
 
 from djmidi import catalog
 from djmidi.catalog._registry import ControllerDefinition, register
@@ -23,6 +23,24 @@ def _glyph_brush_color(view: ControllerLayoutView, key: tuple[str, str, str]):
     if candidates:
         return min(candidates, key=lambda item: item.rect().width()).brush().color()
     raise AssertionError(f"no pad/button glyph found for {key}")
+
+
+def _knob_marker_line(view: ControllerLayoutView, key: tuple[str, str, str]):
+    for item in view._scene.items():
+        if isinstance(item, QGraphicsLineItem) and item.data(layout_view_mod._KEY_ROLE) == key:
+            return item.line()
+    raise AssertionError(f"no knob marker found for {key}")
+
+
+def _fader_thumb_top(view: ControllerLayoutView, key: tuple[str, str, str]) -> float:
+    for item in view._scene.items():
+        if (
+            isinstance(item, QGraphicsRectItem)
+            and item.data(layout_view_mod._KEY_ROLE) == key
+            and item.rect().width() == 18
+        ):
+            return item.rect().y()
+    raise AssertionError(f"no fader thumb found for {key}")
 
 
 def test_refresh_controllers_adds_newly_registered_controller_and_keeps_selection():
@@ -159,6 +177,54 @@ def test_flash_key_briefly_brightens_a_pad_glyph_then_reverts():
 def test_flash_key_on_unused_cell_does_not_crash():
     view = ControllerLayoutView()
     view.flash_key(("DDJ-XP2", "PAD", "Pad 1"))
+    assert len(view._scene.items()) > 0
+
+
+def test_set_value_rotates_the_knob_marker():
+    view = ControllerLayoutView()
+    key = ("DDJ-XP2", "EFFECT", "EFFECT 1")
+    default_line = _knob_marker_line(view, key)
+
+    view.set_value(key, 0)
+    low_line = _knob_marker_line(view, key)
+    view.set_value(key, 127)
+    high_line = _knob_marker_line(view, key)
+
+    # Same pivot (center), but the tip moves to opposite sides of "up" for
+    # the min/max values, and away from the untouched (default) position.
+    assert low_line.p1() == high_line.p1() == default_line.p1()
+    assert low_line.p2() != default_line.p2()
+    assert high_line.p2() != default_line.p2()
+    assert low_line.p2().x() < default_line.p2().x() < high_line.p2().x()
+
+
+def test_set_value_moves_the_fader_thumb():
+    view = ControllerLayoutView()
+    key = ("DDJ-XP2", "MIXER", "Slide FX 1")
+    default_top = _fader_thumb_top(view, key)
+
+    view.set_value(key, 0)
+    bottom_top = _fader_thumb_top(view, key)
+    view.set_value(key, 127)
+    top_top = _fader_thumb_top(view, key)
+
+    # 0 sinks toward the bottom of the track (larger y), 127 rises toward the
+    # top (smaller y), on either side of the untouched (default) position.
+    assert top_top < default_top < bottom_top
+
+
+def test_set_value_is_a_noop_when_unchanged():
+    view = ControllerLayoutView()
+    key = ("DDJ-XP2", "EFFECT", "EFFECT 1")
+    view.set_value(key, 90)
+    line = _knob_marker_line(view, key)
+    view.set_value(key, 90)
+    assert _knob_marker_line(view, key) == line
+
+
+def test_set_value_on_unused_cell_does_not_crash():
+    view = ControllerLayoutView()
+    view.set_value(("DDJ-XP2", "EFFECT", "EFFECT 1"), 64)
     assert len(view._scene.items()) > 0
 
 

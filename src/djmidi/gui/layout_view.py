@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 
 from PySide6.QtCore import QLineF, QPointF, QRectF, Qt, QTimer, Signal
@@ -113,8 +114,29 @@ _KNOB_BRUSH = QBrush(QColor(235, 190, 90))
 _KNOB_RING_BRUSH = QBrush(QColor(47, 57, 73))
 _FADER_PEN = QPen(QColor(55, 65, 80))
 _FADER_PEN.setWidth(3)
+_KNOB_MARKER_PEN = QPen(QColor(35, 38, 46))
+_KNOB_MARKER_PEN.setWidth(2)
 _FLASH_BRUSH = QBrush(QColor(255, 255, 255))
 _FLASH_DURATION_MS = 220
+_MIDI_MAX = 127
+_MIDI_DEFAULT = _MIDI_MAX // 2
+_KNOB_MIN_ANGLE_DEG = -135.0
+_KNOB_MAX_ANGLE_DEG = 135.0
+
+
+def _knob_angle_rad(value: int) -> float:
+    """Angle (radians, clockwise from straight up) of a knob's marker for a
+    7-bit MIDI value, sweeping a typical 270-degree rotary pot range."""
+    clamped = max(0, min(_MIDI_MAX, value))
+    angle_deg = _KNOB_MIN_ANGLE_DEG + (clamped / _MIDI_MAX) * (_KNOB_MAX_ANGLE_DEG - _KNOB_MIN_ANGLE_DEG)
+    return math.radians(angle_deg)
+
+
+def _fader_thumb_top(value: int, track_top: float, track_height: float, thumb_height: float) -> float:
+    """Vertical position of a fader's thumb for a 7-bit MIDI value -- 0 at
+    the bottom of the track, 127 at the top."""
+    clamped = max(0, min(_MIDI_MAX, value))
+    return track_top + (1 - clamped / _MIDI_MAX) * (track_height - thumb_height)
 
 # One color per Serato deck number, so a glance at the layout shows which
 # deck each physical control currently drives.
@@ -203,6 +225,12 @@ class ControllerLayoutView(QWidget):
         # (knob/fader/jog) don't react yet; animating an actual value is a
         # separate follow-up (#13 part 2 continued).
         self._flash_keys: set[CellKey] = set()
+        # Last known 7-bit MIDI value per key, from a live event -- drives the
+        # knob marker angle and fader thumb position (#13 part 2 continued).
+        # Unlike a flash, this is a level, not a pulse: it persists (like a
+        # real knob staying wherever it was left) until the next event for
+        # that key. Pads/buttons/jog glyphs ignore it; no VU glyph exists yet.
+        self._values: dict[CellKey, int] = {}
 
         self._controller_tabs = QTabBar()
         self._controller_tabs.setStyleSheet(
@@ -371,6 +399,13 @@ class ControllerLayoutView(QWidget):
         self._flash_keys.discard(key)
         self._rebuild()
 
+    def set_value(self, key: CellKey, value: int) -> None:
+        """Record a live 7-bit MIDI value for a knob/fader glyph."""
+        if self._values.get(key) == value:
+            return
+        self._values[key] = value
+        self._rebuild()
+
     def clear_selection_history(self) -> None:
         """Forget the faded selection trail while keeping the current cell."""
         self._selection_history.clear()
@@ -477,8 +512,14 @@ class ControllerLayoutView(QWidget):
             shape = QGraphicsEllipseItem(QRectF(left + inset, top + inset, d - 2 * inset, d - 2 * inset))
             shape.setBrush(_KNOB_BRUSH)
             shape.setPen(_CONTROL_PEN)
-            marker = QGraphicsLineItem(QLineF(left + d / 2, top + d / 2, left + d / 2, top + d / 6))
-            marker.setPen(_CONTROL_PEN)
+            center_x, center_y = left + d / 2, top + d / 2
+            radius = d / 2 - d / 6
+            angle = _knob_angle_rad(self._values.get(key, _MIDI_DEFAULT))
+            tip_x = center_x + radius * math.sin(angle)
+            tip_y = center_y - radius * math.cos(angle)
+            marker = QGraphicsLineItem(QLineF(center_x, center_y, tip_x, tip_y))
+            marker.setPen(_KNOB_MARKER_PEN)
+            marker.setZValue(1)  # above the dial ellipse (`shape`, added after this in scene order)
             marker.setData(_KEY_ROLE, key)
             self._scene.addItem(marker)
         elif visual_kind == "jog":
@@ -492,7 +533,8 @@ class ControllerLayoutView(QWidget):
             track.setPen(_FADER_PEN)
             track.setData(_KEY_ROLE, key)
             self._scene.addItem(track)
-            shape = QGraphicsRectItem(QRectF(left + 7, top + h / 2 - 4, 18, 8))
+            thumb_top = _fader_thumb_top(self._values.get(key, _MIDI_DEFAULT), top, h, 8)
+            shape = QGraphicsRectItem(QRectF(left + 7, thumb_top, 18, 8))
             shape.setBrush(_CONTROL_BRUSH)
             shape.setPen(_CONTROL_PEN)
         shape.setData(_KEY_ROLE, key)
