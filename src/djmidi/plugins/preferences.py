@@ -32,6 +32,7 @@ class PluginPreferences:
     log_level: str = "INFO"
     log_path: str = ""
     theme: ThemeMode = "system"
+    auto_start_live_monitor: bool = True
 
     def is_enabled(self, plugin_id: str) -> bool:
         return self.enabled.get(plugin_id, True)
@@ -57,6 +58,7 @@ class PluginPreferences:
                 "log_level": self.log_level,
                 "log_path": self.log_path,
                 "theme": self.theme,
+                "auto_start_live_monitor": self.auto_start_live_monitor,
             },
             indent=2,
             sort_keys=True,
@@ -96,6 +98,7 @@ class PluginPreferences:
             log_level=log_level.upper(),
             log_path=str(raw.get("log_path", "")),
             theme=theme,
+            auto_start_live_monitor=bool(raw.get("auto_start_live_monitor", True)),
         )
 
     @classmethod
@@ -112,7 +115,8 @@ class PluginPreferences:
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(self.to_json(), encoding="utf-8")
         _LOGGER.info(
-            "Saved preferences to %s (detection_policy=%s, routing_enabled=%s, trust_external_plugins=%s, log_level=%s, log_path=%s, theme=%s)",
+            "Saved preferences to %s (detection_policy=%s, routing_enabled=%s, trust_external_plugins=%s, "
+            "log_level=%s, log_path=%s, theme=%s, auto_start_live_monitor=%s)",
             target,
             self.detection_policy,
             self.routing_enabled,
@@ -120,6 +124,7 @@ class PluginPreferences:
             self.log_level,
             self.log_path or "(default)",
             self.theme,
+            self.auto_start_live_monitor,
         )
 
 

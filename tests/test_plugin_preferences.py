@@ -62,3 +62,16 @@ def test_plugin_preferences_from_json_rejects_unknown_theme():
 
     with pytest.raises(ValueError, match="theme"):
         PluginPreferences.from_json('{"enabled": {}, "theme": "neon"}')
+
+
+def test_plugin_preferences_auto_start_live_monitor_defaults_true_and_round_trips(tmp_path):
+    preferences = PluginPreferences()
+    assert preferences.auto_start_live_monitor is True
+    preferences.auto_start_live_monitor = False
+    path = tmp_path / "auto_start.json"
+    preferences.save(path)
+    assert PluginPreferences.load(path).auto_start_live_monitor is False
+
+
+def test_plugin_preferences_from_json_defaults_missing_auto_start_live_monitor_to_true():
+    assert PluginPreferences.from_json('{"enabled": {}}').auto_start_live_monitor is True

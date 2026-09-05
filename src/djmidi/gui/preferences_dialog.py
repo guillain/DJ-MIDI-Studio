@@ -42,6 +42,14 @@ class PreferencesDialog(QDialog):
         trust = QCheckBox("Trust external plugins")
         trust.setChecked(preferences.trust_external_plugins)
         self._trust = trust
+        auto_start_live_monitor = QCheckBox("Auto-start Live Monitor when a mapping is loaded")
+        auto_start_live_monitor.setChecked(preferences.auto_start_live_monitor)
+        auto_start_live_monitor.setToolTip(
+            "Automatically listen on every available MIDI input when a mapping is loaded, so "
+            "By Channel/Deck/Controller reflect live controller presses without opening Live "
+            "Monitor and clicking Start monitoring. Turn off to require that manual step."
+        )
+        self._auto_start_live_monitor = auto_start_live_monitor
         theme = QComboBox()
         theme.addItem("Follow system", "system")
         theme.addItem("Light", "light")
@@ -72,6 +80,7 @@ class PreferencesDialog(QDialog):
         policy_layout.addRow("Log file path:", log_path_row)
         policy_layout.addRow(routing)
         policy_layout.addRow(trust)
+        policy_layout.addRow(auto_start_live_monitor)
 
         controller_ids = {
             definition.plugin_id or definition.name
@@ -148,6 +157,7 @@ class PreferencesDialog(QDialog):
         self._preferences.detection_policy = self._detection.currentData()
         self._preferences.routing_enabled = self._routing.isChecked()
         self._preferences.trust_external_plugins = self._trust.isChecked()
+        self._preferences.auto_start_live_monitor = self._auto_start_live_monitor.isChecked()
         self._preferences.log_level = self._log_level.currentText()
         self._preferences.log_path = self._log_path.text().strip()
         for plugin_id, checkbox in self._plugin_checks.items():

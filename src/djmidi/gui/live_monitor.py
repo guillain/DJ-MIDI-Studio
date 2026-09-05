@@ -258,6 +258,40 @@ class LiveMonitorView(QWidget):
         _LOGGER.info("Saved %d MIDI event(s) to CSV", len(self._events))
         self._status_label.setText(f"Saved {len(self._events)} MIDI event(s).")
 
+    def ensure_monitoring_started(self) -> None:
+        """Best-effort auto-start used when a mapping is loaded, so the By
+        Channel/Deck/Controller layouts reflect live controller presses
+        without a manual "Start monitoring" click (View menu -> "Auto-start
+        Live Monitor on load", see MainWindow._load_tree).
+
+        Never overrides an already-running session (a user who already
+        picked specific ports here keeps that selection), and never pops a
+        dialog for a busy/unavailable port the way the "Start monitoring"
+        button does -- this runs silently in the background, so one port
+        that fails to open (e.g. already claimed by another app) is just
+        skipped and logged, instead of aborting monitoring on every port."""
+        if self._running:
+            return
+        self._refresh_ports()
+        self._select_all_sources()
+        opened: list[str] = []
+        for i in range(self._port_list.count()):
+            if not self._is_checked(i):
+                continue
+            name = self._port_list.item(i).text()
+            try:
+                self._monitor.open_input(name)
+                opened.append(name)
+            except Exception:  # best-effort: one busy port shouldn't block the rest
+                _LOGGER.warning("Live Monitor auto-start: could not open MIDI input %r", name, exc_info=True)
+        if not opened:
+            return
+        self._running = True
+        self._start_button.setText("Stop monitoring")
+        self._status_label.setText(f"Running ({len(opened)} input(s), auto-started)")
+        _LOGGER.info("Live Monitor auto-started on mapping load: inputs=%s", opened)
+        self._timer.start()
+
     def shutdown(self) -> None:
         """Releases MIDI ports; call when the app is closing."""
         if self._running:

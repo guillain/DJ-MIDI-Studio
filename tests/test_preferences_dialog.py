@@ -58,3 +58,12 @@ def test_preferences_dialog_saves_theme_choice():
     dialog._theme.setCurrentIndex(dialog._theme.findData("light"))
     dialog._save()
     assert preferences.theme == "light"
+
+
+def test_preferences_dialog_reflects_and_saves_auto_start_live_monitor():
+    preferences = PluginPreferences(auto_start_live_monitor=True)
+    dialog = PreferencesDialog(preferences)
+    assert dialog._auto_start_live_monitor.isChecked() is True
+    dialog._auto_start_live_monitor.setChecked(False)
+    dialog._save()
+    assert preferences.auto_start_live_monitor is False

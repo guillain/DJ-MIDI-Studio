@@ -695,6 +695,11 @@ class MainWindow(QMainWindow):
             self.midi_routing_view.set_routing_enabled(self.preferences.routing_enabled)
             log_path = self.preferences.log_path or current_log_path()
             configure_logging(self.preferences.log_level, log_path)
+            if self.preferences.auto_start_live_monitor and self.config is not None:
+                # Turning the setting on with a mapping already loaded starts
+                # monitoring immediately, matching "Enable MIDI routing
+                # policies" applying right away above -- no-op if already running.
+                self.live_monitor_view.ensure_monitoring_started()
             self.statusBar().showMessage("Preferences saved")
 
     def _apply_plugin_preferences(self) -> None:
@@ -810,6 +815,8 @@ class MainWindow(QMainWindow):
         self._refresh_layout_usage()
         self._refresh_deck_view()
         self.live_monitor_view.set_config(self.config)
+        if self.preferences.auto_start_live_monitor:
+            self.live_monitor_view.ensure_monitoring_started()
 
     def _rebuild_channel_columns(self) -> None:
         assert self.config is not None
