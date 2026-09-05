@@ -8,11 +8,15 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QDesktopServices, QPainter, QPixmap
+from PySide6.QtCore import QRectF, Qt
+from PySide6.QtGui import QBrush, QColor, QDesktopServices, QPainter, QPen, QPixmap
 from PySide6.QtWidgets import (
+    QAbstractGraphicsShapeItem,
+    QCheckBox,
     QComboBox,
+    QGraphicsEllipseItem,
     QGraphicsPixmapItem,
+    QGraphicsRectItem,
     QGraphicsScene,
     QGraphicsTextItem,
     QGraphicsView,
@@ -23,6 +27,7 @@ from PySide6.QtWidgets import (
 )
 
 from djmidi import catalog
+from djmidi.gui.geometry import TRANSPORT_GEOMETRY
 
 if getattr(sys, "frozen", False):
     _RESOURCE_ROOT = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parents[3]))
@@ -98,16 +103,20 @@ class ControllerImageView(QWidget):
         reset_button.clicked.connect(lambda: self._load(self._combo.currentText()))
         self._documentation_button = QPushButton("Open documentation")
         self._documentation_button.clicked.connect(self._open_documentation)
+        self._transport_checkbox = QCheckBox("Show transport layer")
+        self._transport_checkbox.toggled.connect(lambda _checked: self._draw_transport_overlay())
 
         controls = QHBoxLayout()
         controls.addWidget(self._combo)
         controls.addWidget(reset_button)
         controls.addWidget(self._documentation_button)
+        controls.addWidget(self._transport_checkbox)
         controls.addStretch(1)
 
         self._scene = QGraphicsScene(self)
         self._view = _ZoomableView(self._scene)
         self._pixmap_item: QGraphicsPixmapItem | None = None
+        self._overlay_items: list[QAbstractGraphicsShapeItem] = []
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -146,6 +155,7 @@ class ControllerImageView(QWidget):
         )
         self._scene.clear()
         self._pixmap_item = None
+        self._overlay_items = []
         self._view.resetTransform()
         path = _resolve_image_path(image_for_controller(name))
         pixmap = QPixmap(str(path)) if path is not None and path.exists() else QPixmap()
@@ -157,12 +167,54 @@ class ControllerImageView(QWidget):
             placeholder.setDefaultTextColor(Qt.GlobalColor.darkGray)
             self._scene.addItem(placeholder)
             self._scene.setSceneRect(self._scene.itemsBoundingRect())
+            self._transport_checkbox.setEnabled(False)
             return
         item = QGraphicsPixmapItem(pixmap)
         self._pixmap_item = item
         self._scene.addItem(item)
         self._scene.setSceneRect(item.boundingRect())
         self._view.fitInView(item, Qt.AspectRatioMode.KeepAspectRatio)
+        has_transport = name in TRANSPORT_GEOMETRY
+        self._transport_checkbox.setEnabled(has_transport)
+        self._transport_checkbox.setToolTip(
+            ""
+            if has_transport
+            else "No transport geometry modeled yet for this controller (see gui/geometry.py)"
+        )
+        self._draw_transport_overlay()
+
+    def _draw_transport_overlay(self) -> None:
+        """Colored markers over the real photo at each transport control's
+        true position (gui/geometry.TRANSPORT_GEOMETRY) -- start of the DJ
+        layout visual fidelity chantier (issue #13). Decorative only, like
+        the rest of this tab: no click handling, no binding to loaded config."""
+        for item in self._overlay_items:
+            self._scene.removeItem(item)
+        self._overlay_items = []
+        if self._pixmap_item is None or not self._transport_checkbox.isChecked():
+            return
+        pixmap = self._pixmap_item.pixmap()
+        image_w, image_h = pixmap.width(), pixmap.height()
+        geometry = TRANSPORT_GEOMETRY.get(self._combo.currentText(), {})
+        for label, geom in geometry.items():
+            rect = QRectF(
+                geom.x * image_w,
+                geom.y * image_h,
+                geom.w * image_w,
+                geom.h * image_h,
+            )
+            fill = QColor(geom.color)
+            fill.setAlpha(110)
+            pen = QPen(QColor(geom.color))
+            pen.setWidth(3)
+            shape_item: QAbstractGraphicsShapeItem = (
+                QGraphicsEllipseItem(rect) if geom.shape == "circle" else QGraphicsRectItem(rect)
+            )
+            shape_item.setBrush(QBrush(fill))
+            shape_item.setPen(pen)
+            shape_item.setToolTip(label)
+            self._scene.addItem(shape_item)
+            self._overlay_items.append(shape_item)
 
     def _open_documentation(self) -> None:
         documentation = documentation_for_controller(self._combo.currentText())
