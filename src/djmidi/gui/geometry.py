@@ -43,6 +43,17 @@ callout numbers alone):
   perspective photo (a control further from the camera renders smaller and
   shifted in ways a flat x/y/w/h box can't correct for), so a flat diagram
   is a prerequisite for this controller's geometry, not just a nice-to-have.
+- Numark Mixtrack Pro FX's transport + pad cluster: PLAY/PAUSE, CUE, SYNC,
+  LOOP, and the 8-pad grid -- this covers every entry in
+  ``catalog/numark_mixtrack_pro_fx.py``. Same fix as DDJ-REV1:
+  ``assets/controllers/numark-mixtrack-pro-fx.png`` was an angled marketing
+  photo, replaced with a flat top-down diagram cropped from page 3 of the
+  bundled user guide (``docs/controllers/numark-mixtrack-pro-fx-user-guide-v1.2.pdf``,
+  the "Top Panel" figure) at 300 DPI -- this PDF is a general user guide, not
+  a MIDI message list, so unlike the Pioneer controllers there was no data
+  table to cross-check the catalog's trigger values against (the catalog's
+  own docstring already discloses this as a "conservative community
+  profile"); only the geometry (control positions) came from this PDF.
 
 Both controllers have a mirrored/repeated physical layout that the schematic
 already collapses to one cell regardless of which copy is used:
@@ -190,6 +201,25 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         "LOAD DECK 2/4": ControlGeometry(0.5459, 0.3509, 0.0220, 0.0320, "rect", "#3ea86b"),
         # Muted neutral: a modifier key, not a function.
         "SHIFT": ControlGeometry(0.4781, 0.4821, 0.0323, 0.0218, "rect", "#5f6b7a"),
+    },
+    "Numark Mixtrack Pro FX": {
+        # Blue: matches SYNC's accent color on the other controllers.
+        "SYNC": ControlGeometry(0.0427, 0.6875, 0.0373, 0.0333, "rect", "#4a90d9"),
+        # Amber: matches CUE's accent color on the other controllers.
+        "CUE": ControlGeometry(0.0427, 0.7465, 0.0373, 0.0313, "rect", "#e0954a"),
+        # Green: matches PLAY/PAUSE's accent color on the other controllers.
+        "PLAY/PAUSE": ControlGeometry(0.0427, 0.8194, 0.0373, 0.0538, "rect", "#3ea86b"),
+        # Gray-blue: utility accent, matches loop-style buttons elsewhere.
+        "LOOP": ControlGeometry(0.3050, 0.7778, 0.0367, 0.0295, "rect", "#7a8aa0"),
+        # Salmon-pink: matches the pad grid accent used on the other controllers.
+        "Pad 1": ControlGeometry(0.0967, 0.7413, 0.0392, 0.0556, "rect", "#e0708f"),
+        "Pad 2": ControlGeometry(0.1433, 0.7413, 0.0383, 0.0556, "rect", "#e0708f"),
+        "Pad 3": ControlGeometry(0.1908, 0.7413, 0.0383, 0.0556, "rect", "#e0708f"),
+        "Pad 4": ControlGeometry(0.2367, 0.7413, 0.0383, 0.0556, "rect", "#e0708f"),
+        "Pad 5": ControlGeometry(0.0967, 0.8177, 0.0392, 0.0573, "rect", "#e0708f"),
+        "Pad 6": ControlGeometry(0.1433, 0.8177, 0.0383, 0.0573, "rect", "#e0708f"),
+        "Pad 7": ControlGeometry(0.1908, 0.8177, 0.0383, 0.0573, "rect", "#e0708f"),
+        "Pad 8": ControlGeometry(0.2367, 0.8177, 0.0383, 0.0573, "rect", "#e0708f"),
     },
 }
 
