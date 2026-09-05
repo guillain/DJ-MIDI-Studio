@@ -590,9 +590,22 @@ documentation index.
   buttons (one marker per physical button for "LOAD DECK 1/3" and
   "LOAD DECK 2/4", disambiguated by SHIFT the same way the pad channels
   are), and SHIFT — every DDJ-XP2 catalog section now has real geometry
-  except MIDI-OUT (four output-only LEDs, not a user control). Extending
-  this to XDJ-XZ's mixer strip and hot cue pads, and to the schematic Layout
-  tabs themselves, is future work.
+  except MIDI-OUT (four output-only LEDs, not a user control). Live-wired in
+  `v0.47.28-live-flash-real-layout`: requested directly by the user
+  ("refléter l'état des contrôleurs... si on appuie sur une touche, on doit
+  voir son état changé") — `ControllerImageView.flash_key(label)` briefly
+  turns a marker white on a live MIDI hit, mirroring
+  `ControllerLayoutView.flash_key` on the schematic tabs. New
+  `geometry.resolve_geometry_label(controller, hit_name)` maps a live
+  catalog hit's raw name to the geometry label it should flash — stripping
+  shift suffixes, extracting a pad number from DDJ-XP2's
+  `"Deck 1 Pad 3 (PAD MODE 2)"`-style names, and expanding a combined label
+  like `"PAD MODE 1/5"` back to the logical names it answers to — and only
+  flashes when the hit's controller matches the one currently shown in
+  Controller Images. Extending this to XDJ-XZ's mixer strip and hot cue
+  pads, to continuous values (knob/fader rotation on the real photo, not
+  just a flash), and to the schematic Layout tabs' own remaining gaps
+  (jog wheels, VU meters), is future work.
 - [ ] Add MIDI-value animation for knobs, faders, pads, jog wheels, and VU meters.
   Partially addressed in `v0.47.20-pad-flash-animation`: a discrete pad/button
   glyph now briefly flashes white on a live MIDI hit (`ControllerLayoutView.flash_key`),
