@@ -159,3 +159,44 @@ def test_resolve_geometry_label_returns_none_for_an_unmodeled_control():
     assert resolve_geometry_label("DDJ-XP2", "Rotary Selector (+SHIFT press)") == "Rotary Selector"
     assert resolve_geometry_label("XDJ-XZ", "LOOP IN") is None  # not modeled yet
     assert resolve_geometry_label("__unknown_controller__", "PLAY/PAUSE") is None
+
+
+def test_ddj_rev1_geometry_covers_every_catalog_entry():
+    """DDJ-REV1's catalog (catalog/ddj_rev1.py) has exactly six DECK entries
+    plus an 8-pad grid -- this is the whole controller, not a subset."""
+    assert set(CONTROL_GEOMETRY["DDJ-REV1"]) == {
+        "PLAY/PAUSE",
+        "CUE",
+        "AUTO LOOP",
+        "1/2X",
+        "2X",
+        "SYNC",
+        *(f"Pad {n}" for n in range(1, 9)),
+    }
+
+
+def test_ddj_rev1_pad_grid_is_a_non_overlapping_2x4_layout():
+    pads = {n: CONTROL_GEOMETRY["DDJ-REV1"][f"Pad {n}"] for n in range(1, 9)}
+    for row in range(2):
+        xs = [pads[row * 4 + col + 1].x for col in range(4)]
+        assert xs == sorted(xs)
+    for col in range(4):
+        ys = [pads[row * 4 + col + 1].y for row in range(2)]
+        assert ys == sorted(ys)
+    for a in range(1, 9):
+        for b in range(a + 1, 9):
+            ga, gb = pads[a], pads[b]
+            x_overlap = ga.x < gb.x + gb.w and gb.x < ga.x + ga.w
+            y_overlap = ga.y < gb.y + gb.h and gb.y < ga.y + ga.h
+            assert not (x_overlap and y_overlap), f"Pad {a} and Pad {b} overlap"
+
+
+def test_resolve_geometry_label_extracts_pad_number_from_ddj_rev1_pad_names():
+    """DDJ-REV1's pad_lookup() produces names like "Deck 1 Pad 3 (PAD MODE
+    2)" -- verified against the real lookup path."""
+    hit = next(
+        hit
+        for hit in catalog.lookup("8", "NOTE", "18")  # DDJ-REV1 deck-1 pad channel
+        if hit.controller == "DDJ-REV1"
+    )
+    assert resolve_geometry_label("DDJ-REV1", hit.name) == "Pad 3"
