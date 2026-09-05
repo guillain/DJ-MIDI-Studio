@@ -20,7 +20,7 @@ def test_builtin_controllers_are_registered_at_import():
         "DDJ-1000": 8,
         "DDJ-FLX4": 8,
         "DDJ-REV1": 8,
-        "DDJ-FLX10": 16,
+        "DDJ-FLX10": 8,
         "Numark Mixtrack Pro FX": 8,
         "Hercules DJControl Inpulse 500": 8,
     }
@@ -44,11 +44,14 @@ def test_builtin_controller_plugins_expose_metadata():
 
 
 def test_ddj_flx10_resolves_transport_and_pad_controls():
-    transport_hits = catalog.lookup("3", "Note On", "0")
+    transport_hits = catalog.lookup("3", "Note On", "11")
     assert any(hit.controller == "DDJ-FLX10" and hit.name == "PLAY/PAUSE" for hit in transport_hits)
 
     pad_hits = catalog.lookup("9", "Note On", "31")
-    assert any(hit.controller == "DDJ-FLX10" and hit.name == "Deck 4 Pad 16 (PAD MODE 2)" for hit in pad_hits)
+    assert any(
+        hit.controller == "DDJ-FLX10" and hit.name == "Deck 1 Pad 8 (PAD FX 1, PAGE 2) (+SHIFT)"
+        for hit in pad_hits
+    )
 
 
 def test_ddj_flx4_resolves_two_deck_transport_and_pad_controls():
@@ -74,7 +77,6 @@ def test_ddj_rev1_resolves_serato_transport_and_shifted_pad_controls():
         ("XDJ-XZ", "6", 0),
         ("DDJ-FLX4", "6", 0),
         ("DDJ-REV1", "8", 0),
-        ("DDJ-FLX10", "6", 0),
     ],
 )
 def test_pioneer_pad_grids_resolve_all_eight_modes(controller, channel, note):
@@ -137,6 +139,47 @@ def test_ddj_1000_pad_grid_shift_channel_uses_the_same_note_range():
     matching = [hit for hit in hits if hit.controller == "DDJ-1000"]
     assert matching
     assert matching[0].name == "Deck 1 Pad 1 (HOT CUE, PAGE 1) (+SHIFT)"
+
+
+def test_ddj_flx10_pad_grid_resolves_all_sixteen_real_pad_mode_banks():
+    """DDJ-FLX10's pad grid shares DDJ-1000's 16-real-pad-mode-bank shape
+    (verified independently against DDJ-FLX10's own PDF, not assumed)."""
+    expected_modes = (
+        "HOT CUE, PAGE 1",
+        "HOT CUE, PAGE 2",
+        "PAD FX 1, PAGE 1",
+        "PAD FX 1, PAGE 2",
+        "BEAT JUMP, PAGE 1",
+        "BEAT JUMP, PAGE 2",
+        "SAMPLER, PAGE 1",
+        "SAMPLER, PAGE 2",
+        "KEYBOARD, PAGE 1",
+        "KEYBOARD, PAGE 2",
+        "PAD FX 2, PAGE 1",
+        "PAD FX 2, PAGE 2",
+        "BEAT LOOP, PAGE 1",
+        "BEAT LOOP, PAGE 2",
+        "KEY SHIFT, PAGE 1",
+        "KEY SHIFT, PAGE 2",
+    )
+    for mode_index, mode_name in enumerate(expected_modes):
+        hits = catalog.lookup("8", "Note On", str(mode_index * 8))  # deck 1, pad 1
+        matching = [hit for hit in hits if hit.controller == "DDJ-FLX10"]
+        assert matching, mode_index
+        assert matching[0].name == f"Deck 1 Pad 1 ({mode_name})"
+
+
+def test_ddj_flx10_deck_section_covers_controls_ddj_1000_does_not_have():
+    """DDJ-FLX10 is a materially different, richer controller than
+    DDJ-1000 -- these controls (rekordbox stem control, mix point tools,
+    4 beat jump) have no DDJ-1000 equivalent at all."""
+    for data1, name in (
+        ("13", "ACTIVE PART DRUMS"),
+        ("89", "MIX POINT SELECT <"),
+        ("94", "4 BEAT JUMP <"),
+    ):
+        hits = catalog.lookup("2", "Note On", data1)
+        assert any(hit.controller == "DDJ-FLX10" and hit.name == name for hit in hits)
 
 
 def test_non_pioneer_controller_plugins_resolve_pad_controls():
