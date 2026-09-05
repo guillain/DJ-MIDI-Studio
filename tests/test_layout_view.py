@@ -1,8 +1,28 @@
+from PySide6.QtWidgets import QGraphicsRectItem
+
 from djmidi import catalog
 from djmidi.catalog._registry import ControllerDefinition, register
+from djmidi.gui import layout_view as layout_view_mod
 from djmidi.gui.layout_view import ControllerLayoutView
 
 _USAGE = {("DDJ-XP2", "PAD", "Pad 1"): {"0": {"codfather_st"}, "2": {"auto_loop_specific_length"}}}
+
+
+def _glyph_brush_color(view: ControllerLayoutView, key: tuple[str, str, str]):
+    """Find the small pad/button glyph rect (not the larger half-background
+    rect, which shares the same _KEY_ROLE data) and return its brush color.
+
+    Glyph size is per-controller (LayoutMetrics.pad_glyph/button_glyph), so
+    pick the smallest matching rect rather than a hardcoded pixel width --
+    it is always far smaller than the half-background rect (LayoutMetrics.cell_w)."""
+    candidates = [
+        item
+        for item in view._scene.items()
+        if isinstance(item, QGraphicsRectItem) and item.data(layout_view_mod._KEY_ROLE) == key
+    ]
+    if candidates:
+        return min(candidates, key=lambda item: item.rect().width()).brush().color()
+    raise AssertionError(f"no pad/button glyph found for {key}")
 
 
 def test_refresh_controllers_adds_newly_registered_controller_and_keeps_selection():
@@ -119,6 +139,27 @@ def test_set_controller_switches_tab_when_name_exists():
     view = ControllerLayoutView()
     assert view.set_controller("XDJ-XZ") is True
     assert view._controller == "XDJ-XZ"
+
+
+def test_flash_key_briefly_brightens_a_pad_glyph_then_reverts():
+    view = ControllerLayoutView()
+    view.set_usage(_USAGE)
+    key = ("DDJ-XP2", "PAD", "Pad 1")
+    normal_color = _glyph_brush_color(view, key)
+
+    view.flash_key(key)
+    assert key in view._flash_keys
+    assert _glyph_brush_color(view, key) == layout_view_mod._FLASH_BRUSH.color()
+
+    view._clear_flash(key)
+    assert key not in view._flash_keys
+    assert _glyph_brush_color(view, key) == normal_color
+
+
+def test_flash_key_on_unused_cell_does_not_crash():
+    view = ControllerLayoutView()
+    view.flash_key(("DDJ-XP2", "PAD", "Pad 1"))
+    assert len(view._scene.items()) > 0
 
 
 def test_controller_selector_is_horizontal_scrollable():
