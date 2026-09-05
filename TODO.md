@@ -542,7 +542,7 @@ of official MIDI documentation, and fit with the current catalog architecture.
 - [x] **Numark Mixtrack Pro FX** — initial discrete-control profile delivered.
 - [x] **Hercules DJControl Inpulse 500** — initial discrete-control profile delivered.
 - [ ] Verify the delivered FLX4, FLX10, REV1, Numark, and Hercules profiles against target hardware/firmware captures; continuous controls and missing vendor-specific evidence remain explicitly out of scope until verified.
-- [x] **DDJ-1000** (not originally on this list, but the same class of problem): its catalog data was checked against the official bundled PDF (not hardware) and corrected in `v0.47.31-ddj-1000-catalog-fix` — see Recent evolution chapters. **DDJ-FLX10 was found to have the same kind of problem, worse**: it currently reuses DDJ-1000's (wrong) values, and its real controls diverge substantially from DDJ-1000's (ACTIVE PART DRUMS/VOCAL/INST, MIX POINT SELECT/LINK, CUE/LOOP CALL have no DDJ-1000 equivalent) — fixing it means a full re-transcription from FLX10's own PDF, not a value fix, and is intentionally not done yet.
+- [x] **DDJ-1000** (not originally on this list, but the same class of problem): its catalog data was checked against the official bundled PDF (not hardware) and corrected in `v0.47.31-ddj-1000-catalog-fix` — see Recent evolution chapters. **DDJ-FLX10 had the same kind of problem, worse**: it had reused DDJ-1000's (wrong) values wholesale, and its real controls diverge substantially from DDJ-1000's (ACTIVE PART DRUMS/VOCAL/INST, MIX POINT SELECT/LINK, CUE/LOOP CALL <>/>>) — fully re-transcribed from FLX10's own PDF (not a value fix) in `v0.47.32-ddj-flx10-catalog-fix`, see Recent evolution chapters.
 
 #### New candidates
 
@@ -645,12 +645,21 @@ documentation index.
   deck 1-4 plain/+SHIFT, not 6/7/8/9; the grid has 16 real pad-mode banks
   in 8-note blocks, not 8 modes in 16-note blocks). Every corrected value
   was re-verified against the PDF at 300 DPI (`pdftoppm`), not guessed.
-  Milestone tag `v0.47.31-ddj-1000-catalog-fix`. **DDJ-FLX10's catalog
-  currently duplicates DDJ-1000's (equally wrong) values and has its own,
-  much larger set of real controls with no DDJ-1000 equivalent at all**
-  (ACTIVE PART DRUMS/VOCAL/INST, MIX POINT SELECT/LINK, CUE/LOOP CALL) — its
-  correction is a full re-transcription, not a value fix, and needs its own
-  scoped pass rather than reusing this one's approach.
+  Milestone tag `v0.47.31-ddj-1000-catalog-fix`.
+- [x] **DDJ-FLX10 catalog full re-transcription** (`catalog/ddj_flx10.py`,
+  issue [#11](https://github.com/guillain/DJ-MIDI-Studio/issues/11)) — its
+  catalog had reused DDJ-1000's (equally wrong) values wholesale and only
+  covered 12 controls, but DDJ-FLX10 is a materially different, richer
+  controller with 22 real DECK controls: it has no separate MASTER TEMPO or
+  KEYLOCK button at all, and adds ACTIVE PART DRUMS/VOCAL/INST (rekordbox
+  stem control), CUE/LOOP CALL `<`/`>`, MIX POINT SELECT `<`/`>` + MIX
+  POINT LINK, and 4 BEAT JUMP `<`/`>`, none of which exist on DDJ-1000.
+  Every DECK value was independently re-verified against DDJ-FLX10's own
+  PDF at 300 DPI, not carried over from DDJ-1000's (corrected) catalog. The
+  8-pad grid's channel map and 16-real-pad-mode-bank formula turned out
+  identical to DDJ-1000's once independently checked against DDJ-FLX10's
+  own PAD table. `pad_count` corrected from 16 to 8, matching the real
+  8-pad grid. Milestone tag `v0.47.32-ddj-flx10-catalog-fix`.
 - [ ] Add MIDI-value animation for knobs, faders, pads, jog wheels, and VU meters.
   Partially addressed in `v0.47.20-pad-flash-animation`: a discrete pad/button
   glyph now briefly flashes white on a live MIDI hit (`ControllerLayoutView.flash_key`),
