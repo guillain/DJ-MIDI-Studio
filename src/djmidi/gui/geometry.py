@@ -33,6 +33,16 @@ callout numbers alone):
   continuous controls are out of catalog scope entirely, see
   ``catalog/__init__.py`` -- so there is nothing discrete left to model
   there; a mixer overlay would have to be display-only, like Jog wheel/Tempo.
+- DDJ-REV1's transport + pad cluster: PLAY/PAUSE, CUE, AUTO LOOP, 1/2X, 2X,
+  SYNC, and the 8-pad grid -- this covers every entry in
+  ``catalog/ddj_rev1.py``. ``assets/controllers/ddj-rev1.png`` was replaced
+  with a proper flat top-down diagram cropped from the official MIDI Message
+  List PDF (``docs/controllers/ddj-rev1-midi-message-list-e1.pdf``) instead
+  of the angled marketing photo it shipped with before -- the same
+  fraction-based overlay technique used here isn't reliable against a
+  perspective photo (a control further from the camera renders smaller and
+  shifted in ways a flat x/y/w/h box can't correct for), so a flat diagram
+  is a prerequisite for this controller's geometry, not just a nice-to-have.
 
 Both controllers have a mirrored/repeated physical layout that the schematic
 already collapses to one cell regardless of which copy is used:
@@ -107,6 +117,27 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         "Pad 6": ControlGeometry(0.2363, 0.8471, 0.0214, 0.0350, "rect", "#e0708f"),
         "Pad 7": ControlGeometry(0.2644, 0.8471, 0.0214, 0.0350, "rect", "#e0708f"),
         "Pad 8": ControlGeometry(0.2927, 0.8471, 0.0214, 0.0350, "rect", "#e0708f"),
+    },
+    "DDJ-REV1": {
+        # Green: matches PLAY/PAUSE's accent color on the other controllers.
+        "PLAY/PAUSE": ControlGeometry(0.3100, 0.8772, 0.0328, 0.0665, "circle", "#3ea86b"),
+        # Amber: matches CUE's accent color on the other controllers.
+        "CUE": ControlGeometry(0.2587, 0.9372, 0.0257, 0.0188, "rect", "#e0954a"),
+        # Gray-blue: utility accent, matches PAD MODE-style buttons elsewhere.
+        "AUTO LOOP": ControlGeometry(0.1440, 0.2797, 0.0257, 0.0159, "rect", "#7a8aa0"),
+        "1/2X": ControlGeometry(0.1890, 0.2797, 0.0121, 0.0159, "rect", "#7a8aa0"),
+        "2X": ControlGeometry(0.2149, 0.2797, 0.0121, 0.0159, "rect", "#7a8aa0"),
+        # Blue: matches SYNC's accent color on the other controllers.
+        "SYNC": ControlGeometry(0.2480, 0.2797, 0.0257, 0.0159, "rect", "#4a90d9"),
+        # Salmon-pink: matches the pad grid accent used on the other controllers.
+        "Pad 1": ControlGeometry(0.3673, 0.4986, 0.0328, 0.0694, "rect", "#e0708f"),
+        "Pad 2": ControlGeometry(0.4016, 0.4986, 0.0328, 0.0694, "rect", "#e0708f"),
+        "Pad 3": ControlGeometry(0.4358, 0.4986, 0.0328, 0.0694, "rect", "#e0708f"),
+        "Pad 4": ControlGeometry(0.4697, 0.4986, 0.0328, 0.0694, "rect", "#e0708f"),
+        "Pad 5": ControlGeometry(0.3673, 0.5738, 0.0328, 0.0694, "rect", "#e0708f"),
+        "Pad 6": ControlGeometry(0.4016, 0.5738, 0.0328, 0.0694, "rect", "#e0708f"),
+        "Pad 7": ControlGeometry(0.4358, 0.5738, 0.0328, 0.0694, "rect", "#e0708f"),
+        "Pad 8": ControlGeometry(0.4697, 0.5738, 0.0328, 0.0694, "rect", "#e0708f"),
     },
     "DDJ-XP2": {
         # Salmon-pink: matches the pad grid's own highlight color in the

@@ -616,7 +616,20 @@ documentation index.
   FX, Hercules DJControl Inpulse 500) — see the version history below for
   progress; each batch is gated on `scripts/quality_gate.sh` (coverage,
   code smell, duplication, bandit, pip-audit) passing, not just `pytest`/
-  `ruff`.
+  `ruff`. DDJ-REV1 completed in `v0.47.30-ddj-rev1-geometry`: PLAY/PAUSE,
+  CUE, AUTO LOOP, 1/2X, 2X, SYNC, and its 8-pad grid — every entry in
+  `catalog/ddj_rev1.py`. Required replacing `assets/controllers/ddj-rev1.png`
+  first: it was an angled marketing photo, and this overlay's flat
+  `x/y/w/h` fraction boxes aren't reliable against perspective (a control
+  further from the camera renders smaller and shifted in ways a flat box
+  can't correct for) — the official MIDI Message List PDF already bundled
+  in `docs/controllers/` turned out to have the same style of flat top-down
+  diagram used for DDJ-XP2/XDJ-XZ, rendered at 300 DPI with `pdftoppm` and
+  cropped the same way. Some other bundled controllers (DDJ-FLX4, Hercules
+  DJControl Inpulse 500) have no such PDF available and only an angled
+  photo, so their geometry is deferred until a flat diagram source exists —
+  forcing the fraction-box technique onto a perspective photo would produce
+  overlay markers that don't actually sit on the real button.
 - [ ] Add MIDI-value animation for knobs, faders, pads, jog wheels, and VU meters.
   Partially addressed in `v0.47.20-pad-flash-animation`: a discrete pad/button
   glyph now briefly flashes white on a live MIDI hit (`ControllerLayoutView.flash_key`),
