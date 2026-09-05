@@ -626,11 +626,23 @@ documentation index.
   can't correct for) — the official MIDI Message List PDF already bundled
   in `docs/controllers/` turned out to have the same style of flat top-down
   diagram used for DDJ-XP2/XDJ-XZ, rendered at 300 DPI with `pdftoppm` and
-  cropped the same way. Some other bundled controllers (DDJ-FLX4, Hercules
-  DJControl Inpulse 500) have no such PDF available and only an angled
-  photo, so their geometry is deferred until a flat diagram source exists —
-  forcing the fraction-box technique onto a perspective photo would produce
-  overlay markers that don't actually sit on the real button.
+  cropped the same way. Numark Mixtrack Pro FX completed in
+  `v0.47.33-numark-mixtrack-pro-fx-geometry`: PLAY/PAUSE, CUE, SYNC, LOOP,
+  and its 8-pad grid — every entry in `catalog/numark_mixtrack_pro_fx.py`.
+  Same asset-fix pattern as DDJ-REV1: `assets/controllers/numark-mixtrack-pro-fx.png`
+  was an angled marketing photo, replaced with a flat top-down diagram
+  cropped from page 3 (the "Top Panel" figure) of the bundled
+  `docs/controllers/numark-mixtrack-pro-fx-user-guide-v1.2.pdf`, rendered at
+  300 DPI. That PDF is a general user guide, not a MIDI message list like
+  the Pioneer PDFs, so unlike DDJ-1000 there was no data table to
+  cross-check the catalog's trigger values against — only the geometry came
+  from it; the catalog's own values are unchanged from the pre-existing,
+  self-disclosed "conservative community profile" in its module docstring.
+  Some other bundled controllers (DDJ-FLX4, Hercules DJControl Inpulse 500)
+  have no such PDF available and only an angled photo, so their geometry is
+  deferred until a flat diagram source exists — forcing the fraction-box
+  technique onto a perspective photo would produce overlay markers that
+  don't actually sit on the real button.
 - [x] **DDJ-1000 catalog data correction** (`catalog/ddj_1000.py`, related to
   issue [#11](https://github.com/guillain/DJ-MIDI-Studio/issues/11)) —
   discovered while cross-checking DECK section names against the official
