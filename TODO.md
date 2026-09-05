@@ -359,6 +359,17 @@ Implemented contract, runtime, test, and documentation work:
   out of scope. Visually verified with the app running before delivery, same
   technique as the pad-flash chapter above. Milestone tag
   `v0.47.21-knob-fader-animation`.
+- [x] **Multi-output selection in Controller Setup's MIDI Output** — requested
+  directly by the user, matching `MIDI input`'s existing multi-select. The
+  "Available output ports" list is now a checkbox `QListWidget` (shared
+  `port_list_utils.refresh_checked_port_list` helper, same as `MIDI input`)
+  instead of a single-selection list; `_selected_output_ports()` returns
+  every checked port, and "Send once", "Send double-click", "Play selected/
+  all session row(s)", and "Replay recorded session" all loop over the full
+  list instead of one `currentItem()`. Unlike a fresh `MIDI input` list
+  (nothing pre-checked), `_refresh_output_ports()` auto-checks the first
+  port whenever none are checked, preserving the old single-output
+  convenience default. Milestone tag `v0.47.26-multi-output-selection`.
 
 ### Core mapping workflow
 
