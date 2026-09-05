@@ -653,11 +653,26 @@ documentation index.
   Fig./UI-name callouts (D1-L, D7-L, ...) — each geometry entry's position
   was tied to its catalog name by cross-referencing this PDF's own MIDI
   assignment table (e.g. "D7-L ... BEAT SYNC ... NOTE 88"), not guessed from
-  the drawing's layout alone. Some other bundled controllers (DDJ-FLX4,
-  Hercules DJControl Inpulse 500) have no such PDF available and only an
-  angled photo, so their geometry is deferred until a flat diagram source
-  exists — forcing the fraction-box technique onto a perspective photo
-  would produce overlay markers that don't actually sit on the real button.
+  the drawing's layout alone. DDJ-FLX10 completed in
+  `v0.47.35-ddj-flx10-geometry`: PLAY/PAUSE, CUE, BEAT SYNC, TEMPO RESET,
+  KEY SYNC, ACTIVE PART DRUMS/VOCAL/INST, CUE/LOOP CALL `<`/`>`, LOOP IN,
+  LOOP OUT, 4 BEAT/EXIT, MIX POINT SELECT `<`/`>`, MIX POINT LINK, SLIP
+  REVERSE, QUANTIZE, SLIP, 4 BEAT JUMP `<`/`>`, SHIFT, and its 8-pad grid —
+  every entry in `catalog/ddj_flx10.py` (fully re-transcribed to real MIDI
+  values in `v0.47.32-ddj-flx10-catalog-fix` above). Unlike
+  DDJ-1000/DDJ-REV1/Numark, `assets/controllers/ddj-flx10.png` needed no
+  asset fix at all — it already was a tight, flat, high-DPI top-view crop,
+  so this batch went straight to measuring. Every entry's position was tied
+  to its catalog name by cross-referencing DDJ-FLX10's own MIDI Message
+  List PDF's Fig./UI-name callouts against its assignment table (e.g. PDF
+  row "D6 ... BEAT SYNC ... press ... NOTE 88" confirms the button drawn at
+  D6 is the catalog's `BEAT SYNC` entry, Data1 88) — the same rigor used for
+  DDJ-1000's fix, not assumed from the diagram alone. Some other bundled
+  controllers (DDJ-FLX4, Hercules DJControl Inpulse 500) have no such PDF
+  available and only an angled photo, so their geometry is deferred until a
+  flat diagram source exists — forcing the fraction-box technique onto a
+  perspective photo would produce overlay markers that don't actually sit
+  on the real button.
 - [x] **DDJ-1000 catalog data correction** (`catalog/ddj_1000.py`, related to
   issue [#11](https://github.com/guillain/DJ-MIDI-Studio/issues/11)) —
   discovered while cross-checking DECK section names against the official
