@@ -542,6 +542,7 @@ of official MIDI documentation, and fit with the current catalog architecture.
 - [x] **Numark Mixtrack Pro FX** — initial discrete-control profile delivered.
 - [x] **Hercules DJControl Inpulse 500** — initial discrete-control profile delivered.
 - [ ] Verify the delivered FLX4, FLX10, REV1, Numark, and Hercules profiles against target hardware/firmware captures; continuous controls and missing vendor-specific evidence remain explicitly out of scope until verified.
+- [x] **DDJ-1000** (not originally on this list, but the same class of problem): its catalog data was checked against the official bundled PDF (not hardware) and corrected in `v0.47.31-ddj-1000-catalog-fix` — see Recent evolution chapters. **DDJ-FLX10 was found to have the same kind of problem, worse**: it currently reuses DDJ-1000's (wrong) values, and its real controls diverge substantially from DDJ-1000's (ACTIVE PART DRUMS/VOCAL/INST, MIX POINT SELECT/LINK, CUE/LOOP CALL have no DDJ-1000 equivalent) — fixing it means a full re-transcription from FLX10's own PDF, not a value fix, and is intentionally not done yet.
 
 #### New candidates
 
@@ -630,6 +631,26 @@ documentation index.
   photo, so their geometry is deferred until a flat diagram source exists —
   forcing the fraction-box technique onto a perspective photo would produce
   overlay markers that don't actually sit on the real button.
+- [x] **DDJ-1000 catalog data correction** (`catalog/ddj_1000.py`, related to
+  issue [#11](https://github.com/guillain/DJ-MIDI-Studio/issues/11)) —
+  discovered while cross-checking DECK section names against the official
+  MIDI Message List PDF for the geometry chantier above: PLAY/PAUSE, CUE,
+  and every other DECK entry used placeholder sequential Data1 values
+  (0-13) instead of the PDF's real numbers, several UI names didn't match
+  the real control they described (e.g. `SYNC` → the real button is
+  `BEAT SYNC`; `RELOOP/EXIT` → `4 BEAT LOOP/EXIT`; `REVERSE` →
+  `SLIP REVERSE`), `KEYLOCK`/`TEMPO RANGE` corresponded to no real discrete
+  control and were removed, and the pad grid's channel-to-deck map and note
+  formula were both wrong (real channels are 8/9/10/11/12/13/14/15 for
+  deck 1-4 plain/+SHIFT, not 6/7/8/9; the grid has 16 real pad-mode banks
+  in 8-note blocks, not 8 modes in 16-note blocks). Every corrected value
+  was re-verified against the PDF at 300 DPI (`pdftoppm`), not guessed.
+  Milestone tag `v0.47.31-ddj-1000-catalog-fix`. **DDJ-FLX10's catalog
+  currently duplicates DDJ-1000's (equally wrong) values and has its own,
+  much larger set of real controls with no DDJ-1000 equivalent at all**
+  (ACTIVE PART DRUMS/VOCAL/INST, MIX POINT SELECT/LINK, CUE/LOOP CALL) — its
+  correction is a full re-transcription, not a value fix, and needs its own
+  scoped pass rather than reusing this one's approach.
 - [ ] Add MIDI-value animation for knobs, faders, pads, jog wheels, and VU meters.
   Partially addressed in `v0.47.20-pad-flash-animation`: a discrete pad/button
   glyph now briefly flashes white on a live MIDI hit (`ControllerLayoutView.flash_key`),

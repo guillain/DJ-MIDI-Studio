@@ -17,7 +17,7 @@ def test_builtin_controllers_are_registered_at_import():
     assert catalog.PAD_COUNTS == {
         "DDJ-XP2": 16,
         "XDJ-XZ": 8,
-        "DDJ-1000": 16,
+        "DDJ-1000": 8,
         "DDJ-FLX4": 8,
         "DDJ-REV1": 8,
         "DDJ-FLX10": 16,
@@ -72,7 +72,6 @@ def test_ddj_rev1_resolves_serato_transport_and_shifted_pad_controls():
     [
         ("DDJ-XP2", "8", 12),
         ("XDJ-XZ", "6", 0),
-        ("DDJ-1000", "6", 0),
         ("DDJ-FLX4", "6", 0),
         ("DDJ-REV1", "8", 0),
         ("DDJ-FLX10", "6", 0),
@@ -98,6 +97,46 @@ def test_pioneer_pad_grids_resolve_all_eight_modes(controller, channel, note):
             assert xdj_mode_names[mode - 1] in matching[0].name
         else:
             assert f"PAD MODE {mode}" in matching[0].name
+
+
+def test_ddj_1000_pad_grid_resolves_all_sixteen_real_pad_mode_banks():
+    """DDJ-1000's pad grid has 16 real pad-mode banks (8 named modes x 2
+    pages each), each occupying its own 8-note block -- not the generic 8
+    modes/16-note-block shape the other Pioneer profiles share (see
+    catalog/ddj_1000.py's docstring for the transcription history)."""
+    expected_modes = (
+        "HOT CUE, PAGE 1",
+        "HOT CUE, PAGE 2",
+        "PAD FX 1, PAGE 1",
+        "PAD FX 1, PAGE 2",
+        "BEAT JUMP, PAGE 1",
+        "BEAT JUMP, PAGE 2",
+        "SAMPLER, PAGE 1",
+        "SAMPLER, PAGE 2",
+        "KEYBOARD, PAGE 1",
+        "KEYBOARD, PAGE 2",
+        "PAD FX 2, PAGE 1",
+        "PAD FX 2, PAGE 2",
+        "BEAT LOOP, PAGE 1",
+        "BEAT LOOP, PAGE 2",
+        "KEY SHIFT, PAGE 1",
+        "KEY SHIFT, PAGE 2",
+    )
+    for mode_index, mode_name in enumerate(expected_modes):
+        hits = catalog.lookup("8", "Note On", str(mode_index * 8))  # deck 1, pad 1
+        matching = [hit for hit in hits if hit.controller == "DDJ-1000"]
+        assert matching, mode_index
+        assert matching[0].name == f"Deck 1 Pad 1 ({mode_name})"
+
+
+def test_ddj_1000_pad_grid_shift_channel_uses_the_same_note_range():
+    """The +SHIFT state is carried by the channel (9/11/13/15), not a
+    different Data1 range -- verified against the PDF, where the +SHIFT row
+    for a given pad/mode repeats the same Data1 value as the plain row."""
+    hits = catalog.lookup("9", "Note On", "0")  # deck 1 +SHIFT, pad 1, HOT CUE page 1
+    matching = [hit for hit in hits if hit.controller == "DDJ-1000"]
+    assert matching
+    assert matching[0].name == "Deck 1 Pad 1 (HOT CUE, PAGE 1) (+SHIFT)"
 
 
 def test_non_pioneer_controller_plugins_resolve_pad_controls():

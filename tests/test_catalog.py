@@ -55,14 +55,14 @@ def test_xdj_xz_effect_select():
 
 
 def test_ddj_1000_transport_control():
-    hits = catalog.lookup("2", "Note On", "0")
+    hits = catalog.lookup("2", "Note On", "11")
     assert any(h.controller == "DDJ-1000" and h.name == "PLAY/PAUSE" for h in hits)
 
 
 def test_ddj_1000_pad_grid():
     hits = catalog.lookup("9", "Note On", "31")
     names = [h.name for h in hits if h.controller == "DDJ-1000"]
-    assert names == ["Deck 4 Pad 16 (PAD MODE 2)"]
+    assert names == ["Deck 1 Pad 8 (PAD FX 1, PAGE 2) (+SHIFT)"]
 
 
 def test_no_match_returns_empty_list():
