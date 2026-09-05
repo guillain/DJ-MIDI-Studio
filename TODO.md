@@ -539,6 +539,21 @@ documentation index.
 ### DJ layout visual fidelity
 
 - [ ] Add controller-specific geometry and proportions for XDJ-XZ and DDJ-XP2.
+  Started in `v0.47.23-transport-overlay`: `gui/geometry.py` records real,
+  hand-measured per-control geometry (position + shape + a semantic color) as
+  fractions of the official reference photo (`assets/controllers/*.png`), and
+  the Controller Images tab gained a "Show transport layer" checkbox that
+  overlays it directly on the real photo — sidestepping the schematic
+  Layout tabs' uniform fixed-size cards, which can't represent a giant jog
+  wheel and a small button at their true relative scale without overlapping.
+  Only the "transport" cluster (PLAY/PAUSE, CUE, SYNC, jog wheel, tempo
+  fader) is modeled so far, for XDJ-XZ only — DDJ-XP2 has no deck transport
+  section (it's a pad/FX companion controller: BEAT SYNC/SILENT CUE/
+  QUANTIZE/KEY, not PLAY/CUE/SYNC). Each entry was verified by cropping the
+  region of the real image it claims to describe and screenshotting the
+  rendered overlay against it (not guessed from the PDF callout numbers
+  alone). Extending this to the rest of each controller's physical layout,
+  and to the schematic Layout tabs themselves, is future work.
 - [ ] Add MIDI-value animation for knobs, faders, pads, jog wheels, and VU meters.
   Partially addressed in `v0.47.20-pad-flash-animation`: a discrete pad/button
   glyph now briefly flashes white on a live MIDI hit (`ControllerLayoutView.flash_key`),

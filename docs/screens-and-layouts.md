@@ -124,6 +124,8 @@ The same tab provides MIDI output controls for sending a command once, sending a
 
 Controller Images displays the official reference artwork for the selected catalog controller. The view supports zooming, panning, resetting the zoom, and opening the bundled local controller documentation when available. The selector includes every registered controller; controllers without reference artwork show an explicit placeholder instead of an inaccurate diagram. Artwork is currently available for DDJ-XP2, XDJ-XZ, DDJ-1000, DDJ-FLX4, DDJ-FLX10, DDJ-REV1, Numark Mixtrack Pro FX, and Hercules DJControl Inpulse 500. A controller built in Controller Setup can carry a user-attached image (an absolute path), which this viewer resolves the same way as a bundled filename.
 
+For XDJ-XZ, a `Show transport layer` checkbox overlays colored markers directly on the real photo over PLAY/PAUSE, CUE, SYNC, the jog wheel, and the tempo fader — the start of a "real hardware layout" effort. It's disabled with a tooltip for any controller with no modeled geometry yet (including DDJ-XP2, which has no deck transport section at all). This overlay is decorative reference only, same as the rest of this tab — it doesn't reflect the loaded mapping.
+
 ![Controller Images view](images/layout/controlleur-image.png)
 
 ## Live Monitor
