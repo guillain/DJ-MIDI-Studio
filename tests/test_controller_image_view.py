@@ -118,7 +118,7 @@ def test_resolve_image_path_handles_absolute_and_bundled():
 
 def test_geometry_checkbox_disabled_for_controller_without_geometry():
     view = ControllerImageView()
-    assert view.set_controller("DDJ-1000") is True  # has a reference image but no modeled geometry
+    assert view.set_controller("DDJ-FLX10") is True  # has a reference image but no modeled geometry
     assert view._geometry_checkbox.isEnabled() is False
     assert view._overlay_items == []
 
@@ -152,7 +152,7 @@ def test_switching_away_from_modeled_controller_clears_markers():
     view.set_controller("XDJ-XZ")
     view._geometry_checkbox.setChecked(True)
     assert view._overlay_items
-    view.set_controller("DDJ-1000")
+    view.set_controller("DDJ-FLX10")
     assert view._overlay_items == []
     assert view._geometry_checkbox.isEnabled() is False
 

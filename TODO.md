@@ -638,11 +638,26 @@ documentation index.
   cross-check the catalog's trigger values against — only the geometry came
   from it; the catalog's own values are unchanged from the pre-existing,
   self-disclosed "conservative community profile" in its module docstring.
-  Some other bundled controllers (DDJ-FLX4, Hercules DJControl Inpulse 500)
-  have no such PDF available and only an angled photo, so their geometry is
-  deferred until a flat diagram source exists — forcing the fraction-box
-  technique onto a perspective photo would produce overlay markers that
-  don't actually sit on the real button.
+  DDJ-1000 completed in `v0.47.34-ddj-1000-geometry`: PLAY/PAUSE, CUE,
+  MASTER TEMPO, BEAT SYNC, KEY SYNC, KEY RESET, LOOP IN, LOOP OUT, 4 BEAT
+  LOOP/EXIT, QUANTIZE, SLIP, SLIP REVERSE, and its 8-pad grid — every entry
+  in `catalog/ddj_1000.py` (already fixed to real MIDI values in
+  `v0.47.31-ddj-1000-catalog-fix` above). `assets/controllers/ddj-1000.png`
+  needed a different fix than DDJ-REV1's: not an angled photo, but a
+  low-DPI dump of the *entire* PDF page (title, full device diagram, and the
+  MIDI table below it) — unusably imprecise for fraction-based measurement,
+  with the actual device occupying a small fraction of the image. Replaced
+  with a tight 300 DPI crop of just the top-view device diagram from
+  `docs/controllers/ddj-1000-midi-message-list-e1.pdf` page 1 (the same PDF
+  the catalog fix used), which conveniently carries the manufacturer's own
+  Fig./UI-name callouts (D1-L, D7-L, ...) — each geometry entry's position
+  was tied to its catalog name by cross-referencing this PDF's own MIDI
+  assignment table (e.g. "D7-L ... BEAT SYNC ... NOTE 88"), not guessed from
+  the drawing's layout alone. Some other bundled controllers (DDJ-FLX4,
+  Hercules DJControl Inpulse 500) have no such PDF available and only an
+  angled photo, so their geometry is deferred until a flat diagram source
+  exists — forcing the fraction-box technique onto a perspective photo
+  would produce overlay markers that don't actually sit on the real button.
 - [x] **DDJ-1000 catalog data correction** (`catalog/ddj_1000.py`, related to
   issue [#11](https://github.com/guillain/DJ-MIDI-Studio/issues/11)) —
   discovered while cross-checking DECK section names against the official

@@ -54,6 +54,24 @@ callout numbers alone):
   table to cross-check the catalog's trigger values against (the catalog's
   own docstring already discloses this as a "conservative community
   profile"); only the geometry (control positions) came from this PDF.
+- DDJ-1000's transport + pad cluster: PLAY/PAUSE, CUE, MASTER TEMPO, BEAT
+  SYNC, KEY SYNC, KEY RESET, LOOP IN, LOOP OUT, 4 BEAT LOOP/EXIT, QUANTIZE,
+  SLIP, SLIP REVERSE, and the 8-pad grid -- this covers every entry in
+  ``catalog/ddj_1000.py`` (fixed to real MIDI values in
+  ``v0.47.31-ddj-1000-catalog-fix``, see the ``pioneer-catalog-data-verification``
+  project note). ``assets/controllers/ddj-1000.png`` wasn't an angled photo
+  like DDJ-REV1/Numark, but a low-DPI dump of the *entire* PDF page (title,
+  device diagram, and the MIDI table below it) -- unusably imprecise for
+  fraction-based measurement, with the actual device occupying a small
+  fraction of the image. Replaced with a tight, 300 DPI crop of just the
+  top-view device diagram from ``docs/controllers/ddj-1000-midi-message-list-e1.pdf``
+  page 1 (the same PDF the catalog data fix used), which conveniently
+  already carries the manufacturer's own Fig./UI-name callouts (D1-L, D2-L,
+  ...). Each geometry entry's physical position was matched to its catalog
+  name by cross-referencing this PDF's own MIDI assignment table (e.g.
+  "D7-L ... BEAT SYNC ... NOTE 88" ties the button drawn at D7-L's position
+  directly to the catalog's `BEAT SYNC` entry, Data1 88), not guessed from
+  the drawing's layout alone.
 
 Both controllers have a mirrored/repeated physical layout that the schematic
 already collapses to one cell regardless of which copy is used:
@@ -220,6 +238,38 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         "Pad 6": ControlGeometry(0.1433, 0.8177, 0.0383, 0.0573, "rect", "#e0708f"),
         "Pad 7": ControlGeometry(0.1908, 0.8177, 0.0383, 0.0573, "rect", "#e0708f"),
         "Pad 8": ControlGeometry(0.2367, 0.8177, 0.0383, 0.0573, "rect", "#e0708f"),
+    },
+    "DDJ-1000": {
+        # Green: matches PLAY/PAUSE's accent color on the other controllers.
+        "PLAY/PAUSE": ControlGeometry(0.0518, 0.8267, 0.0491, 0.0943, "circle", "#3ea86b"),
+        # Amber: matches CUE's accent color on the other controllers.
+        "CUE": ControlGeometry(0.0518, 0.7143, 0.0461, 0.0933, "circle", "#e0954a"),
+        # Teal: matches DDJ-XP2's MASTER TEMPO-adjacent utility accent.
+        "MASTER TEMPO": ControlGeometry(0.2814, 0.7111, 0.0161, 0.0254, "rect", "#4ab8a0"),
+        # Blue: matches XDJ-XZ/DDJ-XP2's SYNC/BEAT SYNC accent color.
+        "BEAT SYNC": ControlGeometry(0.3215, 0.5476, 0.0162, 0.0352, "circle", "#4a90d9"),
+        # Gray-blue: utility accent, matches PAD MODE-style buttons elsewhere.
+        "KEY SYNC": ControlGeometry(0.2796, 0.8024, 0.0186, 0.0262, "rect", "#7a8aa0"),
+        "KEY RESET": ControlGeometry(0.2796, 0.8512, 0.0186, 0.0238, "rect", "#7a8aa0"),
+        # Amber: loop cluster, matches DDJ-XP2's loop accent family.
+        "LOOP IN": ControlGeometry(0.0461, 0.0667, 0.0249, 0.0540, "circle", "#d9954a"),
+        "LOOP OUT": ControlGeometry(0.0804, 0.0683, 0.0234, 0.0508, "circle", "#d9954a"),
+        "4 BEAT LOOP/EXIT": ControlGeometry(0.1064, 0.0798, 0.0482, 0.0250, "rect", "#d9954a"),
+        # Teal: a distinct utility accent, separate from the loop/effect/sync families.
+        "QUANTIZE": ControlGeometry(0.2314, 0.0798, 0.0214, 0.0250, "rect", "#4ab8a0"),
+        # Muted neutral: DDJ-1000's SLIP/SLIP REVERSE aren't a modifier key
+        # like SHIFT, but a distinct playback-state toggle family of their own.
+        "SLIP": ControlGeometry(0.2555, 0.0798, 0.0208, 0.0250, "rect", "#8f6fae"),
+        "SLIP REVERSE": ControlGeometry(0.0499, 0.1552, 0.0323, 0.0238, "rect", "#8f6fae"),
+        # Salmon-pink: matches the pad grid accent used on the other controllers.
+        "Pad 1": ControlGeometry(0.1132, 0.7638, 0.0351, 0.0724, "rect", "#e0708f"),
+        "Pad 2": ControlGeometry(0.1531, 0.7638, 0.0355, 0.0724, "rect", "#e0708f"),
+        "Pad 3": ControlGeometry(0.1952, 0.7638, 0.0351, 0.0724, "rect", "#e0708f"),
+        "Pad 4": ControlGeometry(0.2360, 0.7638, 0.0360, 0.0724, "rect", "#e0708f"),
+        "Pad 5": ControlGeometry(0.1132, 0.8457, 0.0351, 0.0724, "rect", "#e0708f"),
+        "Pad 6": ControlGeometry(0.1531, 0.8457, 0.0355, 0.0724, "rect", "#e0708f"),
+        "Pad 7": ControlGeometry(0.1952, 0.8457, 0.0351, 0.0724, "rect", "#e0708f"),
+        "Pad 8": ControlGeometry(0.2360, 0.8457, 0.0360, 0.0724, "rect", "#e0708f"),
     },
 }
 
