@@ -288,3 +288,61 @@ def test_resolve_geometry_label_extracts_pad_number_from_ddj_1000_pad_names():
         if hit.controller == "DDJ-1000"
     )
     assert resolve_geometry_label("DDJ-1000", hit.name) == "Pad 3"
+
+
+def test_ddj_flx10_geometry_covers_every_catalog_entry():
+    """DDJ-FLX10's catalog (catalog/ddj_flx10.py) has exactly twenty-two DECK
+    entries plus an 8-pad grid -- this is the whole controller, not a
+    subset."""
+    assert set(CONTROL_GEOMETRY["DDJ-FLX10"]) == {
+        "PLAY/PAUSE",
+        "CUE",
+        "BEAT SYNC",
+        "TEMPO RESET",
+        "KEY SYNC",
+        "ACTIVE PART DRUMS",
+        "ACTIVE PART VOCAL",
+        "ACTIVE PART INST",
+        "CUE/LOOP CALL <",
+        "CUE/LOOP CALL >",
+        "LOOP IN / 1/2X",
+        "LOOP OUT / 2X",
+        "4 BEAT/EXIT",
+        "MIX POINT SELECT <",
+        "MIX POINT SELECT >",
+        "MIX POINT LINK",
+        "SLIP REVERSE",
+        "QUANTIZE",
+        "SLIP",
+        "4 BEAT JUMP <",
+        "4 BEAT JUMP >",
+        "SHIFT",
+        *(f"Pad {n}" for n in range(1, 9)),
+    }
+
+
+def test_ddj_flx10_pad_grid_is_a_non_overlapping_2x4_layout():
+    pads = {n: CONTROL_GEOMETRY["DDJ-FLX10"][f"Pad {n}"] for n in range(1, 9)}
+    for row in range(2):
+        xs = [pads[row * 4 + col + 1].x for col in range(4)]
+        assert xs == sorted(xs)
+    for col in range(4):
+        ys = [pads[row * 4 + col + 1].y for row in range(2)]
+        assert ys == sorted(ys)
+    for a in range(1, 9):
+        for b in range(a + 1, 9):
+            ga, gb = pads[a], pads[b]
+            x_overlap = ga.x < gb.x + gb.w and gb.x < ga.x + ga.w
+            y_overlap = ga.y < gb.y + gb.h and gb.y < ga.y + ga.h
+            assert not (x_overlap and y_overlap), f"Pad {a} and Pad {b} overlap"
+
+
+def test_resolve_geometry_label_extracts_pad_number_from_ddj_flx10_pad_names():
+    """DDJ-FLX10's pad_lookup() produces names like "Deck 1 Pad 3 (HOT CUE,
+    PAGE 1)" -- verified against the real lookup path."""
+    hit = next(
+        hit
+        for hit in catalog.lookup("8", "NOTE", "2")  # DDJ-FLX10 deck-1 pad channel
+        if hit.controller == "DDJ-FLX10"
+    )
+    assert resolve_geometry_label("DDJ-FLX10", hit.name) == "Pad 3"
