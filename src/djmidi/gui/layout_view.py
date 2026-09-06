@@ -28,6 +28,7 @@ from djmidi.gui import controller_image_view
 from djmidi.gui import geometry as geometry_mod
 from djmidi.gui import layout as layout_mod
 from djmidi.gui.layout import CellKey
+from djmidi.gui.live_send import LiveSendControl
 
 _KEY_ROLE = 0
 _ALL_DECKS = "All decks"
@@ -482,6 +483,13 @@ class ControllerLayoutView(QWidget):
             controls_layout.addWidget(deck_combo)
             self._deck_combo = deck_combo
 
+        # Off by default (see gui/live_send.py's docstring for why): this
+        # tab is browsed constantly while just auditing a mapping, so a
+        # click must never send real MIDI unless the user has deliberately
+        # switched this on.
+        self._live_send = LiveSendControl()
+        controls_layout.addWidget(self._live_send)
+
         self._scene = QGraphicsScene(self)
         self._scene.setBackgroundBrush(_SCENE_BRUSH)
         self._view = _ClickableView(self._scene)
@@ -490,6 +498,7 @@ class ControllerLayoutView(QWidget):
         )
         self._view.cellClicked.connect(self.cellActivated)
         self._view.cellClicked.connect(self._on_cell_clicked_for_detail)
+        self._view.cellClicked.connect(self._on_cell_clicked_for_live_send)
         self._view.viewportResized.connect(self._apply_fit)
 
         # Real-position mode (see _rebuild_real_position) draws compact,
@@ -627,6 +636,17 @@ class ControllerLayoutView(QWidget):
         if self._detail_label.isHidden():
             return
         self._detail_label.setText(self._detail_text_for(key))
+
+    def _on_cell_clicked_for_live_send(self, key: CellKey) -> None:
+        """No-ops unless the embedded LiveSendControl is switched on (default
+        off) -- see gui/live_send.py's docstring. Never interferes with the
+        existing cellActivated/cross-tab-navigation click behavior, which
+        keeps firing exactly as before regardless of this toggle's state."""
+        sent = self._live_send.resolve_and_send(self._controller, key)
+        if sent is not None and not self._detail_label.isHidden():
+            channel = sent.channels[0] if sent.channels else "?"
+            current = self._detail_label.text()
+            self._detail_label.setText(f"{current}\n[LIVE SENT: ch{channel} {sent.note_or_cc} {sent.data1}]")
 
     def _detail_text_for(self, key: CellKey) -> str:
         """The per-cell text real-position mode can't fit inline (name, this

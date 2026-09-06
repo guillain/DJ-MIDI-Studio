@@ -360,3 +360,28 @@ def cell_key_for_geometry_label(controller: str, geometry_label: str) -> CellKey
     primary = _geometry_label_alternatives(geometry_label)[0]
     alias = _LABEL_ALIASES.get((controller, primary))
     return _label_to_key_map(controller).get(alias if alias is not None else primary)
+
+
+_AMBIGUOUS_TRIGGER_MARKERS = ("shift", "long press", "press twice", "direct button")
+
+
+def pick_default_variant(variants: list[catalog.ControlInfo]) -> catalog.ControlInfo:
+    """Given every raw ControlInfo variant reverse_lookup() collapsed into one
+    CellKey (SHIFT vs. plain, or a 16-pad-mode bank), pick one fixed,
+    documented default to actually act on -- neither the Controller
+    Emulator nor a live-send click track per-instance state (SHIFT held,
+    current pad-mode page), so there's no way to know which variant the
+    user "means" beyond a consistent rule: prefer a variant whose name
+    carries no SHIFT/long-press qualifier; among pad-mode-bank variants
+    (which carry no such qualifier at all), take the first one found, which
+    is reverse_lookup()'s lowest-numbered mode by construction.
+
+    Shared by gui/controller_emulator.py (dry-run resolution) and
+    gui/live_send.py (the real-MIDI-send path for ControllerLayoutView and
+    ControllerImageView) -- one resolution rule for "what does clicking
+    this ambiguous cell actually mean", not two independently-drifting ones."""
+    for variant in variants:
+        lowered = variant.name.casefold()
+        if not any(marker in lowered for marker in _AMBIGUOUS_TRIGGER_MARKERS):
+            return variant
+    return variants[0]

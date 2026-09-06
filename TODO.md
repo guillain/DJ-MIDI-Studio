@@ -738,7 +738,7 @@ documentation index.
   grid, so a many-section controller like DDJ-1000 no longer needs
   scrolling to see in full, without shrinking a small controller's already-
   legible cards). A `_RIGHT_MIRROR_GEOMETRY` table in `layout_view.py`
-  (kept separate from `geometry.CONTROL_GEOMETRY` on purpose — seebelow)
+  (kept separate from `geometry.CONTROL_GEOMETRY` on purpose, see below)
   supplies the right-side DECK/LOOP/QUANTIZE/PAD-MODE cluster and, for
   XDJ-XZ, the right tray's transport (PLAY/PAUSE, CUE, SYNC, jog wheel,
   tempo), added after the maintainer caught the first pass as "missing
@@ -749,8 +749,31 @@ documentation index.
   way to route a hit to the correct side the way `_RIGHT_GRID_DECKS` does
   for pads — a same-named right-side entry there would have silently stolen
   that key's slot in `geometry._reverse_index` and broken the left marker's
-  live flash. Real MIDI sending from these layouts (and Controller Images)
-  remains open, tracked as the roadmap's phase R2/4.
+  live flash.
+- [x] **Real MIDI sending from layouts (Phase R2 / phase 4)** — the second
+  half of the same request: clicking a control in the By tabs' schematic or
+  Controller Images' real-photo overlay, not just the dedicated Controller
+  Emulator dock, can now send a real MIDI message. New `gui/live_send.py`:
+  `LiveSendControl`, a small reusable widget (output-port combo + a very
+  visibly styled "LIVE SEND: ON"/"Live send: off" toggle, default **off**)
+  embedded identically in `ControllerEmulatorView`, `ControllerLayoutView`
+  (one instance per tab), and `ControllerImageView`. Resolution reuses
+  `layout.reverse_lookup()` + the newly-shared `layout.pick_default_variant()`
+  (moved out of `controller_emulator.py`, which now imports it, so the
+  emulator's dry-run and the new live-send path resolve an ambiguous
+  cell — SHIFT vs. plain, or a pad-mode bank — through one rule, not two);
+  the actual send reuses `session_player.send_control_info_entry()`
+  verbatim, the same primitive Controller Setup's own "Send once" button
+  already uses. `ControllerImageView` needed genuinely new click handling
+  (it had none before): `_ZoomableView` now distinguishes a real click from
+  a pan gesture by press/release distance before hit-testing a marker.
+  Default-off and the toggle's high-contrast styling are deliberate:
+  `ControllerLayoutView` is browsed constantly while just auditing a
+  mapping, and `ControllerImageView` is often opened just to look at a real
+  photo — neither must ever send live MIDI from an ordinary click by
+  accident. Verified end-to-end over a real IAC Driver port: a resolved
+  DDJ-XP2 SHIFT click produced the exact expected `note_on`/`note_off`
+  pair (channel 7, data1 64) on the wire, not just a mocked assertion.
 - [x] **DDJ-1000 catalog data correction** (`catalog/ddj_1000.py`, related to
   issue [#11](https://github.com/guillain/DJ-MIDI-Studio/issues/11)) —
   discovered while cross-checking DECK section names against the official
