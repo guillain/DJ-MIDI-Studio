@@ -36,7 +36,18 @@ diverging into two independent layouts for the same controller, which the
 maintainer explicitly asked for after phase R1 gave ControllerLayoutView
 real-position rendering but left this emulator on the old uniform grid.
 A controller with no geometry still falls back to that uniform grid here
-too, matching ControllerLayoutView's own fallback."""
+too, matching ControllerLayoutView's own fallback.
+
+A real-position controller's left ("Pad N") and right ("Pad N (R)") pad
+grids (DDJ-XP2/XDJ-XZ decks 1/3 vs. 2/4) get their own click/flash key
+here -- the raw "(R)"-suffixed label, not the merged schematic CellKey
+real_position_markers() resolves both sides to -- and resolution goes
+through layout.resolve_side_aware_variant() rather than a plain
+reverse_lookup() + pick_default_variant(). Without this, the two physical
+grids would flash/resolve/send together: the maintainer hit exactly that
+on real hardware as "pressing a button on one deck also activates the
+second deck" while testing this emulator. See layout.resolve_side_aware_variant's
+own docstring and the control-layout-geometry project memory."""
 
 from __future__ import annotations
 
@@ -74,11 +85,11 @@ _FLASH_DURATION_MS = 220
 # control_no) key.
 _EVENT_TYPE_FOR_KIND: dict[catalog.NoteOrCC, str] = {"NOTE": "Note On", "CC": "Control Change"}
 
-# Moved to layout.py (as pick_default_variant) so gui/live_send.py's
-# real-MIDI-send path can share the exact same "which variant does an
-# ambiguous cell mean" rule instead of a second, independently-drifting
-# copy -- re-exported under the old private name so this module's own call
-# site and tests/test_controller_emulator.py don't need to change.
+# Moved to layout.py (as pick_default_variant), and this module's own
+# resolution now goes through the deck-aware layout.resolve_side_aware_variant()
+# instead of calling this directly -- kept as a re-export under the old
+# private name purely so tests/test_controller_emulator.py's existing
+# pick_default_variant unit tests don't need to change.
 _pick_default_variant = layout_mod.pick_default_variant
 
 
@@ -261,18 +272,35 @@ class EmulatorLayoutView(QWidget):
         white on press."""
         canvas_w, canvas_h = layout_view._reference_canvas_size(self._controller)
         for marker in markers:
+            # A right-pad-grid marker ("Pad 3 (R)") shares its *schematic*
+            # CellKey with the left one (marker.key) by design -- see
+            # real_position_markers()'s docstring -- but using that same
+            # key here would flash/resolve BOTH physical grids together on
+            # a single click, exactly the "pressing a button on one deck
+            # also activates the second deck" the maintainer reported while
+            # testing this emulator. This view has no cross-tab navigation
+            # to preserve (unlike ControllerLayoutView), so it's free to use
+            # a distinct *presentation* key per physical side instead;
+            # layout.resolve_side_aware_variant() (used below in _resolve
+            # via ControllerEmulatorView, and by LiveSendControl) knows how
+            # to resolve this key back to the correct deck's real trigger.
+            key = (
+                (marker.key[0], marker.key[1], marker.label)
+                if marker.label.endswith(layout_mod._RIGHT_GRID_SUFFIX)
+                else marker.key
+            )
             rect = marker.rect
             bg_item: QGraphicsRectItem | QGraphicsEllipseItem = (
                 QGraphicsEllipseItem(rect) if marker.shape == "circle" else QGraphicsRectItem(rect)
             )
-            if marker.key in self._flash_keys:
+            if key in self._flash_keys:
                 bg_item.setBrush(layout_view._FLASH_BRUSH)
             else:
                 resting = QColor(marker.color)
                 resting.setAlpha(90)
                 bg_item.setBrush(QBrush(resting))
             bg_item.setPen(layout_view._BORDER_PEN)
-            bg_item.setData(_KEY_ROLE, marker.key)
+            bg_item.setData(_KEY_ROLE, key)
             bg_item.setData(_KIND_ROLE, marker.visual_kind)
             bg_item.setToolTip(f"{self._controller} — {marker.label}")
             self._scene.addItem(bg_item)
@@ -281,8 +309,8 @@ class EmulatorLayoutView(QWidget):
             glyph_x = rect.center().x() - glyph_size / 2 - 8
             glyph_y = rect.center().y() - glyph_size / 2 - 8
             layout_view.draw_control_glyph(
-                self._scene, self._metrics, glyph_x, glyph_y, marker.visual_kind, marker.key,
-                self._values.get(marker.key), marker.key in self._flash_keys,
+                self._scene, self._metrics, glyph_x, glyph_y, marker.visual_kind, key,
+                self._values.get(key), key in self._flash_keys,
             )
         self._scene.setSceneRect(0, 0, canvas_w, canvas_h)
         self._fit_view()
@@ -411,10 +439,13 @@ class ControllerEmulatorView(QWidget):
         self._status_label.setText(text)
 
     def _resolve(self, key: CellKey) -> str:
-        variants = layout_mod.reverse_lookup(key[0]).get(key)
-        if not variants:
+        # resolve_side_aware_variant (not a plain reverse_lookup() +
+        # pick_default_variant()) so a right-pad-grid marker's key (e.g.
+        # (controller, "PAD", "Pad 3 (R)")) resolves to *that* grid's real
+        # deck (2/4) instead of always falling back to the left grid's.
+        entry = layout_mod.resolve_side_aware_variant(key[0], key)
+        if entry is None:
             return f"{key[1]} {key[2]}: no raw MIDI trigger known for this control."
-        entry = _pick_default_variant(variants)
         channel = entry.channels[0] if entry.channels else "?"
         trigger = f"ch{channel} {entry.note_or_cc} {entry.data1}"
         config = self._config_provider()

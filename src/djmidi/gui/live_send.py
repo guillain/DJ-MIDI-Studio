@@ -188,10 +188,14 @@ class LiveSendControl(QWidget):
         port = self.selected_port()
         if not port:
             return None
-        variants = layout_mod.reverse_lookup(controller).get(key)
-        if not variants:
+        # resolve_side_aware_variant (not a plain reverse_lookup() +
+        # pick_default_variant()) so a right-pad-grid marker's key (e.g.
+        # (controller, "PAD", "Pad 3 (R)")) resolves to *that* grid's real
+        # deck (2/4), not the left grid's (1/3) -- see that function's
+        # docstring for the real report this fixes.
+        entry = layout_mod.resolve_side_aware_variant(controller, key)
+        if entry is None:
             return None
-        entry = layout_mod.pick_default_variant(variants)
         send_control_info_entry(port, entry, value)
         return entry
 
