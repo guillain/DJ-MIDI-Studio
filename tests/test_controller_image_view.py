@@ -211,6 +211,93 @@ def test_clear_flash_ignores_a_stale_callback_after_switching_controller():
     view._clear_flash("XDJ-XZ", "PLAY/PAUSE")  # must not raise despite the stale label/controller
 
 
+# ─── Live send (gui/live_send.py) ─────────────────────────────────────────
+
+
+def test_marker_click_is_a_noop_when_live_send_off(monkeypatch):
+    from djmidi.gui import live_send as live_send_mod
+
+    monkeypatch.setattr(live_send_mod.midi_io, "list_output_ports", lambda: ["Port A"])
+    sent = []
+    monkeypatch.setattr(live_send_mod, "send_control_info_entry", lambda *a, **k: sent.append((a, k)))
+    view = ControllerImageView()
+    view.set_controller("DDJ-XP2")
+    view._geometry_checkbox.setChecked(True)
+    view._on_marker_clicked("SHIFT")
+    assert sent == []
+
+
+def test_marker_click_sends_when_live_send_active(monkeypatch):
+    from djmidi.gui import live_send as live_send_mod
+
+    monkeypatch.setattr(live_send_mod.midi_io, "list_output_ports", lambda: ["Port A"])
+    sent = []
+    monkeypatch.setattr(live_send_mod, "send_control_info_entry", lambda *a, **k: sent.append((a, k)))
+    view = ControllerImageView()
+    view.set_controller("DDJ-XP2")
+    view._geometry_checkbox.setChecked(True)
+    view._live_send._toggle_button.setChecked(True)
+    view._on_marker_clicked("SHIFT")
+    assert len(sent) == 1
+    assert "LIVE SENT" in view._live_send_status.text()
+
+
+def test_marker_click_with_no_raw_trigger_reports_status_without_sending(monkeypatch):
+    from djmidi.gui import live_send as live_send_mod
+
+    monkeypatch.setattr(live_send_mod.midi_io, "list_output_ports", lambda: ["Port A"])
+    sent = []
+    monkeypatch.setattr(live_send_mod, "send_control_info_entry", lambda *a, **k: sent.append((a, k)))
+    view = ControllerImageView()
+    view.set_controller("XDJ-XZ")
+    view._geometry_checkbox.setChecked(True)
+    view._live_send._toggle_button.setChecked(True)
+    view._on_marker_clicked("Jog wheel")  # a display-only marker, no catalog trigger
+    assert sent == []
+    assert "no raw MIDI trigger" in view._live_send_status.text()
+
+
+def test_zoomable_view_emits_marker_clicked_only_for_a_real_click_not_a_pan():
+    from PySide6.QtCore import QEvent, QPointF
+    from PySide6.QtCore import Qt as QtCore
+    from PySide6.QtGui import QMouseEvent
+
+    view = ControllerImageView()
+    view.set_controller("DDJ-XP2")
+    view._geometry_checkbox.setChecked(True)
+    item = view._overlay_items_by_label.get("SHIFT")
+    assert item is not None
+    scene_pos = item.sceneBoundingRect().center()
+    view_pos = view._view.mapFromScene(scene_pos)
+
+    received = []
+    view._view.markerClicked.connect(received.append)
+
+    def press_release(end_pos):
+        local = QPointF(view_pos)
+        press = QMouseEvent(
+            QEvent.Type.MouseButtonPress, local, local, QtCore.MouseButton.LeftButton,
+            QtCore.MouseButton.LeftButton, QtCore.KeyboardModifier.NoModifier,
+        )
+        view._view.mousePressEvent(press)
+        end_local = QPointF(end_pos)
+        release = QMouseEvent(
+            QEvent.Type.MouseButtonRelease, end_local, end_local, QtCore.MouseButton.LeftButton,
+            QtCore.MouseButton.NoButton, QtCore.KeyboardModifier.NoModifier,
+        )
+        view._view.mouseReleaseEvent(release)
+
+    # A drag of more than the click tolerance must not emit a click.
+    from PySide6.QtCore import QPoint
+
+    press_release(view_pos + QPoint(50, 50))
+    assert received == []
+
+    # Press and release at (near enough) the same spot is a genuine click.
+    press_release(view_pos)
+    assert received == ["SHIFT"]
+
+
 def test_load_renders_an_absolute_path_reference_image(tmp_path):
     from PySide6.QtGui import QPixmap
 
