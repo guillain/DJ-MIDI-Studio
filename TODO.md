@@ -866,6 +866,45 @@ documentation index.
   involved change (its cross-tab navigation and `self._usage` dict both key
   off the merged `CellKey` today) — tracked as a known follow-up, not a
   silently-dropped fix.
+- [x] **Fix: the same mirroring bug, one section over (DECK/PAD MODE buttons)**
+  — after the pad-grid fix above shipped, the maintainer confirmed it
+  worked for pads but reported the identical symptom persisted for "tous
+  les modes pad" (the 4 PAD MODE select buttons), i.e. "mirroring deck 1 et
+  2" again. Root cause was structurally different from the pad case: PAD
+  has a *separate* `ControlInfo` per deck (`pad_lookup` embeds "Deck N" in
+  each hit's name), so `resolve_side_aware_variant` could filter *between*
+  variants — but DDJ-XP2's DECK-section buttons (BEAT SYNC, QUANTIZE, 4
+  BEAT LOOP, 1/2X, 2X, SILENT CUE, KEY -/+) and its 4 PAD MODE buttons (and
+  XDJ-XZ's right-tray transport/pad-mode-select equivalents) are each a
+  *single* catalog entry whose `channels` tuple spans all 4 decks at once
+  (`_DECK_CH = ("1", "2", "3", "4")`, channel string == deck number by that
+  module's own convention) — there was no second variant to filter towards
+  at all, and no signal telling the Emulator's right-mirror-cluster markers
+  they were even "the right side" in the first place (unlike a pad grid's
+  "Pad N (R)" label, `_RIGHT_MIRROR_GEOMETRY`'s own labels are bare, e.g.
+  "BEAT SYNC" — deliberately never suffixed, so as not to disturb Controller
+  Images' unrelated live-flash reverse index, which doesn't consume this
+  table at all). Fixed in two parts: `layout_view.real_position_markers()`
+  now suffixes a `_RIGHT_MIRROR_GEOMETRY` entry's *displayed* label " (R)"
+  whenever its resolved cell falls in a new `layout._DECK_MULTIPLEXED_SECTIONS`
+  (`DECK`, `PAD MODE` — EFFECT/MIXER-section mirror entries like Slide FX or
+  the EFFECT depth knobs are excluded, since their channels are FX-chain
+  channels, not deck numbers, and narrowing those would be meaningless);
+  the resolved schematic `CellKey` itself is untouched, so this reuses
+  exactly the same presentation-key-splitting code the pad fix already
+  added to `EmulatorLayoutView`/`ControllerEmulatorView`, with no further
+  changes needed there. `layout.resolve_side_aware_variant()` then narrows
+  such an entry's multi-deck `channels` tuple down to a single channel for
+  the requested side via `_RIGHT_GRID_DECKS` (the same table the pad fix
+  introduced), instead of filtering between several already-separate
+  variants — applied to *both* sides, not just the right, since even the
+  left marker's entry previously spanned all 4 channels (meaning a left
+  click's live send would have also fired channels 2-4 at once, a real bug
+  in its own right, not just a display quirk). `ControllerImageView` needed
+  no change: it draws only from `geometry.CONTROL_GEOMETRY` directly, never
+  from `_RIGHT_MIRROR_GEOMETRY`, so it was never showing this cluster in
+  the first place. Same scope decision as the pad fix: `ControllerLayoutView`'s
+  own real-position mode is left unfixed for this cluster too.
 - [x] **DDJ-1000 catalog data correction** (`catalog/ddj_1000.py`, related to
   issue [#11](https://github.com/guillain/DJ-MIDI-Studio/issues/11)) —
   discovered while cross-checking DECK section names against the official
