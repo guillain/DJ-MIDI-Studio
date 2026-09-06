@@ -774,6 +774,23 @@ documentation index.
   accident. Verified end-to-end over a real IAC Driver port: a resolved
   DDJ-XP2 SHIFT click produced the exact expected `note_on`/`note_off`
   pair (channel 7, data1 64) on the wire, not just a mocked assertion.
+- [x] **Live send port warning** — a real regression report right after R2
+  shipped: the maintainer turned Live Send on, picked what seemed like the
+  obvious output port (their controller's own name, e.g. "DDJ-XP2"), and
+  nothing happened in Serato. Root cause confirmed via the maintainer's own
+  testing, not guessed: a controller's own MIDI port only writes *to* the
+  hardware (e.g. its LEDs) — it's a one-way channel with nothing on the
+  other end to "listen"; Serato has to be listening on a *virtual* port
+  (e.g. an IAC Driver bus) added as an extra control surface input in its
+  own MIDI preferences, exactly mirroring Live Monitor's already-documented
+  output-direction constraint (CLAUDE.md) for the reverse direction. Fixed
+  in `gui/live_send.py`: `LiveSendControl` now shows an inline warning,
+  driven by `catalog.detect_controller()` on the selected port's name,
+  whenever that port matches a real known controller — the exact
+  intuitive-but-wrong choice a first-time user reaches for. No plumbing
+  change was needed (the send mechanism itself is correct, as already
+  verified end-to-end over a real IAC port for R2) — purely a "point the
+  user at a working port" UX fix.
 - [x] **Controller Emulator matches the By tabs' real-position layout** — a
   follow-up request right after R1/R2 shipped: the maintainer wanted the
   Controller Emulator's own schematic to render *identically* to
