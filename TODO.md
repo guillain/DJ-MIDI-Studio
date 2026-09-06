@@ -1056,22 +1056,34 @@ the DJ layout visual fidelity chantier.
   dynamically created dock's `objectName` is a fresh random id every
   session (Qt's dock-state serialization only needs a stable name to
   reposition a dock *within* the current session).
-- [ ] **Phase 3 — continuous control interaction**: drag-to-set knobs/faders,
-  a jog-wheel spin gesture. Still dry-run only; continuous controls have no
-  `ControlInfo` at all today (deliberately out of catalog scope), so this
-  phase's emulator controls stay display-only/non-resolving rather than
-  reopening that scope decision as a side effect.
-- [ ] **Phase 4 — real virtual MIDI output port**: a persistent per-instance
-  virtual output (mirrors `MidiMonitor`'s existing virtual-*input* pattern
-  but for output) so the emulator can drive an actual Serato instance, not
-  just resolve locally.
+- [x] **Phase 3 — continuous control interaction**: delivered as **"Controller
+  Emulator phase 3 — continuous controls"** above (in "DJ layout visual
+  fidelity" — the two chantiers converged once R1's real-position rendering
+  reached the emulator). Drag-to-set knobs/faders/jog wheels, still
+  display-only/non-resolving as planned (continuous controls remain
+  deliberately out of catalog scope).
+- [x] **Phase 4 — real virtual MIDI output port**: delivered, but simplified
+  from the original plan — see **"Real MIDI sending from layouts (Phase R2
+  / phase 4, scope widened)"** above. Rather than a new persistent
+  `midi_io.VirtualMidiOutput` per emulator instance, `LiveSendControl`
+  (`gui/live_send.py`) lets the user pick any existing system output port
+  (real hardware, IAC, etc.) and sends via the same
+  `session_player.send_control_info_entry()` primitive Controller Setup's
+  own "Send once" button already used — proven, tested code, not a new
+  virtual-port lifecycle to manage. Shipped across all three layout
+  surfaces (Controller Emulator, By Channel/Deck/Controller, Controller
+  Images), not just the emulator, per the widened request. A dedicated
+  persistent virtual port may still matter for phase 5's stateful
+  simulation (receiving real Serato output-direction MIDI to drive LED
+  state), if that turns out to need it.
 - [ ] **Phase 5 — full stateful simulation** (recommend splitting into
   5a/5b): output-alias resolution (`userio event="output"` on/off/selected
   aliases → LED colour, handling the confirmed real-world ambiguity where
   `selected` and `off` share the same value in real exports) plus a
   genuinely new state machine for active loop / set hotcue / current
   pad-mode page — no existing precedent anywhere in this codebase, the
-  largest and riskiest phase.
+  largest and riskiest phase. The only phase of the original roadmap not
+  yet started.
 
 ### External tester feedback (2026-08)
 
