@@ -2,16 +2,23 @@
 interactive schematic for one controller. Click a pad/button to see which
 Serato function the currently loaded mapping resolves it to.
 
-Deliberately narrow for this first phase: discrete controls only (no
-drag/spin for knobs/faders/jog wheels -- that's phase 3), no persistent
-state (SHIFT/pad-mode-page tracking is phase 5's job; a clicked cell with
-several raw-trigger variants always resolves to one fixed, documented
-default -- see layout.pick_default_variant), and a single fixed dock
-instance (multiple simultaneous emulator windows are phase 2). Phase 4
-(real MIDI output) is partially delivered: dry-run resolution always
-happens, and a click also sends a real MIDI message when the embedded
-LiveSendControl (gui/live_send.py, shared with ControllerLayoutView and
-ControllerImageView) is switched on -- default off.
+Phase 3 (continuous controls) is delivered: dragging a knob/fader/jog glyph
+vertically sets its value (_ClickableEmulatorView, _DRAG_KINDS), reusing
+draw_control_glyph()'s existing knob-rotation/fader-thumb math via
+EmulatorLayoutView.set_value() -- but deliberately display-only, not
+reopening "continuous controls are out of catalog scope" as a side effect:
+these visual kinds have no ControlInfo at all, so a drag only ever moves
+the glyph, never dry-run-resolves or live-sends (a discrete pad/button
+click is unaffected, still routed through controlPressed as before). No
+persistent *state* beyond that one local value: SHIFT/pad-mode-page
+tracking is phase 5's job; a clicked discrete cell with several
+raw-trigger variants still always resolves to one fixed, documented
+default -- see layout.pick_default_variant. Multiple simultaneous emulator
+windows (phase 2) and real MIDI output (phase 4, partially: dry-run
+resolution always happens, and a click also sends a real MIDI message when
+the embedded LiveSendControl -- gui/live_send.py, shared with
+ControllerLayoutView and ControllerImageView -- is switched on, default
+off) are both delivered too.
 
 This does NOT extend gui.layout_view.ControllerLayoutView: that widget's
 entire contract is a two-controller diff/audit view (a tab bar, a deck
@@ -88,17 +95,65 @@ def _dry_run_lookup(config: MidiConfig) -> dict[tuple[str, str, str], list[str]]
     return lookup
 
 
+_KIND_ROLE = layout_view._KIND_ROLE
+# Continuous controls -- drag-to-set instead of click-to-resolve (phase 3).
+# Deliberately *not* extending catalog scope: these visual kinds have no
+# ControlInfo at all (see the module docstring), so a drag only ever moves
+# the glyph, never dry-run-resolves or live-sends anything.
+_DRAG_KINDS = frozenset({"knob", "fader", "jog"})
+# Pixels of vertical drag per one-unit change in the 0-127 MIDI value --
+# higher = coarser/less sensitive. Matches a typical software-knob feel
+# (a few hundred px of drag to sweep the full range) rather than a literal
+# 1:1 pixel mapping, which would make the small glyphs impossible to set
+# precisely.
+_DRAG_PX_PER_UNIT = 2.5
+
+
 class _ClickableEmulatorView(QGraphicsView):
     controlPressed = Signal(tuple)  # CellKey
+    valueDragged = Signal(tuple, int)  # CellKey, new 0-127 value
     viewportResized = Signal()
 
+    def __init__(self, scene: QGraphicsScene) -> None:
+        super().__init__(scene)
+        # Set by EmulatorLayoutView right after construction -- reads the
+        # continuous control's *current* value so a drag starts from
+        # wherever the glyph was last left, not always from the default.
+        self.value_provider: Callable[[CellKey], int] | None = None
+        self._drag_key: CellKey | None = None
+        self._drag_start_y: float = 0.0
+        self._drag_start_value: int = 0
+
     def mousePressEvent(self, event) -> None:
-        item = self.itemAt(event.pos())
+        item = self.itemAt(event.position().toPoint())
         if item is not None:
             key = item.data(_KEY_ROLE)
             if key is not None:
-                self.controlPressed.emit(key)
+                if item.data(_KIND_ROLE) in _DRAG_KINDS:
+                    self._drag_key = key
+                    self._drag_start_y = event.position().y()
+                    self._drag_start_value = (
+                        self.value_provider(key) if self.value_provider is not None else layout_view._MIDI_DEFAULT
+                    )
+                else:
+                    self.controlPressed.emit(key)
         super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event) -> None:
+        if self._drag_key is not None:
+            # Dragging up increases the value, matching a physical fader/
+            # knob's usual "up = more" convention.
+            delta = (self._drag_start_y - event.position().y()) / _DRAG_PX_PER_UNIT
+            new_value = max(0, min(127, round(self._drag_start_value + delta)))
+            self.valueDragged.emit(self._drag_key, new_value)
+        super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event) -> None:
+        # A drag never counts as a "press" -- no dry-run resolution or live
+        # send for a continuous control, which has no ControlInfo at all to
+        # resolve (see the module docstring); it only ever moves the glyph.
+        self._drag_key = None
+        super().mouseReleaseEvent(event)
 
     def resizeEvent(self, event) -> None:
         super().resizeEvent(event)
@@ -120,6 +175,12 @@ class EmulatorLayoutView(QWidget):
         self._controller = controller
         self._metrics = layout_view.metrics_for(controller)
         self._flash_keys: set[CellKey] = set()
+        # Last drag-to-set value (0-127) per continuous-control key (phase
+        # 3) -- a level, not a pulse, like ControllerLayoutView's own
+        # set_value(): it persists wherever the glyph was last left. No
+        # dry-run/live-send meaning at all (these keys have no ControlInfo),
+        # purely local visual state for the emulator's own interaction.
+        self._values: dict[CellKey, int] = {}
         # Set by _rebuild(); resizeEvent/_fit_view() use it instead of
         # recomputing real_position_markers() on every resize.
         self._real_position_mode = False
@@ -130,7 +191,9 @@ class EmulatorLayoutView(QWidget):
         self._view.setStyleSheet(
             "background: #0d1119; border: 1px solid #2b3b53; border-radius: 8px;"
         )
+        self._view.value_provider = self._current_value
         self._view.controlPressed.connect(self._on_control_pressed)
+        self._view.valueDragged.connect(self.set_value)
         self._view.viewportResized.connect(self._fit_view)
 
         layout = QVBoxLayout(self)
@@ -144,6 +207,20 @@ class EmulatorLayoutView(QWidget):
         self._controller = controller
         self._metrics = layout_view.metrics_for(controller)
         self._flash_keys.clear()
+        self._values.clear()
+        self._rebuild()
+
+    def _current_value(self, key: CellKey) -> int:
+        return self._values.get(key, layout_view._MIDI_DEFAULT)
+
+    def set_value(self, key: CellKey, value: int) -> None:
+        """Drag-to-set a knob/fader/jog glyph (phase 3) -- reuses
+        draw_control_glyph()'s existing knob-rotation/fader-thumb math via
+        _rebuild(), the same way ControllerLayoutView's own set_value()
+        (live MIDI values) already does."""
+        if self._values.get(key) == value:
+            return
+        self._values[key] = value
         self._rebuild()
 
     def flash_key(self, key: CellKey) -> None:
@@ -196,6 +273,7 @@ class EmulatorLayoutView(QWidget):
                 bg_item.setBrush(QBrush(resting))
             bg_item.setPen(layout_view._BORDER_PEN)
             bg_item.setData(_KEY_ROLE, marker.key)
+            bg_item.setData(_KIND_ROLE, marker.visual_kind)
             bg_item.setToolTip(f"{self._controller} — {marker.label}")
             self._scene.addItem(bg_item)
 
@@ -204,7 +282,7 @@ class EmulatorLayoutView(QWidget):
             glyph_y = rect.center().y() - glyph_size / 2 - 8
             layout_view.draw_control_glyph(
                 self._scene, self._metrics, glyph_x, glyph_y, marker.visual_kind, marker.key,
-                None, marker.key in self._flash_keys,
+                self._values.get(marker.key), marker.key in self._flash_keys,
             )
         self._scene.setSceneRect(0, 0, canvas_w, canvas_h)
         self._fit_view()
@@ -226,11 +304,12 @@ class EmulatorLayoutView(QWidget):
             rect.setBrush(layout_view._UNUSED_BRUSH)
             rect.setPen(layout_view._BORDER_PEN)
             rect.setData(_KEY_ROLE, cell.key)
+            rect.setData(_KIND_ROLE, cell.visual_kind)
             rect.setToolTip(f"{cell.key[0]} — {cell.key[1]} {cell.label}")
             self._scene.addItem(rect)
             layout_view.draw_control_glyph(
                 self._scene, m, x, y, cell.visual_kind, cell.key,
-                None, cell.key in self._flash_keys,
+                self._values.get(cell.key), cell.key in self._flash_keys,
             )
             label = QGraphicsSimpleTextItem(layout_view._elide(cell.label, 24))
             label.setFont(small_font)

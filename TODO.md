@@ -796,6 +796,24 @@ documentation index.
   in the real `MainWindow`: a floating Controller Emulator dock for
   DDJ-XP2 now screenshots pixel-for-pixel identical in layout to the By
   Channel tab's own DDJ-XP2 schematic.
+- [x] **Controller Emulator phase 3 — continuous controls** (issue #9's
+  roadmap) — dragging a knob/fader/jog glyph in the Controller Emulator
+  vertically sets its value (up = more), reusing `draw_control_glyph()`'s
+  existing knob-rotation/fader-thumb rendering math via a new
+  `EmulatorLayoutView.set_value()` (mirrors `ControllerLayoutView.set_value()`'s
+  own "a level, not a pulse" persistence). `_ClickableEmulatorView` gained
+  drag tracking gated on a new `_KIND_ROLE` scene-item data role (set by
+  `draw_control_glyph()` alongside `_KEY_ROLE`), so a knob/fader/jog press
+  starts a drag instead of the discrete click path — a pad/button press is
+  completely unaffected. The jog glyph gained a position notch (reusing the
+  knob's own angle math) purely for the drag-to-spin gesture's visible
+  feedback; jog wheels still have no real absolute position, this is
+  cosmetic. Strictly display-only/non-resolving as planned: continuous
+  controls have no `ControlInfo` at all (still out of catalog scope), so a
+  drag only ever moves the glyph, never dry-run-resolves or live-sends.
+  Verified with a real simulated Qt mouse press/move/release sequence
+  confirming the drag starts correctly, updates the value proportionally to
+  drag distance, and persists after release.
 - [x] **DDJ-1000 catalog data correction** (`catalog/ddj_1000.py`, related to
   issue [#11](https://github.com/guillain/DJ-MIDI-Studio/issues/11)) —
   discovered while cross-checking DECK section names against the official

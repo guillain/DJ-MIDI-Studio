@@ -31,6 +31,12 @@ from djmidi.gui.layout import CellKey
 from djmidi.gui.live_send import LiveSendControl
 
 _KEY_ROLE = 0
+# The VisualKind ("knob"/"fader"/"jog"/"button"/"pad") a glyph item was
+# drawn as, set by draw_control_glyph() on every sub-item alongside
+# _KEY_ROLE -- lets a caller (the Controller Emulator's drag-to-set
+# gesture, phase 3) tell a continuous control apart from a discrete one
+# without re-deriving visual_kind_for()/_DISPLAY_CONTROLS itself.
+_KIND_ROLE = 1
 _ALL_DECKS = "All decks"
 
 
@@ -385,6 +391,7 @@ def draw_control_glyph(
         ring.setBrush(_KNOB_RING_BRUSH)
         ring.setPen(_CONTROL_PEN)
         ring.setData(_KEY_ROLE, key)
+        ring.setData(_KIND_ROLE, visual_kind)
         scene.addItem(ring)
         inset = d / 8
         shape = QGraphicsEllipseItem(QRectF(left + inset, top + inset, d - 2 * inset, d - 2 * inset))
@@ -399,23 +406,43 @@ def draw_control_glyph(
         marker.setPen(_KNOB_MARKER_PEN)
         marker.setZValue(1)  # above the dial ellipse (`shape`, added after this in scene order)
         marker.setData(_KEY_ROLE, key)
+        marker.setData(_KIND_ROLE, visual_kind)
         scene.addItem(marker)
     elif visual_kind == "jog":
         d = m.jog_glyph
         shape = QGraphicsEllipseItem(QRectF(left, top, d, d))
         shape.setBrush(_CONTROL_BRUSH)
         shape.setPen(_CONTROL_PEN)
+        # A position notch, reusing the knob's own angle math -- real jog
+        # wheels spin continuously with no absolute position, but the
+        # Controller Emulator's drag-to-spin gesture (phase 3) still needs
+        # *some* visible feedback that a drag did something, so `value`
+        # here is read as "wherever the wheel was last left", the same
+        # convention set_value() already uses for knobs/faders elsewhere.
+        center_x, center_y = left + d / 2, top + d / 2
+        radius = d / 2 - d / 10
+        angle = _knob_angle_rad(resolved_value)
+        tip_x = center_x + radius * math.sin(angle)
+        tip_y = center_y - radius * math.cos(angle)
+        notch = QGraphicsLineItem(QLineF(center_x, center_y, tip_x, tip_y))
+        notch.setPen(_KNOB_MARKER_PEN)
+        notch.setZValue(1)
+        notch.setData(_KEY_ROLE, key)
+        notch.setData(_KIND_ROLE, visual_kind)
+        scene.addItem(notch)
     else:  # fader
         h = m.fader_glyph_h
         track = QGraphicsLineItem(QLineF(left + 16, top, left + 16, top + h))
         track.setPen(_FADER_PEN)
         track.setData(_KEY_ROLE, key)
+        track.setData(_KIND_ROLE, visual_kind)
         scene.addItem(track)
         thumb_top = _fader_thumb_top(resolved_value, top, h, 8)
         shape = QGraphicsRectItem(QRectF(left + 7, thumb_top, 18, 8))
         shape.setBrush(_CONTROL_BRUSH)
         shape.setPen(_CONTROL_PEN)
     shape.setData(_KEY_ROLE, key)
+    shape.setData(_KIND_ROLE, visual_kind)
     shape.setToolTip(f"{key[0]} — {key[1]} {key[2]}")
     scene.addItem(shape)
 
