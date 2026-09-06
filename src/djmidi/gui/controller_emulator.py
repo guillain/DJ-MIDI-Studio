@@ -19,17 +19,27 @@ filter, and a split-half "what does the *other* controller think this
 trigger means" row) for the By Channel/Deck/Controller tabs, none of which
 fits a single-controller interactive emulator. Instead this reuses the
 already-free-standing pieces of that module: layout.build_layout(),
-layout_view.metrics_for(), and layout_view.draw_control_glyph() (extracted
-from ControllerLayoutView._draw_control_shape for exactly this reuse)."""
+layout_view.metrics_for(), layout_view.draw_control_glyph() (extracted from
+ControllerLayoutView._draw_control_shape for exactly this reuse), and
+layout_view.real_position_markers() -- for a controller with measured
+geometry (gui/geometry.CONTROL_GEOMETRY), this schematic now draws the
+exact same real-position markers ControllerLayoutView's real-position mode
+does (same rects, same glyphs), so the two read identically rather than
+diverging into two independent layouts for the same controller, which the
+maintainer explicitly asked for after phase R1 gave ControllerLayoutView
+real-position rendering but left this emulator on the old uniform grid.
+A controller with no geometry still falls back to that uniform grid here
+too, matching ControllerLayoutView's own fallback."""
 
 from __future__ import annotations
 
 from collections.abc import Callable
 
-from PySide6.QtCore import QRectF, QTimer, Signal
-from PySide6.QtGui import QColor, QFont
+from PySide6.QtCore import QRectF, Qt, QTimer, Signal
+from PySide6.QtGui import QBrush, QColor, QFont
 from PySide6.QtWidgets import (
     QComboBox,
+    QGraphicsEllipseItem,
     QGraphicsRectItem,
     QGraphicsScene,
     QGraphicsSimpleTextItem,
@@ -80,6 +90,7 @@ def _dry_run_lookup(config: MidiConfig) -> dict[tuple[str, str, str], list[str]]
 
 class _ClickableEmulatorView(QGraphicsView):
     controlPressed = Signal(tuple)  # CellKey
+    viewportResized = Signal()
 
     def mousePressEvent(self, event) -> None:
         item = self.itemAt(event.pos())
@@ -88,6 +99,13 @@ class _ClickableEmulatorView(QGraphicsView):
             if key is not None:
                 self.controlPressed.emit(key)
         super().mousePressEvent(event)
+
+    def resizeEvent(self, event) -> None:
+        super().resizeEvent(event)
+        # See ControllerLayoutView's identical _ClickableView.resizeEvent
+        # for why this view's own resize (not the outer widget's) is the
+        # reliable trigger for re-fitting real-position mode.
+        self.viewportResized.emit()
 
 
 class EmulatorLayoutView(QWidget):
@@ -102,6 +120,9 @@ class EmulatorLayoutView(QWidget):
         self._controller = controller
         self._metrics = layout_view.metrics_for(controller)
         self._flash_keys: set[CellKey] = set()
+        # Set by _rebuild(); resizeEvent/_fit_view() use it instead of
+        # recomputing real_position_markers() on every resize.
+        self._real_position_mode = False
 
         self._scene = QGraphicsScene(self)
         self._scene.setBackgroundBrush(layout_view._SCENE_BRUSH)
@@ -110,6 +131,7 @@ class EmulatorLayoutView(QWidget):
             "background: #0d1119; border: 1px solid #2b3b53; border-radius: 8px;"
         )
         self._view.controlPressed.connect(self._on_control_pressed)
+        self._view.viewportResized.connect(self._fit_view)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -141,8 +163,56 @@ class EmulatorLayoutView(QWidget):
         self._scene.clear()
         self._scene.setBackgroundBrush(layout_view._SCENE_BRUSH)
         if not self._controller:
+            self._real_position_mode = False
             self._scene.setSceneRect(self._scene.itemsBoundingRect().adjusted(-10, -10, 10, 10))
             return
+        markers = layout_view.real_position_markers(self._controller)
+        self._real_position_mode = bool(markers)
+        if markers:
+            self._rebuild_real_position(markers)
+        else:
+            self._rebuild_classic_grid()
+
+    def _rebuild_real_position(self, markers: list[layout_view.RealPositionMarker]) -> None:
+        """Identical rendering to ControllerLayoutView's own real-position
+        mode (same markers, same rects, same glyphs) -- see
+        layout_view.real_position_markers()'s docstring for why this is a
+        shared function rather than two independently-drifting layouts.
+        No deck-usage coloring here (this schematic has no loaded-mapping
+        concept beyond the dry-run status label below it): a marker rests
+        at its own semantic color, like Controller Images, and flashes
+        white on press."""
+        canvas_w, canvas_h = layout_view._reference_canvas_size(self._controller)
+        for marker in markers:
+            rect = marker.rect
+            bg_item: QGraphicsRectItem | QGraphicsEllipseItem = (
+                QGraphicsEllipseItem(rect) if marker.shape == "circle" else QGraphicsRectItem(rect)
+            )
+            if marker.key in self._flash_keys:
+                bg_item.setBrush(layout_view._FLASH_BRUSH)
+            else:
+                resting = QColor(marker.color)
+                resting.setAlpha(90)
+                bg_item.setBrush(QBrush(resting))
+            bg_item.setPen(layout_view._BORDER_PEN)
+            bg_item.setData(_KEY_ROLE, marker.key)
+            bg_item.setToolTip(f"{self._controller} — {marker.label}")
+            self._scene.addItem(bg_item)
+
+            glyph_size = layout_view.glyph_size_for(self._metrics, marker.visual_kind)
+            glyph_x = rect.center().x() - glyph_size / 2 - 8
+            glyph_y = rect.center().y() - glyph_size / 2 - 8
+            layout_view.draw_control_glyph(
+                self._scene, self._metrics, glyph_x, glyph_y, marker.visual_kind, marker.key,
+                None, marker.key in self._flash_keys,
+            )
+        self._scene.setSceneRect(0, 0, canvas_w, canvas_h)
+        self._fit_view()
+
+    def _rebuild_classic_grid(self) -> None:
+        """A controller with no gui/geometry.CONTROL_GEOMETRY entries --
+        the same uniform-card fallback ControllerLayoutView's classic mode
+        uses, unchanged from before real-position mode existed."""
         m = self._metrics
         col_step = m.cell_w + m.margin
         row_step = m.half_h + m.margin
@@ -169,6 +239,15 @@ class EmulatorLayoutView(QWidget):
             label.setData(_KEY_ROLE, cell.key)
             self._scene.addItem(label)
         self._scene.setSceneRect(self._scene.itemsBoundingRect().adjusted(-10, -10, 10, 10))
+
+    def _fit_view(self) -> None:
+        """Auto-fits to the available window space in real-position mode
+        (matching ControllerLayoutView's own auto-fit); a no-op for the
+        classic grid, which keeps its existing natural-size behavior."""
+        if not self._real_position_mode:
+            return
+        self._view.resetTransform()
+        self._view.fitInView(self._scene.sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
 
 
 class ControllerEmulatorView(QWidget):

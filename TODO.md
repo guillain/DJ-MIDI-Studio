@@ -774,6 +774,28 @@ documentation index.
   accident. Verified end-to-end over a real IAC Driver port: a resolved
   DDJ-XP2 SHIFT click produced the exact expected `note_on`/`note_off`
   pair (channel 7, data1 64) on the wire, not just a mocked assertion.
+- [x] **Controller Emulator matches the By tabs' real-position layout** — a
+  follow-up request right after R1/R2 shipped: the maintainer wanted the
+  Controller Emulator's own schematic to render *identically* to
+  `ControllerLayoutView`'s real-position mode for the same controller,
+  instead of the emulator staying on its original uniform card grid while
+  the By tabs moved on to real positions. Extracted the marker computation
+  `ControllerLayoutView._rebuild_real_position()` did inline into a shared
+  free function, `layout_view.real_position_markers()` (returns a list of
+  `RealPositionMarker`: resolved `CellKey`, true photo rect, shape, resting
+  color, glyph kind — combining `CONTROL_GEOMETRY` and `_RIGHT_MIRROR_GEOMETRY`
+  and resolving each label via `cell_key_for_geometry_label()`, exactly as
+  before) plus `layout_view.glyph_size_for()`. `ControllerLayoutView` now
+  calls this function instead of duplicating the logic; `EmulatorLayoutView`
+  (`gui/controller_emulator.py`) gained the identical branch — real-position
+  markers (no deck-usage coloring, since the emulator has no "loaded
+  mapping usage" concept the way the By tabs do; a marker just rests at its
+  own semantic color and flashes white on press, like Controller Images)
+  for a controller with geometry, the unchanged classic grid otherwise —
+  plus the same `fitInView` auto-fit-to-window behavior. Verified end-to-end
+  in the real `MainWindow`: a floating Controller Emulator dock for
+  DDJ-XP2 now screenshots pixel-for-pixel identical in layout to the By
+  Channel tab's own DDJ-XP2 schematic.
 - [x] **DDJ-1000 catalog data correction** (`catalog/ddj_1000.py`, related to
   issue [#11](https://github.com/guillain/DJ-MIDI-Studio/issues/11)) —
   discovered while cross-checking DECK section names against the official
