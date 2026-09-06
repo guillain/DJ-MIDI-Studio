@@ -560,6 +560,21 @@ documentation index.
 ### Future MIDI API extensions
 
 - [ ] Add MIDI 2.0/UMP support through a separate adapter after the MIDI 1.0 routing and Clock validation is complete.
+  Scoped (not built) on 2026-09-06: not concretely buildable yet, confirmed
+  "not applicable" rather than merely under-scoped. Neither `mido` (1.3.3)
+  nor `python-rtmidi` (1.5.8) has any UMP/MIDI 2.0 support to build on, and
+  no controller in `catalog/*.py` — delivered or on the New candidates list
+  above — advertises or needs MIDI 2.0/UMP (`ControlInfo` is flatly MIDI 1.0:
+  `note_or_cc: Literal["NOTE","CC"]`, no group/per-note-controller/resolution
+  field). The Phase 3 checklist item "Specify MIDI 2.0/UMP as a future
+  adapter instead of mixing it into the MIDI 1.0 router" only recorded the
+  *design decision* to keep it separate — `midi_api.py`'s `MidiMessage`
+  deliberately keeps raw bytes rather than parsing channel/data1/data2 for
+  exactly this reason, but that's a seam, not an adapter. Even the smallest
+  possible slice (detect a UMP-capable port if one exists, log raw packets
+  without acting on them) would be dead code with no consuming hardware.
+  Revisit only if a MIDI 2.0/UMP-capable DJ controller actually appears, or
+  `mido`/`rtmidi` gain UMP support — until then, deliberately deferred.
 - [ ] Revisit external YAML profile support only if JSON profiles cannot express an agreed requirement.
 - [ ] Define a future plugin API for advanced DJ software features such as multi-deck, multi-controller, and multi-software operations.
 
