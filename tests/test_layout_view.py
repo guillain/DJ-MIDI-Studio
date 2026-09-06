@@ -429,6 +429,34 @@ def test_real_position_markers_include_the_right_mirror_cluster():
     assert beat_sync_markers[0].key == beat_sync_markers[1].key == ("DDJ-XP2", "DECK", "BEAT SYNC")
 
 
+def test_real_position_markers_narrow_the_effect_section_right_mirror_too():
+    """DDJ-XP2's EFFECT-section mirror entries (EFFECT 1/2/3, TOUCH STRIP
+    HOLD -- its second Slide FX chain's copies) get the same " (R)" label
+    treatment as DECK/PAD MODE, reported by the maintainer as "le hold
+    effect de la ddj-xp2" sharing the pad/PAD MODE mirroring bug."""
+    markers = layout_view_mod.real_position_markers("DDJ-XP2")
+    labels = {m.label for m in markers}
+    assert "TOUCH STRIP HOLD" in labels
+    assert "TOUCH STRIP HOLD (R)" in labels
+    hold_markers = [m for m in markers if m.label in ("TOUCH STRIP HOLD", "TOUCH STRIP HOLD (R)")]
+    assert hold_markers[0].key == hold_markers[1].key == ("DDJ-XP2", "EFFECT", "TOUCH STRIP HOLD")
+
+
+def test_real_position_markers_give_a_display_only_mirror_its_own_independent_key():
+    """A continuous, catalog-less mirror entry (XDJ-XZ's right-tray "Tempo")
+    has no real trigger for the two sides to share, so -- unlike DECK/PAD
+    MODE/EFFECT -- it gets a fully distinct key, not just a distinct label.
+    Without this, dragging the right Tempo fader in the Controller Emulator
+    would also move the left one's glyph (reported by the maintainer as
+    "même problème pour le temps de la xdj-xz")."""
+    markers = layout_view_mod.real_position_markers("XDJ-XZ")
+    tempo_markers = [m for m in markers if m.label in ("Tempo", "Tempo (R)")]
+    assert {m.label for m in tempo_markers} == {"Tempo", "Tempo (R)"}
+    assert tempo_markers[0].key != tempo_markers[1].key
+    keys = {m.key for m in tempo_markers}
+    assert keys == {("XDJ-XZ", "DISPLAY", "Tempo"), ("XDJ-XZ", "DISPLAY", "Tempo (R)")}
+
+
 def test_real_position_markers_resolve_mixer_display_kind_from_layout_cell():
     """"Slide FX 2" must come out as a fader (from _DISPLAY_CONTROLS), not
     whatever visual_kind_for()'s generic name heuristic would guess."""

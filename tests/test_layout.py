@@ -302,12 +302,35 @@ def test_resolve_side_aware_variant_narrows_xdj_xz_deck_section_too():
     assert right.channels == ("2",)
 
 
-def test_resolve_side_aware_variant_does_not_narrow_effect_section_channels():
-    """EFFECT/MIXER-section entries (Slide FX, EFFECT depth knobs) use
-    FX-chain channels, not deck numbers -- _DECK_MULTIPLEXED_SECTIONS
-    deliberately excludes them, so their multi-channel entries pass through
-    unnarrowed even though a right-mirror geometry entry exists for them."""
+def test_resolve_side_aware_variant_narrows_ddj_xp2_effect_section_by_slide_fx_side():
+    """DDJ-XP2's EFFECT section (EFFECT 1/2/3, TOUCH STRIP HOLD) bundles
+    both Slide FX chains' copies into one entry via _FX_CH = ("5", "6") --
+    channel "5" is Slide FX 1 (left), "6" is Slide FX 2 (right). Reported
+    by the maintainer as "le hold effect de la ddj-xp2" sharing the same
+    mirroring problem as the pads and PAD MODE buttons."""
     clear_reverse_lookup_cache()
-    entry = layout.resolve_side_aware_variant("DDJ-XP2", ("DDJ-XP2", "EFFECT", "EFFECT 1"))
+    left = layout.resolve_side_aware_variant("DDJ-XP2", ("DDJ-XP2", "EFFECT", "EFFECT 1"))
+    right = layout.resolve_side_aware_variant("DDJ-XP2", ("DDJ-XP2", "EFFECT", "EFFECT 1 (R)"))
+    assert left is not None and right is not None
+    assert left.channels == ("5",)
+    assert right.channels == ("6",)
+
+
+def test_resolve_side_aware_variant_narrows_touch_strip_hold_by_slide_fx_side():
+    clear_reverse_lookup_cache()
+    left = layout.resolve_side_aware_variant("DDJ-XP2", ("DDJ-XP2", "EFFECT", "TOUCH STRIP HOLD"))
+    right = layout.resolve_side_aware_variant("DDJ-XP2", ("DDJ-XP2", "EFFECT", "TOUCH STRIP HOLD (R)"))
+    assert left is not None and right is not None
+    assert left.channels == ("5",)
+    assert right.channels == ("6",)
+
+
+def test_resolve_side_aware_variant_does_not_narrow_a_controller_with_no_channel_table():
+    """A (controller, section) pair absent from _RIGHT_SIDE_CHANNELS (e.g.
+    XDJ-XZ's EFFECT section, which has no left/right split at all -- see
+    catalog/xdj_xz.py's single-channel _FX_CH) passes its entry through
+    unnarrowed, exactly as before this fix."""
+    clear_reverse_lookup_cache()
+    entry = layout.resolve_side_aware_variant("XDJ-XZ", ("XDJ-XZ", "EFFECT", "FX QUANTIZE"))
     assert entry is not None
-    assert entry.channels == ("5", "6")
+    assert entry.channels == ("5",)
