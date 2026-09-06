@@ -775,11 +775,25 @@ the DJ layout visual fidelity chantier.
   (a two-controller diff/audit widget with a tab bar and deck filter, not a
   fit for a single-controller interactive emulator) — a new sibling widget,
   `EmulatorLayoutView`, reuses the same free functions instead.
-- [ ] **Phase 2 — multi-instance dock infrastructure**: multiple emulator
-  windows open at once, each bound to its own controller (e.g. DDJ-XP2 +
-  XDJ-XZ side by side). Moved up from last in the original sequencing so
-  phases 3–4 are written instance-scoped from day one instead of needing a
-  retrofit.
+- [x] **Phase 2 — multi-instance dock infrastructure** delivered in
+  `v0.47.38-controller-emulator-phase2`: `View → New Controller Emulator…`
+  opens another independent emulator window at any time, each bound to its
+  own controller (e.g. DDJ-XP2 + XDJ-XZ open side by side, verified by
+  screenshot), replacing phase 1's single fixed dock entirely. Tracked in a
+  new `MainWindow._emulator_docks: dict[str, QDockWidget]` (an instance id,
+  not the fixed string key `_tool_docks` uses for the always-one
+  Live Monitor/MIDI Routing/MIDI Clock/Metronome docks); closing an instance
+  actually tears it down (`removeDockWidget` + `deleteLater()`), unlike the
+  fixed docks' Close, which just hides a permanent singleton. Moved up from
+  last in the original sequencing so phases 3–5 are written instance-scoped
+  from day one instead of needing a retrofit. Which controllers had an
+  emulator open persists across restarts (`emulator/open_controllers` in
+  `QSettings`, replayed as new instances in `_restore_user_layout` before
+  `restoreState()`) — but each instance's exact prior geometry/floating
+  state is not restored, only the set of open controllers, since a
+  dynamically created dock's `objectName` is a fresh random id every
+  session (Qt's dock-state serialization only needs a stable name to
+  reposition a dock *within* the current session).
 - [ ] **Phase 3 — continuous control interaction**: drag-to-set knobs/faders,
   a jog-wheel spin gesture. Still dry-run only; continuous controls have no
   `ControlInfo` at all today (deliberately out of catalog scope), so this

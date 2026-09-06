@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import sys
 from pathlib import Path
+from uuid import uuid4
 
 from PySide6.QtCore import (
     QCoreApplication,
@@ -267,7 +268,11 @@ class MainWindow(QMainWindow):
             selected_rows_provider=self.controller_setup_view.selected_session_rows,
             session_name_provider=self.controller_setup_view.session_controller_name,
         )
-        self.controller_emulator_view = ControllerEmulatorView(config_provider=lambda: self.config)
+        # Controller Emulator instances are dynamic (phase 2 of issue #9's
+        # roadmap: several may be open at once, each bound to its own
+        # controller) -- see _create_emulator_instance, not a fixed
+        # single-instance tool dock like monitor/routing/clock/metronome.
+        self._emulator_docks: dict[str, QDockWidget] = {}
 
         self.introduction_view = IntroductionView()
         self.live_monitor_view.portNamesChanged.connect(
@@ -376,6 +381,24 @@ class MainWindow(QMainWindow):
         frame.moveLeft(max(available.left(), frame.left()))
         self.move(frame.topLeft())
 
+    def _restore_emulator_instances(self, settings: QSettings) -> None:
+        """Reopens one Controller Emulator instance per controller that had
+        one open at last shutdown (see closeEvent). Must run before
+        restoreState() below: Qt's dock-state serialization can only
+        reposition a dock that already exists by objectName, so a
+        dynamically created instance has to exist first -- its objectName
+        is a fresh random id each session regardless (see
+        _create_emulator_instance), so exact prior geometry/floating state
+        isn't restored, only which controllers were open."""
+        saved = settings.value("emulator/open_controllers", [])
+        if isinstance(saved, str):
+            # QSettings collapses a single-element string list back to a
+            # bare string on some platforms/backends.
+            saved = [saved]
+        for controller in saved:
+            if controller:
+                self._create_emulator_instance(controller)
+
     def _restore_user_layout(self) -> None:
         settings = self._layout_settings()
         if settings is None:
@@ -383,6 +406,7 @@ class MainWindow(QMainWindow):
             return
         geometry = settings.value("window/geometry")
         state = settings.value("window/state")
+        self._restore_emulator_instances(settings)
         if geometry:
             self.restoreGeometry(geometry)
         else:
@@ -530,6 +554,13 @@ class MainWindow(QMainWindow):
         for key in ("monitor", "routing", "clock", "metronome"):
             dock = self._tool_docks[key]
             view_menu.addAction(dock.toggleViewAction())
+        self._new_emulator_action = QAction("New Controller Emulator…", self)
+        self._new_emulator_action.setToolTip(
+            "Open another Controller Emulator window -- several may be open at "
+            "once, each bound to its own controller"
+        )
+        self._new_emulator_action.triggered.connect(lambda: self._create_emulator_instance())
+        view_menu.addAction(self._new_emulator_action)
         view_menu.addSeparator()
         self._show_all_controllers_action = QAction("Show all controllers", self, checkable=True)
         self._show_all_controllers_action.setChecked(self._show_all_controllers)
@@ -605,7 +636,6 @@ class MainWindow(QMainWindow):
             "routing": ("MIDI Routing", self.midi_routing_view),
             "clock": ("MIDI Clock", self.midi_clock_view),
             "metronome": ("Metronome", self.metronome_view),
-            "emulator": ("Controller Emulator", self.controller_emulator_view),
         }
         docks: dict[str, QDockWidget] = {}
         for key, (title, widget) in definitions.items():
@@ -672,6 +702,72 @@ class MainWindow(QMainWindow):
             return
         dock.show()
         dock.raise_()
+
+    def _create_emulator_instance(self, controller: str | None = None) -> QDockWidget:
+        """Opens a new, independent Controller Emulator window (issue #9
+        phase 2: unlike the fixed monitor/routing/clock/metronome docks,
+        several of these may exist at once, each bound to its own
+        controller). The instance id only needs to be unique for the current
+        session -- Qt's saveState()/restoreState() only need a stable
+        objectName to reposition a dock *within* a session; reopening the
+        same set of controllers across a restart is handled separately by
+        replaying _create_emulator_instance() calls in _restore_user_layout,
+        not by objectName matching a prior session's random id."""
+        instance_id = f"emulator_{uuid4().hex[:8]}"
+        view = ControllerEmulatorView(config_provider=lambda: self.config, initial_controller=controller)
+        dock = QDockWidget("Controller Emulator", self)
+        dock.setObjectName(f"{instance_id}Dock")
+        dock.setAllowedAreas(Qt.DockWidgetArea.AllDockWidgetAreas)
+        dock.setFeatures(
+            QDockWidget.DockWidgetFeature.DockWidgetClosable
+            | QDockWidget.DockWidgetFeature.DockWidgetMovable
+            | QDockWidget.DockWidgetFeature.DockWidgetFloatable
+        )
+        dock.setWidget(view)
+        dock.setTitleBarWidget(self._build_emulator_dock_title_bar(instance_id, "Controller Emulator", dock))
+        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, dock)
+        self._emulator_docks[instance_id] = dock
+        dock.show()
+        dock.raise_()
+        return dock
+
+    def _build_emulator_dock_title_bar(self, instance_id: str, title: str, dock: QDockWidget) -> QWidget:
+        """Same look as _build_dock_title_bar, but wired to a dynamically
+        created instance: Dock/Undock toggles this specific dock directly
+        (no _tool_docks lookup, since this dock isn't in that dict), and
+        Close actually tears the instance down (_close_emulator_instance)
+        instead of just hiding a permanent singleton widget."""
+        bar = QWidget()
+        bar_layout = QHBoxLayout(bar)
+        bar_layout.setContentsMargins(8, 4, 4, 4)
+        bar_layout.setSpacing(6)
+        label = QLabel(title)
+        label.setStyleSheet("QLabel { font-weight: bold; }")
+        bar_layout.addWidget(label)
+        bar_layout.addStretch(1)
+
+        dock_button = QPushButton()
+        dock_button.setFixedHeight(28)
+        dock_button.setMinimumWidth(64)
+        dock_button.clicked.connect(lambda: dock.setFloating(not dock.isFloating()))
+        dock.topLevelChanged.connect(lambda floating, button=dock_button: self._update_dock_button(button, floating))
+        self._update_dock_button(dock_button, dock.isFloating())
+        bar_layout.addWidget(dock_button)
+
+        close_button = QPushButton()
+        close_button.setFixedSize(28, 28)
+        close_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_TitleBarCloseButton))
+        close_button.setToolTip("Close")
+        close_button.clicked.connect(lambda: self._close_emulator_instance(instance_id))
+        bar_layout.addWidget(close_button)
+        return bar
+
+    def _close_emulator_instance(self, instance_id: str) -> None:
+        dock = self._emulator_docks.pop(instance_id, None)
+        if dock is None:
+            return
+        self.removeDockWidget(dock)
+        dock.deleteLater()
 
     def _set_tool_dock_floating(self, key: str, floating: bool) -> None:
         """Switch a MIDI tool between the main-window dock and a free window."""
@@ -1205,7 +1301,10 @@ class MainWindow(QMainWindow):
         self.controller_layout_view.refresh_controllers()
         self.controller_image_view.refresh_controllers()
         self.introduction_view.refresh_controllers()
-        self.controller_emulator_view.refresh_controllers()
+        for dock in self._emulator_docks.values():
+            widget = dock.widget()
+            if isinstance(widget, ControllerEmulatorView):
+                widget.refresh_controllers()
         if self.config is not None:
             self._refresh_layout_usage()
         self.statusBar().showMessage(f"'{name}' applied for this session.")
@@ -1217,6 +1316,12 @@ class MainWindow(QMainWindow):
             settings.setValue("window/state", self.saveState(1))
             self.midi_routing_view.save_state(settings)
             self.metronome_view.save_state(settings)
+            open_controllers = [
+                widget.current_controller()
+                for dock in self._emulator_docks.values()
+                if isinstance(widget := dock.widget(), ControllerEmulatorView)
+            ]
+            settings.setValue("emulator/open_controllers", open_controllers)
             settings.sync()
         self.live_monitor_view.shutdown()
         self.midi_routing_view.shutdown()
