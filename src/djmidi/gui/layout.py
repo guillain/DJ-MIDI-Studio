@@ -373,26 +373,50 @@ _RIGHT_GRID_DECKS: dict[str, frozenset[int]] = {
 }
 _DECK_NUM_RE = re.compile(r"^Deck (\d+)")
 
+# DDJ-XP2's DECK-section buttons (BEAT SYNC, QUANTIZE, ...) and PAD MODE
+# buttons are each a *single* catalog entry whose `channels` tuple spans
+# all 4 decks at once (e.g. _DECK_CH = ("1", "2", "3", "4") in
+# catalog/ddj_xp2.py -- channel string == deck number by convention,
+# confirmed by that module's own "1-4 = DECK 1-4" comment; XDJ-XZ's DECK
+# section follows the identical convention). Unlike PAD, there is no
+# separate per-deck ControlInfo to filter between -- the *same* entry
+# needs its `channels` narrowed down to just the requested side's deck.
+# EFFECT/MIXER-section entries (Slide FX, EFFECT depth knobs) are
+# deliberately excluded: their channels are FX-chain channels, not deck
+# numbers, so narrowing by "is this channel in _RIGHT_GRID_DECKS" would be
+# meaningless there (and could accidentally strip a legitimate channel).
+_DECK_MULTIPLEXED_SECTIONS = frozenset({"DECK", "PAD MODE"})
+
 
 def resolve_side_aware_variant(controller: str, key: CellKey) -> catalog.ControlInfo | None:
     """Like reverse_lookup(controller).get(base_key) + pick_default_variant(),
     but first strips a real-position " (R)" suffix from the key's label
-    (see geometry.py's "Right pad grid" docstring) and, for a PAD cell,
-    filters the resulting variants down to the matching physical side's
-    deck(s) via _RIGHT_GRID_DECKS.
+    (see geometry.py's "Right pad grid" docstring) and narrows the result
+    down to the matching physical side's deck: for a PAD cell, by filtering
+    the candidate variants via _RIGHT_GRID_DECKS; for a DECK/PAD MODE cell
+    (see _DECK_MULTIPLEXED_SECTIONS), by narrowing the resolved entry's own
+    multi-deck `channels` tuple down to one channel via the same table.
 
-    Exists because a right-pad-grid marker's *presentation* key
-    (e.g. `(controller, "PAD", "Pad 3 (R)")`, used by the Controller
-    Emulator to keep the two grids' flash/click state independent -- see
-    gui/controller_emulator.py) is deliberately NOT a real schematic
-    CellKey `reverse_lookup()` knows about; without this filtering step,
-    resolving it would either find nothing or silently fall back to the
-    *left* grid's deck (1/3) variant regardless of which grid was actually
-    clicked -- confirmed by the maintainer as "pressing a button on one
-    deck also activates the second deck" while testing the Controller
-    Emulator. A combined label ("PAD MODE 1/5") resolves via its first
-    alternative, same as cell_key_for_geometry_label(); a plain key with no
-    suffix (unaffected by this fix -- classic-grid cells, or any
+    Exists because a right-side marker's *presentation* key (e.g.
+    `(controller, "PAD", "Pad 3 (R)")`, or `(controller, "DECK", "BEAT
+    SYNC (R)")` -- used by the Controller Emulator to keep the two
+    physical clusters' flash/click state independent, see
+    gui/controller_emulator.py and layout_view.real_position_markers())
+    is deliberately NOT a real schematic CellKey `reverse_lookup()` knows
+    about; without this filtering step, resolving it would either find
+    nothing, or (for PAD) silently fall back to the *left* grid's deck
+    (1/3), or (for DECK/PAD MODE) return the single shared entry
+    unnarrowed, whose `channels` spans all 4 decks at once -- meaning a
+    live send would fire on every deck simultaneously and dry-run
+    resolution would always check deck 1's mapping, regardless of which
+    physical cluster was actually clicked. Confirmed by the maintainer
+    first for pads ("pressing a button on one deck also activates the
+    second deck"), then again after the pad fix shipped, for the PAD MODE
+    buttons specifically ("tous les modes pad ont le même problème
+    (mirroring deck 1 et 2)") -- the same root cause, one section over.
+    A combined label ("PAD MODE 1/5") resolves via its first alternative,
+    same as cell_key_for_geometry_label(); a plain key with no suffix
+    (unaffected by this fix -- classic-grid cells, or any
     non-real-position caller) behaves exactly as reverse_lookup() +
     pick_default_variant() already did."""
     controller_name, section, label = key
@@ -413,7 +437,14 @@ def resolve_side_aware_variant(controller: str, key: CellKey) -> catalog.Control
         filtered = [variant for variant in variants if _matches_side(variant)]
         if filtered:
             variants = filtered
-    return pick_default_variant(variants)
+    entry = pick_default_variant(variants)
+    if right_decks and section in _DECK_MULTIPLEXED_SECTIONS and len(entry.channels) > 1:
+        side_channels = tuple(
+            ch for ch in entry.channels if ch.isdigit() and (int(ch) in right_decks) == right_side
+        )
+        if side_channels:
+            entry = replace(entry, channels=(side_channels[0],))
+    return entry
 
 
 _AMBIGUOUS_TRIGGER_MARKERS = ("shift", "long press", "press twice", "direct button")

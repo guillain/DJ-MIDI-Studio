@@ -218,7 +218,24 @@ def real_position_markers(controller: str) -> list[RealPositionMarker]:
     instead. Combines CONTROL_GEOMETRY with this module's own
     _RIGHT_MIRROR_GEOMETRY (see its docstring for why that table exists
     separately) and resolves each label to a schematic CellKey via
-    layout.cell_key_for_geometry_label()."""
+    layout.cell_key_for_geometry_label().
+
+    A _RIGHT_MIRROR_GEOMETRY entry whose resolved cell falls in
+    layout._DECK_MULTIPLEXED_SECTIONS (DECK/PAD MODE -- DDJ-XP2's second
+    physical DECK+PAD MODE cluster, XDJ-XZ's right-tray transport) gets its
+    *displayed* label suffixed " (R)", even though its resolved `key` stays
+    the same merged CellKey as the left cluster's. This mirrors exactly how
+    a right-pad-grid label already carries the suffix directly in
+    CONTROL_GEOMETRY (e.g. "Pad 3 (R)"): callers that split click/flash
+    identity on that suffix (gui/controller_emulator.py,
+    gui/controller_image_view.py) and layout.resolve_side_aware_variant()
+    (which narrows a DECK/PAD MODE entry's multi-deck `channels` down to
+    one side) then treat the two physical clusters independently for free,
+    without this function needing to know anything about resolution itself.
+    An EFFECT/MIXER-section mirror entry (Slide FX, EFFECT depth knobs) is
+    left unsuffixed -- those already resolve to their own distinct cell
+    (e.g. "Slide FX 2" is a real cell in its own right, not a merged
+    duplicate of "Slide FX 1"), so there is nothing to disambiguate."""
     geometry_entries = geometry_mod.CONTROL_GEOMETRY.get(controller)
     if not geometry_entries:
         return []
@@ -226,13 +243,16 @@ def real_position_markers(controller: str) -> list[RealPositionMarker]:
     cells_by_key = {cell.key: cell for cell in layout_mod.build_layout(controller)}
     markers: list[RealPositionMarker] = []
     all_entries = itertools.chain(
-        geometry_entries.items(),
-        _RIGHT_MIRROR_GEOMETRY.get(controller, {}).items(),
+        ((label, geom, False) for label, geom in geometry_entries.items()),
+        ((label, geom, True) for label, geom in _RIGHT_MIRROR_GEOMETRY.get(controller, {}).items()),
     )
-    for label, geom in all_entries:
+    for label, geom, is_mirror in all_entries:
         key = layout_mod.cell_key_for_geometry_label(controller, label)
         if key is None:
             key = (controller, "DISPLAY", label)
+        display_label = label
+        if is_mirror and key[1] in layout_mod._DECK_MULTIPLEXED_SECTIONS:
+            display_label = f"{label}{layout_mod._RIGHT_GRID_SUFFIX}"
         rect = QRectF(geom.x * canvas_w, geom.y * canvas_h, geom.w * canvas_w, geom.h * canvas_h)
         # A MIXER/display cell's kind comes from _DISPLAY_CONTROLS (e.g.
         # "Slide FX 2" is explicitly a fader), not the generic name-based
@@ -246,7 +266,7 @@ def real_position_markers(controller: str) -> list[RealPositionMarker]:
             if resolved_cell is not None
             else layout_mod.visual_kind_for(key[1], key[2])
         )
-        markers.append(RealPositionMarker(key, label, rect, geom.shape, geom.color, visual_kind))
+        markers.append(RealPositionMarker(key, display_label, rect, geom.shape, geom.color, visual_kind))
     return markers
 
 

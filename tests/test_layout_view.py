@@ -419,13 +419,14 @@ def test_real_position_markers_include_the_right_mirror_cluster():
     markers = layout_view_mod.real_position_markers("DDJ-XP2")
     labels = {m.label for m in markers}
     assert "BEAT SYNC" in labels  # left (CONTROL_GEOMETRY)
-    # the right-mirror table's own entries share label strings with the
-    # left ones (see _RIGHT_MIRROR_GEOMETRY's docstring), so presence is
-    # confirmed via the resolved key instead of a distinct label string
-    keys_by_label: dict[str, list] = {}
-    for m in markers:
-        keys_by_label.setdefault(m.label, []).append(m)
-    assert len(keys_by_label["BEAT SYNC"]) == 2  # left + right mirror entries
+    # The right-mirror table's own DECK/PAD MODE entries get a distinct
+    # " (R)" *label* (so the emulator/live-send can tell the two physical
+    # clusters apart -- see resolve_side_aware_variant()), even though they
+    # still resolve to the same merged schematic key as the left entry.
+    assert "BEAT SYNC (R)" in labels
+    beat_sync_markers = [m for m in markers if m.label in ("BEAT SYNC", "BEAT SYNC (R)")]
+    assert len(beat_sync_markers) == 2
+    assert beat_sync_markers[0].key == beat_sync_markers[1].key == ("DDJ-XP2", "DECK", "BEAT SYNC")
 
 
 def test_real_position_markers_resolve_mixer_display_kind_from_layout_cell():

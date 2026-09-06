@@ -163,6 +163,54 @@ def test_controller_emulator_view_resolves_left_and_right_pad_to_their_own_deck(
     assert "ch10" in right_text  # deck 2's pad channel
 
 
+# ─── Same fix, one section over: DECK/PAD MODE buttons (the follow-up ─────
+# ─── report "tous les modes pad ont le même problème (mirroring deck 1 ────
+# ─── et 2)" once the pad-grid fix above had already shipped) ───────────────
+
+
+def test_emulator_right_mirror_deck_button_gets_its_own_presentation_key():
+    """DDJ-XP2's second physical DECK/PAD MODE cluster (real_position_markers()
+    suffixes its label " (R)" for exactly this reason) must get its own
+    scene-item key, distinct from the left cluster's, the same way the pad
+    grid already does."""
+    view = EmulatorLayoutView("DDJ-XP2")
+    left_items = [
+        item for item in view._scene.items() if item.data(_KEY_ROLE) == ("DDJ-XP2", "DECK", "BEAT SYNC")
+    ]
+    right_items = [
+        item for item in view._scene.items() if item.data(_KEY_ROLE) == ("DDJ-XP2", "DECK", "BEAT SYNC (R)")
+    ]
+    assert left_items
+    assert right_items
+
+
+def test_emulator_flashing_the_right_mirror_pad_mode_button_does_not_flash_the_left():
+    view = EmulatorLayoutView("DDJ-XP2")
+    left_key: CellKey = ("DDJ-XP2", "PAD MODE", "PAD MODE 1")
+    right_key: CellKey = ("DDJ-XP2", "PAD MODE", "PAD MODE 1 (R)")
+    view.flash_key(right_key)
+    assert right_key in view._flash_keys
+    assert left_key not in view._flash_keys
+
+
+def test_controller_emulator_view_resolves_left_and_right_pad_mode_to_their_own_deck():
+    view = ControllerEmulatorView(config_provider=lambda: None)
+    view._combo.setCurrentText("DDJ-XP2")
+    left_text = view._resolve(("DDJ-XP2", "PAD MODE", "PAD MODE 1"))
+    right_text = view._resolve(("DDJ-XP2", "PAD MODE", "PAD MODE 1 (R)"))
+    assert "ch1 " in left_text  # deck 1's channel
+    assert "ch2 " in right_text  # deck 2's channel
+
+
+def test_controller_emulator_view_resolves_left_and_right_beat_sync_to_their_own_deck():
+    view = ControllerEmulatorView(config_provider=lambda: None)
+    view._combo.setCurrentText("DDJ-XP2")
+    left_text = view._resolve(("DDJ-XP2", "DECK", "BEAT SYNC"))
+    right_text = view._resolve(("DDJ-XP2", "DECK", "BEAT SYNC (R)"))
+    assert "ch1 " in left_text
+    assert "ch2 " in right_text
+
+
 # ─── ControllerEmulatorView ────────────────────────────────────────────────
 
 def test_controller_emulator_view_resolves_against_no_config():

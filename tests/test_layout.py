@@ -259,3 +259,55 @@ def test_resolve_side_aware_variant_combined_label_resolves_via_first_alternativ
 def test_resolve_side_aware_variant_returns_none_for_an_unknown_trigger():
     clear_reverse_lookup_cache()
     assert layout.resolve_side_aware_variant("DDJ-XP2", ("DDJ-XP2", "PAD", "Pad 99")) is None
+
+
+# ─── resolve_side_aware_variant: DECK/PAD MODE sections (the "tous les ────
+# ─── modes pad ont le même problème (mirroring deck 1 et 2)" follow-up) ────
+# These sections have no separate per-deck ControlInfo the way PAD does --
+# a single entry's `channels` tuple spans all 4 decks, so the fix narrows
+# that tuple down to one side's channel instead of filtering variants.
+
+
+def test_resolve_side_aware_variant_narrows_deck_section_to_the_left_channel():
+    clear_reverse_lookup_cache()
+    entry = layout.resolve_side_aware_variant("DDJ-XP2", ("DDJ-XP2", "DECK", "BEAT SYNC"))
+    assert entry is not None
+    assert entry.name == "BEAT SYNC"
+    assert entry.channels == ("1",)  # deck 1, the left cluster's default
+
+
+def test_resolve_side_aware_variant_narrows_deck_section_to_the_right_channel():
+    clear_reverse_lookup_cache()
+    entry = layout.resolve_side_aware_variant("DDJ-XP2", ("DDJ-XP2", "DECK", "BEAT SYNC (R)"))
+    assert entry is not None
+    assert entry.name == "BEAT SYNC"
+    assert entry.channels == ("2",)  # deck 2, the right cluster's default
+
+
+def test_resolve_side_aware_variant_narrows_pad_mode_section_by_side():
+    clear_reverse_lookup_cache()
+    left = layout.resolve_side_aware_variant("DDJ-XP2", ("DDJ-XP2", "PAD MODE", "PAD MODE 1"))
+    right = layout.resolve_side_aware_variant("DDJ-XP2", ("DDJ-XP2", "PAD MODE", "PAD MODE 1 (R)"))
+    assert left is not None and right is not None
+    assert left.channels == ("1",)
+    assert right.channels == ("2",)
+
+
+def test_resolve_side_aware_variant_narrows_xdj_xz_deck_section_too():
+    clear_reverse_lookup_cache()
+    left = layout.resolve_side_aware_variant("XDJ-XZ", ("XDJ-XZ", "DECK", "PLAY/PAUSE"))
+    right = layout.resolve_side_aware_variant("XDJ-XZ", ("XDJ-XZ", "DECK", "PLAY/PAUSE (R)"))
+    assert left is not None and right is not None
+    assert left.channels == ("1",)
+    assert right.channels == ("2",)
+
+
+def test_resolve_side_aware_variant_does_not_narrow_effect_section_channels():
+    """EFFECT/MIXER-section entries (Slide FX, EFFECT depth knobs) use
+    FX-chain channels, not deck numbers -- _DECK_MULTIPLEXED_SECTIONS
+    deliberately excludes them, so their multi-channel entries pass through
+    unnarrowed even though a right-mirror geometry entry exists for them."""
+    clear_reverse_lookup_cache()
+    entry = layout.resolve_side_aware_variant("DDJ-XP2", ("DDJ-XP2", "EFFECT", "EFFECT 1"))
+    assert entry is not None
+    assert entry.channels == ("5", "6")
