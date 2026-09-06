@@ -189,8 +189,7 @@ jobs:
             find . -type f \( \
               -name '*.zip' -o \
               -name '*.tar.gz' -o \
-              -name '*.whl' -o \
-              -name '*.png' \
+              -name '*.whl' \
             \) -print0 | sort -z | xargs -0 sha256sum
           ) > "$checksum_file"
           cat "$checksum_file"
@@ -207,7 +206,6 @@ jobs:
               -name '*.zip' -o \
               -name '*.tar.gz' -o \
               -name '*.whl' -o \
-              -name '*.png' -o \
               -name '*SHA256SUMS.txt' \
             \) -print | sort
           )
