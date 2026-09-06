@@ -598,6 +598,59 @@ def test_show_all_controllers_action_is_in_the_view_menu():
         window.close()
 
 
+def test_performance_mode_action_is_in_the_view_menu():
+    window = MainWindow()
+    try:
+        action = window._performance_mode_action
+        assert action.isCheckable()
+        assert not action.isChecked()
+    finally:
+        window.close()
+
+
+def test_performance_mode_on_shrinks_tree_and_zooms_layout_views():
+    from djmidi.gui.main_window import _PERFORMANCE_TREE_RATIO, _PERFORMANCE_ZOOM_FACTOR
+
+    window = _loaded_window()
+    try:
+        window._on_performance_mode_toggled(True)
+        for splitter in window._pair_splitters:
+            assert window._pair_ratio_by_id[id(splitter)] == _PERFORMANCE_TREE_RATIO
+        for view in (window.layout_view, window.deck_layout_view, window.controller_layout_view):
+            assert view._view.transform().m11() == _PERFORMANCE_ZOOM_FACTOR
+    finally:
+        window.close()
+
+
+def test_performance_mode_off_restores_prior_ratios_and_zoom():
+    window = _loaded_window()
+    try:
+        for splitter in window._pair_splitters:
+            window._pair_ratio_by_id[id(splitter)] = 0.7
+        window._on_performance_mode_toggled(True)
+        window._on_performance_mode_toggled(False)
+        for splitter in window._pair_splitters:
+            assert window._pair_ratio_by_id[id(splitter)] == 0.7
+        for view in (window.layout_view, window.deck_layout_view, window.controller_layout_view):
+            assert view._view.transform().isIdentity()
+    finally:
+        window.close()
+
+
+def test_performance_mode_ratio_survives_a_resize():
+    from djmidi.gui.main_window import _PERFORMANCE_TREE_RATIO
+
+    window = _loaded_window()
+    try:
+        window._on_performance_mode_toggled(True)
+        window.resize(window.width() + 50, window.height() + 50)
+        QApplication.processEvents()
+        for splitter in window._pair_splitters:
+            assert window._pair_ratio_by_id[id(splitter)] == _PERFORMANCE_TREE_RATIO
+    finally:
+        window.close()
+
+
 def test_edit_column_hidden_on_non_tree_tabs():
     from djmidi import catalog
 

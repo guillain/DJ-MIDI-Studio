@@ -135,6 +135,12 @@ _LOCAL_CONTROLLER_DOCUMENTS = [
 
 _LOGGER = logging.getLogger(__name__)
 
+# Performance Mode: how much to shrink the tree pane (never fully to 0 -- the
+# pair splitters are non-collapsible by design) and how much to enlarge the
+# schematic layout glyphs.
+_PERFORMANCE_TREE_RATIO = 0.03
+_PERFORMANCE_ZOOM_FACTOR = 1.6
+
 
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
@@ -176,6 +182,8 @@ class MainWindow(QMainWindow):
         self._pair_splitters: list[QSplitter] = []
         self._pair_ratio_by_id: dict[int, float] = {}
         self._last_controller_detection: tuple[str, ...] = ()
+        self._performance_mode = False
+        self._performance_saved_ratios: dict[int, float] | None = None
 
         self.undo_stack = QUndoStack(self)
 
@@ -529,6 +537,15 @@ class MainWindow(QMainWindow):
         self._show_all_controllers_action.toggled.connect(self._on_show_all_controllers_toggled)
         view_menu.addAction(self._show_all_controllers_action)
 
+        view_menu.addSeparator()
+        self._performance_mode_action = QAction("Performance Mode", self, checkable=True)
+        self._performance_mode_action.setToolTip(
+            "Hide the mapping tree and enlarge the schematic layout for on-stage use "
+            "(session-only, not remembered across restarts)"
+        )
+        self._performance_mode_action.toggled.connect(self._on_performance_mode_toggled)
+        view_menu.addAction(self._performance_mode_action)
+
         settings_menu = self.menuBar().addMenu("&Settings")
         preferences_action = QAction("&Preferences...", self)
         preferences_action.triggered.connect(self._on_preferences)
@@ -719,6 +736,29 @@ class MainWindow(QMainWindow):
         # per-controller Preferences checkboxes without discarding them —
         # unticking it restores exactly this enabled set.
         catalog.set_enabled_plugin_ids(None if self._show_all_controllers else controller_ids)
+
+    def _on_performance_mode_toggled(self, checked: bool) -> None:
+        self._performance_mode = checked
+        if checked:
+            self._performance_saved_ratios = dict(self._pair_ratio_by_id)
+            for splitter in self._pair_splitters:
+                self._pair_ratio_by_id[id(splitter)] = _PERFORMANCE_TREE_RATIO
+                self._set_pair_ratio(splitter, _PERFORMANCE_TREE_RATIO)
+        else:
+            if self._performance_saved_ratios is not None:
+                self._pair_ratio_by_id.update(self._performance_saved_ratios)
+            self._performance_saved_ratios = None
+            for splitter in self._pair_splitters:
+                ratio = self._pair_ratio_by_id.get(id(splitter), 0.5)
+                self._set_pair_ratio(splitter, ratio)
+        zoom = _PERFORMANCE_ZOOM_FACTOR if checked else 1.0
+        for view in (self.layout_view, self.deck_layout_view, self.controller_layout_view):
+            view.set_zoom(zoom)
+        self.statusBar().showMessage(
+            "Performance mode on — tree hidden, layout enlarged"
+            if checked
+            else "Performance mode off"
+        )
 
     def _on_left_tab_changed(self, index: int) -> None:
         """Show the edit / validation column only on the tree tabs."""
