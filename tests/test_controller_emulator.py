@@ -111,6 +111,17 @@ def test_controller_emulator_view_switching_controller_resets_status():
     assert view._emulator._controller == "XDJ-XZ"
 
 
+def test_controller_emulator_view_accepts_an_initial_controller():
+    view = ControllerEmulatorView(config_provider=lambda: None, initial_controller="XDJ-XZ")
+    assert view.current_controller() == "XDJ-XZ"
+    assert view._emulator._controller == "XDJ-XZ"
+
+
+def test_controller_emulator_view_ignores_an_unknown_initial_controller():
+    view = ControllerEmulatorView(config_provider=lambda: None, initial_controller="NOPE")
+    assert view.current_controller() != "NOPE"
+
+
 def test_controller_emulator_view_refresh_controllers_preserves_selection():
     view = ControllerEmulatorView(config_provider=lambda: None)
     view._combo.setCurrentText("XDJ-XZ")

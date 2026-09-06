@@ -651,53 +651,127 @@ def test_performance_mode_ratio_survives_a_resize():
         window.close()
 
 
-def test_controller_emulator_dock_exists_and_starts_hidden():
+def test_no_emulator_instances_exist_until_requested():
     window = MainWindow()
     try:
-        dock = window._tool_docks["emulator"]
-        assert dock.widget() is window.controller_emulator_view
-        assert not dock.isVisible()
+        assert window._emulator_docks == {}
     finally:
         window.close()
 
 
-def test_controller_emulator_dock_toggle_view_action_shows_it():
+def test_new_emulator_instance_creates_a_visible_dock():
     window = MainWindow()
     window.show()
     QApplication.processEvents()
     try:
-        dock = window._tool_docks["emulator"]
-        dock.toggleViewAction().trigger()
+        dock = window._create_emulator_instance()
         QApplication.processEvents()
         assert dock.isVisible()
+        assert len(window._emulator_docks) == 1
     finally:
         window.close()
 
 
-def test_controller_emulator_resolves_against_the_loaded_config():
+def test_multiple_emulator_instances_can_be_open_at_once_for_different_controllers():
+    window = MainWindow()
+    window.show()
+    QApplication.processEvents()
+    try:
+        dock_a = window._create_emulator_instance("DDJ-XP2")
+        dock_b = window._create_emulator_instance("XDJ-XZ")
+        assert len(window._emulator_docks) == 2
+        assert dock_a.widget().current_controller() == "DDJ-XP2"
+        assert dock_b.widget().current_controller() == "XDJ-XZ"
+    finally:
+        window.close()
+
+
+def test_closing_an_emulator_instance_removes_it_from_tracking():
+    window = MainWindow()
+    window.show()
+    QApplication.processEvents()
+    try:
+        window._create_emulator_instance()
+        (instance_id,) = window._emulator_docks.keys()
+        window._close_emulator_instance(instance_id)
+        assert window._emulator_docks == {}
+    finally:
+        window.close()
+
+
+def test_new_controller_emulator_action_triggers_a_new_instance():
+    window = MainWindow()
+    try:
+        assert window._new_emulator_action.text() == "New Controller Emulator…"
+        window._new_emulator_action.trigger()
+        assert len(window._emulator_docks) == 1
+    finally:
+        window.close()
+
+
+def test_controller_emulator_instance_resolves_against_the_loaded_config():
     window = _loaded_window()
     try:
-        emulator = window.controller_emulator_view
-        assert emulator._config_provider() is window.config
+        dock = window._create_emulator_instance()
+        assert dock.widget()._config_provider() is window.config
     finally:
         window.close()
 
 
-def test_controller_applied_refreshes_the_emulator_and_clears_reverse_lookup_cache(monkeypatch):
+def test_controller_applied_refreshes_every_emulator_instance_and_clears_reverse_lookup_cache(monkeypatch):
     from djmidi.gui import layout as layout_mod
 
     window = MainWindow()
     try:
+        dock = window._create_emulator_instance()
         layout_mod.reverse_lookup("DDJ-XP2")  # populate the cache
         cleared = []
         monkeypatch.setattr(layout_mod, "clear_reverse_lookup_cache", lambda: cleared.append(True))
         refreshed = []
-        monkeypatch.setattr(
-            window.controller_emulator_view, "refresh_controllers", lambda: refreshed.append(True)
-        )
+        monkeypatch.setattr(dock.widget(), "refresh_controllers", lambda: refreshed.append(True))
         window._on_controller_applied("DDJ-XP2")
         assert cleared == [True]
         assert refreshed == [True]
+    finally:
+        window.close()
+
+
+def test_close_event_persists_open_emulator_controllers():
+    window = MainWindow()
+    window._create_emulator_instance("DDJ-XP2")
+    window._create_emulator_instance("XDJ-XZ")
+    fake_settings = Mock()
+    with patch.object(window, "_layout_settings", return_value=fake_settings):
+        window.close()
+    saved_calls = {c.args[0]: c.args[1] for c in fake_settings.setValue.call_args_list}
+    assert sorted(saved_calls["emulator/open_controllers"]) == ["DDJ-XP2", "XDJ-XZ"]
+
+
+def test_restore_emulator_instances_reopens_saved_controllers():
+    from unittest.mock import Mock
+
+    window = MainWindow()
+    try:
+        fake_settings = Mock()
+        fake_settings.value.return_value = ["DDJ-XP2", "XDJ-XZ"]
+        window._restore_emulator_instances(fake_settings)
+        controllers = sorted(dock.widget().current_controller() for dock in window._emulator_docks.values())
+        assert controllers == ["DDJ-XP2", "XDJ-XZ"]
+    finally:
+        window.close()
+
+
+def test_restore_emulator_instances_handles_a_single_saved_controller_as_a_bare_string():
+    """QSettings can collapse a single-element string list back to a bare
+    string on some platforms/backends."""
+    from unittest.mock import Mock
+
+    window = MainWindow()
+    try:
+        fake_settings = Mock()
+        fake_settings.value.return_value = "DDJ-XP2"
+        window._restore_emulator_instances(fake_settings)
+        assert len(window._emulator_docks) == 1
     finally:
         window.close()
 

@@ -184,6 +184,7 @@ class ControllerEmulatorView(QWidget):
     def __init__(
         self,
         config_provider: Callable[[], MidiConfig | None],
+        initial_controller: str | None = None,
         parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
@@ -191,9 +192,18 @@ class ControllerEmulatorView(QWidget):
 
         self._combo = QComboBox()
         self._combo.addItems(catalog.CONTROLLER_NAMES)
+
+        initial = initial_controller if initial_controller in catalog.CONTROLLER_NAMES else (
+            catalog.CONTROLLER_NAMES[0] if catalog.CONTROLLER_NAMES else ""
+        )
+        if initial:
+            self._combo.setCurrentText(initial)
+        # Connected after the initial selection so constructing with a
+        # specific initial_controller (see MainWindow._create_emulator_instance)
+        # doesn't fire a redundant _on_controller_changed before self._emulator
+        # exists.
         self._combo.currentTextChanged.connect(self._on_controller_changed)
 
-        initial = catalog.CONTROLLER_NAMES[0] if catalog.CONTROLLER_NAMES else ""
         self._emulator = EmulatorLayoutView(initial)
         self._emulator.controlPressed.connect(self._on_control_pressed)
 
@@ -205,6 +215,12 @@ class ControllerEmulatorView(QWidget):
         layout.addWidget(self._combo)
         layout.addWidget(self._emulator, 1)
         layout.addWidget(self._status_label)
+
+    def current_controller(self) -> str:
+        """The controller currently selected in this instance -- used by
+        MainWindow to persist which controllers had an open emulator
+        instance (see MainWindow.closeEvent/_restore_user_layout)."""
+        return self._combo.currentText()
 
     def refresh_controllers(self) -> None:
         """Repopulates the controller combo from the live registry -- call
