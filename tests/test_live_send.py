@@ -69,3 +69,39 @@ def test_active_changed_signal_fires_on_toggle(monkeypatch):
     assert received == [True]
     control._toggle_button.setChecked(False)
     assert received == [True, False]
+
+
+# ─── Port warning: a real regression report -- "Live send did nothing in
+# ─── Serato" traced to picking the controller's own port, not a virtual one ──
+
+
+def test_port_warning_hidden_for_a_virtual_port(monkeypatch):
+    monkeypatch.setattr(live_send_mod.midi_io, "list_output_ports", lambda: ["IAC Driver Bus 1"])
+    control = LiveSendControl()
+    assert control._port_warning.isHidden()
+
+
+def test_port_warning_shown_for_a_controllers_own_port(monkeypatch):
+    monkeypatch.setattr(live_send_mod.midi_io, "list_output_ports", lambda: ["DDJ-XP2"])
+    control = LiveSendControl()
+    assert not control._port_warning.isHidden()
+    assert "DDJ-XP2" in control._port_warning.text()
+    assert "Serato" in control._port_warning.text()
+
+
+def test_port_warning_updates_when_switching_ports(monkeypatch):
+    monkeypatch.setattr(
+        live_send_mod.midi_io, "list_output_ports", lambda: ["IAC Driver Bus 1", "DDJ-XP2"]
+    )
+    control = LiveSendControl()
+    assert control._port_warning.isHidden()  # first port ("IAC Driver Bus 1") auto-selected
+    control._port_combo.setCurrentText("DDJ-XP2")
+    assert not control._port_warning.isHidden()
+    control._port_combo.setCurrentText("IAC Driver Bus 1")
+    assert control._port_warning.isHidden()
+
+
+def test_port_warning_hidden_when_no_ports_available(monkeypatch):
+    monkeypatch.setattr(live_send_mod.midi_io, "list_output_ports", list)
+    control = LiveSendControl()
+    assert control._port_warning.isHidden()

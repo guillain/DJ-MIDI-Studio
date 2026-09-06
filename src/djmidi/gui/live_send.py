@@ -21,14 +21,32 @@ reuse existing, tested code -- no new MIDI-sending logic anywhere in this
 module: layout.reverse_lookup() + layout.pick_default_variant() for
 resolution (the same pair the Controller Emulator's own dry-run already
 uses), session_player.send_control_info_entry() for the send (the same
-primitive Controller Setup's "Send once" button already uses)."""
+primitive Controller Setup's "Send once" button already uses).
+
+Picking the right *destination* port is the one thing this widget can't do
+for the user, and got a real maintainer confused: sending to a
+controller's own port only writes TO the hardware (e.g. its LEDs), never
+reaches Serato -- Serato has to be listening on a *virtual* port (e.g. an
+IAC Driver bus) added as an extra control surface input in its own MIDI
+preferences, mirroring Live Monitor's documented output-direction
+constraint (CLAUDE.md) for the reverse direction. `_update_port_warning()`
+surfaces an inline warning via `catalog.detect_controller()` when the
+selected port's name matches a real, known controller, since that's
+exactly the intuitive-but-wrong choice a first-time user reaches for."""
 
 from __future__ import annotations
 
 from PySide6.QtCore import Signal
-from PySide6.QtWidgets import QComboBox, QHBoxLayout, QPushButton, QWidget
+from PySide6.QtWidgets import (
+    QComboBox,
+    QHBoxLayout,
+    QLabel,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+)
 
-from djmidi import midi_io
+from djmidi import catalog, midi_io
 from djmidi.catalog._registry import ControlInfo
 from djmidi.gui import layout as layout_mod
 from djmidi.session_player import send_control_info_entry
@@ -51,7 +69,14 @@ class LiveSendControl(QWidget):
         super().__init__(parent)
         self._port_combo = QComboBox()
         self._port_combo.setMinimumWidth(150)
-        self._port_combo.setToolTip("MIDI output port for Live send")
+        self._port_combo.setToolTip(
+            "MIDI output port for Live send -- pick a virtual port (e.g. an "
+            "IAC Driver bus) that you've also added as a control surface "
+            "input in Serato's own MIDI preferences. Sending to your "
+            "controller's own port won't reach Serato: that port writes TO "
+            "the hardware (e.g. its LEDs), not to Serato's mapping engine."
+        )
+        self._port_combo.currentTextChanged.connect(self._update_port_warning)
 
         self._refresh_button = QPushButton("⟳")
         self._refresh_button.setToolTip("Refresh output ports")
@@ -67,12 +92,33 @@ class LiveSendControl(QWidget):
         self._toggle_button.toggled.connect(self._on_toggled)
         self._apply_toggle_style(False)
 
-        layout = QHBoxLayout(self)
+        row = QHBoxLayout()
+        row.setContentsMargins(0, 0, 0, 0)
+        row.setSpacing(6)
+        row.addWidget(self._port_combo)
+        row.addWidget(self._refresh_button)
+        row.addWidget(self._toggle_button)
+
+        # Hidden unless the selected port's name matches a real, known
+        # controller (catalog.detect_controller) -- confirmed root cause of
+        # a real "Live send does nothing in Serato" report: the maintainer
+        # had picked their controller's own port (the intuitive choice),
+        # which only writes TO the hardware, never reaches Serato at all.
+        # Mirrors Live Monitor's own documented output-direction workaround
+        # (CLAUDE.md: a virtual destination must be added as an *extra*
+        # Serato MIDI output) for the reverse direction.
+        self._port_warning = QLabel()
+        self._port_warning.setWordWrap(True)
+        self._port_warning.setStyleSheet(
+            "QLabel { color: #e0954a; padding: 2px 0; font-size: 11px; }"
+        )
+        self._port_warning.hide()
+
+        layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(6)
-        layout.addWidget(self._port_combo)
-        layout.addWidget(self._refresh_button)
-        layout.addWidget(self._toggle_button)
+        layout.setSpacing(2)
+        layout.addLayout(row)
+        layout.addWidget(self._port_warning)
 
         self.refresh_ports()
 
@@ -84,6 +130,21 @@ class LiveSendControl(QWidget):
         restored = self._port_combo.findText(current)
         self._port_combo.setCurrentIndex(max(restored, 0))
         self._port_combo.blockSignals(False)
+        self._update_port_warning(self._port_combo.currentText())
+
+    def _update_port_warning(self, port_name: str) -> None:
+        matches = catalog.detect_controller(port_name) if port_name else []
+        if not matches:
+            self._port_warning.hide()
+            self._port_warning.setText("")
+            return
+        controller_name = matches[0].controller.name
+        self._port_warning.setText(
+            f"⚠ \"{port_name}\" looks like {controller_name}'s own port -- it won't reach "
+            "Serato. Pick a virtual port (e.g. IAC Driver) added as a control "
+            "surface input in Serato's MIDI preferences instead."
+        )
+        self._port_warning.show()
 
     def _on_toggled(self, checked: bool) -> None:
         self._apply_toggle_style(checked)
