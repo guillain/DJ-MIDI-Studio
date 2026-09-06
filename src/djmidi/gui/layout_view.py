@@ -186,6 +186,78 @@ _RIGHT_MIRROR_GEOMETRY: dict[str, dict[str, geometry_mod.ControlGeometry]] = {
 }
 
 
+@dataclass(frozen=True)
+class RealPositionMarker:
+    """One real-position marker: a resolved CellKey, its true rect in the
+    reference photo's own pixel space, and enough presentation data (shape,
+    resting color, glyph kind) to draw it -- the single source of truth
+    shared by ControllerLayoutView's real-position mode (this module) and
+    the Controller Emulator's EmulatorLayoutView (gui/controller_emulator.py),
+    so a controller's schematic reads identically in both places rather
+    than two independently-drifting layouts (the maintainer explicitly
+    asked for this parity after the two initially diverged)."""
+
+    key: CellKey
+    label: str
+    rect: QRectF
+    shape: geometry_mod.Shape
+    color: str
+    visual_kind: layout_mod.VisualKind
+
+
+def real_position_markers(controller: str) -> list[RealPositionMarker]:
+    """Every real-position marker for `controller` -- empty for a controller
+    with no gui/geometry.CONTROL_GEOMETRY entries, which is exactly the
+    signal callers use to fall back to the classic uniform card grid
+    instead. Combines CONTROL_GEOMETRY with this module's own
+    _RIGHT_MIRROR_GEOMETRY (see its docstring for why that table exists
+    separately) and resolves each label to a schematic CellKey via
+    layout.cell_key_for_geometry_label()."""
+    geometry_entries = geometry_mod.CONTROL_GEOMETRY.get(controller)
+    if not geometry_entries:
+        return []
+    canvas_w, canvas_h = _reference_canvas_size(controller)
+    cells_by_key = {cell.key: cell for cell in layout_mod.build_layout(controller)}
+    markers: list[RealPositionMarker] = []
+    all_entries = itertools.chain(
+        geometry_entries.items(),
+        _RIGHT_MIRROR_GEOMETRY.get(controller, {}).items(),
+    )
+    for label, geom in all_entries:
+        key = layout_mod.cell_key_for_geometry_label(controller, label)
+        if key is None:
+            key = (controller, "DISPLAY", label)
+        rect = QRectF(geom.x * canvas_w, geom.y * canvas_h, geom.w * canvas_w, geom.h * canvas_h)
+        # A MIXER/display cell's kind comes from _DISPLAY_CONTROLS (e.g.
+        # "Slide FX 2" is explicitly a fader), not the generic name-based
+        # heuristic visual_kind_for() falls back to -- that heuristic
+        # doesn't recognize "Slide FX 2" as a fader at all (no "fader"/
+        # "level"/... substring), so it must come from the real LayoutCell
+        # when one exists.
+        resolved_cell = cells_by_key.get(key)
+        visual_kind = (
+            resolved_cell.visual_kind
+            if resolved_cell is not None
+            else layout_mod.visual_kind_for(key[1], key[2])
+        )
+        markers.append(RealPositionMarker(key, label, rect, geom.shape, geom.color, visual_kind))
+    return markers
+
+
+def glyph_size_for(metrics: LayoutMetrics, visual_kind: layout_mod.VisualKind) -> int:
+    """The fixed glyph pixel size draw_control_glyph() will actually draw
+    for `visual_kind`, so a caller centering that glyph inside a real
+    geometry box (which is often a different size/aspect than the glyph
+    itself) knows how big a footprint to center."""
+    return {
+        "pad": metrics.pad_glyph,
+        "button": metrics.button_glyph,
+        "knob": metrics.knob_glyph,
+        "jog": metrics.jog_glyph,
+        "fader": metrics.fader_glyph_h,
+    }[visual_kind]
+
+
 # cell key -> Serato deck number -> set of Serato function tags (mapping.tag)
 # bound to that cell for that deck.
 Usage = dict[CellKey, dict[str, set[str]]]
@@ -809,10 +881,10 @@ class ControllerLayoutView(QWidget):
             self._scene.addItem(message)
             self._scene.setSceneRect(self._scene.itemsBoundingRect().adjusted(-10, -10, 10, 10))
             return
-        geometry_entries = geometry_mod.CONTROL_GEOMETRY.get(self._controller)
-        if geometry_entries:
+        markers = real_position_markers(self._controller)
+        if markers:
             self._detail_label.show()
-            self._rebuild_real_position(geometry_entries)
+            self._rebuild_real_position(markers)
             return
         self._detail_label.hide()
         self._metrics = metrics_for(self._controller)
@@ -897,32 +969,22 @@ class ControllerLayoutView(QWidget):
         if not self._fit_card_view():
             self._center_on_pad_zone()
 
-    def _rebuild_real_position(self, geometry_entries: dict[str, geometry_mod.ControlGeometry]) -> None:
-        """Real-position mode: one compact marker per gui/geometry.py entry,
-        placed at its true photographed coordinate (scaled to the reference
-        photo's own pixel size, matching controller_image_view.py's overlay
-        math) instead of a uniform card grid -- the "By ..." tabs'
-        equivalent of the Controller Images real-photo overlay, for the
-        controllers with measured geometry. A marker's CellKey comes from
-        layout.cell_key_for_geometry_label(); one with no match (a
-        continuous/display-only geometry entry, e.g. "FX LEVEL") still gets
-        a placeholder key so it renders (decorative, harmless to click --
+    def _rebuild_real_position(self, markers: list[RealPositionMarker]) -> None:
+        """Real-position mode: one compact marker per real_position_markers()
+        entry, placed at its true photographed coordinate -- the "By ..."
+        tabs' equivalent of the Controller Images real-photo overlay (and,
+        via that same shared function, identical to what the Controller
+        Emulator draws for the same controller). A marker whose key has no
+        real catalog trigger (a continuous/display-only geometry entry,
+        e.g. "FX LEVEL") still renders (decorative, harmless to click --
         MainWindow._on_layout_cell_activated already tolerates a key with no
         matching control). Diff-view content that doesn't fit inline a
         compact marker moves to self._detail_label (see
         _on_cell_clicked_for_detail), updated on click."""
         canvas_w, canvas_h = _reference_canvas_size(self._controller)
         deck_filter = self._selected_deck_filter()
-        cells_by_key = {cell.key: cell for cell in layout_mod.build_layout(self._controller)}
-        all_entries = itertools.chain(
-            geometry_entries.items(),
-            _RIGHT_MIRROR_GEOMETRY.get(self._controller, {}).items(),
-        )
-        for label, geom in all_entries:
-            key = layout_mod.cell_key_for_geometry_label(self._controller, label)
-            if key is None:
-                key = (self._controller, "DISPLAY", label)
-            rect = QRectF(geom.x * canvas_w, geom.y * canvas_h, geom.w * canvas_w, geom.h * canvas_h)
+        for marker in markers:
+            key, rect = marker.key, marker.rect
             decks, tags = self._cell_decks_and_tags(key, deck_filter)
 
             # A background box the real geometry box's true size -- carries
@@ -930,19 +992,19 @@ class ControllerLayoutView(QWidget):
             # click target a small glyph alone wouldn't give. Drawn first so
             # the glyph on top of it stays visible.
             bg_item: QGraphicsRectItem | QGraphicsEllipseItem = (
-                QGraphicsEllipseItem(rect) if geom.shape == "circle" else QGraphicsRectItem(rect)
+                QGraphicsEllipseItem(rect) if marker.shape == "circle" else QGraphicsRectItem(rect)
             )
             if decks or tags:
                 bg_item.setBrush(_brush_for_decks(decks))
             else:
-                resting = QColor(geom.color)
+                resting = QColor(marker.color)
                 resting.setAlpha(90)
                 bg_item.setBrush(QBrush(resting))
             bg_item.setPen(self._selection_pen(key))
             bg_item.setData(_KEY_ROLE, key)
             deck_text = ", ".join(f"Deck {d}" for d in sorted(decks)) if decks else "not used"
             tag_text = ", ".join(sorted(tags)) if tags else "no function mapped"
-            bg_item.setToolTip(f"{self._controller} — {label}\n{deck_text}\nMapped to: {tag_text}")
+            bg_item.setToolTip(f"{self._controller} — {marker.label}\n{deck_text}\nMapped to: {tag_text}")
             self._scene.addItem(bg_item)
 
             # The glyph itself -- reused verbatim from the classic card mode
@@ -951,29 +1013,11 @@ class ControllerLayoutView(QWidget):
             # mode. Centered on the geometry box rather than draw_control_glyph's
             # own "+8, +8 from top-left" convention (built for a much bigger
             # uniform card, not a real, often-smaller photographed control).
-            # A MIXER/display cell's kind comes from _DISPLAY_CONTROLS
-            # (e.g. "Slide FX 2" is explicitly a fader), not the generic
-            # name-based heuristic visual_kind_for() falls back to below --
-            # that heuristic doesn't recognize "Slide FX 2" as a fader at
-            # all (no "fader"/"level"/... substring), so it must come from
-            # the real LayoutCell when one exists.
-            resolved_cell = cells_by_key.get(key)
-            visual_kind = (
-                resolved_cell.visual_kind
-                if resolved_cell is not None
-                else layout_mod.visual_kind_for(key[1], key[2])
-            )
-            glyph_size = {
-                "pad": self._metrics.pad_glyph,
-                "button": self._metrics.button_glyph,
-                "knob": self._metrics.knob_glyph,
-                "jog": self._metrics.jog_glyph,
-                "fader": self._metrics.fader_glyph_h,
-            }[visual_kind]
+            glyph_size = glyph_size_for(self._metrics, marker.visual_kind)
             glyph_x = rect.center().x() - glyph_size / 2 - 8
             glyph_y = rect.center().y() - glyph_size / 2 - 8
             draw_control_glyph(
-                self._scene, self._metrics, glyph_x, glyph_y, visual_kind, key,
+                self._scene, self._metrics, glyph_x, glyph_y, marker.visual_kind, key,
                 self._values.get(key), key in self._flash_keys,
             )
         self._scene.setSceneRect(0, 0, canvas_w, canvas_h)
@@ -1036,4 +1080,12 @@ class ControllerLayoutView(QWidget):
         self._apply_fit()
 
 
-__all__ = ["ControllerLayoutView", "LayoutMetrics", "draw_control_glyph", "metrics_for"]
+__all__ = [
+    "ControllerLayoutView",
+    "LayoutMetrics",
+    "RealPositionMarker",
+    "draw_control_glyph",
+    "glyph_size_for",
+    "metrics_for",
+    "real_position_markers",
+]

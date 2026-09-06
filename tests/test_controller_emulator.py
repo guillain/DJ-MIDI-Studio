@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from djmidi.gui.controller_emulator import (
+    _KEY_ROLE,
     ControllerEmulatorView,
     EmulatorLayoutView,
     _dry_run_lookup,
@@ -64,6 +65,56 @@ def test_emulator_layout_view_click_emits_control_pressed_and_flashes():
     view._on_control_pressed(key)
     assert received == [key]
     assert key in view._flash_keys
+
+
+# ─── Real-position parity with ControllerLayoutView (gui/layout_view.py) ──────
+
+
+def test_emulator_uses_real_position_mode_for_a_geometry_controller():
+    """The maintainer asked for this schematic to be identical to the By
+    tabs' -- for a controller with gui/geometry.CONTROL_GEOMETRY, both must
+    render layout_view.real_position_markers(), not two independent layouts."""
+    from djmidi.gui import layout_view as layout_view_mod
+
+    view = EmulatorLayoutView("DDJ-XP2")
+    assert view._real_position_mode is True
+    markers = layout_view_mod.real_position_markers("DDJ-XP2")
+    assert markers  # sanity: DDJ-XP2 does have geometry
+    for marker in markers:
+        matches = [
+            item
+            for item in view._scene.items()
+            if item.data(_KEY_ROLE) == marker.key
+        ]
+        assert matches, f"no item found for {marker.key}"
+
+
+def test_emulator_falls_back_to_classic_grid_without_geometry():
+    view = EmulatorLayoutView("DDJ-FLX4")
+    assert view._real_position_mode is False
+    # The classic grid's scene rect hugs its items, not a fixed photo canvas.
+    from djmidi.gui import layout_view as layout_view_mod
+
+    canvas_w, canvas_h = layout_view_mod._reference_canvas_size("DDJ-FLX4")
+    assert view._scene.sceneRect() != layout_view_mod.QRectF(0, 0, canvas_w, canvas_h)
+
+
+def test_emulator_real_position_marker_click_still_resolves(monkeypatch):
+    """A right-mirror-cluster or right-pad-grid marker (drawn only via
+    real-position mode) must click through exactly like any other cell."""
+    view = EmulatorLayoutView("DDJ-XP2")
+    received: list[CellKey] = []
+    view.controlPressed.connect(received.append)
+    key: CellKey = ("DDJ-XP2", "DECK", "BEAT SYNC")
+    view._on_control_pressed(key)
+    assert received == [key]
+
+
+def test_emulator_switching_to_a_geometry_controller_updates_real_position_mode():
+    view = EmulatorLayoutView("DDJ-FLX4")
+    assert view._real_position_mode is False
+    view.set_controller("XDJ-XZ")
+    assert view._real_position_mode is True
 
 
 # ─── ControllerEmulatorView ────────────────────────────────────────────────

@@ -397,3 +397,52 @@ def test_live_send_click_still_navigates_cross_tab_regardless_of_toggle():
     view._live_send._toggle_button.setChecked(True)
     view._view.cellClicked.emit(("DDJ-XP2", "OTHER", "SHIFT"))
     assert received == [("DDJ-XP2", "OTHER", "SHIFT")]
+
+
+# ─── real_position_markers() / glyph_size_for() (shared with the Controller
+# ─── Emulator, see gui/controller_emulator.py's EmulatorLayoutView) ───────────
+
+
+def test_real_position_markers_empty_without_geometry():
+    assert layout_view_mod.real_position_markers("DDJ-FLX4") == []
+
+
+def test_real_position_markers_cover_both_ddj_xp2_pad_grids():
+    markers = layout_view_mod.real_position_markers("DDJ-XP2")
+    keys = {m.key for m in markers}
+    assert ("DDJ-XP2", "PAD", "Pad 1") in keys
+    labels = {m.label for m in markers}
+    assert "Pad 1" in labels and "Pad 1 (R)" in labels  # both physical grids present
+
+
+def test_real_position_markers_include_the_right_mirror_cluster():
+    markers = layout_view_mod.real_position_markers("DDJ-XP2")
+    labels = {m.label for m in markers}
+    assert "BEAT SYNC" in labels  # left (CONTROL_GEOMETRY)
+    # the right-mirror table's own entries share label strings with the
+    # left ones (see _RIGHT_MIRROR_GEOMETRY's docstring), so presence is
+    # confirmed via the resolved key instead of a distinct label string
+    keys_by_label: dict[str, list] = {}
+    for m in markers:
+        keys_by_label.setdefault(m.label, []).append(m)
+    assert len(keys_by_label["BEAT SYNC"]) == 2  # left + right mirror entries
+
+
+def test_real_position_markers_resolve_mixer_display_kind_from_layout_cell():
+    """"Slide FX 2" must come out as a fader (from _DISPLAY_CONTROLS), not
+    whatever visual_kind_for()'s generic name heuristic would guess."""
+    markers = layout_view_mod.real_position_markers("DDJ-XP2")
+    slide_fx_2 = next(m for m in markers if m.label == "Slide FX 2")
+    assert slide_fx_2.visual_kind == "fader"
+
+
+def test_glyph_size_for_every_visual_kind():
+    metrics = layout_view_mod.metrics_for("DDJ-XP2")
+    for kind, expected in (
+        ("pad", metrics.pad_glyph),
+        ("button", metrics.button_glyph),
+        ("knob", metrics.knob_glyph),
+        ("jog", metrics.jog_glyph),
+        ("fader", metrics.fader_glyph_h),
+    ):
+        assert layout_view_mod.glyph_size_for(metrics, kind) == expected
