@@ -831,6 +831,41 @@ documentation index.
   Verified with a real simulated Qt mouse press/move/release sequence
   confirming the drag starts correctly, updates the value proportionally to
   drag distance, and persists after release.
+- [x] **Fix: pad-side identity in the Controller Emulator and Controller
+  Images' live send** — the maintainer reported, on real DDJ-XP2 and
+  XDJ-XZ hardware, "lors de l'appui d'un bouton sur un Deck, le deuxième
+  Deck s'active également" (pressing a button on one deck also activates
+  the second deck), reproduced specifically in the Controller Emulator.
+  Root cause: R1's real-position rendering draws a left "Pad N" marker and
+  a right "Pad N (R)" marker (DDJ-XP2/XDJ-XZ decks 1/3 vs. 2/4), but both
+  resolved through the *same* merged `CellKey` (`cell_key_for_geometry_label()`
+  strips the " (R)" suffix by design, a simplification disclosed in Phase
+  R1's own entry above for `ControllerLayoutView`'s usage/selection state) —
+  in the Controller Emulator and Controller Images this same merge also
+  drove flash state and dry-run/live-send *resolution*, so clicking the
+  right grid always flashed the left grid's same-numbered pad too and sent
+  the left grid's deck (1/3) trigger regardless of which grid was actually
+  clicked. Fixed with a new `layout.resolve_side_aware_variant(controller,
+  key)`: strips the " (R)" suffix, then for a PAD cell filters
+  `reverse_lookup()`'s variants down to the matching physical side's
+  deck(s) via a `_RIGHT_GRID_DECKS` table (mirrors `geometry.py`'s own,
+  duplicated rather than imported to avoid a circular import). Both
+  `LiveSendControl.resolve_and_send()` and
+  `ControllerEmulatorView._resolve()` now call it instead of a plain
+  `reverse_lookup()` + `pick_default_variant()`; `EmulatorLayoutView` also
+  gives each physical side its own *presentation* key (the full
+  "(R)"-suffixed label, not the merged schematic `CellKey`) purely for
+  flash/click state, since — unlike `ControllerLayoutView` — it has no
+  cross-tab navigation depending on the merged key. `ControllerImageView`'s
+  `_on_marker_clicked` got the same presentation-key treatment for its own
+  live send. **Deliberately left unfixed in this pass**: `ControllerLayoutView`'s
+  real-position mode (By Channel/Deck/Controller) still uses the merged key
+  for usage-highlighting/selection — the maintainer only confirmed
+  observing the bug in the Controller Emulator, and splitting
+  `ControllerLayoutView`'s usage/selection by physical side is a more
+  involved change (its cross-tab navigation and `self._usage` dict both key
+  off the merged `CellKey` today) — tracked as a known follow-up, not a
+  silently-dropped fix.
 - [x] **DDJ-1000 catalog data correction** (`catalog/ddj_1000.py`, related to
   issue [#11](https://github.com/guillain/DJ-MIDI-Studio/issues/11)) —
   discovered while cross-checking DECK section names against the official

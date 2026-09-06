@@ -362,6 +362,60 @@ def cell_key_for_geometry_label(controller: str, geometry_label: str) -> CellKey
     return _label_to_key_map(controller).get(alias if alias is not None else primary)
 
 
+# Mirrors geometry.py's own _RIGHT_GRID_DECKS (duplicated, not imported --
+# geometry.py already imports FROM this module, so the reverse would be a
+# circular import). Which decks land on the physically distinct right pad
+# grid/tray; any deck not listed (or any controller not listed) has no
+# right-side split modeled.
+_RIGHT_GRID_DECKS: dict[str, frozenset[int]] = {
+    "DDJ-XP2": frozenset({2, 4}),
+    "XDJ-XZ": frozenset({2, 4}),
+}
+_DECK_NUM_RE = re.compile(r"^Deck (\d+)")
+
+
+def resolve_side_aware_variant(controller: str, key: CellKey) -> catalog.ControlInfo | None:
+    """Like reverse_lookup(controller).get(base_key) + pick_default_variant(),
+    but first strips a real-position " (R)" suffix from the key's label
+    (see geometry.py's "Right pad grid" docstring) and, for a PAD cell,
+    filters the resulting variants down to the matching physical side's
+    deck(s) via _RIGHT_GRID_DECKS.
+
+    Exists because a right-pad-grid marker's *presentation* key
+    (e.g. `(controller, "PAD", "Pad 3 (R)")`, used by the Controller
+    Emulator to keep the two grids' flash/click state independent -- see
+    gui/controller_emulator.py) is deliberately NOT a real schematic
+    CellKey `reverse_lookup()` knows about; without this filtering step,
+    resolving it would either find nothing or silently fall back to the
+    *left* grid's deck (1/3) variant regardless of which grid was actually
+    clicked -- confirmed by the maintainer as "pressing a button on one
+    deck also activates the second deck" while testing the Controller
+    Emulator. A combined label ("PAD MODE 1/5") resolves via its first
+    alternative, same as cell_key_for_geometry_label(); a plain key with no
+    suffix (unaffected by this fix -- classic-grid cells, or any
+    non-real-position caller) behaves exactly as reverse_lookup() +
+    pick_default_variant() already did."""
+    controller_name, section, label = key
+    right_side = label.endswith(_RIGHT_GRID_SUFFIX)
+    base_label = label.removesuffix(_RIGHT_GRID_SUFFIX) if right_side else label
+    primary = _geometry_label_alternatives(base_label)[0]
+    variants = reverse_lookup(controller_name).get((controller_name, section, primary))
+    if not variants:
+        return None
+    right_decks = _RIGHT_GRID_DECKS.get(controller_name)
+    if section == "PAD" and right_decks:
+        def _matches_side(variant: catalog.ControlInfo) -> bool:
+            match = _DECK_NUM_RE.match(variant.name)
+            if match is None:
+                return True  # can't tell which deck -- keep it rather than drop it
+            return (int(match.group(1)) in right_decks) == right_side
+
+        filtered = [variant for variant in variants if _matches_side(variant)]
+        if filtered:
+            variants = filtered
+    return pick_default_variant(variants)
+
+
 _AMBIGUOUS_TRIGGER_MARKERS = ("shift", "long press", "press twice", "direct button")
 
 

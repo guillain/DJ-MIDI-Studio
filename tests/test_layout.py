@@ -203,3 +203,59 @@ def test_cell_key_for_geometry_label_cache_is_cleared():
     layout.clear_label_to_key_cache()
     third = layout._label_to_key_map("DDJ-XP2")
     assert third is not first
+
+
+# ─── resolve_side_aware_variant (Controller Emulator / Live Send: left vs. ──
+# ─── right pad grid must resolve to their own deck, not always deck 1/3) ───
+
+
+def test_resolve_side_aware_variant_left_grid_resolves_to_left_deck():
+    clear_reverse_lookup_cache()
+    entry = layout.resolve_side_aware_variant("DDJ-XP2", ("DDJ-XP2", "PAD", "Pad 3"))
+    assert entry is not None
+    assert entry.name.startswith("Deck 1 Pad 3")
+
+
+def test_resolve_side_aware_variant_right_grid_resolves_to_right_deck():
+    clear_reverse_lookup_cache()
+    entry = layout.resolve_side_aware_variant("DDJ-XP2", ("DDJ-XP2", "PAD", "Pad 3 (R)"))
+    assert entry is not None
+    assert entry.name.startswith("Deck 2 Pad 3")
+
+
+def test_resolve_side_aware_variant_left_and_right_pick_different_channels():
+    clear_reverse_lookup_cache()
+    left = layout.resolve_side_aware_variant("DDJ-XP2", ("DDJ-XP2", "PAD", "Pad 5"))
+    right = layout.resolve_side_aware_variant("DDJ-XP2", ("DDJ-XP2", "PAD", "Pad 5 (R)"))
+    assert left is not None and right is not None
+    assert left.channels != right.channels
+    assert left.name.startswith("Deck 1 Pad 5")
+    assert right.name.startswith("Deck 2 Pad 5")
+
+
+def test_resolve_side_aware_variant_works_for_xdj_xz_too():
+    clear_reverse_lookup_cache()
+    left = layout.resolve_side_aware_variant("XDJ-XZ", ("XDJ-XZ", "PAD", "Pad 2"))
+    right = layout.resolve_side_aware_variant("XDJ-XZ", ("XDJ-XZ", "PAD", "Pad 2 (R)"))
+    assert left is not None and right is not None
+    assert left.name.startswith("Deck 1")
+    assert right.name.startswith("Deck 2")
+
+
+def test_resolve_side_aware_variant_passthrough_for_non_suffixed_key():
+    clear_reverse_lookup_cache()
+    plain = layout.resolve_side_aware_variant("DDJ-XP2", ("DDJ-XP2", "OTHER", "SHIFT"))
+    variants = reverse_lookup("DDJ-XP2")[("DDJ-XP2", "OTHER", "SHIFT")]
+    assert plain == layout.pick_default_variant(variants)
+
+
+def test_resolve_side_aware_variant_combined_label_resolves_via_first_alternative():
+    clear_reverse_lookup_cache()
+    entry = layout.resolve_side_aware_variant("DDJ-XP2", ("DDJ-XP2", "PAD MODE", "PAD MODE 1/5"))
+    assert entry is not None
+    assert entry.name.startswith("PAD MODE 1")
+
+
+def test_resolve_side_aware_variant_returns_none_for_an_unknown_trigger():
+    clear_reverse_lookup_cache()
+    assert layout.resolve_side_aware_variant("DDJ-XP2", ("DDJ-XP2", "PAD", "Pad 99")) is None

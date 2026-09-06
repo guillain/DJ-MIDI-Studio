@@ -257,6 +257,43 @@ def test_marker_click_with_no_raw_trigger_reports_status_without_sending(monkeyp
     assert "no raw MIDI trigger" in view._live_send_status.text()
 
 
+def test_marker_click_on_right_pad_grid_sends_the_right_decks_trigger(monkeypatch):
+    """Before this fix, a right-pad-grid marker resolved via the merged
+    CellKey cell_key_for_geometry_label() collapses "Pad 3 (R)" into, so
+    clicking it always sent the *left* grid's deck (1) trigger -- the same
+    underlying bug reported for the Controller Emulator ("pressing a button
+    on one deck also activates the second deck")."""
+    from djmidi.gui import live_send as live_send_mod
+
+    monkeypatch.setattr(live_send_mod.midi_io, "list_output_ports", lambda: ["Port A"])
+    sent = []
+    monkeypatch.setattr(live_send_mod, "send_control_info_entry", lambda *a, **k: sent.append(a))
+    view = ControllerImageView()
+    view.set_controller("DDJ-XP2")
+    view._geometry_checkbox.setChecked(True)
+    view._live_send._toggle_button.setChecked(True)
+    view._on_marker_clicked("Pad 3 (R)")
+    assert len(sent) == 1
+    entry = sent[0][1]
+    assert entry.name.startswith("Deck 2 Pad 3")
+
+
+def test_marker_click_on_left_pad_grid_still_sends_the_left_decks_trigger(monkeypatch):
+    from djmidi.gui import live_send as live_send_mod
+
+    monkeypatch.setattr(live_send_mod.midi_io, "list_output_ports", lambda: ["Port A"])
+    sent = []
+    monkeypatch.setattr(live_send_mod, "send_control_info_entry", lambda *a, **k: sent.append(a))
+    view = ControllerImageView()
+    view.set_controller("DDJ-XP2")
+    view._geometry_checkbox.setChecked(True)
+    view._live_send._toggle_button.setChecked(True)
+    view._on_marker_clicked("Pad 3")
+    assert len(sent) == 1
+    entry = sent[0][1]
+    assert entry.name.startswith("Deck 1 Pad 3")
+
+
 def test_zoomable_view_emits_marker_clicked_only_for_a_real_click_not_a_pan():
     from PySide6.QtCore import QEvent, QPointF
     from PySide6.QtCore import Qt as QtCore

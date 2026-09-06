@@ -118,6 +118,51 @@ def test_emulator_switching_to_a_geometry_controller_updates_real_position_mode(
     assert view._real_position_mode is True
 
 
+# ─── Pad-side identity: left ("Pad N") vs. right ("Pad N (R)") grid must ───
+# ─── stay independent, both visually and on resolution (the "pressing a ───
+# ─── button on one deck also activates the second deck" report) ───────────
+
+
+def test_emulator_right_grid_marker_gets_its_own_presentation_key():
+    """Before this fix, both grids' scene items shared the merged CellKey
+    real_position_markers() resolves both "Pad 3" and "Pad 3 (R)" to; each
+    physical side must now carry its own distinct key."""
+    view = EmulatorLayoutView("DDJ-XP2")
+    left_items = [item for item in view._scene.items() if item.data(_KEY_ROLE) == ("DDJ-XP2", "PAD", "Pad 3")]
+    right_items = [
+        item for item in view._scene.items() if item.data(_KEY_ROLE) == ("DDJ-XP2", "PAD", "Pad 3 (R)")
+    ]
+    assert left_items
+    assert right_items
+
+
+def test_emulator_flashing_the_right_grid_pad_does_not_flash_the_left():
+    view = EmulatorLayoutView("DDJ-XP2")
+    left_key: CellKey = ("DDJ-XP2", "PAD", "Pad 3")
+    right_key: CellKey = ("DDJ-XP2", "PAD", "Pad 3 (R)")
+    view.flash_key(right_key)
+    assert right_key in view._flash_keys
+    assert left_key not in view._flash_keys
+
+
+def test_emulator_left_and_right_pad_clicks_emit_distinct_keys():
+    view = EmulatorLayoutView("DDJ-XP2")
+    received: list[CellKey] = []
+    view.controlPressed.connect(received.append)
+    view._on_control_pressed(("DDJ-XP2", "PAD", "Pad 3"))
+    view._on_control_pressed(("DDJ-XP2", "PAD", "Pad 3 (R)"))
+    assert received == [("DDJ-XP2", "PAD", "Pad 3"), ("DDJ-XP2", "PAD", "Pad 3 (R)")]
+
+
+def test_controller_emulator_view_resolves_left_and_right_pad_to_their_own_deck():
+    view = ControllerEmulatorView(config_provider=lambda: None)
+    view._combo.setCurrentText("DDJ-XP2")
+    left_text = view._resolve(("DDJ-XP2", "PAD", "Pad 3"))
+    right_text = view._resolve(("DDJ-XP2", "PAD", "Pad 3 (R)"))
+    assert "ch8" in left_text  # deck 1's pad channel
+    assert "ch10" in right_text  # deck 2's pad channel
+
+
 # ─── ControllerEmulatorView ────────────────────────────────────────────────
 
 def test_controller_emulator_view_resolves_against_no_config():

@@ -308,18 +308,28 @@ class ControllerImageView(QWidget):
 
     def _on_marker_clicked(self, label: str) -> None:
         """Resolves a clicked overlay marker's label back to a raw trigger
-        the same way ControllerLayoutView's real-position mode does
-        (layout.cell_key_for_geometry_label -> layout.reverse_lookup ->
-        layout.pick_default_variant) and sends it via the shared
-        LiveSendControl -- a no-op unless live send is on and a port is
-        selected. This view has no other click behavior to interfere with
-        (unlike ControllerLayoutView's cross-tab navigation), so there's
-        nothing to preserve here beyond the existing flash-on-live-hit path."""
+        and sends it via the shared LiveSendControl -- a no-op unless live
+        send is on and a port is selected. This view has no other click
+        behavior to interfere with (unlike ControllerLayoutView's cross-tab
+        navigation), so there's nothing to preserve here beyond the
+        existing flash-on-live-hit path.
+
+        Passes the *raw* label (e.g. "Pad 3 (R)"), not the merged key
+        cell_key_for_geometry_label() would collapse it to, so
+        LiveSendControl's layout.resolve_side_aware_variant() can tell a
+        right-pad-grid marker's click apart from its left counterpart's --
+        otherwise clicking the right grid here would silently resolve/send
+        the left grid's deck (1/3) trigger instead of the right's (2/4)."""
         controller = self._combo.currentText()
-        key = layout_mod.cell_key_for_geometry_label(controller, label)
-        if key is None:
+        merged_key = layout_mod.cell_key_for_geometry_label(controller, label)
+        if merged_key is None:
             self._live_send_status.setText(f"{label}: no raw MIDI trigger known for this control.")
             return
+        key = (
+            (merged_key[0], merged_key[1], label)
+            if label.endswith(layout_mod._RIGHT_GRID_SUFFIX)
+            else merged_key
+        )
         sent = self._live_send.resolve_and_send(controller, key)
         if sent is None:
             self._live_send_status.setText("")
