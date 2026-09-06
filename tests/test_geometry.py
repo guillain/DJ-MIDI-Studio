@@ -37,6 +37,7 @@ def test_xdj_xz_transport_geometry_covers_the_expected_controls():
         "SLIP LOOP",
         "BEAT JUMP",
         *(f"Pad {n}" for n in range(1, 9)),
+        *(f"Pad {n} (R)" for n in range(1, 9)),
     }
 
 
@@ -75,6 +76,7 @@ def test_resolve_geometry_label_strips_direct_button_suffix_for_hot_cue_modes():
 def test_ddj_xp2_geometry_covers_the_expected_controls():
     assert set(CONTROL_GEOMETRY["DDJ-XP2"]) == {
         *(f"Pad {n}" for n in range(1, 17)),
+        *(f"Pad {n} (R)" for n in range(1, 17)),
         "PAD MODE 1/5",
         "PAD MODE 2/6",
         "PAD MODE 3/7",
@@ -117,6 +119,79 @@ def test_ddj_xp2_pad_grid_is_a_non_overlapping_4x4_layout():
             assert not (x_overlap and y_overlap), f"Pad {a} and Pad {b} overlap"
 
 
+def _assert_non_overlapping_4x4(pads: dict[int, ControlGeometry]) -> None:
+    for row in range(4):
+        xs = [pads[row * 4 + col + 1].x for col in range(4)]
+        assert xs == sorted(xs)
+    for col in range(4):
+        ys = [pads[row * 4 + col + 1].y for row in range(4)]
+        assert ys == sorted(ys)
+    for a in range(1, 17):
+        for b in range(a + 1, 17):
+            ga, gb = pads[a], pads[b]
+            x_overlap = ga.x < gb.x + gb.w and gb.x < ga.x + ga.w
+            y_overlap = ga.y < gb.y + gb.h and gb.y < ga.y + ga.h
+            assert not (x_overlap and y_overlap), f"Pad {a} and Pad {b} overlap"
+
+
+def test_ddj_xp2_right_pad_grid_is_a_non_overlapping_4x4_layout_to_the_right_of_the_left_grid():
+    left = {n: CONTROL_GEOMETRY["DDJ-XP2"][f"Pad {n}"] for n in range(1, 17)}
+    right = {n: CONTROL_GEOMETRY["DDJ-XP2"][f"Pad {n} (R)"] for n in range(1, 17)}
+    _assert_non_overlapping_4x4(right)
+    # The right grid sits entirely to the right of the left grid's last column.
+    left_right_edge = max(g.x + g.w for g in left.values())
+    assert min(g.x for g in right.values()) >= left_right_edge
+    # Same row Y's as the left grid -- it's a horizontal mirror, not a
+    # vertically shifted copy.
+    for n in range(1, 17):
+        assert right[n].y == left[n].y
+
+
+def test_xdj_xz_right_pad_grid_is_a_non_overlapping_2x4_layout_to_the_right_of_the_left_grid():
+    left = {n: CONTROL_GEOMETRY["XDJ-XZ"][f"Pad {n}"] for n in range(1, 9)}
+    right = {n: CONTROL_GEOMETRY["XDJ-XZ"][f"Pad {n} (R)"] for n in range(1, 9)}
+    for row in range(2):
+        xs = [right[row * 4 + col + 1].x for col in range(4)]
+        assert xs == sorted(xs)
+    for a in range(1, 9):
+        for b in range(a + 1, 9):
+            ga, gb = right[a], right[b]
+            x_overlap = ga.x < gb.x + gb.w and gb.x < ga.x + ga.w
+            y_overlap = ga.y < gb.y + gb.h and gb.y < ga.y + ga.h
+            assert not (x_overlap and y_overlap), f"Pad {a} (R) and Pad {b} (R) overlap"
+    left_right_edge = max(g.x + g.w for g in left.values())
+    assert min(g.x for g in right.values()) >= left_right_edge
+    for n in range(1, 9):
+        assert right[n].y == left[n].y
+
+
+def test_resolve_geometry_label_picks_the_right_grid_for_ddj_xp2_deck_2_and_4():
+    hit_deck2 = next(
+        hit for hit in catalog.lookup("10", "NOTE", "0") if hit.controller == "DDJ-XP2"
+    )
+    assert resolve_geometry_label("DDJ-XP2", hit_deck2.name) == "Pad 1 (R)"
+    hit_deck4 = next(
+        hit for hit in catalog.lookup("14", "NOTE", "0") if hit.controller == "DDJ-XP2"
+    )
+    assert resolve_geometry_label("DDJ-XP2", hit_deck4.name) == "Pad 1 (R)"
+
+
+def test_resolve_geometry_label_keeps_the_left_grid_for_ddj_xp2_deck_1_and_3():
+    hit_deck1 = next(
+        hit for hit in catalog.lookup("8", "NOTE", "0") if hit.controller == "DDJ-XP2"
+    )
+    assert resolve_geometry_label("DDJ-XP2", hit_deck1.name) == "Pad 1"
+    hit_deck3 = next(
+        hit for hit in catalog.lookup("12", "NOTE", "0") if hit.controller == "DDJ-XP2"
+    )
+    assert resolve_geometry_label("DDJ-XP2", hit_deck3.name) == "Pad 1"
+
+
+def test_resolve_geometry_label_picks_the_right_grid_for_xdj_xz_deck_2():
+    hit = next(hit for hit in catalog.lookup("7", "NOTE", "2") if hit.controller == "XDJ-XZ")
+    assert resolve_geometry_label("XDJ-XZ", hit.name) == "Pad 3 (R)"
+
+
 def test_control_geometry_is_frozen():
     geom = ControlGeometry(0.1, 0.2, 0.3, 0.4, "rect", "#ffffff")
     try:
@@ -141,7 +216,7 @@ def test_resolve_geometry_label_extracts_pad_number_from_ddj_xp2_pad_names():
     a hand-written string, so a future format change here is caught."""
     hit = next(
         hit
-        for hit in catalog.lookup("8", "NOTE", "12")  # DDJ-XP2 deck-1 pad channel
+        for hit in catalog.lookup("8", "NOTE", "0")  # DDJ-XP2 deck-1 pad channel
         if hit.controller == "DDJ-XP2"
     )
     assert resolve_geometry_label("DDJ-XP2", hit.name) == "Pad 1"
