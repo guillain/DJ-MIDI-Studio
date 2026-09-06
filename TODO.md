@@ -716,6 +716,41 @@ documentation index.
   symmetry with DDJ-XP2's confirmed deck-1/2 split, not independently
   hardware-tested. See the `control-layout-geometry` project memory for the
   full diagnosis. Milestone tag `v0.47.39-ddj-xp2-pad-geometry-fix`.
+- [x] **Real-position layout for By Channel/Deck/Controller (Phase R1)** — the
+  maintainer asked for these tabs' `ControllerLayoutView` schematic to
+  reflect controls' true physical position (like Controller Images already
+  does) while maximizing space to fit the window, and separately for
+  clicking these layouts (and Controller Images) to eventually send real
+  MIDI (see the Controller Emulator roadmap's phase 4, now widened to cover
+  this too — `~/.claude/plans/purrfect-fluttering-quail.md`'s addendum).
+  Real-position rendering shipped first: for the 6 controllers with
+  `gui/geometry.CONTROL_GEOMETRY` (`XDJ-XZ`, `DDJ-REV1`, `DDJ-XP2`, `Numark
+  Mixtrack Pro FX`, `DDJ-1000`, `DDJ-FLX10`), `ControllerLayoutView` now
+  draws a compact glyph per geometry entry at its true photographed
+  coordinate (scaled to the reference photo's pixel size) instead of the
+  uniform card grid; name/deck/function/other-controller info that no
+  longer fits inline moved to a one-line detail strip below the schematic,
+  updated on click. Controllers with no geometry (`DDJ-FLX4`, `Hercules
+  DJControl Inpulse 500`, any future Controller-Setup-drafted controller)
+  keep the classic card grid unchanged. Both modes now also auto-fit to the
+  available window space on resize (`QGraphicsView.fitInView` for
+  real-position mode; a shrink-only, never-enlarge scale for the classic
+  grid, so a many-section controller like DDJ-1000 no longer needs
+  scrolling to see in full, without shrinking a small controller's already-
+  legible cards). A `_RIGHT_MIRROR_GEOMETRY` table in `layout_view.py`
+  (kept separate from `geometry.CONTROL_GEOMETRY` on purpose — seebelow)
+  supplies the right-side DECK/LOOP/QUANTIZE/PAD-MODE cluster and, for
+  XDJ-XZ, the right tray's transport (PLAY/PAUSE, CUE, SYNC, jog wheel,
+  tempo), added after the maintainer caught the first pass as "missing
+  buttons... not symmetric" (it had only carried the pad grids' right side
+  over). Kept out of `geometry.CONTROL_GEOMETRY` on purpose: unlike pads,
+  these controls' raw catalog names don't carry a deck number, so
+  `resolve_geometry_label` (Controller Images' live-flash overlay) has no
+  way to route a hit to the correct side the way `_RIGHT_GRID_DECKS` does
+  for pads — a same-named right-side entry there would have silently stolen
+  that key's slot in `geometry._reverse_index` and broken the left marker's
+  live flash. Real MIDI sending from these layouts (and Controller Images)
+  remains open, tracked as the roadmap's phase R2/4.
 - [x] **DDJ-1000 catalog data correction** (`catalog/ddj_1000.py`, related to
   issue [#11](https://github.com/guillain/DJ-MIDI-Studio/issues/11)) —
   discovered while cross-checking DECK section names against the official

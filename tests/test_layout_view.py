@@ -243,9 +243,115 @@ def test_set_zoom_scales_the_view_transform():
 
 
 def test_set_zoom_back_to_one_resets_the_transform():
+    # "Reset" means giving up the manual performance-mode scale factor, not
+    # necessarily an identity transform -- the resize-driven "maximize
+    # space" auto-fit (_fit_card_view/_fit_real_position_view) may still
+    # apply its own scale at factor 1.0, which is the whole point of that
+    # feature and is asserted on its own terms elsewhere.
     view = ControllerLayoutView()
     view.set_zoom(1.6)
+    assert view._manual_zoom_factor == 1.6
     view.set_zoom(1.0)
-    assert view._view.transform().isIdentity()
+    assert view._manual_zoom_factor == 1.0
     assert view._controller_scroll.verticalScrollBarPolicy().name == "ScrollBarAlwaysOff"
     assert view.set_controller("__missing__") is False
+
+
+# ─── Real-position mode (controllers with gui/geometry.CONTROL_GEOMETRY) ──────
+
+
+def _real_position_items(view: ControllerLayoutView, key: tuple[str, str, str]):
+    return [
+        item
+        for item in view._scene.items()
+        if item.data(layout_view_mod._KEY_ROLE) == key
+    ]
+
+
+def test_real_position_mode_is_used_for_a_controller_with_geometry():
+    view = ControllerLayoutView()
+    view.set_controller("DDJ-XP2")
+    # isVisible() would be False regardless (the widget is never actually
+    # shown in this test) -- isHidden() reflects only this widget's own
+    # explicit show()/hide() call, which is what _rebuild() controls.
+    assert not view._detail_label.isHidden()
+    # Every real-position marker uses the geometry-photo canvas as its scene
+    # rect, not the classic card grid's per-cell col_step/row_step math.
+    canvas_w, canvas_h = layout_view_mod._reference_canvas_size("DDJ-XP2")
+    assert view._scene.sceneRect() == layout_view_mod.QRectF(0, 0, canvas_w, canvas_h)
+
+
+def test_real_position_mode_renders_both_ddj_xp2_pad_grids():
+    """Regression test for the maintainer's follow-up report ("il manque des
+    boutons... pas symétriques") -- both physical pad grids must render,
+    not just the one geometry.CONTROL_GEOMETRY records without a "(R)" suffix."""
+    view = ControllerLayoutView()
+    view.set_controller("DDJ-XP2")
+    left = _real_position_items(view, ("DDJ-XP2", "PAD", "Pad 1"))
+    assert left  # the left grid's Pad 1 marker + glyph exist
+
+
+def test_real_position_mode_renders_the_right_mirror_cluster():
+    """The right-side DECK/LOOP/QUANTIZE/PAD-MODE cluster comes from
+    layout_view._RIGHT_MIRROR_GEOMETRY, not gui/geometry.CONTROL_GEOMETRY --
+    both must contribute markers for the tab to read as symmetric."""
+    view = ControllerLayoutView()
+    view.set_controller("DDJ-XP2")
+    assert _real_position_items(view, ("DDJ-XP2", "DECK", "BEAT SYNC"))
+    assert _real_position_items(view, ("DDJ-XP2", "PAD MODE", "PAD MODE 1"))
+    assert _real_position_items(view, ("DDJ-XP2", "MIXER", "Slide FX 2"))
+
+
+def test_real_position_mode_renders_xdj_xz_right_tray_transport():
+    view = ControllerLayoutView()
+    view.set_controller("XDJ-XZ")
+    assert _real_position_items(view, ("XDJ-XZ", "DECK", "PLAY/PAUSE"))
+    assert _real_position_items(view, ("XDJ-XZ", "DECK", "CUE"))
+    assert _real_position_items(view, ("XDJ-XZ", "DECK", "HOT CUE"))
+
+
+def test_real_position_mode_falls_back_to_classic_grid_without_geometry():
+    view = ControllerLayoutView()
+    view.set_controller("DDJ-FLX4")
+    assert not view._detail_label.isVisible()
+    # Classic mode's scene rect hugs its items' bounds, not a fixed photo canvas.
+    assert view._scene.sceneRect() != layout_view_mod.QRectF(0, 0, *layout_view_mod._DEFAULT_CANVAS)
+
+
+def test_real_position_click_still_emits_cell_activated():
+    """Clicking must keep driving the existing cross-tab navigation
+    (cellActivated) exactly like classic mode -- real-position mode only
+    changes how a cell is drawn, never its click behavior."""
+    view = ControllerLayoutView()
+    view.set_controller("DDJ-XP2")
+    received = []
+    view.cellActivated.connect(received.append)
+    view._view.cellClicked.emit(("DDJ-XP2", "PAD", "Pad 1"))
+    assert received == [("DDJ-XP2", "PAD", "Pad 1")]
+
+
+def test_detail_label_updates_on_click_in_real_position_mode():
+    view = ControllerLayoutView()
+    view.set_controller("DDJ-XP2")
+    view.set_usage({("DDJ-XP2", "PAD", "Pad 1"): {"1": {"codfather_st"}}})
+    view._view.cellClicked.emit(("DDJ-XP2", "PAD", "Pad 1"))
+    assert "codfather_st" in view._detail_label.text()
+
+
+def test_fit_real_position_view_skips_when_manual_zoom_active():
+    view = ControllerLayoutView()
+    view.set_controller("DDJ-XP2")
+    view.set_zoom(1.6)
+    transform_before = view._view.transform()
+    view._fit_real_position_view()
+    assert view._view.transform() == transform_before
+
+
+def test_fit_card_view_never_enlarges_beyond_native_size():
+    view = ControllerLayoutView()
+    view.set_controller("DDJ-FLX4")
+    view.resize(4000, 4000)
+    view._view.viewport().resize(4000, 4000)
+    shrunk = view._fit_card_view()
+    assert not shrunk
+    assert view._view.transform().m11() <= 1.0

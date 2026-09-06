@@ -141,3 +141,65 @@ def test_reverse_lookup_returns_empty_for_a_cell_with_no_trigger():
     clear_reverse_lookup_cache()
     index = reverse_lookup("DDJ-XP2")
     assert ("DDJ-XP2", "MIXER", "Effect 1 Depth") not in index
+
+
+# ─── cell_key_for_geometry_label (real-position layout view, gui/layout_view.py) ──
+
+
+def test_cell_key_for_geometry_label_resolves_a_plain_label():
+    layout.clear_label_to_key_cache()
+    assert layout.cell_key_for_geometry_label("DDJ-XP2", "SHIFT") == ("DDJ-XP2", "OTHER", "SHIFT")
+
+
+def test_cell_key_for_geometry_label_resolves_a_plain_pad_label():
+    layout.clear_label_to_key_cache()
+    assert layout.cell_key_for_geometry_label("DDJ-XP2", "Pad 3") == ("DDJ-XP2", "PAD", "Pad 3")
+
+
+def test_cell_key_for_geometry_label_right_grid_pad_shares_the_left_key():
+    """A known simplification (see gui/geometry.py's module docstring):
+    "Pad 3 (R)" resolves to the same CellKey as "Pad 3", not a distinct one."""
+    layout.clear_label_to_key_cache()
+    left = layout.cell_key_for_geometry_label("DDJ-XP2", "Pad 3")
+    right = layout.cell_key_for_geometry_label("DDJ-XP2", "Pad 3 (R)")
+    assert left == right == ("DDJ-XP2", "PAD", "Pad 3")
+
+
+def test_cell_key_for_geometry_label_combined_label_resolves_to_first_alternative():
+    layout.clear_label_to_key_cache()
+    assert layout.cell_key_for_geometry_label("DDJ-XP2", "PAD MODE 1/5") == (
+        "DDJ-XP2",
+        "PAD MODE",
+        "PAD MODE 1",
+    )
+    assert layout.cell_key_for_geometry_label("DDJ-XP2", "LOAD DECK 1/3") == (
+        "DDJ-XP2",
+        "BROWSE",
+        "LOAD DECK 1",
+    )
+
+
+def test_cell_key_for_geometry_label_uses_the_alias_table():
+    """DDJ-XP2's "FX LEVEL" geometry marker has no build_layout() cell of
+    that exact name -- it's an alias for the schematic's "Slide FX 1"."""
+    layout.clear_label_to_key_cache()
+    assert layout.cell_key_for_geometry_label("DDJ-XP2", "FX LEVEL") == (
+        "DDJ-XP2",
+        "MIXER",
+        "Slide FX 1",
+    )
+
+
+def test_cell_key_for_geometry_label_returns_none_for_an_unmatched_label():
+    layout.clear_label_to_key_cache()
+    assert layout.cell_key_for_geometry_label("XDJ-XZ", "Jog wheel") is None
+
+
+def test_cell_key_for_geometry_label_cache_is_cleared():
+    layout.clear_label_to_key_cache()
+    first = layout._label_to_key_map("DDJ-XP2")
+    second = layout._label_to_key_map("DDJ-XP2")
+    assert first is second
+    layout.clear_label_to_key_cache()
+    third = layout._label_to_key_map("DDJ-XP2")
+    assert third is not first

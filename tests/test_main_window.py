@@ -633,8 +633,12 @@ def test_performance_mode_off_restores_prior_ratios_and_zoom():
         window._on_performance_mode_toggled(False)
         for splitter in window._pair_splitters:
             assert window._pair_ratio_by_id[id(splitter)] == 0.7
+        # Reset means giving up performance mode's manual scale factor, not
+        # necessarily an identity transform -- the resize-driven "maximize
+        # space" auto-fit may still apply its own scale at factor 1.0 (see
+        # test_layout_view.py's test_set_zoom_back_to_one_resets_the_transform).
         for view in (window.layout_view, window.deck_layout_view, window.controller_layout_view):
-            assert view._view.transform().isIdentity()
+            assert view._manual_zoom_factor == 1.0
     finally:
         window.close()
 
