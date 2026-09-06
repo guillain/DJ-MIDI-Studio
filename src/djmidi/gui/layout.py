@@ -287,3 +287,76 @@ def build_layout(controller: str) -> list[LayoutCell]:
             )
         )
     return positioned
+
+
+_COMBINED_LABEL_RE = re.compile(r"^(?P<prefix>.+ )(?P<numbers>\d+(?:/\d+)+)$")
+_RIGHT_GRID_SUFFIX = " (R)"
+
+
+def _geometry_label_alternatives(label: str) -> tuple[str, ...]:
+    """The individual real-trigger name(s) a gui/geometry.py marker label
+    stands for -- the inverse of that module's own combination scheme, kept
+    here (not imported from geometry.py) to avoid a layout<->geometry
+    circular import. A "Pad 3 (R)" right-pad-grid marker collapses to the
+    same base name as its left counterpart (see the docstring on
+    cell_key_for_geometry_label below); a combined "PAD MODE 1/5" or
+    "LOAD DECK 1/3" marker expands to each individual name it answers to."""
+    base = label.removesuffix(_RIGHT_GRID_SUFFIX)
+    match = _COMBINED_LABEL_RE.match(base)
+    if match is None:
+        return (base,)
+    prefix = match.group("prefix")
+    return tuple(f"{prefix}{n}" for n in match.group("numbers").split("/"))
+
+
+# A handful of gui/geometry.py labels don't textually match the schematic
+# label build_layout() would produce for the same physical control (the two
+# modules' naming evolved independently) -- an explicit, narrow alias table
+# rather than fuzzy matching. DDJ-XP2's "FX LEVEL" geometry marker only
+# records the left SLIDE FX slider (see geometry.py's module docstring's
+# "only the left copy's coordinates are recorded" note), which
+# _DISPLAY_CONTROLS calls "Slide FX 1".
+_LABEL_ALIASES: dict[tuple[str, str], str] = {
+    ("DDJ-XP2", "FX LEVEL"): "Slide FX 1",
+}
+
+_LABEL_TO_KEY_CACHE: dict[str, dict[str, CellKey]] = {}
+
+
+def _label_to_key_map(controller: str) -> dict[str, CellKey]:
+    cached = _LABEL_TO_KEY_CACHE.get(controller)
+    if cached is None:
+        cached = {cell.label: cell.key for cell in build_layout(controller)}
+        _LABEL_TO_KEY_CACHE[controller] = cached
+    return cached
+
+
+def clear_label_to_key_cache() -> None:
+    """Invalidate the geometry-label -> CellKey cache -- call alongside
+    clear_reverse_lookup_cache() wherever the catalog registry changes."""
+    _LABEL_TO_KEY_CACHE.clear()
+
+
+def cell_key_for_geometry_label(controller: str, geometry_label: str) -> CellKey | None:
+    """Maps a gui/geometry.CONTROL_GEOMETRY marker label (e.g. "Pad 3 (R)",
+    "PAD MODE 1/5", "SHIFT") to the schematic CellKey build_layout() already
+    uses for that same physical control, so the real-position layout view
+    (gui/layout_view.py) can drive selection/click/usage-highlighting
+    through the exact same machinery as the classic card grid.
+
+    A right-pad-grid label ("Pad 3 (R)") resolves to the *same* CellKey as
+    its left counterpart ("Pad 3") -- a known simplification (both markers
+    currently share one usage/selection state) documented in
+    gui/geometry.py's module docstring and the project's
+    control-layout-geometry memory; splitting them is real follow-up work,
+    not a bug here. A combined label ("PAD MODE 1/5") resolves to its
+    *first* alternative's CellKey ("PAD MODE 1") -- also a disclosed
+    simplification, not a full merge of both triggers' usage data.
+
+    Returns None if no cell in build_layout() carries a matching label,
+    even after _LABEL_ALIASES (e.g. geometry's continuous "Jog wheel"/
+    "Tempo" display-only markers, which have no discrete catalog entry at
+    all) -- the caller should render such a marker as decorative/non-clickable."""
+    primary = _geometry_label_alternatives(geometry_label)[0]
+    alias = _LABEL_ALIASES.get((controller, primary))
+    return _label_to_key_map(controller).get(alias if alias is not None else primary)

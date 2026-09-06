@@ -1296,6 +1296,7 @@ class MainWindow(QMainWindow):
         were only ever populated once, at construction time, so it shows up
         immediately instead of only after restarting the app."""
         layout_mod.clear_reverse_lookup_cache()
+        layout_mod.clear_label_to_key_cache()
         self.layout_view.refresh_controllers()
         self.deck_layout_view.refresh_controllers()
         self.controller_layout_view.refresh_controllers()

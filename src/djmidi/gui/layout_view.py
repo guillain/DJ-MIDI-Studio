@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import itertools
 import math
 from dataclasses import dataclass
+from pathlib import Path
 
 from PySide6.QtCore import QLineF, QPointF, QRectF, Qt, QTimer, Signal
-from PySide6.QtGui import QBrush, QColor, QFont, QPen
+from PySide6.QtGui import QBrush, QColor, QFont, QPen, QPixmap
 from PySide6.QtWidgets import (
     QComboBox,
     QGraphicsEllipseItem,
@@ -14,6 +16,7 @@ from PySide6.QtWidgets import (
     QGraphicsSimpleTextItem,
     QGraphicsView,
     QHBoxLayout,
+    QLabel,
     QScrollArea,
     QTabBar,
     QVBoxLayout,
@@ -21,6 +24,8 @@ from PySide6.QtWidgets import (
 )
 
 from djmidi import catalog
+from djmidi.gui import controller_image_view
+from djmidi.gui import geometry as geometry_mod
 from djmidi.gui import layout as layout_mod
 from djmidi.gui.layout import CellKey
 
@@ -86,6 +91,99 @@ _METRICS: dict[str, LayoutMetrics] = {
 
 def metrics_for(controller: str) -> LayoutMetrics:
     return _METRICS.get(controller, _DEFAULT_METRICS)
+
+
+# Reuse controller_image_view's own ASSETS_DIR (it already handles the
+# PyInstaller-frozen-app case via sys._MEIPASS) rather than recomputing the
+# same path resolution here -- a second, independent implementation of
+# "find the repo/bundle root" is exactly the kind of thing that quietly
+# drifts out of sync (an earlier version of this code did, using the wrong
+# number of .parents[] hops and always falling back to _DEFAULT_CANVAS).
+_DEFAULT_CANVAS = (1200, 800)
+_REFERENCE_SIZE_CACHE: dict[str, tuple[int, int]] = {}
+
+
+def _reference_canvas_size(controller: str) -> tuple[int, int]:
+    """The real photo's pixel dimensions for `controller`, used as the
+    coordinate space for CONTROL_GEOMETRY's x/y/w/h fractions in the
+    real-position layout mode -- matching controller_image_view.py's own
+    fraction -> pixel math so a schematic marker lands where the photo
+    overlay's marker would. Falls back to a fixed canvas if the reference
+    image is missing (still renders something rather than crashing)."""
+    cached = _REFERENCE_SIZE_CACHE.get(controller)
+    if cached is not None:
+        return cached
+    size = _DEFAULT_CANVAS
+    reference_image = catalog.get_definition(controller).reference_image
+    if reference_image:
+        path = Path(reference_image)
+        if not path.is_absolute():
+            path = controller_image_view.ASSETS_DIR / reference_image
+        if path.exists():
+            pixmap = QPixmap(str(path))
+            if not pixmap.isNull():
+                size = (pixmap.width(), pixmap.height())
+    _REFERENCE_SIZE_CACHE[controller] = size
+    return size
+
+# Real-position mode's *own* supplementary geometry for a controller's
+# right-side mirrored cluster (SLIDE FX2, the second LOOP/QUANTIZE/KEY
+# bank, and the right PAD MODE buttons on DDJ-XP2), measured the same way
+# as everything in gui/geometry.py (crop + scaled gridline overlay, read by
+# eye) but kept *out* of geometry.CONTROL_GEOMETRY on purpose: unlike pads,
+# these controls' raw catalog names (e.g. "BEAT SYNC") don't carry a deck
+# number at all, so geometry.resolve_geometry_label (used by Controller
+# Images' live-flash overlay) has no way to route a live hit to the correct
+# side the way it does for pads via _RIGHT_GRID_DECKS -- adding a same-named
+# "BEAT SYNC (R)" marker there would silently steal that key's slot in
+# geometry._reverse_index and break the left marker's live flash. This
+# table is consumed only by _rebuild_real_position below, entirely
+# independent of Controller Images. Reported by the maintainer as buttons
+# "missing" and the layout "not symmetric" after phase R1's first pass only
+# carried the pad grids' right side over.
+_RIGHT_MIRROR_GEOMETRY: dict[str, dict[str, geometry_mod.ControlGeometry]] = {
+    "DDJ-XP2": {
+        "QUANTIZE": geometry_mod.ControlGeometry(0.5913, 0.3509, 0.0151, 0.0320, "circle", "#4ab8a0"),
+        "4 BEAT LOOP": geometry_mod.ControlGeometry(0.6238, 0.3517, 0.0289, 0.0291, "rect", "#d9954a"),
+        "1/2X": geometry_mod.ControlGeometry(0.6153, 0.4116, 0.0247, 0.0349, "rect", "#d9954a"),
+        "2X": geometry_mod.ControlGeometry(0.6387, 0.4116, 0.0247, 0.0349, "rect", "#d9954a"),
+        "BEAT SYNC": geometry_mod.ControlGeometry(0.5608, 0.4145, 0.0165, 0.0291, "rect", "#4a90d9"),
+        "SILENT CUE": geometry_mod.ControlGeometry(0.5795, 0.4535, 0.0385, 0.0465, "rect", "#e0954a"),
+        "KEY -": geometry_mod.ControlGeometry(0.5388, 0.4564, 0.0192, 0.0407, "rect", "#7a8aa0"),
+        "KEY +": geometry_mod.ControlGeometry(0.5626, 0.4564, 0.0192, 0.0407, "rect", "#7a8aa0"),
+        "PAD MODE 1": geometry_mod.ControlGeometry(0.5094, 0.5364, 0.0324, 0.0262, "rect", "#7a8aa0"),
+        "PAD MODE 2": geometry_mod.ControlGeometry(0.5473, 0.5364, 0.0324, 0.0262, "rect", "#7a8aa0"),
+        "PAD MODE 3": geometry_mod.ControlGeometry(0.5852, 0.5364, 0.0324, 0.0262, "rect", "#7a8aa0"),
+        "PAD MODE 4": geometry_mod.ControlGeometry(0.6242, 0.5364, 0.0324, 0.0262, "rect", "#7a8aa0"),
+        "EFFECT 1": geometry_mod.ControlGeometry(0.6769, 0.3491, 0.0151, 0.0320, "circle", "#9b6fd9"),
+        "EFFECT 2": geometry_mod.ControlGeometry(0.6769, 0.4247, 0.0151, 0.0320, "circle", "#9b6fd9"),
+        "EFFECT 3": geometry_mod.ControlGeometry(0.6769, 0.4997, 0.0151, 0.0320, "circle", "#9b6fd9"),
+        "TOUCH STRIP HOLD": geometry_mod.ControlGeometry(0.6566, 0.9038, 0.0330, 0.0320, "rect", "#8fa0b3"),
+        # "FX LEVEL" (geometry.py's label for the left slider) is aliased to
+        # the schematic's "Slide FX 1" cell (see layout._LABEL_ALIASES); the
+        # right slider maps directly to the schematic's own "Slide FX 2"
+        # cell instead, so it's keyed by that name here directly rather
+        # than needing a second alias.
+        "Slide FX 2": geometry_mod.ControlGeometry(0.6717, 0.5698, 0.0110, 0.2791, "rect", "#6fa8c9"),
+    },
+    "XDJ-XZ": {
+        # The right tray's transport cluster + PAD MODE buttons -- CONTROL_GEOMETRY
+        # only ever recorded the left tray (deck 1); "Pad N (R)" (deck 2/4)
+        # is already there via the pad-grid geometry fix, but PLAY/PAUSE,
+        # CUE, SYNC, the jog wheel/tempo display markers, and the 4 PAD
+        # MODE buttons still need their own right-tray copy here.
+        "PLAY/PAUSE": geometry_mod.ControlGeometry(0.6631, 0.8420, 0.0296, 0.0484, "circle", "#3ea86b"),
+        "CUE": geometry_mod.ControlGeometry(0.6655, 0.7726, 0.0249, 0.0408, "circle", "#e0954a"),
+        "SYNC": geometry_mod.ControlGeometry(0.8749, 0.5312, 0.0187, 0.0306, "circle", "#4a90d9"),
+        "Jog wheel": geometry_mod.ControlGeometry(0.7226, 0.4268, 0.1944, 0.3185, "circle", "#586b82"),
+        "Tempo": geometry_mod.ControlGeometry(0.8826, 0.6911, 0.0156, 0.1911, "rect", "#6fa8c9"),
+        "HOT CUE": geometry_mod.ControlGeometry(0.7241, 0.7675, 0.0214, 0.0096, "rect", "#7a8aa0"),
+        "BEAT LOOP": geometry_mod.ControlGeometry(0.7527, 0.7675, 0.0214, 0.0096, "rect", "#7a8aa0"),
+        "SLIP LOOP": geometry_mod.ControlGeometry(0.7813, 0.7675, 0.0214, 0.0096, "rect", "#7a8aa0"),
+        "BEAT JUMP": geometry_mod.ControlGeometry(0.8096, 0.7675, 0.0214, 0.0096, "rect", "#7a8aa0"),
+    },
+}
+
 
 # cell key -> Serato deck number -> set of Serato function tags (mapping.tag)
 # bound to that cell for that deck.
@@ -251,6 +349,7 @@ def draw_control_glyph(
 
 class _ClickableView(QGraphicsView):
     cellClicked = Signal(tuple)
+    viewportResized = Signal()
 
     def mousePressEvent(self, event) -> None:
         item = self.itemAt(event.pos())
@@ -259,6 +358,18 @@ class _ClickableView(QGraphicsView):
             if key is not None:
                 self.cellClicked.emit(key)
         super().mousePressEvent(event)
+
+    def resizeEvent(self, event) -> None:
+        super().resizeEvent(event)
+        # The outer ControllerLayoutView's own resizeEvent isn't a reliable
+        # signal that *this* viewport's size actually changed -- a parent
+        # QSplitter/layout pass can resize this QGraphicsView without the
+        # outer widget's own size changing, and (seen in an offscreen
+        # test/screenshot script) the reverse: the outer widget's resize()
+        # can run before this viewport's layout has caught up. Fitting from
+        # here instead reacts to the actual viewport size whenever it
+        # settles, however that happened.
+        self.viewportResized.emit()
 
 
 class ControllerLayoutView(QWidget):
@@ -299,6 +410,11 @@ class ControllerLayoutView(QWidget):
         # real knob staying wherever it was left) until the next event for
         # that key. Pads/buttons/jog glyphs ignore it; no VU glyph exists yet.
         self._values: dict[CellKey, int] = {}
+        # Set by set_zoom() (performance mode's manual "shrink everything"
+        # toggle) -- resizeEvent's auto-fit-to-window (real-position mode)
+        # is skipped whenever this isn't 1.0, so performance mode's own
+        # tested zoom behavior is completely undisturbed by it.
+        self._manual_zoom_factor = 1.0
 
         self._controller_tabs = QTabBar()
         self._controller_tabs.setStyleSheet(
@@ -373,11 +489,27 @@ class ControllerLayoutView(QWidget):
             "background: #0d1119; border: 1px solid #2b3b53; border-radius: 8px;"
         )
         self._view.cellClicked.connect(self.cellActivated)
+        self._view.cellClicked.connect(self._on_cell_clicked_for_detail)
+        self._view.viewportResized.connect(self._apply_fit)
+
+        # Real-position mode (see _rebuild_real_position) draws compact,
+        # unlabelled glyphs -- there's no room left in a marker for the name
+        # or the "what does the other controller think this means" text the
+        # classic card mode shows inline, so it moves here instead, updated
+        # on click. Hidden/empty in classic card mode, which already shows
+        # that information inline on every cell.
+        self._detail_label = QLabel("")
+        self._detail_label.setWordWrap(True)
+        self._detail_label.setStyleSheet(
+            "QLabel { color: #c5d0df; padding: 4px 2px; }"
+        )
+        self._detail_label.hide()
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addLayout(controls_layout)
         layout.addWidget(self._view)
+        layout.addWidget(self._detail_label)
 
         self._rebuild()
 
@@ -480,10 +612,47 @@ class ControllerLayoutView(QWidget):
 
     def set_zoom(self, factor: float) -> None:
         """Scale the whole schematic uniformly (performance mode's larger glyphs)."""
+        self._manual_zoom_factor = factor
         self._view.resetTransform()
         if factor != 1.0:
             self._view.scale(factor, factor)
         self._rebuild()
+
+    def _on_cell_clicked_for_detail(self, key: CellKey) -> None:
+        # No isVisible() guard: that reflects the whole window's visibility,
+        # not just this label's own show()/hide() call (isVisible() is
+        # False for a widget that's never been shown at all, e.g. in a
+        # test, or briefly during construction) -- updating text on a
+        # hidden label is harmless, so just always do it.
+        if self._detail_label.isHidden():
+            return
+        self._detail_label.setText(self._detail_text_for(key))
+
+    def _detail_text_for(self, key: CellKey) -> str:
+        """The per-cell text real-position mode can't fit inline (name, this
+        controller's deck(s)/function(s), and what the *other* controller
+        thinks the same real trigger means) -- the classic card mode already
+        shows all of this inline via _draw_half, this is its equivalent for
+        the compact glyph mode."""
+        deck_filter = self._selected_deck_filter()
+        decks, tags = self._cell_decks_and_tags(key, deck_filter)
+        deck_text = ", ".join(f"Deck {d}" for d in sorted(decks)) if decks else "not used"
+        tag_text = ", ".join(sorted(tags)) if tags else "no function mapped"
+        lines = [f"{key[1]} {key[2]} — {deck_text} — {tag_text}"]
+        linked_keys = sorted(self._linked_cells.get(key, set()))
+        if linked_keys:
+            other_controller = linked_keys[0][0]
+            other_labels = ", ".join(k[2] for k in linked_keys)
+            other_decks: set[str] = set()
+            other_tags: set[str] = set()
+            for linked_key in linked_keys:
+                d, t = self._cell_decks_and_tags(linked_key, deck_filter)
+                other_decks |= d
+                other_tags |= t
+            other_deck_text = ", ".join(f"Deck {d}" for d in sorted(other_decks)) if other_decks else "not used"
+            other_tag_text = ", ".join(sorted(other_tags)) if other_tags else "no function mapped"
+            lines.append(f"{other_controller}: {other_labels} — {other_deck_text} — {other_tag_text}")
+        return "\n".join(lines)
 
     def _selection_pen(self, key: CellKey) -> QPen:
         if key in self._selected_keys:
@@ -611,6 +780,7 @@ class ControllerLayoutView(QWidget):
         self._pad_center = None
         self._scene.setBackgroundBrush(_SCENE_BRUSH)
         if not self._controller:
+            self._detail_label.hide()
             message = QGraphicsSimpleTextItem(
                 "No controller catalog is available. Check the bundled controller data."
             )
@@ -619,6 +789,12 @@ class ControllerLayoutView(QWidget):
             self._scene.addItem(message)
             self._scene.setSceneRect(self._scene.itemsBoundingRect().adjusted(-10, -10, 10, 10))
             return
+        geometry_entries = geometry_mod.CONTROL_GEOMETRY.get(self._controller)
+        if geometry_entries:
+            self._detail_label.show()
+            self._rebuild_real_position(geometry_entries)
+            return
+        self._detail_label.hide()
         self._metrics = metrics_for(self._controller)
         m = self._metrics
         col_step = m.cell_w + m.margin
@@ -698,7 +874,120 @@ class ControllerLayoutView(QWidget):
                 sum(cell.col * col_step + m.cell_w / 2 for cell in pad_cells) / len(pad_cells),
                 sum(cell.row * row_step + m.cell_h / 2 for cell in pad_cells) / len(pad_cells),
             )
+        if not self._fit_card_view():
             self._center_on_pad_zone()
+
+    def _rebuild_real_position(self, geometry_entries: dict[str, geometry_mod.ControlGeometry]) -> None:
+        """Real-position mode: one compact marker per gui/geometry.py entry,
+        placed at its true photographed coordinate (scaled to the reference
+        photo's own pixel size, matching controller_image_view.py's overlay
+        math) instead of a uniform card grid -- the "By ..." tabs'
+        equivalent of the Controller Images real-photo overlay, for the
+        controllers with measured geometry. A marker's CellKey comes from
+        layout.cell_key_for_geometry_label(); one with no match (a
+        continuous/display-only geometry entry, e.g. "FX LEVEL") still gets
+        a placeholder key so it renders (decorative, harmless to click --
+        MainWindow._on_layout_cell_activated already tolerates a key with no
+        matching control). Diff-view content that doesn't fit inline a
+        compact marker moves to self._detail_label (see
+        _on_cell_clicked_for_detail), updated on click."""
+        canvas_w, canvas_h = _reference_canvas_size(self._controller)
+        deck_filter = self._selected_deck_filter()
+        cells_by_key = {cell.key: cell for cell in layout_mod.build_layout(self._controller)}
+        all_entries = itertools.chain(
+            geometry_entries.items(),
+            _RIGHT_MIRROR_GEOMETRY.get(self._controller, {}).items(),
+        )
+        for label, geom in all_entries:
+            key = layout_mod.cell_key_for_geometry_label(self._controller, label)
+            if key is None:
+                key = (self._controller, "DISPLAY", label)
+            rect = QRectF(geom.x * canvas_w, geom.y * canvas_h, geom.w * canvas_w, geom.h * canvas_h)
+            decks, tags = self._cell_decks_and_tags(key, deck_filter)
+
+            # A background box the real geometry box's true size -- carries
+            # the deck-usage color, the selection border, and the bigger
+            # click target a small glyph alone wouldn't give. Drawn first so
+            # the glyph on top of it stays visible.
+            bg_item: QGraphicsRectItem | QGraphicsEllipseItem = (
+                QGraphicsEllipseItem(rect) if geom.shape == "circle" else QGraphicsRectItem(rect)
+            )
+            if decks or tags:
+                bg_item.setBrush(_brush_for_decks(decks))
+            else:
+                resting = QColor(geom.color)
+                resting.setAlpha(90)
+                bg_item.setBrush(QBrush(resting))
+            bg_item.setPen(self._selection_pen(key))
+            bg_item.setData(_KEY_ROLE, key)
+            deck_text = ", ".join(f"Deck {d}" for d in sorted(decks)) if decks else "not used"
+            tag_text = ", ".join(sorted(tags)) if tags else "no function mapped"
+            bg_item.setToolTip(f"{self._controller} — {label}\n{deck_text}\nMapped to: {tag_text}")
+            self._scene.addItem(bg_item)
+
+            # The glyph itself -- reused verbatim from the classic card mode
+            # (draw_control_glyph) so a knob still rotates and a fader thumb
+            # still moves from a live MIDI value here too, not just in card
+            # mode. Centered on the geometry box rather than draw_control_glyph's
+            # own "+8, +8 from top-left" convention (built for a much bigger
+            # uniform card, not a real, often-smaller photographed control).
+            # A MIXER/display cell's kind comes from _DISPLAY_CONTROLS
+            # (e.g. "Slide FX 2" is explicitly a fader), not the generic
+            # name-based heuristic visual_kind_for() falls back to below --
+            # that heuristic doesn't recognize "Slide FX 2" as a fader at
+            # all (no "fader"/"level"/... substring), so it must come from
+            # the real LayoutCell when one exists.
+            resolved_cell = cells_by_key.get(key)
+            visual_kind = (
+                resolved_cell.visual_kind
+                if resolved_cell is not None
+                else layout_mod.visual_kind_for(key[1], key[2])
+            )
+            glyph_size = {
+                "pad": self._metrics.pad_glyph,
+                "button": self._metrics.button_glyph,
+                "knob": self._metrics.knob_glyph,
+                "jog": self._metrics.jog_glyph,
+                "fader": self._metrics.fader_glyph_h,
+            }[visual_kind]
+            glyph_x = rect.center().x() - glyph_size / 2 - 8
+            glyph_y = rect.center().y() - glyph_size / 2 - 8
+            draw_control_glyph(
+                self._scene, self._metrics, glyph_x, glyph_y, visual_kind, key,
+                self._values.get(key), key in self._flash_keys,
+            )
+        self._scene.setSceneRect(0, 0, canvas_w, canvas_h)
+        self._fit_real_position_view()
+
+    def _fit_real_position_view(self) -> None:
+        if self._manual_zoom_factor != 1.0:
+            return
+        self._view.resetTransform()
+        self._view.fitInView(self._scene.sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
+
+    def _fit_card_view(self) -> bool:
+        """Shrinks (never enlarges) the classic card schematic to fit the
+        viewport when it's larger than available space, so a controller
+        with many sections doesn't need scrolling to see in full -- the
+        classic-mode half of "maximize space", alongside real-position
+        mode's own auto-fit. Returns whether a shrink was applied; when it
+        wasn't (content already fits, or performance mode's own manual zoom
+        is active), the caller falls back to the existing
+        center-on-pad-zone behavior, unchanged."""
+        if self._manual_zoom_factor != 1.0:
+            return False
+        scene_rect = self._scene.itemsBoundingRect()
+        viewport = self._view.viewport().size()
+        if scene_rect.width() <= 0 or scene_rect.height() <= 0:
+            return False
+        if viewport.width() <= 0 or viewport.height() <= 0:
+            return False
+        scale = min(1.0, viewport.width() / scene_rect.width(), viewport.height() / scene_rect.height())
+        self._view.resetTransform()
+        if scale < 1.0:
+            self._view.scale(scale, scale)
+            return True
+        return False
 
     def _center_on_pad_zone(self) -> None:
         if self._pad_center is None:
@@ -710,9 +999,21 @@ class ControllerLayoutView(QWidget):
             self._scene.setSceneRect(scene_rect)
         self._view.centerOn(self._pad_center)
 
+    def _apply_fit(self) -> None:
+        """Re-applies the current mode's "maximize space" fit against the
+        *actual* current viewport size. Triggered both by this widget's own
+        resizeEvent and by the inner QGraphicsView's viewportResized signal
+        (see _ClickableView.resizeEvent) -- a parent splitter/layout pass
+        can resize the inner viewport without this outer widget's own size
+        changing, so relying on only one of the two misses real cases."""
+        if geometry_mod.CONTROL_GEOMETRY.get(self._controller):
+            self._fit_real_position_view()
+        elif not self._fit_card_view():
+            self._center_on_pad_zone()
+
     def resizeEvent(self, event) -> None:
         super().resizeEvent(event)
-        self._center_on_pad_zone()
+        self._apply_fit()
 
 
 __all__ = ["ControllerLayoutView", "LayoutMetrics", "draw_control_glyph", "metrics_for"]
