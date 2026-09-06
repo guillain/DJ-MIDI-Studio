@@ -747,10 +747,55 @@ documentation index.
 
 ### MIDI controller emulation
 
-- [ ] Add a virtual controller emulator with MIDI input/output, mapping, and routing.
-- [ ] Add the capability to emulate a real controller's MIDI messages and layout for testing, training, and demonstration purposes.
-- [ ] Add a virtual controller with a configurable layout and MIDI message set for testing, training, and demonstration purposes.
-- [ ] Add the list of existing controllers to the virtual controller emulator for testing, training, and demonstration purposes.
+Superseded by [issue #9](https://github.com/guillain/DJ-MIDI-Studio/issues/9)'s
+"Controller MIDI emulator" RFI, which absorbs these four bullets into one
+concrete spec: a software emulator reproducing a real controller's physical
+layout, interactive buttons/pads/knobs, and LED/colour feedback, so a
+mapping can be operated and previewed end to end with no hardware
+connected. Sequenced into 5 phases/PRs after two research passes found it
+bundles five subsystems with no existing precedent (reverse trigger-to-MIDI
+resolution, drag/spin interaction, a real virtual MIDI output port, a
+stateful simulation engine, multi-instance dock infrastructure) — too large
+for one PR, same "one verified, tagged milestone at a time" discipline as
+the DJ layout visual fidelity chantier.
+
+- [x] **Phase 1 — single-instance discrete dry-run emulator** delivered in
+  `v0.47.37-controller-emulator-phase1`: a `Controller Emulator` tool dock
+  (same pattern as Live Monitor/MIDI Routing/MIDI Clock/Metronome) shows one
+  controller's interactive schematic; clicking a pad/button flashes it and
+  resolves what the currently loaded mapping binds that trigger to. Entirely
+  dry-run — no MIDI sent anywhere yet. New reusable plumbing:
+  `layout_view.draw_control_glyph()` (extracted verbatim from
+  `ControllerLayoutView._draw_control_shape`, no behavior change) and
+  `layout.reverse_lookup()` (the inverse of `catalog.lookup()`, needed to
+  turn a clicked cell back into a raw MIDI trigger — static entries via
+  direct scan, pad-bank entries via brute-force enumeration of
+  `pad_lookup`'s bounded domain, which works for any bespoke formula without
+  hand-inverting it). Deliberately does not extend `ControllerLayoutView`
+  (a two-controller diff/audit widget with a tab bar and deck filter, not a
+  fit for a single-controller interactive emulator) — a new sibling widget,
+  `EmulatorLayoutView`, reuses the same free functions instead.
+- [ ] **Phase 2 — multi-instance dock infrastructure**: multiple emulator
+  windows open at once, each bound to its own controller (e.g. DDJ-XP2 +
+  XDJ-XZ side by side). Moved up from last in the original sequencing so
+  phases 3–4 are written instance-scoped from day one instead of needing a
+  retrofit.
+- [ ] **Phase 3 — continuous control interaction**: drag-to-set knobs/faders,
+  a jog-wheel spin gesture. Still dry-run only; continuous controls have no
+  `ControlInfo` at all today (deliberately out of catalog scope), so this
+  phase's emulator controls stay display-only/non-resolving rather than
+  reopening that scope decision as a side effect.
+- [ ] **Phase 4 — real virtual MIDI output port**: a persistent per-instance
+  virtual output (mirrors `MidiMonitor`'s existing virtual-*input* pattern
+  but for output) so the emulator can drive an actual Serato instance, not
+  just resolve locally.
+- [ ] **Phase 5 — full stateful simulation** (recommend splitting into
+  5a/5b): output-alias resolution (`userio event="output"` on/off/selected
+  aliases → LED colour, handling the confirmed real-world ambiguity where
+  `selected` and `off` share the same value in real exports) plus a
+  genuinely new state machine for active loop / set hotcue / current
+  pad-mode page — no existing precedent anywhere in this codebase, the
+  largest and riskiest phase.
 
 ### External tester feedback (2026-08)
 
