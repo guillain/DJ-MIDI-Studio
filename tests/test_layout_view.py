@@ -355,3 +355,45 @@ def test_fit_card_view_never_enlarges_beyond_native_size():
     shrunk = view._fit_card_view()
     assert not shrunk
     assert view._view.transform().m11() <= 1.0
+
+
+# ─── Live send (gui/live_send.py) ─────────────────────────────────────────
+
+
+def test_live_send_defaults_to_off_and_is_a_noop_on_click(monkeypatch):
+    from djmidi.gui import live_send as live_send_mod
+
+    monkeypatch.setattr(live_send_mod.midi_io, "list_output_ports", lambda: ["Port A"])
+    sent = []
+    monkeypatch.setattr(live_send_mod, "send_control_info_entry", lambda *a, **k: sent.append((a, k)))
+    view = ControllerLayoutView()
+    view.set_controller("DDJ-XP2")
+    assert view._live_send.is_active() is False
+    view._view.cellClicked.emit(("DDJ-XP2", "OTHER", "SHIFT"))
+    assert sent == []
+
+
+def test_live_send_sends_on_click_when_active(monkeypatch):
+    from djmidi.gui import live_send as live_send_mod
+
+    monkeypatch.setattr(live_send_mod.midi_io, "list_output_ports", lambda: ["Port A"])
+    sent = []
+    monkeypatch.setattr(live_send_mod, "send_control_info_entry", lambda *a, **k: sent.append((a, k)))
+    view = ControllerLayoutView()
+    view.set_controller("DDJ-XP2")
+    view._live_send._toggle_button.setChecked(True)
+    view._view.cellClicked.emit(("DDJ-XP2", "OTHER", "SHIFT"))
+    assert len(sent) == 1
+    assert sent[0][0][0] == "Port A"
+
+
+def test_live_send_click_still_navigates_cross_tab_regardless_of_toggle():
+    """Live send must never interfere with the existing cellActivated
+    cross-tab navigation, whether it's on or off."""
+    view = ControllerLayoutView()
+    view.set_controller("DDJ-XP2")
+    received = []
+    view.cellActivated.connect(received.append)
+    view._live_send._toggle_button.setChecked(True)
+    view._view.cellClicked.emit(("DDJ-XP2", "OTHER", "SHIFT"))
+    assert received == [("DDJ-XP2", "OTHER", "SHIFT")]

@@ -3,12 +3,15 @@ interactive schematic for one controller. Click a pad/button to see which
 Serato function the currently loaded mapping resolves it to.
 
 Deliberately narrow for this first phase: discrete controls only (no
-drag/spin for knobs/faders/jog wheels -- that's phase 3), dry-run resolution
-only (no MIDI is ever sent to any port -- real-Serato output is phase 4), no
-persistent state (SHIFT/pad-mode-page tracking is phase 5's job; a clicked
-cell with several raw-trigger variants always resolves to one fixed,
-documented default -- see _pick_default_variant), and a single fixed dock
-instance (multiple simultaneous emulator windows are phase 2).
+drag/spin for knobs/faders/jog wheels -- that's phase 3), no persistent
+state (SHIFT/pad-mode-page tracking is phase 5's job; a clicked cell with
+several raw-trigger variants always resolves to one fixed, documented
+default -- see layout.pick_default_variant), and a single fixed dock
+instance (multiple simultaneous emulator windows are phase 2). Phase 4
+(real MIDI output) is partially delivered: dry-run resolution always
+happens, and a click also sends a real MIDI message when the embedded
+LiveSendControl (gui/live_send.py, shared with ControllerLayoutView and
+ControllerImageView) is switched on -- default off.
 
 This does NOT extend gui.layout_view.ControllerLayoutView: that widget's
 entire contract is a two-controller diff/audit view (a tab bar, a deck
@@ -40,6 +43,7 @@ from djmidi import catalog
 from djmidi.gui import layout as layout_mod
 from djmidi.gui import layout_view
 from djmidi.gui.layout import CellKey
+from djmidi.gui.live_send import LiveSendControl
 from djmidi.gui.mapping_group import build_mapping_groups
 from djmidi.model import MidiConfig
 
@@ -53,21 +57,12 @@ _FLASH_DURATION_MS = 220
 # control_no) key.
 _EVENT_TYPE_FOR_KIND: dict[catalog.NoteOrCC, str] = {"NOTE": "Note On", "CC": "Control Change"}
 
-_AMBIGUOUS_MARKERS = ("shift", "long press", "press twice", "direct button")
-
-
-def _pick_default_variant(variants: list[catalog.ControlInfo]) -> catalog.ControlInfo:
-    """Phase 1 tracks no per-instance state (SHIFT held, current pad-mode
-    page -- a later phase's job), so a cell with several raw-trigger variants
-    always resolves to one fixed, documented default: prefer a variant whose
-    name carries no SHIFT/long-press qualifier; among pad-mode-bank variants
-    (which carry no such qualifier at all), take the first one found, which
-    is layout.reverse_lookup()'s lowest-numbered mode by construction."""
-    for variant in variants:
-        lowered = variant.name.casefold()
-        if not any(marker in lowered for marker in _AMBIGUOUS_MARKERS):
-            return variant
-    return variants[0]
+# Moved to layout.py (as pick_default_variant) so gui/live_send.py's
+# real-MIDI-send path can share the exact same "which variant does an
+# ambiguous cell mean" rule instead of a second, independently-drifting
+# copy -- re-exported under the old private name so this module's own call
+# site and tests/test_controller_emulator.py don't need to change.
+_pick_default_variant = layout_mod.pick_default_variant
 
 
 def _dry_run_lookup(config: MidiConfig) -> dict[tuple[str, str, str], list[str]]:
@@ -179,7 +174,10 @@ class EmulatorLayoutView(QWidget):
 class ControllerEmulatorView(QWidget):
     """Dock content for the Controller Emulator: pick a controller, click its
     schematic, see what the currently loaded mapping resolves that trigger
-    to. Dry-run only -- no MIDI is sent anywhere in this phase."""
+    to. Dry-run resolution always happens; a click additionally sends a real
+    MIDI message to a chosen output port when the embedded LiveSendControl
+    (gui/live_send.py) is switched on (default off) -- see that module's
+    docstring for why every layout surface uses the same widget/default."""
 
     def __init__(
         self,
@@ -210,9 +208,12 @@ class ControllerEmulatorView(QWidget):
         self._status_label = QLabel("Click a control to see what it resolves to.")
         self._status_label.setWordWrap(True)
 
+        self._live_send = LiveSendControl()
+
         layout = QVBoxLayout(self)
         layout.setContentsMargins(6, 6, 6, 6)
         layout.addWidget(self._combo)
+        layout.addWidget(self._live_send)
         layout.addWidget(self._emulator, 1)
         layout.addWidget(self._status_label)
 
@@ -245,7 +246,11 @@ class ControllerEmulatorView(QWidget):
         self._status_label.setText("Click a control to see what it resolves to.")
 
     def _on_control_pressed(self, key: CellKey) -> None:
-        self._status_label.setText(self._resolve(key))
+        text = self._resolve(key)
+        sent = self._live_send.resolve_and_send(key[0], key)
+        if sent is not None:
+            text += f"  [LIVE SENT: ch{sent.channels[0] if sent.channels else '?'} {sent.note_or_cc} {sent.data1}]"
+        self._status_label.setText(text)
 
     def _resolve(self, key: CellKey) -> str:
         variants = layout_mod.reverse_lookup(key[0]).get(key)
