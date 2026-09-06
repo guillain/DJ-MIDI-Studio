@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from djmidi.gui.controller_emulator import (
+    _DRAG_PX_PER_UNIT,
     _KEY_ROLE,
     ControllerEmulatorView,
     EmulatorLayoutView,
@@ -179,3 +180,78 @@ def test_controller_emulator_view_refresh_controllers_preserves_selection():
     view.refresh_controllers()
     assert view._combo.currentText() == "XDJ-XZ"
     assert view._emulator._controller == "XDJ-XZ"
+
+
+# ─── Phase 3: drag-to-set continuous controls ─────────────────────────────────
+
+
+def test_set_value_persists_and_is_read_back_by_the_drag_start_value():
+    view = EmulatorLayoutView("DDJ-XP2")
+    key: CellKey = ("DDJ-XP2", "MIXER", "Slide FX 1")
+    assert view._current_value(key) == 63  # _MIDI_DEFAULT, before any drag
+    view.set_value(key, 90)
+    assert view._current_value(key) == 90
+
+
+def test_set_value_is_a_noop_rebuild_when_unchanged():
+    view = EmulatorLayoutView("DDJ-XP2")
+    key: CellKey = ("DDJ-XP2", "MIXER", "Slide FX 1")
+    view.set_value(key, 90)
+    calls = []
+    view._rebuild = lambda: calls.append(1)  # type: ignore[method-assign]
+    view.set_value(key, 90)
+    assert calls == []
+
+
+def test_value_dragged_signal_updates_the_emulator_value():
+    view = EmulatorLayoutView("DDJ-XP2")
+    key: CellKey = ("DDJ-XP2", "MIXER", "Slide FX 1")
+    view._view.valueDragged.emit(key, 100)
+    assert view._values[key] == 100
+
+
+def test_drag_on_a_continuous_glyph_moves_the_value_not_a_click():
+    """A knob/fader/jog press must start a drag (no controlPressed), unlike
+    a discrete pad/button press. Exercises the real drag-delta computation
+    _ClickableEmulatorView.mouseMoveEvent uses, without constructing a real
+    QMouseEvent (which needs a live scene item under the cursor)."""
+    view = EmulatorLayoutView("DDJ-XP2")
+    fader_key: CellKey = ("DDJ-XP2", "MIXER", "Slide FX 1")
+    received: list[CellKey] = []
+    view.controlPressed.connect(received.append)
+
+    view._view._drag_key = fader_key
+    view._view._drag_start_y = 100.0
+    view._view._drag_start_value = 63
+    delta = (view._view._drag_start_y - 40.0) / _DRAG_PX_PER_UNIT  # dragged up 60px
+    new_value = max(0, min(127, round(view._view._drag_start_value + delta)))
+    view._view.valueDragged.emit(fader_key, new_value)
+    assert view._values[fader_key] == new_value
+    assert new_value > 63  # dragging up increased the value
+    assert received == []  # never treated as a click
+
+
+def test_discrete_pad_click_is_unaffected_by_drag_support():
+    view = EmulatorLayoutView("DDJ-XP2")
+    received: list[CellKey] = []
+    view.controlPressed.connect(received.append)
+    key: CellKey = ("DDJ-XP2", "PAD", "Pad 1")
+    view._on_control_pressed(key)
+    assert received == [key]
+
+
+def test_jog_glyph_draws_a_position_notch():
+    """draw_control_glyph()'s jog branch now draws a rotation notch (phase
+    3's visible feedback for the drag-to-spin gesture) -- sanity check it
+    doesn't crash and adds items for a jog-kind cell."""
+    from PySide6.QtWidgets import QGraphicsScene
+
+    from djmidi.gui import layout_view as layout_view_mod
+
+    scene = QGraphicsScene()
+    metrics = layout_view_mod.metrics_for("XDJ-XZ")
+    before = len(scene.items())
+    layout_view_mod.draw_control_glyph(
+        scene, metrics, 0, 0, "jog", ("XDJ-XZ", "DECK", "Jog wheel"), 100, False
+    )
+    assert len(scene.items()) > before
