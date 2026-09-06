@@ -50,6 +50,7 @@ from PySide6.QtWidgets import (
 
 from djmidi import catalog, software
 from djmidi.gui import layout as layout_mod
+from djmidi.gui.controller_emulator import ControllerEmulatorView
 from djmidi.gui.controller_image_view import ControllerImageView
 from djmidi.gui.controller_setup import ControllerSetupView
 from djmidi.gui.controller_tree import CELL_KEY_ROLE, build_controller_columns
@@ -266,6 +267,7 @@ class MainWindow(QMainWindow):
             selected_rows_provider=self.controller_setup_view.selected_session_rows,
             session_name_provider=self.controller_setup_view.session_controller_name,
         )
+        self.controller_emulator_view = ControllerEmulatorView(config_provider=lambda: self.config)
 
         self.introduction_view = IntroductionView()
         self.live_monitor_view.portNamesChanged.connect(
@@ -603,6 +605,7 @@ class MainWindow(QMainWindow):
             "routing": ("MIDI Routing", self.midi_routing_view),
             "clock": ("MIDI Clock", self.midi_clock_view),
             "metronome": ("Metronome", self.metronome_view),
+            "emulator": ("Controller Emulator", self.controller_emulator_view),
         }
         docks: dict[str, QDockWidget] = {}
         for key, (title, widget) in definitions.items():
@@ -1196,11 +1199,13 @@ class MainWindow(QMainWindow):
         (in-memory only) — refresh every view whose controller combo/columns
         were only ever populated once, at construction time, so it shows up
         immediately instead of only after restarting the app."""
+        layout_mod.clear_reverse_lookup_cache()
         self.layout_view.refresh_controllers()
         self.deck_layout_view.refresh_controllers()
         self.controller_layout_view.refresh_controllers()
         self.controller_image_view.refresh_controllers()
         self.introduction_view.refresh_controllers()
+        self.controller_emulator_view.refresh_controllers()
         if self.config is not None:
             self._refresh_layout_usage()
         self.statusBar().showMessage(f"'{name}' applied for this session.")

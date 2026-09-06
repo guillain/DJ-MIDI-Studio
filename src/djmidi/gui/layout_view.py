@@ -181,6 +181,74 @@ def _button_brush(label: str) -> QBrush:
     return _CONTROL_BRUSH
 
 
+def draw_control_glyph(
+    scene: QGraphicsScene,
+    metrics: LayoutMetrics,
+    x: float,
+    y: float,
+    visual_kind: layout_mod.VisualKind,
+    key: CellKey,
+    value: int | None,
+    flashed: bool,
+) -> None:
+    """Draw a compact DJ control glyph at (x, y) inside a layout half, sized
+    by the given LayoutMetrics. Shared by ControllerLayoutView (the
+    read-only By Channel/Deck/Controller schematic, via _draw_control_shape)
+    and the interactive controller emulator (gui/controller_emulator.py), so
+    both draw identical glyphs from one place."""
+    m = metrics
+    left = x + 8
+    top = y + 8
+    resolved_value = _MIDI_DEFAULT if value is None else value
+    if visual_kind in ("pad", "button"):
+        size = m.pad_glyph if visual_kind == "pad" else m.button_glyph
+        shape = QGraphicsRectItem(QRectF(left, top, size, size))
+        if flashed:
+            shape.setBrush(_FLASH_BRUSH)
+        else:
+            shape.setBrush(_PAD_BRUSH if visual_kind == "pad" else _button_brush(key[2]))
+        shape.setPen(_CONTROL_PEN)
+    elif visual_kind == "knob":
+        d = m.knob_glyph
+        ring = QGraphicsEllipseItem(QRectF(left, top, d, d))
+        ring.setBrush(_KNOB_RING_BRUSH)
+        ring.setPen(_CONTROL_PEN)
+        ring.setData(_KEY_ROLE, key)
+        scene.addItem(ring)
+        inset = d / 8
+        shape = QGraphicsEllipseItem(QRectF(left + inset, top + inset, d - 2 * inset, d - 2 * inset))
+        shape.setBrush(_KNOB_BRUSH)
+        shape.setPen(_CONTROL_PEN)
+        center_x, center_y = left + d / 2, top + d / 2
+        radius = d / 2 - d / 6
+        angle = _knob_angle_rad(resolved_value)
+        tip_x = center_x + radius * math.sin(angle)
+        tip_y = center_y - radius * math.cos(angle)
+        marker = QGraphicsLineItem(QLineF(center_x, center_y, tip_x, tip_y))
+        marker.setPen(_KNOB_MARKER_PEN)
+        marker.setZValue(1)  # above the dial ellipse (`shape`, added after this in scene order)
+        marker.setData(_KEY_ROLE, key)
+        scene.addItem(marker)
+    elif visual_kind == "jog":
+        d = m.jog_glyph
+        shape = QGraphicsEllipseItem(QRectF(left, top, d, d))
+        shape.setBrush(_CONTROL_BRUSH)
+        shape.setPen(_CONTROL_PEN)
+    else:  # fader
+        h = m.fader_glyph_h
+        track = QGraphicsLineItem(QLineF(left + 16, top, left + 16, top + h))
+        track.setPen(_FADER_PEN)
+        track.setData(_KEY_ROLE, key)
+        scene.addItem(track)
+        thumb_top = _fader_thumb_top(resolved_value, top, h, 8)
+        shape = QGraphicsRectItem(QRectF(left + 7, thumb_top, 18, 8))
+        shape.setBrush(_CONTROL_BRUSH)
+        shape.setPen(_CONTROL_PEN)
+    shape.setData(_KEY_ROLE, key)
+    shape.setToolTip(f"{key[0]} — {key[1]} {key[2]}")
+    scene.addItem(shape)
+
+
 class _ClickableView(QGraphicsView):
     cellClicked = Signal(tuple)
 
@@ -496,56 +564,10 @@ class ControllerLayoutView(QWidget):
     ) -> None:
         """Draw a compact DJ control glyph inside a layout half, sized by the
         current controller's LayoutMetrics."""
-        m = self._metrics
-        left = x + 8
-        top = y + 8
-        if visual_kind in ("pad", "button"):
-            size = m.pad_glyph if visual_kind == "pad" else m.button_glyph
-            shape = QGraphicsRectItem(QRectF(left, top, size, size))
-            if key in self._flash_keys:
-                shape.setBrush(_FLASH_BRUSH)
-            else:
-                shape.setBrush(_PAD_BRUSH if visual_kind == "pad" else _button_brush(key[2]))
-            shape.setPen(_CONTROL_PEN)
-        elif visual_kind == "knob":
-            d = m.knob_glyph
-            ring = QGraphicsEllipseItem(QRectF(left, top, d, d))
-            ring.setBrush(_KNOB_RING_BRUSH)
-            ring.setPen(_CONTROL_PEN)
-            ring.setData(_KEY_ROLE, key)
-            self._scene.addItem(ring)
-            inset = d / 8
-            shape = QGraphicsEllipseItem(QRectF(left + inset, top + inset, d - 2 * inset, d - 2 * inset))
-            shape.setBrush(_KNOB_BRUSH)
-            shape.setPen(_CONTROL_PEN)
-            center_x, center_y = left + d / 2, top + d / 2
-            radius = d / 2 - d / 6
-            angle = _knob_angle_rad(self._values.get(key, _MIDI_DEFAULT))
-            tip_x = center_x + radius * math.sin(angle)
-            tip_y = center_y - radius * math.cos(angle)
-            marker = QGraphicsLineItem(QLineF(center_x, center_y, tip_x, tip_y))
-            marker.setPen(_KNOB_MARKER_PEN)
-            marker.setZValue(1)  # above the dial ellipse (`shape`, added after this in scene order)
-            marker.setData(_KEY_ROLE, key)
-            self._scene.addItem(marker)
-        elif visual_kind == "jog":
-            d = m.jog_glyph
-            shape = QGraphicsEllipseItem(QRectF(left, top, d, d))
-            shape.setBrush(_CONTROL_BRUSH)
-            shape.setPen(_CONTROL_PEN)
-        else:  # fader
-            h = m.fader_glyph_h
-            track = QGraphicsLineItem(QLineF(left + 16, top, left + 16, top + h))
-            track.setPen(_FADER_PEN)
-            track.setData(_KEY_ROLE, key)
-            self._scene.addItem(track)
-            thumb_top = _fader_thumb_top(self._values.get(key, _MIDI_DEFAULT), top, h, 8)
-            shape = QGraphicsRectItem(QRectF(left + 7, thumb_top, 18, 8))
-            shape.setBrush(_CONTROL_BRUSH)
-            shape.setPen(_CONTROL_PEN)
-        shape.setData(_KEY_ROLE, key)
-        shape.setToolTip(f"{key[0]} — {key[1]} {key[2]}")
-        self._scene.addItem(shape)
+        draw_control_glyph(
+            self._scene, self._metrics, x, y, visual_kind, key,
+            self._values.get(key), key in self._flash_keys,
+        )
 
     _ZONE_HEADER_H = 20
 
@@ -693,4 +715,4 @@ class ControllerLayoutView(QWidget):
         self._center_on_pad_zone()
 
 
-__all__ = ["ControllerLayoutView"]
+__all__ = ["ControllerLayoutView", "LayoutMetrics", "draw_control_glyph", "metrics_for"]
