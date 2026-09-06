@@ -82,9 +82,13 @@ _STATIC: list[ControlInfo] = [
 
 def _pad_lookup(channel: str, kind: NoteOrCC, data1: str) -> ControlInfo | None:
     """16 pads x 8 modes, MIDI note = base(pad) + (mode-1)*16, where
-    base(pad) walks each group of 4 pads from high to low: pad1-4 -> 12-15,
-    pad5-8 -> 8-11, pad9-12 -> 4-7, pad13-16 -> 0-3 (verified against the PDF).
-    Not a case for make_sequential_pad_lookup() — the note order isn't linear."""
+    base(pad) walks each group of 4 pads top row to bottom: pad1-4 -> 0-3,
+    pad5-8 -> 4-7, pad9-12 -> 8-11, pad13-16 -> 12-15 (verified against real
+    hardware over the Live Monitor tab -- see the `control-layout-geometry`
+    project memory; an earlier reading of the PDF had this inverted, which
+    the maintainer caught as "pad rows read 4->1 top to bottom instead of
+    1->4" against their real DDJ-XP2). Not a case for
+    make_sequential_pad_lookup() — the note order isn't linear."""
     if kind != "NOTE" or channel not in _PAD_CH_TO_DECK:
         return None
     note = _parse_midi_note(data1)
@@ -93,7 +97,7 @@ def _pad_lookup(channel: str, kind: NoteOrCC, data1: str) -> ControlInfo | None:
     mode = note // 16 + 1
     base = note % 16
     group, pos = divmod(base, 4)
-    pad = (3 - group) * 4 + pos + 1
+    pad = group * 4 + pos + 1
     deck = _PAD_CH_TO_DECK[channel]
     shift_suffix = " +SHIFT" if channel in _PAD_SHIFT_CHANNELS else ""
     name = f"Deck {deck} Pad {pad} (PAD MODE {mode}){shift_suffix}"

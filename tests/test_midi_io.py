@@ -50,7 +50,7 @@ def test_live_note_on_resolves_via_catalog_like_the_real_sample_file():
     event = mido_message_to_event(msg, "in", timestamp=0.0)
     assert event is not None
     hits = catalog.lookup(event.channel, event.event_type, event.data1)
-    assert any(h.controller == "DDJ-XP2" and h.name == "Deck 1 Pad 13 (PAD MODE 5)" for h in hits)
+    assert any(h.controller == "DDJ-XP2" and h.name == "Deck 1 Pad 1 (PAD MODE 5)" for h in hits)
 
 
 def test_timestamp_defaults_to_monotonic_clock_when_not_given():
