@@ -889,6 +889,12 @@ against the current tree and confirmed still open. Tracked as GitHub issues.
   letting it overlap. Still open in case another view/macOS version clips
   differently — the reporter's affected view + macOS version + screenshot
   would confirm whether this was the same one or a second panel remains.
+  Follow-up in `v0.47.40-controller-setup-input-height`: the maintainer
+  asked for "MIDI input" to match "MIDI Output"'s height in that row — it
+  was pinned to its own content height via `AlignTop` while the taller
+  "MIDI Output" panel grew past it. Removed `AlignTop` and let the port
+  list grow into the freed space (stretch factor, dropped the old 90px
+  height cap), so both panels now share the row's height.
 
 ### Next phases to define
 
