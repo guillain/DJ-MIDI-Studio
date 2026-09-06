@@ -179,15 +179,30 @@ _RIGHT_MIRROR_GEOMETRY: dict[str, dict[str, geometry_mod.ControlGeometry]] = {
         # is already there via the pad-grid geometry fix, but PLAY/PAUSE,
         # CUE, SYNC, the jog wheel/tempo display markers, and the 4 PAD
         # MODE buttons still need their own right-tray copy here.
-        "PLAY/PAUSE": geometry_mod.ControlGeometry(0.6631, 0.8420, 0.0296, 0.0484, "circle", "#3ea86b"),
-        "CUE": geometry_mod.ControlGeometry(0.6655, 0.7726, 0.0249, 0.0408, "circle", "#e0954a"),
-        "SYNC": geometry_mod.ControlGeometry(0.8749, 0.5312, 0.0187, 0.0306, "circle", "#4a90d9"),
-        "Jog wheel": geometry_mod.ControlGeometry(0.7226, 0.4268, 0.1944, 0.3185, "circle", "#586b82"),
-        "Tempo": geometry_mod.ControlGeometry(0.8826, 0.6911, 0.0156, 0.1911, "rect", "#6fa8c9"),
-        "HOT CUE": geometry_mod.ControlGeometry(0.7241, 0.7675, 0.0214, 0.0096, "rect", "#7a8aa0"),
-        "BEAT LOOP": geometry_mod.ControlGeometry(0.7527, 0.7675, 0.0214, 0.0096, "rect", "#7a8aa0"),
-        "SLIP LOOP": geometry_mod.ControlGeometry(0.7813, 0.7675, 0.0214, 0.0096, "rect", "#7a8aa0"),
-        "BEAT JUMP": geometry_mod.ControlGeometry(0.8096, 0.7675, 0.0214, 0.0096, "rect", "#7a8aa0"),
+        #
+        # Re-measured from scratch (crop + crosshair verification against
+        # assets/controllers/xdj-xz.png, same discipline as
+        # control-layout-geometry's "measure -> verify" loop) after the
+        # maintainer reported "la platine de droite de la xdj-xz n'est pas
+        # correctement aligné" (the right deck isn't correctly aligned).
+        # The original values here were derived by mirroring the left
+        # tray's offsets rather than independently measured -- fine for
+        # PLAY/PAUSE/CUE/SYNC/PAD MODE (small enough drift, ~15-30px, to be
+        # visually plausible), but off by ~45-85px for the jog wheel, whose
+        # real position isn't a simple constant offset from the left one
+        # (there's a mixer section between the two jogs, not present
+        # between the transport buttons). Box sizes (w/h) are left matching
+        # the left tray's own values throughout -- same physical hardware,
+        # only x/y (top-left position) actually needed re-measuring.
+        "PLAY/PAUSE": geometry_mod.ControlGeometry(0.6572, 0.8618, 0.0296, 0.0484, "circle", "#3ea86b"),
+        "CUE": geometry_mod.ControlGeometry(0.6642, 0.7898, 0.0249, 0.0408, "circle", "#e0954a"),
+        "SYNC": geometry_mod.ControlGeometry(0.8696, 0.5274, 0.0187, 0.0306, "circle", "#4a90d9"),
+        "Jog wheel": geometry_mod.ControlGeometry(0.6890, 0.3993, 0.1944, 0.3185, "circle", "#586b82"),
+        "Tempo": geometry_mod.ControlGeometry(0.8809, 0.6975, 0.0194, 0.1879, "rect", "#6fa8c9"),
+        "HOT CUE": geometry_mod.ControlGeometry(0.7305, 0.7640, 0.0214, 0.0096, "rect", "#7a8aa0"),
+        "BEAT LOOP": geometry_mod.ControlGeometry(0.7607, 0.7640, 0.0214, 0.0096, "rect", "#7a8aa0"),
+        "SLIP LOOP": geometry_mod.ControlGeometry(0.7908, 0.7640, 0.0214, 0.0096, "rect", "#7a8aa0"),
+        "BEAT JUMP": geometry_mod.ControlGeometry(0.8212, 0.7640, 0.0214, 0.0096, "rect", "#7a8aa0"),
     },
 }
 
@@ -218,7 +233,37 @@ def real_position_markers(controller: str) -> list[RealPositionMarker]:
     instead. Combines CONTROL_GEOMETRY with this module's own
     _RIGHT_MIRROR_GEOMETRY (see its docstring for why that table exists
     separately) and resolves each label to a schematic CellKey via
-    layout.cell_key_for_geometry_label()."""
+    layout.cell_key_for_geometry_label().
+
+    A _RIGHT_MIRROR_GEOMETRY entry whose resolved cell falls in a section
+    layout._RIGHT_SIDE_CHANNELS lists for this controller (DECK/PAD MODE --
+    DDJ-XP2's second physical DECK+PAD MODE cluster, XDJ-XZ's right-tray
+    transport; DDJ-XP2's EFFECT -- its second Slide FX chain's EFFECT
+    1/2/3 + TOUCH STRIP HOLD buttons) gets its *displayed* label suffixed
+    " (R)", even though its resolved `key` stays the same merged CellKey as
+    the left cluster's. This mirrors exactly how a right-pad-grid label
+    already carries the suffix directly in CONTROL_GEOMETRY (e.g. "Pad 3
+    (R)"): callers that split click/flash identity on that suffix
+    (gui/controller_emulator.py, gui/controller_image_view.py) and
+    layout.resolve_side_aware_variant() (which narrows such an entry's
+    multi-channel `channels` down to one side) then treat the two physical
+    clusters independently for free, without this function needing to know
+    anything about resolution itself.
+
+    A mirror entry with NO resolved cell at all (a continuous, display-only
+    control with no catalog entry, e.g. XDJ-XZ's right-tray "Tempo"/"Jog
+    wheel") gets a *fully* distinct key too, not just a distinct label --
+    unlike DECK/PAD MODE/EFFECT, there is no real shared trigger for the
+    two sides to keep routing back to, so nothing is lost by giving each
+    side its own independent `("DISPLAY", ...)` key; the alternative (both
+    sides sharing one key) would make dragging the right Tempo fader also
+    move the left one's glyph in EmulatorLayoutView, and vice versa -- the
+    same class of bug as the click-through cases, just for a drag instead
+    of a click. Any other EFFECT/MIXER-section mirror entry (e.g. XDJ-XZ
+    has none; a future controller's Slide FX-style fader would be
+    display-only too) is left unsuffixed -- it already resolves to its own
+    distinct cell (e.g. "Slide FX 2" is a real cell in its own right, not a
+    merged duplicate of "Slide FX 1"), so there is nothing to disambiguate."""
     geometry_entries = geometry_mod.CONTROL_GEOMETRY.get(controller)
     if not geometry_entries:
         return []
@@ -226,13 +271,19 @@ def real_position_markers(controller: str) -> list[RealPositionMarker]:
     cells_by_key = {cell.key: cell for cell in layout_mod.build_layout(controller)}
     markers: list[RealPositionMarker] = []
     all_entries = itertools.chain(
-        geometry_entries.items(),
-        _RIGHT_MIRROR_GEOMETRY.get(controller, {}).items(),
+        ((label, geom, False) for label, geom in geometry_entries.items()),
+        ((label, geom, True) for label, geom in _RIGHT_MIRROR_GEOMETRY.get(controller, {}).items()),
     )
-    for label, geom in all_entries:
+    for label, geom, is_mirror in all_entries:
         key = layout_mod.cell_key_for_geometry_label(controller, label)
+        display_label = label
         if key is None:
-            key = (controller, "DISPLAY", label)
+            # No real trigger to share -- give a mirror entry its own fully
+            # independent DISPLAY key (see the docstring above).
+            display_label = f"{label}{layout_mod._RIGHT_GRID_SUFFIX}" if is_mirror else label
+            key = (controller, "DISPLAY", display_label)
+        elif is_mirror and key[1] in layout_mod._RIGHT_SIDE_CHANNELS.get(controller, {}):
+            display_label = f"{label}{layout_mod._RIGHT_GRID_SUFFIX}"
         rect = QRectF(geom.x * canvas_w, geom.y * canvas_h, geom.w * canvas_w, geom.h * canvas_h)
         # A MIXER/display cell's kind comes from _DISPLAY_CONTROLS (e.g.
         # "Slide FX 2" is explicitly a fader), not the generic name-based
@@ -246,7 +297,7 @@ def real_position_markers(controller: str) -> list[RealPositionMarker]:
             if resolved_cell is not None
             else layout_mod.visual_kind_for(key[1], key[2])
         )
-        markers.append(RealPositionMarker(key, label, rect, geom.shape, geom.color, visual_kind))
+        markers.append(RealPositionMarker(key, display_label, rect, geom.shape, geom.color, visual_kind))
     return markers
 
 

@@ -866,6 +866,90 @@ documentation index.
   involved change (its cross-tab navigation and `self._usage` dict both key
   off the merged `CellKey` today) — tracked as a known follow-up, not a
   silently-dropped fix.
+- [x] **Fix: the same mirroring bug, one section over (DECK/PAD MODE buttons)**
+  — after the pad-grid fix above shipped, the maintainer confirmed it
+  worked for pads but reported the identical symptom persisted for "tous
+  les modes pad" (the 4 PAD MODE select buttons), i.e. "mirroring deck 1 et
+  2" again. Root cause was structurally different from the pad case: PAD
+  has a *separate* `ControlInfo` per deck (`pad_lookup` embeds "Deck N" in
+  each hit's name), so `resolve_side_aware_variant` could filter *between*
+  variants — but DDJ-XP2's DECK-section buttons (BEAT SYNC, QUANTIZE, 4
+  BEAT LOOP, 1/2X, 2X, SILENT CUE, KEY -/+) and its 4 PAD MODE buttons (and
+  XDJ-XZ's right-tray transport/pad-mode-select equivalents) are each a
+  *single* catalog entry whose `channels` tuple spans all 4 decks at once
+  (`_DECK_CH = ("1", "2", "3", "4")`, channel string == deck number by that
+  module's own convention) — there was no second variant to filter towards
+  at all, and no signal telling the Emulator's right-mirror-cluster markers
+  they were even "the right side" in the first place (unlike a pad grid's
+  "Pad N (R)" label, `_RIGHT_MIRROR_GEOMETRY`'s own labels are bare, e.g.
+  "BEAT SYNC" — deliberately never suffixed, so as not to disturb Controller
+  Images' unrelated live-flash reverse index, which doesn't consume this
+  table at all). Fixed in two parts: `layout_view.real_position_markers()`
+  now suffixes a `_RIGHT_MIRROR_GEOMETRY` entry's *displayed* label " (R)"
+  whenever its resolved cell falls in a new `layout._DECK_MULTIPLEXED_SECTIONS`
+  (`DECK`, `PAD MODE` — EFFECT/MIXER-section mirror entries like Slide FX or
+  the EFFECT depth knobs are excluded, since their channels are FX-chain
+  channels, not deck numbers, and narrowing those would be meaningless);
+  the resolved schematic `CellKey` itself is untouched, so this reuses
+  exactly the same presentation-key-splitting code the pad fix already
+  added to `EmulatorLayoutView`/`ControllerEmulatorView`, with no further
+  changes needed there. `layout.resolve_side_aware_variant()` then narrows
+  such an entry's multi-deck `channels` tuple down to a single channel for
+  the requested side via `_RIGHT_GRID_DECKS` (the same table the pad fix
+  introduced), instead of filtering between several already-separate
+  variants — applied to *both* sides, not just the right, since even the
+  left marker's entry previously spanned all 4 channels (meaning a left
+  click's live send would have also fired channels 2-4 at once, a real bug
+  in its own right, not just a display quirk). `ControllerImageView` needed
+  no change: it draws only from `geometry.CONTROL_GEOMETRY` directly, never
+  from `_RIGHT_MIRROR_GEOMETRY`, so it was never showing this cluster in
+  the first place. Same scope decision as the pad fix: `ControllerLayoutView`'s
+  own real-position mode is left unfixed for this cluster too.
+- [x] **Fix: the mirroring bug generalized (EFFECT-section buttons and
+  continuous mirror faders), plus an XDJ-XZ right-deck geometry
+  correction** — the maintainer confirmed the DECK/PAD MODE fix worked,
+  then reported the same symptom for two more spots: "le hold effect de la
+  ddj-xp2" (DDJ-XP2's TOUCH STRIP HOLD button) and "le temps de la xdj-xz"
+  (XDJ-XZ's Tempo fader) — plus, separately, "la platine de droite de la
+  xdj-xz n'est pas correctement aligné" (the XDJ-XZ's right deck isn't
+  correctly aligned), a geometry problem rather than a resolution one.
+  Root cause of the first two: the DECK/PAD MODE fix's channel-narrowing
+  was hardcoded to deck numbers (`_RIGHT_GRID_DECKS`), but DDJ-XP2's
+  EFFECT section (EFFECT 1/2/3, TOUCH STRIP HOLD) bundles its *two Slide
+  FX chains'* copies into one entry via `_FX_CH = ("5", "6")` — the same
+  single-entry-multi-channel shape as DECK/PAD MODE, just multiplexed by
+  FX-chain channel instead of deck number, so it needed the same fix but
+  wasn't yet covered by it. Generalized `layout._DECK_MULTIPLEXED_SECTIONS`
+  into a `_RIGHT_SIDE_CHANNELS: dict[str, dict[str, frozenset[str]]]`
+  (controller -> section -> right-side channel set), now covering
+  DDJ-XP2's `EFFECT` section (`{"6"}`) alongside `DECK`/`PAD MODE`
+  (`{"2", "4"}`) for both controllers — `resolve_side_aware_variant()`'s
+  narrowing logic is unchanged, just reads from the richer table.
+  XDJ-XZ's Tempo (and Jog wheel) needed a *different* fix: they're
+  continuous, display-only markers with no catalog entry at all, so
+  `real_position_markers()` previously gave both sides the exact same
+  `("DISPLAY", "Tempo")` fallback key (there being no schematic cell to
+  preserve identity with) — meaning dragging the right Tempo fader in the
+  Controller Emulator also moved the left one's glyph. Fixed by giving a
+  mirror entry with no resolved cell a *fully* distinct key too (not just
+  a distinct label, unlike DECK/PAD MODE/EFFECT, which still route back to
+  one real shared trigger): `("DISPLAY", "Tempo (R)")` for the right side.
+  Separately, `_RIGHT_MIRROR_GEOMETRY["XDJ-XZ"]`'s transport cluster
+  (PLAY/PAUSE, CUE, SYNC, jog wheel, Tempo, the 4 PAD MODE-select buttons)
+  was re-measured from scratch against `assets/controllers/xdj-xz.png`
+  (crop + crosshair verification, then a full-image marker overlay to
+  visually confirm every entry against the real photo at once) — its
+  original values had been derived by mirroring the left tray's offsets
+  rather than independently measured, which drifted by ~15-30px for
+  PLAY/PAUSE/CUE/SYNC/PAD MODE (small enough to look plausible) but ~45-85px
+  for the jog wheel specifically, since the real distance between the two
+  jogs isn't a simple constant offset (there's a mixer section between
+  them, unlike the transport buttons). Box sizes (w/h) were left matching
+  the left tray throughout; only x/y (top-left position) needed
+  re-measuring. New tests cover the EFFECT-section narrowing (both
+  DDJ-XP2's split and a regression guard for XDJ-XZ's unsplit single-channel
+  EFFECT section), the Tempo fader's independent DISPLAY key, and
+  `real_position_markers()` emitting the new labels/keys correctly.
 - [x] **DDJ-1000 catalog data correction** (`catalog/ddj_1000.py`, related to
   issue [#11](https://github.com/guillain/DJ-MIDI-Studio/issues/11)) —
   discovered while cross-checking DECK section names against the official

@@ -163,6 +163,81 @@ def test_controller_emulator_view_resolves_left_and_right_pad_to_their_own_deck(
     assert "ch10" in right_text  # deck 2's pad channel
 
 
+# ─── Same fix, one section over: DECK/PAD MODE buttons (the follow-up ─────
+# ─── report "tous les modes pad ont le même problème (mirroring deck 1 ────
+# ─── et 2)" once the pad-grid fix above had already shipped) ───────────────
+
+
+def test_emulator_right_mirror_deck_button_gets_its_own_presentation_key():
+    """DDJ-XP2's second physical DECK/PAD MODE cluster (real_position_markers()
+    suffixes its label " (R)" for exactly this reason) must get its own
+    scene-item key, distinct from the left cluster's, the same way the pad
+    grid already does."""
+    view = EmulatorLayoutView("DDJ-XP2")
+    left_items = [
+        item for item in view._scene.items() if item.data(_KEY_ROLE) == ("DDJ-XP2", "DECK", "BEAT SYNC")
+    ]
+    right_items = [
+        item for item in view._scene.items() if item.data(_KEY_ROLE) == ("DDJ-XP2", "DECK", "BEAT SYNC (R)")
+    ]
+    assert left_items
+    assert right_items
+
+
+def test_emulator_flashing_the_right_mirror_pad_mode_button_does_not_flash_the_left():
+    view = EmulatorLayoutView("DDJ-XP2")
+    left_key: CellKey = ("DDJ-XP2", "PAD MODE", "PAD MODE 1")
+    right_key: CellKey = ("DDJ-XP2", "PAD MODE", "PAD MODE 1 (R)")
+    view.flash_key(right_key)
+    assert right_key in view._flash_keys
+    assert left_key not in view._flash_keys
+
+
+def test_controller_emulator_view_resolves_left_and_right_pad_mode_to_their_own_deck():
+    view = ControllerEmulatorView(config_provider=lambda: None)
+    view._combo.setCurrentText("DDJ-XP2")
+    left_text = view._resolve(("DDJ-XP2", "PAD MODE", "PAD MODE 1"))
+    right_text = view._resolve(("DDJ-XP2", "PAD MODE", "PAD MODE 1 (R)"))
+    assert "ch1 " in left_text  # deck 1's channel
+    assert "ch2 " in right_text  # deck 2's channel
+
+
+def test_controller_emulator_view_resolves_left_and_right_beat_sync_to_their_own_deck():
+    view = ControllerEmulatorView(config_provider=lambda: None)
+    view._combo.setCurrentText("DDJ-XP2")
+    left_text = view._resolve(("DDJ-XP2", "DECK", "BEAT SYNC"))
+    right_text = view._resolve(("DDJ-XP2", "DECK", "BEAT SYNC (R)"))
+    assert "ch1 " in left_text
+    assert "ch2 " in right_text
+
+
+def test_controller_emulator_view_resolves_left_and_right_touch_strip_hold_by_slide_fx_side():
+    """DDJ-XP2's EFFECT section (Slide FX 1 vs 2) bundles the same way as
+    DECK/PAD MODE, just along a different channel axis -- reported by the
+    maintainer as "le hold effect de la ddj-xp2" sharing the same problem."""
+    view = ControllerEmulatorView(config_provider=lambda: None)
+    view._combo.setCurrentText("DDJ-XP2")
+    left_text = view._resolve(("DDJ-XP2", "EFFECT", "TOUCH STRIP HOLD"))
+    right_text = view._resolve(("DDJ-XP2", "EFFECT", "TOUCH STRIP HOLD (R)"))
+    assert "ch5 " in left_text  # Slide FX 1's channel
+    assert "ch6 " in right_text  # Slide FX 2's channel
+
+
+def test_emulator_right_tempo_fader_has_its_own_value_independent_of_the_left():
+    """XDJ-XZ's right-tray "Tempo" fader is continuous/display-only (no
+    catalog trigger), so real_position_markers() gives it a fully distinct
+    DISPLAY key rather than just a distinct label -- otherwise dragging the
+    right fader would also move the left one's glyph in EmulatorLayoutView
+    (reported by the maintainer as "même problème pour le temps de la
+    xdj-xz")."""
+    view = EmulatorLayoutView("XDJ-XZ")
+    left_key: CellKey = ("XDJ-XZ", "DISPLAY", "Tempo")
+    right_key: CellKey = ("XDJ-XZ", "DISPLAY", "Tempo (R)")
+    view.set_value(right_key, 100)
+    assert view._values.get(right_key) == 100
+    assert left_key not in view._values
+
+
 # ─── ControllerEmulatorView ────────────────────────────────────────────────
 
 def test_controller_emulator_view_resolves_against_no_config():

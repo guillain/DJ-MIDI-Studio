@@ -373,26 +373,66 @@ _RIGHT_GRID_DECKS: dict[str, frozenset[int]] = {
 }
 _DECK_NUM_RE = re.compile(r"^Deck (\d+)")
 
+# Sections whose entries bundle more than one physical control's channel
+# into a *single* catalog entry, unlike PAD (where pad_lookup already
+# produces a separate ControlInfo per deck): DDJ-XP2's DECK-section buttons
+# (BEAT SYNC, QUANTIZE, ...) and PAD MODE buttons each have one entry whose
+# `channels` tuple spans all 4 decks at once (_DECK_CH = ("1", "2", "3",
+# "4") in catalog/ddj_xp2.py -- channel string == deck number by
+# convention, confirmed by that module's own "1-4 = DECK 1-4" comment;
+# XDJ-XZ's DECK section follows the identical convention). DDJ-XP2's
+# EFFECT section (EFFECT 1/2/3, TOUCH STRIP HOLD) bundles the *same* way
+# but along a different axis -- Slide FX chain, not deck -- via _FX_CH =
+# ("5", "6"): channel "5" is the left Slide FX 1's copy of the button,
+# "6" the right Slide FX 2's copy. Per-(controller, section) rather than
+# a single deck-number set, because the "right side" channel isn't always
+# a deck number and isn't always the same value across sections (nor does
+# every controller/section combination bundle at all -- XDJ-XZ's EFFECT
+# section uses a single, unbundled channel, so it has no entry here).
+_RIGHT_SIDE_CHANNELS: dict[str, dict[str, frozenset[str]]] = {
+    "DDJ-XP2": {
+        "DECK": frozenset({"2", "4"}),
+        "PAD MODE": frozenset({"2", "4"}),
+        "EFFECT": frozenset({"6"}),
+    },
+    "XDJ-XZ": {
+        "DECK": frozenset({"2", "4"}),
+    },
+}
+
 
 def resolve_side_aware_variant(controller: str, key: CellKey) -> catalog.ControlInfo | None:
     """Like reverse_lookup(controller).get(base_key) + pick_default_variant(),
     but first strips a real-position " (R)" suffix from the key's label
-    (see geometry.py's "Right pad grid" docstring) and, for a PAD cell,
-    filters the resulting variants down to the matching physical side's
-    deck(s) via _RIGHT_GRID_DECKS.
+    (see geometry.py's "Right pad grid" docstring) and narrows the result
+    down to the matching physical side: for a PAD cell, by filtering the
+    candidate variants via _RIGHT_GRID_DECKS; for any other cell whose
+    (controller, section) has an entry in _RIGHT_SIDE_CHANNELS, by
+    narrowing the resolved entry's own multi-channel `channels` tuple down
+    to one channel via that table.
 
-    Exists because a right-pad-grid marker's *presentation* key
-    (e.g. `(controller, "PAD", "Pad 3 (R)")`, used by the Controller
-    Emulator to keep the two grids' flash/click state independent -- see
-    gui/controller_emulator.py) is deliberately NOT a real schematic
-    CellKey `reverse_lookup()` knows about; without this filtering step,
-    resolving it would either find nothing or silently fall back to the
-    *left* grid's deck (1/3) variant regardless of which grid was actually
-    clicked -- confirmed by the maintainer as "pressing a button on one
-    deck also activates the second deck" while testing the Controller
-    Emulator. A combined label ("PAD MODE 1/5") resolves via its first
-    alternative, same as cell_key_for_geometry_label(); a plain key with no
-    suffix (unaffected by this fix -- classic-grid cells, or any
+    Exists because a right-side marker's *presentation* key (e.g.
+    `(controller, "PAD", "Pad 3 (R)")`, `(controller, "DECK", "BEAT
+    SYNC (R)")`, or `(controller, "EFFECT", "TOUCH STRIP HOLD (R)")` --
+    used by the Controller Emulator to keep the two physical clusters'
+    flash/click state independent, see gui/controller_emulator.py and
+    layout_view.real_position_markers()) is deliberately NOT a real
+    schematic CellKey `reverse_lookup()` knows about; without this
+    filtering step, resolving it would either find nothing, or (for PAD)
+    silently fall back to the *left* grid's deck (1/3), or (for a bundled
+    section) return the single shared entry unnarrowed, whose `channels`
+    spans every side at once -- meaning a live send would fire on every
+    side simultaneously and dry-run resolution would always check the
+    left side's mapping, regardless of which physical cluster was actually
+    clicked. Confirmed by the maintainer first for pads ("pressing a
+    button on one deck also activates the second deck"), then again after
+    the pad fix shipped, for the PAD MODE buttons ("tous les modes pad ont
+    le même problème (mirroring deck 1 et 2)"), then again for DDJ-XP2's
+    TOUCH STRIP HOLD/EFFECT buttons and XDJ-XZ's Tempo fader -- the same
+    root cause recurring section by section as each was exercised in turn.
+    A combined label ("PAD MODE 1/5") resolves via its first alternative,
+    same as cell_key_for_geometry_label(); a plain key with no suffix
+    (unaffected by this fix -- classic-grid cells, or any
     non-real-position caller) behaves exactly as reverse_lookup() +
     pick_default_variant() already did."""
     controller_name, section, label = key
@@ -413,7 +453,13 @@ def resolve_side_aware_variant(controller: str, key: CellKey) -> catalog.Control
         filtered = [variant for variant in variants if _matches_side(variant)]
         if filtered:
             variants = filtered
-    return pick_default_variant(variants)
+    entry = pick_default_variant(variants)
+    right_channels = _RIGHT_SIDE_CHANNELS.get(controller_name, {}).get(section)
+    if right_channels and len(entry.channels) > 1:
+        side_channels = tuple(ch for ch in entry.channels if (ch in right_channels) == right_side)
+        if side_channels:
+            entry = replace(entry, channels=(side_channels[0],))
+    return entry
 
 
 _AMBIGUOUS_TRIGGER_MARKERS = ("shift", "long press", "press twice", "direct button")
