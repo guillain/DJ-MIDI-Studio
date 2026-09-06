@@ -651,6 +651,57 @@ def test_performance_mode_ratio_survives_a_resize():
         window.close()
 
 
+def test_controller_emulator_dock_exists_and_starts_hidden():
+    window = MainWindow()
+    try:
+        dock = window._tool_docks["emulator"]
+        assert dock.widget() is window.controller_emulator_view
+        assert not dock.isVisible()
+    finally:
+        window.close()
+
+
+def test_controller_emulator_dock_toggle_view_action_shows_it():
+    window = MainWindow()
+    window.show()
+    QApplication.processEvents()
+    try:
+        dock = window._tool_docks["emulator"]
+        dock.toggleViewAction().trigger()
+        QApplication.processEvents()
+        assert dock.isVisible()
+    finally:
+        window.close()
+
+
+def test_controller_emulator_resolves_against_the_loaded_config():
+    window = _loaded_window()
+    try:
+        emulator = window.controller_emulator_view
+        assert emulator._config_provider() is window.config
+    finally:
+        window.close()
+
+
+def test_controller_applied_refreshes_the_emulator_and_clears_reverse_lookup_cache(monkeypatch):
+    from djmidi.gui import layout as layout_mod
+
+    window = MainWindow()
+    try:
+        layout_mod.reverse_lookup("DDJ-XP2")  # populate the cache
+        cleared = []
+        monkeypatch.setattr(layout_mod, "clear_reverse_lookup_cache", lambda: cleared.append(True))
+        refreshed = []
+        monkeypatch.setattr(
+            window.controller_emulator_view, "refresh_controllers", lambda: refreshed.append(True)
+        )
+        window._on_controller_applied("DDJ-XP2")
+        assert cleared == [True]
+        assert refreshed == [True]
+    finally:
+        window.close()
+
+
 def test_edit_column_hidden_on_non_tree_tabs():
     from djmidi import catalog
 

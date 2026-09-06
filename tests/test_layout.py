@@ -1,4 +1,5 @@
 from djmidi.gui import layout
+from djmidi.gui.layout import clear_reverse_lookup_cache, reverse_lookup
 
 
 def test_ddj_xp2_pad_grid_is_4x4():
@@ -91,3 +92,52 @@ def test_zone_anchors_do_not_vertically_abut():
                     b_lo, b_hi = spans[b]
                     # overlapping columns => must be clearly separated in rows
                     assert a_hi + 1 < b_lo or b_hi + 1 < a_lo, (controller, a, b)
+
+
+# ─── reverse_lookup (gui/controller_emulator.py's raw-trigger resolution) ─────
+
+def test_reverse_lookup_finds_static_entry_variants_by_cell():
+    clear_reverse_lookup_cache()
+    index = reverse_lookup("DDJ-XP2")
+    variants = index[("DDJ-XP2", "DECK", "BEAT SYNC")]
+    names = {v.name for v in variants}
+    assert names == {"BEAT SYNC", "BEAT SYNC (+SHIFT)"}
+    for variant in variants:
+        assert variant.channels == ("1", "2", "3", "4")
+
+
+def test_reverse_lookup_finds_pad_bank_variants_via_brute_force():
+    clear_reverse_lookup_cache()
+    index = reverse_lookup("DDJ-XP2")
+    variants = index[("DDJ-XP2", "PAD", "Pad 1")]
+    # Every pad-mode bank for physical Pad 1, across both the plain and
+    # +SHIFT pad channels, collapses into this one cell.
+    assert len(variants) > 1
+    for variant in variants:
+        hit = layout.catalog.lookup(variant.channels[0], variant.note_or_cc, variant.data1)
+        assert any(h.name.startswith("Pad 1") or "Pad 1 " in h.name for h in hit)
+
+
+def test_reverse_lookup_pad_variants_are_ordered_lowest_data1_first():
+    clear_reverse_lookup_cache()
+    index = reverse_lookup("DDJ-XP2")
+    variants = index[("DDJ-XP2", "PAD", "Pad 1")]
+    same_channel = [v for v in variants if v.channels == variants[0].channels]
+    data1_values = [int(v.data1) for v in same_channel]
+    assert data1_values == sorted(data1_values)
+
+
+def test_reverse_lookup_is_cached_until_cleared():
+    clear_reverse_lookup_cache()
+    first = reverse_lookup("DDJ-XP2")
+    second = reverse_lookup("DDJ-XP2")
+    assert first is second
+    clear_reverse_lookup_cache()
+    third = reverse_lookup("DDJ-XP2")
+    assert third is not first
+
+
+def test_reverse_lookup_returns_empty_for_a_cell_with_no_trigger():
+    clear_reverse_lookup_cache()
+    index = reverse_lookup("DDJ-XP2")
+    assert ("DDJ-XP2", "MIXER", "Effect 1 Depth") not in index

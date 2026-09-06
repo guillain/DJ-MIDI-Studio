@@ -50,6 +50,52 @@ def cell_key(hit: catalog.ControlInfo) -> CellKey:
     return (hit.controller, hit.section, label)
 
 
+_REVERSE_LOOKUP_CACHE: dict[str, dict[CellKey, list[catalog.ControlInfo]]] = {}
+_ALL_CHANNELS = tuple(str(n) for n in range(1, 17))
+_ALL_KINDS: tuple[catalog.NoteOrCC, ...] = ("NOTE", "CC")
+_ALL_DATA1 = tuple(str(n) for n in range(128))
+
+
+def clear_reverse_lookup_cache() -> None:
+    """Invalidate every controller's cached reverse lookup. Call whenever the
+    catalog registry changes at runtime (see
+    MainWindow._on_controller_applied) -- a controller's static entries or
+    pad_lookup formula may have just been replaced."""
+    _REVERSE_LOOKUP_CACHE.clear()
+
+
+def reverse_lookup(controller: str) -> dict[CellKey, list[catalog.ControlInfo]]:
+    """Every real ControlInfo variant that collapses to each layout cell for
+    this controller -- the inverse of catalog.lookup(), needed to turn a
+    clicked emulator cell back into a raw MIDI trigger (gui/controller_emulator.py).
+
+    Static entries are a direct scan. Pad-bank entries (bespoke pad_lookup
+    formulas, e.g. ddj_1000.py's mode/pad note math) have no stored inverse
+    anywhere, so their bounded domain (16 channels x 2 kinds x 128 data1
+    values, <=4096 calls) is brute-force enumerated and re-run through
+    pad_lookup -- this works for any bespoke formula, including future
+    community-submitted ones (see catalog/codegen.py), without hand-inverting
+    each one. Enumeration order (channel, then kind, then ascending data1)
+    means the lowest-numbered pad-mode bank for a given pad is always first
+    in its cell's list -- a deterministic, documented default."""
+    cached = _REVERSE_LOOKUP_CACHE.get(controller)
+    if cached is not None:
+        return cached
+    definition = catalog.get_definition(controller)
+    index: dict[CellKey, list[catalog.ControlInfo]] = {}
+    for entry in definition.static_entries:
+        index.setdefault(cell_key(entry), []).append(entry)
+    if definition.pad_lookup is not None:
+        for channel in _ALL_CHANNELS:
+            for kind in _ALL_KINDS:
+                for data1 in _ALL_DATA1:
+                    hit = definition.pad_lookup(channel, kind, data1)
+                    if hit is not None:
+                        index.setdefault(cell_key(hit), []).append(hit)
+    _REVERSE_LOOKUP_CACHE[controller] = index
+    return index
+
+
 def visual_kind_for(section: str, name: str) -> VisualKind:
     """Infer a DJ-oriented control shape from catalog vocabulary.
 
