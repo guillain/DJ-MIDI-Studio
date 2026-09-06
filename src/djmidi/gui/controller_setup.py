@@ -188,10 +188,10 @@ class ControllerSetupView(QWidget):
         self._port_list = QListWidget()
         self._port_list.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
         # QListWidget.sizeHint() ignores setMinimumHeight (it returns a fixed
-        # ~192px regardless), which was inflating this whole panel row far
-        # beyond its actual content; capping the height pins both ends.
+        # ~192px regardless); a floor keeps it from collapsing, and it grows
+        # to fill "MIDI input"'s panel height via the stretch factor below
+        # (matching "MIDI Output"'s panel, see the io_row comment).
         self._port_list.setMinimumHeight(70)
-        self._port_list.setMaximumHeight(90)
         refresh_button = QPushButton(self._get_icon("refresh"), "")
         refresh_button.setToolTip("Refresh ports")
         refresh_button.clicked.connect(self._refresh_ports)
@@ -209,7 +209,7 @@ class ControllerSetupView(QWidget):
         capture_box, capture_layout = self._titled_panel(
             "MIDI input", [refresh_button, self._learn_button, capture_help_button]
         )
-        capture_layout.addWidget(self._port_list)
+        capture_layout.addWidget(self._port_list, 1)
         capture_layout.addSpacing(6)
         capture_layout.addWidget(self._learn_status)
 
@@ -374,11 +374,13 @@ class ControllerSetupView(QWidget):
         draft_layout.addWidget(self._image_label)
 
         # "MIDI input" (learn) sits at the start of the same row as "MIDI
-        # Output"; top-aligned so it stays as tall as its own content instead
-        # of stretching to the (taller) MIDI Output panel.
+        # Output"; both stretch to the row's shared height (the port list
+        # inside each grows to fill via its own stretch factor above), so
+        # the two panels read as one matched-height toolbar instead of the
+        # (taller) "MIDI Output" panel dwarfing a short "MIDI input" one.
         io_row = QHBoxLayout()
         io_row.setSpacing(12)
-        io_row.addWidget(capture_box, 1, Qt.AlignmentFlag.AlignTop)
+        io_row.addWidget(capture_box, 1)
         io_row.addWidget(output_box, 3)
 
         # The "MIDI Output" panel's three side-by-side columns (Send message /
