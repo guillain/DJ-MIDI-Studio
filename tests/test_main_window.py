@@ -301,7 +301,7 @@ def test_on_live_midi_event_flashes_the_resolved_layout_cells():
 
 
 def test_on_live_midi_event_flashes_the_controller_image_overlay_for_the_shown_controller():
-    """channel 8 / data1 64 is DDJ-XP2 deck-1 Pad 13 (PAD MODE 5) -- see
+    """channel 8 / data1 64 is DDJ-XP2 deck-1 Pad 1 (PAD MODE 5) -- see
     catalog/ddj_xp2.py's pad_lookup note math."""
     from djmidi.midi_io import MidiEvent
 
@@ -311,18 +311,20 @@ def test_on_live_midi_event_flashes_the_controller_image_overlay_for_the_shown_c
     event = MidiEvent(direction="in", channel="8", event_type="Note On", data1="64", data2="127", timestamp=0.0)
     window._on_live_midi_event(event)
     QApplication.processEvents()
-    item = window.controller_image_view._overlay_items_by_label["Pad 13"]
+    item = window.controller_image_view._overlay_items_by_label["Pad 1"]
     assert item.brush().color() == QColor(255, 255, 255, 200)
     window.close()
 
 
 def test_on_live_midi_event_does_not_flash_the_image_overlay_for_a_different_shown_controller():
+    """channel 8 / data1 12 is DDJ-XP2 deck-1 Pad 13 (PAD MODE 1) -- a
+    DDJ-XP2-only label, since XDJ-XZ's own pad grid only goes up to Pad 8."""
     from djmidi.midi_io import MidiEvent
 
     window = _loaded_window()
     window.controller_image_view.set_controller("XDJ-XZ")
     window.controller_image_view._geometry_checkbox.setChecked(True)
-    event = MidiEvent(direction="in", channel="8", event_type="Note On", data1="64", data2="127", timestamp=0.0)
+    event = MidiEvent(direction="in", channel="8", event_type="Note On", data1="12", data2="127", timestamp=0.0)
     window._on_live_midi_event(event)
     QApplication.processEvents()
     assert window.controller_image_view._overlay_items_by_label  # markers exist

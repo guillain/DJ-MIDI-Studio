@@ -88,11 +88,16 @@ callout numbers alone):
 Both controllers have a mirrored/repeated physical layout that the schematic
 already collapses to one cell regardless of which copy is used:
 
-- XDJ-XZ has two deck sides (left tray = deck 1, right tray = deck 2); only
-  the left side's coordinates are recorded here.
+- XDJ-XZ has two deck sides (left tray = deck 1, right tray = deck 2, each
+  also switchable to deck 3/4 respectively -- see below); its pad grid is
+  the only cluster with both sides recorded (see "Right pad grid" below) --
+  the rest of the mixer strip has no discrete catalog entries at all
+  (continuous controls are out of catalog scope), so there is nothing left
+  to duplicate.
 - DDJ-XP2 has two 4x4 pad grids, two SLIDE FX banks, and two LOOP/QUANTIZE/
-  KEY clusters (one per side); only the left copy's coordinates are recorded
-  here.
+  KEY clusters (one per side); only the pad grids have both sides recorded
+  (see "Right pad grid" below) -- the SLIDE FX/LOOP/QUANTIZE/KEY clusters
+  still only have their left copy recorded, same known limitation as before.
 - A physical button shared by more than one logical trigger gets *one*
   geometry entry, labelled with every name it answers to, to avoid drawing
   identical markers stacked on top of each other:
@@ -102,6 +107,26 @@ already collapses to one cell regardless of which copy is used:
     logical "LOAD DECK 1/2/3/4" triggers, disambiguated by SHIFT the same
     way its pad channels are (see ``catalog/ddj_xp2.py``): left = decks
     1/3, right = decks 2/4.
+
+Right pad grid (DDJ-XP2 and XDJ-XZ): both controllers have a *second*,
+physically distinct pad grid to the right of the one described above, which
+earlier revisions of this module didn't record at all -- a live hit on that
+grid (deck 2 or 4 on DDJ-XP2; deck 2 on XDJ-XZ) would fall back to flashing
+the *left* grid's same-numbered marker instead of its own (or nothing),
+which is what the maintainer reported (issue: "pad rows are inverted" +
+"the right pad grid is absent and its hits land on the left grid",
+confirmed on real DDJ-XP2 and XDJ-XZ hardware over the Live Monitor tab).
+The right grid's own entries are recorded here under a name suffixed
+" (R)" (e.g. "Pad 3 (R)"), measured the same way as everything else --
+cropping the real photo and reading off pixel bounds -- and
+``resolve_geometry_label`` picks between the plain and " (R)" labels by
+looking at which deck the live hit's raw name carries (see
+``_RIGHT_GRID_DECKS`` below). DDJ-XP2's left/right split (decks 1/3 = left,
+2/4 = right) is confirmed by both the official MIDI Message List's LOAD
+button table and a real hardware press over Live Monitor (deck 1 -> left
+grid, deck 2 -> right grid); XDJ-XZ's deck 1/2 split is likewise confirmed
+on real hardware, but its deck 3/4 assignment to left/right is inferred by
+symmetry with DDJ-XP2, not independently hardware-tested.
 """
 
 from __future__ import annotations
@@ -158,6 +183,18 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         "Pad 6": ControlGeometry(0.2363, 0.8471, 0.0214, 0.0350, "rect", "#e0708f"),
         "Pad 7": ControlGeometry(0.2644, 0.8471, 0.0214, 0.0350, "rect", "#e0708f"),
         "Pad 8": ControlGeometry(0.2927, 0.8471, 0.0214, 0.0350, "rect", "#e0708f"),
+        # The second, physically distinct pad grid on the right tray (deck
+        # 2, or deck 4 by symmetry) -- see "Right pad grid" in the module
+        # docstring. Same row Y's/size as the left grid, columns measured
+        # separately against the photo.
+        "Pad 1 (R)": ControlGeometry(0.7225, 0.7962, 0.0214, 0.0350, "rect", "#e0708f"),
+        "Pad 2 (R)": ControlGeometry(0.7517, 0.7962, 0.0214, 0.0350, "rect", "#e0708f"),
+        "Pad 3 (R)": ControlGeometry(0.7810, 0.7962, 0.0214, 0.0350, "rect", "#e0708f"),
+        "Pad 4 (R)": ControlGeometry(0.8093, 0.7962, 0.0214, 0.0350, "rect", "#e0708f"),
+        "Pad 5 (R)": ControlGeometry(0.7225, 0.8471, 0.0214, 0.0350, "rect", "#e0708f"),
+        "Pad 6 (R)": ControlGeometry(0.7517, 0.8471, 0.0214, 0.0350, "rect", "#e0708f"),
+        "Pad 7 (R)": ControlGeometry(0.7810, 0.8471, 0.0214, 0.0350, "rect", "#e0708f"),
+        "Pad 8 (R)": ControlGeometry(0.8093, 0.8471, 0.0214, 0.0350, "rect", "#e0708f"),
     },
     "DDJ-REV1": {
         # Green: matches PLAY/PAUSE's accent color on the other controllers.
@@ -199,6 +236,25 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         "Pad 14": ControlGeometry(0.3736, 0.8558, 0.0357, 0.0674, "rect", "#e0708f"),
         "Pad 15": ControlGeometry(0.4134, 0.8558, 0.0357, 0.0674, "rect", "#e0708f"),
         "Pad 16": ControlGeometry(0.4530, 0.8558, 0.0357, 0.0674, "rect", "#e0708f"),
+        # The second, physically distinct pad grid to the right (decks 2/4)
+        # -- see "Right pad grid" in the module docstring. Same row Y's/size
+        # as the left grid, columns measured separately against the photo.
+        "Pad 1 (R)": ControlGeometry(0.5033, 0.5971, 0.0357, 0.0674, "rect", "#e0708f"),
+        "Pad 2 (R)": ControlGeometry(0.5432, 0.5971, 0.0357, 0.0674, "rect", "#e0708f"),
+        "Pad 3 (R)": ControlGeometry(0.5834, 0.5971, 0.0357, 0.0674, "rect", "#e0708f"),
+        "Pad 4 (R)": ControlGeometry(0.6232, 0.5971, 0.0357, 0.0674, "rect", "#e0708f"),
+        "Pad 5 (R)": ControlGeometry(0.5033, 0.6785, 0.0357, 0.0674, "rect", "#e0708f"),
+        "Pad 6 (R)": ControlGeometry(0.5432, 0.6785, 0.0357, 0.0674, "rect", "#e0708f"),
+        "Pad 7 (R)": ControlGeometry(0.5834, 0.6785, 0.0357, 0.0674, "rect", "#e0708f"),
+        "Pad 8 (R)": ControlGeometry(0.6232, 0.6785, 0.0357, 0.0674, "rect", "#e0708f"),
+        "Pad 9 (R)": ControlGeometry(0.5033, 0.7686, 0.0357, 0.0674, "rect", "#e0708f"),
+        "Pad 10 (R)": ControlGeometry(0.5432, 0.7686, 0.0357, 0.0674, "rect", "#e0708f"),
+        "Pad 11 (R)": ControlGeometry(0.5834, 0.7686, 0.0357, 0.0674, "rect", "#e0708f"),
+        "Pad 12 (R)": ControlGeometry(0.6232, 0.7686, 0.0357, 0.0674, "rect", "#e0708f"),
+        "Pad 13 (R)": ControlGeometry(0.5033, 0.8558, 0.0357, 0.0674, "rect", "#e0708f"),
+        "Pad 14 (R)": ControlGeometry(0.5432, 0.8558, 0.0357, 0.0674, "rect", "#e0708f"),
+        "Pad 15 (R)": ControlGeometry(0.5834, 0.8558, 0.0357, 0.0674, "rect", "#e0708f"),
+        "Pad 16 (R)": ControlGeometry(0.6232, 0.8558, 0.0357, 0.0674, "rect", "#e0708f"),
         # One physical button per entry -- see the module docstring.
         "PAD MODE 1/5": ControlGeometry(0.3351, 0.5364, 0.0324, 0.0262, "rect", "#7a8aa0"),
         "PAD MODE 2/6": ControlGeometry(0.3752, 0.5364, 0.0324, 0.0262, "rect", "#7a8aa0"),
@@ -349,6 +405,18 @@ def _label_alternatives(label: str) -> tuple[str, ...]:
     return tuple(f"{prefix}{n}" for n in match.group("numbers").split("/"))
 
 
+_DECK_NUM_RE = re.compile(r"^Deck (\d+)")
+
+# Which decks land on the physically distinct RIGHT pad grid/tray, for
+# controllers with " (R)" geometry entries recorded (see "Right pad grid"
+# in the module docstring). Any deck not listed here (or any controller not
+# listed at all) resolves to the plain, left-side "Pad N" label.
+_RIGHT_GRID_DECKS: dict[str, frozenset[int]] = {
+    "DDJ-XP2": frozenset({2, 4}),
+    "XDJ-XZ": frozenset({2, 4}),
+}
+
+
 _REVERSE_INDEX_CACHE: dict[str, dict[str, str]] = {}
 
 
@@ -375,7 +443,15 @@ def resolve_geometry_label(controller: str, hit_name: str) -> str | None:
         return index[hit_name]
     pad_match = _PAD_NUM_RE.search(hit_name)
     if pad_match is not None:
-        candidate = f"Pad {pad_match.group(1)}"
+        pad_num = pad_match.group(1)
+        deck_match = _DECK_NUM_RE.match(hit_name)
+        if deck_match is not None and int(deck_match.group(1)) in _RIGHT_GRID_DECKS.get(
+            controller, frozenset()
+        ):
+            right_candidate = f"Pad {pad_num} (R)"
+            if right_candidate in index:
+                return index[right_candidate]
+        candidate = f"Pad {pad_num}"
         if candidate in index:
             return index[candidate]
     base = _base_name(hit_name)

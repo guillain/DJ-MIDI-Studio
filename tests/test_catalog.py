@@ -16,7 +16,7 @@ def test_every_control_in_sample_file_resolves_via_ddj_xp2_pad_grid():
 def test_known_ddj_xp2_pad_note():
     hits = catalog.lookup("10", "Note On", "64")
     names = [h.name for h in hits if h.controller == "DDJ-XP2"]
-    assert names == ["Deck 2 Pad 13 (PAD MODE 5)"]
+    assert names == ["Deck 2 Pad 1 (PAD MODE 5)"]
 
 
 def test_ddj_xp2_deck_button():

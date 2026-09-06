@@ -80,7 +80,7 @@ def test_controller_emulator_view_resolves_an_unmapped_trigger():
     config = parse_file(FIXTURE)
     view = ControllerEmulatorView(config_provider=lambda: config)
     view._combo.setCurrentText("DDJ-XP2")
-    # DDJ-XP2's Pad 1 default variant (ch8 NOTE 12) is not present in the
+    # DDJ-XP2's Pad 1 default variant (ch8 NOTE 0) is not present in the
     # real fixture (confirmed by grepping the fixture XML directly).
     key: CellKey = ("DDJ-XP2", "PAD", "Pad 1")
     text = view._resolve(key)

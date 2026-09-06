@@ -688,6 +688,34 @@ documentation index.
   flat diagram source exists — forcing the fraction-box technique onto a
   perspective photo would produce overlay markers that don't actually sit
   on the real button.
+- [x] **DDJ-XP2 pad row-order fix + right pad grid geometry** — two bugs the
+  maintainer caught on their real DDJ-XP2/XDJ-XZ hardware (via a Live
+  Monitor CSV export, not a screenshot), neither visible from the PDFs
+  alone: (1) `catalog/ddj_xp2.py`'s `_pad_lookup` numbered pad rows
+  top-to-bottom as 13-16/9-12/5-8/1-4 instead of 1-4/5-8/9-12/13-16 — the
+  formula's own docstring claimed this was "verified against the PDF", a
+  misreading (likely `pdftotext`'s column-scrambled table output) caught
+  only once real presses over Live Monitor showed the top-left pad sending
+  NOTE 0 (named "Pad 13" by the old formula) and the bottom-left sending
+  NOTE 12 (named "Pad 1"); fixed by dropping the row inversion, a pure
+  display-label change (raw MIDI in exported XML is untouched) that
+  required updating five tests' hardcoded note→pad-name pairs alongside it.
+  (2) Both DDJ-XP2 and XDJ-XZ have a second, physically distinct pad grid
+  (DDJ-XP2: decks 2/4 on the right; XDJ-XZ: deck 2, and by symmetry deck 4,
+  on the right tray) that `gui/geometry.py` had zero geometry for —
+  `resolve_geometry_label` extracted only the bare pad number with no
+  regard for which deck sent the hit, so a right-grid press incorrectly
+  flashed the left grid's same-numbered marker. Fixed by measuring the
+  right grid's real photo coordinates (pixel-scanning for DDJ-XP2's smooth
+  gradient pads; a scaled gridline-overlay crop read by eye for XDJ-XZ's
+  glossier ones), recording them under a `"Pad N (R)"` suffix, and adding
+  deck-aware side selection (`_RIGHT_GRID_DECKS`) to
+  `resolve_geometry_label`. DDJ-XP2's 1/3-left, 2/4-right split is
+  confirmed both by the official MIDI Message List's LOAD-button table and
+  a real deck-1-vs-deck-2 press; XDJ-XZ's deck-3/4 side is inferred by
+  symmetry with DDJ-XP2's confirmed deck-1/2 split, not independently
+  hardware-tested. See the `control-layout-geometry` project memory for the
+  full diagnosis. Milestone tag `v0.47.39-ddj-xp2-pad-geometry-fix`.
 - [x] **DDJ-1000 catalog data correction** (`catalog/ddj_1000.py`, related to
   issue [#11](https://github.com/guillain/DJ-MIDI-Studio/issues/11)) —
   discovered while cross-checking DECK section names against the official
