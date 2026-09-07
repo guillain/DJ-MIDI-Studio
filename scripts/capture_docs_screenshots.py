@@ -2,15 +2,40 @@
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 from unittest.mock import patch
 
+from PySide6.QtCore import QtMsgType, qInstallMessageHandler
 from PySide6.QtWidgets import QApplication
 
 from djmidi import catalog
 from djmidi.gui.main_window import MainWindow
 from djmidi.parser import parse_file
+
+# Purely cosmetic noise from running under QT_QPA_PLATFORM=offscreen: the
+# offscreen platform plugin has no real window manager, so every
+# dock.setFloating(True) + .show()/.raise_() pair here (this script's own
+# floating-dock screenshots, and _create_emulator_instance()'s internal
+# .raise_() call) logs a "this plugin does not support ..." qWarning().
+# Harmless and expected -- these two calls have no QLoggingCategory to
+# target with QT_LOGGING_RULES, so filter by message text instead of
+# suppressing every Qt warning (which could hide a real one).
+_NOISY_OFFSCREEN_MESSAGES = (
+    "This plugin does not support propagateSizeHints()",
+    "This plugin does not support raise()",
+)
+
+
+def _filter_offscreen_platform_noise(msg_type: QtMsgType, context, message: str) -> None:
+    if any(noisy in message for noisy in _NOISY_OFFSCREEN_MESSAGES):
+        return
+    # Anything else (a real warning, our own app's log output, ...) still
+    # reaches stderr exactly as Qt's own default handler would print it.
+    stream = sys.stderr if msg_type != QtMsgType.QtDebugMsg else sys.stdout
+    print(message, file=stream)
+
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "docs" / "images" / "layout"
@@ -44,6 +69,17 @@ class _OfflineMidiMonitor:
 
 
 def main() -> int:
+    # Must be set before QApplication exists -- Qt reads QT_LOGGING_RULES
+    # at logging-subsystem init time. Silences "Populating font family
+    # aliases took ...ms. Replace uses of missing font family 'Sans
+    # Serif' ..." -- a real Qt category (qt.qpa.fonts), so the standard
+    # rules mechanism handles it cleanly, unlike the two uncategorized
+    # qWarning() calls _filter_offscreen_platform_noise() filters below.
+    # Purely cosmetic: QT_QPA_PLATFORM=offscreen has no real font database
+    # to resolve "Sans Serif" against, but nothing in this script's
+    # captures depends on that resolution succeeding.
+    os.environ.setdefault("QT_LOGGING_RULES", "qt.qpa.fonts=false")
+    qInstallMessageHandler(_filter_offscreen_platform_noise)
     app = QApplication.instance() or QApplication(sys.argv)
     with (
         patch("djmidi.gui.live_monitor.list_input_ports", return_value=[]),
