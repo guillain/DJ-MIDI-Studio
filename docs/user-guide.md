@@ -98,6 +98,7 @@ either confirmed or shown as suggestions according to Preferences.
 - `By Channel`: raw model-level controls and mappings.
 - `By Deck`: grouped duplicate mappings (safe synchronized edits).
 - `By Controller`: physical layout/section perspective.
+- `Controller Emulator` (`View -> New Controller Emulator…`): an interactive, clickable schematic for one controller at a time — several instances can be open at once, each on its own controller. Click a pad/button to resolve it against the loaded mapping (and optionally send it live); drag a knob/fader/jog glyph to set its display value.
 - `Controller Images`: static official diagrams and bundled controller documentation, plus an optional real-layout overlay for controllers with modeled geometry (XDJ-XZ's transport cluster, DDJ-XP2's pad cluster so far).
 - `MIDI Routing`: route MIDI and replay Controller Setup rows once or in a loop.
 - `MIDI Clock`: configure Clock sources/destinations and inspect source activity;

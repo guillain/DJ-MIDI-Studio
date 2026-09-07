@@ -9,6 +9,7 @@
 - [Window Compositions](#window-compositions)
 - [Dashboard](#dashboard)
 - [Mapping Views](#mapping-views)
+- [Controller Emulator](#controller-emulator)
 - [Controller Setup](#controller-setup)
 - [Controller Images](#controller-images)
 - [Live Monitor](#live-monitor)
@@ -108,6 +109,31 @@ By Controller groups catalog entries by physical controller and section, such as
 
 ![By Controller mapping view](images/layout/by-controller.png)
 
+## Controller Emulator
+
+The Controller Emulator is an independent, closable dock (`View -> New
+Controller Emulator…`) showing one controller's interactive schematic at a
+time — several instances can be open at once, each bound to its own
+controller, unlike the diff/audit `By Channel`/`By Deck`/`By Controller`
+tabs above. Clicking a pad or button flashes it and resolves what the
+currently loaded mapping binds that trigger to; dragging a knob, fader, or
+jog wheel glyph sets its value (display-only — continuous controls have no
+discrete MIDI mapping to resolve). A `Live send` toggle (default off, shared
+with the other layout surfaces) can additionally send a real MIDI message to
+a chosen output port instead of only resolving locally.
+
+A control whose click mapping is an on/off toggle in the loaded config gets
+a persistent amber highlight while "on", resolved from the mapping's own
+`<userio event="output">` aliases; any other control with output aliases
+(e.g. one with ambiguous `selected`/`off` values) lists its whole alias set
+in the status text instead of guessing which one currently applies.
+
+Every registered controller renders here, not just the two in the loaded
+sample mapping — see the [Controller Layout Gallery](images/controllers/README.md)
+for one screenshot per controller, dry-run with no mapping loaded.
+
+![DDJ-XP2 in the Controller Emulator](images/controllers/ddj-xp2.png)
+
 ## Controller Setup
 
 Controller Setup is used to learn MIDI triggers from hardware or import raw triggers from a Serato XML file. The captured table records the section, physical name, MIDI type, channel(s), data value, source, and device. The `Draft` panel at the top is a single icon toolbar: a `Session`, `Import`, and `Apply / Export` group, each with its caption in front of its buttons, spread across the window width. `MIDI input` (learning: input port list, `Start learning`, status) sits at the start of the same row as `MIDI Output`, whose panel has a dedicated output port list, readable message fields, playback actions, and all eight DDJ-XP2 pad-mode buttons. `Available output ports` is checkbox-based like the input list — check several ports to send/replay/play-rows to all of them at once, not just one; one port stays pre-checked by default.
@@ -119,6 +145,15 @@ The captured table is multi-selectable. Beside `Delete selected row(s)` and `Add
 The same tab provides MIDI output controls for sending a command once, sending a NOTE double-click, replaying selected/all session rows, or generating a catalog module. `Check for conflicts` should be run before applying or exporting a catalog. `Submit to community catalog…` (Apply / Export panel) validates the draft, then opens a pre-filled GitHub issue and copies the profile JSON to the clipboard so a manually built controller can be reviewed and shipped as a built-in; reference images are not part of a submission.
 
 ![Controller Setup](images/layout/controlleur-setup.png)
+
+A session with real hardware-recorded rows already loaded looks like this —
+`data/ddj_xp2.json`, `data/xdj_xz.json`, and `data/xdj_xz-ddj_xp2.json` are
+learned, not imported (`Source` column says `learned`), and can be loaded
+via the `Session` group's `Load session…` icon button:
+
+![Controller Setup with a DDJ-XP2 session loaded](images/layout/controlleur-setup-ddj-xp2.png)
+
+![Controller Setup with an XDJ-XZ and DDJ-XP2 combined session loaded](images/layout/controlleur-setup-xdj-xz-ddj-xp2.png)
 
 ## Controller Images
 

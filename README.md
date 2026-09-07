@@ -81,6 +81,10 @@ Here is the short visual tour. The complete annotated guide is available in
 |---|---|
 | ![By Deck](docs/images/layout/by-deck.png) | ![Controller Images](docs/images/layout/controlleur-image.png) |
 
+| Controller Setup | Controller Emulator |
+|---|---|
+| ![Controller Setup with a DDJ-XP2 session loaded](docs/images/layout/controlleur-setup-ddj-xp2.png) | ![DDJ-XP2 in the Controller Emulator](docs/images/controllers/ddj-xp2.png) |
+
 | Live Monitor | MIDI Routing |
 |---|---|
 | ![Live Monitor](docs/images/layout/live-monitor.png) | ![MIDI Routing](docs/images/layout/midi-routing.png) |
@@ -90,7 +94,9 @@ Here is the short visual tour. The complete annotated guide is available in
 | ![MIDI Clock](docs/images/layout/midi-clock.png) | ![Metronome](docs/images/layout/metronome.png) |
 
 💡 The MIDI tools can stay docked, float independently, or be restored to the
-previous user arrangement.
+previous user arrangement. See the [Controller Layout Gallery](docs/images/controllers/README.md)
+for a Controller Emulator screenshot of every registered controller, not
+just the one shown above.
 
 ## Screens and Workflow
 
@@ -99,6 +105,7 @@ flowchart LR
     Intro[Dashboard tab] --> Channel[By Channel]
 	Intro --> Deck[By Deck]
 	Intro --> Controller[By Controller]
+	Intro --> Emulator[Controller Emulator dock]
 	Intro --> Images[Controller Images]
 	Intro --> Monitor[Live Monitor dock]
 	Intro --> Routing[MIDI Routing dock]
