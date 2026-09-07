@@ -950,6 +950,51 @@ documentation index.
   DDJ-XP2's split and a regression guard for XDJ-XZ's unsplit single-channel
   EFFECT section), the Tempo fader's independent DISPLAY key, and
   `real_position_markers()` emitting the new labels/keys correctly.
+- [x] **Controller Emulator phase 5, slice 1 — toggle-state tracking**
+  (issue #9's roadmap) — asked which way to take Phase 5 (the roadmap's
+  largest, riskiest, precedent-free phase, given a real ambiguity in
+  output aliases where `selected` and `off` can share the same raw value);
+  the maintainer picked the smallest safe slice over a full research pass:
+  hotcue-style set/unset state, without committing to what any specific
+  Serato function tag *means* semantically (this project has never
+  determined what e.g. `codfather_st`/`codfather_fx` actually do in
+  Serato — only their structural shape from the real fixture: 4 slots per
+  deck, `behaviour="toggle"` on click, distinct on/off output values).
+  Built the mechanism generically instead of hardcoding "hot cue": a new
+  Qt-free `gui/output_state.py` (`is_toggle_group`, `find_output_group`,
+  `resolve_toggle_alias`) resolves any click mapping whose translation is
+  explicitly `behaviour="toggle"` against its paired
+  `<userio event="output">` mapping's `on`/`off` aliases — the first time
+  this project's already-parsed/edited/exported `Alias`/`Translation` data
+  is actually *consumed* by resolution logic rather than just
+  round-tripped. `ControllerEmulatorView._apply_toggle_state()` flips a
+  per-key on/off state on every click that resolves to a toggle mapping in
+  the loaded config, reports the resolved alias in the status text (e.g.
+  `[TOGGLED ON: output alias 'on' = 20]`), and persists it as a new amber
+  highlight (`EmulatorLayoutView.set_active()`,
+  `layout_view._ACTIVE_BORDER_PEN`) distinct from the existing transient
+  white flash — verified with a real offscreen screenshot showing the
+  amber-bordered glyph after the flash settles. Deliberately narrow, per
+  the chosen slice: the `selected`/`off` value-collision case (real state
+  about *which* of several slots is active, not just a flip) is explicitly
+  out of scope, left for a later slice; state resets on controller switch
+  but not on every config reload, the same tradeoff phase 3's continuous
+  drag values already accepted.
+- [x] **Controller Emulator phase 5, slice 1 follow-up — read-only alias
+  listing** — the immediate next step after slice 1: a non-toggle click
+  mapping with real output aliases (i.e. exactly the `selected`/`off`
+  value-collision case slice 1 explicitly declined to resolve, confirmed
+  in the real fixture's `auto_loop_specific_length`: `selected=0, on=127,
+  off=0`) now gets its whole alias set listed read-only in the status text
+  (`[output aliases: selected=0, on=127, off=0]`) instead of nothing at
+  all. New `gui/output_state.describe_output_aliases()` makes no attempt
+  to guess which alias currently applies — that needs real per-slot state
+  this project doesn't track yet (phase 5's other, larger piece) — it only
+  ever lists what's *possible*, renamed
+  `ControllerEmulatorView._apply_toggle_state()` →
+  `_apply_output_state()` now that it handles both the stateful
+  (toggle) and read-only (everything else) cases behind one click-group
+  lookup.
 - [x] **DDJ-1000 catalog data correction** (`catalog/ddj_1000.py`, related to
   issue [#11](https://github.com/guillain/DJ-MIDI-Studio/issues/11)) —
   discovered while cross-checking DECK section names against the official
@@ -1076,14 +1121,16 @@ the DJ layout visual fidelity chantier.
   persistent virtual port may still matter for phase 5's stateful
   simulation (receiving real Serato output-direction MIDI to drive LED
   state), if that turns out to need it.
-- [ ] **Phase 5 — full stateful simulation** (recommend splitting into
-  5a/5b): output-alias resolution (`userio event="output"` on/off/selected
-  aliases → LED colour, handling the confirmed real-world ambiguity where
-  `selected` and `off` share the same value in real exports) plus a
-  genuinely new state machine for active loop / set hotcue / current
-  pad-mode page — no existing precedent anywhere in this codebase, the
-  largest and riskiest phase. The only phase of the original roadmap not
-  yet started.
+- [ ] **Phase 5 — full stateful simulation**: slice 1 (toggle-state
+  tracking for unambiguous `behaviour="toggle"` output-alias resolution)
+  delivered — see **"Controller Emulator phase 5, slice 1 — toggle-state
+  tracking"** above. Still open: the confirmed real-world ambiguity where
+  `selected` and `off` share the same value in real exports (needs genuine
+  state about *which* of several slots is active, not just an on/off
+  flip) and a genuinely new state machine for active loop / current
+  pad-mode page — no existing precedent anywhere in this codebase for
+  either, the largest and riskiest remaining piece of the original
+  roadmap.
 
 ### External tester feedback (2026-08)
 

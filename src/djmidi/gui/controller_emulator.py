@@ -47,7 +47,26 @@ reverse_lookup() + pick_default_variant(). Without this, the two physical
 grids would flash/resolve/send together: the maintainer hit exactly that
 on real hardware as "pressing a button on one deck also activates the
 second deck" while testing this emulator. See layout.resolve_side_aware_variant's
-own docstring and the control-layout-geometry project memory."""
+own docstring and the control-layout-geometry project memory.
+
+Phase 5, slice 1 (issue #9's roadmap, the maintainer's chosen smallest safe
+slice over a full alias-resolution research pass): a click that resolves
+to a `behaviour="toggle"` mapping in the loaded config now tracks its own
+on/off state (ControllerEmulatorView._toggle_active) and persists it as a
+distinct amber highlight (EmulatorLayoutView.set_active(),
+layout_view._ACTIVE_BORDER_PEN) until toggled again, resolving the paired
+`userio event="output"` mapping's alias for the new state via
+gui/output_state.py -- the first real GUI consumer of that
+Alias/Translation data. Deliberately narrow: only an unambiguous on/off
+flip is handled (gui/output_state.py's own docstring explains why the
+`selected`/`off` value-collision case needs real state about which slot is
+active, not just a flip, and is left for a later slice), and nothing here
+asserts what a toggle mapping's tag *means* (e.g. whether it's "a hot
+cue") -- purely mechanical, driven by the config's own `behaviour`
+attribute. A non-toggle click mapping with real output aliases (e.g. the
+`selected`/`off` collision case) still gets a read-only listing of its
+whole alias set in the status text via `gui/output_state.describe_output_aliases()`
+-- informational only, no attempt to guess which alias currently applies."""
 
 from __future__ import annotations
 
@@ -73,6 +92,12 @@ from djmidi.gui import layout_view
 from djmidi.gui.layout import CellKey
 from djmidi.gui.live_send import LiveSendControl
 from djmidi.gui.mapping_group import build_mapping_groups
+from djmidi.gui.output_state import (
+    describe_output_aliases,
+    find_output_group,
+    is_toggle_group,
+    resolve_toggle_alias,
+)
 from djmidi.model import MidiConfig
 
 _KEY_ROLE = layout_view._KEY_ROLE
@@ -192,6 +217,12 @@ class EmulatorLayoutView(QWidget):
         # dry-run/live-send meaning at all (these keys have no ControlInfo),
         # purely local visual state for the emulator's own interaction.
         self._values: dict[CellKey, int] = {}
+        # Persistent "toggled on" highlight (phase 5 slice 1, see
+        # gui/output_state.py) -- set/cleared by ControllerEmulatorView via
+        # set_active() when a click resolves to a behaviour="toggle"
+        # mapping in the loaded config. Purely visual here: this view has
+        # no opinion on *why* a key is active, only how to draw it.
+        self._active_keys: set[CellKey] = set()
         # Set by _rebuild(); resizeEvent/_fit_view() use it instead of
         # recomputing real_position_markers() on every resize.
         self._real_position_mode = False
@@ -219,10 +250,26 @@ class EmulatorLayoutView(QWidget):
         self._metrics = layout_view.metrics_for(controller)
         self._flash_keys.clear()
         self._values.clear()
+        self._active_keys.clear()
         self._rebuild()
 
     def _current_value(self, key: CellKey) -> int:
         return self._values.get(key, layout_view._MIDI_DEFAULT)
+
+    def set_active(self, key: CellKey, active: bool) -> None:
+        """Persistent "toggled on" highlight (phase 5 slice 1) -- called by
+        ControllerEmulatorView after resolving a click against the loaded
+        config's toggle-behaviour mappings (gui/output_state.py). A no-op
+        rebuild is skipped when the state doesn't actually change, same
+        discipline as set_value()."""
+        is_active = key in self._active_keys
+        if is_active == active:
+            return
+        if active:
+            self._active_keys.add(key)
+        else:
+            self._active_keys.discard(key)
+        self._rebuild()
 
     def set_value(self, key: CellKey, value: int) -> None:
         """Drag-to-set a knob/fader/jog glyph (phase 3) -- reuses
@@ -295,11 +342,17 @@ class EmulatorLayoutView(QWidget):
             )
             if key in self._flash_keys:
                 bg_item.setBrush(layout_view._FLASH_BRUSH)
+                bg_item.setPen(layout_view._BORDER_PEN)
+            elif key in self._active_keys:
+                active = QColor(marker.color)
+                active.setAlpha(layout_view._ACTIVE_FILL_ALPHA)
+                bg_item.setBrush(QBrush(active))
+                bg_item.setPen(layout_view._ACTIVE_BORDER_PEN)
             else:
                 resting = QColor(marker.color)
                 resting.setAlpha(90)
                 bg_item.setBrush(QBrush(resting))
-            bg_item.setPen(layout_view._BORDER_PEN)
+                bg_item.setPen(layout_view._BORDER_PEN)
             bg_item.setData(_KEY_ROLE, key)
             bg_item.setData(_KIND_ROLE, marker.visual_kind)
             bg_item.setToolTip(f"{self._controller} — {marker.label}")
@@ -330,7 +383,9 @@ class EmulatorLayoutView(QWidget):
             rect = QGraphicsRectItem(QRectF(0, 0, m.cell_w, m.half_h))
             rect.setPos(x, y)
             rect.setBrush(layout_view._UNUSED_BRUSH)
-            rect.setPen(layout_view._BORDER_PEN)
+            rect.setPen(
+                layout_view._ACTIVE_BORDER_PEN if cell.key in self._active_keys else layout_view._BORDER_PEN
+            )
             rect.setData(_KEY_ROLE, cell.key)
             rect.setData(_KIND_ROLE, cell.visual_kind)
             rect.setToolTip(f"{cell.key[0]} — {cell.key[1]} {cell.label}")
@@ -373,6 +428,15 @@ class ControllerEmulatorView(QWidget):
     ) -> None:
         super().__init__(parent)
         self._config_provider = config_provider
+        # Phase 5 slice 1 (gui/output_state.py): on/off state per key,
+        # tracked only for keys that resolve to a behaviour="toggle" click
+        # mapping in the loaded config. Cleared on controller switch (the
+        # keys are meaningless across controllers) but NOT on every config
+        # reload -- same "no persistent state beyond one clicked value"
+        # tradeoff phase 3's continuous _values dict already accepted, and
+        # a real limitation if the user swaps to a differently-mapped
+        # config without switching controllers first.
+        self._toggle_active: dict[CellKey, bool] = {}
 
         self._combo = QComboBox()
         self._combo.addItems(catalog.CONTROLLER_NAMES)
@@ -429,14 +493,65 @@ class ControllerEmulatorView(QWidget):
         if not name:
             return
         self._emulator.set_controller(name)
+        self._toggle_active.clear()
         self._status_label.setText("Click a control to see what it resolves to.")
 
     def _on_control_pressed(self, key: CellKey) -> None:
         text = self._resolve(key)
+        text += self._apply_output_state(key)
         sent = self._live_send.resolve_and_send(key[0], key)
         if sent is not None:
             text += f"  [LIVE SENT: ch{sent.channels[0] if sent.channels else '?'} {sent.note_or_cc} {sent.data1}]"
         self._status_label.setText(text)
+
+    def _apply_output_state(self, key: CellKey) -> str:
+        """Phase 5's output-alias work (gui/output_state.py): finds `key`'s
+        click mapping in the loaded config (if any) and reports its paired
+        output mapping's aliases in the status text -- returns "" for any
+        other key (no config loaded, or no click mapping at this trigger),
+        leaving _resolve()'s own dry-run text as the sole output. Kept
+        separate from _resolve() (which several tests call repeatedly as a
+        pure read-only helper) so only an actual click ever flips state.
+
+        A behaviour="toggle" mapping (slice 1) gets the full stateful
+        treatment: flips a tracked on/off state, reflects it as a
+        persistent highlight via EmulatorLayoutView.set_active(), and
+        resolves the exact alias for the new state. Any other mapping with
+        real output aliases (slice 1's immediate follow-up) gets a
+        read-only listing of the whole alias set instead -- e.g. the
+        confirmed selected/off value-collision case, where this project
+        has no state yet to decide which one currently applies."""
+        entry = layout_mod.resolve_side_aware_variant(key[0], key)
+        config = self._config_provider()
+        if entry is None or config is None:
+            return ""
+        channel = entry.channels[0] if entry.channels else "?"
+        trigger = (channel, _EVENT_TYPE_FOR_KIND[entry.note_or_cc], entry.data1)
+        groups = build_mapping_groups(config)
+        click_group = next(
+            (
+                group
+                for group in groups
+                if group.event == "click" and (group.channel, group.event_type, group.control_no) == trigger
+            ),
+            None,
+        )
+        if click_group is None:
+            return ""
+        output_group = find_output_group(groups, click_group)
+        if is_toggle_group(click_group):
+            new_state = not self._toggle_active.get(key, False)
+            self._toggle_active[key] = new_state
+            self._emulator.set_active(key, new_state)
+            alias = resolve_toggle_alias(output_group, new_state)
+            state_word = "ON" if new_state else "OFF"
+            if alias is not None:
+                return f"  [TOGGLED {state_word}: output alias '{alias.name}' = {alias.value}]"
+            return f"  [TOGGLED {state_word}]"
+        aliases_text = describe_output_aliases(output_group)
+        if aliases_text:
+            return f"  [output aliases: {aliases_text}]"
+        return ""
 
     def _resolve(self, key: CellKey) -> str:
         # resolve_side_aware_variant (not a plain reverse_lookup() +

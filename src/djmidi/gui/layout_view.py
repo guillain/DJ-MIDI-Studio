@@ -346,6 +346,15 @@ _KNOB_MARKER_PEN = QPen(QColor(35, 38, 46))
 _KNOB_MARKER_PEN.setWidth(2)
 _FLASH_BRUSH = QBrush(QColor(255, 255, 255))
 _FLASH_DURATION_MS = 220
+# Persistent "toggled on" highlight for the Controller Emulator's phase 5
+# toggle-state tracking (gui/output_state.py) -- distinct from both the
+# transient white _FLASH_BRUSH (a 220ms press pulse) and _SELECTED_PEN
+# (unrelated cross-tab selection, not used by the emulator at all): a warm
+# amber border, evoking a lit hardware LED, that stays until the tracked
+# state flips off again.
+_ACTIVE_BORDER_PEN = QPen(QColor(255, 196, 60))
+_ACTIVE_BORDER_PEN.setWidth(3)
+_ACTIVE_FILL_ALPHA = 200
 _MIDI_MAX = 127
 _MIDI_DEFAULT = _MIDI_MAX // 2
 _KNOB_MIN_ANGLE_DEG = -135.0
