@@ -76,6 +76,7 @@ responsible for scope, hardware claims, licensing, tests, and final review.
 - [📚 Controller Documentation and Official PDFs](controllers/README.md)
 - [🖼️ Screens and Layouts](screens-and-layouts.md)
 - [📸 Layout Screenshot Index](images/layout/README.md)
+- [🎛️ Controller Layout Gallery](images/controllers/README.md)
 
 ## 🚢 Build, CI, and release
 

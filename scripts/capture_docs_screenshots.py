@@ -8,12 +8,23 @@ from unittest.mock import patch
 
 from PySide6.QtWidgets import QApplication
 
+from djmidi import catalog
 from djmidi.gui.main_window import MainWindow
 from djmidi.parser import parse_file
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "docs" / "images" / "layout"
+CONTROLLERS_OUTPUT = ROOT / "docs" / "images" / "controllers"
 FIXTURE = ROOT / "data" / "xdj_xz-ddj_xp2-4decks.xml"
+# Controller Setup session files recorded from real hardware (see that
+# tab's own docstring for the JSON shape: version/controller_name/
+# recorded_events/rows) -- distinct from FIXTURE above, which is a Serato
+# mapping XML, not a Controller Setup draft.
+SETUP_SESSIONS = {
+    "ddj_xp2.json": "controlleur-setup-ddj-xp2.png",
+    "xdj_xz.json": "controlleur-setup-xdj-xz.png",
+    "xdj_xz-ddj_xp2.json": "controlleur-setup-xdj-xz-ddj-xp2.png",
+}
 
 
 class _OfflineMidiMonitor:
@@ -97,6 +108,56 @@ def main() -> int:
                 raise RuntimeError(f"could not save {filename}")
             dock.setFloating(False)
             dock.hide()
+
+        # One Controller Emulator screenshot per registered controller, in
+        # its own subdirectory -- unlike the tabs above (which show the
+        # loaded config's two controllers together), the emulator is a
+        # single-controller view, so this is the natural way to capture
+        # every controller's own layout (real-position schematic for the 6
+        # with geometry, classic card grid for the other 2) without
+        # depending on which controllers happen to be in FIXTURE. Bypasses
+        # whatever controller plugins happen to be enabled in *this
+        # machine's* real, persisted PluginPreferences (MainWindow.__init__
+        # already narrowed catalog.CONTROLLER_NAMES to just those, exactly
+        # like the real "Show all controllers" View-menu toggle's off
+        # state) -- docs screenshots must show every registered controller
+        # regardless of which ones the person running this script actually
+        # owns.
+        catalog.set_enabled_plugin_ids(None)
+        CONTROLLERS_OUTPUT.mkdir(parents=True, exist_ok=True)
+        for name in catalog.CONTROLLER_NAMES:
+            definition = catalog.get_definition(name)
+            slug = Path(definition.reference_image).stem if definition.reference_image else name.lower().replace(
+                " ", "-"
+            )
+            before_ids = set(window._emulator_docks.keys())
+            emulator_dock = window._create_emulator_instance(name)
+            instance_id = next(iter(set(window._emulator_docks.keys()) - before_ids))
+            emulator_dock.setFloating(True)
+            emulator_dock.resize(900, 700)
+            emulator_dock.show()
+            app.processEvents()
+            if not emulator_dock.grab().save(str(CONTROLLERS_OUTPUT / f"{slug}.png")):
+                raise RuntimeError(f"could not save {slug}.png")
+            window._close_emulator_instance(instance_id)
+            app.processEvents()
+
+        # Controller Setup with a real hardware-recorded session loaded
+        # (data/*.json -- distinct from FIXTURE, a Serato mapping XML, not
+        # a Controller Setup draft; see that tab's own JSON shape).
+        window.left_tabs.setCurrentIndex(window._tab_indexes["setup"])
+        for session_file, out_name in SETUP_SESSIONS.items():
+            window.controller_setup_view._load_session(ROOT / "data" / session_file)
+            # _load_session() leaves the table's selection (and thus its
+            # scroll position) wherever the session file's own row order
+            # last put it -- scroll back to the top so every screenshot
+            # consistently shows the start of the table, not an arbitrary
+            # mid-scroll position.
+            window.controller_setup_view._table.scrollToTop()
+            app.processEvents()
+            if not window.grab().save(str(OUTPUT / out_name)):
+                raise RuntimeError(f"could not save {out_name}")
+
         window.close()
         app.processEvents()
     return 0
