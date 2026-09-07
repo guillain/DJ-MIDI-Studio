@@ -9,3 +9,8 @@ coverage.xml
 build/
 data/*.json
 data/*.csv
+# Controller Setup session fixtures used by scripts/capture_docs_screenshots.py
+# and docs/images/layout/ -- tracked despite the blanket data/*.json ignore above.
+!data/ddj_xp2.json
+!data/xdj_xz.json
+!data/xdj_xz-ddj_xp2.json
