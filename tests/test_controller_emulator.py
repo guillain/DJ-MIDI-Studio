@@ -9,9 +9,31 @@ from djmidi.gui.controller_emulator import (
     _pick_default_variant,
 )
 from djmidi.gui.layout import CellKey, clear_reverse_lookup_cache, reverse_lookup
+from djmidi.model import Alias, Control, MappingElement, MidiConfig, Translation, UserIO
 from djmidi.parser import parse_file
 
 FIXTURE = Path(__file__).parent.parent / "data" / "xdj_xz-ddj_xp2-4decks.xml"
+
+
+def _toggle_config() -> MidiConfig:
+    """A hand-built config (not the real fixture -- see the "Phase 5 slice
+    1" tests below for why) mapping DDJ-XP2's BEAT SYNC trigger (channel 1,
+    NOTE 88 -- a fixed, deterministic resolution with none of the pad-mode
+    ambiguity a real pad trigger would have) to a behaviour="toggle" click
+    mapping with on/off output aliases."""
+    click = MappingElement(
+        tag="some_toggle_fn", deck_id="0", slot_id="0",
+        translations=[Translation(action_on="press", behaviour="toggle")],
+    )
+    output = MappingElement(
+        tag="some_toggle_fn", deck_id="0", slot_id="0",
+        translations=[Translation(aliases=[Alias(name="on", value="20"), Alias(name="off", value="0")])],
+    )
+    control = Control(
+        channel="1", event_type="Note On", control="88",
+        userios=[UserIO(event="click", mappings=[click]), UserIO(event="output", mappings=[output])],
+    )
+    return MidiConfig(controls=[control])
 
 
 def test_pick_default_variant_prefers_the_no_shift_variant():
@@ -375,3 +397,83 @@ def test_jog_glyph_draws_a_position_notch():
         scene, metrics, 0, 0, "jog", ("XDJ-XZ", "DECK", "Jog wheel"), 100, False
     )
     assert len(scene.items()) > before
+
+
+# ─── Phase 5 slice 1: toggle-state tracking (gui/output_state.py) ──────────
+
+
+def test_on_control_pressed_toggles_state_and_reports_the_on_alias():
+    view = ControllerEmulatorView(config_provider=_toggle_config)
+    view._combo.setCurrentText("DDJ-XP2")
+    key: CellKey = ("DDJ-XP2", "DECK", "BEAT SYNC")
+    view._on_control_pressed(key)
+    assert view._toggle_active[key] is True
+    assert "TOGGLED ON" in view._status_label.text()
+    assert "'on' = 20" in view._status_label.text()
+    assert key in view._emulator._active_keys
+
+
+def test_on_control_pressed_toggles_back_off_on_a_second_click():
+    view = ControllerEmulatorView(config_provider=_toggle_config)
+    view._combo.setCurrentText("DDJ-XP2")
+    key: CellKey = ("DDJ-XP2", "DECK", "BEAT SYNC")
+    view._on_control_pressed(key)
+    view._on_control_pressed(key)
+    assert view._toggle_active[key] is False
+    assert "TOGGLED OFF" in view._status_label.text()
+    assert "'off' = 0" in view._status_label.text()
+    assert key not in view._emulator._active_keys
+
+
+def test_apply_toggle_state_is_a_noop_for_a_non_toggle_mapping():
+    """SHIFT has no toggle mapping in _toggle_config() at all -- clicking
+    it must not add anything to _toggle_active or the status text."""
+    view = ControllerEmulatorView(config_provider=_toggle_config)
+    view._combo.setCurrentText("DDJ-XP2")
+    key: CellKey = ("DDJ-XP2", "OTHER", "SHIFT")
+    view._on_control_pressed(key)
+    assert key not in view._toggle_active
+    assert "TOGGLED" not in view._status_label.text()
+
+
+def test_apply_toggle_state_is_a_noop_with_no_config_loaded():
+    view = ControllerEmulatorView(config_provider=lambda: None)
+    view._combo.setCurrentText("DDJ-XP2")
+    key: CellKey = ("DDJ-XP2", "DECK", "BEAT SYNC")
+    view._on_control_pressed(key)
+    assert key not in view._toggle_active
+
+
+def test_switching_controller_clears_toggle_state():
+    view = ControllerEmulatorView(config_provider=_toggle_config)
+    view._combo.setCurrentText("DDJ-XP2")
+    key: CellKey = ("DDJ-XP2", "DECK", "BEAT SYNC")
+    view._on_control_pressed(key)
+    assert view._toggle_active
+    view._combo.setCurrentText("XDJ-XZ")
+    assert view._toggle_active == {}
+
+
+def test_emulator_set_active_marks_and_unmarks_a_key():
+    view = EmulatorLayoutView("DDJ-XP2")
+    key: CellKey = ("DDJ-XP2", "DECK", "BEAT SYNC")
+    view.set_active(key, True)
+    assert key in view._active_keys
+    view.set_active(key, False)
+    assert key not in view._active_keys
+
+
+def test_emulator_set_active_is_a_noop_when_state_does_not_change():
+    """Mirrors set_value()'s own no-rebuild-if-unchanged discipline."""
+    view = EmulatorLayoutView("DDJ-XP2")
+    key: CellKey = ("DDJ-XP2", "DECK", "BEAT SYNC")
+    view.set_active(key, False)  # already inactive -- no-op
+    assert key not in view._active_keys
+
+
+def test_emulator_switching_controller_clears_active_keys():
+    view = EmulatorLayoutView("DDJ-XP2")
+    key: CellKey = ("DDJ-XP2", "DECK", "BEAT SYNC")
+    view.set_active(key, True)
+    view.set_controller("XDJ-XZ")
+    assert view._active_keys == set()
