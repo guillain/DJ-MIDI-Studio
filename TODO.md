@@ -980,6 +980,21 @@ documentation index.
   out of scope, left for a later slice; state resets on controller switch
   but not on every config reload, the same tradeoff phase 3's continuous
   drag values already accepted.
+- [x] **Controller Emulator phase 5, slice 1 follow-up — read-only alias
+  listing** — the immediate next step after slice 1: a non-toggle click
+  mapping with real output aliases (i.e. exactly the `selected`/`off`
+  value-collision case slice 1 explicitly declined to resolve, confirmed
+  in the real fixture's `auto_loop_specific_length`: `selected=0, on=127,
+  off=0`) now gets its whole alias set listed read-only in the status text
+  (`[output aliases: selected=0, on=127, off=0]`) instead of nothing at
+  all. New `gui/output_state.describe_output_aliases()` makes no attempt
+  to guess which alias currently applies — that needs real per-slot state
+  this project doesn't track yet (phase 5's other, larger piece) — it only
+  ever lists what's *possible*, renamed
+  `ControllerEmulatorView._apply_toggle_state()` →
+  `_apply_output_state()` now that it handles both the stateful
+  (toggle) and read-only (everything else) cases behind one click-group
+  lookup.
 - [x] **DDJ-1000 catalog data correction** (`catalog/ddj_1000.py`, related to
   issue [#11](https://github.com/guillain/DJ-MIDI-Studio/issues/11)) —
   discovered while cross-checking DECK section names against the official
