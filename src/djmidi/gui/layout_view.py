@@ -849,7 +849,28 @@ class ControllerLayoutView(QWidget):
         return text.removeprefix("Deck ")
 
     def _cell_decks_and_tags(self, cell_key: CellKey, deck_filter: str | None) -> tuple[set[str], set[str]]:
-        per_deck = self._usage.get(cell_key, {})
+        """`cell_key` may be a side-aware *presentation* key (a real-position
+        marker's " (R)" suffix) even though `self._usage` (built by
+        MainWindow._refresh_layout_usage) stays keyed by the merged
+        schematic key throughout -- deliberately: the "By Controller" text
+        tree (gui/controller_tree.py) and the classic card grid both read
+        the *same* usage dict and have no per-side concept at all, so
+        splitting it at the source would silently under-report their
+        aggregate deck/tag counts. Side-awareness lives here instead: look
+        up the merged key, then narrow the per-deck dict down to the
+        requested physical side's deck_ids for any section that's actually
+        split (layout_mod.is_side_split_section) -- a plain key for a
+        non-split section is returned unfiltered, exactly as before."""
+        controller_name, section, label = cell_key
+        right_side = label.endswith(layout_mod._RIGHT_GRID_SUFFIX)
+        base_label = label.removesuffix(layout_mod._RIGHT_GRID_SUFFIX) if right_side else label
+        per_deck = self._usage.get((controller_name, section, base_label), {})
+        if layout_mod.is_side_split_section(controller_name, section):
+            right_deck_ids = layout_mod.right_side_usage_deck_ids(controller_name)
+            if right_deck_ids is not None:
+                per_deck = {
+                    deck_id: tags for deck_id, tags in per_deck.items() if (deck_id in right_deck_ids) == right_side
+                }
         if deck_filter is not None:
             if deck_filter not in per_deck:
                 return set(), set()
@@ -1071,7 +1092,28 @@ class ControllerLayoutView(QWidget):
         canvas_w, canvas_h = _reference_canvas_size(self._controller)
         deck_filter = self._selected_deck_filter()
         for marker in markers:
-            key, rect = marker.key, marker.rect
+            # A right-side marker ("Pad 3 (R)", "BEAT SYNC (R)", ...) shares
+            # its *schematic* CellKey with its left counterpart by design
+            # (see real_position_markers()'s docstring) -- using that same
+            # key here would show/select/click both physical
+            # grids/clusters together, exactly the "pressing a button on
+            # one deck also activates the second deck" class of bug fixed
+            # for the Controller Emulator (gui/controller_emulator.py,
+            # gui/layout.py's resolve_side_aware_variant()). This tab has
+            # cross-tab navigation to preserve (MainWindow.node_to_item and
+            # the tree views), unlike the emulator, so the fix threads all
+            # the way through: layout.find_controls_for_cell(),
+            # layout.presentation_key_for_hit(), and this same presentation
+            # key are all what MainWindow now uses to keep the two sides
+            # independent end to end -- see main_window.py's
+            # _on_layout_cell_activated/_select_deck_group/
+            # _update_layout_selection/_on_live_midi_event.
+            key = (
+                (marker.key[0], marker.key[1], marker.label)
+                if marker.label.endswith(layout_mod._RIGHT_GRID_SUFFIX)
+                else marker.key
+            )
+            rect = marker.rect
             decks, tags = self._cell_decks_and_tags(key, deck_filter)
 
             # A background box the real geometry box's true size -- carries

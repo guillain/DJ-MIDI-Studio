@@ -7,6 +7,7 @@ from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QApplication, QDialog, QMenu
 
 from djmidi.gui.main_window import MainWindow
+from djmidi.gui.tree_model import NODE_ROLE
 from djmidi.parser import parse_file
 
 FIXTURE = Path(__file__).parent.parent / "data" / "xdj_xz-ddj_xp2-4decks.xml"
@@ -354,6 +355,96 @@ def test_update_layout_selection_with_known_trigger():
     window = _loaded_window()
     window._update_layout_selection("8", "Note On", "64")
     assert len(window.layout_view._selected_keys) > 0
+    window.close()
+
+
+# ─── pad-side identity: cross-tab navigation and tree<->layout selection ──
+# ─── must tell DDJ-XP2/XDJ-XZ's two physical pad grids apart too (the ─────
+# ─── By Channel/Deck/Controller tabs' own follow-up to the Controller ─────
+# ─── Emulator's identical fix) ─────────────────────────────────────────────
+
+
+def test_update_layout_selection_selects_the_left_marker_for_a_deck_1_trigger():
+    """channel 8 = DDJ-XP2's deck 1 pad channel (no shift) -- real fixture
+    trigger, resolves to "Deck 1 Pad 1 (PAD MODE 5)"."""
+    window = _loaded_window()
+    window._update_layout_selection("8", "Note On", "64")
+    assert ("DDJ-XP2", "PAD", "Pad 1") in window.layout_view._selected_keys
+    assert ("DDJ-XP2", "PAD", "Pad 1 (R)") not in window.layout_view._selected_keys
+    window.close()
+
+
+def test_update_layout_selection_selects_the_right_marker_for_a_deck_2_trigger():
+    """channel 10 = DDJ-XP2's deck 2 pad channel -- real fixture trigger,
+    resolves to "Deck 2 Pad 8 (PAD MODE 5)"."""
+    window = _loaded_window()
+    window._update_layout_selection("10", "Note On", "71")
+    assert ("DDJ-XP2", "PAD", "Pad 8 (R)") in window.layout_view._selected_keys
+    assert ("DDJ-XP2", "PAD", "Pad 8") not in window.layout_view._selected_keys
+    window.close()
+
+
+def test_on_layout_cell_activated_finds_a_left_side_control_for_the_plain_key():
+    window = _loaded_window()
+    window._on_layout_cell_activated(("DDJ-XP2", "PAD", "Pad 1"), "channel")
+    assert window.statusBar().currentMessage().startswith("'Pad 1':")
+    assert "No control" not in window.statusBar().currentMessage()
+    window.close()
+
+
+def test_on_layout_cell_activated_finds_a_right_side_control_for_the_suffixed_key():
+    window = _loaded_window()
+    window._on_layout_cell_activated(("DDJ-XP2", "PAD", "Pad 8 (R)"), "channel")
+    assert "No control" not in window.statusBar().currentMessage()
+    # The control the click landed on must actually be the right-side one
+    # (channel 10, deck 2's pad channel), not the left grid's deck 1/3
+    # control sharing the merged "Pad 8" cell. (The same raw trigger also
+    # happens to match other controllers' catalogs at this channel/data1 --
+    # expected, unrelated to this fix -- so check membership, not equality.)
+    assert ("DDJ-XP2", "PAD", "Pad 8 (R)") in window.layout_view._selected_keys
+    assert ("DDJ-XP2", "PAD", "Pad 8") not in window.layout_view._selected_keys
+    window.close()
+
+
+def test_select_deck_group_matches_the_correct_physical_side():
+    window = _loaded_window()
+    assert window._select_deck_group(("DDJ-XP2", "PAD", "Pad 1")) is True
+    assert window._select_deck_group(("DDJ-XP2", "PAD", "Pad 8 (R)")) is True
+    window.close()
+
+
+def test_select_deck_group_selects_a_group_on_the_requested_side_only():
+    """The selected group's own real trigger must actually be on the
+    requested side -- not just "a match was found somewhere"."""
+    window = _loaded_window()
+    window._select_deck_group(("DDJ-XP2", "PAD", "Pad 8 (R)"))
+    # Find whichever deck tree actually ended up with a selection.
+    group = None
+    for view in window._deck_tree_views:
+        indexes = view.selectionModel().selectedIndexes()
+        if indexes:
+            candidate = indexes[0].data(NODE_ROLE)
+            if candidate is not None:
+                group = candidate
+                break
+    assert group is not None
+    assert group.channel == "10"  # DDJ-XP2's deck 2 pad channel -- the right side
+    window.close()
+
+
+def test_select_controller_cell_does_not_corrupt_selection_for_a_right_side_key():
+    """A regression guard for a real bug caught during manual verification:
+    _select_controller_cell() used to fall back to selecting the merged
+    key's tree row when no exact match existed, but that row's own
+    CELL_KEY_ROLE is the merged key -- selecting it re-triggers
+    _on_controller_selection_changed -> _on_layout_cell_activated with the
+    *merged* key, silently overwriting the correct side-aware selection
+    with the merged cell's first (often left-side) match. Must return
+    False and leave the already-correct selection alone instead."""
+    window = _loaded_window()
+    window._on_layout_cell_activated(("DDJ-XP2", "PAD", "Pad 3 (R)"), "controller")
+    assert ("DDJ-XP2", "PAD", "Pad 3 (R)") in window.layout_view._selected_keys
+    assert ("DDJ-XP2", "PAD", "Pad 3") not in window.layout_view._selected_keys
     window.close()
 
 

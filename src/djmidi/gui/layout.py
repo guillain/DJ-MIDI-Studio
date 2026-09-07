@@ -13,6 +13,7 @@ from dataclasses import dataclass, replace
 from typing import Literal
 
 from djmidi import catalog
+from djmidi.model import Control, MidiConfig
 
 CellKey = tuple[str, str, str]  # (controller, section, label)
 VisualKind = Literal["button", "pad", "knob", "fader", "jog"]
@@ -401,6 +402,133 @@ _RIGHT_SIDE_CHANNELS: dict[str, dict[str, frozenset[str]]] = {
 }
 
 
+def hit_matches_side(controller: str, section: str, hit: catalog.ControlInfo, right_side: bool) -> bool:
+    """Whether `hit` (a real catalog entry already known to belong to a
+    given schematic cell) sits on the physical side `right_side` names --
+    True unconditionally for any (controller, section) with no side split
+    modeled at all, so callers can apply this filter unconditionally
+    without special-casing the common case. Two independent ways a hit can carry
+    side information, mirroring resolve_side_aware_variant()'s own two
+    branches: a PAD hit's *name* embeds "Deck N" (pad_lookup produces a
+    separate ControlInfo per deck); a DECK/PAD MODE/EFFECT hit's *channels*
+    tuple spans every side's copy in one shared entry (see
+    _RIGHT_SIDE_CHANNELS's own docstring) -- side membership there means
+    at least one of its channels belongs to the requested side."""
+    if section == "PAD":
+        right_decks = _RIGHT_GRID_DECKS.get(controller)
+        if not right_decks:
+            return True
+        match = _DECK_NUM_RE.match(hit.name)
+        if match is None:
+            return True  # can't tell which deck -- keep it rather than drop it
+        return (int(match.group(1)) in right_decks) == right_side
+    right_channels = _RIGHT_SIDE_CHANNELS.get(controller, {}).get(section)
+    if not right_channels:
+        return True
+    return any((ch in right_channels) == right_side for ch in hit.channels)
+
+
+def _is_definitively_right_side(controller: str, section: str, hit: catalog.ControlInfo) -> bool:
+    """Unlike hit_matches_side() (a permissive filter that defaults to
+    True -- "keep this candidate" -- whenever nothing is known about a
+    side split), this is a strict yes/no used only to decide whether to
+    suffix a *presentation* key: False for a controller/section with no
+    side split modeled at all, or for a hit whose deck/channel doesn't
+    identify a side, so a no-split hit is never mistakenly labeled
+    "right"."""
+    if section == "PAD":
+        right_decks = _RIGHT_GRID_DECKS.get(controller)
+        if not right_decks:
+            return False
+        match = _DECK_NUM_RE.match(hit.name)
+        return match is not None and int(match.group(1)) in right_decks
+    right_channels = _RIGHT_SIDE_CHANNELS.get(controller, {}).get(section)
+    if not right_channels:
+        return False
+    return any(ch in right_channels for ch in hit.channels)
+
+
+def presentation_key_for_hit(hit: catalog.ControlInfo) -> CellKey:
+    """The inverse of resolve_side_aware_variant(): given a real catalog
+    hit, the presentation CellKey identifying which physical side it's on
+    -- the merged schematic key (cell_key(hit)) suffixed " (R)" when the
+    hit definitively belongs to the right physical side (per
+    _is_definitively_right_side()), or the plain merged key for anything
+    else (a left-side hit, or any controller/section with no side split
+    modeled).
+
+    Lets a caller resolving a *real* trigger back to a schematic cell (the
+    reverse direction from a click) emit the same side-aware key
+    real_position_markers()/EmulatorLayoutView use for click/flash/
+    selection identity, instead of the merged key both physical sides
+    would otherwise collide on -- e.g. MainWindow._update_layout_selection
+    highlighting only the marker matching the selected control's actual
+    deck, not both left and right markers at once."""
+    key = cell_key(hit)
+    if _is_definitively_right_side(hit.controller, hit.section, hit):
+        return (key[0], key[1], f"{key[2]}{_RIGHT_GRID_SUFFIX}")
+    return key
+
+
+def find_controls_for_cell(config: MidiConfig, key: CellKey) -> list[Control]:
+    """Every real Control in `config` mapped to the schematic cell `key`
+    names, narrowed to key's physical side when it has one (a "(R)"
+    presentation-key suffix) -- the cross-tab-navigation equivalent of
+    resolve_side_aware_variant(), used by
+    MainWindow._on_layout_cell_activated so clicking a right-side
+    real-position marker (DDJ-XP2/XDJ-XZ decks 2/4) doesn't jump to
+    whatever control happens to share the left side's merged cell instead.
+
+    A right-side key with nothing mapped on that specific side returns an
+    empty list even when the left side *is* mapped -- there is genuinely
+    no control in this file using that physical control, which is exactly
+    what the caller should report, not a fallback to the other side.
+
+    Implemented as a straight presentation_key_for_hit() comparison rather
+    than re-deriving the merged key + side check by hand -- `key` here is
+    always an already-resolved schematic CellKey (from a real-position
+    marker or a classic-grid cell), never a raw geometry label, so there's
+    no combined-label ("PAD MODE 1/5") form to unpack the way
+    cell_key_for_geometry_label() has to."""
+    matches: list[Control] = []
+    for control in config.controls:
+        for hit in catalog.lookup(control.channel, control.event_type, control.control):
+            if presentation_key_for_hit(hit) == key:
+                matches.append(control)
+                break
+    return matches
+
+
+def is_side_split_section(controller: str, section: str) -> bool:
+    """Whether (controller, section) has a modeled left/right physical
+    split at all -- PAD via _RIGHT_GRID_DECKS, or any other section listed
+    in _RIGHT_SIDE_CHANNELS. Lets a caller (ControllerLayoutView's usage
+    aggregation) tell "this key's label has no ' (R)' suffix because it's
+    the *left* half of a split cell" apart from "this key's label has no
+    suffix because the section was never split in the first place" --
+    the two need different treatment (filter to left-side decks only, vs.
+    keep every deck as before)."""
+    if section == "PAD":
+        return controller in _RIGHT_GRID_DECKS
+    return section in _RIGHT_SIDE_CHANNELS.get(controller, {})
+
+
+def right_side_usage_deck_ids(controller: str) -> frozenset[str] | None:
+    """_RIGHT_GRID_DECKS's 1-indexed catalog deck numbers (e.g. {2, 4}),
+    translated to the 0-indexed deck_id strings a loaded config's own
+    MappingElement.deck_id attribute uses (e.g. {"1", "3"}) -- the two
+    numbering conventions are confirmed to differ by exactly one via the
+    real fixture (catalog "Deck 1" pad hits pair with deck_id="0" mapping
+    elements). None when the controller has no side split modeled, so a
+    caller can tell "no split" apart from "split, but this deck_id isn't
+    on either confirmed side" (which can't happen today, but isn't the
+    same question)."""
+    right_decks = _RIGHT_GRID_DECKS.get(controller)
+    if right_decks is None:
+        return None
+    return frozenset(str(deck - 1) for deck in right_decks)
+
+
 def resolve_side_aware_variant(controller: str, key: CellKey) -> catalog.ControlInfo | None:
     """Like reverse_lookup(controller).get(base_key) + pick_default_variant(),
     but first strips a real-position " (R)" suffix from the key's label
@@ -442,15 +570,10 @@ def resolve_side_aware_variant(controller: str, key: CellKey) -> catalog.Control
     variants = reverse_lookup(controller_name).get((controller_name, section, primary))
     if not variants:
         return None
-    right_decks = _RIGHT_GRID_DECKS.get(controller_name)
-    if section == "PAD" and right_decks:
-        def _matches_side(variant: catalog.ControlInfo) -> bool:
-            match = _DECK_NUM_RE.match(variant.name)
-            if match is None:
-                return True  # can't tell which deck -- keep it rather than drop it
-            return (int(match.group(1)) in right_decks) == right_side
-
-        filtered = [variant for variant in variants if _matches_side(variant)]
+    if section == "PAD" and controller_name in _RIGHT_GRID_DECKS:
+        filtered = [
+            variant for variant in variants if hit_matches_side(controller_name, section, variant, right_side)
+        ]
         if filtered:
             variants = filtered
     entry = pick_default_variant(variants)
