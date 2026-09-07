@@ -19,7 +19,14 @@ job.
 This module makes no claim about what any specific Serato function tag
 *means* (e.g. whether a given toggle mapping is "a hot cue"): it is purely
 mechanical, driven entirely by the loaded config's own ``behaviour``
-attribute, never by guessing a tag's semantics."""
+attribute, never by guessing a tag's semantics.
+
+``describe_output_aliases()`` (slice 1's immediate follow-up) covers the
+case ``resolve_toggle_alias()`` explicitly declines: for a non-toggle
+output mapping (e.g. the ``selected``/``off`` collision case above), it
+surfaces the *entire* alias set read-only, rather than guessing which one
+currently applies -- real per-slot state (phase 5's other, larger piece)
+is what would let a later slice pick one instead of just listing them."""
 
 from __future__ import annotations
 
@@ -77,4 +84,26 @@ def resolve_toggle_alias(output_group: MappingGroup | None, active: bool) -> Ali
     return None
 
 
-__all__ = ["find_output_group", "is_toggle_group", "resolve_toggle_alias"]
+def describe_output_aliases(output_group: MappingGroup | None) -> str:
+    """A read-only "name=value, name=value, ..." summary of every alias on
+    `output_group`'s representative translation, in file order -- "" if
+    there is no output group or its translation carries no aliases at all.
+
+    Deliberately makes no attempt to decide *which* alias currently
+    applies (that's resolve_toggle_alias()'s job, and only for a
+    behaviour="toggle" mapping): this is for the ambiguous case
+    resolve_toggle_alias() explicitly declines to handle -- a mapping
+    with a "selected" alias sharing its raw value with "off" (see the
+    module docstring) has no way to know which one a given value means
+    without real state this project doesn't track yet, so the Controller
+    Emulator surfaces the whole alias set as information instead of
+    guessing at one."""
+    if output_group is None:
+        return ""
+    translations = output_group.representative.translations
+    if not translations or not translations[0].aliases:
+        return ""
+    return ", ".join(f"{alias.name}={alias.value}" for alias in translations[0].aliases)
+
+
+__all__ = ["describe_output_aliases", "find_output_group", "is_toggle_group", "resolve_toggle_alias"]

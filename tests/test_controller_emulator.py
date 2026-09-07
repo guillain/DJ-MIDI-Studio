@@ -36,6 +36,30 @@ def _toggle_config() -> MidiConfig:
     return MidiConfig(controls=[control])
 
 
+def _alias_info_config() -> MidiConfig:
+    """Like _toggle_config(), but the click mapping is NOT behaviour="toggle"
+    -- reproducing the real selected/off value-collision shape
+    (auto_loop_specific_length) where this project has no state to decide
+    which alias applies, so it should only ever be listed, never toggled."""
+    click = MappingElement(
+        tag="some_ambiguous_fn", deck_id="0", slot_id="0",
+        translations=[Translation(action_on="any")],
+    )
+    output = MappingElement(
+        tag="some_ambiguous_fn", deck_id="0", slot_id="0",
+        translations=[
+            Translation(
+                aliases=[Alias(name="selected", value="0"), Alias(name="on", value="127"), Alias(name="off", value="0")]
+            )
+        ],
+    )
+    control = Control(
+        channel="1", event_type="Note On", control="88",
+        userios=[UserIO(event="click", mappings=[click]), UserIO(event="output", mappings=[output])],
+    )
+    return MidiConfig(controls=[control])
+
+
 def test_pick_default_variant_prefers_the_no_shift_variant():
     clear_reverse_lookup_cache()
     variants = reverse_lookup("DDJ-XP2")[("DDJ-XP2", "DECK", "BEAT SYNC")]
@@ -425,7 +449,7 @@ def test_on_control_pressed_toggles_back_off_on_a_second_click():
     assert key not in view._emulator._active_keys
 
 
-def test_apply_toggle_state_is_a_noop_for_a_non_toggle_mapping():
+def test_apply_output_state_is_a_noop_for_a_non_toggle_mapping():
     """SHIFT has no toggle mapping in _toggle_config() at all -- clicking
     it must not add anything to _toggle_active or the status text."""
     view = ControllerEmulatorView(config_provider=_toggle_config)
@@ -436,7 +460,35 @@ def test_apply_toggle_state_is_a_noop_for_a_non_toggle_mapping():
     assert "TOGGLED" not in view._status_label.text()
 
 
-def test_apply_toggle_state_is_a_noop_with_no_config_loaded():
+# ─── Non-toggle output mappings: read-only alias listing (the follow-up ───
+# ─── to slice 1, covering the selected/off value-collision case) ──────────
+
+
+def test_on_control_pressed_lists_aliases_for_a_non_toggle_mapping():
+    view = ControllerEmulatorView(config_provider=_alias_info_config)
+    view._combo.setCurrentText("DDJ-XP2")
+    key: CellKey = ("DDJ-XP2", "DECK", "BEAT SYNC")
+    view._on_control_pressed(key)
+    assert "output aliases: selected=0, on=127, off=0" in view._status_label.text()
+    # Read-only: no toggle state or persistent highlight for this mapping.
+    assert key not in view._toggle_active
+    assert key not in view._emulator._active_keys
+    assert "TOGGLED" not in view._status_label.text()
+
+
+def test_on_control_pressed_lists_aliases_consistently_across_repeated_clicks():
+    """Unlike a toggle mapping, repeated clicks must not change the
+    reported alias set -- there is no state to flip here."""
+    view = ControllerEmulatorView(config_provider=_alias_info_config)
+    view._combo.setCurrentText("DDJ-XP2")
+    key: CellKey = ("DDJ-XP2", "DECK", "BEAT SYNC")
+    view._on_control_pressed(key)
+    first = view._status_label.text()
+    view._on_control_pressed(key)
+    assert view._status_label.text() == first
+
+
+def test_apply_output_state_is_a_noop_with_no_config_loaded():
     view = ControllerEmulatorView(config_provider=lambda: None)
     view._combo.setCurrentText("DDJ-XP2")
     key: CellKey = ("DDJ-XP2", "DECK", "BEAT SYNC")

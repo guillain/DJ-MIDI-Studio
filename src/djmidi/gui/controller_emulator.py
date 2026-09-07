@@ -63,7 +63,10 @@ flip is handled (gui/output_state.py's own docstring explains why the
 active, not just a flip, and is left for a later slice), and nothing here
 asserts what a toggle mapping's tag *means* (e.g. whether it's "a hot
 cue") -- purely mechanical, driven by the config's own `behaviour`
-attribute."""
+attribute. A non-toggle click mapping with real output aliases (e.g. the
+`selected`/`off` collision case) still gets a read-only listing of its
+whole alias set in the status text via `gui/output_state.describe_output_aliases()`
+-- informational only, no attempt to guess which alias currently applies."""
 
 from __future__ import annotations
 
@@ -90,6 +93,7 @@ from djmidi.gui.layout import CellKey
 from djmidi.gui.live_send import LiveSendControl
 from djmidi.gui.mapping_group import build_mapping_groups
 from djmidi.gui.output_state import (
+    describe_output_aliases,
     find_output_group,
     is_toggle_group,
     resolve_toggle_alias,
@@ -494,22 +498,29 @@ class ControllerEmulatorView(QWidget):
 
     def _on_control_pressed(self, key: CellKey) -> None:
         text = self._resolve(key)
-        text += self._apply_toggle_state(key)
+        text += self._apply_output_state(key)
         sent = self._live_send.resolve_and_send(key[0], key)
         if sent is not None:
             text += f"  [LIVE SENT: ch{sent.channels[0] if sent.channels else '?'} {sent.note_or_cc} {sent.data1}]"
         self._status_label.setText(text)
 
-    def _apply_toggle_state(self, key: CellKey) -> str:
-        """Phase 5 slice 1 (gui/output_state.py): if `key` resolves to a
-        behaviour="toggle" click mapping in the loaded config, flips its
-        tracked on/off state, reflects it as a persistent highlight via
-        EmulatorLayoutView.set_active(), and resolves the paired output
-        mapping's alias for the new state -- returns "" for any other key
-        (no config loaded, or no toggle-behaviour mapping at this trigger),
+    def _apply_output_state(self, key: CellKey) -> str:
+        """Phase 5's output-alias work (gui/output_state.py): finds `key`'s
+        click mapping in the loaded config (if any) and reports its paired
+        output mapping's aliases in the status text -- returns "" for any
+        other key (no config loaded, or no click mapping at this trigger),
         leaving _resolve()'s own dry-run text as the sole output. Kept
         separate from _resolve() (which several tests call repeatedly as a
-        pure read-only helper) so only an actual click ever flips state."""
+        pure read-only helper) so only an actual click ever flips state.
+
+        A behaviour="toggle" mapping (slice 1) gets the full stateful
+        treatment: flips a tracked on/off state, reflects it as a
+        persistent highlight via EmulatorLayoutView.set_active(), and
+        resolves the exact alias for the new state. Any other mapping with
+        real output aliases (slice 1's immediate follow-up) gets a
+        read-only listing of the whole alias set instead -- e.g. the
+        confirmed selected/off value-collision case, where this project
+        has no state yet to decide which one currently applies."""
         entry = layout_mod.resolve_side_aware_variant(key[0], key)
         config = self._config_provider()
         if entry is None or config is None:
@@ -521,22 +532,26 @@ class ControllerEmulatorView(QWidget):
             (
                 group
                 for group in groups
-                if group.event == "click"
-                and (group.channel, group.event_type, group.control_no) == trigger
-                and is_toggle_group(group)
+                if group.event == "click" and (group.channel, group.event_type, group.control_no) == trigger
             ),
             None,
         )
         if click_group is None:
             return ""
-        new_state = not self._toggle_active.get(key, False)
-        self._toggle_active[key] = new_state
-        self._emulator.set_active(key, new_state)
-        alias = resolve_toggle_alias(find_output_group(groups, click_group), new_state)
-        state_word = "ON" if new_state else "OFF"
-        if alias is not None:
-            return f"  [TOGGLED {state_word}: output alias '{alias.name}' = {alias.value}]"
-        return f"  [TOGGLED {state_word}]"
+        output_group = find_output_group(groups, click_group)
+        if is_toggle_group(click_group):
+            new_state = not self._toggle_active.get(key, False)
+            self._toggle_active[key] = new_state
+            self._emulator.set_active(key, new_state)
+            alias = resolve_toggle_alias(output_group, new_state)
+            state_word = "ON" if new_state else "OFF"
+            if alias is not None:
+                return f"  [TOGGLED {state_word}: output alias '{alias.name}' = {alias.value}]"
+            return f"  [TOGGLED {state_word}]"
+        aliases_text = describe_output_aliases(output_group)
+        if aliases_text:
+            return f"  [output aliases: {aliases_text}]"
+        return ""
 
     def _resolve(self, key: CellKey) -> str:
         # resolve_side_aware_variant (not a plain reverse_lookup() +
