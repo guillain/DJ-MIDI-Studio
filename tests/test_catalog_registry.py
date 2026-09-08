@@ -34,10 +34,11 @@ def test_builtin_controller_plugins_expose_metadata():
     # Controllers with gui/geometry.CONTROL_GEOMETRY still name the annotated
     # "-midi" variant -- that is the image the geometry fractions were measured
     # against -- until each is re-measured against its clean render in its own
-    # follow-up. Done: DDJ-XP2 (v0.47.54), XDJ-XZ (v0.47.55). Controllers with
-    # no geometry already point at the clean render.
+    # follow-up. Done: DDJ-XP2 (v0.47.54), XDJ-XZ (v0.47.55), DDJ-1000
+    # (v0.47.57). Controllers with no geometry already point at the clean render.
     assert definitions["DDJ-XP2"].reference_image == "ddj-xp2.png"
     assert definitions["XDJ-XZ"].reference_image == "xdj-xz.png"
+    assert definitions["DDJ-1000"].reference_image == "ddj-1000.png"
     assert definitions["DDJ-FLX10"].reference_image == "ddj-flx10-midi.png"
     assert definitions["DDJ-FLX4"].reference_image == "ddj-flx4.png"
     assert definitions["DDJ-REV1"].reference_image == "ddj-rev1-midi.png"

@@ -828,10 +828,19 @@ documentation index.
   loop; the structural pad-grid test (right grid a non-overlapping 2×4 to
   the right of the left) passes unchanged. `test_controller_image_view`'s
   "annotated is canonical" stand-in moved from XDJ-XZ to DDJ-REV1.
+- [x] **Re-measure DDJ-1000 geometry against the clean render** (`v0.47.57`) —
+  the third per-controller re-measure. `catalog/ddj_1000.py` `reference_image`
+  → `ddj-1000.png` (3129×1652). Every `CONTROL_GEOMETRY["DDJ-1000"]` entry
+  re-measured against it: PLAY/PAUSE, CUE, MASTER TEMPO, BEAT SYNC, KEY
+  SYNC, KEY RESET, LOOP IN, LOOP OUT, 4 BEAT LOOP/EXIT, QUANTIZE, SLIP, SLIP
+  REVERSE, and the 8-pad grid (all on the left deck). No
+  `_RIGHT_MIRROR_GEOMETRY` for DDJ-1000. Verified with the crop-and-overlay
+  loop; structural pad-grid test passes unchanged. `test_controller_image_view`'s
+  second "annotated is canonical" stand-in moved DDJ-1000 → DDJ-FLX10.
 - [ ] **Re-measure the remaining Pioneer geometry against the clean renders**
-  — one PR each, in order: DDJ-1000, DDJ-FLX10, DDJ-REV1, Numark Mixtrack
-  Pro FX. Same recipe: point `catalog` `reference_image` at `<slug>.png`,
-  re-measure every `CONTROL_GEOMETRY` entry against the clean image with the
+  — one PR each, in order: DDJ-FLX10, DDJ-REV1, Numark Mixtrack Pro FX.
+  Same recipe: point `catalog` `reference_image` at `<slug>.png`, re-measure
+  every `CONTROL_GEOMETRY` entry against the clean image with the
   crop-and-overlay verify loop, then flip the tests that assert the old
   `-midi` canonical for that controller.
 - [x] **"Controller photo" backdrop on by default** (`v0.47.56`) — the
