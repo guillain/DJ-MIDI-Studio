@@ -816,13 +816,24 @@ documentation index.
   DDJ-XP2's `-midi` canonical were flipped (XDJ-XZ now stands in for the
   "annotated is canonical" cases). The By…/emulator real-position schematics
   and the optional photo backdrop now show DDJ-XP2's clean render.
+- [x] **Re-measure XDJ-XZ geometry against the clean render** (`v0.47.55`) —
+  the second per-controller re-measure. `catalog/xdj_xz.py` `reference_image`
+  → `xdj-xz.png` (3024×1623). `CONTROL_GEOMETRY["XDJ-XZ"]` (left tray:
+  PLAY/PAUSE, CUE, SYNC, jog wheel, tempo fader, the 4 PAD MODE-select
+  buttons, and the 8-pad grid ×2) and `layout_view._RIGHT_MIRROR_GEOMETRY["XDJ-XZ"]`
+  (right tray: PLAY/PAUSE, CUE, SYNC, jog wheel, tempo, HOT CUE/BEAT LOOP/
+  SLIP LOOP/BEAT JUMP) re-measured against it. Each side measured
+  independently, not mirrored — the wide central mixer means the two jog
+  wheels aren't a constant offset apart. Verified with the crop-and-overlay
+  loop; the structural pad-grid test (right grid a non-overlapping 2×4 to
+  the right of the left) passes unchanged. `test_controller_image_view`'s
+  "annotated is canonical" stand-in moved from XDJ-XZ to DDJ-REV1.
 - [ ] **Re-measure the remaining Pioneer geometry against the clean renders**
-  — one PR each, in order: XDJ-XZ, DDJ-1000, DDJ-FLX10, DDJ-REV1, Numark
-  Mixtrack Pro FX. Same recipe as the DDJ-XP2 pass above: point `catalog`
-  `reference_image` at `<slug>.png`, re-measure every `CONTROL_GEOMETRY`
-  entry (and `layout_view._RIGHT_MIRROR_GEOMETRY["XDJ-XZ"]`) against the
-  clean image with the crop-and-overlay verify loop, then flip the tests
-  that assert the old `-midi` canonical for that controller.
+  — one PR each, in order: DDJ-1000, DDJ-FLX10, DDJ-REV1, Numark Mixtrack
+  Pro FX. Same recipe: point `catalog` `reference_image` at `<slug>.png`,
+  re-measure every `CONTROL_GEOMETRY` entry against the clean image with the
+  crop-and-overlay verify loop, then flip the tests that assert the old
+  `-midi` canonical for that controller.
 - [x] **Real MIDI sending from layouts (Phase R2 / phase 4)** — the second
   half of the same request: clicking a control in the By tabs' schematic or
   Controller Images' real-photo overlay, not just the dedicated Controller

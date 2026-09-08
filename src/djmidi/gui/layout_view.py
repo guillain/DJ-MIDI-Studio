@@ -219,34 +219,25 @@ _RIGHT_MIRROR_GEOMETRY: dict[str, dict[str, geometry_mod.ControlGeometry]] = {
     },
     "XDJ-XZ": {
         # The right tray's transport cluster + PAD MODE buttons -- CONTROL_GEOMETRY
-        # only ever recorded the left tray (deck 1); "Pad N (R)" (deck 2/4)
-        # is already there via the pad-grid geometry fix, but PLAY/PAUSE,
-        # CUE, SYNC, the jog wheel/tempo display markers, and the 4 PAD
-        # MODE buttons still need their own right-tray copy here.
+        # only ever records the left tray (deck 1/3); "Pad N (R)" (deck 2/4)
+        # is already there via the pad-grid geometry, but PLAY/PAUSE, CUE,
+        # SYNC, the jog wheel/tempo display markers, and the 4 PAD MODE
+        # buttons need their own right-tray copy here.
         #
-        # Re-measured from scratch (crop + crosshair verification against
-        # assets/controllers/xdj-xz-midi.png, same discipline as
-        # control-layout-geometry's "measure -> verify" loop) after the
-        # maintainer reported "la platine de droite de la xdj-xz n'est pas
-        # correctement aligné" (the right deck isn't correctly aligned).
-        # The original values here were derived by mirroring the left
-        # tray's offsets rather than independently measured -- fine for
-        # PLAY/PAUSE/CUE/SYNC/PAD MODE (small enough drift, ~15-30px, to be
-        # visually plausible), but off by ~45-85px for the jog wheel, whose
-        # real position isn't a simple constant offset from the left one
-        # (there's a mixer section between the two jogs, not present
-        # between the transport buttons). Box sizes (w/h) are left matching
-        # the left tray's own values throughout -- same physical hardware,
-        # only x/y (top-left position) actually needed re-measuring.
-        "PLAY/PAUSE": geometry_mod.ControlGeometry(0.6572, 0.8618, 0.0296, 0.0484, "circle", "#3ea86b"),
-        "CUE": geometry_mod.ControlGeometry(0.6642, 0.7898, 0.0249, 0.0408, "circle", "#e0954a"),
-        "SYNC": geometry_mod.ControlGeometry(0.8696, 0.5274, 0.0187, 0.0306, "circle", "#4a90d9"),
-        "Jog wheel": geometry_mod.ControlGeometry(0.6890, 0.3993, 0.1944, 0.3185, "circle", "#586b82"),
-        "Tempo": geometry_mod.ControlGeometry(0.8809, 0.6975, 0.0194, 0.1879, "rect", "#6fa8c9"),
-        "HOT CUE": geometry_mod.ControlGeometry(0.7305, 0.7640, 0.0214, 0.0096, "rect", "#7a8aa0"),
-        "BEAT LOOP": geometry_mod.ControlGeometry(0.7607, 0.7640, 0.0214, 0.0096, "rect", "#7a8aa0"),
-        "SLIP LOOP": geometry_mod.ControlGeometry(0.7908, 0.7640, 0.0214, 0.0096, "rect", "#7a8aa0"),
-        "BEAT JUMP": geometry_mod.ControlGeometry(0.8212, 0.7640, 0.0214, 0.0096, "rect", "#7a8aa0"),
+        # Re-measured against the clean render assets/controllers/xdj-xz.png
+        # in v0.47.55 (mirrors the CONTROL_GEOMETRY["XDJ-XZ"] re-measure).
+        # Each side is measured independently, not mirrored -- the wide
+        # central mixer means the right jog wheel isn't a constant offset
+        # from the left one.
+        "PLAY/PAUSE": geometry_mod.ControlGeometry(0.674, 0.882, 0.052, 0.096, "circle", "#3ea86b"),
+        "CUE": geometry_mod.ControlGeometry(0.674, 0.783, 0.052, 0.095, "circle", "#e0954a"),
+        "SYNC": geometry_mod.ControlGeometry(0.917, 0.472, 0.026, 0.037, "circle", "#4a90d9"),
+        "Jog wheel": geometry_mod.ControlGeometry(0.718, 0.310, 0.216, 0.378, "circle", "#586b82"),
+        "Tempo": geometry_mod.ControlGeometry(0.945, 0.700, 0.028, 0.250, "rect", "#6fa8c9"),
+        "HOT CUE": geometry_mod.ControlGeometry(0.735, 0.800, 0.055, 0.018, "rect", "#7a8aa0"),
+        "BEAT LOOP": geometry_mod.ControlGeometry(0.795, 0.800, 0.055, 0.018, "rect", "#7a8aa0"),
+        "SLIP LOOP": geometry_mod.ControlGeometry(0.853, 0.800, 0.055, 0.018, "rect", "#7a8aa0"),
+        "BEAT JUMP": geometry_mod.ControlGeometry(0.912, 0.800, 0.053, 0.018, "rect", "#7a8aa0"),
     },
 }
 
