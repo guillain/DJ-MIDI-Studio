@@ -6,14 +6,17 @@ abstract uniform-card schematic in ``layout_view.py``.
 Coordinates are fractions (0..1) of the *full* reference image's width/height,
 measured by eye against ``assets/controllers/<file>.png`` at full resolution.
 
-NOTE (v0.47.53): every controller now bundles a clean ``<slug>.png`` render
+NOTE (v0.47.53+): every controller now bundles a clean ``<slug>.png`` render
 *and* an annotated ``<slug>-midi.png`` (MIDI Message List callouts printed
-over it). The fractions below were all measured against the annotated
-variant -- which is why the controllers that have geometry still name
-``<slug>-midi.png`` as their ``catalog`` ``reference_image``. Re-measuring
-each against its clean render, one controller per PR (DDJ-XP2 first), is
-in progress; the historical filenames in the per-controller notes below
-refer to what is now the ``-midi`` variant.
+over it). Re-measuring each geometry block against its clean render, one
+controller per PR, is in progress:
+  - DONE: DDJ-XP2 (v0.47.54) -- ``CONTROL_GEOMETRY["DDJ-XP2"]`` and
+    ``layout_view._RIGHT_MIRROR_GEOMETRY["DDJ-XP2"]`` are for ``ddj-xp2.png``.
+  - PENDING: XDJ-XZ, DDJ-1000, DDJ-FLX10, DDJ-REV1, Numark -- still measured
+    against their ``-midi`` variant, which is why they still name it as their
+    ``catalog`` ``reference_image``. The historical filenames in those
+    controllers' per-controller notes below refer to what is now the
+    ``-midi`` variant.
 A uniform fixed-size schematic card, as used elsewhere in the app, can't
 represent a giant jog wheel and a small button at their true relative scale
 without overlapping neighbours once real spacing is honoured -- overlaying
@@ -227,75 +230,81 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         "Pad 8": ControlGeometry(0.4697, 0.5738, 0.0328, 0.0694, "rect", "#e0708f"),
     },
     "DDJ-XP2": {
-        # Salmon-pink: matches the pad grid's own highlight color in the
-        # reference photo.
-        "Pad 1": ControlGeometry(0.3332, 0.5971, 0.0357, 0.0674, "rect", "#e0708f"),
-        "Pad 2": ControlGeometry(0.3736, 0.5971, 0.0357, 0.0674, "rect", "#e0708f"),
-        "Pad 3": ControlGeometry(0.4134, 0.5971, 0.0357, 0.0674, "rect", "#e0708f"),
-        "Pad 4": ControlGeometry(0.4530, 0.5971, 0.0357, 0.0674, "rect", "#e0708f"),
-        "Pad 5": ControlGeometry(0.3332, 0.6785, 0.0357, 0.0674, "rect", "#e0708f"),
-        "Pad 6": ControlGeometry(0.3736, 0.6785, 0.0357, 0.0674, "rect", "#e0708f"),
-        "Pad 7": ControlGeometry(0.4134, 0.6785, 0.0357, 0.0674, "rect", "#e0708f"),
-        "Pad 8": ControlGeometry(0.4530, 0.6785, 0.0357, 0.0674, "rect", "#e0708f"),
-        "Pad 9": ControlGeometry(0.3332, 0.7686, 0.0357, 0.0674, "rect", "#e0708f"),
-        "Pad 10": ControlGeometry(0.3736, 0.7686, 0.0357, 0.0674, "rect", "#e0708f"),
-        "Pad 11": ControlGeometry(0.4134, 0.7686, 0.0357, 0.0674, "rect", "#e0708f"),
-        "Pad 12": ControlGeometry(0.4530, 0.7686, 0.0357, 0.0674, "rect", "#e0708f"),
-        "Pad 13": ControlGeometry(0.3332, 0.8558, 0.0357, 0.0674, "rect", "#e0708f"),
-        "Pad 14": ControlGeometry(0.3736, 0.8558, 0.0357, 0.0674, "rect", "#e0708f"),
-        "Pad 15": ControlGeometry(0.4134, 0.8558, 0.0357, 0.0674, "rect", "#e0708f"),
-        "Pad 16": ControlGeometry(0.4530, 0.8558, 0.0357, 0.0674, "rect", "#e0708f"),
+        # Re-measured against the clean render assets/controllers/ddj-xp2.png
+        # (3950x2900) in v0.47.54 -- the earlier fractions were for the
+        # callout-annotated ddj-xp2-midi.png, a different crop/aspect.
+        # Salmon-pink: matches the pad grid's own highlight color.
+        # Left grid: cols x = 0.135/0.222/0.309/0.396 (w 0.070),
+        # rows y = 0.429/0.536/0.659/0.789 (h 0.095) -- the growing row gaps
+        # are real on the device.
+        "Pad 1": ControlGeometry(0.135, 0.429, 0.076, 0.101, "rect", "#e0708f"),
+        "Pad 2": ControlGeometry(0.222, 0.429, 0.076, 0.101, "rect", "#e0708f"),
+        "Pad 3": ControlGeometry(0.309, 0.429, 0.076, 0.101, "rect", "#e0708f"),
+        "Pad 4": ControlGeometry(0.396, 0.429, 0.076, 0.101, "rect", "#e0708f"),
+        "Pad 5": ControlGeometry(0.135, 0.536, 0.076, 0.101, "rect", "#e0708f"),
+        "Pad 6": ControlGeometry(0.222, 0.536, 0.076, 0.101, "rect", "#e0708f"),
+        "Pad 7": ControlGeometry(0.309, 0.536, 0.076, 0.101, "rect", "#e0708f"),
+        "Pad 8": ControlGeometry(0.396, 0.536, 0.076, 0.101, "rect", "#e0708f"),
+        "Pad 9": ControlGeometry(0.135, 0.659, 0.076, 0.101, "rect", "#e0708f"),
+        "Pad 10": ControlGeometry(0.222, 0.659, 0.076, 0.101, "rect", "#e0708f"),
+        "Pad 11": ControlGeometry(0.309, 0.659, 0.076, 0.101, "rect", "#e0708f"),
+        "Pad 12": ControlGeometry(0.396, 0.659, 0.076, 0.101, "rect", "#e0708f"),
+        "Pad 13": ControlGeometry(0.135, 0.789, 0.076, 0.101, "rect", "#e0708f"),
+        "Pad 14": ControlGeometry(0.222, 0.789, 0.076, 0.101, "rect", "#e0708f"),
+        "Pad 15": ControlGeometry(0.309, 0.789, 0.076, 0.101, "rect", "#e0708f"),
+        "Pad 16": ControlGeometry(0.396, 0.789, 0.076, 0.101, "rect", "#e0708f"),
         # The second, physically distinct pad grid to the right (decks 2/4)
         # -- see "Right pad grid" in the module docstring. Same row Y's/size
-        # as the left grid, columns measured separately against the photo.
-        "Pad 1 (R)": ControlGeometry(0.5033, 0.5971, 0.0357, 0.0674, "rect", "#e0708f"),
-        "Pad 2 (R)": ControlGeometry(0.5432, 0.5971, 0.0357, 0.0674, "rect", "#e0708f"),
-        "Pad 3 (R)": ControlGeometry(0.5834, 0.5971, 0.0357, 0.0674, "rect", "#e0708f"),
-        "Pad 4 (R)": ControlGeometry(0.6232, 0.5971, 0.0357, 0.0674, "rect", "#e0708f"),
-        "Pad 5 (R)": ControlGeometry(0.5033, 0.6785, 0.0357, 0.0674, "rect", "#e0708f"),
-        "Pad 6 (R)": ControlGeometry(0.5432, 0.6785, 0.0357, 0.0674, "rect", "#e0708f"),
-        "Pad 7 (R)": ControlGeometry(0.5834, 0.6785, 0.0357, 0.0674, "rect", "#e0708f"),
-        "Pad 8 (R)": ControlGeometry(0.6232, 0.6785, 0.0357, 0.0674, "rect", "#e0708f"),
-        "Pad 9 (R)": ControlGeometry(0.5033, 0.7686, 0.0357, 0.0674, "rect", "#e0708f"),
-        "Pad 10 (R)": ControlGeometry(0.5432, 0.7686, 0.0357, 0.0674, "rect", "#e0708f"),
-        "Pad 11 (R)": ControlGeometry(0.5834, 0.7686, 0.0357, 0.0674, "rect", "#e0708f"),
-        "Pad 12 (R)": ControlGeometry(0.6232, 0.7686, 0.0357, 0.0674, "rect", "#e0708f"),
-        "Pad 13 (R)": ControlGeometry(0.5033, 0.8558, 0.0357, 0.0674, "rect", "#e0708f"),
-        "Pad 14 (R)": ControlGeometry(0.5432, 0.8558, 0.0357, 0.0674, "rect", "#e0708f"),
-        "Pad 15 (R)": ControlGeometry(0.5834, 0.8558, 0.0357, 0.0674, "rect", "#e0708f"),
-        "Pad 16 (R)": ControlGeometry(0.6232, 0.8558, 0.0357, 0.0674, "rect", "#e0708f"),
+        # as the left grid; cols x = 0.535/0.622/0.709/0.796.
+        "Pad 1 (R)": ControlGeometry(0.535, 0.429, 0.076, 0.101, "rect", "#e0708f"),
+        "Pad 2 (R)": ControlGeometry(0.622, 0.429, 0.076, 0.101, "rect", "#e0708f"),
+        "Pad 3 (R)": ControlGeometry(0.709, 0.429, 0.076, 0.101, "rect", "#e0708f"),
+        "Pad 4 (R)": ControlGeometry(0.796, 0.429, 0.076, 0.101, "rect", "#e0708f"),
+        "Pad 5 (R)": ControlGeometry(0.535, 0.536, 0.076, 0.101, "rect", "#e0708f"),
+        "Pad 6 (R)": ControlGeometry(0.622, 0.536, 0.076, 0.101, "rect", "#e0708f"),
+        "Pad 7 (R)": ControlGeometry(0.709, 0.536, 0.076, 0.101, "rect", "#e0708f"),
+        "Pad 8 (R)": ControlGeometry(0.796, 0.536, 0.076, 0.101, "rect", "#e0708f"),
+        "Pad 9 (R)": ControlGeometry(0.535, 0.659, 0.076, 0.101, "rect", "#e0708f"),
+        "Pad 10 (R)": ControlGeometry(0.622, 0.659, 0.076, 0.101, "rect", "#e0708f"),
+        "Pad 11 (R)": ControlGeometry(0.709, 0.659, 0.076, 0.101, "rect", "#e0708f"),
+        "Pad 12 (R)": ControlGeometry(0.796, 0.659, 0.076, 0.101, "rect", "#e0708f"),
+        "Pad 13 (R)": ControlGeometry(0.535, 0.789, 0.076, 0.101, "rect", "#e0708f"),
+        "Pad 14 (R)": ControlGeometry(0.622, 0.789, 0.076, 0.101, "rect", "#e0708f"),
+        "Pad 15 (R)": ControlGeometry(0.709, 0.789, 0.076, 0.101, "rect", "#e0708f"),
+        "Pad 16 (R)": ControlGeometry(0.796, 0.789, 0.076, 0.101, "rect", "#e0708f"),
         # One physical button per entry -- see the module docstring.
-        "PAD MODE 1/5": ControlGeometry(0.3351, 0.5364, 0.0324, 0.0262, "rect", "#7a8aa0"),
-        "PAD MODE 2/6": ControlGeometry(0.3752, 0.5364, 0.0324, 0.0262, "rect", "#7a8aa0"),
-        "PAD MODE 3/7": ControlGeometry(0.4151, 0.5364, 0.0324, 0.0262, "rect", "#7a8aa0"),
-        "PAD MODE 4/8": ControlGeometry(0.4546, 0.5364, 0.0324, 0.0262, "rect", "#7a8aa0"),
-        # Purple: the conventional DJ-gear "effect" accent color.
-        "EFFECT 1": ControlGeometry(0.3099, 0.3491, 0.0151, 0.0320, "circle", "#9b6fd9"),
-        "EFFECT 2": ControlGeometry(0.3099, 0.4247, 0.0151, 0.0320, "circle", "#9b6fd9"),
-        "EFFECT 3": ControlGeometry(0.3099, 0.4997, 0.0151, 0.0320, "circle", "#9b6fd9"),
-        "TOUCH STRIP HOLD": ControlGeometry(0.2969, 0.9038, 0.0330, 0.0320, "rect", "#8fa0b3"),
+        "PAD MODE 1/5": ControlGeometry(0.113, 0.362, 0.092, 0.043, "rect", "#7a8aa0"),
+        "PAD MODE 2/6": ControlGeometry(0.222, 0.362, 0.092, 0.043, "rect", "#7a8aa0"),
+        "PAD MODE 3/7": ControlGeometry(0.331, 0.362, 0.092, 0.043, "rect", "#7a8aa0"),
+        "PAD MODE 4/8": ControlGeometry(0.440, 0.362, 0.092, 0.043, "rect", "#7a8aa0"),
+        # Purple: the conventional DJ-gear "effect" accent color. The SLIDE
+        # FX 1 panel's 1/2/3 buttons (far-left column).
+        "EFFECT 1": ControlGeometry(0.045, 0.109, 0.055, 0.040, "circle", "#9b6fd9"),
+        "EFFECT 2": ControlGeometry(0.045, 0.188, 0.055, 0.040, "circle", "#9b6fd9"),
+        "EFFECT 3": ControlGeometry(0.045, 0.284, 0.055, 0.040, "circle", "#9b6fd9"),
+        "TOUCH STRIP HOLD": ControlGeometry(0.055, 0.853, 0.062, 0.048, "rect", "#8fa0b3"),
         # Display-only (continuous, not a discrete catalog trigger).
-        "FX LEVEL": ControlGeometry(0.3120, 0.5698, 0.0110, 0.2791, "rect", "#6fa8c9"),
+        "FX LEVEL": ControlGeometry(0.060, 0.435, 0.045, 0.377, "rect", "#6fa8c9"),
         # Amber: loop/quantize cluster.
-        "4 BEAT LOOP": ControlGeometry(0.3393, 0.3517, 0.0289, 0.0291, "rect", "#d9954a"),
-        "1/2X": ControlGeometry(0.3271, 0.4116, 0.0247, 0.0349, "rect", "#d9954a"),
-        "2X": ControlGeometry(0.3532, 0.4116, 0.0247, 0.0349, "rect", "#d9954a"),
+        "4 BEAT LOOP": ControlGeometry(0.128, 0.108, 0.086, 0.044, "rect", "#d9954a"),
+        "1/2X": ControlGeometry(0.118, 0.183, 0.045, 0.049, "rect", "#d9954a"),
+        "2X": ControlGeometry(0.170, 0.183, 0.046, 0.049, "rect", "#d9954a"),
         # Teal: a distinct utility accent, separate from the loop/effect/sync families.
-        "QUANTIZE": ControlGeometry(0.3869, 0.3509, 0.0151, 0.0320, "circle", "#4ab8a0"),
+        "QUANTIZE": ControlGeometry(0.243, 0.093, 0.042, 0.048, "circle", "#4ab8a0"),
         # Blue: matches XDJ-XZ's SYNC accent color -- same function family.
-        "BEAT SYNC": ControlGeometry(0.4293, 0.4145, 0.0165, 0.0291, "rect", "#4a90d9"),
+        "BEAT SYNC": ControlGeometry(0.345, 0.191, 0.053, 0.052, "rect", "#4a90d9"),
         # Amber: matches XDJ-XZ's CUE accent color -- same function family.
-        "SILENT CUE": ControlGeometry(0.3752, 0.4535, 0.0385, 0.0465, "rect", "#e0954a"),
-        "KEY -": ControlGeometry(0.4110, 0.4564, 0.0192, 0.0407, "rect", "#7a8aa0"),
-        "KEY +": ControlGeometry(0.4264, 0.4564, 0.0192, 0.0407, "rect", "#7a8aa0"),
+        "SILENT CUE": ControlGeometry(0.238, 0.276, 0.048, 0.060, "rect", "#e0954a"),
+        "KEY -": ControlGeometry(0.303, 0.282, 0.042, 0.053, "rect", "#7a8aa0"),
+        "KEY +": ControlGeometry(0.372, 0.282, 0.043, 0.053, "rect", "#7a8aa0"),
         # Magenta: a slate/gray marker is nearly invisible against this
         # knob's bright chrome finish, unlike every other DDJ-XP2 button.
-        "Rotary Selector": ControlGeometry(0.4756, 0.3198, 0.0357, 0.0756, "circle", "#c9548f"),
+        "Rotary Selector": ControlGeometry(0.452, 0.073, 0.075, 0.084, "circle", "#c9548f"),
         # Green: matches PLAY/PAUSE's accent color -- loading leads to playback.
-        "LOAD DECK 1/3": ControlGeometry(0.4233, 0.3509, 0.0220, 0.0320, "rect", "#3ea86b"),
-        "LOAD DECK 2/4": ControlGeometry(0.5459, 0.3509, 0.0220, 0.0320, "rect", "#3ea86b"),
+        "LOAD DECK 1/3": ControlGeometry(0.303, 0.097, 0.095, 0.044, "rect", "#3ea86b"),
+        "LOAD DECK 2/4": ControlGeometry(0.523, 0.097, 0.095, 0.044, "rect", "#3ea86b"),
         # Muted neutral: a modifier key, not a function.
-        "SHIFT": ControlGeometry(0.4781, 0.4821, 0.0323, 0.0218, "rect", "#5f6b7a"),
+        "SHIFT": ControlGeometry(0.506, 0.277, 0.052, 0.052, "rect", "#5f6b7a"),
     },
     "Numark Mixtrack Pro FX": {
         # Blue: matches SYNC's accent color on the other controllers.

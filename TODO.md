@@ -800,16 +800,29 @@ documentation index.
   backdrop follow `reference_image`, so each controller's markers flip to the
   clean image in lockstep with its re-measurement, never before. Milestone
   tag `v0.47.53-clean-reference-images`.
-- [ ] **Re-measure Pioneer geometry against the clean renders** — one PR each,
-  in order: DDJ-XP2, XDJ-XZ, DDJ-1000, DDJ-FLX10, DDJ-REV1, Numark Mixtrack
-  Pro FX. Per controller: point `catalog` `reference_image` at `<slug>.png`,
-  re-measure every `CONTROL_GEOMETRY` entry (and `layout_view._RIGHT_MIRROR_GEOMETRY`
-  for DDJ-XP2 / XDJ-XZ) against the clean image, verify each by cropping the
-  region it claims and screenshotting the rendered overlay (the project's
-  "no visual features built blind" rule), then flip the tests that assert the
-  old `-midi` canonical. The clean renders are higher-res, flat top-down, and
-  free of the callout clutter, so the By…/emulator backdrops become properly
-  legible once flipped.
+- [x] **Re-measure DDJ-XP2 geometry against the clean render** (`v0.47.54`) —
+  the first of the per-controller re-measures. `catalog/ddj_xp2.py`
+  `reference_image` → `ddj-xp2.png` (3950×2900, flat top-down, no callout
+  clutter). Every `CONTROL_GEOMETRY["DDJ-XP2"]` entry (16-pad grid ×2, the
+  4 PAD MODE buttons, SLIDE FX EFFECT 1/2/3 + FX LEVEL + TOUCH STRIP HOLD,
+  LOOP/QUANTIZE/BEAT SYNC/SILENT CUE/KEY/Rotary/LOAD/SHIFT) and every
+  `layout_view._RIGHT_MIRROR_GEOMETRY["DDJ-XP2"]` entry (the right-tray copy
+  of DECK/PAD MODE/EFFECT) re-measured against the new image, each verified
+  by cropping the region it claims and rendering the marker overlay back
+  onto the full-res image (the "no visual features built blind" rule). The
+  structural pad-grid tests (left-to-right / top-to-bottom order, no
+  overlap, right grid entirely right of the left, matching row Y's) still
+  pass unchanged; the `test_controller_image_view` tests that assumed
+  DDJ-XP2's `-midi` canonical were flipped (XDJ-XZ now stands in for the
+  "annotated is canonical" cases). The By…/emulator real-position schematics
+  and the optional photo backdrop now show DDJ-XP2's clean render.
+- [ ] **Re-measure the remaining Pioneer geometry against the clean renders**
+  — one PR each, in order: XDJ-XZ, DDJ-1000, DDJ-FLX10, DDJ-REV1, Numark
+  Mixtrack Pro FX. Same recipe as the DDJ-XP2 pass above: point `catalog`
+  `reference_image` at `<slug>.png`, re-measure every `CONTROL_GEOMETRY`
+  entry (and `layout_view._RIGHT_MIRROR_GEOMETRY["XDJ-XZ"]`) against the
+  clean image with the crop-and-overlay verify loop, then flip the tests
+  that assert the old `-midi` canonical for that controller.
 - [x] **Real MIDI sending from layouts (Phase R2 / phase 4)** — the second
   half of the same request: clicking a control in the By tabs' schematic or
   Controller Images' real-photo overlay, not just the dedicated Controller

@@ -383,10 +383,10 @@ def test_image_variants_none_and_absolute():
 
 def test_midi_checkbox_enabled_when_both_variants_bundled_and_swaps_image():
     view = ControllerImageView()
-    assert view.set_controller("DDJ-XP2") is True
+    # XDJ-XZ's reference_image still names the annotated '-midi' variant, so
+    # the box defaults on (canonical image, overlay-ready).
+    assert view.set_controller("XDJ-XZ") is True
     assert view._midi_checkbox.isEnabled() is True
-    # DDJ-XP2's reference_image names the annotated variant for now, so the
-    # box defaults on (canonical image, overlay-ready).
     assert view._midi_checkbox.isChecked() is True
 
     view._midi_checkbox.setChecked(False)
@@ -396,12 +396,12 @@ def test_midi_checkbox_enabled_when_both_variants_bundled_and_swaps_image():
     assert annotated_size != clean_size  # a different image is now on screen
 
 
-def test_geometry_overlay_only_offered_on_the_canonical_variant():
-    """DDJ-XP2's reference_image currently names the annotated '-midi' variant
-    (geometry is measured against it), so 'Show real layout' is available while
-    that one is shown and disabled once the clean render is swapped in."""
+def test_geometry_overlay_only_offered_on_the_canonical_variant_annotated():
+    """XDJ-XZ's reference_image still names the annotated '-midi' variant, so
+    'Show real layout' is available while that one is shown and disabled once
+    the clean render is swapped in."""
     view = ControllerImageView()
-    assert view.set_controller("DDJ-XP2") is True
+    assert view.set_controller("XDJ-XZ") is True
 
     assert view._geometry_checkbox.isEnabled() is True  # default shows canonical
     view._geometry_checkbox.setChecked(True)
@@ -412,13 +412,30 @@ def test_geometry_overlay_only_offered_on_the_canonical_variant():
     assert view._overlay_items == []  # checked but disabled -> not drawn
 
 
+def test_geometry_overlay_only_offered_on_the_canonical_variant_clean():
+    """DDJ-XP2 has been re-measured against its clean render (v0.47.54), so its
+    reference_image is now the clean one -- the overlay is available by default
+    and disabled once 'MIDI info' swaps the annotated crop in."""
+    view = ControllerImageView()
+    assert view.set_controller("DDJ-XP2") is True
+
+    assert view._midi_checkbox.isChecked() is False  # canonical == clean
+    assert view._geometry_checkbox.isEnabled() is True
+    view._geometry_checkbox.setChecked(True)
+    assert view._overlay_items != []
+
+    view._midi_checkbox.setChecked(True)  # annotated == non-canonical
+    assert view._geometry_checkbox.isEnabled() is False
+    assert view._overlay_items == []
+
+
 def test_midi_override_pins_the_user_choice_across_controller_switches():
     view = ControllerImageView()
-    view.set_controller("DDJ-XP2")
+    view.set_controller("XDJ-XZ")  # canonical is annotated -> box defaults on
     view._midi_checkbox.setChecked(False)  # user opts out of MIDI callouts
-    view.set_controller("XDJ-XZ")
+    view.set_controller("DDJ-REV1")  # also annotated-canonical
     assert view._midi_checkbox.isChecked() is False
-    view.set_controller("DDJ-XP2")
+    view.set_controller("XDJ-XZ")
     assert view._midi_checkbox.isChecked() is False
 
 
