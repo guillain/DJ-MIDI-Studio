@@ -10,4 +10,5 @@ unset VIRTUAL_ENV || true
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-uv run python scripts/quality_gate.py "$@"
+export QT_QPA_PLATFORM=offscreen
+uv run python scripts/capture_docs_screenshots.py "$@"
