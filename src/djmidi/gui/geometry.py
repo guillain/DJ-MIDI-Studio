@@ -10,11 +10,12 @@ NOTE (v0.47.53+): every controller now bundles a clean ``<slug>.png`` render
 *and* an annotated ``<slug>-midi.png`` (MIDI Message List callouts printed
 over it). Re-measuring each geometry block against its clean render, one
 controller per PR, is in progress:
-  - DONE: DDJ-XP2 (v0.47.54), XDJ-XZ (v0.47.55) -- their
-    ``CONTROL_GEOMETRY[...]`` and ``layout_view._RIGHT_MIRROR_GEOMETRY[...]``
-    entries are for the clean ``<slug>.png``.
-  - PENDING: DDJ-1000, DDJ-FLX10, DDJ-REV1, Numark -- still measured against
-    their ``-midi`` variant, which is why they still name it as their
+  - DONE: DDJ-XP2 (v0.47.54), XDJ-XZ (v0.47.55), DDJ-1000 (v0.47.57) --
+    their ``CONTROL_GEOMETRY[...]`` and (where present)
+    ``layout_view._RIGHT_MIRROR_GEOMETRY[...]`` entries are for the clean
+    ``<slug>.png``.
+  - PENDING: DDJ-FLX10, DDJ-REV1, Numark -- still measured against their
+    ``-midi`` variant, which is why they still name it as their
     ``catalog`` ``reference_image``. The historical filenames in those
     controllers' per-controller notes below refer to what is now the
     ``-midi`` variant.
@@ -333,36 +334,41 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         "Pad 8": ControlGeometry(0.2367, 0.8177, 0.0383, 0.0573, "rect", "#e0708f"),
     },
     "DDJ-1000": {
+        # Re-measured against the clean render assets/controllers/ddj-1000.png
+        # (3129x1652) in v0.47.57 -- the earlier fractions were for the
+        # callout-annotated ddj-1000-midi.png, a different crop/aspect. Left
+        # deck (deck 1/3).
         # Green: matches PLAY/PAUSE's accent color on the other controllers.
-        "PLAY/PAUSE": ControlGeometry(0.0518, 0.8267, 0.0491, 0.0943, "circle", "#3ea86b"),
+        "PLAY/PAUSE": ControlGeometry(0.023, 0.795, 0.053, 0.100, "circle", "#3ea86b"),
         # Amber: matches CUE's accent color on the other controllers.
-        "CUE": ControlGeometry(0.0518, 0.7143, 0.0461, 0.0933, "circle", "#e0954a"),
+        "CUE": ControlGeometry(0.023, 0.680, 0.053, 0.100, "circle", "#e0954a"),
         # Teal: matches DDJ-XP2's MASTER TEMPO-adjacent utility accent.
-        "MASTER TEMPO": ControlGeometry(0.2814, 0.7111, 0.0161, 0.0254, "rect", "#4ab8a0"),
+        "MASTER TEMPO": ControlGeometry(0.282, 0.683, 0.026, 0.030, "rect", "#4ab8a0"),
         # Blue: matches XDJ-XZ/DDJ-XP2's SYNC/BEAT SYNC accent color.
-        "BEAT SYNC": ControlGeometry(0.3215, 0.5476, 0.0162, 0.0352, "circle", "#4a90d9"),
+        "BEAT SYNC": ControlGeometry(0.292, 0.521, 0.026, 0.044, "circle", "#4a90d9"),
         # Gray-blue: utility accent, matches PAD MODE-style buttons elsewhere.
-        "KEY SYNC": ControlGeometry(0.2796, 0.8024, 0.0186, 0.0262, "rect", "#7a8aa0"),
-        "KEY RESET": ControlGeometry(0.2796, 0.8512, 0.0186, 0.0238, "rect", "#7a8aa0"),
+        "KEY SYNC": ControlGeometry(0.282, 0.813, 0.026, 0.033, "rect", "#7a8aa0"),
+        "KEY RESET": ControlGeometry(0.282, 0.883, 0.026, 0.030, "rect", "#7a8aa0"),
         # Amber: loop cluster, matches DDJ-XP2's loop accent family.
-        "LOOP IN": ControlGeometry(0.0461, 0.0667, 0.0249, 0.0540, "circle", "#d9954a"),
-        "LOOP OUT": ControlGeometry(0.0804, 0.0683, 0.0234, 0.0508, "circle", "#d9954a"),
-        "4 BEAT LOOP/EXIT": ControlGeometry(0.1064, 0.0798, 0.0482, 0.0250, "rect", "#d9954a"),
+        "LOOP IN": ControlGeometry(0.018, 0.046, 0.034, 0.069, "circle", "#d9954a"),
+        "LOOP OUT": ControlGeometry(0.058, 0.046, 0.034, 0.069, "circle", "#d9954a"),
+        "4 BEAT LOOP/EXIT": ControlGeometry(0.098, 0.068, 0.065, 0.040, "rect", "#d9954a"),
         # Teal: a distinct utility accent, separate from the loop/effect/sync families.
-        "QUANTIZE": ControlGeometry(0.2314, 0.0798, 0.0214, 0.0250, "rect", "#4ab8a0"),
+        "QUANTIZE": ControlGeometry(0.203, 0.068, 0.037, 0.040, "rect", "#4ab8a0"),
         # Muted neutral: DDJ-1000's SLIP/SLIP REVERSE aren't a modifier key
         # like SHIFT, but a distinct playback-state toggle family of their own.
-        "SLIP": ControlGeometry(0.2555, 0.0798, 0.0208, 0.0250, "rect", "#8f6fae"),
-        "SLIP REVERSE": ControlGeometry(0.0499, 0.1552, 0.0323, 0.0238, "rect", "#8f6fae"),
+        "SLIP": ControlGeometry(0.248, 0.068, 0.037, 0.040, "rect", "#8f6fae"),
+        "SLIP REVERSE": ControlGeometry(0.018, 0.168, 0.057, 0.030, "rect", "#8f6fae"),
         # Salmon-pink: matches the pad grid accent used on the other controllers.
-        "Pad 1": ControlGeometry(0.1132, 0.7638, 0.0351, 0.0724, "rect", "#e0708f"),
-        "Pad 2": ControlGeometry(0.1531, 0.7638, 0.0355, 0.0724, "rect", "#e0708f"),
-        "Pad 3": ControlGeometry(0.1952, 0.7638, 0.0351, 0.0724, "rect", "#e0708f"),
-        "Pad 4": ControlGeometry(0.2360, 0.7638, 0.0360, 0.0724, "rect", "#e0708f"),
-        "Pad 5": ControlGeometry(0.1132, 0.8457, 0.0351, 0.0724, "rect", "#e0708f"),
-        "Pad 6": ControlGeometry(0.1531, 0.8457, 0.0355, 0.0724, "rect", "#e0708f"),
-        "Pad 7": ControlGeometry(0.1952, 0.8457, 0.0351, 0.0724, "rect", "#e0708f"),
-        "Pad 8": ControlGeometry(0.2360, 0.8457, 0.0360, 0.0724, "rect", "#e0708f"),
+        # cols x = 0.095/0.158/0.220/0.282 (w 0.055), rows y = 0.712/0.805.
+        "Pad 1": ControlGeometry(0.088, 0.715, 0.055, 0.078, "rect", "#e0708f"),
+        "Pad 2": ControlGeometry(0.150, 0.710, 0.055, 0.082, "rect", "#e0708f"),
+        "Pad 3": ControlGeometry(0.212, 0.715, 0.055, 0.078, "rect", "#e0708f"),
+        "Pad 4": ControlGeometry(0.273, 0.715, 0.055, 0.078, "rect", "#e0708f"),
+        "Pad 5": ControlGeometry(0.088, 0.803, 0.055, 0.078, "rect", "#e0708f"),
+        "Pad 6": ControlGeometry(0.150, 0.800, 0.055, 0.082, "rect", "#e0708f"),
+        "Pad 7": ControlGeometry(0.212, 0.803, 0.055, 0.078, "rect", "#e0708f"),
+        "Pad 8": ControlGeometry(0.273, 0.803, 0.055, 0.078, "rect", "#e0708f"),
     },
     "DDJ-FLX10": {
         # Green: matches PLAY/PAUSE's accent color on the other controllers.

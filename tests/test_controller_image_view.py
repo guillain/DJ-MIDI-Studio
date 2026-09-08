@@ -50,7 +50,7 @@ def test_documentation_for_controller_returns_none_when_not_bundled():
 def test_ddj_1000_order_and_reference_image():
     assert catalog.CONTROLLER_NAMES.index("DDJ-FLX4") < catalog.CONTROLLER_NAMES.index("DDJ-1000")
     assert catalog.CONTROLLER_NAMES.index("DDJ-REV1") < catalog.CONTROLLER_NAMES.index("DDJ-1000")
-    assert IMAGES["DDJ-1000"] == "ddj-1000-midi.png"
+    assert IMAGES["DDJ-1000"] == "ddj-1000.png"
 
 
 def test_loads_pixmap_for_default_controller():
@@ -434,7 +434,7 @@ def test_midi_override_pins_the_user_choice_across_controller_switches():
     view = ControllerImageView()
     view.set_controller("DDJ-REV1")  # canonical is annotated -> box defaults on
     view._midi_checkbox.setChecked(False)  # user opts out of MIDI callouts
-    view.set_controller("DDJ-1000")  # also annotated-canonical
+    view.set_controller("DDJ-FLX10")  # also annotated-canonical
     assert view._midi_checkbox.isChecked() is False
     view.set_controller("DDJ-REV1")
     assert view._midi_checkbox.isChecked() is False
