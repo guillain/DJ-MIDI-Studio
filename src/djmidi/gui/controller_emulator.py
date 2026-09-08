@@ -75,6 +75,7 @@ from collections.abc import Callable
 from PySide6.QtCore import QRectF, Qt, QTimer, Signal
 from PySide6.QtGui import QBrush, QColor, QFont
 from PySide6.QtWidgets import (
+    QCheckBox,
     QComboBox,
     QGraphicsEllipseItem,
     QGraphicsRectItem,
@@ -226,6 +227,10 @@ class EmulatorLayoutView(QWidget):
         # Set by _rebuild(); resizeEvent/_fit_view() use it instead of
         # recomputing real_position_markers() on every resize.
         self._real_position_mode = False
+        # Off by default -- draw the real controller photo behind the
+        # real-position markers, matching ControllerLayoutView's own
+        # "Controller photo" opt-in. No effect in the classic-grid fallback.
+        self._show_reference_photo = False
 
         self._scene = QGraphicsScene(self)
         self._scene.setBackgroundBrush(layout_view._SCENE_BRUSH)
@@ -255,6 +260,13 @@ class EmulatorLayoutView(QWidget):
 
     def _current_value(self, key: CellKey) -> int:
         return self._values.get(key, layout_view._MIDI_DEFAULT)
+
+    def set_show_reference_photo(self, enabled: bool) -> None:
+        """Toggle the real-photo backdrop (real-position mode only)."""
+        if self._show_reference_photo == enabled:
+            return
+        self._show_reference_photo = enabled
+        self._rebuild()
 
     def set_active(self, key: CellKey, active: bool) -> None:
         """Persistent "toggled on" highlight (phase 5 slice 1) -- called by
@@ -318,6 +330,9 @@ class EmulatorLayoutView(QWidget):
         at its own semantic color, like Controller Images, and flashes
         white on press."""
         canvas_w, canvas_h = layout_view._reference_canvas_size(self._controller)
+        photo_shown = self._show_reference_photo and layout_view.draw_reference_photo(
+            self._scene, self._controller
+        )
         for marker in markers:
             # A right-pad-grid marker ("Pad 3 (R)") shares its *schematic*
             # CellKey with the left one (marker.key) by design -- see
@@ -350,7 +365,9 @@ class EmulatorLayoutView(QWidget):
                 bg_item.setPen(layout_view._ACTIVE_BORDER_PEN)
             else:
                 resting = QColor(marker.color)
-                resting.setAlpha(90)
+                # A thinner wash when a photo sits behind it (keeps the real
+                # control legible), the fuller fill on the blank canvas.
+                resting.setAlpha(30 if photo_shown else 90)
                 bg_item.setBrush(QBrush(resting))
                 bg_item.setPen(layout_view._BORDER_PEN)
             bg_item.setData(_KEY_ROLE, key)
@@ -455,6 +472,13 @@ class ControllerEmulatorView(QWidget):
         self._emulator = EmulatorLayoutView(initial)
         self._emulator.controlPressed.connect(self._on_control_pressed)
 
+        self._photo_checkbox = QCheckBox("Controller photo")
+        self._photo_checkbox.setToolTip(
+            "Draw the real controller photo behind the schematic "
+            "(controllers with measured geometry only)."
+        )
+        self._photo_checkbox.toggled.connect(self._emulator.set_show_reference_photo)
+
         self._status_label = QLabel("Click a control to see what it resolves to.")
         self._status_label.setWordWrap(True)
 
@@ -463,6 +487,7 @@ class ControllerEmulatorView(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(6, 6, 6, 6)
         layout.addWidget(self._combo)
+        layout.addWidget(self._photo_checkbox)
         layout.addWidget(self._live_send)
         layout.addWidget(self._emulator, 1)
         layout.addWidget(self._status_label)

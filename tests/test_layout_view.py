@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QGraphicsLineItem, QGraphicsRectItem
+from PySide6.QtWidgets import QGraphicsLineItem, QGraphicsPixmapItem, QGraphicsRectItem
 
 from djmidi import catalog
 from djmidi.catalog._registry import ControllerDefinition, register
@@ -544,3 +544,66 @@ def test_selecting_the_right_pad_key_does_not_select_the_left_marker():
     view.set_selected_keys({right_key})
     assert view._selection_pen(right_key) is layout_view_mod._SELECTED_PEN
     assert view._selection_pen(left_key) is not layout_view_mod._SELECTED_PEN
+
+
+# ─── Real-photo backdrop ("Controller photo" checkbox) ───────────────────────
+
+
+def _photo_items(view: ControllerLayoutView):
+    return [item for item in view._scene.items() if isinstance(item, QGraphicsPixmapItem)]
+
+
+def test_reference_photo_backdrop_is_off_by_default():
+    view = ControllerLayoutView()
+    view.set_controller("DDJ-XP2")
+    assert view._photo_checkbox.isChecked() is False
+    assert _photo_items(view) == []
+
+
+def test_reference_photo_backdrop_drawn_when_enabled():
+    view = ControllerLayoutView()
+    view.set_controller("DDJ-XP2")
+    view.set_show_reference_photo(True)
+    photos = _photo_items(view)
+    assert len(photos) == 1
+    photo = photos[0]
+    # Drops in at the scene origin, well behind every marker/glyph, and at
+    # the same pixel size the markers were positioned against.
+    assert photo.zValue() == layout_view_mod._PHOTO_Z
+    assert photo.pos().x() == 0 and photo.pos().y() == 0
+    canvas_w, canvas_h = layout_view_mod._reference_canvas_size("DDJ-XP2")
+    assert photo.pixmap().width() == canvas_w
+    assert photo.pixmap().height() == canvas_h
+
+
+def test_reference_photo_backdrop_toggles_back_off():
+    view = ControllerLayoutView()
+    view.set_controller("DDJ-XP2")
+    view.set_show_reference_photo(True)
+    view.set_show_reference_photo(False)
+    assert _photo_items(view) == []
+
+
+def test_reference_photo_backdrop_is_a_noop_without_geometry():
+    """A controller with no gui/geometry.CONTROL_GEOMETRY renders the classic
+    card grid, which has no photo backdrop even with the checkbox on."""
+    view = ControllerLayoutView()
+    view.set_controller("DDJ-FLX4")
+    view.set_show_reference_photo(True)
+    assert _photo_items(view) == []
+
+
+def test_reference_photo_backdrop_survives_a_controller_switch():
+    view = ControllerLayoutView()
+    view.set_controller("DDJ-XP2")
+    view.set_show_reference_photo(True)
+    view.set_controller("XDJ-XZ")
+    assert len(_photo_items(view)) == 1
+
+
+def test_reference_pixmap_returns_none_for_an_imageless_controller():
+    register(ControllerDefinition(name="__NoImageCtl__"))
+    try:
+        assert layout_view_mod.reference_pixmap("__NoImageCtl__") is None
+    finally:
+        del catalog._registry._REGISTRY["__NoImageCtl__"]
