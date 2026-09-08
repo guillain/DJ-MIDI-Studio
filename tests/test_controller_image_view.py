@@ -50,7 +50,7 @@ def test_documentation_for_controller_returns_none_when_not_bundled():
 def test_ddj_1000_order_and_reference_image():
     assert catalog.CONTROLLER_NAMES.index("DDJ-FLX4") < catalog.CONTROLLER_NAMES.index("DDJ-1000")
     assert catalog.CONTROLLER_NAMES.index("DDJ-REV1") < catalog.CONTROLLER_NAMES.index("DDJ-1000")
-    assert IMAGES["DDJ-1000"] == "ddj-1000.png"
+    assert IMAGES["DDJ-1000"] == "ddj-1000-midi.png"
 
 
 def test_loads_pixmap_for_default_controller():
@@ -111,7 +111,7 @@ def test_resolve_image_path_handles_absolute_and_bundled():
 
     assert _resolve_image_path(None) is None
     assert _resolve_image_path("") is None
-    assert _resolve_image_path("ddj-xp2.png") == ASSETS_DIR / "ddj-xp2.png"
+    assert _resolve_image_path("ddj-xp2-midi.png") == ASSETS_DIR / "ddj-xp2-midi.png"
     abs_path = "/tmp/custom/minipad.png"
     assert _resolve_image_path(abs_path) == Path(abs_path)
 
@@ -353,3 +353,88 @@ def test_load_renders_an_absolute_path_reference_image(tmp_path):
         import djmidi.catalog as catalog_mod
 
         catalog_mod._registry._REGISTRY.pop("__AbsImageCtrl__", None)
+
+
+# ─── "MIDI info" variant toggle ─────────────────────────────────────────────
+
+
+def test_image_variants_resolves_clean_and_annotated_siblings():
+    from djmidi.gui.controller_image_view import image_variants
+
+    clean, annotated = image_variants("ddj-xp2.png")
+    assert clean == ASSETS_DIR / "ddj-xp2.png"
+    assert annotated == ASSETS_DIR / "ddj-xp2-midi.png"
+    # Passing the annotated name resolves the same pair.
+    assert image_variants("ddj-xp2-midi.png") == (clean, annotated)
+
+
+def test_image_variants_none_and_absolute():
+    from pathlib import Path
+
+    from djmidi.gui.controller_image_view import image_variants
+
+    assert image_variants(None) == (None, None)
+    assert image_variants("") == (None, None)
+    # An absolute path (Controller Setup attachment) has no annotated sibling.
+    missing_abs = "/tmp/definitely/not/here.png"
+    assert image_variants(missing_abs) == (None, None)
+    assert image_variants(str(Path(missing_abs))) == (None, None)
+
+
+def test_midi_checkbox_enabled_when_both_variants_bundled_and_swaps_image():
+    view = ControllerImageView()
+    assert view.set_controller("DDJ-XP2") is True
+    assert view._midi_checkbox.isEnabled() is True
+    # DDJ-XP2's reference_image names the annotated variant for now, so the
+    # box defaults on (canonical image, overlay-ready).
+    assert view._midi_checkbox.isChecked() is True
+
+    view._midi_checkbox.setChecked(False)
+    clean_size = (view._pixmap_item.pixmap().width(), view._pixmap_item.pixmap().height())
+    view._midi_checkbox.setChecked(True)
+    annotated_size = (view._pixmap_item.pixmap().width(), view._pixmap_item.pixmap().height())
+    assert annotated_size != clean_size  # a different image is now on screen
+
+
+def test_geometry_overlay_only_offered_on_the_canonical_variant():
+    """DDJ-XP2's reference_image currently names the annotated '-midi' variant
+    (geometry is measured against it), so 'Show real layout' is available while
+    that one is shown and disabled once the clean render is swapped in."""
+    view = ControllerImageView()
+    assert view.set_controller("DDJ-XP2") is True
+
+    assert view._geometry_checkbox.isEnabled() is True  # default shows canonical
+    view._geometry_checkbox.setChecked(True)
+    assert view._overlay_items != []
+
+    view._midi_checkbox.setChecked(False)  # clean == non-canonical
+    assert view._geometry_checkbox.isEnabled() is False
+    assert view._overlay_items == []  # checked but disabled -> not drawn
+
+
+def test_midi_override_pins_the_user_choice_across_controller_switches():
+    view = ControllerImageView()
+    view.set_controller("DDJ-XP2")
+    view._midi_checkbox.setChecked(False)  # user opts out of MIDI callouts
+    view.set_controller("XDJ-XZ")
+    assert view._midi_checkbox.isChecked() is False
+    view.set_controller("DDJ-XP2")
+    assert view._midi_checkbox.isChecked() is False
+
+
+def test_midi_checkbox_disabled_when_only_one_variant_bundled():
+    """A Controller Setup attachment (absolute path) has no '-midi' sibling."""
+    from pathlib import Path
+
+    image_path = Path("/tmp/djmidi-test-onevariant.png")
+    from PySide6.QtGui import QPixmap
+
+    QPixmap(48, 24).save(str(image_path), "PNG")
+    register(ControllerDefinition(name="__OneVariantCtrl__", reference_image=str(image_path)))
+    try:
+        view = ControllerImageView()
+        assert view.set_controller("__OneVariantCtrl__") is True
+        assert view._midi_checkbox.isEnabled() is False
+    finally:
+        catalog._registry._REGISTRY.pop("__OneVariantCtrl__", None)
+        image_path.unlink(missing_ok=True)

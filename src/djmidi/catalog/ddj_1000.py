@@ -108,7 +108,7 @@ register(
         plugin_id="pioneer.ddj-1000",
         manufacturer="Pioneer DJ",
         supported_software=("serato",),
-        reference_image="ddj-1000.png",
+        reference_image="ddj-1000-midi.png",
         display_order=30,
         static_entries=_STATIC,
         pad_lookup=_pad_lookup,

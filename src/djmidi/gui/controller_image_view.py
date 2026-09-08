@@ -83,6 +83,34 @@ def _resolve_image_path(reference_image: str | None) -> Path | None:
     return candidate if candidate.is_absolute() else ASSETS_DIR / reference_image
 
 
+_MIDI_SUFFIX = "-midi"
+
+
+def image_variants(reference_image: str | None) -> tuple[Path | None, Path | None]:
+    """``(clean_path, annotated_path)`` for a controller's reference image,
+    following the ``<slug>.png`` (clean device render) / ``<slug>-midi.png``
+    (same view with the MIDI Message List's callouts overlaid) bundling
+    convention. Either entry is ``None`` when that file isn't bundled.
+
+    A user-supplied absolute path (a Controller Setup attachment, issue #16)
+    has no annotated sibling by convention, so it comes back as
+    ``(that path, None)``.
+
+    Which of the two a controller's ``reference_image`` actually names is
+    also which one ``gui/geometry.CONTROL_GEOMETRY`` was measured against --
+    the "Show real layout" overlay only lines up on that one (see
+    ``ControllerImageView._load``)."""
+    if not reference_image:
+        return None, None
+    p = Path(reference_image)
+    if p.is_absolute():
+        return (p if p.exists() else None), None
+    stem = p.stem.removesuffix(_MIDI_SUFFIX)
+    clean = ASSETS_DIR / f"{stem}{p.suffix}"
+    annotated = ASSETS_DIR / f"{stem}{_MIDI_SUFFIX}{p.suffix}"
+    return (clean if clean.exists() else None), (annotated if annotated.exists() else None)
+
+
 def documentation_for_controller(name: str) -> Path | None:
     """Return the bundled local document for a controller, when available."""
     filename = DOCUMENTS.get(name)
@@ -149,6 +177,19 @@ class ControllerImageView(QWidget):
         self._geometry_checkbox = QCheckBox("Show real layout")
         self._geometry_checkbox.toggled.connect(lambda _checked: self._draw_geometry_overlay())
 
+        # Off by default: show the clean device render; tick to swap in the
+        # "<slug>-midi.png" variant that has the MIDI Message List's callouts
+        # printed over it. Disabled (with a tooltip) when a controller only
+        # bundles one of the two variants.
+        self._midi_checkbox = QCheckBox("MIDI info")
+        self._midi_checkbox.toggled.connect(self._on_midi_toggled)
+        # None until the user ticks the box themselves; after that it pins
+        # their choice across controller switches. While None, each _load()
+        # defaults the box to whichever variant `reference_image` names (so
+        # the geometry overlay -- measured against that one -- is available
+        # out of the box).
+        self._midi_override: bool | None = None
+
         # Off by default (see gui/live_send.py's docstring): this tab is
         # looked at just to see a real photo, so a click must never send
         # real MIDI unless the user has deliberately switched this on --
@@ -159,6 +200,7 @@ class ControllerImageView(QWidget):
         controls.addWidget(self._combo)
         controls.addWidget(reset_button)
         controls.addWidget(self._documentation_button)
+        controls.addWidget(self._midi_checkbox)
         controls.addWidget(self._geometry_checkbox)
         controls.addWidget(self._live_send)
         controls.addStretch(1)
@@ -206,6 +248,12 @@ class ControllerImageView(QWidget):
     def current_controller_name(self) -> str:
         return self._combo.currentText()
 
+    def _on_midi_toggled(self, checked: bool) -> None:
+        # A deliberate user choice -- pin it across controller switches from
+        # here on (see self._midi_override).
+        self._midi_override = checked
+        self._load(self._combo.currentText())
+
     def _load(self, name: str) -> None:
         documentation = documentation_for_controller(name)
         self._documentation_button.setEnabled(documentation is not None)
@@ -217,7 +265,24 @@ class ControllerImageView(QWidget):
         self._overlay_items = []
         self._overlay_items_by_label = {}
         self._view.resetTransform()
-        path = _resolve_image_path(image_for_controller(name))
+
+        reference = image_for_controller(name)
+        clean_path, annotated_path = image_variants(reference)
+        canonical_path = _resolve_image_path(reference)
+        both_variants = clean_path is not None and annotated_path is not None
+        self._midi_checkbox.setEnabled(both_variants)
+        self._midi_checkbox.setToolTip(
+            "" if both_variants else "Only one image variant is bundled for this controller."
+        )
+
+        canonical_is_annotated = annotated_path is not None and canonical_path == annotated_path
+        want_annotated = self._midi_override if self._midi_override is not None else canonical_is_annotated
+        show_annotated = bool(want_annotated) and annotated_path is not None
+        self._midi_checkbox.blockSignals(True)
+        self._midi_checkbox.setChecked(show_annotated)
+        self._midi_checkbox.blockSignals(False)
+        path = annotated_path if show_annotated else (clean_path or annotated_path)
+
         pixmap = QPixmap(str(path)) if path is not None and path.exists() else QPixmap()
         if pixmap.isNull():
             # Keep the placeholder inside the graphics scene.  Embedding a
@@ -234,13 +299,25 @@ class ControllerImageView(QWidget):
         self._scene.addItem(item)
         self._scene.setSceneRect(item.boundingRect())
         self._view.fitInView(item, Qt.AspectRatioMode.KeepAspectRatio)
-        has_geometry = name in CONTROL_GEOMETRY
-        self._geometry_checkbox.setEnabled(has_geometry)
-        self._geometry_checkbox.setToolTip(
-            ""
-            if has_geometry
-            else "No control geometry modeled yet for this controller (see gui/geometry.py)"
+
+        # CONTROL_GEOMETRY's fractions were measured against whichever variant
+        # `reference_image` names -- they only line up on that one, so the
+        # overlay is offered only while it's the one on screen.
+        on_canonical_image = (
+            canonical_path is not None and path is not None and canonical_path == path
         )
+        has_geometry = name in CONTROL_GEOMETRY
+        self._geometry_checkbox.setEnabled(has_geometry and on_canonical_image)
+        if not has_geometry:
+            self._geometry_checkbox.setToolTip(
+                "No control geometry modeled yet for this controller (see gui/geometry.py)"
+            )
+        elif not on_canonical_image:
+            self._geometry_checkbox.setToolTip(
+                f"The control overlay is only aligned to the {canonical_path.name} image."
+            )
+        else:
+            self._geometry_checkbox.setToolTip("")
         self._draw_geometry_overlay()
 
     def _draw_geometry_overlay(self) -> None:
@@ -252,7 +329,13 @@ class ControllerImageView(QWidget):
             self._scene.removeItem(item)
         self._overlay_items = []
         self._overlay_items_by_label = {}
-        if self._pixmap_item is None or not self._geometry_checkbox.isChecked():
+        # isEnabled() gates out the "checked but the annotated variant is on
+        # screen" case -- CONTROL_GEOMETRY only aligns to the canonical image.
+        if (
+            self._pixmap_item is None
+            or not self._geometry_checkbox.isChecked()
+            or not self._geometry_checkbox.isEnabled()
+        ):
             return
         pixmap = self._pixmap_item.pixmap()
         image_w, image_h = pixmap.width(), pixmap.height()
@@ -351,4 +434,5 @@ __all__ = [
     "ControllerImageView",
     "documentation_for_controller",
     "image_for_controller",
+    "image_variants",
 ]

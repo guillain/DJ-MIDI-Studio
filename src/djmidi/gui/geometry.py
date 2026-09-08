@@ -5,6 +5,15 @@ abstract uniform-card schematic in ``layout_view.py``.
 
 Coordinates are fractions (0..1) of the *full* reference image's width/height,
 measured by eye against ``assets/controllers/<file>.png`` at full resolution.
+
+NOTE (v0.47.53): every controller now bundles a clean ``<slug>.png`` render
+*and* an annotated ``<slug>-midi.png`` (MIDI Message List callouts printed
+over it). The fractions below were all measured against the annotated
+variant -- which is why the controllers that have geometry still name
+``<slug>-midi.png`` as their ``catalog`` ``reference_image``. Re-measuring
+each against its clean render, one controller per PR (DDJ-XP2 first), is
+in progress; the historical filenames in the per-controller notes below
+refer to what is now the ``-midi`` variant.
 A uniform fixed-size schematic card, as used elsewhere in the app, can't
 represent a giant jog wheel and a small button at their true relative scale
 without overlapping neighbours once real spacing is honoured -- overlaying
@@ -35,7 +44,7 @@ callout numbers alone):
   there; a mixer overlay would have to be display-only, like Jog wheel/Tempo.
 - DDJ-REV1's transport + pad cluster: PLAY/PAUSE, CUE, AUTO LOOP, 1/2X, 2X,
   SYNC, and the 8-pad grid -- this covers every entry in
-  ``catalog/ddj_rev1.py``. ``assets/controllers/ddj-rev1.png`` was replaced
+  ``catalog/ddj_rev1.py``. ``assets/controllers/ddj-rev1-midi.png`` was replaced
   with a proper flat top-down diagram cropped from the official MIDI Message
   List PDF (``docs/controllers/ddj-rev1-midi-message-list-e1.pdf``) instead
   of the angled marketing photo it shipped with before -- the same
@@ -59,7 +68,7 @@ callout numbers alone):
   SLIP, SLIP REVERSE, and the 8-pad grid -- this covers every entry in
   ``catalog/ddj_1000.py`` (fixed to real MIDI values in
   ``v0.47.31-ddj-1000-catalog-fix``, see the ``pioneer-catalog-data-verification``
-  project note). ``assets/controllers/ddj-1000.png`` wasn't an angled photo
+  project note). ``assets/controllers/ddj-1000-midi.png`` wasn't an angled photo
   like DDJ-REV1/Numark, but a low-DPI dump of the *entire* PDF page (title,
   device diagram, and the MIDI table below it) -- unusably imprecise for
   fraction-based measurement, with the actual device occupying a small
@@ -78,7 +87,7 @@ callout numbers alone):
   QUANTIZE, SLIP, 4 BEAT JUMP </>, SHIFT, and the 8-pad grid -- this covers
   every entry in ``catalog/ddj_flx10.py`` (fully re-transcribed to real MIDI
   values, see ``v0.47.32-ddj-flx10-catalog-fix``). Unlike DDJ-1000,
-  ``assets/controllers/ddj-flx10.png`` was already a tight, flat, high-DPI
+  ``assets/controllers/ddj-flx10-midi.png`` was already a tight, flat, high-DPI
   crop of just the top-view device diagram -- no asset fix needed here,
   straight to measuring. Each geometry entry's physical position was tied to
   its catalog name the same way as DDJ-1000's, by cross-referencing this
