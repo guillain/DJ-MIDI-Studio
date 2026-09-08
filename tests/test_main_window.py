@@ -333,6 +333,38 @@ def test_on_live_midi_event_does_not_flash_the_image_overlay_for_a_different_sho
     window.close()
 
 
+def test_on_live_midi_event_flashes_an_open_controller_emulator_for_its_controller():
+    from djmidi.gui.controller_emulator import ControllerEmulatorView
+    from djmidi.midi_io import MidiEvent
+
+    window = _loaded_window()
+    dock = window._create_emulator_instance("DDJ-XP2")
+    view = dock.widget()
+    assert isinstance(view, ControllerEmulatorView)
+    event = MidiEvent(direction="in", channel="8", event_type="Note On", data1="64", data2="127", timestamp=0.0)
+    window._on_live_midi_event(event)
+    QApplication.processEvents()
+    assert view._emulator._flash_keys  # the pad the hit resolves to is lit
+    window.close()
+
+
+def test_on_live_midi_event_does_not_flash_an_emulator_showing_a_different_controller():
+    from djmidi.gui.controller_emulator import ControllerEmulatorView
+    from djmidi.midi_io import MidiEvent
+
+    window = _loaded_window()
+    dock = window._create_emulator_instance("XDJ-XZ")
+    view = dock.widget()
+    assert isinstance(view, ControllerEmulatorView)
+    # channel 5 / note 112 is DDJ-XP2's EFFECT 1 knob -- resolves to DDJ-XP2
+    # only, so the XDJ-XZ emulator must not react.
+    event = MidiEvent(direction="in", channel="5", event_type="Note On", data1="112", data2="99", timestamp=0.0)
+    window._on_live_midi_event(event)
+    QApplication.processEvents()
+    assert not view._emulator._flash_keys
+    window.close()
+
+
 # ─── controller applied refresh ───────────────────────────────────────────────
 
 def test_on_controller_applied_updates_status_bar():

@@ -501,6 +501,22 @@ class ControllerEmulatorView(QWidget):
         instance (see MainWindow.closeEvent/_restore_user_layout)."""
         return self._combo.currentText()
 
+    def flash_live_hit(self, hit: catalog.ControlInfo) -> None:
+        """Briefly flash the marker a live MIDI hit resolves to, but only
+        when `hit` belongs to the controller this instance currently shows
+        -- the emulator's own dry-run resolution stays click-driven, this is
+        just the same passive "a real pad lit up" feedback the schematic
+        By... tabs and Controller Images already give on a live hit
+        (MainWindow._on_live_midi_event). No-op otherwise, so MainWindow can
+        call it unconditionally for every open emulator dock.
+
+        Uses layout.presentation_key_for_hit() -- the same side-aware key
+        EmulatorLayoutView stores on its markers -- so a right-tray (deck
+        2/4) hit flashes only the right marker, never both sides."""
+        if hit.controller != self._combo.currentText():
+            return
+        self._emulator.flash_key(layout_mod.presentation_key_for_hit(hit))
+
     def refresh_controllers(self) -> None:
         """Repopulates the controller combo from the live registry -- call
         after a controller is registered/replaced mid-session (see

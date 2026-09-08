@@ -1193,6 +1193,34 @@ documentation index.
   control staying wherever it was left. Jog wheels (rotation is relative, not
   an absolute position) and VU meters (no glyph exists yet — an
   output-direction feature) remain open.
+- [x] **Live flash on the Controller Emulator too** (`v0.47.59`) — the By…
+  tabs and Controller Images already flashed on a live MIDI hit; the
+  Controller Emulator docks didn't. `ControllerEmulatorView.flash_live_hit(hit)`
+  now does the same 220ms pulse (`layout.presentation_key_for_hit(hit)` →
+  `EmulatorLayoutView.flash_key`), self-filtered to the controller each
+  instance shows; `MainWindow._on_live_midi_event` calls it over every open
+  `_emulator_docks` value. Dry-run resolution + phase-5 toggle tracking stay
+  click-only.
+- [ ] **Reflect a real controller's persistent pad/button state (LEDs) in the
+  controller views** — requested by the maintainer. Today every live-MIDI
+  reaction is a 220ms *pulse* (`flash_key`); a real pad/button that is *lit*
+  (a set hot cue, an active loop, a held SHIFT, an engaged FX) stays lit
+  until it changes. Needs scoping before code, roughly:
+  - a `set_active(key, bool)` on `ControllerLayoutView` (the emulator's
+    `EmulatorLayoutView` already has one, `_ACTIVE_BORDER_PEN`) + the same
+    on `ControllerImageView`'s overlay;
+  - `MainWindow._on_live_midi_event` reading Note On (`data2 > 0`) as
+    "active", Note Off / `data2 == 0` as "inactive" — but many controllers
+    send momentary Note On/Off for a *press*, not a latch, so a naive
+    on/off would just re-implement the flash. The real signal is the
+    controller's **output-direction** MIDI (Serato → controller LED feedback),
+    which needs the manual virtual-port step Live Monitor already documents,
+    and per-controller knowledge of which output notes drive which LEDs
+    (not in `catalog/*.py` today — `ControlInfo` has no output/LED field).
+  - decide interaction with the existing transient flash and the red
+    cross-tab selection border (three overlapping highlight concepts).
+  Research pass first (the project's "no visual features built blind" rule);
+  likely one small slice at a time like the geometry and emulator chantiers.
 - [ ] Add an optional performance mode with larger controls and reduced mapping detail.
   Smallest of three scoped options delivered in `v0.47.36-performance-mode`
   (chosen by the user after two research passes turned this vague line into
