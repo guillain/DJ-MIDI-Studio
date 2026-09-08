@@ -134,7 +134,7 @@ register(
         plugin_id="pioneer.ddj-flx10",
         manufacturer="Pioneer DJ",
         supported_software=("rekordbox", "serato"),
-        reference_image="ddj-flx10-midi.png",
+        reference_image="ddj-flx10.png",
         display_order=35,
         static_entries=_STATIC,
         pad_lookup=_pad_lookup,

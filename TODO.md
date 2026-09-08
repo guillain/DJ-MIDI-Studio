@@ -837,12 +837,22 @@ documentation index.
   `_RIGHT_MIRROR_GEOMETRY` for DDJ-1000. Verified with the crop-and-overlay
   loop; structural pad-grid test passes unchanged. `test_controller_image_view`'s
   second "annotated is canonical" stand-in moved DDJ-1000 → DDJ-FLX10.
-- [ ] **Re-measure the remaining Pioneer geometry against the clean renders**
-  — one PR each, in order: DDJ-FLX10, DDJ-REV1, Numark Mixtrack Pro FX.
-  Same recipe: point `catalog` `reference_image` at `<slug>.png`, re-measure
-  every `CONTROL_GEOMETRY` entry against the clean image with the
-  crop-and-overlay verify loop, then flip the tests that assert the old
-  `-midi` canonical for that controller.
+- [x] **Re-measure DDJ-FLX10 / DDJ-REV1 / Numark geometry against the clean
+  renders** (`v0.47.58`) — the last three per-controller re-measures, done
+  together. Each `catalog` `reference_image` → `<slug>.png`; every
+  `CONTROL_GEOMETRY` entry re-measured against the clean image (crop +
+  marker-overlay verify loop, pixel-scanning pad-glow borders where the
+  eye-read was ambiguous). DDJ-FLX10 is the densest block (28 entries: the
+  top LOOP/MIX-POINT/ACTIVE-PART cluster, the deck transport, and the 8-pad
+  grid); DDJ-REV1 and Numark are small (8 + a pad grid). Numark's clean
+  render is only 624×390, so its overlay is the roughest of the set —
+  decorative-accurate, not pixel-perfect, and noted as such in
+  `gui/geometry.py`. **This closes the "re-measure Pioneer geometry" line:
+  every geometry controller now renders on its clean image in the By…
+  tabs, the emulator, and the "Controller photo" backdrop.**
+  `test_controller_image_view`'s "annotated is canonical" cases — no real
+  controller has that shape any more — moved to a hand-registered throwaway
+  definition (`reference_image="ddj-xp2-midi.png"`).
 - [x] **"Controller photo" backdrop on by default** (`v0.47.56`) — the
   maintainer asked for the backdrop to be the default in the By
   Channel/Deck/Controller tabs and the Controller Emulator now that two
