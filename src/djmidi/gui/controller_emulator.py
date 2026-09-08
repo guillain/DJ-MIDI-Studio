@@ -227,10 +227,10 @@ class EmulatorLayoutView(QWidget):
         # Set by _rebuild(); resizeEvent/_fit_view() use it instead of
         # recomputing real_position_markers() on every resize.
         self._real_position_mode = False
-        # Off by default -- draw the real controller photo behind the
+        # On by default -- draw the real controller photo behind the
         # real-position markers, matching ControllerLayoutView's own
-        # "Controller photo" opt-in. No effect in the classic-grid fallback.
-        self._show_reference_photo = False
+        # "Controller photo" default. No effect in the classic-grid fallback.
+        self._show_reference_photo = True
 
         self._scene = QGraphicsScene(self)
         self._scene.setBackgroundBrush(layout_view._SCENE_BRUSH)
@@ -477,6 +477,9 @@ class ControllerEmulatorView(QWidget):
             "Draw the real controller photo behind the schematic "
             "(controllers with measured geometry only)."
         )
+        # On by default (EmulatorLayoutView already defaults it on); check
+        # the box before wiring `toggled` so it just reflects that state.
+        self._photo_checkbox.setChecked(True)
         self._photo_checkbox.toggled.connect(self._emulator.set_show_reference_photo)
 
         self._status_label = QLabel("Click a control to see what it resolves to.")

@@ -684,16 +684,18 @@ class ControllerLayoutView(QWidget):
         self._live_send = LiveSendControl()
         controls_layout.addWidget(self._live_send)
 
-        # Off by default: draw the real controller photo behind the
+        # On by default: draw the real controller photo behind the
         # real-position markers (only has any effect for a controller with
         # gui/geometry.CONTROL_GEOMETRY -- the classic card grid ignores it).
-        # Mirrors the Controller Images tab's own "Show real layout" opt-in
-        # rather than forcing the heavier photo render on everyone.
-        self._show_reference_photo = False
+        # The checkbox stays so it can be turned off. `setChecked(True)`
+        # before wiring `toggled` keeps the state consistent without an
+        # extra _rebuild() -- the one at the end of __init__ renders it.
+        self._show_reference_photo = True
         self._photo_checkbox = QCheckBox("Controller photo")
         self._photo_checkbox.setToolTip(
             "Draw the real controller photo behind the real-position markers."
         )
+        self._photo_checkbox.setChecked(True)
         self._photo_checkbox.toggled.connect(self._on_photo_toggled)
         controls_layout.addWidget(self._photo_checkbox)
 
