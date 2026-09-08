@@ -139,7 +139,7 @@ register(
         plugin_id="pioneer.xdj-xz",
         manufacturer="Pioneer DJ",
         supported_software=("serato",),
-        reference_image="xdj-xz-midi.png",
+        reference_image="xdj-xz.png",
         display_order=20,
         static_entries=_STATIC,
         pad_lookup=_pad_lookup,
