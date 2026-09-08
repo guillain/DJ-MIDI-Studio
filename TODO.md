@@ -750,6 +750,33 @@ documentation index.
   for pads — a same-named right-side entry there would have silently stolen
   that key's slot in `geometry._reverse_index` and broken the left marker's
   live flash.
+- [x] **Real-photo backdrop behind the real-position markers** — the
+  maintainer asked whether the By tabs' and the Controller Emulator's
+  real-position schematics should reuse the actual controller photo the way
+  Controller Images does, rather than positioning markers against that
+  photo's coordinate space but drawing them on a blank canvas. Shipped as an
+  opt-in: a per-view **"Controller photo"** checkbox (off by default,
+  mirroring Controller Images' own "Show real layout" opt-in) on
+  `ControllerLayoutView` and on `ControllerEmulatorView` (driving
+  `EmulatorLayoutView`). When on, `layout_view.draw_reference_photo()` adds
+  the `catalog` reference image (bundled or Controller-Setup-attached) as a
+  `z=-100` `QGraphicsPixmapItem` at `(0, 0)` — the marker rects
+  `real_position_markers()` already produces are in that photo's own pixel
+  space, so it drops in with no scaling and the existing
+  `setSceneRect(0, 0, canvas_w, canvas_h)` still frames it exactly. The
+  resting (unmapped) marker wash drops from alpha 90 to 30 while a photo is
+  behind it so the real control stays legible; deck-usage colouring, the
+  selection border, click/flash, and knob/fader value animation are all
+  unchanged. No effect in the classic card-grid fallback (a controller with
+  no `gui/geometry.CONTROL_GEOMETRY`). `_reference_canvas_size()` was
+  refactored onto the new cached `layout_view.reference_pixmap()` so the one
+  pixmap backs both the canvas-size math and the backdrop. Visually verified
+  offscreen (`ControllerLayoutView` / `EmulatorLayoutView` `.grab()` for
+  DDJ-XP2 and XDJ-XZ, photo on/off) before delivery. XDJ-XZ's source PNG
+  carries a lot of the MIDI Message List PDF's own Fig./UI-name callout
+  boxes, so its backdrop reads busier than DDJ-XP2's — a property of the
+  committed asset, not the render. Milestone tag
+  `v0.47.52-reference-photo-backdrop`.
 - [x] **Real MIDI sending from layouts (Phase R2 / phase 4)** — the second
   half of the same request: clicking a control in the By tabs' schematic or
   Controller Images' real-photo overlay, not just the dedicated Controller

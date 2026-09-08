@@ -1,5 +1,8 @@
 from pathlib import Path
 
+from PySide6.QtWidgets import QGraphicsPixmapItem
+
+from djmidi.gui import layout_view as layout_view_mod
 from djmidi.gui.controller_emulator import (
     _DRAG_PX_PER_UNIT,
     _KEY_ROLE,
@@ -529,3 +532,59 @@ def test_emulator_switching_controller_clears_active_keys():
     view.set_active(key, True)
     view.set_controller("XDJ-XZ")
     assert view._active_keys == set()
+
+
+# ─── Real-photo backdrop ("Controller photo" checkbox) ───────────────────────
+
+
+def _emulator_photo_items(view: EmulatorLayoutView):
+    return [item for item in view._scene.items() if isinstance(item, QGraphicsPixmapItem)]
+
+
+def test_emulator_photo_backdrop_off_by_default():
+    view = EmulatorLayoutView("DDJ-XP2")
+    assert view._show_reference_photo is False
+    assert _emulator_photo_items(view) == []
+
+
+def test_emulator_photo_backdrop_drawn_when_enabled():
+    view = EmulatorLayoutView("DDJ-XP2")
+    view.set_show_reference_photo(True)
+    photos = _emulator_photo_items(view)
+    assert len(photos) == 1
+    assert photos[0].zValue() == layout_view_mod._PHOTO_Z
+
+
+def test_emulator_photo_backdrop_toggles_off():
+    view = EmulatorLayoutView("DDJ-XP2")
+    view.set_show_reference_photo(True)
+    view.set_show_reference_photo(False)
+    assert _emulator_photo_items(view) == []
+
+
+def test_emulator_photo_backdrop_noop_without_geometry():
+    view = EmulatorLayoutView("DDJ-FLX4")
+    view.set_show_reference_photo(True)
+    assert _emulator_photo_items(view) == []
+
+
+def test_emulator_photo_backdrop_does_not_block_click_resolution(monkeypatch):
+    """The z=-100 backdrop must never sit in front of a marker and swallow
+    its click."""
+    clear_reverse_lookup_cache()
+    view = ControllerEmulatorView(config_provider=lambda: None)
+    view._combo.setCurrentText("DDJ-XP2")
+    view._photo_checkbox.setChecked(True)
+    received: list[CellKey] = []
+    view._emulator.controlPressed.connect(received.append)
+    key: CellKey = ("DDJ-XP2", "PAD", "Pad 1")
+    view._emulator._on_control_pressed(key)
+    assert received == [key]
+
+
+def test_controller_emulator_view_photo_checkbox_drives_the_layout():
+    view = ControllerEmulatorView(config_provider=lambda: None)
+    view._combo.setCurrentText("DDJ-XP2")
+    view._photo_checkbox.setChecked(True)
+    assert view._emulator._show_reference_photo is True
+    assert len(_emulator_photo_items(view._emulator)) == 1

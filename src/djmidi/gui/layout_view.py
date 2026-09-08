@@ -8,9 +8,11 @@ from pathlib import Path
 from PySide6.QtCore import QLineF, QPointF, QRectF, Qt, QTimer, Signal
 from PySide6.QtGui import QBrush, QColor, QFont, QPen, QPixmap
 from PySide6.QtWidgets import (
+    QCheckBox,
     QComboBox,
     QGraphicsEllipseItem,
     QGraphicsLineItem,
+    QGraphicsPixmapItem,
     QGraphicsRectItem,
     QGraphicsScene,
     QGraphicsSimpleTextItem,
@@ -108,6 +110,30 @@ def metrics_for(controller: str) -> LayoutMetrics:
 # number of .parents[] hops and always falling back to _DEFAULT_CANVAS).
 _DEFAULT_CANVAS = (1200, 800)
 _REFERENCE_SIZE_CACHE: dict[str, tuple[int, int]] = {}
+_REFERENCE_PIXMAP_CACHE: dict[str, QPixmap | None] = {}
+
+
+def reference_pixmap(controller: str) -> QPixmap | None:
+    """The controller's real reference photo (the same asset the Controller
+    Images tab shows) as a QPixmap, or None when the controller declares no
+    image or the file is missing. Cached; the one pixmap backs both
+    _reference_canvas_size() below and the optional photo backdrop
+    ControllerLayoutView / EmulatorLayoutView draw behind their
+    real-position markers. Needs a QApplication, like any QPixmap."""
+    if controller in _REFERENCE_PIXMAP_CACHE:
+        return _REFERENCE_PIXMAP_CACHE[controller]
+    pixmap: QPixmap | None = None
+    reference_image = catalog.get_definition(controller).reference_image
+    if reference_image:
+        path = Path(reference_image)
+        if not path.is_absolute():
+            path = controller_image_view.ASSETS_DIR / reference_image
+        if path.exists():
+            loaded = QPixmap(str(path))
+            if not loaded.isNull():
+                pixmap = loaded
+    _REFERENCE_PIXMAP_CACHE[controller] = pixmap
+    return pixmap
 
 
 def _reference_canvas_size(controller: str) -> tuple[int, int]:
@@ -120,18 +146,33 @@ def _reference_canvas_size(controller: str) -> tuple[int, int]:
     cached = _REFERENCE_SIZE_CACHE.get(controller)
     if cached is not None:
         return cached
-    size = _DEFAULT_CANVAS
-    reference_image = catalog.get_definition(controller).reference_image
-    if reference_image:
-        path = Path(reference_image)
-        if not path.is_absolute():
-            path = controller_image_view.ASSETS_DIR / reference_image
-        if path.exists():
-            pixmap = QPixmap(str(path))
-            if not pixmap.isNull():
-                size = (pixmap.width(), pixmap.height())
+    pixmap = reference_pixmap(controller)
+    size = (pixmap.width(), pixmap.height()) if pixmap is not None else _DEFAULT_CANVAS
     _REFERENCE_SIZE_CACHE[controller] = size
     return size
+
+
+# Z-value for the real-photo backdrop -- well below every marker/glyph
+# (which sit at the scene's default 0, some nudged to +1) so the schematic
+# always draws on top of the photo, never behind it.
+_PHOTO_Z = -100.0
+
+
+def draw_reference_photo(scene: QGraphicsScene, controller: str) -> bool:
+    """Add the controller's real reference photo as a backdrop behind a
+    real-position schematic's markers, returning whether one was drawn
+    (False when the controller declares no bundled/attached image). The
+    marker rects real_position_markers() produces are already in this
+    photo's own pixel space, so it drops in at (0, 0) with no scaling and
+    the caller's existing setSceneRect(0, 0, canvas_w, canvas_h) still
+    frames it exactly."""
+    pixmap = reference_pixmap(controller)
+    if pixmap is None:
+        return False
+    item = QGraphicsPixmapItem(pixmap)
+    item.setZValue(_PHOTO_Z)
+    scene.addItem(item)
+    return True
 
 # Real-position mode's *own* supplementary geometry for a controller's
 # right-side mirrored cluster (SLIDE FX2, the second LOOP/QUANTIZE/KEY
@@ -649,6 +690,19 @@ class ControllerLayoutView(QWidget):
         self._live_send = LiveSendControl()
         controls_layout.addWidget(self._live_send)
 
+        # Off by default: draw the real controller photo behind the
+        # real-position markers (only has any effect for a controller with
+        # gui/geometry.CONTROL_GEOMETRY -- the classic card grid ignores it).
+        # Mirrors the Controller Images tab's own "Show real layout" opt-in
+        # rather than forcing the heavier photo render on everyone.
+        self._show_reference_photo = False
+        self._photo_checkbox = QCheckBox("Controller photo")
+        self._photo_checkbox.setToolTip(
+            "Draw the real controller photo behind the real-position markers."
+        )
+        self._photo_checkbox.toggled.connect(self._on_photo_toggled)
+        controls_layout.addWidget(self._photo_checkbox)
+
         self._scene = QGraphicsScene(self)
         self._scene.setBackgroundBrush(_SCENE_BRUSH)
         self._view = _ClickableView(self._scene)
@@ -777,6 +831,15 @@ class ControllerLayoutView(QWidget):
     def clear_selection_history(self) -> None:
         """Forget the faded selection trail while keeping the current cell."""
         self._selection_history.clear()
+
+    def _on_photo_toggled(self, checked: bool) -> None:
+        self._show_reference_photo = checked
+        self._rebuild()
+
+    def set_show_reference_photo(self, enabled: bool) -> None:
+        """Toggle the real-photo backdrop from code (keeps the checkbox in
+        sync so the UI still reflects the state)."""
+        self._photo_checkbox.setChecked(enabled)
 
     def set_zoom(self, factor: float) -> None:
         """Scale the whole schematic uniformly (performance mode's larger glyphs)."""
@@ -1082,7 +1145,11 @@ class ControllerLayoutView(QWidget):
         entry, placed at its true photographed coordinate -- the "By ..."
         tabs' equivalent of the Controller Images real-photo overlay (and,
         via that same shared function, identical to what the Controller
-        Emulator draws for the same controller). A marker whose key has no
+        Emulator draws for the same controller). With the "Controller photo"
+        checkbox on, the real reference photo is drawn behind the markers
+        (draw_reference_photo) so this reads exactly like Controller Images'
+        "Show real layout"; off, the markers sit on the plain dark canvas.
+        A marker whose key has no
         real catalog trigger (a continuous/display-only geometry entry,
         e.g. "FX LEVEL") still renders (decorative, harmless to click --
         MainWindow._on_layout_cell_activated already tolerates a key with no
@@ -1090,6 +1157,7 @@ class ControllerLayoutView(QWidget):
         compact marker moves to self._detail_label (see
         _on_cell_clicked_for_detail), updated on click."""
         canvas_w, canvas_h = _reference_canvas_size(self._controller)
+        photo_shown = self._show_reference_photo and draw_reference_photo(self._scene, self._controller)
         deck_filter = self._selected_deck_filter()
         for marker in markers:
             # A right-side marker ("Pad 3 (R)", "BEAT SYNC (R)", ...) shares
@@ -1127,7 +1195,10 @@ class ControllerLayoutView(QWidget):
                 bg_item.setBrush(_brush_for_decks(decks))
             else:
                 resting = QColor(marker.color)
-                resting.setAlpha(90)
+                # Thinner wash over a photo so the real control stays legible
+                # under the marker; the opaque-ish fill is only needed when
+                # there's a blank canvas behind it.
+                resting.setAlpha(30 if photo_shown else 90)
                 bg_item.setBrush(QBrush(resting))
             bg_item.setPen(self._selection_pen(key))
             bg_item.setData(_KEY_ROLE, key)
@@ -1214,7 +1285,9 @@ __all__ = [
     "LayoutMetrics",
     "RealPositionMarker",
     "draw_control_glyph",
+    "draw_reference_photo",
     "glyph_size_for",
     "metrics_for",
     "real_position_markers",
+    "reference_pixmap",
 ]
