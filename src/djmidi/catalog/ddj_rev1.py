@@ -65,7 +65,7 @@ register(
         plugin_id="pioneer.ddj-rev1",
         manufacturer="Pioneer DJ",
         supported_software=("serato",),
-        reference_image="ddj-rev1.png",
+        reference_image="ddj-rev1-midi.png",
         display_order=20,
         static_entries=_STATIC,
         pad_lookup=_pad_lookup,

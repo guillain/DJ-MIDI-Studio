@@ -222,7 +222,7 @@ _RIGHT_MIRROR_GEOMETRY: dict[str, dict[str, geometry_mod.ControlGeometry]] = {
         # MODE buttons still need their own right-tray copy here.
         #
         # Re-measured from scratch (crop + crosshair verification against
-        # assets/controllers/xdj-xz.png, same discipline as
+        # assets/controllers/xdj-xz-midi.png, same discipline as
         # control-layout-geometry's "measure -> verify" loop) after the
         # maintainer reported "la platine de droite de la xdj-xz n'est pas
         # correctement aligné" (the right deck isn't correctly aligned).

@@ -634,7 +634,7 @@ documentation index.
   code smell, duplication, bandit, pip-audit) passing, not just `pytest`/
   `ruff`. DDJ-REV1 completed in `v0.47.30-ddj-rev1-geometry`: PLAY/PAUSE,
   CUE, AUTO LOOP, 1/2X, 2X, SYNC, and its 8-pad grid — every entry in
-  `catalog/ddj_rev1.py`. Required replacing `assets/controllers/ddj-rev1.png`
+  `catalog/ddj_rev1.py`. Required replacing `assets/controllers/ddj-rev1-midi.png`
   first: it was an angled marketing photo, and this overlay's flat
   `x/y/w/h` fraction boxes aren't reliable against perspective (a control
   further from the camera renders smaller and shifted in ways a flat box
@@ -657,7 +657,7 @@ documentation index.
   MASTER TEMPO, BEAT SYNC, KEY SYNC, KEY RESET, LOOP IN, LOOP OUT, 4 BEAT
   LOOP/EXIT, QUANTIZE, SLIP, SLIP REVERSE, and its 8-pad grid — every entry
   in `catalog/ddj_1000.py` (already fixed to real MIDI values in
-  `v0.47.31-ddj-1000-catalog-fix` above). `assets/controllers/ddj-1000.png`
+  `v0.47.31-ddj-1000-catalog-fix` above). `assets/controllers/ddj-1000-midi.png`
   needed a different fix than DDJ-REV1's: not an angled photo, but a
   low-DPI dump of the *entire* PDF page (title, full device diagram, and the
   MIDI table below it) — unusably imprecise for fraction-based measurement,
@@ -675,7 +675,7 @@ documentation index.
   REVERSE, QUANTIZE, SLIP, 4 BEAT JUMP `<`/`>`, SHIFT, and its 8-pad grid —
   every entry in `catalog/ddj_flx10.py` (fully re-transcribed to real MIDI
   values in `v0.47.32-ddj-flx10-catalog-fix` above). Unlike
-  DDJ-1000/DDJ-REV1/Numark, `assets/controllers/ddj-flx10.png` needed no
+  DDJ-1000/DDJ-REV1/Numark, `assets/controllers/ddj-flx10-midi.png` needed no
   asset fix at all — it already was a tight, flat, high-DPI top-view crop,
   so this batch went straight to measuring. Every entry's position was tied
   to its catalog name by cross-referencing DDJ-FLX10's own MIDI Message
@@ -777,6 +777,39 @@ documentation index.
   boxes, so its backdrop reads busier than DDJ-XP2's — a property of the
   committed asset, not the render. Milestone tag
   `v0.47.52-reference-photo-backdrop`.
+- [x] **Clean reference-image variants + "MIDI info" toggle (prep pass)** — the
+  maintainer replaced every `assets/controllers/<slug>.png` with a clean
+  device render (no MIDI callouts printed over it) and moved the old
+  callout-annotated crop to `<slug>-midi.png`, so every controller now
+  bundles **both** variants. This PR lands that asset set and wires the
+  Controller Images tab to it: a new `controller_image_view.image_variants()`
+  resolves the `<slug>.png` / `<slug>-midi.png` pair from either name, and a
+  **"MIDI info" checkbox** swaps between them (disabled when only one variant
+  is bundled — e.g. a Controller Setup attachment). The box defaults to
+  whichever variant a controller's `catalog` `reference_image` names, and a
+  user toggle then pins the choice across controller switches
+  (`_midi_override`). "Show real layout" is now also disabled — with a
+  tooltip — whenever the on-screen variant isn't the geometry-canonical one
+  (`CONTROL_GEOMETRY`'s fractions only align with the image they were
+  measured against; `_draw_geometry_overlay` double-gates on `isEnabled()`).
+  Geometry-free controllers (DDJ-FLX4, Hercules Inpulse 500) point at the
+  clean `<slug>.png` already; the six with geometry (XDJ-XZ, DDJ-REV1,
+  DDJ-XP2, Numark, DDJ-1000, DDJ-FLX10) still name `<slug>-midi.png` and get
+  re-measured against their clean render **one controller per PR, DDJ-XP2
+  first** — the By…/emulator real-position schematics and the optional photo
+  backdrop follow `reference_image`, so each controller's markers flip to the
+  clean image in lockstep with its re-measurement, never before. Milestone
+  tag `v0.47.53-clean-reference-images`.
+- [ ] **Re-measure Pioneer geometry against the clean renders** — one PR each,
+  in order: DDJ-XP2, XDJ-XZ, DDJ-1000, DDJ-FLX10, DDJ-REV1, Numark Mixtrack
+  Pro FX. Per controller: point `catalog` `reference_image` at `<slug>.png`,
+  re-measure every `CONTROL_GEOMETRY` entry (and `layout_view._RIGHT_MIRROR_GEOMETRY`
+  for DDJ-XP2 / XDJ-XZ) against the clean image, verify each by cropping the
+  region it claims and screenshotting the rendered overlay (the project's
+  "no visual features built blind" rule), then flip the tests that assert the
+  old `-midi` canonical. The clean renders are higher-res, flat top-down, and
+  free of the callout clutter, so the By…/emulator backdrops become properly
+  legible once flipped.
 - [x] **Real MIDI sending from layouts (Phase R2 / phase 4)** — the second
   half of the same request: clicking a control in the By tabs' schematic or
   Controller Images' real-photo overlay, not just the dedicated Controller
@@ -963,7 +996,7 @@ documentation index.
   one real shared trigger): `("DISPLAY", "Tempo (R)")` for the right side.
   Separately, `_RIGHT_MIRROR_GEOMETRY["XDJ-XZ"]`'s transport cluster
   (PLAY/PAUSE, CUE, SYNC, jog wheel, Tempo, the 4 PAD MODE-select buttons)
-  was re-measured from scratch against `assets/controllers/xdj-xz.png`
+  was re-measured from scratch against `assets/controllers/xdj-xz-midi.png`
   (crop + crosshair verification, then a full-image marker overlay to
   visually confirm every entry against the real photo at once) — its
   original values had been derived by mirroring the left tray's offsets

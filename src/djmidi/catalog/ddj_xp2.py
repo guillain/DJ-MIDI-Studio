@@ -110,7 +110,7 @@ register(
         plugin_id="pioneer.ddj-xp2",
         manufacturer="Pioneer DJ",
         supported_software=("serato",),
-        reference_image="ddj-xp2.png",
+        reference_image="ddj-xp2-midi.png",
         display_order=10,
         static_entries=_STATIC,
         pad_lookup=_pad_lookup,
