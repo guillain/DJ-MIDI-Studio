@@ -191,28 +191,31 @@ def draw_reference_photo(scene: QGraphicsScene, controller: str) -> bool:
 # carried the pad grids' right side over.
 _RIGHT_MIRROR_GEOMETRY: dict[str, dict[str, geometry_mod.ControlGeometry]] = {
     "DDJ-XP2": {
-        "QUANTIZE": geometry_mod.ControlGeometry(0.5913, 0.3509, 0.0151, 0.0320, "circle", "#4ab8a0"),
-        "4 BEAT LOOP": geometry_mod.ControlGeometry(0.6238, 0.3517, 0.0289, 0.0291, "rect", "#d9954a"),
-        "1/2X": geometry_mod.ControlGeometry(0.6153, 0.4116, 0.0247, 0.0349, "rect", "#d9954a"),
-        "2X": geometry_mod.ControlGeometry(0.6387, 0.4116, 0.0247, 0.0349, "rect", "#d9954a"),
-        "BEAT SYNC": geometry_mod.ControlGeometry(0.5608, 0.4145, 0.0165, 0.0291, "rect", "#4a90d9"),
-        "SILENT CUE": geometry_mod.ControlGeometry(0.5795, 0.4535, 0.0385, 0.0465, "rect", "#e0954a"),
-        "KEY -": geometry_mod.ControlGeometry(0.5388, 0.4564, 0.0192, 0.0407, "rect", "#7a8aa0"),
-        "KEY +": geometry_mod.ControlGeometry(0.5626, 0.4564, 0.0192, 0.0407, "rect", "#7a8aa0"),
-        "PAD MODE 1": geometry_mod.ControlGeometry(0.5094, 0.5364, 0.0324, 0.0262, "rect", "#7a8aa0"),
-        "PAD MODE 2": geometry_mod.ControlGeometry(0.5473, 0.5364, 0.0324, 0.0262, "rect", "#7a8aa0"),
-        "PAD MODE 3": geometry_mod.ControlGeometry(0.5852, 0.5364, 0.0324, 0.0262, "rect", "#7a8aa0"),
-        "PAD MODE 4": geometry_mod.ControlGeometry(0.6242, 0.5364, 0.0324, 0.0262, "rect", "#7a8aa0"),
-        "EFFECT 1": geometry_mod.ControlGeometry(0.6769, 0.3491, 0.0151, 0.0320, "circle", "#9b6fd9"),
-        "EFFECT 2": geometry_mod.ControlGeometry(0.6769, 0.4247, 0.0151, 0.0320, "circle", "#9b6fd9"),
-        "EFFECT 3": geometry_mod.ControlGeometry(0.6769, 0.4997, 0.0151, 0.0320, "circle", "#9b6fd9"),
-        "TOUCH STRIP HOLD": geometry_mod.ControlGeometry(0.6566, 0.9038, 0.0330, 0.0320, "rect", "#8fa0b3"),
+        # Re-measured against the clean render assets/controllers/ddj-xp2.png
+        # in v0.47.54 (mirrors the CONTROL_GEOMETRY["DDJ-XP2"] re-measure) --
+        # the right-tray copy of the DECK/PAD MODE/EFFECT clusters.
+        "QUANTIZE": geometry_mod.ControlGeometry(0.678, 0.092, 0.044, 0.049, "circle", "#4ab8a0"),
+        "4 BEAT LOOP": geometry_mod.ControlGeometry(0.733, 0.097, 0.094, 0.044, "rect", "#d9954a"),
+        "1/2X": geometry_mod.ControlGeometry(0.734, 0.189, 0.050, 0.051, "rect", "#d9954a"),
+        "2X": geometry_mod.ControlGeometry(0.791, 0.189, 0.050, 0.051, "rect", "#d9954a"),
+        "BEAT SYNC": geometry_mod.ControlGeometry(0.648, 0.191, 0.054, 0.052, "rect", "#4a90d9"),
+        "SILENT CUE": geometry_mod.ControlGeometry(0.788, 0.274, 0.054, 0.062, "rect", "#e0954a"),
+        "KEY -": geometry_mod.ControlGeometry(0.585, 0.282, 0.043, 0.053, "rect", "#7a8aa0"),
+        "KEY +": geometry_mod.ControlGeometry(0.652, 0.282, 0.043, 0.053, "rect", "#7a8aa0"),
+        "PAD MODE 1": geometry_mod.ControlGeometry(0.513, 0.362, 0.091, 0.043, "rect", "#7a8aa0"),
+        "PAD MODE 2": geometry_mod.ControlGeometry(0.622, 0.362, 0.091, 0.043, "rect", "#7a8aa0"),
+        "PAD MODE 3": geometry_mod.ControlGeometry(0.730, 0.362, 0.091, 0.043, "rect", "#7a8aa0"),
+        "PAD MODE 4": geometry_mod.ControlGeometry(0.840, 0.362, 0.088, 0.043, "rect", "#7a8aa0"),
+        "EFFECT 1": geometry_mod.ControlGeometry(0.885, 0.109, 0.058, 0.040, "circle", "#9b6fd9"),
+        "EFFECT 2": geometry_mod.ControlGeometry(0.885, 0.187, 0.058, 0.040, "circle", "#9b6fd9"),
+        "EFFECT 3": geometry_mod.ControlGeometry(0.885, 0.284, 0.058, 0.040, "circle", "#9b6fd9"),
+        "TOUCH STRIP HOLD": geometry_mod.ControlGeometry(0.882, 0.853, 0.063, 0.048, "rect", "#8fa0b3"),
         # "FX LEVEL" (geometry.py's label for the left slider) is aliased to
         # the schematic's "Slide FX 1" cell (see layout._LABEL_ALIASES); the
         # right slider maps directly to the schematic's own "Slide FX 2"
         # cell instead, so it's keyed by that name here directly rather
         # than needing a second alias.
-        "Slide FX 2": geometry_mod.ControlGeometry(0.6717, 0.5698, 0.0110, 0.2791, "rect", "#6fa8c9"),
+        "Slide FX 2": geometry_mod.ControlGeometry(0.885, 0.435, 0.045, 0.377, "rect", "#6fa8c9"),
     },
     "XDJ-XZ": {
         # The right tray's transport cluster + PAD MODE buttons -- CONTROL_GEOMETRY

@@ -33,10 +33,10 @@ def test_builtin_controller_plugins_expose_metadata():
     assert definitions["DDJ-XP2"].supported_software == ("serato",)
     # Controllers with gui/geometry.CONTROL_GEOMETRY still name the annotated
     # "-midi" variant -- that is the image the geometry fractions were measured
-    # against, until each one is re-measured against its clean render in its
-    # own follow-up (DDJ-XP2 first). Controllers with no geometry already point
-    # at the clean render.
-    assert definitions["DDJ-XP2"].reference_image == "ddj-xp2-midi.png"
+    # against -- until each is re-measured against its clean render in its own
+    # follow-up. Done: DDJ-XP2 (v0.47.54). Controllers with no geometry already
+    # point at the clean render.
+    assert definitions["DDJ-XP2"].reference_image == "ddj-xp2.png"
     assert definitions["DDJ-FLX10"].reference_image == "ddj-flx10-midi.png"
     assert definitions["DDJ-FLX4"].reference_image == "ddj-flx4.png"
     assert definitions["DDJ-REV1"].reference_image == "ddj-rev1-midi.png"
