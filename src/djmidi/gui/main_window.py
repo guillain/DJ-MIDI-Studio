@@ -1319,6 +1319,15 @@ class MainWindow(QMainWindow):
                 if label is not None:
                     self.controller_image_view.flash_key(label)
 
+            # And every open Controller Emulator dock -- flash_live_hit()
+            # self-filters to the controller each instance shows, so this
+            # can run unconditionally over all of them.
+            for dock in self._emulator_docks.values():
+                view = dock.widget()
+                if isinstance(view, ControllerEmulatorView):
+                    for hit in hits:
+                        view.flash_live_hit(hit)
+
     def _on_intro_drilldown_requested(self, target: str, controller_name: str) -> None:
         if target in self._tool_docks:
             self._show_tool_dock(target)
