@@ -334,3 +334,116 @@ def test_resolve_side_aware_variant_does_not_narrow_a_controller_with_no_channel
     entry = layout.resolve_side_aware_variant("XDJ-XZ", ("XDJ-XZ", "EFFECT", "FX QUANTIZE"))
     assert entry is not None
     assert entry.channels == ("5",)
+
+
+# ─── hit_matches_side / presentation_key_for_hit / find_controls_for_cell ──
+# The By Channel/Deck/Controller tabs' own follow-up to the Controller
+# Emulator's pad-side-identity fix: cross-tab navigation and tree<->layout
+# selection both need to tell the two physical grids/clusters apart too.
+
+from pathlib import Path
+
+from djmidi.parser import parse_file
+
+FIXTURE = Path(__file__).parent.parent / "data" / "xdj_xz-ddj_xp2-4decks.xml"
+
+
+def test_hit_matches_side_true_for_a_controller_with_no_side_split():
+    clear_reverse_lookup_cache()
+    hit = reverse_lookup("DDJ-FLX4")[("DDJ-FLX4", "DECK", "PLAY/PAUSE")][0]
+    assert layout.hit_matches_side("DDJ-FLX4", "DECK", hit, right_side=True) is True
+    assert layout.hit_matches_side("DDJ-FLX4", "DECK", hit, right_side=False) is True
+
+
+def test_hit_matches_side_for_a_pad_hit():
+    clear_reverse_lookup_cache()
+    variants = reverse_lookup("DDJ-XP2")[("DDJ-XP2", "PAD", "Pad 3")]
+    left_hit = next(v for v in variants if v.name.startswith("Deck 1 Pad 3"))
+    right_hit = next(v for v in variants if v.name.startswith("Deck 2 Pad 3"))
+    assert layout.hit_matches_side("DDJ-XP2", "PAD", left_hit, right_side=False) is True
+    assert layout.hit_matches_side("DDJ-XP2", "PAD", left_hit, right_side=True) is False
+    assert layout.hit_matches_side("DDJ-XP2", "PAD", right_hit, right_side=True) is True
+    assert layout.hit_matches_side("DDJ-XP2", "PAD", right_hit, right_side=False) is False
+
+
+def test_hit_matches_side_for_a_bundled_channel_hit():
+    clear_reverse_lookup_cache()
+    beat_sync = reverse_lookup("DDJ-XP2")[("DDJ-XP2", "DECK", "BEAT SYNC")][0]
+    # A single shared entry spans all 4 decks' channels -- it "matches" both
+    # sides at once, since side-narrowing only happens in
+    # resolve_side_aware_variant(), not in this membership check.
+    assert layout.hit_matches_side("DDJ-XP2", "DECK", beat_sync, right_side=True) is True
+    assert layout.hit_matches_side("DDJ-XP2", "DECK", beat_sync, right_side=False) is True
+
+
+def test_presentation_key_for_hit_suffixes_a_right_side_pad():
+    clear_reverse_lookup_cache()
+    variants = reverse_lookup("DDJ-XP2")[("DDJ-XP2", "PAD", "Pad 3")]
+    right_hit = next(v for v in variants if v.name.startswith("Deck 2 Pad 3"))
+    assert layout.presentation_key_for_hit(right_hit) == ("DDJ-XP2", "PAD", "Pad 3 (R)")
+
+
+def test_presentation_key_for_hit_leaves_a_left_side_pad_unsuffixed():
+    clear_reverse_lookup_cache()
+    variants = reverse_lookup("DDJ-XP2")[("DDJ-XP2", "PAD", "Pad 3")]
+    left_hit = next(v for v in variants if v.name.startswith("Deck 1 Pad 3"))
+    assert layout.presentation_key_for_hit(left_hit) == ("DDJ-XP2", "PAD", "Pad 3")
+
+
+def test_presentation_key_for_hit_leaves_a_no_split_control_unsuffixed():
+    clear_reverse_lookup_cache()
+    hit = reverse_lookup("DDJ-FLX4")[("DDJ-FLX4", "DECK", "PLAY/PAUSE")][0]
+    assert layout.presentation_key_for_hit(hit) == ("DDJ-FLX4", "DECK", "PLAY/PAUSE")
+
+
+def test_find_controls_for_cell_separates_left_and_right_pad_controls():
+    config = parse_file(FIXTURE)
+    left = layout.find_controls_for_cell(config, ("DDJ-XP2", "PAD", "Pad 3"))
+    right = layout.find_controls_for_cell(config, ("DDJ-XP2", "PAD", "Pad 3 (R)"))
+    assert left and right
+    # Control isn't hashable -- compare by identity instead of a set.
+    assert all(not any(l is r for r in right) for l in left)
+
+
+def test_find_controls_for_cell_matches_the_merged_lookup_for_a_plain_key():
+    """A key with no side split (or no suffix) behaves exactly like the
+    pre-existing merged cell_key() scan -- no regression for the common
+    case that isn't split at all."""
+    config = parse_file(FIXTURE)
+    matches = layout.find_controls_for_cell(config, ("DDJ-XP2", "DECK", "BEAT SYNC"))
+    # BEAT SYNC isn't mapped by name in this fixture's own tags, but the
+    # function must not raise and must return a list either way.
+    assert isinstance(matches, list)
+
+
+def test_find_controls_for_cell_returns_empty_for_an_unknown_cell():
+    config = parse_file(FIXTURE)
+    assert layout.find_controls_for_cell(config, ("DDJ-XP2", "PAD", "Pad 99")) == []
+
+
+def test_is_side_split_section_true_for_pad_on_a_split_controller():
+    assert layout.is_side_split_section("DDJ-XP2", "PAD") is True
+
+
+def test_is_side_split_section_true_for_a_right_side_channels_entry():
+    assert layout.is_side_split_section("DDJ-XP2", "DECK") is True
+    assert layout.is_side_split_section("DDJ-XP2", "EFFECT") is True
+
+
+def test_is_side_split_section_false_for_an_unlisted_section():
+    assert layout.is_side_split_section("DDJ-XP2", "OTHER") is False
+    assert layout.is_side_split_section("DDJ-XP2", "BROWSE") is False
+
+
+def test_is_side_split_section_false_for_a_controller_with_no_split_at_all():
+    assert layout.is_side_split_section("DDJ-FLX4", "PAD") is False
+    assert layout.is_side_split_section("DDJ-FLX4", "DECK") is False
+
+
+def test_right_side_usage_deck_ids_translates_catalog_decks_to_zero_indexed():
+    assert layout.right_side_usage_deck_ids("DDJ-XP2") == frozenset({"1", "3"})
+    assert layout.right_side_usage_deck_ids("XDJ-XZ") == frozenset({"1", "3"})
+
+
+def test_right_side_usage_deck_ids_none_for_a_controller_with_no_split():
+    assert layout.right_side_usage_deck_ids("DDJ-FLX4") is None

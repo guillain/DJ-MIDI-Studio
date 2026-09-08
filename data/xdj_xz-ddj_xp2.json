@@ -1,0 +1,614 @@
+{
+  "version": 1,
+  "controller_name": "XDJ-XZ and DDJ-XP2",
+  "recorded_events": [
+    {
+      "direction": "in",
+      "channel": "1",
+      "event_type": "Note On",
+      "data1": "60",
+      "data2": "127",
+      "timestamp": 136095.464282166,
+      "port": "DDJ-XP2"
+    },
+    {
+      "direction": "in",
+      "channel": "3",
+      "event_type": "Note On",
+      "data1": "60",
+      "data2": "0",
+      "timestamp": 136095.464306583,
+      "port": "DDJ-XP2"
+    },
+    {
+      "direction": "in",
+      "channel": "2",
+      "event_type": "Note On",
+      "data1": "60",
+      "data2": "127",
+      "timestamp": 136095.494448083,
+      "port": "DDJ-XP2"
+    },
+    {
+      "direction": "in",
+      "channel": "4",
+      "event_type": "Note On",
+      "data1": "60",
+      "data2": "0",
+      "timestamp": 136095.4944655,
+      "port": "DDJ-XP2"
+    },
+    {
+      "direction": "in",
+      "channel": "1",
+      "event_type": "Control Change",
+      "data1": "100",
+      "data2": "127",
+      "timestamp": 136209.91697775,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "3",
+      "event_type": "Control Change",
+      "data1": "100",
+      "data2": "127",
+      "timestamp": 136209.917014875,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "1",
+      "event_type": "Control Change",
+      "data1": "0",
+      "data2": "60",
+      "timestamp": 136209.917024375,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "1",
+      "event_type": "Control Change",
+      "data1": "32",
+      "data2": "73",
+      "timestamp": 136209.917031625,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "1",
+      "event_type": "Control Change",
+      "data1": "30",
+      "data2": "86",
+      "timestamp": 136209.917038666,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "3",
+      "event_type": "Control Change",
+      "data1": "0",
+      "data2": "60",
+      "timestamp": 136209.9170455,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "3",
+      "event_type": "Control Change",
+      "data1": "32",
+      "data2": "73",
+      "timestamp": 136209.917052541,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "3",
+      "event_type": "Control Change",
+      "data1": "30",
+      "data2": "86",
+      "timestamp": 136209.917059166,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "3",
+      "event_type": "Control Change",
+      "data1": "102",
+      "data2": "0",
+      "timestamp": 136209.917065708,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "1",
+      "event_type": "Control Change",
+      "data1": "102",
+      "data2": "127",
+      "timestamp": 136209.917072125,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "1",
+      "event_type": "Note On",
+      "data1": "81",
+      "data2": "0",
+      "timestamp": 136210.068698666,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "1",
+      "event_type": "Control Change",
+      "data1": "0",
+      "data2": "60",
+      "timestamp": 136210.524298708,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "1",
+      "event_type": "Control Change",
+      "data1": "32",
+      "data2": "73",
+      "timestamp": 136210.524331916,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "1",
+      "event_type": "Control Change",
+      "data1": "30",
+      "data2": "86",
+      "timestamp": 136210.5243575,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "3",
+      "event_type": "Control Change",
+      "data1": "0",
+      "data2": "60",
+      "timestamp": 136210.52436425,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "3",
+      "event_type": "Control Change",
+      "data1": "32",
+      "data2": "73",
+      "timestamp": 136210.524370291,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "3",
+      "event_type": "Control Change",
+      "data1": "30",
+      "data2": "86",
+      "timestamp": 136210.524376583,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "3",
+      "event_type": "Control Change",
+      "data1": "102",
+      "data2": "0",
+      "timestamp": 136210.524384208,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "1",
+      "event_type": "Control Change",
+      "data1": "102",
+      "data2": "127",
+      "timestamp": 136210.524390875,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "2",
+      "event_type": "Control Change",
+      "data1": "100",
+      "data2": "127",
+      "timestamp": 136211.621108083,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "4",
+      "event_type": "Control Change",
+      "data1": "100",
+      "data2": "127",
+      "timestamp": 136211.621139708,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "2",
+      "event_type": "Control Change",
+      "data1": "0",
+      "data2": "64",
+      "timestamp": 136211.621147375,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "2",
+      "event_type": "Control Change",
+      "data1": "32",
+      "data2": "19",
+      "timestamp": 136211.621153458,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "2",
+      "event_type": "Control Change",
+      "data1": "30",
+      "data2": "93",
+      "timestamp": 136211.621158791,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "4",
+      "event_type": "Control Change",
+      "data1": "0",
+      "data2": "64",
+      "timestamp": 136211.621163791,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "4",
+      "event_type": "Control Change",
+      "data1": "32",
+      "data2": "19",
+      "timestamp": 136211.621169208,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "4",
+      "event_type": "Control Change",
+      "data1": "30",
+      "data2": "93",
+      "timestamp": 136211.62117475,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "4",
+      "event_type": "Control Change",
+      "data1": "102",
+      "data2": "0",
+      "timestamp": 136211.621179916,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "2",
+      "event_type": "Control Change",
+      "data1": "102",
+      "data2": "127",
+      "timestamp": 136211.621186208,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "2",
+      "event_type": "Note On",
+      "data1": "81",
+      "data2": "0",
+      "timestamp": 136211.771751583,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "1",
+      "event_type": "Note On",
+      "data1": "31",
+      "data2": "127",
+      "timestamp": 136239.895037458,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "1",
+      "event_type": "Note On",
+      "data1": "31",
+      "data2": "0",
+      "timestamp": 136239.895086166,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "2",
+      "event_type": "Note On",
+      "data1": "31",
+      "data2": "127",
+      "timestamp": 136241.72104475,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "2",
+      "event_type": "Note On",
+      "data1": "31",
+      "data2": "0",
+      "timestamp": 136241.721078375,
+      "port": "XDJ-XZ (1)"
+    }
+  ],
+  "rows": [
+    {
+      "section": "",
+      "name": "",
+      "note_or_cc": "CC",
+      "channels": [
+        "1"
+      ],
+      "data1": "100",
+      "source": "learned",
+      "device": "XDJ-XZ (1)"
+    },
+    {
+      "section": "",
+      "name": "",
+      "note_or_cc": "CC",
+      "channels": [
+        "3"
+      ],
+      "data1": "100",
+      "source": "learned",
+      "device": "XDJ-XZ (1)"
+    },
+    {
+      "section": "",
+      "name": "",
+      "note_or_cc": "CC",
+      "channels": [
+        "1"
+      ],
+      "data1": "0",
+      "source": "learned",
+      "device": "XDJ-XZ (1)"
+    },
+    {
+      "section": "",
+      "name": "",
+      "note_or_cc": "CC",
+      "channels": [
+        "1"
+      ],
+      "data1": "32",
+      "source": "learned",
+      "device": "XDJ-XZ (1)"
+    },
+    {
+      "section": "",
+      "name": "",
+      "note_or_cc": "CC",
+      "channels": [
+        "1"
+      ],
+      "data1": "30",
+      "source": "learned",
+      "device": "XDJ-XZ (1)"
+    },
+    {
+      "section": "",
+      "name": "",
+      "note_or_cc": "CC",
+      "channels": [
+        "3"
+      ],
+      "data1": "0",
+      "source": "learned",
+      "device": "XDJ-XZ (1)"
+    },
+    {
+      "section": "",
+      "name": "",
+      "note_or_cc": "CC",
+      "channels": [
+        "3"
+      ],
+      "data1": "32",
+      "source": "learned",
+      "device": "XDJ-XZ (1)"
+    },
+    {
+      "section": "",
+      "name": "",
+      "note_or_cc": "CC",
+      "channels": [
+        "3"
+      ],
+      "data1": "30",
+      "source": "learned",
+      "device": "XDJ-XZ (1)"
+    },
+    {
+      "section": "",
+      "name": "",
+      "note_or_cc": "CC",
+      "channels": [
+        "3"
+      ],
+      "data1": "102",
+      "source": "learned",
+      "device": "XDJ-XZ (1)"
+    },
+    {
+      "section": "",
+      "name": "",
+      "note_or_cc": "CC",
+      "channels": [
+        "1"
+      ],
+      "data1": "102",
+      "source": "learned",
+      "device": "XDJ-XZ (1)"
+    },
+    {
+      "section": "",
+      "name": "",
+      "note_or_cc": "NOTE",
+      "channels": [
+        "1"
+      ],
+      "data1": "81",
+      "source": "learned",
+      "device": "XDJ-XZ (1)"
+    },
+    {
+      "section": "",
+      "name": "",
+      "note_or_cc": "CC",
+      "channels": [
+        "2"
+      ],
+      "data1": "100",
+      "source": "learned",
+      "device": "XDJ-XZ (1)"
+    },
+    {
+      "section": "",
+      "name": "",
+      "note_or_cc": "CC",
+      "channels": [
+        "4"
+      ],
+      "data1": "100",
+      "source": "learned",
+      "device": "XDJ-XZ (1)"
+    },
+    {
+      "section": "",
+      "name": "",
+      "note_or_cc": "CC",
+      "channels": [
+        "2"
+      ],
+      "data1": "0",
+      "source": "learned",
+      "device": "XDJ-XZ (1)"
+    },
+    {
+      "section": "",
+      "name": "",
+      "note_or_cc": "CC",
+      "channels": [
+        "2"
+      ],
+      "data1": "32",
+      "source": "learned",
+      "device": "XDJ-XZ (1)"
+    },
+    {
+      "section": "",
+      "name": "",
+      "note_or_cc": "CC",
+      "channels": [
+        "2"
+      ],
+      "data1": "30",
+      "source": "learned",
+      "device": "XDJ-XZ (1)"
+    },
+    {
+      "section": "",
+      "name": "",
+      "note_or_cc": "CC",
+      "channels": [
+        "4"
+      ],
+      "data1": "0",
+      "source": "learned",
+      "device": "XDJ-XZ (1)"
+    },
+    {
+      "section": "",
+      "name": "",
+      "note_or_cc": "CC",
+      "channels": [
+        "4"
+      ],
+      "data1": "32",
+      "source": "learned",
+      "device": "XDJ-XZ (1)"
+    },
+    {
+      "section": "",
+      "name": "",
+      "note_or_cc": "CC",
+      "channels": [
+        "4"
+      ],
+      "data1": "30",
+      "source": "learned",
+      "device": "XDJ-XZ (1)"
+    },
+    {
+      "section": "",
+      "name": "",
+      "note_or_cc": "CC",
+      "channels": [
+        "4"
+      ],
+      "data1": "102",
+      "source": "learned",
+      "device": "XDJ-XZ (1)"
+    },
+    {
+      "section": "",
+      "name": "",
+      "note_or_cc": "CC",
+      "channels": [
+        "2"
+      ],
+      "data1": "102",
+      "source": "learned",
+      "device": "XDJ-XZ (1)"
+    },
+    {
+      "section": "",
+      "name": "",
+      "note_or_cc": "NOTE",
+      "channels": [
+        "2"
+      ],
+      "data1": "81",
+      "source": "learned",
+      "device": "XDJ-XZ (1)"
+    },
+    {
+      "section": "",
+      "name": "",
+      "note_or_cc": "NOTE",
+      "channels": [
+        "1"
+      ],
+      "data1": "31",
+      "source": "learned",
+      "device": "XDJ-XZ (1)"
+    },
+    {
+      "section": "",
+      "name": "",
+      "note_or_cc": "NOTE",
+      "channels": [
+        "2"
+      ],
+      "data1": "31",
+      "source": "learned",
+      "device": "XDJ-XZ (1)"
+    }
+  ]
+}

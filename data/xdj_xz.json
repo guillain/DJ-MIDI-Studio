@@ -1,0 +1,124 @@
+{
+  "version": 1,
+  "controller_name": "XDJ-XZ",
+  "recorded_events": [
+    {
+      "direction": "in",
+      "channel": "1",
+      "event_type": "Note On",
+      "data1": "9",
+      "data2": "127",
+      "timestamp": 136444.564991,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "1",
+      "event_type": "Note On",
+      "data1": "9",
+      "data2": "0",
+      "timestamp": 136444.7760385,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "1",
+      "event_type": "Note On",
+      "data1": "14",
+      "data2": "127",
+      "timestamp": 136445.508238125,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "1",
+      "event_type": "Note On",
+      "data1": "14",
+      "data2": "0",
+      "timestamp": 136445.508281541,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "1",
+      "event_type": "Note On",
+      "data1": "31",
+      "data2": "127",
+      "timestamp": 136446.360440541,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "1",
+      "event_type": "Note On",
+      "data1": "31",
+      "data2": "0",
+      "timestamp": 136446.360482125,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "2",
+      "event_type": "Note On",
+      "data1": "31",
+      "data2": "127",
+      "timestamp": 136447.790468666,
+      "port": "XDJ-XZ (1)"
+    },
+    {
+      "direction": "in",
+      "channel": "2",
+      "event_type": "Note On",
+      "data1": "31",
+      "data2": "0",
+      "timestamp": 136447.790504083,
+      "port": "XDJ-XZ (1)"
+    }
+  ],
+  "rows": [
+    {
+      "section": "",
+      "name": "",
+      "note_or_cc": "NOTE",
+      "channels": [
+        "1"
+      ],
+      "data1": "9",
+      "source": "learned",
+      "device": "XDJ-XZ (1)"
+    },
+    {
+      "section": "",
+      "name": "",
+      "note_or_cc": "NOTE",
+      "channels": [
+        "1"
+      ],
+      "data1": "14",
+      "source": "learned",
+      "device": "XDJ-XZ (1)"
+    },
+    {
+      "section": "",
+      "name": "",
+      "note_or_cc": "NOTE",
+      "channels": [
+        "1"
+      ],
+      "data1": "31",
+      "source": "learned",
+      "device": "XDJ-XZ (1)"
+    },
+    {
+      "section": "",
+      "name": "",
+      "note_or_cc": "NOTE",
+      "channels": [
+        "2"
+      ],
+      "data1": "31",
+      "source": "learned",
+      "device": "XDJ-XZ (1)"
+    }
+  ]
+}

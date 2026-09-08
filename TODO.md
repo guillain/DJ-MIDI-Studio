@@ -995,6 +995,51 @@ documentation index.
   `_apply_output_state()` now that it handles both the stateful
   (toggle) and read-only (everything else) cases behind one click-group
   lookup.
+- [x] **Pad-side identity extended to the By Channel/Deck/Controller tabs**
+  — the deliberately-deferred follow-up flagged above ("its cross-tab
+  navigation and `self._usage` dict both key off the merged `CellKey`
+  today... a more involved change"): `ControllerLayoutView`'s own
+  real-position mode still used the merged key for usage coloring,
+  selection, and cross-tab navigation, even after the Controller Emulator
+  got the full side-aware fix. Closed with three new Qt-free `gui/layout.py`
+  functions built on the same `_RIGHT_GRID_DECKS`/`_RIGHT_SIDE_CHANNELS`
+  tables the emulator fix introduced: `hit_matches_side()` (a permissive
+  filter predicate), `presentation_key_for_hit()` (the *inverse* of
+  `resolve_side_aware_variant()` — given a real catalog hit, which
+  presentation key it belongs to), and `find_controls_for_cell()` (the
+  cross-tab-navigation equivalent — every real `Control` mapped to a
+  schematic cell, narrowed to one physical side). `ControllerLayoutView._rebuild_real_position()`
+  now computes the same left/right presentation key split the emulator
+  already does; `_cell_decks_and_tags()` narrows the *merged* usage dict
+  down to one side's deck_ids for any side-split section, converting
+  `_RIGHT_GRID_DECKS`'s 1-indexed catalog deck numbers to the 0-indexed
+  `deck_id` strings a loaded config's `MappingElement` actually uses
+  (confirmed via the real fixture: catalog "Deck 1" pairs with
+  `deck_id="0"`). Usage itself deliberately stays keyed by the *merged*
+  cell in `MainWindow._refresh_layout_usage()` — only `linked_cells`
+  (the split-half "what does the other controller think this means" diff)
+  switched to the side-aware key — since the "By Controller" text tree and
+  the classic card grid both read that same dict with no per-side concept
+  at all; splitting it at the source would have silently under-reported
+  their aggregate deck/tag counts. `_on_layout_cell_activated`,
+  `_select_deck_group`, `_update_layout_selection`, and `_on_live_midi_event`
+  all switched to the new side-aware helpers. Caught a real regression
+  during manual verification, not just in review: `_select_controller_cell()`'s
+  first-drafted "fall back to the merged tree row" convenience for a
+  right-side key with no exact match actively **corrupted** the selection
+  instead of merely failing to highlight anything — selecting that row
+  re-triggers `_on_controller_selection_changed`'s own `selectionChanged`
+  handler, which re-runs `_on_layout_cell_activated` with the *merged* key
+  and silently overwrites the correct side-aware selection with the merged
+  cell's first (often left-side) match. Fixed by removing the fallback
+  entirely: the "By Controller" tree has no row for a right-side marker at
+  all (never modeled the two physical clusters as separate rows, unlike
+  the schematic layout) and now simply doesn't highlight anything for that
+  click — a disclosed, narrower gap than before, not a silent one. Verified
+  end-to-end with real offscreen `MainWindow` interaction (not just unit
+  tests): clicking DDJ-XP2's right pad grid in By Controller/By Deck/By
+  Channel each correctly lands on a deck-2/4 control and highlights only
+  the right marker, confirmed via `MainWindow.grab()` screenshots.
 - [x] **DDJ-1000 catalog data correction** (`catalog/ddj_1000.py`, related to
   issue [#11](https://github.com/guillain/DJ-MIDI-Studio/issues/11)) —
   discovered while cross-checking DECK section names against the official

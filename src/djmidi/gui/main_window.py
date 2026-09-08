@@ -1053,7 +1053,11 @@ class MainWindow(QMainWindow):
             # controllers' catalogs at once (a merged config doesn't record which
             # physical device sent it) — link those cells so the layout can show
             # each controller's interpretation of the same trigger side by side.
-            hit_keys = {layout_mod.cell_key(hit) for hit in hits}
+            # presentation_key_for_hit() (not the merged cell_key()) so a link
+            # from DDJ-XP2's right pad grid points at XDJ-XZ's own right-side
+            # hit for the same trigger, not whichever side happens to share
+            # the merged key.
+            hit_keys = {layout_mod.presentation_key_for_hit(hit) for hit in hits}
             for key in hit_keys:
                 others = {other for other in hit_keys if other[0] != key[0]}
                 if others:
@@ -1063,6 +1067,15 @@ class MainWindow(QMainWindow):
                     if not mapping.deck_id:
                         continue
                     for hit in hits:
+                        # Stays keyed by the *merged* cell here (unlike
+                        # linked_cells above): the "By Controller" text tree
+                        # and the classic card grid both read this same
+                        # usage dict with no per-side concept at all, so
+                        # splitting it at the source would silently
+                        # under-report their aggregate deck/tag counts.
+                        # ControllerLayoutView._cell_decks_and_tags() does
+                        # the side-narrowing itself, downstream, only for
+                        # the real-position schematic.
                         cell = usage.setdefault(layout_mod.cell_key(hit), {})
                         cell.setdefault(mapping.deck_id, set()).add(mapping.tag)
         self.layout_view.set_usage(usage, linked_cells)
@@ -1190,6 +1203,23 @@ class MainWindow(QMainWindow):
         return QModelIndex()
 
     def _select_controller_cell(self, key: layout_mod.CellKey) -> bool:
+        """The "By Controller" text tree (gui/controller_tree.py) has no
+        separate row for a right-side real-position marker at all -- it's
+        built from build_layout()'s own cells, a merged, aggregate-usage
+        view by design (unlike the schematic layout, it never modeled two
+        physical grids/clusters as distinct rows), so a right-side key
+        simply finds no row here and this returns False.
+
+        Deliberately does NOT fall back to selecting the merged row: doing
+        so would select a tree row whose own CELL_KEY_ROLE is the *merged*
+        key, and _on_controller_selection_changed's selectionChanged
+        handler would immediately re-run _on_layout_cell_activated with
+        that merged key -- silently overwriting the correct side-aware
+        selection this call was trying to make with whatever the merged
+        cell's first (often left-side) match happens to be. Confirmed by a
+        real offscreen click simulation: this exact feedback loop is what
+        produced a right-side click landing on a left-side deck. Known,
+        disclosed limitation -- not silently dropped."""
         for view in self._controller_tree_views:
             index = self._find_index_with_data(view.model(), key, CELL_KEY_ROLE)
             if index.isValid():
@@ -1208,7 +1238,7 @@ class MainWindow(QMainWindow):
                     if not isinstance(group, MappingGroup):
                         continue
                     if any(
-                        layout_mod.cell_key(hit) == key
+                        layout_mod.presentation_key_for_hit(hit) == key
                         for hit in catalog.lookup(group.channel, group.event_type, group.control_no)
                     ):
                         self._select_model_index(view, index)
@@ -1218,12 +1248,13 @@ class MainWindow(QMainWindow):
     def _on_layout_cell_activated(self, key: tuple, source_tab: str = "channel") -> None:
         if self.config is None:
             return
-        matches: list[Control] = []
-        for control in self.config.controls:
-            for hit in catalog.lookup(control.channel, control.event_type, control.control):
-                if layout_mod.cell_key(hit) == key:
-                    matches.append(control)
-                    break
+        # find_controls_for_cell() (not a manual cell_key(hit) == key scan)
+        # so a right-side real-position marker's presentation key (DDJ-XP2/
+        # XDJ-XZ decks 2/4) only matches controls actually on that physical
+        # side, instead of jumping to whatever control happens to share the
+        # left side's merged cell -- the By Channel/Deck/Controller tabs'
+        # own follow-up to the Controller Emulator's identical fix.
+        matches = layout_mod.find_controls_for_cell(self.config, key)
         if not matches:
             self.statusBar().showMessage(f"No control in this file uses '{key[2]}'")
             self._update_layout_selection(None, None, None)
@@ -1245,7 +1276,14 @@ class MainWindow(QMainWindow):
     def _update_layout_selection(self, channel: str | None, event_type: str | None, control_no: str | None) -> None:
         keys: set[layout_mod.CellKey] = set()
         if channel and event_type and control_no:
-            keys = {layout_mod.cell_key(hit) for hit in catalog.lookup(channel, event_type, control_no)}
+            # presentation_key_for_hit() (not the merged cell_key()) so
+            # selecting a control mapped to, say, DDJ-XP2's deck 2/4 pad
+            # grid highlights only that physical marker, not both left and
+            # right at once.
+            keys = {
+                layout_mod.presentation_key_for_hit(hit)
+                for hit in catalog.lookup(channel, event_type, control_no)
+            }
         self.layout_view.set_selected_keys(keys)
         self.deck_layout_view.set_selected_keys(keys)
         self.controller_layout_view.set_selected_keys(keys)
@@ -1254,7 +1292,10 @@ class MainWindow(QMainWindow):
         self._update_layout_selection(event.channel, event.event_type, event.data1)
         if event.channel and event.event_type and event.data1:
             hits = catalog.lookup(event.channel, event.event_type, event.data1)
-            keys = {layout_mod.cell_key(hit) for hit in hits}
+            # Same reasoning as _update_layout_selection(): flash/value only
+            # the physical marker the live hit's own deck actually belongs
+            # to, not both sides of a split cell.
+            keys = {layout_mod.presentation_key_for_hit(hit) for hit in hits}
             try:
                 value = int(event.data2)
             except (TypeError, ValueError):

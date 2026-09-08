@@ -333,7 +333,10 @@ def test_real_position_click_still_emits_cell_activated():
 def test_detail_label_updates_on_click_in_real_position_mode():
     view = ControllerLayoutView()
     view.set_controller("DDJ-XP2")
-    view.set_usage({("DDJ-XP2", "PAD", "Pad 1"): {"1": {"codfather_st"}}})
+    # deck_id "0" (Serato's own 0-indexed numbering) is catalog Deck 1 --
+    # the *left* physical grid's side, matching the unsuffixed "Pad 1" key
+    # emitted below (see gui/layout.right_side_usage_deck_ids()).
+    view.set_usage({("DDJ-XP2", "PAD", "Pad 1"): {"0": {"codfather_st"}}})
     view._view.cellClicked.emit(("DDJ-XP2", "PAD", "Pad 1"))
     assert "codfather_st" in view._detail_label.text()
 
@@ -475,3 +478,69 @@ def test_glyph_size_for_every_visual_kind():
         ("fader", metrics.fader_glyph_h),
     ):
         assert layout_view_mod.glyph_size_for(metrics, kind) == expected
+
+
+# ─── Pad-side identity in ControllerLayoutView (the By Channel/Deck/ ───────
+# ─── Controller tabs' own follow-up to the Controller Emulator's fix) ──────
+
+
+def test_real_position_mode_gives_left_and_right_pad_markers_distinct_key_role():
+    view = ControllerLayoutView()
+    view.set_controller("DDJ-XP2")
+    left_items = [
+        item for item in view._scene.items() if item.data(layout_view_mod._KEY_ROLE) == ("DDJ-XP2", "PAD", "Pad 3")
+    ]
+    right_items = [
+        item
+        for item in view._scene.items()
+        if item.data(layout_view_mod._KEY_ROLE) == ("DDJ-XP2", "PAD", "Pad 3 (R)")
+    ]
+    assert left_items
+    assert right_items
+
+
+def test_cell_decks_and_tags_separates_left_and_right_pad_usage():
+    view = ControllerLayoutView()
+    view.set_controller("DDJ-XP2")
+    # deck_id "0" = catalog Deck 1 (left), "1" = catalog Deck 2 (right).
+    view.set_usage(
+        {("DDJ-XP2", "PAD", "Pad 3"): {"0": {"left_fn"}, "1": {"right_fn"}}}
+    )
+    left_decks, left_tags = view._cell_decks_and_tags(("DDJ-XP2", "PAD", "Pad 3"), None)
+    right_decks, right_tags = view._cell_decks_and_tags(("DDJ-XP2", "PAD", "Pad 3 (R)"), None)
+    assert left_decks == {"0"}
+    assert left_tags == {"left_fn"}
+    assert right_decks == {"1"}
+    assert right_tags == {"right_fn"}
+
+
+def test_cell_decks_and_tags_unfiltered_for_a_non_split_section():
+    """A section with no side split modeled (e.g. OTHER) must keep showing
+    every deck, exactly as before this fix -- only PAD/DECK/PAD MODE/EFFECT
+    on a controller with a modeled split get narrowed."""
+    view = ControllerLayoutView()
+    view.set_controller("DDJ-XP2")
+    view.set_usage({("DDJ-XP2", "OTHER", "SHIFT"): {"0": {"fn_a"}, "1": {"fn_b"}}})
+    decks, tags = view._cell_decks_and_tags(("DDJ-XP2", "OTHER", "SHIFT"), None)
+    assert decks == {"0", "1"}
+    assert tags == {"fn_a", "fn_b"}
+
+
+def test_clicking_the_right_pad_marker_shows_only_its_own_usage_in_detail_label():
+    view = ControllerLayoutView()
+    view.set_controller("DDJ-XP2")
+    view.set_usage({("DDJ-XP2", "PAD", "Pad 3"): {"0": {"left_fn"}, "1": {"right_fn"}}})
+    view._view.cellClicked.emit(("DDJ-XP2", "PAD", "Pad 3 (R)"))
+    text = view._detail_label.text()
+    assert "right_fn" in text
+    assert "left_fn" not in text
+
+
+def test_selecting_the_right_pad_key_does_not_select_the_left_marker():
+    view = ControllerLayoutView()
+    view.set_controller("DDJ-XP2")
+    right_key = ("DDJ-XP2", "PAD", "Pad 3 (R)")
+    left_key = ("DDJ-XP2", "PAD", "Pad 3")
+    view.set_selected_keys({right_key})
+    assert view._selection_pen(right_key) is layout_view_mod._SELECTED_PEN
+    assert view._selection_pen(left_key) is not layout_view_mod._SELECTED_PEN

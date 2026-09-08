@@ -1,0 +1,124 @@
+{
+  "version": 1,
+  "controller_name": "DDJ-XP2",
+  "recorded_events": [
+    {
+      "direction": "in",
+      "channel": "1",
+      "event_type": "Note On",
+      "data1": "27",
+      "data2": "127",
+      "timestamp": 135878.63874825,
+      "port": "DDJ-XP2"
+    },
+    {
+      "direction": "in",
+      "channel": "1",
+      "event_type": "Note On",
+      "data1": "27",
+      "data2": "0",
+      "timestamp": 135878.759650083,
+      "port": "DDJ-XP2"
+    },
+    {
+      "direction": "in",
+      "channel": "1",
+      "event_type": "Note On",
+      "data1": "28",
+      "data2": "127",
+      "timestamp": 135878.79072075,
+      "port": "DDJ-XP2"
+    },
+    {
+      "direction": "in",
+      "channel": "1",
+      "event_type": "Note On",
+      "data1": "28",
+      "data2": "0",
+      "timestamp": 135878.941770666,
+      "port": "DDJ-XP2"
+    },
+    {
+      "direction": "in",
+      "channel": "2",
+      "event_type": "Note On",
+      "data1": "27",
+      "data2": "127",
+      "timestamp": 135882.137953416,
+      "port": "DDJ-XP2"
+    },
+    {
+      "direction": "in",
+      "channel": "2",
+      "event_type": "Note On",
+      "data1": "27",
+      "data2": "0",
+      "timestamp": 135882.260402458,
+      "port": "DDJ-XP2"
+    },
+    {
+      "direction": "in",
+      "channel": "2",
+      "event_type": "Note On",
+      "data1": "28",
+      "data2": "127",
+      "timestamp": 135882.320973291,
+      "port": "DDJ-XP2"
+    },
+    {
+      "direction": "in",
+      "channel": "2",
+      "event_type": "Note On",
+      "data1": "28",
+      "data2": "0",
+      "timestamp": 135882.442342875,
+      "port": "DDJ-XP2"
+    }
+  ],
+  "rows": [
+    {
+      "section": "Deck 1",
+      "name": "Pad mode 1",
+      "note_or_cc": "NOTE",
+      "channels": [
+        "1"
+      ],
+      "data1": "27",
+      "source": "learned",
+      "device": "DDJ-XP2"
+    },
+    {
+      "section": "Deck 1",
+      "name": "Pad mode 5",
+      "note_or_cc": "NOTE",
+      "channels": [
+        "1"
+      ],
+      "data1": "28",
+      "source": "learned",
+      "device": "DDJ-XP2"
+    },
+    {
+      "section": "Deck 2",
+      "name": "Pad mode 1",
+      "note_or_cc": "NOTE",
+      "channels": [
+        "2"
+      ],
+      "data1": "27",
+      "source": "learned",
+      "device": "DDJ-XP2"
+    },
+    {
+      "section": "Deck 2",
+      "name": "Pad mode 5",
+      "note_or_cc": "NOTE",
+      "channels": [
+        "2"
+      ],
+      "data1": "28",
+      "source": "learned",
+      "device": "DDJ-XP2"
+    }
+  ]
+}
