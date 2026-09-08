@@ -541,23 +541,16 @@ def _emulator_photo_items(view: EmulatorLayoutView):
     return [item for item in view._scene.items() if isinstance(item, QGraphicsPixmapItem)]
 
 
-def test_emulator_photo_backdrop_off_by_default():
+def test_emulator_photo_backdrop_on_by_default():
     view = EmulatorLayoutView("DDJ-XP2")
-    assert view._show_reference_photo is False
-    assert _emulator_photo_items(view) == []
-
-
-def test_emulator_photo_backdrop_drawn_when_enabled():
-    view = EmulatorLayoutView("DDJ-XP2")
-    view.set_show_reference_photo(True)
+    assert view._show_reference_photo is True
     photos = _emulator_photo_items(view)
     assert len(photos) == 1
     assert photos[0].zValue() == layout_view_mod._PHOTO_Z
 
 
-def test_emulator_photo_backdrop_toggles_off():
+def test_emulator_photo_backdrop_can_be_turned_off():
     view = EmulatorLayoutView("DDJ-XP2")
-    view.set_show_reference_photo(True)
     view.set_show_reference_photo(False)
     assert _emulator_photo_items(view) == []
 
@@ -585,6 +578,14 @@ def test_emulator_photo_backdrop_does_not_block_click_resolution(monkeypatch):
 def test_controller_emulator_view_photo_checkbox_drives_the_layout():
     view = ControllerEmulatorView(config_provider=lambda: None)
     view._combo.setCurrentText("DDJ-XP2")
-    view._photo_checkbox.setChecked(True)
+    # On by default.
+    assert view._photo_checkbox.isChecked() is True
     assert view._emulator._show_reference_photo is True
+    assert len(_emulator_photo_items(view._emulator)) == 1
+
+    view._photo_checkbox.setChecked(False)
+    assert view._emulator._show_reference_photo is False
+    assert _emulator_photo_items(view._emulator) == []
+
+    view._photo_checkbox.setChecked(True)
     assert len(_emulator_photo_items(view._emulator)) == 1

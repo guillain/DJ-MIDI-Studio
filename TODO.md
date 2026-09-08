@@ -834,6 +834,17 @@ documentation index.
   re-measure every `CONTROL_GEOMETRY` entry against the clean image with the
   crop-and-overlay verify loop, then flip the tests that assert the old
   `-midi` canonical for that controller.
+- [x] **"Controller photo" backdrop on by default** (`v0.47.56`) — the
+  maintainer asked for the backdrop to be the default in the By
+  Channel/Deck/Controller tabs and the Controller Emulator now that two
+  controllers (DDJ-XP2, XDJ-XZ) render on their clean image and the rest on
+  their geometry-canonical `-midi` crop. `ControllerLayoutView._show_reference_photo`
+  and `EmulatorLayoutView._show_reference_photo` now start `True`, and the
+  two "Controller photo" checkboxes start checked (set before wiring
+  `toggled`, so no redundant early `_rebuild()`). Still a per-view session
+  toggle, not persisted — the on default reapplies each session. No effect
+  for a geometry-free controller (classic card grid). Tests flipped from
+  "off by default" to "on by default" + "can be turned off".
 - [x] **Real MIDI sending from layouts (Phase R2 / phase 4)** — the second
   half of the same request: clicking a control in the By tabs' schematic or
   Controller Images' real-photo overlay, not just the dedicated Controller

@@ -553,10 +553,17 @@ def _photo_items(view: ControllerLayoutView):
     return [item for item in view._scene.items() if isinstance(item, QGraphicsPixmapItem)]
 
 
-def test_reference_photo_backdrop_is_off_by_default():
+def test_reference_photo_backdrop_is_on_by_default():
     view = ControllerLayoutView()
     view.set_controller("DDJ-XP2")
-    assert view._photo_checkbox.isChecked() is False
+    assert view._photo_checkbox.isChecked() is True
+    assert len(_photo_items(view)) == 1
+
+
+def test_reference_photo_backdrop_can_be_turned_off():
+    view = ControllerLayoutView()
+    view.set_controller("DDJ-XP2")
+    view.set_show_reference_photo(False)
     assert _photo_items(view) == []
 
 
