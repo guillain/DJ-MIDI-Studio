@@ -207,7 +207,9 @@ independently with `Refresh MIDI ports`. Physical routing remains disabled
 unless enabled in Preferences. A selected route can carry an optional value
 transform — channel remap, note/CC offset, invert value — via `Edit
 transform…`; the routes table's `Transform` column summarizes it (e.g. `Ch
-3, +12, invert`) or shows `—` when a route is a plain passthrough.
+3, +12, invert`) or shows `—` when a route is a plain passthrough. The
+panel scrolls when the dock is narrower than its controls, so the route
+buttons stay reachable whether the tool is docked or floated.
 
 ## MIDI Clock
 

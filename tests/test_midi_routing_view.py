@@ -43,6 +43,26 @@ def test_routing_view_exposes_clock_panel_for_independent_dock():
     assert view.layout().indexOf(panel) == -1
 
 
+def test_routing_view_content_is_wrapped_in_a_scroll_area():
+    """Issue #19: docked at a narrow width the 5-button route-controls row
+    clipped 'Start routing' off the right edge. The content is now inside a
+    QScrollArea so it scrolls instead."""
+    from PySide6.QtWidgets import QPushButton, QScrollArea
+
+    view = MidiRoutingView()
+    scrolls = view.findChildren(QScrollArea)
+    assert scrolls, "routing view is not scrollable"
+    scroll = scrolls[0]
+    assert scroll.widgetResizable() is True
+    start_button = next(
+        b for b in view.findChildren(QPushButton) if b.text() == "Start routing"
+    )
+    assert scroll.widget().isAncestorOf(start_button)
+    # take_clock_panel() still works -- _clock_panel was never in the scroll.
+    panel = view.take_clock_panel()
+    assert not scroll.widget().isAncestorOf(panel)
+
+
 def test_refresh_ports_separates_midi_inputs_and_outputs():
     view = MidiRoutingView()
     with (

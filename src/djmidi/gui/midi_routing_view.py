@@ -10,12 +10,14 @@ from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
     QDialog,
+    QFrame,
     QGridLayout,
     QGroupBox,
     QHeaderView,
     QLabel,
     QMessageBox,
     QPushButton,
+    QScrollArea,
     QSizePolicy,
     QTableWidget,
     QTableWidgetItem,
@@ -216,10 +218,30 @@ class MidiRoutingView(QWidget):
         )
         help_label.setWordWrap(True)
 
-        layout = QVBoxLayout(self)
+        # The route-controls row puts 5 buttons side by side; when this
+        # view is *docked* (rather than floated) at a narrow width the last
+        # one ("Start routing") clipped off the right edge (issue #19). Wrap
+        # the content in a scroll area so it shows a scrollbar instead --
+        # same fix as the Dashboard / Controller Setup. _clock_panel is
+        # reparented out via take_clock_panel() and is not in this layout,
+        # so it's unaffected.
+        content = QWidget()
+        content.setObjectName("midiToolsSurface")  # keep the scoped theme
+        layout = QVBoxLayout(content)
         layout.addWidget(help_label)
         layout.addWidget(routes_box)
         layout.addStretch(1)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setStyleSheet("QScrollArea { background: transparent; }")
+        scroll.viewport().setStyleSheet("background: transparent;")
+        scroll.setWidget(content)
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        outer.addWidget(scroll)
+
         self._apply_dj_style()
         self.refresh_ports()
 
