@@ -66,7 +66,18 @@ cue") -- purely mechanical, driven by the config's own `behaviour`
 attribute. A non-toggle click mapping with real output aliases (e.g. the
 `selected`/`off` collision case) still gets a read-only listing of its
 whole alias set in the status text via `gui/output_state.describe_output_aliases()`
--- informational only, no attempt to guess which alias currently applies."""
+-- informational only, no attempt to guess which alias currently applies.
+
+Phase 5, slice 2: **pad-mode-page tracking** (gui/pad_mode.py). Clicking a
+pad-mode-select button (DDJ-XP2's PAD MODE 1-4, XDJ-XZ's HOT CUE / BEAT
+LOOP / SLIP LOOP / BEAT JUMP -- the only controllers with such buttons in
+the catalog) lights it and records its mode per grid side
+(ControllerEmulatorView._pad_mode); subsequent pad clicks on that side
+then resolve against that mode's bank via a `prefer_token` threaded into
+`layout.pick_default_variant` instead of always the lowest-numbered mode.
+Still discrete-click only -- DDJ-XP2's PAD MODE buttons double as modes
+5-8 via double click, unreachable here, so a click always selects mode
+1-4. Cleared on controller switch; not persisted across restarts."""
 
 from __future__ import annotations
 
@@ -90,6 +101,7 @@ from PySide6.QtWidgets import (
 from djmidi import catalog
 from djmidi.gui import layout as layout_mod
 from djmidi.gui import layout_view
+from djmidi.gui import pad_mode as pad_mode_mod
 from djmidi.gui.layout import CellKey
 from djmidi.gui.live_send import LiveSendControl
 from djmidi.gui.mapping_group import build_mapping_groups
@@ -524,6 +536,14 @@ class ControllerEmulatorView(QWidget):
         # a real limitation if the user swaps to a differently-mapped
         # config without switching controllers first.
         self._toggle_active: dict[CellKey, bool] = {}
+        # Phase 5, slice 2 (gui/pad_mode.py): the pad-mode page the user
+        # last selected in this instance, per grid side ("" left / " (R)"
+        # right). A pad click resolves against that mode's bank instead of
+        # pick_default_variant()'s lowest. _pad_mode_button_key remembers
+        # which mode button is currently lit for each side so it can be
+        # un-lit on a switch. Both cleared on controller change.
+        self._pad_mode: dict[str, str] = {}
+        self._pad_mode_button_key: dict[str, CellKey] = {}
 
         self._combo = QComboBox()
         self._combo.addItems(catalog.CONTROLLER_NAMES)
@@ -638,11 +658,39 @@ class ControllerEmulatorView(QWidget):
             return
         self._emulator.set_controller(name)
         self._toggle_active.clear()
+        self._pad_mode.clear()
+        self._pad_mode_button_key.clear()
         self._status_label.setText("Click a control to see what it resolves to.")
+
+    def _current_pad_mode_token(self, key: CellKey) -> str | None:
+        """The pad-variant name substring pad resolution should prefer for
+        ``key``'s grid side, given what pad-mode button was last clicked in
+        this instance -- ``None`` for a non-pad key or an untouched grid."""
+        if key[1] != "PAD":
+            return None
+        return self._pad_mode.get(pad_mode_mod.grid_side(key[2]))
+
+    def _select_pad_mode(self, key: CellKey) -> str:
+        """A pad-mode-select button was clicked: record its mode for that
+        grid side, move the lit highlight from the previous mode button to
+        this one, and return a status suffix. ``""`` if ``key`` isn't a
+        pad-mode button."""
+        token = pad_mode_mod.mode_token_for_button(key[0], key[2])
+        if token is None:
+            return ""
+        side = pad_mode_mod.grid_side(key[2])
+        previous = self._pad_mode_button_key.get(side)
+        if previous is not None and previous != key:
+            self._emulator.set_active(previous, False)
+        self._pad_mode[side] = token
+        self._pad_mode_button_key[side] = key
+        self._emulator.set_active(key, True)
+        return f"  [pad mode set: {key[2].removesuffix(' (R)')}]"
 
     def _on_control_pressed(self, key: CellKey) -> None:
         text = self._resolve(key)
         text += self._apply_output_state(key)
+        text += self._select_pad_mode(key)
         sent = self._live_send.resolve_and_send(key[0], key)
         if sent is not None:
             text += f"  [LIVE SENT: ch{sent.channels[0] if sent.channels else '?'} {sent.note_or_cc} {sent.data1}]"
@@ -665,7 +713,9 @@ class ControllerEmulatorView(QWidget):
         read-only listing of the whole alias set instead -- e.g. the
         confirmed selected/off value-collision case, where this project
         has no state yet to decide which one currently applies."""
-        entry = layout_mod.resolve_side_aware_variant(key[0], key)
+        entry = layout_mod.resolve_side_aware_variant(
+            key[0], key, self._current_pad_mode_token(key)
+        )
         config = self._config_provider()
         if entry is None or config is None:
             return ""
@@ -702,7 +752,9 @@ class ControllerEmulatorView(QWidget):
         # pick_default_variant()) so a right-pad-grid marker's key (e.g.
         # (controller, "PAD", "Pad 3 (R)")) resolves to *that* grid's real
         # deck (2/4) instead of always falling back to the left grid's.
-        entry = layout_mod.resolve_side_aware_variant(key[0], key)
+        entry = layout_mod.resolve_side_aware_variant(
+            key[0], key, self._current_pad_mode_token(key)
+        )
         if entry is None:
             return f"{key[1]} {key[2]}: no raw MIDI trigger known for this control."
         channel = entry.channels[0] if entry.channels else "?"

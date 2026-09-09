@@ -1371,13 +1371,22 @@ the DJ layout visual fidelity chantier.
 - [ ] **Phase 5 — full stateful simulation**: slice 1 (toggle-state
   tracking for unambiguous `behaviour="toggle"` output-alias resolution)
   delivered — see **"Controller Emulator phase 5, slice 1 — toggle-state
-  tracking"** above. Still open: the confirmed real-world ambiguity where
-  `selected` and `off` share the same value in real exports (needs genuine
-  state about *which* of several slots is active, not just an on/off
-  flip) and a genuinely new state machine for active loop / current
-  pad-mode page — no existing precedent anywhere in this codebase for
-  either, the largest and riskiest remaining piece of the original
-  roadmap.
+  tracking"** above. **Slice 2 — pad-mode-page tracking**
+  (`v0.47.67-emulator-pad-mode-tracking`): clicking a pad-mode-select
+  button in an emulator instance (DDJ-XP2's PAD MODE 1–4, XDJ-XZ's HOT
+  CUE/BEAT LOOP/SLIP LOOP/BEAT JUMP — the only controllers with such
+  buttons in the catalog) lights it and records its mode per grid side
+  (`ControllerEmulatorView._pad_mode`); subsequent pad clicks on that side
+  resolve against that mode's bank via a `prefer_token` (a pad-variant
+  name substring) threaded into `layout.pick_default_variant` instead of
+  always the lowest-numbered mode. New Qt-free `gui/pad_mode.py` holds the
+  per-controller `{button label: token}` table. Discrete-click only —
+  DDJ-XP2's PAD MODE buttons double as modes 5–8 via double click,
+  unreachable here. Cleared on controller switch, not persisted. Still
+  open: SHIFT-held state (same `prefer_token` mechanism could carry it),
+  and the confirmed `selected`/`off` value-collision case (needs genuine
+  state about *which* of several slots is active, not just an on/off flip)
+  — the largest remaining piece, no existing precedent in the codebase.
 
 ### External tester feedback (2026-08)
 
