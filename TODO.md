@@ -1201,26 +1201,36 @@ documentation index.
   instance shows; `MainWindow._on_live_midi_event` calls it over every open
   `_emulator_docks` value. Dry-run resolution + phase-5 toggle tracking stay
   click-only.
-- [ ] **Reflect a real controller's persistent pad/button state (LEDs) in the
-  controller views** — requested by the maintainer. Today every live-MIDI
-  reaction is a 220ms *pulse* (`flash_key`); a real pad/button that is *lit*
-  (a set hot cue, an active loop, a held SHIFT, an engaged FX) stays lit
-  until it changes. Needs scoping before code, roughly:
-  - a `set_active(key, bool)` on `ControllerLayoutView` (the emulator's
-    `EmulatorLayoutView` already has one, `_ACTIVE_BORDER_PEN`) + the same
-    on `ControllerImageView`'s overlay;
-  - `MainWindow._on_live_midi_event` reading Note On (`data2 > 0`) as
-    "active", Note Off / `data2 == 0` as "inactive" — but many controllers
-    send momentary Note On/Off for a *press*, not a latch, so a naive
-    on/off would just re-implement the flash. The real signal is the
-    controller's **output-direction** MIDI (Serato → controller LED feedback),
-    which needs the manual virtual-port step Live Monitor already documents,
-    and per-controller knowledge of which output notes drive which LEDs
-    (not in `catalog/*.py` today — `ControlInfo` has no output/LED field).
-  - decide interaction with the existing transient flash and the red
-    cross-tab selection border (three overlapping highlight concepts).
-  Research pass first (the project's "no visual features built blind" rule);
-  likely one small slice at a time like the geometry and emulator chantiers.
+- [x] **Live "held down" state in the controller views (input-direction slice)**
+  (`v0.47.60`) — the maintainer asked for the pads/buttons to reflect state,
+  not just a 220ms pulse. Design questions were put to them and answered:
+  *input-direction MIDI* (Note On `data2>0` = held, Note Off / `data2==0` =
+  released), the amber `_ACTIVE_BORDER_PEN` look, and *all three views*.
+  Delivered: `ControllerLayoutView.set_active(key, bool)` (amber border +
+  translucent amber fill; a live red cross-tab selection border still wins,
+  the amber fill keeps "held" visible underneath), `ControllerImageView.set_active(label, bool)`
+  (mutates the overlay marker in place; `_clear_flash` now falls back to the
+  held tint, not the resting colour), and `EmulatorLayoutView.set_live_active`
+  / `ControllerEmulatorView.set_live_active_from_hit` (a `_live_active_keys`
+  set kept apart from the phase-5 click-toggle `_active_keys` so the two
+  don't stomp each other). `MainWindow._on_live_midi_event` resolves a
+  release against `"Note On"` too (so selection/highlight tracks the
+  just-released control instead of vanishing), sets held state before the
+  flash so the 220ms white pulse always paints on top, and leaves held
+  state alone for a plain CC.
+- [ ] **Accurate LED state from output-direction MIDI** — the input-direction
+  slice above is honest but limited: a control that latches (a *set* hot
+  cue, an *active* loop) sends only a momentary press, so it lights while
+  held and goes dark on release. The real lit state is in the
+  **output-direction** MIDI (Serato → controller LED feedback), which needs
+  the manual virtual-port step Live Monitor already documents, plus
+  per-controller knowledge of which output notes drive which LEDs. Decided
+  with the maintainer: **assume output note == input trigger note** (true
+  for most Pioneer gear) rather than add an unverifiable `led_note` field to
+  `catalog/*.py`. Slice: feed the virtual monitor port's traffic through the
+  same `set_active` path, gated on it being a genuine output-direction
+  producer. Research pass first per the "no visual features built blind"
+  rule.
 - [ ] Add an optional performance mode with larger controls and reduced mapping detail.
   Smallest of three scoped options delivered in `v0.47.36-performance-mode`
   (chosen by the user after two research passes turned this vague line into

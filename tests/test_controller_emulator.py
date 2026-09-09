@@ -2,6 +2,7 @@ from pathlib import Path
 
 from PySide6.QtWidgets import QGraphicsPixmapItem
 
+from djmidi import catalog
 from djmidi.gui import layout_view as layout_view_mod
 from djmidi.gui.controller_emulator import (
     _DRAG_PX_PER_UNIT,
@@ -589,3 +590,42 @@ def test_controller_emulator_view_photo_checkbox_drives_the_layout():
 
     view._photo_checkbox.setChecked(True)
     assert len(_emulator_photo_items(view._emulator)) == 1
+
+
+# ─── Live "held down" state (set_live_active / set_live_active_from_hit) ─────
+
+
+def test_emulator_set_live_active_is_separate_from_click_toggle_state():
+    view = EmulatorLayoutView("DDJ-XP2")
+    key: CellKey = ("DDJ-XP2", "PAD", "Pad 1")
+    view.set_live_active(key, True)
+    assert key in view._live_active_keys
+    assert key not in view._active_keys  # the phase-5 click-toggle set is untouched
+    view.set_live_active(key, False)
+    assert key not in view._live_active_keys
+
+
+def test_emulator_set_live_active_noop_when_unchanged():
+    view = EmulatorLayoutView("DDJ-XP2")
+    view.set_live_active(("DDJ-XP2", "PAD", "Pad 1"), False)
+    assert not view._live_active_keys
+
+
+def test_emulator_switching_controller_clears_live_active():
+    view = EmulatorLayoutView("DDJ-XP2")
+    view.set_live_active(("DDJ-XP2", "PAD", "Pad 1"), True)
+    view.set_controller("XDJ-XZ")
+    assert view._live_active_keys == set()
+
+
+def test_controller_emulator_view_set_live_active_from_hit_filters_by_controller():
+    view = ControllerEmulatorView(config_provider=lambda: None)
+    view._combo.setCurrentText("DDJ-XP2")
+    xp2_hit = next(h for h in catalog.lookup("8", "Note On", "12") if h.controller == "DDJ-XP2")
+    view.set_live_active_from_hit(xp2_hit, True)
+    assert view._emulator._live_active_keys
+
+    view._emulator._live_active_keys.clear()
+    xz_hit = next(h for h in catalog.lookup("6", "Note On", "0") if h.controller == "XDJ-XZ")
+    view.set_live_active_from_hit(xz_hit, True)  # different controller -> ignored
+    assert not view._emulator._live_active_keys

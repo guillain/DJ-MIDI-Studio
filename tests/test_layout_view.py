@@ -614,3 +614,59 @@ def test_reference_pixmap_returns_none_for_an_imageless_controller():
         assert layout_view_mod.reference_pixmap("__NoImageCtl__") is None
     finally:
         del catalog._registry._REGISTRY["__NoImageCtl__"]
+
+
+# ─── Persistent "held down" state (set_active) ──────────────────────────────
+
+
+def _bg_item_for(view: ControllerLayoutView, key: tuple[str, str, str]):
+    """The larger background rect/ellipse for a real-position marker (the one
+    carrying the deck/selection/active pen), not its small centred glyph."""
+    from PySide6.QtWidgets import QGraphicsEllipseItem
+
+    cands = [
+        it
+        for it in view._scene.items()
+        if isinstance(it, (QGraphicsRectItem, QGraphicsEllipseItem))
+        and it.data(layout_view_mod._KEY_ROLE) == key
+    ]
+    assert cands, f"no marker for {key}"
+    return max(cands, key=lambda it: it.rect().width() * it.rect().height())
+
+
+def test_set_active_marks_and_unmarks_a_key():
+    view = ControllerLayoutView()
+    view.set_controller("DDJ-XP2")
+    key = ("DDJ-XP2", "PAD", "Pad 1")
+    view.set_active(key, True)
+    assert key in view._active_keys
+    view.set_active(key, False)
+    assert key not in view._active_keys
+
+
+def test_set_active_is_a_noop_when_state_does_not_change():
+    view = ControllerLayoutView()
+    view.set_controller("DDJ-XP2")
+    key = ("DDJ-XP2", "PAD", "Pad 1")
+    view.set_active(key, False)  # already inactive
+    assert key not in view._active_keys
+
+
+def test_active_key_gets_the_amber_border_in_real_position_mode():
+    view = ControllerLayoutView()
+    view.set_controller("DDJ-XP2")
+    key = ("DDJ-XP2", "PAD", "Pad 1")
+    view.set_active(key, True)
+    assert _bg_item_for(view, key).pen().color() == layout_view_mod._ACTIVE_BORDER_PEN.color()
+    view.set_active(key, False)
+    assert _bg_item_for(view, key).pen().color() != layout_view_mod._ACTIVE_BORDER_PEN.color()
+
+
+def test_selection_border_still_wins_over_the_active_border():
+    view = ControllerLayoutView()
+    view.set_controller("DDJ-XP2")
+    key = ("DDJ-XP2", "PAD", "Pad 1")
+    view.set_active(key, True)
+    view.set_selected_keys({key})
+    # Red selection border wins; the amber fill still shows the held state.
+    assert _bg_item_for(view, key).pen().color() == layout_view_mod._SELECTED_PEN.color()

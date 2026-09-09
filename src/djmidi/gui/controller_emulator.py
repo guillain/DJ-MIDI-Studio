@@ -224,6 +224,13 @@ class EmulatorLayoutView(QWidget):
         # mapping in the loaded config. Purely visual here: this view has
         # no opinion on *why* a key is active, only how to draw it.
         self._active_keys: set[CellKey] = set()
+        # Persistent "held down" highlight driven by *live* MIDI (Note On /
+        # Note Off via MainWindow._on_live_midi_event -> flash_live_hit's
+        # sibling set_live_active_from_hit) -- kept apart from _active_keys
+        # (click-driven phase-5 toggle state) so a live press and a
+        # click-toggle don't stomp each other, but drawn with the same amber
+        # look. OR'd with _active_keys everywhere _active_keys is read.
+        self._live_active_keys: set[CellKey] = set()
         # Set by _rebuild(); resizeEvent/_fit_view() use it instead of
         # recomputing real_position_markers() on every resize.
         self._real_position_mode = False
@@ -256,6 +263,7 @@ class EmulatorLayoutView(QWidget):
         self._flash_keys.clear()
         self._values.clear()
         self._active_keys.clear()
+        self._live_active_keys.clear()
         self._rebuild()
 
     def _current_value(self, key: CellKey) -> int:
@@ -281,6 +289,19 @@ class EmulatorLayoutView(QWidget):
             self._active_keys.add(key)
         else:
             self._active_keys.discard(key)
+        self._rebuild()
+
+    def set_live_active(self, key: CellKey, active: bool) -> None:
+        """Persistent "held down" highlight from a live MIDI Note On/Off --
+        the same amber look as set_active()'s click-driven toggle state, but
+        a separate set so the two don't stomp each other (see
+        _live_active_keys)."""
+        if (key in self._live_active_keys) == active:
+            return
+        if active:
+            self._live_active_keys.add(key)
+        else:
+            self._live_active_keys.discard(key)
         self._rebuild()
 
     def set_value(self, key: CellKey, value: int) -> None:
@@ -358,8 +379,8 @@ class EmulatorLayoutView(QWidget):
             if key in self._flash_keys:
                 bg_item.setBrush(layout_view._FLASH_BRUSH)
                 bg_item.setPen(layout_view._BORDER_PEN)
-            elif key in self._active_keys:
-                active = QColor(marker.color)
+            elif key in self._active_keys or key in self._live_active_keys:
+                active = QColor(layout_view._ACTIVE_BORDER_PEN.color())
                 active.setAlpha(layout_view._ACTIVE_FILL_ALPHA)
                 bg_item.setBrush(QBrush(active))
                 bg_item.setPen(layout_view._ACTIVE_BORDER_PEN)
@@ -401,7 +422,9 @@ class EmulatorLayoutView(QWidget):
             rect.setPos(x, y)
             rect.setBrush(layout_view._UNUSED_BRUSH)
             rect.setPen(
-                layout_view._ACTIVE_BORDER_PEN if cell.key in self._active_keys else layout_view._BORDER_PEN
+                layout_view._ACTIVE_BORDER_PEN
+                if cell.key in self._active_keys or cell.key in self._live_active_keys
+                else layout_view._BORDER_PEN
             )
             rect.setData(_KEY_ROLE, cell.key)
             rect.setData(_KIND_ROLE, cell.visual_kind)
@@ -516,6 +539,17 @@ class ControllerEmulatorView(QWidget):
         if hit.controller != self._combo.currentText():
             return
         self._emulator.flash_key(layout_mod.presentation_key_for_hit(hit))
+
+    def set_live_active_from_hit(self, hit: catalog.ControlInfo, active: bool) -> None:
+        """Persistent "held down" amber highlight from a live Note On
+        (active=True) / Note Off (active=False), self-filtered to this
+        instance's controller -- the counterpart to flash_live_hit()'s
+        transient pulse. Left click-driven dry-run resolution and the
+        phase-5 toggle state untouched (EmulatorLayoutView keeps them in a
+        separate set)."""
+        if hit.controller != self._combo.currentText():
+            return
+        self._emulator.set_live_active(layout_mod.presentation_key_for_hit(hit), active)
 
     def refresh_controllers(self) -> None:
         """Repopulates the controller combo from the live registry -- call
