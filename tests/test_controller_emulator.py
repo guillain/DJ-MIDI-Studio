@@ -40,22 +40,43 @@ def _toggle_config() -> MidiConfig:
     return MidiConfig(controls=[control])
 
 
-def _alias_info_config() -> MidiConfig:
-    """Like _toggle_config(), but the click mapping is NOT behaviour="toggle"
-    -- reproducing the real selected/off value-collision shape
-    (auto_loop_specific_length) where this project has no state to decide
-    which alias applies, so it should only ever be listed, never toggled."""
+def _radio_config() -> MidiConfig:
+    """The real selected/off value-collision shape (auto_loop_specific_length):
+    a non-toggle click mapping whose output translation carries a "selected"
+    alias -- one member of a mutually-exclusive set. Two members here, both
+    on reachable DDJ-XP2 DECK buttons (BEAT SYNC NOTE 88 / QUANTIZE NOTE
+    53), same (deck_id, tag)."""
+    controls = []
+    for note, slot in (("88", "0"), ("53", "1")):
+        click = MappingElement(
+            tag="some_radio_fn", deck_id="0", slot_id=slot,
+            translations=[Translation(action_on="any")],
+        )
+        output = MappingElement(
+            tag="some_radio_fn", deck_id="0", slot_id=slot,
+            translations=[
+                Translation(
+                    aliases=[Alias(name="selected", value="0"), Alias(name="on", value="127"), Alias(name="off", value="0")]
+                )
+            ],
+        )
+        controls.append(Control(
+            channel="1", event_type="Note On", control=note,
+            userios=[UserIO(event="click", mappings=[click]), UserIO(event="output", mappings=[output])],
+        ))
+    return MidiConfig(controls=controls)
+
+
+def _plain_alias_config() -> MidiConfig:
+    """A non-toggle, non-radio output mapping (on/off aliases, no "selected",
+    no behaviour="toggle") -- still just gets its alias set listed."""
     click = MappingElement(
-        tag="some_ambiguous_fn", deck_id="0", slot_id="0",
+        tag="some_plain_fn", deck_id="0", slot_id="0",
         translations=[Translation(action_on="any")],
     )
     output = MappingElement(
-        tag="some_ambiguous_fn", deck_id="0", slot_id="0",
-        translations=[
-            Translation(
-                aliases=[Alias(name="selected", value="0"), Alias(name="on", value="127"), Alias(name="off", value="0")]
-            )
-        ],
+        tag="some_plain_fn", deck_id="0", slot_id="0",
+        translations=[Translation(aliases=[Alias(name="on", value="127"), Alias(name="off", value="0")])],
     )
     control = Control(
         channel="1", event_type="Note On", control="88",
@@ -488,32 +509,63 @@ def test_apply_output_state_is_a_noop_for_a_non_toggle_mapping():
     assert "TOGGLED" not in view._status_label.text()
 
 
-# ─── Non-toggle output mappings: read-only alias listing (the follow-up ───
-# ─── to slice 1, covering the selected/off value-collision case) ──────────
+# ─── Non-toggle, non-radio output mappings: read-only alias listing ──────
 
 
-def test_on_control_pressed_lists_aliases_for_a_non_toggle_mapping():
-    view = ControllerEmulatorView(config_provider=_alias_info_config)
+def test_on_control_pressed_lists_aliases_for_a_plain_non_toggle_mapping():
+    view = ControllerEmulatorView(config_provider=_plain_alias_config)
     view._combo.setCurrentText("DDJ-XP2")
     key: CellKey = ("DDJ-XP2", "DECK", "BEAT SYNC")
     view._on_control_pressed(key)
-    assert "output aliases: selected=0, on=127, off=0" in view._status_label.text()
+    assert "output aliases: on=127, off=0" in view._status_label.text()
     # Read-only: no toggle state or persistent highlight for this mapping.
     assert key not in view._toggle_active
     assert key not in view._emulator._active_keys
     assert "TOGGLED" not in view._status_label.text()
 
 
-def test_on_control_pressed_lists_aliases_consistently_across_repeated_clicks():
-    """Unlike a toggle mapping, repeated clicks must not change the
-    reported alias set -- there is no state to flip here."""
-    view = ControllerEmulatorView(config_provider=_alias_info_config)
+def test_on_control_pressed_lists_plain_aliases_consistently_across_clicks():
+    view = ControllerEmulatorView(config_provider=_plain_alias_config)
     view._combo.setCurrentText("DDJ-XP2")
     key: CellKey = ("DDJ-XP2", "DECK", "BEAT SYNC")
     view._on_control_pressed(key)
     first = view._status_label.text()
     view._on_control_pressed(key)
     assert view._status_label.text() == first
+
+
+# ─── Phase 5, "selected/off" slice: mutually-exclusive radio-slot state ───
+
+
+def test_clicking_a_radio_member_selects_it_and_lights_it():
+    view = ControllerEmulatorView(config_provider=_radio_config)
+    view._combo.setCurrentText("DDJ-XP2")
+    sync: CellKey = ("DDJ-XP2", "DECK", "BEAT SYNC")  # slot 0
+    view._on_control_pressed(sync)
+    assert view._selected_slot == {("0", "some_radio_fn"): "0"}
+    assert sync in view._emulator._active_keys
+    assert "SELECTED: some_radio_fn deck 0 slot 0" in view._status_label.text()
+
+
+def test_selecting_a_sibling_unlights_the_previous_member():
+    view = ControllerEmulatorView(config_provider=_radio_config)
+    view._combo.setCurrentText("DDJ-XP2")
+    sync: CellKey = ("DDJ-XP2", "DECK", "BEAT SYNC")  # slot 0
+    quant: CellKey = ("DDJ-XP2", "DECK", "QUANTIZE")  # slot 1, same (deck, tag)
+    view._on_control_pressed(sync)
+    view._on_control_pressed(quant)
+    assert view._selected_slot == {("0", "some_radio_fn"): "1"}
+    assert quant in view._emulator._active_keys
+    assert sync not in view._emulator._active_keys
+
+
+def test_radio_slot_state_clears_on_controller_switch():
+    view = ControllerEmulatorView(config_provider=_radio_config)
+    view._combo.setCurrentText("DDJ-XP2")
+    view._on_control_pressed(("DDJ-XP2", "DECK", "BEAT SYNC"))
+    view._combo.setCurrentText("XDJ-XZ")
+    assert view._selected_slot == {}
+    assert view._selected_cell == {}
 
 
 def test_apply_output_state_is_a_noop_with_no_config_loaded():
