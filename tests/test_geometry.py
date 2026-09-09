@@ -238,8 +238,11 @@ def test_resolve_geometry_label_returns_none_for_an_unmodeled_control():
 
 def test_ddj_rev1_geometry_covers_every_catalog_entry():
     """DDJ-REV1's catalog (catalog/ddj_rev1.py) has exactly six DECK entries
-    plus an 8-pad grid -- this is the whole controller, not a subset."""
+    plus an 8-pad grid -- this is the whole controller, not a subset. Plus
+    one display-only "Jog wheel" (no catalog entry -- a continuous control,
+    spun by gui/jog.py, v0.47.66)."""
     assert set(CONTROL_GEOMETRY["DDJ-REV1"]) == {
+        "Jog wheel",
         "PLAY/PAUSE",
         "CUE",
         "AUTO LOOP",
