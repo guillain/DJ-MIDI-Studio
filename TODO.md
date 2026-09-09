@@ -1486,7 +1486,7 @@ against the current tree and confirmed still open. Tracked as GitHub issues.
   Routing** dock's route-controls row (5 buttons — Add route / Remove
   selected / Edit transform… / Refresh MIDI ports / Start routing) in a
   `QGridLayout` clipping "Start routing" when the dock is *docked* at a
-  narrow width; fixed the same way in `v0.47.71-routing-dock-scroll`
+  narrow width; fixed the same way in `v0.47.72-routing-dock-scroll`
   (wrapped `MidiRoutingView`'s content in a `QScrollArea` — `_clock_panel`
   is reparented out via `take_clock_panel()` so it's unaffected; the
   scroll viewport is styled transparent so the scoped DJ theme still
