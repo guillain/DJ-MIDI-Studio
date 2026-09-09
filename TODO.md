@@ -1190,9 +1190,28 @@ documentation index.
   `v0.47.21-knob-fader-animation`: a knob's marker now rotates (-135 to +135
   degrees) and a fader's thumb now moves within its track from the live 7-bit
   MIDI value (`ControllerLayoutView.set_value`), persisting like a real
-  control staying wherever it was left. Jog wheels (rotation is relative, not
-  an absolute position) and VU meters (no glyph exists yet — an
-  output-direction feature) remain open.
+  control staying wherever it was left. Held-down (`v0.47.60`) and latched
+  output-direction LED (`v0.47.61`) amber highlights followed. **Jog-wheel
+  rotation** addressed in `v0.47.62-jog-wheel-rotation-animation`: a jog
+  turn is a stream of relative Control Change ticks with no catalog entry
+  (continuous controls are out of catalog scope), so
+  `MainWindow._on_live_midi_event` resolves it against a new `gui/jog.py`
+  per-controller table instead — currently only **XDJ-XZ** (platter CC
+  `0x22`/`0x29`, wheel-side CC `0x21`/`0x26` on the deck channel; the
+  `0x40`-centred relative encoding read from the MIDI Message List E3
+  rendered table, not `pdftotext`) — decodes the signed delta and
+  integrates it into each jog glyph's notch via
+  `ControllerLayoutView.spin_jog` / `EmulatorLayoutView.spin_jog` (a
+  running 0–360° `_jog_angles` accumulator, `_JOG_DEGREES_PER_TICK = 6.0`,
+  a cosmetic gain not the platter's real resolution). Runs before
+  `_update_layout_selection` and early-returns, so a jog turn never
+  flashes/selects/`set_value`s; deck 1/3 → left "Jog wheel", deck 2/4 →
+  right-tray "Jog wheel (R)". Schematic layouts + emulators only (the
+  Controller Images overlay markers are plain shapes with no notch). Other
+  controllers with a jog glyph (none have a `"Jog wheel"` geometry entry
+  yet besides XDJ-XZ) would each need their jog CCs added to `gui/jog.py`
+  from their own PDF. VU meters (no glyph exists yet — an output-direction
+  feature) remain open.
 - [x] **Live flash on the Controller Emulator too** (`v0.47.59`) — the By…
   tabs and Controller Images already flashed on a live MIDI hit; the
   Controller Emulator docks didn't. `ControllerEmulatorView.flash_live_hit(hit)`

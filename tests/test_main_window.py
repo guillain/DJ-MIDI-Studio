@@ -1061,3 +1061,56 @@ def test_output_direction_control_change_does_not_touch_led_state():
     QApplication.processEvents()
     assert not window.layout_view._led_keys
     window.close()
+
+
+def test_live_jog_turn_spins_the_jog_glyph_without_moving_the_selection():
+    from djmidi.midi_io import MidiEvent
+
+    window = _loaded_window()
+    key = ("XDJ-XZ", "DISPLAY", "Jog wheel")
+    window.layout_view.set_selected_keys({("XDJ-XZ", "DECK", "PLAY/PAUSE")})
+    before = set(window.layout_view._selected_keys)
+
+    # XDJ-XZ deck-1 platter turn: CC 34 (0x22) on channel 1, value 0x45 = +5.
+    window._on_live_midi_event(
+        MidiEvent(direction="in", channel="1", event_type="Control Change", data1="34", data2="69", timestamp=0.0)
+    )
+    QApplication.processEvents()
+    assert window.layout_view._jog_angles.get(key)
+    assert window.deck_layout_view._jog_angles.get(key)
+    assert window.controller_layout_view._jog_angles.get(key)
+    # A jog turn is motion feedback, not a "user picked this" gesture.
+    assert window.layout_view._selected_keys == before
+    window.close()
+
+
+def test_live_jog_turn_drives_an_open_emulator_for_the_same_controller():
+    from djmidi.gui.controller_emulator import ControllerEmulatorView
+    from djmidi.midi_io import MidiEvent
+
+    window = _loaded_window()
+    dock = window._create_emulator_instance("XDJ-XZ")
+    emu = dock.widget()
+    assert isinstance(emu, ControllerEmulatorView)
+    other = window._create_emulator_instance("DDJ-XP2").widget()
+
+    window._on_live_midi_event(
+        MidiEvent(direction="in", channel="2", event_type="Control Change", data1="33", data2="60", timestamp=0.0)
+    )
+    QApplication.processEvents()
+    # deck 2 -> right-tray jog on XDJ-XZ.
+    assert emu._emulator._jog_angles.get(("XDJ-XZ", "DISPLAY", "Jog wheel (R)"))
+    assert other._emulator._jog_angles == {}  # different controller, untouched
+    window.close()
+
+
+def test_non_jog_control_change_is_left_to_the_normal_lookup_path():
+    from djmidi.midi_io import MidiEvent
+
+    window = _loaded_window()
+    window._on_live_midi_event(
+        MidiEvent(direction="in", channel="1", event_type="Control Change", data1="7", data2="100", timestamp=0.0)
+    )
+    QApplication.processEvents()
+    assert window.layout_view._jog_angles == {}
+    window.close()

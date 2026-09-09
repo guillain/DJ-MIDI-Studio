@@ -702,3 +702,49 @@ def test_input_release_does_not_clear_the_output_led():
     view.set_active(key, False)  # physical button released...
     assert key in view._led_keys  # ...but Serato still drives the LED
     assert _bg_item_for(view, key).pen().color() == layout_view_mod._ACTIVE_BORDER_PEN.color()
+
+
+def test_spin_jog_integrates_relative_ticks_into_a_wrapping_angle():
+    view = ControllerLayoutView()
+    view.set_controller("XDJ-XZ")
+    key = ("XDJ-XZ", "DISPLAY", "Jog wheel")
+    per_tick = layout_view_mod._JOG_DEGREES_PER_TICK
+    view.spin_jog(key, 5)
+    assert view._jog_angles[key] == 5 * per_tick
+    view.spin_jog(key, -2)
+    assert view._jog_angles[key] == 3 * per_tick
+    # Accumulates past a full turn and wraps into 0..360.
+    view.spin_jog(key, int(360 / per_tick) + 4)
+    assert 0.0 <= view._jog_angles[key] < 360.0
+    assert view._jog_angles[key] == (7 * per_tick) % 360.0
+
+
+def test_spin_jog_zero_delta_is_a_noop():
+    view = ControllerLayoutView()
+    view.set_controller("XDJ-XZ")
+    key = ("XDJ-XZ", "DISPLAY", "Jog wheel")
+    view.spin_jog(key, 0)
+    assert key not in view._jog_angles
+
+
+def test_spun_jog_notch_uses_the_accumulated_angle_not_the_pot_sweep():
+    import math
+
+    from PySide6.QtWidgets import QGraphicsLineItem
+
+    view = ControllerLayoutView()
+    view.set_controller("XDJ-XZ")
+    key = ("XDJ-XZ", "DISPLAY", "Jog wheel")
+    view.spin_jog(key, 15)  # 90 degrees at the default 6 deg/tick
+    angle = view._jog_angles[key]
+    lines = [
+        it
+        for it in view._scene.items()
+        if isinstance(it, QGraphicsLineItem)
+        and it.data(layout_view_mod._KIND_ROLE) == "jog"
+        and it.data(layout_view_mod._KEY_ROLE) == key
+    ]
+    assert lines, "no jog notch line drawn"
+    line = lines[0].line()
+    drawn = math.degrees(math.atan2(line.x2() - line.x1(), -(line.y2() - line.y1()))) % 360.0
+    assert abs(drawn - angle) < 1.0

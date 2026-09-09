@@ -394,6 +394,11 @@ _MIDI_MAX = 127
 _MIDI_DEFAULT = _MIDI_MAX // 2
 _KNOB_MIN_ANGLE_DEG = -135.0
 _KNOB_MAX_ANGLE_DEG = 135.0
+# Degrees the jog notch turns per relative MIDI tick (see gui/jog.py). A jog
+# turn is a stream of small +/-1..few deltas; this gain is cosmetic -- big
+# enough that a flick of the wheel visibly spins the glyph, not a faithful
+# reproduction of the platter's real angular resolution (~1440 ticks/rev).
+_JOG_DEGREES_PER_TICK = 6.0
 
 
 def _knob_angle_rad(value: int) -> float:
@@ -462,12 +467,18 @@ def draw_control_glyph(
     key: CellKey,
     value: int | None,
     flashed: bool,
+    jog_angle_deg: float | None = None,
 ) -> None:
     """Draw a compact DJ control glyph at (x, y) inside a layout half, sized
     by the given LayoutMetrics. Shared by ControllerLayoutView (the
     read-only By Channel/Deck/Controller schematic, via _draw_control_shape)
     and the interactive controller emulator (gui/controller_emulator.py), so
-    both draw identical glyphs from one place."""
+    both draw identical glyphs from one place.
+
+    ``jog_angle_deg`` (jog glyphs only): an absolute notch angle in degrees,
+    accumulated from live relative jog-turn MIDI (see ControllerLayoutView.
+    spin_jog / gui/jog.py). When given, it drives the notch instead of the
+    bounded ``value``->pot-sweep mapping the emulator's drag gesture uses."""
     m = metrics
     left = x + 8
     top = y + 8
@@ -516,7 +527,11 @@ def draw_control_glyph(
         # convention set_value() already uses for knobs/faders elsewhere.
         center_x, center_y = left + d / 2, top + d / 2
         radius = d / 2 - d / 10
-        angle = _knob_angle_rad(resolved_value)
+        angle = (
+            math.radians(jog_angle_deg)
+            if jog_angle_deg is not None
+            else _knob_angle_rad(resolved_value)
+        )
         tip_x = center_x + radius * math.sin(angle)
         tip_y = center_y - radius * math.cos(angle)
         notch = QGraphicsLineItem(QLineF(center_x, center_y, tip_x, tip_y))
@@ -617,8 +632,15 @@ class ControllerLayoutView(QWidget):
         # knob marker angle and fader thumb position (#13 part 2 continued).
         # Unlike a flash, this is a level, not a pulse: it persists (like a
         # real knob staying wherever it was left) until the next event for
-        # that key. Pads/buttons/jog glyphs ignore it; no VU glyph exists yet.
+        # that key. Pads/buttons ignore it; no VU glyph exists yet.
         self._values: dict[CellKey, int] = {}
+        # Accumulated jog-notch angle (degrees, 0..360) per jog CellKey, from
+        # live *relative* jog-turn MIDI (gui/jog.py -> spin_jog). Separate
+        # from _values: a jog turn has no absolute position, only a running
+        # delta, so this integrates ticks rather than storing a level. When
+        # present it overrides the emulator drag gesture's value->notch
+        # mapping for that key (draw_control_glyph's jog_angle_deg).
+        self._jog_angles: dict[CellKey, float] = {}
         # Set by set_zoom() (performance mode's manual "shrink everything"
         # toggle) -- resizeEvent's auto-fit-to-window (real-position mode)
         # is skipped whenever this isn't 1.0, so performance mode's own
@@ -863,6 +885,18 @@ class ControllerLayoutView(QWidget):
             self._led_keys.discard(key)
         self._rebuild()
 
+    def spin_jog(self, key: CellKey, delta_ticks: int) -> None:
+        """Turn a jog glyph's notch by ``delta_ticks`` relative MIDI ticks
+        (signed: positive = forward/clockwise). Integrates into a running
+        0..360 angle -- a jog wheel has no absolute position -- and is a
+        no-op for a zero delta. See gui/jog.py for how a live jog CC becomes
+        a (key, delta) pair."""
+        if not delta_ticks:
+            return
+        current = self._jog_angles.get(key, 0.0)
+        self._jog_angles[key] = (current + delta_ticks * _JOG_DEGREES_PER_TICK) % 360.0
+        self._rebuild()
+
     def clear_selection_history(self) -> None:
         """Forget the faded selection trail while keeping the current cell."""
         self._selection_history.clear()
@@ -1042,6 +1076,7 @@ class ControllerLayoutView(QWidget):
         draw_control_glyph(
             self._scene, self._metrics, x, y, visual_kind, key,
             self._values.get(key), key in self._flash_keys,
+            self._jog_angles.get(key),
         )
 
     _ZONE_HEADER_H = 20
@@ -1274,6 +1309,7 @@ class ControllerLayoutView(QWidget):
             draw_control_glyph(
                 self._scene, self._metrics, glyph_x, glyph_y, marker.visual_kind, key,
                 self._values.get(key), key in self._flash_keys,
+                self._jog_angles.get(key),
             )
         self._scene.setSceneRect(0, 0, canvas_w, canvas_h)
         self._fit_real_position_view()
