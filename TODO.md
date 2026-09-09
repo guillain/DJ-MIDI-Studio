@@ -1482,7 +1482,16 @@ against the current tree and confirmed still open. Tracked as GitHub issues.
   `QScrollArea` (`widgetResizable`, no frame), dropped the trailing
   `addStretch` (the scroll area stretches the content itself), and
   lowered the card photo's minimum height 220→170 so the default size
-  still fits without a scrollbar.
+  still fits without a scrollbar. The same audit also caught the **MIDI
+  Routing** dock's route-controls row (5 buttons — Add route / Remove
+  selected / Edit transform… / Refresh MIDI ports / Start routing) in a
+  `QGridLayout` clipping "Start routing" when the dock is *docked* at a
+  narrow width; fixed the same way in `v0.47.72-routing-dock-scroll`
+  (wrapped `MidiRoutingView`'s content in a `QScrollArea` — `_clock_panel`
+  is reparented out via `take_clock_panel()` so it's unaffected; the
+  scroll viewport is styled transparent so the scoped DJ theme still
+  paints). Every mapping tab and tool dock now scrolls rather than
+  clipping at any window size.
 
 ### Next phases to define
 
