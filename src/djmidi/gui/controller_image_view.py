@@ -12,16 +12,18 @@ widget/default rather than each growing its own toggle."""
 
 from __future__ import annotations
 
+import math
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import QPointF, QRectF, Qt, QTimer, Signal
+from PySide6.QtCore import QLineF, QPointF, QRectF, Qt, QTimer, Signal
 from PySide6.QtGui import QBrush, QColor, QDesktopServices, QPainter, QPen, QPixmap
 from PySide6.QtWidgets import (
     QAbstractGraphicsShapeItem,
     QCheckBox,
     QComboBox,
     QGraphicsEllipseItem,
+    QGraphicsLineItem,
     QGraphicsPixmapItem,
     QGraphicsRectItem,
     QGraphicsScene,
@@ -37,6 +39,7 @@ from PySide6.QtWidgets import (
 from djmidi import catalog
 from djmidi.gui import layout as layout_mod
 from djmidi.gui.geometry import CONTROL_GEOMETRY
+from djmidi.gui.jog import DEGREES_PER_TICK as _JOG_DEGREES_PER_TICK
 from djmidi.gui.live_send import LiveSendControl
 
 _FLASH_DURATION_MS = 220
@@ -224,6 +227,15 @@ class ControllerImageView(QWidget):
         # feedback on the virtual monitor port). Latched, same amber tint,
         # kept separate so an input-direction release can't clear it.
         self._led_labels: set[str] = set()
+        # Accumulated jog-notch angle (degrees, 0..360) per jog geometry
+        # label, from live relative jog-turn MIDI (gui/jog.py -> spin_jog).
+        # Mirrors ControllerLayoutView._jog_angles; the schematic tabs and
+        # the emulator already spin, this brings the decorative overlay in
+        # line. _overlay_jog_notches holds the notch line item per label so
+        # spin_jog can turn it in place without a full overlay redraw
+        # (which would clobber an in-flight flash_key mutation).
+        self._jog_angles: dict[str, float] = {}
+        self._overlay_jog_notches: dict[str, QGraphicsLineItem] = {}
 
         self._live_send_status = QLabel("")
         self._live_send_status.setWordWrap(True)
@@ -279,6 +291,8 @@ class ControllerImageView(QWidget):
         self._overlay_items_by_label = {}
         self._active_labels.clear()  # held-state is per-controller
         self._led_labels.clear()  # LED-state is per-controller
+        self._jog_angles.clear()  # jog rotation is per-controller
+        self._overlay_jog_notches = {}
         self._view.resetTransform()
 
         reference = image_for_controller(name)
@@ -340,10 +354,11 @@ class ControllerImageView(QWidget):
         true position (gui/geometry.CONTROL_GEOMETRY) -- the DJ layout visual
         fidelity chantier (issue #13). Decorative only, like the rest of this
         tab: no click handling, no binding to loaded config."""
-        for item in self._overlay_items:
+        for item in (*self._overlay_items, *self._overlay_jog_notches.values()):
             self._scene.removeItem(item)
         self._overlay_items = []
         self._overlay_items_by_label = {}
+        self._overlay_jog_notches = {}
         # isEnabled() gates out the "checked but the annotated variant is on
         # screen" case -- CONTROL_GEOMETRY only aligns to the canonical image.
         if (
@@ -381,6 +396,34 @@ class ControllerImageView(QWidget):
             self._scene.addItem(shape_item)
             self._overlay_items.append(shape_item)
             self._overlay_items_by_label[label] = shape_item
+
+            # A jog marker gets a rotating notch line (like the schematic
+            # layouts' jog glyph), turned by spin_jog from live relative
+            # jog-turn MIDI. Kept as its own item so spin_jog can setLine()
+            # it in place rather than redraw the whole overlay.
+            if layout_mod.visual_kind_for("DISPLAY", label) == "jog":
+                notch = QGraphicsLineItem(
+                    self._jog_notch_line(rect, self._jog_angles.get(label, 0.0))
+                )
+                notch_pen = QPen(QColor(_FLASH_COLOR))
+                notch_pen.setWidth(3)
+                notch.setPen(notch_pen)
+                notch.setZValue(shape_item.zValue() + 1)
+                notch.setData(_LABEL_ROLE, label)
+                self._scene.addItem(notch)
+                # Tracked only in _overlay_jog_notches (not _overlay_items,
+                # whose consumers assume every entry is a .rect() shape) --
+                # the cleanup loop above sweeps this dict's values too.
+                self._overlay_jog_notches[label] = notch
+
+    @staticmethod
+    def _jog_notch_line(rect: QRectF, angle_deg: float) -> QLineF:
+        """A line from the marker centre to its rim at ``angle_deg`` (0 = up,
+        clockwise), the jog-rotation indicator over the reference photo."""
+        cx, cy = rect.center().x(), rect.center().y()
+        radius = min(rect.width(), rect.height()) / 2
+        rad = math.radians(angle_deg)
+        return QLineF(cx, cy, cx + radius * math.sin(rad), cy - radius * math.cos(rad))
 
     def flash_key(self, label: str) -> None:
         """Briefly (220ms) turns a modeled control's marker white on a live
@@ -460,6 +503,39 @@ class ControllerImageView(QWidget):
         else:
             self._led_labels.discard(label)
         self._restyle_label(label)
+
+    def spin_jog(self, label: str, delta_ticks: int) -> None:
+        """Turn a jog marker's notch by ``delta_ticks`` signed relative MIDI
+        ticks, integrated into a running 0..360 angle -- the decorative
+        overlay's version of ControllerLayoutView.spin_jog. No-op for a zero
+        delta or a label with no notch currently drawn (overlay off, not a
+        jog, or a different controller shown)."""
+        if not delta_ticks:
+            return
+        angle = (
+            self._jog_angles.get(label, 0.0) + delta_ticks * _JOG_DEGREES_PER_TICK
+        ) % 360.0
+        self._jog_angles[label] = angle
+        notch = self._overlay_jog_notches.get(label)
+        rect = self._geometry_rect(label)
+        if notch is not None and rect is not None:
+            notch.setLine(self._jog_notch_line(rect, angle))
+
+    def _geometry_rect(self, label: str) -> QRectF | None:
+        """The scene rect a CONTROL_GEOMETRY entry maps to over the current
+        reference image, or None if nothing's drawn / the label is unknown."""
+        if self._pixmap_item is None:
+            return None
+        geom = CONTROL_GEOMETRY.get(self._combo.currentText(), {}).get(label)
+        if geom is None:
+            return None
+        pixmap = self._pixmap_item.pixmap()
+        return QRectF(
+            geom.x * pixmap.width(),
+            geom.y * pixmap.height(),
+            geom.w * pixmap.width(),
+            geom.h * pixmap.height(),
+        )
 
     def _on_marker_clicked(self, label: str) -> None:
         """Resolves a clicked overlay marker's label back to a raw trigger

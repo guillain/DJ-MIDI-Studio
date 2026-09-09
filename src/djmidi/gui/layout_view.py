@@ -28,6 +28,7 @@ from PySide6.QtWidgets import (
 from djmidi import catalog
 from djmidi.gui import controller_image_view
 from djmidi.gui import geometry as geometry_mod
+from djmidi.gui import jog as jog_mod
 from djmidi.gui import layout as layout_mod
 from djmidi.gui.layout import CellKey
 from djmidi.gui.live_send import LiveSendControl
@@ -394,11 +395,10 @@ _MIDI_MAX = 127
 _MIDI_DEFAULT = _MIDI_MAX // 2
 _KNOB_MIN_ANGLE_DEG = -135.0
 _KNOB_MAX_ANGLE_DEG = 135.0
-# Degrees the jog notch turns per relative MIDI tick (see gui/jog.py). A jog
-# turn is a stream of small +/-1..few deltas; this gain is cosmetic -- big
-# enough that a flick of the wheel visibly spins the glyph, not a faithful
-# reproduction of the platter's real angular resolution (~1440 ticks/rev).
-_JOG_DEGREES_PER_TICK = 6.0
+# Degrees the jog notch turns per relative MIDI tick. Defined in gui/jog.py
+# (a Qt-free module both this and controller_image_view import without a
+# cycle); re-exported here under the name existing call sites already use.
+_JOG_DEGREES_PER_TICK = jog_mod.DEGREES_PER_TICK
 
 
 def _knob_angle_rad(value: int) -> float:

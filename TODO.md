@@ -1206,8 +1206,15 @@ documentation index.
   a cosmetic gain not the platter's real resolution). Runs before
   `_update_layout_selection` and early-returns, so a jog turn never
   flashes/selects/`set_value`s; deck 1/3 → left "Jog wheel", deck 2/4 →
-  right-tray "Jog wheel (R)". Schematic layouts + emulators only (the
-  Controller Images overlay markers are plain shapes with no notch). Other
+  right-tray "Jog wheel (R)". Extended to the **Controller Images overlay**
+  in `v0.47.63-controller-images-jog-notch`: `ControllerImageView.spin_jog`
+  turns a white notch line drawn over each jog/rotary geometry marker,
+  kept as its own `_overlay_jog_notches` item so it's turned in place (a
+  full overlay redraw would clobber an in-flight `flash_key`). The overlay
+  has only one `"Jog wheel"` entry, so the `" (R)"` mirror suffix is
+  stripped. `jog.DEGREES_PER_TICK` moved into the Qt-free `gui/jog.py` so
+  `layout_view` and `controller_image_view` share it without a circular
+  import (`layout_view._JOG_DEGREES_PER_TICK` re-exports it). Other
   controllers with a jog glyph (none have a `"Jog wheel"` geometry entry
   yet besides XDJ-XZ) would each need their jog CCs added to `gui/jog.py`
   from their own PDF. VU meters (no glyph exists yet — an output-direction

@@ -1114,3 +1114,28 @@ def test_non_jog_control_change_is_left_to_the_normal_lookup_path():
     QApplication.processEvents()
     assert window.layout_view._jog_angles == {}
     window.close()
+
+
+def test_live_jog_turn_spins_the_controller_images_overlay_when_it_shows_that_controller():
+    from djmidi.midi_io import MidiEvent
+
+    window = _loaded_window()
+    window.controller_image_view.set_controller("XDJ-XZ")
+    window.controller_image_view._geometry_checkbox.setChecked(True)
+
+    # deck 2 -> right-tray jog; the overlay has only the one "Jog wheel"
+    # entry, so the mirror suffix is stripped and it still spins.
+    window._on_live_midi_event(
+        MidiEvent(direction="in", channel="2", event_type="Control Change", data1="33", data2="70", timestamp=0.0)
+    )
+    QApplication.processEvents()
+    assert window.controller_image_view._jog_angles.get("Jog wheel")
+
+    # A different controller on that tab -> untouched.
+    window.controller_image_view.set_controller("DDJ-XP2")
+    window._on_live_midi_event(
+        MidiEvent(direction="in", channel="1", event_type="Control Change", data1="34", data2="70", timestamp=0.1)
+    )
+    QApplication.processEvents()
+    assert "Jog wheel" not in window.controller_image_view._jog_angles
+    window.close()
