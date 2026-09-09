@@ -1154,3 +1154,18 @@ def test_live_ddj_1000_jog_turn_spins_its_layout_jog_glyph():
     assert window.layout_view._jog_angles.get(key)
     assert window.controller_layout_view._jog_angles.get(key)
     window.close()
+
+
+def test_live_ddj_flx10_jog_turn_spins_its_layout_jog_glyph():
+    from djmidi.midi_io import MidiEvent
+
+    window = _loaded_window()
+    key = ("DDJ-FLX10", "DISPLAY", "Jog wheel")
+    # DDJ-FLX10 platter (vinyl-off), deck-1 channel, CC 0x23 ("35"), 0x46 = +6.
+    window._on_live_midi_event(
+        MidiEvent(direction="in", channel="1", event_type="Control Change", data1="35", data2="70", timestamp=0.0)
+    )
+    QApplication.processEvents()
+    assert window.layout_view._jog_angles.get(key)
+    assert window.controller_layout_view._jog_angles.get(key)
+    window.close()

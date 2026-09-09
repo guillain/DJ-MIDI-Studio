@@ -14,40 +14,35 @@ whose column order scrambles multi-column rows). Only controllers with a
 ``"Jog wheel"`` entry in ``gui/geometry.CONTROL_GEOMETRY`` -- i.e. a jog
 glyph actually drawn somewhere -- are worth listing here.
 
-**XDJ-XZ** (MIDI Message List E3, group "1. DECK", Fig ``1[L,R]``):
+Every controller so far uses the **0x40-centred relative** encoding: a
+value above 0x40 is a forward (clockwise) step, below 0x40 is backward, the
+magnitude is the distance from 0x40 (``decode_jog_delta``). The MIDI
+channel is always the deck channel (DECK 1..4 = channel "1".."4").
 
-===========================  ======  =============  ===================
-UI name                      Msg     data1          Encoding
-===========================  ======  =============  ===================
-Jog dial (Platter) rotate    CC      0x22 / 0x29*   "increases from 0x41"
-Jog dial (Wheel side) rotate CC      0x21 / 0x26*   clockwise, "decreases
-                                                    from 0x3F" counter-cw
-===========================  ======  =============  ===================
+===========  ===========================================  ==================
+Controller   Jog-turn CC data1 (hex)                       Source
+===========  ===========================================  ==================
+XDJ-XZ       platter 0x22 / 0x29(+SHIFT);                   MIDI Message
+             wheel-side 0x21 / 0x26(+SHIFT)                 List E3, Fig 1
+DDJ-1000     platter 0x21 / 0x29(+SEARCH) / 0x1F(+SHIFT)    MIDI Message
+                                                            List E1
+DDJ-FLX10    platter 0x22(Vinyl on) / 0x23(Vinyl off) /     MIDI Message
+             0x29(+4 BEAT JUMP) / 0x1F(+SHIFT);             List E1, Fig D3
+             wheel-side 0x21 / 0x26(+SHIFT)
+===========  ===========================================  ==================
 
-**DDJ-1000** (MIDI Message List E1, "JOG (Platter) rotate"):
+XDJ-XZ has two physical jogs -- decks 1/3 on the left, 2/4 on the right
+tray (the same split ``layout.py``'s ``_RIGHT_GRID_DECKS`` uses for the pad
+grids) -- so it resolves side-aware to ``"Jog wheel"`` / ``"Jog wheel
+(R)"``. DDJ-1000 and DDJ-FLX10 are also 2-deck, but their schematics draw
+only the left deck, so every deck channel resolves to their single
+``"Jog wheel"`` marker.
 
-===========================  ======  ==================  ================
-UI name                      Msg     data1               Encoding
-===========================  ======  ==================  ================
-JOG (Platter) rotate         CC      0x21 / 0x29(+SEARCH) same 0x40-centred
-                                     / 0x1F(+SHIFT)       relative encoding
-===========================  ======  ==================  ================
-
-``*`` (XDJ-XZ) = the ``+SHIFT`` variant of the same physical turn. On both
-controllers the MIDI channel is the deck channel (DECK 1..4 = channel
-"1".."4"). On XDJ-XZ decks 1/3 sit on the left jog and 2/4 on the right
-tray jog, the same split ``layout.py``'s ``_RIGHT_GRID_DECKS`` uses for the
-pad grids; DDJ-1000's schematic only draws the left deck, so every deck
-channel there resolves to its single ``"Jog wheel"`` marker.
-
-XDJ-XZ 0x21 and DDJ-1000 0x21 collide (both jog CCs on the deck channel);
-``jog_cell_keys_for_event`` returns *both* markers, and each view spins
-only its own controller's (the schematic shows one controller, the
-emulator self-filters, the images overlay checks ``key[0]``).
-
-The encoding is **0x40-centred relative**: a value above 0x40 is a forward
-(clockwise) step, below 0x40 is backward, and the magnitude is the distance
-from 0x40. ``decode_jog_delta`` returns that signed distance.
+Several of these CCs collide (e.g. 0x21 is used by all three on the deck
+channel). ``jog_cell_keys_for_event`` returns *every* matching marker, and
+each view spins only its own controller's -- the schematic shows one
+controller, the emulator self-filters, the images overlay checks
+``key[0]``.
 """
 
 from __future__ import annotations
@@ -65,22 +60,26 @@ _JOG_CENTRE = 0x40
 DEGREES_PER_TICK = 6.0
 
 _DECK_CHANNELS = frozenset({"1", "2", "3", "4"})
+_RIGHT_DECK_CHANNELS = frozenset({"2", "4"})  # XDJ-XZ right-tray decks
 
-# XDJ-XZ jog-turn CC numbers (decimal strings, matching model.Control's
-# convention): 0x21/0x22 plain + 0x26/0x29 with SHIFT, platter and wheel
-# side. All four spin the same jog glyph.
-_XDJ_XZ_JOG_DATA1 = frozenset({"33", "34", "38", "41"})
-_XDJ_XZ_LEFT_DECK_CH = frozenset({"1", "3"})
-_XDJ_XZ_RIGHT_DECK_CH = frozenset({"2", "4"})
+# Jog-turn CC data1 values (decimal strings, matching model.Control's
+# convention) per controller. XDJ-XZ is the only one with two physical jogs
+# to tell apart by deck channel.
+_XDJ_XZ_JOG_DATA1 = frozenset({"33", "34", "38", "41"})  # 0x21/0x22/0x26/0x29
+_DDJ_1000_JOG_DATA1 = frozenset({"31", "33", "41"})  # 0x1F/0x21/0x29
+_DDJ_FLX10_JOG_DATA1 = frozenset({"31", "33", "34", "35", "38", "41"})
+#                                  0x1F 0x21 0x22 0x23 0x26 0x29
+
+# Single-jog controllers: (data1 set, its one marker key).
+_SINGLE_JOG_RULES: tuple[tuple[frozenset[str], CellKey], ...] = (
+    (_DDJ_1000_JOG_DATA1, ("DDJ-1000", "DISPLAY", "Jog wheel")),
+    (_DDJ_FLX10_JOG_DATA1, ("DDJ-FLX10", "DISPLAY", "Jog wheel")),
+)
+
 _XDJ_XZ_LEFT_KEY: CellKey = ("XDJ-XZ", "DISPLAY", "Jog wheel")
 # The right-tray jog's schematic key carries layout._RIGHT_GRID_SUFFIX, the
 # same way real_position_markers() keys the mirrored pad grid / DECK cluster.
 _XDJ_XZ_RIGHT_KEY: CellKey = ("XDJ-XZ", "DISPLAY", "Jog wheel (R)")
-
-# DDJ-1000 platter rotate: 0x21 plain, 0x29 (+SEARCH), 0x1F (+SHIFT). Its
-# schematic draws only the left deck, so any deck channel -> the one marker.
-_DDJ_1000_JOG_DATA1 = frozenset({"33", "41", "31"})
-_DDJ_1000_KEY: CellKey = ("DDJ-1000", "DISPLAY", "Jog wheel")
 
 
 def decode_jog_delta(value: object) -> int:
@@ -108,10 +107,11 @@ def jog_cell_keys_for_event(
     keys: list[CellKey] = []
     if data1 in _XDJ_XZ_JOG_DATA1:
         keys.append(
-            _XDJ_XZ_RIGHT_KEY if channel in _XDJ_XZ_RIGHT_DECK_CH else _XDJ_XZ_LEFT_KEY
+            _XDJ_XZ_RIGHT_KEY if channel in _RIGHT_DECK_CHANNELS else _XDJ_XZ_LEFT_KEY
         )
-    if data1 in _DDJ_1000_JOG_DATA1:
-        keys.append(_DDJ_1000_KEY)
+    for data1_set, key in _SINGLE_JOG_RULES:
+        if data1 in data1_set:
+            keys.append(key)
     return keys
 
 

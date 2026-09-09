@@ -19,28 +19,20 @@ def test_decode_jog_delta_clamps_and_tolerates_garbage():
 
 
 def test_jog_keys_resolve_xdj_xz_platter_and_wheel_side_by_deck_channel():
-    # Left decks (1, 3) -> left jog; right decks (2, 4) -> right-tray jog.
-    # 0x22/0x26 ("34"/"38") are XDJ-XZ-only data1s (no DDJ-1000 collision).
-    assert jog.jog_cell_keys_for_event("1", "Control Change", "34") == [
-        ("XDJ-XZ", "DISPLAY", "Jog wheel")
-    ]
-    assert jog.jog_cell_keys_for_event("3", "Control Change", "34") == [
-        ("XDJ-XZ", "DISPLAY", "Jog wheel")
-    ]
-    assert jog.jog_cell_keys_for_event("2", "Control Change", "38") == [
-        ("XDJ-XZ", "DISPLAY", "Jog wheel (R)")
-    ]
-    assert jog.jog_cell_keys_for_event("4", "Control Change", "38") == [
-        ("XDJ-XZ", "DISPLAY", "Jog wheel (R)")
-    ]
-    # 0x21 ("33") collides with DDJ-1000's platter; the XDJ-XZ marker is
-    # still the side-correct one.
-    assert ("XDJ-XZ", "DISPLAY", "Jog wheel") in jog.jog_cell_keys_for_event(
-        "3", "Control Change", "33"
-    )
-    assert ("XDJ-XZ", "DISPLAY", "Jog wheel (R)") in jog.jog_cell_keys_for_event(
-        "2", "Control Change", "33"
-    )
+    # XDJ-XZ is the only controller with two physical jogs: left decks (1, 3)
+    # -> "Jog wheel", right-tray decks (2, 4) -> "Jog wheel (R)". Every
+    # XDJ-XZ jog data1 also collides with DDJ-FLX10's (both 2-deck Pioneer
+    # gear on the deck channel), so check membership + the correct side,
+    # never an exact one-element list.
+    for data1 in ("34", "41"):  # platter 0x22 / 0x29
+        for left in ("1", "3"):
+            keys = jog.jog_cell_keys_for_event(left, "Control Change", data1)
+            assert ("XDJ-XZ", "DISPLAY", "Jog wheel") in keys
+            assert ("XDJ-XZ", "DISPLAY", "Jog wheel (R)") not in keys
+        for right in ("2", "4"):
+            keys = jog.jog_cell_keys_for_event(right, "Control Change", data1)
+            assert ("XDJ-XZ", "DISPLAY", "Jog wheel (R)") in keys
+            assert ("XDJ-XZ", "DISPLAY", "Jog wheel") not in keys
 
 
 def test_jog_keys_empty_for_non_jog_events():
@@ -60,14 +52,27 @@ def test_ddj_1000_platter_resolves_on_every_deck_channel():
         assert ("DDJ-1000", "DISPLAY", "Jog wheel") in jog.jog_cell_keys_for_event(
             ch, "Control Change", "33"
         )
-    assert jog.jog_cell_keys_for_event("2", "Control Change", "31") == [
-        ("DDJ-1000", "DISPLAY", "Jog wheel")
+
+
+def test_ddj_flx10_platter_and_wheel_side_resolve_on_every_deck_channel():
+    # Vinyl-on 0x22, vinyl-off 0x23, +4-beat-jump 0x29, +SHIFT 0x1F platter;
+    # 0x21 / 0x26 wheel-side. Single left-deck marker on any deck channel.
+    for data1 in ("34", "35", "41", "31", "33", "38"):
+        for ch in ("1", "2", "3", "4"):
+            assert ("DDJ-FLX10", "DISPLAY", "Jog wheel") in jog.jog_cell_keys_for_event(
+                ch, "Control Change", data1
+            )
+    # A DDJ-FLX10-only data1 (0x23 vinyl-off) -- no other controller claims it.
+    assert jog.jog_cell_keys_for_event("1", "Control Change", "35") == [
+        ("DDJ-FLX10", "DISPLAY", "Jog wheel")
     ]
 
 
-def test_shared_jog_cc_returns_both_controllers_markers():
-    # data1 0x21 ("33") is XDJ-XZ's wheel-side jog *and* DDJ-1000's platter,
-    # both on the deck channel -- each view spins only its own.
+def test_shared_jog_cc_returns_every_controllers_marker():
+    # data1 0x21 ("33") is XDJ-XZ's wheel-side jog, DDJ-1000's platter *and*
+    # DDJ-FLX10's wheel-side, all on the deck channel -- each view spins only
+    # its own.
     keys = jog.jog_cell_keys_for_event("1", "Control Change", "33")
     assert ("XDJ-XZ", "DISPLAY", "Jog wheel") in keys
     assert ("DDJ-1000", "DISPLAY", "Jog wheel") in keys
+    assert ("DDJ-FLX10", "DISPLAY", "Jog wheel") in keys

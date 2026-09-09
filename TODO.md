@@ -1215,17 +1215,22 @@ documentation index.
   stripped. `jog.DEGREES_PER_TICK` moved into the Qt-free `gui/jog.py` so
   `layout_view` and `controller_image_view` share it without a circular
   import (`layout_view._JOG_DEGREES_PER_TICK` re-exports it).
-  **DDJ-1000** added in `v0.47.64-ddj-1000-jog-rotation`: a `"Jog wheel"`
-  geometry entry (left deck, measured against the clean render) + its
-  platter CCs `0x21`/`0x29`/`0x1F` in `gui/jog.py`, same `0x40`-centred
-  encoding from its MIDI Message List E1 rendered table. DDJ-1000's
-  schematic draws only the left deck, so every deck channel resolves to
-  its one marker. XDJ-XZ's `0x21` and DDJ-1000's `0x21` collide on the
-  deck channel — `jog_cell_keys_for_event` returns both markers and each
-  view spins only the controller it's showing. Other controllers with a
-  physical jog (DDJ-FLX10, DDJ-REV1, Numark) still need a `"Jog wheel"`
-  geometry entry + their jog CCs added from their own PDF. VU meters (no
-  glyph exists yet — an output-direction feature) remain open.
+  **DDJ-1000** (`v0.47.64-ddj-1000-jog-rotation`) and **DDJ-FLX10**
+  (`v0.47.65-ddj-flx10-jog-rotation`) followed, same recipe each time: a
+  `"Jog wheel"` geometry entry (left deck, measured against the clean
+  render) + that controller's platter/wheel-side jog CCs in `gui/jog.py`,
+  from its own MIDI Message List rendered table, all the same
+  `0x40`-centred encoding. Both are 2-deck but their schematics draw only
+  the left deck, so every deck channel resolves to their one marker. Many
+  jog CCs collide across Pioneer gear (`0x21` is shared by all three), so
+  `jog_cell_keys_for_event` returns *every* matching marker and each view
+  spins only the controller it shows; single-jog controllers are a
+  `(data1 set, key)` table, XDJ-XZ stays the one side-aware special case.
+  Still to do: **DDJ-REV1**, **Numark** (each needs a `"Jog wheel"`
+  geometry entry + its jog CCs — Numark's "PDF" is a general user guide
+  with no MIDI table, so its jog CCs would be an unverifiable guess unless
+  its community profile documents them). VU meters (no glyph exists yet —
+  an output-direction feature) remain open.
 - [x] **Live flash on the Controller Emulator too** (`v0.47.59`) — the By…
   tabs and Controller Images already flashed on a live MIDI hit; the
   Controller Emulator docks didn't. `ControllerEmulatorView.flash_live_hit(hit)`
