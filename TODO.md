@@ -446,6 +446,14 @@ Implemented contract, runtime, test, and documentation work:
 - [x] Add bootstrap, build, executable packaging, release artifact, CI, and provider-neutral GitHub/GitLab release scripts.
 - [x] Run the multi-platform CI pipeline on every branch push and Pull Request, with a quality gate before Linux/macOS/Windows builds.
 - [x] Migrate GitHub Actions setup steps from Node.js 20-era action versions to the Node.js 24-compatible releases.
+- [x] Harden the Linux CI dependency install against flaky preinstalled vendor
+  apt repos: the five inline `apt-get update && apt-get install` steps in
+  `build-executables.yml` / `draft-release.yml` now call one shared
+  `scripts/install_linux_gui_deps.sh`, which drops every non-Ubuntu source
+  from `/etc/apt/sources.list.d` (Google Chrome's stale `Packages.gz` was
+  failing `apt-get update` with `Hash Sum mismatch` and taking the whole
+  Quality gate down) and retries `update`/`install` up to five times.
+  Milestone tag `v0.47.71-ci-apt-hardening`.
 - [x] Upgrade setup-uv, upload-artifact, and download-artifact to their Node.js 24-compatible major versions.
 - [x] Use native PowerShell archive creation for Windows release artifacts when the Git Bash `zip` utility is unavailable.
 - [x] Collect dynamically discovered catalog and software modules in PyInstaller builds and guard the empty-catalog startup path.
