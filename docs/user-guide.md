@@ -98,8 +98,8 @@ either confirmed or shown as suggestions according to Preferences.
 - `By Channel`: raw model-level controls and mappings.
 - `By Deck`: grouped duplicate mappings (safe synchronized edits).
 - `By Controller`: physical layout/section perspective.
-- `Controller Emulator` (`View -> New Controller Emulator…`): an interactive, clickable schematic for one controller at a time — several instances can be open at once, each on its own controller. Click a pad/button to resolve it against the loaded mapping (and optionally send it live); drag a knob/fader/jog glyph to set its display value.
-- `Controller Images`: static official diagrams and bundled controller documentation, plus an optional real-layout overlay for controllers with modeled geometry (XDJ-XZ's transport cluster, DDJ-XP2's pad cluster so far).
+- `Controller Emulator` (`View -> New Controller Emulator…`): an interactive, clickable schematic for one controller at a time — several instances can be open at once, each on its own controller. Click a pad/button to resolve it against the loaded mapping (and optionally send it live); drag a knob/fader/jog glyph to set its display value. Each instance also flashes and highlights passively from live MIDI (input hits, held Note On/Off, and latched output-direction LED feedback) for the controller it shows.
+- `Controller Images`: static official diagrams and bundled controller documentation, plus an optional real-layout overlay for the six controllers with modeled geometry (DDJ-XP2, XDJ-XZ, DDJ-1000, DDJ-FLX10, DDJ-REV1, Numark Mixtrack Pro FX).
 - `MIDI Routing`: route MIDI and replay Controller Setup rows once or in a loop.
 - `MIDI Clock`: configure Clock sources/destinations and inspect source activity;
   both Clock and Routing device lists load at startup and offer `Refresh MIDI ports`.
@@ -185,6 +185,7 @@ For screenshots and a visual description of each tab, see [Screens and Layouts](
 
 - Input monitoring works from selected MIDI input ports.
 - Output-direction monitoring from Serato requires adding the app virtual destination in Serato MIDI setup.
+- Live events also drive the schematic surfaces (`By Channel`/`By Deck`/`By Controller` layouts, the `Controller Images` overlay, and every open `Controller Emulator`): input hits move the red selection border and flash the glyph white, CC values rotate a knob or move a fader thumb, a held Note On/Off shows a steady amber highlight, and an output-direction LED message latches that amber highlight until Serato clears it.
 - The MIDI engine exposes one-way routing and an initial Clock mirror. Open the
   independent `MIDI Clock` tool from the `View` menu, enable MIDI routing
   in Preferences, add at least one route, then use `Start routing`

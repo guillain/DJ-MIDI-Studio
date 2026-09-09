@@ -128,6 +128,16 @@ a persistent amber highlight while "on", resolved from the mapping's own
 (e.g. one with ambiguous `selected`/`off` values) lists its whole alias set
 in the status text instead of guessing which one currently applies.
 
+Each open emulator instance also reacts to real MIDI traffic, passively
+(the dry-run *resolution* stays click-only). For the controller the
+instance currently shows, a live hit briefly flashes its marker white
+(the same 220 ms pulse a click gives), a live Note On/Note Off holds a
+steady amber "held down" highlight until the release, and an
+output-direction message from Serato (LED feedback, seen on the virtual
+monitor port — see `Live Monitor` below) latches the same amber highlight
+until Serato clears it. An instance showing a different controller ignores
+all three.
+
 Every registered controller renders here, not just the two in the loaded
 sample mapping — see the [Controller Layout Gallery](images/controllers/README.md)
 for one screenshot per controller, dry-run with no mapping loaded.
@@ -159,7 +169,7 @@ via the `Session` group's `Load session…` icon button:
 
 Controller Images displays the official reference artwork for the selected catalog controller. The view supports zooming, panning, resetting the zoom, and opening the bundled local controller documentation when available. The selector includes every registered controller; controllers without reference artwork show an explicit placeholder instead of an inaccurate diagram. Artwork is currently available for DDJ-XP2, XDJ-XZ, DDJ-1000, DDJ-FLX4, DDJ-FLX10, DDJ-REV1, Numark Mixtrack Pro FX, and Hercules DJControl Inpulse 500. DDJ-REV1's artwork is a flat top-down diagram cropped from its official MIDI Message List PDF (`docs/controllers/ddj-rev1-midi-message-list-e1.pdf`), replacing an earlier angled marketing photo — a prerequisite for that controller's `Show real layout` geometry, since the fraction-based overlay isn't reliable against a perspective photo. A controller built in Controller Setup can carry a user-attached image (an absolute path), which this viewer resolves the same way as a bundled filename.
 
-A `Show real layout` checkbox overlays colored markers directly on the real photo at each modeled control's true position. Modeled so far: XDJ-XZ's transport cluster (PLAY/PAUSE, CUE, SYNC, jog wheel, tempo fader) and its hot cue pad cluster (the 8-pad grid and the HOT CUE/BEAT LOOP/SLIP LOOP/BEAT JUMP mode buttons), essentially all of DDJ-XP2 (its pad grid, PAD MODE buttons, SLIDE FX bank, loop/quantize/key controls, browse/load buttons, and SHIFT), and all of DDJ-REV1 (PLAY/PAUSE, CUE, AUTO LOOP, 1/2X, 2X, SYNC, and its 8-pad grid — every entry in its catalog). It's disabled with a tooltip for any controller with no modeled geometry yet. This overlay doesn't reflect the loaded mapping — but it does flash white on a real, live MIDI hit for whichever controller this tab currently shows, the same live feedback the `By Channel`/`By Deck`/`By Controller` layouts already give (see `Live Monitor` below, and `Settings -> Preferences...` to control whether that starts automatically).
+A `Show real layout` checkbox overlays colored markers directly on the reference render at each modeled control's true position. Six controllers have hand-measured geometry so far, each re-measured against its clean device render: XDJ-XZ's transport cluster (PLAY/PAUSE, CUE, SYNC, jog wheel, tempo fader) and its hot cue pad cluster (the 8-pad grid and the HOT CUE/BEAT LOOP/SLIP LOOP/BEAT JUMP mode buttons); essentially all of DDJ-XP2 (its pad grid, PAD MODE buttons, SLIDE FX bank, loop/quantize/key controls, browse/load buttons, and SHIFT); all of DDJ-REV1 (PLAY/PAUSE, CUE, AUTO LOOP, 1/2X, 2X, SYNC, and its 8-pad grid — every entry in its catalog); all of DDJ-1000 (transport, MASTER TEMPO, BEAT/KEY SYNC, LOOP IN/OUT, 4 BEAT LOOP/EXIT, QUANTIZE, SLIP, and its 8-pad grid); all of DDJ-FLX10 (transport, BEAT SYNC, KEY SYNC, ACTIVE PART, CUE/LOOP CALL, LOOP IN/OUT, MIX POINT, BEAT JUMP, SHIFT, and its 8-pad grid); and all of Numark Mixtrack Pro FX (PLAY/PAUSE, CUE, SYNC, LOOP, and its 8-pad grid). Numark's artwork, like DDJ-REV1's above, was first swapped from an angled marketing photo to a flat top-down diagram so the fraction-based overlay could line up. The checkbox is disabled with a tooltip for any controller with no modeled geometry yet, and also whenever the on-screen variant isn't the clean render the geometry was measured against. This overlay doesn't reflect the loaded mapping — but it does flash white on a real, live MIDI hit, and latches an amber highlight from an output-direction LED message, for whichever controller this tab currently shows, the same live feedback the `By Channel`/`By Deck`/`By Controller` layouts already give (see `Live Monitor` below, and `Settings -> Preferences...` to control whether that starts automatically).
 
 ![Controller Images view](images/layout/controlleur-image.png)
 
@@ -168,6 +178,8 @@ A `Show real layout` checkbox overlays colored markers directly on the real phot
 Live Monitor watches checked MIDI input sources in real time. Use `Refresh ports` to update the list or `Select all sources` to check every currently available input. The monitor can also create a virtual destination for Serato output, provided that destination is added as an additional MIDI output in Serato.
 
 The event table contains the timestamp, direction, source device, MIDI channel and data, followed by the physical control and Serato function resolution. Physical control names are filtered using the source device so that a matching control from another controller is not reported accidentally.
+
+While monitoring runs, every live event also drives the schematic surfaces — the `By Channel`/`By Deck`/`By Controller` layouts, the `Controller Images` overlay, and every open `Controller Emulator` — for the controller each one shows. An **input-direction** event moves the persistent red selection border to the control that was hit, briefly flashes a discrete pad/button glyph white (220 ms), records a CC value as a level (rotating a knob's marker or moving a fader's thumb, and left in place afterwards), and holds a steady amber "held down" highlight between a Note On and its Note Off. An **output-direction** event — Serato → controller LED feedback, only visible once this app's virtual monitor destination (`DJMidiStudio Monitor`) is added as an extra MIDI output in Serato — latches the same amber highlight on a Note On and clears it on Note Off, tracked separately so an input-direction release can't turn off an LED the software is still driving. Jog-wheel rotation and VU meters don't react yet. Whether this monitoring starts automatically when a mapping loads is controlled by `Settings -> Preferences...`.
 
 ![Live Monitor](images/layout/live-monitor.png)
 
