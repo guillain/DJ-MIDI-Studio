@@ -370,8 +370,10 @@ def test_resolve_geometry_label_extracts_pad_number_from_ddj_1000_pad_names():
 def test_ddj_flx10_geometry_covers_every_catalog_entry():
     """DDJ-FLX10's catalog (catalog/ddj_flx10.py) has exactly twenty-two DECK
     entries plus an 8-pad grid -- this is the whole controller, not a
-    subset."""
+    subset. Plus one display-only "Jog wheel" (no catalog entry -- a
+    continuous control, spun by gui/jog.py, v0.47.65)."""
     assert set(CONTROL_GEOMETRY["DDJ-FLX10"]) == {
+        "Jog wheel",
         "PLAY/PAUSE",
         "CUE",
         "BEAT SYNC",
