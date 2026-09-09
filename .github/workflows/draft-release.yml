@@ -40,9 +40,7 @@ jobs:
 
       - name: Install Linux GUI and MIDI build dependencies
         if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libasound2-dev pkg-config libegl1 libgl1 libxkbcommon0 libxkbcommon-x11-0
+        run: bash scripts/install_linux_gui_deps.sh
 
       - name: Install dependencies
         run: uv sync --group dev
@@ -72,9 +70,7 @@ jobs:
 
       - name: Install Linux GUI and MIDI build dependencies
         if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libasound2-dev pkg-config libegl1 libgl1 libxkbcommon0 libxkbcommon-x11-0
+        run: bash scripts/install_linux_gui_deps.sh
 
       - name: Install dependencies
         run: uv sync --group dev
@@ -116,9 +112,7 @@ jobs:
 
       - name: Install Linux GUI and MIDI build dependencies
         if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libasound2-dev pkg-config libegl1 libgl1 libxkbcommon0 libxkbcommon-x11-0
+        run: bash scripts/install_linux_gui_deps.sh
 
       - name: Install dependencies
         run: uv sync --group dev
