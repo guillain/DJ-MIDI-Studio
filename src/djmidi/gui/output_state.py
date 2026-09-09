@@ -23,10 +23,16 @@ attribute, never by guessing a tag's semantics.
 
 ``describe_output_aliases()`` (slice 1's immediate follow-up) covers the
 case ``resolve_toggle_alias()`` explicitly declines: for a non-toggle
-output mapping (e.g. the ``selected``/``off`` collision case above), it
-surfaces the *entire* alias set read-only, rather than guessing which one
-currently applies -- real per-slot state (phase 5's other, larger piece)
-is what would let a later slice pick one instead of just listing them."""
+output mapping without tracked state, it surfaces the *entire* alias set
+read-only, rather than guessing which one currently applies.
+
+``is_radio_group()`` / ``radio_group_key()`` (v0.47.69) are phase 5's
+other, larger piece for the Controller Emulator: an output mapping with a
+``selected`` alias is one member of a mutually-exclusive set (every
+``auto_loop_specific_length`` slot on a deck), so clicking one makes it
+"selected" and every sibling "off". The emulator tracks the selected slot
+per ``(deck_id, tag)`` and lights it -- see
+``ControllerEmulatorView._selected_slot``."""
 
 from __future__ import annotations
 
@@ -84,6 +90,28 @@ def resolve_toggle_alias(output_group: MappingGroup | None, active: bool) -> Ali
     return None
 
 
+def is_radio_group(output_group: MappingGroup | None) -> bool:
+    """True if `output_group`'s output translation carries a "selected"
+    alias -- the marker that it's one member of a mutually-exclusive set
+    (the confirmed `auto_loop_specific_length` shape, where "selected" and
+    "off" share a raw value so only tracked state can say which member is
+    the active one). A `behaviour="toggle"` mapping is handled by
+    resolve_toggle_alias() instead; this is phase 5's other, larger half."""
+    if output_group is None:
+        return False
+    translations = output_group.representative.translations
+    if not translations:
+        return False
+    return any(alias.name == "selected" for alias in translations[0].aliases)
+
+
+def radio_group_key(group: MappingGroup) -> tuple[str, str]:
+    """The `(deck_id, tag)` identifying the mutually-exclusive set `group`
+    belongs to: clicking any member makes it "selected" and every sibling
+    "off"."""
+    return (group.deck_id, group.tag)
+
+
 def describe_output_aliases(output_group: MappingGroup | None) -> str:
     """A read-only "name=value, name=value, ..." summary of every alias on
     `output_group`'s representative translation, in file order -- "" if
@@ -106,4 +134,11 @@ def describe_output_aliases(output_group: MappingGroup | None) -> str:
     return ", ".join(f"{alias.name}={alias.value}" for alias in translations[0].aliases)
 
 
-__all__ = ["describe_output_aliases", "find_output_group", "is_toggle_group", "resolve_toggle_alias"]
+__all__ = [
+    "describe_output_aliases",
+    "find_output_group",
+    "is_radio_group",
+    "is_toggle_group",
+    "radio_group_key",
+    "resolve_toggle_alias",
+]

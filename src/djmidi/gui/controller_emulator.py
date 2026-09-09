@@ -82,8 +82,20 @@ SHIFT-held state (ControllerEmulatorView._shift_held, lit while on):
 while held, an ambiguous cell resolves to its +SHIFT variant
 (prefer_shift threaded into pick_default_variant alongside prefer_token).
 A SHIFT geometry marker was added to XDJ-XZ (v0.47.68) so it's clickable
-there too, not just DDJ-XP2. All of this state is cleared on controller
-switch; none of it is persisted across restarts."""
+there too, not just DDJ-XP2.
+
+Phase 5, "selected/off" slice (v0.47.69, the roadmap's last-and-largest
+piece): an output mapping with a `selected` alias
+(gui/output_state.is_radio_group) is one member of a mutually-exclusive
+set sharing a (deck_id, tag) -- every `auto_loop_specific_length` slot on
+a deck, where `selected` and `off` collide at raw value 0. Clicking one
+member records it in `_selected_slot` per group, lights it, un-lights the
+previously-selected sibling, and reports `[SELECTED: <tag> deck N slot M
+-- siblings now 'off']`. This is genuine per-slot state, not the on/off
+flip slice 1 handles; it still makes no claim about what the tag *means*.
+
+All of the phase-5 state (toggle, pad mode, SHIFT, selected slot) is
+cleared on controller switch; none of it is persisted across restarts."""
 
 from __future__ import annotations
 
@@ -114,7 +126,9 @@ from djmidi.gui.mapping_group import build_mapping_groups
 from djmidi.gui.output_state import (
     describe_output_aliases,
     find_output_group,
+    is_radio_group,
     is_toggle_group,
+    radio_group_key,
     resolve_toggle_alias,
 )
 from djmidi.model import MidiConfig
@@ -558,6 +572,14 @@ class ControllerEmulatorView(QWidget):
         # Cleared on controller change.
         self._shift_held = False
         self._shift_key: CellKey | None = None
+        # Phase 5, "selected/off" slice (gui/output_state.py's is_radio_group):
+        # for a mutually-exclusive set of output mappings sharing a
+        # (deck_id, tag) -- every auto_loop_specific_length slot on a deck,
+        # where "selected" and "off" collide at value 0 -- clicking one
+        # member makes it the selected one and every sibling "off". Tracked
+        # per group so a later click un-lights the previous member.
+        self._selected_slot: dict[tuple[str, str], str] = {}
+        self._selected_cell: dict[tuple[str, str], CellKey] = {}
 
         self._combo = QComboBox()
         self._combo.addItems(catalog.CONTROLLER_NAMES)
@@ -676,6 +698,8 @@ class ControllerEmulatorView(QWidget):
         self._pad_mode_button_key.clear()
         self._shift_held = False
         self._shift_key = None
+        self._selected_slot.clear()
+        self._selected_cell.clear()
         self._status_label.setText("Click a control to see what it resolves to.")
 
     def _toggle_shift(self, key: CellKey) -> str:
@@ -770,6 +794,18 @@ class ControllerEmulatorView(QWidget):
             if alias is not None:
                 return f"  [TOGGLED {state_word}: output alias '{alias.name}' = {alias.value}]"
             return f"  [TOGGLED {state_word}]"
+        if is_radio_group(output_group):
+            group_key = radio_group_key(click_group)
+            previous = self._selected_cell.get(group_key)
+            if previous is not None and previous != key:
+                self._emulator.set_active(previous, False)
+            self._selected_slot[group_key] = click_group.slot_id
+            self._selected_cell[group_key] = key
+            self._emulator.set_active(key, True)
+            return (
+                f"  [SELECTED: {click_group.tag} deck {click_group.deck_id} "
+                f"slot {click_group.slot_id} — siblings now 'off']"
+            )
         aliases_text = describe_output_aliases(output_group)
         if aliases_text:
             return f"  [output aliases: {aliases_text}]"

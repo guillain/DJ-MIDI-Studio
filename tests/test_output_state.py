@@ -4,7 +4,9 @@ from djmidi.gui.mapping_group import MappingGroup, build_mapping_groups
 from djmidi.gui.output_state import (
     describe_output_aliases,
     find_output_group,
+    is_radio_group,
     is_toggle_group,
+    radio_group_key,
     resolve_toggle_alias,
 )
 from djmidi.model import Alias, MappingElement, Translation
@@ -42,6 +44,37 @@ def test_is_toggle_group_false_for_an_explicit_mapping():
 def test_is_toggle_group_false_with_no_translations():
     group = _group("some_tag", "0", "0", [])
     assert is_toggle_group(group) is False
+
+
+# ─── is_radio_group / radio_group_key ─────────────────────────────────────
+
+
+def test_is_radio_group_true_for_the_real_selected_off_collision_case():
+    config = parse_file(FIXTURE)
+    groups = build_mapping_groups(config)
+    auto_loop_out = next(
+        g for g in groups if g.tag == "auto_loop_specific_length" and g.event == "output"
+    )
+    assert is_radio_group(auto_loop_out) is True
+
+
+def test_is_radio_group_false_for_a_plain_on_off_output_and_for_none():
+    assert is_radio_group(None) is False
+    plain = _group(
+        "t", "0", "0",
+        [Translation(aliases=[Alias(name="on", value="127"), Alias(name="off", value="0")])],
+    )
+    assert is_radio_group(plain) is False
+    assert is_radio_group(_group("t", "0", "0", [])) is False
+
+
+def test_radio_group_key_is_deck_id_and_tag():
+    config = parse_file(FIXTURE)
+    groups = build_mapping_groups(config)
+    click = next(
+        g for g in groups if g.tag == "auto_loop_specific_length" and g.event == "click"
+    )
+    assert radio_group_key(click) == (click.deck_id, "auto_loop_specific_length")
 
 
 # ─── find_output_group ─────────────────────────────────────────────────────

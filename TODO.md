@@ -1368,7 +1368,7 @@ the DJ layout visual fidelity chantier.
   persistent virtual port may still matter for phase 5's stateful
   simulation (receiving real Serato output-direction MIDI to drive LED
   state), if that turns out to need it.
-- [ ] **Phase 5 — full stateful simulation**: slice 1 (toggle-state
+- [x] **Phase 5 — full stateful simulation**: slice 1 (toggle-state
   tracking for unambiguous `behaviour="toggle"` output-alias resolution)
   delivered — see **"Controller Emulator phase 5, slice 1 — toggle-state
   tracking"** above. **Slice 2 — pad-mode-page tracking**
@@ -1390,10 +1390,21 @@ the DJ layout visual fidelity chantier.
   `prefer_token` (the two compose — SHIFT'd variant of the selected pad
   mode). A SHIFT `CONTROL_GEOMETRY` marker was added to XDJ-XZ (measured
   against its clean render) so it's clickable there too, not just
-  DDJ-XP2. Still open: the confirmed `selected`/`off` value-collision case
-  (needs genuine state about *which* of several slots is active, not just
-  an on/off flip) — the largest remaining piece, no existing precedent in
-  the codebase, still wants a scoping pass.
+  DDJ-XP2. **The `selected`/`off` value-collision case** followed in
+  `v0.47.69-emulator-radio-slot-state` — the roadmap's last-and-largest
+  piece: an output mapping carrying a `selected` alias
+  (`gui/output_state.is_radio_group`) is one member of a mutually-exclusive
+  set sharing a `(deck_id, tag)` — every `auto_loop_specific_length` slot
+  on a deck, where `selected` and `off` collide at raw value 0. Clicking
+  one member records it in `ControllerEmulatorView._selected_slot` per
+  group, lights it, un-lights the previously-selected sibling, and reports
+  `[SELECTED: <tag> deck N slot M — siblings now 'off']`. Genuine per-slot
+  state, not an on/off flip; still makes no claim about what the tag
+  *means*. Handles the confirmed one-mutually-exclusive-set-per-deck-tag
+  shape; a member in a pad-mode bank the emulator can't reach (e.g.
+  DDJ-XP2's mode 5-8) still isn't click-reachable, same limitation as the
+  pad-mode slice. **Phase 5 is now complete** for every case with a
+  precedent in real exports.
 
 ### External tester feedback (2026-08)
 
