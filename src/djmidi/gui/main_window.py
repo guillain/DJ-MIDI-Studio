@@ -50,6 +50,7 @@ from PySide6.QtWidgets import (
 )
 
 from djmidi import catalog, software
+from djmidi.gui import jog as jog_mod
 from djmidi.gui import layout as layout_mod
 from djmidi.gui.controller_emulator import ControllerEmulatorView
 from djmidi.gui.controller_image_view import ControllerImageView
@@ -1304,6 +1305,34 @@ class MainWindow(QMainWindow):
         # this is passive state, not a user gesture.
         if event.direction == "out":
             self._on_output_led_event(event, value)
+            return
+
+        # A jog-wheel turn is a stream of relative Control Change ticks that
+        # deliberately have no catalog entry (continuous controls are out of
+        # catalog scope), so it can't flow through the lookup path below.
+        # Resolve it against gui/jog.py's small per-controller table instead
+        # and integrate the ticks into each jog glyph's notch angle. Handled
+        # before _update_layout_selection so a jog turn never clears the
+        # cross-tab selection -- it isn't a "the user picked this control"
+        # gesture, just motion feedback.
+        jog_keys = jog_mod.jog_cell_keys_for_event(
+            event.channel, event.event_type, event.data1
+        )
+        if jog_keys:
+            delta = jog_mod.decode_jog_delta(value)
+            if delta:
+                for lv in (
+                    self.layout_view,
+                    self.deck_layout_view,
+                    self.controller_layout_view,
+                ):
+                    for key in jog_keys:
+                        lv.spin_jog(key, delta)
+                for dock in self._emulator_docks.values():
+                    view = dock.widget()
+                    if isinstance(view, ControllerEmulatorView):
+                        for key in jog_keys:
+                            view.spin_jog_from_key(key, delta)
             return
 
         # A note release arrives as "Note Off" or as "Note On" with velocity

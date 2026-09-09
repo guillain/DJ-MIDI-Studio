@@ -218,6 +218,11 @@ class EmulatorLayoutView(QWidget):
         # dry-run/live-send meaning at all (these keys have no ControlInfo),
         # purely local visual state for the emulator's own interaction.
         self._values: dict[CellKey, int] = {}
+        # Accumulated jog-notch angle (degrees, 0..360) per jog key, from
+        # live *relative* jog-turn MIDI (gui/jog.py -> spin_jog). Overrides
+        # the drag gesture's value->notch mapping for that key once a live
+        # jog event has arrived; mirrors ControllerLayoutView._jog_angles.
+        self._jog_angles: dict[CellKey, float] = {}
         # Persistent "toggled on" highlight (phase 5 slice 1, see
         # gui/output_state.py) -- set/cleared by ControllerEmulatorView via
         # set_active() when a click resolves to a behaviour="toggle"
@@ -267,6 +272,7 @@ class EmulatorLayoutView(QWidget):
         self._metrics = layout_view.metrics_for(controller)
         self._flash_keys.clear()
         self._values.clear()
+        self._jog_angles.clear()
         self._active_keys.clear()
         self._live_active_keys.clear()
         self._led_keys.clear()
@@ -330,6 +336,19 @@ class EmulatorLayoutView(QWidget):
         if self._values.get(key) == value:
             return
         self._values[key] = value
+        self._rebuild()
+
+    def spin_jog(self, key: CellKey, delta_ticks: int) -> None:
+        """Turn a jog glyph's notch by ``delta_ticks`` signed relative MIDI
+        ticks, integrated into a running 0..360 angle -- the live-MIDI
+        counterpart to the drag gesture, mirroring
+        ControllerLayoutView.spin_jog. No-op for a zero delta."""
+        if not delta_ticks:
+            return
+        current = self._jog_angles.get(key, 0.0)
+        self._jog_angles[key] = (
+            current + delta_ticks * layout_view._JOG_DEGREES_PER_TICK
+        ) % 360.0
         self._rebuild()
 
     def flash_key(self, key: CellKey) -> None:
@@ -424,6 +443,7 @@ class EmulatorLayoutView(QWidget):
             layout_view.draw_control_glyph(
                 self._scene, self._metrics, glyph_x, glyph_y, marker.visual_kind, key,
                 self._values.get(key), key in self._flash_keys,
+                self._jog_angles.get(key),
             )
         self._scene.setSceneRect(0, 0, canvas_w, canvas_h)
         self._fit_view()
@@ -459,6 +479,7 @@ class EmulatorLayoutView(QWidget):
             layout_view.draw_control_glyph(
                 self._scene, m, x, y, cell.visual_kind, cell.key,
                 self._values.get(cell.key), cell.key in self._flash_keys,
+                self._jog_angles.get(cell.key),
             )
             label = QGraphicsSimpleTextItem(layout_view._elide(cell.label, 24))
             label.setFont(small_font)
@@ -585,6 +606,16 @@ class ControllerEmulatorView(QWidget):
         if hit.controller != self._combo.currentText():
             return
         self._emulator.set_led(layout_mod.presentation_key_for_hit(hit), active)
+
+    def spin_jog_from_key(self, key: CellKey, delta_ticks: int) -> None:
+        """Turn this instance's jog glyph from a live relative jog-turn CC,
+        self-filtered to the controller it shows (jog `key`s already carry
+        their controller as `key[0]`, e.g. ("XDJ-XZ", "DISPLAY",
+        "Jog wheel")). No-op otherwise, so MainWindow can call it over every
+        open dock unconditionally, like flash_live_hit."""
+        if key[0] != self._combo.currentText():
+            return
+        self._emulator.spin_jog(key, delta_ticks)
 
     def refresh_controllers(self) -> None:
         """Repopulates the controller combo from the live registry -- call

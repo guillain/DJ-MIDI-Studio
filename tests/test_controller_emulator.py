@@ -672,3 +672,31 @@ def test_controller_emulator_view_set_led_from_hit_filters_by_controller():
     xz_hit = next(h for h in catalog.lookup("6", "Note On", "0") if h.controller == "XDJ-XZ")
     view.set_led_from_hit(xz_hit, True)  # different controller -> ignored
     assert not view._emulator._led_keys
+
+
+# ─── Live jog-wheel rotation (spin_jog / spin_jog_from_key) ─────────────────
+
+
+def test_emulator_spin_jog_integrates_ticks_and_clears_on_controller_switch():
+    view = EmulatorLayoutView("XDJ-XZ")
+    key: CellKey = ("XDJ-XZ", "DISPLAY", "Jog wheel")
+    view.spin_jog(key, 4)
+    view.spin_jog(key, 3)
+    assert view._jog_angles[key] == 7 * layout_view_mod._JOG_DEGREES_PER_TICK
+    view.spin_jog(key, 0)  # no-op
+    assert view._jog_angles[key] == 7 * layout_view_mod._JOG_DEGREES_PER_TICK
+    view.set_controller("DDJ-XP2")
+    assert view._jog_angles == {}
+
+
+def test_controller_emulator_view_spin_jog_from_key_filters_by_controller():
+    view = ControllerEmulatorView(config_provider=lambda: None)
+    view._combo.setCurrentText("XDJ-XZ")
+    key = ("XDJ-XZ", "DISPLAY", "Jog wheel")
+    view.spin_jog_from_key(key, 6)
+    assert view._emulator._jog_angles.get(key)
+
+    view._emulator._jog_angles.clear()
+    view._combo.setCurrentText("DDJ-XP2")
+    view.spin_jog_from_key(key, 6)  # instance now shows a different controller
+    assert not view._emulator._jog_angles
