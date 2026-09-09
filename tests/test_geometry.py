@@ -30,6 +30,7 @@ def test_xdj_xz_transport_geometry_covers_the_expected_controls():
         "PLAY/PAUSE",
         "CUE",
         "SYNC",
+        "SHIFT",  # added v0.47.68 so the emulator's SHIFT-held state is clickable
         "Jog wheel",
         "Tempo",
         "HOT CUE",

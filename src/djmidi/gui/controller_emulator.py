@@ -77,7 +77,13 @@ then resolve against that mode's bank via a `prefer_token` threaded into
 `layout.pick_default_variant` instead of always the lowest-numbered mode.
 Still discrete-click only -- DDJ-XP2's PAD MODE buttons double as modes
 5-8 via double click, unreachable here, so a click always selects mode
-1-4. Cleared on controller switch; not persisted across restarts."""
+1-4. Since v0.47.68 a **SHIFT** cell click also latches an instance-wide
+SHIFT-held state (ControllerEmulatorView._shift_held, lit while on):
+while held, an ambiguous cell resolves to its +SHIFT variant
+(prefer_shift threaded into pick_default_variant alongside prefer_token).
+A SHIFT geometry marker was added to XDJ-XZ (v0.47.68) so it's clickable
+there too, not just DDJ-XP2. All of this state is cleared on controller
+switch; none of it is persisted across restarts."""
 
 from __future__ import annotations
 
@@ -544,6 +550,14 @@ class ControllerEmulatorView(QWidget):
         # un-lit on a switch. Both cleared on controller change.
         self._pad_mode: dict[str, str] = {}
         self._pad_mode_button_key: dict[str, CellKey] = {}
+        # Phase 5, slice 2 continued: SHIFT-held state. Clicking a SHIFT
+        # cell toggles it; while on, an ambiguous cell resolves to its
+        # +SHIFT variant (prefer_shift threaded into pick_default_variant).
+        # Instance-wide (real hardware has a SHIFT per deck, but the
+        # emulator's discrete model treats it as one latched modifier).
+        # Cleared on controller change.
+        self._shift_held = False
+        self._shift_key: CellKey | None = None
 
         self._combo = QComboBox()
         self._combo.addItems(catalog.CONTROLLER_NAMES)
@@ -660,7 +674,20 @@ class ControllerEmulatorView(QWidget):
         self._toggle_active.clear()
         self._pad_mode.clear()
         self._pad_mode_button_key.clear()
+        self._shift_held = False
+        self._shift_key = None
         self._status_label.setText("Click a control to see what it resolves to.")
+
+    def _toggle_shift(self, key: CellKey) -> str:
+        """A SHIFT cell was clicked: flip the instance-wide SHIFT-held
+        state, keep the button lit while it's on, and return a status
+        suffix. ``""`` if ``key`` isn't a SHIFT cell."""
+        if key[2].removesuffix(" (R)") != "SHIFT":
+            return ""
+        self._shift_held = not self._shift_held
+        self._shift_key = key if self._shift_held else None
+        self._emulator.set_active(key, self._shift_held)
+        return f"  [SHIFT {'held' if self._shift_held else 'released'}]"
 
     def _current_pad_mode_token(self, key: CellKey) -> str | None:
         """The pad-variant name substring pad resolution should prefer for
@@ -691,6 +718,7 @@ class ControllerEmulatorView(QWidget):
         text = self._resolve(key)
         text += self._apply_output_state(key)
         text += self._select_pad_mode(key)
+        text += self._toggle_shift(key)
         sent = self._live_send.resolve_and_send(key[0], key)
         if sent is not None:
             text += f"  [LIVE SENT: ch{sent.channels[0] if sent.channels else '?'} {sent.note_or_cc} {sent.data1}]"
@@ -714,7 +742,7 @@ class ControllerEmulatorView(QWidget):
         confirmed selected/off value-collision case, where this project
         has no state yet to decide which one currently applies."""
         entry = layout_mod.resolve_side_aware_variant(
-            key[0], key, self._current_pad_mode_token(key)
+            key[0], key, self._current_pad_mode_token(key), self._shift_held
         )
         config = self._config_provider()
         if entry is None or config is None:
@@ -753,7 +781,7 @@ class ControllerEmulatorView(QWidget):
         # (controller, "PAD", "Pad 3 (R)")) resolves to *that* grid's real
         # deck (2/4) instead of always falling back to the left grid's.
         entry = layout_mod.resolve_side_aware_variant(
-            key[0], key, self._current_pad_mode_token(key)
+            key[0], key, self._current_pad_mode_token(key), self._shift_held
         )
         if entry is None:
             return f"{key[1]} {key[2]}: no raw MIDI trigger known for this control."
