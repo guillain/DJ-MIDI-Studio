@@ -183,6 +183,11 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         # jog wheel and the tempo fader still deserve a place in the overlay.
         "Jog wheel": ControlGeometry(0.062, 0.310, 0.216, 0.378, "circle", "#586b82"),
         "Tempo": ControlGeometry(0.300, 0.700, 0.028, 0.250, "rect", "#6fa8c9"),
+        # Muted neutral: a modifier key, not a function. The small [SHIFT]
+        # button below DIRECTION on the left tray -- added in v0.47.68 so the
+        # Controller Emulator's SHIFT-held state has a marker to click here
+        # (catalog entry NOTE 63 already existed).
+        "SHIFT": ControlGeometry(0.0185, 0.622, 0.026, 0.034, "rect", "#5f6b7a"),
         # Gray-blue: matches DDJ-XP2's PAD MODE utility accent -- these
         # select what the 8-pad grid below does.
         "HOT CUE": ControlGeometry(0.093, 0.800, 0.055, 0.018, "rect", "#7a8aa0"),

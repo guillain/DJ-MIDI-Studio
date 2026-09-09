@@ -88,6 +88,20 @@ def test_pick_default_variant_prefer_token_scopes_to_a_pad_mode_bank():
     assert _pick_default_variant(variants, prefer_token="(NO SUCH MODE)") is variants[0]
 
 
+def test_pick_default_variant_prefer_shift_picks_the_shift_variant():
+    clear_reverse_lookup_cache()
+    variants = reverse_lookup("DDJ-XP2")[("DDJ-XP2", "DECK", "BEAT SYNC")]
+    assert "SHIFT" not in _pick_default_variant(variants).name
+    assert "SHIFT" in _pick_default_variant(variants, prefer_shift=True).name
+    # Combined with prefer_token: the SHIFT variant *of that pad-mode bank*.
+    pads = reverse_lookup("DDJ-XP2")[("DDJ-XP2", "PAD", "Pad 1")]
+    picked = _pick_default_variant(pads, prefer_token="(PAD MODE 2)", prefer_shift=True)
+    assert "(PAD MODE 2)" in picked.name and "SHIFT" in picked.name
+    # A cell with no SHIFT variant resolves the same held or not.
+    sync = reverse_lookup("XDJ-XZ")[("XDJ-XZ", "DECK", "SYNC")]
+    assert _pick_default_variant(sync, prefer_shift=True) is _pick_default_variant(sync)
+
+
 def test_dry_run_lookup_only_includes_click_events():
     config = parse_file(FIXTURE)
     lookup = _dry_run_lookup(config)
@@ -768,3 +782,61 @@ def test_xdj_xz_hot_cue_beat_loop_buttons_steer_pad_resolution():
     assert view._pad_mode == {"": "(BEAT LOOP mode)"}
     beat_loop = view._resolve(("XDJ-XZ", "PAD", "Pad 1"))
     assert beat_loop != hot_cue
+
+
+# ─── Phase 5 slice 2 continued: SHIFT-held state ───────────────────────────
+
+
+def test_clicking_shift_latches_and_steers_resolution_to_the_shift_variant():
+    view = ControllerEmulatorView(config_provider=lambda: None)
+    view._combo.setCurrentText("DDJ-XP2")
+    plain = view._resolve(("DDJ-XP2", "DECK", "BEAT SYNC"))
+
+    view._on_control_pressed(("DDJ-XP2", "OTHER", "SHIFT"))
+    assert view._shift_held is True
+    assert ("DDJ-XP2", "OTHER", "SHIFT") in view._emulator._active_keys
+    shifted = view._resolve(("DDJ-XP2", "DECK", "BEAT SYNC"))
+    assert shifted != plain  # NOTE 88 -> NOTE 92
+
+    view._on_control_pressed(("DDJ-XP2", "OTHER", "SHIFT"))
+    assert view._shift_held is False
+    assert ("DDJ-XP2", "OTHER", "SHIFT") not in view._emulator._active_keys
+    assert view._resolve(("DDJ-XP2", "DECK", "BEAT SYNC")) == plain
+
+
+def test_shift_state_clears_on_controller_switch():
+    view = ControllerEmulatorView(config_provider=lambda: None)
+    view._combo.setCurrentText("DDJ-XP2")
+    view._on_control_pressed(("DDJ-XP2", "OTHER", "SHIFT"))
+    view._combo.setCurrentText("XDJ-XZ")
+    assert view._shift_held is False
+    assert view._shift_key is None
+
+
+def test_xdj_xz_has_a_clickable_shift_marker():
+    from djmidi.gui.layout_view import real_position_markers
+
+    shift = [m for m in real_position_markers("XDJ-XZ") if m.label == "SHIFT"]
+    assert shift and shift[0].key == ("XDJ-XZ", "DECK", "SHIFT")
+
+    view = ControllerEmulatorView(config_provider=lambda: None)
+    view._combo.setCurrentText("XDJ-XZ")
+    view._on_control_pressed(("XDJ-XZ", "DECK", "SHIFT"))
+    assert view._shift_held is True
+
+
+def test_shift_and_pad_mode_compose():
+    view = ControllerEmulatorView(config_provider=lambda: None)
+    view._combo.setCurrentText("DDJ-XP2")
+    view._on_control_pressed(("DDJ-XP2", "PAD MODE", "PAD MODE 2"))
+    view._on_control_pressed(("DDJ-XP2", "OTHER", "SHIFT"))
+    entry = _resolve_side_aware_for_test(view, ("DDJ-XP2", "PAD", "Pad 1"))
+    assert "(PAD MODE 2)" in entry.name and "SHIFT" in entry.name
+
+
+def _resolve_side_aware_for_test(view, key):
+    from djmidi.gui import layout as layout_mod
+
+    return layout_mod.resolve_side_aware_variant(
+        key[0], key, view._current_pad_mode_token(key), view._shift_held
+    )

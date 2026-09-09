@@ -530,7 +530,10 @@ def right_side_usage_deck_ids(controller: str) -> frozenset[str] | None:
 
 
 def resolve_side_aware_variant(
-    controller: str, key: CellKey, prefer_token: str | None = None
+    controller: str,
+    key: CellKey,
+    prefer_token: str | None = None,
+    prefer_shift: bool = False,
 ) -> catalog.ControlInfo | None:
     """Like reverse_lookup(controller).get(base_key) + pick_default_variant(),
     but first strips a real-position " (R)" suffix from the key's label
@@ -566,8 +569,9 @@ def resolve_side_aware_variant(
     non-real-position caller) behaves exactly as reverse_lookup() +
     pick_default_variant() already did.
 
-    ``prefer_token`` is threaded straight to pick_default_variant() -- the
-    Controller Emulator's pad-mode-page tracking (gui/pad_mode.py)."""
+    ``prefer_token`` / ``prefer_shift`` are threaded straight to
+    pick_default_variant() -- the Controller Emulator's pad-mode-page and
+    SHIFT-held state (gui/pad_mode.py, phase 5)."""
     controller_name, section, label = key
     right_side = label.endswith(_RIGHT_GRID_SUFFIX)
     base_label = label.removesuffix(_RIGHT_GRID_SUFFIX) if right_side else label
@@ -581,7 +585,7 @@ def resolve_side_aware_variant(
         ]
         if filtered:
             variants = filtered
-    entry = pick_default_variant(variants, prefer_token)
+    entry = pick_default_variant(variants, prefer_token, prefer_shift)
     right_channels = _RIGHT_SIDE_CHANNELS.get(controller_name, {}).get(section)
     if right_channels and len(entry.channels) > 1:
         side_channels = tuple(ch for ch in entry.channels if (ch in right_channels) == right_side)
@@ -594,14 +598,15 @@ _AMBIGUOUS_TRIGGER_MARKERS = ("shift", "long press", "press twice", "direct butt
 
 
 def pick_default_variant(
-    variants: list[catalog.ControlInfo], prefer_token: str | None = None
+    variants: list[catalog.ControlInfo],
+    prefer_token: str | None = None,
+    prefer_shift: bool = False,
 ) -> catalog.ControlInfo:
     """Given every raw ControlInfo variant reverse_lookup() collapsed into one
     CellKey (SHIFT vs. plain, or a 16-pad-mode bank), pick one fixed,
-    documented default to actually act on -- neither the Controller
-    Emulator nor a live-send click track per-instance state (SHIFT held,
-    current pad-mode page), so there's no way to know which variant the
-    user "means" beyond a consistent rule: prefer a variant whose name
+    documented default to actually act on -- neither the live-send click
+    path nor an emulator instance with no state set tracks which variant
+    the user "means", so the base rule is: prefer a variant whose name
     carries no SHIFT/long-press qualifier; among pad-mode-bank variants
     (which carry no such qualifier at all), take the first one found, which
     is reverse_lookup()'s lowest-numbered mode by construction.
@@ -613,6 +618,12 @@ def pick_default_variant(
     phase 5). Ignored when no variant matches, so an unknown/stale token
     just falls back to the plain default.
 
+    ``prefer_shift`` inverts the base rule: return the first variant whose
+    name carries a SHIFT qualifier (still respecting ``prefer_token``) --
+    the emulator passes it while its SHIFT-held state is on (phase 5).
+    Ignored when no variant is a SHIFT one (a cell with no SHIFT variant
+    resolves the same held or not).
+
     Shared by gui/controller_emulator.py (dry-run resolution) and
     gui/live_send.py (the real-MIDI-send path for ControllerLayoutView and
     ControllerImageView) -- one resolution rule for "what does clicking
@@ -622,6 +633,10 @@ def pick_default_variant(
         scoped = [v for v in variants if token in v.name.casefold()]
         if scoped:
             variants = scoped
+    if prefer_shift:
+        shifted = [v for v in variants if "shift" in v.name.casefold()]
+        if shifted:
+            return shifted[0]
     for variant in variants:
         lowered = variant.name.casefold()
         if not any(marker in lowered for marker in _AMBIGUOUS_TRIGGER_MARKERS):

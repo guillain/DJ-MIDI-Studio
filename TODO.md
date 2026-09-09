@@ -1382,11 +1382,18 @@ the DJ layout visual fidelity chantier.
   always the lowest-numbered mode. New Qt-free `gui/pad_mode.py` holds the
   per-controller `{button label: token}` table. Discrete-click only —
   DDJ-XP2's PAD MODE buttons double as modes 5–8 via double click,
-  unreachable here. Cleared on controller switch, not persisted. Still
-  open: SHIFT-held state (same `prefer_token` mechanism could carry it),
-  and the confirmed `selected`/`off` value-collision case (needs genuine
-  state about *which* of several slots is active, not just an on/off flip)
-  — the largest remaining piece, no existing precedent in the codebase.
+  unreachable here. Cleared on controller switch, not persisted.
+  **SHIFT-held state** followed in `v0.47.68-emulator-shift-state`:
+  clicking a SHIFT cell latches an instance-wide `_shift_held` (lit while
+  on) that makes an ambiguous cell resolve to its `+SHIFT` variant via a
+  `prefer_shift` flag threaded into `pick_default_variant` alongside
+  `prefer_token` (the two compose — SHIFT'd variant of the selected pad
+  mode). A SHIFT `CONTROL_GEOMETRY` marker was added to XDJ-XZ (measured
+  against its clean render) so it's clickable there too, not just
+  DDJ-XP2. Still open: the confirmed `selected`/`off` value-collision case
+  (needs genuine state about *which* of several slots is active, not just
+  an on/off flip) — the largest remaining piece, no existing precedent in
+  the codebase, still wants a scoping pass.
 
 ### External tester feedback (2026-08)
 
