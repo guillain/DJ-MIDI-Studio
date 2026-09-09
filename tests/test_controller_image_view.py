@@ -457,3 +457,68 @@ def test_midi_checkbox_disabled_when_only_one_variant_bundled():
     finally:
         catalog._registry._REGISTRY.pop("__OneVariantCtrl__", None)
         image_path.unlink(missing_ok=True)
+
+
+# ─── Persistent "held down" overlay state (set_active) ──────────────────────
+
+
+def _overlay_geometry_controller(view) -> str:
+    """Pick a controller whose reference_image is the geometry-canonical one
+    and turn the overlay on."""
+    view.set_controller("DDJ-XP2")  # clean render == canonical since v0.47.54
+    view._geometry_checkbox.setChecked(True)
+    assert view._overlay_items_by_label
+    return "DDJ-XP2"
+
+
+def test_set_active_tints_and_restores_an_overlay_marker():
+    from PySide6.QtGui import QColor
+
+    from djmidi.gui.controller_image_view import _ACTIVE_COLOR
+
+    view = ControllerImageView()
+    _overlay_geometry_controller(view)
+    item = view._overlay_items_by_label["Pad 1"]
+    resting = QColor(item.brush().color())
+
+    view.set_active("Pad 1", True)
+    assert "Pad 1" in view._active_labels
+    lit = view._overlay_items_by_label["Pad 1"].brush().color()
+    assert (lit.red(), lit.green(), lit.blue()) == (
+        QColor(_ACTIVE_COLOR).red(),
+        QColor(_ACTIVE_COLOR).green(),
+        QColor(_ACTIVE_COLOR).blue(),
+    )
+    assert view._overlay_items_by_label["Pad 1"].pen().color() == QColor(_ACTIVE_COLOR)
+
+    view.set_active("Pad 1", False)
+    assert "Pad 1" not in view._active_labels
+    assert view._overlay_items_by_label["Pad 1"].brush().color() == resting
+
+
+def test_flash_clear_falls_back_to_the_held_tint_not_the_resting_colour():
+    from PySide6.QtGui import QColor
+
+    from djmidi.gui.controller_image_view import _ACTIVE_COLOR
+
+    view = ControllerImageView()
+    _overlay_geometry_controller(view)
+    view.set_active("Pad 1", True)
+    view.flash_key("Pad 1")  # white pulse on top of the held state
+    assert view._overlay_items_by_label["Pad 1"].brush().color() == QColor(255, 255, 255, 200)
+    view._clear_flash("DDJ-XP2", "Pad 1")
+    # still held -> amber, not the marker's resting colour
+    got = view._overlay_items_by_label["Pad 1"].brush().color()
+    assert (got.red(), got.green(), got.blue()) == (
+        QColor(_ACTIVE_COLOR).red(),
+        QColor(_ACTIVE_COLOR).green(),
+        QColor(_ACTIVE_COLOR).blue(),
+    )
+
+
+def test_active_labels_cleared_on_controller_switch():
+    view = ControllerImageView()
+    _overlay_geometry_controller(view)
+    view.set_active("Pad 1", True)
+    view.set_controller("XDJ-XZ")
+    assert view._active_labels == set()

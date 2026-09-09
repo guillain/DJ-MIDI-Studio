@@ -1289,44 +1289,71 @@ class MainWindow(QMainWindow):
         self.controller_layout_view.set_selected_keys(keys)
 
     def _on_live_midi_event(self, event: MidiEvent) -> None:
-        self._update_layout_selection(event.channel, event.event_type, event.data1)
-        if event.channel and event.event_type and event.data1:
-            hits = catalog.lookup(event.channel, event.event_type, event.data1)
-            # Same reasoning as _update_layout_selection(): flash/value only
-            # the physical marker the live hit's own deck actually belongs
-            # to, not both sides of a split cell.
-            keys = {layout_mod.presentation_key_for_hit(hit) for hit in hits}
-            try:
-                value = int(event.data2)
-            except (TypeError, ValueError):
-                value = None
-            for key in keys:
-                self.layout_view.flash_key(key)
-                self.deck_layout_view.flash_key(key)
-                self.controller_layout_view.flash_key(key)
-                if value is not None:
-                    self.layout_view.set_value(key, value)
-                    self.deck_layout_view.set_value(key, value)
-                    self.controller_layout_view.set_value(key, value)
+        try:
+            value = int(event.data2)
+        except (TypeError, ValueError):
+            value = None
+        # A note release arrives as "Note Off" or as "Note On" with velocity
+        # 0 (running status). Catalog entries are all stored as "Note On", so
+        # resolve a release against "Note On" too -- the selection/highlight
+        # should track the control that was just let go, not vanish.
+        is_release = event.event_type == "Note Off" or (
+            event.event_type == "Note On" and value == 0
+        )
+        is_press = event.event_type == "Note On" and (value or 0) > 0
+        lookup_type = "Note On" if event.event_type == "Note Off" else event.event_type
 
-            # Flash the Controller Images tab's real-photo overlay too, for
-            # whichever controller it currently shows (gui/geometry.py).
-            image_controller = self.controller_image_view.current_controller_name()
+        self._update_layout_selection(event.channel, lookup_type, event.data1)
+        if not (event.channel and event.event_type and event.data1):
+            return
+        hits = catalog.lookup(event.channel, lookup_type, event.data1)
+        # Same reasoning as _update_layout_selection(): flash/value/hold only
+        # the physical marker the live hit's own deck actually belongs to,
+        # not both sides of a split cell.
+        keys = {layout_mod.presentation_key_for_hit(hit) for hit in hits}
+        layouts = (self.layout_view, self.deck_layout_view, self.controller_layout_view)
+        for key in keys:
+            # Persistent "held down" amber highlight first -- lit on press,
+            # cleared on release; a plain CC (neither) leaves it be -- so the
+            # 220ms white flash_key() pulse below always paints on top of it
+            # for a press (Controller Images mutates its marker in place;
+            # order matters there).
+            if is_press or is_release:
+                for lv in layouts:
+                    lv.set_active(key, is_press)
+            if not is_release:
+                for lv in layouts:
+                    lv.flash_key(key)
+            if value is not None:
+                for lv in layouts:
+                    lv.set_value(key, value)
+
+        # The Controller Images tab's real-photo overlay, for whichever
+        # controller it currently shows (gui/geometry.py).
+        image_controller = self.controller_image_view.current_controller_name()
+        for hit in hits:
+            if hit.controller != image_controller:
+                continue
+            label = resolve_geometry_label(hit.controller, hit.name)
+            if label is None:
+                continue
+            if is_press or is_release:
+                self.controller_image_view.set_active(label, is_press)
+            if not is_release:
+                self.controller_image_view.flash_key(label)
+
+        # Every open Controller Emulator dock -- the flash_live_hit /
+        # set_live_active_from_hit calls self-filter to the controller each
+        # instance shows, so this can run unconditionally over all of them.
+        for dock in self._emulator_docks.values():
+            view = dock.widget()
+            if not isinstance(view, ControllerEmulatorView):
+                continue
             for hit in hits:
-                if hit.controller != image_controller:
-                    continue
-                label = resolve_geometry_label(hit.controller, hit.name)
-                if label is not None:
-                    self.controller_image_view.flash_key(label)
-
-            # And every open Controller Emulator dock -- flash_live_hit()
-            # self-filters to the controller each instance shows, so this
-            # can run unconditionally over all of them.
-            for dock in self._emulator_docks.values():
-                view = dock.widget()
-                if isinstance(view, ControllerEmulatorView):
-                    for hit in hits:
-                        view.flash_live_hit(hit)
+                if is_press or is_release:
+                    view.set_live_active_from_hit(hit, is_press)
+                if not is_release:
+                    view.flash_live_hit(hit)
 
     def _on_intro_drilldown_requested(self, target: str, controller_name: str) -> None:
         if target in self._tool_docks:

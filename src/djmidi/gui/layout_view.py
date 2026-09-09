@@ -599,6 +599,12 @@ class ControllerLayoutView(QWidget):
         # (knob/fader/jog) don't react yet; animating an actual value is a
         # separate follow-up (#13 part 2 continued).
         self._flash_keys: set[CellKey] = set()
+        # Keys whose physical control is currently held down (live Note On,
+        # cleared on Note Off -- MainWindow._on_live_midi_event). Unlike the
+        # 220ms _flash_keys pulse this persists until the button is released,
+        # drawn as a steady amber border/tint (_ACTIVE_BORDER_PEN, the same
+        # look the Controller Emulator's phase-5 toggle state uses).
+        self._active_keys: set[CellKey] = set()
         # Last known 7-bit MIDI value per key, from a live event -- drives the
         # knob marker angle and fader thumb position (#13 part 2 continued).
         # Unlike a flash, this is a level, not a pulse: it persists (like a
@@ -824,6 +830,19 @@ class ControllerLayoutView(QWidget):
         self._values[key] = value
         self._rebuild()
 
+    def set_active(self, key: CellKey, active: bool) -> None:
+        """Persistent "held down" highlight for a pad/button, from a live
+        Note On (active=True) / Note Off (active=False) -- see the
+        _active_keys comment. A no-op rebuild is skipped when the state
+        doesn't actually change, same discipline as set_value()."""
+        if (key in self._active_keys) == active:
+            return
+        if active:
+            self._active_keys.add(key)
+        else:
+            self._active_keys.discard(key)
+        self._rebuild()
+
     def clear_selection_history(self) -> None:
         """Forget the faded selection trail while keeping the current cell."""
         self._selection_history.clear()
@@ -956,7 +975,14 @@ class ControllerLayoutView(QWidget):
         rect = QGraphicsRectItem(QRectF(0, 0, m.cell_w, m.half_h))
         rect.setPos(x, y)
         rect.setBrush(_brush_for_decks(decks) if (decks or tags) else _EMPTY_HALF_BRUSH)
-        rect.setPen(self._selection_pen(clickable_key))
+        pen = self._selection_pen(clickable_key)
+        if clickable_key in self._active_keys and clickable_key not in self._flash_keys:
+            amber = QColor(_ACTIVE_BORDER_PEN.color())
+            amber.setAlpha(_ACTIVE_FILL_ALPHA)
+            rect.setBrush(QBrush(amber))
+            if pen in (_BORDER_PEN, _HISTORY_PEN):
+                pen = _ACTIVE_BORDER_PEN
+        rect.setPen(pen)
         rect.setData(_KEY_ROLE, clickable_key)
         deck_text = ", ".join(f"Deck {d}" for d in sorted(decks)) if decks else "not used"
         tag_text = ", ".join(sorted(tags)) if tags else "no function mapped"
@@ -1196,7 +1222,17 @@ class ControllerLayoutView(QWidget):
                 # there's a blank canvas behind it.
                 resting.setAlpha(30 if photo_shown else 90)
                 bg_item.setBrush(QBrush(resting))
-            bg_item.setPen(self._selection_pen(key))
+            pen = self._selection_pen(key)
+            # Held-down state: steady amber fill + border, but a live
+            # selection (red) still wins the border so cross-tab navigation
+            # stays legible; the amber fill keeps "lit" visible underneath.
+            if key in self._active_keys and key not in self._flash_keys:
+                amber = QColor(_ACTIVE_BORDER_PEN.color())
+                amber.setAlpha(_ACTIVE_FILL_ALPHA)
+                bg_item.setBrush(QBrush(amber))
+                if pen in (_BORDER_PEN, _HISTORY_PEN):
+                    pen = _ACTIVE_BORDER_PEN
+            bg_item.setPen(pen)
             bg_item.setData(_KEY_ROLE, key)
             deck_text = ", ".join(f"Deck {d}" for d in sorted(decks)) if decks else "not used"
             tag_text = ", ".join(sorted(tags)) if tags else "no function mapped"

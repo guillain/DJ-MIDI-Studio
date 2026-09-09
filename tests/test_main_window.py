@@ -919,3 +919,64 @@ def test_edit_column_hidden_on_non_tree_tabs():
     finally:
         catalog.set_enabled_plugin_ids(None)
         window.close()
+
+
+def test_on_live_midi_event_holds_and_releases_the_active_highlight():
+    from djmidi.midi_io import MidiEvent
+
+    window = _loaded_window()
+    press = MidiEvent(direction="in", channel="8", event_type="Note On", data1="64", data2="127", timestamp=0.0)
+    window._on_live_midi_event(press)
+    QApplication.processEvents()
+    assert window.layout_view._active_keys
+    assert window.deck_layout_view._active_keys
+    assert window.controller_layout_view._active_keys
+
+    release = MidiEvent(direction="in", channel="8", event_type="Note Off", data1="64", data2="0", timestamp=0.1)
+    window._on_live_midi_event(release)
+    QApplication.processEvents()
+    assert not window.layout_view._active_keys
+    assert not window.controller_layout_view._active_keys
+    window.close()
+
+
+def test_on_live_midi_event_treats_velocity_zero_note_on_as_a_release():
+    from djmidi.midi_io import MidiEvent
+
+    window = _loaded_window()
+    window._on_live_midi_event(
+        MidiEvent(direction="in", channel="8", event_type="Note On", data1="64", data2="127", timestamp=0.0)
+    )
+    QApplication.processEvents()
+    assert window.layout_view._active_keys
+    window._on_live_midi_event(
+        MidiEvent(direction="in", channel="8", event_type="Note On", data1="64", data2="0", timestamp=0.1)
+    )
+    QApplication.processEvents()
+    assert not window.layout_view._active_keys
+    window.close()
+
+
+def test_on_live_midi_event_holds_an_open_emulator_and_the_image_overlay():
+    from djmidi.gui.controller_emulator import ControllerEmulatorView
+    from djmidi.midi_io import MidiEvent
+
+    window = _loaded_window()
+    window.controller_image_view.set_controller("DDJ-XP2")
+    window.controller_image_view._geometry_checkbox.setChecked(True)
+    dock = window._create_emulator_instance("DDJ-XP2")
+    emu = dock.widget()
+    assert isinstance(emu, ControllerEmulatorView)
+
+    press = MidiEvent(direction="in", channel="8", event_type="Note On", data1="64", data2="127", timestamp=0.0)
+    window._on_live_midi_event(press)
+    QApplication.processEvents()
+    assert emu._emulator._live_active_keys
+    assert window.controller_image_view._active_labels
+
+    release = MidiEvent(direction="in", channel="8", event_type="Note Off", data1="64", data2="0", timestamp=0.1)
+    window._on_live_midi_event(release)
+    QApplication.processEvents()
+    assert not emu._emulator._live_active_keys
+    assert not window.controller_image_view._active_labels
+    window.close()

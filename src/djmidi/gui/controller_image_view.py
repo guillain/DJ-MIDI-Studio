@@ -41,6 +41,12 @@ from djmidi.gui.live_send import LiveSendControl
 
 _FLASH_DURATION_MS = 220
 _FLASH_COLOR = "#ffffff"
+# Persistent "held down" tint, matching layout_view._ACTIVE_BORDER_PEN's
+# amber (QColor(255, 196, 60)) -- distinct from the 220ms white press
+# pulse. Driven by input-direction Note On/Off (MainWindow._on_live_midi_event):
+# lit while the physical control is held, cleared on release.
+_ACTIVE_COLOR = "#ffc43c"
+_ACTIVE_FILL_ALPHA = 170
 _LABEL_ROLE = 0
 _CLICK_DRAG_TOLERANCE_PX = 4
 
@@ -211,6 +217,9 @@ class ControllerImageView(QWidget):
         self._pixmap_item: QGraphicsPixmapItem | None = None
         self._overlay_items: list[QAbstractGraphicsShapeItem] = []
         self._overlay_items_by_label: dict[str, QAbstractGraphicsShapeItem] = {}
+        # Labels whose physical control is currently held down (live Note On,
+        # cleared on Note Off) -- drawn with a persistent amber tint.
+        self._active_labels: set[str] = set()
 
         self._live_send_status = QLabel("")
         self._live_send_status.setWordWrap(True)
@@ -264,6 +273,7 @@ class ControllerImageView(QWidget):
         self._pixmap_item = None
         self._overlay_items = []
         self._overlay_items_by_label = {}
+        self._active_labels.clear()  # held-state is per-controller
         self._view.resetTransform()
 
         reference = image_for_controller(name)
@@ -347,9 +357,14 @@ class ControllerImageView(QWidget):
                 geom.w * image_w,
                 geom.h * image_h,
             )
-            fill = QColor(geom.color)
-            fill.setAlpha(110)
-            pen = QPen(QColor(geom.color))
+            if label in self._active_labels:
+                fill = QColor(_ACTIVE_COLOR)
+                fill.setAlpha(_ACTIVE_FILL_ALPHA)
+                pen = QPen(QColor(_ACTIVE_COLOR))
+            else:
+                fill = QColor(geom.color)
+                fill.setAlpha(110)
+                pen = QPen(QColor(geom.color))
             pen.setWidth(3)
             shape_item: QAbstractGraphicsShapeItem = (
                 QGraphicsEllipseItem(rect) if geom.shape == "circle" else QGraphicsRectItem(rect)
@@ -385,9 +400,44 @@ class ControllerImageView(QWidget):
         geom = CONTROL_GEOMETRY.get(controller, {}).get(label)
         if item is None or geom is None:
             return
-        fill = QColor(geom.color)
-        fill.setAlpha(110)
+        # Fall back to the held-down amber tint, not the resting colour, if
+        # the control is still being held when the flash pulse expires.
+        if label in self._active_labels:
+            fill = QColor(_ACTIVE_COLOR)
+            fill.setAlpha(_ACTIVE_FILL_ALPHA)
+        else:
+            fill = QColor(geom.color)
+            fill.setAlpha(110)
         item.setBrush(QBrush(fill))
+
+    def set_active(self, label: str, active: bool) -> None:
+        """Persistent "held down" highlight for a modeled control -- called
+        by MainWindow._on_live_midi_event on a live Note On (active=True) /
+        Note Off (active=False). A no-op if the state doesn't actually
+        change or the label isn't currently drawn."""
+        if (label in self._active_labels) == active:
+            return
+        if active:
+            self._active_labels.add(label)
+        else:
+            self._active_labels.discard(label)
+        item = self._overlay_items_by_label.get(label)
+        if item is None:
+            return
+        geom = CONTROL_GEOMETRY.get(self._combo.currentText(), {}).get(label)
+        if active:
+            fill = QColor(_ACTIVE_COLOR)
+            fill.setAlpha(_ACTIVE_FILL_ALPHA)
+            pen = QPen(QColor(_ACTIVE_COLOR))
+        elif geom is not None:
+            fill = QColor(geom.color)
+            fill.setAlpha(110)
+            pen = QPen(QColor(geom.color))
+        else:
+            return
+        pen.setWidth(3)
+        item.setBrush(QBrush(fill))
+        item.setPen(pen)
 
     def _on_marker_clicked(self, label: str) -> None:
         """Resolves a clicked overlay marker's label back to a raw trigger
