@@ -529,7 +529,9 @@ def right_side_usage_deck_ids(controller: str) -> frozenset[str] | None:
     return frozenset(str(deck - 1) for deck in right_decks)
 
 
-def resolve_side_aware_variant(controller: str, key: CellKey) -> catalog.ControlInfo | None:
+def resolve_side_aware_variant(
+    controller: str, key: CellKey, prefer_token: str | None = None
+) -> catalog.ControlInfo | None:
     """Like reverse_lookup(controller).get(base_key) + pick_default_variant(),
     but first strips a real-position " (R)" suffix from the key's label
     (see geometry.py's "Right pad grid" docstring) and narrows the result
@@ -562,7 +564,10 @@ def resolve_side_aware_variant(controller: str, key: CellKey) -> catalog.Control
     same as cell_key_for_geometry_label(); a plain key with no suffix
     (unaffected by this fix -- classic-grid cells, or any
     non-real-position caller) behaves exactly as reverse_lookup() +
-    pick_default_variant() already did."""
+    pick_default_variant() already did.
+
+    ``prefer_token`` is threaded straight to pick_default_variant() -- the
+    Controller Emulator's pad-mode-page tracking (gui/pad_mode.py)."""
     controller_name, section, label = key
     right_side = label.endswith(_RIGHT_GRID_SUFFIX)
     base_label = label.removesuffix(_RIGHT_GRID_SUFFIX) if right_side else label
@@ -576,7 +581,7 @@ def resolve_side_aware_variant(controller: str, key: CellKey) -> catalog.Control
         ]
         if filtered:
             variants = filtered
-    entry = pick_default_variant(variants)
+    entry = pick_default_variant(variants, prefer_token)
     right_channels = _RIGHT_SIDE_CHANNELS.get(controller_name, {}).get(section)
     if right_channels and len(entry.channels) > 1:
         side_channels = tuple(ch for ch in entry.channels if (ch in right_channels) == right_side)
@@ -588,7 +593,9 @@ def resolve_side_aware_variant(controller: str, key: CellKey) -> catalog.Control
 _AMBIGUOUS_TRIGGER_MARKERS = ("shift", "long press", "press twice", "direct button")
 
 
-def pick_default_variant(variants: list[catalog.ControlInfo]) -> catalog.ControlInfo:
+def pick_default_variant(
+    variants: list[catalog.ControlInfo], prefer_token: str | None = None
+) -> catalog.ControlInfo:
     """Given every raw ControlInfo variant reverse_lookup() collapsed into one
     CellKey (SHIFT vs. plain, or a 16-pad-mode bank), pick one fixed,
     documented default to actually act on -- neither the Controller
@@ -599,10 +606,22 @@ def pick_default_variant(variants: list[catalog.ControlInfo]) -> catalog.Control
     (which carry no such qualifier at all), take the first one found, which
     is reverse_lookup()'s lowest-numbered mode by construction.
 
+    ``prefer_token`` (case-insensitive substring, e.g. ``"(HOT CUE mode)"``)
+    narrows the field to variants whose name contains it *before* applying
+    the rule above -- the Controller Emulator passes the token for the
+    pad-mode page the user last selected in that instance (gui/pad_mode.py,
+    phase 5). Ignored when no variant matches, so an unknown/stale token
+    just falls back to the plain default.
+
     Shared by gui/controller_emulator.py (dry-run resolution) and
     gui/live_send.py (the real-MIDI-send path for ControllerLayoutView and
     ControllerImageView) -- one resolution rule for "what does clicking
     this ambiguous cell actually mean", not two independently-drifting ones."""
+    if prefer_token:
+        token = prefer_token.casefold()
+        scoped = [v for v in variants if token in v.name.casefold()]
+        if scoped:
+            variants = scoped
     for variant in variants:
         lowered = variant.name.casefold()
         if not any(marker in lowered for marker in _AMBIGUOUS_TRIGGER_MARKERS):

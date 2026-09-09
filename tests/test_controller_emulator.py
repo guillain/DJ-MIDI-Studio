@@ -78,6 +78,16 @@ def test_pick_default_variant_falls_back_to_the_lowest_pad_mode():
     assert picked is variants[0]
 
 
+def test_pick_default_variant_prefer_token_scopes_to_a_pad_mode_bank():
+    clear_reverse_lookup_cache()
+    variants = reverse_lookup("DDJ-XP2")[("DDJ-XP2", "PAD", "Pad 1")]
+    picked = _pick_default_variant(variants, prefer_token="(PAD MODE 3)")
+    assert "(PAD MODE 3)" in picked.name
+    assert "+SHIFT" not in picked.name  # still prefers the no-shift variant within the bank
+    # An unknown token falls back to the plain default (no crash, no empty).
+    assert _pick_default_variant(variants, prefer_token="(NO SUCH MODE)") is variants[0]
+
+
 def test_dry_run_lookup_only_includes_click_events():
     config = parse_file(FIXTURE)
     lookup = _dry_run_lookup(config)
@@ -700,3 +710,61 @@ def test_controller_emulator_view_spin_jog_from_key_filters_by_controller():
     view._combo.setCurrentText("DDJ-XP2")
     view.spin_jog_from_key(key, 6)  # instance now shows a different controller
     assert not view._emulator._jog_angles
+
+
+# ─── Phase 5 slice 2: pad-mode-page tracking (gui/pad_mode.py) ──────────────
+
+
+def test_clicking_a_pad_mode_button_steers_later_pad_resolution():
+    view = ControllerEmulatorView(config_provider=lambda: None)
+    view._combo.setCurrentText("DDJ-XP2")
+
+    before = view._resolve(("DDJ-XP2", "PAD", "Pad 1"))
+    assert "NOTE 0" in before  # PAD MODE 1 (lowest) by default
+
+    view._on_control_pressed(("DDJ-XP2", "PAD MODE", "PAD MODE 3"))
+    assert view._pad_mode == {"": "(PAD MODE 3)"}
+    assert ("DDJ-XP2", "PAD MODE", "PAD MODE 3") in view._emulator._active_keys
+
+    after = view._resolve(("DDJ-XP2", "PAD", "Pad 1"))
+    assert "NOTE 32" in after  # (3 - 1) * 16 -- PAD MODE 3's bank
+
+
+def test_pad_mode_selection_is_per_grid_side():
+    view = ControllerEmulatorView(config_provider=lambda: None)
+    view._combo.setCurrentText("DDJ-XP2")
+    view._on_control_pressed(("DDJ-XP2", "PAD MODE", "PAD MODE 3"))
+    # Left grid follows mode 3; the untouched right grid still defaults.
+    assert "NOTE 32" in view._resolve(("DDJ-XP2", "PAD", "Pad 1"))
+    assert "NOTE 0" in view._resolve(("DDJ-XP2", "PAD", "Pad 1 (R)"))
+    assert view._current_pad_mode_token(("DDJ-XP2", "PAD", "Pad 1 (R)")) is None
+
+
+def test_selecting_a_new_pad_mode_relights_and_unlights():
+    view = ControllerEmulatorView(config_provider=lambda: None)
+    view._combo.setCurrentText("DDJ-XP2")
+    view._on_control_pressed(("DDJ-XP2", "PAD MODE", "PAD MODE 2"))
+    view._on_control_pressed(("DDJ-XP2", "PAD MODE", "PAD MODE 4"))
+    assert view._pad_mode == {"": "(PAD MODE 4)"}
+    assert ("DDJ-XP2", "PAD MODE", "PAD MODE 4") in view._emulator._active_keys
+    assert ("DDJ-XP2", "PAD MODE", "PAD MODE 2") not in view._emulator._active_keys
+
+
+def test_pad_mode_state_clears_on_controller_switch():
+    view = ControllerEmulatorView(config_provider=lambda: None)
+    view._combo.setCurrentText("DDJ-XP2")
+    view._on_control_pressed(("DDJ-XP2", "PAD MODE", "PAD MODE 3"))
+    view._combo.setCurrentText("XDJ-XZ")
+    assert view._pad_mode == {}
+    assert view._pad_mode_button_key == {}
+
+
+def test_xdj_xz_hot_cue_beat_loop_buttons_steer_pad_resolution():
+    view = ControllerEmulatorView(config_provider=lambda: None)
+    view._combo.setCurrentText("XDJ-XZ")
+    hot_cue = view._resolve(("XDJ-XZ", "PAD", "Pad 1"))  # HOT CUE mode default
+
+    view._on_control_pressed(("XDJ-XZ", "DECK", "BEAT LOOP"))
+    assert view._pad_mode == {"": "(BEAT LOOP mode)"}
+    beat_loop = view._resolve(("XDJ-XZ", "PAD", "Pad 1"))
+    assert beat_loop != hot_cue
