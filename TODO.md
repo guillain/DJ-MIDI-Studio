@@ -1462,6 +1462,19 @@ against the current tree and confirmed still open. Tracked as GitHub issues.
   "MIDI Output" panel grew past it. Removed `AlignTop` and let the port
   list grow into the freed space (stretch factor, dropped the old 90px
   height cap), so both panels now share the row's height.
+  `v0.47.70-dashboard-scroll-clipping`: a proactive audit (offscreen
+  `MainWindow.grab()` at 1280x820 / 1000x650 / 900x600, every tab + tool
+  dock — being the tester rather than waiting on the reporter) found a
+  second concrete repro: the **Dashboard**'s "Controller overview" card
+  (a controller photo + catalog/file stats + Channel/Controller/Images
+  drill-down buttons) is tall, and below ~750px window height its bottom
+  — the drill-down buttons especially — fell off the visible area with no
+  scroll, and the stats text overlapped the shrunk photo. Same fix as
+  Controller Setup: wrapped the whole `IntroductionView` in a
+  `QScrollArea` (`widgetResizable`, no frame), dropped the trailing
+  `addStretch` (the scroll area stretches the content itself), and
+  lowered the card photo's minimum height 220→170 so the default size
+  still fits without a scrollbar.
 
 ### Next phases to define
 

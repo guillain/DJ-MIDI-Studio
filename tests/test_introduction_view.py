@@ -87,3 +87,23 @@ def test_refresh_midi_availability_marks_matching_controller():
     view.refresh_midi_availability(["USB DDJ-XP2 MIDI 1"])
     assert view._availability_labels["DDJ-XP2"].text() == "MIDI: available"
     assert view._availability_labels["XDJ-XZ"].text() == "MIDI: not detected"
+
+
+def test_dashboard_content_is_wrapped_in_a_scroll_area():
+    """Issue #19: below ~750px window height the Controller overview card's
+    drill-down buttons fell off the bottom with no way to reach them. The
+    whole tab is now inside a QScrollArea so every control stays reachable."""
+    from PySide6.QtWidgets import QScrollArea
+
+    view = IntroductionView()
+    scrolls = view.findChildren(QScrollArea)
+    assert scrolls, "Dashboard tab is not scrollable"
+    scroll = scrolls[0]
+    assert scroll.widgetResizable() is True
+    # The drill-down buttons live inside the scrolled content, not the view's
+    # own (empty) outer layout.
+    assert scroll.widget() is not None
+    channel_btn = next(
+        b for b in view.findChildren(QPushButton) if b.text() == "Channel"
+    )
+    assert scroll.widget().isAncestorOf(channel_btn)

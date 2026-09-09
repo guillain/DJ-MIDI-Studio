@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QPushButton,
+    QScrollArea,
     QSizePolicy,
     QTabWidget,
     QVBoxLayout,
@@ -97,14 +98,30 @@ class IntroductionView(QWidget):
         overview_header.addWidget(catalog_box, 3)
         overview_header.addWidget(tools_box, 1)
 
-        layout = QVBoxLayout(self)
+        # The Controller overview card (a controller photo + stats + drill-down
+        # buttons) is tall enough that below ~750px window height the bottom
+        # of this tab -- the drill-down buttons especially -- fell off the
+        # visible area with no way to reach it (issue #19). Wrap the whole
+        # tab in a scroll area, same fix as Controller Setup's io_row.
+        content = QWidget()
+        layout = QVBoxLayout(content)
         layout.addWidget(title)
         layout.addWidget(description)
         layout.addWidget(self._loaded_file_label)
         layout.addLayout(overview_header)
         layout.addWidget(cards_box)
         layout.addWidget(info)
-        layout.addStretch(1)
+        # No trailing addStretch: the QScrollArea (widgetResizable) already
+        # stretches `content` to fill the viewport when it's taller than the
+        # content, and a stretch here would only inflate the scrolled height.
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setWidget(content)
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        outer.addWidget(scroll)
 
         self.refresh_controllers()
 
@@ -192,7 +209,11 @@ class IntroductionView(QWidget):
 
         image = QLabel()
         image.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        image.setMinimumSize(360, 220)
+        # Keep a floor so the card stays readable, but low enough that the
+        # whole Dashboard still fits without a scrollbar at the default
+        # window height (the scroll area added for issue #19 takes over
+        # below that).
+        image.setMinimumSize(320, 170)
         image.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         image_name = image_for_controller(controller)
         path = ASSETS_DIR / image_name if image_name else None
