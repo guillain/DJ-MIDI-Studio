@@ -1293,6 +1293,19 @@ class MainWindow(QMainWindow):
             value = int(event.data2)
         except (TypeError, ValueError):
             value = None
+
+        # Output-direction traffic (Serato -> controller LED feedback, seen on
+        # the virtual monitor port) drives a *latched* LED highlight, kept
+        # separate from the input-direction momentary "held" state so an
+        # input release can't clear an LED the software is still driving. We
+        # assume the LED note number equals the input trigger note (Serato's
+        # own convention for almost every mapping; there's no per-control
+        # led_note field in the catalog). No flash, no selection change --
+        # this is passive state, not a user gesture.
+        if event.direction == "out":
+            self._on_output_led_event(event, value)
+            return
+
         # A note release arrives as "Note Off" or as "Note On" with velocity
         # 0 (running status). Catalog entries are all stored as "Note On", so
         # resolve a release against "Note On" too -- the selection/highlight
@@ -1354,6 +1367,39 @@ class MainWindow(QMainWindow):
                     view.set_live_active_from_hit(hit, is_press)
                 if not is_release:
                     view.flash_live_hit(hit)
+
+    def _on_output_led_event(self, event: MidiEvent, value: int | None) -> None:
+        """Latch/clear the amber LED highlight from an output-direction MIDI
+        note. Only note events count -- a CC on the output port (rare, e.g. a
+        motorised fader) has no LED meaning here and is ignored."""
+        led_on = event.event_type == "Note On" and (value or 0) > 0
+        led_off = event.event_type == "Note Off" or (
+            event.event_type == "Note On" and value == 0
+        )
+        if not (led_on or led_off):
+            return
+        if not (event.channel and event.data1):
+            return
+        hits = catalog.lookup(event.channel, "Note On", event.data1)
+        keys = {layout_mod.presentation_key_for_hit(hit) for hit in hits}
+        layouts = (self.layout_view, self.deck_layout_view, self.controller_layout_view)
+        for key in keys:
+            for lv in layouts:
+                lv.set_led(key, led_on)
+
+        image_controller = self.controller_image_view.current_controller_name()
+        for hit in hits:
+            if hit.controller == image_controller:
+                label = resolve_geometry_label(hit.controller, hit.name)
+                if label is not None:
+                    self.controller_image_view.set_led(label, led_on)
+
+        for dock in self._emulator_docks.values():
+            view = dock.widget()
+            if not isinstance(view, ControllerEmulatorView):
+                continue
+            for hit in hits:
+                view.set_led_from_hit(hit, led_on)
 
     def _on_intro_drilldown_requested(self, target: str, controller_name: str) -> None:
         if target in self._tool_docks:

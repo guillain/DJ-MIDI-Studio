@@ -605,6 +605,14 @@ class ControllerLayoutView(QWidget):
         # drawn as a steady amber border/tint (_ACTIVE_BORDER_PEN, the same
         # look the Controller Emulator's phase-5 toggle state uses).
         self._active_keys: set[CellKey] = set()
+        # Keys whose LED is currently lit according to *output-direction* MIDI
+        # (Serato -> controller feedback, seen on the virtual monitor port).
+        # Latched: set on a Note On with velocity > 0, cleared on Note Off /
+        # velocity 0. Rendered with the same amber look as _active_keys and
+        # OR'd with it, but kept in a separate set so an input-direction
+        # release can't clear an LED the software is still driving (and vice
+        # versa). See MainWindow._on_live_midi_event's direction == "out" path.
+        self._led_keys: set[CellKey] = set()
         # Last known 7-bit MIDI value per key, from a live event -- drives the
         # knob marker angle and fader thumb position (#13 part 2 continued).
         # Unlike a flash, this is a level, not a pulse: it persists (like a
@@ -843,6 +851,18 @@ class ControllerLayoutView(QWidget):
             self._active_keys.discard(key)
         self._rebuild()
 
+    def set_led(self, key: CellKey, active: bool) -> None:
+        """Latched LED highlight for a pad/button, driven by output-direction
+        MIDI (Serato lighting the control up). Same amber look as set_active
+        but a separate set -- see the _led_keys comment."""
+        if (key in self._led_keys) == active:
+            return
+        if active:
+            self._led_keys.add(key)
+        else:
+            self._led_keys.discard(key)
+        self._rebuild()
+
     def clear_selection_history(self) -> None:
         """Forget the faded selection trail while keeping the current cell."""
         self._selection_history.clear()
@@ -976,7 +996,8 @@ class ControllerLayoutView(QWidget):
         rect.setPos(x, y)
         rect.setBrush(_brush_for_decks(decks) if (decks or tags) else _EMPTY_HALF_BRUSH)
         pen = self._selection_pen(clickable_key)
-        if clickable_key in self._active_keys and clickable_key not in self._flash_keys:
+        is_amber = clickable_key in self._active_keys or clickable_key in self._led_keys
+        if is_amber and clickable_key not in self._flash_keys:
             amber = QColor(_ACTIVE_BORDER_PEN.color())
             amber.setAlpha(_ACTIVE_FILL_ALPHA)
             rect.setBrush(QBrush(amber))
@@ -1226,7 +1247,9 @@ class ControllerLayoutView(QWidget):
             # Held-down state: steady amber fill + border, but a live
             # selection (red) still wins the border so cross-tab navigation
             # stays legible; the amber fill keeps "lit" visible underneath.
-            if key in self._active_keys and key not in self._flash_keys:
+            if (
+                key in self._active_keys or key in self._led_keys
+            ) and key not in self._flash_keys:
                 amber = QColor(_ACTIVE_BORDER_PEN.color())
                 amber.setAlpha(_ACTIVE_FILL_ALPHA)
                 bg_item.setBrush(QBrush(amber))

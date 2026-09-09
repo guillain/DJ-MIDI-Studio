@@ -670,3 +670,35 @@ def test_selection_border_still_wins_over_the_active_border():
     view.set_selected_keys({key})
     # Red selection border wins; the amber fill still shows the held state.
     assert _bg_item_for(view, key).pen().color() == layout_view_mod._SELECTED_PEN.color()
+
+
+def test_set_led_marks_and_unmarks_a_key_independently_of_active():
+    view = ControllerLayoutView()
+    view.set_controller("DDJ-XP2")
+    key = ("DDJ-XP2", "PAD", "Pad 1")
+    view.set_led(key, True)
+    assert key in view._led_keys
+    assert key not in view._active_keys
+    view.set_led(key, False)
+    assert key not in view._led_keys
+
+
+def test_led_key_gets_the_amber_border_in_real_position_mode():
+    view = ControllerLayoutView()
+    view.set_controller("DDJ-XP2")
+    key = ("DDJ-XP2", "PAD", "Pad 1")
+    view.set_led(key, True)
+    assert _bg_item_for(view, key).pen().color() == layout_view_mod._ACTIVE_BORDER_PEN.color()
+    view.set_led(key, False)
+    assert _bg_item_for(view, key).pen().color() != layout_view_mod._ACTIVE_BORDER_PEN.color()
+
+
+def test_input_release_does_not_clear_the_output_led():
+    view = ControllerLayoutView()
+    view.set_controller("DDJ-XP2")
+    key = ("DDJ-XP2", "PAD", "Pad 1")
+    view.set_led(key, True)
+    view.set_active(key, True)
+    view.set_active(key, False)  # physical button released...
+    assert key in view._led_keys  # ...but Serato still drives the LED
+    assert _bg_item_for(view, key).pen().color() == layout_view_mod._ACTIVE_BORDER_PEN.color()

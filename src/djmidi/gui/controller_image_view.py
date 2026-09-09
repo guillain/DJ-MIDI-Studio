@@ -220,6 +220,10 @@ class ControllerImageView(QWidget):
         # Labels whose physical control is currently held down (live Note On,
         # cleared on Note Off) -- drawn with a persistent amber tint.
         self._active_labels: set[str] = set()
+        # Labels whose LED is lit per output-direction MIDI (Serato -> device
+        # feedback on the virtual monitor port). Latched, same amber tint,
+        # kept separate so an input-direction release can't clear it.
+        self._led_labels: set[str] = set()
 
         self._live_send_status = QLabel("")
         self._live_send_status.setWordWrap(True)
@@ -274,6 +278,7 @@ class ControllerImageView(QWidget):
         self._overlay_items = []
         self._overlay_items_by_label = {}
         self._active_labels.clear()  # held-state is per-controller
+        self._led_labels.clear()  # LED-state is per-controller
         self._view.resetTransform()
 
         reference = image_for_controller(name)
@@ -357,7 +362,7 @@ class ControllerImageView(QWidget):
                 geom.w * image_w,
                 geom.h * image_h,
             )
-            if label in self._active_labels:
+            if label in self._active_labels or label in self._led_labels:
                 fill = QColor(_ACTIVE_COLOR)
                 fill.setAlpha(_ACTIVE_FILL_ALPHA)
                 pen = QPen(QColor(_ACTIVE_COLOR))
@@ -400,9 +405,9 @@ class ControllerImageView(QWidget):
         geom = CONTROL_GEOMETRY.get(controller, {}).get(label)
         if item is None or geom is None:
             return
-        # Fall back to the held-down amber tint, not the resting colour, if
-        # the control is still being held when the flash pulse expires.
-        if label in self._active_labels:
+        # Fall back to the amber tint, not the resting colour, if the control
+        # is still held or its LED still lit when the flash pulse expires.
+        if label in self._active_labels or label in self._led_labels:
             fill = QColor(_ACTIVE_COLOR)
             fill.setAlpha(_ACTIVE_FILL_ALPHA)
         else:
@@ -410,22 +415,14 @@ class ControllerImageView(QWidget):
             fill.setAlpha(110)
         item.setBrush(QBrush(fill))
 
-    def set_active(self, label: str, active: bool) -> None:
-        """Persistent "held down" highlight for a modeled control -- called
-        by MainWindow._on_live_midi_event on a live Note On (active=True) /
-        Note Off (active=False). A no-op if the state doesn't actually
-        change or the label isn't currently drawn."""
-        if (label in self._active_labels) == active:
-            return
-        if active:
-            self._active_labels.add(label)
-        else:
-            self._active_labels.discard(label)
+    def _restyle_label(self, label: str) -> None:
+        """Repaint one overlay marker to match its current amber/resting
+        state (amber when held or LED-lit, resting colour otherwise)."""
         item = self._overlay_items_by_label.get(label)
         if item is None:
             return
         geom = CONTROL_GEOMETRY.get(self._combo.currentText(), {}).get(label)
-        if active:
+        if label in self._active_labels or label in self._led_labels:
             fill = QColor(_ACTIVE_COLOR)
             fill.setAlpha(_ACTIVE_FILL_ALPHA)
             pen = QPen(QColor(_ACTIVE_COLOR))
@@ -438,6 +435,31 @@ class ControllerImageView(QWidget):
         pen.setWidth(3)
         item.setBrush(QBrush(fill))
         item.setPen(pen)
+
+    def set_active(self, label: str, active: bool) -> None:
+        """Persistent "held down" highlight for a modeled control -- called
+        by MainWindow._on_live_midi_event on a live Note On (active=True) /
+        Note Off (active=False). A no-op if the state doesn't actually
+        change or the label isn't currently drawn."""
+        if (label in self._active_labels) == active:
+            return
+        if active:
+            self._active_labels.add(label)
+        else:
+            self._active_labels.discard(label)
+        self._restyle_label(label)
+
+    def set_led(self, label: str, active: bool) -> None:
+        """Latched LED highlight for a modeled control, driven by
+        output-direction MIDI (Serato lighting the control up). Same amber
+        look as set_active but a separate set -- see the _led_labels comment."""
+        if (label in self._led_labels) == active:
+            return
+        if active:
+            self._led_labels.add(label)
+        else:
+            self._led_labels.discard(label)
+        self._restyle_label(label)
 
     def _on_marker_clicked(self, label: str) -> None:
         """Resolves a clicked overlay marker's label back to a raw trigger

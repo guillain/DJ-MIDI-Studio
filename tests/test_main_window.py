@@ -980,3 +980,84 @@ def test_on_live_midi_event_holds_an_open_emulator_and_the_image_overlay():
     assert not emu._emulator._live_active_keys
     assert not window.controller_image_view._active_labels
     window.close()
+
+
+def test_output_direction_note_latches_an_led_highlight_without_flashing_or_selecting():
+    from djmidi.midi_io import MidiEvent
+
+    window = _loaded_window()
+    on = MidiEvent(direction="out", channel="8", event_type="Note On", data1="64", data2="127", timestamp=0.0)
+    window._on_live_midi_event(on)
+    QApplication.processEvents()
+    assert window.layout_view._led_keys
+    assert window.deck_layout_view._led_keys
+    assert window.controller_layout_view._led_keys
+    # Output-direction feedback is passive state, not a user gesture:
+    # no momentary held state, no flash pulse, no cross-tab selection.
+    assert not window.layout_view._active_keys
+    assert not window.layout_view._flash_keys
+    assert not window.layout_view._selected_keys
+
+    off = MidiEvent(direction="out", channel="8", event_type="Note Off", data1="64", data2="0", timestamp=0.1)
+    window._on_live_midi_event(off)
+    QApplication.processEvents()
+    assert not window.layout_view._led_keys
+    assert not window.controller_layout_view._led_keys
+    window.close()
+
+
+def test_output_direction_velocity_zero_note_on_clears_the_led():
+    from djmidi.midi_io import MidiEvent
+
+    window = _loaded_window()
+    window._on_live_midi_event(
+        MidiEvent(direction="out", channel="8", event_type="Note On", data1="64", data2="127", timestamp=0.0)
+    )
+    QApplication.processEvents()
+    assert window.layout_view._led_keys
+    window._on_live_midi_event(
+        MidiEvent(direction="out", channel="8", event_type="Note On", data1="64", data2="0", timestamp=0.1)
+    )
+    QApplication.processEvents()
+    assert not window.layout_view._led_keys
+    window.close()
+
+
+def test_output_direction_led_drives_the_emulator_and_image_overlay():
+    from djmidi.gui.controller_emulator import ControllerEmulatorView
+    from djmidi.midi_io import MidiEvent
+
+    window = _loaded_window()
+    window.controller_image_view.set_controller("DDJ-XP2")
+    window.controller_image_view._geometry_checkbox.setChecked(True)
+    dock = window._create_emulator_instance("DDJ-XP2")
+    emu = dock.widget()
+    assert isinstance(emu, ControllerEmulatorView)
+
+    window._on_live_midi_event(
+        MidiEvent(direction="out", channel="8", event_type="Note On", data1="64", data2="127", timestamp=0.0)
+    )
+    QApplication.processEvents()
+    assert emu._emulator._led_keys
+    assert window.controller_image_view._led_labels
+    assert not emu._emulator._live_active_keys  # kept apart from the input-direction hold
+
+    window._on_live_midi_event(
+        MidiEvent(direction="out", channel="8", event_type="Note Off", data1="64", data2="0", timestamp=0.1)
+    )
+    QApplication.processEvents()
+    assert not emu._emulator._led_keys
+    assert not window.controller_image_view._led_labels
+    window.close()
+
+
+def test_output_direction_control_change_does_not_touch_led_state():
+    from djmidi.midi_io import MidiEvent
+
+    window = _loaded_window()
+    window._on_live_midi_event(
+        MidiEvent(direction="out", channel="8", event_type="Control Change", data1="64", data2="127", timestamp=0.0)
+    )
+    QApplication.processEvents()
+    assert not window.layout_view._led_keys
+    window.close()

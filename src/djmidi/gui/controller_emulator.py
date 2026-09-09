@@ -231,6 +231,11 @@ class EmulatorLayoutView(QWidget):
         # click-toggle don't stomp each other, but drawn with the same amber
         # look. OR'd with _active_keys everywhere _active_keys is read.
         self._live_active_keys: set[CellKey] = set()
+        # Latched LED state from *output-direction* MIDI (Serato -> device
+        # feedback, seen on the virtual monitor port -- set_led_from_hit).
+        # Same amber look, OR'd in for rendering, but a separate set so an
+        # input-direction release can't clear an LED the software still drives.
+        self._led_keys: set[CellKey] = set()
         # Set by _rebuild(); resizeEvent/_fit_view() use it instead of
         # recomputing real_position_markers() on every resize.
         self._real_position_mode = False
@@ -264,6 +269,7 @@ class EmulatorLayoutView(QWidget):
         self._values.clear()
         self._active_keys.clear()
         self._live_active_keys.clear()
+        self._led_keys.clear()
         self._rebuild()
 
     def _current_value(self, key: CellKey) -> int:
@@ -302,6 +308,18 @@ class EmulatorLayoutView(QWidget):
             self._live_active_keys.add(key)
         else:
             self._live_active_keys.discard(key)
+        self._rebuild()
+
+    def set_led(self, key: CellKey, active: bool) -> None:
+        """Latched LED highlight from output-direction MIDI (Serato lighting
+        the control up). Same amber look as set_live_active() but a separate
+        set -- see the _led_keys comment."""
+        if (key in self._led_keys) == active:
+            return
+        if active:
+            self._led_keys.add(key)
+        else:
+            self._led_keys.discard(key)
         self._rebuild()
 
     def set_value(self, key: CellKey, value: int) -> None:
@@ -379,7 +397,11 @@ class EmulatorLayoutView(QWidget):
             if key in self._flash_keys:
                 bg_item.setBrush(layout_view._FLASH_BRUSH)
                 bg_item.setPen(layout_view._BORDER_PEN)
-            elif key in self._active_keys or key in self._live_active_keys:
+            elif (
+                key in self._active_keys
+                or key in self._live_active_keys
+                or key in self._led_keys
+            ):
                 active = QColor(layout_view._ACTIVE_BORDER_PEN.color())
                 active.setAlpha(layout_view._ACTIVE_FILL_ALPHA)
                 bg_item.setBrush(QBrush(active))
@@ -423,7 +445,11 @@ class EmulatorLayoutView(QWidget):
             rect.setBrush(layout_view._UNUSED_BRUSH)
             rect.setPen(
                 layout_view._ACTIVE_BORDER_PEN
-                if cell.key in self._active_keys or cell.key in self._live_active_keys
+                if (
+                    cell.key in self._active_keys
+                    or cell.key in self._live_active_keys
+                    or cell.key in self._led_keys
+                )
                 else layout_view._BORDER_PEN
             )
             rect.setData(_KEY_ROLE, cell.key)
@@ -550,6 +576,15 @@ class ControllerEmulatorView(QWidget):
         if hit.controller != self._combo.currentText():
             return
         self._emulator.set_live_active(layout_mod.presentation_key_for_hit(hit), active)
+
+    def set_led_from_hit(self, hit: catalog.ControlInfo, active: bool) -> None:
+        """Latched LED-lit amber highlight from an output-direction MIDI note
+        (Serato -> device), self-filtered to this instance's controller. The
+        counterpart to set_live_active_from_hit() for the "out" direction --
+        EmulatorLayoutView keeps the LED state in its own set."""
+        if hit.controller != self._combo.currentText():
+            return
+        self._emulator.set_led(layout_mod.presentation_key_for_hit(hit), active)
 
     def refresh_controllers(self) -> None:
         """Repopulates the controller combo from the live registry -- call

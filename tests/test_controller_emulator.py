@@ -629,3 +629,46 @@ def test_controller_emulator_view_set_live_active_from_hit_filters_by_controller
     xz_hit = next(h for h in catalog.lookup("6", "Note On", "0") if h.controller == "XDJ-XZ")
     view.set_live_active_from_hit(xz_hit, True)  # different controller -> ignored
     assert not view._emulator._live_active_keys
+
+
+# ─── Output-direction LED state (set_led / set_led_from_hit) ────────────────
+
+
+def test_emulator_set_led_is_separate_from_the_hold_and_toggle_sets():
+    view = EmulatorLayoutView("DDJ-XP2")
+    key: CellKey = ("DDJ-XP2", "PAD", "Pad 1")
+    view.set_led(key, True)
+    assert key in view._led_keys
+    assert key not in view._active_keys
+    assert key not in view._live_active_keys
+    view.set_led(key, False)
+    assert key not in view._led_keys
+
+
+def test_emulator_led_survives_an_input_hold_release():
+    view = EmulatorLayoutView("DDJ-XP2")
+    key: CellKey = ("DDJ-XP2", "PAD", "Pad 1")
+    view.set_led(key, True)
+    view.set_live_active(key, True)
+    view.set_live_active(key, False)
+    assert key in view._led_keys
+
+
+def test_emulator_switching_controller_clears_led_state():
+    view = EmulatorLayoutView("DDJ-XP2")
+    view.set_led(("DDJ-XP2", "PAD", "Pad 1"), True)
+    view.set_controller("XDJ-XZ")
+    assert view._led_keys == set()
+
+
+def test_controller_emulator_view_set_led_from_hit_filters_by_controller():
+    view = ControllerEmulatorView(config_provider=lambda: None)
+    view._combo.setCurrentText("DDJ-XP2")
+    xp2_hit = next(h for h in catalog.lookup("8", "Note On", "12") if h.controller == "DDJ-XP2")
+    view.set_led_from_hit(xp2_hit, True)
+    assert view._emulator._led_keys
+
+    view._emulator._led_keys.clear()
+    xz_hit = next(h for h in catalog.lookup("6", "Note On", "0") if h.controller == "XDJ-XZ")
+    view.set_led_from_hit(xz_hit, True)  # different controller -> ignored
+    assert not view._emulator._led_keys
