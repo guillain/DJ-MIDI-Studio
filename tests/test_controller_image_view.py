@@ -522,3 +522,46 @@ def test_active_labels_cleared_on_controller_switch():
     view.set_active("Pad 1", True)
     view.set_controller("XDJ-XZ")
     assert view._active_labels == set()
+
+
+def test_set_led_tints_a_marker_and_survives_an_input_release():
+    from PySide6.QtGui import QColor
+
+    from djmidi.gui.controller_image_view import _ACTIVE_COLOR
+
+    view = ControllerImageView()
+    _overlay_geometry_controller(view)
+    item = view._overlay_items_by_label["Pad 1"]
+    resting = QColor(item.brush().color())
+
+    view.set_led("Pad 1", True)
+    assert "Pad 1" in view._led_labels
+    lit = view._overlay_items_by_label["Pad 1"].brush().color()
+    assert (lit.red(), lit.green(), lit.blue()) == (
+        QColor(_ACTIVE_COLOR).red(),
+        QColor(_ACTIVE_COLOR).green(),
+        QColor(_ACTIVE_COLOR).blue(),
+    )
+
+    # A phantom input hold + release must not clear the software-driven LED.
+    view.set_active("Pad 1", True)
+    view.set_active("Pad 1", False)
+    assert "Pad 1" in view._led_labels
+    still_lit = view._overlay_items_by_label["Pad 1"].brush().color()
+    assert (still_lit.red(), still_lit.green(), still_lit.blue()) == (
+        QColor(_ACTIVE_COLOR).red(),
+        QColor(_ACTIVE_COLOR).green(),
+        QColor(_ACTIVE_COLOR).blue(),
+    )
+
+    view.set_led("Pad 1", False)
+    assert "Pad 1" not in view._led_labels
+    assert view._overlay_items_by_label["Pad 1"].brush().color() == resting
+
+
+def test_led_labels_cleared_on_controller_switch():
+    view = ControllerImageView()
+    _overlay_geometry_controller(view)
+    view.set_led("Pad 1", True)
+    view.set_controller("XDJ-XZ")
+    assert view._led_labels == set()

@@ -1218,19 +1218,30 @@ documentation index.
   just-released control instead of vanishing), sets held state before the
   flash so the 220ms white pulse always paints on top, and leaves held
   state alone for a plain CC.
-- [ ] **Accurate LED state from output-direction MIDI** — the input-direction
-  slice above is honest but limited: a control that latches (a *set* hot
-  cue, an *active* loop) sends only a momentary press, so it lights while
-  held and goes dark on release. The real lit state is in the
+- [x] **Accurate LED state from output-direction MIDI** (`v0.47.61`) — the
+  input-direction slice above is honest but limited: a control that latches
+  (a *set* hot cue, an *active* loop) sends only a momentary press, so it
+  lights while held and goes dark on release. The real lit state is in the
   **output-direction** MIDI (Serato → controller LED feedback), which needs
-  the manual virtual-port step Live Monitor already documents, plus
-  per-controller knowledge of which output notes drive which LEDs. Decided
-  with the maintainer: **assume output note == input trigger note** (true
-  for most Pioneer gear) rather than add an unverifiable `led_note` field to
-  `catalog/*.py`. Slice: feed the virtual monitor port's traffic through the
-  same `set_active` path, gated on it being a genuine output-direction
-  producer. Research pass first per the "no visual features built blind"
-  rule.
+  the manual virtual-port step Live Monitor already documents. Decided with
+  the maintainer: **assume output note == input trigger note** (true for
+  most Pioneer gear) rather than add an unverifiable `led_note` field to
+  `catalog/*.py`. Delivered: `MainWindow._on_live_midi_event` routes every
+  `MidiEvent.direction == "out"` event to a new `_on_output_led_event`
+  *before* the input-direction logic — it resolves the note against
+  `catalog.lookup(..., "Note On", ...)` and calls `set_led(key/label, on)`
+  on the three `ControllerLayoutView`s, the Controller Images overlay
+  (`ControllerImageView.set_led`), and every open emulator dock
+  (`ControllerEmulatorView.set_led_from_hit` → `EmulatorLayoutView.set_led`).
+  The LED highlight is **latched** (Note On `data2>0` lights it, Note Off /
+  `data2==0` clears it), reuses the amber `_ACTIVE_BORDER_PEN` look, and
+  lives in a `_led_keys` / `_led_labels` set **kept separate** from the
+  input-direction `_active_keys` — rendered as `key in _active_keys or key
+  in _led_keys` — so an input-direction release can't clear an LED Serato is
+  still driving, and vice versa. Output-direction events never flash, change
+  the selection, or move a knob/fader (`set_value`); a CC on the output port
+  is ignored. Limitation: a controller that lights a *different* note than
+  it sends (rare) won't resolve, since there's no per-control `led_note`.
 - [ ] Add an optional performance mode with larger controls and reduced mapping detail.
   Smallest of three scoped options delivered in `v0.47.36-performance-mode`
   (chosen by the user after two research passes turned this vague line into
