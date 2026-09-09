@@ -1126,7 +1126,7 @@ def test_live_jog_turn_spins_the_controller_images_overlay_when_it_shows_that_co
     # deck 2 -> right-tray jog; the overlay has only the one "Jog wheel"
     # entry, so the mirror suffix is stripped and it still spins.
     window._on_live_midi_event(
-        MidiEvent(direction="in", channel="2", event_type="Control Change", data1="33", data2="70", timestamp=0.0)
+        MidiEvent(direction="in", channel="2", event_type="Control Change", data1="34", data2="70", timestamp=0.0)
     )
     QApplication.processEvents()
     assert window.controller_image_view._jog_angles.get("Jog wheel")
@@ -1138,4 +1138,19 @@ def test_live_jog_turn_spins_the_controller_images_overlay_when_it_shows_that_co
     )
     QApplication.processEvents()
     assert "Jog wheel" not in window.controller_image_view._jog_angles
+    window.close()
+
+
+def test_live_ddj_1000_jog_turn_spins_its_layout_jog_glyph():
+    from djmidi.midi_io import MidiEvent
+
+    window = _loaded_window()
+    key = ("DDJ-1000", "DISPLAY", "Jog wheel")
+    # DDJ-1000 platter, deck-1 channel, CC 0x21 ("33"), value 0x46 = +6.
+    window._on_live_midi_event(
+        MidiEvent(direction="in", channel="1", event_type="Control Change", data1="33", data2="70", timestamp=0.0)
+    )
+    QApplication.processEvents()
+    assert window.layout_view._jog_angles.get(key)
+    assert window.controller_layout_view._jog_angles.get(key)
     window.close()
