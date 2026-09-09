@@ -62,17 +62,35 @@ def test_ddj_flx10_platter_and_wheel_side_resolve_on_every_deck_channel():
             assert ("DDJ-FLX10", "DISPLAY", "Jog wheel") in jog.jog_cell_keys_for_event(
                 ch, "Control Change", data1
             )
-    # A DDJ-FLX10-only data1 (0x23 vinyl-off) -- no other controller claims it.
-    assert jog.jog_cell_keys_for_event("1", "Control Change", "35") == [
-        ("DDJ-FLX10", "DISPLAY", "Jog wheel")
+    # 0x29 ("41", +4 BEAT JUMP) is FLX10's alone among the vinyl-style jogs
+    # -- DDJ-REV1 has no such variant.
+    assert jog.jog_cell_keys_for_event("1", "Control Change", "41") == [
+        ("XDJ-XZ", "DISPLAY", "Jog wheel"),
+        ("DDJ-1000", "DISPLAY", "Jog wheel"),
+        ("DDJ-FLX10", "DISPLAY", "Jog wheel"),
     ]
 
 
+def test_ddj_rev1_platter_and_wheel_side_resolve_on_every_deck_channel():
+    # Same jog CCs as DDJ-FLX10 minus 0x29 (no +4 BEAT JUMP variant).
+    for data1 in ("34", "35", "31", "33", "38"):
+        for ch in ("1", "2", "3", "4"):
+            assert ("DDJ-REV1", "DISPLAY", "Jog wheel") in jog.jog_cell_keys_for_event(
+                ch, "Control Change", data1
+            )
+    assert ("DDJ-REV1", "DISPLAY", "Jog wheel") not in jog.jog_cell_keys_for_event(
+        "1", "Control Change", "41"
+    )
+
+
 def test_shared_jog_cc_returns_every_controllers_marker():
-    # data1 0x21 ("33") is XDJ-XZ's wheel-side jog, DDJ-1000's platter *and*
-    # DDJ-FLX10's wheel-side, all on the deck channel -- each view spins only
-    # its own.
-    keys = jog.jog_cell_keys_for_event("1", "Control Change", "33")
-    assert ("XDJ-XZ", "DISPLAY", "Jog wheel") in keys
-    assert ("DDJ-1000", "DISPLAY", "Jog wheel") in keys
-    assert ("DDJ-FLX10", "DISPLAY", "Jog wheel") in keys
+    # data1 0x21 ("33") is a jog CC for XDJ-XZ (wheel-side), DDJ-1000
+    # (platter), DDJ-FLX10 and DDJ-REV1 (wheel-side), all on the deck
+    # channel -- each view spins only its own.
+    keys = set(jog.jog_cell_keys_for_event("1", "Control Change", "33"))
+    assert keys == {
+        ("XDJ-XZ", "DISPLAY", "Jog wheel"),
+        ("DDJ-1000", "DISPLAY", "Jog wheel"),
+        ("DDJ-FLX10", "DISPLAY", "Jog wheel"),
+        ("DDJ-REV1", "DISPLAY", "Jog wheel"),
+    }
