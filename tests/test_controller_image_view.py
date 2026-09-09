@@ -2,6 +2,7 @@ from PySide6.QtGui import QColor, QPainter, QTransform
 
 from djmidi import catalog
 from djmidi.catalog._registry import ControllerDefinition, register
+from djmidi.gui import layout_view as layout_view_mod
 from djmidi.gui.controller_image_view import (
     ASSETS_DIR,
     DOCUMENTS,
@@ -565,3 +566,36 @@ def test_led_labels_cleared_on_controller_switch():
     view.set_led("Pad 1", True)
     view.set_controller("XDJ-XZ")
     assert view._led_labels == set()
+
+
+def test_overlay_draws_a_jog_notch_that_spin_jog_turns_in_place():
+    view = ControllerImageView()
+    view.set_controller("XDJ-XZ")  # has a "Jog wheel" geometry entry
+    view._geometry_checkbox.setChecked(True)
+    assert "Jog wheel" in view._overlay_jog_notches
+    notch = view._overlay_jog_notches["Jog wheel"]
+    before = (notch.line().x2(), notch.line().y2())
+
+    view.spin_jog("Jog wheel", 15)
+    assert view._jog_angles["Jog wheel"] == 15 * layout_view_mod._JOG_DEGREES_PER_TICK
+    assert view._overlay_jog_notches["Jog wheel"] is notch  # same item, turned in place
+    assert (notch.line().x2(), notch.line().y2()) != before
+
+
+def test_spin_jog_zero_delta_and_unknown_label_are_safe_noops():
+    view = ControllerImageView()
+    view.set_controller("XDJ-XZ")
+    view._geometry_checkbox.setChecked(True)
+    view.spin_jog("Jog wheel", 0)
+    assert "Jog wheel" not in view._jog_angles
+    view.spin_jog("No Such Control", 5)  # accumulates but draws nothing, no raise
+    assert view._geometry_rect("No Such Control") is None
+
+
+def test_jog_angles_cleared_on_controller_switch():
+    view = ControllerImageView()
+    view.set_controller("XDJ-XZ")
+    view._geometry_checkbox.setChecked(True)
+    view.spin_jog("Jog wheel", 10)
+    view.set_controller("DDJ-XP2")
+    assert view._jog_angles == {}

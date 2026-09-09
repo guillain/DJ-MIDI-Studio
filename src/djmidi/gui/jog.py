@@ -40,6 +40,14 @@ CellKey = tuple[str, str, str]
 
 _JOG_CENTRE = 0x40
 
+# Degrees a jog notch turns per relative MIDI tick. A jog turn is a stream
+# of small +/-1..few deltas; this gain is cosmetic -- big enough that a
+# flick of the wheel visibly spins the glyph, not a faithful reproduction
+# of the platter's real angular resolution (~1440 ticks/rev). Lives here
+# (not in gui/layout_view) so both layout_view and controller_image_view
+# can read it without a circular import.
+DEGREES_PER_TICK = 6.0
+
 # XDJ-XZ jog-turn CC numbers (decimal strings, matching model.Control's
 # convention): 0x21/0x22 plain + 0x26/0x29 with SHIFT, platter and wheel
 # side. All four spin the same jog glyph.
@@ -81,4 +89,4 @@ def jog_cell_keys_for_event(
     return []
 
 
-__all__ = ["decode_jog_delta", "jog_cell_keys_for_event"]
+__all__ = ["DEGREES_PER_TICK", "decode_jog_delta", "jog_cell_keys_for_event"]

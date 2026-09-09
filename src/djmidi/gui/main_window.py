@@ -1333,6 +1333,15 @@ class MainWindow(QMainWindow):
                     if isinstance(view, ControllerEmulatorView):
                         for key in jog_keys:
                             view.spin_jog_from_key(key, delta)
+                # The Controller Images overlay only carries the one
+                # "Jog wheel" geometry entry (no left/right split), so strip
+                # the mirror suffix and spin it when this tab shows that
+                # controller.
+                image_controller = self.controller_image_view.current_controller_name()
+                for key in jog_keys:
+                    if key[0] == image_controller:
+                        label = key[2].removesuffix(layout_mod._RIGHT_GRID_SUFFIX)
+                        self.controller_image_view.spin_jog(label, delta)
             return
 
         # A note release arrives as "Note Off" or as "Note On" with velocity
