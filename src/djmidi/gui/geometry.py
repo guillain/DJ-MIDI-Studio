@@ -344,6 +344,11 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         # (3129x1652) in v0.47.57 -- the earlier fractions were for the
         # callout-annotated ddj-1000-midi.png, a different crop/aspect. Left
         # deck (deck 1/3).
+        # Display-only continuous control (see the note above): the left jog
+        # platter. Blue-grey, matching XDJ-XZ's "Jog wheel". Turned by
+        # ControllerLayoutView.spin_jog from live relative jog MIDI
+        # (v0.47.64, gui/jog.py) -- decorative, no catalog entry.
+        "Jog wheel": ControlGeometry(0.018, 0.102, 0.255, 0.527, "circle", "#586b82"),
         # Green: matches PLAY/PAUSE's accent color on the other controllers.
         "PLAY/PAUSE": ControlGeometry(0.023, 0.795, 0.053, 0.100, "circle", "#3ea86b"),
         # Amber: matches CUE's accent color on the other controllers.

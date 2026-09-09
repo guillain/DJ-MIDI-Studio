@@ -1202,7 +1202,7 @@ documentation index.
   rendered table, not `pdftotext`) — decodes the signed delta and
   integrates it into each jog glyph's notch via
   `ControllerLayoutView.spin_jog` / `EmulatorLayoutView.spin_jog` (a
-  running 0–360° `_jog_angles` accumulator, `_JOG_DEGREES_PER_TICK = 6.0`,
+  running 0–360° `_jog_angles` accumulator, `jog.DEGREES_PER_TICK = 6.0`,
   a cosmetic gain not the platter's real resolution). Runs before
   `_update_layout_selection` and early-returns, so a jog turn never
   flashes/selects/`set_value`s; deck 1/3 → left "Jog wheel", deck 2/4 →
@@ -1214,11 +1214,18 @@ documentation index.
   has only one `"Jog wheel"` entry, so the `" (R)"` mirror suffix is
   stripped. `jog.DEGREES_PER_TICK` moved into the Qt-free `gui/jog.py` so
   `layout_view` and `controller_image_view` share it without a circular
-  import (`layout_view._JOG_DEGREES_PER_TICK` re-exports it). Other
-  controllers with a jog glyph (none have a `"Jog wheel"` geometry entry
-  yet besides XDJ-XZ) would each need their jog CCs added to `gui/jog.py`
-  from their own PDF. VU meters (no glyph exists yet — an output-direction
-  feature) remain open.
+  import (`layout_view._JOG_DEGREES_PER_TICK` re-exports it).
+  **DDJ-1000** added in `v0.47.64-ddj-1000-jog-rotation`: a `"Jog wheel"`
+  geometry entry (left deck, measured against the clean render) + its
+  platter CCs `0x21`/`0x29`/`0x1F` in `gui/jog.py`, same `0x40`-centred
+  encoding from its MIDI Message List E1 rendered table. DDJ-1000's
+  schematic draws only the left deck, so every deck channel resolves to
+  its one marker. XDJ-XZ's `0x21` and DDJ-1000's `0x21` collide on the
+  deck channel — `jog_cell_keys_for_event` returns both markers and each
+  view spins only the controller it's showing. Other controllers with a
+  physical jog (DDJ-FLX10, DDJ-REV1, Numark) still need a `"Jog wheel"`
+  geometry entry + their jog CCs added from their own PDF. VU meters (no
+  glyph exists yet — an output-direction feature) remain open.
 - [x] **Live flash on the Controller Emulator too** (`v0.47.59`) — the By…
   tabs and Controller Images already flashed on a live MIDI hit; the
   Controller Emulator docks didn't. `ControllerEmulatorView.flash_live_hit(hit)`
