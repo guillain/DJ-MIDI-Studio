@@ -235,6 +235,24 @@ def test_controller_selector_is_horizontal_scrollable():
     assert view._controller_scroll.horizontalScrollBarPolicy().name == "ScrollBarAsNeeded"
 
 
+def test_controller_selector_height_reserves_room_for_its_own_scrollbar():
+    """The scroll area's fixed height is set once, before we know whether a
+    narrower row will ever need the horizontal scrollbar it allows. Without
+    headroom for it, a scrollbar appearing later steals its height from the
+    viewport instead, squashing the tab bar (docked By Deck at 900x600, whose
+    extra deck-filter combo narrows the tab strip below the tabs' natural
+    width, reproduced this: "DDJ-XP2"/"XDJ-XZ" rendered as an unreadable
+    sliver with the scrollbar painted across their bottom half)."""
+    view = ControllerLayoutView()
+    scrollbar_extent = view._controller_scroll.horizontalScrollBar().sizeHint().height()
+    expected = view._controller_tabs.sizeHint().height() + scrollbar_extent + 2
+    assert view._controller_scroll.height() == expected
+    # The viewport itself must be tall enough for the full tab bar, not just
+    # whatever remains after the scrollbar -- otherwise the tab bar is still
+    # clipped even though the container's total height is now correct.
+    assert view._controller_scroll.viewport().height() >= view._controller_tabs.sizeHint().height()
+
+
 def test_set_zoom_scales_the_view_transform():
     view = ControllerLayoutView()
     view.set_zoom(1.6)

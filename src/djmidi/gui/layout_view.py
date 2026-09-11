@@ -804,7 +804,21 @@ class ControllerLayoutView(QWidget):
         """
         self._controller_tabs.adjustSize()
         self._controller_tabs.setMinimumWidth(0)
-        self._controller_scroll.setFixedHeight(self._controller_tabs.sizeHint().height() + 2)
+        # Reserve room for the horizontal scrollbar unconditionally, not just
+        # tall enough for the tab bar alone: this height is fixed once here
+        # and never revisited per-resize, but the scroll area's *width* (and
+        # so whether ScrollBarAsNeeded actually shows a scrollbar) changes on
+        # every window/splitter resize after this runs. With no room
+        # reserved, a scrollbar appearing later steals its height from the
+        # viewport instead, squashing the tab bar into an unreadable sliver
+        # with the scrollbar painted across the bottom half of its text --
+        # caught docked at 900x600 on the By Deck tab (its extra deck-filter
+        # combo narrows the tab strip's own column below the tab bar's
+        # natural width) during the routing-dock clipping audit.
+        scrollbar_extent = self._controller_scroll.horizontalScrollBar().sizeHint().height()
+        self._controller_scroll.setFixedHeight(
+            self._controller_tabs.sizeHint().height() + scrollbar_extent + 2
+        )
 
     def set_controller(self, name: str) -> bool:
         """Selects a controller tab by name; returns False if unknown."""

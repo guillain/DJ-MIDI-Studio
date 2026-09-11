@@ -1490,8 +1490,25 @@ against the current tree and confirmed still open. Tracked as GitHub issues.
   (wrapped `MidiRoutingView`'s content in a `QScrollArea` — `_clock_panel`
   is reparented out via `take_clock_panel()` so it's unaffected; the
   scroll viewport is styled transparent so the scoped DJ theme still
-  paints). Every mapping tab and tool dock now scrolls rather than
-  clipping at any window size.
+  paints). A follow-up sweep at the same three sizes (`v0.47.73-controller-
+  selector-scrollbar-squash`) found one more, not a clipped-and-unreachable
+  case this time but a paint-corruption one: `ControllerLayoutView`'s own
+  DDJ-XP2/XDJ-XZ tab strip sits in a `QScrollArea` whose height is fixed
+  once, at construction, to the tab bar's `sizeHint()` height with no
+  allowance for the horizontal scrollbar `ScrollBarAsNeeded` can later show.
+  By Deck's extra deck-filter combo narrows that row just enough at 900x600
+  (docked) that the scrollbar *does* appear — and since no height was
+  reserved for it, it steals its space from the viewport instead, squashing
+  the tab bar into an unreadable sliver with the scrollbar painted across
+  its bottom half. Fixed by adding the horizontal scrollbar's own
+  `sizeHint()` height to the reserved total unconditionally, so the tab bar
+  always gets its full natural height whether or not the scrollbar ends up
+  visible. Confirmed harmless at 1280x820 (no scrollbar shown, identical
+  look) and on By Channel/By Controller (narrower row, so already fine
+  before this fix). Every mapping tab and tool dock now scrolls, rather
+  than clips or paints over itself, at any window size checked so far —
+  written as a standing claim, not a closed one: the audit technique itself
+  (offscreen `MainWindow.grab()`) is proactive but not exhaustive.
 
 ### Next phases to define
 
