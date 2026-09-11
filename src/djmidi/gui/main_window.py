@@ -70,7 +70,8 @@ from djmidi.gui.midi_routing_view import MidiRoutingView
 from djmidi.gui.preferences_dialog import PreferencesDialog
 from djmidi.gui.safe_update_dialog import SafeUpdateDialog
 from djmidi.gui.splitter_utils import replace_splitter
-from djmidi.gui.theme import apply_theme
+from djmidi.gui.theme import apply_theme, mapping_tree_stylesheet
+from djmidi.gui.theme import signals as theme_signals
 from djmidi.gui.tree_model import NODE_ROLE, build_channel_columns, relabel_item
 from djmidi.integration_detection import (
     detect_controller_ports,
@@ -1105,56 +1106,36 @@ class MainWindow(QMainWindow):
 
     @staticmethod
     def _style_mapping_tree(view: QTreeView) -> None:
-        """Apply the DJ booth palette to every mapping tree consistently."""
+        """Apply the DJ booth palette to every mapping tree consistently,
+        and keep it in sync with a live Settings -> Preferences theme
+        switch. This used to set a literal hardcoded copy of the dark
+        palette's colors, so By Channel/Deck/Controller stayed dark even
+        after picking Light -- theme.mapping_tree_stylesheet() builds this
+        from the same tokens theme.py substitutes its own app-wide QSS
+        from, and reconnecting to themeChanged rebuilds it live instead of
+        only at construction time."""
         view.setAlternatingRowColors(True)
         view.setIndentation(16)
         view.setAnimated(True)
-        view.setStyleSheet(
-            """
-            QTreeView {
-                background: #0e1724;
-                alternate-background-color: #121e2d;
-                color: #dce7f5;
-                border: 1px solid #2b3b53;
-                border-radius: 8px;
-                padding: 5px;
-                outline: none;
-            }
-            QTreeView::item {
-                padding: 6px 8px;
-                border-radius: 4px;
-            }
-            QTreeView::item:hover {
-                background: #263b56;
-                color: #ffffff;
-            }
-            QTreeView::item:selected {
-                background: #d33c72;
-                color: #ffffff;
-            }
-            QHeaderView::section {
-                background: #202d42;
-                color: #b9c9dc;
-                border: 0;
-                border-bottom: 1px solid #3a506d;
-                padding: 7px;
-                font-weight: 600;
-            }
-            QScrollBar:vertical, QScrollBar:horizontal {
-                background: #111a28;
-                border: none;
-            }
-            QScrollBar::handle:vertical, QScrollBar::handle:horizontal {
-                background: #405875;
-                border-radius: 5px;
-                min-height: 24px;
-                min-width: 24px;
-            }
-            QScrollBar::handle:hover {
-                background: #00b9d9;
-            }
-            """
-        )
+
+        def restyle(_mode: str | None = None, view: QTreeView = view) -> None:
+            try:
+                view.setStyleSheet(mapping_tree_stylesheet())
+            except RuntimeError:
+                # theme_signals is a persistent module-level singleton, so
+                # this connection outlives a single tree: reloading a
+                # mapping replaces the whole column splitter
+                # (splitter_utils.replace_splitter -> deleteLater()) without
+                # ever disconnecting it. A closure isn't a bound QObject
+                # method PySide can auto-disconnect on `view`'s destruction
+                # (that auto-disconnection is a bound-method-only feature),
+                # so restyle() can still fire for an already-deleted
+                # QTreeView -- harmless to skip, there's nothing left to
+                # restyle.
+                pass
+
+        restyle()
+        theme_signals.themeChanged.connect(restyle)
 
     def _apply_controller_expand_state(self, view: QTreeView, model: QStandardItemModel, expand_flags: list[tuple[int, bool]]) -> None:
         for row, has_used_leaf in expand_flags:

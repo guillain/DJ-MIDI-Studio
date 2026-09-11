@@ -1184,3 +1184,54 @@ def test_live_ddj_rev1_jog_turn_spins_its_layout_jog_glyph():
     assert window.layout_view._jog_angles.get(key)
     assert window.controller_layout_view._jog_angles.get(key)
     window.close()
+
+
+# ─── theme ──────────────────────────────────────────────────────────────────
+
+
+def test_mapping_trees_restyle_live_on_a_theme_switch():
+    """Every By Channel/Deck/Controller tree used to be built with a literal
+    hardcoded copy of the dark palette, so switching to Light in Preferences
+    left them stuck dark. _style_mapping_tree must rebuild from the current
+    theme.colors() on theme.signals.themeChanged, not just at construction."""
+    from PySide6.QtWidgets import QTreeView
+
+    from djmidi.gui import theme
+
+    window = _loaded_window()
+    views = window.findChildren(QTreeView)
+    assert views
+    try:
+        theme.apply_theme(QApplication.instance(), "light")
+        QApplication.processEvents()
+        for view in views:
+            assert theme.colors("light")["field_bg"] in view.styleSheet()
+            assert theme.colors("dark")["field_bg"] not in view.styleSheet()
+
+        theme.apply_theme(QApplication.instance(), "dark")
+        QApplication.processEvents()
+        for view in views:
+            assert theme.colors("dark")["field_bg"] in view.styleSheet()
+    finally:
+        theme.apply_theme(QApplication.instance(), "dark")
+        window.close()
+
+
+def test_reloading_the_mapping_then_switching_theme_does_not_crash():
+    """Reloading replaces the whole column splitter (splitter_utils
+    .replace_splitter -> deleteLater()) without ever disconnecting the old
+    trees' theme.signals.themeChanged connection -- a later theme switch
+    must not try to restyle an already-deleted QTreeView."""
+    from djmidi.gui import theme
+
+    window = _loaded_window()
+    window._load_tree()
+    QApplication.processEvents()
+    try:
+        theme.apply_theme(QApplication.instance(), "light")
+        QApplication.processEvents()
+        theme.apply_theme(QApplication.instance(), "dark")
+        QApplication.processEvents()
+    finally:
+        theme.apply_theme(QApplication.instance(), "dark")
+        window.close()
