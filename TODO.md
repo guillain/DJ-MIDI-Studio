@@ -327,6 +327,34 @@ Implemented contract, runtime, test, and documentation work:
   reparented onto the **MIDI Clock** panel), **Controller Setup**'s Draft
   toolbar and "MIDI input" panel, and **Live send**'s off-state pill --
   each is its own follow-up.
+  **MIDI Routing/Clock fixed in `v0.47.75-theme-live-midi-tools`**:
+  `theme.midi_tools_stylesheet()` replaces `_apply_dj_style`'s hardcoded QSS
+  the same way `mapping_tree_stylesheet()` did for the trees (two new
+  semantic tokens for the one pairing with no existing equivalent --
+  `table_selected_bg`, and `clock_accent`/`clock_accent_border` for the
+  Clock action button's distinct teal, since it isn't `accent`/`accent2`),
+  reconnected to `themeChanged` the simple way this time: a persistent
+  singleton view (unlike a per-reload tree) has no stale-QObject risk to
+  guard against, so a plain bound-method connection is enough. `MidiClockView`
+  (the dock `_clock_panel` is reparented into) had the same bug on its own
+  one-line background QSS, fixed the same way. Two more spots turned out to
+  be the *same* live-switch gap wearing a different hat: `_clock_status`'s
+  idle/unconfigured/waiting states aren't covered by the 10ms routing-poll
+  timer that otherwise keeps it current, since that timer only runs once
+  routing has actually *started* -- reconnecting `_refresh_clock_status`
+  itself to `themeChanged` (rather than writing a narrow one-state special
+  case, tried first and then discarded once it was clear the other static
+  states had the identical gap) fixes every status at once, semantic
+  color preserved, only the `header_bg` token refreshed. And `clock_intro`'s
+  muted hint-text color is a per-widget inline override that the
+  `#midiToolsSurface QLabel` cascade in `_apply_dj_style`'s stylesheet can't
+  reach, so it gets its own explicit line there too. New `hint_text` token
+  (a muted "subtitle" shade distinct from `label_text`, matching a
+  convention already reused hardcoded across several other panels) added
+  for this and future follow-ups. Verified: a live switch actually renders
+  both docks light, live; dark stays pixel-identical to before this fix.
+  Remaining: **Controller Setup**'s Draft toolbar and "MIDI input" panel,
+  and **Live send**'s off-state pill.
 - [x] **Controller Setup input/output row and merged Draft toolbar** — merge
   the separate `Session`, `Import`, and `Apply / Export` panels into one
   `Draft` panel: a single horizontal icon toolbar (`_toolbar_row`) with a

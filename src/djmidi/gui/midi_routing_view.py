@@ -32,6 +32,9 @@ from djmidi.ableton_link import (
     LinkClockFollower,
 )
 from djmidi.gui.midi_route_transform_dialog import MidiRouteTransformDialog
+from djmidi.gui.theme import colors as theme_colors
+from djmidi.gui.theme import midi_tools_stylesheet
+from djmidi.gui.theme import signals as theme_signals
 from djmidi.midi_clock import MidiClockMirror
 from djmidi.midi_io import list_input_ports, list_output_ports
 from djmidi.midi_router import MidiRoute, MidiRouter, MidiValueTransform
@@ -167,7 +170,15 @@ class MidiRoutingView(QWidget):
         self._serato_virtual_checkbox = QCheckBox("Create virtual input for Serato Clock")
         self._serato_virtual_checkbox.toggled.connect(self._toggle_serato_virtual_input)
         self._clock_status = QLabel("Clock mirror disabled")
-        self._clock_status.setStyleSheet("color: #666;")
+        self._clock_status.setStyleSheet(f"color: {theme_colors()['disabled_text']};")
+        # _refresh_clock_status() recolors this label live while the 10ms
+        # routing-poll timer runs, but that timer only runs once routing has
+        # actually started -- every other state it can show (disabled,
+        # unconfigured, routing-disabled-in-Preferences, waiting-to-start)
+        # is otherwise static and would only catch up on the next explicit
+        # clock action (a checkbox toggle, a route add/remove), not
+        # immediately on a theme switch. Reconnected below, once the method
+        # (and everything it reads) actually exists.
         add_clock_button = QPushButton("Add Clock route")
         add_clock_button.clicked.connect(self._add_clock_route)
         remove_clock_button = QPushButton("Remove selected")
@@ -195,12 +206,11 @@ class MidiRoutingView(QWidget):
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
         )
         clock_layout = QVBoxLayout(self._clock_panel)
-        clock_intro = QLabel(
+        self._clock_intro = QLabel(
             "Build a Clock route, then start routing to send transport and 24 PPQN ticks."
         )
-        clock_intro.setWordWrap(True)
-        clock_intro.setStyleSheet("color: #8fa7bd; padding-bottom: 4px;")
-        clock_layout.addWidget(clock_intro)
+        self._clock_intro.setWordWrap(True)
+        clock_layout.addWidget(self._clock_intro)
         clock_layout.addLayout(clock_controls)
         self._clock_table = QTableWidget(0, 3)
         self._clock_table.setHorizontalHeaderLabels(["Source", "Destination", "State"])
@@ -243,10 +253,23 @@ class MidiRoutingView(QWidget):
         outer.addWidget(scroll)
 
         self._apply_dj_style()
+        theme_signals.themeChanged.connect(self._apply_dj_style)
+        theme_signals.themeChanged.connect(self._refresh_clock_status)
         self.refresh_ports()
 
-    def _apply_dj_style(self) -> None:
-        """Give the routing tools a compact DJ-booth visual identity."""
+    def _apply_dj_style(self, *_args: object) -> None:
+        """Give the routing tools a compact DJ-booth visual identity, and
+        keep it in sync with a live Settings -> Preferences theme switch.
+
+        This used to set a literal hardcoded copy of the dark palette's
+        colors, so this dock (and the MIDI Clock panel reparented from it,
+        below) stayed dark even after picking Light -- theme
+        .midi_tools_stylesheet() builds this from the same tokens theme.py
+        substitutes its own app-wide QSS from. Connected directly to
+        theme.signals.themeChanged (accepting and ignoring the emitted mode
+        via *_args) rather than a closure: unlike the per-reload mapping
+        trees, this view is a persistent singleton for the app's lifetime,
+        so there's no stale-QObject risk to guard against here."""
         self.setObjectName("midiToolsSurface")
         # The Clock card is reparented into its own dock after construction;
         # give it the same visual root so the scoped theme follows it.
@@ -254,110 +277,12 @@ class MidiRoutingView(QWidget):
         self._routing_button.setObjectName("primaryAction")
         self._clock_routing_button.setObjectName("clockAction")
         self._clock_status.setObjectName("clockStatus")
-        self.setStyleSheet(
-            """
-            #midiToolsSurface {
-                background: #0d121b;
-                color: #e8eef7;
-            }
-            #midiToolsSurface QLabel {
-                color: #c9d5e4;
-            }
-            #midiToolsSurface QGroupBox {
-                background: #151e2b;
-                border: 1px solid #2b3b53;
-                border-radius: 10px;
-                margin-top: 12px;
-                padding: 12px 10px 10px 10px;
-                font-weight: 600;
-            }
-            #midiToolsSurface QGroupBox::title {
-                subcontrol-origin: margin;
-                left: 12px;
-                padding: 0 8px;
-                color: #8fe8ff;
-                background: #0d121b;
-            }
-            #midiToolsSurface QComboBox,
-            #midiToolsSurface QTableWidget,
-            #midiToolsSurface QLineEdit,
-            #midiToolsSurface QListWidget {
-                background: #0e1724;
-                color: #e8eef7;
-                border: 1px solid #334963;
-                border-radius: 6px;
-                padding: 5px;
-            }
-            #midiToolsSurface QComboBox:focus,
-            #midiToolsSurface QTableWidget:focus {
-                border: 1px solid #00c2e8;
-            }
-            #midiToolsSurface QComboBox QAbstractItemView {
-                background: #0e1724;
-                color: #e8eef7;
-                border: 1px solid #334963;
-                selection-background-color: #d33c72;
-                selection-color: #ffffff;
-            }
-            #midiToolsSurface QHeaderView::section {
-                background: #202d42;
-                color: #b9c9dc;
-                border: 0;
-                border-bottom: 1px solid #3a506d;
-                padding: 7px;
-                font-weight: 600;
-            }
-            #midiToolsSurface QTableWidget::item:selected {
-                background: #284765;
-                color: #ffffff;
-            }
-            #midiToolsSurface QPushButton {
-                background: #26364d;
-                color: #e8eef7;
-                border: 1px solid #405875;
-                border-radius: 6px;
-                padding: 7px 11px;
-                font-weight: 600;
-            }
-            #midiToolsSurface QPushButton:hover {
-                background: #334b68;
-                border-color: #00c2e8;
-            }
-            #midiToolsSurface QPushButton#primaryAction {
-                background: #d33c72;
-                border-color: #f26395;
-            }
-            #midiToolsSurface QPushButton#clockAction {
-                background: #008eaa;
-                border-color: #28d5ef;
-            }
-            #midiToolsSurface QPushButton#primaryAction:hover,
-            #midiToolsSurface QPushButton#clockAction:hover {
-                background: #f05a8d;
-            }
-            #midiToolsSurface QPushButton:disabled {
-                background: #1a2432;
-                color: #64758b;
-                border-color: #273649;
-            }
-            #midiToolsSurface QCheckBox {
-                color: #c9d5e4;
-                spacing: 7px;
-                padding: 3px 0;
-            }
-            #midiToolsSurface QCheckBox::indicator:checked {
-                background: #00b9d9;
-                border: 1px solid #7eefff;
-            }
-            #midiToolsSurface #clockStatus {
-                background: #202d42;
-                border-left: 4px solid #00c2e8;
-                border-radius: 5px;
-                padding: 9px;
-            }
-            """
-        )
+        self.setStyleSheet(midi_tools_stylesheet())
         self._clock_panel.setStyleSheet(self.styleSheet())
+        # A per-widget inline stylesheet (set once, for the muted "hint"
+        # shade) overrides the #midiToolsSurface QLabel cascade above for
+        # this one label, so it needs its own explicit refresh here too.
+        self._clock_intro.setStyleSheet(f"color: {theme_colors()['hint_text']}; padding-bottom: 4px;")
 
     def take_clock_panel(self) -> QWidget:
         """Detach and return the Clock controls for the independent Clock dock."""
@@ -728,12 +653,20 @@ class MidiRoutingView(QWidget):
     # a GUI label nobody was watching at the time.
     _CLOCK_INACTIVE_ERROR_AFTER_S = 8.0
 
-    def _refresh_clock_status(self) -> None:
-        """Show configured, waiting, active, or stopped Clock state."""
+    def _refresh_clock_status(self, *_args: object) -> None:
+        """Show configured, waiting, active, or stopped Clock state.
+
+        Also reconnected to theme.signals.themeChanged (accepting and
+        ignoring the emitted mode via *_args): the 10ms routing-poll timer
+        that otherwise keeps this label's background/color current only
+        runs once routing has actually started, so every other status this
+        can show (disabled, unconfigured, routing-disabled-in-Preferences,
+        waiting-to-start) would otherwise only catch up on the next
+        explicit clock action, not immediately on a live theme switch."""
         self._clock_status.setToolTip("")
         category = "disabled"
         if not self._clock_enabled.isChecked():
-            text, color = "Clock mirror disabled", "#666"
+            text, color = "Clock mirror disabled", theme_colors()["disabled_text"]
         else:
             configured = (*self._clocks, *self._link_followers)
             if not configured:
@@ -804,7 +737,7 @@ class MidiRoutingView(QWidget):
         self._log_clock_status_transition(category, text)
         self._clock_status.setText(text)
         self._clock_status.setStyleSheet(
-            f"color: {color}; font-weight: 600; background: #202d42; "
+            f"color: {color}; font-weight: 600; background: {theme_colors()['header_bg']}; "
             f"border-left: 4px solid {color}; border-radius: 5px; padding: 9px;"
         )
 
