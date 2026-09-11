@@ -205,6 +205,13 @@ _DARK = {
     "tooltip_bg": "#202d42",
     "tree_hover_bg": "#263b56",
     "tree_hover_text": "#ffffff",
+    "table_selected_bg": "#284765",
+    "clock_accent": "#008eaa",
+    "clock_accent_border": "#28d5ef",
+    # A muted "hint/subtitle" shade distinct from label_text -- reused
+    # verbatim (as a hardcoded literal, before this token existed) across
+    # several panels for secondary explanatory text under a heading.
+    "hint_text": "#8fa7bd",
 }
 
 _LIGHT = {
@@ -239,6 +246,10 @@ _LIGHT = {
     "tooltip_bg": "#23303f",
     "tree_hover_bg": "#dce6f1",
     "tree_hover_text": "#1c2530",
+    "table_selected_bg": "#cfe0f0",
+    "clock_accent": "#0a7fa0",
+    "clock_accent_border": "#39b6d6",
+    "hint_text": "#5b7086",
 }
 
 DARK_THEME = _QSS.substitute(_DARK)
@@ -340,6 +351,120 @@ def mapping_tree_stylesheet(mode: Literal["light", "dark"] | None = None) -> str
     return _TREE_QSS.substitute(colors(mode))
 
 
+_MIDI_TOOLS_QSS = Template("""
+#midiToolsSurface {
+    background: $window_bg;
+    color: $text;
+}
+#midiToolsSurface QLabel {
+    color: $label_text;
+}
+#midiToolsSurface QGroupBox {
+    background: $panel_bg;
+    border: 1px solid $panel_border;
+    border-radius: 10px;
+    margin-top: 12px;
+    padding: 12px 10px 10px 10px;
+    font-weight: 600;
+}
+#midiToolsSurface QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 12px;
+    padding: 0 8px;
+    color: $title;
+    background: $window_bg;
+}
+#midiToolsSurface QComboBox,
+#midiToolsSurface QTableWidget,
+#midiToolsSurface QLineEdit,
+#midiToolsSurface QListWidget {
+    background: $field_bg;
+    color: $text;
+    border: 1px solid $field_border;
+    border-radius: 6px;
+    padding: 5px;
+}
+#midiToolsSurface QComboBox:focus,
+#midiToolsSurface QTableWidget:focus {
+    border: 1px solid $accent2;
+}
+#midiToolsSurface QComboBox QAbstractItemView {
+    background: $field_bg;
+    color: $text;
+    border: 1px solid $field_border;
+    selection-background-color: $accent;
+    selection-color: #ffffff;
+}
+#midiToolsSurface QHeaderView::section {
+    background: $header_bg;
+    color: $header_text;
+    border: 0;
+    border-bottom: 1px solid $field_border;
+    padding: 7px;
+    font-weight: 600;
+}
+#midiToolsSurface QTableWidget::item:selected {
+    background: $table_selected_bg;
+    color: $text;
+}
+#midiToolsSurface QPushButton {
+    background: $button_bg;
+    color: $button_text;
+    border: 1px solid $button_border;
+    border-radius: 6px;
+    padding: 7px 11px;
+    font-weight: 600;
+}
+#midiToolsSurface QPushButton:hover {
+    background: $button_hover_bg;
+    border-color: $accent2;
+}
+#midiToolsSurface QPushButton#primaryAction {
+    background: $accent;
+    border-color: $accent_soft;
+    color: #ffffff;
+}
+#midiToolsSurface QPushButton#clockAction {
+    background: $clock_accent;
+    border-color: $clock_accent_border;
+    color: #ffffff;
+}
+#midiToolsSurface QPushButton#primaryAction:hover,
+#midiToolsSurface QPushButton#clockAction:hover {
+    background: $accent_soft;
+}
+#midiToolsSurface QPushButton:disabled {
+    background: $disabled_bg;
+    color: $disabled_text;
+    border-color: $disabled_border;
+}
+#midiToolsSurface QCheckBox {
+    color: $label_text;
+    spacing: 7px;
+    padding: 3px 0;
+}
+#midiToolsSurface QCheckBox::indicator:checked {
+    background: $accent2;
+    border: 1px solid $accent2;
+}
+#midiToolsSurface #clockStatus {
+    background: $header_bg;
+    border-left: 4px solid $accent2;
+    border-radius: 5px;
+    padding: 9px;
+}
+""")
+
+
+def midi_tools_stylesheet(mode: Literal["light", "dark"] | None = None) -> str:
+    """The scoped QSS MidiRoutingView applies to itself (and reuses verbatim
+    on the reparented MIDI Clock panel) under the #midiToolsSurface
+    objectName. Callable per-mode for the same reason as
+    mapping_tree_stylesheet(): a widget built once needs to rebuild this on
+    a live theme switch, not just read it at construction."""
+    return _MIDI_TOOLS_QSS.substitute(colors(mode))
+
+
 def resolve_mode(mode: str, app: QApplication | None = None) -> Literal["light", "dark"]:
     """Turn a stored ThemeMode into a concrete "light"/"dark". For "system",
     read the OS colour scheme; fall back to dark if it can't be determined."""
@@ -397,6 +522,7 @@ __all__ = [
     "colors",
     "current_mode",
     "mapping_tree_stylesheet",
+    "midi_tools_stylesheet",
     "resolve_mode",
     "signals",
 ]

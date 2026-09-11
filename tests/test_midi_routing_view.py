@@ -3,9 +3,10 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from PySide6.QtCore import QSettings
-from PySide6.QtWidgets import QDialog, QLabel
+from PySide6.QtWidgets import QApplication, QDialog, QLabel
 
 from djmidi.ableton_link import ABLETON_LINK_CLOCK_SOURCE_NAME, LinkBackendUnavailable
+from djmidi.gui import theme
 from djmidi.gui.midi_routing_view import (
     MidiRoutingView,
     _load_json_list,
@@ -412,3 +413,83 @@ def test_restore_state_skips_invalid_saved_route_and_clock_entries(tmp_path):
     view.restore_state(settings)
     assert view.router.routes == ()
     assert view._clocks == []
+
+
+# ─── theme ──────────────────────────────────────────────────────────────────
+
+
+def test_routing_view_and_clock_panel_restyle_live_on_a_theme_switch():
+    """_apply_dj_style used to set a literal hardcoded copy of the dark
+    palette, so this dock (and the MIDI Clock panel reparented from it)
+    stayed dark even after picking Light in Preferences."""
+    view = MidiRoutingView()
+    try:
+        theme.apply_theme(QApplication.instance(), "light")
+        assert theme.colors("light")["window_bg"] in view.styleSheet()
+        assert theme.colors("light")["window_bg"] in view._clock_panel.styleSheet()
+        assert theme.colors("dark")["window_bg"] not in view.styleSheet()
+
+        theme.apply_theme(QApplication.instance(), "dark")
+        assert theme.colors("dark")["window_bg"] in view.styleSheet()
+        assert theme.colors("dark")["window_bg"] in view._clock_panel.styleSheet()
+    finally:
+        theme.apply_theme(QApplication.instance(), "dark")
+
+
+def test_clock_intro_hint_label_restyles_live_on_a_theme_switch():
+    """A per-widget inline stylesheet (the muted 'hint' shade) overrides the
+    #midiToolsSurface QLabel cascade for this one label, so it needs its own
+    explicit refresh -- not just whatever _apply_dj_style's cascade does."""
+    view = MidiRoutingView()
+    try:
+        theme.apply_theme(QApplication.instance(), "light")
+        assert theme.colors("light")["hint_text"] in view._clock_intro.styleSheet()
+
+        theme.apply_theme(QApplication.instance(), "dark")
+        assert theme.colors("dark")["hint_text"] in view._clock_intro.styleSheet()
+    finally:
+        theme.apply_theme(QApplication.instance(), "dark")
+
+
+def test_idle_clock_status_restyles_live_on_a_theme_switch():
+    """The 10ms routing-poll timer that normally recolors _clock_status only
+    runs once routing has actually started, so the idle "Clock mirror
+    disabled" state (the default) would otherwise only catch up on the next
+    explicit clock action, not a theme switch -- _refresh_clock_status is
+    reconnected to theme.signals.themeChanged directly to cover this and
+    every other non-actively-polled status (see test below)."""
+    view = MidiRoutingView()
+    assert not view._clock_enabled.isChecked()
+    try:
+        theme.apply_theme(QApplication.instance(), "light")
+        assert theme.colors("light")["disabled_text"] in view._clock_status.styleSheet()
+
+        theme.apply_theme(QApplication.instance(), "dark")
+        assert theme.colors("dark")["disabled_text"] in view._clock_status.styleSheet()
+    finally:
+        theme.apply_theme(QApplication.instance(), "dark")
+
+
+def test_unconfigured_clock_status_background_restyles_live_on_a_theme_switch():
+    """"Clock configured but routing is disabled in Preferences" is also not
+    covered by the routing-poll timer (routing hasn't started yet) -- its
+    semantic warning color must survive a live theme switch unchanged, but
+    its background token must still update."""
+    view = MidiRoutingView()
+    view._clock_source.addItem("clock-in")
+    view._clock_destination.addItem("clock-out")
+    view._clock_source.setCurrentText("clock-in")
+    view._clock_destination.setCurrentText("clock-out")
+    view._clock_enabled.setChecked(True)
+    view._refresh_clock_status()
+    warning_color = "#b26a00"
+    assert warning_color in view._clock_status.styleSheet()
+    assert theme.colors("dark")["header_bg"] in view._clock_status.styleSheet()
+
+    try:
+        theme.apply_theme(QApplication.instance(), "light")
+        assert warning_color in view._clock_status.styleSheet()
+        assert theme.colors("light")["header_bg"] in view._clock_status.styleSheet()
+        assert theme.colors("dark")["header_bg"] not in view._clock_status.styleSheet()
+    finally:
+        theme.apply_theme(QApplication.instance(), "dark")

@@ -11,6 +11,7 @@ from djmidi.gui.theme import (
     colors,
     current_mode,
     mapping_tree_stylesheet,
+    midi_tools_stylesheet,
     resolve_mode,
     signals,
 )
@@ -94,6 +95,16 @@ def test_mapping_tree_stylesheet_defaults_to_the_current_mode():
         assert mapping_tree_stylesheet() == mapping_tree_stylesheet("light")
     finally:
         apply_theme(app, "dark")
+
+
+def test_midi_tools_stylesheet_reflects_the_requested_mode():
+    dark_qss = midi_tools_stylesheet("dark")
+    light_qss = midi_tools_stylesheet("light")
+    assert dark_qss != light_qss
+    assert colors("dark")["window_bg"] in dark_qss
+    assert colors("light")["window_bg"] in light_qss
+    assert "$" not in dark_qss
+    assert "$" not in light_qss
 
 
 def test_apply_theme_emits_theme_changed_with_the_resolved_mode():
