@@ -3,10 +3,12 @@ from pathlib import Path
 
 import pytest
 from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QApplication
 
 from djmidi import catalog
 from djmidi.catalog._registry import ControlInfo
 from djmidi.catalog.codegen import generate_module_source, merge_by_channel
+from djmidi.gui import theme
 from djmidi.gui.controller_setup import ControllerSetupView, _slugify
 from djmidi.parser import parse_file
 
@@ -1164,7 +1166,9 @@ def test_toolbar_row_labels_groups_and_spreads_them():
         ("Import", [QPushButton()]),
         ("Apply / Export", [QPushButton(), QPushButton()]),
     ]
-    row = ControllerSetupView._toolbar_row(groups)
+    # _toolbar_row is now an instance method (it registers each caption
+    # label it creates for a live theme restyle -- see _restyle_theme).
+    row = ControllerSetupView()._toolbar_row(groups)
     items = [row.itemAt(i) for i in range(row.count())]
     labels = [it.widget().text() for it in items if isinstance(it.widget(), QLabel)]
     buttons = [it.widget() for it in items if isinstance(it.widget(), QPushButton)]
@@ -1205,3 +1209,37 @@ def test_midi_input_and_output_row_is_wrapped_in_a_scroll_area():
     assert "MIDI input" in labels
     group_titles = {box.title() for box in scroll_area.findChildren(QGroupBox)}
     assert "MIDI Output" in group_titles
+
+
+# ─── theme ──────────────────────────────────────────────────────────────────
+
+
+def test_panels_and_labels_restyle_live_on_a_theme_switch():
+    """The "Draft"/"MIDI input" panel frames, their titles, the muted hint
+    labels, the toolbar captions, and the learn-status pill all used to set
+    a literal hardcoded copy of the dark palette's colors, so this whole tab
+    stayed dark even after picking Light in Preferences."""
+    view = _view_with_name()
+    assert view._panel_frames  # sanity: both "Draft" and "MIDI input" registered
+    assert view._panel_title_labels
+    assert view._hint_labels
+    assert view._column_labels
+    try:
+        theme.apply_theme(QApplication.instance(), "light")
+        c = theme.colors("light")
+        for frame in view._panel_frames:
+            assert c["panel_bg"] in frame.styleSheet()
+        for label in view._panel_title_labels:
+            assert c["title"] in label.styleSheet()
+        for label in view._hint_labels:
+            assert c["hint_text"] in label.styleSheet()
+        for label in view._column_labels:
+            assert c["hint_text"] in label.styleSheet()
+        assert c["header_bg"] in view._learn_status.styleSheet()
+
+        theme.apply_theme(QApplication.instance(), "dark")
+        d = theme.colors("dark")
+        assert d["panel_bg"] in view._panel_frames[0].styleSheet()
+        assert d["header_bg"] in view._learn_status.styleSheet()
+    finally:
+        theme.apply_theme(QApplication.instance(), "dark")

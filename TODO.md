@@ -355,6 +355,21 @@ Implemented contract, runtime, test, and documentation work:
   both docks light, live; dark stays pixel-identical to before this fix.
   Remaining: **Controller Setup**'s Draft toolbar and "MIDI input" panel,
   and **Live send**'s off-state pill.
+  **Controller Setup fixed in `v0.47.76-theme-live-controller-setup`**: its
+  "Draft"/"MIDI input" panel frames (a QGroupBox-styled `QFrame` with no
+  native title row, since `QGroupBox` can't host header buttons), their
+  titles, the muted hint labels, the toolbar group captions, and the
+  learn-status pill all had the same hardcoded-dark-snapshot bug. Kept the
+  QSS Templates local to `controller_setup.py` this time rather than adding
+  more to `theme.py`: each is a single-rule snippet specific to one element
+  here, unlike `mapping_tree_stylesheet()`/`midi_tools_stylesheet()`'s
+  shared multi-selector blocks. `_toolbar_row`/`_column_label` had to become
+  instance methods (were a classmethod/staticmethod) so they could register
+  each label they create for the live restyle -- the one existing test that
+  called `_toolbar_row` as an unbound class call was updated to construct a
+  real instance. Verified: a live switch renders both panels light; dark
+  stays pixel-identical to before this fix. Remaining: **Live send**'s
+  off-state pill.
 - [x] **Controller Setup input/output row and merged Draft toolbar** — merge
   the separate `Session`, `Import`, and `Apply / Export` panels into one
   `Draft` panel: a single horizontal icon toolbar (`_toolbar_row`) with a
