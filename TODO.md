@@ -289,6 +289,44 @@ Implemented contract, runtime, test, and documentation work:
   Controller Setup panels still carry hard-coded dark inline styles that a
   follow-up will tokenise; the controller schematic canvas stays dark by
   design. Milestone tag `v0.47.14-theme-selector`.
+  **Follow-up started in `v0.47.74-theme-live-mapping-trees`**: found while
+  actually switching to Light and looking, rather than assuming the one
+  flagged-but-unverified sentence above was the whole story -- it wasn't.
+  Every By Channel/Deck/Controller mapping tree turned out to build its own
+  `QTreeView` styling from a *literal hardcoded copy* of the dark palette's
+  hex values (`_style_mapping_tree`), not just "a few panels" -- so Light
+  theme left all three tree tabs' trees stuck dark, the single most-used
+  surface in the app. Worse, this wasn't only a look-wrong bug: even a
+  properly tokenised widget would still show whatever mode was active at
+  its *construction* time only, because nothing told already-built widgets
+  to rebuild when the user picked a different theme in Preferences later in
+  the same session -- switching Dark -> Light live would leave every
+  already-open tree, dock, and panel showing the old colors until restart.
+  Fixed the second problem generally: `theme.py` now tracks the resolved
+  mode (`current_mode()`), exposes it as a plain token dict any widget can
+  substitute its own scoped QSS from (`colors()`), and emits a
+  `signals.themeChanged` Qt signal on every `apply_theme()` call a widget
+  can reconnect to and rebuild live. Fixed the first problem for the tree
+  case: `theme.mapping_tree_stylesheet()` builds `_style_mapping_tree`'s QSS
+  from `colors()` instead of a frozen string, and each tree reconnects to
+  `themeChanged` to restyle itself immediately on a live switch (verified:
+  Light after a live switch actually renders white/light trees, Dark still
+  renders pixel-identical to before this fix). One real trap along the way:
+  a tree can be destroyed out from under a still-connected `themeChanged`
+  closure (reloading a mapping replaces the whole column splitter --
+  `splitter_utils.replace_splitter` -> `deleteLater()` -- without
+  disconnecting anything, and a plain closure isn't a bound QObject method
+  PySide auto-disconnects the way it would a `view.some_method` slot) --
+  reproduced by reloading, then switching theme, which crashed on a
+  `RuntimeError` from the deleted `QTreeView`; fixed by having the restyle
+  closure swallow that specific `RuntimeError` (nothing left to restyle) instead of
+  trying to track disconnection by hand, which turned out to fight PySide's
+  own (bound-method-only) auto-disconnection and raise a different
+  `RuntimeError` of its own. Still hardcoded and dark regardless of theme,
+  confirmed by screenshot sweep: **MIDI Routing** (`_apply_dj_style`, also
+  reparented onto the **MIDI Clock** panel), **Controller Setup**'s Draft
+  toolbar and "MIDI input" panel, and **Live send**'s off-state pill --
+  each is its own follow-up.
 - [x] **Controller Setup input/output row and merged Draft toolbar** — merge
   the separate `Session`, `Import`, and `Apply / Export` panels into one
   `Draft` panel: a single horizontal icon toolbar (`_toolbar_row`) with a

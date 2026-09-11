@@ -12,7 +12,7 @@ import logging
 from string import Template
 from typing import Literal
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QObject, Qt, Signal
 from PySide6.QtWidgets import QApplication
 
 _LOGGER = logging.getLogger(__name__)
@@ -203,6 +203,8 @@ _DARK = {
     "header_text": "#b9c9dc",
     "scroll_handle": "#56769a",
     "tooltip_bg": "#202d42",
+    "tree_hover_bg": "#263b56",
+    "tree_hover_text": "#ffffff",
 }
 
 _LIGHT = {
@@ -235,12 +237,107 @@ _LIGHT = {
     "header_text": "#45566a",
     "scroll_handle": "#aab6c6",
     "tooltip_bg": "#23303f",
+    "tree_hover_bg": "#dce6f1",
+    "tree_hover_text": "#1c2530",
 }
 
 DARK_THEME = _QSS.substitute(_DARK)
 LIGHT_THEME = _QSS.substitute(_LIGHT)
 # Back-compat alias for callers/tests that referred to the single old theme.
 DJ_THEME = DARK_THEME
+
+_PALETTES: dict[Literal["light", "dark"], dict[str, str]] = {"light": _LIGHT, "dark": _DARK}
+
+# Several custom-styled panels (mapping trees, MIDI Routing/Clock, Controller
+# Setup, Live send) build their own scoped QSS instead of relying purely on
+# the app-wide cascade above -- e.g. to scope colors to one objectName, or to
+# style a QGraphicsView that ignores stylesheets for its scene content. Before
+# this module tracked the active mode, those were written with a literal
+# hardcoded copy of _DARK's values: switching to Light in Preferences left
+# every one of them stuck dark, since nothing ever told them to rebuild.
+# `colors()`/`current_mode()` let them build (and `signals.themeChanged` let
+# them rebuild, live, on a theme switch) from the same token dict this
+# module already substitutes its own QSS from, instead of a frozen snapshot.
+_current_mode: Literal["light", "dark"] = "dark"
+
+
+class _ThemeSignals(QObject):
+    """A module-level signal source: `theme.py` has no QWidget of its own to
+    hang a Signal off, so this tiny QObject singleton stands in for one."""
+
+    themeChanged = Signal(str)  # "light" or "dark" -- always the resolved mode, never "system"
+
+
+signals = _ThemeSignals()
+
+
+def colors(mode: Literal["light", "dark"] | None = None) -> dict[str, str]:
+    """The resolved color-token dict for `mode` (or the currently active one
+    if omitted), for components that build their own scoped QSS. A copy, so
+    callers substituting into a Template can't mutate the shared palette."""
+    return dict(_PALETTES[mode or _current_mode])
+
+
+def current_mode() -> Literal["light", "dark"]:
+    """The last mode `apply_theme()` resolved and applied -- always a
+    concrete "light"/"dark", never "system" (see `resolve_mode`)."""
+    return _current_mode
+
+
+_TREE_QSS = Template("""
+QTreeView {
+    background: $field_bg;
+    alternate-background-color: $table_alt;
+    color: $table_text;
+    border: 1px solid $panel_border;
+    border-radius: 8px;
+    padding: 5px;
+    outline: none;
+}
+QTreeView::item {
+    padding: 6px 8px;
+    border-radius: 4px;
+}
+QTreeView::item:hover {
+    background: $tree_hover_bg;
+    color: $tree_hover_text;
+}
+QTreeView::item:selected {
+    background: $accent;
+    color: #ffffff;
+}
+QHeaderView::section {
+    background: $header_bg;
+    color: $header_text;
+    border: 0;
+    border-bottom: 1px solid $field_border;
+    padding: 7px;
+    font-weight: 600;
+}
+QScrollBar:vertical, QScrollBar:horizontal {
+    background: $bar_bg;
+    border: none;
+}
+QScrollBar::handle:vertical, QScrollBar::handle:horizontal {
+    background: $scroll_handle;
+    border-radius: 5px;
+    min-height: 24px;
+    min-width: 24px;
+}
+QScrollBar::handle:hover {
+    background: $accent2;
+}
+""")
+
+
+def mapping_tree_stylesheet(mode: Literal["light", "dark"] | None = None) -> str:
+    """The scoped QSS every mapping QTreeView (By Channel/Deck/Controller)
+    sets on itself directly, rather than relying on the app-wide cascade in
+    `_QSS`: it needs its own :hover/:selected rules the generic QTreeView
+    block above doesn't define. Callable per-mode (see `colors()`) so a
+    caller can rebuild it after a live theme switch instead of the widget
+    being stuck with whatever was current at construction time."""
+    return _TREE_QSS.substitute(colors(mode))
 
 
 def resolve_mode(mode: str, app: QApplication | None = None) -> Literal["light", "dark"]:
@@ -278,6 +375,15 @@ def apply_theme(app: QApplication, mode: str = "dark") -> None:
         )
     concrete = resolve_mode(mode, app)
     app.setStyleSheet(LIGHT_THEME if concrete == "light" else DARK_THEME)
+    global _current_mode
+    _current_mode = concrete
+    # Emitted unconditionally, not just on an actual flip: a scoped-QSS
+    # widget only needs to read colors() once at construction (by the time
+    # any widget exists, MainWindow.__init__ has already applied the saved
+    # preference), and this signal is purely for a *live* Preferences change
+    # -- cheap to always fire, and simpler than tracking whether this call
+    # happened to change anything.
+    signals.themeChanged.emit(concrete)
     _LOGGER.info("Applied %s theme (mode=%s)", concrete, mode)
 
 
@@ -288,5 +394,9 @@ __all__ = [
     "THEME_MODES",
     "ThemeMode",
     "apply_theme",
+    "colors",
+    "current_mode",
+    "mapping_tree_stylesheet",
     "resolve_mode",
+    "signals",
 ]
