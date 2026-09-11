@@ -24,6 +24,7 @@ import json
 import logging
 import re
 from pathlib import Path
+from string import Template
 from typing import cast
 
 from PySide6.QtCore import QItemSelectionModel, Qt, QTimer, QUrl, Signal
@@ -73,6 +74,8 @@ from djmidi.catalog.community import (
 )
 from djmidi.gui.controller_submission_dialog import ControllerSubmissionDialog
 from djmidi.gui.port_list_utils import refresh_checked_port_list
+from djmidi.gui.theme import colors as theme_colors
+from djmidi.gui.theme import signals as theme_signals
 from djmidi.midi_io import (
     MidiEvent,
     MidiMonitor,
@@ -125,6 +128,25 @@ _APPLY_HELP = (
 
 _DDJ_XP2_PAD_MODE_NOTES = {1: 27, 2: 30, 3: 32, 4: 34}
 
+# This view's few custom-styled elements (a QGroupBox-styled QFrame with no
+# native title row, its title, a muted "hint" subtitle, a small caption, and
+# the learn-status pill) used to set a literal hardcoded copy of the dark
+# palette's colors, so this whole tab stayed dark even after picking Light in
+# Preferences -- same bug, same fix, as theme.mapping_tree_stylesheet() /
+# theme.midi_tools_stylesheet(). Kept local rather than added to theme.py:
+# each is a single-rule snippet specific to this one view, unlike those two
+# shared multi-selector blocks several distinct widgets substitute from.
+_PANEL_FRAME_QSS = Template("QFrame { background: $panel_bg; border: 1px solid $panel_border; border-radius: 9px; }")
+_PANEL_TITLE_QSS = Template("QLabel { font-weight: bold; color: $title; border: none; }")
+_HINT_LABEL_QSS = Template("QLabel { color: $hint_text; border: none; }")
+_COLUMN_LABEL_QSS = Template("QLabel { font-weight: bold; color: $hint_text; font-size: 11px; }")
+_STATUS_PILL_QSS = Template(
+    "QLabel {"
+    " font-weight: bold; padding: 6px 10px; margin-top: 4px;"
+    " background: $header_bg; border: 1px solid $field_border; border-radius: 4px;"
+    " }"
+)
+
 
 def _slugify(name: str) -> str:
     lowered = name.strip().lower()
@@ -160,6 +182,18 @@ class ControllerSetupView(QWidget):
         self._rebuilding = False
         self._learning = False
         self._applied_names: set[str] = set()
+        # This view builds several panels/labels with their own scoped QSS
+        # (a QGroupBox-styled QFrame with no native title row, a muted
+        # "hint" subtitle, a small caption, a status pill) instead of
+        # relying on the app-wide cascade -- each helper below appends what
+        # it creates here rather than hardcoding colors at creation time, so
+        # _restyle_theme() (called once at the end of __init__, and on every
+        # live theme.signals.themeChanged) can build every one of them from
+        # the current theme.colors() instead of a frozen dark snapshot.
+        self._panel_frames: list[QFrame] = []
+        self._panel_title_labels: list[QLabel] = []
+        self._hint_labels: list[QLabel] = []
+        self._column_labels: list[QLabel] = []
 
         self._name_edit = QLineEdit()
         self._name_edit.setPlaceholderText("Controller name, e.g. Behringer CMD LC-1")
@@ -199,12 +233,6 @@ class ControllerSetupView(QWidget):
         self._learn_button.setToolTip("Start learning")
         self._learn_button.clicked.connect(self._toggle_learning)
         self._learn_status = QLabel("Stopped")
-        self._learn_status.setStyleSheet(
-            "QLabel {"
-            " font-weight: bold; padding: 6px 10px; margin-top: 4px;"
-            " background: #202d42; border: 1px solid #3a506d; border-radius: 4px;"
-            " }"
-        )
         capture_help_button = self._help_button("MIDI input (learn from controller)", _CAPTURE_HELP)
         capture_box, capture_layout = self._titled_panel(
             "MIDI input", [refresh_button, self._learn_button, capture_help_button]
@@ -222,7 +250,7 @@ class ControllerSetupView(QWidget):
         import_help_button = self._help_button("Import", _IMPORT_HELP)
         self._image_label = QLabel("No reference image")
         self._image_label.setWordWrap(True)
-        self._image_label.setStyleSheet("QLabel { color: #8fa7bd; border: none; }")
+        self._hint_labels.append(self._image_label)
 
         self._output_port_list = QListWidget()
         self._output_port_list.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
@@ -357,7 +385,7 @@ class ControllerSetupView(QWidget):
             "(that is File → Open)."
         )
         draft_hint.setWordWrap(True)
-        draft_hint.setStyleSheet("QLabel { color: #8fa7bd; border: none; }")
+        self._hint_labels.append(draft_hint)
         draft_layout.addWidget(draft_hint)
         draft_layout.addLayout(
             self._toolbar_row(
@@ -442,8 +470,28 @@ class ControllerSetupView(QWidget):
         self._timer.setInterval(_POLL_INTERVAL_MS)
         self._timer.timeout.connect(self._poll)
 
+        self._restyle_theme()
+        theme_signals.themeChanged.connect(self._restyle_theme)
         self._refresh_ports()
         self._refresh_output_ports()
+
+    def _restyle_theme(self, *_args: object) -> None:
+        """Rebuild every custom-styled element this view registered above
+        from the current theme.colors(), instead of the hardcoded dark
+        snapshot each used to set at construction time. A persistent
+        singleton for the tab's lifetime (like MidiRoutingView, unlike a
+        per-reload mapping tree), so a plain themeChanged connection is
+        enough -- no stale-QObject risk to guard against."""
+        c = theme_colors()
+        for frame in self._panel_frames:
+            frame.setStyleSheet(_PANEL_FRAME_QSS.substitute(c))
+        for label in self._panel_title_labels:
+            label.setStyleSheet(_PANEL_TITLE_QSS.substitute(c))
+        for label in self._hint_labels:
+            label.setStyleSheet(_HINT_LABEL_QSS.substitute(c))
+        for label in self._column_labels:
+            label.setStyleSheet(_COLUMN_LABEL_QSS.substitute(c))
+        self._learn_status.setStyleSheet(_STATUS_PILL_QSS.substitute(c))
 
     def _get_icon(self, icon_type: str) -> QIcon:
         """Get a standard Qt icon by type name."""
@@ -479,9 +527,7 @@ class ControllerSetupView(QWidget):
         native title bar can't host widgets, so this is a plain QFrame styled
         to match (see theme.py's QGroupBox rule)."""
         frame = QFrame()
-        frame.setStyleSheet(
-            "QFrame { background: #151e2b; border: 1px solid #2b3b53; border-radius: 9px; }"
-        )
+        self._panel_frames.append(frame)
         outer = QVBoxLayout(frame)
         outer.setContentsMargins(8, 6, 8, 8)
         outer.setSpacing(6)
@@ -489,7 +535,7 @@ class ControllerSetupView(QWidget):
         header = QHBoxLayout()
         header.setSpacing(6)
         title_label = QLabel(title)
-        title_label.setStyleSheet("QLabel { font-weight: bold; color: #8fe8ff; border: none; }")
+        self._panel_title_labels.append(title_label)
         header.addWidget(title_label)
         header.addStretch(1)
         for button in header_buttons:
@@ -515,8 +561,7 @@ class ControllerSetupView(QWidget):
         grid.setColumnStretch(columns, 1)
         return grid
 
-    @classmethod
-    def _toolbar_row(cls, groups: list[tuple[str, list[QPushButton]]]) -> QHBoxLayout:
+    def _toolbar_row(self, groups: list[tuple[str, list[QPushButton]]]) -> QHBoxLayout:
         """One horizontal strip: each group is a caption followed by its
         28x28 icon buttons, and the groups are spread across the full width
         (first flush left, last flush right)."""
@@ -525,7 +570,7 @@ class ControllerSetupView(QWidget):
         for index, (caption, buttons) in enumerate(groups):
             if index:
                 row.addStretch(1)
-            label = cls._column_label(caption)
+            label = self._column_label(caption)
             row.addWidget(label)
             row.addSpacing(2)
             for button in buttons:
@@ -533,10 +578,9 @@ class ControllerSetupView(QWidget):
                 row.addWidget(button)
         return row
 
-    @staticmethod
-    def _column_label(text: str) -> QLabel:
+    def _column_label(self, text: str) -> QLabel:
         label = QLabel(text)
-        label.setStyleSheet("QLabel { font-weight: bold; color: #8fa7bd; font-size: 11px; }")
+        self._column_labels.append(label)
         return label
 
     # -- controller name -------------------------------------------------
