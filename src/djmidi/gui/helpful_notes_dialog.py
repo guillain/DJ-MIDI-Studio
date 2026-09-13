@@ -4,6 +4,8 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QCloseEvent
 from PySide6.QtWidgets import QDialog, QLabel, QMessageBox, QPushButton, QVBoxLayout
 
+from djmidi.gui.theme import colors as theme_colors
+
 HELPFUL_NOTES_TEXT = (
     "- By Channel: most granular editing (raw Control/UserIO/Mapping).\n"
     "- By Deck: grouped editing of Serato duplicate trigger sets (x10) via MappingGroup.\n"
@@ -27,8 +29,15 @@ class HelpfulNotesDialog(QDialog):
         self.setMinimumSize(520, 260)
         self.setModal(False)
 
-        title = QLabel("Quick workflow reminders")
-        title.setStyleSheet("font-size: 16px; font-weight: 700; color: #8fe8ff;")
+        self._title_label = QLabel("Quick workflow reminders")
+        # A hardcoded copy of the dark palette's "title" color -- unlike the
+        # other panels in this theme-consistency chantier this dialog is
+        # transient (a fresh instance each time it's shown, not a
+        # persistent singleton), so reading theme.colors() once here at
+        # construction is enough; no live themeChanged wiring needed.
+        self._title_label.setStyleSheet(
+            f"font-size: 16px; font-weight: 700; color: {theme_colors()['title']};"
+        )
         notes = QLabel(HELPFUL_NOTES_TEXT)
         notes.setTextFormat(Qt.TextFormat.PlainText)
         notes.setWordWrap(True)
@@ -37,7 +46,7 @@ class HelpfulNotesDialog(QDialog):
         close_button.clicked.connect(self.close)
 
         layout = QVBoxLayout(self)
-        layout.addWidget(title)
+        layout.addWidget(self._title_label)
         layout.addWidget(notes, 1)
         layout.addWidget(close_button)
 
