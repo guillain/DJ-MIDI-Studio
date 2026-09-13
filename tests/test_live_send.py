@@ -1,4 +1,7 @@
+from PySide6.QtWidgets import QApplication
+
 from djmidi.gui import live_send as live_send_mod
+from djmidi.gui import theme
 from djmidi.gui.live_send import LiveSendControl
 
 
@@ -105,3 +108,66 @@ def test_port_warning_hidden_when_no_ports_available(monkeypatch):
     monkeypatch.setattr(live_send_mod.midi_io, "list_output_ports", list)
     control = LiveSendControl()
     assert control._port_warning.isHidden()
+
+
+# ─── theme ──────────────────────────────────────────────────────────────────
+
+
+def test_off_state_pill_restyles_live_on_a_theme_switch(monkeypatch):
+    """The "off" toggle style used to set a literal hardcoded copy of the
+    dark palette's colors, so this pill stayed dark even after picking
+    Light in Preferences."""
+    monkeypatch.setattr(live_send_mod.midi_io, "list_output_ports", lambda: ["Port A"])
+    control = LiveSendControl()
+    assert control.is_active() is False
+    try:
+        theme.apply_theme(QApplication.instance(), "light")
+        c = theme.colors("light")
+        assert c["header_bg"] in control._toggle_button.styleSheet()
+        assert c["hint_text"] in control._toggle_button.styleSheet()
+
+        theme.apply_theme(QApplication.instance(), "dark")
+        d = theme.colors("dark")
+        assert d["header_bg"] in control._toggle_button.styleSheet()
+    finally:
+        theme.apply_theme(QApplication.instance(), "dark")
+
+
+def test_on_state_pill_stays_the_same_theme_invariant_red_on_a_theme_switch(monkeypatch):
+    """The "on" style is deliberately theme-invariant (a hardware-LED-style
+    warning), so a theme switch must not touch it -- but the toggle must
+    still be re-evaluated for the *current* checked state, not just reset to
+    the "off" style."""
+    monkeypatch.setattr(live_send_mod.midi_io, "list_output_ports", lambda: ["Port A"])
+    control = LiveSendControl()
+    control._toggle_button.setChecked(True)
+    before = control._toggle_button.styleSheet()
+    assert "#c0304a" in before
+
+    theme.apply_theme(QApplication.instance(), "light")
+    try:
+        assert control._toggle_button.styleSheet() == before
+        assert control._toggle_button.text() == "LIVE SEND: ON"
+    finally:
+        theme.apply_theme(QApplication.instance(), "dark")
+
+
+def test_restyle_on_a_destroyed_instance_does_not_crash(monkeypatch):
+    """An instance embedded in a dynamic Controller Emulator dock is
+    destroyed on dock close (_close_emulator_instance), but the persistent
+    theme.signals.themeChanged connection outlives it -- a later theme
+    switch must not crash trying to restyle a deleted QPushButton."""
+    from PySide6.QtWidgets import QWidget
+
+    monkeypatch.setattr(live_send_mod.midi_io, "list_output_ports", lambda: ["Port A"])
+    host = QWidget()
+    LiveSendControl(parent=host)  # its themeChanged connection outlives this scope
+    host.deleteLater()
+    QApplication.processEvents()
+    QApplication.processEvents()
+
+    try:
+        theme.apply_theme(QApplication.instance(), "light")
+        theme.apply_theme(QApplication.instance(), "dark")
+    finally:
+        theme.apply_theme(QApplication.instance(), "dark")

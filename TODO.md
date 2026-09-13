@@ -370,6 +370,23 @@ Implemented contract, runtime, test, and documentation work:
   real instance. Verified: a live switch renders both panels light; dark
   stays pixel-identical to before this fix. Remaining: **Live send**'s
   off-state pill.
+  **Live send fixed in `v0.47.77-theme-live-live-send`, closing out this
+  chantier**: the "off" toggle pill (`LiveSendControl._apply_toggle_style`)
+  had the same hardcoded-dark-snapshot bug; the "on" pill's vivid red is
+  deliberately theme-invariant (a hardware-LED-style warning, like
+  `theme.py`'s own `accent` pink being the same hex in both palettes) and
+  was left alone. This instance is embedded in both persistent views
+  (`ControllerLayoutView`, `ControllerImageView` -- live for the app's
+  session) and dynamic ones (`ControllerEmulatorView`, destroyed by
+  `_close_emulator_instance` on dock close), so it needed the same
+  stale-QObject guard as the mapping trees despite being a plain
+  bound-method `themeChanged` connection -- reproduced and fixed the same
+  way (a `RuntimeError` guard in the restyle method), confirmed with a
+  dedicated regression test this time rather than only a one-off manual
+  script. With this, every custom-styled panel the original `v0.47.14`
+  theme-selector docstring flagged (plus the ones only actually switching
+  to Light and looking found) is theme-aware and updates live on a
+  Settings -> Preferences switch, with no restart required.
 - [x] **Controller Setup input/output row and merged Draft toolbar** — merge
   the separate `Session`, `Import`, and `Apply / Export` panels into one
   `Draft` panel: a single horizontal icon toolbar (`_toolbar_row`) with a
