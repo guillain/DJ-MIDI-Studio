@@ -49,6 +49,8 @@ from PySide6.QtWidgets import (
 from djmidi import catalog, midi_io
 from djmidi.catalog._registry import ControlInfo
 from djmidi.gui import layout as layout_mod
+from djmidi.gui.theme import colors as theme_colors
+from djmidi.gui.theme import signals as theme_signals
 from djmidi.session_player import send_control_info_entry
 
 _DEFAULT_SEND_VALUE = 127
@@ -91,6 +93,12 @@ class LiveSendControl(QWidget):
         )
         self._toggle_button.toggled.connect(self._on_toggled)
         self._apply_toggle_style(False)
+        # An instance can be embedded in a persistent view (ControllerLayoutView,
+        # ControllerImageView -- lives for the app's session) or a dynamic one
+        # (ControllerEmulatorView, destroyed by _close_emulator_instance on
+        # dock close), so guard against the latter the same way the mapping
+        # trees do: nothing left to restyle once the underlying widget is gone.
+        theme_signals.themeChanged.connect(self._restyle_theme)
 
         row = QHBoxLayout()
         row.setContentsMargins(0, 0, 0, 0)
@@ -152,6 +160,10 @@ class LiveSendControl(QWidget):
 
     def _apply_toggle_style(self, checked: bool) -> None:
         if checked:
+            # Deliberately theme-invariant, like a hardware LED: this is the
+            # one state that must stay vividly, unmistakably red regardless
+            # of Light/Dark, the same way theme.py's own "accent" pink is
+            # the same hex in both palettes.
             self._toggle_button.setText("LIVE SEND: ON")
             self._toggle_button.setStyleSheet(
                 "QPushButton {"
@@ -161,12 +173,25 @@ class LiveSendControl(QWidget):
             )
         else:
             self._toggle_button.setText("Live send: off")
+            c = theme_colors()
             self._toggle_button.setStyleSheet(
                 "QPushButton {"
-                " background: #202d3d; color: #8fa7bd;"
-                " border: 1px solid #3a506d; border-radius: 5px; padding: 4px 10px;"
+                f" background: {c['header_bg']}; color: {c['hint_text']};"
+                f" border: 1px solid {c['field_border']}; border-radius: 5px; padding: 4px 10px;"
                 " }"
             )
+
+    def _restyle_theme(self, *_args: object) -> None:
+        """Was a literal hardcoded copy of the dark palette for the "off"
+        state, so this pill stayed dark even after picking Light --
+        reapplies the *current* checked state's style (not just "off") with
+        theme.colors(), since a live theme switch can happen while the
+        toggle is ON too (the ON style is intentionally theme-invariant, but
+        recomputing it here is one branch, not worth special-casing away)."""
+        try:
+            self._apply_toggle_style(self._toggle_button.isChecked())
+        except RuntimeError:
+            pass  # this instance (e.g. a closed Controller Emulator dock) is gone
 
     def is_active(self) -> bool:
         return self._toggle_button.isChecked()
