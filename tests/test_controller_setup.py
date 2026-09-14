@@ -1211,6 +1211,16 @@ def test_midi_input_and_output_row_is_wrapped_in_a_scroll_area():
     assert "MIDI Output" in group_titles
 
 
+# A regression test for the "Draft" panel squeeze/overlap this scroll area
+# fixed lives in test_main_window.py (test_draft_panel_never_shrinks_below_
+# its_minimum_size_in_main_window), not here: the bug only reproduces with
+# this view embedded in MainWindow, whose explicit setMinimumSize(320, 240)
+# overrides the layout's own computed minimum and lets the tab actually be
+# squeezed below it. A bare top-level ControllerSetupView() has no such
+# override, so Qt just clamps resize() to the layout's minimumSize instead
+# of reproducing the squeeze -- confirmed by trying that shape first.
+
+
 # ─── theme ──────────────────────────────────────────────────────────────────
 
 
