@@ -393,6 +393,26 @@ Implemented contract, runtime, test, and documentation work:
   is a fresh instance each time it's shown (not a persistent singleton), so
   reading `theme.colors()` once at construction is enough. Previously
   untested; a small test file was added alongside the fix.
+  One more, found by re-scanning every remaining hardcoded hex color
+  app-wide rather than trusting the sweep was exhaustive
+  (`v0.47.79-theme-dashboard-availability`): the Dashboard's per-controller
+  "MIDI: not checked"/"not detected" labels (`IntroductionView
+  .refresh_midi_availability`) used a plain `#777` that was never tuned per
+  palette (unlike `disabled_text`, whose light/dark values are each chosen
+  for contrast against their own `window_bg`) -- tokenized to
+  `disabled_text`. The "MIDI: available" green and the controller-photo
+  frame's dark background were left alone: the green matches MIDI
+  Routing's already-established semantic status-color convention, and the
+  photo frame is a deliberately always-dark backdrop, the same design
+  choice as the layout schematic canvas. This one also needed its own
+  `themeChanged` reconnect, not just a token swap:
+  `refresh_midi_availability` only reruns on a MIDI port-list change (a
+  relatively rare event, live_monitor_view.portNamesChanged), so a live
+  theme switch with no port change around the same time would otherwise
+  leave the old color in place. The rest of the codebase's remaining
+  hardcoded colors (the layout/emulator schematic canvases, the
+  controller-photo overlay markers, and MIDI Routing's own semantic
+  status colors) are deliberate and theme-invariant by design, not bugs.
 - [x] **Controller Setup input/output row and merged Draft toolbar** — merge
   the separate `Session`, `Import`, and `Apply / Export` panels into one
   `Draft` panel: a single horizontal icon toolbar (`_toolbar_row`) with a
