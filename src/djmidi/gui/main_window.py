@@ -146,6 +146,50 @@ _PERFORMANCE_TREE_RATIO = 0.03
 _PERFORMANCE_ZOOM_FACTOR = 1.6
 
 
+def _refresh_tree_row_layout(view: QTreeView) -> None:
+    """Force Qt to repaint every currently *visible* branch row under
+    `view`'s current stylesheet.
+
+    `QTreeView.setStyleSheet()` alone leaves a row's already-laid-out area
+    showing whatever background was cached the *last* time that row's
+    expand state changed -- found on By Controller after a live theme
+    switch: rows that stay collapsed (`_apply_controller_expand_state`
+    only expands a section with a used leaf) rendered with the *previous*
+    theme's dark background indefinitely, while rows that had just been
+    freshly expanded/collapsed painted correctly. By Channel/Deck never
+    showed this because `expandToDepth(0)` touches every top-level row's
+    expand state once at construction, well before any later theme switch
+    -- by then Qt has nothing stale left to redraw for those specific
+    rows. Toggling a row's expanded state off and immediately back to
+    whatever it already was is a UI no-op but forces the repaint.
+
+    Deliberately bounded to the viewport rather than a recursive full-model
+    walk (which this started as): a row that isn't currently painted has
+    nothing stale to fix -- scrolling to it afterwards already repaints
+    correctly on its own (confirmed: a live theme switch followed by a
+    scroll renders every newly-revealed row in the *current* theme, no
+    staleness). Bounding the cost to "however many rows are on screen"
+    also matters for a reason unrelated to correctness: theme.signals
+    .themeChanged is a persistent module-level signal, and a tree whose
+    widget hasn't actually been destroyed yet (Qt's own deferred-deletion
+    timing, not a bug in this codebase) keeps costing this function on
+    every future theme switch for as long as it lingers -- a recursive
+    whole-model walk turned that from negligible into something that
+    visibly compounded across a long test run (or, in principle, a long
+    real session with several mapping reloads)."""
+    model = view.model()
+    if model is None:
+        return
+    viewport_bottom = view.viewport().rect().bottom()
+    index = view.indexAt(view.viewport().rect().topLeft())
+    while index.isValid() and view.visualRect(index).top() <= viewport_bottom:
+        if model.hasChildren(index):
+            was_expanded = view.isExpanded(index)
+            view.setExpanded(index, not was_expanded)
+            view.setExpanded(index, was_expanded)
+        index = view.indexBelow(index)
+
+
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
@@ -183,6 +227,11 @@ class MainWindow(QMainWindow):
         self._channel_model_owner: dict[int, tuple[QTreeView, QSortFilterProxyModel]] = {}
         self._deck_tree_views: list[QTreeView] = []
         self._controller_tree_views: list[QTreeView] = []
+        # One connection, bound to self (MainWindow's own app-session
+        # lifetime), rather than one theme_signals.themeChanged connection
+        # per tree -- see _restyle_mapping_trees's docstring for why a
+        # per-tree closure leaked.
+        theme_signals.themeChanged.connect(self._restyle_mapping_trees)
         self._pair_splitters: list[QSplitter] = []
         self._pair_ratio_by_id: dict[int, float] = {}
         self._last_controller_detection: tuple[str, ...] = ()
@@ -1106,36 +1155,54 @@ class MainWindow(QMainWindow):
 
     @staticmethod
     def _style_mapping_tree(view: QTreeView) -> None:
-        """Apply the DJ booth palette to every mapping tree consistently,
-        and keep it in sync with a live Settings -> Preferences theme
-        switch. This used to set a literal hardcoded copy of the dark
+        """Apply the DJ booth palette to a mapping tree at construction
+        time. This used to set a literal hardcoded copy of the dark
         palette's colors, so By Channel/Deck/Controller stayed dark even
         after picking Light -- theme.mapping_tree_stylesheet() builds this
         from the same tokens theme.py substitutes its own app-wide QSS
-        from, and reconnecting to themeChanged rebuilds it live instead of
-        only at construction time."""
+        from.
+
+        A live Settings -> Preferences theme switch is handled centrally by
+        _restyle_mapping_trees (one connection, made once in __init__),
+        not by a per-tree theme.signals.themeChanged connection here -- see
+        that method's docstring for why the per-tree version, tried first,
+        turned out to leak."""
         view.setAlternatingRowColors(True)
         view.setIndentation(16)
         view.setAnimated(True)
+        view.setStyleSheet(mapping_tree_stylesheet())
 
-        def restyle(_mode: str | None = None, view: QTreeView = view) -> None:
-            try:
-                view.setStyleSheet(mapping_tree_stylesheet())
-            except RuntimeError:
-                # theme_signals is a persistent module-level singleton, so
-                # this connection outlives a single tree: reloading a
-                # mapping replaces the whole column splitter
-                # (splitter_utils.replace_splitter -> deleteLater()) without
-                # ever disconnecting it. A closure isn't a bound QObject
-                # method PySide can auto-disconnect on `view`'s destruction
-                # (that auto-disconnection is a bound-method-only feature),
-                # so restyle() can still fire for an already-deleted
-                # QTreeView -- harmless to skip, there's nothing left to
-                # restyle.
-                pass
+    def _restyle_mapping_trees(self, *_args: object) -> None:
+        """Rebuild every *currently live* mapping tree's stylesheet (and
+        force-repaint its visible rows -- see _refresh_tree_row_layout) on
+        a live Settings -> Preferences theme switch.
 
-        restyle()
-        theme_signals.themeChanged.connect(restyle)
+        The first version connected each tree individually to
+        theme.signals.themeChanged via a closure, at construction
+        (_style_mapping_tree). That leaked: reloading a mapping replaces
+        self._channel_model_owner / _deck_tree_views / _controller_tree_views
+        wholesale (splitter_utils.replace_splitter -> deleteLater() on the
+        old widgets) without ever disconnecting their individual
+        connections, and a plain closure isn't a bound QObject method
+        PySide auto-disconnects on the tree's destruction. Each dead
+        connection kept paying for a full restyle on every future theme
+        switch for as long as the underlying widget lingered (Qt's
+        deferred-deletion timing, not instant) -- measured compounding
+        linearly across repeated reloads within a single session, not just
+        an artifact of a test file constructing many windows.
+
+        Iterating these three lists instead has nothing to ever go stale:
+        they're always replaced, never appended to, so an old tree simply
+        isn't in them anymore once something rebuilds the columns -- one
+        connection, tied to MainWindow's own genuinely-app-session-long
+        lifetime, covers every tree that currently exists no matter how
+        many times the mapping has been reloaded."""
+        for view, _proxy in self._channel_model_owner.values():
+            view.setStyleSheet(mapping_tree_stylesheet())
+            _refresh_tree_row_layout(view)
+        for view in (*self._deck_tree_views, *self._controller_tree_views):
+            view.setStyleSheet(mapping_tree_stylesheet())
+            _refresh_tree_row_layout(view)
 
     def _apply_controller_expand_state(self, view: QTreeView, model: QStandardItemModel, expand_flags: list[tuple[int, bool]]) -> None:
         for row, has_used_leaf in expand_flags:

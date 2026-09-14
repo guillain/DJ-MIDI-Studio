@@ -1235,3 +1235,137 @@ def test_reloading_the_mapping_then_switching_theme_does_not_crash():
     finally:
         theme.apply_theme(QApplication.instance(), "dark")
         window.close()
+
+
+def test_refresh_tree_row_layout_does_not_change_expand_state():
+    """_refresh_tree_row_layout toggles each *visible* branch row's expand
+    state off and immediately back to force Qt to repaint it (see the
+    docstring for the underlying Qt repaint-cache quirk); across the whole
+    tree (visible or not, since a toggle is only ever a net no-op) this
+    must never change the tree's actual expand state -- a UI no-op, purely
+    to force a repaint, not an intentional collapse/expand."""
+    from djmidi.gui.main_window import _refresh_tree_row_layout
+
+    window = _loaded_window()
+    window.left_tabs.setCurrentIndex(window._tab_indexes["controller"])
+    QApplication.processEvents()
+    view = window._controller_tree_views[0]
+    model = view.model()
+
+    def branch_indexes(parent=None):
+        parent_index = parent if parent is not None else view.rootIndex()
+        for row in range(model.rowCount(parent_index)):
+            index = model.index(row, 0, parent_index)
+            if model.hasChildren(index):
+                yield index
+                yield from branch_indexes(index)
+
+    before = {index: view.isExpanded(index) for index in branch_indexes()}
+    assert before  # sanity: the fixture's DDJ-XP2 catalog has branch rows
+    assert not all(before.values())  # and at least one stays collapsed by default
+
+    _refresh_tree_row_layout(view)
+
+    after = {index: view.isExpanded(index) for index in branch_indexes()}
+    assert after == before
+    window.close()
+
+
+def test_refresh_tree_row_layout_only_touches_rows_inside_the_viewport():
+    """The first version of this function walked the *entire* model
+    recursively regardless of what was actually on screen. That's wrong on
+    its own terms (an off-screen row has nothing stale to fix -- scrolling
+    to it afterwards already repaints correctly on its own), and it turned
+    a pre-existing, previously-harmless leak into a real cost: a tree whose
+    widget hasn't been destroyed yet (theme.signals.themeChanged is a
+    persistent module-level signal a closed-but-not-yet-garbage-collected
+    window's trees stay connected to) kept paying for a full recursive
+    walk on every future theme switch for as long as it lingered, which
+    measurably compounded across this test file's many _loaded_window()
+    calls. Bounding the walk to the viewport keeps the cost to "however
+    many rows are on screen" regardless of model size or how many stale
+    connections have piled up."""
+    window = _loaded_window()
+    window.left_tabs.setCurrentIndex(window._tab_indexes["channel"])
+    QApplication.processEvents()
+    view = next(iter(window._channel_model_owner.values()))[0]
+
+    touched: list[object] = []
+    original_set_expanded = view.setExpanded
+
+    def spy_set_expanded(index, expand):
+        touched.append(index)
+        original_set_expanded(index, expand)
+
+    view.setExpanded = spy_set_expanded
+    try:
+        from djmidi.gui.main_window import _refresh_tree_row_layout
+
+        _refresh_tree_row_layout(view)
+    finally:
+        view.setExpanded = original_set_expanded
+
+    viewport_bottom = view.viewport().rect().bottom()
+    for index in touched:
+        assert view.visualRect(index).top() <= viewport_bottom
+
+    def total_row_count(model, parent=None) -> int:
+        parent_index = parent if parent is not None else view.rootIndex()
+        total = model.rowCount(parent_index)
+        for row in range(model.rowCount(parent_index)):
+            total += total_row_count(model, model.index(row, 0, parent_index))
+        return total
+
+    # setExpanded is called twice per visible branch row (off, then back
+    # on) -- this fixture's channel column has far more total rows, across
+    # every nesting level, than could ever fit in one screen's viewport.
+    assert len(touched) < total_row_count(view.model())
+    window.close()
+
+
+def test_by_controller_collapsed_sections_restyle_live_on_a_theme_switch():
+    """A real repaint bug, not just a stale-stylesheet-string one: Qt leaves
+    a row's already-laid-out area showing the *previous* theme's background
+    until its expand state is touched again. By Controller's sections that
+    stay collapsed (_apply_controller_expand_state only expands the ones
+    with a used leaf) never got that nudge from a plain setStyleSheet()
+    call, so a live theme switch left them stuck dark -- checking
+    view.styleSheet() alone (as the test above does) can't catch this,
+    since the stylesheet *text* was always correct; only the rendered
+    pixels were wrong. Reproduced and fixed via _refresh_tree_row_layout, a
+    recursive, net-no-op expand-state toggle."""
+    from djmidi.gui import theme
+
+    window = _loaded_window()
+    window.left_tabs.setCurrentIndex(window._tab_indexes["controller"])
+    QApplication.processEvents()
+    view = window._controller_tree_views[0]
+    model = view.model()
+    collapsed_index = next(
+        model.index(row, 0)
+        for row in range(model.rowCount())
+        if model.hasChildren(model.index(row, 0)) and not view.isExpanded(model.index(row, 0))
+    )
+    try:
+        theme.apply_theme(QApplication.instance(), "light")
+        QApplication.processEvents()
+        view.scrollTo(collapsed_index)
+        QApplication.processEvents()
+
+        rect = view.visualRect(collapsed_index)
+        assert not rect.isEmpty()
+        pixmap = view.viewport().grab(rect)
+        sampled = pixmap.toImage().pixelColor(rect.width() // 2, rect.height() // 2)
+        sampled_rgb = (sampled.red(), sampled.green(), sampled.blue())
+
+        light_candidates = {
+            QColor(theme.colors("light")[key]).getRgb()[:3] for key in ("field_bg", "table_alt")
+        }
+        dark_candidates = {
+            QColor(theme.colors("dark")[key]).getRgb()[:3] for key in ("field_bg", "table_alt")
+        }
+        assert sampled_rgb not in dark_candidates
+        assert sampled_rgb in light_candidates
+    finally:
+        theme.apply_theme(QApplication.instance(), "dark")
+        window.close()
