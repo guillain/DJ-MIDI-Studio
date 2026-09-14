@@ -386,7 +386,13 @@ Implemented contract, runtime, test, and documentation work:
   script. With this, every custom-styled panel the original `v0.47.14`
   theme-selector docstring flagged (plus the ones only actually switching
   to Light and looking found) is theme-aware and updates live on a
-  Settings -> Preferences switch, with no restart required.
+  Settings -> Preferences switch, with no restart required. One more small
+  leftover, `v0.47.78-theme-helpful-notes-title`: the Helpful Notes popup's
+  heading had the same hardcoded `title` color -- fixed the same way, but
+  without the themeChanged wiring the other fixes needed, since this dialog
+  is a fresh instance each time it's shown (not a persistent singleton), so
+  reading `theme.colors()` once at construction is enough. Previously
+  untested; a small test file was added alongside the fix.
 - [x] **Controller Setup input/output row and merged Draft toolbar** — merge
   the separate `Session`, `Import`, and `Apply / Export` panels into one
   `Draft` panel: a single horizontal icon toolbar (`_toolbar_row`) with a
