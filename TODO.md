@@ -413,6 +413,54 @@ Implemented contract, runtime, test, and documentation work:
   hardcoded colors (the layout/emulator schematic canvases, the
   controller-photo overlay markers, and MIDI Routing's own semantic
   status colors) are deliberate and theme-invariant by design, not bugs.
+  Two more findings while widening the audit to floating docks and more
+  window sizes, both fixed in `v0.47.80-by-controller-collapsed-rows`:
+  - **A real, separate bug**, not a color-token gap: **By Controller**'s
+    collapsed sections (`DECK`, `EFFECT`, ... -- anything without a used
+    leaf, since `_apply_controller_expand_state` only expands the ones
+    that have one) stayed rendered with the *previous* theme's dark
+    background after a live switch, even though `view.styleSheet()`
+    itself was already correctly light -- the stylesheet text was right,
+    the rendered pixels weren't. Root-caused to a genuine Qt repaint-cache
+    quirk: `QTreeView.setStyleSheet()` alone leaves a row's already-laid-
+    out area showing whatever was cached the *last* time that row's
+    expand state changed, and collapsed rows never get that nudge from a
+    plain `setStyleSheet()` call. By Channel/Deck never showed this
+    because `expandToDepth(0)` touches every top-level row's expand state
+    once at construction, well before any later theme switch -- by then
+    Qt has nothing stale left to redraw there. Fixed with
+    `_refresh_tree_row_layout()`: toggles each *visible* branch row's
+    expand state off and immediately back (a UI no-op) to force the
+    repaint, bounded to the viewport rather than a recursive full-model
+    walk (an off-screen row has nothing stale to fix -- scrolling to it
+    afterwards already repaints correctly on its own, confirmed directly).
+    Reproduced and fixed with pixel-sampled screenshots, not just a
+    stylesheet-string check, since the string was never the problem.
+  - **A genuine pre-existing leak**, found while stress-testing the fix
+    above: reloading a mapping (`_load_tree()`) replaces
+    `_channel_model_owner`/`_deck_tree_views`/`_controller_tree_views`
+    wholesale, but the *old* trees' individual `theme.signals
+    .themeChanged` connections (one per tree, from `_style_mapping_tree`,
+    since `v0.47.74`) were never disconnected -- a plain closure isn't a
+    bound QObject method PySide auto-disconnects on the tree's
+    destruction. Each dead connection kept costing a full restyle on
+    every future theme switch for as long as the underlying widget
+    lingered (Qt's own deferred-deletion timing, not instant), measured
+    directly: a live theme switch after repeated `_load_tree()` calls on
+    one window went from ~0.25s to ~1.5s over 8 reloads before this fix.
+    Fixed by centralizing to **one** connection, `MainWindow
+    ._restyle_mapping_trees`, made once (bound to `self`, tied to
+    `MainWindow`'s own real app-session lifetime) and iterating the three
+    always-current view lists directly instead -- there's nothing to ever
+    go stale, since an old tree simply isn't in them anymore once
+    something rebuilds the columns. Confirmed the same repeated-reload
+    benchmark now grows a small, roughly-flat amount instead (~0.25s ->
+    ~0.35s over 8 reloads) rather than compounding; the remaining residual
+    wasn't fully traced to a single cause and is left as a known, low-
+    severity loose end -- not blocking, since a real session has exactly
+    one `MainWindow` and reloading a file a handful of times costs at most
+    a couple of seconds on the *next* theme switch, not a growing tax on
+    every one after it.
 - [x] **Controller Setup input/output row and merged Draft toolbar** — merge
   the separate `Session`, `Import`, and `Apply / Export` panels into one
   `Draft` panel: a single horizontal icon toolbar (`_toolbar_row`) with a
