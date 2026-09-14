@@ -1681,6 +1681,64 @@ against the current tree and confirmed still open. Tracked as GitHub issues.
   than clips or paints over itself, at any window size checked so far —
   written as a standing claim, not a closed one: the audit technique itself
   (offscreen `MainWindow.grab()`) is proactive but not exhaustive.
+  Two more findings while widening the audit to floating docks and more
+  window sizes, both fixed in `v0.47.81-controller-setup-draft-overlap`:
+  first, a proactive sweep of the mapping tabs and every tool dock (docked
+  *and* floating: Live Monitor, MIDI Routing, MIDI Clock, Metronome, a
+  Controller Emulator instance) at 1280x820/1000x650/900x600/700x500/
+  500x400/320x240 confirmed the standing claim above still holds at every
+  one of those — including floating-dock variants, not previously checked
+  — with one exception: at 500x400 and smaller, Controller Setup's "Draft"
+  panel (the hint text above the Session/Import/Apply toolbar) visibly
+  overlapped the toolbar underneath it, unreadable garbled text rather than
+  a clean clip. Root cause, confirmed by geometry: the name row, "Draft"
+  panel, and "MIDI input"/"MIDI Output" row sat directly in the tab's
+  top-level layout with no scroll protection of their own (only the MIDI
+  input/Output row's *inner* content had one, from the original fix
+  above) — at these sizes the tab's aggregate content height exceeds the
+  window, and with nothing to fall back on Qt compresses every sibling,
+  including "Draft", below its `minimumSizeHint` to fit. A squeezed QLabel
+  doesn't clip cleanly; it keeps painting its full wrapped text inside a
+  near-zero-height rect, which is what produced the overlap (the Draft
+  `QFrame` fell from its 120px `minimumSizeHint` to 61px at 500x400 and
+  16px at 320x240). Fixed by giving the name row + "Draft" + "MIDI
+  input"/"MIDI Output" their own `QScrollArea` (`header_scroll`) ahead of
+  the results table — deliberately *not* the whole tab: a first attempt
+  wrapping everything, matching the Dashboard/MidiRouting precedent,
+  regressed the common case instead, because `self._table`'s stretch=1
+  Expanding policy (so it can shrink below its own sizeHint to fit
+  whatever room is left) has no equivalent once nested in a scroll area —
+  `QVBoxLayout.sizeHint()` just sums every child's sizeHint with no idea
+  the table would gladly take less, and a `widgetResizable` `QScrollArea`
+  holds its content at that inflated sizeHint rather than shrinking it,
+  even well above the true `minimumSizeHint`; verified this pushed
+  row-action buttons off-screen at 1280x820, a size confirmed fine before.
+  Scoping the scroll area to just the header region (no elastic child of
+  its own) sidesteps that gap entirely. A second attempt, en route to this
+  fix, also found and fixed a subtler version of the same class of Qt
+  quirk: nesting the *existing* MIDI input/Output `QScrollArea` inside the
+  *new* header one made the outer one under-request height (a
+  `QScrollArea`'s own `sizeHint()` does not track a `widgetResizable`
+  content widget's `sizeHint()` the way a plain widget's does), so it was
+  flattened to a single scroll level — the MIDI input/Output row's plain
+  container joins the name row and "Draft" directly under one
+  `header_scroll` — plus a small `_AutoSizeScrollArea` subclass overriding
+  `sizeHint()` to actually return the content's, so the header region gets
+  the room it deserves instead of Qt's default under-estimate (verified:
+  without it, 1280x820 regressed again, cutting off "PAD 7"/"PAD 8" and the
+  row-action buttons that were visible before any of this). Confirmed via
+  geometry (Draft's frame height stays at/above its `minimumSizeHint` at
+  every size from 1280x820 down to 320x240) and screenshots (no more
+  overlap at 500x400/320x240; 1280x820 renders complete, matching the
+  pre-fix baseline almost exactly — one row of the MIDI Output panel now
+  needs a small internal scroll instead of fitting outright, an accepted
+  trade-off given the alternative). Second, the docked MIDI Routing panel
+  and its floating-dock variant both still clip the route-controls button
+  row's last button ("Start routing") at narrow widths — but confirmed,
+  this time by actually scrolling it, to be the *same* already-accepted
+  design from the original MIDI Routing fix (a working, if not obviously
+  discoverable, horizontal scrollbar at the bottom of the panel), not a
+  new regression — left as-is.
 
 ### Next phases to define
 

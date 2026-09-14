@@ -27,7 +27,7 @@ from pathlib import Path
 from string import Template
 from typing import cast
 
-from PySide6.QtCore import QItemSelectionModel, Qt, QTimer, QUrl, Signal
+from PySide6.QtCore import QItemSelectionModel, QSize, Qt, QTimer, QUrl, Signal
 from PySide6.QtGui import QDesktopServices, QIcon
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -146,6 +146,32 @@ _STATUS_PILL_QSS = Template(
     " background: $header_bg; border: 1px solid $field_border; border-radius: 4px;"
     " }"
 )
+
+
+class _AutoSizeScrollArea(QScrollArea):
+    """A `widgetResizable` QScrollArea whose sizeHint() actually tracks its
+    content, unlike the base class.
+
+    QScrollArea.sizeHint() does not scale with a resizable widget's own
+    sizeHint() -- it stays a small, roughly constant value regardless of how
+    tall the content actually wants to be. That's invisible when the scroll
+    area is the *sole* item in its parent layout (the Dashboard/MidiRouting
+    precedent this fix otherwise follows): a lone child in a QVBoxLayout
+    gets the whole available rect regardless of its sizeHint, so the gap
+    never shows. It becomes a real bug once the scroll area shares a layout
+    with another stretch>0 sibling (here, self._table): the layout honors
+    each item's sizeHint first and only distributes leftover space by
+    stretch factor, so an under-reported sizeHint starves this widget of
+    room it should get, even on a window plenty tall enough for everything
+    to fit without scrolling (verified: without this override, the "Draft"
+    panel's fix below regressed 1280x820 -- previously scroll-free -- to
+    cut off "PAD 7"/"PAD 8" and the row-action buttons)."""
+
+    def sizeHint(self) -> QSize:
+        widget = self.widget()
+        if widget is not None:
+            return widget.sizeHint()
+        return super().sizeHint()
 
 
 def _slugify(name: str) -> str:
@@ -420,10 +446,6 @@ class ControllerSetupView(QWidget):
         # instead of letting that happen again.
         io_container = QWidget()
         io_container.setLayout(io_row)
-        io_scroll = QScrollArea()
-        io_scroll.setWidgetResizable(True)
-        io_scroll.setFrameShape(QFrame.Shape.NoFrame)
-        io_scroll.setWidget(io_container)
 
         self._table = QTableWidget(0, 7)
         self._table.setHorizontalHeaderLabels(["Section", "Name", "Type", "Channel(s)", "Data1", "Source", "Device"])
@@ -457,12 +479,67 @@ class ControllerSetupView(QWidget):
         row_buttons.addWidget(bulk_name_button)
         row_buttons.addStretch(1)
 
+        # The name row, "Draft" panel (hint text + Session/Import/Apply
+        # toolbar), and "MIDI input"/"MIDI Output" (io_scroll) previously sat
+        # directly in the top-level layout with no scroll protection of their
+        # own -- only io_scroll's *inner* row got one, from the original
+        # issue #19 fix. Found by widening that audit to more window sizes:
+        # at 500x400 (and worse below it) the whole tab's aggregate content
+        # height exceeds the window, and Qt compresses every top-level
+        # sibling -- including "Draft" -- below its minimumSizeHint to fit,
+        # rather than reserving each one's floor. A squeezed QLabel doesn't
+        # clip cleanly; it keeps painting its full wrapped text inside a
+        # near-zero-height rect, so draft_hint's text visibly overlapped the
+        # toolbar row's icon buttons underneath it (confirmed via geometry:
+        # the Draft QFrame fell from its 120px minimumSizeHint to 61px at
+        # 500x400 and 16px at 320x240).
+        #
+        # Fixed by wrapping just this *header* region (name row + Draft +
+        # MIDI input/Output) in its own QScrollArea -- deliberately NOT the
+        # whole tab (self._table and row_buttons stay outside it). A first
+        # attempt wrapped everything, matching the Dashboard/MidiRoutingView
+        # precedent, but that regressed the common case: self._table has
+        # stretch=1 and an Expanding size policy specifically so it can
+        # shrink below its own sizeHint to fit whatever room the table row
+        # is left -- QVBoxLayout.sizeHint() doesn't know that, it just sums
+        # every child's sizeHint, and a widgetResizable QScrollArea keeps its
+        # content at that (inflated) sizeHint rather than shrinking it to
+        # the viewport whenever the viewport is smaller than the sizeHint --
+        # even if it's still well above minimumSizeHint. Verified: nesting
+        # the table inside the outer scroll made it trigger a scrollbar (and
+        # push row_buttons off-screen) at 1280x820, a size confirmed fine
+        # before.
+        #
+        # A second attempt kept the MIDI input/Output row on its own
+        # pre-existing inner QScrollArea (io_scroll, from the original issue
+        # #19 fix) and wrapped *that* plus draft_box in a second, outer one.
+        # That regressed too, more subtly: a QScrollArea's own sizeHint()
+        # doesn't track its resizable content's sizeHint the way a plain
+        # widget's does, so nesting one QScrollArea inside another's layout
+        # made the outer one request far less height than the inner one
+        # actually wanted, forcing an avoidable scrollbar at sizes (e.g.
+        # 1280x820) that fit before with room to spare. Fixed by flattening
+        # to one scroll level: io_row's plain container (io_container) joins
+        # name_row and draft_box directly inside header_content, and
+        # header_scroll is the *only* QScrollArea in this region -- no more
+        # nested scroll areas to trip the same sizeHint gap over again.
+        header_content = QWidget()
+        header_layout = QVBoxLayout(header_content)
+        header_layout.setContentsMargins(0, 0, 0, 0)
+        header_layout.setSpacing(12)
+        header_layout.addLayout(name_row)
+        header_layout.addWidget(draft_box, 0)
+        header_layout.addWidget(io_container, 0)
+
+        header_scroll = _AutoSizeScrollArea()
+        header_scroll.setWidgetResizable(True)
+        header_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        header_scroll.setWidget(header_content)
+
         layout = QVBoxLayout(self)
         layout.setSpacing(12)
         layout.setContentsMargins(10, 10, 10, 10)
-        layout.addLayout(name_row)
-        layout.addWidget(draft_box, 0)
-        layout.addWidget(io_scroll, 0)
+        layout.addWidget(header_scroll, 0)
         layout.addWidget(self._table, 1)
         layout.addLayout(row_buttons)
 

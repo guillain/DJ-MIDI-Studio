@@ -1369,3 +1369,47 @@ def test_by_controller_collapsed_sections_restyle_live_on_a_theme_switch():
     finally:
         theme.apply_theme(QApplication.instance(), "dark")
         window.close()
+
+
+def test_draft_panel_never_shrinks_below_its_minimum_size_in_main_window():
+    """Widening the issue #19 audit (offscreen MainWindow.grab() at more
+    window sizes) found a second, worse repro on Controller Setup than the
+    already-fixed MIDI input/Output row: at 500x400 (and smaller) the
+    tab's aggregate content height exceeds the window, and with no scroll
+    protection at the top level Qt compressed every sibling -- including
+    the "Draft" panel (hint text + Session/Import/Apply toolbar) -- below
+    its minimumSizeHint to fit. A squeezed QLabel doesn't clip cleanly:
+    draft_hint kept painting its full wrapped text inside a near-zero-
+    height rect, visibly overlapping the toolbar row underneath it
+    (confirmed via geometry before the fix: the Draft QFrame fell from its
+    120px minimumSizeHint to 61px at 500x400 and 16px at 320x240).
+
+    Reproducing this needs the real MainWindow, not a bare
+    ControllerSetupView(): MainWindow's explicit setMinimumSize(320, 240)
+    overrides the layout's own computed minimum, which is what actually
+    lets the tab be squeezed this far -- a bare top-level view has no such
+    override, so Qt just clamps resize() to the layout's minimumSize and
+    never reproduces the squeeze (confirmed by trying that shape first).
+
+    Fixed by giving the name row + "Draft" + "MIDI input"/"MIDI Output"
+    their own QScrollArea (header_scroll, controller_setup.py) ahead of
+    the results table, using a small _AutoSizeScrollArea subclass so the
+    scroll area's sizeHint actually tracks its content instead of Qt's
+    default (which doesn't, and starved the region of height it should
+    get even at sizes with plenty of room -- verified separately at
+    1280x820, previously scroll-free, which still renders complete)."""
+    from PySide6.QtWidgets import QLabel
+
+    window = _loaded_window()
+    window.left_tabs.setCurrentIndex(window._tab_indexes["setup"])
+    window.resize(500, 400)
+    QApplication.processEvents()
+
+    setup_view = window.controller_setup_view
+    draft_frame = next(
+        frame
+        for frame in setup_view._panel_frames
+        if any(lbl.text() == "Draft" for lbl in frame.findChildren(QLabel))
+    )
+    assert draft_frame.height() >= draft_frame.minimumSizeHint().height()
+    window.close()
