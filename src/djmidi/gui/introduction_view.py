@@ -21,6 +21,8 @@ from PySide6.QtWidgets import (
 from djmidi import catalog
 from djmidi.gui.controller_image_view import ASSETS_DIR, image_for_controller
 from djmidi.gui.layout import CellKey
+from djmidi.gui.theme import colors as theme_colors
+from djmidi.gui.theme import signals as theme_signals
 
 
 class IntroductionView(QWidget):
@@ -124,6 +126,17 @@ class IntroductionView(QWidget):
         outer.addWidget(scroll)
 
         self.refresh_controllers()
+        # refresh_midi_availability only reruns on live_monitor_view
+        # .portNamesChanged (MainWindow.__init__), a relatively rare event
+        # (plugging/unplugging a device) -- reconnected here too so its two
+        # "not checked"/"not detected" labels (previously a literal
+        # hardcoded "#777") don't sit stale until the next port change. A
+        # persistent singleton for the app's session, so a plain
+        # bound-method connection is enough -- no stale-QObject risk.
+        theme_signals.themeChanged.connect(self._on_theme_changed)
+
+    def _on_theme_changed(self, *_args: object) -> None:
+        self.refresh_midi_availability(self._midi_port_names)
 
     def refresh_controllers(self) -> None:
         current = self._controller_combo.currentText()
@@ -150,13 +163,13 @@ class IntroductionView(QWidget):
         for controller, label in self._availability_labels.items():
             if not port_names:
                 label.setText("MIDI: not checked")
-                label.setStyleSheet("color: #777; font-weight: 600;")
+                label.setStyleSheet(f"color: {theme_colors()['disabled_text']}; font-weight: 600;")
             elif controller in detected:
                 label.setText("MIDI: available")
                 label.setStyleSheet("color: #16803c; font-weight: 600;")
             else:
                 label.setText("MIDI: not detected")
-                label.setStyleSheet("color: #777; font-weight: 600;")
+                label.setStyleSheet(f"color: {theme_colors()['disabled_text']}; font-weight: 600;")
 
     def set_controller(self, controller: str) -> bool:
         """Select a controller in the Dashboard without opening a drill-down."""
@@ -237,7 +250,7 @@ class IntroductionView(QWidget):
         details.addWidget(catalog_info)
 
         availability = QLabel("MIDI: not checked")
-        availability.setStyleSheet("color: #777; font-weight: 600;")
+        availability.setStyleSheet(f"color: {theme_colors()['disabled_text']}; font-weight: 600;")
         self._availability_labels[controller] = availability
         details.addWidget(availability)
 

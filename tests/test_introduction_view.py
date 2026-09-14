@@ -1,5 +1,6 @@
-from PySide6.QtWidgets import QPushButton, QSizePolicy
+from PySide6.QtWidgets import QApplication, QPushButton, QSizePolicy
 
+from djmidi.gui import theme
 from djmidi.gui.introduction_view import IntroductionView
 
 
@@ -87,6 +88,25 @@ def test_refresh_midi_availability_marks_matching_controller():
     view.refresh_midi_availability(["USB DDJ-XP2 MIDI 1"])
     assert view._availability_labels["DDJ-XP2"].text() == "MIDI: available"
     assert view._availability_labels["XDJ-XZ"].text() == "MIDI: not detected"
+
+
+def test_availability_labels_restyle_live_on_a_theme_switch():
+    """The "not checked"/"not detected" availability labels used to set a
+    literal hardcoded gray, so they never adapted to Light -- and since
+    refresh_midi_availability only reruns on a MIDI port-list change (a
+    relatively rare event), a live theme switch needed its own reconnect,
+    not just a token swap, to actually update them without one."""
+    view = IntroductionView()
+    view.refresh_midi_availability([])  # every label starts "not checked"
+    label = view._availability_labels["DDJ-XP2"]
+    try:
+        theme.apply_theme(QApplication.instance(), "light")
+        assert theme.colors("light")["disabled_text"] in label.styleSheet()
+
+        theme.apply_theme(QApplication.instance(), "dark")
+        assert theme.colors("dark")["disabled_text"] in label.styleSheet()
+    finally:
+        theme.apply_theme(QApplication.instance(), "dark")
 
 
 def test_dashboard_content_is_wrapped_in_a_scroll_area():
