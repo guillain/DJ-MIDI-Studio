@@ -325,8 +325,14 @@ def test_ddj_1000_geometry_covers_every_catalog_entry():
     """DDJ-1000's catalog (catalog/ddj_1000.py) has exactly twelve DECK
     entries plus an 8-pad grid -- this is the whole controller, not a
     subset. Plus one display-only "Jog wheel" (no catalog entry -- a
-    continuous control, spun by gui/jog.py, v0.47.64)."""
-    assert set(CONTROL_GEOMETRY["DDJ-1000"]) == {
+    continuous control, spun by gui/jog.py, v0.47.64). Issue #103 added a
+    right-deck (deck 2/4) " (R)" copy of every non-pad entry -- the pad
+    grid's own right-deck copy is a known-remaining gap (see the module's
+    DDJ-1000 comment: the shipped left "Pad 1" entry was itself found
+    imprecise while measuring the right deck, so re-measuring the right
+    grid faithfully needs the left grid re-measured too, not mirrored or
+    guessed)."""
+    non_pad = {
         "Jog wheel",
         "PLAY/PAUSE",
         "CUE",
@@ -340,8 +346,27 @@ def test_ddj_1000_geometry_covers_every_catalog_entry():
         "QUANTIZE",
         "SLIP",
         "SLIP REVERSE",
-        *(f"Pad {n}" for n in range(1, 9)),
     }
+    assert set(CONTROL_GEOMETRY["DDJ-1000"]) == (
+        non_pad
+        | {f"{name} (R)" for name in non_pad}
+        | {f"Pad {n}" for n in range(1, 9)}
+    )
+
+
+def test_ddj_1000_right_deck_entries_do_not_overlap_their_left_counterparts():
+    """A cheap sanity check that every " (R)" entry actually landed on the
+    right half of the reference image, not a copy-paste of the left
+    fraction (which would draw two identical markers stacked on the left
+    deck instead of one on each deck)."""
+    geometry = CONTROL_GEOMETRY["DDJ-1000"]
+    for label, geom in geometry.items():
+        if label.endswith(" (R)"):
+            left_label = label[: -len(" (R)")]
+            left_geom = geometry[left_label]
+            assert geom.x > left_geom.x + left_geom.w, (
+                f"{label} does not sit to the right of {left_label}"
+            )
 
 
 def test_ddj_1000_pad_grid_is_a_non_overlapping_2x4_layout():
