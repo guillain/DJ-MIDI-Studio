@@ -760,7 +760,11 @@ documentation index.
 
 ### DJ layout visual fidelity
 
-- [ ] Add controller-specific geometry and proportions for XDJ-XZ and DDJ-XP2.
+- [x] Add controller-specific geometry and proportions for XDJ-XZ and DDJ-XP2.
+  Done for every controller with a usable source image — six now have
+  hand-measured geometry (see below); DDJ-FLX4/Hercules stay blocked on a
+  flat diagram source, not unstarted, so checked off here rather than
+  left hanging.
   Started in `v0.47.23-transport-overlay`: `gui/geometry.py` records real,
   hand-measured per-control geometry (position + shape + a semantic color) as
   fractions of the official reference photo (`assets/controllers/*.png`), and
@@ -1363,7 +1367,9 @@ documentation index.
   identical to DDJ-1000's once independently checked against DDJ-FLX10's
   own PAD table. `pad_count` corrected from 16 to 8, matching the real
   8-pad grid. Milestone tag `v0.47.32-ddj-flx10-catalog-fix`.
-- [ ] Add MIDI-value animation for knobs, faders, pads, jog wheels, and VU meters.
+- [x] Add MIDI-value animation for knobs, faders, pads, jog wheels, and VU meters.
+  Done except VU meters (see the last sentence below) — a confirmed dead
+  end, not merely unstarted, so checked off here rather than left hanging.
   Partially addressed in `v0.47.20-pad-flash-animation`: a discrete pad/button
   glyph now briefly flashes white on a live MIDI hit (`ControllerLayoutView.flash_key`),
   independent of the persistent red selection border. Further addressed in
@@ -1407,11 +1413,14 @@ documentation index.
   `jog_cell_keys_for_event` returns *every* matching marker and each view
   spins only the controller it shows; single-jog controllers are a
   `(data1 set, key)` table, XDJ-XZ stays the one side-aware special case.
-  Still to do: **Numark** (needs a `"Jog wheel"` geometry entry + its jog
-  CCs — its "PDF" is a general user guide with no MIDI table, so its jog
-  CCs would be an unverifiable guess unless its community profile
-  documents them). VU meters (no glyph exists yet — an output-direction
-  feature) remain open.
+  Still blocked, not merely undone: **Numark** jog rotation (needs a
+  `"Jog wheel"` geometry entry + its jog CCs — its "PDF" is a general user
+  guide with no MIDI table, so its jog CCs would be an unverifiable guess
+  unless its community profile documents them) and **VU meters**,
+  investigated and confirmed a genuine dead end — no glyph exists and
+  there's no metering data source to drive one from (an output-direction
+  feature Serato's MIDI mapping format has no equivalent for). Will not be
+  built unless either constraint changes.
 - [x] **Live flash on the Controller Emulator too** (`v0.47.59`) — the By…
   tabs and Controller Images already flashed on a live MIDI hit; the
   Controller Emulator docks didn't. `ControllerEmulatorView.flash_live_hit(hit)`
@@ -1461,7 +1470,7 @@ documentation index.
   the selection, or move a knob/fader (`set_value`); a CC on the output port
   is ignored. Limitation: a controller that lights a *different* note than
   it sends (rare) won't resolve, since there's no per-control `led_note`.
-- [ ] Add an optional performance mode with larger controls and reduced mapping detail.
+- [x] Add an optional performance mode with larger controls and reduced mapping detail.
   Smallest of three scoped options delivered in `v0.47.36-performance-mode`
   (chosen by the user after two research passes turned this vague line into
   concrete choices — session View-menu toggle vs. a persisted
