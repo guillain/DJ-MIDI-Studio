@@ -1413,3 +1413,37 @@ def test_draft_panel_never_shrinks_below_its_minimum_size_in_main_window():
     )
     assert draft_frame.height() >= draft_frame.minimumSizeHint().height()
     window.close()
+
+
+def test_tool_dock_geometry_never_extends_past_the_window_edge():
+    """Widening the issue #19 audit further (after the Draft panel fix)
+    found a worse variant of the same "aggregate minimum exceeds the
+    window" bug: Live Monitor, MIDI Clock, and Metronome each had no
+    scroll protection in their own content at all (unlike MIDI Routing,
+    which already wrapped its content in a QScrollArea). At a narrow
+    enough docked width, QMainWindow doesn't shrink a dock below its
+    minimumSizeHint to keep it inside the window -- it lets the dock's
+    *geometry* extend past the window's right edge instead, silently
+    clipping that dock's own title bar (the Undock/Close buttons
+    MainWindow builds via _build_dock_title_bar) along with it. Confirmed
+    via geometry before the fix: the MIDI Clock dock's right edge sat at
+    755 in a 700px-wide window. Fixed the same way as MIDI Routing and the
+    Draft panel: wrap each view's content in a QScrollArea (MidiClockView,
+    MetronomeView) or just its non-elastic header row (LiveMonitorView,
+    whose self._log table is already its own QAbstractScrollArea) --
+    scroll_utils.AutoSizeScrollArea, not a plain QScrollArea, for
+    LiveMonitorView since its top row shares a layout with that stretch=1
+    table sibling."""
+    window = _loaded_window()
+    window.left_tabs.setCurrentIndex(window._tab_indexes["controller"])
+    window.resize(700, 500)
+    QApplication.processEvents()
+
+    for key in ("clock", "monitor", "metronome"):
+        window._show_tool_dock(key)
+        QApplication.processEvents()
+        dock = window._tool_docks[key]
+        right_edge = dock.geometry().x() + dock.geometry().width()
+        assert right_edge <= window.width(), f"{key} dock extends past the window edge"
+        dock.hide()
+    window.close()

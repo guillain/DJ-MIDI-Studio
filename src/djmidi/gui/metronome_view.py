@@ -13,6 +13,7 @@ from collections.abc import Callable
 from PySide6.QtCore import QSettings, Qt, QTimer
 from PySide6.QtWidgets import (
     QAbstractItemView,
+    QFrame,
     QGroupBox,
     QHBoxLayout,
     QLabel,
@@ -20,6 +21,7 @@ from PySide6.QtWidgets import (
     QListWidget,
     QMessageBox,
     QPushButton,
+    QScrollArea,
     QVBoxLayout,
     QWidget,
 )
@@ -101,9 +103,32 @@ class MetronomeView(QWidget):
         top_row.addWidget(output_box, 1)
         top_row.addWidget(transport_box, 1)
 
+        # This dock's three side-by-side columns had no scroll protection at
+        # all -- found while widening the issue #19 clipping audit: at a
+        # narrow enough docked width, this dock's real minimum width (~3
+        # columns' worth of buttons/labels) plus the central widget's own
+        # minimum exceeds the window, and QMainWindow lets this dock's
+        # geometry extend past the window's right edge rather than shrink
+        # either below its floor -- silently clipping this dock's own title
+        # bar (Undock/Close) along with it. Same fix as Dashboard
+        # (IntroductionView) and MidiRoutingView: wrap the content in a
+        # QScrollArea, whose small minimumSizeHint (regardless of the real
+        # content's size) is what lets the dock actually shrink to fit.
+        content = QWidget()
+        content_layout = QVBoxLayout(content)
+        content_layout.setContentsMargins(0, 0, 0, 0)
+        content_layout.addLayout(top_row)
+        # No trailing addStretch: the QScrollArea (widgetResizable) already
+        # stretches `content` to fill the viewport when it's taller than the
+        # content, and a stretch here would only inflate the scrolled height.
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setWidget(content)
         layout = QVBoxLayout(self)
-        layout.addLayout(top_row)
-        layout.addStretch(1)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(scroll)
 
         self._loop_timer = QTimer(self)
         self._loop_timer.timeout.connect(self._on_loop_tick)
