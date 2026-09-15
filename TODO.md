@@ -765,6 +765,20 @@ documentation index.
   hand-measured geometry (see below); DDJ-FLX4/Hercules stay blocked on a
   flat diagram source, not unstarted, so checked off here rather than
   left hanging.
+  `v0.47.83-ddj-1000-right-deck-geometry` (issue #103): found, via the
+  widened window-size audit's screenshots, that every controller except
+  DDJ-XP2 (and XDJ-XZ's pad grid) only ever had its *left* deck modeled —
+  a deck 2/4 hit had no marker of its own on the real-position overlay at
+  all. Added DDJ-1000's right deck (every entry except the pad grid,
+  independently measured and crop-verified — a symmetry-axis mirror was
+  tried first and rejected, several percent off once checked with a tight
+  crop). Also found the *shipped left* `"Pad 1"` entry is itself
+  imprecise (a tight crop shows its declared width spanning into
+  `"Pad 2"`), so the pad grid (both decks) needs its own re-measurement
+  pass, left as a follow-up rather than mirroring or guessing new data.
+  DDJ-REV1/Numark/DDJ-FLX10 still need the same right-deck treatment —
+  tracked in issue #103, not done here (this PR is DDJ-1000 only, the
+  same one-controller-at-a-time discipline as the rest of this chantier).
   Started in `v0.47.23-transport-overlay`: `gui/geometry.py` records real,
   hand-measured per-control geometry (position + shape + a semantic color) as
   fractions of the official reference photo (`assets/controllers/*.png`), and

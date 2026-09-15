@@ -391,6 +391,47 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         "Pad 6": ControlGeometry(0.150, 0.800, 0.055, 0.082, "rect", "#e0708f"),
         "Pad 7": ControlGeometry(0.212, 0.803, 0.055, 0.078, "rect", "#e0708f"),
         "Pad 8": ControlGeometry(0.273, 0.803, 0.055, 0.078, "rect", "#e0708f"),
+        # Right deck (deck 2/4) -- issue #103: every entry above only ever
+        # had its left-deck (deck 1/3) copy recorded, so a deck 2/4 hit had
+        # no marker of its own on the real-position overlay at all (worse
+        # than the DDJ-XP2/XDJ-XZ "right pad grid" gap the module docstring
+        # already covers -- there, only the pad grid was missing; here nothing
+        # on the right deck was modeled). Measured independently, control by
+        # control, NOT by mirroring the left deck's fractions around a single
+        # axis: an automated symmetry-axis detector found one that fit the
+        # jog wheel well (it's huge and forgiving) but was off by several
+        # percent for CUE/PLAY-PAUSE and the loop cluster once checked with a
+        # tight crop -- this image's two decks are not a rigid mirror of each
+        # other, so each entry below was independently cropped and confirmed
+        # against assets/controllers/ddj-1000.png, same discipline as the
+        # left deck. The pad grid (both decks) is a known-remaining gap: a
+        # tight crop of the *shipped* left "Pad 1" entry above showed it's
+        # already imprecise (its declared width comfortably spans into "Pad
+        # 2"), so re-measuring the right grid faithfully requires
+        # re-measuring the left grid too -- left as its own follow-up rather
+        # than mirroring imprecise data or guessing new data (see issue
+        # #103). Live-hit flash resolution for these is also a known
+        # follow-up: resolve_geometry_label only picks the " (R)" variant by
+        # deck number for *pad*-numbered hits (_RIGHT_GRID_DECKS) -- DDJ-1000
+        # non-pad ControlInfo names (e.g. "PLAY/PAUSE") carry no "Deck N"
+        # prefix to key off at all, so a deck 2/4 press of these still
+        # flashes the left marker. These entries are reachable today only via
+        # the static "Show real layout" overlay, which draws every entry
+        # unconditionally regardless of deck -- the specific gap issue #103
+        # reported.
+        "Jog wheel (R)": ControlGeometry(0.6332, 0.102, 0.255, 0.527, "circle", "#586b82"),
+        "PLAY/PAUSE (R)": ControlGeometry(0.640, 0.795, 0.053, 0.100, "circle", "#3ea86b"),
+        "CUE (R)": ControlGeometry(0.640, 0.680, 0.053, 0.100, "circle", "#e0954a"),
+        "MASTER TEMPO (R)": ControlGeometry(0.8824, 0.680, 0.026, 0.030, "rect", "#4ab8a0"),
+        "BEAT SYNC (R)": ControlGeometry(0.9234, 0.521, 0.026, 0.044, "circle", "#4a90d9"),
+        "KEY SYNC (R)": ControlGeometry(0.8824, 0.771, 0.026, 0.033, "rect", "#7a8aa0"),
+        "KEY RESET (R)": ControlGeometry(0.8824, 0.824, 0.026, 0.030, "rect", "#7a8aa0"),
+        "LOOP IN (R)": ControlGeometry(0.6332, 0.046, 0.034, 0.069, "circle", "#d9954a"),
+        "LOOP OUT (R)": ControlGeometry(0.6632, 0.046, 0.034, 0.069, "circle", "#d9954a"),
+        "4 BEAT LOOP/EXIT (R)": ControlGeometry(0.6903, 0.068, 0.065, 0.040, "rect", "#d9954a"),
+        "QUANTIZE (R)": ControlGeometry(0.8258, 0.068, 0.037, 0.040, "rect", "#4ab8a0"),
+        "SLIP (R)": ControlGeometry(0.8530, 0.068, 0.037, 0.040, "rect", "#8f6fae"),
+        "SLIP REVERSE (R)": ControlGeometry(0.6165, 0.122, 0.057, 0.030, "rect", "#8f6fae"),
     },
     "DDJ-FLX10": {
         # Re-measured against the clean render assets/controllers/ddj-flx10.png
