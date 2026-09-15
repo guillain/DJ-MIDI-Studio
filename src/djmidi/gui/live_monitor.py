@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
     QAbstractItemView,
     QCheckBox,
     QFileDialog,
+    QFrame,
     QGroupBox,
     QHBoxLayout,
     QLabel,
@@ -32,6 +33,7 @@ from PySide6.QtWidgets import (
 from djmidi import catalog
 from djmidi.gui.mapping_group import build_mapping_groups
 from djmidi.gui.port_list_utils import refresh_checked_port_list
+from djmidi.gui.scroll_utils import AutoSizeScrollArea
 from djmidi.midi_io import MidiEvent, MidiMonitor, list_input_ports
 from djmidi.model import MidiConfig
 
@@ -107,9 +109,33 @@ class LiveMonitorView(QWidget):
         self._log.setColumnWidth(2, 180)
         self._log.horizontalHeader().setStretchLastSection(True)
 
+        # top_row ("Input sources" + "Monitor") had no scroll protection --
+        # found while widening the issue #19 clipping audit: at a narrow
+        # enough docked width, this dock's real minimum width exceeds the
+        # window, and QMainWindow lets this dock's geometry extend past the
+        # window's right edge rather than shrink below its floor, silently
+        # clipping this dock's own title bar (Undock/Close) along with it.
+        # Same fix as Controller Setup's header region: wrap only top_row,
+        # not self._log too -- a QTableWidget is already its own
+        # QAbstractScrollArea (internal scrollbars handle any column
+        # overflow on its own), so it doesn't need -- and, per the Draft
+        # panel fix's own lesson, must NOT get -- a second, outer
+        # QScrollArea: nesting one changes how the layout negotiates space
+        # and can make things worse, not better. AutoSizeScrollArea (not a
+        # plain QScrollArea) for the same reason as that fix: self._log has
+        # stretch=1 below, so a plain QScrollArea's sizeHint (which doesn't
+        # track its content) would starve top_row of room even on a window
+        # plenty tall enough for both.
+        top_row_container = QWidget()
+        top_row_container.setLayout(top_row)
+        top_scroll = AutoSizeScrollArea()
+        top_scroll.setWidgetResizable(True)
+        top_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        top_scroll.setWidget(top_row_container)
+
         layout = QVBoxLayout(self)
-        layout.addLayout(top_row)
-        layout.addWidget(self._log)
+        layout.addWidget(top_scroll, 0)
+        layout.addWidget(self._log, 1)
 
         self._timer = QTimer(self)
         self._timer.setInterval(_POLL_INTERVAL_MS)
