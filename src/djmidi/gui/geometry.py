@@ -517,6 +517,44 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         "Pad 6": ControlGeometry(0.163, 0.770, 0.040, 0.052, "rect", "#e0708f"),
         "Pad 7": ControlGeometry(0.203, 0.770, 0.040, 0.052, "rect", "#e0708f"),
         "Pad 8": ControlGeometry(0.244, 0.770, 0.040, 0.052, "rect", "#e0708f"),
+        # Right deck (deck 2/4) -- issue #103, same treatment as DDJ-1000
+        # (v0.47.83) and DDJ-REV1 (v0.47.84): every entry above only ever
+        # had its left-deck (deck 1/3) copy recorded. Every entry below was
+        # independently measured and crop-verified against
+        # assets/controllers/ddj-flx10.png, not derived from a
+        # symmetry-axis mirror -- same lesson carried over from DDJ-1000.
+        # The pad grid's right-deck copy is a known-remaining gap, same
+        # category as DDJ-REV1's (the shipped left "Pad 1" here checked out
+        # fine under a tight crop, but the right grid's own bounds weren't
+        # attempted this round given the size of this controller's non-pad
+        # set alone) -- left for a follow-up (issue #103). Live-hit flash
+        # resolution stays left-deck-only for these, same reason as
+        # DDJ-1000/DDJ-REV1: resolve_geometry_label only keys off deck
+        # number for pad-numbered hits, and DDJ-FLX10's non-pad ControlInfo
+        # names carry no "Deck N" prefix to resolve a deck from.
+        "Jog wheel (R)": ControlGeometry(0.6912, 0.279, 0.262, 0.387, "circle", "#586b82"),
+        "PLAY/PAUSE (R)": ControlGeometry(0.6468, 0.757, 0.066, 0.088, "circle", "#3ea86b"),
+        "CUE (R)": ControlGeometry(0.6468, 0.668, 0.066, 0.088, "circle", "#e0954a"),
+        "BEAT SYNC (R)": ControlGeometry(0.8752, 0.646, 0.034, 0.040, "rect", "#4a90d9"),
+        "TEMPO RESET (R)": ControlGeometry(0.8791, 0.710, 0.026, 0.032, "circle", "#4ab8a0"),
+        "KEY SYNC (R)": ControlGeometry(0.8757, 0.775, 0.034, 0.030, "rect", "#7a8aa0"),
+        "ACTIVE PART DRUMS (R)": ControlGeometry(0.6564, 0.1962, 0.0297, 0.0154, "rect", "#9b6fd9"),
+        "ACTIVE PART VOCAL (R)": ControlGeometry(0.6694, 0.1962, 0.0297, 0.0154, "rect", "#9b6fd9"),
+        "ACTIVE PART INST (R)": ControlGeometry(0.7025, 0.1962, 0.0280, 0.0154, "rect", "#9b6fd9"),
+        "CUE/LOOP CALL < (R)": ControlGeometry(0.8055, 0.1831, 0.017, 0.023, "circle", "#5f6b7a"),
+        "CUE/LOOP CALL > (R)": ControlGeometry(0.8952, 0.1831, 0.017, 0.023, "circle", "#5f6b7a"),
+        "LOOP IN / 1/2X (R)": ControlGeometry(0.6524, 0.2273, 0.0252, 0.0335, "circle", "#d9954a"),
+        "LOOP OUT / 2X (R)": ControlGeometry(0.6876, 0.2273, 0.0246, 0.0335, "circle", "#d9954a"),
+        "4 BEAT/EXIT (R)": ControlGeometry(0.7233, 0.2273, 0.0252, 0.0335, "circle", "#d9954a"),
+        "MIX POINT SELECT < (R)": ControlGeometry(0.7997, 0.2381, 0.017, 0.023, "circle", "#5f6b7a"),
+        "MIX POINT SELECT > (R)": ControlGeometry(0.8476, 0.2381, 0.017, 0.023, "circle", "#5f6b7a"),
+        "MIX POINT LINK (R)": ControlGeometry(0.8751, 0.2356, 0.022, 0.028, "circle", "#5f6b7a"),
+        "SLIP REVERSE (R)": ControlGeometry(0.6405, 0.288, 0.044, 0.020, "rect", "#8f6fae"),
+        "SLIP (R)": ControlGeometry(0.9358, 0.292, 0.024, 0.020, "rect", "#8f6fae"),
+        "QUANTIZE (R)": ControlGeometry(0.8922, 0.292, 0.024, 0.020, "rect", "#4ab8a0"),
+        "4 BEAT JUMP < (R)": ControlGeometry(0.649, 0.638, 0.032, 0.034, "rect", "#5f6b7a"),
+        "4 BEAT JUMP > (R)": ControlGeometry(0.6798, 0.638, 0.032, 0.034, "rect", "#5f6b7a"),
+        "SHIFT (R)": ControlGeometry(0.6480, 0.594, 0.025, 0.030, "rect", "#5f6b7a"),
     },
 }
 
