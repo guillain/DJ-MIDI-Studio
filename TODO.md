@@ -789,6 +789,19 @@ documentation index.
   bounds kept landing on a pad boundary rather than a pad center — left
   for a follow-up rather than shipped imprecise. Numark/DDJ-FLX10 still
   need the right-deck treatment — tracked in issue #103.
+  `v0.47.85-ddj-flx10-right-deck-geometry`: same treatment for DDJ-FLX10 —
+  a `" (R)"` copy of every entry except the pad grid, 23 entries in one
+  PR (by far the largest right-deck batch so far, since DDJ-FLX10's own
+  catalog is the biggest of the three), all independently crop-verified.
+  The pad grid's right-deck copy stays a known-remaining gap, same
+  category as DDJ-REV1's — not attempted here given the size of the
+  non-pad set alone. Also tried and abandoned: Numark Mixtrack Pro FX —
+  its source image (624×390, already flagged elsewhere as
+  "decorative-accurate, not pixel-perfect") proved too low-resolution for
+  this crop-verification technique to work confidently; a tight crop of
+  even the *shipped left* "SYNC" entry didn't clearly land on the SYNC
+  button. Left for whenever a higher-resolution source becomes available,
+  not attempted with a resolution this project already knew was marginal.
   Started in `v0.47.23-transport-overlay`: `gui/geometry.py` records real,
   hand-measured per-control geometry (position + shape + a semantic color) as
   fractions of the official reference photo (`assets/controllers/*.png`), and

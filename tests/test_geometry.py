@@ -424,8 +424,11 @@ def test_ddj_flx10_geometry_covers_every_catalog_entry():
     """DDJ-FLX10's catalog (catalog/ddj_flx10.py) has exactly twenty-two DECK
     entries plus an 8-pad grid -- this is the whole controller, not a
     subset. Plus one display-only "Jog wheel" (no catalog entry -- a
-    continuous control, spun by gui/jog.py, v0.47.65)."""
-    assert set(CONTROL_GEOMETRY["DDJ-FLX10"]) == {
+    continuous control, spun by gui/jog.py, v0.47.65). Issue #103 added a
+    right-deck (deck 2/4) " (R)" copy of every non-pad entry, same as
+    DDJ-1000/DDJ-REV1 -- the pad grid's own right-deck copy is a
+    known-remaining gap (see the module's DDJ-FLX10 comment)."""
+    non_pad = {
         "Jog wheel",
         "PLAY/PAUSE",
         "CUE",
@@ -449,8 +452,26 @@ def test_ddj_flx10_geometry_covers_every_catalog_entry():
         "4 BEAT JUMP <",
         "4 BEAT JUMP >",
         "SHIFT",
-        *(f"Pad {n}" for n in range(1, 9)),
     }
+    assert set(CONTROL_GEOMETRY["DDJ-FLX10"]) == (
+        non_pad
+        | {f"{name} (R)" for name in non_pad}
+        | {f"Pad {n}" for n in range(1, 9)}
+    )
+
+
+def test_ddj_flx10_right_deck_entries_do_not_overlap_their_left_counterparts():
+    """A cheap sanity check that every " (R)" entry actually landed on the
+    right half of the reference image, not a copy-paste of the left
+    fraction."""
+    geometry = CONTROL_GEOMETRY["DDJ-FLX10"]
+    for label, geom in geometry.items():
+        if label.endswith(" (R)"):
+            left_label = label[: -len(" (R)")]
+            left_geom = geometry[left_label]
+            assert geom.x > left_geom.x + left_geom.w, (
+                f"{label} does not sit to the right of {left_label}"
+            )
 
 
 def test_ddj_flx10_pad_grid_is_a_non_overlapping_2x4_layout():
