@@ -248,6 +248,32 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         "Pad 6": ControlGeometry(0.398, 0.532, 0.034, 0.048, "rect", "#e0708f"),
         "Pad 7": ControlGeometry(0.437, 0.532, 0.034, 0.048, "rect", "#e0708f"),
         "Pad 8": ControlGeometry(0.475, 0.532, 0.034, 0.048, "rect", "#e0708f"),
+        # Right deck (deck 2/4) -- issue #103, same treatment as DDJ-1000
+        # (v0.47.83): every entry above only ever had its left-deck (deck
+        # 1/3) copy recorded. Every entry below was independently measured
+        # and crop-verified against assets/controllers/ddj-rev1.png, not
+        # mirrored around a single axis -- same lesson as DDJ-1000's
+        # right-deck PR: an axis that fits one control doesn't reliably fit
+        # the rest. The pad grid's right-deck copy (the 8-pad grid showing
+        # HOT CUE/AUTO LOOP/TRACKING/SAMPLER mode labels, a different pad
+        # mode than the left deck's BEAT JUMP/ROLL/TRANS/SCRATCH BANK, but
+        # the same physical 8-pad grid) is a known-remaining gap: unlike
+        # DDJ-1000, the shipped *left* "Pad 1" entry here checked out fine
+        # under a tight crop, but repeated attempts to precisely locate the
+        # right grid's own column/row bounds kept landing on a pad
+        # boundary rather than a pad center -- left for a dedicated
+        # follow-up (issue #103) rather than shipped imprecise. Live-hit
+        # flash resolution stays left-deck-only for these, same reason as
+        # DDJ-1000: resolve_geometry_label only keys off deck number for
+        # pad-numbered hits, and DDJ-REV1's non-pad ControlInfo names carry
+        # no "Deck N" prefix to resolve a deck from.
+        "Jog wheel (R)": ControlGeometry(0.6925, 0.358, 0.261, 0.368, "circle", "#586b82"),
+        "PLAY/PAUSE (R)": ControlGeometry(0.8975, 0.720, 0.052, 0.070, "circle", "#3ea86b"),
+        "CUE (R)": ControlGeometry(0.834, 0.740, 0.060, 0.035, "rect", "#e0954a"),
+        "AUTO LOOP (R)": ControlGeometry(0.718, 0.306, 0.062, 0.030, "rect", "#7a8aa0"),
+        "1/2X (R)": ControlGeometry(0.775, 0.306, 0.024, 0.033, "rect", "#7a8aa0"),
+        "2X (R)": ControlGeometry(0.801, 0.306, 0.025, 0.033, "rect", "#7a8aa0"),
+        "SYNC (R)": ControlGeometry(0.823, 0.306, 0.060, 0.030, "rect", "#4a90d9"),
     },
     "DDJ-XP2": {
         # Re-measured against the clean render assets/controllers/ddj-xp2.png

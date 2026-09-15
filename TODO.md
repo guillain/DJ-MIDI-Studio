@@ -779,6 +779,16 @@ documentation index.
   DDJ-REV1/Numark/DDJ-FLX10 still need the same right-deck treatment —
   tracked in issue #103, not done here (this PR is DDJ-1000 only, the
   same one-controller-at-a-time discipline as the rest of this chantier).
+  `v0.47.84-ddj-rev1-right-deck-geometry`: same treatment for DDJ-REV1 —
+  a `" (R)"` copy of every entry except the pad grid (Jog wheel,
+  PLAY/PAUSE, CUE, AUTO LOOP, 1/2X, 2X, SYNC), independently
+  crop-verified, no axis mirroring. The pad grid's right-deck copy is a
+  known-remaining gap here too, for a different reason than DDJ-1000's:
+  the shipped left `"Pad 1"` checked out fine under a tight crop, but
+  repeated attempts to precisely locate the right grid's own column/row
+  bounds kept landing on a pad boundary rather than a pad center — left
+  for a follow-up rather than shipped imprecise. Numark/DDJ-FLX10 still
+  need the right-deck treatment — tracked in issue #103.
   Started in `v0.47.23-transport-overlay`: `gui/geometry.py` records real,
   hand-measured per-control geometry (position + shape + a semantic color) as
   fractions of the official reference photo (`assets/controllers/*.png`), and
