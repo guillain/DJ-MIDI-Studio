@@ -826,6 +826,17 @@ documentation index.
   anomaly rather than a measurement error, left unresolved rather than
   guessed. DDJ-REV1/DDJ-FLX10/Numark's pad grids remain open — tracked
   in issue #103.
+  `v0.47.87-ddj-flx10-pad-grid`: DDJ-FLX10's pad grid, both decks,
+  re-measured together with the same clean-crop technique. Unlike
+  DDJ-1000 (left grid was itself wrong) or DDJ-REV1 (right grid's last
+  column resisted every attempt), DDJ-FLX10's left grid checked out
+  close-but-not-identical and its right grid measured cleanly on the
+  first pass — no anomaly on this controller. `_RIGHT_GRID_DECKS` gained
+  a `"DDJ-FLX10"` entry too (verified:
+  `resolve_geometry_label("DDJ-FLX10", "Deck 2 Pad 3 (...)") == "Pad 3
+  (R)"`), same free win as DDJ-1000's. DDJ-REV1's right grid (the
+  anomaly) and all of Numark (blocked on source resolution) remain open
+  — tracked in issue #103.
   Started in `v0.47.23-transport-overlay`: `gui/geometry.py` records real,
   hand-measured per-control geometry (position + shape + a semantic color) as
   fractions of the official reference photo (`assets/controllers/*.png`), and

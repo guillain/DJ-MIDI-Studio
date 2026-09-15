@@ -477,9 +477,9 @@ def test_ddj_flx10_geometry_covers_every_catalog_entry():
     entries plus an 8-pad grid -- this is the whole controller, not a
     subset. Plus one display-only "Jog wheel" (no catalog entry -- a
     continuous control, spun by gui/jog.py, v0.47.65). Issue #103 added a
-    right-deck (deck 2/4) " (R)" copy of every non-pad entry, same as
-    DDJ-1000/DDJ-REV1 -- the pad grid's own right-deck copy is a
-    known-remaining gap (see the module's DDJ-FLX10 comment)."""
+    right-deck (deck 2/4) " (R)" copy of every non-pad entry (v0.47.85),
+    then the pad grid too (v0.47.87, both decks re-measured together with
+    the clean-crop technique established for DDJ-1000's re-measurement)."""
     non_pad = {
         "Jog wheel",
         "PLAY/PAUSE",
@@ -509,6 +509,7 @@ def test_ddj_flx10_geometry_covers_every_catalog_entry():
         non_pad
         | {f"{name} (R)" for name in non_pad}
         | {f"Pad {n}" for n in range(1, 9)}
+        | {f"Pad {n} (R)" for n in range(1, 9)}
     )
 
 
@@ -540,6 +541,57 @@ def test_ddj_flx10_pad_grid_is_a_non_overlapping_2x4_layout():
             x_overlap = ga.x < gb.x + gb.w and gb.x < ga.x + ga.w
             y_overlap = ga.y < gb.y + gb.h and gb.y < ga.y + ga.h
             assert not (x_overlap and y_overlap), f"Pad {a} and Pad {b} overlap"
+
+
+def test_ddj_flx10_right_pad_grid_is_a_non_overlapping_2x4_layout_to_the_right_of_the_left_grid():
+    """v0.47.87 (issue #103): the right pad grid, measured alongside a
+    re-measurement of the left one. Same shape check as DDJ-1000's right
+    grid test."""
+    left = {n: CONTROL_GEOMETRY["DDJ-FLX10"][f"Pad {n}"] for n in range(1, 9)}
+    right = {n: CONTROL_GEOMETRY["DDJ-FLX10"][f"Pad {n} (R)"] for n in range(1, 9)}
+    for row in range(2):
+        xs = [right[row * 4 + col + 1].x for col in range(4)]
+        assert xs == sorted(xs)
+    for col in range(4):
+        ys = [right[row * 4 + col + 1].y for row in range(2)]
+        assert ys == sorted(ys)
+    for a in range(1, 9):
+        for b in range(a + 1, 9):
+            ga, gb = right[a], right[b]
+            x_overlap = ga.x < gb.x + gb.w and gb.x < ga.x + ga.w
+            y_overlap = ga.y < gb.y + gb.h and gb.y < ga.y + ga.h
+            assert not (x_overlap and y_overlap), f"Pad {a} (R) and Pad {b} (R) overlap"
+    left_right_edge = max(g.x + g.w for g in left.values())
+    assert min(g.x for g in right.values()) >= left_right_edge
+    # Measured together, not mirrored -- both grids landed on the same
+    # rows in practice, so assert that fact (unlike DDJ-1000's, whose left
+    # and right grids were measured in two separate PRs and only turned
+    # out to share rows by coincidence -- here it's expected by
+    # construction, worth pinning down either way).
+    for n in range(1, 9):
+        assert right[n].y == left[n].y
+
+
+def test_resolve_geometry_label_picks_the_right_grid_for_ddj_flx10_deck_2_and_4():
+    hit_deck2 = next(
+        hit for hit in catalog.lookup("10", "NOTE", "2") if hit.controller == "DDJ-FLX10"
+    )
+    assert resolve_geometry_label("DDJ-FLX10", hit_deck2.name) == "Pad 3 (R)"
+    hit_deck4 = next(
+        hit for hit in catalog.lookup("14", "NOTE", "2") if hit.controller == "DDJ-FLX10"
+    )
+    assert resolve_geometry_label("DDJ-FLX10", hit_deck4.name) == "Pad 3 (R)"
+
+
+def test_resolve_geometry_label_keeps_the_left_grid_for_ddj_flx10_deck_1_and_3():
+    hit_deck1 = next(
+        hit for hit in catalog.lookup("8", "NOTE", "2") if hit.controller == "DDJ-FLX10"
+    )
+    assert resolve_geometry_label("DDJ-FLX10", hit_deck1.name) == "Pad 3"
+    hit_deck3 = next(
+        hit for hit in catalog.lookup("12", "NOTE", "2") if hit.controller == "DDJ-FLX10"
+    )
+    assert resolve_geometry_label("DDJ-FLX10", hit_deck3.name) == "Pad 3"
 
 
 def test_resolve_geometry_label_extracts_pad_number_from_ddj_flx10_pad_names():
