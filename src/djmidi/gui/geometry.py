@@ -521,17 +521,37 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         "4 BEAT JUMP >": ControlGeometry(0.097, 0.638, 0.032, 0.034, "rect", "#5f6b7a"),
         # Muted neutral: a modifier key, not a function.
         "SHIFT": ControlGeometry(0.054, 0.584, 0.025, 0.030, "rect", "#5f6b7a"),
-        # Salmon-pink: matches the pad grid accent used on the other controllers.
-        # cols x = 0.124/0.164/0.204/0.245 (w 0.040), rows y = 0.714/0.770 --
-        # pixel-scanned against the pad glow borders.
-        "Pad 1": ControlGeometry(0.123, 0.714, 0.040, 0.052, "rect", "#e0708f"),
-        "Pad 2": ControlGeometry(0.163, 0.714, 0.040, 0.052, "rect", "#e0708f"),
-        "Pad 3": ControlGeometry(0.203, 0.714, 0.040, 0.052, "rect", "#e0708f"),
-        "Pad 4": ControlGeometry(0.244, 0.714, 0.040, 0.052, "rect", "#e0708f"),
-        "Pad 5": ControlGeometry(0.123, 0.770, 0.040, 0.052, "rect", "#e0708f"),
-        "Pad 6": ControlGeometry(0.163, 0.770, 0.040, 0.052, "rect", "#e0708f"),
-        "Pad 7": ControlGeometry(0.203, 0.770, 0.040, 0.052, "rect", "#e0708f"),
-        "Pad 8": ControlGeometry(0.244, 0.770, 0.040, 0.052, "rect", "#e0708f"),
+        # Salmon-pink: matches the pad grid accent used on the other
+        # controllers. Re-measured in v0.47.87 (issue #103) alongside the
+        # right grid, with the clean-uncluttered-crop-per-grid technique
+        # established for DDJ-1000's re-measurement -- the values below
+        # (v0.47.58) checked out close but not identical under a tight
+        # crop, refined slightly rather than left approximate now that a
+        # precise right grid needs a precise left one to sit next to.
+        # cols x = 0.122/0.164/0.204/0.245 (w 0.036), rows y = 0.727/0.788
+        # (h 0.053).
+        "Pad 1": ControlGeometry(0.1223, 0.7267, 0.0363, 0.0533, "rect", "#e0708f"),
+        "Pad 2": ControlGeometry(0.1637, 0.7267, 0.0357, 0.0533, "rect", "#e0708f"),
+        "Pad 3": ControlGeometry(0.2044, 0.7267, 0.0358, 0.0533, "rect", "#e0708f"),
+        "Pad 4": ControlGeometry(0.2452, 0.7267, 0.0358, 0.0533, "rect", "#e0708f"),
+        "Pad 5": ControlGeometry(0.1223, 0.7876, 0.0363, 0.0534, "rect", "#e0708f"),
+        "Pad 6": ControlGeometry(0.1637, 0.7876, 0.0357, 0.0534, "rect", "#e0708f"),
+        "Pad 7": ControlGeometry(0.2044, 0.7876, 0.0358, 0.0534, "rect", "#e0708f"),
+        "Pad 8": ControlGeometry(0.2452, 0.7876, 0.0358, 0.0534, "rect", "#e0708f"),
+        # Right pad grid -- v0.47.87 (issue #103), same clean-crop technique,
+        # measured independently, not mirrored (its columns land a hair
+        # narrower than the left grid's, ~0.035 vs ~0.036, consistent with
+        # what DDJ-1000's independent left/right measurements also showed).
+        # cols x = 0.743/0.784/0.825/0.865 (w 0.035), rows y = 0.727/0.788
+        # (h 0.053, same rows as the left grid).
+        "Pad 1 (R)": ControlGeometry(0.7247, 0.7267, 0.0357, 0.0533, "rect", "#e0708f"),
+        "Pad 2 (R)": ControlGeometry(0.7660, 0.7267, 0.0352, 0.0533, "rect", "#e0708f"),
+        "Pad 3 (R)": ControlGeometry(0.8068, 0.7267, 0.0352, 0.0533, "rect", "#e0708f"),
+        "Pad 4 (R)": ControlGeometry(0.8476, 0.7267, 0.0352, 0.0533, "rect", "#e0708f"),
+        "Pad 5 (R)": ControlGeometry(0.7247, 0.7876, 0.0357, 0.0534, "rect", "#e0708f"),
+        "Pad 6 (R)": ControlGeometry(0.7660, 0.7876, 0.0352, 0.0534, "rect", "#e0708f"),
+        "Pad 7 (R)": ControlGeometry(0.8068, 0.7876, 0.0352, 0.0534, "rect", "#e0708f"),
+        "Pad 8 (R)": ControlGeometry(0.8476, 0.7876, 0.0352, 0.0534, "rect", "#e0708f"),
         # Right deck (deck 2/4) -- issue #103, same treatment as DDJ-1000
         # (v0.47.83) and DDJ-REV1 (v0.47.84): every entry above only ever
         # had its left-deck (deck 1/3) copy recorded. Every entry below was
@@ -607,6 +627,11 @@ _RIGHT_GRID_DECKS: dict[str, frozenset[int]] = {
     # catalog/ddj_1000.py's channel-per-deck convention (_DECK_CHANNELS =
     # "1","2","3","4" maps 1:1 to deck number).
     "DDJ-1000": frozenset({2, 4}),
+    # v0.47.87: same story as DDJ-1000 -- DDJ-FLX10's _pad_lookup() names
+    # already carry a "Deck N" prefix, and _PAD_CHANNELS maps channels
+    # 8/9->deck 1, 10/11->deck 2, 12/13->deck 3, 14/15->deck 4, so deck 2/4
+    # is the right tray by the same convention.
+    "DDJ-FLX10": frozenset({2, 4}),
 }
 
 
