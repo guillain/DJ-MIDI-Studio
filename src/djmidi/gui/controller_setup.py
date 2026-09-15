@@ -27,7 +27,7 @@ from pathlib import Path
 from string import Template
 from typing import cast
 
-from PySide6.QtCore import QItemSelectionModel, QSize, Qt, QTimer, QUrl, Signal
+from PySide6.QtCore import QItemSelectionModel, Qt, QTimer, QUrl, Signal
 from PySide6.QtGui import QDesktopServices, QIcon
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -45,7 +45,6 @@ from PySide6.QtWidgets import (
     QListWidget,
     QMessageBox,
     QPushButton,
-    QScrollArea,
     QSizePolicy,
     QStyle,
     QTableWidget,
@@ -74,6 +73,7 @@ from djmidi.catalog.community import (
 )
 from djmidi.gui.controller_submission_dialog import ControllerSubmissionDialog
 from djmidi.gui.port_list_utils import refresh_checked_port_list
+from djmidi.gui.scroll_utils import AutoSizeScrollArea
 from djmidi.gui.theme import colors as theme_colors
 from djmidi.gui.theme import signals as theme_signals
 from djmidi.midi_io import (
@@ -146,32 +146,6 @@ _STATUS_PILL_QSS = Template(
     " background: $header_bg; border: 1px solid $field_border; border-radius: 4px;"
     " }"
 )
-
-
-class _AutoSizeScrollArea(QScrollArea):
-    """A `widgetResizable` QScrollArea whose sizeHint() actually tracks its
-    content, unlike the base class.
-
-    QScrollArea.sizeHint() does not scale with a resizable widget's own
-    sizeHint() -- it stays a small, roughly constant value regardless of how
-    tall the content actually wants to be. That's invisible when the scroll
-    area is the *sole* item in its parent layout (the Dashboard/MidiRouting
-    precedent this fix otherwise follows): a lone child in a QVBoxLayout
-    gets the whole available rect regardless of its sizeHint, so the gap
-    never shows. It becomes a real bug once the scroll area shares a layout
-    with another stretch>0 sibling (here, self._table): the layout honors
-    each item's sizeHint first and only distributes leftover space by
-    stretch factor, so an under-reported sizeHint starves this widget of
-    room it should get, even on a window plenty tall enough for everything
-    to fit without scrolling (verified: without this override, the "Draft"
-    panel's fix below regressed 1280x820 -- previously scroll-free -- to
-    cut off "PAD 7"/"PAD 8" and the row-action buttons)."""
-
-    def sizeHint(self) -> QSize:
-        widget = self.widget()
-        if widget is not None:
-            return widget.sizeHint()
-        return super().sizeHint()
 
 
 def _slugify(name: str) -> str:
@@ -531,7 +505,7 @@ class ControllerSetupView(QWidget):
         header_layout.addWidget(draft_box, 0)
         header_layout.addWidget(io_container, 0)
 
-        header_scroll = _AutoSizeScrollArea()
+        header_scroll = AutoSizeScrollArea()
         header_scroll.setWidgetResizable(True)
         header_scroll.setFrameShape(QFrame.Shape.NoFrame)
         header_scroll.setWidget(header_content)
