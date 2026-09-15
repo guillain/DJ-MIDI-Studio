@@ -407,16 +407,23 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         # like SHIFT, but a distinct playback-state toggle family of their own.
         "SLIP": ControlGeometry(0.248, 0.068, 0.037, 0.040, "rect", "#8f6fae"),
         "SLIP REVERSE": ControlGeometry(0.018, 0.168, 0.057, 0.030, "rect", "#8f6fae"),
-        # Salmon-pink: matches the pad grid accent used on the other controllers.
-        # cols x = 0.095/0.158/0.220/0.282 (w 0.055), rows y = 0.712/0.805.
-        "Pad 1": ControlGeometry(0.088, 0.715, 0.055, 0.078, "rect", "#e0708f"),
-        "Pad 2": ControlGeometry(0.150, 0.710, 0.055, 0.082, "rect", "#e0708f"),
-        "Pad 3": ControlGeometry(0.212, 0.715, 0.055, 0.078, "rect", "#e0708f"),
-        "Pad 4": ControlGeometry(0.273, 0.715, 0.055, 0.078, "rect", "#e0708f"),
-        "Pad 5": ControlGeometry(0.088, 0.803, 0.055, 0.078, "rect", "#e0708f"),
-        "Pad 6": ControlGeometry(0.150, 0.800, 0.055, 0.082, "rect", "#e0708f"),
-        "Pad 7": ControlGeometry(0.212, 0.803, 0.055, 0.078, "rect", "#e0708f"),
-        "Pad 8": ControlGeometry(0.273, 0.803, 0.055, 0.078, "rect", "#e0708f"),
+        # Salmon-pink: matches the pad grid accent used on the other
+        # controllers. Re-measured in v0.47.86 (issue #103): the fractions
+        # below (v0.47.57) turned out imprecise -- a tight crop of the
+        # shipped "Pad 1" entry comfortably spanned into "Pad 2" -- found
+        # while measuring the right grid and re-verified against this
+        # left grid with the same clean-crop technique (four columns +
+        # both rows individually corner-checked, not eyeballed from a
+        # cluttered wide shot). cols x = 0.081/0.127/0.172/0.217 (w
+        # 0.038-0.040), rows y = 0.741/0.820 (h 0.070).
+        "Pad 1": ControlGeometry(0.0808, 0.7406, 0.0399, 0.0697, "rect", "#e0708f"),
+        "Pad 2": ControlGeometry(0.1265, 0.7406, 0.0390, 0.0697, "rect", "#e0708f"),
+        "Pad 3": ControlGeometry(0.1719, 0.7406, 0.0383, 0.0697, "rect", "#e0708f"),
+        "Pad 4": ControlGeometry(0.2166, 0.7406, 0.0383, 0.0697, "rect", "#e0708f"),
+        "Pad 5": ControlGeometry(0.0808, 0.8201, 0.0399, 0.0698, "rect", "#e0708f"),
+        "Pad 6": ControlGeometry(0.1265, 0.8201, 0.0390, 0.0698, "rect", "#e0708f"),
+        "Pad 7": ControlGeometry(0.1719, 0.8201, 0.0383, 0.0698, "rect", "#e0708f"),
+        "Pad 8": ControlGeometry(0.2166, 0.8201, 0.0383, 0.0698, "rect", "#e0708f"),
         # Right deck (deck 2/4) -- issue #103: every entry above only ever
         # had its left-deck (deck 1/3) copy recorded, so a deck 2/4 hit had
         # no marker of its own on the real-position overlay at all (worse
@@ -430,13 +437,7 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         # tight crop -- this image's two decks are not a rigid mirror of each
         # other, so each entry below was independently cropped and confirmed
         # against assets/controllers/ddj-1000.png, same discipline as the
-        # left deck. The pad grid (both decks) is a known-remaining gap: a
-        # tight crop of the *shipped* left "Pad 1" entry above showed it's
-        # already imprecise (its declared width comfortably spans into "Pad
-        # 2"), so re-measuring the right grid faithfully requires
-        # re-measuring the left grid too -- left as its own follow-up rather
-        # than mirroring imprecise data or guessing new data (see issue
-        # #103). Live-hit flash resolution for these is also a known
+        # left deck. Live-hit flash resolution for these is also a known
         # follow-up: resolve_geometry_label only picks the " (R)" variant by
         # deck number for *pad*-numbered hits (_RIGHT_GRID_DECKS) -- DDJ-1000
         # non-pad ControlInfo names (e.g. "PLAY/PAUSE") carry no "Deck N"
@@ -458,6 +459,20 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         "QUANTIZE (R)": ControlGeometry(0.8258, 0.068, 0.037, 0.040, "rect", "#4ab8a0"),
         "SLIP (R)": ControlGeometry(0.8530, 0.068, 0.037, 0.040, "rect", "#8f6fae"),
         "SLIP REVERSE (R)": ControlGeometry(0.6165, 0.122, 0.057, 0.030, "rect", "#8f6fae"),
+        # Right pad grid -- v0.47.86 (issue #103), same clean-crop technique
+        # as the left grid's re-measurement above, not a mirror of it (the
+        # right grid's own columns measure ~0.033 wide vs the left's
+        # ~0.038-0.040 -- close, but a mirror would have been off). cols x =
+        # 0.710/0.753/0.795/0.838 (w 0.033), rows y = 0.741/0.820 (h 0.070,
+        # same rows as the left grid).
+        "Pad 1 (R)": ControlGeometry(0.7104, 0.7406, 0.0329, 0.0697, "rect", "#e0708f"),
+        "Pad 2 (R)": ControlGeometry(0.7529, 0.7406, 0.0326, 0.0697, "rect", "#e0708f"),
+        "Pad 3 (R)": ControlGeometry(0.7951, 0.7406, 0.0326, 0.0697, "rect", "#e0708f"),
+        "Pad 4 (R)": ControlGeometry(0.8377, 0.7406, 0.0326, 0.0697, "rect", "#e0708f"),
+        "Pad 5 (R)": ControlGeometry(0.7104, 0.8201, 0.0329, 0.0698, "rect", "#e0708f"),
+        "Pad 6 (R)": ControlGeometry(0.7529, 0.8201, 0.0326, 0.0698, "rect", "#e0708f"),
+        "Pad 7 (R)": ControlGeometry(0.7951, 0.8201, 0.0326, 0.0698, "rect", "#e0708f"),
+        "Pad 8 (R)": ControlGeometry(0.8377, 0.8201, 0.0326, 0.0698, "rect", "#e0708f"),
     },
     "DDJ-FLX10": {
         # Re-measured against the clean render assets/controllers/ddj-flx10.png
@@ -583,6 +598,15 @@ _DECK_NUM_RE = re.compile(r"^Deck (\d+)")
 _RIGHT_GRID_DECKS: dict[str, frozenset[int]] = {
     "DDJ-XP2": frozenset({2, 4}),
     "XDJ-XZ": frozenset({2, 4}),
+    # v0.47.86 (issue #103): DDJ-1000's pad_lookup() names already carry a
+    # "Deck N" prefix (unlike its other DECK entries, which don't -- see
+    # this controller's " (R)" comment above), so now that the right pad
+    # grid has its own geometry, this existing pad-specific resolution path
+    # picks it up for free. Deck 2/4 = right tray, confirmed both by the
+    # reference photo's own "DECK SELECT 2/4" label on that side and by
+    # catalog/ddj_1000.py's channel-per-deck convention (_DECK_CHANNELS =
+    # "1","2","3","4" maps 1:1 to deck number).
+    "DDJ-1000": frozenset({2, 4}),
 }
 
 

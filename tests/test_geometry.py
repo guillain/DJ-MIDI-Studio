@@ -350,12 +350,11 @@ def test_ddj_1000_geometry_covers_every_catalog_entry():
     entries plus an 8-pad grid -- this is the whole controller, not a
     subset. Plus one display-only "Jog wheel" (no catalog entry -- a
     continuous control, spun by gui/jog.py, v0.47.64). Issue #103 added a
-    right-deck (deck 2/4) " (R)" copy of every non-pad entry -- the pad
-    grid's own right-deck copy is a known-remaining gap (see the module's
-    DDJ-1000 comment: the shipped left "Pad 1" entry was itself found
-    imprecise while measuring the right deck, so re-measuring the right
-    grid faithfully needs the left grid re-measured too, not mirrored or
-    guessed)."""
+    right-deck (deck 2/4) " (R)" copy of every non-pad entry (v0.47.83),
+    then the pad grid too (v0.47.86) once the shipped left "Pad 1" entry
+    -- found imprecise while first measuring the right deck -- was
+    re-measured for both decks with a cleaner crop technique (see the
+    module's DDJ-1000 comment)."""
     non_pad = {
         "Jog wheel",
         "PLAY/PAUSE",
@@ -375,6 +374,7 @@ def test_ddj_1000_geometry_covers_every_catalog_entry():
         non_pad
         | {f"{name} (R)" for name in non_pad}
         | {f"Pad {n}" for n in range(1, 9)}
+        | {f"Pad {n} (R)" for n in range(1, 9)}
     )
 
 
@@ -407,6 +407,58 @@ def test_ddj_1000_pad_grid_is_a_non_overlapping_2x4_layout():
             x_overlap = ga.x < gb.x + gb.w and gb.x < ga.x + ga.w
             y_overlap = ga.y < gb.y + gb.h and gb.y < ga.y + ga.h
             assert not (x_overlap and y_overlap), f"Pad {a} and Pad {b} overlap"
+
+
+def test_ddj_1000_right_pad_grid_is_a_non_overlapping_2x4_layout_to_the_right_of_the_left_grid():
+    """v0.47.86 (issue #103): the right pad grid, re-measured alongside the
+    left one after the shipped left "Pad 1" turned out imprecise. Same
+    shape check as DDJ-XP2/XDJ-XZ's right grids, but same-row-Y is not
+    asserted here -- unlike those two, DDJ-1000's right grid was measured
+    independently rather than mirrored, and while it landed on the same
+    rows in practice, that's a fact to verify, not assume."""
+    left = {n: CONTROL_GEOMETRY["DDJ-1000"][f"Pad {n}"] for n in range(1, 9)}
+    right = {n: CONTROL_GEOMETRY["DDJ-1000"][f"Pad {n} (R)"] for n in range(1, 9)}
+    for row in range(2):
+        xs = [right[row * 4 + col + 1].x for col in range(4)]
+        assert xs == sorted(xs)
+    for col in range(4):
+        ys = [right[row * 4 + col + 1].y for row in range(2)]
+        assert ys == sorted(ys)
+    for a in range(1, 9):
+        for b in range(a + 1, 9):
+            ga, gb = right[a], right[b]
+            x_overlap = ga.x < gb.x + gb.w and gb.x < ga.x + ga.w
+            y_overlap = ga.y < gb.y + gb.h and gb.y < ga.y + ga.h
+            assert not (x_overlap and y_overlap), f"Pad {a} (R) and Pad {b} (R) overlap"
+    left_right_edge = max(g.x + g.w for g in left.values())
+    assert min(g.x for g in right.values()) >= left_right_edge
+
+
+def test_resolve_geometry_label_picks_the_right_grid_for_ddj_1000_deck_2_and_4():
+    """v0.47.86: unlike DDJ-1000's other DECK entries, pad_lookup() names
+    already carry a "Deck N" prefix, so wiring DDJ-1000 into
+    _RIGHT_GRID_DECKS (once the right grid's geometry existed to resolve
+    to) was enough to make this work for free, the same mechanism DDJ-XP2/
+    XDJ-XZ already use."""
+    hit_deck2 = next(
+        hit for hit in catalog.lookup("10", "NOTE", "2") if hit.controller == "DDJ-1000"
+    )
+    assert resolve_geometry_label("DDJ-1000", hit_deck2.name) == "Pad 3 (R)"
+    hit_deck4 = next(
+        hit for hit in catalog.lookup("14", "NOTE", "2") if hit.controller == "DDJ-1000"
+    )
+    assert resolve_geometry_label("DDJ-1000", hit_deck4.name) == "Pad 3 (R)"
+
+
+def test_resolve_geometry_label_keeps_the_left_grid_for_ddj_1000_deck_1_and_3():
+    hit_deck1 = next(
+        hit for hit in catalog.lookup("8", "NOTE", "2") if hit.controller == "DDJ-1000"
+    )
+    assert resolve_geometry_label("DDJ-1000", hit_deck1.name) == "Pad 3"
+    hit_deck3 = next(
+        hit for hit in catalog.lookup("12", "NOTE", "2") if hit.controller == "DDJ-1000"
+    )
+    assert resolve_geometry_label("DDJ-1000", hit_deck3.name) == "Pad 3"
 
 
 def test_resolve_geometry_label_extracts_pad_number_from_ddj_1000_pad_names():

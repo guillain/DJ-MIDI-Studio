@@ -802,6 +802,30 @@ documentation index.
   even the *shipped left* "SYNC" entry didn't clearly land on the SYNC
   button. Left for whenever a higher-resolution source becomes available,
   not attempted with a resolution this project already knew was marginal.
+  `v0.47.86-ddj-1000-pad-grid-remeasure`: the pad-grid follow-up flagged
+  in `v0.47.83` above, done. Re-measured DDJ-1000's pad grid for *both*
+  decks (not just the right one) with a cleaner technique than the
+  original `v0.47.57` pass: a full, uncluttered 4-column-by-2-row crop of
+  each grid alone, with every column corner-checked individually against
+  a tight crop, instead of eyeballing a wide shot with other controls
+  sharing the frame. Fixed the shipped left grid's imprecision (found
+  while first measuring the right one) and added a matching right grid —
+  both now land tight on every pad, no spillover into neighbours.
+  Bonus: `_RIGHT_GRID_DECKS` gained a `"DDJ-1000"` entry, so the right
+  pad grid's live-hit flash resolution now works too (verified:
+  `resolve_geometry_label("DDJ-1000", "Deck 2 Pad 3 (...)") == "Pad 3
+  (R)"`) — DDJ-1000's pad names, unlike its other DECK entries, already
+  carry a "Deck N" prefix, so this was free once the geometry existed to
+  resolve to; every other " (R)" entry on this controller stays
+  static-overlay-only, same limitation as before. Same technique tried
+  on DDJ-REV1's right pad grid first and **abandoned**: its last column
+  resisted every measurement attempt (col1-3 landed cleanly with
+  consistent ~0.049 spacing each time, but col4 repeatedly landed on the
+  jog wheel regardless of spacing tried) -- the real layout doesn't
+  appear to be 4 uniformly-spaced columns on that side, a genuine
+  anomaly rather than a measurement error, left unresolved rather than
+  guessed. DDJ-REV1/DDJ-FLX10/Numark's pad grids remain open — tracked
+  in issue #103.
   Started in `v0.47.23-transport-overlay`: `gui/geometry.py` records real,
   hand-measured per-control geometry (position + shape + a semantic color) as
   fractions of the official reference photo (`assets/controllers/*.png`), and
