@@ -26,7 +26,12 @@ def test_ddj_xp2_has_no_transport_controls():
 
 
 def test_xdj_xz_transport_geometry_covers_the_expected_controls():
-    assert set(CONTROL_GEOMETRY["XDJ-XZ"]) == {
+    """v0.47.88 (issue #103) added a right-tray (deck 2/4) " (R)" copy of
+    every non-pad entry -- the pad grid already had both sides since
+    v0.47.55, but the transport/pad-mode cluster stayed left-tray-only
+    until now (the module docstring used to (wrongly) claim there was
+    nothing left on the right tray to model)."""
+    non_pad = {
         "PLAY/PAUSE",
         "CUE",
         "SYNC",
@@ -37,9 +42,26 @@ def test_xdj_xz_transport_geometry_covers_the_expected_controls():
         "BEAT LOOP",
         "SLIP LOOP",
         "BEAT JUMP",
-        *(f"Pad {n}" for n in range(1, 9)),
-        *(f"Pad {n} (R)" for n in range(1, 9)),
     }
+    assert set(CONTROL_GEOMETRY["XDJ-XZ"]) == (
+        non_pad
+        | {f"{name} (R)" for name in non_pad}
+        | {f"Pad {n}" for n in range(1, 9)}
+        | {f"Pad {n} (R)" for n in range(1, 9)}
+    )
+
+
+def test_xdj_xz_right_deck_entries_do_not_overlap_their_left_counterparts():
+    """Same sanity check as DDJ-1000/DDJ-FLX10: every " (R)" entry actually
+    landed on the right tray, not a copy-paste of the left fraction."""
+    geometry = CONTROL_GEOMETRY["XDJ-XZ"]
+    for label, geom in geometry.items():
+        if label.endswith(" (R)"):
+            left_label = label[: -len(" (R)")]
+            left_geom = geometry[left_label]
+            assert geom.x > left_geom.x + left_geom.w, (
+                f"{label} does not sit to the right of {left_label}"
+            )
 
 
 def test_xdj_xz_hot_cue_pad_grid_is_a_non_overlapping_2x4_layout():
