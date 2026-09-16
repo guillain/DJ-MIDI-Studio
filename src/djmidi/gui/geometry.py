@@ -43,6 +43,13 @@ callout numbers alone):
   continuous controls are out of catalog scope entirely, see
   ``catalog/__init__.py`` -- so there is nothing discrete left to model
   there; a mixer overlay would have to be display-only, like Jog wheel/Tempo.
+- XDJ-XZ's right tray (v0.47.88, issue #103): the right-tray mirror of the
+  transport + hot cue pad-mode cluster above (PLAY/PAUSE, CUE, SHIFT, HOT
+  CUE, BEAT LOOP, SLIP LOOP, BEAT JUMP, SYNC), plus display-only Jog wheel
+  (R)/Tempo (R) markers -- this had been missing even though the pad grid's
+  right side was already recorded back in v0.47.55; see the "Both
+  controllers have a mirrored/repeated physical layout" note below for why
+  it stayed left-tray-only until now.
 - DDJ-REV1's transport + pad cluster: PLAY/PAUSE, CUE, AUTO LOOP, 1/2X, 2X,
   SYNC, and the 8-pad grid -- this covers every entry in
   ``catalog/ddj_rev1.py``. ``assets/controllers/ddj-rev1-midi.png`` was replaced
@@ -99,11 +106,20 @@ Both controllers have a mirrored/repeated physical layout that the schematic
 already collapses to one cell regardless of which copy is used:
 
 - XDJ-XZ has two deck sides (left tray = deck 1, right tray = deck 2, each
-  also switchable to deck 3/4 respectively -- see below); its pad grid is
-  the only cluster with both sides recorded (see "Right pad grid" below) --
-  the rest of the mixer strip has no discrete catalog entries at all
-  (continuous controls are out of catalog scope), so there is nothing left
-  to duplicate.
+  also switchable to deck 3/4 respectively -- see below). As of
+  ``v0.47.88`` both the pad grid *and* the transport/pad-mode cluster
+  (PLAY/PAUSE, CUE, SHIFT, HOT CUE, BEAT LOOP, SLIP LOOP, BEAT JUMP, SYNC)
+  have both sides recorded (see "Right pad grid" below for the pad grid;
+  the transport cluster's `" (R)"` entries live alongside the left copies
+  in the XDJ-XZ block below), plus display-only Jog wheel (R)/Tempo (R)
+  markers for the two continuous controls that already had a left-side
+  entry. An earlier version of this comment claimed the rest of the mixer
+  strip had no discrete catalog entries at all and so nothing was left to
+  duplicate -- that was wrong; the transport cluster above is real,
+  catalog-backed, and simply had no geometry recorded yet. What remains
+  genuinely out of catalog scope (continuous controls with no discrete
+  catalog entry at all, e.g. TRIM/EQ/channel fader) is unaffected by this
+  and still has no geometry, on either side.
 - DDJ-XP2 has two 4x4 pad grids, two SLIDE FX banks, and two LOOP/QUANTIZE/
   KEY clusters (one per side); only the pad grids have both sides recorded
   (see "Right pad grid" below) -- the SLIDE FX/LOOP/QUANTIZE/KEY clusters
@@ -216,6 +232,34 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         "Pad 6 (R)": ControlGeometry(0.797, 0.900, 0.060, 0.068, "rect", "#e0708f"),
         "Pad 7 (R)": ControlGeometry(0.863, 0.900, 0.060, 0.068, "rect", "#e0708f"),
         "Pad 8 (R)": ControlGeometry(0.930, 0.900, 0.060, 0.068, "rect", "#e0708f"),
+        # Right tray transport + pad-mode cluster -- issue #103. The module
+        # docstring above used to claim "the rest of the mixer strip has no
+        # discrete catalog entries at all... so there is nothing left to
+        # duplicate" for XDJ-XZ; that was wrong. The right tray has its own
+        # physical CUE/PLAY-PAUSE/SHIFT/HOT CUE/BEAT LOOP/SLIP LOOP/BEAT
+        # JUMP cluster (confirmed against the reference photo, not assumed
+        # from symmetry) that simply had no geometry recorded, on top of
+        # the pad grid above which already did. Plus display-only Jog wheel
+        # and Tempo (continuous, no catalog entry, same as their left
+        # counterparts). Each independently measured and crop-verified
+        # against assets/controllers/xdj-xz.png, same discipline as
+        # DDJ-1000/DDJ-REV1/DDJ-FLX10's right-deck work. Live-hit flash
+        # resolution stays left-tray-only for these (reachable via the
+        # static overlay only): unlike the pad grid, whose names carry a
+        # "Deck N" prefix that resolve_geometry_label already keys off,
+        # XDJ-XZ's other DECK entries (PLAY/PAUSE, CUE, SYNC, SHIFT, HOT
+        # CUE, ...) carry no deck info in their name at all -- same
+        # limitation as DDJ-1000/DDJ-REV1/DDJ-FLX10's non-pad entries.
+        "PLAY/PAUSE (R)": ControlGeometry(0.6750, 0.882, 0.052, 0.096, "circle", "#3ea86b"),
+        "CUE (R)": ControlGeometry(0.6750, 0.783, 0.051, 0.095, "circle", "#e0954a"),
+        "SYNC (R)": ControlGeometry(0.9294, 0.4850, 0.026, 0.037, "circle", "#4a90d9"),
+        "Jog wheel (R)": ControlGeometry(0.7186, 0.3417, 0.216, 0.378, "circle", "#586b82"),
+        "Tempo (R)": ControlGeometry(0.9533, 0.700, 0.028, 0.250, "rect", "#6fa8c9"),
+        "SHIFT (R)": ControlGeometry(0.6725, 0.622, 0.026, 0.034, "rect", "#5f6b7a"),
+        "HOT CUE (R)": ControlGeometry(0.7451, 0.800, 0.055, 0.018, "rect", "#7a8aa0"),
+        "BEAT LOOP (R)": ControlGeometry(0.7806, 0.800, 0.056, 0.018, "rect", "#7a8aa0"),
+        "SLIP LOOP (R)": ControlGeometry(0.8173, 0.800, 0.056, 0.018, "rect", "#7a8aa0"),
+        "BEAT JUMP (R)": ControlGeometry(0.8546, 0.800, 0.053, 0.018, "rect", "#7a8aa0"),
     },
     "DDJ-REV1": {
         # Re-measured against the clean render assets/controllers/ddj-rev1.png

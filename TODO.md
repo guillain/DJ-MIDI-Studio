@@ -837,6 +837,24 @@ documentation index.
   (R)"`), same free win as DDJ-1000's. DDJ-REV1's right grid (the
   anomaly) and all of Numark (blocked on source resolution) remain open
   — tracked in issue #103.
+  `v0.47.88-xdj-xz-right-tray-transport-geometry`: XDJ-XZ's turn, but a
+  different kind of gap than the other three — its pad grid already had
+  both sides since `v0.47.55`, but a re-read of its `geometry.py` block
+  turned up an inline comment claiming the rest of the mixer strip "has
+  no discrete catalog entries at all... so there is nothing left to
+  duplicate," which direct image inspection showed to be wrong: XDJ-XZ's
+  right tray has a real, catalog-backed PLAY/PAUSE, CUE, SHIFT, HOT
+  CUE/BEAT LOOP/SLIP LOOP/BEAT JUMP, SYNC cluster (plus display-only Jog
+  wheel/Tempo) that simply had no geometry recorded — not a case of
+  "nothing to model" but of a stale comment nobody had re-checked. Added
+  all 10 entries, each independently measured and crop-verified (SYNC and
+  Jog wheel each needed one refinement pass before landing clean), and
+  corrected the docstring. Same known limitation as DDJ-1000/DDJ-FLX10's
+  non-pad `" (R)"` entries: XDJ-XZ's non-pad `ControlInfo` names carry no
+  "Deck N" prefix, so these stay static-overlay-only, not reachable via
+  live-hit flash resolution. This was the last easy win under issue #103;
+  DDJ-REV1's right pad grid (the anomaly) and Numark (blocked on source
+  resolution) remain the two open items.
   Started in `v0.47.23-transport-overlay`: `gui/geometry.py` records real,
   hand-measured per-control geometry (position + shape + a semantic color) as
   fractions of the official reference photo (`assets/controllers/*.png`), and
