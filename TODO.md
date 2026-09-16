@@ -1821,8 +1821,10 @@ against the current tree and confirmed still open. Tracked as GitHub issues.
   content widget's `sizeHint()` the way a plain widget's does), so it was
   flattened to a single scroll level — the MIDI input/Output row's plain
   container joins the name row and "Draft" directly under one
-  `header_scroll` — plus a small `_AutoSizeScrollArea` subclass overriding
-  `sizeHint()` to actually return the content's, so the header region gets
+  `header_scroll` — plus a small `_AutoSizeScrollArea` subclass (later
+  extracted into the reusable `gui/scroll_utils.AutoSizeScrollArea`, see
+  `v0.47.82` below) overriding `sizeHint()` to actually return the content's,
+  so the header region gets
   the room it deserves instead of Qt's default under-estimate (verified:
   without it, 1280x820 regressed again, cutting off "PAD 7"/"PAD 8" and the
   row-action buttons that were visible before any of this). Confirmed via
@@ -1838,6 +1840,32 @@ against the current tree and confirmed still open. Tracked as GitHub issues.
   design from the original MIDI Routing fix (a working, if not obviously
   discoverable, horizontal scrollbar at the bottom of the panel), not a
   new regression — left as-is.
+  `v0.47.82-tool-dock-titlebar-clipping`: a new failure mode, worse than a
+  squeeze. Re-screenshotting every tool dock *docked* at narrow widths
+  (700x500, By Controller tab) found Live Monitor, MIDI Clock, and
+  Metronome's Undock/Close title-bar buttons had vanished entirely — not
+  clipped text, the whole dock's *geometry* extended past the window's
+  right edge, taking its own title bar (`MainWindow._build_dock_title_bar`,
+  built independently of the dock's body content) out of view with it.
+  MIDI Routing's title bar survived the identical repro. Root cause: when a
+  dock's real minimum width (driven entirely by its body — MidiClockView/
+  MetronomeView/LiveMonitorView had no scroll protection at all, unlike
+  MidiRoutingView by this point) plus the central widget's own minimum
+  exceeds the window, `QMainWindow` doesn't shrink either below its floor —
+  it lets the dock's geometry extend past the window's edge instead, a
+  distinct Qt quirk from the compression/overlap bugs fixed above. Fixed by
+  wrapping each of the three docks' content in a `QScrollArea` (`live_monitor.py`'s
+  `top_row` needed the new `AutoSizeScrollArea` since its `_log` table is an
+  elastic sibling in the same layout — a plain `QScrollArea`'s `sizeHint()`
+  doesn't track a `widgetResizable` content widget's, the same lesson
+  Controller Setup's `_AutoSizeScrollArea` had already learned, so that
+  class was extracted into a shared `gui/scroll_utils.AutoSizeScrollArea`
+  and both call sites now import it; `midi_clock_view.py` and
+  `metronome_view.py` had no elastic sibling, so a plain `QScrollArea`
+  sufficed for those two). New regression test,
+  `test_tool_dock_geometry_never_extends_past_the_window_edge`
+  (`tests/test_main_window.py`), verified failing on pre-fix source
+  (`755 <= 700` assertion failure) before confirming the fix.
 
 ### Next phases to define
 
