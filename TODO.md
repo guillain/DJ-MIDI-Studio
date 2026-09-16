@@ -855,6 +855,33 @@ documentation index.
   live-hit flash resolution. This was the last easy win under issue #103;
   DDJ-REV1's right pad grid (the anomaly) and Numark (blocked on source
   resolution) remain the two open items.
+  `v0.47.89-numark-right-tray-geometry`: unblocked Numark, the last open
+  item, after asking the maintainer whether to swap its unreliable
+  low-res (624x390) photorealistic reference image for a higher-DPI flat
+  diagram with baked-in legend numbers — a visible product change, so put
+  to the maintainer rather than decided alone (see the
+  `djmidi-audience-and-quality-bar` project memory: don't build visual
+  features blind). Approved ("swap to line-art diagram"). The diagram
+  turned out to already exist in the repo under the `-midi` name — this
+  controller's geometry had used it once before, in `v0.47.33`, until the
+  `v0.47.58` clean-render pass swapped in the now-proven-unreliable photo
+  and demoted the diagram to the `-midi` slot. Re-cropped a fresh, higher-
+  DPI version from the same source PDF, made it the "clean" primary render
+  again, and dropped the old photo and the `-midi` slot entirely (a single
+  bundled image now, "MIDI info" disabled — same as a Controller Setup
+  attachment with no sibling) rather than keep a second, backwards-named
+  "MIDI info" view that no longer means anything for this controller.
+  Every entry was re-measured from scratch against the new image (the old
+  fractions were tied to the old aspect ratio), and a full right-deck
+  (deck 2) `" (R)"` copy was added in the same pass, including the pad
+  grid — `_RIGHT_GRID_DECKS` gained a `"Numark Mixtrack Pro FX": frozenset({2})`
+  entry, so the pad grid's live-hit flash resolution works for free, same
+  mechanism as DDJ-1000/DDJ-FLX10; the four non-pad `" (R)"` entries stay
+  static-overlay-only, since the catalog collapses both decks' PLAY/PAUSE/
+  CUE/SYNC/LOOP into one shared name with no per-deck distinction to key
+  off. This closes every currently-tractable item under issue #103.
+  DDJ-REV1's right pad grid (the anomaly, tried twice) is the one
+  remaining gap, left open pending a fundamentally different approach.
   Started in `v0.47.23-transport-overlay`: `gui/geometry.py` records real,
   hand-measured per-control geometry (position + shape + a semantic color) as
   fractions of the official reference photo (`assets/controllers/*.png`), and
