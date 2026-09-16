@@ -71,6 +71,19 @@ callout numbers alone):
   table to cross-check the catalog's trigger values against (the catalog's
   own docstring already discloses this as a "conservative community
   profile"); only the geometry (control positions) came from this PDF.
+  **Update (v0.47.89, issue #103):** the v0.47.58 rename above (this
+  flat diagram becoming the "-midi" variant in favor of a newly-sourced
+  "clean" photorealistic render) turned out to be a regression -- that
+  low-res 624x390 photo couldn't be measured reliably (a tight crop of
+  the shipped left "SYNC" entry didn't clearly land on the button). Every
+  entry was re-measured from scratch against a freshly-cropped, higher-DPI
+  version of this same PDF diagram, which is now back to being the "clean"
+  primary render; the old photorealistic file and the "-midi" variant slot
+  were both dropped (this controller now bundles a single image, "MIDI
+  info" disabled, same as a Controller Setup attachment with no sibling).
+  A right-deck (deck 2) `" (R)"` copy of every entry was added in the same
+  pass -- Numark's two decks are two separate physical trays, same gap
+  issue #103 flagged on DDJ-1000/DDJ-REV1/DDJ-FLX10.
 - DDJ-1000's transport + pad cluster: PLAY/PAUSE, CUE, MASTER TEMPO, BEAT
   SYNC, KEY SYNC, KEY RESET, LOOP IN, LOOP OUT, 4 BEAT LOOP/EXIT, QUANTIZE,
   SLIP, SLIP REVERSE, and the 8-pad grid -- this covers every entry in
@@ -134,25 +147,31 @@ already collapses to one cell regardless of which copy is used:
     way its pad channels are (see ``catalog/ddj_xp2.py``): left = decks
     1/3, right = decks 2/4.
 
-Right pad grid (DDJ-XP2 and XDJ-XZ): both controllers have a *second*,
-physically distinct pad grid to the right of the one described above, which
-earlier revisions of this module didn't record at all -- a live hit on that
-grid (deck 2 or 4 on DDJ-XP2; deck 2 on XDJ-XZ) would fall back to flashing
-the *left* grid's same-numbered marker instead of its own (or nothing),
-which is what the maintainer reported (issue: "pad rows are inverted" +
-"the right pad grid is absent and its hits land on the left grid",
-confirmed on real DDJ-XP2 and XDJ-XZ hardware over the Live Monitor tab).
-The right grid's own entries are recorded here under a name suffixed
-" (R)" (e.g. "Pad 3 (R)"), measured the same way as everything else --
-cropping the real photo and reading off pixel bounds -- and
-``resolve_geometry_label`` picks between the plain and " (R)" labels by
-looking at which deck the live hit's raw name carries (see
-``_RIGHT_GRID_DECKS`` below). DDJ-XP2's left/right split (decks 1/3 = left,
-2/4 = right) is confirmed by both the official MIDI Message List's LOAD
-button table and a real hardware press over Live Monitor (deck 1 -> left
-grid, deck 2 -> right grid); XDJ-XZ's deck 1/2 split is likewise confirmed
-on real hardware, but its deck 3/4 assignment to left/right is inferred by
-symmetry with DDJ-XP2, not independently hardware-tested.
+Right pad grid (DDJ-XP2, XDJ-XZ, DDJ-1000, DDJ-FLX10, Numark Mixtrack Pro
+FX): each of these controllers has a *second*, physically distinct pad grid
+to the right of the one described above, which earlier revisions of this
+module didn't record at all -- a live hit on that grid (deck 2 or 4 on
+DDJ-XP2/DDJ-1000/DDJ-FLX10; deck 2 on XDJ-XZ/Numark) would fall back to
+flashing the *left* grid's same-numbered marker instead of its own (or
+nothing), which is what the maintainer reported for DDJ-XP2/XDJ-XZ (issue:
+"pad rows are inverted" + "the right pad grid is absent and its hits land
+on the left grid", confirmed on real DDJ-XP2 and XDJ-XZ hardware over the
+Live Monitor tab) and what a later proactive audit found repeated across
+every other controller with geometry (issue #103). The right grid's own
+entries are recorded here under a name suffixed " (R)" (e.g. "Pad 3 (R)"),
+measured the same way as everything else -- cropping the real photo and
+reading off pixel bounds -- and ``resolve_geometry_label`` picks between
+the plain and " (R)" labels by looking at which deck the live hit's raw
+name carries (see ``_RIGHT_GRID_DECKS`` below). DDJ-XP2's left/right split
+(decks 1/3 = left, 2/4 = right) is confirmed by both the official MIDI
+Message List's LOAD button table and a real hardware press over Live
+Monitor (deck 1 -> left grid, deck 2 -> right grid); XDJ-XZ's deck 1/2
+split is likewise confirmed on real hardware, but its deck 3/4 assignment
+to left/right is inferred by symmetry with DDJ-XP2, not independently
+hardware-tested. DDJ-1000/DDJ-FLX10/Numark's left/right splits all come
+from each controller's own channel-per-deck catalog convention (deck N maps
+directly to a fixed MIDI channel per ``_DECK_CHANNELS``/``_PAD_CHANNELS``),
+not hardware-tested independently of that convention either.
 """
 
 from __future__ import annotations
@@ -397,28 +416,69 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         "SHIFT": ControlGeometry(0.506, 0.277, 0.052, 0.052, "rect", "#5f6b7a"),
     },
     "Numark Mixtrack Pro FX": {
-        # Re-measured against the clean render
-        # assets/controllers/numark-mixtrack-pro-fx.png (624x390) in v0.47.58 --
-        # the earlier fractions were for the callout-annotated
-        # numark-mixtrack-pro-fx-midi.png, a different crop/aspect. Deck 1.
+        # v0.47.89 (issue #103): re-measured from scratch against a brand new
+        # reference image. The old "clean" render (624x390, photorealistic)
+        # proved too low-resolution to measure reliably -- a tight crop of
+        # even the shipped left "SYNC" entry didn't clearly land on the
+        # button. Swapped it for a flat, high-DPI top-view diagram cropped
+        # from the bundled user guide PDF (docs/controllers/numark-mixtrack-
+        # pro-fx-user-guide-v1.2.pdf page 3, 300 DPI, tight-cropped to just
+        # the device) -- the same source this controller's geometry already
+        # used once before, in v0.47.33, prior to the v0.47.58 rename that
+        # demoted it to the "-midi" variant in favor of the (now-removed)
+        # low-res photo. That PDF diagram has its own numbered legend
+        # circles baked into the raster (not a separate overlay), so unlike
+        # every other controller's "clean" render this one isn't callout-
+        # free -- a deliberate, user-approved trade-off to get a reliable
+        # measurement source (see issue #103). The controller's `-midi`
+        # variant was dropped rather than kept as a second, semantically-
+        # backwards "MIDI info" view; "MIDI info" is disabled for this
+        # controller now (single bundled variant), matching how a Controller
+        # Setup attachment with no `-midi` sibling already behaves.
+        #
+        # Unlike the previous single-marker-only measurement, this pass also
+        # added a right-deck (deck 2) " (R)" copy of every entry -- Numark's
+        # two decks are two separate physical trays (left = deck 1, right =
+        # deck 2), the same shape of gap issue #103 flagged on DDJ-1000/
+        # DDJ-REV1/DDJ-FLX10. Non-pad entries stay static-overlay-only, same
+        # known limitation as those three: the catalog's _STATIC ControlInfo
+        # entries (catalog/numark_mixtrack_pro_fx.py) collapse both channels
+        # into one shared name ("PLAY/PAUSE", not "Deck 2 PLAY/PAUSE"), so
+        # there's no per-deck name for resolve_geometry_label to key live-hit
+        # flash resolution off. Pad names *do* already carry a "Deck N"
+        # prefix (_pad_lookup), so the pad grid's right side works for free
+        # once _RIGHT_GRID_DECKS carries an entry for this controller (see
+        # below) -- same mechanism as DDJ-1000/DDJ-FLX10.
+        #
         # Blue: matches SYNC's accent color on the other controllers.
-        "SYNC": ControlGeometry(0.074, 0.658, 0.054, 0.030, "rect", "#4a90d9"),
+        "SYNC": ControlGeometry(0.012, 0.683, 0.056, 0.045, "rect", "#4a90d9"),
+        "SYNC (R)": ControlGeometry(0.595, 0.700, 0.058, 0.048, "rect", "#4a90d9"),
         # Amber: matches CUE's accent color on the other controllers.
-        "CUE": ControlGeometry(0.074, 0.698, 0.054, 0.044, "rect", "#e0954a"),
+        "CUE": ControlGeometry(0.012, 0.752, 0.056, 0.048, "rect", "#e0954a"),
+        "CUE (R)": ControlGeometry(0.595, 0.752, 0.058, 0.052, "rect", "#e0954a"),
         # Green: matches PLAY/PAUSE's accent color on the other controllers.
-        "PLAY/PAUSE": ControlGeometry(0.074, 0.752, 0.054, 0.046, "rect", "#3ea86b"),
+        "PLAY/PAUSE": ControlGeometry(0.010, 0.857, 0.058, 0.052, "rect", "#3ea86b"),
+        "PLAY/PAUSE (R)": ControlGeometry(0.595, 0.812, 0.060, 0.062, "rect", "#3ea86b"),
         # Gray-blue: utility accent, matches loop-style buttons elsewhere.
-        "LOOP": ControlGeometry(0.303, 0.760, 0.038, 0.032, "rect", "#7a8aa0"),
+        "LOOP": ControlGeometry(0.280, 0.768, 0.058, 0.068, "rect", "#7a8aa0"),
+        "LOOP (R)": ControlGeometry(0.872, 0.768, 0.055, 0.068, "rect", "#7a8aa0"),
         # Salmon-pink: matches the pad grid accent used on the other controllers.
-        # cols x = 0.145/0.218/0.292/0.365 (w 0.060), rows y = 0.703/0.768.
-        "Pad 1": ControlGeometry(0.136, 0.688, 0.058, 0.048, "rect", "#e0708f"),
-        "Pad 2": ControlGeometry(0.209, 0.688, 0.058, 0.048, "rect", "#e0708f"),
-        "Pad 3": ControlGeometry(0.283, 0.688, 0.058, 0.048, "rect", "#e0708f"),
-        "Pad 4": ControlGeometry(0.356, 0.688, 0.058, 0.048, "rect", "#e0708f"),
-        "Pad 5": ControlGeometry(0.136, 0.748, 0.058, 0.048, "rect", "#e0708f"),
-        "Pad 6": ControlGeometry(0.209, 0.748, 0.058, 0.048, "rect", "#e0708f"),
-        "Pad 7": ControlGeometry(0.283, 0.748, 0.058, 0.048, "rect", "#e0708f"),
-        "Pad 8": ControlGeometry(0.356, 0.748, 0.058, 0.048, "rect", "#e0708f"),
+        "Pad 1": ControlGeometry(0.078, 0.753, 0.045, 0.072, "rect", "#e0708f"),
+        "Pad 2": ControlGeometry(0.137, 0.753, 0.040, 0.072, "rect", "#e0708f"),
+        "Pad 3": ControlGeometry(0.188, 0.753, 0.040, 0.072, "rect", "#e0708f"),
+        "Pad 4": ControlGeometry(0.229, 0.753, 0.045, 0.072, "rect", "#e0708f"),
+        "Pad 5": ControlGeometry(0.078, 0.833, 0.045, 0.075, "rect", "#e0708f"),
+        "Pad 6": ControlGeometry(0.137, 0.833, 0.040, 0.075, "rect", "#e0708f"),
+        "Pad 7": ControlGeometry(0.188, 0.833, 0.040, 0.075, "rect", "#e0708f"),
+        "Pad 8": ControlGeometry(0.229, 0.833, 0.045, 0.075, "rect", "#e0708f"),
+        "Pad 1 (R)": ControlGeometry(0.658, 0.753, 0.043, 0.072, "rect", "#e0708f"),
+        "Pad 2 (R)": ControlGeometry(0.709, 0.753, 0.040, 0.072, "rect", "#e0708f"),
+        "Pad 3 (R)": ControlGeometry(0.767, 0.753, 0.040, 0.072, "rect", "#e0708f"),
+        "Pad 4 (R)": ControlGeometry(0.817, 0.753, 0.045, 0.072, "rect", "#e0708f"),
+        "Pad 5 (R)": ControlGeometry(0.658, 0.833, 0.043, 0.075, "rect", "#e0708f"),
+        "Pad 6 (R)": ControlGeometry(0.709, 0.833, 0.040, 0.075, "rect", "#e0708f"),
+        "Pad 7 (R)": ControlGeometry(0.767, 0.833, 0.040, 0.075, "rect", "#e0708f"),
+        "Pad 8 (R)": ControlGeometry(0.817, 0.833, 0.045, 0.075, "rect", "#e0708f"),
     },
     "DDJ-1000": {
         # Re-measured against the clean render assets/controllers/ddj-1000.png
@@ -676,6 +736,11 @@ _RIGHT_GRID_DECKS: dict[str, frozenset[int]] = {
     # 8/9->deck 1, 10/11->deck 2, 12/13->deck 3, 14/15->deck 4, so deck 2/4
     # is the right tray by the same convention.
     "DDJ-FLX10": frozenset({2, 4}),
+    # v0.47.89: Numark Mixtrack Pro FX has only two decks (not four), and
+    # its _pad_lookup() names already carry a "Deck N" prefix the same way
+    # DDJ-1000/DDJ-FLX10's do, so deck 2 (right tray) resolves for free once
+    # the right pad grid's geometry exists.
+    "Numark Mixtrack Pro FX": frozenset({2}),
 }
 
 

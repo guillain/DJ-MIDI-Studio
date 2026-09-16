@@ -330,14 +330,16 @@ def test_resolve_geometry_label_extracts_pad_number_from_ddj_rev1_pad_names():
 def test_numark_mixtrack_pro_fx_geometry_covers_every_catalog_entry():
     """Numark Mixtrack Pro FX's catalog (catalog/numark_mixtrack_pro_fx.py)
     has exactly four DECK entries plus an 8-pad grid -- this is the whole
-    controller, not a subset."""
-    assert set(CONTROL_GEOMETRY["Numark Mixtrack Pro FX"]) == {
-        "PLAY/PAUSE",
-        "CUE",
-        "SYNC",
-        "LOOP",
-        *(f"Pad {n}" for n in range(1, 9)),
-    }
+    controller, not a subset. v0.47.89 (issue #103) added a right-deck
+    (deck 2) " (R)" copy of every entry, re-measured from scratch against a
+    replacement reference image (see the module's Numark comment)."""
+    non_pad = {"PLAY/PAUSE", "CUE", "SYNC", "LOOP"}
+    assert set(CONTROL_GEOMETRY["Numark Mixtrack Pro FX"]) == (
+        non_pad
+        | {f"{name} (R)" for name in non_pad}
+        | {f"Pad {n}" for n in range(1, 9)}
+        | {f"Pad {n} (R)" for n in range(1, 9)}
+    )
 
 
 def test_numark_mixtrack_pro_fx_pad_grid_is_a_non_overlapping_2x4_layout():
@@ -356,6 +358,36 @@ def test_numark_mixtrack_pro_fx_pad_grid_is_a_non_overlapping_2x4_layout():
             assert not (x_overlap and y_overlap), f"Pad {a} and Pad {b} overlap"
 
 
+def test_numark_mixtrack_pro_fx_right_deck_entries_do_not_overlap_their_left_counterparts():
+    """Same sanity check as DDJ-1000/DDJ-FLX10/XDJ-XZ: every " (R)" entry
+    actually landed on the right tray, not a copy-paste of the left
+    fraction."""
+    geometry = CONTROL_GEOMETRY["Numark Mixtrack Pro FX"]
+    for label, geom in geometry.items():
+        if label.endswith(" (R)"):
+            left_label = label[: -len(" (R)")]
+            left_geom = geometry[left_label]
+            assert geom.x > left_geom.x + left_geom.w, (
+                f"{label} does not sit to the right of {left_label}"
+            )
+
+
+def test_numark_mixtrack_pro_fx_right_pad_grid_is_a_non_overlapping_2x4_layout_to_the_right_of_the_left_grid():
+    left = {n: CONTROL_GEOMETRY["Numark Mixtrack Pro FX"][f"Pad {n}"] for n in range(1, 9)}
+    right = {n: CONTROL_GEOMETRY["Numark Mixtrack Pro FX"][f"Pad {n} (R)"] for n in range(1, 9)}
+    for row in range(2):
+        xs = [right[row * 4 + col + 1].x for col in range(4)]
+        assert xs == sorted(xs)
+    for a in range(1, 9):
+        for b in range(a + 1, 9):
+            ga, gb = right[a], right[b]
+            x_overlap = ga.x < gb.x + gb.w and gb.x < ga.x + ga.w
+            y_overlap = ga.y < gb.y + gb.h and gb.y < ga.y + ga.h
+            assert not (x_overlap and y_overlap), f"Pad {a} (R) and Pad {b} (R) overlap"
+    left_right_edge = max(g.x + g.w for g in left.values())
+    assert min(g.x for g in right.values()) >= left_right_edge
+
+
 def test_resolve_geometry_label_extracts_pad_number_from_numark_pad_names():
     """Numark Mixtrack Pro FX's pad_lookup() produces names like
     "Deck 1 Pad 4" -- verified against the real lookup path."""
@@ -365,6 +397,18 @@ def test_resolve_geometry_label_extracts_pad_number_from_numark_pad_names():
         if hit.controller == "Numark Mixtrack Pro FX"
     )
     assert resolve_geometry_label("Numark Mixtrack Pro FX", hit.name) == "Pad 4"
+
+
+def test_resolve_geometry_label_picks_the_right_grid_for_numark_deck_2():
+    """v0.47.89: Numark's pad_lookup() names already carry a "Deck N" prefix,
+    so wiring it into _RIGHT_GRID_DECKS was enough to make this work for
+    free, the same mechanism DDJ-1000/DDJ-FLX10 already use."""
+    hit = next(
+        hit
+        for hit in catalog.lookup("2", "NOTE", "39")  # deck-2 pad channel, note 36+3
+        if hit.controller == "Numark Mixtrack Pro FX"
+    )
+    assert resolve_geometry_label("Numark Mixtrack Pro FX", hit.name) == "Pad 4 (R)"
 
 
 def test_ddj_1000_geometry_covers_every_catalog_entry():
