@@ -368,9 +368,22 @@ def cell_key_for_geometry_label(controller: str, geometry_label: str) -> CellKey
 # circular import). Which decks land on the physically distinct right pad
 # grid/tray; any deck not listed (or any controller not listed) has no
 # right-side split modeled.
+#
+# This copy had drifted out of sync with geometry.py's (missing DDJ-1000,
+# DDJ-FLX10, Numark Mixtrack Pro FX, and DDJ-REV1, all of which had already
+# gained a real right pad grid there) -- found and re-synced in the
+# issue-#118 ("layout" session) pass. The schematic/emulator PAD-section
+# side filtering (hit_matches_side, resolve_side_aware_variant, this
+# module's other _RIGHT_GRID_DECKS reads below) had silently been treating
+# those four controllers as having no right-side split at all. Re-sync both
+# tables together if either one changes.
 _RIGHT_GRID_DECKS: dict[str, frozenset[int]] = {
     "DDJ-XP2": frozenset({2, 4}),
     "XDJ-XZ": frozenset({2, 4}),
+    "DDJ-1000": frozenset({2, 4}),
+    "DDJ-FLX10": frozenset({2, 4}),
+    "DDJ-REV1": frozenset({2, 4}),
+    "Numark Mixtrack Pro FX": frozenset({2}),
 }
 _DECK_NUM_RE = re.compile(r"^Deck (\d+)")
 

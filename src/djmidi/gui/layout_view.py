@@ -176,71 +176,31 @@ def draw_reference_photo(scene: QGraphicsScene, controller: str) -> bool:
     return True
 
 # Real-position mode's *own* supplementary geometry for a controller's
-# right-side mirrored cluster (SLIDE FX2, the second LOOP/QUANTIZE/KEY
-# bank, and the right PAD MODE buttons on DDJ-XP2), measured the same way
-# as everything in gui/geometry.py (crop + scaled gridline overlay, read by
-# eye) but kept *out* of geometry.CONTROL_GEOMETRY on purpose: unlike pads,
-# these controls' raw catalog names (e.g. "BEAT SYNC") don't carry a deck
-# number at all, so geometry.resolve_geometry_label (used by Controller
-# Images' live-flash overlay) has no way to route a live hit to the correct
-# side the way it does for pads via _RIGHT_GRID_DECKS -- adding a same-named
-# "BEAT SYNC (R)" marker there would silently steal that key's slot in
-# geometry._reverse_index and break the left marker's live flash. This
-# table is consumed only by _rebuild_real_position below, entirely
-# independent of Controller Images. Reported by the maintainer as buttons
-# "missing" and the layout "not symmetric" after phase R1's first pass only
-# carried the pad grids' right side over.
-_RIGHT_MIRROR_GEOMETRY: dict[str, dict[str, geometry_mod.ControlGeometry]] = {
-    "DDJ-XP2": {
-        # Re-measured against the clean render assets/controllers/ddj-xp2.png
-        # in v0.47.54 (mirrors the CONTROL_GEOMETRY["DDJ-XP2"] re-measure) --
-        # the right-tray copy of the DECK/PAD MODE/EFFECT clusters.
-        "QUANTIZE": geometry_mod.ControlGeometry(0.678, 0.092, 0.044, 0.049, "circle", "#4ab8a0"),
-        "4 BEAT LOOP": geometry_mod.ControlGeometry(0.733, 0.097, 0.094, 0.044, "rect", "#d9954a"),
-        "1/2X": geometry_mod.ControlGeometry(0.734, 0.189, 0.050, 0.051, "rect", "#d9954a"),
-        "2X": geometry_mod.ControlGeometry(0.791, 0.189, 0.050, 0.051, "rect", "#d9954a"),
-        "BEAT SYNC": geometry_mod.ControlGeometry(0.648, 0.191, 0.054, 0.052, "rect", "#4a90d9"),
-        "SILENT CUE": geometry_mod.ControlGeometry(0.788, 0.274, 0.054, 0.062, "rect", "#e0954a"),
-        "KEY -": geometry_mod.ControlGeometry(0.585, 0.282, 0.043, 0.053, "rect", "#7a8aa0"),
-        "KEY +": geometry_mod.ControlGeometry(0.652, 0.282, 0.043, 0.053, "rect", "#7a8aa0"),
-        "PAD MODE 1": geometry_mod.ControlGeometry(0.513, 0.362, 0.091, 0.043, "rect", "#7a8aa0"),
-        "PAD MODE 2": geometry_mod.ControlGeometry(0.622, 0.362, 0.091, 0.043, "rect", "#7a8aa0"),
-        "PAD MODE 3": geometry_mod.ControlGeometry(0.730, 0.362, 0.091, 0.043, "rect", "#7a8aa0"),
-        "PAD MODE 4": geometry_mod.ControlGeometry(0.840, 0.362, 0.088, 0.043, "rect", "#7a8aa0"),
-        "EFFECT 1": geometry_mod.ControlGeometry(0.885, 0.109, 0.058, 0.040, "circle", "#9b6fd9"),
-        "EFFECT 2": geometry_mod.ControlGeometry(0.885, 0.187, 0.058, 0.040, "circle", "#9b6fd9"),
-        "EFFECT 3": geometry_mod.ControlGeometry(0.885, 0.284, 0.058, 0.040, "circle", "#9b6fd9"),
-        "TOUCH STRIP HOLD": geometry_mod.ControlGeometry(0.882, 0.853, 0.063, 0.048, "rect", "#8fa0b3"),
-        # "FX LEVEL" (geometry.py's label for the left slider) is aliased to
-        # the schematic's "Slide FX 1" cell (see layout._LABEL_ALIASES); the
-        # right slider maps directly to the schematic's own "Slide FX 2"
-        # cell instead, so it's keyed by that name here directly rather
-        # than needing a second alias.
-        "Slide FX 2": geometry_mod.ControlGeometry(0.885, 0.435, 0.045, 0.377, "rect", "#6fa8c9"),
-    },
-    "XDJ-XZ": {
-        # The right tray's transport cluster + PAD MODE buttons -- CONTROL_GEOMETRY
-        # only ever records the left tray (deck 1/3); "Pad N (R)" (deck 2/4)
-        # is already there via the pad-grid geometry, but PLAY/PAUSE, CUE,
-        # SYNC, the jog wheel/tempo display markers, and the 4 PAD MODE
-        # buttons need their own right-tray copy here.
-        #
-        # Re-measured against the clean render assets/controllers/xdj-xz.png
-        # in v0.47.55 (mirrors the CONTROL_GEOMETRY["XDJ-XZ"] re-measure).
-        # Each side is measured independently, not mirrored -- the wide
-        # central mixer means the right jog wheel isn't a constant offset
-        # from the left one.
-        "PLAY/PAUSE": geometry_mod.ControlGeometry(0.674, 0.882, 0.052, 0.096, "circle", "#3ea86b"),
-        "CUE": geometry_mod.ControlGeometry(0.674, 0.783, 0.052, 0.095, "circle", "#e0954a"),
-        "SYNC": geometry_mod.ControlGeometry(0.917, 0.472, 0.026, 0.037, "circle", "#4a90d9"),
-        "Jog wheel": geometry_mod.ControlGeometry(0.718, 0.310, 0.216, 0.378, "circle", "#586b82"),
-        "Tempo": geometry_mod.ControlGeometry(0.945, 0.700, 0.028, 0.250, "rect", "#6fa8c9"),
-        "HOT CUE": geometry_mod.ControlGeometry(0.735, 0.800, 0.055, 0.018, "rect", "#7a8aa0"),
-        "BEAT LOOP": geometry_mod.ControlGeometry(0.795, 0.800, 0.055, 0.018, "rect", "#7a8aa0"),
-        "SLIP LOOP": geometry_mod.ControlGeometry(0.853, 0.800, 0.055, 0.018, "rect", "#7a8aa0"),
-        "BEAT JUMP": geometry_mod.ControlGeometry(0.912, 0.800, 0.053, 0.018, "rect", "#7a8aa0"),
-    },
-}
+# right-side mirrored cluster, for a controller/section where
+# gui/geometry.CONTROL_GEOMETRY can't carry the right-side copy itself.
+#
+# DDJ-XP2's right-side DECK/PAD MODE/EFFECT cluster and XDJ-XZ's right-tray
+# transport+PAD MODE cluster both *used* to live only here, on the theory
+# that a same-named "BEAT SYNC (R)"/"PLAY/PAUSE (R)" entry in
+# geometry.CONTROL_GEOMETRY would collide with the left one in
+# geometry._reverse_index and break its live flash on Controller Images.
+# That theory didn't hold up: the reverse index is keyed by the label text
+# itself, so a distinctly-*named* "... (R)" entry never collides with its
+# unsuffixed left counterpart -- confirmed while fixing the issue-#118
+# ("layout" session) geometry pass, where both controllers' right clusters
+# moved into geometry.CONTROL_GEOMETRY directly instead (also fixing
+# Controller Images, which this table never covered -- only the
+# schematic/emulator read it). Keeping both tables populated for the same
+# buttons made real_position_markers() double-count them (two overlapping
+# markers with the same " (R)" label) -- confirmed for DDJ-XP2 by a failing
+# test and, on inspection, already silently true for XDJ-XZ too, since its
+# CONTROL_GEOMETRY right-tray entries had existed since v0.47.88 alongside
+# this table's own copies. Both controllers' entries were removed here once
+# their geometry.CONTROL_GEOMETRY counterparts existed, leaving this table
+# empty -- kept only as an extension point for a hypothetical future
+# controller whose right-side cluster can't be expressed as ordinary
+# "X (R)" geometry.CONTROL_GEOMETRY labels.
+_RIGHT_MIRROR_GEOMETRY: dict[str, dict[str, geometry_mod.ControlGeometry]] = {}
 
 
 @dataclass(frozen=True)

@@ -97,6 +97,11 @@ def test_resolve_geometry_label_strips_direct_button_suffix_for_hot_cue_modes():
 
 
 def test_ddj_xp2_geometry_covers_the_expected_controls():
+    # Both physical clusters (decks 1/3 and 2/4) are modeled directly here
+    # now -- see the module's DDJ-XP2 comment for why the right cluster used
+    # to live only in layout_view._RIGHT_MIRROR_GEOMETRY instead. Rotary
+    # Selector and SHIFT are single physical controls shared by both decks,
+    # so they have no " (R)" counterpart.
     assert set(CONTROL_GEOMETRY["DDJ-XP2"]) == {
         *(f"Pad {n}" for n in range(1, 17)),
         *(f"Pad {n} (R)" for n in range(1, 17)),
@@ -104,19 +109,36 @@ def test_ddj_xp2_geometry_covers_the_expected_controls():
         "PAD MODE 2/6",
         "PAD MODE 3/7",
         "PAD MODE 4/8",
+        "PAD MODE 1/5 (R)",
+        "PAD MODE 2/6 (R)",
+        "PAD MODE 3/7 (R)",
+        "PAD MODE 4/8 (R)",
         "EFFECT 1",
         "EFFECT 2",
         "EFFECT 3",
+        "EFFECT 1 (R)",
+        "EFFECT 2 (R)",
+        "EFFECT 3 (R)",
         "TOUCH STRIP HOLD",
+        "TOUCH STRIP HOLD (R)",
         "FX LEVEL",
+        "Slide FX 2",
         "4 BEAT LOOP",
+        "4 BEAT LOOP (R)",
         "1/2X",
+        "1/2X (R)",
         "2X",
+        "2X (R)",
         "QUANTIZE",
+        "QUANTIZE (R)",
         "BEAT SYNC",
+        "BEAT SYNC (R)",
         "SILENT CUE",
+        "SILENT CUE (R)",
         "KEY -",
+        "KEY - (R)",
         "KEY +",
+        "KEY + (R)",
         "Rotary Selector",
         "LOAD DECK 1/3",
         "LOAD DECK 2/4",
@@ -264,12 +286,12 @@ def test_ddj_rev1_geometry_covers_every_catalog_entry():
     plus an 8-pad grid -- this is the whole controller, not a subset. Plus
     one display-only "Jog wheel" (no catalog entry -- a continuous control,
     spun by gui/jog.py, v0.47.66). Issue #103 added a right-deck (deck 2/4)
-    " (R)" copy of every non-pad entry, same as DDJ-1000 -- the pad grid's
-    own right-deck copy is a known-remaining gap (see the module's
-    DDJ-REV1 comment: repeated attempts to precisely locate the right
-    grid's column/row bounds kept landing on a pad boundary rather than a
-    pad center, so it's left for a dedicated follow-up rather than shipped
-    imprecise)."""
+    " (R)" copy of every non-pad entry, same as DDJ-1000; the pad grid's own
+    right-deck copy (originally a known-remaining gap -- repeated attempts
+    to precisely locate the right grid's column/row bounds kept landing on
+    a pad boundary rather than a pad center) was filled in the issue-#118
+    ("layout" session) pass, anchored off the one edge that cropped
+    unambiguously: the SAMPLER pad's boundary against the jog wheel."""
     non_pad = {
         "Jog wheel",
         "PLAY/PAUSE",
@@ -283,6 +305,7 @@ def test_ddj_rev1_geometry_covers_every_catalog_entry():
         non_pad
         | {f"{name} (R)" for name in non_pad}
         | {f"Pad {n}" for n in range(1, 9)}
+        | {f"Pad {n} (R)" for n in range(1, 9)}
     )
 
 
