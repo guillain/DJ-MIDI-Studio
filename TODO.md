@@ -882,6 +882,56 @@ documentation index.
   off. This closes every currently-tractable item under issue #103.
   DDJ-REV1's right pad grid (the anomaly, tried twice) is the one
   remaining gap, left open pending a fundamentally different approach.
+  `v0.47.90-controller-geometry-precision-pass` (the "layout" session):
+  the maintainer reported, from fresh eyes on Controller Images rather
+  than a tracked issue, that the whole real-layout overlay read as
+  "très grossier" (crude) and asymmetric across decks A/B — a broader
+  precision audit than any single `v0.47.8x` PR above, covering every
+  entry on all six geometry-modeled controllers, not just the previously
+  flagged right-deck gaps. Re-measured every fraction directly against
+  each controller's reference photo (crop + gridline overlay, verified by
+  rendering the fix back onto the photo, and — after two follow-up misses
+  slipped past that check alone — by screenshotting the real running app
+  too): DDJ-XP2's entire LOOP/QUANTIZE/KEY/EFFECT/LOAD/PAD MODE cluster
+  had drifted off the real buttons (up to a third of the image's width)
+  and had no right-side `CONTROL_GEOMETRY` coverage at all; XDJ-XZ's pads
+  were ~30% oversized with the wrong pitch (the first fix corrected size
+  but not pitch, caught by the maintainer's own re-check) and its
+  right-tray HOT CUE/BEAT LOOP/SLIP LOOP/BEAT JUMP row drifted further
+  right at each column; DDJ-1000 had QUANTIZE/SLIP/SLIP REVERSE a row (or
+  two) below the real buttons and MASTER TEMPO/KEY SYNC/KEY RESET beside
+  theirs; DDJ-FLX10 had overlapping ACTIVE PART DRUMS/VOCAL/INST (R) and
+  an undersized jog wheel; DDJ-REV1 had PLAY/PAUSE and CUE on the wrong
+  side of the jog wheel entirely, plus an oversized AUTO LOOP/1-2X/2X/SYNC
+  row; Numark had SYNC/CUE/PLAY-PAUSE/LOOP anchored on the diagram's own
+  numbered legend circles instead of the buttons beside them (the second
+  follow-up miss, caught only once screenshotted from the real app — the
+  PIL verification render used a single debug color for every entry
+  regardless of its real semantic color, which hid the misalignment at a
+  glance).
+  **Also closes DDJ-REV1's right pad grid**, the one gap the paragraph
+  above left open "pending a fundamentally different approach": the
+  per-pad crop that kept landing on a boundary instead of a center still
+  doesn't work, but cropping the *whole* right grid against the
+  SAMPLER/jog-wheel boundary (the one edge that cropped unambiguously)
+  and walking left in the pitch confirmed on the left grid did. Issue
+  #103 is now fully closed, not just "every currently-tractable item."
+  Also found and fixed two independent architecture bugs surfaced while
+  re-measuring: `layout_view._RIGHT_MIRROR_GEOMETRY` had been silently
+  duplicating `CONTROL_GEOMETRY`'s job for DDJ-XP2/XDJ-XZ's right-side
+  clusters since the `v0.47.5x` re-measurement passes, so the schematic/
+  emulator view double-drew every marker in that cluster once this pass
+  added the same coverage to `CONTROL_GEOMETRY` directly — resolved by
+  moving that data into `CONTROL_GEOMETRY` as ordinary `"X (R)"` entries
+  (the convention every other controller already used) and removing the
+  now-empty mirror table; and `layout.py` kept its own hand-duplicated
+  copy of `geometry.py`'s `_RIGHT_GRID_DECKS` (to dodge a circular
+  import) that had quietly fallen out of sync, missing DDJ-1000,
+  DDJ-FLX10, DDJ-REV1, and Numark entirely — their right-tray pad hits
+  were never resolving to the right-side schematic cell in the By
+  Channel/Deck/Controller tabs or the emulator, even though Controller
+  Images' live-flash resolution (reading `geometry.py`'s copy) worked
+  correctly the whole time.
   Started in `v0.47.23-transport-overlay`: `gui/geometry.py` records real,
   hand-measured per-control geometry (position + shape + a semantic color) as
   fractions of the official reference photo (`assets/controllers/*.png`), and

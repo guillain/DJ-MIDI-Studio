@@ -311,8 +311,9 @@ def test_real_position_mode_renders_both_ddj_xp2_pad_grids():
 
 def test_real_position_mode_renders_the_right_mirror_cluster():
     """The right-side DECK/LOOP/QUANTIZE/PAD-MODE cluster comes from
-    layout_view._RIGHT_MIRROR_GEOMETRY, not gui/geometry.CONTROL_GEOMETRY --
-    both must contribute markers for the tab to read as symmetric."""
+    gui/geometry.CONTROL_GEOMETRY's own " (R)" entries now (previously
+    layout_view._RIGHT_MIRROR_GEOMETRY) -- still resolving to the same
+    merged schematic cell as the left cluster."""
     view = ControllerLayoutView()
     view.set_controller("DDJ-XP2")
     assert _real_position_items(view, ("DDJ-XP2", "DECK", "BEAT SYNC"))
@@ -440,10 +441,11 @@ def test_real_position_markers_include_the_right_mirror_cluster():
     markers = layout_view_mod.real_position_markers("DDJ-XP2")
     labels = {m.label for m in markers}
     assert "BEAT SYNC" in labels  # left (CONTROL_GEOMETRY)
-    # The right-mirror table's own DECK/PAD MODE entries get a distinct
-    # " (R)" *label* (so the emulator/live-send can tell the two physical
-    # clusters apart -- see resolve_side_aware_variant()), even though they
-    # still resolve to the same merged schematic key as the left entry.
+    # CONTROL_GEOMETRY's own "BEAT SYNC (R)" entry (previously supplied by
+    # layout_view._RIGHT_MIRROR_GEOMETRY instead) is a distinct *label* (so
+    # the emulator/live-send can tell the two physical clusters apart -- see
+    # resolve_side_aware_variant()), even though it still resolves to the
+    # same merged schematic key as the left entry.
     assert "BEAT SYNC (R)" in labels
     beat_sync_markers = [m for m in markers if m.label in ("BEAT SYNC", "BEAT SYNC (R)")]
     assert len(beat_sync_markers) == 2
@@ -451,9 +453,9 @@ def test_real_position_markers_include_the_right_mirror_cluster():
 
 
 def test_real_position_markers_narrow_the_effect_section_right_mirror_too():
-    """DDJ-XP2's EFFECT-section mirror entries (EFFECT 1/2/3, TOUCH STRIP
-    HOLD -- its second Slide FX chain's copies) get the same " (R)" label
-    treatment as DECK/PAD MODE, reported by the maintainer as "le hold
+    """DDJ-XP2's EFFECT-section right-cluster entries (EFFECT 1/2/3, TOUCH
+    STRIP HOLD -- its second Slide FX chain's copies) get the same " (R)"
+    label treatment as DECK/PAD MODE, reported by the maintainer as "le hold
     effect de la ddj-xp2" sharing the pad/PAD MODE mirroring bug."""
     markers = layout_view_mod.real_position_markers("DDJ-XP2")
     labels = {m.label for m in markers}
@@ -464,7 +466,7 @@ def test_real_position_markers_narrow_the_effect_section_right_mirror_too():
 
 
 def test_real_position_markers_give_a_display_only_mirror_its_own_independent_key():
-    """A continuous, catalog-less mirror entry (XDJ-XZ's right-tray "Tempo")
+    """A continuous, catalog-less entry (XDJ-XZ's right-tray "Tempo (R)")
     has no real trigger for the two sides to share, so -- unlike DECK/PAD
     MODE/EFFECT -- it gets a fully distinct key, not just a distinct label.
     Without this, dragging the right Tempo fader in the Controller Emulator
