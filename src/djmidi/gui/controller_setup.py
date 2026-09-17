@@ -45,6 +45,7 @@ from PySide6.QtWidgets import (
     QListWidget,
     QMessageBox,
     QPushButton,
+    QScrollArea,
     QSizePolicy,
     QStyle,
     QTableWidget,
@@ -453,6 +454,26 @@ class ControllerSetupView(QWidget):
         row_buttons.addWidget(bulk_name_button)
         row_buttons.addStretch(1)
 
+        # row_buttons itself had no scroll protection -- at a narrow enough
+        # width its four buttons' labels ("Set section for selected rows…"
+        # is the longest) squeezed below legible, overlapping each other
+        # entirely at 320x240 (issue #19, found by the same proactive audit
+        # that caught Controller Images' toolbar and By Channel/Deck/
+        # Controller's controls_layout, v0.47.91/.92). Same fix: a
+        # QScrollArea with a height fixed to the row's own sizeHint (not
+        # AutoSizeScrollArea -- this row's content never changes height,
+        # unlike header_scroll above, whose content does), so it scrolls
+        # horizontally as a unit instead of squeezing.
+        self._row_buttons_container = QWidget()
+        self._row_buttons_container.setLayout(row_buttons)
+        row_buttons_height = self._row_buttons_container.sizeHint().height()
+        self._row_buttons_scroll = QScrollArea()
+        self._row_buttons_scroll.setWidgetResizable(True)
+        self._row_buttons_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        self._row_buttons_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self._row_buttons_scroll.setFixedHeight(row_buttons_height)
+        self._row_buttons_scroll.setWidget(self._row_buttons_container)
+
         # The name row, "Draft" panel (hint text + Session/Import/Apply
         # toolbar), and "MIDI input"/"MIDI Output" (io_scroll) previously sat
         # directly in the top-level layout with no scroll protection of their
@@ -515,7 +536,7 @@ class ControllerSetupView(QWidget):
         layout.setContentsMargins(10, 10, 10, 10)
         layout.addWidget(header_scroll, 0)
         layout.addWidget(self._table, 1)
-        layout.addLayout(row_buttons)
+        layout.addWidget(self._row_buttons_scroll, 0)
 
         self._timer = QTimer(self)
         self._timer.setInterval(_POLL_INTERVAL_MS)

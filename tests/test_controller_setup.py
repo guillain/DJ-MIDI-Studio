@@ -1197,18 +1197,47 @@ def test_midi_input_and_output_row_is_wrapped_in_a_scroll_area():
     "MIDI Output" row's three columns (Send message / Playback / Pad modes)
     need more width than is guaranteed, and used to overlap instead of
     shrinking. A QScrollArea around that row enforces its real minimum size
-    and shows a scrollbar instead."""
+    and shows a scrollbar instead.
+
+    Two QScrollArea instances exist on this view (findChildren matches the
+    AutoSizeScrollArea subclass too): header_scroll (this test's target)
+    and row_buttons_scroll (v0.47.92's row_buttons fix, same issue) -- find
+    the one that actually contains the MIDI input/Output content rather
+    than assuming there is only one."""
     from PySide6.QtWidgets import QGroupBox, QLabel, QScrollArea
 
     view = _view_with_name()
     scroll_areas = view.findChildren(QScrollArea)
-    assert len(scroll_areas) == 1
-    scroll_area = scroll_areas[0]
+    assert len(scroll_areas) == 2
+    scroll_area = next(sa for sa in scroll_areas if sa.findChildren(QGroupBox))
     assert scroll_area.widgetResizable() is True
     labels = {lbl.text() for lbl in scroll_area.findChildren(QLabel)}
     assert "MIDI input" in labels
     group_titles = {box.title() for box in scroll_area.findChildren(QGroupBox)}
     assert "MIDI Output" in group_titles
+
+
+def test_row_buttons_row_scrolls_instead_of_clipping_at_a_narrow_width():
+    """Regression test for issue #19 (v0.47.92): row_buttons (Delete
+    selected row(s) / Add row / Set section for selected rows… / Set name
+    for selected rows…) had no scroll protection of its own, unlike
+    header_scroll above it. At a narrow enough width its four buttons'
+    labels squeezed below legible, overlapping each other entirely at
+    320x240. row_buttons_scroll must stay at exactly the row's natural
+    height regardless of the view's own width, and scroll horizontally
+    rather than compress once the content doesn't fit."""
+    view = _view_with_name()
+    view.show()
+    QApplication.processEvents()
+    view.resize(900, 600)
+    QApplication.processEvents()
+    wide_height = view._row_buttons_scroll.height()
+
+    view.resize(220, 600)
+    QApplication.processEvents()
+    assert view._row_buttons_scroll.height() == wide_height
+    assert view._row_buttons_scroll.horizontalScrollBar().maximum() > 0
+    view.close()
 
 
 # A regression test for the "Draft" panel squeeze/overlap this scroll area

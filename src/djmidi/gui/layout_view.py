@@ -719,9 +719,38 @@ class ControllerLayoutView(QWidget):
         )
         self._detail_label.hide()
 
+        # controls_layout's trailing widgets (deck filter, live-send port
+        # picker, "Controller photo" checkbox) have no scroll protection of
+        # their own -- self._controller_scroll only absorbs overflow from
+        # the controller tab strip itself (its own fix, v0.47.73). Once the
+        # tab strip scroll hits its own minimum and the row still doesn't
+        # fit, Qt has nowhere left to take space from but those trailing
+        # widgets, squeezing their labels below legible (issue #19; found
+        # by the same proactive audit that caught Controller Images'
+        # toolbar, v0.47.91 -- "Controller photo" truncated to "C", the
+        # live-send port combo to a sliver). Same fix: wrap the whole row
+        # in a QScrollArea with a height fixed to its own sizeHint, so it
+        # scrolls horizontally as a unit instead. Not a plain QScrollArea
+        # nested directly around self._controller_scroll (TODO.md's issue
+        # #19 history flags that exact shape -- a scroll area whose sole
+        # content is another scroll area -- as a real under-sizing pitfall
+        # in this codebase); here the outer scroll area's content is a
+        # QWidget with four siblings, only one of which is itself a scroll
+        # area, which is the same shape already verified safe for
+        # Controller Images' row.
+        self._controls_container = QWidget()
+        self._controls_container.setLayout(controls_layout)
+        controls_row_height = self._controls_container.sizeHint().height()
+        self._controls_scroll = QScrollArea()
+        self._controls_scroll.setWidgetResizable(True)
+        self._controls_scroll.setFrameShape(QScrollArea.Shape.NoFrame)
+        self._controls_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self._controls_scroll.setFixedHeight(controls_row_height)
+        self._controls_scroll.setWidget(self._controls_container)
+
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.addLayout(controls_layout)
+        layout.addWidget(self._controls_scroll, 0)
         layout.addWidget(self._view)
         layout.addWidget(self._detail_label)
 
