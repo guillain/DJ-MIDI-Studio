@@ -106,12 +106,14 @@ from PySide6.QtGui import QBrush, QColor, QFont
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
+    QFrame,
     QGraphicsEllipseItem,
     QGraphicsRectItem,
     QGraphicsScene,
     QGraphicsSimpleTextItem,
     QGraphicsView,
     QLabel,
+    QScrollArea,
     QVBoxLayout,
     QWidget,
 )
@@ -613,13 +615,42 @@ class ControllerEmulatorView(QWidget):
 
         self._live_send = LiveSendControl()
 
+        # This dock had no scroll protection at all -- the same gap issue
+        # #19's audit already found and fixed in the three fixed tool docks
+        # (v0.47.82) and the Controller Images toolbar row (v0.47.91), just
+        # not yet checked here since a Controller Emulator instance is
+        # created dynamically, not one of MainWindow's fixed docks. Confirmed
+        # via geometry, not just eyeballing: at 420x320 and 320x240 this
+        # dock's own geometry extended past the window's edge (e.g. right
+        # edge 516 in a 420-wide window), silently clipping its title bar
+        # (Undock/Close, built by MainWindow._build_emulator_dock_title_bar)
+        # along with it -- the exact same "aggregate minimum exceeds the
+        # window, QMainWindow lets the dock overflow instead of shrinking"
+        # bug as MidiClockView/MetronomeView before their v0.47.82 fix. Same
+        # fix: wrap the whole content in a QScrollArea (widgetResizable),
+        # which reports a small minimumSizeHint regardless of the schematic's
+        # real size, letting the dock actually shrink to fit instead of
+        # overflowing. A plain QScrollArea, not scroll_utils.AutoSizeScrollArea
+        # -- there is no elastic sibling here whose height needs tracking
+        # (self._emulator is itself the one stretch=1 widget inside the
+        # scrolled content, not a sibling of the scroll area).
+        content = QWidget()
+        content_layout = QVBoxLayout(content)
+        content_layout.setContentsMargins(0, 0, 0, 0)
+        content_layout.addWidget(self._combo)
+        content_layout.addWidget(self._photo_checkbox)
+        content_layout.addWidget(self._live_send)
+        content_layout.addWidget(self._emulator, 1)
+        content_layout.addWidget(self._status_label)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setWidget(content)
+
         layout = QVBoxLayout(self)
         layout.setContentsMargins(6, 6, 6, 6)
-        layout.addWidget(self._combo)
-        layout.addWidget(self._photo_checkbox)
-        layout.addWidget(self._live_send)
-        layout.addWidget(self._emulator, 1)
-        layout.addWidget(self._status_label)
+        layout.addWidget(scroll)
 
     def current_controller(self) -> str:
         """The controller currently selected in this instance -- used by

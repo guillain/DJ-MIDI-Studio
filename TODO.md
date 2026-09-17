@@ -2003,6 +2003,34 @@ against the current tree and confirmed still open. Tracked as GitHub issues.
   itself a scroll area, not a direct scroll-in-scroll nesting. New
   regression tests in `tests/test_layout_view.py` and
   `tests/test_controller_setup.py`, same shape as `v0.47.91`'s.
+  `v0.47.94-controller-emulator-dock-clipping`: widened the same audit to
+  the Controller Emulator dock (`controller_emulator.ControllerEmulatorView`)
+  -- created dynamically via `MainWindow._create_emulator_instance`, not one
+  of the three fixed tool docks `v0.47.82` covered, so it had never been
+  checked against this bug class. Confirmed via geometry (the same technique
+  `test_tool_dock_geometry_never_extends_past_the_window_edge` uses, not a
+  screenshot this time): at a 550px-wide window this dock's
+  `minimumSizeHint` (305 wide, driven by its combo/checkbox/live-send row
+  plus the schematic `QGraphicsView`) pushed its right edge to 581, clipping
+  its own title bar (Undock/Close, built by
+  `MainWindow._build_emulator_dock_title_bar`) along with it -- the same
+  "aggregate minimum exceeds the window, `QMainWindow` lets the dock overflow
+  instead of shrinking" failure as `v0.47.82`'s three docks, since
+  `ControllerEmulatorView` had no scroll protection in its own content at
+  all. Fixed the same way as `MidiClockView`/`MetronomeView`: wrapped the
+  whole content (controller combo, "Controller photo" checkbox,
+  `LiveSendControl`, the schematic view, the status label) in a plain
+  `QScrollArea` (`widgetResizable`, no frame), dropping the reported minimum
+  to 238 wide and letting the dock shrink to fit at 550px and above.
+  A smaller residual overflow remains below ~500px, same as the three fixed
+  tool docks' own unchanged behavior at their 320x240 floor -- not a
+  regression introduced by this fix, the established floor every tool dock
+  in this app already has. New regression test,
+  `test_controller_emulator_dock_geometry_never_extends_past_the_window_edge`
+  (`tests/test_main_window.py`), bisected to the tightest width (550) that
+  isolates the regression -- 600px was already clean before the fix --
+  verified failing pre-fix (`581 <= 550` assertion failure) before confirming
+  the fix, same discipline as `v0.47.82`'s own test.
 
 ### Next phases to define
 
