@@ -22,6 +22,7 @@ from PySide6.QtWidgets import (
     QAbstractGraphicsShapeItem,
     QCheckBox,
     QComboBox,
+    QFrame,
     QGraphicsEllipseItem,
     QGraphicsLineItem,
     QGraphicsPixmapItem,
@@ -32,6 +33,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QPushButton,
+    QScrollArea,
     QVBoxLayout,
     QWidget,
 )
@@ -214,6 +216,31 @@ class ControllerImageView(QWidget):
         controls.addWidget(self._live_send)
         controls.addStretch(1)
 
+        # This toolbar row (controller picker, zoom/docs buttons, both
+        # checkboxes, the live-send port picker) has no room to shrink
+        # below its natural width -- at a docked/narrow window it silently
+        # truncated every label (issue #19; a proactive audit at 700x500
+        # down to 320x240 found this tab's own toolbar had never been
+        # covered by that chantier's earlier passes, unlike Controller
+        # Setup/Dashboard/MIDI Routing). Wrap it in a scroll area so it
+        # scrolls horizontally instead. Unlike Live Monitor's top_row (whose
+        # AutoSizeScrollArea tracks a *variable* content height shared with
+        # a stretch>0 sibling), this row's content never changes height, so
+        # a fixed height read once from the unwrapped layout's own
+        # sizeHint() is simpler and avoids a real regression AutoSizeScrollArea
+        # caused here: its sizeHint() over-reported this row's height enough
+        # to open a visible gap above it at every window size, not just the
+        # narrow ones this fix targets.
+        self._controls_container = QWidget()
+        self._controls_container.setLayout(controls)
+        controls_row_height = self._controls_container.sizeHint().height()
+        self._controls_scroll = QScrollArea()
+        self._controls_scroll.setWidgetResizable(True)
+        self._controls_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        self._controls_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self._controls_scroll.setFixedHeight(controls_row_height)
+        self._controls_scroll.setWidget(self._controls_container)
+
         self._scene = QGraphicsScene(self)
         self._view = _ZoomableView(self._scene)
         self._view.markerClicked.connect(self._on_marker_clicked)
@@ -242,7 +269,7 @@ class ControllerImageView(QWidget):
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.addLayout(controls)
+        layout.addWidget(self._controls_scroll, 0)
         layout.addWidget(self._view)
         layout.addWidget(self._live_send_status)
 

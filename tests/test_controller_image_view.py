@@ -1,4 +1,5 @@
 from PySide6.QtGui import QColor, QPainter, QTransform
+from PySide6.QtWidgets import QApplication
 
 from djmidi import catalog
 from djmidi.catalog._registry import ControllerDefinition, register
@@ -599,3 +600,36 @@ def test_jog_angles_cleared_on_controller_switch():
     view.spin_jog("Jog wheel", 10)
     view.set_controller("DDJ-XP2")
     assert view._jog_angles == {}
+
+
+def test_toolbar_row_scrolls_instead_of_clipping_at_a_narrow_width():
+    """Regression test for issue #19: this tab's own toolbar row (controller
+    picker, zoom/docs buttons, both checkboxes, the live-send port picker)
+    has no room to shrink below its natural width. At a narrow/docked
+    window it used to silently truncate every label instead of scrolling —
+    found by a proactive screenshot audit that this tab's toolbar had never
+    been covered by the earlier Controller Setup/Dashboard/MIDI Routing
+    passes under the same issue. `controls_scroll` must stay at exactly the
+    row's natural (unscrolled) height regardless of the view's own width,
+    not squeeze the row shorter (the garbled-text failure mode) and not
+    leave a gap above it either (a real regression hit while building this
+    fix: an early `AutoSizeScrollArea`-based attempt over-reported this
+    row's sizeHint enough to open a visible gap above it at every width,
+    not just the narrow ones being fixed)."""
+    view = ControllerImageView()
+    view.show()
+    QApplication.processEvents()
+    view.resize(800, 600)
+    QApplication.processEvents()
+    wide_height = view._controls_scroll.height()
+
+    view.resize(200, 600)
+    QApplication.processEvents()
+    # Narrowing the window must not squeeze the row shorter (the pre-fix
+    # clipping failure mode) or taller (the gap-above regression hit while
+    # building this fix) -- its height is fixed, independent of width.
+    assert view._controls_scroll.height() == wide_height
+    # The row's real content is wider than 200px, so it must be scrollable
+    # rather than compressed to fit.
+    assert view._controls_scroll.horizontalScrollBar().maximum() > 0
+    view.close()
