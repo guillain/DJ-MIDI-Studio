@@ -1,4 +1,9 @@
-from PySide6.QtWidgets import QGraphicsLineItem, QGraphicsPixmapItem, QGraphicsRectItem
+from PySide6.QtWidgets import (
+    QApplication,
+    QGraphicsLineItem,
+    QGraphicsPixmapItem,
+    QGraphicsRectItem,
+)
 
 from djmidi import catalog
 from djmidi.catalog._registry import ControllerDefinition, register
@@ -768,3 +773,29 @@ def test_spun_jog_notch_uses_the_accumulated_angle_not_the_pot_sweep():
     line = lines[0].line()
     drawn = math.degrees(math.atan2(line.x2() - line.x1(), -(line.y2() - line.y1()))) % 360.0
     assert abs(drawn - angle) < 1.0
+
+
+def test_controls_row_scrolls_instead_of_clipping_at_a_narrow_width():
+    """Regression test for issue #19 (v0.47.91 follow-up): controls_layout's
+    trailing widgets (deck filter, live-send port picker, "Controller
+    photo" checkbox) have no scroll protection of their own --
+    self._controller_scroll only ever absorbed overflow from the
+    controller tab strip itself. Once that scroll area hit its own
+    minimum and the row still didn't fit, Qt squeezed the trailing widgets
+    below legible instead ("Controller photo" -> "C"). controls_scroll
+    must stay at exactly the row's natural height regardless of the
+    view's own width (too short is the pre-fix clipping mode; too tall
+    is the gap-above regression the Controller Images version of this fix
+    hit first, see that test)."""
+    view = ControllerLayoutView(show_deck_filter=True)
+    view.show()
+    QApplication.processEvents()
+    view.resize(900, 600)
+    QApplication.processEvents()
+    wide_height = view._controls_scroll.height()
+
+    view.resize(220, 600)
+    QApplication.processEvents()
+    assert view._controls_scroll.height() == wide_height
+    assert view._controls_scroll.horizontalScrollBar().maximum() > 0
+    view.close()
