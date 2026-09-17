@@ -1965,6 +1965,27 @@ against the current tree and confirmed still open. Tracked as GitHub issues.
   regression test in `tests/test_controller_image_view.py` asserts the
   row's height stays constant across a width change and that a
   horizontal scrollbar engages once the content doesn't fit.
+  `v0.47.92-controller-setup-row-buttons-clipping`: the same audit
+  extended to `ControllerLayoutView`'s own `controls_layout` (the
+  controller tab strip + deck filter + live-send port picker +
+  "Controller photo" checkbox shared by By Channel/By Deck/By
+  Controller) and to Controller Setup's `row_buttons` (Delete selected
+  row(s) / Add row / Set section for selected rows… / Set name for
+  selected rows…) -- both had the identical gap, and both squeezed
+  their labels illegible (Controller Setup's four buttons fully
+  *overlapped* each other at 320x240) rather than scrolling. Same fix
+  both times: a `QScrollArea` with a fixed height read from the row's
+  own `sizeHint()`. `controls_layout` had one added wrinkle worth a
+  design note for future rows like it: it already contained its own
+  inner `self._controller_scroll` (the tab strip's `v0.47.73` fix), and
+  TODO.md's own issue-#19 history flags "a scroll area whose sole
+  content is another scroll area" as a real under-sizing pitfall in
+  this codebase (Controller Setup's `header_scroll`/`io_scroll` regression
+  above) -- confirmed *not* the same shape here, since the outer scroll
+  area's content is a `QWidget` with four siblings, only one of which is
+  itself a scroll area, not a direct scroll-in-scroll nesting. New
+  regression tests in `tests/test_layout_view.py` and
+  `tests/test_controller_setup.py`, same shape as `v0.47.91`'s.
 
 ### Next phases to define
 
