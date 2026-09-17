@@ -1447,3 +1447,33 @@ def test_tool_dock_geometry_never_extends_past_the_window_edge():
         assert right_edge <= window.width(), f"{key} dock extends past the window edge"
         dock.hide()
     window.close()
+
+
+def test_controller_emulator_dock_geometry_never_extends_past_the_window_edge():
+    """Same bug class as test_tool_dock_geometry_never_extends_past_the_window_edge
+    above, found in a later pass of the same issue #19 audit: the Controller
+    Emulator dock is created dynamically (_create_emulator_instance), not one
+    of MainWindow's three fixed tool docks, so it was never covered by the
+    v0.47.82 fix above -- it had no scroll protection in its own content at
+    all. Confirmed via geometry before the fix: at a 550px-wide window this
+    dock's minimumSizeHint (305 wide) pushed its right edge to 581, clipping
+    its title bar (Undock/Close, built by
+    MainWindow._build_emulator_dock_title_bar) along with it. Fixed the same
+    way as MidiClockView/MetronomeView: wrap the whole content in a plain
+    QScrollArea (widgetResizable), which reports a small minimumSizeHint (238
+    wide, down from 305) regardless of the schematic's real size, letting the
+    dock actually shrink to fit at this width -- confirmed via bisection that
+    600px was already clean pre-fix, so 550 is the tightest width that
+    isolates this regression. A smaller residual overflow remains below
+    ~500px, same as the fixed tool docks' own unchanged behavior at their
+    320x240 floor (see the test above) -- not a regression from this fix."""
+    window = _loaded_window()
+    window.left_tabs.setCurrentIndex(window._tab_indexes["controller"])
+    window.resize(550, 500)
+    QApplication.processEvents()
+
+    dock = window._create_emulator_instance("DDJ-XP2")
+    QApplication.processEvents()
+    right_edge = dock.geometry().x() + dock.geometry().width()
+    assert right_edge <= window.width(), "Controller Emulator dock extends past the window edge"
+    window.close()
