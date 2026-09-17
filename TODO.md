@@ -651,6 +651,23 @@ Implemented contract, runtime, test, and documentation work:
 - [x] Restore the main window surface after native macOS full-screen transitions.
 - [x] Translate the Dashboard UI and tests to English.
 - [x] Rename the project to DJ MIDI Studio.
+- [x] Set the real app version in the macOS bundle's `CFBundleShortVersionString`/
+  `CFBundleVersion` — found while manually verifying the `v0.47.92` release build
+  actually launches (downloaded the signed macOS zip from the GitHub release,
+  checked its SHA-256 against the published sums, launched it offscreen and
+  confirmed it starts up): `Info.plist` showed `0.0.0` regardless of the real
+  release version, the *only* place this app's version is exposed at all (no
+  in-app "About" dialog or version string). Root cause: PyInstaller's
+  plain-script CLI mode (no `.spec` file, as `scripts/build.sh` uses) has no
+  flag for either key — only its `BUNDLE()` spec-file API takes a `version=`
+  kwarg, and `CFBundleVersion` isn't even present in the default `Info.plist`
+  at all. Patched in directly with `/usr/libexec/PlistBuddy` (bundled with
+  Xcode CLT on every macOS runner) right after the PyInstaller build and
+  *before* `codesign` (editing a signed bundle's `Info.plist` afterward would
+  invalidate the signature), rather than switching to a generated `.spec`
+  file for this alone. Verified locally: rebuilt, confirmed both keys read
+  the real `pyproject.toml` version, and the app still launches correctly
+  with the patched bundle.
 
 ### Phase 3 hardware validation
 

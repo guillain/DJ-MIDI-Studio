@@ -110,6 +110,34 @@ if [[ "$BUILD_EXECUTABLE" -eq 1 ]]; then
 
   if [[ "$OS_NAME" == "macos" ]]; then
     APP_PATH="$OUT_DIR/$APP_NAME.app"
+
+    # PyInstaller's plain-script CLI mode (no .spec file, as used above) has
+    # no flag for CFBundleShortVersionString/CFBundleVersion -- only its
+    # BUNDLE() spec-file API takes a version= kwarg -- so every build
+    # shipped "0.0.0" in Info.plist regardless of the real release version
+    # (found while manually verifying the v0.47.92 release build actually
+    # launches: `mdls`/Finder "Get Info" on the released .app showed
+    # "0.0.0", the only place this app's version is exposed at all --
+    # there's no in-app "About" dialog or version string). Patch it in
+    # directly with PlistBuddy (bundled with Xcode CLT on every macOS
+    # runner) rather than switching to a generated .spec file for this
+    # alone. Must run *before* codesign below -- editing a signed bundle's
+    # Info.plist invalidates the signature.
+    APP_VERSION="$(sed -nE 's/^version = "([^"]+)"/\1/p' "$ROOT_DIR/pyproject.toml" | head -n 1)"
+    if [[ -z "$APP_VERSION" ]]; then
+      echo "Could not read version from pyproject.toml" >&2
+      exit 1
+    fi
+    echo "==> Setting macOS bundle version to $APP_VERSION"
+    PLIST_PATH="$APP_PATH/Contents/Info.plist"
+    /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $APP_VERSION" "$PLIST_PATH"
+    # CFBundleVersion isn't in PyInstaller's default Info.plist at all (only
+    # CFBundleShortVersionString is, defaulted to "0.0.0") -- Set fails on a
+    # missing key, so try that first (in case a future PyInstaller version
+    # starts including it) and fall back to Add.
+    /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $APP_VERSION" "$PLIST_PATH" 2>/dev/null \
+      || /usr/libexec/PlistBuddy -c "Add :CFBundleVersion string $APP_VERSION" "$PLIST_PATH"
+
     if [[ -n "$MACOS_SIGNING_IDENTITY" ]]; then
       echo "==> Signing macOS app with identity: $MACOS_SIGNING_IDENTITY"
       codesign --deep --force --verbose --options runtime --timestamp \
