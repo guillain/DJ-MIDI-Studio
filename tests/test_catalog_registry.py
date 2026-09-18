@@ -31,19 +31,21 @@ def test_builtin_controller_plugins_expose_metadata():
     assert definitions["DDJ-XP2"].plugin_id == "pioneer.ddj-xp2"
     assert definitions["DDJ-XP2"].manufacturer == "Pioneer DJ"
     assert definitions["DDJ-XP2"].supported_software == ("serato",)
-    # Every controller now names its clean "<slug>.png" render. The ones with
-    # gui/geometry.CONTROL_GEOMETRY were re-measured against it one at a time:
-    # DDJ-XP2 (v0.47.54), XDJ-XZ (v0.47.55), DDJ-1000 (v0.47.57), and
-    # DDJ-FLX10 / DDJ-REV1 / Numark (v0.47.58). The geometry-free DDJ-FLX4 and
-    # Hercules already pointed there.
-    assert definitions["DDJ-XP2"].reference_image == "ddj-xp2.png"
-    assert definitions["XDJ-XZ"].reference_image == "xdj-xz.png"
-    assert definitions["DDJ-1000"].reference_image == "ddj-1000.png"
-    assert definitions["DDJ-FLX10"].reference_image == "ddj-flx10.png"
-    assert definitions["DDJ-FLX4"].reference_image == "ddj-flx4.png"
-    assert definitions["DDJ-REV1"].reference_image == "ddj-rev1.png"
-    assert definitions["Numark Mixtrack Pro FX"].reference_image == "numark-mixtrack-pro-fx.png"
-    assert definitions["Hercules DJControl Inpulse 500"].reference_image == "hercules-djcontrol-inpulse-500.png"
+    # Every controller now names its clean "<slug>/reference.png" render,
+    # one subdirectory per controller under controllers/ (see
+    # controllers/README.md). The ones with gui/geometry.CONTROL_GEOMETRY
+    # were re-measured against it one at a time: DDJ-XP2 (v0.47.54), XDJ-XZ
+    # (v0.47.55), DDJ-1000 (v0.47.57), and DDJ-FLX10 / DDJ-REV1 / Numark
+    # (v0.47.58). The geometry-free DDJ-FLX4 and Hercules already pointed
+    # there.
+    assert definitions["DDJ-XP2"].reference_image == "ddj-xp2/reference.png"
+    assert definitions["XDJ-XZ"].reference_image == "xdj-xz/reference.png"
+    assert definitions["DDJ-1000"].reference_image == "ddj-1000/reference.png"
+    assert definitions["DDJ-FLX10"].reference_image == "ddj-flx10/reference.png"
+    assert definitions["DDJ-FLX4"].reference_image == "ddj-flx4/reference.png"
+    assert definitions["DDJ-REV1"].reference_image == "ddj-rev1/reference.png"
+    assert definitions["Numark Mixtrack Pro FX"].reference_image == "numark-mixtrack-pro-fx/reference.png"
+    assert definitions["Hercules DJControl Inpulse 500"].reference_image == "hercules-djcontrol-inpulse-500/reference.png"
     assert definitions["Numark Mixtrack Pro FX"].manufacturer == "Numark"
     assert definitions["Hercules DJControl Inpulse 500"].manufacturer == "Hercules"
     assert definitions["DDJ-FLX10"].plugin_id == "pioneer.ddj-flx10"

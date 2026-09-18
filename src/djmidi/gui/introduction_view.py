@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (
 )
 
 from djmidi import catalog
-from djmidi.gui.controller_image_view import ASSETS_DIR, image_for_controller
+from djmidi.gui.controller_image_view import CONTROLLERS_DIR, image_for_controller
 from djmidi.gui.layout import CellKey
 from djmidi.gui.theme import colors as theme_colors
 from djmidi.gui.theme import signals as theme_signals
@@ -229,7 +229,7 @@ class IntroductionView(QWidget):
         image.setMinimumSize(320, 170)
         image.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         image_name = image_for_controller(controller)
-        path = ASSETS_DIR / image_name if image_name else None
+        path = CONTROLLERS_DIR / image_name if image_name else None
         pixmap = QPixmap(str(path)) if path is not None and path.exists() else QPixmap()
         if pixmap.isNull():
             image.setText("Image unavailable")

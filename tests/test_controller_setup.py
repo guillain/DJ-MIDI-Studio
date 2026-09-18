@@ -924,7 +924,7 @@ def test_export_module_emits_reference_image_basename(tmp_path):
     out_path = tmp_path / "minipad.py"
     view._export_module(out_path)
     text = out_path.read_text()
-    assert "reference_image='minipad.png'," in text
+    assert "reference_image='custom/minipad.png'," in text
 
 
 def _accept_submission_dialog(monkeypatch, metadata=None):

@@ -1,5 +1,5 @@
 """DDJ-FLX10 controller definition, transcribed from Pioneer's official MIDI
-Message List PDF (docs/controllers/ddj-flx10-midi-message-list-e1.pdf).
+Message List PDF (controllers/ddj-flx10/ddj-flx10-midi-message-list-e1.pdf).
 
 The DDJ-FLX10 uses one MIDI channel per deck and eight additional channels
 (four decks x on/+SHIFT) for the performance-pad bank. This catalog
@@ -134,7 +134,7 @@ register(
         plugin_id="pioneer.ddj-flx10",
         manufacturer="Pioneer DJ",
         supported_software=("rekordbox", "serato"),
-        reference_image="ddj-flx10.png",
+        reference_image="ddj-flx10/reference.png",
         display_order=35,
         static_entries=_STATIC,
         pad_lookup=_pad_lookup,

@@ -1,5 +1,5 @@
 """A zoomable/pannable viewer for the official Pioneer controller diagrams
-(cropped from the MIDI Message List PDFs, see assets/controllers/ and
+(cropped from the MIDI Message List PDFs, see controllers/<slug>/ and
 README.md "Technical References"). No *automatic* interaction with the
 loaded config beyond a modeled control's marker (gui/geometry.CONTROL_GEOMETRY,
 "Show real layout") flashing on a live MIDI hit, mirroring
@@ -59,16 +59,22 @@ if getattr(sys, "frozen", False):
     _RESOURCE_ROOT = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parents[3]))
 else:
     _RESOURCE_ROOT = Path(__file__).resolve().parents[3]
-ASSETS_DIR = _RESOURCE_ROOT / "assets" / "controllers"
-DOCUMENTS_DIR = _RESOURCE_ROOT / "docs" / "controllers"
+# One common directory, one subdirectory per controller, holding every asset
+# for that controller together (reference.png / reference-midi.png / its
+# source PDF) -- see controllers/README.md. A "custom/" subdirectory is
+# reserved for controllers built with Controller Setup (codegen.py).
+CONTROLLERS_DIR = _RESOURCE_ROOT / "controllers"
 DOCUMENTS = {
-    "DDJ-XP2": "ddj-xp2-midi-message-list-e1.pdf",
-    "XDJ-XZ": "xdj-xz-midi-message-list-e3.pdf",
-    "DDJ-1000": "ddj-1000-midi-message-list-e1.pdf",
-    "DDJ-REV1": "ddj-rev1-midi-message-list-e1.pdf",
-    "DDJ-FLX10": "ddj-flx10-midi-message-list-e1.pdf",
-    "Numark Mixtrack Pro FX": "numark-mixtrack-pro-fx-user-guide-v1.2.pdf",
-    "Hercules DJControl Inpulse 500": "hercules-djcontrol-inpulse-500-product-sheet-fr.pdf",
+    "DDJ-XP2": "ddj-xp2/ddj-xp2-midi-message-list-e1.pdf",
+    "XDJ-XZ": "xdj-xz/xdj-xz-midi-message-list-e3.pdf",
+    "DDJ-1000": "ddj-1000/ddj-1000-midi-message-list-e1.pdf",
+    "DDJ-REV1": "ddj-rev1/ddj-rev1-midi-message-list-e1.pdf",
+    "DDJ-FLX10": "ddj-flx10/ddj-flx10-midi-message-list-e1.pdf",
+    "DDJ-FLX4": "ddj-flx4/ddj-flx4-midi-message-list-e1.pdf",
+    "Numark Mixtrack Pro FX": "numark-mixtrack-pro-fx/numark-mixtrack-pro-fx-user-guide-v1.2.pdf",
+    "Hercules DJControl Inpulse 500": (
+        "hercules-djcontrol-inpulse-500/hercules-djcontrol-inpulse-500-product-sheet-fr.pdf"
+    ),
 }
 # Compatibility snapshot for callers that need to enumerate known image assets.
 # New plugins provide this metadata through ControllerDefinition.reference_image.
@@ -85,13 +91,15 @@ def image_for_controller(name: str) -> str | None:
 
 
 def _resolve_image_path(reference_image: str | None) -> Path | None:
-    """A controller's ``reference_image`` is either a bare filename bundled
-    under ``assets/controllers/`` (the built-ins) or an absolute path to a
-    user-supplied image attached in Controller Setup (issue #16). Accept both."""
+    """A controller's ``reference_image`` is either a path bundled under
+    ``controllers/`` (the built-ins name it ``<slug>/reference.png``, a
+    Controller Setup export names it ``custom/<filename>``) or an absolute
+    path to a user-supplied image attached in Controller Setup, not yet
+    exported (issue #16). Accept both."""
     if not reference_image:
         return None
     candidate = Path(reference_image)
-    return candidate if candidate.is_absolute() else ASSETS_DIR / reference_image
+    return candidate if candidate.is_absolute() else CONTROLLERS_DIR / reference_image
 
 
 _MIDI_SUFFIX = "-midi"
@@ -99,9 +107,11 @@ _MIDI_SUFFIX = "-midi"
 
 def image_variants(reference_image: str | None) -> tuple[Path | None, Path | None]:
     """``(clean_path, annotated_path)`` for a controller's reference image,
-    following the ``<slug>.png`` (clean device render) / ``<slug>-midi.png``
+    following the ``reference.png`` (clean device render) / ``reference-midi.png``
     (same view with the MIDI Message List's callouts overlaid) bundling
-    convention. Either entry is ``None`` when that file isn't bundled.
+    convention -- both siblings living in that controller's own
+    ``controllers/<slug>/`` directory. Either entry is ``None`` when that
+    file isn't bundled.
 
     A user-supplied absolute path (a Controller Setup attachment, issue #16)
     has no annotated sibling by convention, so it comes back as
@@ -117,15 +127,16 @@ def image_variants(reference_image: str | None) -> tuple[Path | None, Path | Non
     if p.is_absolute():
         return (p if p.exists() else None), None
     stem = p.stem.removesuffix(_MIDI_SUFFIX)
-    clean = ASSETS_DIR / f"{stem}{p.suffix}"
-    annotated = ASSETS_DIR / f"{stem}{_MIDI_SUFFIX}{p.suffix}"
+    directory = CONTROLLERS_DIR / p.parent
+    clean = directory / f"{stem}{p.suffix}"
+    annotated = directory / f"{stem}{_MIDI_SUFFIX}{p.suffix}"
     return (clean if clean.exists() else None), (annotated if annotated.exists() else None)
 
 
 def documentation_for_controller(name: str) -> Path | None:
     """Return the bundled local document for a controller, when available."""
     filename = DOCUMENTS.get(name)
-    path = DOCUMENTS_DIR / filename if filename else None
+    path = CONTROLLERS_DIR / filename if filename else None
     return path if path is not None and path.exists() else None
 
 
@@ -602,9 +613,8 @@ class ControllerImageView(QWidget):
 
 
 __all__ = [
-    "ASSETS_DIR",
+    "CONTROLLERS_DIR",
     "DOCUMENTS",
-    "DOCUMENTS_DIR",
     "IMAGES",
     "ControllerImageView",
     "documentation_for_controller",

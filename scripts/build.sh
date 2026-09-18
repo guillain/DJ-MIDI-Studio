@@ -103,8 +103,7 @@ if [[ "$BUILD_EXECUTABLE" -eq 1 ]]; then
     --collect-all aalink \
     --hidden-import rtmidi \
     --hidden-import aalink \
-    --add-data "$NATIVE_ROOT_DIR/assets${DATA_SEP}assets" \
-    --add-data "$NATIVE_ROOT_DIR/docs/controllers${DATA_SEP}docs/controllers" \
+    --add-data "$NATIVE_ROOT_DIR/controllers${DATA_SEP}controllers" \
     --osx-bundle-identifier "com.guillain.djmidi" \
     "$NATIVE_ROOT_DIR/src/djmidi/gui/app.py"
 

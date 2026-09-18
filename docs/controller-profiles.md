@@ -49,9 +49,9 @@ product sheet is available.
 
 The DDJ-FLX10 currently ships as a conservative Python profile covering common
 discrete deck and pad triggers. Its official MIDI message list is archived in
-`docs/controllers/`, and the annotated first-page diagram is available in the
-Controller Images view. Firmware capture is still required before treating the
-profile as production-verified.
+`controllers/ddj-flx10/`, and the annotated first-page diagram is available in
+the Controller Images view. Firmware capture is still required before treating
+the profile as production-verified.
 
 The Numark Mixtrack Pro FX and Hercules DJControl Inpulse 500 profiles also
 include official product-view artwork for physical orientation. These images
