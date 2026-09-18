@@ -15,6 +15,7 @@ def test_builtin_controllers_are_registered_at_import():
     assert "Numark Mixtrack Pro FX" in catalog.CONTROLLER_NAMES
     assert "Hercules DJControl Inpulse 500" in catalog.CONTROLLER_NAMES
     assert "DDJ-REV5" in catalog.CONTROLLER_NAMES
+    assert "DDJ-800" in catalog.CONTROLLER_NAMES
     assert catalog.PAD_COUNTS == {
         "DDJ-XP2": 16,
         "XDJ-XZ": 8,
@@ -25,6 +26,7 @@ def test_builtin_controllers_are_registered_at_import():
         "Numark Mixtrack Pro FX": 8,
         "Hercules DJControl Inpulse 500": 8,
         "DDJ-REV5": 8,
+        "DDJ-800": 8,
     }
 
 
@@ -56,6 +58,10 @@ def test_builtin_controller_plugins_expose_metadata():
     assert definitions["DDJ-REV5"].plugin_id == "pioneer.ddj-rev5"
     assert definitions["DDJ-REV5"].manufacturer == "Pioneer DJ"
     assert definitions["DDJ-REV5"].supported_software == ("serato",)
+    assert definitions["DDJ-800"].reference_image == "ddj-800/reference.png"
+    assert definitions["DDJ-800"].plugin_id == "pioneer.ddj-800"
+    assert definitions["DDJ-800"].manufacturer == "Pioneer DJ"
+    assert definitions["DDJ-800"].supported_software == ("serato",)
 
 
 def test_ddj_flx10_resolves_transport_and_pad_controls():

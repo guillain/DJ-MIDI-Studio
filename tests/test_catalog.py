@@ -124,3 +124,77 @@ def test_ddj_rev5_static_entries_have_no_duplicate_triggers():
             key = (channel, entry.data1)
             assert key not in seen, f"{key} claimed by both {seen.get(key)!r} and {entry.name!r}"
             seen[key] = entry.name
+
+
+def test_ddj_800_deck_transport():
+    hits = catalog.lookup("3", "Note On", "11")
+    assert any(h.controller == "DDJ-800" and h.name == "PLAY/PAUSE" for h in hits)
+
+
+def test_ddj_800_pad_grid():
+    hits = catalog.lookup("10", "Note On", "48")
+    names = [h.name for h in hits if h.controller == "DDJ-800"]
+    assert names == ["Deck 2 Pad 1 (SAMPLER PAGE 1)"]
+
+
+def test_ddj_800_pad_grid_page_2():
+    hits = catalog.lookup("8", "Note On", "56")
+    names = [h.name for h in hits if h.controller == "DDJ-800"]
+    assert names == ["Deck 1 Pad 1 (SAMPLER PAGE 2)"]
+
+
+def test_ddj_800_pad_grid_with_shift():
+    hits = catalog.lookup("15", "Note On", "126")
+    names = [h.name for h in hits if h.controller == "DDJ-800"]
+    assert names == ["Deck 4 Pad 7 (KEY SHIFT PAGE 2) (+SHIFT)"]
+
+
+def test_ddj_800_pad_grid_covers_the_full_note_range_with_no_gaps():
+    """The pad grid's 8-mode x 16-note-per-mode layout exactly covers the
+    full 0-127 Data1 range with no gaps, unlike DDJ-REV5's grid (which
+    only uses the first half of each 16-note block)."""
+    hits = catalog.lookup("8", "Note On", "127")
+    names = [h.name for h in hits if h.controller == "DDJ-800"]
+    assert names == ["Deck 1 Pad 8 (KEY SHIFT PAGE 2)"]
+    # A channel this controller doesn't use for pads at all resolves to no
+    # DDJ-800 hit (a hit from another controller sharing that channel/note
+    # is fine and expected -- MIDI channels are shared across controllers).
+    hits = catalog.lookup("16", "Note On", "0")
+    assert not any(h.controller == "DDJ-800" for h in hits)
+
+
+def test_ddj_800_effect_and_browse_controls():
+    fx_hits = catalog.lookup("5", "Note On", "74")
+    assert any(h.controller == "DDJ-800" and h.name == "BEAT <" for h in fx_hits)
+
+    color_fx_hits = catalog.lookup("7", "Note On", "0")
+    assert any(h.controller == "DDJ-800" and h.name == "COLOR FX D-ECHO" for h in color_fx_hits)
+
+    browse_hits = catalog.lookup("7", "Note On", "65")
+    assert any(h.controller == "DDJ-800" and h.name == "BROWSE" for h in browse_hits)
+
+
+def test_ddj_800_headphones_cue_spans_all_deck_channels():
+    for channel in ("1", "2", "3", "4"):
+        hits = catalog.lookup(channel, "Note On", "84")
+        assert any(h.controller == "DDJ-800" and h.name == "HEADPHONES CUE" for h in hits), channel
+
+
+def test_ddj_800_line_phono_switch_limited_to_two_channels():
+    for channel in ("1", "2"):
+        hits = catalog.lookup(channel, "Note On", "70")
+        assert any(h.controller == "DDJ-800" and h.name == "LINE/PHONO SW" for h in hits), channel
+    for channel in ("3", "4"):
+        hits = catalog.lookup(channel, "Note On", "70")
+        assert not any(h.controller == "DDJ-800" for h in hits), channel
+
+
+def test_ddj_800_static_entries_have_no_duplicate_triggers():
+    from djmidi.catalog import ddj_800
+
+    seen: dict[tuple[str, str], str] = {}
+    for entry in ddj_800._STATIC:
+        for channel in entry.channels:
+            key = (channel, entry.data1)
+            assert key not in seen, f"{key} claimed by both {seen.get(key)!r} and {entry.name!r}"
+            seen[key] = entry.name
