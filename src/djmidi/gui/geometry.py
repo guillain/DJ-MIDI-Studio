@@ -1,10 +1,10 @@
 """Real per-control geometry (position + shape + a semantic resting color)
 for overlaying on top of a controller's actual reference photo
-(``assets/controllers/``, see ``controller_image_view.py``) instead of the
+(``controllers/<slug>/``, see ``controller_image_view.py``) instead of the
 abstract uniform-card schematic in ``layout_view.py``.
 
 Coordinates are fractions (0..1) of the *full* reference image's width/height,
-measured by eye against ``assets/controllers/<file>.png`` at full resolution.
+measured by eye against ``controllers/<slug>/reference.png`` at full resolution.
 
 NOTE (v0.47.53..58): every controller now bundles a clean ``<slug>.png``
 render *and* an annotated ``<slug>-midi.png`` (MIDI Message List callouts
@@ -52,9 +52,9 @@ callout numbers alone):
   it stayed left-tray-only until now.
 - DDJ-REV1's transport + pad cluster: PLAY/PAUSE, CUE, AUTO LOOP, 1/2X, 2X,
   SYNC, and the 8-pad grid -- this covers every entry in
-  ``catalog/ddj_rev1.py``. ``assets/controllers/ddj-rev1-midi.png`` was replaced
+  ``catalog/ddj_rev1.py``. ``controllers/ddj-rev1/reference-midi.png`` was replaced
   with a proper flat top-down diagram cropped from the official MIDI Message
-  List PDF (``docs/controllers/ddj-rev1-midi-message-list-e1.pdf``) instead
+  List PDF (``controllers/ddj-rev1/ddj-rev1-midi-message-list-e1.pdf``) instead
   of the angled marketing photo it shipped with before -- the same
   fraction-based overlay technique used here isn't reliable against a
   perspective photo (a control further from the camera renders smaller and
@@ -63,9 +63,9 @@ callout numbers alone):
 - Numark Mixtrack Pro FX's transport + pad cluster: PLAY/PAUSE, CUE, SYNC,
   LOOP, and the 8-pad grid -- this covers every entry in
   ``catalog/numark_mixtrack_pro_fx.py``. Same fix as DDJ-REV1:
-  ``assets/controllers/numark-mixtrack-pro-fx.png`` was an angled marketing
+  ``controllers/numark-mixtrack-pro-fx/reference.png`` was an angled marketing
   photo, replaced with a flat top-down diagram cropped from page 3 of the
-  bundled user guide (``docs/controllers/numark-mixtrack-pro-fx-user-guide-v1.2.pdf``,
+  bundled user guide (``controllers/numark-mixtrack-pro-fx/numark-mixtrack-pro-fx-user-guide-v1.2.pdf``,
   the "Top Panel" figure) at 300 DPI -- this PDF is a general user guide, not
   a MIDI message list, so unlike the Pioneer controllers there was no data
   table to cross-check the catalog's trigger values against (the catalog's
@@ -89,12 +89,12 @@ callout numbers alone):
   SLIP, SLIP REVERSE, and the 8-pad grid -- this covers every entry in
   ``catalog/ddj_1000.py`` (fixed to real MIDI values in
   ``v0.47.31-ddj-1000-catalog-fix``, see the ``pioneer-catalog-data-verification``
-  project note). ``assets/controllers/ddj-1000-midi.png`` wasn't an angled photo
+  project note). ``controllers/ddj-1000/reference-midi.png`` wasn't an angled photo
   like DDJ-REV1/Numark, but a low-DPI dump of the *entire* PDF page (title,
   device diagram, and the MIDI table below it) -- unusably imprecise for
   fraction-based measurement, with the actual device occupying a small
   fraction of the image. Replaced with a tight, 300 DPI crop of just the
-  top-view device diagram from ``docs/controllers/ddj-1000-midi-message-list-e1.pdf``
+  top-view device diagram from ``controllers/ddj-1000/ddj-1000-midi-message-list-e1.pdf``
   page 1 (the same PDF the catalog data fix used), which conveniently
   already carries the manufacturer's own Fig./UI-name callouts (D1-L, D2-L,
   ...). Each geometry entry's physical position was matched to its catalog
@@ -108,11 +108,11 @@ callout numbers alone):
   QUANTIZE, SLIP, 4 BEAT JUMP </>, SHIFT, and the 8-pad grid -- this covers
   every entry in ``catalog/ddj_flx10.py`` (fully re-transcribed to real MIDI
   values, see ``v0.47.32-ddj-flx10-catalog-fix``). Unlike DDJ-1000,
-  ``assets/controllers/ddj-flx10-midi.png`` was already a tight, flat, high-DPI
+  ``controllers/ddj-flx10/reference-midi.png`` was already a tight, flat, high-DPI
   crop of just the top-view device diagram -- no asset fix needed here,
   straight to measuring. Each geometry entry's physical position was tied to
   its catalog name the same way as DDJ-1000's, by cross-referencing this
-  controller's own MIDI Message List PDF (``docs/controllers/ddj-flx10-midi-message-list-e1.pdf``)
+  controller's own MIDI Message List PDF (``controllers/ddj-flx10/ddj-flx10-midi-message-list-e1.pdf``)
   Fig./UI-name callouts against its MIDI assignment table.
 
 Both controllers have a mirrored/repeated physical layout that the schematic
@@ -203,7 +203,7 @@ class ControlGeometry:
 # control with no catalog entry) -> geometry.
 CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
     "XDJ-XZ": {
-        # Re-measured against the clean render assets/controllers/xdj-xz.png
+        # Re-measured against the clean render controllers/xdj-xz/reference.png
         # (3024x1623) in v0.47.55 -- the earlier fractions were for the
         # callout-annotated xdj-xz-midi.png, a different crop/aspect. Left
         # tray = deck 1 (also deck 3).
@@ -272,7 +272,7 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         # the pad grid above which already did. Plus display-only Jog wheel
         # and Tempo (continuous, no catalog entry, same as their left
         # counterparts). Each independently measured and crop-verified
-        # against assets/controllers/xdj-xz.png, same discipline as
+        # against controllers/xdj-xz/reference.png, same discipline as
         # DDJ-1000/DDJ-REV1/DDJ-FLX10's right-deck work. Live-hit flash
         # resolution stays left-tray-only for these (reachable via the
         # static overlay only): unlike the pad grid, whose names carry a
@@ -295,7 +295,7 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         "BEAT JUMP (R)": ControlGeometry(0.921, 0.792, 0.052, 0.016, "rect", "#7a8aa0"),
     },
     "DDJ-REV1": {
-        # Re-measured against the clean render assets/controllers/ddj-rev1.png
+        # Re-measured against the clean render controllers/ddj-rev1/reference.png
         # (1792x1316) in v0.47.58 -- the earlier fractions were for the
         # callout-annotated ddj-rev1-midi.png, a different crop/aspect. Deck 1
         # (left jog, top-left LOOP/SYNC cluster, centre-left pad bank).
@@ -339,7 +339,7 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         # Right deck (deck 2/4) -- issue #103, same treatment as DDJ-1000
         # (v0.47.83): every entry above only ever had its left-deck (deck
         # 1/3) copy recorded. Every entry below was independently measured
-        # and crop-verified against assets/controllers/ddj-rev1.png, not
+        # and crop-verified against controllers/ddj-rev1/reference.png, not
         # mirrored around a single axis -- same lesson as DDJ-1000's
         # right-deck PR: an axis that fits one control doesn't reliably fit
         # the rest. The pad grid's right-deck copy (the 8-pad grid showing
@@ -380,7 +380,7 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         "SYNC (R)": ControlGeometry(0.865, 0.302, 0.048, 0.014, "rect", "#4a90d9"),
     },
     "DDJ-XP2": {
-        # Re-measured against the clean render assets/controllers/ddj-xp2.png
+        # Re-measured against the clean render controllers/ddj-xp2/reference.png
         # (3950x2900) in v0.47.54 -- the earlier fractions were for the
         # callout-annotated ddj-xp2-midi.png, a different crop/aspect.
         # Salmon-pink: matches the pad grid's own highlight color.
@@ -512,9 +512,9 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         # proved too low-resolution to measure reliably -- a tight crop of
         # even the shipped left "SYNC" entry didn't clearly land on the
         # button. Swapped it for a flat, high-DPI top-view diagram cropped
-        # from the bundled user guide PDF (docs/controllers/numark-mixtrack-
-        # pro-fx-user-guide-v1.2.pdf page 3, 300 DPI, tight-cropped to just
-        # the device) -- the same source this controller's geometry already
+        # from the bundled user guide PDF (controllers/numark-mixtrack-pro-fx/
+        # numark-mixtrack-pro-fx-user-guide-v1.2.pdf page 3, 300 DPI,
+        # tight-cropped to just the device) -- the same source this controller's geometry already
         # used once before, in v0.47.33, prior to the v0.47.58 rename that
         # demoted it to the "-midi" variant in favor of the (now-removed)
         # low-res photo. That PDF diagram has its own numbered legend
@@ -582,7 +582,7 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         "Pad 8 (R)": ControlGeometry(0.839, 0.833, 0.040, 0.075, "rect", "#e0708f"),
     },
     "DDJ-1000": {
-        # Re-measured against the clean render assets/controllers/ddj-1000.png
+        # Re-measured against the clean render controllers/ddj-1000/reference.png
         # (3129x1652) in v0.47.57 -- the earlier fractions were for the
         # callout-annotated ddj-1000-midi.png, a different crop/aspect. Left
         # deck (deck 1/3).
@@ -647,7 +647,7 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         # percent for CUE/PLAY-PAUSE and the loop cluster once checked with a
         # tight crop -- this image's two decks are not a rigid mirror of each
         # other, so each entry below was independently cropped and confirmed
-        # against assets/controllers/ddj-1000.png, same discipline as the
+        # against controllers/ddj-1000/reference.png, same discipline as the
         # left deck. Live-hit flash resolution for these is also a known
         # follow-up: resolve_geometry_label only picks the " (R)" variant by
         # deck number for *pad*-numbered hits (_RIGHT_GRID_DECKS) -- DDJ-1000
@@ -687,7 +687,7 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         "Pad 8 (R)": ControlGeometry(0.8377, 0.8201, 0.0326, 0.0698, "rect", "#e0708f"),
     },
     "DDJ-FLX10": {
-        # Re-measured against the clean render assets/controllers/ddj-flx10.png
+        # Re-measured against the clean render controllers/ddj-flx10/reference.png
         # (1792x1316) in v0.47.58 -- the earlier fractions were for the
         # callout-annotated ddj-flx10-midi.png, a different crop/aspect. Left
         # deck (deck 1/3).
@@ -772,7 +772,7 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         # (v0.47.83) and DDJ-REV1 (v0.47.84): every entry above only ever
         # had its left-deck (deck 1/3) copy recorded. Every entry below was
         # independently measured and crop-verified against
-        # assets/controllers/ddj-flx10.png, not derived from a
+        # controllers/ddj-flx10/reference.png, not derived from a
         # symmetry-axis mirror -- same lesson carried over from DDJ-1000.
         # The pad grid's right-deck copy is a known-remaining gap, same
         # category as DDJ-REV1's (the shipped left "Pad 1" here checked out

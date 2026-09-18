@@ -9,7 +9,7 @@ which ``(channel, CC data1)`` pairs a controller's jog turn uses, and how to
 turn its relative value into a signed tick delta.
 
 Data source: the official **MIDI Message List** PDF bundled in
-``docs/controllers/``, read from the *rendered table* (not ``pdftotext``,
+``controllers/<slug>/``, read from the *rendered table* (not ``pdftotext``,
 whose column order scrambles multi-column rows). Only controllers with a
 ``"Jog wheel"`` entry in ``gui/geometry.CONTROL_GEOMETRY`` -- i.e. a jog
 glyph actually drawn somewhere -- are worth listing here.

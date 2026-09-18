@@ -126,14 +126,18 @@ _LOCAL_HELP_DOCUMENTS = [
 ]
 
 _LOCAL_CONTROLLER_DOCUMENTS = [
-    ("Controller documentation index", "docs/controllers/README.md"),
-    ("DDJ-XP2 MIDI Message List", "docs/controllers/ddj-xp2-midi-message-list-e1.pdf"),
-    ("XDJ-XZ MIDI Message List", "docs/controllers/xdj-xz-midi-message-list-e3.pdf"),
-    ("DDJ-1000 MIDI Message List", "docs/controllers/ddj-1000-midi-message-list-e1.pdf"),
-    ("DDJ-FLX10 MIDI Message List", "docs/controllers/ddj-flx10-midi-message-list-e1.pdf"),
-    ("DDJ-REV1 MIDI Message List", "docs/controllers/ddj-rev1-midi-message-list-e1.pdf"),
-    ("Numark Mixtrack Pro FX User Guide", "docs/controllers/numark-mixtrack-pro-fx-user-guide-v1.2.pdf"),
-    ("Hercules DJControl Inpulse 500 Product Sheet", "docs/controllers/hercules-djcontrol-inpulse-500-product-sheet-fr.pdf"),
+    ("Controller documentation index", "controllers/README.md"),
+    ("DDJ-XP2 MIDI Message List", "controllers/ddj-xp2/ddj-xp2-midi-message-list-e1.pdf"),
+    ("XDJ-XZ MIDI Message List", "controllers/xdj-xz/xdj-xz-midi-message-list-e3.pdf"),
+    ("DDJ-1000 MIDI Message List", "controllers/ddj-1000/ddj-1000-midi-message-list-e1.pdf"),
+    ("DDJ-FLX10 MIDI Message List", "controllers/ddj-flx10/ddj-flx10-midi-message-list-e1.pdf"),
+    ("DDJ-FLX4 MIDI Message List", "controllers/ddj-flx4/ddj-flx4-midi-message-list-e1.pdf"),
+    ("DDJ-REV1 MIDI Message List", "controllers/ddj-rev1/ddj-rev1-midi-message-list-e1.pdf"),
+    ("Numark Mixtrack Pro FX User Guide", "controllers/numark-mixtrack-pro-fx/numark-mixtrack-pro-fx-user-guide-v1.2.pdf"),
+    (
+        "Hercules DJControl Inpulse 500 Product Sheet",
+        "controllers/hercules-djcontrol-inpulse-500/hercules-djcontrol-inpulse-500-product-sheet-fr.pdf",
+    ),
 ]
 
 

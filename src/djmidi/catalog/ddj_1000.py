@@ -1,5 +1,5 @@
 """DDJ-1000 controller definition, transcribed from Pioneer's official MIDI
-Message List PDF (docs/controllers/ddj-1000-midi-message-list-e1.pdf).
+Message List PDF (controllers/ddj-1000/ddj-1000-midi-message-list-e1.pdf).
 
 The DDJ-1000 uses one MIDI channel per deck and eight additional channels
 (four decks x on/+SHIFT) for the performance-pad bank. This catalog
@@ -108,7 +108,7 @@ register(
         plugin_id="pioneer.ddj-1000",
         manufacturer="Pioneer DJ",
         supported_software=("serato",),
-        reference_image="ddj-1000.png",
+        reference_image="ddj-1000/reference.png",
         display_order=30,
         static_entries=_STATIC,
         pad_lookup=_pad_lookup,

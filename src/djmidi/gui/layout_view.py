@@ -103,7 +103,7 @@ def metrics_for(controller: str) -> LayoutMetrics:
     return _METRICS.get(controller, _DEFAULT_METRICS)
 
 
-# Reuse controller_image_view's own ASSETS_DIR (it already handles the
+# Reuse controller_image_view's own CONTROLLERS_DIR (it already handles the
 # PyInstaller-frozen-app case via sys._MEIPASS) rather than recomputing the
 # same path resolution here -- a second, independent implementation of
 # "find the repo/bundle root" is exactly the kind of thing that quietly
@@ -128,7 +128,7 @@ def reference_pixmap(controller: str) -> QPixmap | None:
     if reference_image:
         path = Path(reference_image)
         if not path.is_absolute():
-            path = controller_image_view.ASSETS_DIR / reference_image
+            path = controller_image_view.CONTROLLERS_DIR / reference_image
         if path.exists():
             loaded = QPixmap(str(path))
             if not loaded.isNull():

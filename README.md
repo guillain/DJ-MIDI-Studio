@@ -140,7 +140,7 @@ mapping parsing, Live Monitor, MIDI routing, and unknown-device workflows.
 📚 The documentation is intentionally local and bundled with the application:
 
 - [Documentation Home](docs/README.md)
-- [Controller documentation and official PDF sources](docs/controllers/README.md)
+- [Controller documentation and official PDF sources](controllers/README.md)
 - [User Guide](docs/user-guide.md) — everyday workflow, including sending MIDI commands from the CLI
 - [Screens and Layouts](docs/screens-and-layouts.md)
 - [Architecture](docs/architecture.md)
@@ -173,11 +173,14 @@ including architecture diagrams, validation boundaries, and screenshot reference
 
 - [Serato MIDI Mapping Guide](https://support.serato.com/hc/en-us/articles/209377487-MIDI-mapping-with-Serato-DJ-Pro)
 - [Traktor integration guide](docs/traktor.md)
-- [Controller documentation index and bundled PDFs](docs/controllers/README.md)
-- [Pioneer DJ XDJ-XZ MIDI Message List](docs/controllers/xdj-xz-midi-message-list-e3.pdf)
-- [Pioneer DJ DDJ-XP2 MIDI Message List](docs/controllers/ddj-xp2-midi-message-list-e1.pdf)
-- [Pioneer DJ DDJ-FLX10 MIDI Message List](docs/controllers/ddj-flx10-midi-message-list-e1.pdf)
-- [Pioneer DJ DDJ-FLX4 product page](https://www.pioneerdj.com/en/product/dj-controllers/ddj-flx4/)
-- [Pioneer DJ DDJ-REV1 MIDI Message List](docs/controllers/ddj-rev1-midi-message-list-e1.pdf)
-- [Numark Mixtrack Pro FX User Guide](docs/controllers/numark-mixtrack-pro-fx-user-guide-v1.2.pdf)
-- [Hercules DJControl Inpulse 500 Product Sheet](docs/controllers/hercules-djcontrol-inpulse-500-product-sheet-fr.pdf)
+- [Controller documentation index and bundled PDFs](controllers/README.md)
+- [Pioneer DJ XDJ-XZ MIDI Message List](controllers/xdj-xz/xdj-xz-midi-message-list-e3.pdf)
+- [Pioneer DJ DDJ-XP2 MIDI Message List](controllers/ddj-xp2/ddj-xp2-midi-message-list-e1.pdf)
+- [Pioneer DJ DDJ-FLX10 MIDI Message List](controllers/ddj-flx10/ddj-flx10-midi-message-list-e1.pdf)
+- [Pioneer DJ DDJ-FLX4 MIDI Message List](controllers/ddj-flx4/ddj-flx4-midi-message-list-e1.pdf)
+- [Pioneer DJ DDJ-REV1 MIDI Message List](controllers/ddj-rev1/ddj-rev1-midi-message-list-e1.pdf)
+- [Numark Mixtrack Pro FX User Guide](controllers/numark-mixtrack-pro-fx/numark-mixtrack-pro-fx-user-guide-v1.2.pdf)
+- [Hercules DJControl Inpulse 500 Product Sheet](controllers/hercules-djcontrol-inpulse-500/hercules-djcontrol-inpulse-500-product-sheet-fr.pdf)
+- [Pioneer DJ DDJ-REV5 MIDI Message List](controllers/ddj-rev5/ddj-rev5-midi-message-list-e1.pdf)
+- [Pioneer DJ DDJ-800 MIDI Message List](controllers/ddj-800/ddj-800-midi-message-list-e3.pdf)
+- [Native Instruments Traktor Kontrol S2 MK3 Manual](controllers/traktor-kontrol-s2-mk3/traktor-kontrol-s2-mk3-manual.pdf)

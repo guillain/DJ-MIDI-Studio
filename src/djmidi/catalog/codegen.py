@@ -74,10 +74,10 @@ def build_definition(
     directly into the live registry (in-memory, no file write). Always
     pad_lookup=None/pad_count=0, see generate_module_source.
 
-    reference_image, when given, is either a bare filename resolved against
-    assets/controllers/ (bundled images) or an absolute path to a
-    user-supplied image (Controller Setup's "Attach reference image…"); the
-    Controller Images viewer accepts both.
+    reference_image, when given, is either a path resolved against
+    controllers/ (bundled images, e.g. "custom/<filename>") or an absolute
+    path to a user-supplied image (Controller Setup's "Attach reference
+    image…"); the Controller Images viewer accepts both.
     """
     merged = merge_by_channel(entries)
     return ControllerDefinition(
@@ -124,9 +124,9 @@ def generate_module_source(
     pad-grid formula from captured data is out of scope for this generator.
 
     reference_image, when set, is emitted as the ControllerDefinition's
-    reference_image (a filename under assets/controllers/, matching the bundled
-    controllers) so the Controller Images tab shows it after the module is
-    imported on a future launch.
+    reference_image (a path under controllers/, typically "custom/<filename>"
+    for a Controller Setup export) so the Controller Images tab shows it after
+    the module is imported on a future launch.
     """
     section_order = infer_section_order(entries)
     lines = [

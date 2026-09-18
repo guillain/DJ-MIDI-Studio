@@ -1154,8 +1154,8 @@ class ControllerSetupView(QWidget):
             "Reference image attached",
             "The image is referenced by its path on this machine — it is not copied into the "
             "project. It shows in the Controller Images tab after \"Apply now\", and is saved in "
-            "the session JSON. \"Generate catalog module…\" writes reference_image=<filename>; place "
-            "a copy at assets/controllers/<filename> if you want it bundled (respecting its "
+            "the session JSON. \"Generate catalog module…\" writes reference_image='custom/<filename>'; "
+            "place a copy at controllers/custom/<filename> if you want it bundled (respecting its "
             "licence — user-supplied images are your responsibility).",
         )
 
@@ -1297,10 +1297,13 @@ class ControllerSetupView(QWidget):
 
     def _build_definition_with_image(self):
         """The ControllerDefinition a draft turns into, with the attached
-        reference image reduced to its basename (see `_reference_image`).
-        Shared by module export and community submission so both derive from
-        the exact same transformation "Apply now" uses."""
-        image_name = Path(self._reference_image).name if self._reference_image else None
+        reference image reduced to a ``custom/<basename>`` path (see
+        `_reference_image`) -- where a manually-copied bundled file would
+        resolve, under `controllers/custom/`. Shared by module export and
+        community submission; "Apply now" instead registers the raw absolute
+        path directly (`_apply`), since it needs no bundled copy to resolve
+        within the current session."""
+        image_name = f"custom/{Path(self._reference_image).name}" if self._reference_image else None
         return build_definition(self._controller_name, self._rows, image_name)
 
     def _export_module(self, path: str | Path) -> None:
@@ -1438,8 +1441,8 @@ class ControllerSetupView(QWidget):
         if self._reference_image:
             image_name = Path(self._reference_image).name
             message += (
-                f"\n\nThe module references reference_image='{image_name}'. Copy your image to "
-                f"assets/controllers/{image_name} for it to show in the Controller Images tab on a "
+                f"\n\nThe module references reference_image='custom/{image_name}'. Copy your image to "
+                f"controllers/custom/{image_name} for it to show in the Controller Images tab on a "
                 "future launch (user-supplied images are your responsibility re: licensing)."
             )
         QMessageBox.information(self, "Catalog module generated", message)
