@@ -69,3 +69,58 @@ def test_no_match_returns_empty_list():
     assert catalog.lookup("1", "Note On", "999999") == []
     assert catalog.lookup(None, "Note On", "20") == []
     assert catalog.lookup("1", None, "20") == []
+
+
+def test_ddj_rev5_deck_transport():
+    hits = catalog.lookup("3", "Note On", "11")
+    assert any(h.controller == "DDJ-REV5" and h.name == "PLAY/PAUSE" for h in hits)
+
+
+def test_ddj_rev5_pad_grid():
+    hits = catalog.lookup("10", "Note On", "48")
+    names = [h.name for h in hits if h.controller == "DDJ-REV5"]
+    assert names == ["Deck 2 Pad 1 (SAMPLER MODE)"]
+
+
+def test_ddj_rev5_pad_grid_with_shift():
+    hits = catalog.lookup("15", "Note On", "119")
+    names = [h.name for h in hits if h.controller == "DDJ-REV5"]
+    assert names == ["Deck 4 Pad 8 (SCRATCH BANK MODE) (+SHIFT)"]
+
+
+def test_ddj_rev5_ambiguous_user_mode_notes_are_excluded():
+    """The 8 pad-mode banks each occupy a 16-note block but only use the
+    first 8 (pad positions); the remaining 8 notes per block are the PDF's
+    ambiguous "USER MODE" rows this controller's catalog deliberately
+    leaves untranscribed (see ddj_rev5.py's module docstring)."""
+    for note in ("8", "24", "40", "56", "72", "88", "104", "120"):
+        hits = catalog.lookup("8", "Note On", note)
+        assert not any(h.controller == "DDJ-REV5" for h in hits), note
+
+
+def test_ddj_rev5_fx_and_browse_controls():
+    fx_hits = catalog.lookup("5", "Note On", "112")
+    assert any(h.controller == "DDJ-REV5" and h.name == "FX1-1" for h in fx_hits)
+
+    beat_hits = catalog.lookup("6", "Note On", "6")
+    assert any(h.controller == "DDJ-REV5" and h.name == "BEAT <" for h in beat_hits)
+
+    browse_hits = catalog.lookup("7", "Note On", "65")
+    assert any(h.controller == "DDJ-REV5" and h.name == "BROWSE" for h in browse_hits)
+
+
+def test_ddj_rev5_headphones_cue_spans_all_deck_channels():
+    for channel in ("1", "2", "3", "4"):
+        hits = catalog.lookup(channel, "Note On", "7")
+        assert any(h.controller == "DDJ-REV5" and h.name == "HEADPHONES CUE" for h in hits), channel
+
+
+def test_ddj_rev5_static_entries_have_no_duplicate_triggers():
+    from djmidi.catalog import ddj_rev5
+
+    seen: dict[tuple[str, str], str] = {}
+    for entry in ddj_rev5._STATIC:
+        for channel in entry.channels:
+            key = (channel, entry.data1)
+            assert key not in seen, f"{key} claimed by both {seen.get(key)!r} and {entry.name!r}"
+            seen[key] = entry.name
