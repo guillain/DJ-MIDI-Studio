@@ -2031,6 +2031,48 @@ against the current tree and confirmed still open. Tracked as GitHub issues.
   isolates the regression -- 600px was already clean before the fix --
   verified failing pre-fix (`581 <= 550` assertion failure) before confirming
   the fix, same discipline as `v0.47.82`'s own test.
+- [x] **Controller docs/assets reorg + three new controller materials**
+  (`v0.47.95-controller-assets-reorg`) — the maintainer supplied a flat
+  top-down MIDI Message List PDF for DDJ-FLX4 (previously blocked on having
+  none at all), a real 14-page MIDI-capable Hercules doc replacing the old
+  2-page marketing product sheet, and complete artwork + MIDI Message List
+  PDFs for three brand-new candidates from issue #12 — DDJ-REV5, DDJ-800,
+  and Native Instruments Traktor Kontrol S2 MK3 — plus asked for `assets/`
+  and `docs/controllers/` (previously split, the split itself a long-standing
+  source of friction for anyone bundling a new controller's files) to be
+  merged into one `controllers/<slug>/` directory per controller holding
+  everything for it (`reference.png`/`reference-midi.png`/its source PDF),
+  with a reserved `controllers/custom/` for Controller Setup exports.
+  Mechanical but wide-reaching: every catalog module's `reference_image`
+  (now `"<slug>/reference.png"`), `controller_image_view.py`'s
+  `ASSETS_DIR`/`DOCUMENTS_DIR` (merged into one `CONTROLLERS_DIR`, fixing a
+  latent bug along the way — `image_variants()` derived the `-midi` sibling
+  by string-manipulating just the filename stem, silently discarding the new
+  per-controller subdirectory until fixed to preserve `p.parent`),
+  `layout_view.py`/`introduction_view.py`'s re-exported `ASSETS_DIR` import,
+  `codegen.py`/`controller_setup.py`'s custom-export path (now
+  `reference_image='custom/<filename>'`, so a manually-copied bundled image
+  actually resolves under the new `custom/` directory instead of a stale
+  flat-`assets/controllers/` instruction), `scripts/build.sh`'s two
+  `--add-data` lines (merged into one for `controllers`), `main_window.py`'s
+  Help-menu document list (gained a DDJ-FLX4 entry now that it has a PDF),
+  and every test asserting an old bundled path. `controllers/README.md`
+  (moved and rewritten from `docs/controllers/README.md`) documents the new
+  layout and lists the three new candidates as "no catalog module yet" —
+  this PR is the file reorg and material intake only, not the catalog
+  transcription work itself, which stays its own one-controller-at-a-time
+  chantier per this project's established discipline (issue #12). DDJ-FLX4's
+  new PDF and the replaced Hercules doc are similarly just archived here,
+  not yet cross-checked against the existing catalog data (tracked under
+  issue #11, same as the other conservative profiles). CLAUDE.md's and this
+  file's own historical narrative (the extensive `assets/controllers/...`/
+  `docs/controllers/...` path mentions describing exactly what existed in
+  past versions) is deliberately left as-is — accurate for what was true
+  then, per this file's own "Delivered work retained as historical record"
+  rule — while `gui/geometry.py`'s per-controller measurement notes and the
+  other in-code docstrings *were* updated to the new paths, since those are
+  live pointers meant to help a future contributor actually re-open the
+  referenced file, not a historical chronicle.
 
 ### Next phases to define
 
