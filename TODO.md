@@ -738,12 +738,12 @@ of official MIDI documentation, and fit with the current catalog architecture.
 - [x] **DDJ-REV1** — official MIDI Message List E1, conservative Serato profile, and reference artwork delivered.
 - [x] **Numark Mixtrack Pro FX** — initial discrete-control profile delivered.
 - [x] **Hercules DJControl Inpulse 500** — initial discrete-control profile delivered.
-- [ ] Verify the delivered FLX4, FLX10, REV1, Numark, and Hercules profiles against target hardware/firmware captures; continuous controls and missing vendor-specific evidence remain explicitly out of scope until verified.
+- [x] **DDJ-REV5** (not originally on this list either, and mislabeled as a "two-deck battle controller" before an official MIDI Message List PDF existed — it's actually a four-deck flagship): catalog module transcribed from the maintainer-supplied PDF in `v0.47.96-ddj-rev5-catalog` — see Recent evolution chapters.
+- [ ] Verify the delivered FLX4, FLX10, REV1, Numark, Hercules, and DDJ-REV5 profiles against target hardware/firmware captures; continuous controls and missing vendor-specific evidence remain explicitly out of scope until verified.
 - [x] **DDJ-1000** (not originally on this list, but the same class of problem): its catalog data was checked against the official bundled PDF (not hardware) and corrected in `v0.47.31-ddj-1000-catalog-fix` — see Recent evolution chapters. **DDJ-FLX10 had the same kind of problem, worse**: it had reused DDJ-1000's (wrong) values wholesale, and its real controls diverge substantially from DDJ-1000's (ACTIVE PART DRUMS/VOCAL/INST, MIX POINT SELECT/LINK, CUE/LOOP CALL <>/>>) — fully re-transcribed from FLX10's own PDF (not a value fix) in `v0.47.32-ddj-flx10-catalog-fix`, see Recent evolution chapters.
 
 #### New candidates
 
-- [ ] **DDJ-REV5** — two-deck battle controller with a distinct pad/deck layout.
 - [ ] **DDJ-800** — established two-channel Rekordbox controller.
 - [ ] **Native Instruments Traktor Kontrol S2 MK3** — representative non-Pioneer Traktor controller.
 - [ ] **RANE FOUR** — four-channel Serato controller.
@@ -2073,6 +2073,61 @@ against the current tree and confirmed still open. Tracked as GitHub issues.
   other in-code docstrings *were* updated to the new paths, since those are
   live pointers meant to help a future contributor actually re-open the
   referenced file, not a historical chronicle.
+- [x] **DDJ-REV5 catalog module** (`v0.47.96-ddj-rev5-catalog`, issue #12) —
+  the first of the three new candidates from the controller-assets reorg PR
+  (`v0.47.95`) to get an actual catalog module, one controller at a time per
+  this project's established discipline. DDJ-REV5 is a four-deck flagship
+  controller — the "New candidates" backlog line above had guessed "two-deck
+  battle controller" before an official MIDI Message List PDF existed; that
+  was wrong, corrected once the real PDF (`controllers/ddj-rev5/ddj-rev5-midi-message-list-e1.pdf`,
+  maintainer-supplied) was available to transcribe from.
+  Structurally close to DDJ-1000/DDJ-FLX10: one MIDI channel per deck (1-4)
+  for DECK-section controls, a shared channel 7 for BROWSE/global MIXER
+  controls, channels 5/6 for its two FX units, and eight pad channels (four
+  decks x on/+SHIFT) for the performance-pad bank. Transcribed: 14 DECK
+  transport/loop buttons (PLAY/PAUSE, CUE, TEMPO RANGE, KEY LOCK, SYNC, BPM
+  TRANSITION SELECT/START, LOOP 1/2X, LOOP 2X, SLIP, CENSOR, KEY -/+, STEMS)
+  plus its 4 pad-mode-select buttons (HOT CUE/ROLL/SAVED LOOP/SAMPLER MODE);
+  BROWSE and BACK; 6 FX buttons (FX1-1/2/3, FX2-1/2/3) plus BEAT </> (same
+  Data1 on both FX1 and FX2 channels); and 3 MIXER controls (HEADPHONES CUE,
+  spanning all 4 deck channels like DECK-section entries; CROSSFADER
+  REVERSE; SHIFT). The 8-pad grid uses a bespoke `_pad_lookup` (like
+  DDJ-1000/DDJ-FLX10's), but a different note-to-bank formula verified
+  directly from this PDF's own PERFORMANCE PADS group: 8 named modes (HOT
+  CUE, ROLL, SAVED LOOP, SAMPLER, PITCH PLAY, PIANO PLAY, STEMS, SCRATCH
+  BANK) each occupying a 16-note block, of which only the first 8 notes are
+  real pad positions — `mode, pad = divmod(note, 16)` with `pad >= 8`
+  rejected, not DDJ-1000/FLX10's `divmod(note, 8)` shape.
+  Deliberately excluded rather than guessed, each for its own documented
+  reason (see `catalog/ddj_rev5.py`'s own module docstring for the full
+  writeup): every "+SHIFT <control>" DECK-section variant (real per the PDF,
+  but matching DDJ-1000/DDJ-FLX10's own established precedent of never
+  modeling those as separate entries, rather than introduce a third
+  catalog with a different shape); AUTO LOOP (the PDF's own Data1/Data2
+  columns for its input and MIDI-OUT rows disagree — 0x05 in vs 0x04 out —
+  in a way the extracted table text doesn't resolve cleanly); STEMS SOLO and
+  BPM TRANSITION BAR ("Indicate"-only rows, LED output with no press input,
+  same category as DDJ-XP2's excluded MIDI-OUT section); the STEMS
+  +VOCAL/+MELODY/+BASS/+DRUMS sub-triggers and the PDF's "VOCAL/PAD1"
+  through "DRUMS/PAD4" block (these land on the pad channels at Data1 values
+  — 72-75, 88-91, 104-107, 120-123 — that don't fit the 8-mode grid formula
+  above: 72, for instance, falls mid-way through the PITCH PLAY MODE block
+  rather than at a valid pad position, and the PDF's own figure numbering
+  doesn't disambiguate what these represent without the physical device or
+  its diagram); DECK1/3 and DECK2/4 deck-pair select and LOAD (each sends a
+  multi-message sequence — switch one deck off, another on — rather than one
+  simple trigger, the same reason DDJ-1000/DDJ-FLX10 already exclude the
+  equivalent DECK SELECT function; LOAD's per-deck Data1 assignment was also
+  not unambiguously orderable from the extracted PDF table); and three
+  2/3-position slide switches (MIC OFF/ON/TALKOVER, AUX LINE/PORTABLE,
+  INPUT SELECT), each sending a *pair* of NOTE messages per position rather
+  than the catalog's one-trigger-per-name model.
+  31 static entries + the 8-mode/8-pad grid, verified with dedicated tests
+  (`tests/test_catalog.py`, `tests/test_catalog_registry.py`) including a
+  spot-check that every one of the ambiguous "USER MODE" pad notes above
+  resolves to no match, and a static-entries duplicate-trigger check.
+  Field-verification against real hardware remains open, same status as
+  every other PDF-transcribed profile (issue #11).
 
 ### Next phases to define
 
