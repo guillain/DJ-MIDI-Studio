@@ -726,6 +726,36 @@ XDJ-XZ, DDJ-XP2, MIDIface 4x4, Ableton Live 12. See
 
 ## Open backlog
 
+### Candidate DJ software integrations
+
+See `software/README.md` for the full index (mirrors `controllers/README.md`'s
+"one common directory, one subdirectory per X" layout, but for the DJ
+software side of the plugin architecture). Format research done
+2026-09-19; no plugin work started for either.
+
+- [ ] **Pioneer/AlphaTheta rekordbox** — real format is a 14/15-field CSV
+  (`software/rekordbox/README.md`), not XML. Official Pioneer support
+  article confirms it but is bot-protected (403 to automated fetches);
+  community documentation ([alexrster/rekordbox-dj](https://github.com/alexrster/rekordbox-dj))
+  independently confirms the same column shape. Blocked on a real exported
+  CSV to validate against — rekordbox itself bundles official per-controller
+  mapping files inside its own app resources, a legitimate already-licensed
+  source if the app is installed locally.
+- [ ] **VirtualDJ** — real format is two XML files (a "definition" file
+  naming every MIDI code, a "mapping" file tying those names to VDJScript
+  actions), officially documented on VirtualDJ's own wiki
+  (`software/virtualdj/README.md`). Best-documented of the four formats
+  surveyed. Blocked on a real definition+mapping file pair to validate
+  against; also an open design question on how much of VDJScript's
+  free-form `action` strings this project's flat `MappingElement.tag` model
+  should attempt to represent vs. pass through opaquely.
+
+For every new software: obtain and archive real reference material (a real
+exported file, or credible official/community format documentation) in
+`software/<slug>/`, add the plugin under `src/djmidi/software/`, add tests,
+and document what's conservative/unverified — never fabricate format
+details, same discipline as the controller catalog side (issues #11/#12).
+
 ### Candidate controller catalogues
 
 The following profiles are intentionally ordered by market reach, availability
@@ -762,6 +792,21 @@ of official MIDI documentation, and fit with the current catalog architecture.
   Behringer CMD-LC1).
 - [ ] **RANE FOUR** — four-channel Serato controller.
 - [ ] **Denon DJ Prime 4+** — four-deck Engine DJ system and Serato comparison point.
+- [ ] **Behringer CMD-LC1** — surfaced by a real maintainer-owned Serato
+  mapping (`data/serato/cmd-lc1.xml.zip`, 2026-09-19); already
+  named in `catalog/__init__.py`'s own docstring as the original motivating
+  example for the "no official docs" Controller Setup workflow. No official
+  MIDI message list is known to exist — build via Controller Setup (live
+  learning or importing the real `.xml` above) rather than waiting on a PDF
+  that may never come, per `catalog/__init__.py`'s documented no-docs path.
+- [ ] **Korg nanoPAD2** — surfaced by a real maintainer-owned Traktor
+  mapping (`data/traktor/nanopad2-remixer.tsi.zip`,
+  2026-09-19). Same no-official-docs treatment as CMD-LC1 likely applies;
+  check for an official Korg MIDI implementation chart before assuming so.
+- [ ] **Behringer CMD Studio 4a** — surfaced by a real maintainer-owned
+  Traktor mapping (`data/traktor/cmd-studio-4a.tsi.zip`,
+  2026-09-19). Same no-official-docs treatment as CMD-LC1 likely applies;
+  check for an official Behringer MIDI implementation chart first.
 
 For every new controller: obtain and archive an official MIDI message list or
 capture the hardware, add the profile and layout metadata, add tests, document

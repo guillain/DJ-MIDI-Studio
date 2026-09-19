@@ -179,11 +179,11 @@ def main() -> int:
             app.processEvents()
 
         # Controller Setup with a real hardware-recorded session loaded
-        # (data/*.json -- distinct from FIXTURE, a Serato mapping XML, not
-        # a Controller Setup draft; see that tab's own JSON shape).
+        # (data/controllers/*.json -- distinct from FIXTURE, a Serato mapping
+        # XML, not a Controller Setup draft; see that tab's own JSON shape).
         window.left_tabs.setCurrentIndex(window._tab_indexes["setup"])
         for session_file, out_name in SETUP_SESSIONS.items():
-            window.controller_setup_view._load_session(ROOT / "data" / session_file)
+            window.controller_setup_view._load_session(ROOT / "data" / "controllers" / session_file)
             # _load_session() leaves the table's selection (and thus its
             # scroll position) wherever the session file's own row order
             # last put it -- scroll back to the top so every screenshot
