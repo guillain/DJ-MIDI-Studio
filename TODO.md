@@ -2129,6 +2129,42 @@ against the current tree and confirmed still open. Tracked as GitHub issues.
   Field-verification against real hardware remains open, same status as
   every other PDF-transcribed profile (issue #11).
 
+### One-click controller "Sync" / initialization
+
+Proposed by the maintainer (2026-09-19), not yet scoped or built.
+
+- [ ] A single button/action ("Sync") that, on press, automatically sends a
+  pre-recorded set of MIDI messages to every MIDI controller, to bring them
+  into a known/initialized state.
+
+Source, verbatim: *"elle permettra avec un seul bouton d'initialiser tous
+les contrôleurs midi. Initialiser: envoyer les jeux de notes qu'on avait
+pré-enregistré automatiquement aux contrôleurs MIDI dès qu'on appuie sur
+'sync'."*
+
+Closest existing building block: Controller Setup's `MIDI Output` panel
+already has a **"Replay recorded session"** button
+(`ControllerSetupView._on_replay_recorded_session_clicked`,
+`midi_io.replay_midi_events`) that sends a captured/learned set of MIDI
+events to one selected output port. This proposal reads as generalizing
+that from "one Controller Setup session, one port, manually triggered" to
+"one global action, every connected controller, one click" — but that
+reframing raises open questions that need answering together before this
+can become a real phase:
+
+- Where do the "pre-recorded note sets" live per controller — a new field
+  on `ControllerDefinition`, a separate init-sequence file per `controllers/<slug>/`,
+  or a session recorded through Controller Setup the same way a mapping
+  profile is today?
+- Is "Sync" one MIDI output port, or does it fan out to every open/known
+  output port at once (and if the latter, how does it know which recorded
+  set belongs to which physical controller when several are connected)?
+- Where does the button live — the toolbar, the Dashboard, a new
+  Preferences toggle to auto-run it at startup, or Live Monitor?
+- Is this meant to restore controller LED/display state after Serato
+  overwrote it, force a controller into a specific mode bank, or something
+  else — the answer changes what "initialize" should actually send.
+
 ### Next phases to define
 
 No new phase is committed yet. After the Phase 3 hardware validation review,
