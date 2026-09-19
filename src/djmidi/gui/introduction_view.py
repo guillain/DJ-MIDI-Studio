@@ -22,7 +22,19 @@ from djmidi import catalog
 from djmidi.gui.controller_image_view import CONTROLLERS_DIR, image_for_controller
 from djmidi.gui.layout import CellKey
 from djmidi.gui.theme import colors as theme_colors
+from djmidi.gui.theme import current_mode as theme_current_mode
 from djmidi.gui.theme import signals as theme_signals
+
+# Fixed per-software accent, one pair per theme mode (light/dark) so each
+# stays legible against both backgrounds -- same convention as theme.py's
+# own "clock_accent" token, kept local here since only the Dashboard's
+# loaded-file badge needs it (issue #121). Any other/unknown software plugin
+# falls back to the theme's own neutral "hint_text" shade rather than
+# guessing a color for a controller-agnostic future plugin.
+_SOFTWARE_BADGE_COLORS: dict[str, dict[str, str]] = {
+    "serato": {"dark": "#e8792a", "light": "#b8560f"},
+    "traktor": {"dark": "#29c1d1", "light": "#0a7fa0"},
+}
 
 
 class IntroductionView(QWidget):
@@ -37,20 +49,30 @@ class IntroductionView(QWidget):
         self._card_stats: dict[str, QLabel] = {}
         self._availability_labels: dict[str, QLabel] = {}
         self._midi_port_names: list[str] = []
+        self._loaded_software_id: str | None = None
 
         title = QLabel("DJ MIDI Studio")
         title.setStyleSheet("font-size: 18px; font-weight: 600;")
 
-        description = QLabel(
-            "Visualize, edit, and validate your Serato MIDI mappings. "
-            "Start here, then use the shortcuts below to drill down into "
-            "the detailed views."
-        )
-        description.setWordWrap(True)
+        self._description_label = QLabel()
+        self._description_label.setWordWrap(True)
 
         self._loaded_file_label = QLabel("Loaded file: none")
         self._loaded_file_label.setWordWrap(True)
         self._loaded_file_label.setFrameShape(QFrame.Shape.StyledPanel)
+        # Bold, per-software-colored name (issue #121) -- a small always-
+        # visible marker next to the loaded-file line, since the one-time
+        # "which software?" dialog at File -> Open is otherwise the only
+        # place this ever showed. Empty/hidden until a file with a known
+        # software plugin is loaded.
+        self._software_badge_label = QLabel()
+        self._software_badge_label.setStyleSheet("font-weight: 600;")
+        self._software_badge_label.hide()
+        loaded_file_row = QHBoxLayout()
+        loaded_file_row.addWidget(self._loaded_file_label, 1)
+        loaded_file_row.addWidget(self._software_badge_label, 0)
+
+        self._update_description(None)
 
         self._controller_combo = QComboBox()
         self._controller_combo.addItems(catalog.CONTROLLER_NAMES)
@@ -108,8 +130,8 @@ class IntroductionView(QWidget):
         content = QWidget()
         layout = QVBoxLayout(content)
         layout.addWidget(title)
-        layout.addWidget(description)
-        layout.addWidget(self._loaded_file_label)
+        layout.addWidget(self._description_label)
+        layout.addLayout(loaded_file_row)
         layout.addLayout(overview_header)
         layout.addWidget(cards_box)
         layout.addWidget(info)
@@ -137,6 +159,8 @@ class IntroductionView(QWidget):
 
     def _on_theme_changed(self, *_args: object) -> None:
         self.refresh_midi_availability(self._midi_port_names)
+        if self._loaded_software_id is not None:
+            self._restyle_software_badge()
 
     def refresh_controllers(self) -> None:
         current = self._controller_combo.currentText()
@@ -178,12 +202,54 @@ class IntroductionView(QWidget):
         self._controller_combo.setCurrentText(controller)
         return True
 
-    def set_loaded_config_info(self, path: str | Path | None, control_count: int = 0) -> None:
+    def _update_description(self, software_name: str | None) -> None:
+        """Software-neutral by default; names the currently loaded software
+        once one is loaded (issue #121) -- the previous hardcoded "Serato"
+        wording was actively wrong once a Traktor mapping was open."""
+        if software_name:
+            self._description_label.setText(
+                f"Visualize, edit, and validate your {software_name} MIDI mappings. "
+                "Start here, then use the shortcuts below to drill down into "
+                "the detailed views."
+            )
+        else:
+            self._description_label.setText(
+                "Visualize, edit, and validate your Serato DJ or Traktor MIDI "
+                "mappings. Start here, then use the shortcuts below to drill "
+                "down into the detailed views."
+            )
+
+    def set_loaded_config_info(
+        self,
+        path: str | Path | None,
+        control_count: int = 0,
+        software_id: str | None = None,
+        software_name: str | None = None,
+    ) -> None:
         if path is None:
             self._loaded_file_label.setText("Loaded file: none")
+            self._loaded_software_id = None
+            self._software_badge_label.hide()
+            self._update_description(None)
             return
         name = Path(path).name
         self._loaded_file_label.setText(f"Loaded file: {name} ({control_count} control(s))")
+        self._update_description(software_name)
+        self._loaded_software_id = software_id
+        if software_name:
+            self._software_badge_label.setText(software_name)
+            self._restyle_software_badge()
+            self._software_badge_label.show()
+        else:
+            self._software_badge_label.hide()
+
+    def _restyle_software_badge(self) -> None:
+        """Re-picks the badge's light/dark color for the current theme mode
+        -- called on load and again on every theme change, since the two
+        modes use different hex values (see _SOFTWARE_BADGE_COLORS)."""
+        palette = _SOFTWARE_BADGE_COLORS.get(self._loaded_software_id or "")
+        color = (palette or {}).get(theme_current_mode(), theme_colors()["hint_text"])
+        self._software_badge_label.setStyleSheet(f"font-weight: 600; color: {color};")
 
     def set_usage_summary(self, usage: dict[CellKey, dict[str, set[str]]]) -> None:
         summary: dict[str, tuple[int, int, int]] = {}
