@@ -25,6 +25,22 @@ as:
   `CLAUDE.md` — every unique trigger repeated verbatim 10 times, confirmed
   load-bearing (deleting the "duplicates" breaks the config in real Serato).
 
+## Additional real samples
+
+The maintainer supplied two more real Serato exports (2026-09-19), zipped
+individually in `data/serato/`:
+
+- `cmd-lc1.xml.zip` — a Behringer CMD-LC1 mapping (no catalog module yet,
+  and no official MIDI docs are known to exist for it — see
+  `catalog/__init__.py`'s no-docs Controller Setup path; tracked in
+  `TODO.md`'s "New candidates" list).
+- `ddj-xp2-custom.xml.zip` — a customized DDJ-XP2 mapping.
+
+Not (yet) wired into the automated test suite the way the primary
+`xdj_xz-ddj_xp2-4decks.xml` fixture is; useful for spot-checking the
+parser/exporter/validator against real-world variety beyond the one
+canonical fixture.
+
 ## Status
 
 Well-grounded. This is the reference case the rest of `software/` is trying

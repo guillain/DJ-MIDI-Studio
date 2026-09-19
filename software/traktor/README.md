@@ -82,14 +82,30 @@ partial table (hundreds of entries) is published at
 Only transcribe an ID → name pair here (or into the plugin) once actually
 needed and cross-checked — don't bulk-copy the whole list speculatively.
 
+## Real samples
+
+The maintainer supplied real `.tsi` exports from their own Traktor setup
+(2026-09-19), unblocking the item below — each zipped individually (one
+`.zip` per file, so the archive listing itself stays browsable) in
+`data/traktor/`:
+
+- `xdj-xz-settings.tsi.zip` — a full Traktor settings export including the XDJ-XZ controller mapping
+- `cmd-studio-4a.tsi.zip` — Behringer CMD Studio 4a mapping
+- `nanopad2-remixer.tsi.zip` — Korg nanoPAD2 remix-deck mapping
+- `keyboard-mapping.tsi.zip` — a computer-keyboard (not MIDI hardware) mapping
+
+These also surfaced three real controller candidates with no catalog module
+yet — CMD Studio 4a, nanoPAD2, and (from a real Serato export,
+`data/serato/cmd-lc1.xml.zip`) the Behringer CMD-LC1 — tracked in
+`TODO.md`'s "New candidates" list.
+
 ## What's still missing before this can be trusted
 
-- **A real `.tsi` file.** Everything above is reverse-engineered documentation,
-  not a real sample to test a parser against. Same "never fabricate, get a
-  real file" discipline this project already applies to controller MIDI
-  catalogs (issue #11/#12) — blocked on the maintainer supplying one (or an
-  official NI sample, if one exists) before any implementation can be
-  considered verified rather than "should work per the spec."
+- Parse at least one real `.tsi` above with an actual implementation and
+  confirm the decoded structure matches this document's field layout
+  before trusting either as correct — having the files is necessary but
+  not sufficient; the parser still needs to be built and checked against
+  them, not just against the reverse-engineered spec in isolation.
 - Which `TraktorControlId`s map to which catalog-worthy discrete controls
   (this app's catalog scope is press/toggle controls, same as the
   controller side) isn't decided yet — the 200+-entry command list above is
