@@ -15,6 +15,14 @@ from .rekordbox_library import (
     parse_playlists,
 )
 from .scanner import AUDIO_EXTENSIONS, ScanResult, iter_audio_files, scan_root
+from .serato_library import (
+    iter_chunks,
+    parse_crate,
+    write_chunk,
+    write_chunks,
+    write_crate,
+    write_crate_file,
+)
 
 __all__ = [
     "AUDIO_EXTENSIONS",
@@ -28,9 +36,15 @@ __all__ = [
     "TrackRecord",
     "clean_noise_frames",
     "iter_audio_files",
+    "iter_chunks",
+    "parse_crate",
     "parse_export",
     "parse_playlists",
     "read_metadata",
     "scan_root",
+    "write_chunk",
+    "write_chunks",
+    "write_crate",
+    "write_crate_file",
     "write_metadata",
 ]
