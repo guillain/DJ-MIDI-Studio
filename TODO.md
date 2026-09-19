@@ -557,6 +557,30 @@ Implemented contract, runtime, test, and documentation work:
   rather than blocking the rest or popping a dialog — this runs silently in
   the background, unlike the manual "Start monitoring" button. Milestone tag
   `v0.47.27-auto-start-live-monitor`.
+- [x] **Music-library scan/index foundation** (`v0.47.98-library-scan-index`,
+  issue #125) — first delivered piece of a new, separate initiative from
+  everything else in this project: managing the maintainer's actual audio
+  collection (674 GB, 85,607 files across `/Users/guillain/Music`) rather
+  than MIDI mappings, after their own real collection proved too
+  disorganized to build BPM/key-compatible playlists from by hand. Scoped
+  into milestone "Music library management" (#5) and tracking issue #133
+  (full feature breakdown, feasibility summary, and sequencing). New
+  `src/djmidi/library/`: `db.py`'s `LibraryDB` (a local SQLite index of
+  `path`/`size`/`mtime`/`missing` per track, never file content or tags)
+  and `scanner.py`'s incremental `scan_root()` (skips a file whose
+  size/mtime haven't changed, flags a disappeared file `missing` rather
+  than deleting it so a temporarily-unmounted drive or a rename doesn't
+  lose history, filters to real audio extensions while skipping macOS
+  AppleDouble sidecars and hidden directories — both found throughout the
+  real collection). Deliberately Qt-free like `model.py`/`parser.py`, and
+  strictly read-only against real files: no code here touches an audio
+  file, a tag, or any DJ software's own library/playlist file. An
+  investigation pass this same session located real fixtures in the
+  maintainer's own `_Serato_` (`database V2` + 426 crates), `_Traktor`
+  (`collection.nml`, 44,564 entries), and `PIONEER/rekordbox`
+  (`export.pdb`) folders — unblocking #129/#130/#134's "no real fixture
+  yet" concern before those sub-issues even started; see #133's own
+  investigation-update section for the full findings.
 
 ### Core mapping workflow
 
