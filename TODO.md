@@ -2262,6 +2262,32 @@ against the current tree and confirmed still open. Tracked as GitHub issues.
   Fig.-callout-cross-referencing methodology.
   Field-verification against real hardware remains open, same status as
   every other PDF-transcribed profile (issue #11).
+- [x] **Visually differentiate a loaded Serato vs Traktor mapping**
+  (`v0.47.98-software-visual-differentiation`, issue #121) — until now, the
+  only place the app ever named which software a loaded file belonged to
+  was a one-time `QInputDialog` shown at `File -> Open`; after that, the
+  window title stayed a static `"DJ MIDI Studio"` and the Dashboard's
+  `Loaded file: <name> (<N> control(s))` label never mentioned it either,
+  while the Dashboard's own description text was hardcoded to "Serato MIDI
+  mappings" — actively wrong once a Traktor file was open. Now: the window
+  title becomes `DJ MIDI Studio — <file> [<software>]` once a mapping
+  loads; the Dashboard's loaded-file line gains a bold, colored software
+  badge next to it (`IntroductionView._software_badge_label`) — a fixed
+  per-software light/dark color pair (`_SOFTWARE_BADGE_COLORS`, Serato
+  orange / Traktor teal, restyled live on a theme switch the same way the
+  MIDI-availability labels already do); and the description text is
+  software-neutral when nothing is loaded and names the loaded software
+  once one is (`IntroductionView._update_description`). An unknown/future
+  software plugin falls back to the theme's own neutral `hint_text` shade
+  rather than guessing a color. Verified by screenshotting the real running
+  `MainWindow` (not just trusting the code) after loading both a real
+  Serato fixture and a synthetic Traktor NML sample, in both light and dark
+  theme, per this project's "don't build visual features blind" discipline
+  — caught nothing wrong, but confirmed the badge legible against both
+  backgrounds and the title/description text exactly as intended before
+  shipping. Out of scope, tracked separately: anything about the
+  *correctness* of what each software's plugin actually parses/exports
+  (issue #122).
 
 ### One-click controller "Sync" / initialization
 

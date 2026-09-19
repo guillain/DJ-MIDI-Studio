@@ -127,3 +127,51 @@ def test_dashboard_content_is_wrapped_in_a_scroll_area():
         b for b in view.findChildren(QPushButton) if b.text() == "Channel"
     )
     assert scroll.widget().isAncestorOf(channel_btn)
+
+
+# ─── Loaded-software visual differentiation (issue #121) ────────────────────
+
+
+def test_loaded_file_label_and_badge_show_the_software_name():
+    view = IntroductionView()
+    view.set_loaded_config_info("mymapping.xml", 42, software_id="serato", software_name="Serato DJ")
+    assert "mymapping.xml" in view._loaded_file_label.text()
+    assert "42 control(s)" in view._loaded_file_label.text()
+    assert view._software_badge_label.text() == "Serato DJ"
+    assert not view._software_badge_label.isHidden()
+    assert "#e8792a" in view._software_badge_label.styleSheet()  # dark mode default
+
+
+def test_badge_hidden_and_description_neutral_when_nothing_loaded():
+    view = IntroductionView()
+    view.set_loaded_config_info("x.xml", 1, software_id="serato", software_name="Serato DJ")
+    view.set_loaded_config_info(None)
+    assert view._loaded_file_label.text() == "Loaded file: none"
+    assert view._software_badge_label.isHidden()
+    assert "Serato DJ or Traktor" in view._description_label.text()
+
+
+def test_description_names_the_loaded_software():
+    view = IntroductionView()
+    view.set_loaded_config_info("x.nml", 2, software_id="traktor", software_name="Native Instruments Traktor")
+    assert "Native Instruments Traktor MIDI mappings" in view._description_label.text()
+    assert view._software_badge_label.text() == "Native Instruments Traktor"
+
+
+def test_unknown_software_id_falls_back_to_a_neutral_badge_color():
+    view = IntroductionView()
+    view.set_loaded_config_info("x.xml", 1, software_id="__future_plugin__", software_name="Future Software")
+    assert not view._software_badge_label.isHidden()
+    assert view._software_badge_label.text() == "Future Software"
+
+
+def test_theme_change_restyles_a_visible_badge():
+    view = IntroductionView()
+    view.set_loaded_config_info("x.xml", 1, software_id="traktor", software_name="Native Instruments Traktor")
+    dark_style = view._software_badge_label.styleSheet()
+    theme.apply_theme(QApplication.instance(), "light")
+    try:
+        assert view._software_badge_label.styleSheet() != dark_style
+        assert "#0a7fa0" in view._software_badge_label.styleSheet()
+    finally:
+        theme.apply_theme(QApplication.instance(), "dark")

@@ -179,6 +179,23 @@ def test_load_tree_sets_intro_file_info():
     window.close()
 
 
+def test_load_tree_sets_intro_software_badge():
+    """Issue #121: the Dashboard's loaded-file line and the window title
+    both name the software once a mapping is loaded, not just the one-time
+    load dialog."""
+    window = _loaded_window()
+    assert window.introduction_view._software_badge_label.text() == "Serato DJ"
+    assert window.introduction_view._software_badge_label.isVisible()
+    assert window.windowTitle() == f"DJ MIDI Studio — {FIXTURE.name} [Serato DJ]"
+    window.close()
+
+
+def test_window_title_resets_when_nothing_is_loaded():
+    window = MainWindow()
+    assert window.windowTitle() == "DJ MIDI Studio"
+    window.close()
+
+
 def test_load_tree_sets_live_monitor_config():
     window = _loaded_window()
     assert window.live_monitor_view._config is not None

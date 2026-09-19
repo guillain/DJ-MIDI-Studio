@@ -1003,9 +1003,27 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(f"Loaded {len(self.config.controls)} controls from {self.current_path.name}")
         _LOGGER.info("Loaded %d control(s) from %s (software=%s)", len(self.config.controls), path, selected.plugin_id)
 
+    def _update_window_title(self) -> None:
+        """Reflects the loaded file and its software (issue #121) -- the
+        title used to stay a static "DJ MIDI Studio" for the entire session,
+        the one-time "which software?" load dialog being the only place that
+        ever named it."""
+        if self.current_path is None or self.config is None:
+            self.setWindowTitle("DJ MIDI Studio")
+            return
+        definition = software.get_definition(self.software_id)
+        self.setWindowTitle(f"DJ MIDI Studio — {self.current_path.name} [{definition.name}]")
+
     def _load_tree(self) -> None:
         assert self.config is not None
-        self.introduction_view.set_loaded_config_info(self.current_path, len(self.config.controls))
+        definition = software.get_definition(self.software_id)
+        self.introduction_view.set_loaded_config_info(
+            self.current_path,
+            len(self.config.controls),
+            software_id=self.software_id,
+            software_name=definition.name,
+        )
+        self._update_window_title()
         self._rebuild_channel_columns()
         self._refresh_layout_usage()
         self._refresh_deck_view()
