@@ -745,7 +745,21 @@ of official MIDI documentation, and fit with the current catalog architecture.
 
 #### New candidates
 
-- [ ] **Native Instruments Traktor Kontrol S2 MK3** — representative non-Pioneer Traktor controller.
+- [ ] **Native Instruments Traktor Kontrol S2 MK3** — representative non-Pioneer
+  Traktor controller. **Checked 2026-09-19**: the maintainer-supplied PDF
+  (`controllers/traktor-kontrol-s2-mk3/traktor-kontrol-s2-mk3-manual.pdf`,
+  50 pages) is a general product manual (workflow, mixer channels, CUE
+  channel, features) — confirmed via `pdftotext -layout` that it contains
+  zero occurrences of "MIDI", any hex byte pattern, or "Note On"/"Control
+  Change", unlike DDJ-REV5/DDJ-800's real MIDI Message List PDFs. No usable
+  MIDI assignment table exists in this document; a catalog module would
+  have to fabricate values, which this project doesn't do. Blocked on
+  either an official NI MIDI implementation chart (if one exists elsewhere)
+  or, more realistically, building the profile via Controller Setup's
+  live-learning workflow against real hardware — no PDF needed for that
+  path (see `catalog/__init__.py`'s documented no-docs route, originally
+  built for exactly this "no official docs exist" scenario, e.g. the
+  Behringer CMD-LC1).
 - [ ] **RANE FOUR** — four-channel Serato controller.
 - [ ] **Denon DJ Prime 4+** — four-deck Engine DJ system and Serato comparison point.
 
