@@ -677,6 +677,25 @@ Implemented contract, runtime, test, and documentation work:
   grouping, then Camelot key. The harder full-ordered-path mode (smooth
   BPM/energy progression across a whole draft) is deferred, per the
   issue's own scope, until this simple mode is validated against real use.
+- [x] **Genre/style taxonomy and alias normalization** (issue #127) — new
+  `src/djmidi/taxonomy/`, a plugin-style registry mirroring `catalog/`'s
+  pattern (`_registry.py`'s `Category`/`CategoryMatch` dataclasses + a
+  plain-dict registry, one module per genre family registering itself on
+  import). Seeded directly from the real, mined `Genre%%Subgenre` crate
+  counts in issue #127's investigation comment: `Tek` (Tribe, HardTek,
+  RaggaTek, HardCore, FrenchCore, PsyTrance, BarBass) and `Electro`
+  (Drum & Bass, Dub, DnB_jungle_pungle, Ragga Jungle, Break beat), plus the
+  maintainer's explicit acronym/casing alias federations (DnB/D&B/Drum and
+  Bass; Psy/Psytrance/Psy-Trance; Tribe/TribeTek/Tribecore;
+  Raggatek/Reggaeton Tek/Ragga Tek). `resolve_category(raw_genre,
+  folder_hint, crate_hint)` tries an exact/alias match against the crate
+  hint, then the folder hint, then the raw tag, before falling back to a
+  `rapidfuzz`-scored suggestion (`confidence="fuzzy"`) that is never
+  auto-applied — a hard requirement, since the raw `TCON` tag alone proved
+  unreliable (real tracks filed under `Tek/PsyTrance` carry `TCON` values
+  like `House`/`Techno`/`Other`). `merge_categories`/`add_alias` manage the
+  in-memory registry for a maintainer-confirmed duplicate or a new spelling
+  variant.
 
 ### Core mapping workflow
 
