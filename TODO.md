@@ -778,6 +778,23 @@ of official MIDI documentation, and fit with the current catalog architecture.
 - [ ] **Native Instruments Traktor Kontrol S2 MK3** — representative non-Pioneer Traktor controller.
 - [ ] **RANE FOUR** — four-channel Serato controller.
 - [ ] **Denon DJ Prime 4+** — four-deck Engine DJ system and Serato comparison point.
+- [ ] **Behringer CMD-LC1** — surfaced by real maintainer-owned Serato/Traktor
+  mapping files (`data/serato/CMD-LC1.xml`, 2026-09-19); already named in
+  `catalog/__init__.py`'s own docstring as the original motivating example
+  for the "no official docs" Controller Setup workflow. No official MIDI
+  message list is known to exist — build via Controller Setup (live
+  learning or importing the real `.xml`/`.tsi` above) rather than waiting
+  on a PDF that may never come, per `catalog/__init__.py`'s documented
+  no-docs path.
+- [ ] **Korg nanoPAD2** — surfaced by a real maintainer-owned Traktor
+  mapping (`data/traktor/nonaPad2_remixer.tsi`, 2026-09-19). Same
+  no-official-docs treatment as CMD-LC1 likely applies; check for an
+  official Korg MIDI implementation chart before assuming so.
+- [ ] **Behringer CMD Studio 4a** — surfaced by two real maintainer-owned
+  Traktor mappings (`data/traktor/CMD STUDIO 4A - Jog Fx 4 channels.tsi`,
+  `data/traktor/TraktorPro263_CMD-studio4a_conf-all_012_Kunox.tsi`,
+  2026-09-19). Same no-official-docs treatment as CMD-LC1 likely applies;
+  check for an official Behringer MIDI implementation chart first.
 
 For every new controller: obtain and archive an official MIDI message list or
 capture the hardware, add the profile and layout metadata, add tests, document
