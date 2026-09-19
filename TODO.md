@@ -622,6 +622,24 @@ Implemented contract, runtime, test, and documentation work:
   `tests/test_rekordbox_library.py` covers the DeviceSQL string codec
   directly plus a full parse of a hand-built synthetic `export.pdb` fixture
   (real page/row-index binary layout, not just a wrapper-logic unit test).
+- [x] **Serato crate (playlist) format read/write** (issue #129) — new
+  `src/djmidi/library/serato_library.py` (deliberately not `serato.py`, to
+  avoid colliding with the unrelated pre-existing MIDI-mapping
+  `software/serato.py`): a defensive tag+big-endian-length chunk
+  reader/writer for `_Serato_/Subcrates/*.crate` files, `parse_crate()`
+  extracting the ordered track-path list from `otrk`/`ptrk` chunks
+  (tolerant of unknown sibling chunks, e.g. the `osrt`/`ovct`
+  column-definition chunks real crates also carry), and
+  `write_crate()`/`write_crate_file()` building a new crate from scratch
+  (a `vrsn` header plus one `otrk`/`ptrk` pair per path; the
+  column-definition chunks are display-only and omitted rather than
+  fabricated). Validated read-only against all 213 of the maintainer's real
+  `Subcrates` files (25,538 tracks parsed, zero failures) without writing
+  anything under `/Users/guillain/Music`; the committed round-trip test
+  uses only synthetic, made-up paths. `database V2` (the main library
+  index) stays unimplemented/out of scope by design, per the issue's own
+  risk framing — writes only ever target a caller-specified new path, never
+  an existing/live Serato file.
 
 ### Core mapping workflow
 
