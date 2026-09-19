@@ -2300,7 +2300,7 @@ can become a real phase:
   else — the answer changes what "initialize" should actually send.
 
 - [x] **Preferences dialog redesigned into General/Plugins tabs**
-  (`v0.47.99-preferences-tabbed-layout`) — the
+  (`v0.48.5-preferences-tabbed-layout`) — the
   "Enabled plugins" checklist grows with every new controller or software
   plugin (11 controllers and counting) and was pushing the whole dialog
   taller with each addition, on top of an already-tried-and-reverted
