@@ -87,7 +87,9 @@ available with a packaged release.
 
 ## Dashboard
 
-The Dashboard shows the loaded Serato file, the registered controllers, catalog statistics, MIDI availability indicators, and shortcuts into the detailed views. Controller overview is presented as one spacious tab per controller, with the reference image on the left and vertical `Channel`, `Controller`, and `Images` actions on the right. The active controller selector still controls those drill-down actions. Availability is detected from the currently listed MIDI input ports; `MIDI: available` means a port name matches the controller catalog, while `MIDI: not detected` means no match was found. The whole tab scrolls when the window is short, so the drill-down buttons under the controller overview stay reachable at any size.
+The Dashboard shows the loaded mapping file, the registered controllers, catalog statistics, MIDI availability indicators, and shortcuts into the detailed views. Controller overview is presented as one spacious tab per controller, with the reference image on the left and vertical `Channel`, `Controller`, and `Images` actions on the right. The active controller selector still controls those drill-down actions. Availability is detected from the currently listed MIDI input ports; `MIDI: available` means a port name matches the controller catalog, while `MIDI: not detected` means no match was found. The whole tab scrolls when the window is short, so the drill-down buttons under the controller overview stay reachable at any size.
+
+Once a mapping is loaded, its software is named next to the "Loaded file" line as a small colored badge (Serato DJ in orange, Native Instruments Traktor in teal) — the window title and the Dashboard's own description text update to match, since the one-time "which software?" confirmation shown when opening a file used to be the only place this was ever surfaced (issue #121). Nothing is loaded yet: the description reads generically ("Serato DJ or Traktor MIDI mappings") and no badge is shown.
 
 The current catalog contains DDJ-XP2, XDJ-XZ, DDJ-1000, DDJ-FLX4, DDJ-FLX10, DDJ-REV1, Numark Mixtrack Pro FX, and Hercules DJControl Inpulse 500. Controller Setup definitions applied during the current session also appear here immediately. Reference artwork is available for all eight built-in controllers. The DDJ-FLX10 and DDJ-REV1 images are annotated official MIDI message-list diagrams; the DDJ-FLX4, Numark, and Hercules images are official product views used as physical-layout references, not complete MIDI message maps.
 
@@ -157,7 +159,7 @@ The same tab provides MIDI output controls for sending a command once, sending a
 ![Controller Setup](images/layout/controlleur-setup.png)
 
 A session with real hardware-recorded rows already loaded looks like this —
-`data/ddj_xp2.json`, `data/xdj_xz.json`, and `data/xdj_xz-ddj_xp2.json` are
+`../data/conrtollers/ddj_xp2.json`, `../data/conrtollers/xdj_xz.json`, and `../data/conrtollers/xdj_xz-ddj_xp2.json` are
 learned, not imported (`Source` column says `learned`), and can be loaded
 via the `Session` group's `Load session…` icon button:
 
