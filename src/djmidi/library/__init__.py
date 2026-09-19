@@ -12,15 +12,18 @@ from .rekordbox_library import (
     RekordboxPlaylist,
     RekordboxTrack,
     parse_export,
-    parse_playlists,
 )
+from .rekordbox_library import parse_playlists as parse_rekordbox_playlists
 from .scanner import AUDIO_EXTENSIONS, ScanResult, iter_audio_files, scan_root
+from .traktor_library import NmlTrack, parse_collection
+from .traktor_library import parse_playlists as parse_traktor_playlists
 
 __all__ = [
     "AUDIO_EXTENSIONS",
     "MANAGED_FIELDS",
     "LibraryDB",
     "LibraryRoot",
+    "NmlTrack",
     "RekordboxPlaylist",
     "RekordboxTrack",
     "ScanResult",
@@ -28,8 +31,10 @@ __all__ = [
     "TrackRecord",
     "clean_noise_frames",
     "iter_audio_files",
+    "parse_collection",
     "parse_export",
-    "parse_playlists",
+    "parse_rekordbox_playlists",
+    "parse_traktor_playlists",
     "read_metadata",
     "scan_root",
     "write_metadata",
