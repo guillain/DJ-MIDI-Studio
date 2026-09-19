@@ -739,12 +739,12 @@ of official MIDI documentation, and fit with the current catalog architecture.
 - [x] **Numark Mixtrack Pro FX** — initial discrete-control profile delivered.
 - [x] **Hercules DJControl Inpulse 500** — initial discrete-control profile delivered.
 - [x] **DDJ-REV5** (not originally on this list either, and mislabeled as a "two-deck battle controller" before an official MIDI Message List PDF existed — it's actually a four-deck flagship): catalog module transcribed from the maintainer-supplied PDF in `v0.47.96-ddj-rev5-catalog` — see Recent evolution chapters.
-- [ ] Verify the delivered FLX4, FLX10, REV1, Numark, Hercules, and DDJ-REV5 profiles against target hardware/firmware captures; continuous controls and missing vendor-specific evidence remain explicitly out of scope until verified.
+- [x] **DDJ-800** (not originally on this list either; was listed as a "New candidate" until its own maintainer-supplied MIDI Message List PDF arrived): catalog module transcribed from that PDF in `v0.47.97-ddj-800-catalog` — see Recent evolution chapters.
+- [ ] Verify the delivered FLX4, FLX10, REV1, Numark, Hercules, DDJ-REV5, and DDJ-800 profiles against target hardware/firmware captures; continuous controls and missing vendor-specific evidence remain explicitly out of scope until verified.
 - [x] **DDJ-1000** (not originally on this list, but the same class of problem): its catalog data was checked against the official bundled PDF (not hardware) and corrected in `v0.47.31-ddj-1000-catalog-fix` — see Recent evolution chapters. **DDJ-FLX10 had the same kind of problem, worse**: it had reused DDJ-1000's (wrong) values wholesale, and its real controls diverge substantially from DDJ-1000's (ACTIVE PART DRUMS/VOCAL/INST, MIX POINT SELECT/LINK, CUE/LOOP CALL <>/>>) — fully re-transcribed from FLX10's own PDF (not a value fix) in `v0.47.32-ddj-flx10-catalog-fix`, see Recent evolution chapters.
 
 #### New candidates
 
-- [ ] **DDJ-800** — established two-channel Rekordbox controller.
 - [ ] **Native Instruments Traktor Kontrol S2 MK3** — representative non-Pioneer Traktor controller.
 - [ ] **RANE FOUR** — four-channel Serato controller.
 - [ ] **Denon DJ Prime 4+** — four-deck Engine DJ system and Serato comparison point.
@@ -2126,6 +2126,57 @@ against the current tree and confirmed still open. Tracked as GitHub issues.
   (`tests/test_catalog.py`, `tests/test_catalog_registry.py`) including a
   spot-check that every one of the ambiguous "USER MODE" pad notes above
   resolves to no match, and a static-entries duplicate-trigger check.
+  Field-verification against real hardware remains open, same status as
+  every other PDF-transcribed profile (issue #11).
+- [x] **DDJ-800 catalog module** (`v0.47.97-ddj-800-catalog`, issue #12) —
+  the second of the three new candidates from the controller-assets reorg
+  PR to get a catalog module. Also structurally close to DDJ-1000/DDJ-
+  REV5: one MIDI channel per deck (1-4) for DECK-section controls, a
+  shared channel 7 for BROWSE/global MIXER controls, channel 5 for its
+  single FX unit, and eight pad channels (four decks x on/+SHIFT).
+  Transcribed: 19 DECK transport/loop/search/memory buttons (PLAY/PAUSE,
+  CUE, MASTER TEMPO, BEAT SYNC, KEY SYNC, TEMPO RANGE, LOOP IN/OUT,
+  RELOOP/EXIT, QUANTIZE, SLIP, SLIP REVERSE, SEARCH </>, MEMORY, DELETE,
+  CUE/LOOP CALL </>, SHIFT) plus 4 pad-mode-select buttons (HOT CUE/PAD
+  FX/BEAT JUMP/SAMPLER MODE); BROWSE, BACK, VIEW; 4 COLOR FX buttons (on
+  the shared channel 7, not the dedicated FX channel) plus BEAT </> and
+  BEAT FX ON/OFF (on channel 5); and 3 MIXER controls (HEADPHONES CUE
+  spanning all 4 deck channels; MASTER CUE; LINE/PHONO SW, unlike every
+  other entry here limited to channels 1/2 only per the PDF's own "1/2"
+  condition column — DDJ-800 is a 2-channel mixer even though its DECK
+  section addresses 4 channels for a 4-deck workflow). The 8-pad grid
+  reuses a different bespoke formula again, verified directly against the
+  PDF: 8 named modes (HOT CUE, PAD FX 1, BEAT JUMP, SAMPLER, KEYBOARD, PAD
+  FX 2, BEAT LOOP, KEY SHIFT) each occupying a full 16-note block with
+  *no* gap this time — `mode, rest = divmod(note, 16)` then
+  `page, pad = divmod(rest, 8)`, covering the entire 0-127 Data1 range
+  with both PAGE 1 and PAGE 2 states modeled per mode, unlike DDJ-REV5's
+  grid (half-empty blocks) or DDJ-1000/FLX10's (`divmod(note, 8)`, no
+  paging at all).
+  Deliberately excluded, each for its own documented reason (see
+  `catalog/ddj_800.py`'s module docstring): every "+SHIFT <control>" DECK
+  variant (same established precedent as DDJ-1000/DDJ-FLX10/DDJ-REV5);
+  LOAD (each of the two physical buttons sends a different trigger
+  depending on which deck is currently selected on that side, not one
+  deterministic value per button, same reasoning as DDJ-REV5's own
+  LOAD/DECK-select exclusion); MIC OFF/ON and INPUT SELECT (each sends a
+  *pair* of NOTE messages per switch position, not one clean trigger,
+  same pattern DDJ-REV5 excluded its slide switches for); CROSSFADER and
+  CH FADER "Fader Start" messages (edge-triggered NOTEs fired when the
+  *continuous* fader crosses zero — an emergent trigger from analog fader
+  movement, not a discrete press); FX SELECT and CH SELECT (encoder
+  rotations stepping through named values, continuous, out of scope); and
+  the pad grid's PAGE 1/PAGE 2 switch buttons themselves (the PDF's table
+  layout for that row couldn't be reliably machine-extracted — a footnote
+  describes two simple buttons, but the extracted text showed values that
+  don't resolve to that description without the source image or hardware
+  to check against; the pad grid below still models both pages for every
+  named mode from their own unambiguous rows, so this only means the
+  switch buttons aren't independently catalogued).
+  A handful of values (VIEW, LINE/PHONO SW, COLOR FX, HEADPHONES CUE, and
+  several pad-grid notes) were independently spot-checked against the raw
+  extracted PDF text before shipping, on top of the module's own
+  Fig.-callout-cross-referencing methodology.
   Field-verification against real hardware remains open, same status as
   every other PDF-transcribed profile (issue #11).
 
