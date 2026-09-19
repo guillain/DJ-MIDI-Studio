@@ -622,6 +622,17 @@ Implemented contract, runtime, test, and documentation work:
   `tests/test_rekordbox_library.py` covers the DeviceSQL string codec
   directly plus a full parse of a hand-built synthetic `export.pdb` fixture
   (real page/row-index binary layout, not just a wrapper-logic unit test).
+- [x] **Traktor `collection.nml` read support** (issue #130) —
+  `src/djmidi/library/traktor_library.py`: `parse_collection()` (streaming
+  `ET.iterparse`, `NmlTrack` per entry: title/artist/bpm/musical
+  key/album/location) and `parse_playlists()` (name → ordered list of
+  Traktor's own `VOLUME+DIR+FILE` track keys, matching `NmlTrack.key`,
+  real `PLAYLIST` nodes only — `SMARTLIST` saved-search nodes have no
+  explicit track list and are skipped), both verified read-only against
+  the maintainer's real 51.7MB/44,564-entry `collection.nml` (all entries
+  parsed in ~0.5s, ~61MB peak RSS — bounded, not a full-file DOM load).
+  Writing a `.nml` playlist back out is deferred (not attempted this
+  pass) — reading was the stated priority and is fully delivered.
 
 ### Core mapping workflow
 
