@@ -2325,6 +2325,22 @@ can become a real phase:
   overwrote it, force a controller into a specific mode bank, or something
   else — the answer changes what "initialize" should actually send.
 
+- [x] **Preferences dialog redesigned into General/Plugins tabs**
+  (`v0.48.5-preferences-tabbed-layout`) — the
+  "Enabled plugins" checklist grows with every new controller or software
+  plugin (11 controllers and counting) and was pushing the whole dialog
+  taller with each addition, on top of an already-tried-and-reverted
+  two-column layout. Split `PreferencesDialog` (`gui/preferences_dialog.py`)
+  into a `QTabWidget`: **General** (theme, detection, log level/path,
+  routing/trust/auto-start-live-monitor checkboxes) and **Plugins** (the
+  checklist plus enable/disable-all buttons, wrapped in its own
+  `QScrollArea` so the list can keep growing without resizing the dialog).
+  Verified by screenshotting the real running dialog on both tabs,
+  including scrolled to the bottom of the Plugins list, before shipping —
+  per this project's "don't build visual features blind" discipline.
+  `tests/test_preferences_dialog.py` needed no changes (it exercises
+  preference save/load behavior, not widget layout).
+
 ### Next phases to define
 
 No new phase is committed yet. After the Phase 3 hardware validation review,

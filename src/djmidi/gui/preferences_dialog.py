@@ -7,12 +7,14 @@ from PySide6.QtWidgets import (
     QDialogButtonBox,
     QFileDialog,
     QFormLayout,
-    QGroupBox,
     QHBoxLayout,
     QLabel,
     QLineEdit,
     QPushButton,
+    QScrollArea,
+    QTabWidget,
     QVBoxLayout,
+    QWidget,
 )
 
 from djmidi import catalog, software
@@ -72,8 +74,8 @@ class PreferencesDialog(QDialog):
         log_path_row.addWidget(log_path, 1)
         log_path_row.addWidget(browse_button)
 
-        policy_box = QGroupBox("Integration policy")
-        policy_layout = QFormLayout(policy_box)
+        general_tab = QWidget()
+        policy_layout = QFormLayout(general_tab)
         policy_layout.addRow("Theme:", theme)
         policy_layout.addRow("Detection:", detection)
         policy_layout.addRow("Log level:", log_level)
@@ -88,8 +90,8 @@ class PreferencesDialog(QDialog):
         }
         self._controller_plugin_ids = controller_ids
 
-        plugins_box = QGroupBox("Enabled plugins")
-        plugins_layout = QVBoxLayout(plugins_box)
+        plugins_page = QWidget()
+        plugins_layout = QVBoxLayout(plugins_page)
         hint = QLabel(
             "Disabled controllers are hidden from the mapping tabs, the Dashboard, "
             "and the Controller Images selector. Use View → Show all controllers "
@@ -102,6 +104,7 @@ class PreferencesDialog(QDialog):
             checkbox.setChecked(preferences.is_enabled(plugin_id))
             self._plugin_checks[plugin_id] = checkbox
             plugins_layout.addWidget(checkbox)
+        plugins_layout.addStretch(1)
 
         select_all = QPushButton("Enable all controllers")
         select_all.clicked.connect(lambda: self._set_all_controllers(True))
@@ -113,6 +116,23 @@ class PreferencesDialog(QDialog):
         controller_buttons.addStretch(1)
         plugins_layout.addLayout(controller_buttons)
 
+        # The plugin list grows with every new controller/software plugin
+        # (11 controllers and counting) -- its own scroll area keeps the
+        # dialog from growing ever taller as the catalog does, rather than
+        # widening/heightening the whole window.
+        plugins_scroll = QScrollArea()
+        plugins_scroll.setWidget(plugins_page)
+        plugins_scroll.setWidgetResizable(True)
+        plugins_scroll.setFrameShape(QScrollArea.Shape.NoFrame)
+
+        # Tabs, not a fixed side-by-side split: scales better as more
+        # settings/plugins are added over time than either a single long
+        # vertical stack or a two-column layout whose column widths would
+        # need constant rebalancing.
+        tabs = QTabWidget()
+        tabs.addTab(general_tab, "General")
+        tabs.addTab(plugins_scroll, "Plugins")
+
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel
         )
@@ -120,8 +140,7 @@ class PreferencesDialog(QDialog):
         buttons.rejected.connect(self.reject)
 
         layout = QVBoxLayout(self)
-        layout.addWidget(policy_box)
-        layout.addWidget(plugins_box)
+        layout.addWidget(tabs)
         layout.addWidget(buttons)
 
     @staticmethod
