@@ -648,6 +648,22 @@ Implemented contract, runtime, test, and documentation work:
   and `numba`/`llvmlite`'s JIT is a known `PyInstaller`-bundling risk for a
   project that ships release builds. Tests use a synthetic click-track WAV,
   never a real file from the maintainer's actual collection.
+- [x] **Dock window management and a Preferences corner icon** (issue #137)
+  — the `&Settings` menu is gone, replaced by a `⚙` corner-widget button on
+  the menu bar; every dock (the four fixed tool docks and every Controller
+  Emulator instance) gained a compact "Window" menu button next to the
+  existing Dock/Undock and Close, offering Maximize/Restore (floats +
+  `showMaximized()`s the dock, Restore returns to its prior floating
+  geometry — confirmed with the maintainer before building, since Qt has no
+  native per-dock maximize), Reduce/Expand (collapses to just the title-bar
+  strip), and four snap-to-side actions. One menu button rather than six
+  separate buttons, after the six-button version regressed the two existing
+  `..._never_extends_past_the_window_edge` tests by pushing the title bar's
+  minimum width past the window edge at narrow sizes. Even that one
+  button's footprint mattered: the same emulator regression test still
+  failed on Linux CI (560 vs 550, passing locally on macOS) from
+  platform font-metric differences — fixed by shrinking the button to
+  22x22 and tightening the bar's own margins/spacing.
 
 ### Core mapping workflow
 
