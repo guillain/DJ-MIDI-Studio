@@ -581,6 +581,25 @@ Implemented contract, runtime, test, and documentation work:
   (`export.pdb`) folders — unblocking #129/#130/#134's "no real fixture
   yet" concern before those sub-issues even started; see #133's own
   investigation-update section for the full findings.
+- [x] **Non-destructive audio metadata read/write** (issue #126) —
+  `library/metadata.py`, a `mutagen` wrapper exposing a normalized
+  `TrackMetadata` (title/artist/album/genre/bpm/key/comment/rating/energy)
+  via `read_metadata()`/`write_metadata()` across MP3/AIFF (ID3),
+  FLAC/OGG (Vorbis comments), and M4A (MP4 atoms). Writes are frame-level
+  and surgical — only the touched field's frame/key is ever replaced, so
+  Serato's `GEOB:Serato *` blobs (Overview/Analysis/Autotags/Markers_/
+  Markers2/BeatGrid), `PRIV:TRAKTOR4`, and FLAC's `serato_*` Vorbis-comment
+  equivalents survive byte-identical, proven by tests that write a managed
+  field and assert those frames are unchanged before/after. `MANAGED_FIELDS`
+  is the explicit allowlist this app touches; `clean_noise_frames()` is
+  dry-run by default and only strips confirmed real-world noise (duplicate
+  ID3v1 `COMM` mirrors, `COMM:Songs-DB_Preference`/`MusicMatch_Preference`,
+  `WM/*` `PRIV` frames, `replaygain_*`, `TXXX:LABELNO`/Vorbis `labelno`) on
+  an explicit non-dry-run call, never the protected blobs or managed
+  fields. Deliberately cut: decoding Serato's proprietary Autotags binary
+  blob to read its embedded BPM/key (undocumented format, would mean
+  guessing structure) — standard `TBPM`/`TKEY`/Vorbis/MP4 tags are read
+  instead, left for the BPM/key analysis sub-issue (#128) if ever needed.
 
 ### Core mapping workflow
 

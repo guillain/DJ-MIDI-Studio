@@ -1,6 +1,6 @@
 [project]
 name = "djmidi"
-version = "0.48.5"
+version = "0.48.6"
 description = "DJ MIDI mapping visualizer, editor, and controller toolkit"
 authors = [
     { name = "guillain", email = "guillain@gmail.com" }
@@ -10,6 +10,7 @@ dependencies = [
     "PySide6>=6.7",
     "aalink>=0.2.3",
     "mido>=1.3",
+    "mutagen>=1.48.1",
     "python-rtmidi>=1.5",
 ]
 
