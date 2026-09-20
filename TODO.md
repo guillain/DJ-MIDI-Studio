@@ -600,6 +600,28 @@ Implemented contract, runtime, test, and documentation work:
   blob to read its embedded BPM/key (undocumented format, would mean
   guessing structure) — standard `TBPM`/`TKEY`/Vorbis/MP4 tags are read
   instead, left for the BPM/key analysis sub-issue (#128) if ever needed.
+- [x] **Rekordbox export.pdb library read support** (issue #134, part of
+  milestone "Music library management" #5) — new `src/djmidi/library/
+  rekordbox_library.py`: `parse_export()` (tracks, resolving artist/album/
+  genre/label/key names) and `parse_playlists()` (the playlist/folder tree,
+  each playlist's track IDs in real order) against a Rekordbox USB/device
+  export's `export.pdb`. Investigation found `pyrekordbox` — this project's
+  preferred, actively-maintained dependency for every *other* Rekordbox
+  format — does not read this one at all (confirmed from its installed
+  source: it covers `master.db`, RekordboxXML, ANLZ and My-Settings only,
+  and its own README points elsewhere, to `rekordcrate`/`crate-digger`, for
+  device exports); the one PyPI-named alternative found doesn't actually
+  exist on PyPI, only as a two-star single-commit GitHub repo, too thin to
+  depend on for real personal library data. So this is a from-scratch
+  binary parser instead, hand-written against Deep Symmetry crate-digger's
+  published `rekordbox_pdb.ksy` Kaitai Struct spec (a factual byte-layout
+  reference, not copied code) and verified byte-for-byte against the
+  maintainer's own real `export.pdb` (6,513 tracks, 27 playlists/folders,
+  correct titles/artists/albums/genres/labels/keys/BPM/comments/paths) —
+  read-only, nothing under `/Users/guillain/Music` was ever written.
+  `tests/test_rekordbox_library.py` covers the DeviceSQL string codec
+  directly plus a full parse of a hand-built synthetic `export.pdb` fixture
+  (real page/row-index binary layout, not just a wrapper-logic unit test).
 
 ### Core mapping workflow
 
