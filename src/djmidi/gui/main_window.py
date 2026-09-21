@@ -727,8 +727,8 @@ class MainWindow(QMainWindow):
         """
         bar = QWidget()
         bar_layout = QHBoxLayout(bar)
-        bar_layout.setContentsMargins(8, 4, 4, 4)
-        bar_layout.setSpacing(6)
+        bar_layout.setContentsMargins(4, 4, 4, 4)
+        bar_layout.setSpacing(3)
         label = QLabel(title)
         label.setStyleSheet("QLabel { font-weight: bold; }")
         bar_layout.addWidget(label)
@@ -775,7 +775,7 @@ class MainWindow(QMainWindow):
         guess -- see issue #137.
         """
         button = QPushButton()
-        button.setFixedSize(28, 28)
+        button.setFixedSize(22, 22)
         button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_TitleBarMenuButton))
         button.setToolTip("Window")
 
@@ -905,8 +905,8 @@ class MainWindow(QMainWindow):
         instead of just hiding a permanent singleton widget."""
         bar = QWidget()
         bar_layout = QHBoxLayout(bar)
-        bar_layout.setContentsMargins(8, 4, 4, 4)
-        bar_layout.setSpacing(6)
+        bar_layout.setContentsMargins(4, 4, 4, 4)
+        bar_layout.setSpacing(3)
         label = QLabel(title)
         label.setStyleSheet("QLabel { font-weight: bold; }")
         bar_layout.addWidget(label)
