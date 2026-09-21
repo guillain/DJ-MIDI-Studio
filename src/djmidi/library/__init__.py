@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from .analysis import estimate_bpm, estimate_key, resolve_bpm_key, to_camelot
 from .db import LibraryDB, LibraryRoot, TrackRecord
 from .metadata import (
     MANAGED_FIELDS,
@@ -30,12 +31,16 @@ __all__ = [
     "TrackMetadata",
     "TrackRecord",
     "clean_noise_frames",
+    "estimate_bpm",
+    "estimate_key",
     "iter_audio_files",
     "parse_collection",
     "parse_export",
     "parse_rekordbox_playlists",
     "parse_traktor_playlists",
     "read_metadata",
+    "resolve_bpm_key",
     "scan_root",
+    "to_camelot",
     "write_metadata",
 ]

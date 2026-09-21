@@ -1,6 +1,6 @@
 [project]
 name = "djmidi"
-version = "0.48.15"
+version = "0.48.16"
 description = "DJ MIDI mapping visualizer, editor, and controller toolkit"
 authors = [
     { name = "guillain", email = "guillain@gmail.com" }
@@ -28,6 +28,11 @@ dev = [
 [project.scripts]
 djmidi = "djmidi:main"
 djmidi-send-midi = "djmidi.midi_send:main"
+
+[project.optional-dependencies]
+analysis = [
+    "librosa>=0.10",
+]
 
 [build-system]
 requires = ["uv_build>=0.12.3,<0.13.0"]

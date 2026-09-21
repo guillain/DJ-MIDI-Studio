@@ -633,6 +633,21 @@ Implemented contract, runtime, test, and documentation work:
   parsed in ~0.5s, ~61MB peak RSS — bounded, not a full-file DOM load).
   Writing a `.nml` playlist back out is deferred (not attempted this
   pass) — reading was the stated priority and is fully delivered.
+- [x] **BPM/Camelot-key analysis** (issue #128) — new
+  `src/djmidi/library/analysis.py`: a dependency-free `to_camelot()` lookup
+  covering every notation the issue's own investigation found tagged on
+  real tracks (plain note names with `#`/`b` and an `m`/`min`/`minor`
+  suffix, Mixed In Key's Open Key numbering like `7m`, and Camelot codes
+  passed straight through), plus `estimate_bpm`/`estimate_key` audio-analysis
+  fallbacks (`librosa` beat tracking / Krumhansl-Schmuckler chroma-profile
+  key estimation) for the genuine tag gaps, and a `resolve_bpm_key()` helper
+  that only reaches for audio analysis when a tag value is missing.
+  `librosa` is a new optional `analysis` extra, not a base dependency — per
+  the issue's own dependency-feasibility investigation, it pulls in 18
+  transitive packages (`numpy`/`scipy`/`scikit-learn`/`numba`/`llvmlite`/...)
+  and `numba`/`llvmlite`'s JIT is a known `PyInstaller`-bundling risk for a
+  project that ships release builds. Tests use a synthetic click-track WAV,
+  never a real file from the maintainer's actual collection.
 
 ### Core mapping workflow
 
