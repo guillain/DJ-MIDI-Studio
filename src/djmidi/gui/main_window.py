@@ -36,6 +36,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QLineEdit,
     QMainWindow,
+    QMenu,
     QMessageBox,
     QPushButton,
     QSplitter,
@@ -634,10 +635,17 @@ class MainWindow(QMainWindow):
         self._performance_mode_action.toggled.connect(self._on_performance_mode_toggled)
         view_menu.addAction(self._performance_mode_action)
 
-        settings_menu = self.menuBar().addMenu("&Settings")
-        preferences_action = QAction("&Preferences...", self)
-        preferences_action.triggered.connect(self._on_preferences)
-        settings_menu.addAction(preferences_action)
+        # Preferences moved out of the menu bar (issue #137) into an
+        # always-visible corner icon instead of a menu someone has to open
+        # first to discover it. Kept as an instance attribute -- unlike
+        # addWidget() on a layout, setCornerWidget() doesn't reliably keep
+        # PySide6's Python-side wrapper alive on its own, so a purely local
+        # variable here gets garbage-collected out from under the C++ widget.
+        self._preferences_button = QPushButton("⚙")
+        self._preferences_button.setFixedSize(28, 28)
+        self._preferences_button.setToolTip("Preferences...")
+        self._preferences_button.clicked.connect(self._on_preferences)
+        self.menuBar().setCornerWidget(self._preferences_button, Qt.Corner.TopRightCorner)
 
         help_menu = self.menuBar().addMenu("&Help")
         documentation_menu = help_menu.addMenu("Project Documentation")
@@ -719,12 +727,15 @@ class MainWindow(QMainWindow):
         """
         bar = QWidget()
         bar_layout = QHBoxLayout(bar)
-        bar_layout.setContentsMargins(8, 4, 4, 4)
-        bar_layout.setSpacing(6)
+        bar_layout.setContentsMargins(4, 4, 4, 4)
+        bar_layout.setSpacing(3)
         label = QLabel(title)
         label.setStyleSheet("QLabel { font-weight: bold; }")
         bar_layout.addWidget(label)
         bar_layout.addStretch(1)
+
+        for button in self._build_window_control_buttons(dock):
+            bar_layout.addWidget(button)
 
         dock_button = QPushButton()
         dock_button.setFixedHeight(28)
@@ -741,6 +752,106 @@ class MainWindow(QMainWindow):
         close_button.clicked.connect(dock.close)
         bar_layout.addWidget(close_button)
         return bar
+
+    def _build_window_control_buttons(self, dock: QDockWidget) -> list[QPushButton]:
+        """A single compact "Window" menu button, added to every dock's title
+        bar (issue #137) alongside the existing Dock/Undock and Close
+        buttons: Maximize/Restore, Reduce/Expand, and snap-to-side actions.
+
+        An earlier version of this added one 28px button per action (6 in
+        total), which regressed test_tool_dock_geometry_never_extends_past_
+        the_window_edge / the emulator equivalent -- at a narrow docked
+        width, the title bar's own minimum size drives the dock's minimum
+        width, and six extra buttons pushed that past the window edge. One
+        menu button keeps the same footprint as the existing Close button.
+
+        Maximize floats the dock (if docked) and showMaximized()s it, like
+        any top-level window; Restore returns it to its prior floating
+        geometry, not to wherever it was docked before (that's what the
+        existing Dock/Undock button already does). Reduce collapses the dock
+        to just its title-bar strip (content hidden, a fixed maximum height
+        applied) rather than hiding it outright, unlike Close; triggering it
+        again re-expands. Both are confirmed maintainer decisions, not a
+        guess -- see issue #137.
+        """
+        button = QPushButton()
+        button.setFixedSize(22, 22)
+        button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_TitleBarMenuButton))
+        button.setToolTip("Window")
+
+        menu = QMenu(button)
+        reduce_action = QAction("Reduce to title bar", button)
+        maximize_action = QAction("Maximize", button)
+        menu.addAction(reduce_action)
+        menu.addAction(maximize_action)
+        menu.addSeparator()
+        snap_specs = [
+            ("Snap left", Qt.DockWidgetArea.LeftDockWidgetArea),
+            ("Snap right", Qt.DockWidgetArea.RightDockWidgetArea),
+            ("Snap to top", Qt.DockWidgetArea.TopDockWidgetArea),
+            ("Snap to bottom", Qt.DockWidgetArea.BottomDockWidgetArea),
+        ]
+        for label, area in snap_specs:
+            snap_action = QAction(label, button)
+            snap_action.triggered.connect(lambda checked=False, d=dock, a=area: self._snap_dock_to_area(d, a))
+            menu.addAction(snap_action)
+        button.setMenu(menu)
+
+        self._init_dock_window_state(dock, reduce_action, maximize_action)
+        reduce_action.triggered.connect(lambda: self._toggle_dock_reduced(dock))
+        maximize_action.triggered.connect(lambda: self._toggle_dock_maximized(dock))
+
+        return [button]
+
+    @staticmethod
+    def _init_dock_window_state(dock: QDockWidget, reduce_action: QAction, maximize_action: QAction) -> None:
+        dock._dj_reduced = False
+        dock._dj_maximized = False
+        dock._dj_premax_geometry = None
+        dock._dj_reduce_action = reduce_action
+        dock._dj_maximize_action = maximize_action
+
+    def _toggle_dock_reduced(self, dock: QDockWidget) -> None:
+        widget = dock.widget()
+        if widget is None:
+            return
+        if not dock._dj_reduced:
+            widget.hide()
+            title_bar = dock.titleBarWidget()
+            dock.setMaximumHeight(title_bar.sizeHint().height() if title_bar is not None else 32)
+            dock._dj_reduced = True
+            dock._dj_reduce_action.setText("Expand")
+        else:
+            widget.show()
+            dock.setMaximumHeight(16777215)
+            dock._dj_reduced = False
+            dock._dj_reduce_action.setText("Reduce to title bar")
+
+    def _toggle_dock_maximized(self, dock: QDockWidget) -> None:
+        if not dock._dj_maximized:
+            if not dock.isFloating():
+                dock.setFloating(True)
+            dock._dj_premax_geometry = dock.geometry()
+            dock.showMaximized()
+            dock._dj_maximized = True
+            dock._dj_maximize_action.setText("Restore")
+        else:
+            dock.showNormal()
+            if dock._dj_premax_geometry is not None:
+                dock.setGeometry(dock._dj_premax_geometry)
+            dock._dj_maximized = False
+            dock._dj_maximize_action.setText("Maximize")
+
+    def _snap_dock_to_area(self, dock: QDockWidget, area: Qt.DockWidgetArea) -> None:
+        if dock._dj_reduced:
+            self._toggle_dock_reduced(dock)
+        if dock._dj_maximized:
+            self._toggle_dock_maximized(dock)
+        if dock.isFloating():
+            dock.setFloating(False)
+        self.addDockWidget(area, dock)
+        dock.show()
+        dock.raise_()
 
     @staticmethod
     def _update_dock_button(button: QPushButton, floating: bool) -> None:
@@ -794,12 +905,15 @@ class MainWindow(QMainWindow):
         instead of just hiding a permanent singleton widget."""
         bar = QWidget()
         bar_layout = QHBoxLayout(bar)
-        bar_layout.setContentsMargins(8, 4, 4, 4)
-        bar_layout.setSpacing(6)
+        bar_layout.setContentsMargins(4, 4, 4, 4)
+        bar_layout.setSpacing(3)
         label = QLabel(title)
         label.setStyleSheet("QLabel { font-weight: bold; }")
         bar_layout.addWidget(label)
         bar_layout.addStretch(1)
+
+        for button in self._build_window_control_buttons(dock):
+            bar_layout.addWidget(button)
 
         dock_button = QPushButton()
         dock_button.setFixedHeight(28)
