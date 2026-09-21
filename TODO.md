@@ -664,6 +664,19 @@ Implemented contract, runtime, test, and documentation work:
   failed on Linux CI (560 vs 550, passing locally on macOS) from
   platform font-metric differences — fixed by shrinking the button to
   22x22 and tightening the bar's own margins/spacing.
+- [x] **BPM/key/genre-aware playlist generation, simple mode** (issue #131)
+  — new `src/djmidi/library/playlist.py`: `PlaylistTrack` deliberately
+  decoupled from `LibraryDB`/#127's `Category`/#128's analysis types (a
+  caller resolves those and passes plain values), `is_camelot_compatible()`
+  (standard harmonic-mixing rule: same key, +/-1 on the wheel, or same
+  number/other letter), `is_bpm_compatible()` (a percentage window, not a
+  fixed delta), `find_compatible_tracks()` (compatible candidates sorted
+  by BPM closeness). `build_playlist_draft()` implements the maintainer's
+  explicit ordering rule, given verbatim: "Groupé par catégorie, puis par
+  range de BPM, puis trié par clef" — category, then a `bpm_bucket()`
+  grouping, then Camelot key. The harder full-ordered-path mode (smooth
+  BPM/energy progression across a whole draft) is deferred, per the
+  issue's own scope, until this simple mode is validated against real use.
 
 ### Core mapping workflow
 
