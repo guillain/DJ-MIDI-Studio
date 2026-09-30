@@ -714,6 +714,34 @@ Implemented contract, runtime, test, and documentation work:
   index) stays unimplemented/out of scope by design, per the issue's own
   risk framing — writes only ever target a caller-specified new path, never
   an existing/live Serato file.
+- [x] **Music Library GUI tab** (issue #132, closes epic #133) — a seventh
+  `left_tabs` tab, `gui/music_library_view.py`'s `MusicLibraryView`, binding
+  every library sub-issue to one screen: a music-folder list with an
+  incremental **Scan & read tags** job (driven a slice at a time from a
+  `QTimer` through the new `scanner.iter_scan_root` /
+  `workspace.iter_refresh_metadata` generators, never a blocking loop); the
+  consolidated, sortable/filterable metadata table (custom
+  `QAbstractTableModel` sized for the real ~85k-track collection, numeric
+  BPM sort, text + category filters, Camelot column, fuzzy category
+  suggestions shown in amber italics, missing files greyed); a **Track**
+  panel whose tag writes go through `commands.WriteTrackMetadataCommand` on
+  a `QUndoStack` (undo re-writes the old values through the same surgical
+  `write_metadata`), a *Confirm suggested category* action (records the
+  genre as an alias — #127's "federate only with confirmation"), and a
+  dry-run-then-confirm *Clean noise frames…*; a **Categories** panel
+  (new/alias/rename/merge/delete, persisted in the library DB and replayed
+  over the built-in families at startup); and a **Playlists** panel
+  (manual from selection, #131's default-order and seed-matched
+  generation, import from Serato crates / Traktor `collection.nml` /
+  Rekordbox `export.pdb`, export as a *new* Serato crate at a user-chosen
+  path, rename/delete). New Qt-free `library/workspace.py` holds all the
+  glue (consolidation, taxonomy persistence, volume-relative crate paths,
+  Traktor `PRIMARYKEY` → path, Rekordbox device-root mapping); `LibraryDB`
+  gained a `track_metadata` *cache* table (re-read whenever a file's mtime
+  moves), `playlists`/`playlist_tracks`, and `user_categories` /
+  `removed_categories`. The index opens lazily on first show at
+  `library.sqlite3` beside `preferences.json` (`DJMIDI_LIBRARY_DB`
+  overrides; the test suite pins it to `:memory:`).
 
 ### Core mapping workflow
 
