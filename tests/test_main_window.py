@@ -1216,7 +1216,13 @@ def test_mapping_trees_restyle_live_on_a_theme_switch():
     from djmidi.gui import theme
 
     window = _loaded_window()
-    views = window.findChildren(QTreeView)
+    # Only the mapping trees carry a per-widget stylesheet; the Music
+    # Library tab's category tree is themed by the app-wide stylesheet.
+    views = [
+        view
+        for view in window.findChildren(QTreeView)
+        if not window.music_library_view.isAncestorOf(view)
+    ]
     assert views
     try:
         theme.apply_theme(QApplication.instance(), "light")
