@@ -14,6 +14,9 @@ from djmidi.model import MidiConfig
 _LOGGER = logging.getLogger(__name__)
 
 Parser = Callable[[str], MidiConfig]
+
+# NIXML is a real Traktor .tsi; NML is this app's legacy flat mapping shape.
+_TRAKTOR_ROOTS = frozenset({"NIXML", "NML"})
 Exporter = Callable[[MidiConfig], str]
 
 
@@ -27,6 +30,9 @@ class SoftwareDefinition:
     display_order: int = 100
     capabilities: tuple[str, ...] = ()
     permissions: tuple[str, ...] = ()
+    change_summary: Callable[[str, str], str] | None = None
+    """Optional human-readable description of the changes between two
+    exports, shown before a save when the raw diff isn't readable."""
 
     def parse_file(self, path: str | PathLike[str]) -> MidiConfig:
         return self.parser(Path(path).read_text(encoding="utf-8"))
@@ -48,7 +54,7 @@ class SoftwareDefinition:
         normalized_suffix = suffix.lower() if suffix else ""
         return normalized_suffix in self.extensions or (
             self.plugin_id == "serato" and root_tag == "midi"
-        ) or (self.plugin_id == "traktor" and root_tag == "NML")
+        ) or (self.plugin_id == "traktor" and root_tag in _TRAKTOR_ROOTS)
 
 
 _REGISTRY: dict[str, SoftwareDefinition] = {}
@@ -104,7 +110,7 @@ def detect_from_text(text: str, suffix: str = "") -> list[SoftwareDefinition]:
         definition
         for definition in active_definitions()
         if (definition.plugin_id == "serato" and root_tag == "midi")
-        or (definition.plugin_id == "traktor" and root_tag == "NML")
+        or (definition.plugin_id == "traktor" and root_tag in _TRAKTOR_ROOTS)
     ]
     matches = signature_matches or [
         definition for definition in active_definitions() if definition.can_parse(root_tag, suffix)
