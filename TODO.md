@@ -757,6 +757,21 @@ Implemented contract, runtime, test, and documentation work:
   `safe_update`). Adding/removing bindings and rewriting two-message
   (14-bit CC) bindings are refused rather than approximated. The old flat
   `<NML><MAPPING>` shape is kept only as a legacy fallback.
+- [x] **Screenshot/layout refresh** — `scripts/capture_docs_screenshots.py`
+  now also captures By Channel, the Music Library tab (track, categories,
+  playlists — on a synthetic demo collection generated on the fly, with the
+  library index pinned to `:memory:` so the script never touches a real
+  `library.sqlite3`) and a real Traktor `.tsi`. Fixed two capture bugs: the
+  Controller Emulator gallery had silently stopped updating since the
+  `v0.47.95` asset reorg (every `reference_image` became
+  `<slug>/reference.png`, so all ten captures overwrote one
+  `reference.png`), which also left DDJ-REV5/DDJ-800 with no gallery image;
+  and the live-send port picker leaked the capturing machine's own MIDI
+  ports into the images. The Traktor capture exposed a real layout limit:
+  a 10-channel mapping squeezed every By Channel column to "ch1 N…" — the
+  By Channel/Deck/Controller column rows now sit in a horizontal
+  `QScrollArea` (`splitter_utils.scrollable_columns`) with a
+  `MAPPING_COLUMN_MIN_WIDTH` per column, so they scroll instead.
 
 ### Core mapping workflow
 

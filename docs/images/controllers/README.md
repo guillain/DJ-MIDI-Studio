@@ -6,7 +6,7 @@ screenshot per registered controller, generated from
 image shows that controller's interactive schematic exactly as it renders
 today: the real-position layout (drawn from `gui/geometry.CONTROL_GEOMETRY`,
 scaled to the official reference photo) for the six controllers with modeled
-geometry, or the generic uniform card grid for the two that don't yet have it.
+geometry, or the generic uniform card grid for the four that don't yet have it.
 
 ## Table of Contents
 
@@ -30,6 +30,8 @@ that overlay involves and which controllers already have it:
 
 - [DDJ-FLX4](ddj-flx4.png)
 - [Hercules DJControl Inpulse 500](hercules-djcontrol-inpulse-500.png)
+- [DDJ-REV5](ddj-rev5.png)
+- [DDJ-800](ddj-800.png)
 
 Each schematic is dry-run only in these screenshots — no mapping is loaded,
 so every control resolves to "click to see what it resolves to" rather than

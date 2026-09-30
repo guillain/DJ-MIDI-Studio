@@ -3,20 +3,25 @@
 These screenshots show the main DJ MIDI Studio workspace, its mapping views,
 and the independent MIDI tools. Most are generated from
 `data/xdj_xz-ddj_xp2-4decks.xml` (a Serato mapping); the Controller Setup
-sessions below load a different kind of file instead — a recorded hardware
-profile, not a mapping. Both come from `scripts/capture_docs_screenshots.py`,
+sessions below load a recorded hardware profile instead, the Traktor capture
+a real `.tsi` export (`data/traktor/xdj-xz-settings.tsi.zip`), and the Music
+Library captures a small synthetic, generated-on-the-fly demo collection
+(never a real one). Both come from `scripts/capture_docs_screenshots.py`,
 run without physical MIDI hardware.
 
 ## Table of Contents
 
 - [Application views](#application-views)
 - [Controller Setup sessions](#controller-setup-sessions)
+- [Music Library](#music-library)
+- [Traktor mapping](#traktor-mapping)
 - [MIDI tools](#midi-tools)
 - [Window compositions](#window-compositions)
 
 ## Application views
 
 - [Dashboard](dashboard.png)
+- [By Channel](by-channel.png)
 - [By Deck](by-deck.png)
 - [By Controller](by-controller.png)
 - [Controller Setup](controlleur-setup.png)
@@ -36,6 +41,19 @@ MIDI triggers instead of the tab's blank starting state above:
 - [DDJ-XP2 session](controlleur-setup-ddj-xp2.png) (`data/ddj_xp2.json`)
 - [XDJ-XZ session](controlleur-setup-xdj-xz.png) (`data/xdj_xz.json`)
 - [XDJ-XZ and DDJ-XP2 combined session](controlleur-setup-xdj-xz-ddj-xp2.png) (`data/xdj_xz-ddj_xp2.json`)
+
+## Music Library
+
+- [Track table and Track panel](music-library.png) — a fuzzy category
+  suggestion selected, ready to confirm
+- [Categories panel](music-library-categories.png)
+- [Playlists panel](music-library-playlists.png) — an auto-sorted playlist
+  and one matched from a seed track
+
+## Traktor mapping
+
+- [A real Traktor `.tsi` in By Channel](traktor-tsi.png) — 10 MIDI channels,
+  so the column row scrolls sideways instead of squeezing every column
 
 ## MIDI tools
 

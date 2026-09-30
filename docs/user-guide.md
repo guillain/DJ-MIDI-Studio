@@ -318,3 +318,7 @@ categories, and playlists — independently of any MIDI mapping.
 
 The library index is stored beside the preferences file as
 `library.sqlite3`.
+
+![Music Library: track table and Track panel](images/layout/music-library.png)
+
+![Music Library: Playlists panel](images/layout/music-library-playlists.png)

@@ -91,13 +91,19 @@ The Dashboard shows the loaded mapping file, the registered controllers, catalog
 
 Once a mapping is loaded, its software is named next to the "Loaded file" line as a small colored badge (Serato DJ in orange, Native Instruments Traktor in teal) — the window title and the Dashboard's own description text update to match, since the one-time "which software?" confirmation shown when opening a file used to be the only place this was ever surfaced (issue #121). Nothing is loaded yet: the description reads generically ("Serato DJ or Traktor MIDI mappings") and no badge is shown.
 
-The current catalog contains DDJ-XP2, XDJ-XZ, DDJ-1000, DDJ-FLX4, DDJ-FLX10, DDJ-REV1, Numark Mixtrack Pro FX, and Hercules DJControl Inpulse 500. Controller Setup definitions applied during the current session also appear here immediately. Reference artwork is available for all eight built-in controllers. The DDJ-FLX10 and DDJ-REV1 images are annotated official MIDI message-list diagrams; the DDJ-FLX4, Numark, and Hercules images are official product views used as physical-layout references, not complete MIDI message maps.
+The current catalog contains DDJ-XP2, XDJ-XZ, DDJ-1000, DDJ-FLX4, DDJ-FLX10, DDJ-REV1, DDJ-REV5, DDJ-800, Numark Mixtrack Pro FX, and Hercules DJControl Inpulse 500. Controller Setup definitions applied during the current session also appear here immediately. Reference artwork is available for all ten built-in controllers. The DDJ-FLX10 and DDJ-REV1 images are annotated official MIDI message-list diagrams; the DDJ-FLX4, Numark, and Hercules images are official product views used as physical-layout references, not complete MIDI message maps.
 
 ## Mapping Views
 
 ### By Channel
 
 By Channel is the most granular editing view. It presents the raw MIDI controls grouped by channel and exposes the underlying `Control`, `UserIO`, and mapping hierarchy. Use it when an individual XML mapping must be inspected or edited precisely.
+
+![By Channel mapping view](images/layout/by-channel.png)
+
+Every column (here and in By Deck / By Controller) keeps a readable minimum width. When a mapping uses more channels than fit — a real Traktor `.tsi` for the XDJ-XZ spans ten — the row of columns scrolls sideways instead of squeezing each one down to "ch1 N…":
+
+![A real Traktor .tsi mapping with ten channel columns](images/layout/traktor-tsi.png)
 
 ### By Deck
 
@@ -123,6 +129,15 @@ tags, undo/redo, confirm a suggested category, clean noise frames),
 **Categories** (the genre/style taxonomy), and **Playlists** (import,
 generate, export). The edit/validation column of the mapping tabs is hidden
 here.
+
+![Music Library: track table and Track panel](images/layout/music-library.png)
+
+An amber `? Family / Name` category is a fuzzy suggestion; **Confirm suggested
+category** turns that genre spelling into a permanent alias.
+
+![Music Library: Categories panel](images/layout/music-library-categories.png)
+
+![Music Library: Playlists panel](images/layout/music-library-playlists.png)
 
 ## Controller Emulator
 
