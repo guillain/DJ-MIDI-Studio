@@ -68,6 +68,7 @@ from djmidi.gui.mapping_group import MappingGroup
 from djmidi.gui.metronome_view import MetronomeView
 from djmidi.gui.midi_clock_view import MidiClockView
 from djmidi.gui.midi_routing_view import MidiRoutingView
+from djmidi.gui.music_library_view import MusicLibraryView
 from djmidi.gui.preferences_dialog import PreferencesDialog
 from djmidi.gui.safe_update_dialog import SafeUpdateDialog
 from djmidi.gui.splitter_utils import replace_splitter
@@ -341,6 +342,10 @@ class MainWindow(QMainWindow):
         self.introduction_view.drillDownRequested.connect(self._on_intro_drilldown_requested)
         self.introduction_view.toolRequested.connect(self._show_tool_dock)
 
+        # Music Library (issue #133/#132): a separate domain from mappings --
+        # the DJ's own collection. Opens its index lazily on first show.
+        self.music_library_view = MusicLibraryView()
+
         self.left_tabs = QTabWidget()
         self._tab_indexes = {
             "intro": self.left_tabs.addTab(self.introduction_view, "Dashboard"),
@@ -349,6 +354,7 @@ class MainWindow(QMainWindow):
             "channel": self.left_tabs.addTab(channel_pair, "By Channel"),
             "deck": self.left_tabs.addTab(deck_pair, "By Deck"),
             "controller": self.left_tabs.addTab(controller_pair, "By Controller"),
+            "library": self.left_tabs.addTab(self.music_library_view, "Music Library"),
         }
         self.edit_panel = EditPanel(self.undo_stack, self._on_command_applied, self._on_group_edit_applied)
 
@@ -1671,6 +1677,7 @@ class MainWindow(QMainWindow):
             settings.sync()
         self.live_monitor_view.shutdown()
         self.midi_routing_view.shutdown()
+        self.music_library_view.close_db()
         self.metronome_view.shutdown()
         self.controller_setup_view.shutdown()
         super().closeEvent(event)

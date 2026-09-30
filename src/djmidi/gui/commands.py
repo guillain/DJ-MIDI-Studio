@@ -144,3 +144,36 @@ class RemoveGroupAliasCommand(QUndoCommand):
         for translation, alias in zip(self._translations, self._aliases, strict=True):
             translation.aliases.insert(self._index, alias)
         self._on_applied()
+
+
+class WriteTrackMetadataCommand(QUndoCommand):
+    """Undoable write of managed tags to one real audio file (Music Library
+    tab, issue #132). Undo writes the previous values back through the same
+    surgical `write_metadata` path, so Serato/Traktor frames stay untouched
+    either way."""
+
+    def __init__(
+        self,
+        path: str,
+        old_values: dict[str, object],
+        new_values: dict[str, object],
+        on_applied: Callable[[str], None],
+        writer: Callable[..., None] | None = None,
+    ) -> None:
+        changed = sorted(new_values)
+        super().__init__(f"Edit {', '.join(changed)} of {path.rsplit('/', 1)[-1]}")
+        self._path = path
+        self._old = {name: old_values.get(name) for name in changed}
+        self._new = dict(new_values)
+        self._on_applied = on_applied
+        if writer is None:
+            from djmidi.library.metadata import write_metadata as writer
+        self._writer = writer
+
+    def redo(self) -> None:
+        self._writer(self._path, **self._new)
+        self._on_applied(self._path)
+
+    def undo(self) -> None:
+        self._writer(self._path, **self._old)
+        self._on_applied(self._path)
