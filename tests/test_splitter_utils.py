@@ -41,3 +41,14 @@ def test_replace_splitter_new_splitter_starts_empty():
     new = replace_splitter(container, old)
     assert new.count() == 0
 
+
+
+def test_replace_splitter_inside_a_scroll_area():
+    from djmidi.gui.splitter_utils import scrollable_columns
+
+    old = QSplitter(Qt.Orientation.Horizontal)
+    area = scrollable_columns(old)
+    assert area.widget() is old
+    new = replace_splitter(area, old)
+    assert area.widget() is new
+    assert area.widgetResizable()

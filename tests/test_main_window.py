@@ -1500,3 +1500,42 @@ def test_controller_emulator_dock_geometry_never_extends_past_the_window_edge():
     right_edge = dock.geometry().x() + dock.geometry().width()
     assert right_edge <= window.width(), "Controller Emulator dock extends past the window edge"
     window.close()
+
+
+def test_many_channel_columns_scroll_instead_of_truncating():
+    """A real Traktor XDJ-XZ .tsi spans 10 MIDI channels: every column keeps
+    a readable width and the row scrolls sideways instead."""
+    import zipfile
+
+    from djmidi.gui.main_window import MAPPING_COLUMN_MIN_WIDTH
+    from djmidi.software.traktor import parse_string
+
+    archive = Path(__file__).parent.parent / "data" / "traktor" / "xdj-xz-settings.tsi.zip"
+    with zipfile.ZipFile(archive) as bundle:
+        text = bundle.read(next(n for n in bundle.namelist() if n.endswith(".tsi"))).decode("utf-8")
+    window = MainWindow()
+    window.resize(1400, 860)
+    window.show()
+    window.config = parse_string(text)
+    window.software_id = "traktor"
+    window.current_path = Path("xdj-xz-settings.tsi")
+    window._load_tree()
+    window.left_tabs.setCurrentIndex(window._tab_indexes["channel"])
+    QApplication.processEvents()
+    try:
+        assert window.channel_splitter.count() >= 10
+        widths = [window.channel_splitter.widget(i).width() for i in range(window.channel_splitter.count())]
+        assert min(widths) >= MAPPING_COLUMN_MIN_WIDTH
+        assert window._channel_columns_scroll.horizontalScrollBar().maximum() > 0
+    finally:
+        window.close()
+
+
+def test_few_channel_columns_still_fill_the_width():
+    window = _loaded_window()
+    window.resize(1600, 1000)
+    QApplication.processEvents()
+    try:
+        assert window._channel_columns_scroll.horizontalScrollBar().maximum() == 0
+    finally:
+        window.close()
