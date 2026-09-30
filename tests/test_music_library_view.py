@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 from mutagen.id3 import ID3, TBPM, TCON, TIT2, TKEY, TPE1
-from PySide6.QtWidgets import QInputDialog, QMessageBox
+from PySide6.QtWidgets import QApplication, QInputDialog, QMessageBox
 
 from djmidi import taxonomy
 from djmidi.gui import music_library_view as mlv
@@ -326,3 +326,31 @@ def test_main_window_has_music_library_tab():
     window.left_tabs.setCurrentIndex(index)
     assert not window._right_splitter.isVisible()
     window.close()
+
+
+@pytest.mark.parametrize("size", [(1100, 700), (700, 500), (320, 240)])
+def test_no_button_is_squeezed_below_its_minimum(size):
+    """Issue #19's rule for every tab: at small window sizes the Music
+    Library scrolls rather than crushing its buttons into slivers."""
+    from PySide6.QtWidgets import QAbstractButton
+
+    view = MusicLibraryView(db_path=":memory:")
+    view.resize(*size)
+    view.show()
+    try:
+        for tab in range(view.side_tabs.count()):
+            view.side_tabs.setCurrentIndex(tab)
+            QApplication.processEvents()
+            squeezed = [
+                button.text()
+                for button in view.findChildren(QAbstractButton)
+                if button.isVisible()
+                and (
+                    button.width() < button.minimumSizeHint().width() - 1
+                    or button.height() < button.minimumSizeHint().height() - 1
+                )
+            ]
+            assert squeezed == [], (size, tab, squeezed)
+    finally:
+        view.close_db()
+        view.close()

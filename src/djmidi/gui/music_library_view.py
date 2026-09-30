@@ -36,6 +36,7 @@ from PySide6.QtWidgets import (
     QComboBox,
     QFileDialog,
     QFormLayout,
+    QFrame,
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
@@ -48,6 +49,8 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QProgressBar,
     QPushButton,
+    QScrollArea,
+    QSizePolicy,
     QSplitter,
     QTableView,
     QTabWidget,
@@ -87,6 +90,10 @@ COLUMNS: tuple[tuple[str, str], ...] = (
 _COLUMN_INDEX = {key: index for index, (_header, key) in enumerate(COLUMNS)}
 _EDIT_FIELDS = ("title", "artist", "album", "genre", "bpm", "key", "comment", "rating", "energy")
 
+# Below this the tab scrolls rather than squeezing its panels (issue #19).
+_CONTENT_MIN_WIDTH = 760
+_CONTENT_MIN_HEIGHT = 440
+
 ALL_CATEGORIES = "All categories"
 UNCATEGORIZED = "Uncategorized"
 
@@ -102,6 +109,14 @@ def _format_bpm(bpm: float | None) -> str:
     if bpm is None:
         return ""
     return f"{bpm:g}" if bpm == int(bpm) else f"{bpm:.2f}"
+
+
+def _scrolled(panel: QWidget) -> QScrollArea:
+    area = QScrollArea()
+    area.setWidgetResizable(True)
+    area.setFrameShape(QFrame.Shape.NoFrame)
+    area.setWidget(panel)
+    return area
 
 
 def _field_text(name: str, value: object) -> str:
@@ -243,15 +258,27 @@ class MusicLibraryView(QWidget):
         self._job_timer.timeout.connect(self._run_job_slice)
         self._current_path: str | None = None
 
-        layout = QVBoxLayout(self)
+        # The whole tab scrolls below its real minimum instead of crushing
+        # buttons into slivers (issue #19's standing rule for every tab).
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        self._scroll = QScrollArea()
+        self._scroll.setWidgetResizable(True)
+        self._scroll.setFrameShape(QFrame.Shape.NoFrame)
+        outer.addWidget(self._scroll)
+        content = QWidget()
+        content.setMinimumSize(_CONTENT_MIN_WIDTH, _CONTENT_MIN_HEIGHT)
+        self._scroll.setWidget(content)
+
+        layout = QVBoxLayout(content)
         layout.addWidget(self._build_folders_group())
 
         body = QSplitter(Qt.Orientation.Horizontal)
         body.addWidget(self._build_table_panel())
         self.side_tabs = QTabWidget()
-        self.side_tabs.addTab(self._build_track_panel(), "Track")
-        self.side_tabs.addTab(self._build_categories_panel(), "Categories")
-        self.side_tabs.addTab(self._build_playlists_panel(), "Playlists")
+        self.side_tabs.addTab(_scrolled(self._build_track_panel()), "Track")
+        self.side_tabs.addTab(_scrolled(self._build_categories_panel()), "Categories")
+        self.side_tabs.addTab(_scrolled(self._build_playlists_panel()), "Playlists")
         body.addWidget(self.side_tabs)
         body.setStretchFactor(0, 3)
         body.setStretchFactor(1, 2)
@@ -266,11 +293,13 @@ class MusicLibraryView(QWidget):
 
     def _build_folders_group(self) -> QGroupBox:
         group = QGroupBox("Music folders")
-        grid = QGridLayout(group)
+        group.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
+        box = QVBoxLayout(group)
+        row = QHBoxLayout()
         self.roots_list = QListWidget()
-        self.roots_list.setMaximumHeight(72)
+        self.roots_list.setMaximumHeight(56)
         self.roots_list.setToolTip("Folders this app indexes. Scanning never modifies your files.")
-        grid.addWidget(self.roots_list, 0, 0, 3, 1)
+        row.addWidget(self.roots_list, 1)
         self.add_root_button = QPushButton("Add folder…")
         self.add_root_button.clicked.connect(self._on_add_root_clicked)
         self.remove_root_button = QPushButton("Remove")
@@ -280,20 +309,17 @@ class MusicLibraryView(QWidget):
             "Index new/changed files and read their tags. Incremental: unchanged files are skipped."
         )
         self.scan_button.clicked.connect(self.start_scan)
-        grid.addWidget(self.add_root_button, 0, 1)
-        grid.addWidget(self.remove_root_button, 1, 1)
-        grid.addWidget(self.scan_button, 2, 1)
-        self.progress_bar = QProgressBar()
-        self.progress_bar.setVisible(False)
+        for button in (self.add_root_button, self.remove_root_button, self.scan_button):
+            row.addWidget(button, 0, Qt.AlignmentFlag.AlignTop)
+        box.addLayout(row)
+        status_row = QHBoxLayout()
         self.status_label = QLabel("Add a music folder, then scan it.")
         self.status_label.setWordWrap(True)
-        status_box = QVBoxLayout()
-        status_box.addWidget(self.status_label)
-        status_box.addWidget(self.progress_bar)
-        status_box.addStretch(1)
-        grid.addLayout(status_box, 0, 2, 3, 1)
-        grid.setColumnStretch(0, 2)
-        grid.setColumnStretch(2, 3)
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setVisible(False)
+        status_row.addWidget(self.status_label, 1)
+        status_row.addWidget(self.progress_bar, 1)
+        box.addLayout(status_row)
         return group
 
     def _build_table_panel(self) -> QWidget:
@@ -304,6 +330,7 @@ class MusicLibraryView(QWidget):
         self.filter_edit = QLineEdit()
         self.filter_edit.setPlaceholderText("Filter by artist, title, genre, BPM, key, comment…")
         self.filter_edit.setClearButtonEnabled(True)
+        self.filter_edit.setMinimumWidth(160)
         self.category_filter = QComboBox()
         self.category_filter.setMinimumContentsLength(16)
         self.count_label = QLabel()
