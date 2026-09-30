@@ -11,11 +11,16 @@ os.environ.setdefault(
     os.path.join(tempfile.gettempdir(), "djmidi-test-preferences.json"),
 )
 
+# Same for the music library index (issue #132): a window built by a test
+# must never open the developer's real library.sqlite3.
+os.environ.setdefault("DJMIDI_LIBRARY_DB", ":memory:")
+
 import mido
 import pytest
 from PySide6.QtWidgets import QApplication
 
-from djmidi import catalog, software
+from djmidi import catalog, software, taxonomy
+from djmidi.taxonomy import _registry as taxonomy_registry
 
 # The suite is hardware-free.  CoreMIDI enumeration can abort the interpreter
 # on a headless or permission-restricted macOS runner before Python can catch
@@ -51,3 +56,14 @@ def _reset_plugin_enablement():
     for frozen in ("CONTROLLER_NAMES", "PAD_COUNTS"):
         if frozen in vars(catalog):
             delattr(catalog, frozen)
+
+
+@pytest.fixture(autouse=True)
+def _restore_taxonomy_registry():
+    """The taxonomy registry is process-global; category edits made by a
+    test (directly or through the Music Library tab) must not leak."""
+    taxonomy.discover_plugins()
+    snapshot = dict(taxonomy_registry._REGISTRY)
+    yield
+    taxonomy_registry._REGISTRY.clear()
+    taxonomy_registry._REGISTRY.update(snapshot)

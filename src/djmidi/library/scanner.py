@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Generator, Iterator
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -43,17 +43,13 @@ class ScanResult:
     missing: int = 0
 
 
-def scan_root(
-    root_path: str | Path,
-    db: LibraryDB,
-    progress_callback: Callable[[int], None] | None = None,
-) -> ScanResult:
-    """Incrementally index every audio file under `root_path` into `db`.
+def iter_scan_root(root_path: str | Path, db: LibraryDB) -> Generator[int, None, ScanResult]:
+    """Step-by-step `scan_root`: yields the running file count after each
+    file and returns the `ScanResult` (via ``StopIteration.value``).
 
-    Read-only against the filesystem: only path/size/mtime are recorded, the
-    file content is never opened. A file already indexed with an unchanged
-    size and mtime is skipped rather than re-touched.
-    """
+    Lets a GUI drive the scan a slice at a time from a `QTimer` -- this
+    project's established non-blocking pattern (see `midi_io` polling) --
+    without this module depending on Qt."""
     root_path = Path(root_path)
     root = db.add_root(root_path)
     result = ScanResult()
@@ -70,8 +66,28 @@ def scan_root(
         else:
             result.unchanged += 1
         db.upsert_track(root.id, path_str, stat.st_size, stat.st_mtime)
-        if progress_callback is not None:
-            progress_callback(count)
+        yield count
     db.commit()
     result.missing = db.mark_missing_except(root.id, seen_paths)
     return result
+
+
+def scan_root(
+    root_path: str | Path,
+    db: LibraryDB,
+    progress_callback: Callable[[int], None] | None = None,
+) -> ScanResult:
+    """Incrementally index every audio file under `root_path` into `db`.
+
+    Read-only against the filesystem: only path/size/mtime are recorded, the
+    file content is never opened. A file already indexed with an unchanged
+    size and mtime is skipped rather than re-touched.
+    """
+    steps = iter_scan_root(root_path, db)
+    while True:
+        try:
+            count = next(steps)
+        except StopIteration as done:
+            return done.value
+        if progress_callback is not None:
+            progress_callback(count)

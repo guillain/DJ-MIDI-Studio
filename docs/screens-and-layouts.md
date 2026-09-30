@@ -23,7 +23,7 @@
 The mapping workspace is organized as tabs across the top of the main window:
 
 `Dashboard`, `Controller Setup`, `Controller Images`, `By Channel`, `By Deck`,
-and `By Controller`. `Live Monitor`, `MIDI Routing`, `MIDI Clock`, and
+`By Controller`, and `Music Library`. `Live Monitor`, `MIDI Routing`, `MIDI Clock`, and
 `Metronome` are independent, closable Qt dock panels rather than mapping
 tabs. They can be shown from the `View` menu, moved to another dock area,
 floated as windows, or opened from the Dashboard buttons.
@@ -110,6 +110,19 @@ By Deck groups duplicate Serato trigger sets by deck and slot. The upper area co
 By Controller groups catalog entries by physical controller and section, such as `PAD`, `DECK`, or `EFFECT`. The lower DJ layout maps the selected controller's controls and shows the associated mappings. It uses a dark performance-oriented canvas with each zone framed and labelled, deck colors, and high-contrast selection accents. Pads, color-coded transport buttons, knobs, faders, and jog wheels are rendered as compact interactive controls sized by per-controller metrics, with the pad bank centered in the initial viewport for quicker inspection. The XDJ-XZ and DDJ-XP2 also show display-only mixer controls such as trim, EQ, volume, crossfader, and Slide FX faders; these make the hardware surface legible even though continuous MIDI mappings are not yet in the discrete catalog. Controllers without dedicated geometry use the same generic grid and remain fully usable. Its controller selector scrolls horizontally as the dynamic catalog grows. Clicking a mapped layout control selects the matching physical-control item in the upper tree and keeps the By Controller tab active. Current selections use a strong highlight; recent previous selections remain visible with a faded highlight, making navigation history easier to follow.
 
 ![By Controller mapping view](images/layout/by-controller.png)
+
+## Music Library
+
+A separate workspace for your music collection rather than MIDI mappings.
+Top: the indexed music folders with **Add folder…**, **Remove**, and **Scan &
+read tags** (incremental, with a progress bar; the window stays responsive).
+Left: the consolidated track table — Title, Artist, Album, Genre, Category,
+BPM, Key, Camelot, Rating, Energy, Comment, Path — sortable on any column,
+filtered by free text and by category. Right: three panels — **Track** (edit
+tags, undo/redo, confirm a suggested category, clean noise frames),
+**Categories** (the genre/style taxonomy), and **Playlists** (import,
+generate, export). The edit/validation column of the mapping tabs is hidden
+here.
 
 ## Controller Emulator
 

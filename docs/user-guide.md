@@ -12,6 +12,7 @@
 - [Validate and Export](#validate-and-export)
 - [Live Monitor Notes](#live-monitor-notes)
 - [Send MIDI Commands](#send-midi-commands)
+- [Manage Your Music Library](#manage-your-music-library)
 
 ## Open a Mapping File
 
@@ -278,3 +279,42 @@ Inside the GUI:
 
 - use `Controller Setup` to send one-shot commands from the current saved/loaded session to the selected MIDI output;
 - use `Metronome` (`View` menu) when you want loop/repeat playback with a configurable frequency.
+
+## Manage Your Music Library
+
+The `Music Library` tab organizes your own tracks — tags, BPM/key, genre
+categories, and playlists — independently of any MIDI mapping.
+
+1. **Add folder…** and pick your music folder(s), then **Scan & read tags**.
+   Scanning only records each file's path, size, and date, then reads its
+   tags; unchanged files are skipped on later scans, and a file that
+   disappears (e.g. an unplugged drive) is greyed as *missing* rather than
+   forgotten.
+2. Browse the table: click a header to sort (BPM sorts numerically), type in
+   the filter box, or pick a category. The **Camelot** column translates any
+   key notation (`Am`, `F#m`, Open Key `7m`, `8A`) to the Camelot wheel.
+3. **Categories** come from your folder and Serato-crate hierarchy first
+   (e.g. `Tek/PsyTrance/…`), then the genre tag. A category shown as
+   `? Tek / PsyTrance` in amber is only a *suggestion* — select the track and
+   click **Confirm suggested category** to make that genre spelling an alias
+   for good. The **Categories** panel creates, renames, merges, and deletes
+   categories and aliases.
+4. **Track** panel: edit title/artist/album/genre/BPM/key/comment/rating/
+   energy and click **Write tags**. Only the changed fields are written;
+   Serato and Traktor data stored in the file is preserved. **Undo**/**Redo**
+   write the previous values back. **Clean noise frames…** lists leftover
+   junk tags and removes them only after you confirm.
+5. **Playlists** panel:
+   - **New from selection** — the rows selected in the table.
+   - **Auto: sort visible** — every visible row grouped by category, then BPM
+     range, then key.
+   - **Auto: match current** — the selected track followed by every visible
+     track within ±6 % BPM and a harmonically compatible Camelot key.
+   - **Import** Serato crates, a Traktor `collection.nml`, or a Rekordbox USB
+     `export.pdb` (read-only — the originals are never modified).
+   - **Export as Serato crate…** writes a *new* `.crate` file wherever you
+     choose; copy it into your `_Serato_/Subcrates` folder yourself if you
+     want Serato to pick it up.
+
+The library index is stored beside the preferences file as
+`library.sqlite3`.
