@@ -104,6 +104,22 @@ def _format_bpm(bpm: float | None) -> str:
     return f"{bpm:g}" if bpm == int(bpm) else f"{bpm:.2f}"
 
 
+def _field_text(name: str, value: object) -> str:
+    if name == "bpm":
+        return _format_bpm(value)
+    return "" if value is None else str(value)
+
+
+def _can_confirm_suggestion(row: workspace.LibraryRow) -> bool:
+    return bool(row.category is None and row.category_suggestion and row.metadata and row.metadata.genre)
+
+
+def _same_bpm(a: float | None, b: float | None) -> bool:
+    if a is None or b is None:
+        return a is b
+    return abs(a - b) <= 1e-6
+
+
 class LibraryTableModel(QAbstractTableModel):
     """Read-only table over `workspace.LibraryRow`s -- a custom model rather
     than a `QStandardItemModel` since a real collection runs to ~85k rows."""
@@ -141,26 +157,31 @@ class LibraryTableModel(QAbstractTableModel):
         if role == Qt.ItemDataRole.DisplayRole:
             return self._display(row, key)
         if role == SORT_ROLE:
-            if key == "bpm":
-                return row.bpm if row.bpm is not None else -1.0
-            return self._display(row, key).casefold()
+            return (row.bpm if row.bpm is not None else -1.0) if key == "bpm" else self._display(row, key).casefold()
+        return self._decoration(row, key, role)
+
+    @staticmethod
+    def _decoration(row: workspace.LibraryRow, key: str, role: int):
+        suggested = key == "category" and row.category is None and bool(row.category_suggestion)
         if role == Qt.ItemDataRole.ForegroundRole:
             if row.missing:
                 return QBrush(QColor("#888888"))
-            if key == "category" and row.category is None and row.category_suggestion:
-                return QBrush(QColor("#b07a00"))
-        if role == Qt.ItemDataRole.FontRole and key == "category" and row.category is None and row.category_suggestion:
+            return QBrush(QColor("#b07a00")) if suggested else None
+        if role == Qt.ItemDataRole.FontRole and suggested:
             font = QFont()
             font.setItalic(True)
             return font
         if role == Qt.ItemDataRole.ToolTipRole:
-            if row.missing:
-                return f"Missing on disk: {row.path}"
-            if key == "category" and row.category is None and row.category_suggestion:
-                return "Fuzzy suggestion only -- confirm it from the Track panel to make it stick."
-            if key == "path":
-                return row.path
+            return LibraryTableModel._tooltip(row, key, suggested)
         return None
+
+    @staticmethod
+    def _tooltip(row: workspace.LibraryRow, key: str, suggested: bool) -> str | None:
+        if row.missing:
+            return f"Missing on disk: {row.path}"
+        if suggested:
+            return "Fuzzy suggestion only -- confirm it from the Track panel to make it stick."
+        return row.path if key == "path" else None
 
     @staticmethod
     def _display(row: workspace.LibraryRow, key: str) -> str:
@@ -646,8 +667,7 @@ class MusicLibraryView(QWidget):
         self._current_path = row.path if row is not None else None
         metadata = (row.metadata if row is not None else None) or TrackMetadata()
         for name, edit in self.field_edits.items():
-            value = getattr(metadata, name)
-            edit.setText(_format_bpm(value) if name == "bpm" else ("" if value is None else str(value)))
+            edit.setText(_field_text(name, getattr(metadata, name)))
         editable = row is not None and not row.missing
         for widget in (*self.field_edits.values(), self.apply_button, self.revert_button, self.clean_button):
             widget.setEnabled(editable)
@@ -659,15 +679,16 @@ class MusicLibraryView(QWidget):
             return
         self.track_path_label.setText(row.path + ("  (missing on disk)" if row.missing else ""))
         self.camelot_label.setText(row.camelot_key or "—")
+        self.category_value_label.setText(self._category_text(row))
+        self.accept_suggestion_button.setEnabled(_can_confirm_suggestion(row))
+
+    @staticmethod
+    def _category_text(row: workspace.LibraryRow) -> str:
         if row.category:
-            self.category_value_label.setText(category_label(row.category))
-        elif row.category_suggestion:
-            self.category_value_label.setText(f"Suggested: {category_label(row.category_suggestion)}")
-        else:
-            self.category_value_label.setText("—")
-        self.accept_suggestion_button.setEnabled(
-            bool(row.category is None and row.category_suggestion and metadata.genre)
-        )
+            return category_label(row.category)
+        if row.category_suggestion:
+            return f"Suggested: {category_label(row.category_suggestion)}"
+        return "—"
 
     def pending_track_edits(self) -> dict[str, object]:
         """Fields whose edit box differs from the cached tags."""
@@ -678,17 +699,13 @@ class MusicLibraryView(QWidget):
         changes: dict[str, object] = {}
         for name, edit in self.field_edits.items():
             text = edit.text().strip()
+            old = getattr(metadata, name)
             if name == "bpm":
-                new_value: object = float(text.replace(",", ".")) if text else None
-                old = metadata.bpm
-                if (new_value is None) != (old is None) or (
-                    new_value is not None and old is not None and abs(float(new_value) - old) > 1e-6
-                ):
-                    changes[name] = new_value
-                continue
-            new_value = text or None
-            if new_value != getattr(metadata, name):
-                changes[name] = new_value
+                new_bpm = float(text.replace(",", ".")) if text else None
+                if not _same_bpm(new_bpm, old):
+                    changes[name] = new_bpm
+            elif (text or None) != old:
+                changes[name] = text or None
         return changes
 
     def apply_track_edits(self) -> bool:
@@ -875,17 +892,7 @@ class MusicLibraryView(QWidget):
             return
         indexed = {row.path: row for row in self.table_model.rows()}
         for path in self.db.playlist_paths(int(current.data(Qt.ItemDataRole.UserRole))):
-            row = indexed.get(path)
-            label = Path(path).name
-            if row is not None and row.metadata and row.metadata.title:
-                artist = f"{row.metadata.artist} — " if row.metadata.artist else ""
-                details = " · ".join(filter(None, [_format_bpm(row.bpm), row.camelot_key or ""]))
-                label = f"{artist}{row.metadata.title}" + (f"  [{details}]" if details else "")
-            item = QListWidgetItem(label)
-            item.setToolTip(path if row is not None else f"Not in the indexed folders: {path}")
-            if row is None:
-                item.setForeground(QBrush(QColor("#888888")))
-            self.playlist_tracks.addItem(item)
+            self.playlist_tracks.addItem(_playlist_track_item(path, indexed.get(path)))
 
     def create_playlist(self, name: str, paths: list[str], source: str = workspace.SOURCE_MANUAL) -> int:
         playlist_id = self.db.create_playlist(name, paths, source)
@@ -1017,3 +1024,19 @@ class MusicLibraryView(QWidget):
         if answer == QMessageBox.StandardButton.Yes:
             self.db.delete_playlist(playlist_id)
             self._reload_playlists()
+
+
+def _playlist_track_label(path: str, row: workspace.LibraryRow | None) -> str:
+    if row is None or row.metadata is None or not row.metadata.title:
+        return Path(path).name
+    artist = f"{row.metadata.artist} — " if row.metadata.artist else ""
+    details = " · ".join(filter(None, [_format_bpm(row.bpm), row.camelot_key or ""]))
+    return f"{artist}{row.metadata.title}" + (f"  [{details}]" if details else "")
+
+
+def _playlist_track_item(path: str, row: workspace.LibraryRow | None) -> QListWidgetItem:
+    item = QListWidgetItem(_playlist_track_label(path, row))
+    item.setToolTip(path if row is not None else f"Not in the indexed folders: {path}")
+    if row is None:
+        item.setForeground(QBrush(QColor("#888888")))
+    return item
