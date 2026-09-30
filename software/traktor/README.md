@@ -1,15 +1,14 @@
 # Native Instruments Traktor mapping format
 
-## Status: plugin being rewritten (issue #122)
+## Status: implemented and verified against real exports (issue #122)
 
-The original `src/djmidi/software/traktor.py` plugin (documented in
-`docs/traktor.md`) was built on an incorrect assumption: that a Traktor
-mapping export is flat XML with `<MAPPING>`/`<MIDI>`/`<NOTE>`/`<CC>`
-elements, parsed with a plain `ElementTree.fromstring`. Research done
-2026-09-19 (see issue #122) found this is not how Traktor's real controller
-mapping format works at all. This file records what *is* real, with
-sources, so the rewrite (and any future contributor) has ground truth
-instead of another guess.
+`src/djmidi/software/_tsi.py` decodes `.tsi` controller mappings on top of
+the generic chunk codec `src/djmidi/binary_chunks.py`, and
+`src/djmidi/software/traktor.py` exposes them through the software-plugin
+registry. Everything below was checked against the real exports in
+`data/traktor/` (see "Verified against real files"); the original plugin's
+flat-XML `<NML><MAPPING>` assumption (see next section) survives only as a
+legacy fallback for files this app produced before.
 
 ## `.nml` is the wrong file entirely
 
@@ -99,17 +98,48 @@ yet — CMD Studio 4a, nanoPAD2, and (from a real Serato export,
 `data/serato/cmd-lc1.xml.zip`) the Behringer CMD-LC1 — tracked in
 `TODO.md`'s "New candidates" list.
 
-## What's still missing before this can be trusted
+## Verified against real files
 
-- Parse at least one real `.tsi` above with an actual implementation and
-  confirm the decoded structure matches this document's field layout
-  before trusting either as correct — having the files is necessary but
-  not sufficient; the parser still needs to be built and checked against
-  them, not just against the reverse-engineered spec in isolation.
-- Which `TraktorControlId`s map to which catalog-worthy discrete controls
-  (this app's catalog scope is press/toggle controls, same as the
-  controller side) isn't decided yet — the 200+-entry command list above is
-  far broader than what's useful to expose.
+Checked on all four real exports (2026-09-30):
+
+| File | Devices | Mappings | Notes |
+|---|---|---|---|
+| `xdj-xz-settings.tsi` | 5 | 8,963 | 8 compound labels |
+| `cmd-studio-4a.tsi` | 4 | 381 | 1 command never MIDI-learned |
+| `nanopad2-remixer.tsi` | 1 | 16 | |
+| `keyboard-mapping.tsi` | 0 | 0 | no `DeviceIO.Config.Controller` entry |
+
+- **Chunk tree** matches the layout above exactly, with two container
+  headers the layout lists only implicitly: `DEVS` and `CMAS` start with an
+  `int` count, and the `DCBM` *under* `DDCB` is a list (an `int` count of
+  nested `DCBM` bindings), while each nested `DCBM` is a leaf. Re-encoding an
+  unmodified tree and its Base64 is byte-identical on every file.
+- **Binding labels** read `ChNN.Note.<note><octave>`, `ChNN.CC.NNN` or
+  `ChNN.PitchBend`. Octave numbering starts at `C-1` = MIDI note 0, confirmed
+  against the official Pioneer XDJ-XZ values in `catalog/xdj_xz.py`:
+  Traktor's own XDJ-XZ mapping puts Play (command 100) on `C-1` (note 0),
+  Cue (206) on `C#-1` (note 1) and Sync On (125) on `G1` (note 31) — exactly
+  the Pioneer MIDI list's PLAY/PAUSE 0, CUE 1 and SYNC 31. That also
+  confirms those three command IDs.
+- **Compound labels** exist: `Ch01.CC.032+Ch01.CC.000` binds two messages
+  at once (a 14-bit CC's MSB + LSB). Only their first part is shown as the
+  trigger, and they are never rewritten.
+- **Unassigned mappings** exist: a `CMAI` whose binding id has no `DCBM`
+  entry is a command added in Traktor but never MIDI-learned.
+- **`CMAD` field order** up to the comment is confirmed by real comments
+  decoding cleanly ("HOTCUE", "Scratch A Light", ...); binding ids are unique
+  per device.
+
+## What's deliberately not done
+
+- Writing is limited to re-labelling existing bindings. Creating a `.tsi`
+  from scratch, or adding/removing bindings, would mean synthesizing
+  `CMAD` payloads whose unknown fields aren't understood — refused instead.
+- Only command IDs 100/125/206 are named (the three cross-checked above);
+  every other command shows as `Command <id>` rather than a name copied
+  from the community list without verification.
+- `DDCI`/`DDCO` (the device's full MIDI in/out definitions) and `DVST` are
+  decoded as opaque data and carried over verbatim.
 
 ## Sources
 

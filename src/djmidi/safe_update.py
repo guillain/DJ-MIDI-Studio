@@ -14,6 +14,14 @@ from pathlib import Path
 _LOGGER = logging.getLogger(__name__)
 
 Validator = Callable[[str], None]
+# Describes, in human terms, what changed between two versions of a file --
+# for formats whose raw diff is unreadable (e.g. a Traktor .tsi's Base64 blob).
+Summarizer = Callable[[str, str], str]
+
+# A diff line longer than this is elided: a single multi-megabyte line (an
+# embedded binary blob) would otherwise flood the confirmation dialog.
+MAX_DIFF_LINE = 2000
+_ELIDED_HEAD = 160
 
 
 @dataclass
@@ -69,7 +77,22 @@ class SafeUpdatePlan:
             _LOGGER.info("Rolled back %s by deleting the newly-created file (no prior backup)", self.path)
 
 
-def prepare_update(path: str | Path, updated_text: str, validator: Validator | None = None) -> SafeUpdatePlan:
+def _elide_long_lines(diff_lines: list[str]) -> list[str]:
+    elided = []
+    for line in diff_lines:
+        if len(line) > MAX_DIFF_LINE:
+            hidden = len(line) - _ELIDED_HEAD
+            line = f"{line[:_ELIDED_HEAD]}… [{hidden:,} more characters]\n"
+        elided.append(line)
+    return elided
+
+
+def prepare_update(
+    path: str | Path,
+    updated_text: str,
+    validator: Validator | None = None,
+    summarize: Summarizer | None = None,
+) -> SafeUpdatePlan:
     target = Path(path)
     _LOGGER.debug("Preparing safe update for %s (exists=%s)", target, target.exists())
     original_text = target.read_text(encoding="utf-8") if target.exists() else ""
@@ -80,13 +103,21 @@ def prepare_update(path: str | Path, updated_text: str, validator: Validator | N
             _LOGGER.warning("Safe update validation failed for %s", target, exc_info=True)
             raise
     diff = "".join(
-        difflib.unified_diff(
-            original_text.splitlines(keepends=True),
-            updated_text.splitlines(keepends=True),
-            fromfile=str(target),
-            tofile=f"{target} (updated)",
+        _elide_long_lines(
+            list(
+                difflib.unified_diff(
+                    original_text.splitlines(keepends=True),
+                    updated_text.splitlines(keepends=True),
+                    fromfile=str(target),
+                    tofile=f"{target} (updated)",
+                )
+            )
         )
     )
+    if summarize is not None and original_text:
+        summary = summarize(original_text, updated_text)
+        if summary:
+            diff = f"{summary}\n\n{diff}"
     return SafeUpdatePlan(
         path=target,
         original_text=original_text,

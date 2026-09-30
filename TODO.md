@@ -742,6 +742,21 @@ Implemented contract, runtime, test, and documentation work:
   `removed_categories`. The index opens lazily on first show at
   `library.sqlite3` beside `preferences.json` (`DJMIDI_LIBRARY_DB`
   overrides; the test suite pins it to `:memory:`).
+- [x] **Traktor `.tsi` controller mappings, for real** (issue #122) — the
+  `traktor` plugin now decodes the actual Traktor mapping format (settings
+  XML wrapping a Base64 chunk blob) through a new generic chunk codec,
+  `src/djmidi/binary_chunks.py`, and `src/djmidi/software/_tsi.py`,
+  verified against all four real exports in `data/traktor/` (9,360
+  mappings; byte-identical re-encode; `C-1` = note 0 cross-checked against
+  the official Pioneer XDJ-XZ notes for Play/Cue/Sync). Every MIDI-bound
+  mapping opens as a control with its command, deck, interaction mode,
+  controller type and comment; editing a trigger and saving re-labels only
+  that binding and carries every other byte over, with the save
+  confirmation listing the re-assigned bindings (new
+  `SoftwareDefinition.change_summary` hook + generic long-line elision in
+  `safe_update`). Adding/removing bindings and rewriting two-message
+  (14-bit CC) bindings are refused rather than approximated. The old flat
+  `<NML><MAPPING>` shape is kept only as a legacy fallback.
 
 ### Core mapping workflow
 

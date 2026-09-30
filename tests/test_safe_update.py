@@ -42,3 +42,26 @@ def test_safe_update_cannot_apply_twice_or_rollback_before_apply(tmp_path):
     with pytest.raises(RuntimeError, match="already been applied"):
         plan.apply()
     assert path.read_text(encoding="utf-8") == "<new />\n"
+
+
+def test_long_diff_lines_are_elided(tmp_path):
+    from djmidi.safe_update import MAX_DIFF_LINE, prepare_update
+
+    target = tmp_path / "blob.txt"
+    target.write_text("head\n" + "A" * (MAX_DIFF_LINE * 3) + "\n", encoding="utf-8")
+    plan = prepare_update(target, "head\n" + "B" * (MAX_DIFF_LINE * 3) + "\n")
+    assert "more characters]" in plan.diff
+    assert max(len(line) for line in plan.diff.splitlines()) < MAX_DIFF_LINE
+    # The file itself is never truncated, only its preview.
+    assert plan.updated_text.count("B") == MAX_DIFF_LINE * 3
+
+
+def test_summary_is_prepended_only_for_an_existing_file(tmp_path):
+    from djmidi.safe_update import prepare_update
+
+    target = tmp_path / "x.txt"
+    plan = prepare_update(target, "new\n", summarize=lambda old, new: "SUMMARY")
+    assert not plan.diff.startswith("SUMMARY")
+    target.write_text("old\n", encoding="utf-8")
+    plan = prepare_update(target, "new\n", summarize=lambda old, new: "SUMMARY")
+    assert plan.diff.startswith("SUMMARY\n\n")

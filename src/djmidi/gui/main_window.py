@@ -1756,6 +1756,7 @@ class MainWindow(QMainWindow):
                 target,
                 definition.exporter(self.config),
                 definition.parser,
+                summarize=definition.change_summary,
             )
         except (OSError, TypeError, ValueError) as exc:
             _LOGGER.exception("Failed to prepare save for %s", target)
