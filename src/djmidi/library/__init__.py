@@ -24,6 +24,14 @@ from .rekordbox_library import (
 )
 from .rekordbox_library import parse_playlists as parse_rekordbox_playlists
 from .scanner import AUDIO_EXTENSIONS, ScanResult, iter_audio_files, scan_root
+from .serato_library import (
+    iter_chunks,
+    parse_crate,
+    write_chunk,
+    write_chunks,
+    write_crate,
+    write_crate_file,
+)
 from .traktor_library import NmlTrack, parse_collection
 from .traktor_library import parse_playlists as parse_traktor_playlists
 
@@ -48,7 +56,9 @@ __all__ = [
     "is_bpm_compatible",
     "is_camelot_compatible",
     "iter_audio_files",
+    "iter_chunks",
     "parse_collection",
+    "parse_crate",
     "parse_export",
     "parse_rekordbox_playlists",
     "parse_traktor_playlists",
@@ -56,5 +66,9 @@ __all__ = [
     "resolve_bpm_key",
     "scan_root",
     "to_camelot",
+    "write_chunk",
+    "write_chunks",
+    "write_crate",
+    "write_crate_file",
     "write_metadata",
 ]
