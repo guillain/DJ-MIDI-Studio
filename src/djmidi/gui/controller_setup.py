@@ -72,6 +72,7 @@ from djmidi.catalog.community import (
     submission_issue_url,
     summarise_source,
 )
+from djmidi.controller_sync import ControllerSyncSet, sync_set_from_events
 from djmidi.gui.controller_submission_dialog import ControllerSubmissionDialog
 from djmidi.gui.port_list_utils import refresh_checked_port_list
 from djmidi.gui.scroll_utils import AutoSizeScrollArea
@@ -164,6 +165,9 @@ class ControllerSetupView(QWidget):
     # Emitted with a file path when the user, after importing triggers from a
     # Serato XML, also wants that file opened as an editable mapping.
     openMappingRequested = Signal(str)
+    # Emitted with a controller_sync.ControllerSyncSet built from the recorded
+    # session; MainWindow stores it in PluginPreferences for one-click "Sync".
+    syncSetSaveRequested = Signal(object)
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -281,6 +285,12 @@ class ControllerSetupView(QWidget):
         send_all_button.clicked.connect(self._on_send_all_rows_clicked)
         replay_button = QPushButton(self._get_icon("refresh"), "Replay recorded session")
         replay_button.clicked.connect(self._on_replay_recorded_session_clicked)
+        sync_set_button = QPushButton(self._get_icon("save"), "Save as controller sync set")
+        sync_set_button.setToolTip(
+            "Store the recorded session as this controller's initialization set: "
+            "the menu bar's Sync button (and Live Monitor's) then sends it to the controller."
+        )
+        sync_set_button.clicked.connect(self._on_save_sync_set_clicked)
 
         self._send_status = QLabel("No MIDI output sent yet.")
 
@@ -326,7 +336,14 @@ class ControllerSetupView(QWidget):
 
         action_grid = QVBoxLayout()
         action_grid.setSpacing(8)
-        for button in (send_once_button, send_double_button, send_selected_button, send_all_button, replay_button):
+        for button in (
+            send_once_button,
+            send_double_button,
+            send_selected_button,
+            send_all_button,
+            replay_button,
+            sync_set_button,
+        ):
             button.setMinimumHeight(28)
             action_grid.addWidget(button)
         action_grid.addStretch(1)
@@ -1043,6 +1060,24 @@ class ControllerSetupView(QWidget):
 
         self._send_status.setText(f"Replaying recorded session ({len(events)} event(s))…")
         schedule(0, events[0].timestamp)
+
+    def build_sync_set(self) -> ControllerSyncSet:
+        """The recorded session as a controller sync set (raises ValueError)."""
+        name = self._controller_name.strip()
+        if not name:
+            raise ValueError("Enter a controller name first: the sync set is stored per controller.")
+        sync_set = sync_set_from_events(name, self._recorded_events)
+        if not sync_set.messages:
+            raise ValueError("No MIDI note/CC event has been recorded in this session.")
+        return sync_set
+
+    def _on_save_sync_set_clicked(self) -> None:
+        try:
+            sync_set = self.build_sync_set()
+        except ValueError as exc:
+            QMessageBox.warning(self, "Cannot save sync set", str(exc))
+            return
+        self.syncSetSaveRequested.emit(sync_set)
 
     def _is_checked(self, row: int) -> bool:
         return self._port_list.item(row).checkState() == Qt.CheckState.Checked

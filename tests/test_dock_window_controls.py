@@ -14,12 +14,24 @@ def test_settings_menu_is_removed_in_favor_of_a_corner_icon():
 
 def test_preferences_corner_widget_opens_preferences():
     window = MainWindow()
-    button = window.menuBar().cornerWidget(Qt.Corner.TopRightCorner)
-    assert button is not None
+    corner = window.menuBar().cornerWidget(Qt.Corner.TopRightCorner)
+    assert corner is not None
+    button = window._preferences_button
+    assert button.parent() is corner
 
     window._on_preferences = Mock()
     button.click()
     window._on_preferences.assert_called_once()
+
+
+def test_sync_corner_button_sits_beside_the_gear_and_runs_sync():
+    window = MainWindow()
+    corner = window.menuBar().cornerWidget(Qt.Corner.TopRightCorner)
+    assert window._sync_button.parent() is corner
+
+    window._on_sync_controllers = Mock()
+    window._sync_button.click()
+    window._on_sync_controllers.assert_called_once()
 
 
 def test_dock_reduce_toggle_hides_and_restores_the_widget():

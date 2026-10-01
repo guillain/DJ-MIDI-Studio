@@ -12,6 +12,7 @@
 - [Validate and Export](#validate-and-export)
 - [Live Monitor Notes](#live-monitor-notes)
 - [Send MIDI Commands](#send-midi-commands)
+- [Sync Controllers](#sync-controllers)
 - [Manage Your Music Library](#manage-your-music-library)
 
 ## Open a Mapping File
@@ -42,7 +43,8 @@ Available levels are `DEBUG`, `INFO`, `WARNING`, `ERROR`, and `CRITICAL`.
 Use `Settings -> Preferences...` to review the dynamically discovered
 controller and software plugins. The dialog persists the theme, plugin
 enablement, detection policy, routing policy, external-plugin trust,
-auto-start behavior for Live Monitor, and log verbosity.
+auto-start behavior for Live Monitor, log verbosity, and the controller
+initialization sets used by [Sync](#sync-controllers).
 
 `Auto-start Live Monitor when a mapping is loaded` (on by default) listens on
 every available MIDI input as soon as a mapping is loaded, so `By Channel` /
@@ -279,6 +281,29 @@ Inside the GUI:
 
 - use `Controller Setup` to send one-shot commands from the current saved/loaded session to the selected MIDI output;
 - use `Metronome` (`View` menu) when you want loop/repeat playback with a configurable frequency.
+
+## Sync Controllers
+
+`Sync` brings every connected controller into a known state in one click: it
+sends each controller the MIDI messages you recorded for it beforehand (for
+example the pad-mode and LED buttons you always press after plugging it in).
+
+1. **Record a set.** In `Controller Setup`, type the controller's name, tick
+   its input port, start learning, press the controls to send at
+   initialization, stop learning, then click `Save as controller sync set`
+   (in the `MIDI Output` → `Playback` column). There is one set per
+   controller: saving again under the same name asks before replacing it.
+2. **Sync.** Click `⟳ Sync` at the top right of the menu bar, beside the
+   Preferences gear, or `Sync controllers` in `Live Monitor`. Messages are
+   sent in recorded order, without the original pauses. The status bar shows
+   how many controllers were synced and which ones were not connected.
+3. **Manage sets** in `Preferences` → `Controller sync`: see each set's
+   message count, choose which output port it goes to, or remove it.
+
+By default a set goes to the port it was recorded on. If that port is not
+connected, Sync looks for an output port whose name contains the controller
+name (`DDJ-XP2` matches `PIONEER DDJ-XP2`), ignoring case and punctuation. A
+controller that isn't found is skipped without stopping the others.
 
 ## Manage Your Music Library
 

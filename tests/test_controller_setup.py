@@ -1282,3 +1282,33 @@ def test_panels_and_labels_restyle_live_on_a_theme_switch():
         assert d["header_bg"] in view._learn_status.styleSheet()
     finally:
         theme.apply_theme(QApplication.instance(), "dark")
+
+
+def test_save_as_sync_set_emits_recorded_session_for_named_controller(monkeypatch):
+    from djmidi.midi_io import MidiEvent
+
+    view = ControllerSetupView()
+    warnings = []
+    monkeypatch.setattr(
+        "djmidi.gui.controller_setup.QMessageBox.warning", lambda *args: warnings.append(args[2])
+    )
+    emitted = []
+    view.syncSetSaveRequested.connect(emitted.append)
+
+    view._on_save_sync_set_clicked()  # no name, no events
+    assert emitted == [] and "controller name" in warnings[-1]
+
+    view._name_edit.setText("DDJ-XP2")
+    view._on_save_sync_set_clicked()  # name, still no events
+    assert emitted == [] and "No MIDI" in warnings[-1]
+
+    view._recorded_events = [
+        MidiEvent("in", "1", "Note On", "11", "127", 0.0, "PIONEER DDJ-XP2"),
+        MidiEvent("in", "1", "Note Off", "11", "0", 0.1, "PIONEER DDJ-XP2"),
+    ]
+    view._on_save_sync_set_clicked()
+    assert len(emitted) == 1
+    sync_set = emitted[0]
+    assert sync_set.controller == "DDJ-XP2"
+    assert sync_set.output_port == "PIONEER DDJ-XP2"
+    assert len(sync_set.messages) == 2

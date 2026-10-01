@@ -67,3 +67,30 @@ def test_preferences_dialog_reflects_and_saves_auto_start_live_monitor():
     dialog._auto_start_live_monitor.setChecked(False)
     dialog._save()
     assert preferences.auto_start_live_monitor is False
+
+
+def test_controller_sync_tab_edits_port_and_removes_sets(monkeypatch):
+    from djmidi.controller_sync import ControllerSyncSet, SyncMessage
+    from djmidi.gui import preferences_dialog
+
+    monkeypatch.setattr(preferences_dialog, "list_output_ports", lambda: ["PIONEER DDJ-XP2", "XDJ-XZ"])
+    preferences = PluginPreferences()
+    preferences.set_sync_set(ControllerSyncSet("DDJ-XP2", "", (SyncMessage("Note On", 1, 11, 127),)))
+    preferences.set_sync_set(ControllerSyncSet("XDJ-XZ", "Old port", ()))
+    dialog = PreferencesDialog(preferences)
+
+    assert dialog._sync_table.rowCount() == 2
+    assert dialog._sync_table.item(0, 2).text() == "1"
+    xp2_combo = dialog._sync_table.cellWidget(0, 1)
+    assert xp2_combo.currentData() == ""  # auto
+    xz_combo = dialog._sync_table.cellWidget(1, 1)
+    assert xz_combo.currentText() == "Old port (not connected)"
+
+    xp2_combo.setCurrentIndex(xp2_combo.findData("PIONEER DDJ-XP2"))
+    dialog._sync_table.selectRow(1)
+    dialog._remove_selected_sync_set()
+    dialog._save()
+
+    assert [s.controller for s in preferences.controller_sync_sets] == ["DDJ-XP2"]
+    assert preferences.controller_sync_sets[0].output_port == "PIONEER DDJ-XP2"
+    assert len(preferences.controller_sync_sets[0].messages) == 1

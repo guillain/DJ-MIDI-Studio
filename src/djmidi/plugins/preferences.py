@@ -16,6 +16,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
 
+from djmidi.controller_sync import ControllerSyncSet
+
 _LOGGER = logging.getLogger(__name__)
 
 DetectionPolicy = Literal["ask", "suggest"]
@@ -33,6 +35,22 @@ class PluginPreferences:
     log_path: str = ""
     theme: ThemeMode = "system"
     auto_start_live_monitor: bool = True
+    # One-click "Sync" sets, at most one per controller (see controller_sync).
+    controller_sync_sets: list[ControllerSyncSet] = field(default_factory=list)
+
+    def sync_set_for(self, controller: str) -> ControllerSyncSet | None:
+        return next((s for s in self.controller_sync_sets if s.controller == controller), None)
+
+    def set_sync_set(self, sync_set: ControllerSyncSet) -> None:
+        """Adds or replaces (keeping its position) the set for that controller."""
+        for index, existing in enumerate(self.controller_sync_sets):
+            if existing.controller == sync_set.controller:
+                self.controller_sync_sets[index] = sync_set
+                return
+        self.controller_sync_sets.append(sync_set)
+
+    def remove_sync_set(self, controller: str) -> None:
+        self.controller_sync_sets = [s for s in self.controller_sync_sets if s.controller != controller]
 
     def is_enabled(self, plugin_id: str) -> bool:
         return self.enabled.get(plugin_id, True)
@@ -59,6 +77,7 @@ class PluginPreferences:
                 "log_path": self.log_path,
                 "theme": self.theme,
                 "auto_start_live_monitor": self.auto_start_live_monitor,
+                "controller_sync_sets": [sync_set.to_dict() for sync_set in self.controller_sync_sets],
             },
             indent=2,
             sort_keys=True,
@@ -90,6 +109,13 @@ class PluginPreferences:
         theme = raw.get("theme", "system")
         if theme not in _THEME_MODES:
             raise ValueError("theme must be 'system', 'light', or 'dark'")
+        raw_sync_sets = raw.get("controller_sync_sets", [])
+        if not isinstance(raw_sync_sets, list):
+            raise TypeError("controller_sync_sets must be a list")
+        sync_sets: dict[str, ControllerSyncSet] = {}
+        for raw_set in raw_sync_sets:
+            sync_set = ControllerSyncSet.from_dict(raw_set)
+            sync_sets[sync_set.controller] = sync_set  # one per controller: last wins
         return cls(
             enabled=dict(raw["enabled"]),
             detection_policy=detection_policy,
@@ -99,6 +125,7 @@ class PluginPreferences:
             log_path=str(raw.get("log_path", "")),
             theme=theme,
             auto_start_live_monitor=bool(raw.get("auto_start_live_monitor", True)),
+            controller_sync_sets=list(sync_sets.values()),
         )
 
     @classmethod
@@ -116,7 +143,7 @@ class PluginPreferences:
         target.write_text(self.to_json(), encoding="utf-8")
         _LOGGER.info(
             "Saved preferences to %s (detection_policy=%s, routing_enabled=%s, trust_external_plugins=%s, "
-            "log_level=%s, log_path=%s, theme=%s, auto_start_live_monitor=%s)",
+            "log_level=%s, log_path=%s, theme=%s, auto_start_live_monitor=%s, controller_sync_sets=%d)",
             target,
             self.detection_policy,
             self.routing_enabled,
@@ -125,6 +152,7 @@ class PluginPreferences:
             self.log_path or "(default)",
             self.theme,
             self.auto_start_live_monitor,
+            len(self.controller_sync_sets),
         )
 
 

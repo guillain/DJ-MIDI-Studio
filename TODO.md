@@ -132,6 +132,16 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **One-click controller Sync** (`v0.48.26-controller-sync`) — a
+  `⟳ Sync` button in the menu bar (beside the Preferences gear) and a
+  `Sync controllers` button in Live Monitor send each connected controller
+  its recorded initialization set. Sets are recorded in Controller Setup
+  (`Save as controller sync set`, one per controller name, replacing asks
+  first) and stored in Preferences, whose new `Controller sync` tab lists
+  them, picks each set's output port (or automatic name matching) and
+  removes them. Qt-free core in `controller_sync.py`; a disconnected
+  controller or failing port is reported in the status bar without stopping
+  the others.
 - [x] **Independent MIDI Clock tool** — move Clock configuration and diagnostics
   into a closable/floating dock while retaining shared routing safety and
   `Ableton Link (DJ MIDI Studio)` support. Commit `4e85483`, follow-up fixes
@@ -2482,9 +2492,10 @@ against the current tree and confirmed still open. Tracked as GitHub issues.
 
 ### One-click controller "Sync" / initialization
 
-Proposed by the maintainer (2026-09-19), not yet scoped or built.
+Proposed by the maintainer (2026-09-19); scoped and delivered 2026-10-01
+(`v0.48.26-controller-sync`, see below).
 
-- [ ] A single button/action ("Sync") that, on press, automatically sends a
+- [x] A single button/action ("Sync") that, on press, automatically sends a
   pre-recorded set of MIDI messages to every MIDI controller, to bring them
   into a known/initialized state.
 
@@ -2515,6 +2526,16 @@ can become a real phase:
 - Is this meant to restore controller LED/display state after Serato
   overwrote it, force a controller into a specific mode bank, or something
   else — the answer changes what "initialize" should actually send.
+
+Resolved with the maintainer before building: **one recorded set per
+controller, stored in Preferences** (`PluginPreferences.controller_sync_sets`),
+and the button lives **both in the menu bar** (`⟳ Sync`, beside the
+Preferences gear) **and in Live Monitor**. It fans out to every controller
+that has a set and looks connected — the set's recorded port first, then a
+case/punctuation-insensitive name match against the available output ports —
+so the "which set for which device" question is answered by the set's own
+controller name/port. What a set sends is whatever the user recorded, so the
+"what does initialize mean" question stays the user's call per controller.
 
 - [x] **Preferences dialog redesigned into General/Plugins tabs**
   (`v0.48.5-preferences-tabbed-layout`) — the
