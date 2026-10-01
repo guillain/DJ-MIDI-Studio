@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import uuid
 import xml.etree.ElementTree as ET
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from os import PathLike
+from pathlib import Path
 
 
 @dataclass
@@ -121,3 +124,75 @@ def parse_playlists(path: str | PathLike[str]) -> dict[str, list[str]]:
             _collect_playlists(elem, playlists)
             elem.clear()
     return playlists
+
+
+# -- writing a standalone playlist .nml --------------------------------------
+#
+# Shape copied from the .nml files Traktor Pro 4 itself writes for a single
+# playlist (its History/*.nml files, checked read-only on the maintainer's
+# machine): a COLLECTION holding one ENTRY per distinct track (TITLE/ARTIST
+# attributes + a LOCATION), an empty SETS, and PLAYLISTS/$ROOT folder with one
+# PLAYLIST node whose ENTRY/PRIMARYKEY KEYs are VOLUME+DIR+FILE. A user list
+# is TYPE="LIST" with a 32-hex UUID, as in the real collection.nml. Nothing
+# Traktor computes itself (AUDIO_ID, analysis, cue points) is fabricated:
+# Traktor reads tags and analyses tracks on import.
+
+_NML_DECLARATION = b'<?xml version="1.0" encoding="UTF-8" standalone="no" ?>\n'
+
+
+@dataclass(frozen=True)
+class NmlExportTrack:
+    volume: str
+    directory: str  # Traktor-encoded, e.g. "/:Users/:me/:Music/:"
+    filename: str
+    title: str = ""
+    artist: str = ""
+
+    @property
+    def key(self) -> str:
+        """The PRIMARYKEY a playlist entry uses to point at this track."""
+        return f"{self.volume}{self.directory}{self.filename}"
+
+
+def encode_nml_dir(components: Sequence[str]) -> str:
+    """``["Users", "me"]`` -> ``"/:Users/:me/:"`` (Traktor's DIR encoding)."""
+    return "".join(f"/:{component}" for component in components) + "/:"
+
+
+def build_playlist_nml(playlist_name: str, tracks: Iterable[NmlExportTrack]) -> bytes:
+    tracks = list(tracks)
+    unique: dict[str, NmlExportTrack] = {}
+    for track in tracks:
+        unique.setdefault(track.key, track)
+
+    root = ET.Element("NML", VERSION="20")
+    ET.SubElement(root, "HEAD", COMPANY="www.native-instruments.com", PROGRAM="Traktor Pro 4")
+    collection = ET.SubElement(root, "COLLECTION", ENTRIES=str(len(unique)))
+    for track in unique.values():
+        attributes = {name: value for name, value in (("TITLE", track.title), ("ARTIST", track.artist)) if value}
+        entry = ET.SubElement(collection, "ENTRY", attributes)
+        ET.SubElement(
+            entry,
+            "LOCATION",
+            DIR=track.directory,
+            FILE=track.filename,
+            VOLUME=track.volume,
+            VOLUMEID=track.volume,
+        )
+    ET.SubElement(root, "SETS", ENTRIES="0")
+    playlists = ET.SubElement(root, "PLAYLISTS")
+    folder = ET.SubElement(playlists, "NODE", TYPE="FOLDER", NAME="$ROOT")
+    subnodes = ET.SubElement(folder, "SUBNODES", COUNT="1")
+    node = ET.SubElement(subnodes, "NODE", TYPE="PLAYLIST", NAME=playlist_name)
+    playlist = ET.SubElement(node, "PLAYLIST", ENTRIES=str(len(tracks)), TYPE="LIST", UUID=uuid.uuid4().hex)
+    for track in tracks:
+        entry = ET.SubElement(playlist, "ENTRY")
+        ET.SubElement(entry, "PRIMARYKEY", TYPE="TRACK", KEY=track.key)
+    ET.SubElement(root, "INDEXING")
+    return _NML_DECLARATION + ET.tostring(root, encoding="utf-8", short_empty_elements=False)
+
+
+def write_playlist_nml(path: str | PathLike[str], playlist_name: str, tracks: Iterable[NmlExportTrack]) -> None:
+    """Writes a new single-playlist .nml at exactly `path` (never a real
+    collection.nml on its own initiative), for Traktor's Import Playlist."""
+    Path(path).write_bytes(build_playlist_nml(playlist_name, tracks))

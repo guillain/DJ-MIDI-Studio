@@ -29,6 +29,7 @@ from .playlist import PlaylistTrack, build_playlist_draft, find_compatible_track
 from .rekordbox_library import parse_export
 from .rekordbox_library import parse_playlists as parse_rekordbox_playlists
 from .serato_library import parse_crate, write_crate_file
+from .traktor_library import NmlExportTrack, encode_nml_dir, write_playlist_nml
 from .traktor_library import parse_playlists as parse_traktor_playlists
 
 _LOGGER = logging.getLogger(__name__)
@@ -312,6 +313,59 @@ def read_traktor_playlists(nml_path: str | os.PathLike[str]) -> dict[str, list[s
     return {
         name: [traktor_key_to_path(key) for key in keys] for name, keys in parse_traktor_playlists(nml_path).items()
     }
+
+
+def boot_volume_name(volumes_dir: str | os.PathLike[str] = "/Volumes") -> str:
+    """The name Traktor records as VOLUME for a path on the boot disk: on
+    macOS the ``/Volumes`` entry that is a symlink back to ``/`` (real
+    collection.nml: ``"Macintosh HD"``). ``""`` when there is none (not macOS)."""
+    try:
+        entries = sorted(Path(volumes_dir).iterdir())
+    except OSError:
+        return ""
+    for entry in entries:
+        if entry.is_symlink() and os.path.realpath(entry) == os.path.realpath("/"):
+            return entry.name
+    return ""
+
+
+def traktor_location(track_path: str, volumes_dir: str | os.PathLike[str] = "/Volumes") -> tuple[str, str, str]:
+    """``(VOLUME, DIR, FILE)`` as Traktor encodes them -- the inverse of
+    `traktor_key_to_path`. ``/Volumes/<name>/...`` is that external volume;
+    any other absolute POSIX path is on the boot volume. A Windows drive
+    becomes ``"C:"`` (Traktor's Windows convention; not verified on a real
+    Windows collection)."""
+    path = Path(track_path)
+    parts = path.parts
+    if len(parts) >= 3 and parts[0] == "/" and parts[1] == "Volumes":
+        volume, components = parts[2], parts[3:-1]
+    elif path.drive:
+        volume, components = path.drive, parts[1:-1]
+    else:
+        volume, components = boot_volume_name(volumes_dir), parts[1:-1]
+    return volume, encode_nml_dir(components), path.name
+
+
+def export_traktor_playlist(
+    nml_path: str | os.PathLike[str],
+    playlist_name: str,
+    track_paths: Iterable[str],
+    db: LibraryDB | None = None,
+    volumes_dir: str | os.PathLike[str] = "/Volumes",
+) -> None:
+    """Writes a new single-playlist .nml at exactly `nml_path` for Traktor's
+    Import Playlist. Titles/artists come from the metadata cache when `db`
+    has them; Traktor re-reads tags on import either way."""
+    tracks = []
+    for track_path in track_paths:
+        volume, directory, filename = traktor_location(track_path, volumes_dir)
+        title = artist = ""
+        record = db.get_track_by_path(track_path) if db is not None else None
+        cached = db.get_cached_metadata(record.id) if record is not None else None
+        if cached is not None:
+            title, artist = cached[1].title or "", cached[1].artist or ""
+        tracks.append(NmlExportTrack(volume, directory, filename, title, artist))
+    write_playlist_nml(nml_path, playlist_name, tracks)
 
 
 def read_rekordbox_playlists(pdb_path: str | os.PathLike[str]) -> dict[str, list[str]]:

@@ -474,6 +474,9 @@ class MusicLibraryView(QWidget):
             ("import_rekordbox_button", "Import Rekordbox export…", self._on_import_rekordbox_clicked, ""),
             ("export_serato_button", "Export as Serato crate…", self._on_export_serato_clicked,
              "Writes a new .crate file where you choose. Never overwrites a crate on its own."),
+            ("export_traktor_button", "Export as Traktor playlist…", self._on_export_traktor_clicked,
+             ("Writes a new single-playlist .nml where you choose, for Traktor's Import Playlist. "
+              "Never touches collection.nml.")),
             ("rename_playlist_button", "Rename…", self._on_rename_playlist_clicked, ""),
             ("delete_playlist_button", "Delete", self._on_delete_playlist_clicked, ""),
         ]
@@ -1026,6 +1029,24 @@ class MusicLibraryView(QWidget):
         if path:
             try:
                 self.export_playlist_as_crate(playlist_id, path)
+            except OSError as exc:
+                QMessageBox.warning(self, "Export failed", f"{path}\n\n{exc}")
+
+    def export_playlist_as_nml(self, playlist_id: int, nml_path: str, name: str) -> None:
+        workspace.export_traktor_playlist(nml_path, name, self.db.playlist_paths(playlist_id), db=self.db)
+        self.status_label.setText(f"Exported {Path(nml_path).name}.")
+
+    def _on_export_traktor_clicked(self) -> None:
+        playlist_id = self.selected_playlist_id()
+        if playlist_id is None:
+            return
+        name = self.playlist_list.currentItem().text().split("  (", 1)[0]
+        path, _ = QFileDialog.getSaveFileName(
+            self, "Export as Traktor playlist", f"{name}.nml", "Traktor playlists (*.nml)"
+        )
+        if path:
+            try:
+                self.export_playlist_as_nml(playlist_id, path, name)
             except OSError as exc:
                 QMessageBox.warning(self, "Export failed", f"{path}\n\n{exc}")
 
