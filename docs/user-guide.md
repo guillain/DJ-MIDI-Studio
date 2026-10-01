@@ -340,6 +340,11 @@ categories, and playlists — independently of any MIDI mapping.
    - **Export as Serato crate…** writes a *new* `.crate` file wherever you
      choose; copy it into your `_Serato_/Subcrates` folder yourself if you
      want Serato to pick it up.
+   - **Export as Traktor playlist…** writes a *new* single-playlist `.nml`
+     file wherever you choose. In Traktor, right-click `Playlists` in the
+     browser tree → `Import Playlist`, then pick that file. Your
+     `collection.nml` is never touched. Traktor reads each track's tags and
+     analyses it on import.
 
 The library index is stored beside the preferences file as
 `library.sqlite3`.
