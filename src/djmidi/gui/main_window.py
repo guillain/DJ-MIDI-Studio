@@ -51,6 +51,12 @@ from PySide6.QtWidgets import (
 )
 
 from djmidi import catalog, software
+from djmidi.controller_sync import (
+    ControllerSyncSet,
+    SyncResult,
+    run_sync,
+    summarize_results,
+)
 from djmidi.gui import jog as jog_mod
 from djmidi.gui import layout as layout_mod
 from djmidi.gui.controller_emulator import ControllerEmulatorView
@@ -80,7 +86,7 @@ from djmidi.integration_detection import (
     detect_software_mapping,
 )
 from djmidi.logging_config import configure_logging, current_log_path
-from djmidi.midi_io import MidiEvent
+from djmidi.midi_io import MidiEvent, list_output_ports
 from djmidi.model import Control, MappingElement, MidiConfig
 from djmidi.plugins import PluginPreferences, default_preferences_path
 from djmidi.safe_update import prepare_update
@@ -319,10 +325,12 @@ class MainWindow(QMainWindow):
         self.controller_image_view = ControllerImageView()
 
         self.live_monitor_view = LiveMonitorView(on_event=self._on_live_midi_event)
+        self.live_monitor_view.syncRequested.connect(self._on_sync_controllers)
 
         self.controller_setup_view = ControllerSetupView()
         self.controller_setup_view.controllerApplied.connect(self._on_controller_applied)
         self.controller_setup_view.openMappingRequested.connect(self._on_open_mapping_requested)
+        self.controller_setup_view.syncSetSaveRequested.connect(self._on_sync_set_save_requested)
 
         self.midi_routing_view = MidiRoutingView()
         self.midi_routing_view.set_routing_enabled(self.preferences.routing_enabled)
@@ -658,7 +666,22 @@ class MainWindow(QMainWindow):
         self._preferences_button.setFixedSize(28, 28)
         self._preferences_button.setToolTip("Preferences...")
         self._preferences_button.clicked.connect(self._on_preferences)
-        self.menuBar().setCornerWidget(self._preferences_button, Qt.Corner.TopRightCorner)
+        # One-click controller initialization (Sync), beside the gear so it's
+        # reachable from every tab; Live Monitor carries the same action.
+        self._sync_button = QPushButton("⟳ Sync")
+        self._sync_button.setFixedHeight(28)
+        self._sync_button.setToolTip(
+            "Sync controllers: send each connected controller its recorded initialization set"
+        )
+        self._sync_button.clicked.connect(self._on_sync_controllers)
+        # Same keep-alive concern as the gear button above: hold the container.
+        self._menu_corner = QWidget()
+        corner_layout = QHBoxLayout(self._menu_corner)
+        corner_layout.setContentsMargins(0, 0, 0, 0)
+        corner_layout.setSpacing(4)
+        corner_layout.addWidget(self._sync_button)
+        corner_layout.addWidget(self._preferences_button)
+        self.menuBar().setCornerWidget(self._menu_corner, Qt.Corner.TopRightCorner)
 
         help_menu = self.menuBar().addMenu("&Help")
         documentation_menu = help_menu.addMenu("Project Documentation")
@@ -1000,6 +1023,40 @@ class MainWindow(QMainWindow):
                 # policies" applying right away above -- no-op if already running.
                 self.live_monitor_view.ensure_monitoring_started()
             self.statusBar().showMessage("Preferences saved")
+
+    def _on_sync_controllers(self) -> list[SyncResult]:
+        """Sends every stored controller sync set to its connected controller."""
+        sync_sets = list(self.preferences.controller_sync_sets)
+        if not sync_sets:
+            QMessageBox.information(
+                self,
+                "No controller sync set",
+                "No initialization set is recorded yet.\n\n"
+                "In Controller Setup, enter the controller name, start learning, press the "
+                "controls to send at initialization, then click \"Save as controller sync set\".",
+            )
+            return []
+        results = run_sync(sync_sets, list_output_ports())
+        self.statusBar().showMessage(summarize_results(results), 10_000)
+        return results
+
+    def _on_sync_set_save_requested(self, sync_set: ControllerSyncSet) -> None:
+        existing = self.preferences.sync_set_for(sync_set.controller)
+        if existing is not None:
+            reply = QMessageBox.question(
+                self,
+                "Replace sync set",
+                f"Replace the {len(existing.messages)}-message sync set already stored for "
+                f"{sync_set.controller} with this {len(sync_set.messages)}-message recording?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            )
+            if reply != QMessageBox.StandardButton.Yes:
+                return
+        self.preferences.set_sync_set(sync_set)
+        self.preferences.save(self.preferences_path)
+        self.statusBar().showMessage(
+            f"Sync set saved for {sync_set.controller} ({len(sync_set.messages)} message(s))", 10_000
+        )
 
     def _apply_plugin_preferences(self) -> None:
         controller_ids = {

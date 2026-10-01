@@ -181,3 +181,11 @@ def test_ensure_monitoring_started_with_no_available_ports_stays_stopped(monkeyp
 def test_shutdown_when_never_started_does_not_raise():
     view = LiveMonitorView()
     view.shutdown()  # should be a no-op, not raise
+
+
+def test_sync_button_emits_sync_requested():
+    view = LiveMonitorView()
+    fired = []
+    view.syncRequested.connect(lambda: fired.append(True))
+    view._sync_button.click()
+    assert fired == [True]

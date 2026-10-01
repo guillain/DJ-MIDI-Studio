@@ -54,6 +54,8 @@ _LOGGER = logging.getLogger(__name__)
 class LiveMonitorView(QWidget):
     eventReceived = Signal(object)  # MidiEvent
     portNamesChanged = Signal(list)
+    # "Sync controllers" clicked; MainWindow owns the stored sync sets.
+    syncRequested = Signal()
 
     def __init__(self, on_event: Callable[[MidiEvent], None] | None = None, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -88,6 +90,12 @@ class LiveMonitorView(QWidget):
         clear_button.clicked.connect(self._clear_log)
         save_button = QPushButton("Save log…")
         save_button.clicked.connect(self._save_log)
+        self._sync_button = QPushButton("Sync controllers")
+        self._sync_button.setToolTip(
+            "Send each controller its recorded initialization set "
+            "(recorded in Controller Setup, listed in Preferences → Controller sync)."
+        )
+        self._sync_button.clicked.connect(self.syncRequested)
 
         controls_box = QGroupBox("Monitor")
         controls_layout = QVBoxLayout(controls_box)
@@ -97,6 +105,7 @@ class LiveMonitorView(QWidget):
         controls_layout.addWidget(self._status_label)
         controls_layout.addWidget(clear_button)
         controls_layout.addWidget(save_button)
+        controls_layout.addWidget(self._sync_button)
         controls_layout.addStretch(1)
 
         top_row = QHBoxLayout()

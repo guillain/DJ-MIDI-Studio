@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import dataclasses
+
 from PySide6.QtWidgets import (
+    QAbstractItemView,
     QCheckBox,
     QComboBox,
     QDialog,
@@ -8,17 +11,22 @@ from PySide6.QtWidgets import (
     QFileDialog,
     QFormLayout,
     QHBoxLayout,
+    QHeaderView,
     QLabel,
     QLineEdit,
     QPushButton,
     QScrollArea,
+    QTableWidget,
+    QTableWidgetItem,
     QTabWidget,
     QVBoxLayout,
     QWidget,
 )
 
 from djmidi import catalog, software
+from djmidi.controller_sync import ControllerSyncSet
 from djmidi.logging_config import default_log_path
+from djmidi.midi_io import list_output_ports
 from djmidi.plugins import PluginPreferences
 
 
@@ -132,6 +140,7 @@ class PreferencesDialog(QDialog):
         tabs = QTabWidget()
         tabs.addTab(general_tab, "General")
         tabs.addTab(plugins_scroll, "Plugins")
+        tabs.addTab(self._build_sync_tab(preferences), "Controller sync")
 
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel
@@ -142,6 +151,66 @@ class PreferencesDialog(QDialog):
         layout = QVBoxLayout(self)
         layout.addWidget(tabs)
         layout.addWidget(buttons)
+
+    _AUTO_PORT_LABEL = "Auto (match controller name)"
+
+    def _build_sync_tab(self, preferences: PluginPreferences) -> QWidget:
+        page = QWidget()
+        layout = QVBoxLayout(page)
+        hint = QLabel(
+            "Initialization sets sent by the Sync button (menu bar and Live Monitor), one per "
+            "controller. Record one in Controller Setup: name the controller, start learning, "
+            "press the controls, then \"Save as controller sync set\"."
+        )
+        hint.setWordWrap(True)
+        layout.addWidget(hint)
+        self._sync_sets: list[ControllerSyncSet] = list(preferences.controller_sync_sets)
+        self._sync_table = QTableWidget(0, 3)
+        self._sync_table.setHorizontalHeaderLabels(["Controller", "Output port", "Messages"])
+        self._sync_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self._sync_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        header = self._sync_table.horizontalHeader()
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        # Port names ("PIONEER DDJ-XP2 ...") need room to stay readable.
+        self._sync_table.setMinimumWidth(480)
+        self._sync_table.verticalHeader().setVisible(False)
+        available = list_output_ports()
+        for sync_set in self._sync_sets:
+            row = self._sync_table.rowCount()
+            self._sync_table.insertRow(row)
+            self._sync_table.setItem(row, 0, QTableWidgetItem(sync_set.controller))
+            port_combo = QComboBox()
+            port_combo.addItem(self._AUTO_PORT_LABEL, "")
+            for port in dict.fromkeys([*available, sync_set.output_port]):
+                if port:
+                    port_combo.addItem(port if port in available else f"{port} (not connected)", port)
+            port_combo.setCurrentIndex(max(port_combo.findData(sync_set.output_port), 0))
+            self._sync_table.setCellWidget(row, 1, port_combo)
+            self._sync_table.setItem(row, 2, QTableWidgetItem(str(len(sync_set.messages))))
+        layout.addWidget(self._sync_table, 1)
+        remove_button = QPushButton("Remove selected set")
+        remove_button.clicked.connect(self._remove_selected_sync_set)
+        buttons = QHBoxLayout()
+        buttons.addWidget(remove_button)
+        buttons.addStretch(1)
+        layout.addLayout(buttons)
+        return page
+
+    def _remove_selected_sync_set(self) -> None:
+        rows = sorted({index.row() for index in self._sync_table.selectedIndexes()}, reverse=True)
+        for row in rows:
+            self._sync_table.removeRow(row)
+            del self._sync_sets[row]
+
+    def _edited_sync_sets(self) -> list[ControllerSyncSet]:
+        edited = []
+        for row, sync_set in enumerate(self._sync_sets):
+            combo = self._sync_table.cellWidget(row, 1)
+            port = combo.currentData() if isinstance(combo, QComboBox) else sync_set.output_port
+            edited.append(dataclasses.replace(sync_set, output_port=port or ""))
+        return edited
 
     @staticmethod
     def _plugin_entries() -> list[tuple[str, str]]:
@@ -181,6 +250,7 @@ class PreferencesDialog(QDialog):
         self._preferences.log_path = self._log_path.text().strip()
         for plugin_id, checkbox in self._plugin_checks.items():
             self._preferences.set_enabled(plugin_id, checkbox.isChecked())
+        self._preferences.controller_sync_sets = self._edited_sync_sets()
         self.accept()
 
 
