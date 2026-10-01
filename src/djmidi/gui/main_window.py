@@ -71,7 +71,7 @@ from djmidi.gui.midi_routing_view import MidiRoutingView
 from djmidi.gui.music_library_view import MusicLibraryView
 from djmidi.gui.preferences_dialog import PreferencesDialog
 from djmidi.gui.safe_update_dialog import SafeUpdateDialog
-from djmidi.gui.splitter_utils import replace_splitter
+from djmidi.gui.splitter_utils import replace_splitter, scrollable_columns
 from djmidi.gui.theme import apply_theme, mapping_tree_stylesheet
 from djmidi.gui.theme import signals as theme_signals
 from djmidi.gui.tree_model import NODE_ROLE, build_channel_columns, relabel_item
@@ -196,6 +196,10 @@ def _refresh_tree_row_layout(view: QTreeView) -> None:
         index = view.indexBelow(index)
 
 
+# A mapping column narrower than this truncates every row ("ch1 N..."); the
+# column row scrolls sideways instead (see splitter_utils.scrollable_columns).
+MAPPING_COLUMN_MIN_WIDTH = 220
+
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
@@ -258,7 +262,8 @@ class MainWindow(QMainWindow):
         channel_layout.setContentsMargins(0, 0, 0, 0)
         channel_layout.addWidget(self.search_box)
         self.channel_splitter = QSplitter(Qt.Orientation.Horizontal)
-        channel_layout.addWidget(self.channel_splitter)
+        self._channel_columns_scroll = scrollable_columns(self.channel_splitter)
+        channel_layout.addWidget(self._channel_columns_scroll)
 
         self.layout_view = ControllerLayoutView()
         self.layout_view.cellActivated.connect(lambda key: self._on_layout_cell_activated(key, "channel"))
@@ -267,7 +272,8 @@ class MainWindow(QMainWindow):
         deck_columns_layout = QVBoxLayout(self.deck_columns_container)
         deck_columns_layout.setContentsMargins(0, 0, 0, 0)
         self.deck_splitter = QSplitter(Qt.Orientation.Horizontal)
-        deck_columns_layout.addWidget(self.deck_splitter)
+        self._deck_columns_scroll = scrollable_columns(self.deck_splitter)
+        deck_columns_layout.addWidget(self._deck_columns_scroll)
 
         self.deck_layout_view = ControllerLayoutView(show_deck_filter=True)
         self.deck_layout_view.cellActivated.connect(lambda key: self._on_layout_cell_activated(key, "deck"))
@@ -276,7 +282,8 @@ class MainWindow(QMainWindow):
         controller_columns_layout = QVBoxLayout(self.controller_columns_container)
         controller_columns_layout.setContentsMargins(0, 0, 0, 0)
         self.controller_splitter = QSplitter(Qt.Orientation.Horizontal)
-        controller_columns_layout.addWidget(self.controller_splitter)
+        self._controller_columns_scroll = scrollable_columns(self.controller_splitter)
+        controller_columns_layout.addWidget(self._controller_columns_scroll)
 
         self.controller_layout_view = ControllerLayoutView()
         self.controller_layout_view.cellActivated.connect(lambda key: self._on_layout_cell_activated(key, "controller"))
@@ -1153,7 +1160,7 @@ class MainWindow(QMainWindow):
 
     def _rebuild_channel_columns(self) -> None:
         assert self.config is not None
-        self.channel_splitter = replace_splitter(self.channel_columns_container, self.channel_splitter)
+        self.channel_splitter = replace_splitter(self._channel_columns_scroll, self.channel_splitter)
 
         self.node_to_item = {}
         self._channel_model_owner = {}
@@ -1172,6 +1179,7 @@ class MainWindow(QMainWindow):
             self.channel_proxies.append(proxy)
 
             view = QTreeView()
+            view.setMinimumWidth(MAPPING_COLUMN_MIN_WIDTH)
             self._style_mapping_tree(view)
             view.setHeaderHidden(False)
             view.setModel(proxy)
@@ -1184,11 +1192,12 @@ class MainWindow(QMainWindow):
 
     def _refresh_deck_view(self) -> None:
         assert self.config is not None
-        self.deck_splitter = replace_splitter(self.deck_columns_container, self.deck_splitter)
+        self.deck_splitter = replace_splitter(self._deck_columns_scroll, self.deck_splitter)
         self._deck_tree_views = []
 
         for _deck_id, model in build_deck_columns(self.config):
             view = QTreeView()
+            view.setMinimumWidth(MAPPING_COLUMN_MIN_WIDTH)
             self._style_mapping_tree(view)
             view.setHeaderHidden(False)
             view.setModel(model)
@@ -1278,11 +1287,12 @@ class MainWindow(QMainWindow):
         self._refresh_controller_columns(usage)
 
     def _refresh_controller_columns(self, usage: dict[layout_mod.CellKey, dict[str, set[str]]]) -> None:
-        self.controller_splitter = replace_splitter(self.controller_columns_container, self.controller_splitter)
+        self.controller_splitter = replace_splitter(self._controller_columns_scroll, self.controller_splitter)
         self._controller_tree_views = []
 
         for _controller, model, expand_flags in build_controller_columns(usage):
             view = QTreeView()
+            view.setMinimumWidth(MAPPING_COLUMN_MIN_WIDTH)
             self._style_mapping_tree(view)
             view.setHeaderHidden(False)
             view.setModel(model)

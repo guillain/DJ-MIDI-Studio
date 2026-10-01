@@ -4,15 +4,25 @@ from __future__ import annotations
 
 import os
 import sys
+import tempfile
+import zipfile
 from pathlib import Path
 from unittest.mock import patch
 
 from PySide6.QtCore import QtMsgType, qInstallMessageHandler
 from PySide6.QtWidgets import QApplication
 
+# Never open (or create) the real music library index of whoever runs this:
+# the Music Library captures below scan a throwaway synthetic library.
+os.environ.setdefault("DJMIDI_LIBRARY_DB", ":memory:")
+
+from mutagen.id3 import ID3, TBPM, TCON, TIT2, TKEY, TPE1
+
 from djmidi import catalog
 from djmidi.gui.main_window import MainWindow
+from djmidi.library import workspace
 from djmidi.parser import parse_file
+from djmidi.software.traktor import parse_string as parse_traktor
 
 # Purely cosmetic noise from running under QT_QPA_PLATFORM=offscreen: the
 # offscreen platform plugin has no real window manager, so every
@@ -45,6 +55,25 @@ FIXTURE = ROOT / "data" / "xdj_xz-ddj_xp2-4decks.xml"
 # tab's own docstring for the JSON shape: version/controller_name/
 # recorded_events/rows) -- distinct from FIXTURE above, which is a Serato
 # mapping XML, not a Controller Setup draft.
+# A real Traktor .tsi export (issue #122), committed zipped.
+TRAKTOR_FIXTURE = ROOT / "data" / "traktor" / "xdj-xz-settings.tsi.zip"
+# Synthetic tracks for the Music Library captures: (folder, title, artist,
+# BPM, key, genre tag). Invented demo data -- tiny silent MP3 stubs written
+# to a temp dir, never a real collection. The folders mimic a hand-curated
+# Genre/Subgenre tree, and two genre tags are deliberately off so the
+# category column shows both folder-resolved and fuzzy-suggested cases.
+DEMO_TRACKS = (
+    ("Tek/Tribe", "Kalimba Stomp", "Crowd Mover", "174", "Am", "Techno"),
+    ("Tek/Tribe", "Dust Road", "Sonic Nomad", "172", "Em", "Other"),
+    ("Tek/PsyTrance", "Neon Temple", "Astral Ops", "145", "F#m", "House"),
+    ("Tek/HardTek", "Iron Floor", "Bassline Riot", "180", "Gm", "Hardtek"),
+    ("Electro/Dub", "Roots Signal", "Dub Kitchen", "140", "D", "Dub"),
+    ("Electro/Drum & Bass", "Night Runner", "Low Orbit", "174", "Bm", "DnB"),
+    ("misc", "Midnight Jungle", "Selecta K", "172", "Bb", "Jungle"),
+    ("misc", "Lost Frequencies", "Unknown", "145", "C#m", "Psytrancee"),
+)
+_MP3_FRAME = bytes([0xFF, 0xFB, 0x90, 0xC4]) + b"\x00" * 413
+
 SETUP_SESSIONS = {
     "ddj_xp2.json": "controlleur-setup-ddj-xp2.png",
     "xdj_xz.json": "controlleur-setup-xdj-xz.png",
@@ -89,6 +118,10 @@ def main() -> int:
         patch("djmidi.gui.controller_setup.MidiMonitor", _OfflineMidiMonitor),
         patch("djmidi.gui.midi_routing_view.list_input_ports", return_value=[]),
         patch("djmidi.gui.midi_routing_view.list_output_ports", return_value=[]),
+        # Live-send pickers (By Channel/Deck/Controller, Controller Images,
+        # emulator) list ports via midi_io directly -- without this, the
+        # capturing machine's own MIDI ports leak into the images.
+        patch("djmidi.midi_io.list_output_ports", return_value=[]),
     ):
         window = MainWindow()
         window.resize(1600, 1000)
@@ -101,6 +134,7 @@ def main() -> int:
             "intro": "dashboard.png",
             "setup": "controlleur-setup.png",
             "images": "controlleur-image.png",
+            "channel": "by-channel.png",
             "deck": "by-deck.png",
             "controller": "by-controller.png",
             "monitor": "live-monitor.png",
@@ -163,9 +197,16 @@ def main() -> int:
         CONTROLLERS_OUTPUT.mkdir(parents=True, exist_ok=True)
         for name in catalog.CONTROLLER_NAMES:
             definition = catalog.get_definition(name)
-            slug = Path(definition.reference_image).stem if definition.reference_image else name.lower().replace(
-                " ", "-"
-            )
+            # reference_image is "<slug>/reference.png" since the controller
+            # assets moved to controllers/<slug>/ (v0.47.95) -- the slug is the
+            # directory, not the file stem (which is "reference" for every one).
+            reference = Path(definition.reference_image) if definition.reference_image else None
+            if reference is not None and reference.parent.name:
+                slug = reference.parent.name
+            elif reference is not None:
+                slug = reference.stem
+            else:
+                slug = name.lower().replace(" ", "-")
             before_ids = set(window._emulator_docks.keys())
             emulator_dock = window._create_emulator_instance(name)
             instance_id = next(iter(set(window._emulator_docks.keys()) - before_ids))
@@ -194,9 +235,79 @@ def main() -> int:
             if not window.grab().save(str(OUTPUT / out_name)):
                 raise RuntimeError(f"could not save {out_name}")
 
+        _capture_music_library(app, window)
+        _capture_traktor_mapping(app, window)
+
         window.close()
         app.processEvents()
     return 0
+
+
+def _write_demo_library(root: Path) -> None:
+    for index, (folder, title, artist, bpm, key, genre) in enumerate(DEMO_TRACKS):
+        path = root / folder / f"{index:02d} {artist} - {title}.mp3"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(_MP3_FRAME * 20)
+        tags = ID3()
+        for frame, value in ((TIT2, title), (TPE1, artist), (TBPM, bpm), (TKEY, key), (TCON, genre)):
+            tags.add(frame(encoding=3, text=[value]))
+        tags.save(path)
+
+
+def _save(widget, filename: str) -> None:
+    if not widget.grab().save(str(OUTPUT / filename)):
+        raise RuntimeError(f"could not save {filename}")
+
+
+def _capture_music_library(app: QApplication, window: MainWindow) -> None:
+    """Music Library tab (issue #132): track panel on a fuzzy-suggested
+    track, the category manager, and generated playlists."""
+    with tempfile.TemporaryDirectory() as temp:
+        music = Path(temp) / "Music"
+        _write_demo_library(music)
+        view = window.music_library_view
+        window.left_tabs.setCurrentIndex(window._tab_indexes["library"])
+        app.processEvents()
+        view.add_root(music)
+        view.start_scan()
+        view.run_pending_job()
+        view.table.resizeColumnsToContents()
+        suggested = next(row for row in view.table_model.rows() if row.category_suggestion)
+        view.select_path(suggested.path)
+        view.side_tabs.setCurrentIndex(0)
+        app.processEvents()
+        _save(window, "music-library.png")
+
+        view.side_tabs.setCurrentIndex(1)
+        app.processEvents()
+        _save(window, "music-library-categories.png")
+
+        seed = next(row for row in view.table_model.rows() if row.title == "Kalimba Stomp")
+        view.create_playlist("Friday set", workspace.generate_playlist(view.visible_rows()), workspace.SOURCE_GENERATED)
+        view.create_playlist(
+            "Mix from Kalimba Stomp",
+            workspace.generate_playlist(view.visible_rows(), seed_path=seed.path),
+            workspace.SOURCE_GENERATED,
+        )
+        view.select_path(seed.path)
+        app.processEvents()
+        _save(window, "music-library-playlists.png")
+        view.close_db()
+
+
+def _capture_traktor_mapping(app: QApplication, window: MainWindow) -> None:
+    """A real Traktor .tsi (issue #122) open in the By Channel view."""
+    with zipfile.ZipFile(TRAKTOR_FIXTURE) as archive:
+        member = next(name for name in archive.namelist() if name.endswith(".tsi"))
+        text = archive.read(member).decode("utf-8")
+    window.config = parse_traktor(text)
+    window.software_id = "traktor"
+    window.current_path = Path(member)
+    window._load_tree()
+    # Its triggers are the XDJ-XZ's own, so show them on that layout.
+    window._on_intro_drilldown_requested("channel", "XDJ-XZ")
+    app.processEvents()
+    _save(window, "traktor-tsi.png")
 
 
 if __name__ == "__main__":

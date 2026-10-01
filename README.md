@@ -93,6 +93,10 @@ Here is the short visual tour. The complete annotated guide is available in
 |---|---|
 | ![MIDI Clock](docs/images/layout/midi-clock.png) | ![Metronome](docs/images/layout/metronome.png) |
 
+| Music Library | Traktor `.tsi` mapping |
+|---|---|
+| ![Music Library](docs/images/layout/music-library.png) | ![A real Traktor .tsi in By Channel](docs/images/layout/traktor-tsi.png) |
+
 💡 The MIDI tools can stay docked, float independently, or be restored to the
 previous user arrangement. See the [Controller Layout Gallery](docs/images/controllers/README.md)
 for a Controller Emulator screenshot of every registered controller, not

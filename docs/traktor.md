@@ -35,6 +35,8 @@ Each Traktor mapping that has a MIDI assignment becomes one control:
 A command that was added in Traktor but never MIDI-learned has no trigger,
 so it doesn't appear in the views; it stays in the file untouched.
 
+![A real Traktor XDJ-XZ .tsi in By Channel](images/layout/traktor-tsi.png)
+
 ## Saving
 
 Change a control's channel, type, or number and save: only that binding's
