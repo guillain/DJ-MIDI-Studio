@@ -132,6 +132,16 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Export a playlist as a Traktor `.nml`**
+  (`v0.48.27-traktor-playlist-export`) — the Music Library tab's new
+  `Export as Traktor playlist…` writes a standalone single-playlist `.nml`
+  (Traktor → `Import Playlist`) at a user-chosen path, never into
+  `collection.nml`. Structure copied from Traktor Pro 4's own single-playlist
+  files (`History/*.nml`, read-only); path encoding is the inverse of the
+  import side (`traktor_location`, boot volume = the `/Volumes` symlink to
+  `/`). Re-exporting every real playlist of the maintainer's collection
+  reproduced 219/219 track keys byte-identically; an actual import inside
+  Traktor remains to be confirmed by the maintainer.
 - [x] **One-click controller Sync** (`v0.48.26-controller-sync`) — a
   `⟳ Sync` button in the menu bar (beside the Preferences gear) and a
   `Sync controllers` button in Live Monitor send each connected controller
@@ -641,8 +651,8 @@ Implemented contract, runtime, test, and documentation work:
   explicit track list and are skipped), both verified read-only against
   the maintainer's real 51.7MB/44,564-entry `collection.nml` (all entries
   parsed in ~0.5s, ~61MB peak RSS — bounded, not a full-file DOM load).
-  Writing a `.nml` playlist back out is deferred (not attempted this
-  pass) — reading was the stated priority and is fully delivered.
+  Writing a `.nml` playlist back out was deferred here, then delivered in
+  `v0.48.27-traktor-playlist-export` (see Recent evolution chapters).
 - [x] **BPM/Camelot-key analysis** (issue #128) — new
   `src/djmidi/library/analysis.py`: a dependency-free `to_camelot()` lookup
   covering every notation the issue's own investigation found tagged on

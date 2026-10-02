@@ -110,3 +110,52 @@ def test_playlist_track_keys_join_against_collection_track_keys(tmp_path):
     resolved = [tracks_by_key[key].title for key in playlists["Hard_Tek"]]
 
     assert resolved == ["Bumpy", "Au Ké de la Core"]
+
+
+def test_encode_nml_dir_matches_traktor_encoding():
+    from djmidi.library.traktor_library import encode_nml_dir
+
+    assert encode_nml_dir(["Users", "dj", "Music", "Tek"]) == "/:Users/:dj/:Music/:Tek/:"
+    assert encode_nml_dir([]) == "/:"
+
+
+def test_playlist_nml_roundtrips_through_the_real_parsers(tmp_path):
+    from djmidi.library.traktor_library import (
+        NmlExportTrack,
+        parse_collection,
+        parse_playlists,
+        write_playlist_nml,
+    )
+
+    a = NmlExportTrack("Macintosh HD", "/:Users/:dj/:Music/:", "Alpha.mp3", "Alpha", "Artist A")
+    b = NmlExportTrack("DJ Drive", "/:Tek/:", "Bravo & Co.flac")
+    nml = tmp_path / "Friday.nml"
+    write_playlist_nml(nml, "Friday <Set>", [a, b, a])
+
+    raw = nml.read_bytes()
+    assert raw.startswith(b'<?xml version="1.0" encoding="UTF-8" standalone="no" ?>\n<NML VERSION="20">')
+    # Duplicates appear once in COLLECTION but keep their playlist position.
+    tracks = parse_collection(nml)
+    assert [(t.title, t.artist, t.key) for t in tracks] == [
+        ("Alpha", "Artist A", "Macintosh HD/:Users/:dj/:Music/:Alpha.mp3"),
+        ("", "", "DJ Drive/:Tek/:Bravo & Co.flac"),
+    ]
+    assert parse_playlists(nml) == {"Friday <Set>": [a.key, b.key, a.key]}
+
+
+def test_playlist_nml_structure_matches_traktor_written_files(tmp_path):
+    import re
+    import xml.etree.ElementTree as ET
+
+    from djmidi.library.traktor_library import NmlExportTrack, write_playlist_nml
+
+    nml = tmp_path / "x.nml"
+    write_playlist_nml(nml, "Set", [NmlExportTrack("Macintosh HD", "/:m/:", "a.mp3")])
+    root = ET.parse(nml).getroot()
+    assert [child.tag for child in root] == ["HEAD", "COLLECTION", "SETS", "PLAYLISTS", "INDEXING"]
+    location = root.find("COLLECTION/ENTRY/LOCATION")
+    assert location.attrib == {"DIR": "/:m/:", "FILE": "a.mp3", "VOLUME": "Macintosh HD", "VOLUMEID": "Macintosh HD"}
+    playlist = root.find("PLAYLISTS/NODE/SUBNODES/NODE/PLAYLIST")
+    assert playlist.get("TYPE") == "LIST" and playlist.get("ENTRIES") == "1"
+    assert re.fullmatch(r"[0-9a-f]{32}", playlist.get("UUID"))
+    assert root.find("PLAYLISTS/NODE").get("NAME") == "$ROOT"

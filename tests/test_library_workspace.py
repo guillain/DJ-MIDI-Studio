@@ -256,3 +256,44 @@ def test_refresh_track_metadata_after_write(tmp_path):
         workspace.refresh_track_metadata(db, str(track))
         [row] = workspace.consolidate(db)
     assert row.title == "New"
+
+
+def test_boot_volume_name_finds_the_symlink_to_root(tmp_path):
+    volumes = tmp_path / "Volumes"
+    volumes.mkdir()
+    (volumes / "USB Stick").mkdir()
+    assert workspace.boot_volume_name(volumes) == ""
+    (volumes / "Macintosh HD").symlink_to("/")
+    assert workspace.boot_volume_name(volumes) == "Macintosh HD"
+    assert workspace.boot_volume_name(tmp_path / "missing") == ""
+
+
+def test_traktor_location_is_the_inverse_of_traktor_key_to_path(tmp_path):
+    volumes = tmp_path / "Volumes"
+    volumes.mkdir()
+    (volumes / "Macintosh HD").symlink_to("/")
+    assert workspace.traktor_location("/Users/dj/Music/Tek/a.mp3", volumes) == (
+        "Macintosh HD",
+        "/:Users/:dj/:Music/:Tek/:",
+        "a.mp3",
+    )
+    assert workspace.traktor_location("/Volumes/DJ Drive/Tek/b.flac", volumes) == ("DJ Drive", "/:Tek/:", "b.flac")
+    volume, directory, filename = workspace.traktor_location("/Users/dj/a.mp3", volumes)
+    assert workspace.traktor_key_to_path(volume + directory + filename) == "/Users/dj/a.mp3"
+
+
+def test_export_traktor_playlist_uses_cached_titles(tmp_path):
+    from djmidi.library.db import LibraryDB
+    from djmidi.library.metadata import TrackMetadata
+    from djmidi.library.traktor_library import parse_collection
+
+    db = LibraryDB()
+    root = db.add_root(str(tmp_path))
+    track = str(tmp_path / "a.mp3")
+    db.upsert_track(root.id, track, 1, 1.0)
+    record = db.get_track_by_path(track)
+    db.set_cached_metadata(record.id, 1.0, TrackMetadata(title="Alpha", artist="Artist A"))
+    nml = tmp_path / "Set.nml"
+    workspace.export_traktor_playlist(nml, "Set", [track, str(tmp_path / "unknown.mp3")], db=db)
+    assert workspace.read_traktor_playlists(nml) == {"Set": [track, str(tmp_path / "unknown.mp3")]}
+    assert [(t.title, t.artist) for t in parse_collection(nml)] == [("Alpha", "Artist A"), ("", "")]

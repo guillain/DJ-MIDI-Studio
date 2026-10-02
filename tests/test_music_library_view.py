@@ -240,6 +240,18 @@ def test_playlist_rename_delete_and_crate_export(library, monkeypatch):
     assert view.playlist_list.count() == 0
 
 
+def test_export_playlist_as_traktor_nml(library, monkeypatch):
+    view, music, tmp_path = library
+    track = str(music / "misc" / "c.mp3")
+    view.create_playlist("Set", [track])
+    view.playlist_list.setCurrentRow(0)
+    nml = tmp_path / "Set.nml"
+    monkeypatch.setattr(mlv.QFileDialog, "getSaveFileName", lambda *a, **k: (str(nml), ""))
+    view._on_export_traktor_clicked()
+    assert workspace.read_traktor_playlists(nml) == {"Set": [track]}
+    assert "Set.nml" in view.status_label.text()
+
+
 def test_import_serato_crate_feeds_category_hints(library, monkeypatch):
     view, music, tmp_path = library
     crate = tmp_path / "Tek%%HardTek%%Friday.crate"
