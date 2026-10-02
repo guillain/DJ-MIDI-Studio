@@ -51,6 +51,7 @@ been written from it — see `CLAUDE.md` for how to add one from official docs.
 | DDJ-REV5 | [ddj-rev5/ddj-rev5-midi-message-list-e1.pdf](ddj-rev5/ddj-rev5-midi-message-list-e1.pdf) | Pioneer DJ DDJ-REV5 MIDI Message List E1 | Archived locally; **no catalog module yet** (issue #12) |
 | DDJ-800 | [ddj-800/ddj-800-midi-message-list-e3.pdf](ddj-800/ddj-800-midi-message-list-e3.pdf) | Pioneer DJ DDJ-800 MIDI Message List E3 | Archived locally; **no catalog module yet** (issue #12) |
 | Native Instruments Traktor Kontrol S2 MK3 | [traktor-kontrol-s2-mk3/traktor-kontrol-s2-mk3-manual.pdf](traktor-kontrol-s2-mk3/traktor-kontrol-s2-mk3-manual.pdf) | Native Instruments Traktor Kontrol S2 MK3 Manual (English) | Archived locally; **no catalog module yet** (issue #12) |
+| Korg nanoPAD2 | [korg-nanopad2/nanopad2-midi-implementation.txt](korg-nanopad2/nanopad2-midi-implementation.txt), [chart](korg-nanopad2/nanopad2-midi-implementation-chart.pdf) | Korg nanoPAD2 MIDI Implementation rev. 1.01 + MIDI Implementation Chart (official) | Archived locally; **no catalog module** — pads are user-assignable, no factory note table (issue #12) |
 
 ## How to extend this index
 
