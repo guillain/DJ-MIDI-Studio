@@ -1077,8 +1077,16 @@ of official MIDI documentation, and fit with the current catalog architecture.
   path (see `catalog/__init__.py`'s documented no-docs route, originally
   built for exactly this "no official docs exist" scenario, e.g. the
   Behringer CMD-LC1).
-- [ ] **RANE FOUR** — four-channel Serato controller.
-- [ ] **Denon DJ Prime 4+** — four-deck Engine DJ system and Serato comparison point.
+- [ ] **RANE FOUR** — four-channel Serato controller. **Checked
+  2026-10-02**: no official MIDI message list found (Rane/inMusic support,
+  Serato hardware page, manuals). Blocked on that document or a
+  Controller Setup capture on real hardware.
+- [ ] **Denon DJ Prime 4+** — four-deck Engine DJ system and Serato
+  comparison point. **Checked 2026-10-02**: Denon DJ's official downloads
+  page lists only the shared PRIME user guide (v5.0.0) and a Windows
+  driver for PRIME 4/4+ — no MIDI specification, unlike the LC6000, which
+  has an official `LC6000-PRIME-MIDI-Specification-v1.0.pdf`. Blocked the
+  same way.
 - [x] **Behringer CMD-LC1** (`v0.48.29-catalog-cmd-lc1`) — done from a
   hardware capture, see Recent evolution chapters. Original note: surfaced by a real maintainer-owned Serato
   mapping (`data/serato/cmd-lc1.xml.zip`, 2026-09-19); already
@@ -1089,12 +1097,23 @@ of official MIDI documentation, and fit with the current catalog architecture.
   that may never come, per `catalog/__init__.py`'s documented no-docs path.
 - [ ] **Korg nanoPAD2** — surfaced by a real maintainer-owned Traktor
   mapping (`data/traktor/nanopad2-remixer.tsi.zip`,
-  2026-09-19). Same no-official-docs treatment as CMD-LC1 likely applies;
-  check for an official Korg MIDI implementation chart before assuming so.
+  2026-09-19). **Checked 2026-10-02**: Korg's official MIDI Implementation
+  (TXT, rev. 1.01) and MIDI Implementation Chart are archived in
+  `controllers/korg-nanopad2/`. They document the message *format* (pads send
+  Note/CC/Program Change on a per-scene channel) and the scene-dump layout,
+  but every pad's note/CC is user-assignable per scene (4 scenes) and none of
+  Korg's documents (implementation, chart, owner's manual, parameter guide)
+  gives a factory-default note table. A catalog profile would have to guess
+  those values; blocked on a Controller Setup capture of the maintainer's
+  own unit (or a Korg Kontrol Editor scene-set dump).
 - [ ] **Behringer CMD Studio 4a** — surfaced by a real maintainer-owned
   Traktor mapping (`data/traktor/cmd-studio-4a.tsi.zip`,
-  2026-09-19). Same no-official-docs treatment as CMD-LC1 likely applies;
-  check for an official Behringer MIDI implementation chart first.
+  2026-09-19). **Checked 2026-10-02**: the official Quick Start Guide has no
+  MIDI table, and Behringer's product page (now redirected away from
+  musictribe.com) no longer serves downloads. A Music Tribe community
+  thread refers to a 4a MIDI document with note/CC and LED addresses, but
+  no copy of it could be located from an official source. Blocked on that
+  document or a Controller Setup capture.
 
 For every new controller: obtain and archive an official MIDI message list or
 capture the hardware, add the profile and layout metadata, add tests, document
