@@ -10,18 +10,25 @@ from pathlib import Path
 from unittest.mock import patch
 
 from PySide6.QtCore import QtMsgType, qInstallMessageHandler
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QTabWidget
 
 # Never open (or create) the real music library index of whoever runs this:
 # the Music Library captures below scan a throwaway synthetic library.
 os.environ.setdefault("DJMIDI_LIBRARY_DB", ":memory:")
+# Same for preferences: the docs show the default install (every built-in
+# controller enabled), not whichever plugins the person running this disabled.
+os.environ.setdefault("DJMIDI_PREFERENCES_FILE", str(Path(tempfile.mkdtemp()) / "preferences.json"))
 
 from mutagen.id3 import ID3, TBPM, TCON, TIT2, TKEY, TPE1
 
 from djmidi import catalog
+from djmidi.controller_sync import ControllerSyncSet, SyncMessage
 from djmidi.gui.main_window import MainWindow
+from djmidi.gui.music_library_view import BulkTagDialog
+from djmidi.gui.preferences_dialog import PreferencesDialog
 from djmidi.library import workspace
 from djmidi.parser import parse_file
+from djmidi.plugins.preferences import PluginPreferences
 from djmidi.software.traktor import parse_string as parse_traktor
 
 # Purely cosmetic noise from running under QT_QPA_PLATFORM=offscreen: the
@@ -122,6 +129,7 @@ def main() -> int:
         # emulator) list ports via midi_io directly -- without this, the
         # capturing machine's own MIDI ports leak into the images.
         patch("djmidi.midi_io.list_output_ports", return_value=[]),
+        patch("djmidi.gui.preferences_dialog.list_output_ports", return_value=[]),
     ):
         window = MainWindow()
         window.resize(1600, 1000)
@@ -237,6 +245,7 @@ def main() -> int:
 
         _capture_music_library(app, window)
         _capture_traktor_mapping(app, window)
+        _capture_preferences_sync(app)
 
         window.close()
         app.processEvents()
@@ -292,7 +301,38 @@ def _capture_music_library(app: QApplication, window: MainWindow) -> None:
         view.select_path(seed.path)
         app.processEvents()
         _save(window, "music-library-playlists.png")
+
+        # "Write tags to selection…": a whole folder selected, the genre
+        # typed in the Track panel, so the dialog opens with Genre ticked.
+        view.side_tabs.setCurrentIndex(0)
+        folder = str(Path(seed.path).parent)
+        paths = [row.path for row in view.visible_rows() if str(Path(row.path).parent) == folder]
+        view.table.clearSelection()
+        view.select_path(paths[0])
+        view.select_paths(paths)
+        view.field_edits["genre"].setText("Afro House")
+        values = {name: edit.text() for name, edit in view.field_edits.items()}
+        dialog = BulkTagDialog(values, len(paths), set(view.pending_track_edits()), window)
+        dialog.show()
+        app.processEvents()
+        _save(dialog, "music-library-bulk-tags.png")
+        dialog.close()
         view.close_db()
+
+
+def _capture_preferences_sync(app: QApplication) -> None:
+    """Preferences → Controller sync with two recorded sets."""
+    preferences = PluginPreferences()
+    for controller, port, notes in (("DDJ-XP2", "PIONEER DDJ-XP2", (27, 30)), ("XDJ-XZ", "XDJ-XZ (1)", (0, 1, 31))):
+        messages = tuple(SyncMessage.create("Note On", 1, note, 127) for note in notes)
+        preferences.set_sync_set(ControllerSyncSet(controller=controller, output_port=port, messages=messages))
+    dialog = PreferencesDialog(preferences)
+    dialog.findChild(QTabWidget).setCurrentIndex(2)
+    dialog.resize(640, 420)
+    dialog.show()
+    app.processEvents()
+    _save(dialog, "preferences-controller-sync.png")
+    dialog.close()
 
 
 def _capture_traktor_mapping(app: QApplication, window: MainWindow) -> None:
