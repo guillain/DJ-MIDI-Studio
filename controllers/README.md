@@ -50,6 +50,7 @@ been written from it — see `CLAUDE.md` for how to add one from official docs.
 | Hercules DJControl Inpulse 500 | [hercules-djcontrol-inpulse-500/hercules-djcontrol-inpulse-500-product-sheet-fr.pdf](hercules-djcontrol-inpulse-500/hercules-djcontrol-inpulse-500-product-sheet-fr.pdf) | [Product Sheet PDF](https://www.hercules.com/wp-content/uploads/2020/06/DJControl_Inpulse_500_Product_Sheet_FR.pdf) | Archived locally; catalog data not yet cross-checked against it (tracked in issue #11) |
 | DDJ-REV5 | [ddj-rev5/ddj-rev5-midi-message-list-e1.pdf](ddj-rev5/ddj-rev5-midi-message-list-e1.pdf) | Pioneer DJ DDJ-REV5 MIDI Message List E1 | Archived locally; **no catalog module yet** (issue #12) |
 | DDJ-800 | [ddj-800/ddj-800-midi-message-list-e3.pdf](ddj-800/ddj-800-midi-message-list-e3.pdf) | Pioneer DJ DDJ-800 MIDI Message List E3 | Archived locally; **no catalog module yet** (issue #12) |
+| Behringer CMD LC-1 | — | No vendor MIDI message list exists | Profile captured from the maintainer's real unit with Controller Setup (all 52 buttons, channel 8) and checked against a real Serato export; no reference artwork yet |
 | Native Instruments Traktor Kontrol S2 MK3 | [traktor-kontrol-s2-mk3/traktor-kontrol-s2-mk3-manual.pdf](traktor-kontrol-s2-mk3/traktor-kontrol-s2-mk3-manual.pdf) | Native Instruments Traktor Kontrol S2 MK3 Manual (English) | Archived locally; **no catalog module yet** (issue #12) |
 
 ## How to extend this index

@@ -83,7 +83,9 @@ encoders, the face is 13 rows of 4 buttons, notes left to right: the buttons
 printed 1-8 (notes 16-23), an unlabelled 4x8 grid (32-63), then MUTE (64-67),
 SOLO (68-71) and RECORD (72-75). Notes 24-31 are unused. The encoders are
 endless rotaries without a push switch (CC from 16 on channel 8) and stay out
-of the catalog like every continuous control. LED feedback was checked on
+of the catalog like every continuous control. macOS names the device's port
+`CMD LC-1` (no manufacturer prefix); the profile declares that name so the
+Dashboard's port-name detection still recognizes it. LED feedback was checked on
 the unit: a Note On sent back on the button's own note lights its LED, which
 is the convention Live Monitor and the Controller Emulator assume.
 
