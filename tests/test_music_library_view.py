@@ -366,3 +366,72 @@ def test_no_button_is_squeezed_below_its_minimum(size):
     finally:
         view.close_db()
         view.close()
+
+
+def _select_paths(view, paths):
+    view.table.clearSelection()
+    view.select_path(paths[0])
+    view.select_paths(paths)
+
+
+def test_write_tags_to_selection_is_one_undo_step(library):
+    view, music, _ = library
+    a, b = str(music / "Tek" / "Tribe" / "a.mp3"), str(music / "Tek" / "Tribe" / "b.mp3")
+    _select_paths(view, [a, b])
+    assert {row.path for row in view.selected_rows()} == {a, b}
+    assert view.write_selection_button.isEnabled()
+    assert view.write_tags_to_selection({"genre": "Tribe", "album": "Free Party"}) == 2
+    for path in (a, b):
+        tags = read_metadata(path)
+        assert (tags.genre, tags.album) == ("Tribe", "Free Party")
+    assert read_metadata(a).title == "Alpha"  # unchecked fields are untouched
+    assert {row.path for row in view.selected_rows()} == {a, b}  # selection survives the reload
+    assert "2 track(s)" in view.status_label.text()
+    assert view.undo_stack.count() == 1
+    view.undo_stack.undo()
+    assert read_metadata(a).genre == "Techno" and read_metadata(b).album is None
+
+
+def test_write_tags_to_selection_skips_unchanged_and_reports_failures(library, monkeypatch):
+    view, music, _ = library
+    a, c = str(music / "Tek" / "Tribe" / "a.mp3"), str(music / "misc" / "c.mp3")
+    _select_paths(view, [a, c])
+    assert view.write_tags_to_selection({"genre": "Techno"}) == 1  # a already has it
+    assert read_metadata(c).genre == "Techno"
+    assert view.write_tags_to_selection({"genre": "Techno"}) == 0
+    assert "already have" in view.status_label.text()
+
+    Path(c).write_bytes(b"not audio")
+    warnings = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda *args: warnings.append(args))
+    assert view.write_tags_to_selection({"bpm": 140.0}) == 1
+    assert warnings and "1 failed" in warnings[0][2]
+    assert read_metadata(a).bpm == 140.0
+
+
+def test_bulk_tag_dialog_values(library):
+    view, music, _ = library
+    view.select_path(str(music / "Tek" / "Tribe" / "a.mp3"))
+    view.field_edits["genre"].setText("Tribe")
+    values = {name: edit.text() for name, edit in view.field_edits.items()}
+    dialog = mlv.BulkTagDialog(values, 3, set(view.pending_track_edits()))
+    ok = dialog.buttons.button(mlv.QDialogButtonBox.StandardButton.Ok)
+    assert dialog.checked_fields() == ["genre"] and ok.isEnabled()
+    assert "3 track" in ok.text()
+    assert not dialog.edits["title"].isEnabled()
+    dialog.checks["comment"].setChecked(True)
+    dialog.edits["comment"].setText("")
+    assert dialog.values() == {"genre": "Tribe", "comment": None}
+    dialog.checks["genre"].setChecked(False)
+    dialog.checks["comment"].setChecked(False)
+    assert not ok.isEnabled()
+    dialog.checks["bpm"].setChecked(True)
+    dialog.edits["bpm"].setText("fast")
+    with pytest.raises(ValueError):
+        dialog.values()
+
+
+def test_write_selection_button_disabled_without_selection(library):
+    view, _, _ = library
+    view.table.clearSelection()
+    assert not view.write_selection_button.isEnabled()

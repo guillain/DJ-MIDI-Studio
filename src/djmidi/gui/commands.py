@@ -177,3 +177,52 @@ class WriteTrackMetadataCommand(QUndoCommand):
     def undo(self) -> None:
         self._writer(self._path, **self._old)
         self._on_applied(self._path)
+
+
+class WriteTracksMetadataCommand(QUndoCommand):
+    """Undoable write of managed tags to several audio files at once (Music
+    Library tab, "Write tags to selection…"). One undo step for the whole
+    batch. A file that fails to write is recorded in `failures` and skipped
+    (also on undo) instead of aborting the rest; if nothing at all could be
+    written the command marks itself obsolete so `QUndoStack.push` drops it."""
+
+    def __init__(
+        self,
+        changes: dict[str, tuple[dict[str, object], dict[str, object]]],
+        on_applied: Callable[[list[str]], None],
+        writer: Callable[..., None] | None = None,
+    ) -> None:
+        fields = sorted({name for _old, new in changes.values() for name in new})
+        super().__init__(f"Edit {', '.join(fields)} of {len(changes)} tracks")
+        self._changes = {path: (dict(old), dict(new)) for path, (old, new) in changes.items()}
+        self._on_applied = on_applied
+        if writer is None:
+            from djmidi.library.metadata import write_metadata as writer
+        self._writer = writer
+        self.written: list[str] = []
+        self.failures: dict[str, str] = {}
+
+    def redo(self) -> None:
+        self.written, self.failures = [], {}
+        for path, (_old, new) in self._changes.items():
+            try:
+                self._writer(path, **new)
+            except Exception as exc:  # noqa: BLE001 - one bad file must not stop the batch
+                self.failures[path] = str(exc)
+            else:
+                self.written.append(path)
+        if not self.written:
+            self.setObsolete(True)
+            return
+        self._on_applied(self.written)
+
+    def undo(self) -> None:
+        restored: list[str] = []
+        for path in self.written:
+            try:
+                self._writer(path, **self._changes[path][0])
+            except Exception as exc:  # noqa: BLE001
+                self.failures[path] = str(exc)
+            else:
+                restored.append(path)
+        self._on_applied(restored)
