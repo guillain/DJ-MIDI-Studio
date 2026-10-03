@@ -7,7 +7,9 @@ playlist engine, Serato/Traktor/Rekordbox formats) to one tab:
   a `QTimer` (this project's non-blocking pattern, see `midi_io` polling);
 - the consolidated metadata table (sortable/filterable, category column);
 - a Track panel whose tag edits go through a `QUndoStack`
-  (`commands.WriteTrackMetadataCommand`), a Categories panel over the
+  (`commands.WriteTrackMetadataCommand`, or `WriteTracksMetadataCommand` when
+  "Write tags to selection…" copies chosen fields to every selected track),
+  a Categories panel over the
   taxonomy registry, and a Playlists panel (import/generate/export).
 
 Opening the library index is lazy (first time the tab is shown), so merely
@@ -30,10 +32,14 @@ from PySide6.QtCore import (
     Qt,
     QTimer,
 )
-from PySide6.QtGui import QBrush, QColor, QFont, QUndoStack
+from PySide6.QtGui import QBrush, QColor, QCursor, QFont, QUndoStack
 from PySide6.QtWidgets import (
     QAbstractItemView,
+    QApplication,
+    QCheckBox,
     QComboBox,
+    QDialog,
+    QDialogButtonBox,
     QFileDialog,
     QFormLayout,
     QFrame,
@@ -61,7 +67,7 @@ from PySide6.QtWidgets import (
 )
 
 from djmidi import taxonomy
-from djmidi.gui.commands import WriteTrackMetadataCommand
+from djmidi.gui.commands import WriteTrackMetadataCommand, WriteTracksMetadataCommand
 from djmidi.library import workspace
 from djmidi.library.db import LibraryDB, default_library_db_path
 from djmidi.library.metadata import TrackMetadata, clean_noise_frames
@@ -123,6 +129,87 @@ def _field_text(name: str, value: object) -> str:
     if name == "bpm":
         return _format_bpm(value)
     return "" if value is None else str(value)
+
+
+def _field_label(name: str) -> str:
+    return "BPM" if name == "bpm" else name.capitalize()
+
+
+def _parse_field(name: str, text: str) -> object:
+    """Edit-box text -> tag value; empty clears the tag. Raises ValueError
+    for a non-numeric BPM."""
+    text = text.strip()
+    if name == "bpm":
+        return float(text.replace(",", ".")) if text else None
+    return text or None
+
+
+def _same_value(name: str, a: object, b: object) -> bool:
+    return _same_bpm(a, b) if name == "bpm" else a == b
+
+
+class BulkTagDialog(QDialog):
+    """Pick which tag(s) to copy onto every selected track. Each field starts
+    from the Track panel's current text; only checked fields are written,
+    and a checked empty field clears that tag."""
+
+    def __init__(
+        self,
+        values: dict[str, str],
+        track_count: int,
+        checked: set[str] | frozenset[str] = frozenset(),
+        parent: QWidget | None = None,
+    ) -> None:
+        super().__init__(parent)
+        self.setWindowTitle("Write tags to selection")
+        self.setMinimumWidth(420)
+        box = QVBoxLayout(self)
+        intro = QLabel(
+            f"Check the tag(s) to write to the {track_count} selected track(s). Unchecked tags are left "
+            "as they are in every file; a checked empty field clears that tag. Serato/Traktor data is preserved."
+        )
+        intro.setWordWrap(True)
+        box.addWidget(intro)
+        grid = QGridLayout()
+        self.checks: dict[str, QCheckBox] = {}
+        self.edits: dict[str, QLineEdit] = {}
+        for row, name in enumerate(_EDIT_FIELDS):
+            check = QCheckBox(_field_label(name))
+            check.setChecked(name in checked)
+            edit = QLineEdit(values.get(name, ""))
+            edit.setPlaceholderText("(empty: clears the tag)")
+            edit.setEnabled(check.isChecked())
+            check.toggled.connect(edit.setEnabled)
+            check.toggled.connect(self._update_ok)
+            grid.addWidget(check, row, 0)
+            grid.addWidget(edit, row, 1)
+            self.checks[name] = check
+            self.edits[name] = edit
+        box.addLayout(grid)
+        self.buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        self.buttons.button(QDialogButtonBox.StandardButton.Ok).setText(f"Write to {track_count} track(s)")
+        self.buttons.accepted.connect(self._on_accept)
+        self.buttons.rejected.connect(self.reject)
+        box.addWidget(self.buttons)
+        self._update_ok()
+
+    def _update_ok(self, *_args: object) -> None:
+        self.buttons.button(QDialogButtonBox.StandardButton.Ok).setEnabled(bool(self.checked_fields()))
+
+    def checked_fields(self) -> list[str]:
+        return [name for name, check in self.checks.items() if check.isChecked()]
+
+    def values(self) -> dict[str, object]:
+        """Checked fields only, parsed. Raises ValueError for a bad BPM."""
+        return {name: _parse_field(name, self.edits[name].text()) for name in self.checked_fields()}
+
+    def _on_accept(self) -> None:
+        try:
+            self.values()
+        except ValueError:
+            QMessageBox.warning(self, "Invalid BPM", "BPM must be a number, e.g. 174 or 128.5.")
+            return
+        self.accept()
 
 
 def _can_confirm_suggestion(row: workspace.LibraryRow) -> bool:
@@ -376,7 +463,7 @@ class MusicLibraryView(QWidget):
             edit = QLineEdit()
             edit.returnPressed.connect(self.apply_track_edits)
             self.field_edits[name] = edit
-            form.addRow(name.capitalize() if name != "bpm" else "BPM", edit)
+            form.addRow(_field_label(name), edit)
         self.camelot_label = QLabel()
         form.addRow("Camelot", self.camelot_label)
         self.category_value_label = QLabel()
@@ -410,6 +497,15 @@ class MusicLibraryView(QWidget):
         for button in (self.apply_button, self.revert_button, undo_button, redo_button):
             buttons.addWidget(button)
         box.addLayout(buttons)
+
+        self.write_selection_button = QPushButton("Write tags to selection…")
+        self.write_selection_button.setToolTip(
+            "Choose which tag(s) to copy from the fields above onto every selected track, "
+            "as one undoable step. Serato/Traktor data is preserved."
+        )
+        self.write_selection_button.clicked.connect(self._on_write_selection_clicked)
+        box.addWidget(self.write_selection_button)
+        self.table.selectionModel().selectionChanged.connect(self._update_selection_actions)
 
         self.clean_button = QPushButton("Clean noise frames…")
         self.clean_button.setToolTip(
@@ -695,6 +791,7 @@ class MusicLibraryView(QWidget):
 
     def _update_track_panel(self, row: workspace.LibraryRow | None) -> None:
         self._current_path = row.path if row is not None else None
+        self._update_selection_actions()
         metadata = (row.metadata if row is not None else None) or TrackMetadata()
         for name, edit in self.field_edits.items():
             edit.setText(_field_text(name, getattr(metadata, name)))
@@ -712,6 +809,12 @@ class MusicLibraryView(QWidget):
         self.category_value_label.setText(self._category_text(row))
         self.accept_suggestion_button.setEnabled(_can_confirm_suggestion(row))
 
+    def _writable_selection(self) -> list[workspace.LibraryRow]:
+        return [row for row in self.selected_rows() if not row.missing]
+
+    def _update_selection_actions(self, *_args: object) -> None:
+        self.write_selection_button.setEnabled(bool(self._writable_selection()))
+
     @staticmethod
     def _category_text(row: workspace.LibraryRow) -> str:
         if row.category:
@@ -728,14 +831,9 @@ class MusicLibraryView(QWidget):
         metadata = row.metadata or TrackMetadata()
         changes: dict[str, object] = {}
         for name, edit in self.field_edits.items():
-            text = edit.text().strip()
-            old = getattr(metadata, name)
-            if name == "bpm":
-                new_bpm = float(text.replace(",", ".")) if text else None
-                if not _same_bpm(new_bpm, old):
-                    changes[name] = new_bpm
-            elif (text or None) != old:
-                changes[name] = text or None
+            new = _parse_field(name, edit.text())
+            if not _same_value(name, new, getattr(metadata, name)):
+                changes[name] = new
         return changes
 
     def apply_track_edits(self) -> bool:
@@ -759,6 +857,69 @@ class MusicLibraryView(QWidget):
             QMessageBox.warning(self, "Could not write tags", f"{row.path}\n\n{exc}")
             return False
         return True
+
+    def _on_write_selection_clicked(self) -> None:
+        rows = self._writable_selection()
+        if not rows:
+            return
+        try:
+            preselected = set(self.pending_track_edits())
+        except ValueError:
+            preselected = {"bpm"}
+        values = {name: edit.text() for name, edit in self.field_edits.items()}
+        dialog = BulkTagDialog(values, len(rows), preselected, self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+        self.write_tags_to_selection(dialog.values())
+
+    def write_tags_to_selection(self, values: dict[str, object]) -> int:
+        """Write `values` to every selected, present track as one undo step.
+        Tracks already holding those values are skipped. Returns the number
+        of files written."""
+        if not values:
+            return 0
+        changes: dict[str, tuple[dict[str, object], dict[str, object]]] = {}
+        for row in self._writable_selection():
+            metadata = row.metadata or TrackMetadata()
+            new = {name: value for name, value in values.items() if not _same_value(name, value, getattr(metadata, name))}
+            if new:
+                changes[row.path] = ({name: getattr(metadata, name) for name in new}, new)
+        if not changes:
+            self.status_label.setText("Selected tracks already have these tags.")
+            return 0
+        command = WriteTracksMetadataCommand(changes, self._on_tracks_written)
+        QApplication.setOverrideCursor(QCursor(Qt.CursorShape.WaitCursor))
+        try:
+            self.undo_stack.push(command)
+        finally:
+            QApplication.restoreOverrideCursor()
+        if command.failures:
+            _LOGGER.warning("Tag write failed for %d file(s): %s", len(command.failures), command.failures)
+            details = "\n".join(f"{Path(path).name}: {error}" for path, error in list(command.failures.items())[:20])
+            QMessageBox.warning(
+                self,
+                "Some tags could not be written",
+                f"{len(command.written)} track(s) written, {len(command.failures)} failed:\n\n{details}",
+            )
+        return len(command.written)
+
+    def _on_tracks_written(self, paths: list[str]) -> None:
+        selected = [row.path for row in self.selected_rows()]
+        for path in paths:
+            workspace.refresh_track_metadata(self.db, path)
+        self._reload_rows()
+        self.select_paths(selected)
+        self.status_label.setText(f"Tags written to {len(paths)} track(s).")
+
+    def select_paths(self, paths: list[str]) -> None:
+        """Re-select several tracks (after a reload), keeping the current one current."""
+        wanted = set(paths)
+        model = self.table.selectionModel()
+        flags = QItemSelectionModel.SelectionFlag.Select | QItemSelectionModel.SelectionFlag.Rows
+        for proxy_row in range(self.proxy.rowCount()):
+            index = self.proxy.index(proxy_row, 0)
+            if index.data(ROW_ROLE).path in wanted:
+                model.select(index, flags)
 
     def _on_track_written(self, path: str) -> None:
         workspace.refresh_track_metadata(self.db, path)
