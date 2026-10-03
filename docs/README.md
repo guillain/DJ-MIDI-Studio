@@ -1,87 +1,80 @@
-# Documentation Index 📚
+# 📚 DJ MIDI Studio documentation
 
-> **DJ MIDI Studio documentation** — user guides, engineering notes, AI-assisted
-> development resources, and release procedures in one offline-friendly index.
+> Two doors: **End user** for DJs using the app, **Developer** for people
+> working on its code. Everything is local and bundled with the app.
+
+📍 Docs
 
 ![DJ MIDI Studio dashboard](images/layout/dashboard.png)
 
 ## Table of Contents
 
-- [Choose a path](#choose-a-path)
-- [👤 User documentation](#-user-documentation)
-- [🛠️ Developer documentation](#️-developer-documentation)
-- [🤖 AI-assisted development](#-ai-assisted-development)
-- [🤝 Contribution and review](#-contribution-and-review)
-- [🎛️ Hardware and MIDI references](#️-hardware-and-midi-references)
-- [🚢 Build, CI, and release](#-build-ci-and-release)
+- [Choose your path](#choose-your-path)
+- [Documentation map](#documentation-map)
+- [Page template](#page-template)
+- [In this section](#in-this-section)
 
-## Choose a path
+## Choose your path
 
-| I want to… | Start here |
+| I am… | Start here |
 | --- | --- |
-| Install and run the application | [Quickstart](quickstart.md) |
-| Understand the UI and workflows | [User Guide](user-guide.md) |
-| Set up a development environment | [Developer Setup](development/setup.md) |
-| Understand the codebase | [Architecture](architecture.md) and [Development Workflow](development/workflow.md) |
-| Use an AI agent safely on this project | [AI-Assisted Development](agents/ai-assisted-development.md) |
-| Add a feature or fix a bug | [Contributing](development/contributing.md) |
-| Add or update an AI prompt/context asset | [Agent Assets](agents/assets/README.md) |
-| Prepare a release | [Build and Release](build-and-release.md) and [Release Checklist](release-checklist.md) |
+| 🎧 A DJ who wants to use the app | [End user documentation](enduser/README.md) |
+| 🛠️ A developer or contributor | [Developer documentation](developer/README.md) |
 
-## 👤 User documentation
+| I want to… | Go to |
+| --- | --- |
+| Install and start | [User guide → Install](enduser/user-guide.md#install) |
+| See what the app can do | [Features](enduser/features/README.md) |
+| Know if my controller is supported | [Supported controllers](enduser/controller-profiles.md) |
+| Run the code from source | [Quickstart](developer/setup/quickstart.md) |
+| Understand the architecture | [Architecture](developer/design/architecture.md) |
+| Prepare a release | [Release checklist](developer/cicd/release-checklist.md) |
 
-- [🚀 Quickstart](quickstart.md)
-- [📖 User Guide](user-guide.md)
-- [🖼️ Screens and Layouts](screens-and-layouts.md)
-- [🧭 End-to-End Examples](examples.md)
-- [🧩 Plugins](plugins.md)
-- [🕒 MIDI Clock Compatibility](midi-clock-compatibility.md)
-- [🎚️ Traktor Integration](traktor.md)
+## Documentation map
 
-## 🛠️ Developer documentation
+```text
+docs/
+├── README.md                     ← you are here
+├── enduser/                      DJs
+│   ├── README.md                 feature showcase
+│   ├── user-guide.md             install, first launch, everyday workflow
+│   ├── examples.md               step-by-step recipes
+│   ├── controller-profiles.md    supported controllers
+│   ├── midi-clock-compatibility.md
+│   ├── plugins.md
+│   └── features/                 one page per feature
+├── developer/                    contributors
+│   ├── README.md                 services overview
+│   ├── workflow.md, contributing.md
+│   ├── setup/                    quickstart, developer setup
+│   ├── design/                   architecture, plugin manifest, evolution
+│   ├── cicd/                     tests, quality gates, build, release
+│   └── agent/                    AI-assisted development
+└── images/                       screenshots (generated) and galleries
+```
 
-- [🛠️ Development Documentation Index](development/README.md)
-- [🧰 Developer Setup](development/setup.md)
-- [🔁 Development Workflow](development/workflow.md)
-- [📚 Recent Evolution Chapters](development/evolution.md)
-- [🏗️ Architecture](architecture.md)
-- [🧪 Testing and Quality](testing-and-quality.md)
-- [✅ Quality Gates](quality-gates.md)
-- [🧩 Controller Profiles](controller-profiles.md)
-- [📦 Plugin Manifest](plugin-manifest.md)
+Controller manuals and MIDI message lists live in
+[`controllers/`](../controllers/README.md); DJ-software format research in
+[`software/`](../software/README.md).
 
-## 🤖 AI-assisted development
+## Page template
 
-- [🤖 AI-Assisted Resources Index](agents/README.md)
-- [🤖 AI-Assisted Development](agents/ai-assisted-development.md)
-- [🗂️ Agent Assets Index](agents/assets/README.md)
-- [🧠 Project Context](agents/assets/project-context.md)
-- [📝 Task Prompt Template](agents/assets/task-template.md)
-- [🔍 Review Checklist](agents/assets/review-checklist.md)
-- [📌 Maintainer context: `CLAUDE.md`](../CLAUDE.md)
+Every page follows the same shape, so you always know where to look:
 
-AI output is treated as a proposed change: the human maintainer remains
-responsible for scope, hardware claims, licensing, tests, and final review.
+1. `# Title` with an emoji, then a one-paragraph `>` summary;
+2. a `📍` breadcrumb back to every parent index;
+3. a `## Table of Contents`;
+4. the content;
+5. a `## Related` section (feature and guide pages) or an
+   `## In this section` table (every `README.md` index).
 
-## 🤝 Contribution and review
+Every directory has a `README.md` index. `tests/test_docs.py` checks the
+template and that every relative link resolves.
 
-- [🤝 Contributing](development/contributing.md)
-- [🧭 Development Workflow](development/workflow.md)
-- [🧪 Testing and Quality](testing-and-quality.md)
-- [📋 TODO and project backlog](../TODO.md)
+## In this section
 
-## 🎛️ Hardware and MIDI references
-
-- [🎛️ Controller Profiles](controller-profiles.md)
-- [📚 Controller Documentation and Official PDFs](controllers/README.md)
-- [🖼️ Screens and Layouts](screens-and-layouts.md)
-- [📸 Layout Screenshot Index](images/layout/README.md)
-- [🎛️ Controller Layout Gallery](images/controllers/README.md)
-
-## 🚢 Build, CI, and release
-
-- [🏗️ Build and Release](build-and-release.md)
-- [✅ Release Checklist](release-checklist.md)
-
-The documentation is bundled with the application. Prefer relative links and
-local references so the guides remain useful without network access.
+| Page | What it covers |
+| --- | --- |
+| [End user](enduser/README.md) | Features, user guide, recipes, supported controllers |
+| [Developer](developer/README.md) | Services, design, setup, CI/CD, AI-assisted development |
+| [Images](images/README.md) | Screenshot indexes and how they are generated |

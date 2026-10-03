@@ -132,6 +132,33 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Documentation reorganized by audience** (`v0.48.29-docs-reorganization`)
+  — requested by the maintainer: `docs/enduser/` (feature showcase + one page
+  per feature: Controller Setup, Controller Sync, Live Monitor, Music Library,
+  Controller Emulator, mapping editor, Traktor mappings, Controller Images,
+  MIDI Routing/Clock/Metronome, workspace) and `docs/developer/` (services
+  overview, `setup/`, `design/`, `cicd/`, `agent/`); root `README.md` now
+  leads with the four highlight features. One page template (breadcrumb,
+  TOC, Related / In this section) enforced with every link and anchor by
+  `tests/test_docs.py`. Stale content fixed along the way (`Settings` menu →
+  ⚙ button, jog/LED live feedback, controller lists, REV5/800 status,
+  Traktor `.tsi` instead of NML, architecture modules). Real bug found:
+  `docs/` was never bundled into release builds, so the `Help` menu's
+  documentation entries were all broken in packaged apps — now bundled.
+  Screenshots regenerated (with default preferences instead of the
+  capturing machine's), plus two new ones: the bulk tag dialog and
+  Preferences → Controller sync.
+- [x] **Write tags to the whole selection** (`v0.48.28-library-bulk-tag-write`)
+  — requested by the maintainer: the Music Library Track panel's new
+  `Write tags to selection…` opens a dialog listing every managed tag
+  (pre-filled from the Track panel, pre-checked for the fields just edited)
+  and writes only the checked ones to every selected, present track.
+  `commands.WriteTracksMetadataCommand` makes the batch one undo step, skips
+  tracks already holding the value, keeps going past a file that fails
+  (reported at the end; dropped from undo), and marks itself obsolete when
+  nothing was written. Writes stay synchronous behind a wait cursor —
+  fine for a few hundred files; a very large batch would want the tab's
+  `QTimer` job slicing.
 - [x] **Export a playlist as a Traktor `.nml`**
   (`v0.48.27-traktor-playlist-export`) — the Music Library tab's new
   `Export as Traktor playlist…` writes a standalone single-playlist `.nml`

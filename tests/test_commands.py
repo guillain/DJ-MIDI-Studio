@@ -185,3 +185,42 @@ def test_remove_group_alias_command_undo_reinserts_at_index():
     assert t1.aliases[0] is alias_a
     assert t2.aliases[0] is alias_b
 
+
+
+def test_write_tracks_metadata_command_batches_and_skips_failures():
+    from PySide6.QtGui import QUndoStack
+
+    from djmidi.gui.commands import WriteTracksMetadataCommand
+
+    files = {"a": {"genre": "Old"}, "b": {"genre": None}, "bad": {"genre": "X"}}
+    applied = []
+
+    def writer(path, **fields):
+        if path == "bad":
+            raise OSError("read-only")
+        files[path].update(fields)
+
+    changes = {path: ({"genre": files[path]["genre"]}, {"genre": "New"}) for path in files}
+    stack = QUndoStack()
+    command = WriteTracksMetadataCommand(changes, applied.append, writer=writer)
+    stack.push(command)
+    assert files["a"]["genre"] == files["b"]["genre"] == "New"
+    assert command.written == ["a", "b"] and "bad" in command.failures
+    assert stack.count() == 1 and applied == [["a", "b"]]
+    stack.undo()
+    assert files["a"]["genre"] == "Old" and files["b"]["genre"] is None
+    assert applied[-1] == ["a", "b"]
+
+
+def test_write_tracks_metadata_command_dropped_when_nothing_written():
+    from PySide6.QtGui import QUndoStack
+
+    from djmidi.gui.commands import WriteTracksMetadataCommand
+
+    def writer(path, **fields):
+        raise OSError("nope")
+
+    stack = QUndoStack()
+    command = WriteTracksMetadataCommand({"x": ({}, {"genre": "G"})}, lambda paths: None, writer=writer)
+    stack.push(command)
+    assert stack.count() == 0 and command.failures == {"x": "nope"}

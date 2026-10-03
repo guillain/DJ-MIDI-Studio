@@ -1,5 +1,7 @@
 # Layout Screenshot Index 📸
 
+📍 [Docs](../../README.md) › [Images](../README.md) › Layout screenshots
+
 These screenshots show the main DJ MIDI Studio workspace, its mapping views,
 and the independent MIDI tools. Most are generated from
 `data/xdj_xz-ddj_xp2-4decks.xml` (a Serato mapping); the Controller Setup
@@ -11,14 +13,11 @@ run without physical MIDI hardware.
 
 ## Table of Contents
 
-- [Application views](#application-views)
-- [Controller Setup sessions](#controller-setup-sessions)
-- [Music Library](#music-library)
-- [Traktor mapping](#traktor-mapping)
-- [MIDI tools](#midi-tools)
-- [Window compositions](#window-compositions)
+- [In this section](#in-this-section)
 
-## Application views
+## In this section
+
+### Application views
 
 - [Dashboard](dashboard.png)
 - [By Channel](by-channel.png)
@@ -28,41 +27,48 @@ run without physical MIDI hardware.
 - [Controller Images](controlleur-image.png)
 
 See also the [Controller Layout Gallery](../controllers/README.md) — one
-[Controller Emulator](../../screens-and-layouts.md#controller-emulator)
+[Controller Emulator](../../enduser/features/controller-emulator.md)
 screenshot per registered controller, not just the two loaded here.
 
-## Controller Setup sessions
+### Controller Setup sessions
 
-Controller Setup with a real hardware-recorded session loaded (`data/*.json`
+Controller Setup with a real hardware-recorded session loaded (`data/controllers/*.json`
 — a Controller Setup draft saved from that tab's own `Session` toolbar
 group, not a Serato mapping XML), showing the resulting table of learned
 MIDI triggers instead of the tab's blank starting state above:
 
-- [DDJ-XP2 session](controlleur-setup-ddj-xp2.png) (`data/ddj_xp2.json`)
-- [XDJ-XZ session](controlleur-setup-xdj-xz.png) (`data/xdj_xz.json`)
-- [XDJ-XZ and DDJ-XP2 combined session](controlleur-setup-xdj-xz-ddj-xp2.png) (`data/xdj_xz-ddj_xp2.json`)
+- [DDJ-XP2 session](controlleur-setup-ddj-xp2.png) (`data/controllers/ddj_xp2.json`)
+- [XDJ-XZ session](controlleur-setup-xdj-xz.png) (`data/controllers/xdj_xz.json`)
+- [XDJ-XZ and DDJ-XP2 combined session](controlleur-setup-xdj-xz-ddj-xp2.png) (`data/controllers/xdj_xz-ddj_xp2.json`)
 
-## Music Library
+### Music Library
 
 - [Track table and Track panel](music-library.png) — a fuzzy category
   suggestion selected, ready to confirm
 - [Categories panel](music-library-categories.png)
 - [Playlists panel](music-library-playlists.png) — an auto-sorted playlist
   and one matched from a seed track
+- [Write tags to selection](music-library-bulk-tags.png) — the bulk tag
+  dialog, with Genre ticked for a whole folder
 
-## Traktor mapping
+### Dialogs
+
+- [Preferences → Controller sync](preferences-controller-sync.png) — two
+  recorded controller sync sets
+
+### Traktor mapping
 
 - [A real Traktor `.tsi` in By Channel](traktor-tsi.png) — 10 MIDI channels,
   so the column row scrolls sideways instead of squeezing every column
 
-## MIDI tools
+### MIDI tools
 
 - [Live Monitor](live-monitor.png)
 - [MIDI Routing](midi-routing.png)
 - [MIDI Clock](midi-clock.png)
 - [Metronome](metronome.png)
 
-## Window compositions
+### Window compositions
 
 - [All MIDI tools docked](midi-tools-docked.png)
 - [Live Monitor floating](live-monitor-floating.png)
@@ -71,5 +77,5 @@ MIDI triggers instead of the tab's blank starting state above:
 - [Metronome floating](metronome-floating.png)
 
 The screenshots are reference compositions, not an exhaustive catalogue of
-every user-defined dock position or window size. See [Screens and Layouts](../../screens-and-layouts.md)
+every user-defined dock position or window size. See [Screens and Layouts](../../enduser/features/README.md)
 for the annotated visual guide.

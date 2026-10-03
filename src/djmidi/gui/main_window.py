@@ -98,7 +98,7 @@ _SEVERITY_COLORS = {
     "info": QColor(225, 225, 225),
 }
 
-# The official docs catalog.py was transcribed from (see README.md "Technical References").
+# The official docs catalog.py was transcribed from (see controllers/README.md).
 _REFERENCE_LINKS = [
     ("Serato MIDI Mapping Guide", "https://support.serato.com/hc/en-us/articles/209377487-MIDI-mapping-with-Serato-DJ-Pro"),
     (
@@ -121,16 +121,15 @@ _REFERENCE_LINKS = [
 
 _LOCAL_HELP_DOCUMENTS = [
     ("Documentation Home", "docs/README.md"),
-    ("Quickstart", "docs/quickstart.md"),
-    ("User Guide", "docs/user-guide.md"),
-    ("Screens and Layouts", "docs/screens-and-layouts.md"),
-    ("Architecture", "docs/architecture.md"),
-    ("End-to-End Examples", "docs/examples.md"),
-    ("MIDI Clock Compatibility", "docs/midi-clock-compatibility.md"),
-    ("Testing and Quality", "docs/testing-and-quality.md"),
-    ("Quality Gates", "docs/quality-gates.md"),
-    ("Build and Release", "docs/build-and-release.md"),
-    ("Release Checklist", "docs/release-checklist.md"),
+    ("Features Overview", "docs/enduser/README.md"),
+    ("User Guide", "docs/enduser/user-guide.md"),
+    ("Feature Pages", "docs/enduser/features/README.md"),
+    ("End-to-End Examples", "docs/enduser/examples.md"),
+    ("Supported Controllers", "docs/enduser/controller-profiles.md"),
+    ("MIDI Clock Compatibility", "docs/enduser/midi-clock-compatibility.md"),
+    ("Developer Documentation", "docs/developer/README.md"),
+    ("Architecture", "docs/developer/design/architecture.md"),
+    ("Build and Release", "docs/developer/cicd/build-and-release.md"),
 ]
 
 _LOCAL_CONTROLLER_DOCUMENTS = [

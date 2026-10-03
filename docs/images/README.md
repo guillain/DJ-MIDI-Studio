@@ -1,18 +1,23 @@
 # Documentation Images 🖼️
 
+📍 [Docs](../README.md) › Images
+
 This directory contains visual assets used by the documentation. Images are
 kept local so the user and developer guides remain useful offline and can be
 bundled with the application where appropriate.
 
 ## Table of Contents
 
-- [Layout screenshots](#layout-screenshots)
+- [In this section](#in-this-section)
 - [Generation](#generation)
 - [Usage rules](#usage-rules)
 
-## Layout screenshots
+## In this section
 
-All current UI screenshots are indexed in the [layout screenshot README](layout/README.md).
+| Index | What it covers |
+| --- | --- |
+| [Layout screenshots](layout/README.md) | Every screenshot of the app's tabs, tools, dialogs and windows |
+| [Controller gallery](controllers/README.md) | One Controller Emulator screenshot per built-in controller |
 
 ## Generation
 
@@ -29,4 +34,5 @@ artifacts.
 
 Use screenshots to explain stable application behavior and window compositions.
 When the UI changes, regenerate the affected images and update the relevant
-documentation pages and indexes together.
+documentation pages and indexes together. The test suite
+(`tests/test_docs.py`) fails on any image link that no longer resolves.
