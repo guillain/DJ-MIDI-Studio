@@ -82,12 +82,27 @@ class PreferencesDialog(QDialog):
         log_path_row.addWidget(log_path, 1)
         log_path_row.addWidget(browse_button)
 
+        setup_file = QLineEdit()
+        setup_file.setText(preferences.controller_setup_default_file)
+        setup_file.setPlaceholderText("None — start with an empty draft")
+        setup_file.setToolTip(
+            "Session JSON or Serato XML loaded into Controller Setup the first time "
+            "that tab is shown, when its draft is still empty."
+        )
+        self._setup_file = setup_file
+        setup_browse = QPushButton("Browse...")
+        setup_browse.clicked.connect(self._browse_setup_file)
+        setup_file_row = QHBoxLayout()
+        setup_file_row.addWidget(setup_file, 1)
+        setup_file_row.addWidget(setup_browse)
+
         general_tab = QWidget()
         policy_layout = QFormLayout(general_tab)
         policy_layout.addRow("Theme:", theme)
         policy_layout.addRow("Detection:", detection)
         policy_layout.addRow("Log level:", log_level)
         policy_layout.addRow("Log file path:", log_path_row)
+        policy_layout.addRow("Controller Setup default file:", setup_file_row)
         policy_layout.addRow(routing)
         policy_layout.addRow(trust)
         policy_layout.addRow(auto_start_live_monitor)
@@ -240,6 +255,16 @@ class PreferencesDialog(QDialog):
         if path:
             self._log_path.setText(path)
 
+    def _browse_setup_file(self) -> None:
+        path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Select Controller Setup default file",
+            self._setup_file.text(),
+            "Controller Setup session or Serato XML (*.json *.xml);;All files (*)",
+        )
+        if path:
+            self._setup_file.setText(path)
+
     def _save(self) -> None:
         self._preferences.theme = self._theme.currentData()
         self._preferences.detection_policy = self._detection.currentData()
@@ -248,6 +273,7 @@ class PreferencesDialog(QDialog):
         self._preferences.auto_start_live_monitor = self._auto_start_live_monitor.isChecked()
         self._preferences.log_level = self._log_level.currentText()
         self._preferences.log_path = self._log_path.text().strip()
+        self._preferences.controller_setup_default_file = self._setup_file.text().strip()
         for plugin_id, checkbox in self._plugin_checks.items():
             self._preferences.set_enabled(plugin_id, checkbox.isChecked())
         self._preferences.controller_sync_sets = self._edited_sync_sets()

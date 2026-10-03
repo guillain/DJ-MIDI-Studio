@@ -5,7 +5,9 @@ independently testable and reusable outside the GUI."""
 
 from __future__ import annotations
 
-from djmidi.catalog._registry import ControlInfo, ControllerDefinition
+from dataclasses import replace
+
+from djmidi.catalog._registry import ControlInfo, ControllerDefinition, NoteOrCC
 
 
 def find_trigger_conflicts(entries: list[ControlInfo]) -> list[str]:
@@ -61,6 +63,34 @@ def merge_by_channel(entries: list[ControlInfo]) -> list[ControlInfo]:
 
 def infer_section_order(entries: list[ControlInfo]) -> tuple[str, ...]:
     return tuple(dict.fromkeys(entry.section for entry in entries))
+
+
+_PAD_CHANNELS = tuple(str(n) for n in range(1, 17))
+_PAD_KINDS: tuple[NoteOrCC, ...] = ("NOTE", "CC")
+_PAD_DATA1 = tuple(str(n) for n in range(128))
+
+
+def definition_entries(definition: ControllerDefinition, controller_name: str | None = None) -> list[ControlInfo]:
+    """Every ControlInfo a registered definition can resolve, flattened into the
+    draft shape Controller Setup edits ("Start from controller…"): its static
+    entries, then every pad-bank variant its pad_lookup produces. A pad
+    formula has no stored inverse, so its bounded domain (16 channels x 2
+    kinds x 128 data1) is enumerated -- the same approach as
+    gui/layout.reverse_lookup, which works for any bespoke formula.
+
+    controller_name, when given, relabels every entry (a copy is drafted
+    under a new name so applying it never replaces the built-in)."""
+    entries = list(definition.static_entries)
+    if definition.pad_lookup is not None:
+        for channel in _PAD_CHANNELS:
+            for kind in _PAD_KINDS:
+                for data1 in _PAD_DATA1:
+                    hit = definition.pad_lookup(channel, kind, data1)
+                    if hit is not None:
+                        entries.append(hit)
+    if controller_name is not None:
+        entries = [replace(entry, controller=controller_name) for entry in entries]
+    return entries
 
 
 def build_definition(
@@ -163,6 +193,7 @@ def generate_module_source(
 
 __all__ = [
     "build_definition",
+    "definition_entries",
     "find_trigger_conflicts",
     "generate_module_source",
     "infer_section_order",

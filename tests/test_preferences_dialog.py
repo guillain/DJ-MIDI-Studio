@@ -94,3 +94,12 @@ def test_controller_sync_tab_edits_port_and_removes_sets(monkeypatch):
     assert [s.controller for s in preferences.controller_sync_sets] == ["DDJ-XP2"]
     assert preferences.controller_sync_sets[0].output_port == "PIONEER DDJ-XP2"
     assert len(preferences.controller_sync_sets[0].messages) == 1
+
+
+def test_preferences_dialog_reflects_and_saves_controller_setup_default_file():
+    preferences = PluginPreferences(controller_setup_default_file="/a/b.json")
+    dialog = PreferencesDialog(preferences)
+    assert dialog._setup_file.text() == "/a/b.json"
+    dialog._setup_file.setText("  /c/d.xml  ")
+    dialog._save()
+    assert preferences.controller_setup_default_file == "/c/d.xml"
