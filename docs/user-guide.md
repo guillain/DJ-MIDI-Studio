@@ -327,8 +327,14 @@ categories, and playlists — independently of any MIDI mapping.
 4. **Track** panel: edit title/artist/album/genre/BPM/key/comment/rating/
    energy and click **Write tags**. Only the changed fields are written;
    Serato and Traktor data stored in the file is preserved. **Undo**/**Redo**
-   write the previous values back. **Clean noise frames…** lists leftover
-   junk tags and removes them only after you confirm.
+   write the previous values back. **Write tags to selection…** copies tags
+   to every track selected in the table (Shift/Cmd-click to select several):
+   a dialog lists every tag, pre-filled from the Track panel and pre-checked
+   for the ones you just edited; only the checked tags are written (a checked
+   empty field clears that tag), tracks that already have the value are
+   skipped, and the whole batch is one **Undo** step. A file that can't be
+   written is reported at the end without stopping the others. **Clean noise
+   frames…** lists leftover junk tags and removes them only after you confirm.
 5. **Playlists** panel:
    - **New from selection** — the rows selected in the table.
    - **Auto: sort visible** — every visible row grouped by category, then BPM
