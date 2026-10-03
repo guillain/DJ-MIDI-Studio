@@ -132,6 +132,20 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Behringer CMD LC-1 catalog module** (`v0.48.29-catalog-cmd-lc1`) —
+  the first controller built from a hardware capture rather than a vendor
+  PDF (none exists). The maintainer plugged the unit in and read triggers off
+  Controller Setup's live learning; `catalog/behringer_cmd_lc_1.py` covers all
+  52 buttons on channel 8 as static entries (NUMBER 1-8 = notes 16-23, a 4x8
+  GRID = 32-63, MUTE/SOLO/RECORD = 64-75; 24-31 unused) and
+  `tests/test_catalog_cmd_lc1.py` checks every one of the 30 triggers in the
+  real Serato export (`data/serato/cmd-lc1.xml.zip`) resolves to exactly one
+  named control. The 8 encoders (CC 16+, no push switch) are out of catalog
+  scope. Side finding: that export repeats each trigger **9** times, not 10
+  like the XDJ-XZ/DDJ-XP2 file, so the duplication count is not a Serato
+  constant (still load-bearing, still not deduplicated). LED feedback
+  checked on the unit (a Note On on the button's own note lights it). Not
+  yet done: a reference image / geometry for Controller Images.
 - [x] **Write tags to the whole selection** (`v0.48.28-library-bulk-tag-write`)
   — requested by the maintainer: the Music Library Track panel's new
   `Write tags to selection…` opens a dialog listing every managed tag
@@ -1038,7 +1052,8 @@ of official MIDI documentation, and fit with the current catalog architecture.
   Behringer CMD-LC1).
 - [ ] **RANE FOUR** — four-channel Serato controller.
 - [ ] **Denon DJ Prime 4+** — four-deck Engine DJ system and Serato comparison point.
-- [ ] **Behringer CMD-LC1** — surfaced by a real maintainer-owned Serato
+- [x] **Behringer CMD-LC1** (`v0.48.29-catalog-cmd-lc1`) — done from a
+  hardware capture, see Recent evolution chapters. Original note: surfaced by a real maintainer-owned Serato
   mapping (`data/serato/cmd-lc1.xml.zip`, 2026-09-19); already
   named in `catalog/__init__.py`'s own docstring as the original motivating
   example for the "no official docs" Controller Setup workflow. No official

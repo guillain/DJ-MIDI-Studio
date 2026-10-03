@@ -16,6 +16,7 @@ def test_builtin_controllers_are_registered_at_import():
     assert "Hercules DJControl Inpulse 500" in catalog.CONTROLLER_NAMES
     assert "DDJ-REV5" in catalog.CONTROLLER_NAMES
     assert "DDJ-800" in catalog.CONTROLLER_NAMES
+    assert "Behringer CMD LC-1" in catalog.CONTROLLER_NAMES
     assert catalog.PAD_COUNTS == {
         "DDJ-XP2": 16,
         "XDJ-XZ": 8,
@@ -27,6 +28,7 @@ def test_builtin_controllers_are_registered_at_import():
         "Hercules DJControl Inpulse 500": 8,
         "DDJ-REV5": 8,
         "DDJ-800": 8,
+        "Behringer CMD LC-1": 0,
     }
 
 
