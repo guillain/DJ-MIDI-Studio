@@ -132,6 +132,17 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Controller Setup: start from a catalog controller + default file**
+  (`v0.48.30-controller-setup-start-from`) — requested by the maintainer
+  while building the CMD LC-1 profile ("on ne peut pas importer directement
+  la logique de mapping en sélectionnant le type de contrôleur ?").
+  `Start from controller…` fills the draft from any registered controller
+  via the new Qt-free `codegen.definition_entries` (static entries + every
+  pad-bank variant, enumerated over pad_lookup's bounded domain like
+  `layout.reverse_lookup`) under `"<name> (copy)"`, since Apply hard-blocks
+  reusing a built-in's name. `PluginPreferences.controller_setup_default_file`
+  (Preferences → General) names a session JSON or Serato XML that the tab
+  loads the first time it's shown, if the draft is empty; failures only log.
 - [x] **Behringer CMD LC-1 catalog module** (`v0.48.29-catalog-cmd-lc1`) —
   the first controller built from a hardware capture rather than a vendor
   PDF (none exists). The maintainer plugged the unit in and read triggers off

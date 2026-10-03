@@ -328,6 +328,7 @@ class MainWindow(QMainWindow):
         self.live_monitor_view.syncRequested.connect(self._on_sync_controllers)
 
         self.controller_setup_view = ControllerSetupView()
+        self.controller_setup_view.set_default_file(self.preferences.controller_setup_default_file)
         self.controller_setup_view.controllerApplied.connect(self._on_controller_applied)
         self.controller_setup_view.openMappingRequested.connect(self._on_open_mapping_requested)
         self.controller_setup_view.syncSetSaveRequested.connect(self._on_sync_set_save_requested)
@@ -1015,6 +1016,7 @@ class MainWindow(QMainWindow):
             self._apply_plugin_preferences()
             self._on_controller_applied(self.introduction_view._controller_combo.currentText())
             self.midi_routing_view.set_routing_enabled(self.preferences.routing_enabled)
+            self.controller_setup_view.set_default_file(self.preferences.controller_setup_default_file)
             log_path = self.preferences.log_path or current_log_path()
             configure_logging(self.preferences.log_level, log_path)
             if self.preferences.auto_start_live_monitor and self.config is not None:

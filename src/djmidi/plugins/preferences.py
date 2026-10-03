@@ -35,6 +35,8 @@ class PluginPreferences:
     log_path: str = ""
     theme: ThemeMode = "system"
     auto_start_live_monitor: bool = True
+    # Session JSON or Serato XML Controller Setup loads when first shown ("" = none).
+    controller_setup_default_file: str = ""
     # One-click "Sync" sets, at most one per controller (see controller_sync).
     controller_sync_sets: list[ControllerSyncSet] = field(default_factory=list)
 
@@ -77,6 +79,7 @@ class PluginPreferences:
                 "log_path": self.log_path,
                 "theme": self.theme,
                 "auto_start_live_monitor": self.auto_start_live_monitor,
+                "controller_setup_default_file": self.controller_setup_default_file,
                 "controller_sync_sets": [sync_set.to_dict() for sync_set in self.controller_sync_sets],
             },
             indent=2,
@@ -125,6 +128,7 @@ class PluginPreferences:
             log_path=str(raw.get("log_path", "")),
             theme=theme,
             auto_start_live_monitor=bool(raw.get("auto_start_live_monitor", True)),
+            controller_setup_default_file=str(raw.get("controller_setup_default_file", "")),
             controller_sync_sets=list(sync_sets.values()),
         )
 

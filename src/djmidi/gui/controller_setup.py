@@ -63,6 +63,7 @@ from djmidi.catalog._registry import (
 )
 from djmidi.catalog.codegen import (
     build_definition,
+    definition_entries,
     find_trigger_conflicts,
     generate_module_source,
 )
@@ -103,7 +104,8 @@ _TAB_HELP = (
     "doesn't know yet. It does NOT open a Serato mapping for editing; that is "
     "File → Open.\n\n"
     "Workflow: (1) get the triggers — learn them from the hardware under MIDI input, "
-    "or Import them from an existing Serato XML; (2) type a Section and Name for each "
+    "Import them from an existing Serato XML, or Start from a controller already in the "
+    "catalog (a named copy to adapt); (2) type a Section and Name for each "
     "row; (3) Apply / Export to use the profile now or write it to disk."
 )
 _CAPTURE_HELP = (
@@ -187,6 +189,10 @@ class ControllerSetupView(QWidget):
         self._rebuilding = False
         self._learning = False
         self._applied_names: set[str] = set()
+        # PluginPreferences.controller_setup_default_file, loaded the first
+        # time the tab is shown (see _maybe_load_default_file).
+        self._default_file = ""
+        self._default_file_loaded = False
         # This view builds several panels/labels with their own scoped QSS
         # (a QGroupBox-styled QFrame with no native title row, a muted
         # "hint" subtitle, a small caption, a status pill) instead of
@@ -220,6 +226,9 @@ class ControllerSetupView(QWidget):
         save_button = QPushButton(self._get_icon("save"), "")
         save_button.setToolTip("Save session…")
         save_button.clicked.connect(self._on_save_session_clicked)
+        start_from_button = QPushButton(self._get_icon("template"), "")
+        start_from_button.setToolTip("Start from controller…")
+        start_from_button.clicked.connect(self._on_start_from_controller_clicked)
         clear_button = QPushButton(self._get_icon("clear"), "")
         clear_button.setToolTip("Clear captured rows")
         clear_button.clicked.connect(self._on_clear_rows_clicked)
@@ -408,7 +417,7 @@ class ControllerSetupView(QWidget):
         draft_layout.addLayout(
             self._toolbar_row(
                 [
-                    ("Session", [new_button, load_button, save_button, clear_button]),
+                    ("Session", [new_button, start_from_button, load_button, save_button, clear_button]),
                     ("Import", [import_button, self._attach_image_button, import_help_button]),
                     (
                         "Apply / Export",
@@ -601,6 +610,7 @@ class ControllerSetupView(QWidget):
             "help": QStyle.StandardPixmap.SP_MessageBoxQuestion,
             "image": QStyle.StandardPixmap.SP_FileDialogContentsView,
             "submit": QStyle.StandardPixmap.SP_ArrowUp,
+            "template": QStyle.StandardPixmap.SP_FileDialogDetailedView,
         }
         return style.standardIcon(icon_map.get(icon_type, QStyle.StandardPixmap.SP_FileIcon))
 
@@ -874,6 +884,72 @@ class ControllerSetupView(QWidget):
         if self._dirty and not self._confirm("This will discard the current unsaved rows (keeping the controller name). Continue?"):
             return
         self._reset(clear_name=False)
+
+    # -- start from a catalog controller / default file ---------------------
+
+    def start_from_controller(self, controller: str) -> None:
+        """Replaces the draft with every entry of a registered controller, under
+        "<name> (copy)": Apply hard-blocks re-using a built-in's name, so the
+        copy stays applicable while the user adapts it (rename at will)."""
+        definition = catalog.get_definition(controller)
+        name = f"{controller} (copy)"
+        self._reset(clear_name=True)
+        self._controller_name = name
+        self._name_edit.setText(name)
+        self._rows = definition_entries(definition, name)
+        self._sources = [f"catalog:{controller}"] * len(self._rows)
+        self._devices = [""] * len(self._rows)
+        self._rebuild_table()
+        self._dirty = True
+        _LOGGER.info("Controller Setup draft started from %r (%d row(s))", controller, len(self._rows))
+
+    def _on_start_from_controller_clicked(self) -> None:
+        names = list(catalog.CONTROLLER_NAMES)
+        if not names:
+            QMessageBox.information(self, "No controller", "No controller is registered.")
+            return
+        controller, ok = QInputDialog.getItem(
+            self, "Start from controller", "Copy every control of:", names, 0, False
+        )
+        if not ok or not controller:
+            return
+        if self._dirty and not self._confirm("This will discard the current unsaved draft. Continue?"):
+            return
+        self.start_from_controller(controller)
+
+    def set_default_file(self, path: str) -> None:
+        """Session JSON or Serato XML to load the first time the tab is shown."""
+        self._default_file = path.strip()
+
+    def load_file(self, path: str | Path) -> None:
+        """Loads a session JSON, or imports a Serato XML's triggers into a fresh
+        draft (no "open as mapping" prompt). Raises on an unreadable file."""
+        target = Path(path)
+        if target.suffix.lower() == ".xml":
+            config = parse_file(target)
+            self._reset(clear_name=False)
+            added = self._import_config(config, target.name)
+            _LOGGER.info("Imported %d trigger(s) from %s into Controller Setup", added, target)
+        else:
+            self._load_session(target)
+        self._dirty = False
+
+    def _maybe_load_default_file(self) -> None:
+        if self._default_file_loaded:
+            return
+        self._default_file_loaded = True
+        if not self._default_file or self._rows or self._dirty:
+            return
+        try:
+            self.load_file(self._default_file)
+        except (OSError, json.JSONDecodeError, KeyError, TypeError, ValueError, SyntaxError) as exc:
+            _LOGGER.warning("Could not load Controller Setup default file %s: %s", self._default_file, exc)
+            return
+        _LOGGER.info("Loaded Controller Setup default file %s", self._default_file)
+
+    def showEvent(self, event) -> None:
+        super().showEvent(event)
+        self._maybe_load_default_file()
 
     # -- capture (learn mode) ------------------------------------------------
 

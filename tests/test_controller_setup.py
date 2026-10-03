@@ -1312,3 +1312,84 @@ def test_save_as_sync_set_emits_recorded_session_for_named_controller(monkeypatc
     assert sync_set.controller == "DDJ-XP2"
     assert sync_set.output_port == "PIONEER DDJ-XP2"
     assert len(sync_set.messages) == 2
+
+
+def test_start_from_controller_copies_every_entry_under_a_new_name():
+    from djmidi.catalog.codegen import definition_entries
+
+    view = ControllerSetupView()
+    view.start_from_controller("DDJ-XP2")
+    expected = definition_entries(catalog.get_definition("DDJ-XP2"), "DDJ-XP2 (copy)")
+    assert view._controller_name == "DDJ-XP2 (copy)"
+    assert view._name_edit.text() == "DDJ-XP2 (copy)"
+    assert view._rows == expected
+    assert set(view._sources) == {"catalog:DDJ-XP2"}
+    assert view._table.rowCount() == len(expected)
+    assert view._dirty is True
+    # A straight copy names every row, so it validates without manual edits.
+    assert view._validate() == []
+
+
+def test_start_from_controller_button_uses_chosen_controller(monkeypatch):
+    import djmidi.gui.controller_setup as controller_setup_mod
+
+    view = ControllerSetupView()
+    monkeypatch.setattr(
+        controller_setup_mod.QInputDialog, "getItem", lambda *a, **k: ("Numark Mixtrack Pro FX", True)
+    )
+    view._on_start_from_controller_clicked()
+    assert view._controller_name == "Numark Mixtrack Pro FX (copy)"
+    assert len(view._rows) == 4 + 16
+
+
+def test_start_from_controller_cancel_keeps_draft(monkeypatch):
+    import djmidi.gui.controller_setup as controller_setup_mod
+
+    view = _view_with_name("MiniPad")
+    view._maybe_add_row("1", "NOTE", "0", "manual")
+    monkeypatch.setattr(controller_setup_mod.QInputDialog, "getItem", lambda *a, **k: ("DDJ-XP2", False))
+    view._on_start_from_controller_clicked()
+    assert view._controller_name == "MiniPad"
+    assert len(view._rows) == 1
+
+
+def test_default_session_file_loads_on_first_show(tmp_path):
+    source = _view_with_name("MiniPad")
+    source._maybe_add_row("1", "NOTE", "7", "learned")
+    session_path = tmp_path / "minipad.json"
+    source._save_session(session_path)
+
+    view = ControllerSetupView()
+    view.set_default_file(str(session_path))
+    view.show()
+    QApplication.processEvents()
+    assert view._controller_name == "MiniPad"
+    assert [row.data1 for row in view._rows] == ["7"]
+    assert view._dirty is False
+    # Only the first show loads it; later shows keep whatever the user did since.
+    view._reset(clear_name=True)
+    view.hide()
+    view.show()
+    QApplication.processEvents()
+    assert view._rows == []
+    view.close()
+
+
+def test_default_xml_file_imports_triggers_on_first_show():
+    view = ControllerSetupView()
+    view.set_default_file(str(FIXTURE))
+    view.show()
+    QApplication.processEvents()
+    assert len(view._rows) == 64
+    assert set(view._devices) == {FIXTURE.name}
+    assert view._dirty is False
+    view.close()
+
+
+def test_missing_default_file_is_ignored(tmp_path):
+    view = ControllerSetupView()
+    view.set_default_file(str(tmp_path / "missing.json"))
+    view.show()
+    QApplication.processEvents()
+    assert view._rows == []
+    view.close()

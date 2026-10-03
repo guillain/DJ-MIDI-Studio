@@ -191,3 +191,22 @@ def test_generated_module_with_reference_image_round_trips(tmp_path):
         assert catalog.get_definition("__ImgCodegen__").reference_image == "img_codegen.png"
     finally:
         catalog._registry._REGISTRY.pop("__ImgCodegen__", None)
+
+
+def test_definition_entries_flattens_static_and_pad_entries():
+    from djmidi.catalog.codegen import definition_entries
+
+    definition = catalog.get_definition("Numark Mixtrack Pro FX")
+    entries = definition_entries(definition)
+    assert entries[: len(definition.static_entries)] == list(definition.static_entries)
+    pads = entries[len(definition.static_entries) :]
+    # 8 pads x 2 deck channels, every one re-resolvable through lookup().
+    assert len(pads) == 16
+    assert {(p.channels, p.data1) for p in pads} == {((ch,), str(n)) for ch in ("1", "2") for n in range(36, 44)}
+
+
+def test_definition_entries_relabels_controller():
+    from djmidi.catalog.codegen import definition_entries
+
+    entries = definition_entries(catalog.get_definition("DDJ-XP2"), "My XP2")
+    assert entries and {e.controller for e in entries} == {"My XP2"}

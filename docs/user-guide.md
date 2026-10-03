@@ -55,6 +55,14 @@ session where you already picked specific ports on `Live Monitor` is never
 overridden, and a port that's busy or unavailable is skipped silently rather
 than blocking the others or popping a dialog.
 
+`Controller Setup default file` (empty by default) names a Controller Setup
+session (`.json`) or a Serato mapping (`.xml`) to load into `Controller Setup`
+the first time that tab is shown in a session, as long as its draft is still
+empty — handy when you keep refining the same controller profile. A session
+loads as-is; an XML seeds the draft with its triggers (no prompt to open it as
+a mapping). A missing or unreadable file is skipped and logged. A change takes
+effect on the next launch if the tab was already shown.
+
 `Theme` selects `Follow system` (default — track the OS light/dark setting
 live), `Light`, or `Dark`. The choice applies immediately on save and is
 restored on the next launch; it also sets Qt's colour scheme so native
@@ -131,6 +139,12 @@ Serato XML seeds that profile with its raw triggers so you don't have to
 press every button by hand, and after a successful import you're offered to
 also open the same file as an editable mapping (`By Channel` / `By Deck` /
 `By Controller`).
+
+`Start from controller…` (in the `Session` group) replaces the draft with
+every control of a controller already in the catalog — sections, names, pads
+of every pad mode — under the name `<controller> (copy)`, ready to adapt
+(rename, delete or add rows, then Apply / Export). The copy gets its own name
+so applying it never replaces the built-in controller.
 
 Select several rows in the captured table and use `Set section for selected
 rows…` or `Set name for selected rows…` to label a whole pad grid in one

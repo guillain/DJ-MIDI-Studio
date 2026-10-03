@@ -75,3 +75,12 @@ def test_plugin_preferences_auto_start_live_monitor_defaults_true_and_round_trip
 
 def test_plugin_preferences_from_json_defaults_missing_auto_start_live_monitor_to_true():
     assert PluginPreferences.from_json('{"enabled": {}}').auto_start_live_monitor is True
+
+
+def test_plugin_preferences_controller_setup_default_file_round_trips(tmp_path):
+    assert PluginPreferences().controller_setup_default_file == ""
+    assert PluginPreferences.from_json('{"enabled": {}}').controller_setup_default_file == ""
+    preferences = PluginPreferences(controller_setup_default_file="/tmp/minipad.json")
+    path = tmp_path / "prefs.json"
+    preferences.save(path)
+    assert PluginPreferences.load(path).controller_setup_default_file == "/tmp/minipad.json"
