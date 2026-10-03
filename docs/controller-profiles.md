@@ -76,6 +76,17 @@ Hercules profiles currently expose their verified eight-pad bank only: their
 mode-switch messages are not yet documented by a vendor MIDI list or a local
 hardware capture, so they are intentionally not guessed.
 
+The Behringer CMD LC-1 has no published MIDI message list. Its profile was
+captured from real hardware with Controller Setup (factory settings, MIDI
+channel 8) and cross-checked against a real Serato export. Under the eight
+encoders, the face is 13 rows of 4 buttons, notes left to right: the buttons
+printed 1-8 (notes 16-23), an unlabelled 4x8 grid (32-63), then MUTE (64-67),
+SOLO (68-71) and RECORD (72-75). Notes 24-31 are unused. The encoders are
+endless rotaries without a push switch (CC from 16 on channel 8) and stay out
+of the catalog like every continuous control. LED feedback was checked on
+the unit: a Note On sent back on the button's own note lights its LED, which
+is the convention Live Monitor and the Controller Emulator assume.
+
 Reference sources:
 
 - [Controller documentation index and official PDF URLs](controllers/README.md)

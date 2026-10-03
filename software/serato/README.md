@@ -30,10 +30,10 @@ as:
 The maintainer supplied two more real Serato exports (2026-09-19), zipped
 individually in `data/serato/`:
 
-- `cmd-lc1.xml.zip` — a Behringer CMD-LC1 mapping (no catalog module yet,
-  and no official MIDI docs are known to exist for it — see
-  `catalog/__init__.py`'s no-docs Controller Setup path; tracked in
-  `TODO.md`'s "New candidates" list).
+- `cmd-lc1.xml.zip` — a Behringer CMD-LC1 mapping. No official MIDI docs
+  exist; `catalog/behringer_cmd_lc_1.py` was captured on the real unit and
+  `tests/test_catalog_cmd_lc1.py` checks this export against it. Each trigger
+  repeats 9 times here (10 in the XDJ-XZ/DDJ-XP2 file).
 - `ddj-xp2-custom.xml.zip` — a customized DDJ-XP2 mapping.
 
 Not (yet) wired into the automated test suite the way the primary

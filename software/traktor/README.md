@@ -93,10 +93,10 @@ The maintainer supplied real `.tsi` exports from their own Traktor setup
 - `nanopad2-remixer.tsi.zip` — Korg nanoPAD2 remix-deck mapping
 - `keyboard-mapping.tsi.zip` — a computer-keyboard (not MIDI hardware) mapping
 
-These also surfaced three real controller candidates with no catalog module
-yet — CMD Studio 4a, nanoPAD2, and (from a real Serato export,
-`data/serato/cmd-lc1.xml.zip`) the Behringer CMD-LC1 — tracked in
-`TODO.md`'s "New candidates" list.
+These also surfaced real controller candidates with no catalog module
+yet — CMD Studio 4a and nanoPAD2 — tracked in `TODO.md`'s "New candidates"
+list. (The Behringer CMD-LC1, from the real Serato export
+`data/serato/cmd-lc1.xml.zip`, now has one: `catalog/behringer_cmd_lc_1.py`.)
 
 ## Verified against real files
 
