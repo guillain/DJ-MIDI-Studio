@@ -40,6 +40,9 @@ class ControllerDefinition:
     supported_software: tuple[str, ...] = ()
     midi_capabilities: tuple[str, ...] = ()
     midi_identity_ids: tuple[bytes, ...] = ()
+    # Names the OS gives the device's MIDI port when they don't contain
+    # `name` (e.g. "CMD LC-1" for "Behringer CMD LC-1"); matched like `name`.
+    port_names: tuple[str, ...] = ()
     reference_image: str | None = None
     display_order: int = 100
     static_entries: list[ControlInfo] = field(default_factory=list)
@@ -133,13 +136,14 @@ def detect_controller(port_name: str) -> list[ControllerMatch]:
     haystack = port_name.casefold()
     matches: list[ControllerMatch] = []
     for definition in active_controller_definitions():
-        candidates = [definition.name, definition.manufacturer or "", definition.plugin_id or ""]
+        exact = [definition.name, *definition.port_names]
+        candidates = [*exact, definition.manufacturer or "", definition.plugin_id or ""]
         matched = next((candidate for candidate in candidates if candidate and candidate.casefold() in haystack), None)
         if matched is not None:
             matches.append(
                 ControllerMatch(
                     definition,
-                    100 if matched == definition.name else 75,
+                    100 if matched in exact else 75,
                     f"port name contains {matched!r}",
                 )
             )

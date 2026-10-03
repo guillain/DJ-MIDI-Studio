@@ -31,6 +31,12 @@ def test_controller_is_registered():
     assert CONTROLLER in catalog.CONTROLLER_NAMES
 
 
+def test_macos_port_name_is_detected():
+    # The OS names the port "CMD LC-1", without the manufacturer prefix.
+    matches = catalog.detect_controller("CMD LC-1")
+    assert [(m.controller.name, m.score) for m in matches] == [(CONTROLLER, 100)]
+
+
 def test_real_export_shape():
     triggers = _real_triggers()
     assert len(triggers) == 30
