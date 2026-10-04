@@ -42,9 +42,23 @@ records file paths, sizes, dates and a cache of the tags, never the audio.
 ## Browse, sort and filter
 
 - Click a column header to sort (BPM sorts numerically).
-- Type in the filter box to search titles, artists, genres, BPM, keys and
+- Type in the search box to search titles, artists, genres, BPM, keys and
   comments.
-- Pick a category in the category filter, or `Uncategorized`.
+- Narrow the list with the filters under it. They combine, and the
+  `N / M tracks` counter shows how many tracks are left:
+
+| Filter | Shows |
+| --- | --- |
+| Category | One category, or `Uncategorized` |
+| Genre | Tracks with that genre tag (the list holds every genre in your library) |
+| Key | Tracks with that key tag, as written in the file |
+| Camelot | Tracks in that Camelot key; tick `+ compatible` to add the keys that mix harmonically with it (±1 on the wheel and the relative major/minor) |
+| BPM `min` – `max` | Tracks within that range, both ends included; leave a side at `min` / `max` for no limit. Tracks without a BPM are hidden while a BPM limit is set |
+
+`Reset filters` clears the search box and every filter. Filters stay as they
+are after a rescan or a tag edit.
+
+![Filters: 170–180 BPM, compatible with 8A](../../images/layout/music-library-filters.png)
 
 The **Camelot** column translates any key notation into the Camelot wheel
 used for harmonic mixing: `Am`, `F#m`, Open Key `7m` and `8A` are all
