@@ -1,0 +1,101 @@
+# 🧭 End-to-end examples
+
+> 🧭 These recipes follow real user journeys: detect hardware, inspect MIDI,
+> route messages, and keep unknown devices safe.
+
+📍 [Docs](../README.md) › [End user](README.md) › End-to-end examples
+
+## Table of Contents
+
+- [Detect a connected controller](#detect-a-connected-controller)
+- [Open a Serato or Traktor mapping](#open-a-serato-or-traktor-mapping)
+- [Inspect a physical MIDI event](#inspect-a-physical-midi-event)
+- [Route MIDI between devices](#route-midi-between-devices)
+- [Work with an unknown controller](#work-with-an-unknown-controller)
+- [Fix tags on a whole album](#fix-tags-on-a-whole-album)
+- [Related](#related)
+
+## Detect a connected controller
+
+1. Connect the controller before starting DJ MIDI Studio.
+2. Open ⚙ Preferences.
+3. Choose `Suggest detected integration` if high-confidence matches may be
+   activated automatically. Keep `Ask before enabling` to confirm detections.
+4. Start or refresh the `Live Monitor` port list.
+
+The Dashboard and layout selectors update when a known controller is matched.
+The detection message includes the confidence and the MIDI port evidence. An
+ambiguous result is never silently selected.
+
+See [Supported controllers](controller-profiles.md) for the built-in
+profiles and which ones are verified on real hardware.
+
+## Open a Serato or Traktor mapping
+
+1. Open ⚙ Preferences.
+2. Select `Suggest detected integration` for automatic parser selection, or
+   leave the default confirmation policy enabled.
+3. Use `File -> Open...` and choose the mapping file.
+
+Serato XML (`<midi>`) and Traktor `.tsi` signatures are detected before
+the parser is selected. If the file is malformed, unsupported, or ambiguous,
+the software selector remains available so the user can choose explicitly.
+
+For what Traktor `.tsi` support covers and its limits, see
+[Traktor mappings](features/traktor-mappings.md).
+
+## Inspect a physical MIDI event
+
+![Live Monitor](../images/layout/live-monitor.png)
+
+1. Open `Live Monitor`.
+2. Click `Select all sources`, or check only the desired MIDI inputs.
+3. Click `Start monitoring`.
+4. Trigger a button or pad on the controller.
+
+Use the `Source device` column to identify the originating MIDI port. The
+`Physical / Serato` column contains the physical control and mapping function;
+the device name is intentionally kept in its dedicated column.
+
+## Route MIDI between devices
+
+1. Enable `Enable MIDI routing policies` in Preferences.
+2. Open `MIDI Routing`, select a source and destination, then click `Add route`.
+3. Open the independent `MIDI Clock` tool from the `View` menu.
+4. Optionally enable the Clock policy and add one or more source/destination lines.
+   For a direct Serato workflow, enable Link in Serato and
+   choose `Ableton Link (DJ MIDI Studio)` as the source; otherwise choose a
+   physical MIDI Clock input or an external bridge output.
+5. Click `Start routing` only after checking the selected ports.
+
+Routing is opt-in, opens only the ports used by enabled routes and Clock policy,
+and closes them with `Stop routing`. The route graph rejects direct cycles;
+Clock messages are subject to the configured minimum interval safeguard. The
+direct Link follower is read-only with respect to Link tempo and emits
+Start/Continue/Stop plus 24 PPQN ticks to the selected MIDI output.
+
+## Work with an unknown controller
+
+1. Open `Controller Setup`.
+2. Select the MIDI input and capture representative buttons or pads.
+3. Review the learned channel, event type, and data value.
+4. Name the rows, then `Apply now` to use the profile for the current
+   session, or generate a catalog module to keep it.
+
+Unknown devices remain usable without claiming an incorrect catalog. Verify
+the captured values against the manufacturer's MIDI documentation before
+sharing or exporting a profile for wider use.
+
+## Fix tags on a whole album
+
+1. Open the `Music Library` tab and select the album's tracks (Shift-click).
+2. Type the album name and genre in the Track panel.
+3. Click `Write tags to selection…`; `Album` and `Genre` are already ticked.
+4. Click `Write to N track(s)`. One `Undo` reverts the whole batch.
+
+See [Music Library](features/music-library.md#write-tags-to-many-tracks-at-once).
+
+## Related
+
+- [Features](features/README.md)
+- [User guide](user-guide.md)
