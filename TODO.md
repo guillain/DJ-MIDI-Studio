@@ -143,7 +143,8 @@ Implemented contract, runtime, test, and documentation work:
   (scene bases 0/4/48/52; per row two runs of four notes 24 apart), so one profile covers them all:
   64 pads, sections `SCENE 1`–`SCENE 4`. The HOLD/GATE ARP/TOUCH SCALE/KEY/RANGE/SCALE/TAP buttons
   were pressed too and send nothing. A Korg editor screenshot showing notes 36–51 (also what the
-  Traktor export maps) doesn't match the unit, so it isn't bundled as the "MIDI info" image.
+  Traktor export maps) doesn't match the unit; it's bundled as the "MIDI info" image at the
+  maintainer's request, documented as showing pad positions, not this unit's notes.
   Captured by dictating presses one at a time against a background `mido` recorder — see the
   CMD LC-1 entry for the earlier, self-labelled loop.
 - [x] **Controller assets grouped by vendor** (`v0.48.34-controllers-by-vendor`) — every
