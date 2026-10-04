@@ -12,7 +12,7 @@
 - [Build a profile in five steps](#build-a-profile-in-five-steps)
 - [Start from a controller the app already knows](#start-from-a-controller-the-app-already-knows)
 - [Learn from the hardware](#learn-from-the-hardware)
-- [Import an existing Serato mapping](#import-an-existing-serato-mapping)
+- [Import an existing Serato or Traktor mapping](#import-an-existing-serato-or-traktor-mapping)
 - [Label many controls at once](#label-many-controls-at-once)
 - [Send MIDI back to the controller](#send-midi-back-to-the-controller)
 - [Use the profile: apply, export, share](#use-the-profile-apply-export-share)
@@ -66,12 +66,17 @@ trigger, so pressing the same pad twice never creates a second row.
 `Check for conflicts` flags any trigger that two differently named rows
 both claim. It also runs automatically before applying or exporting.
 
-## Import an existing Serato mapping
+## Import an existing Serato or Traktor mapping
 
-`Import` → choose a Serato `.xml` mapping file to seed the table with every
-trigger it uses, so you don't have to press every button by hand. Serato
-files don't contain physical control names, so Section and Name stay for
-you to fill in. Importing the same file twice adds nothing new.
+`Import` → choose a Serato `.xml` or a Traktor `.tsi` mapping to seed the
+table with every trigger it uses, so you don't have to press every button by
+hand. Mapping files don't contain physical control names, so Section and
+Name stay for you to fill in. Importing the same file twice adds nothing new.
+
+A Traktor `.tsi` export often holds several devices, usually one per
+controller (for example a CMD Studio 4a next to a CMD Micro). When it does,
+you choose which device to import, or `All devices`; each row's **Device**
+column names the Traktor device it came from.
 
 After a successful import, the app offers to also open that file as an
 editable mapping in `By Channel` / `By Deck` / `By Controller`.
@@ -122,10 +127,10 @@ attached image) as a JSON file so you can continue later. The repository
 ships recorded sessions for the DDJ-XP2 and XDJ-XZ in `data/controllers/`.
 
 To pick up where you left off every time, set ⚙ Preferences →
-`Controller Setup default file` to a session `.json` or a Serato `.xml`. It is
-loaded the first time the tab is shown in a session, as long as the draft is
-still empty (an `.xml` only seeds triggers, without offering to open it as a
-mapping). A missing or unreadable file is skipped and logged.
+`Controller Setup default file` to a session `.json`, a Serato `.xml` or a
+Traktor `.tsi`. It is loaded the first time the tab is shown in a session, as
+long as the draft is still empty (a mapping only seeds triggers, every device
+of a `.tsi` included, without offering to open it as a mapping). A missing or unreadable file is skipped and logged.
 
 ![Controller Setup with an XDJ-XZ and DDJ-XP2 combined session](../../images/layout/controlleur-setup-xdj-xz-ddj-xp2.png)
 

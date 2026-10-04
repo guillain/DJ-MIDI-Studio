@@ -35,7 +35,7 @@
 
 | Page | Covers |
 | --- | --- |
-| [controller-setup.md](controller-setup.md) | Learning, importing, labelling, MIDI output, apply/export/share |
+| [controller-setup.md](controller-setup.md) | Learning, importing Serato/Traktor mappings, labelling, MIDI output, apply/export/share |
 | [controller-sync.md](controller-sync.md) | Recording sync sets, syncing, port matching |
 | [live-monitor.md](live-monitor.md) | Event log, live feedback, Serato LED feedback |
 | [music-library.md](music-library.md) | Scan, tags, bulk tag writes, categories, playlists, import/export |

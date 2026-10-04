@@ -132,6 +132,21 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Controller Setup imports Traktor `.tsi` mappings**
+  (`v0.48.33-controller-setup-tsi-import`) — step 1 of the guided-capture
+  recipe for the next no-docs candidates (CMD Studio 4a, nanoPAD2), whose only
+  real material is a Traktor export. `controller_setup.read_mapping_file`
+  picks the Serato or Traktor parser by suffix; `tsi_device_labels` names each
+  Traktor device with bindings (comment or name, plus its input port). A
+  `.tsi` holding several devices asks which one to import, because the
+  maintainer's "CMD Studio 4a" export also carries a CMD Micro and a nanoPAD2
+  device — importing everything would merge three controllers' triggers.
+  Rows are tagged `tsi-import` with the Traktor device as their Device. The
+  default-file preference accepts `.tsi` too (every device). Findings from the
+  exports, to confirm on hardware: nanoPAD2 scene = 16 contiguous notes 36-51
+  on channel 1; CMD Studio 4a (`S4A_MAPPING`) repeats one note/CC layout on
+  channels 1-4 (one per deck, with gaps in the numbering), plus a pitch bend
+  per channel.
 - [x] **Music Library filters** (`v0.48.32-library-filters`) — requested by
   the maintainer: Genre, Key, Camelot (with `+ compatible`, reusing
   `playlist.is_camelot_compatible`) and an inclusive BPM `min`–`max` range
