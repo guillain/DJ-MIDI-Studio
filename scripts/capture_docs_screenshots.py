@@ -291,6 +291,16 @@ def _capture_music_library(app: QApplication, window: MainWindow) -> None:
         app.processEvents()
         _save(window, "music-library-categories.png")
 
+        # Filters: 170-180 BPM, harmonically compatible with 8A.
+        view.side_tabs.setCurrentIndex(0)
+        view.bpm_min_filter.setValue(170)
+        view.bpm_max_filter.setValue(180)
+        view.camelot_filter.setCurrentIndex(view.camelot_filter.findData("8A"))
+        view.camelot_compatible_check.setChecked(True)
+        app.processEvents()
+        _save(window, "music-library-filters.png")
+        view.reset_filters()
+
         seed = next(row for row in view.table_model.rows() if row.title == "Kalimba Stomp")
         view.create_playlist("Friday set", workspace.generate_playlist(view.visible_rows()), workspace.SOURCE_GENERATED)
         view.create_playlist(

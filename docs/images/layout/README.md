@@ -46,6 +46,8 @@ MIDI triggers instead of the tab's blank starting state above:
 - [Track table and Track panel](music-library.png) — a fuzzy category
   suggestion selected, ready to confirm
 - [Categories panel](music-library-categories.png)
+- [Filters](music-library-filters.png) — 170–180 BPM, harmonically
+  compatible with 8A
 - [Playlists panel](music-library-playlists.png) — an auto-sorted playlist
   and one matched from a seed track
 - [Write tags to selection](music-library-bulk-tags.png) — the bulk tag

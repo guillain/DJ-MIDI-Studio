@@ -57,6 +57,7 @@ from PySide6.QtWidgets import (
     QPushButton,
     QScrollArea,
     QSizePolicy,
+    QSpinBox,
     QSplitter,
     QTableView,
     QTabWidget,
@@ -71,6 +72,7 @@ from djmidi.gui.commands import WriteTrackMetadataCommand, WriteTracksMetadataCo
 from djmidi.library import workspace
 from djmidi.library.db import LibraryDB, default_library_db_path
 from djmidi.library.metadata import TrackMetadata, clean_noise_frames
+from djmidi.library.playlist import is_camelot_compatible
 from djmidi.library.scanner import iter_scan_root
 
 _LOGGER = logging.getLogger(__name__)
@@ -102,6 +104,12 @@ _CONTENT_MIN_HEIGHT = 440
 
 ALL_CATEGORIES = "All categories"
 UNCATEGORIZED = "Uncategorized"
+ALL_GENRES = "All genres"
+ALL_KEYS = "All keys"
+ALL_CAMELOT = "All Camelot"
+# Wheel order: 1A, 1B, 2A, … 12B.
+CAMELOT_CODES = tuple(f"{number}{letter}" for number in range(1, 13) for letter in "AB")
+_BPM_FILTER_MAX = 300
 
 ROW_ROLE = Qt.ItemDataRole.UserRole + 1
 SORT_ROLE = Qt.ItemDataRole.UserRole + 2
@@ -303,25 +311,93 @@ class LibraryTableModel(QAbstractTableModel):
         return "" if value is None else str(value)
 
 
+def _norm(text: str | None) -> str:
+    return (text or "").strip().casefold()
+
+
 class LibraryFilterProxy(QSortFilterProxyModel):
-    """Free-text filter across every column plus a category filter."""
+    """Free-text filter across every column, plus category, genre, BPM
+    range, key and Camelot filters (all combined with AND)."""
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self._category: str = ALL_CATEGORIES
+        self._genre: str | None = None
+        self._bpm_min: float | None = None
+        self._bpm_max: float | None = None
+        self._key: str | None = None
+        self._camelot: str | None = None
+        self._camelot_compatible = False
         self.setFilterCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.setFilterKeyColumn(-1)
         self.setSortRole(SORT_ROLE)
 
-    def set_category_filter(self, category: str) -> None:
+    def _change_filter(self, apply: Callable[[], None]) -> None:
         # Qt 6.10 deprecated invalidateFilter() for this begin/end pair.
         if hasattr(self, "beginFilterChange"):
             self.beginFilterChange()
-            self._category = category
+            apply()
             self.endFilterChange(QSortFilterProxyModel.Direction.Rows)
         else:
-            self._category = category
+            apply()
             self.invalidateFilter()
+
+    def set_category_filter(self, category: str) -> None:
+        self._change_filter(lambda: setattr(self, "_category", category))
+
+    def set_genre_filter(self, genre: str | None) -> None:
+        """Exact genre tag (case-insensitive); None for every genre."""
+        self._change_filter(lambda: setattr(self, "_genre", _norm(genre) or None))
+
+    def set_bpm_range(self, minimum: float | None, maximum: float | None) -> None:
+        """Inclusive BPM bounds; None leaves that side open. With any bound
+        set, tracks without a BPM are hidden."""
+
+        def apply() -> None:
+            self._bpm_min, self._bpm_max = minimum, maximum
+
+        self._change_filter(apply)
+
+    def set_key_filter(self, key: str | None) -> None:
+        """Exact key tag as written in the file (case-insensitive)."""
+        self._change_filter(lambda: setattr(self, "_key", _norm(key) or None))
+
+    def set_camelot_filter(self, camelot: str | None, compatible: bool = False) -> None:
+        """One Camelot code; with `compatible`, also every harmonically
+        compatible key (same code, ±1 on the wheel, relative major/minor)."""
+
+        def apply() -> None:
+            self._camelot = camelot.upper() if camelot else None
+            self._camelot_compatible = compatible
+
+        self._change_filter(apply)
+
+    def has_track_filters(self) -> bool:
+        return any(
+            value is not None for value in (self._genre, self._bpm_min, self._bpm_max, self._key, self._camelot)
+        )
+
+    def _accepts_track(self, row: workspace.LibraryRow) -> bool:
+        metadata = row.metadata
+        if self._genre is not None and _norm(metadata.genre if metadata else None) != self._genre:
+            return False
+        if self._bpm_min is not None or self._bpm_max is not None:
+            bpm = row.bpm
+            if bpm is None:
+                return False
+            if self._bpm_min is not None and bpm < self._bpm_min:
+                return False
+            if self._bpm_max is not None and bpm > self._bpm_max:
+                return False
+        if self._key is not None and _norm(metadata.key if metadata else None) != self._key:
+            return False
+        if self._camelot is not None:
+            if row.camelot_key is None:
+                return False
+            if self._camelot_compatible:
+                return is_camelot_compatible(self._camelot, row.camelot_key)
+            return row.camelot_key.upper() == self._camelot
+        return True
 
     def filterAcceptsRow(self, source_row: int, source_parent: QModelIndex | QPersistentModelIndex) -> bool:
         model = self.sourceModel()
@@ -329,6 +405,8 @@ class LibraryFilterProxy(QSortFilterProxyModel):
         if self._category == UNCATEGORIZED and row.category is not None:
             return False
         if self._category not in (ALL_CATEGORIES, UNCATEGORIZED) and row.category != self._category:
+            return False
+        if not self._accepts_track(row):
             return False
         return super().filterAcceptsRow(source_row, source_parent)
 
@@ -425,6 +503,7 @@ class MusicLibraryView(QWidget):
         filters.addWidget(self.category_filter)
         filters.addWidget(self.count_label)
         box.addLayout(filters)
+        box.addLayout(self._build_track_filters())
 
         self.table_model = LibraryTableModel(self)
         self.proxy = LibraryFilterProxy(self)
@@ -449,6 +528,61 @@ class MusicLibraryView(QWidget):
         self.proxy.modelReset.connect(self._update_count_label)
         self.proxy.layoutChanged.connect(self._update_count_label)
         return panel
+
+    def _build_track_filters(self) -> QVBoxLayout:
+        """Genre / key / Camelot, then BPM range, under the search box (two
+        rows so the table panel stays usable at narrow widths, issue #19)."""
+        rows = QVBoxLayout()
+        first, second = QHBoxLayout(), QHBoxLayout()
+        self.genre_filter = QComboBox()
+        self.genre_filter.setToolTip("Only tracks with this genre tag")
+        self.bpm_min_filter = QSpinBox()
+        self.bpm_max_filter = QSpinBox()
+        for spin, label in ((self.bpm_min_filter, "min"), (self.bpm_max_filter, "max")):
+            spin.setRange(0, _BPM_FILTER_MAX)
+            spin.setSpecialValueText(label)
+            spin.setToolTip(f"{label.capitalize()}imum BPM (inclusive); leave at “{label}” for no limit")
+            spin.setAccelerated(True)
+        self.key_filter = QComboBox()
+        self.key_filter.setToolTip("Only tracks with this key tag, as written in the file")
+        self.camelot_filter = QComboBox()
+        self.camelot_filter.addItem(ALL_CAMELOT, None)
+        for code in CAMELOT_CODES:
+            self.camelot_filter.addItem(code, code)
+        self.camelot_filter.setToolTip("Only tracks in this Camelot key")
+        self.camelot_compatible_check = QCheckBox("+ compatible")
+        self.camelot_compatible_check.setToolTip(
+            "Also show harmonically compatible keys: ±1 on the wheel and the relative major/minor"
+        )
+        # A long genre or key must not widen the table panel: size each combo
+        # from a few characters, the popup still shows full names.
+        for combo, length in ((self.genre_filter, 8), (self.key_filter, 5), (self.camelot_filter, 5)):
+            combo.setMinimumContentsLength(length)
+            combo.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+        self.reset_filters_button = QPushButton("Reset filters")
+        self.reset_filters_button.clicked.connect(self.reset_filters)
+        first.addWidget(self.genre_filter, 2)
+        first.addWidget(self.key_filter, 1)
+        first.addWidget(self.camelot_filter, 1)
+        second.addWidget(QLabel("BPM"))
+        second.addWidget(self.bpm_min_filter)
+        second.addWidget(QLabel("–"))
+        second.addWidget(self.bpm_max_filter)
+        second.addWidget(self.camelot_compatible_check)
+        second.addStretch(1)
+        second.addWidget(self.reset_filters_button)
+        rows.addLayout(first)
+        rows.addLayout(second)
+        self._refill_combo(self.genre_filter, ALL_GENRES, [])
+        self._refill_combo(self.key_filter, ALL_KEYS, [])
+
+        self.genre_filter.currentIndexChanged.connect(self._on_genre_filter_changed)
+        self.key_filter.currentIndexChanged.connect(self._on_key_filter_changed)
+        self.bpm_min_filter.valueChanged.connect(self._on_bpm_filter_changed)
+        self.bpm_max_filter.valueChanged.connect(self._on_bpm_filter_changed)
+        self.camelot_filter.currentIndexChanged.connect(self._on_camelot_filter_changed)
+        self.camelot_compatible_check.toggled.connect(self._on_camelot_filter_changed)
+        return rows
 
     def _build_track_panel(self) -> QWidget:
         panel = QWidget()
@@ -629,6 +763,7 @@ class MusicLibraryView(QWidget):
         current = self._current_path
         self.table_model.set_rows(workspace.consolidate(self.db))
         self._refresh_category_filter()
+        self._refresh_value_filters(self.table_model.rows())
         if current is not None:
             self.select_path(current)
         self._update_count_label()
@@ -758,6 +893,76 @@ class MusicLibraryView(QWidget):
         self.category_filter.setCurrentIndex(max(index, 0))
         self.category_filter.blockSignals(False)
         self.proxy.set_category_filter(self.category_filter.currentData())
+
+    @staticmethod
+    def _refill_combo(combo: QComboBox, all_label: str, values: list[str]) -> None:
+        """Replace a value filter's items, keeping the current choice when
+        it still exists (else falling back to `all_label`)."""
+        previous = combo.currentData()
+        combo.blockSignals(True)
+        combo.clear()
+        combo.addItem(all_label, None)
+        for value in values:
+            combo.addItem(value, value)
+        index = combo.findData(previous) if previous is not None else 0
+        combo.setCurrentIndex(max(index, 0))
+        combo.blockSignals(False)
+
+    def _refresh_value_filters(self, rows: list[workspace.LibraryRow]) -> None:
+        genres: dict[str, str] = {}
+        keys: dict[str, str] = {}
+        for row in rows:
+            if row.metadata is None:
+                continue
+            for value, seen in ((row.metadata.genre, genres), (row.metadata.key, keys)):
+                if value and value.strip():
+                    seen.setdefault(_norm(value), value.strip())
+        self._refill_combo(self.genre_filter, ALL_GENRES, sorted(genres.values(), key=str.casefold))
+        self._refill_combo(self.key_filter, ALL_KEYS, sorted(keys.values(), key=str.casefold))
+        self.proxy.set_genre_filter(self.genre_filter.currentData())
+        self.proxy.set_key_filter(self.key_filter.currentData())
+
+    def _on_genre_filter_changed(self, *_args: object) -> None:
+        self.proxy.set_genre_filter(self.genre_filter.currentData())
+        self._update_count_label()
+
+    def _on_key_filter_changed(self, *_args: object) -> None:
+        self.proxy.set_key_filter(self.key_filter.currentData())
+        self._update_count_label()
+
+    def _on_bpm_filter_changed(self, *_args: object) -> None:
+        minimum = self.bpm_min_filter.value() or None
+        maximum = self.bpm_max_filter.value() or None
+        self.proxy.set_bpm_range(minimum, maximum)
+        self._update_count_label()
+
+    def _on_camelot_filter_changed(self, *_args: object) -> None:
+        self.proxy.set_camelot_filter(self.camelot_filter.currentData(), self.camelot_compatible_check.isChecked())
+        self._update_count_label()
+
+    def reset_filters(self) -> None:
+        """Clear the search box and every filter."""
+        widgets = (
+            self.filter_edit, self.category_filter, self.genre_filter, self.key_filter,
+            self.bpm_min_filter, self.bpm_max_filter, self.camelot_filter, self.camelot_compatible_check,
+        )
+        for widget in widgets:
+            widget.blockSignals(True)
+        self.filter_edit.clear()
+        for combo in (self.category_filter, self.genre_filter, self.key_filter, self.camelot_filter):
+            combo.setCurrentIndex(0)
+        self.bpm_min_filter.setValue(0)
+        self.bpm_max_filter.setValue(0)
+        self.camelot_compatible_check.setChecked(False)
+        for widget in widgets:
+            widget.blockSignals(False)
+        self.proxy.setFilterFixedString("")
+        self.proxy.set_category_filter(ALL_CATEGORIES)
+        self.proxy.set_genre_filter(None)
+        self.proxy.set_key_filter(None)
+        self.proxy.set_bpm_range(None, None)
+        self.proxy.set_camelot_filter(None)
+        self._update_count_label()
 
     def _update_count_label(self, *_args: object) -> None:
         self.count_label.setText(f"{self.proxy.rowCount()} / {self.table_model.rowCount()} tracks")

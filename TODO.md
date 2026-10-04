@@ -132,6 +132,15 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Music Library filters** (`v0.48.32-library-filters`) — requested by
+  the maintainer: Genre, Key, Camelot (with `+ compatible`, reusing
+  `playlist.is_camelot_compatible`) and an inclusive BPM `min`–`max` range
+  under the search box, combined with the existing text/category filters in
+  `LibraryFilterProxy` (AND), plus `Reset filters`. Genre/Key lists are
+  rebuilt from the library on every reload, keeping the current choice;
+  combos are sized from a few characters so a long genre can't widen the
+  table panel (issue #19's squeeze test caught exactly that, and the
+  filters needed two rows to fit at 700 px).
 - [x] **Documentation reorganized by audience** (`v0.48.31-docs-reorganization`)
   — requested by the maintainer: `docs/enduser/` (feature showcase + one page
   per feature: Controller Setup, Controller Sync, Live Monitor, Music Library,
