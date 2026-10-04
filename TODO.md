@@ -132,6 +132,13 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Behringer CMD Studio 4a profile** (`v0.48.37-catalog-cmd-studio-4a`) —
+  `catalog/behringer_cmd_studio_4a.py`, 106 buttons captured on the maintainer's unit in all four deck
+  layers by dictated presses. A deck layer only changes the channel (left A/C = 1/3, right B/D = 2/4),
+  so each side's 30 buttons are one entry per label with two channels; the deck-select buttons send on
+  their own layer only, BROWSE `<`/`>`/ENTER always on channel 1. Right LOOP arrows are reversed vs the
+  left (55 `>`, 56 `<`), re-checked alone on the unit. Every note of the real Traktor export's
+  `S4A_MAPPING` device resolves to exactly one captured button.
 - [x] **Behringer CMD Micro profile** (`v0.48.36-catalog-cmd-micro`) — `catalog/behringer_cmd_micro.py`,
   20 buttons on channel 1, captured on the maintainer's unit by dictating presses one at a time (a
   first self-paced pass skipped and swapped buttons; re-asking each button alone fixed it). The decks
@@ -1153,7 +1160,8 @@ of official MIDI documentation, and fit with the current catalog architecture.
   gives a factory-default note table. A catalog profile would have to guess
   those values; blocked on a Controller Setup capture of the maintainer's
   own unit (or a Korg Kontrol Editor scene-set dump).
-- [ ] **Behringer CMD Studio 4a** — surfaced by a real maintainer-owned
+- [x] **Behringer CMD Studio 4a** (`v0.48.37-catalog-cmd-studio-4a`) — done from a
+  hardware capture of the maintainer's unit, see Recent evolution chapters. Original note: surfaced by a real maintainer-owned
   Traktor mapping (`data/traktor/cmd-studio-4a.tsi.zip`,
   2026-09-19). **Checked 2026-10-02**: the official Quick Start Guide has no
   MIDI table, and Behringer's product page (now redirected away from
