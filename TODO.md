@@ -132,6 +132,13 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Controller assets grouped by vendor** (`v0.48.34-controllers-by-vendor`) — every
+  bundled controller folder moved from `controllers/<slug>/` to
+  `controllers/hardware/<vendor>/<Model>/` (e.g. `hardware/pioneer/DDJ-XP2/`), following the
+  maintainer's own `hardware/behringer/CMD-micro/` layout; every `reference_image`, local document
+  path, test and docstring updated, docs screenshot file names unchanged. Also archives the
+  CMD Micro and CMD Studio 4a artwork and vendor PDFs ahead of their hardware-captured profiles.
+  Older entries below still name the pre-reorg paths, kept as a historical record.
 - [x] **Controller Setup imports Traktor `.tsi` mappings**
   (`v0.48.33-controller-setup-tsi-import`) — step 1 of the guided-capture
   recipe for the next no-docs candidates (CMD Studio 4a, nanoPAD2), whose only
