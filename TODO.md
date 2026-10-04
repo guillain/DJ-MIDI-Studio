@@ -132,6 +132,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Behringer CMD Micro profile** (`v0.48.36-catalog-cmd-micro`) — `catalog/behringer_cmd_micro.py`,
+  20 buttons on channel 1, captured on the maintainer's unit by dictating presses one at a time (a
+  first self-paced pass skipped and swapped buttons; re-asking each button alone fixed it). The decks
+  aren't mirrored (deck B `1`/`2`/LOAD = 34/36/37, note 35 unused), confirmed by the real Traktor
+  export's `CMD MICRO Mixer` device, which also maps notes 1–2 that no button sent — left out.
 - [x] **Korg nanoPAD2 profile** (`v0.48.35-catalog-korg-nanopad2`) — `catalog/korg_nanopad2.py`,
   captured on the maintainer's unit in all four scenes (the scene change shows up as Korg's documented
   Scene Change SysEx, which split the capture). All four scenes send on channel 1 with disjoint notes
