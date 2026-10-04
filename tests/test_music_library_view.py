@@ -435,3 +435,63 @@ def test_write_selection_button_disabled_without_selection(library):
     view, _, _ = library
     view.table.clearSelection()
     assert not view.write_selection_button.isEnabled()
+
+
+def _titles(view):
+    return sorted(row.title for row in view.visible_rows())
+
+
+def test_genre_and_key_filters_list_the_library_values(library):
+    view, _, _ = library
+    genres = [view.genre_filter.itemText(i) for i in range(view.genre_filter.count())]
+    keys = [view.key_filter.itemText(i) for i in range(view.key_filter.count())]
+    assert genres == [mlv.ALL_GENRES, "Psytrancee", "Techno"]
+    assert keys == [mlv.ALL_KEYS, "Am", "C", "Em"]
+    view.genre_filter.setCurrentIndex(view.genre_filter.findData("Techno"))
+    assert _titles(view) == ["Alpha", "Bravo"]
+    view.key_filter.setCurrentIndex(view.key_filter.findData("Em"))
+    assert _titles(view) == ["Bravo"]
+    assert view.count_label.text() == "1 / 3 tracks"
+
+
+def test_bpm_range_filter_is_inclusive_and_open_ended(library):
+    view, _, _ = library
+    view.bpm_min_filter.setValue(172)
+    assert _titles(view) == ["Alpha", "Bravo"]
+    view.bpm_max_filter.setValue(172)
+    assert _titles(view) == ["Alpha"]
+    view.bpm_min_filter.setValue(0)
+    view.bpm_max_filter.setValue(100)
+    assert _titles(view) == ["Charlie"]
+
+
+def test_camelot_filter_with_and_without_compatible_keys(library):
+    view, _, _ = library
+    # Alpha Am = 8A, Bravo Em = 9A, Charlie C = 8B.
+    view.camelot_filter.setCurrentIndex(view.camelot_filter.findData("8A"))
+    assert _titles(view) == ["Alpha"]
+    view.camelot_compatible_check.setChecked(True)
+    assert _titles(view) == ["Alpha", "Bravo", "Charlie"]
+    view.camelot_filter.setCurrentIndex(view.camelot_filter.findData("10A"))
+    assert _titles(view) == ["Bravo"]
+
+
+def test_filters_combine_and_reset(library):
+    view, _, _ = library
+    view.filter_edit.setText("a")
+    view.genre_filter.setCurrentIndex(view.genre_filter.findData("Techno"))
+    view.bpm_min_filter.setValue(173)
+    assert _titles(view) == ["Bravo"]
+    assert view.proxy.has_track_filters()
+    view.reset_filters()
+    assert _titles(view) == ["Alpha", "Bravo", "Charlie"]
+    assert view.filter_edit.text() == "" and view.genre_filter.currentIndex() == 0
+    assert view.bpm_min_filter.value() == 0 and not view.proxy.has_track_filters()
+
+
+def test_value_filters_survive_a_reload(library):
+    view, _, _ = library
+    view.genre_filter.setCurrentIndex(view.genre_filter.findData("Techno"))
+    view.reload()
+    assert view.genre_filter.currentData() == "Techno"
+    assert _titles(view) == ["Alpha", "Bravo"]
