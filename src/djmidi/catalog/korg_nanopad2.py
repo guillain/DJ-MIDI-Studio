@@ -13,9 +13,10 @@ to right; each row is two runs of four consecutive notes, 24 apart:
 - top row: base+0..3, then base+24..27;
 - bottom row: base+12..15, then base+36..39;
 
-with base 0, 4, 48 and 52 for scenes 1-4. A Korg editor screenshot showing
-notes 36-51 for Scene 1 does not match the unit, so it is not bundled as this
-controller's "MIDI info" image.
+with base 0, 4, 48 and 52 for scenes 1-4. The bundled reference-midi.png (the
+"MIDI info" view) is a Korg editor screenshot of a different Scene 1, notes
+36-51, the layout the maintainer's Traktor export also maps: it shows where the
+pads are, not the notes this unit sends.
 
 The X-Y touch pad (continuous) is left out like every continuous control. The
 HOLD / GATE ARP / TOUCH SCALE / KEY/RANGE / SCALE/TAP / SCENE buttons were
