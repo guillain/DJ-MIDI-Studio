@@ -86,7 +86,7 @@ class PreferencesDialog(QDialog):
         setup_file.setText(preferences.controller_setup_default_file)
         setup_file.setPlaceholderText("None — start with an empty draft")
         setup_file.setToolTip(
-            "Session JSON or Serato XML loaded into Controller Setup the first time "
+            "Session JSON, Serato XML or Traktor TSI loaded into Controller Setup the first time "
             "that tab is shown, when its draft is still empty."
         )
         self._setup_file = setup_file
@@ -260,7 +260,7 @@ class PreferencesDialog(QDialog):
             self,
             "Select Controller Setup default file",
             self._setup_file.text(),
-            "Controller Setup session or Serato XML (*.json *.xml);;All files (*)",
+            "Controller Setup session or mapping (*.json *.xml *.tsi);;All files (*)",
         )
         if path:
             self._setup_file.setText(path)

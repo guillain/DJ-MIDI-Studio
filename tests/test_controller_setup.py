@@ -1393,3 +1393,85 @@ def test_missing_default_file_is_ignored(tmp_path):
     QApplication.processEvents()
     assert view._rows == []
     view.close()
+
+
+TRAKTOR = Path(__file__).parent.parent / "data" / "traktor"
+
+
+def _extract_tsi(name: str, tmp_path: Path) -> Path:
+    import zipfile
+
+    with zipfile.ZipFile(TRAKTOR / name) as archive:
+        member = next(n for n in archive.namelist() if n.endswith(".tsi"))
+        target = tmp_path / Path(member).name
+        target.write_bytes(archive.read(member))
+    return target
+
+
+def test_import_tsi_seeds_unique_triggers_with_the_device_label(tmp_path):
+    from djmidi.gui.controller_setup import read_mapping_file, tsi_device_labels
+
+    path = _extract_tsi("nanopad2-remixer.tsi.zip", tmp_path)
+    config = read_mapping_file(path)
+    view = _view_with_name("nanoPAD2")
+    assert view._import_config(config, path.name) == 16
+    assert {row.note_or_cc for row in view._rows} == {"NOTE"}
+    assert set(view._sources) == {"tsi-import"}
+    assert set(view._devices) == set(tsi_device_labels(config).values())
+    assert all(row.section == "" and row.name == "" for row in view._rows)
+    assert view._import_config(config, path.name) == 0
+
+
+def test_import_tsi_limits_to_the_chosen_device(tmp_path):
+    from djmidi.gui.controller_setup import read_mapping_file, tsi_device_labels
+
+    path = _extract_tsi("cmd-studio-4a.tsi.zip", tmp_path)
+    config = read_mapping_file(path)
+    labels = tsi_device_labels(config)
+    assert len(labels) == 3
+    s4a = next(index for index, label in labels.items() if "S4A_MAPPING" in label)
+    expected = {
+        (c.channel, c.event_type, c.control)
+        for c in config.controls
+        if c.extra_attrs.get("tsi_device") == s4a and c.event_type in ("Note On", "Control Change")
+    }
+    view = _view_with_name("CMD Studio 4a")
+    assert view._import_config(config, path.name, s4a) == len(expected)
+    assert set(view._devices) == {labels[s4a]}
+
+
+def test_import_click_asks_which_tsi_device(monkeypatch, tmp_path):
+    import djmidi.gui.controller_setup as controller_setup_mod
+
+    path = _extract_tsi("cmd-studio-4a.tsi.zip", tmp_path)
+    view = _view_with_name("CMD Studio 4a")
+    monkeypatch.setattr(controller_setup_mod.QFileDialog, "getOpenFileName", lambda *a, **k: (str(path), ""))
+    monkeypatch.setattr(
+        controller_setup_mod.QMessageBox, "question", lambda *a, **k: controller_setup_mod.QMessageBox.StandardButton.No
+    )
+    asked = []
+
+    def choose(_parent, _title, _label, items, *_args):
+        asked.append(items)
+        return next(item for item in items if "S4A_MAPPING" in item), True
+
+    monkeypatch.setattr(controller_setup_mod.QInputDialog, "getItem", choose)
+    view._on_import_xml_clicked()
+    assert asked and asked[0][-1] == controller_setup_mod._ALL_TSI_DEVICES
+    assert view._rows and all("S4A_MAPPING" in device for device in view._devices)
+
+    cancelled = _view_with_name("Other")
+    monkeypatch.setattr(controller_setup_mod.QInputDialog, "getItem", lambda *a, **k: ("", False))
+    cancelled._on_import_xml_clicked()
+    assert cancelled._rows == []
+
+
+def test_default_tsi_file_imports_every_device(tmp_path):
+    path = _extract_tsi("nanopad2-remixer.tsi.zip", tmp_path)
+    view = ControllerSetupView()
+    view.set_default_file(str(path))
+    view.show()
+    QApplication.processEvents()
+    assert len(view._rows) == 16
+    assert view._dirty is False
+    view.close()
