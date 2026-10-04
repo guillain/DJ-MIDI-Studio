@@ -93,6 +93,7 @@ from djmidi.session_player import (
     play_control_info_entries,
     replay_midi_events,
 )
+from djmidi.software.traktor import parse_string as parse_traktor
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -104,7 +105,7 @@ _TAB_HELP = (
     "doesn't know yet. It does NOT open a Serato mapping for editing; that is "
     "File → Open.\n\n"
     "Workflow: (1) get the triggers — learn them from the hardware under MIDI input, "
-    "Import them from an existing Serato XML, or Start from a controller already in the "
+    "Import them from an existing Serato XML or Traktor TSI mapping, or Start from a controller already in the "
     "catalog (a named copy to adapt); (2) type a Section and Name for each "
     "row; (3) Apply / Export to use the profile now or write it to disk."
 )
@@ -115,13 +116,42 @@ _CAPTURE_HELP = (
     "aren't in scope for a profile — delete those rows before exporting."
 )
 _IMPORT_HELP = (
-    "Import triggers from a Serato XML: reads every <control> and adds one row per "
-    "unique (channel, type, control). It seeds the profile so you don't have to press "
-    "every button on the hardware — it does NOT open the mapping for editing (that's "
-    "File → Open). Serato function names aren't physical control names, so Section and "
-    "Name still have to be filled in by hand. After importing you're offered to open "
-    "the same file as an editable mapping too."
+    "Import triggers from a Serato XML or a Traktor TSI mapping: adds one row per "
+    "unique (channel, type, control) the file uses. It seeds the profile so you don't "
+    "have to press every button on the hardware — it does NOT open the mapping for "
+    "editing (that's File → Open). Mapped functions aren't physical control names, so "
+    "Section and Name still have to be filled in by hand. A TSI export can hold several "
+    "devices (one per controller); you pick which one to import. After importing you're "
+    "offered to open the same file as an editable mapping too."
 )
+
+_ALL_TSI_DEVICES = "All devices"
+
+
+def read_mapping_file(path: str | Path) -> MidiConfig:
+    """Serato `.xml` or Traktor `.tsi` mapping -> model, chosen by suffix."""
+    target = Path(path)
+    if target.suffix.lower() == ".tsi":
+        return parse_traktor(target.read_text(encoding="utf-8"))
+    return parse_file(target)
+
+
+def tsi_device_labels(config: MidiConfig) -> dict[str, str]:
+    """`tsi_device` index -> readable label, for each device of a Traktor
+    `.tsi` that has at least one MIDI-bound control (empty for Serato)."""
+    document = getattr(config, "_tsi_document", None)
+    used = {control.extra_attrs.get("tsi_device") for control in config.controls}
+    if document is None:
+        return {}
+    labels: dict[str, str] = {}
+    for device in document.devices:
+        key = str(device.index)
+        if key not in used:
+            continue
+        name = device.comment.strip() or device.name.strip() or "Device"
+        port = f" — {device.in_port}" if device.in_port else ""
+        labels[key] = f"#{device.index} {name}{port}"
+    return labels
 _APPLY_HELP = (
     "Apply now registers this draft in the running app so it shows up in the Layout, By "
     "Controller, and Controller Images tabs — in-memory only, lost on restart. \"Generate "
@@ -256,7 +286,7 @@ class ControllerSetupView(QWidget):
         capture_layout.addWidget(self._learn_status)
 
         import_button = QPushButton(self._get_icon("import"), "")
-        import_button.setToolTip("Import triggers from a Serato XML file…")
+        import_button.setToolTip("Import triggers from a Serato XML or Traktor TSI mapping…")
         import_button.clicked.connect(self._on_import_xml_clicked)
         self._attach_image_button = QPushButton(self._get_icon("image"), "")
         self._attach_image_button.setToolTip("Attach reference image…")
@@ -918,15 +948,16 @@ class ControllerSetupView(QWidget):
         self.start_from_controller(controller)
 
     def set_default_file(self, path: str) -> None:
-        """Session JSON or Serato XML to load the first time the tab is shown."""
+        """Session JSON, Serato XML or Traktor TSI to load the first time the tab is shown."""
         self._default_file = path.strip()
 
     def load_file(self, path: str | Path) -> None:
-        """Loads a session JSON, or imports a Serato XML's triggers into a fresh
-        draft (no "open as mapping" prompt). Raises on an unreadable file."""
+        """Loads a session JSON, or imports a Serato XML's / Traktor TSI's
+        triggers (every device) into a fresh draft (no "open as mapping"
+        prompt). Raises on an unreadable file."""
         target = Path(path)
-        if target.suffix.lower() == ".xml":
-            config = parse_file(target)
+        if target.suffix.lower() in (".xml", ".tsi"):
+            config = read_mapping_file(target)
             self._reset(clear_name=False)
             added = self._import_config(config, target.name)
             _LOGGER.info("Imported %d trigger(s) from %s into Controller Setup", added, target)
@@ -1202,33 +1233,72 @@ class ControllerSetupView(QWidget):
 
     # -- import from Serato XML ----------------------------------------------
 
-    def _import_config(self, config: MidiConfig, device: str = "") -> int:
+    def _import_config(self, config: MidiConfig, device: str = "", tsi_device: str | None = None) -> int:
+        """One row per new trigger of `config`. For a Traktor `.tsi`,
+        `tsi_device` limits the import to that device, and each row's Device
+        column names the Traktor device it came from."""
+        labels = tsi_device_labels(config)
+        source = "tsi-import" if labels else "xml-import"
         added = 0
         for control in config.controls:
             kind = _event_kind(control.event_type)
             if kind is None:
                 continue
-            if self._maybe_add_row(control.channel, kind, control.control, "xml-import", device):
+            index = control.extra_attrs.get("tsi_device")
+            if tsi_device is not None and index != tsi_device:
+                continue
+            row_device = labels.get(index, device) if labels else device
+            if self._maybe_add_row(control.channel, kind, control.control, source, row_device):
                 added += 1
         return added
 
+    def _choose_tsi_device(self, config: MidiConfig) -> tuple[bool, str | None]:
+        """(ok, device index or None for all). Asks only when the file holds
+        more than one device -- a settings export often bundles several
+        controllers, and mixing them would merge unrelated triggers."""
+        labels = tsi_device_labels(config)
+        if len(labels) <= 1:
+            return True, None
+        choices = [*labels.values(), _ALL_TSI_DEVICES]
+        choice, ok = QInputDialog.getItem(
+            self,
+            "Choose a Traktor device",
+            "This TSI holds several devices (usually one per controller).\nImport the triggers of:",
+            choices,
+            0,
+            False,
+        )
+        if not ok:
+            return False, None
+        if choice == _ALL_TSI_DEVICES:
+            return True, None
+        return True, next(index for index, label in labels.items() if label == choice)
+
     def _on_import_xml_clicked(self) -> None:
-        path_str, _ = QFileDialog.getOpenFileName(self, "Import Serato MIDI config", "", "XML files (*.xml)")
+        path_str, _ = QFileDialog.getOpenFileName(
+            self,
+            "Import a MIDI mapping",
+            "",
+            "MIDI mappings (*.xml *.tsi);;Serato XML (*.xml);;Traktor TSI (*.tsi)",
+        )
         if not path_str:
             return
         try:
-            config = parse_file(path_str)
+            config = read_mapping_file(path_str)
         except Exception as exc:
-            _LOGGER.exception("Failed to import Serato XML %s into Controller Setup", path_str)
+            _LOGGER.exception("Failed to import mapping %s into Controller Setup", path_str)
             QMessageBox.critical(self, "Failed to import file", str(exc))
             return
-        added = self._import_config(config, Path(path_str).name)
+        ok, tsi_device = self._choose_tsi_device(config)
+        if not ok:
+            return
+        added = self._import_config(config, Path(path_str).name, tsi_device)
         _LOGGER.info("Imported %d new trigger(s) from %s into Controller Setup", added, path_str)
         reply = QMessageBox.question(
             self,
             "Import complete",
             f"Added {added} new trigger row(s) to the profile (duplicates skipped).\n\n"
-            "Open this same file as an editable Serato mapping too "
+            "Open this same file as an editable mapping too "
             "(By Channel / By Deck / By Controller)?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
