@@ -132,6 +132,28 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Behringer CMD Studio 4a profile** (`v0.48.37-catalog-cmd-studio-4a`) —
+  `catalog/behringer_cmd_studio_4a.py`, 106 buttons captured on the maintainer's unit in all four deck
+  layers by dictated presses. A deck layer only changes the channel (left A/C = 1/3, right B/D = 2/4),
+  so each side's 30 buttons are one entry per label with two channels; the deck-select buttons send on
+  their own layer only, BROWSE `<`/`>`/ENTER always on channel 1. Right LOOP arrows are reversed vs the
+  left (55 `>`, 56 `<`), re-checked alone on the unit. Every note of the real Traktor export's
+  `S4A_MAPPING` device resolves to exactly one captured button.
+- [x] **Behringer CMD Micro profile** (`v0.48.36-catalog-cmd-micro`) — `catalog/behringer_cmd_micro.py`,
+  20 buttons on channel 1, captured on the maintainer's unit by dictating presses one at a time (a
+  first self-paced pass skipped and swapped buttons; re-asking each button alone fixed it). The decks
+  aren't mirrored (deck B `1`/`2`/LOAD = 34/36/37, note 35 unused), confirmed by the real Traktor
+  export's `CMD MICRO Mixer` device, which also maps notes 1–2 that no button sent — left out.
+- [x] **Korg nanoPAD2 profile** (`v0.48.35-catalog-korg-nanopad2`) — `catalog/korg_nanopad2.py`,
+  captured on the maintainer's unit in all four scenes (the scene change shows up as Korg's documented
+  Scene Change SysEx, which split the capture). All four scenes send on channel 1 with disjoint notes
+  (scene bases 0/4/48/52; per row two runs of four notes 24 apart), so one profile covers them all:
+  64 pads, sections `SCENE 1`–`SCENE 4`. The HOLD/GATE ARP/TOUCH SCALE/KEY/RANGE/SCALE/TAP buttons
+  were pressed too and send nothing. A Korg editor screenshot showing notes 36–51 (also what the
+  Traktor export maps) doesn't match the unit; it's bundled as the "MIDI info" image at the
+  maintainer's request, documented as showing pad positions, not this unit's notes.
+  Captured by dictating presses one at a time against a background `mido` recorder — see the
+  CMD LC-1 entry for the earlier, self-labelled loop.
 - [x] **Controller assets grouped by vendor** (`v0.48.34-controllers-by-vendor`) — every
   bundled controller folder moved from `controllers/<slug>/` to
   `controllers/hardware/<vendor>/<Model>/` (e.g. `hardware/pioneer/DDJ-XP2/`), following the
@@ -1126,7 +1148,8 @@ of official MIDI documentation, and fit with the current catalog architecture.
   MIDI message list is known to exist — build via Controller Setup (live
   learning or importing the real `.xml` above) rather than waiting on a PDF
   that may never come, per `catalog/__init__.py`'s documented no-docs path.
-- [ ] **Korg nanoPAD2** — surfaced by a real maintainer-owned Traktor
+- [x] **Korg nanoPAD2** (`v0.48.35-catalog-korg-nanopad2`) — done from a
+  hardware capture of the maintainer's unit, see Recent evolution chapters. Original note: surfaced by a real maintainer-owned Traktor
   mapping (`data/traktor/nanopad2-remixer.tsi.zip`,
   2026-09-19). **Checked 2026-10-02**: Korg's official MIDI Implementation
   (TXT, rev. 1.01) and MIDI Implementation Chart are archived in
@@ -1137,7 +1160,8 @@ of official MIDI documentation, and fit with the current catalog architecture.
   gives a factory-default note table. A catalog profile would have to guess
   those values; blocked on a Controller Setup capture of the maintainer's
   own unit (or a Korg Kontrol Editor scene-set dump).
-- [ ] **Behringer CMD Studio 4a** — surfaced by a real maintainer-owned
+- [x] **Behringer CMD Studio 4a** (`v0.48.37-catalog-cmd-studio-4a`) — done from a
+  hardware capture of the maintainer's unit, see Recent evolution chapters. Original note: surfaced by a real maintainer-owned
   Traktor mapping (`data/traktor/cmd-studio-4a.tsi.zip`,
   2026-09-19). **Checked 2026-10-02**: the official Quick Start Guide has no
   MIDI table, and Behringer's product page (now redirected away from
