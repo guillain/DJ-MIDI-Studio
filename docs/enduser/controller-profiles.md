@@ -11,6 +11,7 @@
 - [What a profile covers](#what-a-profile-covers)
 - [Behringer CMD LC-1](#behringer-cmd-lc-1)
 - [Behringer CMD Micro](#behringer-cmd-micro)
+- [Behringer CMD Studio 4a](#behringer-cmd-studio-4a)
 - [Korg nanoPAD2](#korg-nanopad2)
 - [Pad modes](#pad-modes)
 - [Add your own controller](#add-your-own-controller)
@@ -33,6 +34,7 @@
 | Hercules DJControl Inpulse 500 | Conservative values; product sheet | Grid | — | Not yet |
 | Behringer CMD LC-1 | Captured from a real unit with Controller Setup (no vendor list exists), checked against a real Serato export | Grid | — | ✅ |
 | Behringer CMD Micro | Captured from a real unit (no vendor list exists), checked against a real Traktor export | Grid | — | ✅ |
+| Behringer CMD Studio 4a | Captured from a real unit in all 4 deck layers (no vendor list exists), checked against a real Traktor export | Grid | — | ✅ |
 | Korg nanoPAD2 | Captured from a real unit in all 4 scenes (Korg publishes no note table) | Grid | — | ✅ |
 
 "Not yet" means the profile was transcribed from documentation but hasn't
@@ -74,6 +76,21 @@ two decks don't use mirrored notes (on deck B, `1` is 34 and `2` is 36), so
 check by name rather than by pattern. Jog wheels, faders, the crossfader and
 the knobs (including BROWSE, which has no push) are continuous and aren't
 named. macOS calls its port `CMD Micro`.
+
+## Behringer CMD Studio 4a
+
+Behringer publishes no MIDI message list for the CMD Studio 4a either; the
+profile was captured from a real unit in all four deck layers and covers
+every note of a real Traktor export. Each side switches between two decks,
+and the deck only changes the MIDI channel, never the note: the left side
+sends on channel 1 for deck A and 3 for deck C, the right side on 2 for deck
+B and 4 for deck D. Names carry the side's decks, e.g. `HOT CUE 1 (A/C)`.
+The deck-select buttons send on their own deck's channel only, and the
+BROWSE `<`, `>` and `ENTER` buttons always send on channel 1. On the right
+side the LOOP arrows are reversed compared with the left (55 is `>`, 56 is
+`<`). Knobs, faders, the crossfader and the jog wheels are continuous and
+aren't named; none of the knobs has a push switch. macOS calls its port
+`Studio 4A`.
 
 ## Korg nanoPAD2
 

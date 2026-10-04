@@ -76,7 +76,7 @@ Open several, one per controller.
 
 Supported out of the box: Serato DJ Pro and Traktor mappings; DDJ-XP2,
 XDJ-XZ, DDJ-1000, DDJ-FLX4, DDJ-FLX10, DDJ-REV1, DDJ-REV5, DDJ-800, Numark
-Mixtrack Pro FX, Hercules DJControl Inpulse 500, Behringer CMD LC-1, Behringer CMD Micro and Korg nanoPAD2 — and any other
+Mixtrack Pro FX, Hercules DJControl Inpulse 500, Behringer CMD LC-1, CMD Micro and CMD Studio 4a, and Korg nanoPAD2 — and any other
 controller through Controller Setup. See
 [Supported controllers](controller-profiles.md).
 
