@@ -52,6 +52,7 @@ been written from it — see `CLAUDE.md` for how to add one from official docs.
 | DDJ-800 | [ddj-800/ddj-800-midi-message-list-e3.pdf](ddj-800/ddj-800-midi-message-list-e3.pdf) | Pioneer DJ DDJ-800 MIDI Message List E3 | Archived locally; catalog module transcribed from it, not yet verified on hardware (issue #11) |
 | Behringer CMD LC-1 | — | No vendor MIDI message list exists | Profile captured from the maintainer's real unit with Controller Setup (all 52 buttons, channel 8) and checked against a real Serato export; no reference artwork yet |
 | Native Instruments Traktor Kontrol S2 MK3 | [traktor-kontrol-s2-mk3/traktor-kontrol-s2-mk3-manual.pdf](traktor-kontrol-s2-mk3/traktor-kontrol-s2-mk3-manual.pdf) | Native Instruments Traktor Kontrol S2 MK3 Manual (English) | Archived locally; **no catalog module yet** (issue #12) |
+| Korg nanoPAD2 | [korg-nanopad2/nanopad2-midi-implementation.txt](korg-nanopad2/nanopad2-midi-implementation.txt), [chart](korg-nanopad2/nanopad2-midi-implementation-chart.pdf) | Korg nanoPAD2 MIDI Implementation rev. 1.01 + MIDI Implementation Chart (official) | Archived locally; **no catalog module** — pads are user-assignable, no factory note table (issue #12) |
 
 ## How to extend this index
 
