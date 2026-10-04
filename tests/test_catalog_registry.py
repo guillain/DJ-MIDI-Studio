@@ -18,6 +18,8 @@ def test_builtin_controllers_are_registered_at_import():
     assert "DDJ-800" in catalog.CONTROLLER_NAMES
     assert "Behringer CMD LC-1" in catalog.CONTROLLER_NAMES
     assert "Korg nanoPAD2" in catalog.CONTROLLER_NAMES
+    assert "Behringer CMD Micro" in catalog.CONTROLLER_NAMES
+    assert "Behringer CMD Studio 4a" in catalog.CONTROLLER_NAMES
     assert catalog.PAD_COUNTS == {
         "DDJ-XP2": 16,
         "XDJ-XZ": 8,
@@ -31,6 +33,8 @@ def test_builtin_controllers_are_registered_at_import():
         "DDJ-800": 8,
         "Behringer CMD LC-1": 0,
         "Korg nanoPAD2": 0,
+        "Behringer CMD Micro": 0,
+        "Behringer CMD Studio 4a": 0,
     }
 
 
