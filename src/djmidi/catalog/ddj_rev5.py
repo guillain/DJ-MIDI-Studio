@@ -1,5 +1,5 @@
 """DDJ-REV5 controller definition, transcribed from Pioneer's official MIDI
-Message List PDF (controllers/ddj-rev5/ddj-rev5-midi-message-list-e1.pdf).
+Message List PDF (controllers/hardware/pioneer/DDJ-REV5/ddj-rev5-midi-message-list-e1.pdf).
 
 The DDJ-REV5 is a 4-deck flagship controller: one MIDI channel per deck
 (1-4) for DECK-section controls, a shared channel 7 for BROWSE/EFFECT/
@@ -158,7 +158,7 @@ register(
         plugin_id="pioneer.ddj-rev5",
         manufacturer="Pioneer DJ",
         supported_software=("serato",),
-        reference_image="ddj-rev5/reference.png",
+        reference_image="hardware/pioneer/DDJ-REV5/reference.png",
         display_order=60,
         static_entries=_STATIC,
         pad_lookup=_pad_lookup,

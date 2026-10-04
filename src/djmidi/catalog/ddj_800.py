@@ -1,5 +1,5 @@
 """DDJ-800 controller definition, transcribed from Pioneer's official MIDI
-Message List PDF (controllers/ddj-800/ddj-800-midi-message-list-e3.pdf).
+Message List PDF (controllers/hardware/pioneer/DDJ-800/ddj-800-midi-message-list-e3.pdf).
 
 Like DDJ-REV5, the DDJ-800 is modeled as a 4-deck-channel controller: one
 MIDI channel per deck (1-4) for DECK-section controls, a shared channel 7
@@ -173,7 +173,7 @@ register(
         plugin_id="pioneer.ddj-800",
         manufacturer="Pioneer DJ",
         supported_software=("serato",),
-        reference_image="ddj-800/reference.png",
+        reference_image="hardware/pioneer/DDJ-800/reference.png",
         display_order=61,
         static_entries=_STATIC,
         pad_lookup=_pad_lookup,

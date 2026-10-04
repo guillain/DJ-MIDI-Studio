@@ -1,5 +1,5 @@
 """A zoomable/pannable viewer for the official Pioneer controller diagrams
-(cropped from the MIDI Message List PDFs, see controllers/<slug>/ and
+(cropped from the MIDI Message List PDFs, see controllers/hardware/<vendor>/<Model>/ and
 README.md "Technical References"). No *automatic* interaction with the
 loaded config beyond a modeled control's marker (gui/geometry.CONTROL_GEOMETRY,
 "Show real layout") flashing on a live MIDI hit, mirroring
@@ -65,15 +65,15 @@ else:
 # reserved for controllers built with Controller Setup (codegen.py).
 CONTROLLERS_DIR = _RESOURCE_ROOT / "controllers"
 DOCUMENTS = {
-    "DDJ-XP2": "ddj-xp2/ddj-xp2-midi-message-list-e1.pdf",
-    "XDJ-XZ": "xdj-xz/xdj-xz-midi-message-list-e3.pdf",
-    "DDJ-1000": "ddj-1000/ddj-1000-midi-message-list-e1.pdf",
-    "DDJ-REV1": "ddj-rev1/ddj-rev1-midi-message-list-e1.pdf",
-    "DDJ-FLX10": "ddj-flx10/ddj-flx10-midi-message-list-e1.pdf",
-    "DDJ-FLX4": "ddj-flx4/ddj-flx4-midi-message-list-e1.pdf",
-    "Numark Mixtrack Pro FX": "numark-mixtrack-pro-fx/numark-mixtrack-pro-fx-user-guide-v1.2.pdf",
+    "DDJ-XP2": "hardware/pioneer/DDJ-XP2/ddj-xp2-midi-message-list-e1.pdf",
+    "XDJ-XZ": "hardware/pioneer/XDJ-XZ/xdj-xz-midi-message-list-e3.pdf",
+    "DDJ-1000": "hardware/pioneer/DDJ-1000/ddj-1000-midi-message-list-e1.pdf",
+    "DDJ-REV1": "hardware/pioneer/DDJ-REV1/ddj-rev1-midi-message-list-e1.pdf",
+    "DDJ-FLX10": "hardware/pioneer/DDJ-FLX10/ddj-flx10-midi-message-list-e1.pdf",
+    "DDJ-FLX4": "hardware/pioneer/DDJ-FLX4/ddj-flx4-midi-message-list-e1.pdf",
+    "Numark Mixtrack Pro FX": "hardware/numark/Mixtrack-Pro-FX/numark-mixtrack-pro-fx-user-guide-v1.2.pdf",
     "Hercules DJControl Inpulse 500": (
-        "hercules-djcontrol-inpulse-500/hercules-djcontrol-inpulse-500-product-sheet-fr.pdf"
+        "hardware/hercules/DJControl-Inpulse-500/hercules-djcontrol-inpulse-500-product-sheet-fr.pdf"
     ),
 }
 # Compatibility snapshot for callers that need to enumerate known image assets.
@@ -92,7 +92,7 @@ def image_for_controller(name: str) -> str | None:
 
 def _resolve_image_path(reference_image: str | None) -> Path | None:
     """A controller's ``reference_image`` is either a path bundled under
-    ``controllers/`` (the built-ins name it ``<slug>/reference.png``, a
+    ``controllers/`` (the built-ins name it ``hardware/<vendor>/<Model>/reference.png``, a
     Controller Setup export names it ``custom/<filename>``) or an absolute
     path to a user-supplied image attached in Controller Setup, not yet
     exported (issue #16). Accept both."""
@@ -110,7 +110,7 @@ def image_variants(reference_image: str | None) -> tuple[Path | None, Path | Non
     following the ``reference.png`` (clean device render) / ``reference-midi.png``
     (same view with the MIDI Message List's callouts overlaid) bundling
     convention -- both siblings living in that controller's own
-    ``controllers/<slug>/`` directory. Either entry is ``None`` when that
+    ``controllers/hardware/<vendor>/<Model>/`` directory. Either entry is ``None`` when that
     file isn't bundled.
 
     A user-supplied absolute path (a Controller Setup attachment, issue #16)

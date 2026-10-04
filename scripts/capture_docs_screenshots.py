@@ -205,11 +205,16 @@ def main() -> int:
         CONTROLLERS_OUTPUT.mkdir(parents=True, exist_ok=True)
         for name in catalog.CONTROLLER_NAMES:
             definition = catalog.get_definition(name)
-            # reference_image is "<slug>/reference.png" since the controller
-            # assets moved to controllers/<slug>/ (v0.47.95) -- the slug is the
-            # directory, not the file stem (which is "reference" for every one).
+            # reference_image is "hardware/<vendor>/<Model>/reference.png" --
+            # the slug comes from the directories, not the file stem (which is
+            # "reference" for every one). Pioneer models keep their bare name
+            # ("ddj-xp2"), other vendors are prefixed ("numark-mixtrack-pro-fx"),
+            # matching the screenshot names the docs already link to.
             reference = Path(definition.reference_image) if definition.reference_image else None
-            if reference is not None and reference.parent.name:
+            if reference is not None and len(reference.parts) >= 4 and reference.parts[0] == "hardware":
+                vendor, model = reference.parts[1], reference.parts[2]
+                slug = (model if vendor == "pioneer" else f"{vendor}-{model}").lower()
+            elif reference is not None and reference.parent.name:
                 slug = reference.parent.name
             elif reference is not None:
                 slug = reference.stem

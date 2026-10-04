@@ -50,7 +50,7 @@ register(
         plugin_id="numark.mixtrack-pro-fx",
         manufacturer="Numark",
         supported_software=("serato", "virtualdj"),
-        reference_image="numark-mixtrack-pro-fx/reference.png",
+        reference_image="hardware/numark/Mixtrack-Pro-FX/reference.png",
         static_entries=_STATIC,
         pad_lookup=_pad_lookup,
         pad_count=8,

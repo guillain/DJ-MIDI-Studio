@@ -56,7 +56,7 @@ def test_documentation_for_controller_returns_none_when_not_bundled():
 def test_ddj_1000_order_and_reference_image():
     assert catalog.CONTROLLER_NAMES.index("DDJ-FLX4") < catalog.CONTROLLER_NAMES.index("DDJ-1000")
     assert catalog.CONTROLLER_NAMES.index("DDJ-REV1") < catalog.CONTROLLER_NAMES.index("DDJ-1000")
-    assert IMAGES["DDJ-1000"] == "ddj-1000/reference.png"
+    assert IMAGES["DDJ-1000"] == "hardware/pioneer/DDJ-1000/reference.png"
 
 
 def test_loads_pixmap_for_default_controller():
@@ -117,7 +117,7 @@ def test_resolve_image_path_handles_absolute_and_bundled():
 
     assert _resolve_image_path(None) is None
     assert _resolve_image_path("") is None
-    assert _resolve_image_path("ddj-xp2/reference-midi.png") == CONTROLLERS_DIR / "ddj-xp2/reference-midi.png"
+    assert _resolve_image_path("hardware/pioneer/DDJ-XP2/reference-midi.png") == CONTROLLERS_DIR / "hardware/pioneer/DDJ-XP2/reference-midi.png"
     abs_path = "/tmp/custom/minipad.png"
     assert _resolve_image_path(abs_path) == Path(abs_path)
 
@@ -367,11 +367,11 @@ def test_load_renders_an_absolute_path_reference_image(tmp_path):
 def test_image_variants_resolves_clean_and_annotated_siblings():
     from djmidi.gui.controller_image_view import image_variants
 
-    clean, annotated = image_variants("ddj-xp2/reference.png")
-    assert clean == CONTROLLERS_DIR / "ddj-xp2" / "reference.png"
-    assert annotated == CONTROLLERS_DIR / "ddj-xp2" / "reference-midi.png"
+    clean, annotated = image_variants("hardware/pioneer/DDJ-XP2/reference.png")
+    assert clean == CONTROLLERS_DIR / "hardware" / "pioneer" / "DDJ-XP2" / "reference.png"
+    assert annotated == CONTROLLERS_DIR / "hardware" / "pioneer" / "DDJ-XP2" / "reference-midi.png"
     # Passing the annotated name resolves the same pair.
-    assert image_variants("ddj-xp2/reference-midi.png") == (clean, annotated)
+    assert image_variants("hardware/pioneer/DDJ-XP2/reference-midi.png") == (clean, annotated)
 
 
 def test_image_variants_none_and_absolute():
@@ -392,7 +392,7 @@ def _register_midi_canonical(name: str) -> None:
     '-midi' variant -- every *real* geometry controller was re-measured
     against its clean render (v0.47.54..58), so this scenario now only
     exists for a hand-registered definition."""
-    register(ControllerDefinition(name=name, reference_image="ddj-xp2/reference-midi.png"))
+    register(ControllerDefinition(name=name, reference_image="hardware/pioneer/DDJ-XP2/reference-midi.png"))
 
 
 def test_midi_checkbox_enabled_when_both_variants_bundled_and_swaps_image():

@@ -61,7 +61,7 @@ register(
         plugin_id="pioneer.ddj-flx4",
         manufacturer="Pioneer DJ",
         supported_software=("rekordbox", "serato"),
-        reference_image="ddj-flx4/reference.png",
+        reference_image="hardware/pioneer/DDJ-FLX4/reference.png",
         display_order=25,
         static_entries=_STATIC,
         pad_lookup=_pad_lookup,
