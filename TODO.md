@@ -132,6 +132,15 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Korg nanoPAD2 profile** (`v0.48.35-catalog-korg-nanopad2`) — `catalog/korg_nanopad2.py`,
+  captured on the maintainer's unit in all four scenes (the scene change shows up as Korg's documented
+  Scene Change SysEx, which split the capture). All four scenes send on channel 1 with disjoint notes
+  (scene bases 0/4/48/52; per row two runs of four notes 24 apart), so one profile covers them all:
+  64 pads, sections `SCENE 1`–`SCENE 4`. The HOLD/GATE ARP/TOUCH SCALE/KEY/RANGE/SCALE/TAP buttons
+  were pressed too and send nothing. A Korg editor screenshot showing notes 36–51 (also what the
+  Traktor export maps) doesn't match the unit, so it isn't bundled as the "MIDI info" image.
+  Captured by dictating presses one at a time against a background `mido` recorder — see the
+  CMD LC-1 entry for the earlier, self-labelled loop.
 - [x] **Controller assets grouped by vendor** (`v0.48.34-controllers-by-vendor`) — every
   bundled controller folder moved from `controllers/<slug>/` to
   `controllers/hardware/<vendor>/<Model>/` (e.g. `hardware/pioneer/DDJ-XP2/`), following the
@@ -1126,7 +1135,8 @@ of official MIDI documentation, and fit with the current catalog architecture.
   MIDI message list is known to exist — build via Controller Setup (live
   learning or importing the real `.xml` above) rather than waiting on a PDF
   that may never come, per `catalog/__init__.py`'s documented no-docs path.
-- [ ] **Korg nanoPAD2** — surfaced by a real maintainer-owned Traktor
+- [x] **Korg nanoPAD2** (`v0.48.35-catalog-korg-nanopad2`) — done from a
+  hardware capture of the maintainer's unit, see Recent evolution chapters. Original note: surfaced by a real maintainer-owned Traktor
   mapping (`data/traktor/nanopad2-remixer.tsi.zip`,
   2026-09-19). **Checked 2026-10-02**: Korg's official MIDI Implementation
   (TXT, rev. 1.01) and MIDI Implementation Chart are archived in
