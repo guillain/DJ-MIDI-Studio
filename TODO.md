@@ -132,6 +132,13 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **macOS glyph buttons no longer cut off** (`v0.48.38-macos-glyph-buttons`, issue #19) — first
+  clipping audit run on the real macOS `cocoa` platform (every tab and tool dock at 1280×820 down to
+  700×500, widget minimums vs geometry) instead of offscreen Linux renders. Nothing lay outside the
+  window, but three glyph-only buttons rendered cut: the `⚙` Preferences corner button, the live-send
+  `⟳` refresh, and the dock title-bar Window button, which also showed the Qt logo (macOS's
+  `SP_TitleBarMenuButton`). A `compact` property drops the theme padding and menu arrow for them; the
+  Window button became a `☰` glyph. Regression test fails on the pre-fix source.
 - [x] **Behringer CMD Studio 4a profile** (`v0.48.37-catalog-cmd-studio-4a`) —
   `catalog/behringer_cmd_studio_4a.py`, 106 buttons captured on the maintainer's unit in all four deck
   layers by dictated presses. A deck layer only changes the channel (left A/C = 1/3, right B/D = 2/4),

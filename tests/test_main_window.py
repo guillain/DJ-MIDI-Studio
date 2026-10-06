@@ -1539,3 +1539,30 @@ def test_few_channel_columns_still_fill_the_width():
         assert window._channel_columns_scroll.horizontalScrollBar().maximum() == 0
     finally:
         window.close()
+
+
+def test_glyph_only_buttons_leave_room_for_their_glyph():
+    """Issue #19, seen on macOS: the theme's button padding left ~4px inside
+    the fixed-size gear / refresh / window-menu buttons, so their glyphs
+    rendered cut off. Those buttons drop the padding, so each one's own
+    minimum size now fits inside its fixed size."""
+    from PySide6.QtWidgets import QPushButton
+
+    window = MainWindow()
+    window._show_tool_dock("monitor")
+    window.show()
+    # The live-send refresh button lives in the By Channel layout view.
+    window.left_tabs.setCurrentIndex(window._tab_indexes["channel"])
+    QApplication.processEvents()
+    try:
+        compact = [b for b in window.findChildren(QPushButton) if b.property("compact") and b.isVisible()]
+        texts = {b.text() for b in compact}
+        assert {"⚙", "⟳", "☰"} <= texts
+        for button in compact:
+            hint = button.minimumSizeHint()
+            assert button.width() >= hint.width() - 1, (button.text(), button.width(), hint.width())
+        # The window menu shows a text glyph, not QStyle's title-bar icon
+        # (the Qt logo on macOS).
+        assert all(b.icon().isNull() for b in compact if b.text() == "☰")
+    finally:
+        window.close()

@@ -83,6 +83,7 @@ class LiveSendControl(QWidget):
         self._refresh_button = QPushButton("⟳")
         self._refresh_button.setToolTip("Refresh output ports")
         self._refresh_button.setFixedWidth(26)
+        self._refresh_button.setProperty("compact", True)
         self._refresh_button.clicked.connect(self.refresh_ports)
 
         self._toggle_button = QPushButton()

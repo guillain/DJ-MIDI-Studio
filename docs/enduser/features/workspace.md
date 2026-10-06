@@ -34,7 +34,7 @@ are restored at the next launch.
 Each tool window's title bar has:
 
 - **Dock / Undock** to float it or put it back;
-- a **Window** menu: `Maximize` (again to restore), `Reduce to title bar`
+- a **Window** menu (the `☰` button): `Maximize` (again to restore), `Reduce to title bar`
   (again to expand), and `Snap left` / `Snap right` / `Snap to top` /
   `Snap to bottom`;
 - **Close**.
