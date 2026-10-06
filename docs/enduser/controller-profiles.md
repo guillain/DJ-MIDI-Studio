@@ -10,6 +10,9 @@
 - [Built-in controllers](#built-in-controllers)
 - [What a profile covers](#what-a-profile-covers)
 - [Behringer CMD LC-1](#behringer-cmd-lc-1)
+- [Behringer CMD Micro](#behringer-cmd-micro)
+- [Behringer CMD Studio 4a](#behringer-cmd-studio-4a)
+- [Korg nanoPAD2](#korg-nanopad2)
 - [Pad modes](#pad-modes)
 - [Add your own controller](#add-your-own-controller)
 - [JSON profiles](#json-profiles)
@@ -30,6 +33,9 @@
 | Numark Mixtrack Pro FX | Conservative community values; user guide for the layout | ✅ | — | Not yet |
 | Hercules DJControl Inpulse 500 | Conservative values; product sheet | Grid | — | Not yet |
 | Behringer CMD LC-1 | Captured from a real unit with Controller Setup (no vendor list exists), checked against a real Serato export | Grid | — | ✅ |
+| Behringer CMD Micro | Captured from a real unit (no vendor list exists), checked against a real Traktor export | Grid | — | ✅ |
+| Behringer CMD Studio 4a | Captured from a real unit in all 4 deck layers (no vendor list exists), checked against a real Traktor export | Grid | — | ✅ |
+| Korg nanoPAD2 | Captured from a real unit in all 4 scenes (Korg publishes no note table) | Grid | — | ✅ |
 
 "Not yet" means the profile was transcribed from documentation but hasn't
 been checked against a real device. Check the controls you rely on with the
@@ -59,6 +65,48 @@ and, like every continuous control, aren't named. macOS calls its port
 `CMD LC-1` with no manufacturer prefix; the profile declares that name so the
 Dashboard still detects it. A Note On sent back on a button's own note lights
 its LED, which is what Live Monitor and the Controller Emulator expect.
+
+## Behringer CMD Micro
+
+Behringer publishes no MIDI message list for the CMD Micro; the profile was
+captured from a real unit and matches a real Traktor export. Every button
+sends on MIDI channel 1: per deck `1`, `2`, `SYNC`, `▶II`, `CUE`, `PITCHBEND
+−/+`, `LOAD A/B` and `CUE A/B`, plus the `LEFT`/`RIGHT` browse buttons. The
+two decks don't use mirrored notes (on deck B, `1` is 34 and `2` is 36), so
+check by name rather than by pattern. Jog wheels, faders, the crossfader and
+the knobs (including BROWSE, which has no push) are continuous and aren't
+named. macOS calls its port `CMD Micro`.
+
+## Behringer CMD Studio 4a
+
+Behringer publishes no MIDI message list for the CMD Studio 4a either; the
+profile was captured from a real unit in all four deck layers and covers
+every note of a real Traktor export. Each side switches between two decks,
+and the deck only changes the MIDI channel, never the note: the left side
+sends on channel 1 for deck A and 3 for deck C, the right side on 2 for deck
+B and 4 for deck D. Names carry the side's decks, e.g. `HOT CUE 1 (A/C)`.
+The deck-select buttons send on their own deck's channel only, and the
+BROWSE `<`, `>` and `ENTER` buttons always send on channel 1. On the right
+side the LOOP arrows are reversed compared with the left (55 is `>`, 56 is
+`<`). Knobs, faders, the crossfader and the jog wheels are continuous and
+aren't named; none of the knobs has a push switch. macOS calls its port
+`Studio 4A`.
+
+## Korg nanoPAD2
+
+Korg documents the nanoPAD2's message format but not its notes: every pad is
+assignable per scene in Korg's editor. The profile was captured from a real
+unit in all four scenes. They all send on MIDI channel 1 with different notes,
+so one profile covers every scene: the pads appear as `Scene N Top Pad 1–8`
+and `Scene N Bottom Pad 1–8`. If you reprogrammed your nanoPAD2 in Korg's
+editor, your notes will differ: check them in the
+[Live Monitor](features/live-monitor.md), or build your own profile with
+[Controller Setup](features/controller-setup.md). The X-Y pad is continuous
+and isn't named; HOLD, GATE ARP, TOUCH SCALE, KEY/RANGE, SCALE/TAP and SCENE
+only change the controller's own state and send nothing to map. In
+Controller Images, the "MIDI info" view shows a Korg editor layout
+(notes 36–51) that differs from the captured unit: use it for pad positions,
+not note numbers.
 
 ## Pad modes
 

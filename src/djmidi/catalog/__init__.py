@@ -26,9 +26,9 @@ To add a new controller (e.g. a Behringer CMD LC-1 or a generic "miniPad"):
    `djmidi.controllers` entry-point group. Discovery imports it automatically;
    `CONTROLLER_NAMES`, the Layout/Controller-tree/Controller-image tabs'
    controller combos, and `lookup()` all pick it up automatically.
-5. Optional: set `reference_image="<slug>/reference.png"` and drop a cropped
+5. Optional: set `reference_image="hardware/<vendor>/<Model>/reference.png"` and drop a cropped
    reference image (plus its `reference-midi.png` sibling, if any) at
-   `controllers/<slug>/` (the image view falls back to a "not found"
+   `controllers/hardware/<vendor>/<Model>/` (the image view falls back to a "not found"
    placeholder if there isn't one yet).
 """
 

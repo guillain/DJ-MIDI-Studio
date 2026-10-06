@@ -81,7 +81,7 @@ what the mapping does, switch pad modes, latch SHIFT, and turn on
   `export.pdb` playlists).
 - **Controllers:** Pioneer DDJ-XP2, XDJ-XZ, DDJ-1000, DDJ-FLX4, DDJ-FLX10,
   DDJ-REV1, DDJ-REV5, DDJ-800, Numark Mixtrack Pro FX, Hercules DJControl
-  Inpulse 500, Behringer CMD LC-1 — plus any controller through Controller Setup.
+  Inpulse 500, Behringer CMD LC-1, CMD Micro, CMD Studio 4a, Korg nanoPAD2 — plus any controller through Controller Setup.
   [Verification status](docs/enduser/controller-profiles.md).
 - **Systems:** macOS, Windows, Linux.
 

@@ -50,7 +50,7 @@ register(
         plugin_id="hercules.djcontrol-inpulse-500",
         manufacturer="Hercules",
         supported_software=("serato", "virtualdj"),
-        reference_image="hercules-djcontrol-inpulse-500/reference.png",
+        reference_image="hardware/hercules/DJControl-Inpulse-500/reference.png",
         static_entries=_STATIC,
         pad_lookup=_pad_lookup,
         pad_count=8,

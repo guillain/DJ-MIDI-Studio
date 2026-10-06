@@ -17,6 +17,9 @@ def test_builtin_controllers_are_registered_at_import():
     assert "DDJ-REV5" in catalog.CONTROLLER_NAMES
     assert "DDJ-800" in catalog.CONTROLLER_NAMES
     assert "Behringer CMD LC-1" in catalog.CONTROLLER_NAMES
+    assert "Korg nanoPAD2" in catalog.CONTROLLER_NAMES
+    assert "Behringer CMD Micro" in catalog.CONTROLLER_NAMES
+    assert "Behringer CMD Studio 4a" in catalog.CONTROLLER_NAMES
     assert catalog.PAD_COUNTS == {
         "DDJ-XP2": 16,
         "XDJ-XZ": 8,
@@ -29,6 +32,9 @@ def test_builtin_controllers_are_registered_at_import():
         "DDJ-REV5": 8,
         "DDJ-800": 8,
         "Behringer CMD LC-1": 0,
+        "Korg nanoPAD2": 0,
+        "Behringer CMD Micro": 0,
+        "Behringer CMD Studio 4a": 0,
     }
 
 
@@ -44,23 +50,23 @@ def test_builtin_controller_plugins_expose_metadata():
     # (v0.47.55), DDJ-1000 (v0.47.57), and DDJ-FLX10 / DDJ-REV1 / Numark
     # (v0.47.58). The geometry-free DDJ-FLX4 and Hercules already pointed
     # there.
-    assert definitions["DDJ-XP2"].reference_image == "ddj-xp2/reference.png"
-    assert definitions["XDJ-XZ"].reference_image == "xdj-xz/reference.png"
-    assert definitions["DDJ-1000"].reference_image == "ddj-1000/reference.png"
-    assert definitions["DDJ-FLX10"].reference_image == "ddj-flx10/reference.png"
-    assert definitions["DDJ-FLX4"].reference_image == "ddj-flx4/reference.png"
-    assert definitions["DDJ-REV1"].reference_image == "ddj-rev1/reference.png"
-    assert definitions["Numark Mixtrack Pro FX"].reference_image == "numark-mixtrack-pro-fx/reference.png"
-    assert definitions["Hercules DJControl Inpulse 500"].reference_image == "hercules-djcontrol-inpulse-500/reference.png"
+    assert definitions["DDJ-XP2"].reference_image == "hardware/pioneer/DDJ-XP2/reference.png"
+    assert definitions["XDJ-XZ"].reference_image == "hardware/pioneer/XDJ-XZ/reference.png"
+    assert definitions["DDJ-1000"].reference_image == "hardware/pioneer/DDJ-1000/reference.png"
+    assert definitions["DDJ-FLX10"].reference_image == "hardware/pioneer/DDJ-FLX10/reference.png"
+    assert definitions["DDJ-FLX4"].reference_image == "hardware/pioneer/DDJ-FLX4/reference.png"
+    assert definitions["DDJ-REV1"].reference_image == "hardware/pioneer/DDJ-REV1/reference.png"
+    assert definitions["Numark Mixtrack Pro FX"].reference_image == "hardware/numark/Mixtrack-Pro-FX/reference.png"
+    assert definitions["Hercules DJControl Inpulse 500"].reference_image == "hardware/hercules/DJControl-Inpulse-500/reference.png"
     assert definitions["Numark Mixtrack Pro FX"].manufacturer == "Numark"
     assert definitions["Hercules DJControl Inpulse 500"].manufacturer == "Hercules"
     assert definitions["DDJ-FLX10"].plugin_id == "pioneer.ddj-flx10"
     assert definitions["DDJ-FLX10"].supported_software == ("rekordbox", "serato")
-    assert definitions["DDJ-REV5"].reference_image == "ddj-rev5/reference.png"
+    assert definitions["DDJ-REV5"].reference_image == "hardware/pioneer/DDJ-REV5/reference.png"
     assert definitions["DDJ-REV5"].plugin_id == "pioneer.ddj-rev5"
     assert definitions["DDJ-REV5"].manufacturer == "Pioneer DJ"
     assert definitions["DDJ-REV5"].supported_software == ("serato",)
-    assert definitions["DDJ-800"].reference_image == "ddj-800/reference.png"
+    assert definitions["DDJ-800"].reference_image == "hardware/pioneer/DDJ-800/reference.png"
     assert definitions["DDJ-800"].plugin_id == "pioneer.ddj-800"
     assert definitions["DDJ-800"].manufacturer == "Pioneer DJ"
     assert definitions["DDJ-800"].supported_software == ("serato",)
