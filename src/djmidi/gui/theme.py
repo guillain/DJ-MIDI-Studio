@@ -92,6 +92,16 @@ QPushButton:hover {
     background: $button_hover_bg;
     border-color: $accent2;
 }
+/* Glyph-only buttons (gear, refresh, window menu) are fixed at ~26px: the
+   default padding above leaves ~4px for the glyph, which then renders cut
+   off (issue #19, visible on macOS). */
+QPushButton[compact="true"] {
+    padding: 0px;
+}
+QPushButton[compact="true"]::menu-indicator {
+    image: none;
+    width: 0px;
+}
 QPushButton:pressed {
     background: $accent;
     color: #ffffff;
@@ -418,6 +428,13 @@ _MIDI_TOOLS_QSS = Template("""
 #midiToolsSurface QPushButton:hover {
     background: $button_hover_bg;
     border-color: $accent2;
+}
+#midiToolsSurface QPushButton[compact="true"] {
+    padding: 0px;
+}
+#midiToolsSurface QPushButton[compact="true"]::menu-indicator {
+    image: none;
+    width: 0px;
 }
 #midiToolsSurface QPushButton#primaryAction {
     background: $accent;

@@ -664,6 +664,7 @@ class MainWindow(QMainWindow):
         # variable here gets garbage-collected out from under the C++ widget.
         self._preferences_button = QPushButton("⚙")
         self._preferences_button.setFixedSize(28, 28)
+        self._preferences_button.setProperty("compact", True)
         self._preferences_button.setToolTip("Preferences...")
         self._preferences_button.clicked.connect(self._on_preferences)
         # One-click controller initialization (Sync), beside the gear so it's
@@ -810,9 +811,11 @@ class MainWindow(QMainWindow):
         again re-expands. Both are confirmed maintainer decisions, not a
         guess -- see issue #137.
         """
-        button = QPushButton()
+        # A text glyph, not QStyle.SP_TitleBarMenuButton: on macOS that
+        # standard icon is the Qt logo (issue #19).
+        button = QPushButton("☰")
         button.setFixedSize(22, 22)
-        button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_TitleBarMenuButton))
+        button.setProperty("compact", True)
         button.setToolTip("Window")
 
         menu = QMenu(button)
