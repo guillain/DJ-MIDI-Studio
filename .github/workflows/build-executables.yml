@@ -114,12 +114,24 @@ jobs:
           BRANCH_NAME: ${{ github.ref_name }}
         shell: bash
         run: |
-          open_prs="$(gh pr list --base main --head "$BRANCH_NAME" --state open --json number --jq 'length')"
+          # CI takes ~2h: by the time this runs, the branch may already be
+          # merged and deleted (e.g. a stacked PR merged into its base).
+          if ! git ls-remote --exit-code --heads origin "$BRANCH_NAME" >/dev/null; then
+            echo "$BRANCH_NAME no longer exists on origin; nothing to do."
+            exit 0
+          fi
+          # Any open PR from this branch counts, whatever its base: a stacked
+          # PR targets another feature branch, not main.
+          open_prs="$(gh pr list --head "$BRANCH_NAME" --state open --json number --jq 'length')"
           if [[ "$open_prs" -gt 0 ]]; then
             echo "An open Pull Request already exists for $BRANCH_NAME."
             exit 0
           fi
           commits="$(git log --format='- %s' origin/main..HEAD)"
+          if [[ -z "$commits" ]]; then
+            echo "$BRANCH_NAME has no commits beyond main; nothing to integrate."
+            exit 0
+          fi
           body="## Automated CI result
 
           The multi-platform CI pipeline completed successfully on Linux, macOS, and Windows.
