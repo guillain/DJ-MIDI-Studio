@@ -34,7 +34,7 @@
 | Hercules DJControl Inpulse 500 | Conservative values; product sheet | Grid | — | Not yet |
 | Behringer CMD LC-1 | Captured from a real unit with Controller Setup (no vendor list exists), checked against a real Serato export | Grid | — | ✅ |
 | Behringer CMD Micro | Captured from a real unit (no vendor list exists), checked against a real Traktor export | ✅ | — | ✅ |
-| Behringer CMD Studio 4a | Captured from a real unit in all 4 deck layers (no vendor list exists), checked against a real Traktor export | Grid | — | ✅ |
+| Behringer CMD Studio 4a | Captured from a real unit in all 4 deck layers (no vendor list exists), checked against a real Traktor export | ✅ | — | ✅ |
 | Korg nanoPAD2 | Captured from a real unit in all 4 scenes (Korg publishes no note table) | Grid | — | ✅ |
 
 "Not yet" means the profile was transcribed from documentation but hasn't

@@ -132,6 +132,10 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **CMD Studio 4a real layout** (`v0.48.40-geometry-cmd-studio-4a`, issue #13) — `CONTROL_GEOMETRY`
+  for all 67 buttons, same pixel-outline measurement as the CMD Micro. Each side's catalog names cover
+  both deck layers, so one marker per button resolves either layer; the right LOOP arrows are placed by
+  their printed arrow (catalog notes 55 `>` / 56 `<`). Checked in the running app's Controller Emulator.
 - [x] **CMD Micro real layout** (`v0.48.39-geometry-cmd-micro`, issue #13) — `CONTROL_GEOMETRY` for all
   20 CMD Micro buttons, measured on its flat render by detecting each lit button outline as a connected
   component of saturated pixels (pixel bounds, not eyeballed), keyed by the catalog names so live hits
