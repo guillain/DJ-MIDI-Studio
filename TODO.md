@@ -132,6 +132,10 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Confirm all suggestions** (`v0.48.52-library-confirm-all-suggestions`) — requested by the maintainer: the
+  Music Library's Track panel gains `Confirm all suggestions (N)`, which records every visible track's genre as an
+  alias of its suggested (fuzzy) category in one go — listing the genre → category pairs and asking first, one
+  table reload at the end. Scoped to the filtered rows so a user can review a subset; the count follows the filters.
 - [x] **Dashboard files column + generic mode buttons** (`v0.48.51-dashboard-files-and-mode-buttons`) — maintainer
   feedback: "Your files" now sits first on the Known controllers / MIDI tools row (its actions in a 2×2 grid), and
   Controller Setup's MIDI Output no longer always shows eight hard-coded DDJ-XP2 pad-mode buttons — a leftover from
