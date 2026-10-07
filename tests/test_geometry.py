@@ -718,3 +718,32 @@ def test_behringer_cmd_micro_decks_sit_on_their_own_side():
             assert box.x + box.w < 0.5, name
         if name.startswith("Deck B") or name.endswith(" B"):
             assert box.x > 0.5, name
+
+
+def test_behringer_cmd_studio_4a_geometry_covers_every_catalog_entry():
+    """Each side's names cover both of its deck layers ("(A/C)", "(B/D)"),
+    so one marker per button resolves live hits from either layer."""
+    names = {entry.name for entry in catalog.static_entries("Behringer CMD Studio 4a")}
+    assert set(CONTROL_GEOMETRY["Behringer CMD Studio 4a"]) == names
+    for name in names:
+        assert resolve_geometry_label("Behringer CMD Studio 4a", name) == name
+
+
+def test_behringer_cmd_studio_4a_markers_do_not_overlap():
+    boxes = list(CONTROL_GEOMETRY["Behringer CMD Studio 4a"].items())
+    for i, (a_name, a) in enumerate(boxes):
+        for b_name, b in boxes[i + 1 :]:
+            overlap = a.x < b.x + b.w and b.x < a.x + a.w and a.y < b.y + b.h and b.y < a.y + a.h
+            assert not overlap, (a_name, b_name)
+
+
+def test_behringer_cmd_studio_4a_sides_and_reversed_right_loop_arrows():
+    geometry = CONTROL_GEOMETRY["Behringer CMD Studio 4a"]
+    for name, box in geometry.items():
+        if name.endswith("(A/C)") or name in ("DECK A", "DECK C"):
+            assert box.x + box.w < 0.5, name
+        if name.endswith("(B/D)") or name in ("DECK B", "DECK D"):
+            assert box.x > 0.5, name
+    # Placed by printed arrow: "<" left of ">" on both sides.
+    assert geometry["LOOP < (A/C)"].x < geometry["LOOP > (A/C)"].x
+    assert geometry["LOOP < (B/D)"].x < geometry["LOOP > (B/D)"].x
