@@ -132,6 +132,14 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Contextual `?` help everywhere** (`v0.48.44-contextual-help`) — requested by the maintainer. A
+  shared `gui/help_button.py` (compact `?` button → short rich-text explanation + `Open full guide` to
+  the bundled `docs/enduser/features/` page) and `gui/help_texts.py` (all 17 texts in one place,
+  summarizing the feature pages). Placed on the Dashboard (overview, MIDI tools), Controller Images,
+  the By Channel/Deck/Controller layouts, the edit panel, every Music Library area (folders, filters,
+  Track, Categories, Playlists), Live Monitor, MIDI Routing, MIDI Clock, Metronome and every Controller
+  Emulator; Controller Setup's existing help buttons now use the same component. A test asserts every
+  tab and tool window has one and every linked guide is bundled; the macOS clipping audit is clean.
 - [x] **No more freeze after a bulk tag write** (`v0.48.43-library-post-write-freeze`) — reported by the
   maintainer after v0.48.42: once both progress windows closed, the app stayed unresponsive long enough
   to look crashed. Cause: re-selecting the rewritten tracks one `select()` call per row, each one
