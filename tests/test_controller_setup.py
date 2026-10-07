@@ -306,7 +306,7 @@ def test_on_apply_clicked_blocks_overwriting_a_controller_it_never_applied(monke
             lambda parent, title, text: shown.update(title=title, text=text),
         )
         view._on_apply_clicked()
-        assert shown.get("title") == "Cannot apply"
+        assert shown.get("title") == "Cannot install"
         assert catalog.get_definition("__PreExistingController__").static_entries == []
     finally:
         catalog._registry._REGISTRY.pop("__PreExistingController__", None)
@@ -370,9 +370,12 @@ def test_new_session_forgets_names_this_draft_previously_applied(monkeypatch):
         ]
         view._sources = ["manual"]
         view._devices = [""]
+        # It's now the user's own installed profile: replacing it asks first.
+        asked = []
+        view._confirm = lambda message: asked.append(message) or False
         view._on_apply_clicked()
 
-        assert shown.get("title") == "Cannot apply"
+        assert asked and "installed controller profiles" in asked[0]
         hits = catalog.lookup("1", "Note On", "0")
         assert any(h.name == "PLAY" for h in hits), "original draft's definition must survive"
     finally:
@@ -424,8 +427,10 @@ def test_load_session_forgets_names_this_draft_previously_applied(monkeypatch, t
         view._load_session(other_session)
         assert view._applied_names == set()
 
+        asked = []
+        view._confirm = lambda message: asked.append(message) or False
         view._on_apply_clicked()
-        assert shown.get("title") == "Cannot apply"
+        assert asked and "installed controller profiles" in asked[0]
         hits = catalog.lookup("1", "Note On", "0")
         assert any(h.name == "PLAY" for h in hits), "original draft's definition must survive"
     finally:
@@ -464,7 +469,7 @@ def test_on_apply_clicked_surfaces_unexpected_exception_instead_of_failing_silen
         lambda parent, title, text: shown.update(title=title, text=text),
     )
     view._on_apply_clicked()
-    assert shown.get("title") == "Failed to apply"
+    assert shown.get("title") == "Failed to install"
     assert "boom" in shown.get("text", "")
     assert "__ApplySetupTest4__" not in catalog.CONTROLLER_NAMES
 

@@ -40,6 +40,7 @@ def load_controller_profile(path: str | Path, *, replace: bool = False) -> Contr
         plugin_id=manifest.plugin_id,
         manufacturer=manifest.vendor,
         supported_software=tuple(_string_list(controller.get("supported_software", ()), "supported_software")),
+        port_names=tuple(_string_list(controller.get("port_names", ()), "port_names")),
         reference_image=controller.get("reference_image"),
         display_order=int(controller.get("display_order", 100)),
         static_entries=entries,
@@ -77,4 +78,90 @@ def _string_list(value: object, field_name: str) -> list[str]:
     return [item.strip() for item in value]
 
 
-__all__ = ["load_controller_profile"]
+USER_PLUGIN_PREFIX = "user."
+
+
+def profile_document(definition: ControllerDefinition, *, vendor: str = "User", version: str = "1.0.0") -> dict:
+    """The JSON document load_controller_profile() reads back, for a
+    controller with static entries only (what Controller Setup builds)."""
+    if definition.pad_lookup is not None:
+        raise ValueError("A JSON profile can only hold static entries, not a pad formula")
+    plugin_id = definition.plugin_id or USER_PLUGIN_PREFIX + _slug(definition.name)
+    controller: dict[str, object] = {
+        "name": definition.name,
+        "entries": [
+            {
+                "section": entry.section,
+                "name": entry.name,
+                "note_or_cc": entry.note_or_cc,
+                "channels": list(entry.channels),
+                "data1": entry.data1,
+            }
+            for entry in definition.static_entries
+        ],
+    }
+    if definition.supported_software:
+        controller["supported_software"] = list(definition.supported_software)
+    if definition.port_names:
+        controller["port_names"] = list(definition.port_names)
+    if definition.reference_image:
+        controller["reference_image"] = definition.reference_image
+    return {
+        "manifest": {
+            "schema_version": 1,
+            "plugin_id": plugin_id,
+            "kind": "controller",
+            "name": definition.name,
+            "version": version,
+            "api_version": "1",
+            "vendor": definition.manufacturer or vendor,
+            "license": "user",
+        },
+        "controller": controller,
+    }
+
+
+def save_controller_profile(definition: ControllerDefinition, path: str | Path) -> Path:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(profile_document(definition), indent=2) + "\n", encoding="utf-8")
+    return target
+
+
+def load_user_profiles(directory: str | Path) -> tuple[list[str], dict[str, str]]:
+    """Register every installed profile in `directory` (``*.json``).
+
+    Returns the names loaded and, per file, why it wasn't. A profile reusing
+    a built-in controller's name is skipped rather than allowed to replace
+    the built-in. Re-running replaces the user's own profiles in place."""
+    from djmidi.catalog._registry import _REGISTRY
+
+    loaded: list[str] = []
+    errors: dict[str, str] = {}
+    folder = Path(directory)
+    if not folder.is_dir():
+        return loaded, errors
+    for path in sorted(folder.glob("*.json")):
+        try:
+            name = json.loads(path.read_text(encoding="utf-8"))["manifest"]["name"]
+            existing = _REGISTRY.get(name)
+            if existing is not None and not (existing.plugin_id or "").startswith(USER_PLUGIN_PREFIX):
+                errors[str(path)] = f"'{name}' is a built-in controller; the profile was not loaded"
+                continue
+            loaded.append(load_controller_profile(path, replace=True).name)
+        except Exception as exc:  # noqa: BLE001 - one bad file must not stop the others
+            errors[str(path)] = f"{type(exc).__name__}: {exc}"
+    return loaded, errors
+
+
+def _slug(name: str) -> str:
+    return "".join(char if char.isalnum() else "-" for char in name.lower()).strip("-") or "controller"
+
+
+__all__ = [
+    "USER_PLUGIN_PREFIX",
+    "load_controller_profile",
+    "load_user_profiles",
+    "profile_document",
+    "save_controller_profile",
+]

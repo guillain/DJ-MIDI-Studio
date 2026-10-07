@@ -52,7 +52,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from djmidi import catalog, file_locations, software
+from djmidi import catalog, file_locations, software, user_paths
+from djmidi.catalog.profile import load_user_profiles
 from djmidi.controller_sync import (
     ControllerSyncSet,
     SyncResult,
@@ -237,6 +238,13 @@ class MainWindow(QMainWindow):
         self.software_id = "serato"
         catalog.discover_plugins(trust_external=self.preferences.trust_external_plugins)
         software.discover_plugins(trust_external=self.preferences.trust_external_plugins)
+        # Controller profiles the user installed from Controller Setup
+        # (issue #175): JSON files in their DJ MIDI Studio folder.
+        loaded, failed = load_user_profiles(user_paths.controllers_dir())
+        if loaded:
+            _LOGGER.info("Loaded %d installed controller profile(s): %s", len(loaded), ", ".join(loaded))
+        for path, reason in failed.items():
+            _LOGGER.warning("Skipped controller profile %s: %s", path, reason)
         # "Show all controllers" (View menu) bypasses the per-controller
         # Preferences enablement so the mapping tabs list every registered
         # controller again; the real state is restored from QSettings in
@@ -642,10 +650,14 @@ class MainWindow(QMainWindow):
             ("Open Draft...", setup._on_load_session_clicked),
             ("Save Draft...", setup._on_save_session_clicked),
             ("Learn Triggers from a Mapping...", setup._on_import_xml_clicked),
+            ("Install Profile", setup._on_apply_clicked),
         ):
             action = QAction(label, self)
             action.triggered.connect(lambda _checked=False, h=handler: self._run_in_tab("setup", h))
             profile_menu.addAction(action)
+        installed_action = QAction("Show Installed Profiles", self)
+        installed_action.triggered.connect(self._on_reveal_installed_profiles)
+        profile_menu.addAction(installed_action)
 
         library = self.music_library_view
         import_menu = file_menu.addMenu("&Import")
@@ -1961,6 +1973,11 @@ class MainWindow(QMainWindow):
             self._on_preferences(tab="Controller sync")
         elif action.startswith("recent:"):
             self._load_mapping_from_path(Path(action.removeprefix("recent:")))
+
+    def _on_reveal_installed_profiles(self) -> None:
+        folder = user_paths.controllers_dir()
+        folder.mkdir(parents=True, exist_ok=True)
+        reveal_in_file_manager(folder)
 
     def _on_reveal_mapping(self) -> None:
         if self.current_path is not None:

@@ -23,6 +23,7 @@ import dataclasses
 import json
 import logging
 import re
+import shutil
 from pathlib import Path
 from string import Template
 from typing import cast
@@ -54,7 +55,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from djmidi import catalog
+from djmidi import catalog, user_paths
 from djmidi.catalog._registry import (
     ControlInfo,
     NoteOrCC,
@@ -73,6 +74,7 @@ from djmidi.catalog.community import (
     submission_issue_url,
     summarise_source,
 )
+from djmidi.catalog.profile import USER_PLUGIN_PREFIX, save_controller_profile
 from djmidi.controller_sync import ControllerSyncSet, sync_set_from_events
 from djmidi.gui.controller_submission_dialog import ControllerSubmissionDialog
 from djmidi.gui.help_button import help_button
@@ -154,11 +156,12 @@ def tsi_device_labels(config: MidiConfig) -> dict[str, str]:
         labels[key] = f"#{device.index} {name}{port}"
     return labels
 _APPLY_HELP = (
-    "Apply now registers this draft in the running app so it shows up in the Layout, By "
-    "Controller, and Controller Images tabs — in-memory only, lost on restart. \"Generate "
-    "catalog module…\" writes the permanent catalog/<slug>.py. \"Submit to community catalog…\" "
+    "Install saves this profile in your Controllers folder (Documents/DJ MIDI Studio/Controllers) "
+    "with a copy of its picture, activates it in every view now, and loads it again at every "
+    "launch. Installing again under the same name updates it. \"Submit to community catalog…\" "
     "opens a pre-filled GitHub issue with the profile JSON so it can be reviewed and shipped as "
-    "a built-in (reference images are not included)."
+    "a built-in (reference images are not included). For developers, the remaining button "
+    "generates a Python catalog module instead."
 )
 
 _DDJ_XP2_PAD_MODE_NOTES = {1: 27, 2: 30, 3: 32, 4: 34}
@@ -181,6 +184,12 @@ _STATUS_PILL_QSS = Template(
     " background: $header_bg; border: 1px solid $field_border; border-radius: 4px;"
     " }"
 )
+
+
+def _is_user_profile(name: str) -> bool:
+    """A controller the user installed (so Install may update it), not a built-in."""
+    definition = catalog._registry._REGISTRY.get(name)
+    return definition is not None and (definition.plugin_id or "").startswith(USER_PLUGIN_PREFIX)
 
 
 def _slugify(name: str) -> str:
@@ -423,10 +432,12 @@ class ControllerSetupView(QWidget):
         check_button.setToolTip("Check for conflicts")
         check_button.clicked.connect(self._on_check_conflicts_clicked)
         self._apply_button = QPushButton(self._get_icon("apply"), "")
-        self._apply_button.setToolTip("Apply now (this session)")
+        self._apply_button.setToolTip(
+            "Install this profile: saved in your Controllers folder and loaded at every launch"
+        )
         self._apply_button.clicked.connect(self._on_apply_clicked)
         export_button = QPushButton(self._get_icon("export"), "")
-        export_button.setToolTip("Generate catalog module…")
+        export_button.setToolTip("For developers: generate a Python catalog module…")
         export_button.clicked.connect(self._on_export_clicked)
         submit_button = QPushButton(self._get_icon("submit"), "")
         submit_button.setToolTip("Submit to community catalog…")
@@ -1333,9 +1344,9 @@ class ControllerSetupView(QWidget):
         QMessageBox.information(
             self,
             "Reference image attached",
-            "The image is referenced by its path on this machine — it is not copied into the "
-            "project. It shows in the Controller Images tab after \"Apply now\", and is saved in "
-            "the session JSON. \"Generate catalog module…\" writes reference_image='custom/<filename>'; "
+            "The image is referenced by its path on this machine and saved in the session JSON. "
+            "Install copies it next to the installed profile, so it keeps showing in Controller "
+            "Images even if you move the original. \"Generate catalog module…\" writes reference_image='custom/<filename>'; "
             "place a copy at controllers/custom/<filename> if you want it bundled (respecting its "
             "licence — user-supplied images are your responsibility).",
         )
@@ -1545,20 +1556,40 @@ class ControllerSetupView(QWidget):
             _LOGGER.info("Controller Setup conflict check for %r: no issues", self._controller_name)
             QMessageBox.information(self, "No conflicts", "No missing fields or conflicting triggers found — draft looks stable.")
 
-    def _apply(self) -> None:
-        register(
-            build_definition(self._controller_name, self._rows, self._reference_image or None),
-            replace=True,
+    def _apply(self) -> Path:
+        """Install the draft (issue #175): save it as a JSON profile in the
+        user's Controllers folder -- with a copy of its picture -- so it is
+        loaded at every launch, and register it now."""
+        folder = user_paths.controllers_dir()
+        folder.mkdir(parents=True, exist_ok=True)
+        slug = self._slug() or "controller"
+        image = None
+        if self._reference_image and Path(self._reference_image).is_file():
+            source = Path(self._reference_image)
+            copied = folder / f"{slug}{source.suffix.lower()}"
+            if source.resolve() != copied.resolve():
+                shutil.copy2(source, copied)
+            image = str(copied)
+        definition = dataclasses.replace(
+            build_definition(self._controller_name, self._rows, image or self._reference_image or None),
+            plugin_id=f"{USER_PLUGIN_PREFIX}{slug}",
         )
+        path = save_controller_profile(definition, folder / f"{slug}.json")
+        register(definition, replace=True)
         self._applied_names.add(self._controller_name)
         self.controllerApplied.emit(self._controller_name)
+        return path
 
     def _on_apply_clicked(self) -> None:
         errors = self._validate()
         if errors:
-            QMessageBox.warning(self, "Cannot apply yet", "\n".join(errors))
+            QMessageBox.warning(self, "Cannot install yet", "\n".join(errors))
             return
-        if self._controller_name in catalog.CONTROLLER_NAMES and self._controller_name not in self._applied_names:
+        if (
+            self._controller_name in catalog.CONTROLLER_NAMES
+            and self._controller_name not in self._applied_names
+            and not _is_user_profile(self._controller_name)
+        ):
             # Blocks silently clobbering a pre-existing controller (DDJ-XP2, XDJ-XZ, or
             # anything applied by a *different* draft) — this is in-memory only, so the
             # hand-written module on disk is untouched, but a running session that
@@ -1571,25 +1602,33 @@ class ControllerSetupView(QWidget):
             )
             QMessageBox.critical(
                 self,
-                "Cannot apply",
-                f"'{self._controller_name}' is already a loaded controller (built-in or applied by "
-                "another draft). Applying would replace its full definition in memory for the rest of "
-                "this session — every tab using it would show only this draft's rows until you restart "
-                "the app. Pick a different controller name for this new draft.",
+                "Cannot install",
+                f"'{self._controller_name}' is already a built-in controller. Installing would replace "
+                "its full definition with this draft's rows in every view. Pick a different controller "
+                "name for this profile.",
             )
             return
-        try:
-            self._apply()
-        except Exception as exc:
-            _LOGGER.exception("Failed to apply Controller Setup draft %r", self._controller_name)
-            QMessageBox.critical(self, "Failed to apply", f"{type(exc).__name__}: {exc}")
+        if (
+            _is_user_profile(self._controller_name)
+            and self._controller_name not in self._applied_names
+            and not self._confirm(
+                f"'{self._controller_name}' is already one of your installed controller profiles. "
+                "Replace it with this draft?"
+            )
+        ):
             return
+        try:
+            path = self._apply()
+        except Exception as exc:
+            _LOGGER.exception("Failed to install Controller Setup draft %r", self._controller_name)
+            QMessageBox.critical(self, "Failed to install", f"{type(exc).__name__}: {exc}")
+            return
+        _LOGGER.info("Installed controller profile %r at %s", self._controller_name, path)
         QMessageBox.information(
             self,
-            "Applied",
-            f"'{self._controller_name}' is now active in this session's Layout, By Controller, and "
-            "Controller Images tabs. This lasts only for the current run — use \"Generate catalog "
-            "module…\" and add its import to catalog/__init__.py to make it permanent.",
+            "Installed",
+            f"'{self._controller_name}' is installed: it is active now in every view and is loaded "
+            f"again at every launch.\n\nSaved in {path}",
         )
 
     def _on_export_clicked(self) -> None:
