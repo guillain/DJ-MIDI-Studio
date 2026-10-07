@@ -8,7 +8,6 @@ from pathlib import Path
 from PySide6.QtCore import QLineF, QPointF, QRectF, Qt, QTimer, Signal
 from PySide6.QtGui import QBrush, QColor, QFont, QPen, QPixmap
 from PySide6.QtWidgets import (
-    QCheckBox,
     QComboBox,
     QGraphicsEllipseItem,
     QGraphicsLineItem,
@@ -31,6 +30,7 @@ from djmidi.gui import geometry as geometry_mod
 from djmidi.gui import jog as jog_mod
 from djmidi.gui import layout as layout_mod
 from djmidi.gui.help_button import help_button
+from djmidi.gui.layer_toggles import LayerToggles
 from djmidi.gui.layout import CellKey
 from djmidi.gui.live_send import LiveSendControl
 
@@ -175,6 +175,38 @@ def draw_reference_photo(scene: QGraphicsScene, controller: str) -> bool:
     item.setZValue(_PHOTO_Z)
     scene.addItem(item)
     return True
+
+
+_MIDI_PIXMAP_CACHE: dict[str, QPixmap | None] = {}
+
+
+def midi_pixmap(controller: str) -> QPixmap | None:
+    """The controller's photo with its MIDI callouts printed on it (the
+    ``reference-midi.png`` sibling of its reference image), or None when it
+    doesn't ship one. Cached like reference_pixmap()."""
+    if controller in _MIDI_PIXMAP_CACHE:
+        return _MIDI_PIXMAP_CACHE[controller]
+    pixmap: QPixmap | None = None
+    reference_image = catalog.get_definition(controller).reference_image
+    clean, annotated = controller_image_view.image_variants(reference_image)
+    if annotated is not None and annotated != clean and annotated.exists():
+        loaded = QPixmap(str(annotated))
+        if not loaded.isNull():
+            pixmap = loaded
+    _MIDI_PIXMAP_CACHE[controller] = pixmap
+    return pixmap
+
+
+def draw_midi_photo(scene: QGraphicsScene, controller: str) -> QPixmap | None:
+    """Add the MIDI picture as the scene's only layer (the Layout markers
+    don't line up with it, see gui/layer_toggles.py); returns it, so the
+    caller can frame the scene to its own size."""
+    pixmap = midi_pixmap(controller)
+    if pixmap is not None:
+        item = QGraphicsPixmapItem(pixmap)
+        item.setZValue(_PHOTO_Z)
+        scene.addItem(item)
+    return pixmap
 
 # Real-position mode's *own* supplementary geometry for a controller's
 # right-side mirrored cluster, for a controller/section where
@@ -681,20 +713,14 @@ class ControllerLayoutView(QWidget):
         self._live_send = LiveSendControl()
         controls_layout.addWidget(self._live_send)
 
-        # On by default: draw the real controller photo behind the
-        # real-position markers (only has any effect for a controller with
-        # gui/geometry.CONTROL_GEOMETRY -- the classic card grid ignores it).
-        # The checkbox stays so it can be turned off. `setChecked(True)`
-        # before wiring `toggled` keeps the state consistent without an
-        # extra _rebuild() -- the one at the end of __init__ renders it.
-        self._show_reference_photo = True
-        self._photo_checkbox = QCheckBox("Controller photo")
-        self._photo_checkbox.setToolTip(
-            "Draw the real controller photo behind the real-position markers."
-        )
-        self._photo_checkbox.setChecked(True)
-        self._photo_checkbox.toggled.connect(self._on_photo_toggled)
-        controls_layout.addWidget(self._photo_checkbox)
+        # The display layers (gui/layer_toggles.py): the real Controller
+        # photo (on by default) and the Layout markers, or the MIDI picture
+        # alone. Photo layers only exist in real-position mode -- the classic
+        # card grid has no measured positions to put a photo behind.
+        self._layers = LayerToggles(controller=True, midi=False, layout=True)
+        self._layers.changed.connect(self._rebuild)
+        self._photo_checkbox = self._layers.controller_box
+        controls_layout.addWidget(self._layers)
         controls_layout.addWidget(help_button(self, *help_texts.MAPPING_VIEWS))
 
         self._scene = QGraphicsScene(self)
@@ -906,13 +932,13 @@ class ControllerLayoutView(QWidget):
         """Forget the faded selection trail while keeping the current cell."""
         self._selection_history.clear()
 
-    def _on_photo_toggled(self, checked: bool) -> None:
-        self._show_reference_photo = checked
-        self._rebuild()
+    @property
+    def _show_reference_photo(self) -> bool:
+        return self._layers.state().photo
 
     def set_show_reference_photo(self, enabled: bool) -> None:
-        """Toggle the real-photo backdrop from code (keeps the checkbox in
-        sync so the UI still reflects the state)."""
+        """Toggle the Controller photo layer from code (keeps the checkbox
+        in sync so the UI still reflects the state)."""
         self._photo_checkbox.setChecked(enabled)
 
     def set_zoom(self, factor: float) -> None:
@@ -1136,11 +1162,19 @@ class ControllerLayoutView(QWidget):
             self._scene.setSceneRect(self._scene.itemsBoundingRect().adjusted(-10, -10, 10, 10))
             return
         markers = real_position_markers(self._controller)
+        self._layers.set_available(
+            photo=bool(markers) and reference_pixmap(self._controller) is not None,
+            midi=bool(markers) and midi_pixmap(self._controller) is not None,
+            layout=True,
+        )
         if markers:
             self._detail_label.show()
             self._rebuild_real_position(markers)
             return
         self._detail_label.hide()
+        if not self._layers.state().layout:
+            self._scene.setSceneRect(0, 0, 1, 1)
+            return
         self._metrics = metrics_for(self._controller)
         m = self._metrics
         col_step = m.cell_w + m.margin
@@ -1239,10 +1273,17 @@ class ControllerLayoutView(QWidget):
         matching control). Diff-view content that doesn't fit inline a
         compact marker moves to self._detail_label (see
         _on_cell_clicked_for_detail), updated on click."""
+        layers = self._layers.state()
+        if layers.midi:
+            pixmap = draw_midi_photo(self._scene, self._controller)
+            if pixmap is not None:
+                self._scene.setSceneRect(0, 0, pixmap.width(), pixmap.height())
+                self._fit_real_position_view()
+                return
         canvas_w, canvas_h = _reference_canvas_size(self._controller)
-        photo_shown = self._show_reference_photo and draw_reference_photo(self._scene, self._controller)
+        photo_shown = layers.photo and draw_reference_photo(self._scene, self._controller)
         deck_filter = self._selected_deck_filter()
-        for marker in markers:
+        for marker in markers if layers.layout else ():
             # A right-side marker ("Pad 3 (R)", "BEAT SYNC (R)", ...) shares
             # its *schematic* CellKey with its left counterpart by design
             # (see real_position_markers()'s docstring) -- using that same

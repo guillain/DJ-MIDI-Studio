@@ -387,30 +387,42 @@ def test_image_variants_none_and_absolute():
     assert image_variants(str(Path(missing_abs))) == (None, None)
 
 
-def _register_midi_canonical(name: str) -> None:
-    """A throwaway controller whose reference_image names the annotated
-    '-midi' variant -- every *real* geometry controller was re-measured
-    against its clean render (v0.47.54..58), so this scenario now only
-    exists for a hand-registered definition."""
-    register(ControllerDefinition(name=name, reference_image="hardware/pioneer/DDJ-XP2/reference-midi.png"))
+def test_midi_layer_swaps_the_picture_and_greys_out_the_layout():
+    """Controller and MIDI are one photo at a time; the Layout was measured on
+    the Controller photo, so it's greyed out (not drawn) over the MIDI one."""
+    view = ControllerImageView()
+    assert view.set_controller("DDJ-XP2") is True
+    assert view._midi_checkbox.isEnabled() is True
+    view._geometry_checkbox.setChecked(True)
+    assert view._overlay_items != []
+
+    view._midi_checkbox.setChecked(True)
+    assert view._photo_checkbox.isChecked() is False
+    assert view._midi_item.isVisible() and not view._pixmap_item.isVisible()
+    assert view._geometry_checkbox.isEnabled() is False and view._overlay_items == []
+
+    view._photo_checkbox.setChecked(True)
+    assert view._midi_checkbox.isChecked() is False
+    assert view._pixmap_item.isVisible() and not view._midi_item.isVisible()
+    assert view._geometry_checkbox.isEnabled() is True and view._overlay_items != []
 
 
-def test_midi_checkbox_enabled_when_both_variants_bundled_and_swaps_image():
-    _register_midi_canonical("__MidiCanonicalCtl__")
-    try:
-        view = ControllerImageView()
-        assert view.set_controller("__MidiCanonicalCtl__") is True
-        assert view._midi_checkbox.isEnabled() is True
-        # reference_image names the annotated variant -> box defaults on.
-        assert view._midi_checkbox.isChecked() is True
+def test_layout_alone_draws_markers_without_the_photo():
+    view = ControllerImageView()
+    view.set_controller("DDJ-XP2")
+    view._geometry_checkbox.setChecked(True)
+    view._photo_checkbox.setChecked(False)
+    assert not view._pixmap_item.isVisible()
+    assert view._overlay_items != []
 
-        view._midi_checkbox.setChecked(False)
-        clean_size = (view._pixmap_item.pixmap().width(), view._pixmap_item.pixmap().height())
-        view._midi_checkbox.setChecked(True)
-        annotated_size = (view._pixmap_item.pixmap().width(), view._pixmap_item.pixmap().height())
-        assert annotated_size != clean_size  # a different image is now on screen
-    finally:
-        catalog._registry._REGISTRY.pop("__MidiCanonicalCtl__", None)
+
+def test_all_layers_off_shows_a_hint():
+    view = ControllerImageView()
+    view.set_controller("DDJ-XP2")
+    view._photo_checkbox.setChecked(False)
+    assert view._placeholder is not None and "All layers are off" in view._placeholder.toPlainText()
+    view._photo_checkbox.setChecked(True)
+    assert view._placeholder is None
 
 
 def test_geometry_overlay_only_offered_on_the_canonical_variant():
@@ -430,21 +442,28 @@ def test_geometry_overlay_only_offered_on_the_canonical_variant():
     assert view._overlay_items == []  # checked but disabled -> not drawn
 
 
-def test_midi_override_pins_the_user_choice_across_controller_switches():
-    _register_midi_canonical("__MidiCanonicalA__")
-    _register_midi_canonical("__MidiCanonicalB__")
+def test_layers_stay_as_ticked_across_controller_switches():
+    """A ticked MIDI layer stays ticked when switching controllers; on a
+    controller without a MIDI picture the Controller photo shows instead."""
+    from pathlib import Path
+
+    from PySide6.QtGui import QPixmap
+
+    image_path = Path("/tmp/djmidi-test-layers-onevariant.png")
+    QPixmap(48, 24).save(str(image_path), "PNG")
+    register(ControllerDefinition(name="__LayersOneVariant__", reference_image=str(image_path)))
     try:
         view = ControllerImageView()
-        view.set_controller("__MidiCanonicalA__")  # canonical annotated -> box on
-        assert view._midi_checkbox.isChecked() is True
-        view._midi_checkbox.setChecked(False)  # user opts out of MIDI callouts
-        view.set_controller("__MidiCanonicalB__")
-        assert view._midi_checkbox.isChecked() is False
-        view.set_controller("__MidiCanonicalA__")
-        assert view._midi_checkbox.isChecked() is False
+        view.set_controller("DDJ-XP2")
+        view._midi_checkbox.setChecked(True)
+        view.set_controller("XDJ-XZ")
+        assert view._midi_checkbox.isChecked() is True and view._midi_item.isVisible()
+        view.set_controller("__LayersOneVariant__")
+        assert view._midi_checkbox.isEnabled() is False
+        assert view._pixmap_item.isVisible()  # falls back to the photo
     finally:
-        catalog._registry._REGISTRY.pop("__MidiCanonicalA__", None)
-        catalog._registry._REGISTRY.pop("__MidiCanonicalB__", None)
+        catalog._registry._REGISTRY.pop("__LayersOneVariant__", None)
+        image_path.unlink(missing_ok=True)
 
 
 def test_midi_checkbox_disabled_when_only_one_variant_bundled():
