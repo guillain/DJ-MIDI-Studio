@@ -9,7 +9,6 @@ from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
     QComboBox,
     QFrame,
-    QGridLayout,
     QGroupBox,
     QHBoxLayout,
     QLabel,
@@ -241,6 +240,9 @@ class IntroductionView(QWidget):
         self._files_mapping_label = QLabel()
         self._files_mapping_label.setWordWrap(True)
         self._files_mapping_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        self._files_folder_label = QLabel()
+        self._files_folder_label.setWordWrap(True)
+        self._files_folder_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         self._files_backup_label = QLabel()
         self._files_backup_label.setWordWrap(True)
         self._files_sync_label = QLabel()
@@ -248,28 +250,36 @@ class IntroductionView(QWidget):
         self._files_recent_layout = QVBoxLayout()
         self._files_recent_layout.setSpacing(2)
         info = QVBoxLayout()
-        for widget in (self._files_mapping_label, self._files_backup_label):
+        info.setSpacing(6)
+        for widget in (self._files_mapping_label, self._files_folder_label, self._files_backup_label):
             info.addWidget(widget)
         info.addLayout(self._files_recent_layout)
         info.addWidget(self._files_sync_label)
-        row = QHBoxLayout()
-        row.addLayout(info, 1)
-        layout.addLayout(row)
-        # A 2x2 grid: the card shares its row with Known controllers and MIDI tools.
-        buttons = QGridLayout()
+        info.addStretch(1)
+        # Two columns: the information gets the width, the actions a narrow
+        # column of compact buttons beside it.
+        buttons = QVBoxLayout()
+        buttons.setSpacing(6)
         self._files_buttons: dict[str, QPushButton] = {}
-        for index, (action, label) in enumerate((
+        for action, label in (
             ("open", "Open mapping…"),
             ("reveal", "Show in Finder" if sys.platform == "darwin" else "Show in folder"),
-            ("restore", "Restore previous version…"),
-            ("sync", "Manage sync sets…"),
-        )):
+            ("restore", "Restore previous…"),
+            ("sync", "Sync sets…"),
+        ):
             button = QPushButton(label)
+            button.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
             button.clicked.connect(lambda _checked=False, a=action: self.fileActionRequested.emit(a))
-            buttons.addWidget(button, index // 2, index % 2)
+            buttons.addWidget(button)
             self._files_buttons[action] = button
-        layout.addLayout(buttons)
-        layout.addStretch(1)
+        self._files_buttons["restore"].setToolTip("Restore the version saved before the last save")
+        self._files_buttons["sync"].setToolTip("Manage the controller sync sets (Preferences)")
+        buttons.addStretch(1)
+        row = QHBoxLayout()
+        row.setSpacing(12)
+        row.addLayout(info, 1)
+        row.addLayout(buttons, 0)
+        layout.addLayout(row, 1)
         self.set_files_summary(mapping=None)
         return box
 
@@ -284,7 +294,12 @@ class IntroductionView(QWidget):
             self._files_mapping_label.setText("<b>Mapping:</b> none open — <i>File → Open Mapping…</i>")
         else:
             path = Path(mapping)
-            self._files_mapping_label.setText(f"<b>Mapping:</b> {path.name}<br><small>{path.parent}</small>")
+            self._files_mapping_label.setText(f"<b>Mapping:</b> {path.name}")
+            self._files_mapping_label.setToolTip(str(path))
+        self._files_folder_label.setText(
+            f"<b>Folder:</b> {Path(mapping).parent}" if mapping is not None else ""
+        )
+        self._files_folder_label.setVisible(mapping is not None)
         if backup is None:
             self._files_backup_label.setText("<b>Previous version:</b> none yet (made on every save)")
         else:
