@@ -25,6 +25,7 @@ from pathlib import Path
 
 from PySide6.QtCore import (
     QAbstractTableModel,
+    QItemSelection,
     QItemSelectionModel,
     QModelIndex,
     QPersistentModelIndex,
@@ -32,9 +33,10 @@ from PySide6.QtCore import (
     Qt,
     QTimer,
 )
-from PySide6.QtGui import QBrush, QColor, QFont, QUndoStack
+from PySide6.QtGui import QBrush, QColor, QCursor, QFont, QUndoStack
 from PySide6.QtWidgets import (
     QAbstractItemView,
+    QApplication,
     QCheckBox,
     QComboBox,
     QDialog,
@@ -1128,8 +1130,8 @@ class MusicLibraryView(QWidget):
         dialog.setAutoClose(True)
         dialog.setAutoReset(True)
 
-        def report(done: int, total: int) -> bool:
-            dialog.setLabelText(f"{label} {done}/{total}")
+        def report(done: int, total: int, text: str | None = None) -> bool:
+            dialog.setLabelText(text or f"{label} {done}/{total}")
             dialog.setValue(done)
             return not dialog.wasCanceled()
 
@@ -1138,32 +1140,51 @@ class MusicLibraryView(QWidget):
     def _on_tracks_written(self, paths: list[str]) -> None:
         selected = [row.path for row in self.selected_rows()]
         # Re-reading every written file's tags takes as long as writing them.
-        # Not cancellable: stopping here would leave the table showing stale tags.
-        progress = self._tag_write_progress("Reading tags back…", len(paths), cancellable=False) if len(paths) > 1 else None
+        # Not cancellable: stopping here would leave the table showing stale
+        # tags. One extra step keeps the window up while the table reloads
+        # (seconds on a large library), so the app never looks frozen.
+        total = len(paths) + 1
+        progress = self._tag_write_progress("Reading tags back…", total, cancellable=False) if len(paths) > 1 else None
         for index, path in enumerate(paths):
             if progress is not None:
-                progress(index, len(paths))
+                progress(index, total)
             workspace.refresh_track_metadata(self.db, path)
         if progress is not None:
-            progress(len(paths), len(paths))
+            progress(len(paths), total, "Refreshing the table…")
         self._reload_rows()
         self.select_paths(selected)
+        if progress is not None:
+            progress(total, total)
         self.status_label.setText(f"Tags written to {len(paths)} track(s).")
 
     def select_paths(self, paths: list[str]) -> None:
         """Re-select several tracks (after a reload), keeping the current one current."""
         wanted = set(paths)
-        model = self.table.selectionModel()
+        # One select() call for the whole set: selecting row by row emitted
+        # selectionChanged (and refreshed the Track panel) once per track,
+        # which froze the window for minutes after a bulk write on a long
+        # selection. Contiguous rows are merged into one range each.
+        selection = QItemSelection()
+        start = None
+        for proxy_row in range(self.proxy.rowCount() + 1):
+            hit = proxy_row < self.proxy.rowCount() and self.proxy.index(proxy_row, 0).data(ROW_ROLE).path in wanted
+            if hit and start is None:
+                start = proxy_row
+            elif not hit and start is not None:
+                selection.select(self.proxy.index(start, 0), self.proxy.index(proxy_row - 1, 0))
+                start = None
         flags = QItemSelectionModel.SelectionFlag.Select | QItemSelectionModel.SelectionFlag.Rows
-        for proxy_row in range(self.proxy.rowCount()):
-            index = self.proxy.index(proxy_row, 0)
-            if index.data(ROW_ROLE).path in wanted:
-                model.select(index, flags)
+        self.table.selectionModel().select(selection, flags)
 
     def _on_track_written(self, path: str) -> None:
         workspace.refresh_track_metadata(self.db, path)
         self._current_path = path
-        self._reload_rows()
+        # Reloading a large library takes a few seconds even for one track.
+        QApplication.setOverrideCursor(QCursor(Qt.CursorShape.WaitCursor))
+        try:
+            self._reload_rows()
+        finally:
+            QApplication.restoreOverrideCursor()
         self.status_label.setText(f"Tags written: {Path(path).name}")
 
     def confirm_category_suggestion(self) -> None:
