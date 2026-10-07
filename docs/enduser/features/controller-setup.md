@@ -15,7 +15,7 @@
 - [Learn triggers from an existing mapping](#learn-triggers-from-an-existing-mapping)
 - [Label many controls at once](#label-many-controls-at-once)
 - [Send MIDI back to the controller](#send-midi-back-to-the-controller)
-- [Use the profile: apply, export, share](#use-the-profile-apply-export-share)
+- [Use the profile: install, share](#use-the-profile-install-share)
 - [Sessions](#sessions)
 - [Related](#related)
 
@@ -45,8 +45,8 @@ mapping. To edit a mapping, use `File → Open Mapping…` and the
 3. In `MIDI input`, tick the controller's port and click `Start learning`.
 4. Press every button and pad you care about. Each new trigger appears once
    in the table, even if you press it again.
-5. Fill in each row's **Section** and **Name**, then `Apply now` to use the
-   profile right away.
+5. Fill in each row's **Section** and **Name**, then `Install` to use the
+   profile right away and keep it for every launch.
 
 ## Start from a controller the app already knows
 
@@ -110,17 +110,18 @@ LEDs, switch pad modes, or initialize a device:
 For repeated playback at a fixed rate, use the
 [Metronome](midi-routing-and-clock.md#metronome).
 
-## Use the profile: apply, export, share
+## Use the profile: install, share
 
 | Action | What happens |
 | --- | --- |
-| `Apply now (this session)` | The controller appears immediately in every controller selector, layout and emulator. Not kept after a restart. |
-| `Generate catalog module…` | Writes a Python profile file you (or a maintainer) can add to the app permanently. |
-| `Attach reference image…` | Gives the controller a photo or diagram (PNG/JPG), shown in [Controller Images](controller-images.md). The image stays where it is on your disk. |
+| `Install` | Saves the profile in your `Documents/DJ MIDI Studio/Controllers` folder (with a copy of its picture) and activates it in every controller selector, layout and emulator. It is loaded again at every launch; installing again under the same name updates it, after asking. `File → Controller Profile → Show Installed Profiles` opens the folder. |
+| `Attach reference image…` | Gives the controller a photo or diagram (PNG/JPG), shown in [Controller Images](controller-images.md). Install keeps a copy next to the profile. |
+| For developers: `Generate catalog module…` | Writes a Python profile file a maintainer can add to the app as a built-in. |
 | `Submit to community catalog…` | Validates the profile, copies it as JSON to the clipboard and opens a pre-filled GitHub issue for you to review and post. Nothing is uploaded automatically, and images are never included. |
 
-A profile can't be applied under the name of a built-in controller, so a
-test draft can never overwrite, for example, the real DDJ-XP2 profile.
+A profile can't be installed under the name of a built-in controller, so a
+draft can never overwrite, for example, the real DDJ-XP2 profile; an
+installed file reusing such a name is skipped at launch.
 
 ## Sessions
 

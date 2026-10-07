@@ -132,6 +132,14 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **File management, phase 2: install a controller profile** (`v0.48.49-install-controller-profiles`,
+  issue #175) — Controller Setup's `Apply now (this session)` became **Install**: the draft is saved as a JSON
+  profile (the existing `catalog/profile.py` format, new `profile_document` / `save_controller_profile`) in
+  `Documents/DJ MIDI Studio/Controllers` (`djmidi/user_paths.py`, `DJMIDI_WORKSPACE` override, fresh per test)
+  with a copy of its picture, registered as `user.<slug>`, and `load_user_profiles` reloads every installed
+  file at launch — a built-in name is skipped, never replaced. Re-installing your own profile under the same
+  name asks first. `.py` generation is relabelled for developers; `File → Controller Profile` gains
+  `Install Profile` and `Show Installed Profiles`.
 - [x] **File management, phase 1: File menu by object + "Your files"** (`v0.48.48-file-menu-by-object`,
   issue #175) — the File menu now groups the mapping (`Open Mapping…`, `Open Recent Mapping`, `Save Mapping`,
   `Save Mapping As…`, `Restore Previous Version…`, `Show Mapping in Finder`), the controller profile (new /
