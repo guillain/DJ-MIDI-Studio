@@ -132,6 +132,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **nanoPAD2 real layout + scenes as pad modes** (`v0.48.41-geometry-nanopad2`, issue #13) — the
+  catalog now models the 4 scenes like a Pioneer pad grid's pad modes: a 16-pad `pad_lookup` (pads 1–8
+  top row, 9–16 bottom) named `Pad N (SCENE S)`, replacing 64 static `Scene S Top/Bottom Pad C` entries,
+  so layouts, the emulator and live flashes group the scenes onto the same physical pad. 16 geometry
+  markers measured from the unlit pads' thin black outlines on luminance profiles (exact pixel bounds),
+  checked in the running app's Controller Emulator.
 - [x] **CMD Studio 4a real layout** (`v0.48.40-geometry-cmd-studio-4a`, issue #13) — `CONTROL_GEOMETRY`
   for all 67 buttons, same pixel-outline measurement as the CMD Micro. Each side's catalog names cover
   both deck layers, so one marker per button resolves either layer; the right LOOP arrows are placed by
