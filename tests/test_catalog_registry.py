@@ -32,7 +32,7 @@ def test_builtin_controllers_are_registered_at_import():
         "DDJ-REV5": 8,
         "DDJ-800": 8,
         "Behringer CMD LC-1": 0,
-        "Korg nanoPAD2": 0,
+        "Korg nanoPAD2": 16,
         "Behringer CMD Micro": 0,
         "Behringer CMD Studio 4a": 0,
     }
