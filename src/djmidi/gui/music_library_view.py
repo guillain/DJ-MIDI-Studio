@@ -69,7 +69,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from djmidi import taxonomy
+from djmidi import taxonomy, user_paths
 from djmidi.gui import help_texts
 from djmidi.gui.commands import WriteTrackMetadataCommand, WriteTracksMetadataCommand
 from djmidi.gui.help_button import help_button, help_row
@@ -1452,7 +1452,10 @@ class MusicLibraryView(QWidget):
             return
         name = self.playlist_list.currentItem().text().split("  (", 1)[0]
         path, _ = QFileDialog.getSaveFileName(
-            self, "Export as Serato crate", f"{name}.crate", "Serato crates (*.crate)"
+            self,
+            "Export as Serato crate",
+            str(user_paths.subfolder(user_paths.EXPORTS) / f"{name}.crate"),
+            "Serato crates (*.crate)",
         )
         if path:
             try:
@@ -1470,7 +1473,10 @@ class MusicLibraryView(QWidget):
             return
         name = self.playlist_list.currentItem().text().split("  (", 1)[0]
         path, _ = QFileDialog.getSaveFileName(
-            self, "Export as Traktor playlist", f"{name}.nml", "Traktor playlists (*.nml)"
+            self,
+            "Export as Traktor playlist",
+            str(user_paths.subfolder(user_paths.EXPORTS) / f"{name}.nml"),
+            "Traktor playlists (*.nml)",
         )
         if path:
             try:

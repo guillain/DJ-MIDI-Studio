@@ -204,6 +204,8 @@ def _slugify(name: str) -> str:
 
 class ControllerSetupView(QWidget):
     controllerApplied = Signal(str)
+    # The draft file just saved or opened (issue #175: reopened at launch).
+    draftFileChanged = Signal(str)
     # Emitted with a file path when the user, after importing triggers from a
     # Serato XML, also wants that file opened as an editable mapping.
     openMappingRequested = Signal(str)
@@ -1421,7 +1423,7 @@ class ControllerSetupView(QWidget):
         self._dirty = False
 
     def _on_save_session_clicked(self) -> None:
-        default_name = f"{self._slug() or 'controller'}.json"
+        default_name = str(user_paths.subfolder(user_paths.DRAFTS) / f"{self._slug() or 'controller'}.json")
         path_str, _ = QFileDialog.getSaveFileName(self, "Save controller setup session", default_name, "JSON files (*.json)")
         if not path_str:
             return
@@ -1432,11 +1434,14 @@ class ControllerSetupView(QWidget):
             QMessageBox.critical(self, "Failed to save session", str(exc))
             return
         _LOGGER.info("Saved Controller Setup session to %s (%d row(s))", path_str, len(self._rows))
+        self.draftFileChanged.emit(path_str)
 
     def _on_load_session_clicked(self) -> None:
         if self._dirty and not self._confirm("This will discard the current unsaved draft. Continue?"):
             return
-        path_str, _ = QFileDialog.getOpenFileName(self, "Load controller setup session", "", "JSON files (*.json)")
+        path_str, _ = QFileDialog.getOpenFileName(
+            self, "Load controller setup session", str(user_paths.subfolder(user_paths.DRAFTS)), "JSON files (*.json)"
+        )
         if not path_str:
             return
         try:
@@ -1446,6 +1451,7 @@ class ControllerSetupView(QWidget):
             QMessageBox.critical(self, "Failed to load session", str(exc))
             return
         _LOGGER.info("Loaded Controller Setup session from %s (%d row(s))", path_str, len(self._rows))
+        self.draftFileChanged.emit(path_str)
 
     # -- validation / export ---------------------------------------------------
 
