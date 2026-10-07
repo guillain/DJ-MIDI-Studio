@@ -153,6 +153,7 @@ class PreferencesDialog(QDialog):
         # vertical stack or a two-column layout whose column widths would
         # need constant rebalancing.
         tabs = QTabWidget()
+        self.tabs = tabs
         tabs.addTab(general_tab, "General")
         tabs.addTab(plugins_scroll, "Plugins")
         tabs.addTab(self._build_sync_tab(preferences), "Controller sync")

@@ -117,10 +117,10 @@ _CAPTURE_HELP = (
     "aren't in scope for a profile — delete those rows before exporting."
 )
 _IMPORT_HELP = (
-    "Import triggers from a Serato XML or a Traktor TSI mapping: adds one row per "
+    "Learn triggers from a Serato XML or a Traktor TSI mapping: adds one row per "
     "unique (channel, type, control) the file uses. It seeds the profile so you don't "
     "have to press every button on the hardware — it does NOT open the mapping for "
-    "editing (that's File → Open). Mapped functions aren't physical control names, so "
+    "editing (that's File → Open Mapping). Mapped functions aren't physical control names, so "
     "Section and Name still have to be filled in by hand. A TSI export can hold several "
     "devices (one per controller); you pick which one to import. After importing you're "
     "offered to open the same file as an editable mapping too."
@@ -287,12 +287,12 @@ class ControllerSetupView(QWidget):
         capture_layout.addWidget(self._learn_status)
 
         import_button = QPushButton(self._get_icon("import"), "")
-        import_button.setToolTip("Import triggers from a Serato XML or Traktor TSI mapping…")
+        import_button.setToolTip("Learn triggers from a mapping (Serato XML or Traktor TSI)…")
         import_button.clicked.connect(self._on_import_xml_clicked)
         self._attach_image_button = QPushButton(self._get_icon("image"), "")
         self._attach_image_button.setToolTip("Attach reference image…")
         self._attach_image_button.clicked.connect(self._on_attach_image_clicked)
-        import_help_button = self._help_button("Import", _IMPORT_HELP)
+        import_help_button = self._help_button("Learn triggers from a mapping", _IMPORT_HELP)
         self._image_label = QLabel("No reference image")
         self._image_label.setWordWrap(True)
         self._hint_labels.append(self._image_label)
@@ -449,7 +449,7 @@ class ControllerSetupView(QWidget):
             self._toolbar_row(
                 [
                     ("Session", [new_button, start_from_button, load_button, save_button, clear_button]),
-                    ("Import", [import_button, self._attach_image_button, import_help_button]),
+                    ("Learn", [import_button, self._attach_image_button, import_help_button]),
                     (
                         "Apply / Export",
                         [check_button, self._apply_button, export_button, submit_button, apply_help_button],
@@ -1277,7 +1277,7 @@ class ControllerSetupView(QWidget):
     def _on_import_xml_clicked(self) -> None:
         path_str, _ = QFileDialog.getOpenFileName(
             self,
-            "Import a MIDI mapping",
+            "Learn triggers from a mapping",
             "",
             "MIDI mappings (*.xml *.tsi);;Serato XML (*.xml);;Traktor TSI (*.tsi)",
         )

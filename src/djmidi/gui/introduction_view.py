@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import sys
+from datetime import UTC, datetime
 from pathlib import Path
 
 from PySide6.QtCore import Qt, Signal
@@ -44,6 +46,8 @@ class IntroductionView(QWidget):
 
     drillDownRequested = Signal(str, str)  # target tab key, controller name
     toolRequested = Signal(str)  # independent tool dock key
+    # "open" / "reveal" / "restore" / "sync" / "recent:<path>" (issue #175)
+    fileActionRequested = Signal(str)
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -121,6 +125,8 @@ class IntroductionView(QWidget):
         info.setWordWrap(True)
         info.setFrameShape(QFrame.Shape.StyledPanel)
 
+        files_box = self._build_files_box()
+
         overview_header = QHBoxLayout()
         overview_header.setSpacing(10)
         overview_header.addWidget(catalog_box, 3)
@@ -136,6 +142,7 @@ class IntroductionView(QWidget):
         layout.addWidget(title)
         layout.addWidget(self._description_label)
         layout.addLayout(loaded_file_row)
+        layout.addWidget(files_box)
         layout.addLayout(overview_header)
         layout.addWidget(cards_box)
         layout.addWidget(info)
@@ -222,6 +229,90 @@ class IntroductionView(QWidget):
                 "mappings. Start here, then use the shortcuts below to drill "
                 "down into the detailed views."
             )
+
+    def _build_files_box(self) -> QGroupBox:
+        """"Your files" (issue #175): every file the user works with, in one
+        place -- the open mapping and its previous version, recent mappings,
+        and the controller sync sets -- with an action for each."""
+        box = QGroupBox("Your files")
+        layout = QVBoxLayout(box)
+        layout.addLayout(help_row(self, *help_texts.DASHBOARD_FILES))
+        self._files_mapping_label = QLabel()
+        self._files_mapping_label.setWordWrap(True)
+        self._files_mapping_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        self._files_backup_label = QLabel()
+        self._files_backup_label.setWordWrap(True)
+        self._files_sync_label = QLabel()
+        self._files_sync_label.setWordWrap(True)
+        self._files_recent_layout = QVBoxLayout()
+        self._files_recent_layout.setSpacing(2)
+        info = QVBoxLayout()
+        for widget in (self._files_mapping_label, self._files_backup_label):
+            info.addWidget(widget)
+        info.addLayout(self._files_recent_layout)
+        info.addWidget(self._files_sync_label)
+        row = QHBoxLayout()
+        row.addLayout(info, 1)
+        layout.addLayout(row)
+        buttons = QHBoxLayout()
+        self._files_buttons: dict[str, QPushButton] = {}
+        for action, label in (
+            ("open", "Open mapping…"),
+            ("reveal", "Show in Finder" if sys.platform == "darwin" else "Show in folder"),
+            ("restore", "Restore previous version…"),
+            ("sync", "Manage sync sets…"),
+        ):
+            button = QPushButton(label)
+            button.clicked.connect(lambda _checked=False, a=action: self.fileActionRequested.emit(a))
+            buttons.addWidget(button)
+            self._files_buttons[action] = button
+        buttons.addStretch(1)
+        layout.addLayout(buttons)
+        self.set_files_summary(mapping=None)
+        return box
+
+    def set_files_summary(
+        self,
+        mapping: str | Path | None,
+        backup: str | Path | None = None,
+        sync_sets: list[str] | None = None,
+        recents: list[str] | None = None,
+    ) -> None:
+        if mapping is None:
+            self._files_mapping_label.setText("<b>Mapping:</b> none open — <i>File → Open Mapping…</i>")
+        else:
+            path = Path(mapping)
+            self._files_mapping_label.setText(f"<b>Mapping:</b> {path.name}<br><small>{path.parent}</small>")
+        if backup is None:
+            self._files_backup_label.setText("<b>Previous version:</b> none yet (made on every save)")
+        else:
+            when = datetime.fromtimestamp(Path(backup).stat().st_mtime, tz=UTC).astimezone()
+            self._files_backup_label.setText(f"<b>Previous version:</b> kept from {when:%Y-%m-%d %H:%M}")
+        while self._files_recent_layout.count():
+            item = self._files_recent_layout.takeAt(0)
+            if item.widget() is not None:
+                # Hidden now: deleteLater() only runs back in the event loop.
+                item.widget().hide()
+                item.widget().deleteLater()
+        others = [entry for entry in (recents or []) if mapping is None or entry != str(mapping)][:3]
+        if others:
+            self._files_recent_layout.addWidget(QLabel("<b>Recent:</b>"))
+            for entry in others:
+                button = QPushButton(Path(entry).name)
+                button.setToolTip(entry)
+                button.setFlat(True)
+                button.setStyleSheet("text-align: left;")
+                button.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Fixed)
+                button.clicked.connect(lambda _checked=False, e=entry: self.fileActionRequested.emit(f"recent:{e}"))
+                self._files_recent_layout.addWidget(button)
+        names = sync_sets or []
+        self._files_sync_label.setText(
+            f"<b>Sync sets:</b> {', '.join(names)}"
+            if names
+            else "<b>Sync sets:</b> none — record one in Controller Setup"
+        )
+        self._files_buttons["reveal"].setEnabled(mapping is not None)
+        self._files_buttons["restore"].setEnabled(backup is not None)
 
     def set_loaded_config_info(
         self,

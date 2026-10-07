@@ -15,9 +15,27 @@ DASHBOARD_OVERVIEW: HelpEntry = (
         "and shortcuts into the <b>By Channel</b>, <b>By Controller</b> and "
         "<b>Controller Images</b> views.<br><br>"
         "Open a Serato <tt>.xml</tt> or Traktor <tt>.tsi</tt> mapping with "
-        "<b>File → Open…</b>."
+        "<b>File → Open Mapping…</b>."
     ),
     "mapping-editor.md",
+)
+
+DASHBOARD_FILES: HelpEntry = (
+    "Your files",
+    (
+        "Everything you work with, in one place:<ul>"
+        "<li><b>Mapping</b>: the Serato <tt>.xml</tt> or Traktor <tt>.tsi</tt> file open in the "
+        "editor. It stays where your DJ software keeps it; <b>File → Save Mapping</b> writes it "
+        "back there.</li>"
+        "<li><b>Previous version</b>: every save keeps the version it replaces next to the file "
+        "(<tt>.bak</tt>); <b>Restore previous version…</b> puts it back.</li>"
+        "<li><b>Recent</b>: the last mappings you opened (also in <b>File → Open Recent "
+        "Mapping</b>).</li>"
+        "<li><b>Sync sets</b>: the initialization messages recorded in Controller Setup, one per "
+        "controller, sent by <b>⟳ Sync</b>.</li></ul>"
+        "Controller profiles you build live in <b>File → Controller Profile</b>."
+    ),
+    "workspace.md",
 )
 
 DASHBOARD_TOOLS: HelpEntry = (
@@ -62,8 +80,8 @@ EDIT_PANEL: HelpEntry = (
         "Serato repeats each trigger several times in a mapping and those copies must stay "
         "identical: edit in <b>By Deck</b>, which updates every copy at once.<br><br>"
         "<b>Edit → Validate</b> lists errors, warnings and info in the table below "
-        "(duplicate copies are info only: they are expected). <b>File → Save</b> shows the "
-        "exact changes before writing, keeps a backup, and <b>File → Rollback Last Save</b> "
+        "(duplicate copies are info only: they are expected). <b>File → Save Mapping</b> shows the "
+        "exact changes before writing, keeps a backup, and <b>File → Restore Previous Version…</b> "
         "restores it."
     ),
     "mapping-editor.md",

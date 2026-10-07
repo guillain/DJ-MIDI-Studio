@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import logging
+import shutil
 import sys
+from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
@@ -50,7 +52,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from djmidi import catalog, software
+from djmidi import catalog, file_locations, software
 from djmidi.controller_sync import (
     ControllerSyncSet,
     SyncResult,
@@ -65,6 +67,7 @@ from djmidi.gui.controller_setup import ControllerSetupView
 from djmidi.gui.controller_tree import CELL_KEY_ROLE, build_controller_columns
 from djmidi.gui.deck_tree import build_deck_columns
 from djmidi.gui.edit_panel import EditPanel
+from djmidi.gui.file_reveal import reveal_in_file_manager
 from djmidi.gui.geometry import resolve_geometry_label
 from djmidi.gui.helpful_notes_dialog import HelpfulNotesDialog
 from djmidi.gui.introduction_view import IntroductionView
@@ -118,6 +121,10 @@ _REFERENCE_LINKS = [
         "https://djtechtools.com/2018/06/27/serato-dj-pro-four-ways-for-syncing-with-external-gear/",
     ),
 ]
+
+_REVEAL_LABEL = "Show Mapping in Finder" if sys.platform == "darwin" else "Show Mapping in File Manager"
+_RECENT_SETTINGS_KEY = "files/recent_mappings"
+_LAST_DIR_SETTINGS_KEY = "files/last_mapping_dir"
 
 _LOCAL_HELP_DOCUMENTS = [
     ("Documentation Home", "docs/README.md"),
@@ -402,7 +409,15 @@ class MainWindow(QMainWindow):
         main_splitter.setAutoFillBackground(True)
         self._tool_docks = self._create_tool_docks()
 
+        settings = self._layout_settings()
+        self._recent_mappings: list[str] = (
+            [str(entry) for entry in (settings.value(_RECENT_SETTINGS_KEY, [], type=list) or [])]
+            if settings is not None
+            else []
+        )
         self._build_menu()
+        self.introduction_view.fileActionRequested.connect(self._on_dashboard_file_action)
+        self._refresh_file_actions()
         self.helpful_notes_dialog = HelpfulNotesDialog(self)
         self.helpful_notes_dialog.closedPersistently.connect(self._persist_helpful_notes_closed)
         self.helpful_notes_dialog.closedForSession.connect(self._allow_helpful_notes_next_start)
@@ -588,24 +603,72 @@ class MainWindow(QMainWindow):
         # On macOS, Qt moves the menu bar into the system-wide bar at the top of
         # the screen by default, which is easy to miss; keep it in-window instead.
         self.menuBar().setNativeMenuBar(False)
+        # Organized by object (issue #175): the DJ software mapping first,
+        # then the controller profile being built, then imports/exports that
+        # used to live only behind buttons in their tabs.
         file_menu = self.menuBar().addMenu("&File")
 
-        open_action = QAction("&Open...", self)
+        open_action = QAction("&Open Mapping...", self)
+        open_action.setShortcut(QKeySequence.StandardKey.Open)
         open_action.triggered.connect(self._on_open)
         file_menu.addAction(open_action)
+        self._recent_menu = file_menu.addMenu("Open &Recent Mapping")
 
-        save_action = QAction("&Save", self)
+        save_action = QAction("&Save Mapping", self)
+        save_action.setShortcut(QKeySequence.StandardKey.Save)
         save_action.triggered.connect(self._on_save)
         file_menu.addAction(save_action)
 
-        save_as_action = QAction("Save &As...", self)
+        save_as_action = QAction("Save Mapping &As...", self)
         save_as_action.triggered.connect(self._on_save_as)
         file_menu.addAction(save_as_action)
 
-        self._rollback_action = QAction("Rollback Last Save", self)
+        self._rollback_action = QAction("Restore &Previous Version...", self)
+        self._rollback_action.setToolTip("Replace the mapping with the version saved before its last save.")
         self._rollback_action.setEnabled(False)
         self._rollback_action.triggered.connect(self._on_rollback_last_save)
         file_menu.addAction(self._rollback_action)
+
+        self._reveal_action = QAction(_REVEAL_LABEL, self)
+        self._reveal_action.setEnabled(False)
+        self._reveal_action.triggered.connect(self._on_reveal_mapping)
+        file_menu.addAction(self._reveal_action)
+
+        file_menu.addSeparator()
+        profile_menu = file_menu.addMenu("&Controller Profile")
+        setup = self.controller_setup_view
+        for label, handler in (
+            ("New Draft", setup._on_new_session_clicked),
+            ("Open Draft...", setup._on_load_session_clicked),
+            ("Save Draft...", setup._on_save_session_clicked),
+            ("Learn Triggers from a Mapping...", setup._on_import_xml_clicked),
+        ):
+            action = QAction(label, self)
+            action.triggered.connect(lambda _checked=False, h=handler: self._run_in_tab("setup", h))
+            profile_menu.addAction(action)
+
+        library = self.music_library_view
+        import_menu = file_menu.addMenu("&Import")
+        for label, handler in (
+            ("Serato Crates into the Music Library...", library._on_import_serato_clicked),
+            ("Traktor Playlists into the Music Library...", library._on_import_traktor_clicked),
+            ("Rekordbox USB Export into the Music Library...", library._on_import_rekordbox_clicked),
+        ):
+            action = QAction(label, self)
+            action.triggered.connect(lambda _checked=False, h=handler: self._run_in_tab("library", h))
+            import_menu.addAction(action)
+        export_menu = file_menu.addMenu("&Export")
+        for label, handler in (
+            ("Selected Playlist as a Serato Crate...", library._on_export_serato_clicked),
+            ("Selected Playlist as a Traktor Playlist...", library._on_export_traktor_clicked),
+        ):
+            action = QAction(label, self)
+            action.triggered.connect(lambda _checked=False, h=handler: self._run_in_tab("library", h))
+            export_menu.addAction(action)
+        log_action = QAction("Live Monitor Log...", self)
+        log_action.triggered.connect(self.live_monitor_view._save_log)
+        export_menu.addAction(log_action)
+        self._rebuild_recent_menu()
 
         edit_menu = self.menuBar().addMenu("&Edit")
 
@@ -666,7 +729,7 @@ class MainWindow(QMainWindow):
         self._preferences_button.setFixedSize(28, 28)
         self._preferences_button.setProperty("compact", True)
         self._preferences_button.setToolTip("Preferences...")
-        self._preferences_button.clicked.connect(self._on_preferences)
+        self._preferences_button.clicked.connect(lambda: self._on_preferences())
         # One-click controller initialization (Sync), beside the gear so it's
         # reachable from every tab; Live Monitor carries the same action.
         self._sync_button = QPushButton("⟳ Sync")
@@ -1008,8 +1071,12 @@ class MainWindow(QMainWindow):
             if application is not None:
                 apply_theme(application, "system")
 
-    def _on_preferences(self) -> None:
+    def _on_preferences(self, tab: str | None = None) -> None:
         dialog = PreferencesDialog(self.preferences, self)
+        if tab:
+            for index in range(dialog.tabs.count()):
+                if dialog.tabs.tabText(index) == tab:
+                    dialog.tabs.setCurrentIndex(index)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             self.preferences.save(self.preferences_path)
             application = QApplication.instance()
@@ -1026,6 +1093,7 @@ class MainWindow(QMainWindow):
                 # monitoring immediately, matching "Enable MIDI routing
                 # policies" applying right away above -- no-op if already running.
                 self.live_monitor_view.ensure_monitoring_started()
+            self._refresh_file_actions()
             self.statusBar().showMessage("Preferences saved")
 
     def _on_sync_controllers(self) -> list[SyncResult]:
@@ -1122,7 +1190,7 @@ class MainWindow(QMainWindow):
         path_str, _ = QFileDialog.getOpenFileName(
             self,
             "Open DJ mapping",
-            "",
+            str(self._mapping_start_dir()),
             "Supported mapping files (*.xml *.nml *.tsi);;All files (*)",
         )
         if not path_str:
@@ -1189,6 +1257,7 @@ class MainWindow(QMainWindow):
         self._load_tree()
         self.issues_table.setRowCount(0)
         self.statusBar().showMessage(f"Loaded {len(self.config.controls)} controls from {self.current_path.name}")
+        self._remember_mapping(path)
         _LOGGER.info("Loaded %d control(s) from %s (software=%s)", len(self.config.controls), path, selected.plugin_id)
 
     def _update_window_title(self) -> None:
@@ -1810,7 +1879,7 @@ class MainWindow(QMainWindow):
         path_str, _ = QFileDialog.getSaveFileName(
             self,
             f"Export {definition.name} mapping",
-            "",
+            str(self.current_path or self._mapping_start_dir()),
             f"{definition.name} files (*{' *'.join(definition.extensions)})",
         )
         if not path_str:
@@ -1818,6 +1887,7 @@ class MainWindow(QMainWindow):
         target = Path(path_str)
         if self._safe_save(target, definition):
             self.current_path = target
+            self._remember_mapping(target)
             self.statusBar().showMessage(f"Saved to {self.current_path}")
 
     def _safe_save(self, target: Path, definition) -> bool:
@@ -1844,21 +1914,100 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "Failed to save mapping", str(exc))
             return False
         self._last_save_plan = plan
-        self._rollback_action.setEnabled(plan.backup_path.exists())
+        self._refresh_file_actions()
         self.statusBar().showMessage(f"Saved to {target}")
         return True
 
     def _on_rollback_last_save(self) -> None:
-        if self._last_save_plan is None:
+        """Restore the version saved before the mapping's last save: the
+        `.bak` every save keeps next to the file, so this also works for a
+        save made in an earlier session (it used to need this session's)."""
+        if self.current_path is None:
+            return
+        backup = file_locations.backup_path(self.current_path)
+        if not backup.is_file():
+            self._refresh_file_actions()
+            return
+        when = datetime.fromtimestamp(backup.stat().st_mtime, tz=UTC).astimezone().strftime("%Y-%m-%d %H:%M")
+        answer = QMessageBox.question(
+            self,
+            "Restore previous version",
+            f"Replace {self.current_path.name} with the version saved before its last save ({when})?\n\n"
+            "Unsaved edits in the app are lost.",
+        )
+        if answer != QMessageBox.StandardButton.Yes:
             return
         try:
-            self._last_save_plan.rollback()
+            shutil.copy2(backup, self.current_path)
         except OSError as exc:
-            _LOGGER.exception("Failed to rollback save for %s", self._last_save_plan.path)
-            QMessageBox.critical(self, "Failed to rollback save", str(exc))
+            _LOGGER.exception("Failed to restore %s from %s", self.current_path, backup)
+            QMessageBox.critical(self, "Failed to restore the previous version", str(exc))
             return
-        self._rollback_action.setEnabled(False)
-        self.statusBar().showMessage(f"Rolled back {self._last_save_plan.path}")
+        _LOGGER.info("Restored %s from %s", self.current_path, backup)
+        self._last_save_plan = None
+        restored = self.current_path
+        self._load_mapping_from_path(restored)
+        self.statusBar().showMessage(f"Restored the previous version of {restored.name}")
+
+    def _on_dashboard_file_action(self, action: str) -> None:
+        """The Dashboard's "Your files" card buttons."""
+        if action == "open":
+            self._on_open()
+        elif action == "reveal":
+            self._on_reveal_mapping()
+        elif action == "restore":
+            self._on_rollback_last_save()
+        elif action == "sync":
+            self._on_preferences(tab="Controller sync")
+        elif action.startswith("recent:"):
+            self._load_mapping_from_path(Path(action.removeprefix("recent:")))
+
+    def _on_reveal_mapping(self) -> None:
+        if self.current_path is not None:
+            reveal_in_file_manager(self.current_path)
+
+    def _run_in_tab(self, tab_key: str, handler) -> None:
+        """Show the tab an action belongs to, then run it, so a File menu
+        entry lands the user where its result appears."""
+        self.left_tabs.setCurrentIndex(self._tab_indexes[tab_key])
+        handler()
+
+    def _mapping_start_dir(self) -> Path:
+        settings = self._layout_settings()
+        last_dir = settings.value(_LAST_DIR_SETTINGS_KEY, "", type=str) if settings is not None else ""
+        return file_locations.mapping_start_dir(self.software_id, last_dir or None)
+
+    def _remember_mapping(self, path: Path) -> None:
+        self._recent_mappings = file_locations.push_recent(self._recent_mappings, path)
+        settings = self._layout_settings()
+        if settings is not None:
+            settings.setValue(_RECENT_SETTINGS_KEY, self._recent_mappings)
+            settings.setValue(_LAST_DIR_SETTINGS_KEY, str(path.parent))
+        self._rebuild_recent_menu()
+        self._refresh_file_actions()
+
+    def _rebuild_recent_menu(self) -> None:
+        self._recent_menu.clear()
+        recents = file_locations.existing_recents(self._recent_mappings)
+        for entry in recents:
+            action = QAction(f"{Path(entry).name}  —  {Path(entry).parent}", self)
+            action.triggered.connect(lambda _checked=False, e=entry: self._load_mapping_from_path(Path(e)))
+            self._recent_menu.addAction(action)
+        self._recent_menu.setEnabled(bool(recents))
+
+    def _refresh_file_actions(self) -> None:
+        """Enable the mapping file actions and refresh the Dashboard's
+        "Your files" card from the current state."""
+        has_file = self.current_path is not None
+        backup = file_locations.backup_path(self.current_path) if has_file else None
+        self._rollback_action.setEnabled(backup is not None and backup.is_file())
+        self._reveal_action.setEnabled(has_file)
+        self.introduction_view.set_files_summary(
+            mapping=self.current_path,
+            backup=backup if backup is not None and backup.is_file() else None,
+            sync_sets=[sync_set.controller for sync_set in self.preferences.controller_sync_sets],
+            recents=file_locations.existing_recents(self._recent_mappings),
+        )
 
     def _on_validate(self) -> None:
         if self.config is None:

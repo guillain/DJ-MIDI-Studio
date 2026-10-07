@@ -1566,3 +1566,59 @@ def test_glyph_only_buttons_leave_room_for_their_glyph():
         assert all(b.icon().isNull() for b in compact if b.text() == "☰")
     finally:
         window.close()
+
+
+def test_file_menu_is_organized_by_object():
+    """Issue #175: the mapping actions, then the controller profile, then
+    imports/exports, all reachable from File."""
+    window = MainWindow()
+    try:
+        file_menu = next(a.menu() for a in window.menuBar().actions() if a.text() == "&File")
+        labels = [a.text() for a in file_menu.actions() if not a.isSeparator()]
+        assert labels[:6] == [
+            "&Open Mapping...",
+            "Open &Recent Mapping",
+            "&Save Mapping",
+            "Save Mapping &As...",
+            "Restore &Previous Version...",
+            window._reveal_action.text(),
+        ]
+        assert {"&Controller Profile", "&Import", "&Export"} <= set(labels)
+    finally:
+        window.close()
+
+
+def test_recent_mappings_fill_the_menu_and_the_dashboard(tmp_path):
+    window = MainWindow()
+    try:
+        first, second = tmp_path / "a.xml", tmp_path / "b.xml"
+        for path in (first, second):
+            path.write_text("<midi/>")
+            window._remember_mapping(path)
+        assert [a.text().split("  —  ")[0] for a in window._recent_menu.actions()] == ["b.xml", "a.xml"]
+        assert window._recent_menu.isEnabled()
+        assert "Recent" in window.introduction_view._files_recent_layout.itemAt(0).widget().text()
+    finally:
+        window.close()
+
+
+def test_restore_previous_version_uses_the_backup_next_to_the_mapping(tmp_path, monkeypatch):
+    from PySide6.QtWidgets import QMessageBox
+
+    window = MainWindow()
+    try:
+        mapping = tmp_path / "mapping.xml"
+        mapping.write_text("new")
+        (tmp_path / "mapping.xml.bak").write_text("previous")
+        window.current_path = mapping
+        window._refresh_file_actions()
+        assert window._rollback_action.isEnabled()
+        assert window.introduction_view._files_buttons["restore"].isEnabled()
+        reloaded = []
+        monkeypatch.setattr(QMessageBox, "question", lambda *a, **k: QMessageBox.StandardButton.Yes)
+        monkeypatch.setattr(window, "_load_mapping_from_path", reloaded.append)
+        window._on_rollback_last_save()
+        assert mapping.read_text() == "previous"
+        assert reloaded == [mapping]
+    finally:
+        window.close()
