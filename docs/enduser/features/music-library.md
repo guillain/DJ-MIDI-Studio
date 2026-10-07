@@ -92,6 +92,10 @@ Tracks that already have the value are skipped, the whole batch is a single
 `Undo` step, and a file that can't be written is reported at the end
 without stopping the others.
 
+A long batch shows a progress window (`Writing tags… 312/850`), and so does
+its `Undo`. `Cancel` stops after the current file: the files already written
+keep their new tags, and `Undo` restores exactly those.
+
 ![Write tags to selection](../../images/layout/music-library-bulk-tags.png)
 
 ## Genre categories

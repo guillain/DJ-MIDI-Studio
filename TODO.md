@@ -132,6 +132,13 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Progress for bulk tag writes** (`v0.48.42-library-tag-write-progress`) — requested by the
+  maintainer: `Write tags to selection…` on thousands of files ran inside one blocking `QUndoStack.push`
+  with only a wait cursor. `WriteTracksMetadataCommand` now takes a `progress_factory(label, total)`
+  called afresh for every redo/undo pass; its per-file callback returning False stops the pass
+  (`cancelled`), keeping what's written, which is exactly what undo restores. The Music Library shows a
+  `QProgressDialog` (window-modal, appears after 400 ms) for writing, restoring and the non-cancellable
+  re-read of the written files' tags.
 - [x] **nanoPAD2 real layout + scenes as pad modes** (`v0.48.41-geometry-nanopad2`, issue #13) — the
   catalog now models the 4 scenes like a Pioneer pad grid's pad modes: a 16-pad `pad_lookup` (pads 1–8
   top row, 9–16 bottom) named `Pad N (SCENE S)`, replacing 64 static `Scene S Top/Bottom Pad C` entries,
