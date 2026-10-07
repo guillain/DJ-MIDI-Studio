@@ -75,6 +75,7 @@ from djmidi.catalog.community import (
 )
 from djmidi.controller_sync import ControllerSyncSet, sync_set_from_events
 from djmidi.gui.controller_submission_dialog import ControllerSubmissionDialog
+from djmidi.gui.help_button import help_button
 from djmidi.gui.port_list_utils import refresh_checked_port_list
 from djmidi.gui.scroll_utils import AutoSizeScrollArea
 from djmidi.gui.theme import colors as theme_colors
@@ -645,10 +646,9 @@ class ControllerSetupView(QWidget):
         return style.standardIcon(icon_map.get(icon_type, QStyle.StandardPixmap.SP_FileIcon))
 
     def _help_button(self, title: str, text: str) -> QPushButton:
-        button = QPushButton(self._get_icon("help"), "")
-        button.setToolTip(f"{title} help")
-        button.clicked.connect(lambda: QMessageBox.information(self, title, text))
-        return button
+        # The app-wide "?" help button (help_button.py), with a link to this
+        # tab's page of the user guide.
+        return help_button(self, title, text, "controller-setup.md")
 
     def _titled_panel(self, title: str, header_buttons: list[QPushButton]) -> tuple[QFrame, QVBoxLayout]:
         """A QGroupBox-styled panel with icon-only action buttons in its title

@@ -39,8 +39,10 @@ from PySide6.QtWidgets import (
 )
 
 from djmidi import catalog
+from djmidi.gui import help_texts
 from djmidi.gui import layout as layout_mod
 from djmidi.gui.geometry import CONTROL_GEOMETRY
+from djmidi.gui.help_button import help_button
 from djmidi.gui.jog import DEGREES_PER_TICK as _JOG_DEGREES_PER_TICK
 from djmidi.gui.live_send import LiveSendControl
 
@@ -225,6 +227,7 @@ class ControllerImageView(QWidget):
         controls.addWidget(self._midi_checkbox)
         controls.addWidget(self._geometry_checkbox)
         controls.addWidget(self._live_send)
+        controls.addWidget(help_button(self, *help_texts.CONTROLLER_IMAGES))
         controls.addStretch(1)
 
         # This toolbar row (controller picker, zoom/docs buttons, both

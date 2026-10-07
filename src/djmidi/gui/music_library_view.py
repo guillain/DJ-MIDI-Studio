@@ -70,7 +70,9 @@ from PySide6.QtWidgets import (
 )
 
 from djmidi import taxonomy
+from djmidi.gui import help_texts
 from djmidi.gui.commands import WriteTrackMetadataCommand, WriteTracksMetadataCommand
+from djmidi.gui.help_button import help_button, help_row
 from djmidi.library import workspace
 from djmidi.library.db import LibraryDB, default_library_db_path
 from djmidi.library.metadata import TrackMetadata, clean_noise_frames
@@ -481,6 +483,7 @@ class MusicLibraryView(QWidget):
         self.scan_button.clicked.connect(self.start_scan)
         for button in (self.add_root_button, self.remove_root_button, self.scan_button):
             row.addWidget(button, 0, Qt.AlignmentFlag.AlignTop)
+        row.addWidget(help_button(self, *help_texts.LIBRARY_FOLDERS), 0, Qt.AlignmentFlag.AlignTop)
         box.addLayout(row)
         status_row = QHBoxLayout()
         self.status_label = QLabel("Add a music folder, then scan it.")
@@ -576,6 +579,7 @@ class MusicLibraryView(QWidget):
         second.addWidget(self.camelot_compatible_check)
         second.addStretch(1)
         second.addWidget(self.reset_filters_button)
+        second.addWidget(help_button(self, *help_texts.LIBRARY_TABLE))
         rows.addLayout(first)
         rows.addLayout(second)
         self._refill_combo(self.genre_filter, ALL_GENRES, [])
@@ -592,6 +596,7 @@ class MusicLibraryView(QWidget):
     def _build_track_panel(self) -> QWidget:
         panel = QWidget()
         box = QVBoxLayout(panel)
+        box.addLayout(help_row(self, *help_texts.LIBRARY_TRACK))
         self.track_path_label = QLabel()
         self.track_path_label.setWordWrap(True)
         self.track_path_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
@@ -659,6 +664,7 @@ class MusicLibraryView(QWidget):
     def _build_categories_panel(self) -> QWidget:
         panel = QWidget()
         box = QVBoxLayout(panel)
+        box.addLayout(help_row(self, *help_texts.LIBRARY_CATEGORIES))
         self.category_tree = QTreeWidget()
         self.category_tree.setHeaderLabels(["Category", "Tracks", "Aliases"])
         self.category_tree.setColumnWidth(0, 160)
@@ -690,6 +696,7 @@ class MusicLibraryView(QWidget):
     def _build_playlists_panel(self) -> QWidget:
         panel = QWidget()
         box = QVBoxLayout(panel)
+        box.addLayout(help_row(self, *help_texts.LIBRARY_PLAYLISTS))
         self.playlist_list = QListWidget()
         self.playlist_list.currentItemChanged.connect(self._on_playlist_selected)
         box.addWidget(self.playlist_list, 1)
