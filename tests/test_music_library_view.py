@@ -392,6 +392,40 @@ def test_write_tags_to_selection_is_one_undo_step(library):
     assert read_metadata(a).genre == "Techno" and read_metadata(b).album is None
 
 
+
+def test_write_tags_to_selection_shows_progress_and_stops_on_cancel(library, monkeypatch):
+    """Writing tags to thousands of files is long: every pass gets a progress
+    window, and Cancel keeps what's already written (undoable)."""
+    view, music, _ = library
+    a, b = str(music / "Tek" / "Tribe" / "a.mp3"), str(music / "Tek" / "Tribe" / "b.mp3")
+    labels = []
+
+    def fake_progress(label, total, cancellable=True):
+        labels.append((label, total, cancellable))
+        return lambda done, total: done < 1 if label == "Writing tags…" else True
+
+    monkeypatch.setattr(view, "_tag_write_progress", fake_progress)
+    _select_paths(view, [a, b])
+    assert view.write_tags_to_selection({"genre": "Tribe"}) == 1
+    assert labels[0] == ("Writing tags…", 2, True)
+    assert "Stopped: tags written to 1 of 2" in view.status_label.text()
+    assert [read_metadata(p).genre for p in (a, b)].count("Tribe") == 1
+    view.undo_stack.undo()
+    assert labels[-1][0] == "Restoring tags…"
+    assert read_metadata(a).genre == read_metadata(b).genre == "Techno"
+
+
+def test_tag_write_progress_dialog_counts_files(library):
+    view, _music, _ = library
+    report = view._tag_write_progress("Writing tags…", 3)
+    assert report(1, 3) is True
+    from PySide6.QtWidgets import QProgressDialog
+
+    dialog = view.findChildren(QProgressDialog)[-1]
+    assert dialog.labelText() == "Writing tags… 1/3" and dialog.value() == 1
+    dialog.cancel()
+    assert report(2, 3) is False
+
 def test_write_tags_to_selection_skips_unchanged_and_reports_failures(library, monkeypatch):
     view, music, _ = library
     a, c = str(music / "Tek" / "Tribe" / "a.mp3"), str(music / "misc" / "c.mp3")

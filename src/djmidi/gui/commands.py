@@ -179,18 +179,32 @@ class WriteTrackMetadataCommand(QUndoCommand):
         self._on_applied(self._path)
 
 
+# A progress callback: (files done, total) -> False to stop after the
+# current file. Made fresh by a factory for every redo/undo pass, so each
+# pass (the first write, an undo hours later, a redo) gets its own dialog.
+Progress = Callable[[int, int], bool]
+ProgressFactory = Callable[[str, int], Progress]
+
+
 class WriteTracksMetadataCommand(QUndoCommand):
     """Undoable write of managed tags to several audio files at once (Music
     Library tab, "Write tags to selection…"). One undo step for the whole
     batch. A file that fails to write is recorded in `failures` and skipped
     (also on undo) instead of aborting the rest; if nothing at all could be
-    written the command marks itself obsolete so `QUndoStack.push` drops it."""
+    written the command marks itself obsolete so `QUndoStack.push` drops it.
+
+    Writing thousands of files takes a while, so an optional
+    `progress_factory(label, total)` is called at the start of every redo and
+    undo and its callback after each file. When the callback returns False
+    the pass stops there (`cancelled` is set): files already written stay
+    written and are exactly the ones an undo restores."""
 
     def __init__(
         self,
         changes: dict[str, tuple[dict[str, object], dict[str, object]]],
         on_applied: Callable[[list[str]], None],
         writer: Callable[..., None] | None = None,
+        progress_factory: ProgressFactory | None = None,
     ) -> None:
         fields = sorted({name for _old, new in changes.values() for name in new})
         super().__init__(f"Edit {', '.join(fields)} of {len(changes)} tracks")
@@ -199,30 +213,37 @@ class WriteTracksMetadataCommand(QUndoCommand):
         if writer is None:
             from djmidi.library.metadata import write_metadata as writer
         self._writer = writer
+        self._progress_factory = progress_factory
         self.written: list[str] = []
         self.failures: dict[str, str] = {}
+        self.cancelled = False
 
-    def redo(self) -> None:
-        self.written, self.failures = [], {}
-        for path, (_old, new) in self._changes.items():
+    def _write_all(self, label: str, items: list[tuple[str, dict[str, object]]]) -> list[str]:
+        progress = self._progress_factory(label, len(items)) if self._progress_factory else None
+        done: list[str] = []
+        self.cancelled = False
+        for index, (path, fields) in enumerate(items):
+            if progress is not None and not progress(index, len(items)):
+                self.cancelled = True
+                break
             try:
-                self._writer(path, **new)
+                self._writer(path, **fields)
             except Exception as exc:  # noqa: BLE001 - one bad file must not stop the batch
                 self.failures[path] = str(exc)
             else:
-                self.written.append(path)
+                done.append(path)
+        if progress is not None:
+            progress(len(items), len(items))
+        return done
+
+    def redo(self) -> None:
+        self.failures = {}
+        self.written = self._write_all("Writing tags…", [(path, new) for path, (_old, new) in self._changes.items()])
         if not self.written:
             self.setObsolete(True)
             return
         self._on_applied(self.written)
 
     def undo(self) -> None:
-        restored: list[str] = []
-        for path in self.written:
-            try:
-                self._writer(path, **self._changes[path][0])
-            except Exception as exc:  # noqa: BLE001
-                self.failures[path] = str(exc)
-            else:
-                restored.append(path)
+        restored = self._write_all("Restoring tags…", [(path, self._changes[path][0]) for path in self.written])
         self._on_applied(restored)

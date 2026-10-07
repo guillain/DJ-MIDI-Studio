@@ -224,3 +224,38 @@ def test_write_tracks_metadata_command_dropped_when_nothing_written():
     command = WriteTracksMetadataCommand({"x": ({}, {"genre": "G"})}, lambda paths: None, writer=writer)
     stack.push(command)
     assert stack.count() == 0 and command.failures == {"x": "nope"}
+
+
+def test_write_tracks_metadata_command_reports_progress_and_can_be_cancelled():
+    """A bulk tag write reports each file to a fresh progress callback per
+    redo/undo pass; stopping keeps what's written, and undo restores exactly that."""
+    from PySide6.QtGui import QUndoStack
+
+    from djmidi.gui.commands import WriteTracksMetadataCommand
+
+    files = {name: {"genre": "Old"} for name in ("a", "b", "c")}
+    passes = []
+
+    def writer(path, **fields):
+        files[path].update(fields)
+
+    def factory(label, total):
+        calls = []
+        passes.append((label, total, calls))
+
+        def report(done, total):
+            calls.append(done)
+            return done < 2  # stop before the third file
+
+        return report
+
+    changes = {path: ({"genre": "Old"}, {"genre": "New"}) for path in files}
+    stack = QUndoStack()
+    command = WriteTracksMetadataCommand(changes, lambda paths: None, writer=writer, progress_factory=factory)
+    stack.push(command)
+    assert command.cancelled is True and command.written == ["a", "b"]
+    assert [files[p]["genre"] for p in ("a", "b", "c")] == ["New", "New", "Old"]
+    assert passes[0][:2] == ("Writing tags…", 3) and passes[0][2] == [0, 1, 2, 3]
+    stack.undo()
+    assert passes[1][:2] == ("Restoring tags…", 2)
+    assert all(f["genre"] == "Old" for f in files.values())
