@@ -210,7 +210,7 @@ LIBRARY_TRACK: HelpEntry = (
         "<b>Write tags to selection…</b> writes chosen tags to every selected track as "
         "one undo step, with a progress window you can cancel. "
         "<b>Confirm suggested category</b> turns an amber suggestion into a permanent "
-        "alias. <b>Clean noise frames…</b> lists leftover junk tags and removes them only "
+        "alias; <b>Confirm all suggestions</b> does it for every track shown, after listing them. <b>Clean noise frames…</b> lists leftover junk tags and removes them only "
         "after you confirm."
     ),
     "music-library.md",

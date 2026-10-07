@@ -562,3 +562,28 @@ def test_value_filters_survive_a_reload(library):
     view.reload()
     assert view.genre_filter.currentData() == "Techno"
     assert _titles(view) == ["Alpha", "Bravo"]
+
+
+def test_confirm_all_suggestions_records_every_visible_pair(library, monkeypatch):
+    """One click confirms every suggested category among the shown tracks
+    (each genre becomes an alias), after listing them."""
+    view, _music, _ = library
+    assert view.pending_suggestions() == {"Psytrancee": "Tek%%PsyTrance"}
+    assert view.accept_all_suggestions_button.isEnabled()
+    assert view.accept_all_suggestions_button.text() == "Confirm all suggestions (1)"
+    asked = []
+    monkeypatch.setattr(
+        QMessageBox, "question", lambda *args, **kwargs: asked.append(args[2]) or QMessageBox.StandardButton.Yes
+    )
+    view.accept_all_suggestions_button.click()
+    assert "Psytrancee" in asked[0]
+    rows = {row.title: row for row in view.table_model.rows()}
+    assert rows["Charlie"].category == "Tek%%PsyTrance" and rows["Charlie"].category_suggestion is None
+    assert view.pending_suggestions() == {} and not view.accept_all_suggestions_button.isEnabled()
+
+
+def test_confirm_all_suggestions_only_covers_the_filtered_tracks(library):
+    view, _music, _ = library
+    view.filter_edit.setText("Alpha")
+    assert view.pending_suggestions() == {}
+    assert view.confirm_all_suggestions() == 0
