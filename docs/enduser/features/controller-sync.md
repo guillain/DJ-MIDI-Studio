@@ -60,6 +60,11 @@ Open ⚙ **Preferences** → **Controller sync**. Each set shows its message
 count; choose which output port it goes to (`Auto` follows the rules above)
 or remove it.
 
+Each set is a file in `Documents/DJ MIDI Studio/Sync`, one per controller,
+so you can back it up or copy it to another computer. Sets recorded with an
+older version are moved there automatically the first time you start this
+one.
+
 ## Related
 
 - [Controller Setup](controller-setup.md): where sync sets are recorded.

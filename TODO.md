@@ -132,6 +132,14 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **File management, phase 3: visible workspace + reopen at launch** (`v0.48.50-workspace-folder`,
+  issue #175) — `Documents/DJ MIDI Studio` (`user_paths.ensure_workspace`, with a README) holds `Controllers`,
+  `Sync`, `Drafts`, `Logs` and `Exports`; Controller Setup drafts, Live Monitor logs and Music Library exports
+  default there, and Preferences shows the folder with `Open folder`. Sync sets are now one JSON file per
+  controller in `Sync` (`sync_store.py`): adopted from `preferences.json` once at launch, then mirrored on every
+  preferences save. Requested in the same session: the app **reopens the last mapping** with its software,
+  skipping the detection prompt (`_load_mapping_from_path(..., software_id=)`), and hands the last saved/opened
+  Controller Setup draft to that tab — new `reopen_last_files` preference, on by default.
 - [x] **File management, phase 2: install a controller profile** (`v0.48.49-install-controller-profiles`,
   issue #175) — Controller Setup's `Apply now (this session)` became **Install**: the draft is saved as a JSON
   profile (the existing `catalog/profile.py` format, new `profile_document` / `save_controller_profile`) in
