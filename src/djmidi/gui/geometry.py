@@ -810,6 +810,31 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         "4 BEAT JUMP > (R)": ControlGeometry(0.6798, 0.638, 0.032, 0.034, "rect", "#5f6b7a"),
         "SHIFT (R)": ControlGeometry(0.6480, 0.594, 0.025, 0.030, "rect", "#5f6b7a"),
     },
+    "Korg nanoPAD2": {
+        # Measured against controllers/hardware/korg/nanoPAD2/reference.png
+        # (1200x800): the pads are unlit, so each one's thin black outline
+        # was located on luminance profiles through every pad row and column
+        # (exact pixel bounds). The catalog models the 4 scenes as pad modes
+        # ("Pad N (SCENE S)"), so these 16 markers resolve a live hit from
+        # any scene through the usual pad-number path. Pink: the pad color
+        # every other controller's pad grid uses.
+        "Pad 1": ControlGeometry(0.287, 0.431, 0.071, 0.106, "rect", "#e0708f"),
+        "Pad 2": ControlGeometry(0.371, 0.431, 0.070, 0.106, "rect", "#e0708f"),
+        "Pad 3": ControlGeometry(0.454, 0.431, 0.071, 0.106, "rect", "#e0708f"),
+        "Pad 4": ControlGeometry(0.538, 0.431, 0.070, 0.106, "rect", "#e0708f"),
+        "Pad 5": ControlGeometry(0.630, 0.431, 0.070, 0.106, "rect", "#e0708f"),
+        "Pad 6": ControlGeometry(0.713, 0.431, 0.070, 0.106, "rect", "#e0708f"),
+        "Pad 7": ControlGeometry(0.797, 0.431, 0.070, 0.106, "rect", "#e0708f"),
+        "Pad 8": ControlGeometry(0.879, 0.431, 0.070, 0.106, "rect", "#e0708f"),
+        "Pad 9": ControlGeometry(0.287, 0.557, 0.071, 0.105, "rect", "#e0708f"),
+        "Pad 10": ControlGeometry(0.371, 0.557, 0.070, 0.105, "rect", "#e0708f"),
+        "Pad 11": ControlGeometry(0.454, 0.557, 0.071, 0.105, "rect", "#e0708f"),
+        "Pad 12": ControlGeometry(0.538, 0.557, 0.070, 0.105, "rect", "#e0708f"),
+        "Pad 13": ControlGeometry(0.630, 0.557, 0.070, 0.105, "rect", "#e0708f"),
+        "Pad 14": ControlGeometry(0.713, 0.557, 0.070, 0.105, "rect", "#e0708f"),
+        "Pad 15": ControlGeometry(0.797, 0.557, 0.070, 0.105, "rect", "#e0708f"),
+        "Pad 16": ControlGeometry(0.879, 0.557, 0.070, 0.105, "rect", "#e0708f"),
+    },
     "Behringer CMD Micro": {
         # Measured against controllers/hardware/behringer/CMD-micro/reference.png
         # (974x267, flat top-down render): every button's lit outline was

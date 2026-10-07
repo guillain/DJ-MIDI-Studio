@@ -39,7 +39,8 @@ def test_every_captured_pad_resolves_to_its_position(scene):
     for row, notes in zip(("Top", "Bottom"), CAPTURED[scene], strict=True):
         for col, note in enumerate(notes, start=1):
             hits = _nanopad_hits("1", note)
-            assert [(h.section, h.name) for h in hits] == [(f"SCENE {scene}", f"Scene {scene} {row} Pad {col}")]
+            pad = col if row == "Top" else col + 8
+            assert [(h.section, h.name) for h in hits] == [("PAD", f"Pad {pad} (SCENE {scene})")]
 
 
 def test_profile_has_exactly_the_captured_pads():

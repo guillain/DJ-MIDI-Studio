@@ -747,3 +747,25 @@ def test_behringer_cmd_studio_4a_sides_and_reversed_right_loop_arrows():
     # Placed by printed arrow: "<" left of ">" on both sides.
     assert geometry["LOOP < (A/C)"].x < geometry["LOOP > (A/C)"].x
     assert geometry["LOOP < (B/D)"].x < geometry["LOOP > (B/D)"].x
+
+
+def test_korg_nanopad2_pad_markers_resolve_every_scene():
+    """The 4 scenes are modelled as pad modes, so one marker per physical
+    pad resolves a live hit from any scene."""
+    geometry = CONTROL_GEOMETRY["Korg nanoPAD2"]
+    assert set(geometry) == {f"Pad {n}" for n in range(1, 17)}
+    for scene in range(1, 5):
+        for pad in range(1, 17):
+            assert resolve_geometry_label("Korg nanoPAD2", f"Pad {pad} (SCENE {scene})") == f"Pad {pad}"
+
+
+def test_korg_nanopad2_pad_grid_is_a_non_overlapping_2x8_layout():
+    pads = CONTROL_GEOMETRY["Korg nanoPAD2"]
+    for row in range(2):
+        for col in range(1, 8):
+            left, right = pads[f"Pad {row * 8 + col}"], pads[f"Pad {row * 8 + col + 1}"]
+            assert left.x + left.w <= right.x
+            assert abs(left.y - right.y) < 0.002
+    for col in range(1, 9):
+        top, bottom = pads[f"Pad {col}"], pads[f"Pad {col + 8}"]
+        assert top.y + top.h <= bottom.y
