@@ -810,6 +810,36 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         "4 BEAT JUMP > (R)": ControlGeometry(0.6798, 0.638, 0.032, 0.034, "rect", "#5f6b7a"),
         "SHIFT (R)": ControlGeometry(0.6480, 0.594, 0.025, 0.030, "rect", "#5f6b7a"),
     },
+    "Behringer CMD Micro": {
+        # Measured against controllers/hardware/behringer/CMD-micro/reference.png
+        # (974x267, flat top-down render): every button's lit outline was
+        # located as a connected component of saturated pixels, so these are
+        # the outline's own pixel bounds, not eyeballed. Labels are the
+        # catalog names themselves, which already carry their deck ("Deck A
+        # SYNC", "LOAD B"), so live hits resolve on both decks without any
+        # _RIGHT_GRID_DECKS entry. Colors follow the hardware LEDs: green
+        # PLAY, blue CUE, amber for the rest; the browse arrows are neutral.
+        "Deck A 1": ControlGeometry(0.282, 0.086, 0.044, 0.101, "rect", "#e0954a"),
+        "Deck A 2": ControlGeometry(0.282, 0.273, 0.047, 0.101, "rect", "#e0954a"),
+        "Deck A SYNC": ControlGeometry(0.282, 0.464, 0.044, 0.176, "rect", "#e0954a"),
+        "Deck A PLAY/PAUSE": ControlGeometry(0.217, 0.738, 0.044, 0.161, "rect", "#3ea86b"),
+        "Deck A CUE": ControlGeometry(0.282, 0.738, 0.044, 0.161, "rect", "#4a90d9"),
+        "Deck A PITCHBEND -": ControlGeometry(0.062, 0.790, 0.045, 0.086, "rect", "#e0954a"),
+        "Deck A PITCHBEND +": ControlGeometry(0.127, 0.790, 0.045, 0.090, "rect", "#e0954a"),
+        "LOAD A": ControlGeometry(0.349, 0.086, 0.047, 0.112, "rect", "#e0954a"),
+        "CUE A": ControlGeometry(0.349, 0.798, 0.046, 0.097, "rect", "#e0954a"),
+        "LEFT": ControlGeometry(0.420, 0.333, 0.044, 0.101, "rect", "#7a8aa0"),
+        "RIGHT": ControlGeometry(0.538, 0.333, 0.044, 0.101, "rect", "#7a8aa0"),
+        "LOAD B": ControlGeometry(0.609, 0.082, 0.048, 0.105, "rect", "#e0954a"),
+        "CUE B": ControlGeometry(0.609, 0.798, 0.044, 0.097, "rect", "#e0954a"),
+        "Deck B 1": ControlGeometry(0.674, 0.086, 0.046, 0.101, "rect", "#e0954a"),
+        "Deck B 2": ControlGeometry(0.674, 0.273, 0.046, 0.109, "rect", "#e0954a"),
+        "Deck B SYNC": ControlGeometry(0.676, 0.464, 0.044, 0.176, "rect", "#e0954a"),
+        "Deck B PLAY/PAUSE": ControlGeometry(0.676, 0.738, 0.044, 0.161, "rect", "#3ea86b"),
+        "Deck B CUE": ControlGeometry(0.741, 0.738, 0.044, 0.161, "rect", "#4a90d9"),
+        "Deck B PITCHBEND -": ControlGeometry(0.830, 0.794, 0.045, 0.086, "rect", "#e0954a"),
+        "Deck B PITCHBEND +": ControlGeometry(0.895, 0.794, 0.045, 0.086, "rect", "#e0954a"),
+    },
 }
 
 

@@ -692,3 +692,29 @@ def test_resolve_geometry_label_extracts_pad_number_from_ddj_flx10_pad_names():
         if hit.controller == "DDJ-FLX10"
     )
     assert resolve_geometry_label("DDJ-FLX10", hit.name) == "Pad 3"
+
+
+def test_behringer_cmd_micro_geometry_covers_every_catalog_entry():
+    """Every CMD Micro button has a marker, keyed by its catalog name, so a
+    live hit resolves on either deck without any _RIGHT_GRID_DECKS entry."""
+    names = {entry.name for entry in catalog.static_entries("Behringer CMD Micro")}
+    assert set(CONTROL_GEOMETRY["Behringer CMD Micro"]) == names
+    for name in names:
+        assert resolve_geometry_label("Behringer CMD Micro", name) == name
+
+
+def test_behringer_cmd_micro_markers_do_not_overlap():
+    boxes = list(CONTROL_GEOMETRY["Behringer CMD Micro"].items())
+    for i, (a_name, a) in enumerate(boxes):
+        for b_name, b in boxes[i + 1 :]:
+            overlap = a.x < b.x + b.w and b.x < a.x + a.w and a.y < b.y + b.h and b.y < a.y + a.h
+            assert not overlap, (a_name, b_name)
+
+
+def test_behringer_cmd_micro_decks_sit_on_their_own_side():
+    geometry = CONTROL_GEOMETRY["Behringer CMD Micro"]
+    for name, box in geometry.items():
+        if name.startswith("Deck A") or name.endswith(" A"):
+            assert box.x + box.w < 0.5, name
+        if name.startswith("Deck B") or name.endswith(" B"):
+            assert box.x > 0.5, name
