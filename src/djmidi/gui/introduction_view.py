@@ -119,8 +119,8 @@ class IntroductionView(QWidget):
         tools_layout.addWidget(metronome_button)
 
         info = QLabel(
-            "Tip: after applying a controller from Controller Setup, "
-            "it appears immediately across this session's views."
+            "Tip: a controller you install from Controller Setup appears immediately in every view, "
+            "and again at every launch."
         )
         info.setWordWrap(True)
         info.setFrameShape(QFrame.Shape.StyledPanel)
@@ -436,19 +436,23 @@ class IntroductionView(QWidget):
             f"Catalog: {len(definition.static_entries)} static entry(ies), {definition.pad_count} pad(s)"
         )
         catalog_info.setWordWrap(True)
-        details.addWidget(catalog_info)
+        details.addWidget(catalog_info, 1)
 
         availability = QLabel("MIDI: not checked")
         availability.setStyleSheet(f"color: {theme_colors()['disabled_text']}; font-weight: 600;")
         self._availability_labels[controller] = availability
-        details.addWidget(availability)
+        details.addWidget(availability, 1)
 
         stats = QLabel("In loaded file: 0 cell(s), 0 deck(s), 0 function(s)")
         stats.setWordWrap(True)
         self._card_stats[controller] = stats
-        details.addWidget(stats)
+        details.addWidget(stats, 1)
 
-        details.addStretch(1)
+        # The three lines share the column's height down to the buttons
+        # instead of bunching at the top above an empty gap.
+        for label in (catalog_info, availability, stats):
+            label.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
+            label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         buttons = QVBoxLayout()
         for target, label in (("channel", "Channel"), ("controller", "Controller"), ("images", "Images")):
             btn = QPushButton(label)
