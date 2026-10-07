@@ -38,6 +38,17 @@ DASHBOARD_FILES: HelpEntry = (
     "workspace.md",
 )
 
+DASHBOARD_CONTROLLERS: HelpEntry = (
+    "Known controllers",
+    (
+        "Every controller the app knows: the built-in profiles and the ones you installed from "
+        "<b>Controller Setup</b>. The <b>Active controller for drill-down</b> is the one the "
+        "<b>Channel</b>, <b>Controller</b> and <b>Images</b> shortcuts open. Hide controllers you "
+        "don't own in ⚙ Preferences → Plugins."
+    ),
+    "controller-images.md",
+)
+
 DASHBOARD_TOOLS: HelpEntry = (
     "MIDI tools",
     (

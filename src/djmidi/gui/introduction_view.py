@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import html
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
@@ -85,6 +86,7 @@ class IntroductionView(QWidget):
 
         catalog_box = QGroupBox("Known controllers")
         catalog_layout = QVBoxLayout(catalog_box)
+        catalog_layout.addLayout(help_row(self, *help_texts.DASHBOARD_CONTROLLERS))
         catalog_layout.addWidget(QLabel("Active controller for drill-down:"))
         catalog_layout.addWidget(self._controller_combo)
         self._known_count_label = QLabel()
@@ -247,26 +249,25 @@ class IntroductionView(QWidget):
         self._files_backup_label.setWordWrap(True)
         self._files_sync_label = QLabel()
         self._files_sync_label.setWordWrap(True)
-        self._files_recent_layout = QVBoxLayout()
-        self._files_recent_layout.setSpacing(2)
-        # The information spreads over the same height as the button column
-        # beside it (an equal stretch between lines, none at the end).
+        # Recent mappings as links, so this is a block like the others.
+        self._files_recent_label = QLabel()
+        self._files_recent_label.setWordWrap(True)
+        self._files_recent_label.setTextFormat(Qt.TextFormat.RichText)
+        self._files_recent_label.linkActivated.connect(lambda path: self.fileActionRequested.emit(f"recent:{path}"))
+        # Same model as Known controllers: every block takes an equal share of
+        # the height, its text vertically centered.
         info = QVBoxLayout()
-        info.setSpacing(4)
-        blocks = (
+        for label in (
             self._files_mapping_label,
             self._files_folder_label,
             self._files_backup_label,
-            self._files_recent_layout,
+            self._files_recent_label,
             self._files_sync_label,
-        )
-        for index, block in enumerate(blocks):
-            if index:
-                info.addStretch(1)
-            if isinstance(block, QVBoxLayout):
-                info.addLayout(block)
-            else:
-                info.addWidget(block)
+        ):
+            label.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
+            label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+            info.addWidget(label, 1)
+
         # Two columns: the information gets the width, the actions a narrow
         # column of compact buttons beside it.
         buttons = QVBoxLayout()
@@ -282,6 +283,8 @@ class IntroductionView(QWidget):
             button.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
             button.clicked.connect(lambda _checked=False, a=action: self.fileActionRequested.emit(a))
             button.setMinimumHeight(34)
+            if self._files_buttons:
+                buttons.addStretch(1)
             buttons.addWidget(button)
             self._files_buttons[action] = button
         self._files_buttons["restore"].setToolTip("Restore the version saved before the last save")
@@ -316,23 +319,11 @@ class IntroductionView(QWidget):
         else:
             when = datetime.fromtimestamp(Path(backup).stat().st_mtime, tz=UTC).astimezone()
             self._files_backup_label.setText(f"<b>Previous version:</b> kept from {when:%Y-%m-%d %H:%M}")
-        while self._files_recent_layout.count():
-            item = self._files_recent_layout.takeAt(0)
-            if item.widget() is not None:
-                # Hidden now: deleteLater() only runs back in the event loop.
-                item.widget().hide()
-                item.widget().deleteLater()
         others = [entry for entry in (recents or []) if mapping is None or entry != str(mapping)][:3]
-        if others:
-            self._files_recent_layout.addWidget(QLabel("<b>Recent:</b>"))
-            for entry in others:
-                button = QPushButton(Path(entry).name)
-                button.setToolTip(entry)
-                button.setFlat(True)
-                button.setStyleSheet("text-align: left;")
-                button.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Fixed)
-                button.clicked.connect(lambda _checked=False, e=entry: self.fileActionRequested.emit(f"recent:{e}"))
-                self._files_recent_layout.addWidget(button)
+        links = ", ".join(
+            f'<a href="{html.escape(entry, quote=True)}">{html.escape(Path(entry).name)}</a>' for entry in others
+        )
+        self._files_recent_label.setText(f"<b>Recent:</b> {links}" if others else "<b>Recent:</b> none yet")
         names = sync_sets or []
         self._files_sync_label.setText(
             f"<b>Sync sets:</b> {', '.join(names)}"
