@@ -249,13 +249,24 @@ class IntroductionView(QWidget):
         self._files_sync_label.setWordWrap(True)
         self._files_recent_layout = QVBoxLayout()
         self._files_recent_layout.setSpacing(2)
+        # The information spreads over the same height as the button column
+        # beside it (an equal stretch between lines, none at the end).
         info = QVBoxLayout()
-        info.setSpacing(6)
-        for widget in (self._files_mapping_label, self._files_folder_label, self._files_backup_label):
-            info.addWidget(widget)
-        info.addLayout(self._files_recent_layout)
-        info.addWidget(self._files_sync_label)
-        info.addStretch(1)
+        info.setSpacing(4)
+        blocks = (
+            self._files_mapping_label,
+            self._files_folder_label,
+            self._files_backup_label,
+            self._files_recent_layout,
+            self._files_sync_label,
+        )
+        for index, block in enumerate(blocks):
+            if index:
+                info.addStretch(1)
+            if isinstance(block, QVBoxLayout):
+                info.addLayout(block)
+            else:
+                info.addWidget(block)
         # Two columns: the information gets the width, the actions a narrow
         # column of compact buttons beside it.
         buttons = QVBoxLayout()
@@ -270,11 +281,11 @@ class IntroductionView(QWidget):
             button = QPushButton(label)
             button.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
             button.clicked.connect(lambda _checked=False, a=action: self.fileActionRequested.emit(a))
+            button.setMinimumHeight(34)
             buttons.addWidget(button)
             self._files_buttons[action] = button
         self._files_buttons["restore"].setToolTip("Restore the version saved before the last save")
         self._files_buttons["sync"].setToolTip("Manage the controller sync sets (Preferences)")
-        buttons.addStretch(1)
         row = QHBoxLayout()
         row.setSpacing(12)
         row.addLayout(info, 1)
