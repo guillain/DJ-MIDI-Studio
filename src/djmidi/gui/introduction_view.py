@@ -9,6 +9,7 @@ from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
     QComboBox,
     QFrame,
+    QGridLayout,
     QGroupBox,
     QHBoxLayout,
     QLabel,
@@ -129,6 +130,7 @@ class IntroductionView(QWidget):
 
         overview_header = QHBoxLayout()
         overview_header.setSpacing(10)
+        overview_header.addWidget(files_box, 3)
         overview_header.addWidget(catalog_box, 3)
         overview_header.addWidget(tools_box, 1)
 
@@ -142,7 +144,6 @@ class IntroductionView(QWidget):
         layout.addWidget(title)
         layout.addWidget(self._description_label)
         layout.addLayout(loaded_file_row)
-        layout.addWidget(files_box)
         layout.addLayout(overview_header)
         layout.addWidget(cards_box)
         layout.addWidget(info)
@@ -254,20 +255,21 @@ class IntroductionView(QWidget):
         row = QHBoxLayout()
         row.addLayout(info, 1)
         layout.addLayout(row)
-        buttons = QHBoxLayout()
+        # A 2x2 grid: the card shares its row with Known controllers and MIDI tools.
+        buttons = QGridLayout()
         self._files_buttons: dict[str, QPushButton] = {}
-        for action, label in (
+        for index, (action, label) in enumerate((
             ("open", "Open mapping…"),
             ("reveal", "Show in Finder" if sys.platform == "darwin" else "Show in folder"),
             ("restore", "Restore previous version…"),
             ("sync", "Manage sync sets…"),
-        ):
+        )):
             button = QPushButton(label)
             button.clicked.connect(lambda _checked=False, a=action: self.fileActionRequested.emit(a))
-            buttons.addWidget(button)
+            buttons.addWidget(button, index // 2, index % 2)
             self._files_buttons[action] = button
-        buttons.addStretch(1)
         layout.addLayout(buttons)
+        layout.addStretch(1)
         self.set_files_summary(mapping=None)
         return box
 
