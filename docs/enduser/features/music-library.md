@@ -94,7 +94,9 @@ without stopping the others.
 
 A long batch shows a progress window (`Writing tags… 312/850`), and so does
 its `Undo`. `Cancel` stops after the current file: the files already written
-keep their new tags, and `Undo` restores exactly those.
+keep their new tags, and `Undo` restores exactly those. The window stays
+open until the table has been refreshed, so the app is ready as soon as it
+closes.
 
 ![Write tags to selection](../../images/layout/music-library-bulk-tags.png)
 

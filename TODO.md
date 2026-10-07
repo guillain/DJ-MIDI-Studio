@@ -132,6 +132,13 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **No more freeze after a bulk tag write** (`v0.48.43-library-post-write-freeze`) — reported by the
+  maintainer after v0.48.42: once both progress windows closed, the app stayed unresponsive long enough
+  to look crashed. Cause: re-selecting the rewritten tracks one `select()` call per row, each one
+  emitting `selectionChanged` and refreshing the Track panel (500 of 2,000 tracks: 1.6 s; minutes on
+  real selections). Now one `QItemSelection` of merged contiguous ranges (0.02 s; 5,000 of 20,000:
+  0.13 s). The read-back progress window also stays up through the table reload ("Refreshing the
+  table…", ~1 s per 20,000 tracks), and a single-track write shows the wait cursor during its reload.
 - [x] **Progress for bulk tag writes** (`v0.48.42-library-tag-write-progress`) — requested by the
   maintainer: `Write tags to selection…` on thousands of files ran inside one blocking `QUndoStack.push`
   with only a wait cursor. `WriteTracksMetadataCommand` now takes a `progress_factory(label, total)`
