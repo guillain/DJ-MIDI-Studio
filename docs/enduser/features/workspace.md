@@ -8,6 +8,7 @@
 ## Table of Contents
 
 - [Tabs and tool windows](#tabs-and-tool-windows)
+- [Your files](#your-files)
 - [Window controls](#window-controls)
 - [Performance Mode](#performance-mode)
 - [Preferences](#preferences)
@@ -28,6 +29,22 @@ are restored at the next launch.
 ![All MIDI tools docked](../../images/layout/midi-tools-docked.png)
 
 ![Live Monitor floating](../../images/layout/live-monitor-floating.png)
+
+## Your files
+
+Everything that is a file in the app is reachable from the **File** menu,
+organized by what it is:
+
+| Menu | What it handles |
+| --- | --- |
+| `Open Mapping…`, `Open Recent Mapping`, `Save Mapping`, `Save Mapping As…` | The Serato `.xml` or Traktor `.tsi` mapping you edit. It stays where your DJ software keeps it |
+| `Restore Previous Version…`, `Show Mapping in Finder` | The version kept by your last save, and where the file is |
+| `Controller Profile ▸` | The controller profile you build in Controller Setup: new, open or save a draft, learn triggers from a mapping |
+| `Import ▸` / `Export ▸` | Serato crates, Traktor playlists and Rekordbox exports for the Music Library, and the Live Monitor log |
+
+The Dashboard's **Your files** card shows the same things at a glance: the
+open mapping and its folder, whether a previous version is kept, your recent
+mappings, and your controller sync sets, with a button for each.
 
 ## Window controls
 

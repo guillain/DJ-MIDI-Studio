@@ -12,7 +12,7 @@
 - [Build a profile in five steps](#build-a-profile-in-five-steps)
 - [Start from a controller the app already knows](#start-from-a-controller-the-app-already-knows)
 - [Learn from the hardware](#learn-from-the-hardware)
-- [Import an existing Serato or Traktor mapping](#import-an-existing-serato-or-traktor-mapping)
+- [Learn triggers from an existing mapping](#learn-triggers-from-an-existing-mapping)
 - [Label many controls at once](#label-many-controls-at-once)
 - [Send MIDI back to the controller](#send-midi-back-to-the-controller)
 - [Use the profile: apply, export, share](#use-the-profile-apply-export-share)
@@ -33,7 +33,7 @@ you add **any other one** — a Behringer, a Korg pad, a home-made box —
 without waiting for official MIDI documentation.
 
 Controller Setup builds a controller *profile*, not a Serato or Traktor
-mapping. To edit a mapping, use `File → Open` and the
+mapping. To edit a mapping, use `File → Open Mapping…` and the
 [mapping editor](mapping-editor.md).
 
 ![Controller Setup with a learned DDJ-XP2 session](../../images/layout/controlleur-setup-ddj-xp2.png)
@@ -66,9 +66,11 @@ trigger, so pressing the same pad twice never creates a second row.
 `Check for conflicts` flags any trigger that two differently named rows
 both claim. It also runs automatically before applying or exporting.
 
-## Import an existing Serato or Traktor mapping
+## Learn triggers from an existing mapping
 
-`Import` → choose a Serato `.xml` or a Traktor `.tsi` mapping to seed the
+`Learn triggers from a mapping…` (in the `Learn` panel, or `File →
+Controller Profile`) → choose a Serato `.xml` or a Traktor `.tsi` mapping to
+seed the
 table with every trigger it uses, so you don't have to press every button by
 hand. Mapping files don't contain physical control names, so Section and
 Name stay for you to fill in. Importing the same file twice adds nothing new.

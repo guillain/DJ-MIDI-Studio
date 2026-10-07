@@ -132,6 +132,15 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **File management, phase 1: File menu by object + "Your files"** (`v0.48.48-file-menu-by-object`,
+  issue #175) — the File menu now groups the mapping (`Open Mapping…`, `Open Recent Mapping`, `Save Mapping`,
+  `Save Mapping As…`, `Restore Previous Version…`, `Show Mapping in Finder`), the controller profile (new /
+  open / save draft, learn triggers) and `Import ▸` / `Export ▸` (Music Library crates/NML/Rekordbox,
+  Live Monitor log), each entry switching to its tab. Mapping dialogs start in the last folder or the DJ
+  software's mapping folder (`file_locations.py`, Qt-free); recent mappings persist in QSettings. Restore
+  now uses the `.bak` every save keeps, so it works in a later session too. The Dashboard gets a "Your
+  files" card (mapping + folder, previous version, recents, sync sets, one action each), and Controller
+  Setup's `Import` is renamed `Learn triggers from a mapping…`.
 - [x] **CMD LC-1 artwork and real layout** (`v0.48.47-cmd-lc-1-images`) — the maintainer added the CMD LC-1's
   photo and MIDI picture (a stray heading fragment beside the device was blanked), normalized with
   `scripts/process_controller_images.py`, attached as its `reference_image`, and its 52 buttons measured on

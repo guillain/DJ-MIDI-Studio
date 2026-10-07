@@ -56,7 +56,7 @@ Library files are only ever read: exports always create a new file.
 
 ## Everyday workflow
 
-1. **Open** a mapping with `File → Open…`.
+1. **Open** a mapping with `File → Open Mapping…` (or `Open Recent Mapping`).
 2. **Explore** it in `By Channel`, `By Deck` or `By Controller`, or click
    through it in a [Controller Emulator](features/controller-emulator.md).
 3. **Check live** what each button does with the
@@ -64,8 +64,9 @@ Library files are only ever read: exports always create a new file.
    mapping is loaded.
 4. **Edit** in the right-hand panel; `Edit → Undo` is always available.
 5. **Validate** with `Edit → Validate`.
-6. **Save** with `File → Save`; you see the exact changes first, a backup is
-   kept, and `File → Rollback Last Save` restores it.
+6. **Save** with `File → Save Mapping`; you see the exact changes first, the
+   previous version is kept next to the file, and `File → Restore Previous
+   Version…` puts it back.
 
 New controller? Start with [Controller Setup](features/controller-setup.md).
 Before a gig, [Controller Sync](features/controller-sync.md) puts every
