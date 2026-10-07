@@ -692,3 +692,80 @@ def test_resolve_geometry_label_extracts_pad_number_from_ddj_flx10_pad_names():
         if hit.controller == "DDJ-FLX10"
     )
     assert resolve_geometry_label("DDJ-FLX10", hit.name) == "Pad 3"
+
+
+def test_behringer_cmd_micro_geometry_covers_every_catalog_entry():
+    """Every CMD Micro button has a marker, keyed by its catalog name, so a
+    live hit resolves on either deck without any _RIGHT_GRID_DECKS entry."""
+    names = {entry.name for entry in catalog.static_entries("Behringer CMD Micro")}
+    assert set(CONTROL_GEOMETRY["Behringer CMD Micro"]) == names
+    for name in names:
+        assert resolve_geometry_label("Behringer CMD Micro", name) == name
+
+
+def test_behringer_cmd_micro_markers_do_not_overlap():
+    boxes = list(CONTROL_GEOMETRY["Behringer CMD Micro"].items())
+    for i, (a_name, a) in enumerate(boxes):
+        for b_name, b in boxes[i + 1 :]:
+            overlap = a.x < b.x + b.w and b.x < a.x + a.w and a.y < b.y + b.h and b.y < a.y + a.h
+            assert not overlap, (a_name, b_name)
+
+
+def test_behringer_cmd_micro_decks_sit_on_their_own_side():
+    geometry = CONTROL_GEOMETRY["Behringer CMD Micro"]
+    for name, box in geometry.items():
+        if name.startswith("Deck A") or name.endswith(" A"):
+            assert box.x + box.w < 0.5, name
+        if name.startswith("Deck B") or name.endswith(" B"):
+            assert box.x > 0.5, name
+
+
+def test_behringer_cmd_studio_4a_geometry_covers_every_catalog_entry():
+    """Each side's names cover both of its deck layers ("(A/C)", "(B/D)"),
+    so one marker per button resolves live hits from either layer."""
+    names = {entry.name for entry in catalog.static_entries("Behringer CMD Studio 4a")}
+    assert set(CONTROL_GEOMETRY["Behringer CMD Studio 4a"]) == names
+    for name in names:
+        assert resolve_geometry_label("Behringer CMD Studio 4a", name) == name
+
+
+def test_behringer_cmd_studio_4a_markers_do_not_overlap():
+    boxes = list(CONTROL_GEOMETRY["Behringer CMD Studio 4a"].items())
+    for i, (a_name, a) in enumerate(boxes):
+        for b_name, b in boxes[i + 1 :]:
+            overlap = a.x < b.x + b.w and b.x < a.x + a.w and a.y < b.y + b.h and b.y < a.y + a.h
+            assert not overlap, (a_name, b_name)
+
+
+def test_behringer_cmd_studio_4a_sides_and_reversed_right_loop_arrows():
+    geometry = CONTROL_GEOMETRY["Behringer CMD Studio 4a"]
+    for name, box in geometry.items():
+        if name.endswith("(A/C)") or name in ("DECK A", "DECK C"):
+            assert box.x + box.w < 0.5, name
+        if name.endswith("(B/D)") or name in ("DECK B", "DECK D"):
+            assert box.x > 0.5, name
+    # Placed by printed arrow: "<" left of ">" on both sides.
+    assert geometry["LOOP < (A/C)"].x < geometry["LOOP > (A/C)"].x
+    assert geometry["LOOP < (B/D)"].x < geometry["LOOP > (B/D)"].x
+
+
+def test_korg_nanopad2_pad_markers_resolve_every_scene():
+    """The 4 scenes are modelled as pad modes, so one marker per physical
+    pad resolves a live hit from any scene."""
+    geometry = CONTROL_GEOMETRY["Korg nanoPAD2"]
+    assert set(geometry) == {f"Pad {n}" for n in range(1, 17)}
+    for scene in range(1, 5):
+        for pad in range(1, 17):
+            assert resolve_geometry_label("Korg nanoPAD2", f"Pad {pad} (SCENE {scene})") == f"Pad {pad}"
+
+
+def test_korg_nanopad2_pad_grid_is_a_non_overlapping_2x8_layout():
+    pads = CONTROL_GEOMETRY["Korg nanoPAD2"]
+    for row in range(2):
+        for col in range(1, 8):
+            left, right = pads[f"Pad {row * 8 + col}"], pads[f"Pad {row * 8 + col + 1}"]
+            assert left.x + left.w <= right.x
+            assert abs(left.y - right.y) < 0.002
+    for col in range(1, 9):
+        top, bottom = pads[f"Pad {col}"], pads[f"Pad {col + 8}"]
+        assert top.y + top.h <= bottom.y

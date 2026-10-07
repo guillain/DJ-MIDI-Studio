@@ -33,9 +33,9 @@
 | Numark Mixtrack Pro FX | Conservative community values; user guide for the layout | ✅ | — | Not yet |
 | Hercules DJControl Inpulse 500 | Conservative values; product sheet | Grid | — | Not yet |
 | Behringer CMD LC-1 | Captured from a real unit with Controller Setup (no vendor list exists), checked against a real Serato export | Grid | — | ✅ |
-| Behringer CMD Micro | Captured from a real unit (no vendor list exists), checked against a real Traktor export | Grid | — | ✅ |
-| Behringer CMD Studio 4a | Captured from a real unit in all 4 deck layers (no vendor list exists), checked against a real Traktor export | Grid | — | ✅ |
-| Korg nanoPAD2 | Captured from a real unit in all 4 scenes (Korg publishes no note table) | Grid | — | ✅ |
+| Behringer CMD Micro | Captured from a real unit (no vendor list exists), checked against a real Traktor export | ✅ | — | ✅ |
+| Behringer CMD Studio 4a | Captured from a real unit in all 4 deck layers (no vendor list exists), checked against a real Traktor export | ✅ | — | ✅ |
+| Korg nanoPAD2 | Captured from a real unit in all 4 scenes (Korg publishes no note table) | ✅ | — | ✅ |
 
 "Not yet" means the profile was transcribed from documentation but hasn't
 been checked against a real device. Check the controls you rely on with the
@@ -97,8 +97,9 @@ aren't named; none of the knobs has a push switch. macOS calls its port
 Korg documents the nanoPAD2's message format but not its notes: every pad is
 assignable per scene in Korg's editor. The profile was captured from a real
 unit in all four scenes. They all send on MIDI channel 1 with different notes,
-so one profile covers every scene: the pads appear as `Scene N Top Pad 1–8`
-and `Scene N Bottom Pad 1–8`. If you reprogrammed your nanoPAD2 in Korg's
+so one profile covers every scene. The scenes work like pad modes: the 16
+pads are `Pad 1–8` (top row) and `Pad 9–16` (bottom row), each named with its
+scene, e.g. `Pad 5 (SCENE 2)`. If you reprogrammed your nanoPAD2 in Korg's
 editor, your notes will differ: check them in the
 [Live Monitor](features/live-monitor.md), or build your own profile with
 [Controller Setup](features/controller-setup.md). The X-Y pad is continuous
