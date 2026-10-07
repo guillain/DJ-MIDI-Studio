@@ -35,8 +35,9 @@ you like, each on its own controller (for example a DDJ-XP2 next to an
 XDJ-XZ). Each one is a window you can dock, float, maximize or snap to a
 side. The set of open emulators is restored at the next launch.
 
-The `Controller photo` checkbox (on by default) draws the real controller
-photo behind the controls.
+The [display layers](controller-images.md#display-layers) choose what's
+drawn: the `Controller` photo (on by default), the `MIDI` picture alone, and
+the `Layout`, which holds the clickable controls.
 
 ## Click to resolve a control
 

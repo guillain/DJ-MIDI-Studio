@@ -132,6 +132,16 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Controller / MIDI / Layout display layers** (`v0.48.45-controller-view-layers`) — requested by the
+  maintainer: every controller view (Controller Images, the By… drawings, every Controller Emulator) now
+  shows the same three layer checkboxes from `gui/layer_toggles.py` instead of its own `MIDI info` /
+  `Show real layout` / `Controller photo` boxes. Rule chosen by the maintainer: one photo at a time
+  (Controller and MIDI exclude each other, both may be off) and Layout greyed out while MIDI shows, since
+  the markers were measured on the Controller photo and the MIDI pictures are other crops — so photo
+  only, layout only (new), photo + layout, or MIDI alone. Ticked state persists across controller
+  switches; a ticked MIDI on a controller without one falls back to the photo. Photo layers are offered
+  in the By… views and emulator only for controllers with a measured layout. The old checkbox
+  attributes stay as aliases of the new boxes.
 - [x] **Contextual `?` help everywhere** (`v0.48.44-contextual-help`) — requested by the maintainer. A
   shared `gui/help_button.py` (compact `?` button → short rich-text explanation + `Open full guide` to
   the bundled `docs/enduser/features/` page) and `gui/help_texts.py` (all 17 texts in one place,

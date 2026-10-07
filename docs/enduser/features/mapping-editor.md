@@ -70,7 +70,9 @@ which controls are mapped, colored by deck. Pads, buttons, knobs, faders and
 jog wheels have their own shapes. For the controllers with measured
 geometry (DDJ-XP2, XDJ-XZ, DDJ-1000, DDJ-FLX10, DDJ-REV1, Numark Mixtrack Pro
 FX, Behringer CMD Micro and CMD Studio 4a, Korg nanoPAD2), controls sit at their true positions on the real controller photo
-(`Controller photo` checkbox); other controllers use a tidy grid.
+(the `Controller`, `MIDI` and `Layout` [display
+layers](controller-images.md#display-layers)); other controllers use a tidy
+grid.
 
 `By Deck` adds a deck filter to color only one deck. The last few selections
 stay softly highlighted so you can follow where you've been. With the
