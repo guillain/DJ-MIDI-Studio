@@ -132,6 +132,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **CMD Micro real layout** (`v0.48.39-geometry-cmd-micro`, issue #13) — `CONTROL_GEOMETRY` for all
+  20 CMD Micro buttons, measured on its flat render by detecting each lit button outline as a connected
+  component of saturated pixels (pixel bounds, not eyeballed), keyed by the catalog names so live hits
+  resolve on both decks. Verified by screenshotting Controller Images ("Show real layout") and a
+  Controller Emulator in the running app. First of the hardware-captured controllers to get geometry.
 - [x] **macOS glyph buttons no longer cut off** (`v0.48.38-macos-glyph-buttons`, issue #19) — first
   clipping audit run on the real macOS `cocoa` platform (every tab and tool dock at 1280×820 down to
   700×500, widget minimums vs geometry) instead of offscreen Linux renders. Nothing lay outside the
