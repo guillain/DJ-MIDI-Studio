@@ -402,7 +402,7 @@ def test_write_tags_to_selection_shows_progress_and_stops_on_cancel(library, mon
 
     def fake_progress(label, total, cancellable=True):
         labels.append((label, total, cancellable))
-        return lambda done, total: done < 1 if label == "Writing tags…" else True
+        return lambda done, total, text=None: done < 1 if label == "Writing tags…" else True
 
     monkeypatch.setattr(view, "_tag_write_progress", fake_progress)
     _select_paths(view, [a, b])
@@ -414,6 +414,39 @@ def test_write_tags_to_selection_shows_progress_and_stops_on_cancel(library, mon
     assert labels[-1][0] == "Restoring tags…"
     assert read_metadata(a).genre == read_metadata(b).genre == "Techno"
 
+
+
+def test_reselecting_many_tracks_is_a_single_selection_change(library):
+    """After a bulk write the rewritten tracks are re-selected in one
+    select() call: row by row, each selection refreshed the Track panel and
+    froze the window for minutes on a long list."""
+    view, _music, _ = library
+    paths = [row.path for row in view.table_model.rows()]
+    changes = []
+    view.table.selectionModel().selectionChanged.connect(lambda *_: changes.append(1))
+    view.select_paths(paths)
+    assert len(changes) == 1
+    assert {row.path for row in view.selected_rows()} == set(paths)
+
+
+def test_progress_window_stays_up_while_the_table_reloads(library, monkeypatch):
+    view, music, _ = library
+    a, b = str(music / "Tek" / "Tribe" / "a.mp3"), str(music / "Tek" / "Tribe" / "b.mp3")
+    reported = []
+
+    def fake_progress(label, total, cancellable=True):
+        def report(done, total, text=None):
+            reported.append((label, done, total, text))
+            return True
+
+        return report
+
+    monkeypatch.setattr(view, "_tag_write_progress", fake_progress)
+    _select_paths(view, [a, b])
+    view.write_tags_to_selection({"genre": "Tribe"})
+    read_back = [r for r in reported if r[0] == "Reading tags back…"]
+    assert ("Reading tags back…", 2, 3, "Refreshing the table…") in read_back
+    assert read_back[-1][1:3] == (3, 3)
 
 def test_tag_write_progress_dialog_counts_files(library):
     view, _music, _ = library
