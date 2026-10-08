@@ -132,6 +132,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **CMD LC-1 artwork and real layout** (`v0.48.47-cmd-lc-1-images`) — the maintainer added the CMD LC-1's
+  photo and MIDI picture (a stray heading fragment beside the device was blanked), normalized with
+  `scripts/process_controller_images.py`, attached as its `reference_image`, and its 52 buttons measured on
+  the processed photo (every button is lit: 13 rows of 4 saturated outlines). Checked in the Controller
+  Emulator. The small sources (448 and 434 px) are enlarged to 2000 px, so they're a bit soft.
 - [x] **Controller images normalized** (`v0.48.46-controller-images-cleanup`) — requested by the maintainer:
   all 28 bundled pictures processed by the new `scripts/process_controller_images.py`. Photos get a
   transparent background (only outside the filled device silhouette, so the Numark line drawing keeps its

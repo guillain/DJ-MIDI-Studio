@@ -49,9 +49,9 @@ other way round, and both can be off. The layout was measured on the
 photo only, layout only, photo + layout, or the MIDI picture alone. Here the
 layout starts off; in the other views it starts on, over the photo.
 
-Nine controllers have a measured layout: DDJ-XP2, XDJ-XZ, DDJ-1000,
-DDJ-FLX10, DDJ-REV1, Numark Mixtrack Pro FX, Behringer CMD Micro and
-CMD Studio 4a, and Korg nanoPAD2, with both decks where the controller has
+Ten controllers have a measured layout: DDJ-XP2, XDJ-XZ, DDJ-1000,
+DDJ-FLX10, DDJ-REV1, Numark Mixtrack Pro FX, Behringer CMD LC-1, CMD Micro
+and CMD Studio 4a, and Korg nanoPAD2, with both decks where the controller has
 two. Others show their photo here, and a grid in the other views.
 
 With the [Live Monitor](live-monitor.md) running, a marker flashes when you

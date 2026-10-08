@@ -50,6 +50,7 @@ register(
         plugin_id="behringer.cmd-lc-1",
         manufacturer="Behringer",
         port_names=("CMD LC-1",),
+        reference_image="hardware/behringer/CMD-LC-1/reference.png",
         supported_software=("serato",),
         static_entries=_STATIC,
         section_order=("NUMBER", "GRID", "MUTE", "SOLO", "RECORD"),

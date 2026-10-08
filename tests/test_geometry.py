@@ -769,3 +769,18 @@ def test_korg_nanopad2_pad_grid_is_a_non_overlapping_2x8_layout():
     for col in range(1, 9):
         top, bottom = pads[f"Pad {col}"], pads[f"Pad {col + 8}"]
         assert top.y + top.h <= bottom.y
+
+
+def test_behringer_cmd_lc_1_geometry_covers_every_catalog_entry_in_13_rows_of_4():
+    names = {entry.name for entry in catalog.static_entries("Behringer CMD LC-1")}
+    geometry = CONTROL_GEOMETRY["Behringer CMD LC-1"]
+    assert set(geometry) == names and len(names) == 52
+    for name in names:
+        assert resolve_geometry_label("Behringer CMD LC-1", name) == name
+    rows: list[list] = []
+    for box in sorted(geometry.values(), key=lambda b: b.y):
+        if rows and abs(box.y - rows[-1][0].y) < 0.01:
+            rows[-1].append(box)
+        else:
+            rows.append([box])
+    assert [len(row) for row in rows] == [4] * 13
