@@ -20,7 +20,6 @@ from PySide6.QtCore import QLineF, QPointF, QRectF, Qt, QTimer, Signal
 from PySide6.QtGui import QBrush, QColor, QDesktopServices, QPainter, QPen, QPixmap
 from PySide6.QtWidgets import (
     QAbstractGraphicsShapeItem,
-    QCheckBox,
     QComboBox,
     QFrame,
     QGraphicsEllipseItem,
@@ -44,6 +43,7 @@ from djmidi.gui import layout as layout_mod
 from djmidi.gui.geometry import CONTROL_GEOMETRY
 from djmidi.gui.help_button import help_button
 from djmidi.gui.jog import DEGREES_PER_TICK as _JOG_DEGREES_PER_TICK
+from djmidi.gui.layer_toggles import LayerToggles
 from djmidi.gui.live_send import LiveSendControl
 
 _FLASH_DURATION_MS = 220
@@ -183,6 +183,13 @@ class _ZoomableView(QGraphicsView):
             self.markerClicked.emit(label)
 
 
+
+def _load_pixmap(path: Path | None) -> QPixmap | None:
+    if path is None or not path.exists():
+        return None
+    pixmap = QPixmap(str(path))
+    return None if pixmap.isNull() else pixmap
+
 class ControllerImageView(QWidget):
     """Combo to pick a controller, a zoomable/pannable image of its official
     diagram, and a button to reset the view back to fit-to-window."""
@@ -198,21 +205,16 @@ class ControllerImageView(QWidget):
         reset_button.clicked.connect(lambda: self._load(self._combo.currentText()))
         self._documentation_button = QPushButton("Open documentation")
         self._documentation_button.clicked.connect(self._open_documentation)
-        self._geometry_checkbox = QCheckBox("Show real layout")
-        self._geometry_checkbox.toggled.connect(lambda _checked: self._draw_geometry_overlay())
-
-        # Off by default: show the clean device render; tick to swap in the
-        # "<slug>-midi.png" variant that has the MIDI Message List's callouts
-        # printed over it. Disabled (with a tooltip) when a controller only
-        # bundles one of the two variants.
-        self._midi_checkbox = QCheckBox("MIDI info")
-        self._midi_checkbox.toggled.connect(self._on_midi_toggled)
-        # None until the user ticks the box themselves; after that it pins
-        # their choice across controller switches. While None, each _load()
-        # defaults the box to whichever variant `reference_image` names (so
-        # the geometry overlay -- measured against that one -- is available
-        # out of the box).
-        self._midi_override: bool | None = None
+        # The display layers (gui/layer_toggles.py): Controller photo, MIDI
+        # picture, Layout markers. The Layout starts off here: this tab is
+        # first a picture viewer. The old checkbox names stay as aliases.
+        self._layers = LayerToggles(controller=True, midi=False, layout=False)
+        self._layers.changed.connect(self._apply_layers)
+        self._geometry_checkbox = self._layers.layout_box
+        self._midi_checkbox = self._layers.midi_box
+        self._photo_checkbox = self._layers.controller_box
+        self._midi_item: QGraphicsPixmapItem | None = None
+        self._placeholder: QGraphicsTextItem | None = None
 
         # Off by default (see gui/live_send.py's docstring): this tab is
         # looked at just to see a real photo, so a click must never send
@@ -224,8 +226,7 @@ class ControllerImageView(QWidget):
         controls.addWidget(self._combo)
         controls.addWidget(reset_button)
         controls.addWidget(self._documentation_button)
-        controls.addWidget(self._midi_checkbox)
-        controls.addWidget(self._geometry_checkbox)
+        controls.addWidget(self._layers)
         controls.addWidget(self._live_send)
         controls.addWidget(help_button(self, *help_texts.CONTROLLER_IMAGES))
         controls.addStretch(1)
@@ -314,12 +315,6 @@ class ControllerImageView(QWidget):
     def current_controller_name(self) -> str:
         return self._combo.currentText()
 
-    def _on_midi_toggled(self, checked: bool) -> None:
-        # A deliberate user choice -- pin it across controller switches from
-        # here on (see self._midi_override).
-        self._midi_override = checked
-        self._load(self._combo.currentText())
-
     def _load(self, name: str) -> None:
         documentation = documentation_for_controller(name)
         self._documentation_button.setEnabled(documentation is not None)
@@ -328,6 +323,8 @@ class ControllerImageView(QWidget):
         )
         self._scene.clear()
         self._pixmap_item = None
+        self._midi_item = None
+        self._placeholder = None
         self._overlay_items = []
         self._overlay_items_by_label = {}
         self._active_labels.clear()  # held-state is per-controller
@@ -339,56 +336,59 @@ class ControllerImageView(QWidget):
         reference = image_for_controller(name)
         clean_path, annotated_path = image_variants(reference)
         canonical_path = _resolve_image_path(reference)
-        both_variants = clean_path is not None and annotated_path is not None
-        self._midi_checkbox.setEnabled(both_variants)
-        self._midi_checkbox.setToolTip(
-            "" if both_variants else "Only one image variant is bundled for this controller."
-        )
-
-        canonical_is_annotated = annotated_path is not None and canonical_path == annotated_path
-        want_annotated = self._midi_override if self._midi_override is not None else canonical_is_annotated
-        show_annotated = bool(want_annotated) and annotated_path is not None
-        self._midi_checkbox.blockSignals(True)
-        self._midi_checkbox.setChecked(show_annotated)
-        self._midi_checkbox.blockSignals(False)
-        path = annotated_path if show_annotated else (clean_path or annotated_path)
-
-        pixmap = QPixmap(str(path)) if path is not None and path.exists() else QPixmap()
-        if pixmap.isNull():
-            # Keep the placeholder inside the graphics scene.  Embedding a
-            # QWidget here (via addWidget) can leave a deleted QLabel proxy
-            # behind when the scene is cleared during a controller switch.
-            placeholder = QGraphicsTextItem(f"Image not found: {path if path is not None else name}")
-            placeholder.setDefaultTextColor(Qt.GlobalColor.darkGray)
-            self._scene.addItem(placeholder)
-            self._scene.setSceneRect(self._scene.itemsBoundingRect())
-            self._geometry_checkbox.setEnabled(False)
-            return
-        item = QGraphicsPixmapItem(pixmap)
-        self._pixmap_item = item
-        self._scene.addItem(item)
-        self._scene.setSceneRect(item.boundingRect())
-        self._view.fitInView(item, Qt.AspectRatioMode.KeepAspectRatio)
-
-        # CONTROL_GEOMETRY's fractions were measured against whichever variant
-        # `reference_image` names -- they only line up on that one, so the
-        # overlay is offered only while it's the one on screen.
-        on_canonical_image = (
-            canonical_path is not None and path is not None and canonical_path == path
-        )
-        has_geometry = name in CONTROL_GEOMETRY
-        self._geometry_checkbox.setEnabled(has_geometry and on_canonical_image)
+        photo_path = clean_path or canonical_path
+        midi_path = annotated_path if annotated_path is not None and annotated_path != photo_path else None
+        photo = _load_pixmap(photo_path)
+        midi = _load_pixmap(midi_path)
+        if photo is not None:
+            # Always in the scene: CONTROL_GEOMETRY's fractions map onto its
+            # size even while the photo itself is hidden (Layout only).
+            self._pixmap_item = QGraphicsPixmapItem(photo)
+            self._scene.addItem(self._pixmap_item)
+        if midi is not None:
+            self._midi_item = QGraphicsPixmapItem(midi)
+            self._scene.addItem(self._midi_item)
+        # The markers were measured on the canonical image, so the Layout is
+        # only offered while that's the one the Controller layer shows.
+        has_geometry = name in CONTROL_GEOMETRY and photo is not None and photo_path == canonical_path
+        self._layers.set_available(photo=photo is not None, midi=midi is not None, layout=has_geometry)
         if not has_geometry:
             self._geometry_checkbox.setToolTip(
                 "No control geometry modeled yet for this controller (see gui/geometry.py)"
             )
-        elif not on_canonical_image:
-            self._geometry_checkbox.setToolTip(
-                f"The control overlay is only aligned to the {canonical_path.name} image."
-            )
-        else:
-            self._geometry_checkbox.setToolTip("")
+        self._apply_layers(fit=True)
+
+    def _apply_layers(self, fit: bool = False) -> None:
+        """Show the ticked layers without reloading the controller, so a
+        toggle keeps the zoom and the live held/LED/jog state."""
+        state = self._layers.state()
+        if self._pixmap_item is not None:
+            self._pixmap_item.setVisible(state.photo)
+        if self._midi_item is not None:
+            self._midi_item.setVisible(state.midi)
+        if self._placeholder is not None:
+            self._scene.removeItem(self._placeholder)
+            self._placeholder = None
         self._draw_geometry_overlay()
+        shown = self._midi_item if state.midi else self._pixmap_item
+        if shown is None:
+            name = self._combo.currentText()
+            self._placeholder = QGraphicsTextItem(f"Image not found: {image_for_controller(name) or name}")
+        elif not (state.photo or state.midi or state.layout):
+            self._placeholder = QGraphicsTextItem("All layers are off: tick Controller, MIDI or Layout.")
+        if self._placeholder is not None:
+            # Kept inside the graphics scene: embedding a QWidget here (via
+            # addWidget) can leave a deleted QLabel proxy behind when the
+            # scene is cleared during a controller switch.
+            self._placeholder.setDefaultTextColor(Qt.GlobalColor.darkGray)
+            self._scene.addItem(self._placeholder)
+        if shown is None:
+            self._scene.setSceneRect(self._scene.itemsBoundingRect())
+            return
+        rect = shown.boundingRect()
+        self._scene.setSceneRect(rect)
+        if fit or self._view.transform().isIdentity():
+            self._view.fitInView(rect, Qt.AspectRatioMode.KeepAspectRatio)
 
     def _draw_geometry_overlay(self) -> None:
         """Colored markers over the real photo at each modeled control's
@@ -402,11 +402,7 @@ class ControllerImageView(QWidget):
         self._overlay_jog_notches = {}
         # isEnabled() gates out the "checked but the annotated variant is on
         # screen" case -- CONTROL_GEOMETRY only aligns to the canonical image.
-        if (
-            self._pixmap_item is None
-            or not self._geometry_checkbox.isChecked()
-            or not self._geometry_checkbox.isEnabled()
-        ):
+        if self._pixmap_item is None or not self._layers.state().layout:
             return
         pixmap = self._pixmap_item.pixmap()
         image_w, image_h = pixmap.width(), pixmap.height()

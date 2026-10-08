@@ -10,8 +10,7 @@
 
 - [What it does](#what-it-does)
 - [Browse a controller](#browse-a-controller)
-- [Show real layout](#show-real-layout)
-- [MIDI info](#midi-info)
+- [Display layers](#display-layers)
 - [Related](#related)
 
 ## What it does
@@ -32,24 +31,32 @@ own image.
 
 The same documents are in `Help → Controller References`.
 
-## Show real layout
+## Display layers
 
-Tick `Show real layout` to draw a marker on every modeled control at its
-true position on the picture. Nine controllers are measured: DDJ-XP2,
-XDJ-XZ, DDJ-1000, DDJ-FLX10, DDJ-REV1, Numark Mixtrack Pro FX, Behringer CMD
-Micro and CMD Studio 4a, and Korg nanoPAD2, with both decks where the
-controller has two.
+Every controller view (this tab, the `By Channel` / `By Deck` /
+`By Controller` drawings and every [Controller
+Emulator](controller-emulator.md)) has the same three layer checkboxes:
+
+| Layer | Shows |
+| --- | --- |
+| `Controller` | The real photo of the controller |
+| `MIDI` | The same controller with its MIDI message list callouts printed on it, when it ships one |
+| `Layout` | The app's MIDI layout: a marker on every modeled control at its true position |
+
+Only one photo shows at a time: ticking `MIDI` unticks `Controller` and the
+other way round, and both can be off. The layout was measured on the
+`Controller` photo, so it is greyed out while `MIDI` is shown. That gives
+photo only, layout only, photo + layout, or the MIDI picture alone. Here the
+layout starts off; in the other views it starts on, over the photo.
+
+Nine controllers have a measured layout: DDJ-XP2, XDJ-XZ, DDJ-1000,
+DDJ-FLX10, DDJ-REV1, Numark Mixtrack Pro FX, Behringer CMD Micro and
+CMD Studio 4a, and Korg nanoPAD2, with both decks where the controller has
+two. Others show their photo here, and a grid in the other views.
 
 With the [Live Monitor](live-monitor.md) running, a marker flashes when you
 hit that control on the hardware, a jog marker turns with the platter, and
 LED messages from Serato light it amber.
-
-## MIDI info
-
-When a controller ships a second picture with its MIDI message list
-callouts printed on it, `MIDI info` switches to it. The real-layout overlay
-only lines up with the clean picture, so it is disabled while `MIDI info` is
-on.
 
 ## Related
 

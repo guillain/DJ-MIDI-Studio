@@ -104,7 +104,6 @@ from collections.abc import Callable
 from PySide6.QtCore import QRectF, Qt, QTimer, Signal
 from PySide6.QtGui import QBrush, QColor, QFont
 from PySide6.QtWidgets import (
-    QCheckBox,
     QComboBox,
     QFrame,
     QGraphicsEllipseItem,
@@ -124,6 +123,7 @@ from djmidi.gui import help_texts, layout_view
 from djmidi.gui import layout as layout_mod
 from djmidi.gui import pad_mode as pad_mode_mod
 from djmidi.gui.help_button import help_button
+from djmidi.gui.layer_toggles import LayerToggles
 from djmidi.gui.layout import CellKey
 from djmidi.gui.live_send import LiveSendControl
 from djmidi.gui.mapping_group import build_mapping_groups
@@ -284,6 +284,10 @@ class EmulatorLayoutView(QWidget):
         # real-position markers, matching ControllerLayoutView's own
         # "Controller photo" default. No effect in the classic-grid fallback.
         self._show_reference_photo = True
+        # The other display layers (gui/layer_toggles.py), set by the owning
+        # ControllerEmulatorView: the MIDI picture alone, or the Layout.
+        self._show_midi = False
+        self._show_layout = True
 
         self._scene = QGraphicsScene(self)
         self._scene.setBackgroundBrush(layout_view._SCENE_BRUSH)
@@ -322,6 +326,13 @@ class EmulatorLayoutView(QWidget):
         if self._show_reference_photo == enabled:
             return
         self._show_reference_photo = enabled
+        self._rebuild()
+
+    def set_layers(self, photo: bool, midi: bool, layout: bool) -> None:
+        """Show the given display layers (see gui/layer_toggles.py)."""
+        if (self._show_reference_photo, self._show_midi, self._show_layout) == (photo, midi, layout):
+            return
+        self._show_reference_photo, self._show_midi, self._show_layout = photo, midi, layout
         self._rebuild()
 
     def set_active(self, key: CellKey, active: bool) -> None:
@@ -411,8 +422,10 @@ class EmulatorLayoutView(QWidget):
         self._real_position_mode = bool(markers)
         if markers:
             self._rebuild_real_position(markers)
-        else:
+        elif self._show_layout:
             self._rebuild_classic_grid()
+        else:
+            self._scene.setSceneRect(0, 0, 1, 1)
 
     def _rebuild_real_position(self, markers: list[layout_view.RealPositionMarker]) -> None:
         """Identical rendering to ControllerLayoutView's own real-position
@@ -423,11 +436,17 @@ class EmulatorLayoutView(QWidget):
         concept beyond the dry-run status label below it): a marker rests
         at its own semantic color, like Controller Images, and flashes
         white on press."""
+        if self._show_midi:
+            pixmap = layout_view.draw_midi_photo(self._scene, self._controller)
+            if pixmap is not None:
+                self._scene.setSceneRect(0, 0, pixmap.width(), pixmap.height())
+                self._fit_view()
+                return
         canvas_w, canvas_h = layout_view._reference_canvas_size(self._controller)
         photo_shown = self._show_reference_photo and layout_view.draw_reference_photo(
             self._scene, self._controller
         )
-        for marker in markers:
+        for marker in markers if self._show_layout else ():
             # A right-pad-grid marker ("Pad 3 (R)") shares its *schematic*
             # CellKey with the left one (marker.key) by design -- see
             # real_position_markers()'s docstring -- but using that same
@@ -602,15 +621,13 @@ class ControllerEmulatorView(QWidget):
         self._emulator = EmulatorLayoutView(initial)
         self._emulator.controlPressed.connect(self._on_control_pressed)
 
-        self._photo_checkbox = QCheckBox("Controller photo")
-        self._photo_checkbox.setToolTip(
-            "Draw the real controller photo behind the schematic "
-            "(controllers with measured geometry only)."
-        )
-        # On by default (EmulatorLayoutView already defaults it on); check
-        # the box before wiring `toggled` so it just reflects that state.
-        self._photo_checkbox.setChecked(True)
-        self._photo_checkbox.toggled.connect(self._emulator.set_show_reference_photo)
+        # The display layers (gui/layer_toggles.py): the real Controller
+        # photo (on by default) and the Layout markers, or the MIDI picture
+        # alone. The old checkbox name stays as an alias.
+        self._layers = LayerToggles(controller=True, midi=False, layout=True)
+        self._layers.changed.connect(self._sync_layers)
+        self._photo_checkbox = self._layers.controller_box
+        self._sync_layers()
 
         self._status_label = QLabel("Click a control to see what it resolves to.")
         self._status_label.setWordWrap(True)
@@ -643,7 +660,7 @@ class ControllerEmulatorView(QWidget):
         combo_row.addWidget(self._combo, 1)
         combo_row.addWidget(help_button(self, *help_texts.CONTROLLER_EMULATOR))
         content_layout.addLayout(combo_row)
-        content_layout.addWidget(self._photo_checkbox)
+        content_layout.addWidget(self._layers)
         content_layout.addWidget(self._live_send)
         content_layout.addWidget(self._emulator, 1)
         content_layout.addWidget(self._status_label)
@@ -725,10 +742,22 @@ class ControllerEmulatorView(QWidget):
         if new_current:
             self._emulator.set_controller(new_current)
 
+    def _sync_layers(self) -> None:
+        """Offer the layers the shown controller has, then draw the ticked ones."""
+        controller = self._emulator._controller
+        measured = bool(controller) and bool(layout_view.real_position_markers(controller))
+        self._layers.set_available(
+            photo=measured and layout_view.reference_pixmap(controller) is not None,
+            midi=measured and layout_view.midi_pixmap(controller) is not None,
+            layout=True,
+        )
+        self._emulator.set_layers(*self._layers.state())
+
     def _on_controller_changed(self, name: str) -> None:
         if not name:
             return
         self._emulator.set_controller(name)
+        self._sync_layers()
         self._toggle_active.clear()
         self._pad_mode.clear()
         self._pad_mode_button_key.clear()

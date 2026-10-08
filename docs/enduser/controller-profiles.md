@@ -105,7 +105,7 @@ editor, your notes will differ: check them in the
 [Controller Setup](features/controller-setup.md). The X-Y pad is continuous
 and isn't named; HOLD, GATE ARP, TOUCH SCALE, KEY/RANGE, SCALE/TAP and SCENE
 only change the controller's own state and send nothing to map. In
-Controller Images, the "MIDI info" view shows a Korg editor layout
+Controller Images, the `MIDI` layer shows a Korg editor layout
 (notes 36–51) that differs from the captured unit: use it for pad positions,
 not note numbers.
 
