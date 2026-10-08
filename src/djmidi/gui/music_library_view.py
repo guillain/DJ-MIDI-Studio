@@ -32,10 +32,9 @@ from PySide6.QtCore import (
     Qt,
     QTimer,
 )
-from PySide6.QtGui import QBrush, QColor, QCursor, QFont, QUndoStack
+from PySide6.QtGui import QBrush, QColor, QFont, QUndoStack
 from PySide6.QtWidgets import (
     QAbstractItemView,
-    QApplication,
     QCheckBox,
     QComboBox,
     QDialog,
@@ -54,6 +53,7 @@ from PySide6.QtWidgets import (
     QListWidgetItem,
     QMessageBox,
     QProgressBar,
+    QProgressDialog,
     QPushButton,
     QScrollArea,
     QSizePolicy,
@@ -78,6 +78,9 @@ from djmidi.library.scanner import iter_scan_root
 _LOGGER = logging.getLogger(__name__)
 
 # Time slice a job may use per timer tick before yielding back to Qt.
+# A bulk tag write shows its progress window only past this delay, so a
+# handful of files doesn't flash a dialog.
+_PROGRESS_DELAY_MS = 400
 _SLICE_SECONDS = 0.025
 
 # (header, key) -- key is a TrackMetadata field or a LibraryRow extra.
@@ -1092,12 +1095,15 @@ class MusicLibraryView(QWidget):
         if not changes:
             self.status_label.setText("Selected tracks already have these tags.")
             return 0
-        command = WriteTracksMetadataCommand(changes, self._on_tracks_written)
-        QApplication.setOverrideCursor(QCursor(Qt.CursorShape.WaitCursor))
-        try:
-            self.undo_stack.push(command)
-        finally:
-            QApplication.restoreOverrideCursor()
+        command = WriteTracksMetadataCommand(
+            changes, self._on_tracks_written, progress_factory=self._tag_write_progress
+        )
+        self.undo_stack.push(command)
+        if command.cancelled:
+            self.status_label.setText(
+                f"Stopped: tags written to {len(command.written)} of {len(changes)} track(s)."
+                " Undo restores the ones already written."
+            )
         if command.failures:
             _LOGGER.warning("Tag write failed for %d file(s): %s", len(command.failures), command.failures)
             details = "\n".join(f"{Path(path).name}: {error}" for path, error in list(command.failures.items())[:20])
@@ -1108,10 +1114,38 @@ class MusicLibraryView(QWidget):
             )
         return len(command.written)
 
+    def _tag_write_progress(self, label: str, total: int, cancellable: bool = True) -> Callable[[int, int], bool]:
+        """A progress window for one pass of a bulk tag write (write, undo or
+        redo): shown only if the pass lasts more than a moment, with a Cancel
+        button. Returns the command's per-file callback; False means stop."""
+        dialog = QProgressDialog(label, "Cancel" if cancellable else "", 0, max(total, 1), self)
+        if not cancellable:
+            dialog.setCancelButton(None)
+        dialog.setWindowTitle("Music Library")
+        dialog.setMinimumWidth(360)
+        dialog.setWindowModality(Qt.WindowModality.WindowModal)
+        dialog.setMinimumDuration(_PROGRESS_DELAY_MS)
+        dialog.setAutoClose(True)
+        dialog.setAutoReset(True)
+
+        def report(done: int, total: int) -> bool:
+            dialog.setLabelText(f"{label} {done}/{total}")
+            dialog.setValue(done)
+            return not dialog.wasCanceled()
+
+        return report
+
     def _on_tracks_written(self, paths: list[str]) -> None:
         selected = [row.path for row in self.selected_rows()]
-        for path in paths:
+        # Re-reading every written file's tags takes as long as writing them.
+        # Not cancellable: stopping here would leave the table showing stale tags.
+        progress = self._tag_write_progress("Reading tags back…", len(paths), cancellable=False) if len(paths) > 1 else None
+        for index, path in enumerate(paths):
+            if progress is not None:
+                progress(index, len(paths))
             workspace.refresh_track_metadata(self.db, path)
+        if progress is not None:
+            progress(len(paths), len(paths))
         self._reload_rows()
         self.select_paths(selected)
         self.status_label.setText(f"Tags written to {len(paths)} track(s).")
