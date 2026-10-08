@@ -26,10 +26,11 @@ from PySide6.QtWidgets import (
 )
 
 from djmidi import catalog
-from djmidi.gui import controller_image_view
+from djmidi.gui import controller_image_view, help_texts
 from djmidi.gui import geometry as geometry_mod
 from djmidi.gui import jog as jog_mod
 from djmidi.gui import layout as layout_mod
+from djmidi.gui.help_button import help_button
 from djmidi.gui.layout import CellKey
 from djmidi.gui.live_send import LiveSendControl
 
@@ -694,6 +695,7 @@ class ControllerLayoutView(QWidget):
         self._photo_checkbox.setChecked(True)
         self._photo_checkbox.toggled.connect(self._on_photo_toggled)
         controls_layout.addWidget(self._photo_checkbox)
+        controls_layout.addWidget(help_button(self, *help_texts.MAPPING_VIEWS))
 
         self._scene = QGraphicsScene(self)
         self._scene.setBackgroundBrush(_SCENE_BRUSH)

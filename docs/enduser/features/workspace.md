@@ -77,6 +77,10 @@ at startup again.
 The **Help** menu opens this documentation, the bundled controller manuals
 and the official online references, all offline except the latter.
 
+Every tab and tool window also has **`?` buttons** next to the controls they
+explain: click one for a short explanation of that area, and `Open full
+guide` for its page of this documentation (bundled, so it works offline).
+
 ## Related
 
 - [User guide](../user-guide.md)

@@ -31,6 +31,8 @@ from PySide6.QtWidgets import (
 )
 
 from djmidi import catalog
+from djmidi.gui import help_texts
+from djmidi.gui.help_button import help_row
 from djmidi.gui.mapping_group import build_mapping_groups
 from djmidi.gui.port_list_utils import refresh_checked_port_list
 from djmidi.gui.scroll_utils import AutoSizeScrollArea
@@ -99,6 +101,7 @@ class LiveMonitorView(QWidget):
 
         controls_box = QGroupBox("Monitor")
         controls_layout = QVBoxLayout(controls_box)
+        controls_layout.addLayout(help_row(self, *help_texts.LIVE_MONITOR))
         controls_layout.addWidget(self._virtual_checkbox)
         controls_layout.addWidget(virtual_help)
         controls_layout.addWidget(self._start_button)

@@ -31,6 +31,8 @@ from djmidi.ableton_link import (
     LinkBackendUnavailable,
     LinkClockFollower,
 )
+from djmidi.gui import help_texts
+from djmidi.gui.help_button import help_row
 from djmidi.gui.midi_route_transform_dialog import MidiRouteTransformDialog
 from djmidi.gui.theme import colors as theme_colors
 from djmidi.gui.theme import midi_tools_stylesheet
@@ -160,6 +162,7 @@ class MidiRoutingView(QWidget):
         routes_box = QGroupBox("One-way MIDI routes")
         routes_box.setObjectName("routingCard")
         routes_layout = QVBoxLayout(routes_box)
+        routes_layout.addLayout(help_row(self, *help_texts.MIDI_ROUTING))
         routes_layout.addLayout(route_controls)
         routes_layout.addWidget(self._routes_table)
 
@@ -206,6 +209,7 @@ class MidiRoutingView(QWidget):
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
         )
         clock_layout = QVBoxLayout(self._clock_panel)
+        clock_layout.addLayout(help_row(self._clock_panel, *help_texts.MIDI_CLOCK))
         self._clock_intro = QLabel(
             "Build a Clock route, then start routing to send transport and 24 PPQN ticks."
         )

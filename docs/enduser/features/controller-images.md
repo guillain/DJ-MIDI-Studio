@@ -35,9 +35,10 @@ The same documents are in `Help → Controller References`.
 ## Show real layout
 
 Tick `Show real layout` to draw a marker on every modeled control at its
-true position on the picture. Six controllers are measured: DDJ-XP2,
-XDJ-XZ, DDJ-1000, DDJ-FLX10, DDJ-REV1 and Numark Mixtrack Pro FX, with both
-decks where the controller has two.
+true position on the picture. Nine controllers are measured: DDJ-XP2,
+XDJ-XZ, DDJ-1000, DDJ-FLX10, DDJ-REV1, Numark Mixtrack Pro FX, Behringer CMD
+Micro and CMD Studio 4a, and Korg nanoPAD2, with both decks where the
+controller has two.
 
 With the [Live Monitor](live-monitor.md) running, a marker flashes when you
 hit that control on the hardware, a jog marker turns with the platter, and

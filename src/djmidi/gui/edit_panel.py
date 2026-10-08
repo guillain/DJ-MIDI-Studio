@@ -18,6 +18,7 @@ from PySide6.QtWidgets import (
 )
 
 from djmidi import catalog
+from djmidi.gui import help_texts
 from djmidi.gui.commands import (
     AddAliasCommand,
     AddGroupAliasCommand,
@@ -27,6 +28,7 @@ from djmidi.gui.commands import (
     SetAttrCommand,
     SetGroupAttrCommand,
 )
+from djmidi.gui.help_button import help_row
 from djmidi.gui.mapping_group import MappingGroup
 from djmidi.model import Alias, Control, MappingElement, Translation, UserIO
 
@@ -48,6 +50,7 @@ class EditPanel(QWidget):
         self._on_group_applied = on_group_applied or (lambda: None)
         self._node: object | None = None
         self._layout = QVBoxLayout(self)
+        self._layout.addLayout(help_row(self, *help_texts.EDIT_PANEL))
         self._prompt_label = QLabel("Select a node in the tree to edit it.")
         self._layout.addWidget(self._prompt_label)
         self._body: QWidget | None = None

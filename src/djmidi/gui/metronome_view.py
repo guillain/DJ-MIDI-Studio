@@ -27,6 +27,8 @@ from PySide6.QtWidgets import (
 )
 
 from djmidi.catalog._registry import ControlInfo
+from djmidi.gui import help_texts
+from djmidi.gui.help_button import help_row
 from djmidi.gui.port_list_utils import refresh_selectable_port_list
 from djmidi.midi_io import list_output_ports
 from djmidi.session_player import _parse_int, play_control_info_entries
@@ -86,6 +88,7 @@ class MetronomeView(QWidget):
 
         transport_box = QGroupBox("Transport")
         transport_layout = QVBoxLayout(transport_box)
+        transport_layout.addLayout(help_row(self, *help_texts.METRONOME))
         transport_layout.addWidget(QLabel("Value / velocity (0-127)"))
         transport_layout.addWidget(self._value_edit)
         transport_layout.addWidget(QLabel("Loop frequency (Hz)"))

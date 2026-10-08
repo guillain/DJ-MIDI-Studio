@@ -19,7 +19,9 @@ from PySide6.QtWidgets import (
 )
 
 from djmidi import catalog
+from djmidi.gui import help_texts
 from djmidi.gui.controller_image_view import CONTROLLERS_DIR, image_for_controller
+from djmidi.gui.help_button import help_row
 from djmidi.gui.layout import CellKey
 from djmidi.gui.theme import colors as theme_colors
 from djmidi.gui.theme import current_mode as theme_current_mode
@@ -93,10 +95,12 @@ class IntroductionView(QWidget):
 
         cards_box = QGroupBox("Controller overview")
         cards_box_layout = QVBoxLayout(cards_box)
+        cards_box_layout.addLayout(help_row(self, *help_texts.DASHBOARD_OVERVIEW))
         cards_box_layout.addWidget(self._controller_tabs)
 
         tools_box = QGroupBox("MIDI tools")
         tools_layout = QVBoxLayout(tools_box)
+        tools_layout.addLayout(help_row(self, *help_texts.DASHBOARD_TOOLS))
         monitor_button = QPushButton("Open Live Monitor")
         monitor_button.clicked.connect(lambda: self.toolRequested.emit("monitor"))
         routing_button = QPushButton("Open MIDI Routing")

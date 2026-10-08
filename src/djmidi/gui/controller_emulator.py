@@ -112,6 +112,7 @@ from PySide6.QtWidgets import (
     QGraphicsScene,
     QGraphicsSimpleTextItem,
     QGraphicsView,
+    QHBoxLayout,
     QLabel,
     QScrollArea,
     QVBoxLayout,
@@ -119,9 +120,10 @@ from PySide6.QtWidgets import (
 )
 
 from djmidi import catalog
+from djmidi.gui import help_texts, layout_view
 from djmidi.gui import layout as layout_mod
-from djmidi.gui import layout_view
 from djmidi.gui import pad_mode as pad_mode_mod
+from djmidi.gui.help_button import help_button
 from djmidi.gui.layout import CellKey
 from djmidi.gui.live_send import LiveSendControl
 from djmidi.gui.mapping_group import build_mapping_groups
@@ -637,7 +639,10 @@ class ControllerEmulatorView(QWidget):
         content = QWidget()
         content_layout = QVBoxLayout(content)
         content_layout.setContentsMargins(0, 0, 0, 0)
-        content_layout.addWidget(self._combo)
+        combo_row = QHBoxLayout()
+        combo_row.addWidget(self._combo, 1)
+        combo_row.addWidget(help_button(self, *help_texts.CONTROLLER_EMULATOR))
+        content_layout.addLayout(combo_row)
         content_layout.addWidget(self._photo_checkbox)
         content_layout.addWidget(self._live_send)
         content_layout.addWidget(self._emulator, 1)
