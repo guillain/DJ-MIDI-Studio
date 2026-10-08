@@ -42,7 +42,8 @@ organized by what it is:
 | `Controller Profile ▸` | The controller profile you build in Controller Setup: new, open or save a draft, learn triggers from a mapping |
 | `Import ▸` / `Export ▸` | Serato crates, Traktor playlists and Rekordbox exports for the Music Library, and the Live Monitor log |
 
-The Dashboard's **Your files** card shows the same things at a glance: the
+The Dashboard's **Your files** card, first on the row with *Known
+controllers* and *MIDI tools*, shows the same things at a glance: the
 open mapping and its folder, whether a previous version is kept, your recent
 mappings, and your controller sync sets, with a button for each.
 

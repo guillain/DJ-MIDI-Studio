@@ -132,6 +132,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Dashboard files column + generic mode buttons** (`v0.48.51-dashboard-files-and-mode-buttons`) — maintainer
+  feedback: "Your files" now sits first on the Known controllers / MIDI tools row (its actions in a 2×2 grid), and
+  Controller Setup's MIDI Output no longer always shows eight hard-coded DDJ-XP2 pad-mode buttons — a leftover from
+  the project's start: the "Mode buttons" column lists the draft's own rows whose section contains MODE, rebuilt
+  on every row change, sent on their own channel; a hint shows when there are none.
 - [x] **File management, phase 3: visible workspace + reopen at launch** (`v0.48.50-workspace-folder`,
   issue #175) — `Documents/DJ MIDI Studio` (`user_paths.ensure_workspace`, with a README) holds `Controllers`,
   `Sync`, `Drafts`, `Logs` and `Exports`; Controller Setup drafts, Live Monitor logs and Music Library exports

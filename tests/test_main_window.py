@@ -1597,7 +1597,7 @@ def test_recent_mappings_fill_the_menu_and_the_dashboard(tmp_path):
             window._remember_mapping(path)
         assert [a.text().split("  —  ")[0] for a in window._recent_menu.actions()] == ["b.xml", "a.xml"]
         assert window._recent_menu.isEnabled()
-        assert "Recent" in window.introduction_view._files_recent_layout.itemAt(0).widget().text()
+        assert "a.xml" in window.introduction_view._files_recent_label.text()
     finally:
         window.close()
 

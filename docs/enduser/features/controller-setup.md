@@ -105,7 +105,10 @@ LEDs, switch pad modes, or initialize a device:
 - **Playback** replays the selected rows or the whole recorded session.
   `Save as controller sync set` turns the recording into a
   [Sync](controller-sync.md) set.
-- **Pad modes** has one-click buttons for the eight DDJ-XP2 pad modes.
+- **Mode buttons** has one one-click button per mode-switch row of your
+  draft (any row whose section contains `MODE`, such as `PAD MODE`), sent on
+  that row's channel. For a mode reached by double-clicking, use
+  `Send double-click` in **Playback**.
 
 For repeated playback at a fixed rate, use the
 [Metronome](midi-routing-and-clock.md#metronome).
