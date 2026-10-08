@@ -52,7 +52,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from djmidi import catalog, file_locations, software, user_paths
+from djmidi import catalog, file_locations, software, sync_store, user_paths
 from djmidi.catalog.profile import load_user_profiles
 from djmidi.controller_sync import (
     ControllerSyncSet,
@@ -126,6 +126,9 @@ _REFERENCE_LINKS = [
 _REVEAL_LABEL = "Show Mapping in Finder" if sys.platform == "darwin" else "Show Mapping in File Manager"
 _RECENT_SETTINGS_KEY = "files/recent_mappings"
 _LAST_DIR_SETTINGS_KEY = "files/last_mapping_dir"
+_LAST_MAPPING_SETTINGS_KEY = "files/last_mapping"
+_LAST_SOFTWARE_SETTINGS_KEY = "files/last_mapping_software"
+_LAST_DRAFT_SETTINGS_KEY = "files/last_draft"
 
 _LOCAL_HELP_DOCUMENTS = [
     ("Documentation Home", "docs/README.md"),
@@ -245,6 +248,12 @@ class MainWindow(QMainWindow):
             _LOGGER.info("Loaded %d installed controller profile(s): %s", len(loaded), ", ".join(loaded))
         for path, reason in failed.items():
             _LOGGER.warning("Skipped controller profile %s: %s", path, reason)
+        # The user's visible folder (issue #175 phase 3); sync sets live there
+        # as one file per controller, moved out of preferences.json once.
+        user_paths.ensure_workspace()
+        self.preferences.controller_sync_sets = sync_store.adopt_sync_sets(
+            user_paths.sync_dir(), list(self.preferences.controller_sync_sets)
+        )
         # "Show all controllers" (View menu) bypasses the per-controller
         # Preferences enablement so the mapping tabs list every registered
         # controller again; the real state is restored from QSettings in
@@ -430,6 +439,8 @@ class MainWindow(QMainWindow):
         self.helpful_notes_dialog.closedPersistently.connect(self._persist_helpful_notes_closed)
         self.helpful_notes_dialog.closedForSession.connect(self._allow_helpful_notes_next_start)
         self._restore_user_layout()
+        self.controller_setup_view.draftFileChanged.connect(self._remember_draft)
+        self._prepare_reopen_last_files()
         QTimer.singleShot(0, self._initialize_pair_splitters)
         QTimer.singleShot(0, self._show_helpful_notes_if_enabled)
         self.introduction_view.set_loaded_config_info(None)
@@ -1090,7 +1101,7 @@ class MainWindow(QMainWindow):
                 if dialog.tabs.tabText(index) == tab:
                     dialog.tabs.setCurrentIndex(index)
         if dialog.exec() == QDialog.DialogCode.Accepted:
-            self.preferences.save(self.preferences_path)
+            self._save_preferences()
             application = QApplication.instance()
             if application is not None:
                 apply_theme(application, self.preferences.theme)
@@ -1137,7 +1148,7 @@ class MainWindow(QMainWindow):
             if reply != QMessageBox.StandardButton.Yes:
                 return
         self.preferences.set_sync_set(sync_set)
-        self.preferences.save(self.preferences_path)
+        self._save_preferences()
         self.statusBar().showMessage(
             f"Sync set saved for {sync_set.controller} ({len(sync_set.messages)} message(s))", 10_000
         )
@@ -1216,7 +1227,9 @@ class MainWindow(QMainWindow):
         if self.config is not None:
             self.left_tabs.setCurrentIndex(self._tab_indexes["channel"])
 
-    def _load_mapping_from_path(self, path: Path) -> None:
+    def _load_mapping_from_path(self, path: Path, software_id: str | None = None) -> None:
+        """Open a mapping. With `software_id` (a reopened file whose software
+        is already known) the detection prompt is skipped."""
         _LOGGER.info("Opening mapping file %s", path)
         try:
             mapping_text = path.read_text(encoding="utf-8")
@@ -1243,7 +1256,10 @@ class MainWindow(QMainWindow):
         prompt = "Mapping software:"
         if detected is not None:
             prompt = f"Mapping software (detected: {detected.name}, {detected.score}% — {detected.reasons[0]}):"
-        if detected is not None and detection.status == "match" and self.preferences.detection_policy == "suggest":
+        known = next((definition for definition in definitions if definition.plugin_id == software_id), None)
+        if known is not None:
+            selected = known
+        elif detected is not None and detection.status == "match" and self.preferences.detection_policy == "suggest":
             selected = definitions[detected_index]
         else:
             software_name, accepted = QInputDialog.getItem(
@@ -1961,6 +1977,39 @@ class MainWindow(QMainWindow):
         self._load_mapping_from_path(restored)
         self.statusBar().showMessage(f"Restored the previous version of {restored.name}")
 
+    def _remember_draft(self, path: str) -> None:
+        settings = self._layout_settings()
+        if settings is not None:
+            settings.setValue(_LAST_DRAFT_SETTINGS_KEY, path)
+
+    def _prepare_reopen_last_files(self) -> None:
+        """Pick up where the user left off (issue #175): reopen the last
+        mapping with its software -- no detection prompt -- and hand the last
+        Controller Setup draft to that tab, which loads it the first time
+        it's shown (unless a default file is set in Preferences). Real app
+        only: tests and screenshot scripts have no settings."""
+        settings = self._layout_settings()
+        if settings is None or not self.preferences.reopen_last_files:
+            return
+        draft = settings.value(_LAST_DRAFT_SETTINGS_KEY, "", type=str)
+        if draft and not self.preferences.controller_setup_default_file and Path(draft).is_file():
+            self.controller_setup_view.set_default_file(draft)
+        mapping = settings.value(_LAST_MAPPING_SETTINGS_KEY, "", type=str)
+        software_id = settings.value(_LAST_SOFTWARE_SETTINGS_KEY, "", type=str) or None
+        if mapping and Path(mapping).is_file():
+            QTimer.singleShot(0, lambda: self._reopen_mapping(Path(mapping), software_id))
+
+    def _reopen_mapping(self, path: Path, software_id: str | None) -> None:
+        if self.config is not None:
+            return  # something was opened meanwhile
+        _LOGGER.info("Reopening the last mapping %s", path)
+        self._load_mapping_from_path(path, software_id=software_id)
+
+    def _save_preferences(self) -> None:
+        """preferences.json, plus the Sync folder mirroring the sync sets."""
+        self.preferences.save(self.preferences_path)
+        sync_store.save_sync_sets(user_paths.sync_dir(), self.preferences.controller_sync_sets)
+
     def _on_dashboard_file_action(self, action: str) -> None:
         """The Dashboard's "Your files" card buttons."""
         if action == "open":
@@ -2000,6 +2049,8 @@ class MainWindow(QMainWindow):
         if settings is not None:
             settings.setValue(_RECENT_SETTINGS_KEY, self._recent_mappings)
             settings.setValue(_LAST_DIR_SETTINGS_KEY, str(path.parent))
+            settings.setValue(_LAST_MAPPING_SETTINGS_KEY, str(path))
+            settings.setValue(_LAST_SOFTWARE_SETTINGS_KEY, self.software_id)
         self._rebuild_recent_menu()
         self._refresh_file_actions()
 

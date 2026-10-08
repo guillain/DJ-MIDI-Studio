@@ -164,8 +164,6 @@ _APPLY_HELP = (
     "generates a Python catalog module instead."
 )
 
-_DDJ_XP2_PAD_MODE_NOTES = {1: 27, 2: 30, 3: 32, 4: 34}
-
 # This view's few custom-styled elements (a QGroupBox-styled QFrame with no
 # native title row, its title, a muted "hint" subtitle, a small caption, and
 # the learn-status pill) used to set a literal hardcoded copy of the dark
@@ -204,6 +202,8 @@ def _slugify(name: str) -> str:
 
 class ControllerSetupView(QWidget):
     controllerApplied = Signal(str)
+    # The draft file just saved or opened (issue #175: reopened at launch).
+    draftFileChanged = Signal(str)
     # Emitted with a file path when the user, after importing triggers from a
     # Serato XML, also wants that file opened as an editable mapping.
     openMappingRequested = Signal(str)
@@ -401,19 +401,23 @@ class ControllerSetupView(QWidget):
         actions_column.addWidget(self._column_label("Playback"))
         actions_column.addLayout(action_grid)
 
-        pad_grid = QGridLayout()
-        pad_grid.setHorizontalSpacing(6)
-        pad_grid.setVerticalSpacing(6)
-        for index, mode in enumerate(range(1, 9)):
-            button = QPushButton(f"PAD {mode}")
-            button.setMinimumWidth(90)
-            button.setMinimumHeight(28)
-            button.clicked.connect(lambda _checked=False, m=mode: self._on_send_ddj_xp2_pad_mode(m))
-            pad_grid.addWidget(button, index // 2, index % 2)
+        # One-click send buttons for the draft's own mode-switch rows (any
+        # section containing "MODE", e.g. PAD MODE) -- rebuilt whenever the
+        # rows change. Used to be eight hard-coded DDJ-XP2 buttons shown for
+        # every controller.
+        self._mode_grid = QGridLayout()
+        self._mode_grid.setHorizontalSpacing(6)
+        self._mode_grid.setVerticalSpacing(6)
+        self._mode_hint = QLabel(
+            "Rows whose section contains MODE (e.g. PAD MODE) appear here as one-click send buttons."
+        )
+        self._mode_hint.setWordWrap(True)
+        self._hint_labels.append(self._mode_hint)
         pads_column = QVBoxLayout()
         pads_column.setSpacing(6)
-        pads_column.addWidget(self._column_label("Pad modes (DDJ-XP2)"))
-        pads_column.addLayout(pad_grid)
+        pads_column.addWidget(self._column_label("Mode buttons"))
+        pads_column.addWidget(self._mode_hint)
+        pads_column.addLayout(self._mode_grid)
         pads_column.addStretch(1)
 
         controls_row = QHBoxLayout()
@@ -756,6 +760,32 @@ class ControllerSetupView(QWidget):
 
     def _mark_dirty(self) -> None:
         self._dirty = True
+        self._refresh_mode_buttons()
+
+    def _mode_rows(self) -> list[ControlInfo]:
+        """The draft's mode-switch rows, without their SHIFT variants."""
+        return [
+            row
+            for row in self._rows
+            if "MODE" in row.section.upper() and row.note_or_cc == "NOTE" and "SHIFT" not in row.name.upper()
+        ]
+
+    def _refresh_mode_buttons(self) -> None:
+        if not hasattr(self, "_mode_grid"):
+            return
+        while self._mode_grid.count():
+            item = self._mode_grid.takeAt(0)
+            if item.widget() is not None:
+                item.widget().hide()
+                item.widget().deleteLater()
+        rows = self._mode_rows()
+        self._mode_hint.setVisible(not rows)
+        for index, row in enumerate(rows):
+            button = QPushButton(row.name)
+            button.setMinimumHeight(28)
+            button.setToolTip(f"Send {row.name}: Note {row.data1} on channel {row.channels[0]}")
+            button.clicked.connect(lambda _checked=False, r=row: self._on_send_mode_row(r))
+            self._mode_grid.addWidget(button, index // 2, index % 2)
 
     # -- table <-> rows ----------------------------------------------------
 
@@ -765,6 +795,7 @@ class ControllerSetupView(QWidget):
         self._rebuilding = False
         for entry, source, device in zip(self._rows, self._sources, self._devices):
             self._append_row_to_table(entry, source, device)
+        self._refresh_mode_buttons()
 
     def _append_row_to_table(self, entry: ControlInfo, source: str, device: str = "") -> None:
         self._rebuilding = True
@@ -1077,23 +1108,19 @@ class ControllerSetupView(QWidget):
             return
         self._send_status.setText("Double-click MIDI sequence sent.")
 
-    def _on_send_ddj_xp2_pad_mode(self, mode: int) -> None:
-        if mode not in (1, 2, 3, 4, 5, 6, 7, 8):
-            QMessageBox.critical(self, "Unsupported mode", f"Unsupported DDJ-XP2 pad mode: {mode}")
-            return
-        if mode <= 4:
-            note = _DDJ_XP2_PAD_MODE_NOTES[mode]
-            double_click = False
-        else:
-            note = _DDJ_XP2_PAD_MODE_NOTES[mode - 4]
-            double_click = True
-        self._send_data1_edit.setText(str(note))
+    def _on_send_mode_row(self, row: ControlInfo) -> None:
+        """Send one mode-switch row (a Note press + release) on its own
+        channel to the checked output ports."""
         try:
-            self._send_note_click(note=note, double_click=double_click)
+            note = _parse_int(row.data1, "Data1", 0, 127)
+            channel = _parse_int(row.channels[0], "Channel", 1, 16)
+            self._send_channel_edit.setText(str(channel))
+            self._send_data1_edit.setText(str(note))
+            self._send_note_click(note=note, double_click=False)
         except Exception as exc:  # noqa: BLE001 - show user-facing error
             QMessageBox.critical(self, "Failed to send MIDI", str(exc))
             return
-        self._send_status.setText(f"Sent DDJ-XP2 PAD MODE {mode} trigger.")
+        self._send_status.setText(f"Sent {row.name} (Note {note}, channel {channel}).")
 
     def _selected_row_indices(self) -> list[int]:
         selected = sorted({index.row() for index in self._table.selectedIndexes()})
@@ -1421,7 +1448,7 @@ class ControllerSetupView(QWidget):
         self._dirty = False
 
     def _on_save_session_clicked(self) -> None:
-        default_name = f"{self._slug() or 'controller'}.json"
+        default_name = str(user_paths.subfolder(user_paths.DRAFTS) / f"{self._slug() or 'controller'}.json")
         path_str, _ = QFileDialog.getSaveFileName(self, "Save controller setup session", default_name, "JSON files (*.json)")
         if not path_str:
             return
@@ -1432,11 +1459,14 @@ class ControllerSetupView(QWidget):
             QMessageBox.critical(self, "Failed to save session", str(exc))
             return
         _LOGGER.info("Saved Controller Setup session to %s (%d row(s))", path_str, len(self._rows))
+        self.draftFileChanged.emit(path_str)
 
     def _on_load_session_clicked(self) -> None:
         if self._dirty and not self._confirm("This will discard the current unsaved draft. Continue?"):
             return
-        path_str, _ = QFileDialog.getOpenFileName(self, "Load controller setup session", "", "JSON files (*.json)")
+        path_str, _ = QFileDialog.getOpenFileName(
+            self, "Load controller setup session", str(user_paths.subfolder(user_paths.DRAFTS)), "JSON files (*.json)"
+        )
         if not path_str:
             return
         try:
@@ -1446,6 +1476,7 @@ class ControllerSetupView(QWidget):
             QMessageBox.critical(self, "Failed to load session", str(exc))
             return
         _LOGGER.info("Loaded Controller Setup session from %s (%d row(s))", path_str, len(self._rows))
+        self.draftFileChanged.emit(path_str)
 
     # -- validation / export ---------------------------------------------------
 

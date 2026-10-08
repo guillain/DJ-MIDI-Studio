@@ -628,29 +628,41 @@ def test_send_output_double_click_reports_invalid_data1_instead_of_raising(monke
     assert shown.get("title") == "Failed to send MIDI"
 
 
-def test_ddj_xp2_pad_mode_5_uses_double_click_on_mode_1(monkeypatch):
+def test_mode_buttons_follow_the_drafts_own_mode_rows(monkeypatch):
+    """The Mode buttons column lists the draft's own mode-switch rows (any
+    controller), not eight DDJ-XP2 buttons whatever the controller."""
+    from PySide6.QtWidgets import QPushButton
+
     import djmidi.gui.controller_setup as controller_setup_mod
 
     sent = []
     view = _view_with_name()
     monkeypatch.setattr(controller_setup_mod, "list_output_ports", lambda: ["Port A"])
-    monkeypatch.setattr(
-        controller_setup_mod,
-        "send_midi_message",
-        lambda **kwargs: sent.append(kwargs),
-    )
-    monkeypatch.setattr(
-        controller_setup_mod.QTimer,
-        "singleShot",
-        lambda _ms, callback: callback(),
-    )
+    monkeypatch.setattr(controller_setup_mod, "send_midi_message", lambda **kwargs: sent.append(kwargs))
+
+    def mode_buttons():
+        return [
+            view._mode_grid.itemAt(i).widget()
+            for i in range(view._mode_grid.count())
+            if isinstance(view._mode_grid.itemAt(i).widget(), QPushButton)
+        ]
+
+    assert mode_buttons() == [] and not view._mode_hint.isHidden()
+    view._rows = [
+        ControlInfo("MiniPad", "PAD MODE", "HOT CUE", "NOTE", ("7",), "27"),
+        ControlInfo("MiniPad", "PAD MODE", "HOT CUE (+SHIFT)", "NOTE", ("7",), "105"),
+        ControlInfo("MiniPad", "PAD", "Pad 1", "NOTE", ("7",), "0"),
+    ]
+    view._sources = ["manual"] * 3
+    view._devices = [""] * 3
+    view._rebuild_table()
+    buttons = mode_buttons()
+    assert [b.text() for b in buttons] == ["HOT CUE"] and view._mode_hint.isHidden()
 
     view._refresh_output_ports()
     view._send_data2_edit.setText("127")
-    view._send_delay_ms_edit.setText("0")
-    view._on_send_ddj_xp2_pad_mode(5)
-    assert len(sent) == 4
-    assert all(msg["data1"] == 27 for msg in sent)
+    buttons[0].click()
+    assert [(m["channel_1_based"], m["data1"]) for m in sent] == [(7, 27), (7, 27)]
 
 
 def test_play_session_rows_once_sends_note_click_and_cc(monkeypatch):

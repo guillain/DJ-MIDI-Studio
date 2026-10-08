@@ -1597,7 +1597,7 @@ def test_recent_mappings_fill_the_menu_and_the_dashboard(tmp_path):
             window._remember_mapping(path)
         assert [a.text().split("  —  ")[0] for a in window._recent_menu.actions()] == ["b.xml", "a.xml"]
         assert window._recent_menu.isEnabled()
-        assert "Recent" in window.introduction_view._files_recent_layout.itemAt(0).widget().text()
+        assert "a.xml" in window.introduction_view._files_recent_label.text()
     finally:
         window.close()
 
@@ -1620,5 +1620,44 @@ def test_restore_previous_version_uses_the_backup_next_to_the_mapping(tmp_path, 
         window._on_rollback_last_save()
         assert mapping.read_text() == "previous"
         assert reloaded == [mapping]
+    finally:
+        window.close()
+
+
+def test_sync_sets_live_in_the_sync_folder(tmp_path):
+    """Issue #175: sync sets are read from the user's Sync folder at launch
+    and every preferences save mirrors them back there."""
+    from djmidi import sync_store, user_paths
+    from djmidi.controller_sync import ControllerSyncSet, SyncMessage
+
+    sync_set = ControllerSyncSet("DDJ-XP2", "Port", (SyncMessage.create("Note On", 1, 1, 127),))
+    sync_store.save_sync_sets(user_paths.sync_dir(), [sync_set])
+    window = MainWindow()
+    try:
+        assert window.preferences.controller_sync_sets == [sync_set]
+        assert (user_paths.workspace_dir() / "README.txt").is_file()
+        window.preferences.remove_sync_set("DDJ-XP2")
+        window._save_preferences()
+        assert list(user_paths.sync_dir().glob("*.json")) == []
+    finally:
+        window.close()
+
+
+def test_last_mapping_reopens_with_its_software_without_asking(tmp_path, monkeypatch):
+    from PySide6.QtCore import QSettings
+    from PySide6.QtWidgets import QInputDialog
+
+    settings = QSettings(str(tmp_path / "settings.ini"), QSettings.Format.IniFormat)
+    monkeypatch.setattr(MainWindow, "_layout_settings", staticmethod(lambda: settings))
+    mapping = tmp_path / "mapping.xml"
+    mapping.write_text(FIXTURE.read_text())
+    settings.setValue("files/last_mapping", str(mapping))
+    settings.setValue("files/last_mapping_software", "serato")
+    monkeypatch.setattr(QInputDialog, "getItem", lambda *a, **k: (_ for _ in ()).throw(AssertionError("asked")))
+    window = MainWindow()
+    try:
+        QApplication.processEvents()  # the reopen is queued
+        assert window.current_path == mapping
+        assert window.software_id == "serato" and window.config is not None
     finally:
         window.close()

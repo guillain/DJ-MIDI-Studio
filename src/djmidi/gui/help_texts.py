@@ -28,7 +28,7 @@ DASHBOARD_FILES: HelpEntry = (
         "editor. It stays where your DJ software keeps it; <b>File → Save Mapping</b> writes it "
         "back there.</li>"
         "<li><b>Previous version</b>: every save keeps the version it replaces next to the file "
-        "(<tt>.bak</tt>); <b>Restore previous version…</b> puts it back.</li>"
+        "(<tt>.bak</tt>); <b>Restore previous…</b> puts it back.</li>"
         "<li><b>Recent</b>: the last mappings you opened (also in <b>File → Open Recent "
         "Mapping</b>).</li>"
         "<li><b>Sync sets</b>: the initialization messages recorded in Controller Setup, one per "
@@ -36,6 +36,17 @@ DASHBOARD_FILES: HelpEntry = (
         "Controller profiles you build live in <b>File → Controller Profile</b>."
     ),
     "workspace.md",
+)
+
+DASHBOARD_CONTROLLERS: HelpEntry = (
+    "Known controllers",
+    (
+        "Every controller the app knows: the built-in profiles and the ones you installed from "
+        "<b>Controller Setup</b>. The <b>Active controller for drill-down</b> is the one the "
+        "<b>Channel</b>, <b>Controller</b> and <b>Images</b> shortcuts open. Hide controllers you "
+        "don't own in ⚙ Preferences → Plugins."
+    ),
+    "controller-images.md",
 )
 
 DASHBOARD_TOOLS: HelpEntry = (
