@@ -12,8 +12,16 @@ lowercase (`pioneer`, `behringer`, `native-instruments`); the model folder
 keeps the name printed on the device (`DDJ-XP2`, `CMD-micro`, `nanoPAD2`). The
 per-controller image convention is `reference.png` (clean device render,
 shown by default) and, where available, `reference-midi.png` (the same view
-with the MIDI Message List's callouts printed over it — Controller Images'
-"MIDI info" checkbox swaps between them).
+with the MIDI Message List's callouts printed over it — the `MIDI` display
+layer shows it).
+
+Both are normalized by `scripts/process_controller_images.py`: cropped to the
+controller with a 1 % margin and resized to **2000 px wide**. The photo gets
+a transparent background (outside the device's outline only, so a line
+drawing keeps its white inside); the MIDI picture stays on white, since its
+titles and callouts are dark text. Run the script on a new image **before**
+measuring its layout: the layout positions are fractions of the processed
+image.
 
 ```
 controllers/

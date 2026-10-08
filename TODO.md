@@ -132,6 +132,15 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Controller images normalized** (`v0.48.46-controller-images-cleanup`) — requested by the maintainer:
+  all 28 bundled pictures processed by the new `scripts/process_controller_images.py`. Photos get a
+  transparent background (only outside the filled device silhouette, so the Numark line drawing keeps its
+  white inside), MIDI pictures stay on white (their dark titles/callouts were unreadable when made
+  transparent), and both are cropped (1 % margin) and resized to 2000 px wide with Lanczos — the
+  maintainer's chosen size, so the small sources (CMD Micro, nanoPAD2, Pro 3…) are enlarged and a bit
+  soft. Every `CONTROL_GEOMETRY` entry of the 9 measured controllers (367) was remapped from its crop
+  box and checked on screen with the overlay on. The repo script reproduces the committed images pixel
+  for pixel.
 - [x] **Controller / MIDI / Layout display layers** (`v0.48.45-controller-view-layers`) — requested by the
   maintainer: every controller view (Controller Images, the By… drawings, every Controller Emulator) now
   shows the same three layer checkboxes from `gui/layer_toggles.py` instead of its own `MIDI info` /
