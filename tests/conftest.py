@@ -14,6 +14,9 @@ os.environ.setdefault(
 # Same for the music library index (issue #132): a window built by a test
 # must never open the developer's real library.sqlite3.
 os.environ.setdefault("DJMIDI_LIBRARY_DB", ":memory:")
+# The user's DJ MIDI Studio folder (installed controller profiles, ...) is a
+# throwaway one for the whole test session, never ~/Documents.
+os.environ.setdefault("DJMIDI_WORKSPACE", tempfile.mkdtemp(prefix="djmidi-workspace-"))
 
 import mido
 import pytest
@@ -35,6 +38,13 @@ def _qapp():
     to exist before construction; tests run headless via QT_QPA_PLATFORM."""
     app = QApplication.instance() or QApplication([])
     yield app
+
+
+@pytest.fixture(autouse=True)
+def _fresh_workspace(tmp_path, monkeypatch):
+    """Each test gets its own empty DJ MIDI Studio folder, so a profile one
+    test installs is never loaded by the next test's MainWindow."""
+    monkeypatch.setenv("DJMIDI_WORKSPACE", str(tmp_path / "workspace"))
 
 
 @pytest.fixture(autouse=True)

@@ -122,13 +122,15 @@ so they aren't guessed.
 
 Any controller can be added without its manufacturer's MIDI documentation:
 [Controller Setup](features/controller-setup.md) learns it from the
-hardware, or from a Serato mapping you already use, and can share it with
-the community catalog.
+hardware, or from a Serato mapping you already use. `Install` keeps it for
+every launch, as a JSON profile in `Documents/DJ MIDI Studio/Controllers`,
+and it can be shared with the community catalog.
 
 ## JSON profiles
 
-A controller with only static Note/CC controls can also be described in a
-JSON file and installed as a plugin:
+A controller with only static Note/CC controls is described by a JSON file
+— exactly what Controller Setup's `Install` writes. Any such file placed in
+`Documents/DJ MIDI Studio/Controllers` is loaded at launch:
 
 ```json
 {

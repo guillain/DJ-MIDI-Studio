@@ -35,6 +35,8 @@ class PluginPreferences:
     log_path: str = ""
     theme: ThemeMode = "system"
     auto_start_live_monitor: bool = True
+    # Reopen the last mapping and Controller Setup draft at launch (issue #175).
+    reopen_last_files: bool = True
     # Session JSON or Serato XML Controller Setup loads when first shown ("" = none).
     controller_setup_default_file: str = ""
     # One-click "Sync" sets, at most one per controller (see controller_sync).
@@ -79,6 +81,7 @@ class PluginPreferences:
                 "log_path": self.log_path,
                 "theme": self.theme,
                 "auto_start_live_monitor": self.auto_start_live_monitor,
+                "reopen_last_files": self.reopen_last_files,
                 "controller_setup_default_file": self.controller_setup_default_file,
                 "controller_sync_sets": [sync_set.to_dict() for sync_set in self.controller_sync_sets],
             },
@@ -128,6 +131,7 @@ class PluginPreferences:
             log_path=str(raw.get("log_path", "")),
             theme=theme,
             auto_start_live_monitor=bool(raw.get("auto_start_live_monitor", True)),
+            reopen_last_files=bool(raw.get("reopen_last_files", True)),
             controller_setup_default_file=str(raw.get("controller_setup_default_file", "")),
             controller_sync_sets=list(sync_sets.values()),
         )

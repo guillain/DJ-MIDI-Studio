@@ -79,8 +79,8 @@ Start/Continue/Stop plus 24 PPQN ticks to the selected MIDI output.
 1. Open `Controller Setup`.
 2. Select the MIDI input and capture representative buttons or pads.
 3. Review the learned channel, event type, and data value.
-4. Name the rows, then `Apply now` to use the profile for the current
-   session, or generate a catalog module to keep it.
+4. Name the rows, then `Install` (or `File → Controller Profile → Install
+   Profile`): the profile is active right away and kept for every launch.
 
 Unknown devices remain usable without claiming an incorrect catalog. Verify
 the captured values against the manufacturer's MIDI documentation before

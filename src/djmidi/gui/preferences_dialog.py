@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import dataclasses
 
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QCheckBox,
@@ -23,8 +24,9 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from djmidi import catalog, software
+from djmidi import catalog, software, user_paths
 from djmidi.controller_sync import ControllerSyncSet
+from djmidi.gui.file_reveal import reveal_in_file_manager
 from djmidi.logging_config import default_log_path
 from djmidi.midi_io import list_output_ports
 from djmidi.plugins import PluginPreferences
@@ -60,6 +62,26 @@ class PreferencesDialog(QDialog):
             "Monitor and clicking Start monitoring. Turn off to require that manual step."
         )
         self._auto_start_live_monitor = auto_start_live_monitor
+        reopen_last_files = QCheckBox("Reopen my last mapping and Controller Setup draft at launch")
+        reopen_last_files.setChecked(preferences.reopen_last_files)
+        reopen_last_files.setToolTip(
+            "Load the mapping you had open last (with the same DJ software, without asking again) and "
+            "the Controller Setup draft you saved or opened last, so you pick up where you left off."
+        )
+        self._reopen_last_files = reopen_last_files
+        workspace_row = QWidget()
+        workspace_layout = QHBoxLayout(workspace_row)
+        workspace_layout.setContentsMargins(0, 0, 0, 0)
+        workspace_label = QLabel(str(user_paths.workspace_dir()))
+        workspace_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        workspace_label.setToolTip(
+            "Your controller profiles, sync sets, Controller Setup drafts, saved logs and exports. "
+            "Your Serato / Traktor mappings stay where your DJ software keeps them."
+        )
+        open_workspace = QPushButton("Open folder")
+        open_workspace.clicked.connect(lambda: reveal_in_file_manager(user_paths.ensure_workspace()))
+        workspace_layout.addWidget(workspace_label, 1)
+        workspace_layout.addWidget(open_workspace)
         theme = QComboBox()
         theme.addItem("Follow system", "system")
         theme.addItem("Light", "light")
@@ -106,6 +128,8 @@ class PreferencesDialog(QDialog):
         policy_layout.addRow(routing)
         policy_layout.addRow(trust)
         policy_layout.addRow(auto_start_live_monitor)
+        policy_layout.addRow(reopen_last_files)
+        policy_layout.addRow("Your files folder:", workspace_row)
 
         controller_ids = {
             definition.plugin_id or definition.name
@@ -272,6 +296,7 @@ class PreferencesDialog(QDialog):
         self._preferences.routing_enabled = self._routing.isChecked()
         self._preferences.trust_external_plugins = self._trust.isChecked()
         self._preferences.auto_start_live_monitor = self._auto_start_live_monitor.isChecked()
+        self._preferences.reopen_last_files = self._reopen_last_files.isChecked()
         self._preferences.log_level = self._log_level.currentText()
         self._preferences.log_path = self._log_path.text().strip()
         self._preferences.controller_setup_default_file = self._setup_file.text().strip()
