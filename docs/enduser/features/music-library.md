@@ -109,7 +109,9 @@ then the genre tag, since a genre tag alone is often wrong.
 - A category shown in amber as `? Tek / PsyTrance` is only a
   **suggestion** from a near-match spelling. Select the track and click
   `Confirm suggested category` to make that spelling a permanent alias.
-  Suggestions are never applied on their own.
+  `Confirm all suggestions (N)` does it for every track shown in the table
+  (narrow them with the filters first if you want), after listing each
+  genre → category pair. Suggestions are never applied on their own.
 - The **Categories** panel shows track counts and lets you create, rename,
   merge and delete categories and aliases (`DnB`, `D&B` and `Drum and Bass`
   can all mean `Drum & Bass`).

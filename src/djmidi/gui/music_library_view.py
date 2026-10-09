@@ -622,6 +622,14 @@ class MusicLibraryView(QWidget):
         )
         self.accept_suggestion_button.clicked.connect(self.confirm_category_suggestion)
         box.addWidget(self.accept_suggestion_button)
+        self.accept_all_suggestions_button = QPushButton("Confirm all suggestions")
+        self.accept_all_suggestions_button.setToolTip(
+            "Confirms every suggested category among the tracks shown in the table (narrow them "
+            "with the filters first if needed): each genre becomes an alias of its suggested "
+            "category. Lists them and asks before applying."
+        )
+        self.accept_all_suggestions_button.clicked.connect(self._on_confirm_all_suggestions_clicked)
+        box.addWidget(self.accept_all_suggestions_button)
 
         buttons = QHBoxLayout()
         self.apply_button = QPushButton("Write tags")
@@ -978,6 +986,56 @@ class MusicLibraryView(QWidget):
 
     def _update_count_label(self, *_args: object) -> None:
         self.count_label.setText(f"{self.proxy.rowCount()} / {self.table_model.rowCount()} tracks")
+        self._update_all_suggestions_button()
+
+    def pending_suggestions(self) -> dict[str, str]:
+        """Genre -> suggested category for the visible tracks that have a
+        suggestion (the pairs "Confirm all suggestions" would record)."""
+        pairs: dict[str, str] = {}
+        for row in self.visible_rows():
+            if _can_confirm_suggestion(row):
+                pairs.setdefault(row.metadata.genre.strip(), row.category_suggestion)
+        return pairs
+
+    def _update_all_suggestions_button(self) -> None:
+        if not hasattr(self, "accept_all_suggestions_button"):
+            return
+        count = len(self.pending_suggestions())
+        self.accept_all_suggestions_button.setEnabled(count > 0)
+        self.accept_all_suggestions_button.setText(
+            f"Confirm all suggestions ({count})" if count else "Confirm all suggestions"
+        )
+
+    def confirm_all_suggestions(self) -> int:
+        """Record every pending genre -> suggested category pair as an alias;
+        returns how many were recorded. One table reload at the end."""
+        recorded = 0
+        for genre, category in self.pending_suggestions().items():
+            try:
+                workspace.add_category_alias(self.db, category, genre)
+            except ValueError as exc:
+                _LOGGER.warning("Could not confirm %r as an alias of %s: %s", genre, category, exc)
+                continue
+            recorded += 1
+        if recorded:
+            self._reload_rows()
+        self.status_label.setText(f"Confirmed {recorded} suggested categor{'y' if recorded == 1 else 'ies'}.")
+        return recorded
+
+    def _on_confirm_all_suggestions_clicked(self) -> None:
+        pairs = self.pending_suggestions()
+        if not pairs:
+            return
+        lines = [f"“{genre}” → {category_label(category)}" for genre, category in sorted(pairs.items())]
+        shown = "\n".join(lines[:20]) + (f"\n… and {len(lines) - 20} more" if len(lines) > 20 else "")
+        answer = QMessageBox.question(
+            self,
+            "Confirm all suggestions",
+            f"Each genre below becomes an alias of its suggested category, for every track with "
+            f"that genre:\n\n{shown}",
+        )
+        if answer == QMessageBox.StandardButton.Yes:
+            self.confirm_all_suggestions()
 
     def visible_rows(self) -> list[workspace.LibraryRow]:
         return [self.proxy.index(r, 0).data(ROW_ROLE) for r in range(self.proxy.rowCount())]
