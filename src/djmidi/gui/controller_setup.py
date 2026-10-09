@@ -23,6 +23,7 @@ import dataclasses
 import json
 import logging
 import re
+import shutil
 from pathlib import Path
 from string import Template
 from typing import cast
@@ -54,7 +55,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from djmidi import catalog
+from djmidi import catalog, user_paths
 from djmidi.catalog._registry import (
     ControlInfo,
     NoteOrCC,
@@ -73,6 +74,7 @@ from djmidi.catalog.community import (
     submission_issue_url,
     summarise_source,
 )
+from djmidi.catalog.profile import USER_PLUGIN_PREFIX, save_controller_profile
 from djmidi.controller_sync import ControllerSyncSet, sync_set_from_events
 from djmidi.gui.controller_submission_dialog import ControllerSubmissionDialog
 from djmidi.gui.help_button import help_button
@@ -117,10 +119,10 @@ _CAPTURE_HELP = (
     "aren't in scope for a profile — delete those rows before exporting."
 )
 _IMPORT_HELP = (
-    "Import triggers from a Serato XML or a Traktor TSI mapping: adds one row per "
+    "Learn triggers from a Serato XML or a Traktor TSI mapping: adds one row per "
     "unique (channel, type, control) the file uses. It seeds the profile so you don't "
     "have to press every button on the hardware — it does NOT open the mapping for "
-    "editing (that's File → Open). Mapped functions aren't physical control names, so "
+    "editing (that's File → Open Mapping). Mapped functions aren't physical control names, so "
     "Section and Name still have to be filled in by hand. A TSI export can hold several "
     "devices (one per controller); you pick which one to import. After importing you're "
     "offered to open the same file as an editable mapping too."
@@ -154,14 +156,13 @@ def tsi_device_labels(config: MidiConfig) -> dict[str, str]:
         labels[key] = f"#{device.index} {name}{port}"
     return labels
 _APPLY_HELP = (
-    "Apply now registers this draft in the running app so it shows up in the Layout, By "
-    "Controller, and Controller Images tabs — in-memory only, lost on restart. \"Generate "
-    "catalog module…\" writes the permanent catalog/<slug>.py. \"Submit to community catalog…\" "
+    "Install saves this profile in your Controllers folder (Documents/DJ MIDI Studio/Controllers) "
+    "with a copy of its picture, activates it in every view now, and loads it again at every "
+    "launch. Installing again under the same name updates it. \"Submit to community catalog…\" "
     "opens a pre-filled GitHub issue with the profile JSON so it can be reviewed and shipped as "
-    "a built-in (reference images are not included)."
+    "a built-in (reference images are not included). For developers, the remaining button "
+    "generates a Python catalog module instead."
 )
-
-_DDJ_XP2_PAD_MODE_NOTES = {1: 27, 2: 30, 3: 32, 4: 34}
 
 # This view's few custom-styled elements (a QGroupBox-styled QFrame with no
 # native title row, its title, a muted "hint" subtitle, a small caption, and
@@ -183,6 +184,12 @@ _STATUS_PILL_QSS = Template(
 )
 
 
+def _is_user_profile(name: str) -> bool:
+    """A controller the user installed (so Install may update it), not a built-in."""
+    definition = catalog._registry._REGISTRY.get(name)
+    return definition is not None and (definition.plugin_id or "").startswith(USER_PLUGIN_PREFIX)
+
+
 def _slugify(name: str) -> str:
     lowered = name.strip().lower()
     slug = re.sub(r"[^a-z0-9]+", "_", lowered).strip("_")
@@ -195,6 +202,8 @@ def _slugify(name: str) -> str:
 
 class ControllerSetupView(QWidget):
     controllerApplied = Signal(str)
+    # The draft file just saved or opened (issue #175: reopened at launch).
+    draftFileChanged = Signal(str)
     # Emitted with a file path when the user, after importing triggers from a
     # Serato XML, also wants that file opened as an editable mapping.
     openMappingRequested = Signal(str)
@@ -287,12 +296,12 @@ class ControllerSetupView(QWidget):
         capture_layout.addWidget(self._learn_status)
 
         import_button = QPushButton(self._get_icon("import"), "")
-        import_button.setToolTip("Import triggers from a Serato XML or Traktor TSI mapping…")
+        import_button.setToolTip("Learn triggers from a mapping (Serato XML or Traktor TSI)…")
         import_button.clicked.connect(self._on_import_xml_clicked)
         self._attach_image_button = QPushButton(self._get_icon("image"), "")
         self._attach_image_button.setToolTip("Attach reference image…")
         self._attach_image_button.clicked.connect(self._on_attach_image_clicked)
-        import_help_button = self._help_button("Import", _IMPORT_HELP)
+        import_help_button = self._help_button("Learn triggers from a mapping", _IMPORT_HELP)
         self._image_label = QLabel("No reference image")
         self._image_label.setWordWrap(True)
         self._hint_labels.append(self._image_label)
@@ -392,19 +401,23 @@ class ControllerSetupView(QWidget):
         actions_column.addWidget(self._column_label("Playback"))
         actions_column.addLayout(action_grid)
 
-        pad_grid = QGridLayout()
-        pad_grid.setHorizontalSpacing(6)
-        pad_grid.setVerticalSpacing(6)
-        for index, mode in enumerate(range(1, 9)):
-            button = QPushButton(f"PAD {mode}")
-            button.setMinimumWidth(90)
-            button.setMinimumHeight(28)
-            button.clicked.connect(lambda _checked=False, m=mode: self._on_send_ddj_xp2_pad_mode(m))
-            pad_grid.addWidget(button, index // 2, index % 2)
+        # One-click send buttons for the draft's own mode-switch rows (any
+        # section containing "MODE", e.g. PAD MODE) -- rebuilt whenever the
+        # rows change. Used to be eight hard-coded DDJ-XP2 buttons shown for
+        # every controller.
+        self._mode_grid = QGridLayout()
+        self._mode_grid.setHorizontalSpacing(6)
+        self._mode_grid.setVerticalSpacing(6)
+        self._mode_hint = QLabel(
+            "Rows whose section contains MODE (e.g. PAD MODE) appear here as one-click send buttons."
+        )
+        self._mode_hint.setWordWrap(True)
+        self._hint_labels.append(self._mode_hint)
         pads_column = QVBoxLayout()
         pads_column.setSpacing(6)
-        pads_column.addWidget(self._column_label("Pad modes (DDJ-XP2)"))
-        pads_column.addLayout(pad_grid)
+        pads_column.addWidget(self._column_label("Mode buttons"))
+        pads_column.addWidget(self._mode_hint)
+        pads_column.addLayout(self._mode_grid)
         pads_column.addStretch(1)
 
         controls_row = QHBoxLayout()
@@ -423,10 +436,12 @@ class ControllerSetupView(QWidget):
         check_button.setToolTip("Check for conflicts")
         check_button.clicked.connect(self._on_check_conflicts_clicked)
         self._apply_button = QPushButton(self._get_icon("apply"), "")
-        self._apply_button.setToolTip("Apply now (this session)")
+        self._apply_button.setToolTip(
+            "Install this profile: saved in your Controllers folder and loaded at every launch"
+        )
         self._apply_button.clicked.connect(self._on_apply_clicked)
         export_button = QPushButton(self._get_icon("export"), "")
-        export_button.setToolTip("Generate catalog module…")
+        export_button.setToolTip("For developers: generate a Python catalog module…")
         export_button.clicked.connect(self._on_export_clicked)
         submit_button = QPushButton(self._get_icon("submit"), "")
         submit_button.setToolTip("Submit to community catalog…")
@@ -449,7 +464,7 @@ class ControllerSetupView(QWidget):
             self._toolbar_row(
                 [
                     ("Session", [new_button, start_from_button, load_button, save_button, clear_button]),
-                    ("Import", [import_button, self._attach_image_button, import_help_button]),
+                    ("Learn", [import_button, self._attach_image_button, import_help_button]),
                     (
                         "Apply / Export",
                         [check_button, self._apply_button, export_button, submit_button, apply_help_button],
@@ -745,6 +760,32 @@ class ControllerSetupView(QWidget):
 
     def _mark_dirty(self) -> None:
         self._dirty = True
+        self._refresh_mode_buttons()
+
+    def _mode_rows(self) -> list[ControlInfo]:
+        """The draft's mode-switch rows, without their SHIFT variants."""
+        return [
+            row
+            for row in self._rows
+            if "MODE" in row.section.upper() and row.note_or_cc == "NOTE" and "SHIFT" not in row.name.upper()
+        ]
+
+    def _refresh_mode_buttons(self) -> None:
+        if not hasattr(self, "_mode_grid"):
+            return
+        while self._mode_grid.count():
+            item = self._mode_grid.takeAt(0)
+            if item.widget() is not None:
+                item.widget().hide()
+                item.widget().deleteLater()
+        rows = self._mode_rows()
+        self._mode_hint.setVisible(not rows)
+        for index, row in enumerate(rows):
+            button = QPushButton(row.name)
+            button.setMinimumHeight(28)
+            button.setToolTip(f"Send {row.name}: Note {row.data1} on channel {row.channels[0]}")
+            button.clicked.connect(lambda _checked=False, r=row: self._on_send_mode_row(r))
+            self._mode_grid.addWidget(button, index // 2, index % 2)
 
     # -- table <-> rows ----------------------------------------------------
 
@@ -754,6 +795,7 @@ class ControllerSetupView(QWidget):
         self._rebuilding = False
         for entry, source, device in zip(self._rows, self._sources, self._devices):
             self._append_row_to_table(entry, source, device)
+        self._refresh_mode_buttons()
 
     def _append_row_to_table(self, entry: ControlInfo, source: str, device: str = "") -> None:
         self._rebuilding = True
@@ -1066,23 +1108,19 @@ class ControllerSetupView(QWidget):
             return
         self._send_status.setText("Double-click MIDI sequence sent.")
 
-    def _on_send_ddj_xp2_pad_mode(self, mode: int) -> None:
-        if mode not in (1, 2, 3, 4, 5, 6, 7, 8):
-            QMessageBox.critical(self, "Unsupported mode", f"Unsupported DDJ-XP2 pad mode: {mode}")
-            return
-        if mode <= 4:
-            note = _DDJ_XP2_PAD_MODE_NOTES[mode]
-            double_click = False
-        else:
-            note = _DDJ_XP2_PAD_MODE_NOTES[mode - 4]
-            double_click = True
-        self._send_data1_edit.setText(str(note))
+    def _on_send_mode_row(self, row: ControlInfo) -> None:
+        """Send one mode-switch row (a Note press + release) on its own
+        channel to the checked output ports."""
         try:
-            self._send_note_click(note=note, double_click=double_click)
+            note = _parse_int(row.data1, "Data1", 0, 127)
+            channel = _parse_int(row.channels[0], "Channel", 1, 16)
+            self._send_channel_edit.setText(str(channel))
+            self._send_data1_edit.setText(str(note))
+            self._send_note_click(note=note, double_click=False)
         except Exception as exc:  # noqa: BLE001 - show user-facing error
             QMessageBox.critical(self, "Failed to send MIDI", str(exc))
             return
-        self._send_status.setText(f"Sent DDJ-XP2 PAD MODE {mode} trigger.")
+        self._send_status.setText(f"Sent {row.name} (Note {note}, channel {channel}).")
 
     def _selected_row_indices(self) -> list[int]:
         selected = sorted({index.row() for index in self._table.selectedIndexes()})
@@ -1277,7 +1315,7 @@ class ControllerSetupView(QWidget):
     def _on_import_xml_clicked(self) -> None:
         path_str, _ = QFileDialog.getOpenFileName(
             self,
-            "Import a MIDI mapping",
+            "Learn triggers from a mapping",
             "",
             "MIDI mappings (*.xml *.tsi);;Serato XML (*.xml);;Traktor TSI (*.tsi)",
         )
@@ -1333,9 +1371,9 @@ class ControllerSetupView(QWidget):
         QMessageBox.information(
             self,
             "Reference image attached",
-            "The image is referenced by its path on this machine — it is not copied into the "
-            "project. It shows in the Controller Images tab after \"Apply now\", and is saved in "
-            "the session JSON. \"Generate catalog module…\" writes reference_image='custom/<filename>'; "
+            "The image is referenced by its path on this machine and saved in the session JSON. "
+            "Install copies it next to the installed profile, so it keeps showing in Controller "
+            "Images even if you move the original. \"Generate catalog module…\" writes reference_image='custom/<filename>'; "
             "place a copy at controllers/custom/<filename> if you want it bundled (respecting its "
             "licence — user-supplied images are your responsibility).",
         )
@@ -1410,7 +1448,7 @@ class ControllerSetupView(QWidget):
         self._dirty = False
 
     def _on_save_session_clicked(self) -> None:
-        default_name = f"{self._slug() or 'controller'}.json"
+        default_name = str(user_paths.subfolder(user_paths.DRAFTS) / f"{self._slug() or 'controller'}.json")
         path_str, _ = QFileDialog.getSaveFileName(self, "Save controller setup session", default_name, "JSON files (*.json)")
         if not path_str:
             return
@@ -1421,11 +1459,14 @@ class ControllerSetupView(QWidget):
             QMessageBox.critical(self, "Failed to save session", str(exc))
             return
         _LOGGER.info("Saved Controller Setup session to %s (%d row(s))", path_str, len(self._rows))
+        self.draftFileChanged.emit(path_str)
 
     def _on_load_session_clicked(self) -> None:
         if self._dirty and not self._confirm("This will discard the current unsaved draft. Continue?"):
             return
-        path_str, _ = QFileDialog.getOpenFileName(self, "Load controller setup session", "", "JSON files (*.json)")
+        path_str, _ = QFileDialog.getOpenFileName(
+            self, "Load controller setup session", str(user_paths.subfolder(user_paths.DRAFTS)), "JSON files (*.json)"
+        )
         if not path_str:
             return
         try:
@@ -1435,6 +1476,7 @@ class ControllerSetupView(QWidget):
             QMessageBox.critical(self, "Failed to load session", str(exc))
             return
         _LOGGER.info("Loaded Controller Setup session from %s (%d row(s))", path_str, len(self._rows))
+        self.draftFileChanged.emit(path_str)
 
     # -- validation / export ---------------------------------------------------
 
@@ -1545,20 +1587,40 @@ class ControllerSetupView(QWidget):
             _LOGGER.info("Controller Setup conflict check for %r: no issues", self._controller_name)
             QMessageBox.information(self, "No conflicts", "No missing fields or conflicting triggers found — draft looks stable.")
 
-    def _apply(self) -> None:
-        register(
-            build_definition(self._controller_name, self._rows, self._reference_image or None),
-            replace=True,
+    def _apply(self) -> Path:
+        """Install the draft (issue #175): save it as a JSON profile in the
+        user's Controllers folder -- with a copy of its picture -- so it is
+        loaded at every launch, and register it now."""
+        folder = user_paths.controllers_dir()
+        folder.mkdir(parents=True, exist_ok=True)
+        slug = self._slug() or "controller"
+        image = None
+        if self._reference_image and Path(self._reference_image).is_file():
+            source = Path(self._reference_image)
+            copied = folder / f"{slug}{source.suffix.lower()}"
+            if source.resolve() != copied.resolve():
+                shutil.copy2(source, copied)
+            image = str(copied)
+        definition = dataclasses.replace(
+            build_definition(self._controller_name, self._rows, image or self._reference_image or None),
+            plugin_id=f"{USER_PLUGIN_PREFIX}{slug}",
         )
+        path = save_controller_profile(definition, folder / f"{slug}.json")
+        register(definition, replace=True)
         self._applied_names.add(self._controller_name)
         self.controllerApplied.emit(self._controller_name)
+        return path
 
     def _on_apply_clicked(self) -> None:
         errors = self._validate()
         if errors:
-            QMessageBox.warning(self, "Cannot apply yet", "\n".join(errors))
+            QMessageBox.warning(self, "Cannot install yet", "\n".join(errors))
             return
-        if self._controller_name in catalog.CONTROLLER_NAMES and self._controller_name not in self._applied_names:
+        if (
+            self._controller_name in catalog.CONTROLLER_NAMES
+            and self._controller_name not in self._applied_names
+            and not _is_user_profile(self._controller_name)
+        ):
             # Blocks silently clobbering a pre-existing controller (DDJ-XP2, XDJ-XZ, or
             # anything applied by a *different* draft) — this is in-memory only, so the
             # hand-written module on disk is untouched, but a running session that
@@ -1571,25 +1633,33 @@ class ControllerSetupView(QWidget):
             )
             QMessageBox.critical(
                 self,
-                "Cannot apply",
-                f"'{self._controller_name}' is already a loaded controller (built-in or applied by "
-                "another draft). Applying would replace its full definition in memory for the rest of "
-                "this session — every tab using it would show only this draft's rows until you restart "
-                "the app. Pick a different controller name for this new draft.",
+                "Cannot install",
+                f"'{self._controller_name}' is already a built-in controller. Installing would replace "
+                "its full definition with this draft's rows in every view. Pick a different controller "
+                "name for this profile.",
             )
             return
-        try:
-            self._apply()
-        except Exception as exc:
-            _LOGGER.exception("Failed to apply Controller Setup draft %r", self._controller_name)
-            QMessageBox.critical(self, "Failed to apply", f"{type(exc).__name__}: {exc}")
+        if (
+            _is_user_profile(self._controller_name)
+            and self._controller_name not in self._applied_names
+            and not self._confirm(
+                f"'{self._controller_name}' is already one of your installed controller profiles. "
+                "Replace it with this draft?"
+            )
+        ):
             return
+        try:
+            path = self._apply()
+        except Exception as exc:
+            _LOGGER.exception("Failed to install Controller Setup draft %r", self._controller_name)
+            QMessageBox.critical(self, "Failed to install", f"{type(exc).__name__}: {exc}")
+            return
+        _LOGGER.info("Installed controller profile %r at %s", self._controller_name, path)
         QMessageBox.information(
             self,
-            "Applied",
-            f"'{self._controller_name}' is now active in this session's Layout, By Controller, and "
-            "Controller Images tabs. This lasts only for the current run — use \"Generate catalog "
-            "module…\" and add its import to catalog/__init__.py to make it permanent.",
+            "Installed",
+            f"'{self._controller_name}' is installed: it is active now in every view and is loaded "
+            f"again at every launch.\n\nSaved in {path}",
         )
 
     def _on_export_clicked(self) -> None:

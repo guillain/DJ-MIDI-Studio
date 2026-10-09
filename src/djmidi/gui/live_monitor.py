@@ -30,7 +30,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from djmidi import catalog
+from djmidi import catalog, user_paths
 from djmidi.gui import help_texts
 from djmidi.gui.help_button import help_row
 from djmidi.gui.mapping_group import build_mapping_groups
@@ -270,7 +270,7 @@ class LiveMonitorView(QWidget):
         path_str, _ = QFileDialog.getSaveFileName(
             self,
             "Save Live Monitor log",
-            "midi-monitor-log.csv",
+            str(user_paths.subfolder(user_paths.LOGS) / "midi-monitor-log.csv"),
             "CSV files (*.csv)",
         )
         if not path_str:

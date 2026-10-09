@@ -27,7 +27,9 @@ drawing of your controller, and keeps every edit undoable and validated.
 
 ## Open a mapping
 
-`File → Open…` and choose a Serato `.xml` or Traktor `.tsi` mapping. The
+`File → Open Mapping…` and choose a Serato `.xml` or Traktor `.tsi` mapping
+(the dialog starts in your DJ software's mapping folder; `File → Open Recent
+Mapping` lists the last ones). The
 app recognizes the format from the file's content; when it isn't sure, it
 asks which software the file belongs to. The software is then shown as a
 badge on the Dashboard (Serato in orange, Traktor in teal) and in the window
@@ -94,9 +96,11 @@ it over editing copies one by one in By Channel.
 1. `Edit → Validate` checks the structure and looks for conflicts; results
    appear as errors, warnings and info in the right-hand panel. Duplicate
    copies are reported as *info* only, since they are expected.
-2. `File → Save` or `Save As…` shows the exact changes (a diff) before
-   writing. A backup is made and the file is written in one atomic step.
-3. `File → Rollback Last Save` restores that backup.
+2. `File → Save Mapping` or `Save Mapping As…` shows the exact changes (a
+   diff) before writing. The version it replaces is kept next to the file
+   (`<name>.bak`) and the file is written in one atomic step.
+3. `File → Restore Previous Version…` puts that previous version back, even
+   in a later session. `File → Show Mapping in Finder` shows where the file is.
 
 An unedited file saves back byte-for-byte identical.
 

@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import html
+import sys
+from datetime import UTC, datetime
 from pathlib import Path
 
 from PySide6.QtCore import Qt, Signal
@@ -44,6 +47,8 @@ class IntroductionView(QWidget):
 
     drillDownRequested = Signal(str, str)  # target tab key, controller name
     toolRequested = Signal(str)  # independent tool dock key
+    # "open" / "reveal" / "restore" / "sync" / "recent:<path>" (issue #175)
+    fileActionRequested = Signal(str)
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -81,6 +86,7 @@ class IntroductionView(QWidget):
 
         catalog_box = QGroupBox("Known controllers")
         catalog_layout = QVBoxLayout(catalog_box)
+        catalog_layout.addLayout(help_row(self, *help_texts.DASHBOARD_CONTROLLERS))
         catalog_layout.addWidget(QLabel("Active controller for drill-down:"))
         catalog_layout.addWidget(self._controller_combo)
         self._known_count_label = QLabel()
@@ -115,14 +121,17 @@ class IntroductionView(QWidget):
         tools_layout.addWidget(metronome_button)
 
         info = QLabel(
-            "Tip: after applying a controller from Controller Setup, "
-            "it appears immediately across this session's views."
+            "Tip: a controller you install from Controller Setup appears immediately in every view, "
+            "and again at every launch."
         )
         info.setWordWrap(True)
         info.setFrameShape(QFrame.Shape.StyledPanel)
 
+        files_box = self._build_files_box()
+
         overview_header = QHBoxLayout()
         overview_header.setSpacing(10)
+        overview_header.addWidget(files_box, 3)
         overview_header.addWidget(catalog_box, 3)
         overview_header.addWidget(tools_box, 1)
 
@@ -223,6 +232,107 @@ class IntroductionView(QWidget):
                 "down into the detailed views."
             )
 
+    def _build_files_box(self) -> QGroupBox:
+        """"Your files" (issue #175): every file the user works with, in one
+        place -- the open mapping and its previous version, recent mappings,
+        and the controller sync sets -- with an action for each."""
+        box = QGroupBox("Your files")
+        layout = QVBoxLayout(box)
+        layout.addLayout(help_row(self, *help_texts.DASHBOARD_FILES))
+        self._files_mapping_label = QLabel()
+        self._files_mapping_label.setWordWrap(True)
+        self._files_mapping_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        self._files_folder_label = QLabel()
+        self._files_folder_label.setWordWrap(True)
+        self._files_folder_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        self._files_backup_label = QLabel()
+        self._files_backup_label.setWordWrap(True)
+        self._files_sync_label = QLabel()
+        self._files_sync_label.setWordWrap(True)
+        # Recent mappings as links, so this is a block like the others.
+        self._files_recent_label = QLabel()
+        self._files_recent_label.setWordWrap(True)
+        self._files_recent_label.setTextFormat(Qt.TextFormat.RichText)
+        self._files_recent_label.linkActivated.connect(lambda path: self.fileActionRequested.emit(f"recent:{path}"))
+        # Same model as Known controllers: every block takes an equal share of
+        # the height, its text vertically centered.
+        info = QVBoxLayout()
+        for label in (
+            self._files_mapping_label,
+            self._files_folder_label,
+            self._files_backup_label,
+            self._files_recent_label,
+            self._files_sync_label,
+        ):
+            label.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
+            label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+            info.addWidget(label, 1)
+
+        # Two columns: the information gets the width, the actions a narrow
+        # column of compact buttons beside it.
+        buttons = QVBoxLayout()
+        buttons.setSpacing(6)
+        self._files_buttons: dict[str, QPushButton] = {}
+        for action, label in (
+            ("open", "Open mapping…"),
+            ("reveal", "Show in Finder" if sys.platform == "darwin" else "Show in folder"),
+            ("restore", "Restore previous…"),
+            ("sync", "Sync sets…"),
+        ):
+            button = QPushButton(label)
+            button.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
+            button.clicked.connect(lambda _checked=False, a=action: self.fileActionRequested.emit(a))
+            button.setMinimumHeight(34)
+            if self._files_buttons:
+                buttons.addStretch(1)
+            buttons.addWidget(button)
+            self._files_buttons[action] = button
+        self._files_buttons["restore"].setToolTip("Restore the version saved before the last save")
+        self._files_buttons["sync"].setToolTip("Manage the controller sync sets (Preferences)")
+        row = QHBoxLayout()
+        row.setSpacing(12)
+        row.addLayout(info, 1)
+        row.addLayout(buttons, 0)
+        layout.addLayout(row, 1)
+        self.set_files_summary(mapping=None)
+        return box
+
+    def set_files_summary(
+        self,
+        mapping: str | Path | None,
+        backup: str | Path | None = None,
+        sync_sets: list[str] | None = None,
+        recents: list[str] | None = None,
+    ) -> None:
+        if mapping is None:
+            self._files_mapping_label.setText("<b>Mapping:</b> none open — <i>File → Open Mapping…</i>")
+        else:
+            path = Path(mapping)
+            self._files_mapping_label.setText(f"<b>Mapping:</b> {path.name}")
+            self._files_mapping_label.setToolTip(str(path))
+        self._files_folder_label.setText(
+            f"<b>Folder:</b> {Path(mapping).parent}" if mapping is not None else ""
+        )
+        self._files_folder_label.setVisible(mapping is not None)
+        if backup is None:
+            self._files_backup_label.setText("<b>Previous version:</b> none yet (made on every save)")
+        else:
+            when = datetime.fromtimestamp(Path(backup).stat().st_mtime, tz=UTC).astimezone()
+            self._files_backup_label.setText(f"<b>Previous version:</b> kept from {when:%Y-%m-%d %H:%M}")
+        others = [entry for entry in (recents or []) if mapping is None or entry != str(mapping)][:3]
+        links = ", ".join(
+            f'<a href="{html.escape(entry, quote=True)}">{html.escape(Path(entry).name)}</a>' for entry in others
+        )
+        self._files_recent_label.setText(f"<b>Recent:</b> {links}" if others else "<b>Recent:</b> none yet")
+        names = sync_sets or []
+        self._files_sync_label.setText(
+            f"<b>Sync sets:</b> {', '.join(names)}"
+            if names
+            else "<b>Sync sets:</b> none — record one in Controller Setup"
+        )
+        self._files_buttons["reveal"].setEnabled(mapping is not None)
+        self._files_buttons["restore"].setEnabled(backup is not None)
+
     def set_loaded_config_info(
         self,
         path: str | Path | None,
@@ -317,19 +427,23 @@ class IntroductionView(QWidget):
             f"Catalog: {len(definition.static_entries)} static entry(ies), {definition.pad_count} pad(s)"
         )
         catalog_info.setWordWrap(True)
-        details.addWidget(catalog_info)
+        details.addWidget(catalog_info, 1)
 
         availability = QLabel("MIDI: not checked")
         availability.setStyleSheet(f"color: {theme_colors()['disabled_text']}; font-weight: 600;")
         self._availability_labels[controller] = availability
-        details.addWidget(availability)
+        details.addWidget(availability, 1)
 
         stats = QLabel("In loaded file: 0 cell(s), 0 deck(s), 0 function(s)")
         stats.setWordWrap(True)
         self._card_stats[controller] = stats
-        details.addWidget(stats)
+        details.addWidget(stats, 1)
 
-        details.addStretch(1)
+        # The three lines share the column's height down to the buttons
+        # instead of bunching at the top above an empty gap.
+        for label in (catalog_info, availability, stats):
+            label.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
+            label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         buttons = QVBoxLayout()
         for target, label in (("channel", "Channel"), ("controller", "Controller"), ("images", "Images")):
             btn = QPushButton(label)

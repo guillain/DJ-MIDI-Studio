@@ -11,6 +11,8 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
+from djmidi import file_locations
+
 _LOGGER = logging.getLogger(__name__)
 
 Validator = Callable[[str], None]
@@ -123,7 +125,7 @@ def prepare_update(
         original_text=original_text,
         updated_text=updated_text,
         diff=diff,
-        backup_path=target.with_name(f"{target.name}.bak"),
+        backup_path=file_locations.backup_path(target),
         target_existed=target.exists(),
     )
 

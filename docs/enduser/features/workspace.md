@@ -8,6 +8,7 @@
 ## Table of Contents
 
 - [Tabs and tool windows](#tabs-and-tool-windows)
+- [Your files](#your-files)
 - [Window controls](#window-controls)
 - [Performance Mode](#performance-mode)
 - [Preferences](#preferences)
@@ -28,6 +29,42 @@ are restored at the next launch.
 ![All MIDI tools docked](../../images/layout/midi-tools-docked.png)
 
 ![Live Monitor floating](../../images/layout/live-monitor-floating.png)
+
+## Your files
+
+Everything that is a file in the app is reachable from the **File** menu,
+organized by what it is:
+
+| Menu | What it handles |
+| --- | --- |
+| `Open Mapping…`, `Open Recent Mapping`, `Save Mapping`, `Save Mapping As…` | The Serato `.xml` or Traktor `.tsi` mapping you edit. It stays where your DJ software keeps it |
+| `Restore Previous Version…`, `Show Mapping in Finder` | The version kept by your last save, and where the file is |
+| `Controller Profile ▸` | The controller profile you build in Controller Setup: new, open or save a draft, learn triggers from a mapping |
+| `Import ▸` / `Export ▸` | Serato crates, Traktor playlists and Rekordbox exports for the Music Library, and the Live Monitor log |
+
+The Dashboard's **Your files** card, first on the row with *Known
+controllers* and *MIDI tools*, shows the same things at a glance: the
+open mapping and its folder, whether a previous version is kept, your recent
+mappings, and your controller sync sets, with a button for each.
+
+Everything the app creates for you lives in one folder you can see, back up
+and share, `Documents/DJ MIDI Studio` (⚙ Preferences → `Open folder`):
+
+| Folder | Holds |
+| --- | --- |
+| `Controllers` | Controller profiles you installed from Controller Setup |
+| `Sync` | One initialization [sync set](controller-sync.md) per controller |
+| `Drafts` | Controller Setup drafts you saved |
+| `Logs` | Live Monitor logs you saved |
+| `Exports` | Playlists exported from the Music Library |
+
+Your Serato and Traktor mappings are not moved there: they stay where your
+DJ software keeps them, and the app only remembers where they are.
+
+At launch the app **reopens your last mapping** — with the same DJ software,
+without asking again — and the last Controller Setup draft you saved or
+opened, so you pick up where you left off. Turn it off in ⚙ Preferences
+(`Reopen my last mapping and Controller Setup draft at launch`).
 
 ## Window controls
 
@@ -59,7 +96,7 @@ The **⚙** button at the top right of the menu bar opens Preferences (the
 
 | Tab | Settings |
 | --- | --- |
-| General | Theme (`Follow system`, `Light`, `Dark`), integration detection (`Ask before enabling` or `Suggest detected integration`), log level and log file, `Enable MIDI routing policies`, `Trust external plugins`, `Auto-start Live Monitor when a mapping is loaded`, `Controller Setup default file` |
+| General | Theme (`Follow system`, `Light`, `Dark`), integration detection (`Ask before enabling` or `Suggest detected integration`), log level and log file, `Enable MIDI routing policies`, `Trust external plugins`, `Auto-start Live Monitor when a mapping is loaded`, `Reopen my last mapping and Controller Setup draft at launch`, `Controller Setup default file`, your files folder (`Open folder`) |
 | Plugins | Enable or disable each controller and software plugin; `Enable all controllers` / `Disable all controllers` |
 | Controller sync | Your [sync sets](controller-sync.md#manage-sync-sets) |
 

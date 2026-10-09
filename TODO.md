@@ -132,6 +132,36 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Dashboard files column + generic mode buttons** (`v0.48.51-dashboard-files-and-mode-buttons`) — maintainer
+  feedback: "Your files" now sits first on the Known controllers / MIDI tools row (its actions in a 2×2 grid), and
+  Controller Setup's MIDI Output no longer always shows eight hard-coded DDJ-XP2 pad-mode buttons — a leftover from
+  the project's start: the "Mode buttons" column lists the draft's own rows whose section contains MODE, rebuilt
+  on every row change, sent on their own channel; a hint shows when there are none.
+- [x] **File management, phase 3: visible workspace + reopen at launch** (`v0.48.50-workspace-folder`,
+  issue #175) — `Documents/DJ MIDI Studio` (`user_paths.ensure_workspace`, with a README) holds `Controllers`,
+  `Sync`, `Drafts`, `Logs` and `Exports`; Controller Setup drafts, Live Monitor logs and Music Library exports
+  default there, and Preferences shows the folder with `Open folder`. Sync sets are now one JSON file per
+  controller in `Sync` (`sync_store.py`): adopted from `preferences.json` once at launch, then mirrored on every
+  preferences save. Requested in the same session: the app **reopens the last mapping** with its software,
+  skipping the detection prompt (`_load_mapping_from_path(..., software_id=)`), and hands the last saved/opened
+  Controller Setup draft to that tab — new `reopen_last_files` preference, on by default.
+- [x] **File management, phase 2: install a controller profile** (`v0.48.49-install-controller-profiles`,
+  issue #175) — Controller Setup's `Apply now (this session)` became **Install**: the draft is saved as a JSON
+  profile (the existing `catalog/profile.py` format, new `profile_document` / `save_controller_profile`) in
+  `Documents/DJ MIDI Studio/Controllers` (`djmidi/user_paths.py`, `DJMIDI_WORKSPACE` override, fresh per test)
+  with a copy of its picture, registered as `user.<slug>`, and `load_user_profiles` reloads every installed
+  file at launch — a built-in name is skipped, never replaced. Re-installing your own profile under the same
+  name asks first. `.py` generation is relabelled for developers; `File → Controller Profile` gains
+  `Install Profile` and `Show Installed Profiles`.
+- [x] **File management, phase 1: File menu by object + "Your files"** (`v0.48.48-file-menu-by-object`,
+  issue #175) — the File menu now groups the mapping (`Open Mapping…`, `Open Recent Mapping`, `Save Mapping`,
+  `Save Mapping As…`, `Restore Previous Version…`, `Show Mapping in Finder`), the controller profile (new /
+  open / save draft, learn triggers) and `Import ▸` / `Export ▸` (Music Library crates/NML/Rekordbox,
+  Live Monitor log), each entry switching to its tab. Mapping dialogs start in the last folder or the DJ
+  software's mapping folder (`file_locations.py`, Qt-free); recent mappings persist in QSettings. Restore
+  now uses the `.bak` every save keeps, so it works in a later session too. The Dashboard gets a "Your
+  files" card (mapping + folder, previous version, recents, sync sets, one action each), and Controller
+  Setup's `Import` is renamed `Learn triggers from a mapping…`.
 - [x] **CMD LC-1 artwork and real layout** (`v0.48.47-cmd-lc-1-images`) — the maintainer added the CMD LC-1's
   photo and MIDI picture (a stray heading fragment beside the device was blanked), normalized with
   `scripts/process_controller_images.py`, attached as its `reference_image`, and its 52 buttons measured on

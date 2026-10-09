@@ -15,6 +15,7 @@ from PySide6.QtWidgets import QApplication, QTabWidget
 # Never open (or create) the real music library index of whoever runs this:
 # the Music Library captures below scan a throwaway synthetic library.
 os.environ.setdefault("DJMIDI_LIBRARY_DB", ":memory:")
+os.environ.setdefault("DJMIDI_WORKSPACE", tempfile.mkdtemp(prefix="djmidi-docs-workspace-"))
 # Same for preferences: the docs show the default install (every built-in
 # controller enabled), not whichever plugins the person running this disabled.
 os.environ.setdefault("DJMIDI_PREFERENCES_FILE", str(Path(tempfile.mkdtemp()) / "preferences.json"))
