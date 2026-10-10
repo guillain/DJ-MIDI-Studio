@@ -31,8 +31,8 @@ DASHBOARD_FILES: HelpEntry = (
         "(<tt>.bak</tt>); <b>Restore previous…</b> puts it back.</li>"
         "<li><b>Recent</b>: the last mappings you opened (also in <b>File → Open Recent "
         "Mapping</b>).</li>"
-        "<li><b>Sync sets</b>: the initialization messages recorded in Controller Setup, one per "
-        "controller, sent by <b>⟳ Sync</b>.</li></ul>"
+        "<li><b>Sync sets</b>: the initialization messages recorded with <b>● Rec</b> or in "
+        "Controller Setup, one per controller, sent by <b>⟳ Sync</b> and at launch.</li></ul>"
         "Controller profiles you build live in <b>File → Controller Profile</b>."
     ),
     "workspace.md",

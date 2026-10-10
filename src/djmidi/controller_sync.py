@@ -130,6 +130,32 @@ def sync_set_from_events(controller: str, events: Iterable[object], output_port:
     return ControllerSyncSet(controller.strip(), output_port or first_port, tuple(messages))
 
 
+def sync_sets_from_recording(
+    events: Iterable[object], controller_for_port: Callable[[str], str] | None = None
+) -> list[ControllerSyncSet]:
+    """Splits one recording over several input ports into one sync set per
+    port, in first-seen order -- the menu bar's Record button listens to
+    every controller at once. ``controller_for_port`` names the controller
+    behind a port (catalog detection in the GUI); the port name itself is
+    used when it returns nothing. The recorded port becomes each set's
+    ``output_port``, a controller's input and output ports normally sharing
+    its device name. Ports that produced no note/CC message yield no set."""
+    by_port: dict[str, list[object]] = {}
+    for event in events:
+        if getattr(event, "direction", "in") != "in":
+            continue
+        by_port.setdefault(str(getattr(event, "port", "") or ""), []).append(event)
+    sync_sets: list[ControllerSyncSet] = []
+    for port, port_events in by_port.items():
+        if not port:
+            continue
+        controller = (controller_for_port(port) if controller_for_port else "") or port
+        sync_set = sync_set_from_events(controller, port_events, output_port=port)
+        if sync_set.messages:
+            sync_sets.append(sync_set)
+    return sync_sets
+
+
 def _squash(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", "", text.lower())
 
@@ -226,4 +252,5 @@ __all__ = [
     "run_sync",
     "summarize_results",
     "sync_set_from_events",
+    "sync_sets_from_recording",
 ]

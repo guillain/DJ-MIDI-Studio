@@ -59,3 +59,85 @@ def test_saving_a_sync_set_persists_it_and_confirms_replacement(tmp_path, monkey
     monkeypatch.setattr(QMessageBox, "question", lambda *args: QMessageBox.StandardButton.Yes)
     window._on_sync_set_save_requested(replacement)
     assert PluginPreferences.load(window.preferences_path).sync_set_for("DDJ-XP2") == replacement
+
+
+class _FakeMonitor:
+    def __init__(self, events):
+        self.events = list(events)
+        self.opened = []
+
+    def open_input(self, name):
+        if name == "Busy port":
+            raise OSError("busy")
+        self.opened.append(name)
+
+    def poll(self):
+        events, self.events = self.events, []
+        return events
+
+    def close_all(self):
+        self.opened = []
+
+
+def _event(port, data1, event_type="Note On"):
+    from djmidi.midi_io import MidiEvent
+
+    return MidiEvent("in", "1", event_type, str(data1), "127", 0.0, port)
+
+
+def test_record_button_saves_one_sync_set_per_controller(tmp_path, monkeypatch):
+    window = _window(tmp_path)
+    monitor = _FakeMonitor([_event("PIONEER DDJ-XP2", 11), _event("Some Unknown Box", 3), _event("PIONEER DDJ-XP2", 12)])
+    window._record_monitor = monitor
+    monkeypatch.setattr(main_window_module, "list_input_ports", lambda: ["PIONEER DDJ-XP2", "Busy port", "Some Unknown Box"])
+
+    window._record_button.click()
+    assert window._record_button.isChecked()
+    assert monitor.opened == ["PIONEER DDJ-XP2", "Some Unknown Box"]
+    window._record_button.click()
+
+    stored = PluginPreferences.load(window.preferences_path)
+    xp2 = stored.sync_set_for("DDJ-XP2")
+    assert xp2.output_port == "PIONEER DDJ-XP2"
+    assert [message.data1 for message in xp2.messages] == [11, 12]
+    assert stored.sync_set_for("Some Unknown Box").messages[0].data1 == 3
+    assert monitor.opened == []
+    assert window._record_button.text() == "● Rec"
+
+
+def test_record_asks_before_replacing_and_keeps_old_set_on_no(tmp_path, monkeypatch):
+    window = _window(tmp_path)
+    old = ControllerSyncSet("DDJ-XP2", "", (SyncMessage("Note On", 1, 1, 127),))
+    window.preferences.set_sync_set(old)
+    window._record_monitor = _FakeMonitor([_event("PIONEER DDJ-XP2", 11)])
+    monkeypatch.setattr(main_window_module, "list_input_ports", lambda: ["PIONEER DDJ-XP2"])
+    monkeypatch.setattr(QMessageBox, "question", lambda *args: QMessageBox.StandardButton.No)
+
+    window._record_button.click()
+    window._record_button.click()
+
+    assert window.preferences.sync_set_for("DDJ-XP2") == old
+
+
+def test_record_without_any_input_unchecks_the_button(tmp_path, monkeypatch):
+    window = _window(tmp_path)
+    window._record_monitor = _FakeMonitor([])
+    monkeypatch.setattr(main_window_module, "list_input_ports", list)
+    warned = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda *args: warned.append(args[1]))
+    window._record_button.click()
+    assert warned == ["Cannot record"]
+    assert not window._record_button.isChecked()
+
+
+def test_startup_sync_is_silent_without_sets_and_sends_stored_ones(tmp_path, monkeypatch):
+    window = _window(tmp_path)
+    monkeypatch.setattr(QMessageBox, "information", lambda *args: (_ for _ in ()).throw(AssertionError))
+    assert window._sync_at_startup() == []
+
+    window.preferences.set_sync_set(ControllerSyncSet("DDJ-XP2", "", (SyncMessage("Note On", 1, 11, 127),)))
+    sent = []
+    monkeypatch.setattr(main_window_module, "list_output_ports", lambda: ["PIONEER DDJ-XP2"])
+    monkeypatch.setattr("djmidi.midi_io.send_midi_message", lambda **kwargs: sent.append(kwargs))
+    assert [result.ok for result in window._sync_at_startup()] == [True]
+    assert len(sent) == 1

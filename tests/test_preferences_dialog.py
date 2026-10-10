@@ -103,3 +103,12 @@ def test_preferences_dialog_reflects_and_saves_controller_setup_default_file():
     dialog._setup_file.setText("  /c/d.xml  ")
     dialog._save()
     assert preferences.controller_setup_default_file == "/c/d.xml"
+
+
+def test_preferences_dialog_reflects_and_saves_auto_sync_on_startup():
+    preferences = PluginPreferences()
+    dialog = PreferencesDialog(preferences)
+    assert dialog._auto_sync_on_startup.isChecked() is True
+    dialog._auto_sync_on_startup.setChecked(False)
+    dialog._save()
+    assert preferences.auto_sync_on_startup is False
