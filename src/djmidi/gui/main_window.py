@@ -59,6 +59,7 @@ from djmidi.controller_sync import (
     SyncResult,
     run_sync,
     summarize_results,
+    sync_sets_from_recording,
 )
 from djmidi.gui import jog as jog_mod
 from djmidi.gui import layout as layout_mod
@@ -90,7 +91,7 @@ from djmidi.integration_detection import (
     detect_software_mapping,
 )
 from djmidi.logging_config import configure_logging, current_log_path
-from djmidi.midi_io import MidiEvent, list_output_ports
+from djmidi.midi_io import MidiEvent, MidiMonitor, list_input_ports, list_output_ports
 from djmidi.model import Control, MappingElement, MidiConfig
 from djmidi.plugins import PluginPreferences, default_preferences_path
 from djmidi.safe_update import prepare_update
@@ -129,6 +130,8 @@ _LAST_DIR_SETTINGS_KEY = "files/last_mapping_dir"
 _LAST_MAPPING_SETTINGS_KEY = "files/last_mapping"
 _LAST_SOFTWARE_SETTINGS_KEY = "files/last_mapping_software"
 _LAST_DRAFT_SETTINGS_KEY = "files/last_draft"
+# Lets controllers' MIDI ports settle before the launch-time Sync.
+_STARTUP_SYNC_DELAY_MS = 1500
 
 _LOCAL_HELP_DOCUMENTS = [
     ("Documentation Home", "docs/README.md"),
@@ -441,6 +444,9 @@ class MainWindow(QMainWindow):
         self._restore_user_layout()
         self.controller_setup_view.draftFileChanged.connect(self._remember_draft)
         self._prepare_reopen_last_files()
+        if self._layout_settings() is not None and self.preferences.auto_sync_on_startup:
+            # Real app only, like reopening files: tests never touch MIDI here.
+            QTimer.singleShot(_STARTUP_SYNC_DELAY_MS, self._sync_at_startup)
         QTimer.singleShot(0, self._initialize_pair_splitters)
         QTimer.singleShot(0, self._show_helpful_notes_if_enabled)
         self.introduction_view.set_loaded_config_info(None)
@@ -761,11 +767,27 @@ class MainWindow(QMainWindow):
             "Sync controllers: send each connected controller its recorded initialization set"
         )
         self._sync_button.clicked.connect(self._on_sync_controllers)
+        # Record the controllers' setup in one click: listen to every MIDI
+        # input while checked, save one sync set per controller on release.
+        self._record_button = QPushButton("● Rec")
+        self._record_button.setCheckable(True)
+        self._record_button.setFixedHeight(28)
+        self._record_button.setToolTip(
+            "Record controller setup: press the controls to send at initialization, then click "
+            "again to save them as each controller's sync set (played by ⟳ Sync and at launch)"
+        )
+        self._record_button.toggled.connect(self._on_record_toggled)
+        self._record_monitor = MidiMonitor()
+        self._record_events: list[MidiEvent] = []
+        self._record_timer = QTimer(self)
+        self._record_timer.setInterval(20)
+        self._record_timer.timeout.connect(self._poll_recording)
         # Same keep-alive concern as the gear button above: hold the container.
         self._menu_corner = QWidget()
         corner_layout = QHBoxLayout(self._menu_corner)
         corner_layout.setContentsMargins(0, 0, 0, 0)
         corner_layout.setSpacing(4)
+        corner_layout.addWidget(self._record_button)
         corner_layout.addWidget(self._sync_button)
         corner_layout.addWidget(self._preferences_button)
         self.menuBar().setCornerWidget(self._menu_corner, Qt.Corner.TopRightCorner)
@@ -1134,6 +1156,88 @@ class MainWindow(QMainWindow):
         results = run_sync(sync_sets, list_output_ports())
         self.statusBar().showMessage(summarize_results(results), 10_000)
         return results
+
+    def _sync_at_startup(self) -> list[SyncResult]:
+        """Launch-time Sync: silent when nothing is recorded, status bar only."""
+        sync_sets = list(self.preferences.controller_sync_sets)
+        if not sync_sets:
+            return []
+        results = run_sync(sync_sets, list_output_ports())
+        self.statusBar().showMessage(summarize_results(results), 10_000)
+        return results
+
+    def _on_record_toggled(self, recording: bool) -> None:
+        if recording:
+            self._start_recording()
+        else:
+            self._stop_recording()
+
+    def _start_recording(self) -> None:
+        self._record_events = []
+        opened = []
+        for name in list_input_ports():
+            try:
+                self._record_monitor.open_input(name)
+            except Exception as exc:  # noqa: BLE001 - one busy port must not block the others
+                _LOGGER.warning("Record: cannot open MIDI input %r: %s", name, exc)
+                continue
+            opened.append(name)
+        if not opened:
+            QMessageBox.warning(self, "Cannot record", "No MIDI input could be opened: is a controller connected?")
+            self._record_button.blockSignals(True)
+            self._record_button.setChecked(False)
+            self._record_button.blockSignals(False)
+            return
+        self._record_button.setText("■ Stop")
+        self._record_timer.start()
+        _LOGGER.info("Record: listening on %s", opened)
+        self.statusBar().showMessage(
+            f"Recording on {len(opened)} MIDI input(s): press the controls to send at initialization, "
+            "then click ■ Stop"
+        )
+
+    def _poll_recording(self) -> None:
+        self._record_events.extend(self._record_monitor.poll())
+
+    def _stop_recording(self) -> list[ControllerSyncSet]:
+        self._record_timer.stop()
+        self._poll_recording()
+        self._record_monitor.close_all()
+        self._record_button.setText("● Rec")
+        sync_sets = sync_sets_from_recording(self._record_events, self._controller_name_for_port)
+        self._record_events = []
+        if not sync_sets:
+            self.statusBar().showMessage("Recording stopped: no MIDI note/CC received, nothing saved", 10_000)
+            return []
+        replaced = [
+            f"{sync_set.controller} ({len(existing.messages)} message(s))"
+            for sync_set in sync_sets
+            if (existing := self.preferences.sync_set_for(sync_set.controller)) is not None
+        ]
+        if replaced:
+            reply = QMessageBox.question(
+                self,
+                "Replace sync sets",
+                "Replace the sync set(s) already stored for:\n" + "\n".join(replaced),
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            )
+            if reply != QMessageBox.StandardButton.Yes:
+                self.statusBar().showMessage("Recording discarded", 10_000)
+                return []
+        for sync_set in sync_sets:
+            self.preferences.set_sync_set(sync_set)
+        self._save_preferences()
+        self.statusBar().showMessage(
+            "Sync set(s) saved: "
+            + ", ".join(f"{sync_set.controller} ({len(sync_set.messages)} msg)" for sync_set in sync_sets),
+            10_000,
+        )
+        return sync_sets
+
+    @staticmethod
+    def _controller_name_for_port(port: str) -> str:
+        matches = catalog.detect_controller(port)
+        return matches[0].controller.name if matches else ""
 
     def _on_sync_set_save_requested(self, sync_set: ControllerSyncSet) -> None:
         existing = self.preferences.sync_set_for(sync_set.controller)
@@ -1830,6 +1934,8 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(f"'{name}' applied for this session.")
 
     def closeEvent(self, event) -> None:
+        self._record_timer.stop()
+        self._record_monitor.close_all()
         settings = self._layout_settings()
         if settings is not None:
             settings.setValue("window/geometry", self.saveGeometry())

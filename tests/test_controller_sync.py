@@ -148,3 +148,22 @@ def test_preferences_reject_malformed_sync_sets():
             '{"enabled": {}, "controller_sync_sets": [{"controller": "X", "messages": '
             '[{"event_type": "Note On", "channel": 99, "data1": 0, "data2": 0}]}]}'
         )
+
+
+def test_sync_sets_from_recording_splits_by_port():
+    from djmidi.controller_sync import sync_sets_from_recording
+    from djmidi.midi_io import MidiEvent
+
+    events = [
+        MidiEvent("in", "1", "Note On", "11", "127", 0.0, "PIONEER DDJ-XP2"),
+        MidiEvent("out", "1", "Note On", "99", "127", 0.0, "DJMidiStudio Monitor"),
+        MidiEvent("in", "2", "Control Change", "7", "64", 0.0, "Other"),
+        MidiEvent("in", "1", "Note Off", "11", "0", 0.0, "PIONEER DDJ-XP2"),
+        MidiEvent("in", "1", "Pitch", "0", "0", 0.0, "Junk"),
+    ]
+    names = {"PIONEER DDJ-XP2": "DDJ-XP2"}
+    sets = sync_sets_from_recording(events, names.get)
+    assert [(s.controller, s.output_port, len(s.messages)) for s in sets] == [
+        ("DDJ-XP2", "PIONEER DDJ-XP2", 2),
+        ("Other", "Other", 1),
+    ]

@@ -84,3 +84,11 @@ def test_plugin_preferences_controller_setup_default_file_round_trips(tmp_path):
     path = tmp_path / "prefs.json"
     preferences.save(path)
     assert PluginPreferences.load(path).controller_setup_default_file == "/tmp/minipad.json"
+
+
+def test_plugin_preferences_auto_sync_on_startup_defaults_true_and_round_trips(tmp_path):
+    assert PluginPreferences.from_json('{"enabled": {}}').auto_sync_on_startup is True
+    preferences = PluginPreferences(auto_sync_on_startup=False)
+    path = tmp_path / "auto_sync.json"
+    preferences.save(path)
+    assert PluginPreferences.load(path).auto_sync_on_startup is False

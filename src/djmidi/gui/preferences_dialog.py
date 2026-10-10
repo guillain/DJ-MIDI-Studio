@@ -69,6 +69,13 @@ class PreferencesDialog(QDialog):
             "the Controller Setup draft you saved or opened last, so you pick up where you left off."
         )
         self._reopen_last_files = reopen_last_files
+        auto_sync_on_startup = QCheckBox("Sync controllers at launch")
+        auto_sync_on_startup.setChecked(preferences.auto_sync_on_startup)
+        auto_sync_on_startup.setToolTip(
+            "Send each connected controller its recorded initialization set (● Rec / Controller "
+            "Setup) when the app starts, as if you had clicked ⟳ Sync."
+        )
+        self._auto_sync_on_startup = auto_sync_on_startup
         workspace_row = QWidget()
         workspace_layout = QHBoxLayout(workspace_row)
         workspace_layout.setContentsMargins(0, 0, 0, 0)
@@ -129,6 +136,7 @@ class PreferencesDialog(QDialog):
         policy_layout.addRow(trust)
         policy_layout.addRow(auto_start_live_monitor)
         policy_layout.addRow(reopen_last_files)
+        policy_layout.addRow(auto_sync_on_startup)
         policy_layout.addRow("Your files folder:", workspace_row)
 
         controller_ids = {
@@ -297,6 +305,7 @@ class PreferencesDialog(QDialog):
         self._preferences.trust_external_plugins = self._trust.isChecked()
         self._preferences.auto_start_live_monitor = self._auto_start_live_monitor.isChecked()
         self._preferences.reopen_last_files = self._reopen_last_files.isChecked()
+        self._preferences.auto_sync_on_startup = self._auto_sync_on_startup.isChecked()
         self._preferences.log_level = self._log_level.currentText()
         self._preferences.log_path = self._log_path.text().strip()
         self._preferences.controller_setup_default_file = self._setup_file.text().strip()
