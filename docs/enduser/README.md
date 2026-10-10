@@ -22,8 +22,8 @@
 Teach the app **any** MIDI controller by pressing its buttons, or by
 importing a Serato mapping you already use. Name the controls, apply, and
 the controller shows up everywhere. Then record the buttons you always press
-after plugging in, and bring **every connected controller** to that state
-with one click on `⟳ Sync`.
+after plugging in with `● Rec`, and bring **every connected controller** to
+that state with one click on `⟳ Sync` — or automatically at launch.
 
 → [Controller Setup](features/controller-setup.md) ·
 [Controller Sync](features/controller-sync.md)

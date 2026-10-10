@@ -29,8 +29,9 @@
 
 Teach the app **any** MIDI controller by pressing its buttons, or import a
 Serato mapping you already use. No manufacturer documentation needed. Then
-record the buttons you always press after plugging in, and put **every
-connected controller** in that state with one click on `⟳ Sync`.
+record the buttons you always press after plugging in with `● Rec`, and put
+**every connected controller** in that state with one click on `⟳ Sync` — or
+automatically at launch.
 → [Controller Setup](docs/enduser/features/controller-setup.md) ·
 [Controller Sync](docs/enduser/features/controller-sync.md)
 

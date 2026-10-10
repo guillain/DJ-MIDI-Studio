@@ -132,6 +132,14 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Record button + Sync at launch** (`v0.48.53-controller-sync-record`) — requested by the maintainer ("un
+  bouton 'record' pour sauvegarder le setup et le jouer automatiquement"; placement and trigger chosen by them):
+  a checkable `● Rec` beside `⟳ Sync` listens to every MIDI input and, on `■ Stop`, saves one sync set per port
+  that sent a note/CC (`controller_sync.sync_sets_from_recording`; controller named by `catalog.detect_controller`,
+  else the port name; one confirmation lists every set it would replace). `PluginPreferences.auto_sync_on_startup`
+  (default on, Preferences → General) sends the stored sets once, 1.5 s after launch — real app only, silent
+  without sets.
+
 - [x] **Confirm all suggestions** (`v0.48.52-library-confirm-all-suggestions`) — requested by the maintainer: the
   Music Library's Track panel gains `Confirm all suggestions (N)`, which records every visible track's genre as an
   alias of its suggested (fuzzy) category in one go — listing the genre → category pairs and asking first, one
