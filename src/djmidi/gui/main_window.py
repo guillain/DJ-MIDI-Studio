@@ -56,6 +56,7 @@ from djmidi import catalog, file_locations, software, sync_store, user_paths
 from djmidi.catalog.profile import load_user_profiles
 from djmidi.controller_sync import (
     ControllerSyncSet,
+    PlugInSyncTracker,
     SyncResult,
     run_sync,
     summarize_results,
@@ -132,6 +133,8 @@ _LAST_SOFTWARE_SETTINGS_KEY = "files/last_mapping_software"
 _LAST_DRAFT_SETTINGS_KEY = "files/last_draft"
 # Lets controllers' MIDI ports settle before the launch-time Sync.
 _STARTUP_SYNC_DELAY_MS = 1500
+# How often output ports are listed to spot a controller being plugged in.
+_PLUG_IN_POLL_MS = 2000
 
 _LOCAL_HELP_DOCUMENTS = [
     ("Documentation Home", "docs/README.md"),
@@ -444,9 +447,9 @@ class MainWindow(QMainWindow):
         self._restore_user_layout()
         self.controller_setup_view.draftFileChanged.connect(self._remember_draft)
         self._prepare_reopen_last_files()
-        if self._layout_settings() is not None and self.preferences.auto_sync_on_startup:
+        if self._layout_settings() is not None:
             # Real app only, like reopening files: tests never touch MIDI here.
-            QTimer.singleShot(_STARTUP_SYNC_DELAY_MS, self._sync_at_startup)
+            QTimer.singleShot(_STARTUP_SYNC_DELAY_MS, self._start_controller_sync)
         QTimer.singleShot(0, self._initialize_pair_splitters)
         QTimer.singleShot(0, self._show_helpful_notes_if_enabled)
         self.introduction_view.set_loaded_config_info(None)
@@ -779,6 +782,12 @@ class MainWindow(QMainWindow):
         self._record_button.toggled.connect(self._on_record_toggled)
         self._record_monitor = MidiMonitor()
         self._record_events: list[MidiEvent] = []
+        # Sync-on-plug-in (issue #183): started by _start_controller_sync in
+        # the real app only; _poll_plugged_controllers stays callable by tests.
+        self._plug_in_tracker = PlugInSyncTracker()
+        self._plug_in_timer = QTimer(self)
+        self._plug_in_timer.setInterval(_PLUG_IN_POLL_MS)
+        self._plug_in_timer.timeout.connect(self._poll_plugged_controllers)
         self._record_timer = QTimer(self)
         self._record_timer.setInterval(20)
         self._record_timer.timeout.connect(self._poll_recording)
@@ -1133,6 +1142,8 @@ class MainWindow(QMainWindow):
             self.controller_setup_view.set_default_file(self.preferences.controller_setup_default_file)
             log_path = self.preferences.log_path or current_log_path()
             configure_logging(self.preferences.log_level, log_path)
+            if self._layout_settings() is not None:
+                self._update_plug_in_watch()
             if self.preferences.auto_start_live_monitor and self.config is not None:
                 # Turning the setting on with a mapping already loaded starts
                 # monitoring immediately, matching "Enable MIDI routing
@@ -1157,13 +1168,49 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(summarize_results(results), 10_000)
         return results
 
-    def _sync_at_startup(self) -> list[SyncResult]:
-        """Launch-time Sync: silent when nothing is recorded, status bar only."""
+    def _sync_at_startup(self, ports: list[str] | None = None) -> list[SyncResult]:
+        """Launch-time Sync: silent when nothing is recorded, status bar only.
+        Seeds the plug-in tracker with the same port list, so a controller
+        synced here isn't synced again by the first plug-in poll."""
+        if ports is None:
+            ports = list_output_ports()
+        self._plug_in_tracker.seed(ports)
         sync_sets = list(self.preferences.controller_sync_sets)
         if not sync_sets:
             return []
-        results = run_sync(sync_sets, list_output_ports())
+        results = run_sync(sync_sets, ports)
         self.statusBar().showMessage(summarize_results(results), 10_000)
+        return results
+
+    def _start_controller_sync(self) -> None:
+        """Launch-time entry point (real app only): the Sync at launch, if
+        enabled, then watching for controllers being plugged in."""
+        if self.preferences.auto_sync_on_startup:
+            self._sync_at_startup()
+        self._update_plug_in_watch()
+
+    def _update_plug_in_watch(self) -> None:
+        """Starts or stops the plug-in poll to match the preference. Starting
+        it seeds the tracker with what's connected now (without sending), so
+        only controllers plugged in from then on are synced."""
+        if not self.preferences.auto_sync_on_plug_in:
+            self._plug_in_timer.stop()
+            self._plug_in_tracker.reset()
+            return
+        if self._plug_in_timer.isActive():
+            return
+        if not self._plug_in_tracker.seeded:
+            self._plug_in_tracker.seed(list_output_ports())
+        self._plug_in_timer.start()
+
+    def _poll_plugged_controllers(self) -> list[SyncResult]:
+        """Sends a sync set once to each controller whose port just appeared."""
+        ports = list_output_ports()
+        due = self._plug_in_tracker.due(self.preferences.controller_sync_sets, ports)
+        if not due:
+            return []
+        results = run_sync(due, ports)
+        self.statusBar().showMessage("Plugged in -- " + summarize_results(results), 10_000)
         return results
 
     def _on_record_toggled(self, recording: bool) -> None:
@@ -1935,6 +1982,7 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event) -> None:
         self._record_timer.stop()
+        self._plug_in_timer.stop()
         self._record_monitor.close_all()
         settings = self._layout_settings()
         if settings is not None:
