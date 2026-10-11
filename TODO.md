@@ -132,6 +132,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Sync scenes** (`v0.48.61-sync-scenes`, issue #188) — several named sync sets per controller (Tek / DnB /
+  Warm-up…), picked with a scene combo between `● Rec` and `⟳ Sync` (`New scene…` adds one). Sync, launch and
+  plug-in sync send each controller its set for the active scene, falling back to its Default set; `● Rec` and
+  Controller Setup record into the active scene. Existing sets and files load as scene "Default" unchanged;
+  other scenes are stored as `<controller>.<scene>.json`. Preferences → Controller sync shows a Scene column.
 - [x] **Edit sync set messages** (`v0.48.59-sync-set-editor`, issue #186) — Preferences → Controller sync →
   `Edit messages…` (or double-click a set) lists a set's messages (type/channel/data1/data2), edits them with
   validation, deletes and reorders them, and can send one as a test; saved with the Preferences dialog, no
