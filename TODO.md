@@ -132,6 +132,13 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Quick audio preview in the Music Library tab** (`v0.48.64-library-audio-preview`, issue #192) — a
+  `gui/audio_preview.AudioPreviewBar` under the library table (play/pause, stop, seek slider, position/duration,
+  "Start at 30%") plays the current track through QtMultimedia's `QMediaPlayer` + `QAudioOutput`. Guarded import:
+  without QtMultimedia the bar is disabled with a tooltip; the player is created on the first Play only. Selecting
+  another track while playing switches to it; leaving the tab (non-spontaneous hide) or `close_db()` (app close)
+  stops it. PyInstaller's stock `hook-PySide6.QtMultimedia` already collects the `multimedia` plugins, so
+  `scripts/build.sh` is unchanged.
 - [x] **Record button + Sync at launch** (`v0.48.53-controller-sync-record`) — requested by the maintainer ("un
   bouton 'record' pour sauvegarder le setup et le jouer automatiquement"; placement and trigger chosen by them):
   a checkable `● Rec` beside `⟳ Sync` listens to every MIDI input and, on `■ Stop`, saves one sync set per port
