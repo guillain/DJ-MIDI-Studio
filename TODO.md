@@ -132,6 +132,10 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Sync on plug-in** (`v0.48.55-sync-on-plug-in`, issue #183) — output ports are listed every 2 s in the
+  real app; when a port appears that a stored sync set resolves to, that set is sent once. Never re-sent while it
+  stays connected, sent again after unplug/replug; the launch Sync seeds the Qt-free `PlugInSyncTracker` so nothing
+  is sent twice. New `auto_sync_on_plug_in` preference (default on) next to "Sync controllers at launch".
 - [x] **Record button + Sync at launch** (`v0.48.53-controller-sync-record`) — requested by the maintainer ("un
   bouton 'record' pour sauvegarder le setup et le jouer automatiquement"; placement and trigger chosen by them):
   a checkable `● Rec` beside `⟳ Sync` listens to every MIDI input and, on `■ Stop`, saves one sync set per port
