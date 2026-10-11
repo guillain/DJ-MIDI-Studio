@@ -39,6 +39,7 @@ organized by what it is:
 | --- | --- |
 | `Open Mapping…`, `Open Recent Mapping`, `Save Mapping`, `Save Mapping As…` | The Serato `.xml` or Traktor `.tsi` mapping you edit. It stays where your DJ software keeps it |
 | `Restore Previous Version…`, `Show Mapping in Finder` | The version kept by your last save, and where the file is |
+| `Compare Mapping With…`, `Compare With Previous Version` | What changed between the open mapping and another file or its `.bak` — see [Compare mappings](mapping-diff.md) |
 | `Controller Profile ▸` | The controller profile you build in Controller Setup: new, open or save a draft, learn triggers from a mapping |
 | `Import ▸` / `Export ▸` | Serato crates, Traktor playlists and Rekordbox exports for the Music Library, and the Live Monitor log |
 

@@ -27,6 +27,7 @@
 | --- | --- | --- |
 | 🗺️ | [Mapping editor](mapping-editor.md) | Open, explore, edit, validate and save Serato mappings |
 | 🎧 | [Traktor mappings](traktor-mappings.md) | The same for Traktor `.tsi` controller mappings |
+| 🔍 | [Compare mappings](mapping-diff.md) | What changed between two mappings, highlighted on the layouts |
 | 🖼️ | [Controller Images](controller-images.md) | Official diagrams and manuals, offline, with real control positions |
 | 🔀 | [MIDI Routing, Clock and Metronome](midi-routing-and-clock.md) | Route MIDI, generate Clock from Ableton Link, loop MIDI |
 | 🪟 | [Workspace and preferences](workspace.md) | Tool windows, Performance Mode, Preferences |
@@ -42,6 +43,7 @@
 | [controller-emulator.md](controller-emulator.md) | Click-to-resolve, modes and SHIFT, Live send |
 | [mapping-editor.md](mapping-editor.md) | Dashboard, the three views, editing, validation, saving |
 | [traktor-mappings.md](traktor-mappings.md) | Traktor `.tsi` support and its limits |
+| [mapping-diff.md](mapping-diff.md) | Comparing with another file or the previous version, change kinds, duplicates |
 | [controller-images.md](controller-images.md) | Reference pictures, real layout overlay, MIDI info |
 | [midi-routing-and-clock.md](midi-routing-and-clock.md) | Routes, transforms, MIDI Clock from Link, Metronome |
 | [workspace.md](workspace.md) | Tabs and docks, window controls, Performance Mode, Preferences |
