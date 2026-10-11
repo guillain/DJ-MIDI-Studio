@@ -94,6 +94,20 @@ Open ⚙ **Preferences** → **Controller sync**. Each set shows its message
 count; choose which output port it goes to (`Auto` follows the rules above)
 or remove it.
 
+To fix a set without recording it again, select it and click
+**`Edit messages…`** (or double-click it). The editor lists its messages in
+the order they are sent:
+
+- Change a message's type (`Note On`, `Note Off`, `Control Change`) or
+  double-click its channel (1–16) or data values (0–127) to edit them.
+- `Delete` removes the selected message; `Move up` / `Move down` reorder it.
+- `Send selected` sends the selected message to the controller right away,
+  to check what it does (greyed out when the controller is not connected).
+
+An invalid value is pointed out and `OK` is refused until it is fixed.
+`OK` keeps the changes in the Preferences dialog; they are written when you
+click `Save` there (`Cancel` drops them).
+
 Each set is a file in `Documents/DJ MIDI Studio/Sync`, one per controller,
 so you can back it up or copy it to another computer. Sets recorded with an
 older version are moved there automatically the first time you start this

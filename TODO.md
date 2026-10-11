@@ -132,6 +132,10 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Edit sync set messages** (`v0.48.59-sync-set-editor`, issue #186) — Preferences → Controller sync →
+  `Edit messages…` (or double-click a set) lists a set's messages (type/channel/data1/data2), edits them with
+  validation, deletes and reorders them, and can send one as a test; saved with the Preferences dialog, no
+  re-recording needed. Qt-free `messages_from_rows` / `move_message` / `ControllerSyncSet.with_messages`.
 - [x] **Sync on plug-in** (`v0.48.55-sync-on-plug-in`, issue #183) — output ports are listed every 2 s in the
   real app; when a port appears that a stored sync set resolves to, that set is sent once. Never re-sent while it
   stays connected, sent again after unplug/replug; the launch Sync seeds the Qt-free `PlugInSyncTracker` so nothing
