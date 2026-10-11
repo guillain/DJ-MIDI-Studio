@@ -239,6 +239,22 @@ LIBRARY_CATEGORIES: HelpEntry = (
     "music-library.md",
 )
 
+LIBRARY_DUPLICATES: HelpEntry = (
+    "Duplicate tracks",
+    (
+        "<b>Find duplicates…</b> lists two kinds of groups from the scanned folders:"
+        "<ul><li><b>Exact copies</b>: byte-identical files. Only files of the same size are "
+        "read and compared by content hash.</li>"
+        "<li><b>Same artist + title</b>: tags that match once case, accents, punctuation, "
+        "<i>feat.</i> credits and <i>(Original Mix)</i> are ignored. Other versions "
+        "(<i>Extended Mix</i>, <i>Radio Edit</i>, remixes) stay distinct. A candidate, not "
+        "proof: compare format, size and bitrate.</li></ul>"
+        "Nothing is deleted or moved: <b>Reveal in Finder</b> (or double-click) shows a copy "
+        "so you can deal with it yourself."
+    ),
+    "music-library.md",
+)
+
 LIBRARY_PLAYLISTS: HelpEntry = (
     "Playlists",
     (
