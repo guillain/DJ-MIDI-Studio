@@ -252,3 +252,21 @@ LIBRARY_PLAYLISTS: HelpEntry = (
     ),
     "music-library.md",
 )
+
+MAPPING_DIFF: HelpEntry = (
+    "Compare mappings",
+    (
+        "Lists what changed between two mappings by what each trigger <i>does</i>, not "
+        "by XML text:<ul>"
+        "<li><b>Re-assigned</b>: a trigger now drives a different function.</li>"
+        "<li><b>Added</b> / <b>Removed</b>: functions bound only on one side.</li>"
+        "<li><b>Changed values</b>: same function, different translation or alias values "
+        "(e.g. <i>alias on: 127 → 100</i>).</li>"
+        "<li><b>Duplicate count</b>: Serato repeats every trigger (often 10×); a file that "
+        "gained or lost copies shows here once, not as many adds or removes.</li></ul>"
+        "Click a row to highlight that control on the layouts and select it in "
+        "<b>By Channel</b>. Opened from <b>File → Compare Mapping With…</b> or "
+        "<b>File → Compare With Previous Version</b> (the <tt>.bak</tt> kept by the last save)."
+    ),
+    "mapping-diff.md",
+)
