@@ -12,6 +12,7 @@
 - [Open a mapping](#open-a-mapping)
 - [Dashboard](#dashboard)
 - [Three views of the same mapping](#three-views-of-the-same-mapping)
+- [Find which control triggers a function](#find-which-control-triggers-a-function)
 - [The controller layout](#the-controller-layout)
 - [Edit safely](#edit-safely)
 - [Validate and save](#validate-and-save)
@@ -64,6 +65,26 @@ three layouts. Clicking a control in a layout jumps to its raw entry.
 ![By Deck](../../images/layout/by-deck.png)
 
 ![By Channel](../../images/layout/by-channel.png)
+
+## Find which control triggers a function
+
+The trees answer "what does this button do?". The **Find function** field,
+at the top of the editing column on the three mapping tabs, answers the
+reverse: type what you want a control to *do* and the list shows every
+control bound to it.
+
+- Words match the Serato function names, ignoring case and underscores:
+  `loop roll` finds `auto_loop_roll_specific_length`.
+- `deck 2` or `slot 3` keep only that deck or slot, numbered as the file
+  stores them (the same numbers the By Deck tab shows); a bare number
+  matches either one.
+- `output` (or `led`) keeps only LED feedback, `click` only button presses.
+
+Each result shows the function, its deck and slot, then the MIDI trigger
+and the physical control it resolves to (hover for every controller that
+shares that trigger). Selecting a result outlines **all** its controls in
+red on the layouts and selects the first one in the current tab, like
+clicking it on the layout.
 
 ## The controller layout
 
