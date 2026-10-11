@@ -132,6 +132,13 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Workspace backup and restore** (`v0.48.58-workspace-backup`, issue #187) — `File → Back Up Workspace…` /
+  `Restore Workspace…` (also buttons beside Preferences' files folder) zip `Documents/DJ MIDI Studio`, preferences.json
+  and, when asked, the library index (SQLite online backup API, consistent while open) with a `manifest.json`. Qt-free
+  `djmidi.backup`: restore is a dry-run plan by default (what it adds/overwrites, zip-slip and symlink-escape refused,
+  JSON/SQLite payloads validated before any write), only adds/overwrites, and asks the user to restart afterwards
+  rather than hot-reloading preferences/profiles. Backups already in the workspace are never nested.
+
 - [x] **Record button + Sync at launch** (`v0.48.53-controller-sync-record`) — requested by the maintainer ("un
   bouton 'record' pour sauvegarder le setup et le jouer automatiquement"; placement and trigger chosen by them):
   a checkable `● Rec` beside `⟳ Sync` listens to every MIDI input and, on `■ Stop`, saves one sync set per port

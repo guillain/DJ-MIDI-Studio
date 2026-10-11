@@ -33,7 +33,10 @@ DASHBOARD_FILES: HelpEntry = (
         "Mapping</b>).</li>"
         "<li><b>Sync sets</b>: the initialization messages recorded with <b>● Rec</b> or in "
         "Controller Setup, one per controller, sent by <b>⟳ Sync</b> and at launch.</li></ul>"
-        "Controller profiles you build live in <b>File → Controller Profile</b>."
+        "Controller profiles you build live in <b>File → Controller Profile</b>. "
+        "<b>File → Back Up Workspace…</b> saves your profiles, sync sets, drafts and preferences "
+        "(and, if you want, the library index) in one zip; <b>Restore Workspace…</b> brings them "
+        "back, on another Mac too, after showing what it overwrites."
     ),
     "workspace.md",
 )
