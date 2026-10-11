@@ -218,6 +218,45 @@ class LibraryDB:
             return None
         return TrackRecord(id=row[0], root_id=row[1], path=row[2], size=row[3], mtime=row[4], missing=bool(row[5]))
 
+    def relink_tracks(self, links: Iterable[tuple[int, str, int, int, float]]) -> int:
+        """Point missing tracks at the files they moved to (issue #190).
+
+        Each link is ``(missing_track_id, new_path, root_id, size, mtime)``.
+        This app's index only: playlist entries naming the old path follow
+        the new one, and the old row's cached tags move over when the new
+        file has none yet. If `new_path` is already indexed the stale row is
+        dropped; otherwise the missing row itself takes the new path. All
+        links commit together or not at all. Returns how many were applied
+        (a link whose row is gone or no longer missing is skipped)."""
+        applied = 0
+        with self._conn:
+            for missing_id, new_path, root_id, size, mtime in links:
+                row = self._conn.execute(
+                    "SELECT path FROM tracks WHERE id = ? AND missing = 1", (missing_id,)
+                ).fetchone()
+                if row is None:
+                    continue
+                old_path, new_path = row[0], str(new_path)
+                target = self._conn.execute("SELECT id FROM tracks WHERE path = ?", (new_path,)).fetchone()
+                if target is None:
+                    self._conn.execute(
+                        "UPDATE tracks SET path = ?, root_id = ?, size = ?, mtime = ?, missing = 0 WHERE id = ?",
+                        (new_path, root_id, size, mtime, missing_id),
+                    )
+                else:
+                    has_cache = self._conn.execute(
+                        "SELECT 1 FROM track_metadata WHERE track_id = ?", (target[0],)
+                    ).fetchone()
+                    if has_cache is None:
+                        self._conn.execute(
+                            "UPDATE track_metadata SET track_id = ? WHERE track_id = ?", (target[0], missing_id)
+                        )
+                    self._conn.execute("DELETE FROM track_metadata WHERE track_id = ?", (missing_id,))
+                    self._conn.execute("DELETE FROM tracks WHERE id = ?", (missing_id,))
+                self._conn.execute("UPDATE playlist_tracks SET path = ? WHERE path = ?", (new_path, old_path))
+                applied += 1
+        return applied
+
     # --- metadata cache -------------------------------------------------
 
     def set_cached_metadata(self, track_id: int, mtime: float, metadata: TrackMetadata) -> None:

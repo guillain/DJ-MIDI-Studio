@@ -73,10 +73,11 @@ from djmidi import taxonomy, user_paths
 from djmidi.gui import help_texts
 from djmidi.gui.commands import WriteTrackMetadataCommand, WriteTracksMetadataCommand
 from djmidi.gui.help_button import help_button, help_row
-from djmidi.library import workspace
-from djmidi.library.db import LibraryDB, default_library_db_path
+from djmidi.library import relink, workspace
+from djmidi.library.db import LibraryDB, TrackRecord, default_library_db_path
 from djmidi.library.metadata import TrackMetadata, clean_noise_frames
 from djmidi.library.playlist import is_camelot_compatible
+from djmidi.library.relink import RelinkCandidate, RelinkProposal
 from djmidi.library.scanner import iter_scan_root
 
 _LOGGER = logging.getLogger(__name__)
@@ -225,6 +226,95 @@ class BulkTagDialog(QDialog):
             QMessageBox.warning(self, "Invalid BPM", "BPM must be a number, e.g. 174 or 128.5.")
             return
         self.accept()
+
+
+class RelinkDialog(QDialog):
+    """Review `relink.RelinkProposal`s (issue #190): one checkable row per
+    missing track, its proposed new path (a combo when several files
+    match), and how it matched. Confident proposals start checked; a track
+    with no match is listed but can't be checked."""
+
+    def __init__(self, proposals: list[RelinkProposal], parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        self.setWindowTitle("Relink missing tracks")
+        self.resize(900, 420)
+        self._proposals = proposals
+        box = QVBoxLayout(self)
+        intro = QLabel(
+            "Files that moved since they were indexed. Checked tracks are relinked in this app's index "
+            "only: their playlists and cached tags follow the new path. No audio file or DJ software "
+            "library is modified. Pre-checked rows have exactly one file with the same name and size."
+        )
+        intro.setWordWrap(True)
+        box.addWidget(intro)
+        self.tree = QTreeWidget()
+        self.tree.setHeaderLabels(["Missing track", "Relink to", "Match"])
+        self.tree.setRootIsDecorated(False)
+        self._combos: dict[int, QComboBox] = {}
+        for index, proposal in enumerate(proposals):
+            item = QTreeWidgetItem([proposal.missing.path, "", ""])
+            item.setData(0, Qt.ItemDataRole.UserRole, index)
+            self.tree.addTopLevelItem(item)
+            if not proposal.candidates:
+                item.setText(1, "No matching file found")
+                item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEnabled)
+                continue
+            item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+            item.setCheckState(0, Qt.CheckState.Checked if proposal.confident else Qt.CheckState.Unchecked)
+            item.setText(2, _match_label(proposal.best))
+            if len(proposal.candidates) == 1:
+                item.setText(1, proposal.best.path)
+                continue
+            combo = QComboBox()
+            for candidate in proposal.candidates:
+                combo.addItem(candidate.path)
+            combo.currentIndexChanged.connect(
+                lambda row, item=item, proposal=proposal: item.setText(2, _match_label(proposal.candidates[row]))
+            )
+            self._combos[index] = combo
+            self.tree.setItemWidget(item, 1, combo)
+        self.tree.header().setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
+        self.tree.setColumnWidth(0, 320)
+        self.tree.setColumnWidth(1, 320)
+        box.addWidget(self.tree, 1)
+        self.buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        self.buttons.button(QDialogButtonBox.StandardButton.Ok).setText("Relink checked…")
+        self.buttons.accepted.connect(self.accept)
+        self.buttons.rejected.connect(self.reject)
+        self.tree.itemChanged.connect(self._update_ok)
+        box.addWidget(self.buttons)
+        self._update_ok()
+
+    def _update_ok(self, *_args: object) -> None:
+        self.buttons.button(QDialogButtonBox.StandardButton.Ok).setEnabled(bool(self.choices()))
+
+    def set_choice(self, index: int, checked: bool, candidate_index: int = 0) -> None:
+        item = self.tree.topLevelItem(index)
+        item.setCheckState(0, Qt.CheckState.Checked if checked else Qt.CheckState.Unchecked)
+        if index in self._combos:
+            self._combos[index].setCurrentIndex(candidate_index)
+
+    def choices(self) -> list[tuple[TrackRecord, RelinkCandidate]]:
+        """Checked (missing track, chosen candidate) pairs."""
+        result = []
+        for row in range(self.tree.topLevelItemCount()):
+            item = self.tree.topLevelItem(row)
+            if item.checkState(0) != Qt.CheckState.Checked:
+                continue
+            proposal = self._proposals[item.data(0, Qt.ItemDataRole.UserRole)]
+            combo = self._combos.get(row)
+            candidate = proposal.candidates[combo.currentIndex() if combo is not None else 0]
+            result.append((proposal.missing, candidate))
+        return result
+
+
+def _match_label(candidate: RelinkCandidate) -> str:
+    label = {relink.MATCH_EXACT: "Same name and size", relink.MATCH_NAME: "Same name, other size"}.get(
+        candidate.match, "Same title and artist"
+    )
+    if candidate.tags_agree and candidate.match != relink.MATCH_TAGS:
+        label += " + tags"
+    return label + ("" if candidate.indexed else " (not scanned yet)")
 
 
 def _can_confirm_suggestion(row: workspace.LibraryRow) -> bool:
@@ -481,7 +571,12 @@ class MusicLibraryView(QWidget):
             "Index new/changed files and read their tags. Incremental: unchanged files are skipped."
         )
         self.scan_button.clicked.connect(self.start_scan)
-        for button in (self.add_root_button, self.remove_root_button, self.scan_button):
+        self.relink_button = QPushButton("Relink missing…")
+        self.relink_button.setToolTip(
+            "Find where missing tracks moved (same file name and size) and relink them in this app's index."
+        )
+        self.relink_button.clicked.connect(self.start_relink_search)
+        for button in (self.add_root_button, self.remove_root_button, self.scan_button, self.relink_button):
             row.addWidget(button, 0, Qt.AlignmentFlag.AlignTop)
         row.addWidget(help_button(self, *help_texts.LIBRARY_FOLDERS), 0, Qt.AlignmentFlag.AlignTop)
         box.addLayout(row)
@@ -861,6 +956,7 @@ class MusicLibraryView(QWidget):
     def _start_job(self, job: Generator[None]) -> None:
         self._job = job
         self.scan_button.setEnabled(False)
+        self.relink_button.setEnabled(False)
         self.progress_bar.setVisible(True)
         self._job_timer.start()
 
@@ -868,6 +964,7 @@ class MusicLibraryView(QWidget):
         self._job_timer.stop()
         self._job = None
         self.scan_button.setEnabled(True)
+        self.relink_button.setEnabled(True)
         self.progress_bar.setVisible(False)
 
     def _run_job_slice(self) -> None:
@@ -884,6 +981,58 @@ class MusicLibraryView(QWidget):
             _LOGGER.exception("Music library job failed")
             self.status_label.setText("Scan failed (see the log).")
             self._stop_job()
+
+    # --- relinking missing tracks (issue #190) ---------------------------
+
+    def start_relink_search(self) -> None:
+        """Search the roots for missing tracks' new paths, then review them."""
+        if self.is_busy():
+            return
+        self._start_job(self._relink_job())
+
+    def _relink_job(self) -> Generator[None]:
+        self.progress_bar.setRange(0, 0)
+        steps = relink.iter_relink_proposals(self.db)
+        while True:
+            try:
+                count = next(steps)
+            except StopIteration as done:
+                proposals = done.value
+                break
+            self.status_label.setText(f"Looking for moved files… {count} checked")
+            yield
+        if not proposals:
+            self.status_label.setText("No missing tracks to relink.")
+            return
+        found = sum(1 for proposal in proposals if proposal.candidates)
+        self.status_label.setText(f"{len(proposals)} missing track(s), {found} with a possible new location.")
+        # Opened once the job has stopped: a modal dialog inside a timer
+        # slice would re-enter this generator.
+        QTimer.singleShot(0, lambda: self.review_relinks(proposals))
+
+    def review_relinks(self, proposals: list[RelinkProposal]) -> None:
+        dialog = RelinkDialog(proposals, self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+        choices = dialog.choices()
+        if not choices:
+            return
+        answer = QMessageBox.question(
+            self,
+            "Relink missing tracks",
+            f"Relink {len(choices)} track(s) in this app's index?\n\n"
+            "Playlists and cached tags follow the new paths and the stale entries are dropped. "
+            "No audio file or DJ software library is modified. This can't be undone.",
+        )
+        if answer != QMessageBox.StandardButton.Yes:
+            return
+        result = relink.apply_relinks(self.db, choices)
+        message = f"Relinked {result.relinked} track(s)."
+        if result.skipped:
+            message += f" Skipped {len(result.skipped)} whose file is gone or outside the music folders."
+        self.status_label.setText(message)
+        self._reload_rows()
+        self._reload_playlists()
 
     def run_pending_job(self) -> None:
         """Drain the current job synchronously (tests, scripted use)."""
