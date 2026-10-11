@@ -27,6 +27,7 @@ from PySide6.QtWidgets import (
 from djmidi import catalog, software, user_paths
 from djmidi.controller_sync import ControllerSyncSet
 from djmidi.gui.file_reveal import reveal_in_file_manager
+from djmidi.gui.sync_set_editor import SyncSetEditorDialog
 from djmidi.logging_config import default_log_path
 from djmidi.midi_io import list_output_ports
 from djmidi.plugins import PluginPreferences
@@ -246,10 +247,15 @@ class PreferencesDialog(QDialog):
             port_combo.setCurrentIndex(max(port_combo.findData(sync_set.output_port), 0))
             self._sync_table.setCellWidget(row, 1, port_combo)
             self._sync_table.setItem(row, 2, QTableWidgetItem(str(len(sync_set.messages))))
+        self._sync_table.cellDoubleClicked.connect(lambda row, _column: self._edit_sync_set(row))
         layout.addWidget(self._sync_table, 1)
+        edit_button = QPushButton("Edit messages…")
+        edit_button.setToolTip("List, edit, delete or reorder the selected set's messages")
+        edit_button.clicked.connect(self._edit_selected_sync_set)
         remove_button = QPushButton("Remove selected set")
         remove_button.clicked.connect(self._remove_selected_sync_set)
         buttons = QHBoxLayout()
+        buttons.addWidget(edit_button)
         buttons.addWidget(remove_button)
         buttons.addStretch(1)
         layout.addLayout(buttons)
@@ -260,6 +266,24 @@ class PreferencesDialog(QDialog):
         for row in rows:
             self._sync_table.removeRow(row)
             del self._sync_sets[row]
+
+    def _edit_selected_sync_set(self) -> None:
+        rows = sorted({index.row() for index in self._sync_table.selectedIndexes()})
+        if rows:
+            self._edit_sync_set(rows[0])
+
+    def _edit_sync_set(self, row: int) -> None:
+        """Opens the message editor for one set. Its result only replaces the
+        set in this dialog; Preferences' own Save persists it, Cancel drops it."""
+        if not 0 <= row < len(self._sync_sets):
+            return
+        # Test sends follow the port currently chosen in the combo.
+        current = self._edited_sync_sets()[row]
+        editor = SyncSetEditorDialog(current, list_output_ports(), parent=self)
+        if editor.exec() != QDialog.DialogCode.Accepted:
+            return
+        self._sync_sets[row] = dataclasses.replace(self._sync_sets[row], messages=editor.edited_sync_set().messages)
+        self._sync_table.setItem(row, 2, QTableWidgetItem(str(len(self._sync_sets[row].messages))))
 
     def _edited_sync_sets(self) -> list[ControllerSyncSet]:
         edited = []
