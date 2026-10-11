@@ -246,7 +246,10 @@ LIBRARY_PLAYLISTS: HelpEntry = (
         "<li><b>Auto: sort visible</b>: every visible track, grouped by category, then BPM "
         "range, then key.</li>"
         "<li><b>Auto: match current</b>: the selected track followed by visible tracks "
-        "within ±6&nbsp;% BPM and a compatible key.</li></ul>"
+        "within ±6&nbsp;% BPM and a compatible key.</li>"
+        "<li><b>Auto: mix path…</b>: visible tracks chained so each one mixes into the next "
+        "(BPM rising, falling or steady), from the selected track; tracks that don't fit go "
+        "to a separate <i>(leftovers)</i> playlist.</li></ul>"
         "Import Serato crates, Traktor playlists or a Rekordbox USB export (read only); "
         "export to a new Serato crate or Traktor playlist file where you choose."
     ),

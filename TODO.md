@@ -132,6 +132,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Playlist path mode** (`v0.48.63-playlist-path-mode`, issue #191) — issue #131's deferred follow-up:
+  `playlist.build_playlist_path` chains tracks so every step is BPM- (±6 %) and Camelot-compatible and the BPM
+  rises, falls or stays steady, via a deterministic receding-horizon beam search (beam 8, lookahead 3) over a
+  per-Camelot-key BPM index (3,000 synthetic tracks well under 2 s, tested); unplaceable tracks are returned as
+  leftovers. Music Library: `Auto: mix path…` (direction prompt, starts from the selected track) writes the path
+  plus a separate `… (leftovers)` playlist. Simple mode stays the default.
 - [x] **Record button + Sync at launch** (`v0.48.53-controller-sync-record`) — requested by the maintainer ("un
   bouton 'record' pour sauvegarder le setup et le jouer automatiquement"; placement and trigger chosen by them):
   a checkable `● Rec` beside `⟳ Sync` listens to every MIDI input and, on `■ Stop`, saves one sync set per port
