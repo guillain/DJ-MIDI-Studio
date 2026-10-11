@@ -25,7 +25,12 @@ from djmidi.taxonomy import Category
 from .analysis import to_camelot
 from .db import LibraryDB, StoredCategory, TrackRecord
 from .metadata import TrackMetadata, read_metadata
-from .playlist import PlaylistTrack, build_playlist_draft, find_compatible_tracks
+from .playlist import (
+    PlaylistTrack,
+    build_playlist_draft,
+    build_playlist_path,
+    find_compatible_tracks,
+)
 from .rekordbox_library import parse_export
 from .rekordbox_library import parse_playlists as parse_rekordbox_playlists
 from .serato_library import parse_crate, write_crate_file
@@ -255,6 +260,19 @@ def generate_playlist(
         raise ValueError(f"Seed track is not in the candidate list: {seed_path}")
     compatible = find_compatible_tracks(seed, tracks, bpm_tolerance_pct, same_category_only)
     return [seed.identifier, *(track.identifier for track in compatible)]
+
+
+def generate_playlist_path(
+    rows: list[LibraryRow],
+    start_path: str | None = None,
+    direction: str = "up",
+    bpm_tolerance_pct: float = 6.0,
+) -> tuple[list[str], list[str]]:
+    """Issue #191's path mode: `(path, leftovers)` -- the path in play
+    order, then every track that couldn't be placed on it."""
+    tracks = to_playlist_tracks(row for row in rows if not row.missing)
+    result = build_playlist_path(tracks, start_path, tolerance_pct=bpm_tolerance_pct, direction=direction)
+    return [track.identifier for track in result.path], [track.identifier for track in result.leftovers]
 
 
 def volume_root(path: str | os.PathLike[str]) -> Path:
