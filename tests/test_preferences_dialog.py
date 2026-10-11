@@ -80,10 +80,10 @@ def test_controller_sync_tab_edits_port_and_removes_sets(monkeypatch):
     dialog = PreferencesDialog(preferences)
 
     assert dialog._sync_table.rowCount() == 2
-    assert dialog._sync_table.item(0, 2).text() == "1"
-    xp2_combo = dialog._sync_table.cellWidget(0, 1)
+    assert dialog._sync_table.item(0, 3).text() == "1"
+    xp2_combo = dialog._sync_table.cellWidget(0, 2)
     assert xp2_combo.currentData() == ""  # auto
-    xz_combo = dialog._sync_table.cellWidget(1, 1)
+    xz_combo = dialog._sync_table.cellWidget(1, 2)
     assert xz_combo.currentText() == "Old port (not connected)"
 
     xp2_combo.setCurrentIndex(xp2_combo.findData("PIONEER DDJ-XP2"))
@@ -132,7 +132,7 @@ def test_controller_sync_tab_edits_messages_through_the_editor(monkeypatch):
     messages = (SyncMessage("Note On", 1, 11, 127), SyncMessage("Note On", 1, 12, 127))
     preferences.set_sync_set(ControllerSyncSet("DDJ-XP2", "", messages))
     dialog = PreferencesDialog(preferences)
-    dialog._sync_table.cellWidget(0, 1).setCurrentIndex(1)  # PIONEER DDJ-XP2
+    dialog._sync_table.cellWidget(0, 2).setCurrentIndex(1)  # PIONEER DDJ-XP2
 
     seen_ports = []
 
@@ -148,7 +148,7 @@ def test_controller_sync_tab_edits_messages_through_the_editor(monkeypatch):
     dialog._edit_selected_sync_set()
 
     assert seen_ports == ["PIONEER DDJ-XP2"]
-    assert dialog._sync_table.item(0, 2).text() == "1"
+    assert dialog._sync_table.item(0, 3).text() == "1"
     assert preferences.controller_sync_sets[0].messages == messages  # not saved yet
     dialog._save()
     assert preferences.controller_sync_sets[0].messages == (SyncMessage("Note On", 1, 12, 127),)
@@ -170,3 +170,21 @@ def test_controller_sync_tab_editor_cancel_keeps_messages(monkeypatch):
     dialog._edit_sync_set(0)
     dialog._save()
     assert preferences.controller_sync_sets[0].messages == messages
+
+
+def test_controller_sync_tab_shows_each_set_scene_and_keeps_it_on_save(monkeypatch):
+    from djmidi.controller_sync import ControllerSyncSet, SyncMessage
+    from djmidi.gui import preferences_dialog
+
+    monkeypatch.setattr(preferences_dialog, "list_output_ports", list)
+    preferences = PluginPreferences()
+    message = (SyncMessage("Note On", 1, 11, 127),)
+    preferences.set_sync_set(ControllerSyncSet("DDJ-XP2", "", message))
+    preferences.set_sync_set(ControllerSyncSet("DDJ-XP2", "", message, scene="Tek"))
+    dialog = PreferencesDialog(preferences)
+
+    header = dialog._sync_table.horizontalHeaderItem(1).text()
+    assert header == "Scene"
+    assert [dialog._sync_table.item(row, 1).text() for row in range(2)] == ["Default", "Tek"]
+    dialog._save()
+    assert [s.key for s in preferences.controller_sync_sets] == [("DDJ-XP2", "Default"), ("DDJ-XP2", "Tek")]

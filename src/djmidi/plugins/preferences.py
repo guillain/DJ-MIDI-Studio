@@ -16,7 +16,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
 
-from djmidi.controller_sync import ControllerSyncSet
+from djmidi.controller_sync import (
+    DEFAULT_SCENE,
+    ControllerSyncSet,
+    normalize_scene,
+    sets_for_scene,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -43,22 +48,36 @@ class PluginPreferences:
     auto_sync_on_plug_in: bool = True
     # Session JSON or Serato XML Controller Setup loads when first shown ("" = none).
     controller_setup_default_file: str = ""
-    # One-click "Sync" sets, at most one per controller (see controller_sync).
+    # One-click "Sync" sets, at most one per (controller, scene) (see controller_sync).
     controller_sync_sets: list[ControllerSyncSet] = field(default_factory=list)
+    # The scene ⟳ Sync, launch and plug-in sync send (issue #188).
+    active_sync_scene: str = DEFAULT_SCENE
 
-    def sync_set_for(self, controller: str) -> ControllerSyncSet | None:
-        return next((s for s in self.controller_sync_sets if s.controller == controller), None)
+    def sync_set_for(self, controller: str, scene: str = DEFAULT_SCENE) -> ControllerSyncSet | None:
+        """The set stored for exactly that controller and scene (no fallback)."""
+        key = (controller, normalize_scene(scene))
+        return next((s for s in self.controller_sync_sets if s.key == key), None)
 
     def set_sync_set(self, sync_set: ControllerSyncSet) -> None:
-        """Adds or replaces (keeping its position) the set for that controller."""
+        """Adds or replaces (keeping its position) the set for that controller and scene."""
         for index, existing in enumerate(self.controller_sync_sets):
-            if existing.controller == sync_set.controller:
+            if existing.key == sync_set.key:
                 self.controller_sync_sets[index] = sync_set
                 return
         self.controller_sync_sets.append(sync_set)
 
-    def remove_sync_set(self, controller: str) -> None:
-        self.controller_sync_sets = [s for s in self.controller_sync_sets if s.controller != controller]
+    def remove_sync_set(self, controller: str, scene: str | None = None) -> None:
+        """Removes that controller's set for ``scene``, or all its sets when ``scene`` is None."""
+        self.controller_sync_sets = [
+            s
+            for s in self.controller_sync_sets
+            if not (s.controller == controller and (scene is None or s.scene == normalize_scene(scene)))
+        ]
+
+    def active_sync_sets(self) -> list[ControllerSyncSet]:
+        """What a Sync sends now: each controller's set for the active scene,
+        else its default-scene set (``controller_sync.sets_for_scene``)."""
+        return sets_for_scene(self.controller_sync_sets, self.active_sync_scene)
 
     def is_enabled(self, plugin_id: str) -> bool:
         return self.enabled.get(plugin_id, True)
@@ -90,6 +109,7 @@ class PluginPreferences:
                 "auto_sync_on_plug_in": self.auto_sync_on_plug_in,
                 "controller_setup_default_file": self.controller_setup_default_file,
                 "controller_sync_sets": [sync_set.to_dict() for sync_set in self.controller_sync_sets],
+                "active_sync_scene": self.active_sync_scene,
             },
             indent=2,
             sort_keys=True,
@@ -124,10 +144,10 @@ class PluginPreferences:
         raw_sync_sets = raw.get("controller_sync_sets", [])
         if not isinstance(raw_sync_sets, list):
             raise TypeError("controller_sync_sets must be a list")
-        sync_sets: dict[str, ControllerSyncSet] = {}
+        sync_sets: dict[tuple[str, str], ControllerSyncSet] = {}
         for raw_set in raw_sync_sets:
             sync_set = ControllerSyncSet.from_dict(raw_set)
-            sync_sets[sync_set.controller] = sync_set  # one per controller: last wins
+            sync_sets[sync_set.key] = sync_set  # one per (controller, scene): last wins
         return cls(
             enabled=dict(raw["enabled"]),
             detection_policy=detection_policy,
@@ -142,6 +162,7 @@ class PluginPreferences:
             auto_sync_on_plug_in=bool(raw.get("auto_sync_on_plug_in", True)),
             controller_setup_default_file=str(raw.get("controller_setup_default_file", "")),
             controller_sync_sets=list(sync_sets.values()),
+            active_sync_scene=normalize_scene(raw.get("active_sync_scene")),
         )
 
     @classmethod

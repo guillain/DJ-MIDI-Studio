@@ -4,10 +4,18 @@ every connected controller to bring it into a known state.
 Qt-free so the preferences store, the GUI and tests share one contract. A
 :class:`ControllerSyncSet` is one controller's recorded messages (captured in
 Controller Setup and saved into ``PluginPreferences``, one set per
-controller); :func:`run_sync` sends every set to its controller's output port
+controller and scene); :func:`run_sync` sends every set to its controller's output port
 in recorded order. Timing between recorded events is deliberately dropped:
 an initialization burst only needs the order, and sending it immediately
 keeps "Sync" a single, instant action.
+
+Scenes (issue #188): a controller may have several named sets ("Tek",
+"DnB", "Warm-up"...), keyed by ``(controller, scene)``. One scene is active
+at a time; :func:`sets_for_scene` picks, for each controller, its set for
+that scene and falls back to its :data:`DEFAULT_SCENE` set when it has none
+-- so a controller recorded only once keeps syncing whatever scene is active.
+A set saved before scenes existed carries no ``scene`` key and loads as
+:data:`DEFAULT_SCENE`.
 """
 
 from __future__ import annotations
@@ -71,6 +79,15 @@ class SyncMessage:
         return cls.create(raw.get("event_type", ""), raw.get("channel"), raw.get("data1"), raw.get("data2"))
 
 
+DEFAULT_SCENE = "Default"
+
+
+def normalize_scene(name: object) -> str:
+    """A scene name stripped of surrounding blanks; blank means :data:`DEFAULT_SCENE`."""
+    text = str(name or "").strip()
+    return text or DEFAULT_SCENE
+
+
 @dataclass(frozen=True)
 class ControllerSyncSet:
     controller: str
@@ -78,10 +95,22 @@ class ControllerSyncSet:
     # falls back to matching the controller name against the port names.
     output_port: str = ""
     messages: tuple[SyncMessage, ...] = field(default_factory=tuple)
+    # Named scene this set belongs to (issue #188); see sets_for_scene.
+    scene: str = DEFAULT_SCENE
+
+    @property
+    def key(self) -> tuple[str, str]:
+        return (self.controller, self.scene)
+
+    @property
+    def label(self) -> str:
+        """``"DDJ-XP2"`` for the default scene, ``"DDJ-XP2 — Tek"`` otherwise."""
+        return self.controller if self.scene == DEFAULT_SCENE else f"{self.controller} — {self.scene}"
 
     def to_dict(self) -> dict[str, object]:
         return {
             "controller": self.controller,
+            "scene": self.scene,
             "output_port": self.output_port,
             "messages": [message.to_dict() for message in self.messages],
         }
@@ -100,11 +129,36 @@ class ControllerSyncSet:
             controller=controller.strip(),
             output_port=str(raw.get("output_port", "")),
             messages=tuple(SyncMessage.from_dict(message) for message in messages),
+            scene=normalize_scene(raw.get("scene")),
         )
 
     def with_messages(self, messages: Iterable[SyncMessage]) -> ControllerSyncSet:
         """A copy with its messages replaced (the Preferences editor's result)."""
-        return ControllerSyncSet(self.controller, self.output_port, tuple(messages))
+        return ControllerSyncSet(self.controller, self.output_port, tuple(messages), self.scene)
+
+    def in_scene(self, scene: object) -> ControllerSyncSet:
+        """A copy filed under another scene."""
+        return ControllerSyncSet(self.controller, self.output_port, self.messages, normalize_scene(scene))
+
+
+def scene_names(sync_sets: Iterable[ControllerSyncSet], *extra: str) -> list[str]:
+    """Every scene in use (plus ``extra``), :data:`DEFAULT_SCENE` first, the
+    others in case-insensitive alphabetical order."""
+    names = {sync_set.scene for sync_set in sync_sets} | {normalize_scene(name) for name in extra}
+    names.discard(DEFAULT_SCENE)
+    return [DEFAULT_SCENE, *sorted(names, key=str.casefold)]
+
+
+def sets_for_scene(sync_sets: Iterable[ControllerSyncSet], scene: object) -> list[ControllerSyncSet]:
+    """The sets to send while ``scene`` is active: for each controller (in
+    first-seen order) its set for that scene, else its default-scene set; a
+    controller with neither is left out."""
+    wanted = normalize_scene(scene)
+    by_controller: dict[str, dict[str, ControllerSyncSet]] = {}
+    for sync_set in sync_sets:
+        by_controller.setdefault(sync_set.controller, {})[sync_set.scene] = sync_set
+    chosen = (scenes.get(wanted) or scenes.get(DEFAULT_SCENE) for scenes in by_controller.values())
+    return [sync_set for sync_set in chosen if sync_set is not None]
 
 
 def move_message(messages: Sequence[SyncMessage], index: int, offset: int) -> tuple[SyncMessage, ...]:
@@ -321,14 +375,18 @@ def summarize_results(results: Sequence[SyncResult]) -> str:
 
 
 __all__ = [
+    "DEFAULT_SCENE",
     "ControllerSyncSet",
     "PlugInSyncTracker",
     "SyncMessage",
     "SyncResult",
     "messages_from_rows",
     "move_message",
+    "normalize_scene",
     "resolve_output_port",
     "run_sync",
+    "scene_names",
+    "sets_for_scene",
     "summarize_results",
     "sync_set_from_events",
     "sync_sets_from_recording",

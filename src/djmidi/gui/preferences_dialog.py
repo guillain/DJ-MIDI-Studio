@@ -32,6 +32,10 @@ from djmidi.logging_config import default_log_path
 from djmidi.midi_io import list_output_ports
 from djmidi.plugins import PluginPreferences
 
+# Controller sync tab columns: Controller, Scene, Output port, Messages.
+_PORT_COLUMN = 2
+_MESSAGES_COLUMN = 3
+
 
 class PreferencesDialog(QDialog):
     """Safe, explicit preferences for plugins and integration policies."""
@@ -217,20 +221,23 @@ class PreferencesDialog(QDialog):
         layout = QVBoxLayout(page)
         hint = QLabel(
             "Initialization sets sent by the Sync button (menu bar and Live Monitor), one per "
-            "controller. Record one in Controller Setup: name the controller, start learning, "
-            "press the controls, then \"Save as controller sync set\"."
+            "controller and scene. ⟳ Sync sends each controller its set for the scene chosen "
+            "beside it in the menu bar, or its Default set when it has none for that scene. "
+            "Record one with ● Rec (into the active scene), or in Controller Setup: name the "
+            "controller, start learning, press the controls, then \"Save as controller sync set\"."
         )
         hint.setWordWrap(True)
         layout.addWidget(hint)
         self._sync_sets: list[ControllerSyncSet] = list(preferences.controller_sync_sets)
-        self._sync_table = QTableWidget(0, 3)
-        self._sync_table.setHorizontalHeaderLabels(["Controller", "Output port", "Messages"])
+        self._sync_table = QTableWidget(0, 4)
+        self._sync_table.setHorizontalHeaderLabels(["Controller", "Scene", "Output port", "Messages"])
         self._sync_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self._sync_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         header = self._sync_table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
-        header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
-        header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(_PORT_COLUMN, QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(_MESSAGES_COLUMN, QHeaderView.ResizeMode.ResizeToContents)
         # Port names ("PIONEER DDJ-XP2 ...") need room to stay readable.
         self._sync_table.setMinimumWidth(480)
         self._sync_table.verticalHeader().setVisible(False)
@@ -239,14 +246,15 @@ class PreferencesDialog(QDialog):
             row = self._sync_table.rowCount()
             self._sync_table.insertRow(row)
             self._sync_table.setItem(row, 0, QTableWidgetItem(sync_set.controller))
+            self._sync_table.setItem(row, 1, QTableWidgetItem(sync_set.scene))
             port_combo = QComboBox()
             port_combo.addItem(self._AUTO_PORT_LABEL, "")
             for port in dict.fromkeys([*available, sync_set.output_port]):
                 if port:
                     port_combo.addItem(port if port in available else f"{port} (not connected)", port)
             port_combo.setCurrentIndex(max(port_combo.findData(sync_set.output_port), 0))
-            self._sync_table.setCellWidget(row, 1, port_combo)
-            self._sync_table.setItem(row, 2, QTableWidgetItem(str(len(sync_set.messages))))
+            self._sync_table.setCellWidget(row, _PORT_COLUMN, port_combo)
+            self._sync_table.setItem(row, _MESSAGES_COLUMN, QTableWidgetItem(str(len(sync_set.messages))))
         self._sync_table.cellDoubleClicked.connect(lambda row, _column: self._edit_sync_set(row))
         layout.addWidget(self._sync_table, 1)
         edit_button = QPushButton("Edit messages…")
@@ -283,12 +291,12 @@ class PreferencesDialog(QDialog):
         if editor.exec() != QDialog.DialogCode.Accepted:
             return
         self._sync_sets[row] = dataclasses.replace(self._sync_sets[row], messages=editor.edited_sync_set().messages)
-        self._sync_table.setItem(row, 2, QTableWidgetItem(str(len(self._sync_sets[row].messages))))
+        self._sync_table.setItem(row, _MESSAGES_COLUMN, QTableWidgetItem(str(len(self._sync_sets[row].messages))))
 
     def _edited_sync_sets(self) -> list[ControllerSyncSet]:
         edited = []
         for row, sync_set in enumerate(self._sync_sets):
-            combo = self._sync_table.cellWidget(row, 1)
+            combo = self._sync_table.cellWidget(row, _PORT_COLUMN)
             port = combo.currentData() if isinstance(combo, QComboBox) else sync_set.output_port
             edited.append(dataclasses.replace(sync_set, output_port=port or ""))
         return edited

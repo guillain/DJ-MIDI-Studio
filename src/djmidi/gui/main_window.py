@@ -30,6 +30,7 @@ from PySide6.QtGui import (
 )
 from PySide6.QtWidgets import (
     QApplication,
+    QComboBox,
     QDialog,
     QDockWidget,
     QFileDialog,
@@ -58,7 +59,9 @@ from djmidi.controller_sync import (
     ControllerSyncSet,
     PlugInSyncTracker,
     SyncResult,
+    normalize_scene,
     run_sync,
+    scene_names,
     summarize_results,
     sync_sets_from_recording,
 )
@@ -770,6 +773,18 @@ class MainWindow(QMainWindow):
             "Sync controllers: send each connected controller its recorded initialization set"
         )
         self._sync_button.clicked.connect(self._on_sync_controllers)
+        # Active sync scene (issue #188): which named set ⟳ Sync, launch and
+        # plug-in sync send, and which scene ● Rec records into.
+        self._sync_scene_combo = QComboBox()
+        self._sync_scene_combo.setFixedHeight(28)
+        self._sync_scene_combo.setMaximumWidth(140)
+        self._sync_scene_combo.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToContents)
+        self._sync_scene_combo.setToolTip(
+            "Sync scene: ⟳ Sync, launch and plug-in sync send each controller its set for this scene "
+            "(or its Default set when it has none); ● Rec records into it"
+        )
+        self._refresh_sync_scene_combo()
+        self._sync_scene_combo.activated.connect(self._on_sync_scene_activated)
         # Record the controllers' setup in one click: listen to every MIDI
         # input while checked, save one sync set per controller on release.
         self._record_button = QPushButton("● Rec")
@@ -797,6 +812,7 @@ class MainWindow(QMainWindow):
         corner_layout.setContentsMargins(0, 0, 0, 0)
         corner_layout.setSpacing(4)
         corner_layout.addWidget(self._record_button)
+        corner_layout.addWidget(self._sync_scene_combo)
         corner_layout.addWidget(self._sync_button)
         corner_layout.addWidget(self._preferences_button)
         self.menuBar().setCornerWidget(self._menu_corner, Qt.Corner.TopRightCorner)
@@ -1153,15 +1169,21 @@ class MainWindow(QMainWindow):
             self.statusBar().showMessage("Preferences saved")
 
     def _on_sync_controllers(self) -> list[SyncResult]:
-        """Sends every stored controller sync set to its connected controller."""
-        sync_sets = list(self.preferences.controller_sync_sets)
+        """Sends each controller its sync set for the active scene."""
+        sync_sets = self.preferences.active_sync_sets()
         if not sync_sets:
+            recorded = (
+                f"No initialization set is recorded for the scene \"{self.preferences.active_sync_scene}\" "
+                "and no controller has a Default set."
+                if self.preferences.controller_sync_sets
+                else "No initialization set is recorded yet."
+            )
             QMessageBox.information(
                 self,
                 "No controller sync set",
-                "No initialization set is recorded yet.\n\n"
-                "In Controller Setup, enter the controller name, start learning, press the "
-                "controls to send at initialization, then click \"Save as controller sync set\".",
+                recorded + "\n\n"
+                "Click ● Rec, press the controls to send at initialization, then click ■ Stop -- or, in "
+                "Controller Setup, start learning, press the controls, then click \"Save as controller sync set\".",
             )
             return []
         results = run_sync(sync_sets, list_output_ports())
@@ -1175,7 +1197,7 @@ class MainWindow(QMainWindow):
         if ports is None:
             ports = list_output_ports()
         self._plug_in_tracker.seed(ports)
-        sync_sets = list(self.preferences.controller_sync_sets)
+        sync_sets = self.preferences.active_sync_sets()
         if not sync_sets:
             return []
         results = run_sync(sync_sets, ports)
@@ -1206,7 +1228,7 @@ class MainWindow(QMainWindow):
     def _poll_plugged_controllers(self) -> list[SyncResult]:
         """Sends a sync set once to each controller whose port just appeared."""
         ports = list_output_ports()
-        due = self._plug_in_tracker.due(self.preferences.controller_sync_sets, ports)
+        due = self._plug_in_tracker.due(self.preferences.active_sync_sets(), ports)
         if not due:
             return []
         results = run_sync(due, ports)
@@ -1251,15 +1273,19 @@ class MainWindow(QMainWindow):
         self._poll_recording()
         self._record_monitor.close_all()
         self._record_button.setText("● Rec")
-        sync_sets = sync_sets_from_recording(self._record_events, self._controller_name_for_port)
+        scene = self.preferences.active_sync_scene
+        sync_sets = [
+            sync_set.in_scene(scene)
+            for sync_set in sync_sets_from_recording(self._record_events, self._controller_name_for_port)
+        ]
         self._record_events = []
         if not sync_sets:
             self.statusBar().showMessage("Recording stopped: no MIDI note/CC received, nothing saved", 10_000)
             return []
         replaced = [
-            f"{sync_set.controller} ({len(existing.messages)} message(s))"
+            f"{sync_set.label} ({len(existing.messages)} message(s))"
             for sync_set in sync_sets
-            if (existing := self.preferences.sync_set_for(sync_set.controller)) is not None
+            if (existing := self.preferences.sync_set_for(sync_set.controller, scene)) is not None
         ]
         if replaced:
             reply = QMessageBox.question(
@@ -1276,7 +1302,7 @@ class MainWindow(QMainWindow):
         self._save_preferences()
         self.statusBar().showMessage(
             "Sync set(s) saved: "
-            + ", ".join(f"{sync_set.controller} ({len(sync_set.messages)} msg)" for sync_set in sync_sets),
+            + ", ".join(f"{sync_set.label} ({len(sync_set.messages)} msg)" for sync_set in sync_sets),
             10_000,
         )
         return sync_sets
@@ -1287,13 +1313,15 @@ class MainWindow(QMainWindow):
         return matches[0].controller.name if matches else ""
 
     def _on_sync_set_save_requested(self, sync_set: ControllerSyncSet) -> None:
-        existing = self.preferences.sync_set_for(sync_set.controller)
+        # Controller Setup records into the active scene, like ● Rec.
+        sync_set = sync_set.in_scene(self.preferences.active_sync_scene)
+        existing = self.preferences.sync_set_for(sync_set.controller, sync_set.scene)
         if existing is not None:
             reply = QMessageBox.question(
                 self,
                 "Replace sync set",
                 f"Replace the {len(existing.messages)}-message sync set already stored for "
-                f"{sync_set.controller} with this {len(sync_set.messages)}-message recording?",
+                f"{sync_set.label} with this {len(sync_set.messages)}-message recording?",
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             )
             if reply != QMessageBox.StandardButton.Yes:
@@ -1301,8 +1329,44 @@ class MainWindow(QMainWindow):
         self.preferences.set_sync_set(sync_set)
         self._save_preferences()
         self.statusBar().showMessage(
-            f"Sync set saved for {sync_set.controller} ({len(sync_set.messages)} message(s))", 10_000
+            f"Sync set saved for {sync_set.label} ({len(sync_set.messages)} message(s))", 10_000
         )
+
+    _NEW_SCENE_DATA = "\x00new-scene"
+
+    def _refresh_sync_scene_combo(self) -> None:
+        """Fills the scene combo: every scene in use (plus the active one,
+        which may not have a set yet), then "New scene…"."""
+        combo = self._sync_scene_combo
+        active = self.preferences.active_sync_scene
+        combo.blockSignals(True)
+        combo.clear()
+        for name in scene_names(self.preferences.controller_sync_sets, active):
+            combo.addItem(name, name)
+        combo.insertSeparator(combo.count())
+        combo.addItem("New scene…", self._NEW_SCENE_DATA)
+        combo.setCurrentIndex(max(combo.findData(active), 0))
+        combo.blockSignals(False)
+
+    def _on_sync_scene_activated(self, index: int) -> None:
+        data = self._sync_scene_combo.itemData(index)
+        if data == self._NEW_SCENE_DATA:
+            name, accepted = QInputDialog.getText(
+                self, "New sync scene", "Scene name (e.g. Tek, DnB, Warm-up):"
+            )
+            if not accepted or not name.strip():
+                self._refresh_sync_scene_combo()  # back to the active scene
+                return
+            data = name
+        self._set_active_sync_scene(str(data))
+
+    def _set_active_sync_scene(self, scene: str) -> None:
+        """Makes ``scene`` active (persisted). Nothing is sent: ⟳ Sync does
+        that, so switching scenes mid-set never surprises a controller."""
+        scene = normalize_scene(scene)
+        self.preferences.active_sync_scene = scene
+        self._save_preferences()
+        self.statusBar().showMessage(f"Sync scene: {scene}", 5_000)
 
     def _apply_plugin_preferences(self) -> None:
         controller_ids = {
@@ -2163,6 +2227,8 @@ class MainWindow(QMainWindow):
         """preferences.json, plus the Sync folder mirroring the sync sets."""
         self.preferences.save(self.preferences_path)
         sync_store.save_sync_sets(user_paths.sync_dir(), self.preferences.controller_sync_sets)
+        if hasattr(self, "_sync_scene_combo"):
+            self._refresh_sync_scene_combo()
 
     def _on_dashboard_file_action(self, action: str) -> None:
         """The Dashboard's "Your files" card buttons."""
@@ -2227,7 +2293,7 @@ class MainWindow(QMainWindow):
         self.introduction_view.set_files_summary(
             mapping=self.current_path,
             backup=backup if backup is not None and backup.is_file() else None,
-            sync_sets=[sync_set.controller for sync_set in self.preferences.controller_sync_sets],
+            sync_sets=[sync_set.label for sync_set in self.preferences.controller_sync_sets],
             recents=file_locations.existing_recents(self._recent_mappings),
         )
 
