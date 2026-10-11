@@ -86,6 +86,7 @@ from djmidi.gui.splitter_utils import replace_splitter, scrollable_columns
 from djmidi.gui.theme import apply_theme, mapping_tree_stylesheet
 from djmidi.gui.theme import signals as theme_signals
 from djmidi.gui.tree_model import NODE_ROLE, build_channel_columns, relabel_item
+from djmidi.gui.update_notice import UpdateChecker
 from djmidi.integration_detection import (
     detect_controller_ports,
     detect_software_mapping,
@@ -95,6 +96,7 @@ from djmidi.midi_io import MidiEvent, MidiMonitor, list_input_ports, list_output
 from djmidi.model import Control, MappingElement, MidiConfig
 from djmidi.plugins import PluginPreferences, default_preferences_path
 from djmidi.safe_update import prepare_update
+from djmidi.update_check import ReleaseInfo, current_version, is_check_due, is_newer
 from djmidi.validator import ValidationIssue, validate
 
 _SEVERITY_COLORS = {
@@ -132,6 +134,9 @@ _LAST_SOFTWARE_SETTINGS_KEY = "files/last_mapping_software"
 _LAST_DRAFT_SETTINGS_KEY = "files/last_draft"
 # Lets controllers' MIDI ports settle before the launch-time Sync.
 _STARTUP_SYNC_DELAY_MS = 1500
+# Startup update check (issue #193): after the window is up, at most once a day.
+_STARTUP_UPDATE_CHECK_DELAY_MS = 3000
+_LAST_UPDATE_CHECK_SETTINGS_KEY = "updates/last_check"
 
 _LOCAL_HELP_DOCUMENTS = [
     ("Documentation Home", "docs/README.md"),
@@ -447,6 +452,16 @@ class MainWindow(QMainWindow):
         if self._layout_settings() is not None and self.preferences.auto_sync_on_startup:
             # Real app only, like reopening files: tests never touch MIDI here.
             QTimer.singleShot(_STARTUP_SYNC_DELAY_MS, self._sync_at_startup)
+        self._update_checker = UpdateChecker(self)
+        self._update_checker.finished.connect(self._on_update_check_finished)
+        self._update_label = QLabel()
+        self._update_label.setTextFormat(Qt.TextFormat.RichText)
+        self._update_label.setOpenExternalLinks(True)
+        self._update_label.hide()
+        self.statusBar().addPermanentWidget(self._update_label)
+        if self._layout_settings() is not None and self.preferences.check_for_updates:
+            # Real app only, like Sync at launch: tests never touch the network.
+            QTimer.singleShot(_STARTUP_UPDATE_CHECK_DELAY_MS, self._check_for_updates_at_startup)
         QTimer.singleShot(0, self._initialize_pair_splitters)
         QTimer.singleShot(0, self._show_helpful_notes_if_enabled)
         self.introduction_view.set_loaded_config_info(None)
@@ -816,6 +831,12 @@ class MainWindow(QMainWindow):
             action.triggered.connect(lambda checked=False, u=url: QDesktopServices.openUrl(QUrl(u)))
             online_menu.addAction(action)
 
+        help_menu.addSeparator()
+        self._check_updates_action = QAction("Check for &Updates...", self)
+        self._check_updates_action.setToolTip("Ask GitHub whether a newer DJ MIDI Studio release exists.")
+        self._check_updates_action.triggered.connect(self._on_check_for_updates)
+        help_menu.addAction(self._check_updates_action)
+
     def _show_helpful_notes(self) -> None:
         self.helpful_notes_dialog.show()
         self.helpful_notes_dialog.raise_()
@@ -1165,6 +1186,70 @@ class MainWindow(QMainWindow):
         results = run_sync(sync_sets, list_output_ports())
         self.statusBar().showMessage(summarize_results(results), 10_000)
         return results
+
+    def _check_for_updates_at_startup(self) -> bool:
+        """Launch-time update check: at most once per 24 h, silent unless newer."""
+        settings = self._layout_settings()
+        if settings is None or not self.preferences.check_for_updates:
+            return False
+        try:
+            last_check = float(settings.value(_LAST_UPDATE_CHECK_SETTINGS_KEY, 0) or 0) or None
+        except (TypeError, ValueError):
+            last_check = None
+        if not is_check_due(last_check, datetime.now(UTC).timestamp()):
+            return False
+        return self._update_checker.start(manual=False)
+
+    def _on_check_for_updates(self) -> None:
+        if not self._update_checker.start(manual=True):
+            self.statusBar().showMessage("Already checking for updates...", 5_000)
+            return
+        self.statusBar().showMessage("Checking for updates...")
+
+    def _on_update_check_finished(self, release: ReleaseInfo | None, manual: bool) -> None:
+        local = current_version()
+        newer = release is not None and is_newer(release.version, local)
+        if release is not None:
+            # Only a successful check counts toward the daily limit, so an
+            # offline launch tries again next time.
+            settings = self._layout_settings()
+            if settings is not None:
+                settings.setValue(_LAST_UPDATE_CHECK_SETTINGS_KEY, datetime.now(UTC).timestamp())
+        if manual:
+            self.statusBar().clearMessage()
+        if newer:
+            version = ".".join(map(str, release.version))
+            self._update_label.setText(f'<a href="{release.url}">Update available: v{version}</a>')
+            self._update_label.setToolTip(f"Open the {release.tag} release page in your browser")
+            self._update_label.show()
+            self.statusBar().showMessage(f"DJ MIDI Studio v{version} is available (you have v{local}).", 15_000)
+        if not manual:
+            return
+        if release is None:
+            QMessageBox.information(
+                self,
+                "Check for Updates",
+                "Couldn't reach GitHub to check for a new version. Check your connection and try again.",
+            )
+        elif newer:
+            answer = QMessageBox.question(
+                self,
+                "Check for Updates",
+                f"DJ MIDI Studio v{'.'.join(map(str, release.version))} is available "
+                f"(you have v{local}).\n\nOpen the release page to download it?",
+            )
+            if answer == QMessageBox.StandardButton.Yes:
+                QDesktopServices.openUrl(QUrl(release.url))
+        elif local is None:
+            QMessageBox.information(
+                self,
+                "Check for Updates",
+                f"The latest release is {release.tag}, but this copy's own version is unknown.",
+            )
+        else:
+            QMessageBox.information(
+                self, "Check for Updates", f"You're up to date (v{local}, latest release {release.tag})."
+            )
 
     def _on_record_toggled(self, recording: bool) -> None:
         if recording:

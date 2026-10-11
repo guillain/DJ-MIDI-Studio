@@ -112,3 +112,12 @@ def test_preferences_dialog_reflects_and_saves_auto_sync_on_startup():
     dialog._auto_sync_on_startup.setChecked(False)
     dialog._save()
     assert preferences.auto_sync_on_startup is False
+
+
+def test_preferences_dialog_reflects_and_saves_check_for_updates():
+    preferences = PluginPreferences()
+    dialog = PreferencesDialog(preferences)
+    assert dialog._check_for_updates.isChecked() is True
+    dialog._check_for_updates.setChecked(False)
+    dialog._save()
+    assert preferences.check_for_updates is False

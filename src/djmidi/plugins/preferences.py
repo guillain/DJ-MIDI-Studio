@@ -39,6 +39,8 @@ class PluginPreferences:
     reopen_last_files: bool = True
     # Send every stored controller sync set once at launch (Record → auto-play).
     auto_sync_on_startup: bool = True
+    # Look for a newer GitHub release at launch, at most once a day (issue #193).
+    check_for_updates: bool = True
     # Session JSON or Serato XML Controller Setup loads when first shown ("" = none).
     controller_setup_default_file: str = ""
     # One-click "Sync" sets, at most one per controller (see controller_sync).
@@ -85,6 +87,7 @@ class PluginPreferences:
                 "auto_start_live_monitor": self.auto_start_live_monitor,
                 "reopen_last_files": self.reopen_last_files,
                 "auto_sync_on_startup": self.auto_sync_on_startup,
+                "check_for_updates": self.check_for_updates,
                 "controller_setup_default_file": self.controller_setup_default_file,
                 "controller_sync_sets": [sync_set.to_dict() for sync_set in self.controller_sync_sets],
             },
@@ -136,6 +139,7 @@ class PluginPreferences:
             auto_start_live_monitor=bool(raw.get("auto_start_live_monitor", True)),
             reopen_last_files=bool(raw.get("reopen_last_files", True)),
             auto_sync_on_startup=bool(raw.get("auto_sync_on_startup", True)),
+            check_for_updates=bool(raw.get("check_for_updates", True)),
             controller_setup_default_file=str(raw.get("controller_setup_default_file", "")),
             controller_sync_sets=list(sync_sets.values()),
         )
