@@ -132,6 +132,14 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Duplicate track detection** (`v0.48.56-library-duplicates`, issue #184) — Qt-free
+  `library/duplicates.py`: a *metadata* tier (normalized artist + title: NFKD/accents, casefold, `feat.`
+  credits and `(Original Mix)`-style suffixes dropped, every other version marker kept, punctuation squashed;
+  no artist or title → never grouped) and an *exact* tier (same size → 64 KB prefix hash → full chunked
+  `blake2b`, a generator yielding per chunk). Music Library's `Find duplicates…` runs it on the tab's `QTimer`
+  job slicer and opens a read-only `DuplicatesDialog` (path/format/size, bitrate read lazily on expand, Reveal in
+  Finder). First slice deliberately read-only (no Trash/delete); duration comparison deferred (not in the tag
+  cache).
 - [x] **Record button + Sync at launch** (`v0.48.53-controller-sync-record`) — requested by the maintainer ("un
   bouton 'record' pour sauvegarder le setup et le jouer automatiquement"; placement and trigger chosen by them):
   a checkable `● Rec` beside `⟳ Sync` listens to every MIDI input and, on `■ Stop`, saves one sync set per port
