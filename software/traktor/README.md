@@ -141,6 +141,139 @@ Checked on all four real exports (2026-09-30):
 - `DDCI`/`DDCO` (the device's full MIDI in/out definitions) and `DVST` are
   decoded as opaque data and carried over verbatim.
 
+## Serato ↔ Traktor conversion: research (issue #194)
+
+Issue #194 asked for converting a loaded Serato mapping to a `.tsi` and
+back, limited to a small command subset (Play/Cue/Sync/hot cues). This
+section records what was examined (2026-10-12), why no converter shipped,
+and which captures would unblock one. Nothing below was written to any
+real file; the `.tsi`/`.xml` exports were unzipped to a scratch directory
+and read only.
+
+### The Traktor half is ready (for re-targeting existing bindings)
+
+Everything needed to *re-target* an existing Traktor binding is already
+proven, and needs no new binary knowledge:
+
+- **Command IDs 100/206/125 hold on three controllers, not one.** Besides
+  the XDJ-XZ cross-check above, both Behringer devices in
+  `cmd-studio-4a.tsi` match the hardware-captured catalogs exactly:
+  CMD Micro deck A Sync/Play/Cue on `A#0`/`B0`/`C1` = notes 22/23/24 and
+  deck B on `D2`/`D#2`/`E2` = 38/39/40 (`catalog/behringer_cmd_micro.py`);
+  CMD Studio 4a Cue/Play on `G2`/`G#2` = 43/44 (left) and `D#5`/`E5` =
+  75/76 (right) (`catalog/behringer_cmd_studio_4a.py`).
+- **`CMAD.TargetDeck` 0-3 is decks A-D.** In the XDJ-XZ export it follows
+  the MIDI channel (Ch01 → 0 … Ch04 → 3); in the CMD Micro mapping both
+  decks share channel 1 and only `TargetDeck` (0 vs 1) tells them apart —
+  so the deck lives in `TargetDeck`, not in the channel.
+- **The three commands always use the same settings.** Across all 80
+  mappings of commands 100/206/125: input Play and Sync are
+  `Button`/`Toggle`, input Cue is `Button`/`Hold`, every output is
+  `LED`/`Output`. Re-labelling keeps those bytes as they are.
+- **Re-labelling is already a supported write** (`_export_tsi` →
+  `TsiDocument.to_text(relabel)`), byte-identical outside the edited
+  `DCBM` labels.
+
+Limits that a converter would have to report, not work around:
+
+- a template can only receive commands it already holds — the real CMD
+  Studio 4a mapping has Play and Cue but **no Sync** binding, although the
+  hardware has a SYNC button (catalog notes 45/77);
+- some of these bindings carry **modifier conditions**: 8 of the 10 input
+  Sync mappings in the XDJ-XZ export have `ModifierOneId` 2548 set, and 2
+  output Play mappings have `ModifierOneId` 100. Re-labelling such a
+  binding to a Serato trigger keeps the condition, so the new button only
+  works while that modifier is in the recorded state;
+- one command can appear several times per deck (the XDJ-XZ export has a
+  second device whose Play/Cue *outputs* drive CC 77/68 screen feedback),
+  so "the" Play binding of a deck isn't always unique.
+
+### The Serato half is the blocker
+
+**No real Serato export contains a Play, Cue or Sync mapping.** All three
+real files (`data/xdj_xz-ddj_xp2-4decks.xml`,
+`data/serato/cmd-lc1.xml.zip`, `data/serato/ddj-xp2-custom.xml.zip`) use
+only four mapping tags in total:
+
+| Tag | Elements across the 3 files |
+|---|---|
+| `auto_loop_specific_length` | 2,591 |
+| `codfather_fx` | 768 |
+| `codfather_st` | 732 |
+| `auto_loop_roll_specific_length` | 231 |
+
+Serato's own mapping guide can't be fetched (Cloudflare bot challenge, see
+the Help menu note in `CLAUDE.md`), and no other source in this repository
+names the XML tag Serato writes for Play, Cue or Sync. Without that name:
+
+- **Serato → Traktor** can't tell which Serato element is "Play", so it
+  has nothing to re-target the Traktor template's bindings to;
+- **Traktor → Serato** can't write a Serato element for a Traktor Play
+  binding — that would mean inventing a tag, a `translation`
+  (`action_on`/`behaviour`) and aliases, the same kind of fabrication the
+  catalog refuses for controller MIDI data.
+
+The four tags the real files *do* contain don't help either: no Traktor
+command ID for loops or effects has been cross-checked (only 100/125/206
+are named), and the meaning of a Serato `slot_id` for
+`auto_loop_specific_length` (which loop length a slot stands for) isn't
+confirmed either (`CLAUDE.md`'s 10x-duplication note).
+
+So no converter shipped for #194 — a half that would only ever report
+"not supported" for every element of every real file would be dead code.
+
+### `CMAD` layout check (for a future "create a binding" feature)
+
+Parsing every one of the 9,360 real `CMAD` payloads with the field list
+above consumes each one **exactly**, with no trailing byte — good evidence
+the field *order* is right. The values of the "Unknown" fields are not
+understood, though:
+
+- the first `DWORD` is always `4`, and the last is always `0`;
+- the `DWORD`s before `SetValueTo`, before `LedMinControllerRange` and
+  before `LedMaxControllerRange` are `1` or `2` and always move together
+  (8,118 × `1`, 1,242 × `2`), which looks like a value-type tag, but isn't
+  proven to be one;
+- the documented `Resolution` enum doesn't match reality: 5,396 mappings
+  carry `0x00000001`, which isn't one of its values (`0x3D800000`, the
+  documented default, appears 3,945 times; `0x3B800000`, not in the enum,
+  19 times).
+
+So *creating* a binding (needed whenever the template lacks a command)
+would still mean copying a `CMAD` from another mapping of the same command
+and hoping its unknown fields mean the same thing — not done.
+
+### What would unblock a converter
+
+Captures the maintainer could make, in order of value:
+
+1. **Serato tag names (unblocks both directions for the subset).** In
+   Serato DJ Pro, with a controller that has no native Serato support (e.g.
+   the CMD LC-1, or the IAC Driver), MIDI-learn deck 1 and deck 2 Play,
+   Cue and Sync, then export the mapping XML. Better still: one export per
+   step (Play only, then Play + Cue, …) so each new element is
+   unambiguous. Hot cues 1-8 on one deck the same way, if hot cues are
+   wanted too.
+2. **A Traktor template with every target command.** A `.tsi` for the
+   destination controller that already has Play, Cue and Sync (and hot cues
+   if wanted) mapped on every deck, without modifier conditions — the
+   converter would only re-label it.
+3. **Hot-cue command IDs.** Map hot cue 1 and hot cue 2 on deck A in
+   Traktor on a known note, export, and the ID can be cross-checked the
+   same way as 100/206/125. (Not checked here: the community list's
+   hot-cue IDs stay unverified, per this file's rule.)
+4. **`CMAD` field meaning (only to create bindings).** Two exports of the
+   same Traktor mapping, before and after adding exactly one command, then
+   after changing exactly one setting (e.g. Resolution, or "Set to value")
+   in Traktor's Controller Manager — the byte difference names the field.
+
+With (1) and (2), the conservative design is: take a Serato mapping and a
+template `.tsi`; for each Serato Play/Cue/Sync element whose deck maps to
+a template binding with the same command and `TargetDeck`, re-label that
+binding to the Serato trigger through the existing `to_text(relabel)`
+path; list every other Serato element, every template binding left
+untouched and every modifier-conditioned binding in a report.
+
 ## Sources
 
 - [ivanz/TraktorMappingFileFormat](https://github.com/ivanz/TraktorMappingFileFormat) — reverse-engineered `.tsi` format spec (wiki + `.bt` binary template)
