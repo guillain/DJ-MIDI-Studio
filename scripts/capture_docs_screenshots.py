@@ -2,14 +2,26 @@
 
 from __future__ import annotations
 
+import contextlib
+import copy
 import os
+import shutil
 import sys
 import tempfile
 import zipfile
+from collections.abc import Iterator
 from pathlib import Path
 from unittest.mock import patch
 
-from PySide6.QtCore import QtMsgType, qInstallMessageHandler
+from PySide6.QtCore import (
+    QObject,
+    QPoint,
+    QtMsgType,
+    QUrl,
+    Signal,
+    qInstallMessageHandler,
+)
+from PySide6.QtGui import QPainter
 from PySide6.QtWidgets import QApplication, QTabWidget
 
 # Never open (or create) the real music library index of whoever runs this:
@@ -24,10 +36,14 @@ from mutagen.id3 import ID3, TBPM, TCON, TIT2, TKEY, TPE1
 
 from djmidi import catalog
 from djmidi.controller_sync import ControllerSyncSet, SyncMessage
+from djmidi.exporter import write_file
+from djmidi.gui import cheat_sheet
+from djmidi.gui.cheat_sheet_dialog import CheatSheetExportDialog
+from djmidi.gui.cheat_sheet_pdf import render_sheet_image
 from djmidi.gui.main_window import MainWindow
-from djmidi.gui.music_library_view import BulkTagDialog
+from djmidi.gui.music_library_view import BulkTagDialog, RelinkDialog
 from djmidi.gui.preferences_dialog import PreferencesDialog
-from djmidi.library import workspace
+from djmidi.library import relink, workspace
 from djmidi.parser import parse_file
 from djmidi.plugins.preferences import PluginPreferences
 from djmidi.software.traktor import parse_string as parse_traktor
@@ -249,13 +265,155 @@ def main() -> int:
             if not window.grab().save(str(OUTPUT / out_name)):
                 raise RuntimeError(f"could not save {out_name}")
 
+        _capture_function_search(app, window)
+        _capture_mapping_diff(app, window)
+        _capture_cheat_sheet(app, window)
+        window.statusBar().clearMessage()
         _capture_music_library(app, window)
         _capture_traktor_mapping(app, window)
         _capture_preferences_sync(app)
+        # Last: it records sync sets and switches the active scene, which
+        # the menu bar of every later window capture would show.
+        _capture_sync_scene_combo(app, window)
 
         window.close()
         app.processEvents()
     return 0
+
+
+def _capture_function_search(app: QApplication, window: MainWindow) -> None:
+    """Find function (issue #185): a query with its results, first one picked."""
+    window.left_tabs.setCurrentIndex(window._tab_indexes["channel"])
+    window.function_search_view.set_query("loop roll")
+    # Give the results list room: by default it shares the column with the
+    # edit panel and shows about one result.
+    sizes = window._right_splitter.sizes()
+    window._right_splitter.setSizes([360, max(sum(sizes) - 360 - sizes[-1], 100), sizes[-1]])
+    app.processEvents()
+    if window.function_search_view.result_count():
+        window.function_search_view.select_row(0)
+    window.left_tabs.setCurrentIndex(window._tab_indexes["channel"])
+    app.processEvents()
+    _save(window, "function-search.png")
+    window.function_search_view.set_query("")
+    window._right_splitter.setSizes(sizes)
+
+
+def _capture_mapping_diff(app: QApplication, window: MainWindow) -> None:
+    """Compare with… (issue #189): the open fixture against a copy edited in
+    three places -- one trigger missing, one slot moved, one alias value
+    changed -- written to a temp file, never next to the fixture."""
+    assert window.config is not None
+    reference = copy.deepcopy(window.config)
+    triggers = sorted({(c.channel, c.event_type, c.control) for c in reference.controls})
+    removed, moved, retuned = triggers[3], triggers[12], triggers[25]
+    reference.controls = [c for c in reference.controls if (c.channel, c.event_type, c.control) != removed]
+    for control in reference.controls:
+        trigger = (control.channel, control.event_type, control.control)
+        for userio in control.userios:
+            for mapping in userio.mappings:
+                if trigger == moved and mapping.slot_id is not None:
+                    mapping.slot_id = str(int(mapping.slot_id) + 1) if mapping.slot_id.isdigit() else mapping.slot_id
+                if trigger == retuned:
+                    for translation in mapping.translations:
+                        for alias in translation.aliases:
+                            if alias.value.isdigit():
+                                alias.value = str((int(alias.value) + 1) % 128)
+    with tempfile.TemporaryDirectory() as temp:
+        path = Path(temp) / "friday-set.xml"
+        write_file(reference, path)
+        dialog = window._compare_with_path(path, "friday-set.xml")
+        if dialog is None:
+            raise RuntimeError("the mapping comparison failed")
+        dialog.resize(1000, 600)
+        app.processEvents()
+        _save(dialog, "mapping-diff.png")
+        dialog.close()
+        window._diff_dialog = None
+
+
+def _capture_cheat_sheet(app: QApplication, window: MainWindow) -> None:
+    """File → Export → Cheat Sheet (issue #182): the controller picker and
+    the first page it prints for the DDJ-XP2, drawn by the PDF code."""
+    assert window.config is not None
+    candidates = cheat_sheet.candidate_controllers(window.config)
+    names = [name for name, _count in candidates]
+    dialog = CheatSheetExportDialog(candidates, window._cheat_sheet_preselection(names), window)
+    dialog.show()
+    app.processEvents()
+    _save(dialog, "cheat-sheet-dialog.png")
+    dialog.close()
+    sheet = cheat_sheet.build_sheets(window.config, ["DDJ-XP2"])[0]
+    if not render_sheet_image(sheet, dpi=110).save(str(OUTPUT / "cheat-sheet-page.png")):
+        raise RuntimeError("could not save cheat-sheet-page.png")
+
+
+def _capture_sync_scene_combo(app: QApplication, window: MainWindow) -> None:
+    """The menu bar's sync scene combo (issue #188), opened, with three
+    scenes in use -- composed from the window and the popup, which is its
+    own top-level window."""
+    preferences = window.preferences
+    for controller, scene in (("DDJ-XP2", "Default"), ("DDJ-XP2", "Tek"), ("XDJ-XZ", "DnB")):
+        message = SyncMessage.create("Note On", 1, 0, 127)
+        preferences.set_sync_set(ControllerSyncSet(controller=controller, messages=(message,), scene=scene))
+    preferences.active_sync_scene = "Tek"
+    window._refresh_sync_scene_combo()
+    combo = window._sync_scene_combo
+    combo.showPopup()
+    app.processEvents()
+    image = window.grab().toImage()
+    popup = combo.view().window()
+    # Drawn just under the combo: the offscreen screen is smaller than the
+    # window, so Qt clamps the real popup somewhere else on it.
+    offset = combo.mapTo(window, QPoint(0, combo.height()))
+    painter = QPainter(image)
+    painter.drawPixmap(offset, popup.grab())
+    painter.end()
+    combo.hidePopup()
+    ratio = image.devicePixelRatio()
+    corner = window._menu_corner.mapTo(window, QPoint(0, 0))
+    left = max(corner.x() - 260, 0)
+    height = max(offset.y() + popup.height() + 20, window._menu_corner.height() + 20)
+    cropped = image.copy(
+        round(left * ratio), 0, round((window.width() - left) * ratio), round(height * ratio)
+    )
+    if not cropped.save(str(OUTPUT / "sync-scene-combo.png")):
+        raise RuntimeError("could not save sync-scene-combo.png")
+
+
+class _DemoPlayer(QObject):
+    """Stands in for QMediaPlayer in the preview capture: reports a duration
+    and a position without decoding (or playing) anything."""
+
+    durationChanged = Signal(int)
+    positionChanged = Signal(int)
+    playbackStateChanged = Signal(object)
+    errorOccurred = Signal(object, str)
+
+    def __init__(self, parent: QObject | None = None) -> None:
+        super().__init__(parent)
+        self._playing = False
+
+    def setSource(self, _url: QUrl) -> None:
+        pass
+
+    def play(self) -> None:
+        self._playing = True
+        self.playbackStateChanged.emit(1)
+
+    def pause(self) -> None:
+        self._playing = False
+        self.playbackStateChanged.emit(2)
+
+    def stop(self) -> None:
+        self._playing = False
+        self.playbackStateChanged.emit(0)
+
+    def setPosition(self, position: int) -> None:
+        self.positionChanged.emit(position)
+
+    def isPlaying(self) -> bool:
+        return self._playing
 
 
 def _write_demo_library(root: Path) -> None:
@@ -274,11 +432,28 @@ def _save(widget, filename: str) -> None:
         raise RuntimeError(f"could not save {filename}")
 
 
+@contextlib.contextmanager
+def _demo_music_dir() -> Iterator[Path]:
+    """A throwaway folder for the synthetic library. A short fixed path
+    under /tmp where there is one, so the duplicates/relink captures show
+    readable paths instead of a random /var/folders/... temp name; removed
+    before and after either way."""
+    base = Path("/tmp/djmidi-docs-demo")
+    if not Path("/tmp").is_dir():
+        with tempfile.TemporaryDirectory() as temp:
+            yield Path(temp) / "Music"
+        return
+    shutil.rmtree(base, ignore_errors=True)
+    try:
+        yield base / "Music"
+    finally:
+        shutil.rmtree(base, ignore_errors=True)
+
+
 def _capture_music_library(app: QApplication, window: MainWindow) -> None:
     """Music Library tab (issue #132): track panel on a fuzzy-suggested
     track, the category manager, and generated playlists."""
-    with tempfile.TemporaryDirectory() as temp:
-        music = Path(temp) / "Music"
+    with _demo_music_dir() as music:
         _write_demo_library(music)
         view = window.music_library_view
         window.left_tabs.setCurrentIndex(window._tab_indexes["library"])
@@ -333,15 +508,72 @@ def _capture_music_library(app: QApplication, window: MainWindow) -> None:
         app.processEvents()
         _save(dialog, "music-library-bulk-tags.png")
         dialog.close()
+        view.field_edits["genre"].setText((seed.metadata.genre if seed.metadata else None) or "")
+
+        # Audio preview bar (issue #192), playing 2:12 into a 6:00 track.
+        preview = view.audio_preview
+        preview._player_factory = _DemoPlayer
+        view.select_path(seed.path)
+        preview.play()
+        preview._player.durationChanged.emit(360_000)
+        preview._player.positionChanged.emit(132_000)
+        app.processEvents()
+        _save(preview, "music-library-preview.png")
+        preview.stop()
+
+        # Find duplicates… (issue #184): a byte-identical copy and a re-encode
+        # (same artist/title, other bytes) of two demo tracks.
+        night = next(row for row in view.table_model.rows() if row.title == "Night Runner")
+        shutil.copy2(seed.path, music / "misc" / Path(seed.path).name)
+        reencode = music / "misc" / "Low Orbit - Night Runner (320).mp3"
+        shutil.copy2(night.path, reencode)
+        with reencode.open("ab") as handle:
+            handle.write(_MP3_FRAME * 5)
+        view.start_scan()
+        view.run_pending_job()
+        view.find_duplicates()
+        view.run_pending_job()
+        app.processEvents()
+        if view.duplicates_dialog is None:
+            raise RuntimeError("the duplicate search opened no dialog")
+        view.duplicates_dialog.resize(1000, 460)
+        view.duplicates_dialog.tree.expandAll()
+        app.processEvents()
+        _save(view.duplicates_dialog, "music-library-duplicates.png")
+        view.duplicates_dialog.close()
+
+        # Relink missing… (issue #190): a folder renamed since the last scan.
+        # The proposals are built directly: the view's own job opens the
+        # dialog modally, which would block this script.
+        (music / "Electro" / "Dub").rename(music / "Electro" / "Dub & Roots")
+        lost = next(music.glob("misc/*Lost Frequencies.mp3"))
+        (music / "misc" / "Unsorted").mkdir()
+        lost.rename(music / "misc" / "Unsorted" / lost.name)
+        view.start_scan()
+        view.run_pending_job()
+        dialog = RelinkDialog(relink.find_relink_proposals(view.db), view)
+        dialog.resize(1200, 360)
+        dialog.show()
+        for column in range(dialog.tree.columnCount()):
+            dialog.tree.resizeColumnToContents(column)
+        app.processEvents()
+        _save(dialog, "music-library-relink.png")
+        dialog.close()
         view.close_db()
 
 
 def _capture_preferences_sync(app: QApplication) -> None:
     """Preferences → Controller sync with two recorded sets."""
     preferences = PluginPreferences()
-    for controller, port, notes in (("DDJ-XP2", "PIONEER DDJ-XP2", (27, 30)), ("XDJ-XZ", "XDJ-XZ (1)", (0, 1, 31))):
+    for controller, port, notes, scene in (
+        ("DDJ-XP2", "PIONEER DDJ-XP2", (27, 30), "Default"),
+        ("DDJ-XP2", "PIONEER DDJ-XP2", (27,), "Tek"),
+        ("XDJ-XZ", "XDJ-XZ (1)", (0, 1, 31), "Default"),
+    ):
         messages = tuple(SyncMessage.create("Note On", 1, note, 127) for note in notes)
-        preferences.set_sync_set(ControllerSyncSet(controller=controller, output_port=port, messages=messages))
+        preferences.set_sync_set(
+            ControllerSyncSet(controller=controller, output_port=port, messages=messages, scene=scene)
+        )
     dialog = PreferencesDialog(preferences)
     dialog.findChild(QTabWidget).setCurrentIndex(2)
     dialog.resize(640, 420)
