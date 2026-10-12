@@ -575,7 +575,7 @@ class MusicLibraryView(QWidget):
         box = QVBoxLayout(group)
         row = QHBoxLayout()
         self.roots_list = QListWidget()
-        self.roots_list.setMaximumHeight(56)
+        self.roots_list.setMaximumHeight(96)
         self.roots_list.setToolTip("Folders this app indexes. Scanning never modifies your files.")
         row.addWidget(self.roots_list, 1)
         self.add_root_button = QPushButton("Add folder…")
@@ -597,15 +597,21 @@ class MusicLibraryView(QWidget):
             "List identical files and tracks sharing artist + title. Read-only: nothing is deleted."
         )
         self.duplicates_button.clicked.connect(self.find_duplicates)
-        for button in (
-            self.add_root_button,
-            self.remove_root_button,
-            self.scan_button,
-            self.duplicates_button,
-            self.relink_button,
+        # Two button columns rather than one row: five buttons side by side
+        # need more width than the tab's minimum content width guarantees.
+        buttons = QGridLayout()
+        for index, button in enumerate(
+            (
+                self.add_root_button,
+                self.scan_button,
+                self.remove_root_button,
+                self.duplicates_button,
+                self.relink_button,
+            )
         ):
-            row.addWidget(button, 0, Qt.AlignmentFlag.AlignTop)
-        row.addWidget(help_button(self, *help_texts.LIBRARY_FOLDERS), 0, Qt.AlignmentFlag.AlignTop)
+            buttons.addWidget(button, index // 2, index % 2)
+        buttons.addWidget(help_button(self, *help_texts.LIBRARY_FOLDERS), 0, 2, Qt.AlignmentFlag.AlignTop)
+        row.addLayout(buttons)
         box.addLayout(row)
         status_row = QHBoxLayout()
         self.status_label = QLabel("Add a music folder, then scan it.")
