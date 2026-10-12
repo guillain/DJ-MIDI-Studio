@@ -92,3 +92,19 @@ def test_plugin_preferences_auto_sync_on_startup_defaults_true_and_round_trips(t
     path = tmp_path / "auto_sync.json"
     preferences.save(path)
     assert PluginPreferences.load(path).auto_sync_on_startup is False
+
+
+def test_plugin_preferences_auto_sync_on_plug_in_defaults_true_and_round_trips(tmp_path):
+    assert PluginPreferences.from_json('{"enabled": {}}').auto_sync_on_plug_in is True
+    preferences = PluginPreferences(auto_sync_on_plug_in=False)
+    path = tmp_path / "preferences.json"
+    preferences.save(path)
+    assert PluginPreferences.load(path).auto_sync_on_plug_in is False
+
+
+def test_plugin_preferences_check_for_updates_defaults_true_and_round_trips(tmp_path):
+    assert PluginPreferences.from_json('{"enabled": {}}').check_for_updates is True
+    preferences = PluginPreferences(check_for_updates=False)
+    path = tmp_path / "updates.json"
+    preferences.save(path)
+    assert PluginPreferences.load(path).check_for_updates is False

@@ -2,6 +2,12 @@ from __future__ import annotations
 
 from .analysis import estimate_bpm, estimate_key, resolve_bpm_key, to_camelot
 from .db import LibraryDB, LibraryRoot, TrackRecord
+from .duplicates import (
+    DuplicateGroup,
+    find_exact_duplicates,
+    find_metadata_duplicates,
+    iter_exact_duplicates,
+)
 from .metadata import (
     MANAGED_FIELDS,
     TrackMetadata,
@@ -38,6 +44,7 @@ from .traktor_library import parse_playlists as parse_traktor_playlists
 __all__ = [
     "AUDIO_EXTENSIONS",
     "MANAGED_FIELDS",
+    "DuplicateGroup",
     "LibraryDB",
     "LibraryRoot",
     "NmlTrack",
@@ -53,10 +60,13 @@ __all__ = [
     "estimate_bpm",
     "estimate_key",
     "find_compatible_tracks",
+    "find_exact_duplicates",
+    "find_metadata_duplicates",
     "is_bpm_compatible",
     "is_camelot_compatible",
     "iter_audio_files",
     "iter_chunks",
+    "iter_exact_duplicates",
     "parse_collection",
     "parse_crate",
     "parse_export",
