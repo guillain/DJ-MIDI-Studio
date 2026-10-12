@@ -12,6 +12,7 @@
 - [Scan your music](#scan-your-music)
 - [Relink moved tracks](#relink-moved-tracks)
 - [Browse, sort and filter](#browse-sort-and-filter)
+- [Listen to a track](#listen-to-a-track)
 - [Edit tags](#edit-tags)
 - [Write tags to many tracks at once](#write-tags-to-many-tracks-at-once)
 - [Find duplicate tracks](#find-duplicate-tracks)
@@ -85,6 +86,22 @@ are after a rescan or a tag edit.
 The **Camelot** column translates any key notation into the Camelot wheel
 used for harmonic mixing: `Am`, `F#m`, Open Key `7m` and `8A` are all
 understood.
+
+## Listen to a track
+
+The preview bar under the table plays the selected track, so you can check
+a category or a key by ear without opening your DJ software:
+
+- `▶ Play` / `❚❚ Pause` and `■ Stop` (stop rewinds to the start).
+- Drag the slider to move through the track; the label shows position and
+  length.
+- While a track plays, selecting another one switches to it straight away —
+  handy for auditioning a list with the arrow keys.
+- Tick **Start at 30%** to skip the intro.
+
+Playback stops when you leave the tab or close the app. If your system
+can't play audio through Qt, the bar stays greyed out with a tooltip
+explaining why; files are only read, never changed.
 
 ## Edit tags
 

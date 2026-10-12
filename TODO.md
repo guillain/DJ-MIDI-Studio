@@ -132,6 +132,13 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Quick audio preview in the Music Library tab** (`v0.48.64-library-audio-preview`, issue #192) — a
+  `gui/audio_preview.AudioPreviewBar` under the library table (play/pause, stop, seek slider, position/duration,
+  "Start at 30%") plays the current track through QtMultimedia's `QMediaPlayer` + `QAudioOutput`. Guarded import:
+  without QtMultimedia the bar is disabled with a tooltip; the player is created on the first Play only. Selecting
+  another track while playing switches to it; leaving the tab (non-spontaneous hide) or `close_db()` (app close)
+  stops it. PyInstaller's stock `hook-PySide6.QtMultimedia` already collects the `multimedia` plugins, so
+  `scripts/build.sh` is unchanged.
 - [x] **Playlist path mode** (`v0.48.63-playlist-path-mode`, issue #191) — issue #131's deferred follow-up:
   `playlist.build_playlist_path` chains tracks so every step is BPM- (±6 %) and Camelot-compatible and the BPM
   rises, falls or stays steady, via a deterministic receding-horizon beam search (beam 8, lookahead 3) over a

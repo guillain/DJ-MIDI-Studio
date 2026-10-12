@@ -73,6 +73,7 @@ from PySide6.QtWidgets import (
 
 from djmidi import taxonomy, user_paths
 from djmidi.gui import help_texts
+from djmidi.gui.audio_preview import AudioPreviewBar
 from djmidi.gui.commands import WriteTrackMetadataCommand, WriteTracksMetadataCommand
 from djmidi.gui.duplicates_dialog import DuplicatesDialog
 from djmidi.gui.help_button import help_button, help_row
@@ -560,6 +561,10 @@ class MusicLibraryView(QWidget):
         # table is what needs the room.
         body.setSizes([680, 320])
         layout.addWidget(body, 1)
+        # Issue #192: play the current track (gui/audio_preview.py).
+        self.audio_preview = AudioPreviewBar(self)
+        layout.addWidget(self.audio_preview)
+        self.table.selectionModel().currentRowChanged.connect(self._preview_current_row)
         self._update_track_panel(None)
 
     # --- construction ---------------------------------------------------
@@ -882,10 +887,22 @@ class MusicLibraryView(QWidget):
         return self._db
 
     def close_db(self) -> None:
+        self.audio_preview.stop()
         self._stop_job()
         if self._db is not None:
             self._db.close()
             self._db = None
+
+    def hideEvent(self, event) -> None:
+        # Leaving the tab stops the preview; minimizing the window (a
+        # spontaneous hide) lets it play on.
+        if not event.spontaneous():
+            self.audio_preview.stop()
+        super().hideEvent(event)
+
+    def _preview_current_row(self, current: QModelIndex, _previous: QModelIndex) -> None:
+        row = current.data(ROW_ROLE) if current.isValid() else None
+        self.audio_preview.set_source(row.path if row is not None and not row.missing else None)
 
     def showEvent(self, event) -> None:
         super().showEvent(event)

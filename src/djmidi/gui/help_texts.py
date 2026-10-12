@@ -249,6 +249,17 @@ LIBRARY_TRACK: HelpEntry = (
     "music-library.md",
 )
 
+LIBRARY_PREVIEW: HelpEntry = (
+    "Audio preview",
+    (
+        "<b>Play</b> the selected track to check its category or key by ear, without "
+        "opening your DJ software. Drag the slider to move through it. While a track "
+        "plays, selecting another one switches to it. Tick <b>Start at 30%</b> to skip "
+        "the intro. Playback stops when you leave the tab."
+    ),
+    "music-library.md",
+)
+
 LIBRARY_CATEGORIES: HelpEntry = (
     "Genre categories",
     (
