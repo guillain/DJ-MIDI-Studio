@@ -98,6 +98,11 @@ a category or a key by ear without opening your DJ software:
 - While a track plays, selecting another one switches to it straight away —
   handy for auditioning a list with the arrow keys.
 - Tick **Start at 30%** to skip the intro.
+- **Vol** sets the preview volume; it is remembered for next time.
+- With the track list focused, **Space** plays or pauses and **←** / **→**
+  jump back or forward 10 seconds.
+- Tick **Auto-advance** (off by default, remembered) to play the next track
+  in the list when one ends; missing files are skipped.
 
 Playback stops when you leave the tab or close the app. If your system
 can't play audio through Qt, the bar stays greyed out with a tooltip

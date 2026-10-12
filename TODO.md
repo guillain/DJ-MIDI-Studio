@@ -132,6 +132,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Audio preview controls** (`v0.48.68-audio-preview-controls`, issue #210) — the Music Library preview bar
+  gained a volume slider and an Auto-advance box (off by default), both remembered via an injected
+  `QSettings`-like object (`MainWindow._layout_settings()`, `None` in tests); Space = play/pause and Left/Right =
+  seek ±10 s while the track table has focus (event filter → `AudioPreviewBar.handle_key`, modified keys fall
+  through); at end of track, auto-advance plays the next non-missing row.
 - [x] **New version notice** (`v0.48.65-update-notice`, issue #193) — Qt-free `update_check.py` asks GitHub's
   `releases/latest` API (urllib, 5 s timeout, no auth) and compares the tag's numeric `X.Y.Z` prefix with
   `importlib.metadata.version("djmidi")`; every failure is silent (debug log). `gui/update_notice.UpdateChecker`

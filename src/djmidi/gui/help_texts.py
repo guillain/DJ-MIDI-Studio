@@ -255,7 +255,10 @@ LIBRARY_PREVIEW: HelpEntry = (
         "<b>Play</b> the selected track to check its category or key by ear, without "
         "opening your DJ software. Drag the slider to move through it. While a track "
         "plays, selecting another one switches to it. Tick <b>Start at 30%</b> to skip "
-        "the intro. Playback stops when you leave the tab."
+        "the intro. <b>Vol</b> sets the volume (remembered). In the track list, "
+        "<b>Space</b> plays/pauses and <b>Left</b>/<b>Right</b> jump 10 s. Tick "
+        "<b>Auto-advance</b> to play the next track when one ends. Playback stops "
+        "when you leave the tab."
     ),
     "music-library.md",
 )
