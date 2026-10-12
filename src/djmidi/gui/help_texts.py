@@ -150,7 +150,10 @@ CONTROLLER_EMULATOR: HelpEntry = (
         "<li>Layers: <b>Controller</b> photo, <b>MIDI</b> picture (alone) and <b>Layout</b> "
         "(the clickable controls).</li>"
         "<li>The emulator also follows the real controller when the Live Monitor is "
-        "running.</li></ul>"
+        "running.</li>"
+        "<li><b>Pad colours</b> (only for controllers whose documentation lists them, "
+        "e.g. Hercules DJControl Inpulse 500): pick a colour, switch <b>Paint</b> on, "
+        "click pads, then <b>Save to sync set</b>.</li></ul>"
         "Open more emulators with <b>View → New Controller Emulator…</b>."
     ),
     "controller-emulator.md",
