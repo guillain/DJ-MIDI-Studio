@@ -4,7 +4,9 @@ Binds the Qt-free `djmidi.library` layer (scan index, tag cache, taxonomy,
 playlist engine, Serato/Traktor/Rekordbox formats) to one tab:
 
 - music folder list + a "Scan & read tags" job, driven a slice at a time by
-  a `QTimer` (this project's non-blocking pattern, see `midi_io` polling);
+  a `QTimer` (this project's non-blocking pattern, see `midi_io` polling),
+  and a "Find duplicates…" job on the same timer (issue #184, opens a
+  read-only `DuplicatesDialog`);
 - the consolidated metadata table (sortable/filterable, category column);
 - a Track panel whose tag edits go through a `QUndoStack`
   (`commands.WriteTrackMetadataCommand`, or `WriteTracksMetadataCommand` when
@@ -72,8 +74,9 @@ from PySide6.QtWidgets import (
 from djmidi import taxonomy, user_paths
 from djmidi.gui import help_texts
 from djmidi.gui.commands import WriteTrackMetadataCommand, WriteTracksMetadataCommand
+from djmidi.gui.duplicates_dialog import DuplicatesDialog
 from djmidi.gui.help_button import help_button, help_row
-from djmidi.library import relink, workspace
+from djmidi.library import duplicates, relink, workspace
 from djmidi.library.db import LibraryDB, TrackRecord, default_library_db_path
 from djmidi.library.metadata import TrackMetadata, clean_noise_frames
 from djmidi.library.playlist import is_camelot_compatible
@@ -519,6 +522,7 @@ class MusicLibraryView(QWidget):
         self._job_timer.setInterval(0)
         self._job_timer.timeout.connect(self._run_job_slice)
         self._current_path: str | None = None
+        self.duplicates_dialog: DuplicatesDialog | None = None
 
         # The whole tab scrolls below its real minimum instead of crushing
         # buttons into slivers (issue #19's standing rule for every tab).
@@ -576,7 +580,18 @@ class MusicLibraryView(QWidget):
             "Find where missing tracks moved (same file name and size) and relink them in this app's index."
         )
         self.relink_button.clicked.connect(self.start_relink_search)
-        for button in (self.add_root_button, self.remove_root_button, self.scan_button, self.relink_button):
+        self.duplicates_button = QPushButton("Find duplicates…")
+        self.duplicates_button.setToolTip(
+            "List identical files and tracks sharing artist + title. Read-only: nothing is deleted."
+        )
+        self.duplicates_button.clicked.connect(self.find_duplicates)
+        for button in (
+            self.add_root_button,
+            self.remove_root_button,
+            self.scan_button,
+            self.duplicates_button,
+            self.relink_button,
+        ):
             row.addWidget(button, 0, Qt.AlignmentFlag.AlignTop)
         row.addWidget(help_button(self, *help_texts.LIBRARY_FOLDERS), 0, Qt.AlignmentFlag.AlignTop)
         box.addLayout(row)
@@ -953,10 +968,50 @@ class MusicLibraryView(QWidget):
         )
         self._reload_rows()
 
+    def find_duplicates(self) -> None:
+        """Start the duplicate search over the indexed, present tracks."""
+        if self.is_busy():
+            return
+        if not self.db.list_tracks(include_missing=False):
+            self.status_label.setText("Scan a music folder first.")
+            return
+        self._start_job(self._duplicates_job())
+
+    def _duplicates_job(self) -> Generator[None]:
+        # Metadata tier: tag cache only, instant even on a large library.
+        groups = duplicates.find_metadata_duplicates(duplicates.metadata_entries(self.db))
+        sizes = duplicates.size_entries(self.db)
+        total = duplicates.exact_candidate_count(sizes)
+        self.progress_bar.setRange(0, max(total, 1))
+        self.status_label.setText(f"Comparing {total} file(s) of equal size…")
+        yield
+        steps = duplicates.iter_exact_duplicates(sizes)
+        while True:
+            try:
+                done = next(steps)
+            except StopIteration as finished:
+                exact = finished.value
+                break
+            self.progress_bar.setValue(done)
+            self.status_label.setText(f"Comparing files of equal size… {done}/{total}")
+            yield
+        self.status_label.setText(
+            f"Duplicates: {len(exact)} group(s) of identical files, {len(groups)} group(s) sharing artist + title."
+        )
+        self._show_duplicates(exact + groups)
+
+    def _show_duplicates(self, groups: list[duplicates.DuplicateGroup]) -> None:
+        if self.duplicates_dialog is not None:
+            self.duplicates_dialog.close()
+            self.duplicates_dialog.deleteLater()
+        self.duplicates_dialog = DuplicatesDialog(groups, self)
+        self.duplicates_dialog.show()
+
     def _start_job(self, job: Generator[None]) -> None:
         self._job = job
         self.scan_button.setEnabled(False)
         self.relink_button.setEnabled(False)
+        self.duplicates_button.setEnabled(False)
         self.progress_bar.setVisible(True)
         self._job_timer.start()
 
@@ -965,6 +1020,7 @@ class MusicLibraryView(QWidget):
         self._job = None
         self.scan_button.setEnabled(True)
         self.relink_button.setEnabled(True)
+        self.duplicates_button.setEnabled(True)
         self.progress_bar.setVisible(False)
 
     def _run_job_slice(self) -> None:
@@ -979,7 +1035,7 @@ class MusicLibraryView(QWidget):
             self._stop_job()
         except Exception:
             _LOGGER.exception("Music library job failed")
-            self.status_label.setText("Scan failed (see the log).")
+            self.status_label.setText("The scan or duplicate search failed (see the log).")
             self._stop_job()
 
     # --- relinking missing tracks (issue #190) ---------------------------

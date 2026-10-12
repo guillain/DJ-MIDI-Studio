@@ -650,3 +650,70 @@ def test_relink_dialog_choices():
     assert [(m.id, c.path) for m, c in dialog.choices()] == [(2, "/y/b.mp3")]
     assert dialog.tree.topLevelItem(1).text(2) == "Same name, other size (not scanned yet)"
     assert dialog.tree.topLevelItem(2).text(1) == "No matching file found"
+
+
+def test_find_duplicates_without_scan_asks_for_one():
+    view = MusicLibraryView(db_path=":memory:")
+    view.find_duplicates()
+    assert view.duplicates_dialog is None
+    assert "Scan" in view.status_label.text()
+    view.close_db()
+
+
+def test_find_duplicates_opens_read_only_dialog(library, monkeypatch):
+    """Issue #184: exact copies and same-artist+title tracks are listed,
+    revealable in Finder, and no file is touched."""
+    from djmidi.gui import duplicates_dialog
+
+    view, music, _ = library
+    original = music / "Tek" / "Tribe" / "a.mp3"
+    copy = music / "copies" / "a copy.mp3"
+    copy.parent.mkdir()
+    copy.write_bytes(original.read_bytes())
+    _mp3(music / "misc" / "alpha2.mp3", title="Alpha (Original Mix)", artist="ZED")
+    view.start_scan()
+    view.run_pending_job()
+    before = {p: p.read_bytes() for p in music.rglob("*.mp3")}
+
+    view.find_duplicates()
+    assert view.is_busy()
+    assert not view.duplicates_button.isEnabled()
+    view.run_pending_job()
+    assert view.duplicates_button.isEnabled()
+    dialog = view.duplicates_dialog
+    assert dialog is not None and dialog.isVisible()
+    exact = [g for g in dialog.groups if g.tier == "exact"]
+    by_meta = [g for g in dialog.groups if g.tier == "metadata"]
+    assert [g.paths for g in exact] == [tuple(sorted((str(original), str(copy))))]
+    assert [len(g.paths) for g in by_meta] == [3]
+    assert "1 group(s) of identical files" in view.status_label.text()
+
+    items = dialog.file_items()
+    assert len(items) == 5
+    assert {item.text(1) for item in items} == {"MP3"}
+    group_item = items[0].parent()
+    group_item.setExpanded(True)
+    assert all(group_item.child(i).text(3) != "…" for i in range(group_item.childCount()))
+
+    revealed: list[str] = []
+    monkeypatch.setattr(duplicates_dialog, "reveal_in_file_manager", revealed.append)
+    assert not dialog.reveal_button.isEnabled()
+    dialog.tree.setCurrentItem(items[0])
+    assert dialog.reveal_button.isEnabled()
+    dialog.reveal_button.click()
+    assert revealed == [items[0].data(0, duplicates_dialog.PATH_ROLE)]
+    # Read-only: every file is still there, byte for byte.
+    assert {p: p.read_bytes() for p in music.rglob("*.mp3")} == before
+
+    view.find_duplicates()
+    view.run_pending_job()
+    assert view.duplicates_dialog is not dialog
+
+
+def test_format_size():
+    from djmidi.gui.duplicates_dialog import format_size
+
+    assert format_size(None) == ""
+    assert format_size(512) == "512 B"
+    assert format_size(2048) == "2.0 KB"
+    assert format_size(5 * 1024**3) == "5.0 GB"
