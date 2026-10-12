@@ -132,6 +132,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Docs screenshots for the 2026-10 features** (`v0.48.71-docs-screenshots-2026-10`, issue #213) —
+  `scripts/capture_docs_screenshots.py` now also captures the cheat-sheet export dialog and a rendered page, the mapping
+  diff window, Find function, the duplicates and relink dialogs, the audio preview bar and the sync scene combo, all from
+  the data/ fixture mapping or the synthetic demo library (never real preferences/library); each image is referenced
+  from its `docs/enduser/features/` page. `tests/test_capture_docs_screenshots.py` covers the script's helpers.
 - [x] **New version notice** (`v0.48.65-update-notice`, issue #193) — Qt-free `update_check.py` asks GitHub's
   `releases/latest` API (urllib, 5 s timeout, no auth) and compares the tag's numeric `X.Y.Z` prefix with
   `importlib.metadata.version("djmidi")`; every failure is silent (debug log). `gui/update_notice.UpdateChecker`

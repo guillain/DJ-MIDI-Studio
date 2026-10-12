@@ -62,6 +62,8 @@ Only this app's index changes: no audio file and no Serato, Traktor or
 Rekordbox library is touched. Relinking can't be undone, so check the list
 before confirming.
 
+![Relink missing tracks: two moved files, ticked](../../images/layout/music-library-relink.png)
+
 ## Browse, sort and filter
 
 - Click a column header to sort (BPM sorts numerically).
@@ -98,6 +100,8 @@ a category or a key by ear without opening your DJ software:
 - While a track plays, selecting another one switches to it straight away —
   handy for auditioning a list with the arrow keys.
 - Tick **Start at 30%** to skip the intro.
+
+![Preview bar playing a track](../../images/layout/music-library-preview.png)
 
 Playback stops when you leave the tab or close the app. If your system
 can't play audio through Qt, the bar stays greyed out with a tooltip
@@ -157,6 +161,8 @@ it) to see it in your file manager.
 Nothing is deleted or moved from this window: you decide which copy to keep
 and remove the others yourself, in Finder or in your DJ software. Track
 lengths are not compared yet.
+
+![Duplicate tracks: an exact copy and two same artist + title groups](../../images/layout/music-library-duplicates.png)
 
 ## Genre categories
 
