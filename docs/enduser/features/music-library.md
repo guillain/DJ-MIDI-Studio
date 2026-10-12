@@ -15,6 +15,7 @@
 - [Listen to a track](#listen-to-a-track)
 - [Edit tags](#edit-tags)
 - [Write tags to many tracks at once](#write-tags-to-many-tracks-at-once)
+- [Estimate missing BPM and keys](#estimate-missing-bpm-and-keys)
 - [Find duplicate tracks](#find-duplicate-tracks)
 - [Genre categories](#genre-categories)
 - [Playlists](#playlists)
@@ -147,6 +148,32 @@ open until the table has been refreshed, so the app is ready as soon as it
 closes.
 
 ![Write tags to selection](../../images/layout/music-library-bulk-tags.png)
+
+## Estimate missing BPM and keys
+
+Tracks with no BPM or key tag can't be filtered by tempo or matched on the
+Camelot wheel. `Analyse BPM/key` listens to them and suggests the values:
+
+1. Scan your folders first, so the tags are known.
+2. Click `Analyse BPM/key`. Only tracks missing a BPM or a key are analysed
+   (a minute from the middle of each track); the window stays usable, and
+   the button turns into `Stop analysis` until it's done. Stopping keeps
+   what was found so far.
+3. Estimates appear in amber with a `?` in the BPM, Key and Camelot
+   columns, and on the Track panel's `Analysis` line. They are **not** in
+   your files yet.
+4. Select the tracks whose estimates you trust and click
+   `Apply analysis suggestions…`. The list is shown before anything is
+   written; only empty BPM/key tags are filled, never one you already set.
+   The whole batch is one `Undo` step.
+
+Key estimates are right most of the time, but heavy bass can fool them:
+listen before applying them to a set you care about. A track is analysed
+once; it is looked at again only if the file changes outside this app.
+
+The button is greyed out, with the reason in its tooltip, when the optional
+audio-analysis component isn't installed (from a source checkout:
+`uv sync --extra analysis`).
 
 ## Find duplicate tracks
 

@@ -132,6 +132,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Background BPM/key analysis** (`v0.48.77-background-analysis`, issue #224) — Music Library
+  `Analyse BPM/key` estimates tempo/key (librosa, optional `analysis` extra; 60 s clip per track) for
+  tracks missing either tag, as a stoppable `QTimer`-sliced job. Estimates are stored as suggestions
+  only (`analysis_suggestions` table, keyed to the file's mtime), shown amber `? value`, and written
+  only through `Apply analysis suggestions…` (empty tags only, one undoable `WriteTracksMetadataCommand`).
+  Disabled with an explanatory tooltip when librosa is missing.
 - [x] **Readable function names** (`v0.48.72-readable-function-names`, issue #209) — Qt-free
   `function_names.py`: `FUNCTION_NAMES` maps the only four tags the real Serato exports contain
   (inventoried from `data/xdj_xz-ddj_xp2-4decks.xml` + `data/serato/*.xml.zip`; a test keeps the table
