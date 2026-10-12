@@ -132,6 +132,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Command palette** (`v0.48.75-command-palette`, issue #222) — Cmd+K (`Ctrl+K`) opens one
+  keyboard-only search over every enabled menu action, every tab, the loaded mapping's functions
+  (reusing `function_search`) and the Music Library's tracks; Enter runs/opens, Esc closes. Qt-free
+  ranking in `command_palette.py` (exact > prefix > substring > subsequence, kind order breaks ties),
+  thin `gui/command_palette.py` dialog; tracks only once the library tab opened its index.
 - [x] **Readable function names** (`v0.48.72-readable-function-names`, issue #209) — Qt-free
   `function_names.py`: `FUNCTION_NAMES` maps the only four tags the real Serato exports contain
   (inventoried from `data/xdj_xz-ddj_xp2-4decks.xml` + `data/serato/*.xml.zip`; a test keeps the table
