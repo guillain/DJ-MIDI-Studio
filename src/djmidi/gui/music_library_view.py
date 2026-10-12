@@ -13,7 +13,9 @@ playlist engine, Serato/Traktor/Rekordbox formats) to one tab:
   (`commands.WriteTrackMetadataCommand`, or `WriteTracksMetadataCommand` when
   "Write tags to selection…" copies chosen fields to every selected track),
   a Categories panel over the
-  taxonomy registry, and a Playlists panel (import/generate/export).
+  taxonomy registry, a Playlists panel (import/generate/export), and a
+  History panel (issue #227: Serato/Traktor play history, read-only, plus
+  the indexed tracks never played).
 
 Opening the library index is lazy (first time the tab is shown), so merely
 constructing the main window never creates or reads `library.sqlite3`.
@@ -81,7 +83,7 @@ from djmidi.gui.audio_preview import AudioPreviewBar
 from djmidi.gui.commands import WriteTrackMetadataCommand, WriteTracksMetadataCommand
 from djmidi.gui.duplicates_dialog import DuplicatesDialog
 from djmidi.gui.help_button import help_button, help_row
-from djmidi.library import discard, duplicates, relink, workspace
+from djmidi.library import discard, duplicates, history, relink, workspace
 from djmidi.library.db import LibraryDB, TrackRecord, default_library_db_path
 from djmidi.library.metadata import TrackMetadata, clean_noise_frames
 from djmidi.library.playlist import is_camelot_compatible
@@ -614,6 +616,7 @@ class MusicLibraryView(QWidget):
         self._job_timer.timeout.connect(self._run_job_slice)
         self._current_path: str | None = None
         self.duplicates_dialog: DuplicatesDialog | None = None
+        self._history_sessions: list[history.HistorySession] = []
 
         # The whole tab scrolls below its real minimum instead of crushing
         # buttons into slivers (issue #19's standing rule for every tab).
@@ -636,6 +639,7 @@ class MusicLibraryView(QWidget):
         self.side_tabs.addTab(_scrolled(self._build_track_panel()), "Track")
         self.side_tabs.addTab(_scrolled(self._build_categories_panel()), "Categories")
         self.side_tabs.addTab(_scrolled(self._build_playlists_panel()), "Playlists")
+        self.side_tabs.addTab(_scrolled(self._build_history_panel()), "History")
         body.addWidget(self.side_tabs)
         body.setStretchFactor(0, 3)
         body.setStretchFactor(1, 2)
@@ -959,6 +963,36 @@ class MusicLibraryView(QWidget):
         box.addLayout(grid)
         return panel
 
+    def _build_history_panel(self) -> QWidget:
+        panel = QWidget()
+        box = QVBoxLayout(panel)
+        box.addLayout(help_row(self, *help_texts.LIBRARY_HISTORY))
+        grid = QGridLayout()
+        self.load_history_button = QPushButton("Load DJ history")
+        self.load_history_button.setToolTip(
+            "Reads Serato (~/Music/_Serato_/History) and Traktor (~/Music/_Traktor/History) history. Read-only."
+        )
+        self.load_history_button.clicked.connect(self._on_load_history_clicked)
+        self.history_folder_button = QPushButton("Load from folder…")
+        self.history_folder_button.setToolTip("A Serato History/Sessions folder or a Traktor History folder.")
+        self.history_folder_button.clicked.connect(self._on_history_folder_clicked)
+        self.select_never_played_button = QPushButton("Select never played")
+        self.select_never_played_button.setToolTip("Selects, in the table, the visible tracks never played.")
+        self.select_never_played_button.clicked.connect(self.select_never_played)
+        self.select_never_played_button.setEnabled(False)
+        grid.addWidget(self.load_history_button, 0, 0)
+        grid.addWidget(self.history_folder_button, 0, 1)
+        grid.addWidget(self.select_never_played_button, 1, 0)
+        box.addLayout(grid)
+        self.history_summary = QLabel("No history loaded.")
+        self.history_summary.setWordWrap(True)
+        box.addWidget(self.history_summary)
+        self.history_tree = QTreeWidget()
+        self.history_tree.setHeaderLabels(["When", "Track", "Deck"])
+        self.history_tree.itemDoubleClicked.connect(self._on_history_item_activated)
+        box.addWidget(self.history_tree, 1)
+        return panel
+
     # --- database lifecycle --------------------------------------------
 
     @property
@@ -1045,6 +1079,8 @@ class MusicLibraryView(QWidget):
         if current is not None:
             self.select_path(current)
         self._update_count_label()
+        if self._history_sessions:
+            self._update_history_summary()
         # Per-category track counts follow the rows.
         self._reload_categories()
 
@@ -2028,6 +2064,109 @@ class MusicLibraryView(QWidget):
         if answer == QMessageBox.StandardButton.Yes:
             self.db.delete_playlist(playlist_id)
             self._reload_playlists()
+
+
+    # --- play history (issue #227) -------------------------------------------
+
+    def load_history(self, dirs: dict[str, str | Path]) -> int:
+        """Read the given ``{source: folder}`` history folders (read-only) and
+        show them; returns the number of sessions read."""
+        try:
+            sessions = history.read_history(dirs)
+        except OSError as exc:
+            QMessageBox.warning(self, "History", f"Could not read the history.\n\n{exc}")
+            return 0
+        self._history_sessions = sessions
+        self._fill_history_tree()
+        self._update_history_summary()
+        self.side_tabs.setCurrentIndex(self.side_tabs.count() - 1)
+        return len(sessions)
+
+    def _on_load_history_clicked(self) -> None:
+        dirs = history.default_history_dirs()
+        if not dirs:
+            self.history_summary.setText(
+                "No Serato or Traktor history folder found in ~/Music. Use “Load from folder…”."
+            )
+            return
+        self.load_history(dirs)
+
+    def _on_history_folder_clicked(self) -> None:
+        folder = QFileDialog.getExistingDirectory(self, "Choose a Serato or Traktor history folder")
+        if not folder:
+            return
+        source = history.detect_source(folder)
+        if source is None:
+            QMessageBox.information(
+                self, "History", "This folder holds no Serato .session or Traktor history .nml file."
+            )
+            return
+        self.load_history({source: folder})
+
+    def _fill_history_tree(self) -> None:
+        self.history_tree.clear()
+        indexed = {row.path: row for row in self.table_model.rows()}
+        grey = QBrush(QColor("#888888"))
+        for session in self._history_sessions:
+            started = session.started_at
+            when = started.strftime("%Y-%m-%d %H:%M") if started else ""
+            top = QTreeWidgetItem([when, f"{session.name}  ({len(session.entries)})", ""])
+            for entry in session.entries:
+                label = " — ".join(filter(None, [entry.artist, entry.title])) or Path(entry.path).name
+                item = QTreeWidgetItem(
+                    [
+                        entry.played_at.strftime("%H:%M") if entry.played_at else "",
+                        label,
+                        "" if entry.deck is None else str(entry.deck),
+                    ]
+                )
+                item.setData(0, Qt.ItemDataRole.UserRole, entry.path)
+                notes = [entry.path]
+                if not entry.played:
+                    notes.append("Loaded but not marked as played.")
+                if entry.path not in indexed:
+                    notes.append("Not in the indexed folders.")
+                if not entry.played or entry.path not in indexed:
+                    for column in range(3):
+                        item.setForeground(column, grey)
+                item.setToolTip(1, "\n".join(notes))
+                top.addChild(item)
+            self.history_tree.addTopLevelItem(top)
+        self.history_tree.resizeColumnToContents(0)
+
+    def never_played_paths(self) -> list[str]:
+        """Indexed, present tracks with no played row in the loaded history."""
+        paths = [row.path for row in self.table_model.rows() if not row.missing]
+        return history.never_played(paths, self._history_sessions)
+
+    def _update_history_summary(self) -> None:
+        if not self._history_sessions:
+            self.history_summary.setText("No history found in the chosen folder(s).")
+            self.select_never_played_button.setEnabled(False)
+            return
+        plays = history.summarize_plays(self._history_sessions)
+        total = sum(p.play_count for p in plays.values())
+        indexed = sum(1 for row in self.table_model.rows() if not row.missing)
+        never = len(self.never_played_paths())
+        self.history_summary.setText(
+            f"{len(self._history_sessions)} session(s), {total} play(s) of {len(plays)} track(s). "
+            f"{never} of {indexed} indexed track(s) never played."
+        )
+        self.select_never_played_button.setEnabled(never > 0)
+
+    def select_never_played(self) -> int:
+        """Select the never-played tracks among the visible rows; returns how many."""
+        never = set(self.never_played_paths())
+        visible = [row.path for row in self.visible_rows() if row.path in never]
+        self.table.clearSelection()
+        self.select_paths(visible)
+        self.status_label.setText(f"{len(visible)} visible track(s) never played selected.")
+        return len(visible)
+
+    def _on_history_item_activated(self, item: QTreeWidgetItem, _column: int) -> None:
+        path = item.data(0, Qt.ItemDataRole.UserRole)
+        if path and not self.select_path(path):
+            self.status_label.setText("That track isn't visible in the table (not indexed, or filtered out).")
 
 
 def _playlist_track_label(path: str, row: workspace.LibraryRow | None) -> str:
