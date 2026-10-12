@@ -11,6 +11,7 @@
 - [What it does](#what-it-does)
 - [Start monitoring](#start-monitoring)
 - [Read the event log](#read-the-event-log)
+- [Spot conflicts live](#spot-conflicts-live)
 - [The whole app lights up](#the-whole-app-lights-up)
 - [See what Serato sends back (LED feedback)](#see-what-serato-sends-back-led-feedback)
 - [Limits](#limits)
@@ -57,6 +58,22 @@ Physical names are matched against the source device, so a pad on one
 controller is never mistaken for the same note on another one.
 `Clear log` empties the table; `Save log…` exports it. `Sync controllers`
 runs [Controller Sync](controller-sync.md).
+
+## Spot conflicts live
+
+When a button or pad you press triggers **two or more different functions
+on the same deck** of the loaded mapping, its log row turns amber and the
+`Physical / Serato` column starts with `CONFLICT`, followed by the deck and
+the clashing functions (for example `CONFLICT deck 1: cue (slot 0), play
+(slot 0)`). The `Conflicts:` counter under the status counts those hits and
+how many different triggers they came from; `Clear log` and loading another
+mapping reset it.
+
+Serato writes every trigger several times over with identical content; that
+repetition is normal and is **never** reported as a conflict. The same
+function on two different decks isn't a conflict either, and LED messages
+(`out`) are not checked. A release (`Note On` at velocity 0) is still
+flagged in its row but not counted again.
 
 ## The whole app lights up
 

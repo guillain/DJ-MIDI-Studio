@@ -132,6 +132,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Live conflict detection** (`v0.48.76-live-conflicts`, issue #223) — Qt-free
+  `validator.find_deck_conflicts`: a trigger whose `click` mappings bind two or more distinct
+  `(tag, slot_id)` functions on the same deck (identical 10x duplicates collapse to one, so the
+  real fixture reports none; output mappings ignored). Live Monitor flags such an input's row in
+  amber with a `CONFLICT deck N: …` prefix and counts hits/triggers under its status; Clear log
+  and loading a mapping reset the counter.
 - [x] **Readable function names** (`v0.48.72-readable-function-names`, issue #209) — Qt-free
   `function_names.py`: `FUNCTION_NAMES` maps the only four tags the real Serato exports contain
   (inventoried from `data/xdj_xz-ddj_xp2-4decks.xml` + `data/serato/*.xml.zip`; a test keeps the table
