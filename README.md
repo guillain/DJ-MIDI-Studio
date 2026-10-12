@@ -72,6 +72,7 @@ what the mapping does, switch pad modes, latch SHIFT, and turn on
 | 🗺️ | [Mapping editor](docs/enduser/features/mapping-editor.md) | Serato mappings by channel, deck or physical control; grouped edits, validation, diff before save, rollback |
 | 🎧 | [Traktor mappings](docs/enduser/features/traktor-mappings.md) | Open Traktor `.tsi` mappings and re-assign MIDI triggers byte-safely |
 | 🖼️ | [Controller Images](docs/enduser/features/controller-images.md) | Official diagrams and manuals, offline, with real control positions |
+| 🖨️ | [Cheat Sheet (PDF)](docs/enduser/features/cheat-sheet.md) | Print the mapping on each controller's photo, one page per pad bank |
 | 🔀 | [MIDI Routing, Clock and Metronome](docs/enduser/features/midi-routing-and-clock.md) | Route MIDI, generate 24 PPQN MIDI Clock from Ableton Link, loop MIDI |
 | 🪟 | [Workspace and preferences](docs/enduser/features/workspace.md) | Dockable tools, Performance Mode, light/dark theme |
 
