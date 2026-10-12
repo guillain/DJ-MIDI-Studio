@@ -132,6 +132,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Sync when switching scene** (`v0.48.70-sync-on-scene-switch`, issue #212) — new
+  `PluginPreferences.sync_on_scene_switch` (default off), a Preferences checkbox next to the other sync
+  options; when on, changing the sync scene combo sends the new scene's sets to connected controllers right
+  away through the same `active_sync_sets()` + `run_sync` path (status bar only, nothing when the scene did
+  not change or has nothing to send).
 - [x] **New version notice** (`v0.48.65-update-notice`, issue #193) — Qt-free `update_check.py` asks GitHub's
   `releases/latest` API (urllib, 5 s timeout, no auth) and compares the tag's numeric `X.Y.Z` prefix with
   `importlib.metadata.version("djmidi")`; every failure is silent (debug log). `gui/update_notice.UpdateChecker`

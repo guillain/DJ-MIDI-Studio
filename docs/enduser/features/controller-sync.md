@@ -101,7 +101,11 @@ active one:
   active and stays in the list once a set is recorded for it.
 
 Switching scenes sends nothing by itself — click `⟳ Sync` when you want the
-controllers to follow. The active scene is remembered across restarts. Sets
+controllers to follow — unless ⚙ **Preferences** → **Sync when switching
+scene** is ticked (off by default): then picking another scene sends each
+connected controller its set for the new scene straight away, and the status
+bar reports it (`Sync scene: Tek -- Synced …`). Re-picking the scene that is
+already active sends nothing, and a scene with nothing to send stays silent. The active scene is remembered across restarts. Sets
 recorded before scenes existed are your `Default` scene.
 
 ## How Sync finds each controller
