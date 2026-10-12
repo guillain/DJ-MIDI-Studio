@@ -132,6 +132,15 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **MIDI Learn in the mapping editor** (`v0.48.73-midi-learn`, issue #220) — Qt-free
+  `midi_learn.py` (`trigger_from_event`: only a Note On with velocity > 0 or a CC, input
+  direction; `find_trigger_conflicts`/`describe_conflicts`; `find_parent_control`) behind a
+  `Learn` button in the edit panel's Control, function and By Deck group forms. Events come from
+  the Live Monitor (`MainWindow._on_live_midi_event` → `EditPanel.feed_learn_event`, auto-started
+  via `_ensure_learn_listening`); 10 s timeout, the button doubles as Cancel; a conflicting
+  trigger asks first. The reassignment is a `QUndoStack` macro of the existing
+  `SetAttrCommand`/`SetGroupAttrCommand` (one undo step; group-aware, also updating the
+  `MappingGroup`'s own trigger fields).
 - [x] **Readable function names** (`v0.48.72-readable-function-names`, issue #209) — Qt-free
   `function_names.py`: `FUNCTION_NAMES` maps the only four tags the real Serato exports contain
   (inventoried from `data/xdj_xz-ddj_xp2-4decks.xml` + `data/serato/*.xml.zip`; a test keeps the table
