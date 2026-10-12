@@ -232,6 +232,52 @@ def run_sync(
     return results
 
 
+class PlugInSyncTracker:
+    """Decides which sync sets to send when a controller is plugged in.
+
+    Remembers the output ports seen on the previous poll; a set is due only
+    when the port it resolves to (:func:`resolve_output_port`) wasn't there
+    last time -- so a controller staying connected is never re-synced, and
+    unplugging then replugging it syncs it again. Tracking ports rather than
+    controllers also means a set recorded (or edited) while its controller
+    is already connected isn't sent back to it on the next poll.
+
+    The first :meth:`due` call only records the ports (a controller already
+    connected when watching starts wasn't "plugged in"); :meth:`seed` does
+    the same explicitly, e.g. with the port list the launch-time Sync just
+    used, so a controller isn't synced twice at launch.
+    """
+
+    def __init__(self) -> None:
+        self._known: frozenset[str] | None = None
+
+    @property
+    def seeded(self) -> bool:
+        return self._known is not None
+
+    def seed(self, available_ports: Iterable[str]) -> None:
+        self._known = frozenset(available_ports)
+
+    def reset(self) -> None:
+        """Forgets the ports, so the next :meth:`due` call only re-seeds."""
+        self._known = None
+
+    def due(self, sync_sets: Iterable[ControllerSyncSet], available_ports: Sequence[str]) -> list[ControllerSyncSet]:
+        """The sets whose controller appeared since the previous call."""
+        previous = self._known
+        self.seed(available_ports)
+        if previous is None:
+            return []
+        appeared = [port for port in available_ports if port not in previous]
+        if not appeared:
+            return []
+        return [
+            sync_set
+            for sync_set in sync_sets
+            if (port := resolve_output_port(sync_set, available_ports)) is not None and port in appeared
+        ]
+
+
 def summarize_results(results: Sequence[SyncResult]) -> str:
     """One status-bar line, e.g. ``"Synced 1/2 controller(s): DDJ-XP2 (12 msg), XDJ-XZ (not connected)"``."""
     if not results:
@@ -246,6 +292,7 @@ def summarize_results(results: Sequence[SyncResult]) -> str:
 
 __all__ = [
     "ControllerSyncSet",
+    "PlugInSyncTracker",
     "SyncMessage",
     "SyncResult",
     "resolve_output_port",

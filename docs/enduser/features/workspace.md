@@ -40,7 +40,7 @@ organized by what it is:
 | `Open Mapping…`, `Open Recent Mapping`, `Save Mapping`, `Save Mapping As…` | The Serato `.xml` or Traktor `.tsi` mapping you edit. It stays where your DJ software keeps it |
 | `Restore Previous Version…`, `Show Mapping in Finder` | The version kept by your last save, and where the file is |
 | `Controller Profile ▸` | The controller profile you build in Controller Setup: new, open or save a draft, learn triggers from a mapping |
-| `Import ▸` / `Export ▸` | Serato crates, Traktor playlists and Rekordbox exports for the Music Library, and the Live Monitor log |
+| `Import ▸` / `Export ▸` | Serato crates, Traktor playlists and Rekordbox exports for the Music Library, the Live Monitor log, and the [Cheat Sheet (PDF)](cheat-sheet.md) |
 
 The Dashboard's **Your files** card, first on the row with *Known
 controllers* and *MIDI tools*, shows the same things at a glance: the
@@ -56,7 +56,7 @@ and share, `Documents/DJ MIDI Studio` (⚙ Preferences → `Open folder`):
 | `Sync` | One initialization [sync set](controller-sync.md) per controller |
 | `Drafts` | Controller Setup drafts you saved |
 | `Logs` | Live Monitor logs you saved |
-| `Exports` | Playlists exported from the Music Library |
+| `Exports` | Playlists exported from the Music Library, cheat sheets |
 
 Your Serato and Traktor mappings are not moved there: they stay where your
 DJ software keeps them, and the app only remembers where they are.

@@ -32,7 +32,7 @@ DASHBOARD_FILES: HelpEntry = (
         "<li><b>Recent</b>: the last mappings you opened (also in <b>File → Open Recent "
         "Mapping</b>).</li>"
         "<li><b>Sync sets</b>: the initialization messages recorded with <b>● Rec</b> or in "
-        "Controller Setup, one per controller, sent by <b>⟳ Sync</b> and at launch.</li></ul>"
+        "Controller Setup, one per controller, sent by <b>⟳ Sync</b>, at launch and when a controller is plugged in.</li></ul>"
         "Controller profiles you build live in <b>File → Controller Profile</b>."
     ),
     "workspace.md",
@@ -250,6 +250,22 @@ LIBRARY_CATEGORIES: HelpEntry = (
         "Create, rename, merge and delete categories here, and add aliases so several "
         "spellings (<i>DnB</i>, <i>D&amp;B</i>, <i>Drum and Bass</i>) mean the same "
         "category."
+    ),
+    "music-library.md",
+)
+
+LIBRARY_DUPLICATES: HelpEntry = (
+    "Duplicate tracks",
+    (
+        "<b>Find duplicates…</b> lists two kinds of groups from the scanned folders:"
+        "<ul><li><b>Exact copies</b>: byte-identical files. Only files of the same size are "
+        "read and compared by content hash.</li>"
+        "<li><b>Same artist + title</b>: tags that match once case, accents, punctuation, "
+        "<i>feat.</i> credits and <i>(Original Mix)</i> are ignored. Other versions "
+        "(<i>Extended Mix</i>, <i>Radio Edit</i>, remixes) stay distinct. A candidate, not "
+        "proof: compare format, size and bitrate.</li></ul>"
+        "Nothing is deleted or moved: <b>Reveal in Finder</b> (or double-click) shows a copy "
+        "so you can deal with it yourself."
     ),
     "music-library.md",
 )
