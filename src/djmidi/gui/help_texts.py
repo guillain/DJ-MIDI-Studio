@@ -165,7 +165,10 @@ LIVE_MONITOR: HelpEntry = (
         "It starts on its own when a mapping is loaded (⚙ Preferences). To choose ports "
         "yourself: <b>Refresh ports</b>, tick inputs, <b>Start monitoring</b>.<br><br>"
         "To see the LED messages Serato sends back, tick <b>Create virtual monitor</b> and "
-        "add <i>DJMidiStudio Monitor</i> as an extra MIDI output in Serato."
+        "add <i>DJMidiStudio Monitor</i> as an extra MIDI output in Serato.<br><br>"
+        "A press that fires two or more different functions on the same deck is shown in "
+        "amber as <b>CONFLICT</b> and counted; Serato's identical repeated triggers are not "
+        "conflicts."
     ),
     "live-monitor.md",
 )
@@ -315,6 +318,21 @@ LIBRARY_PLAYLISTS: HelpEntry = (
         "are used.</li></ul>"
         "Import Serato crates, Traktor playlists or a Rekordbox USB export (read only); "
         "export to a new Serato crate or Traktor playlist file where you choose."
+    ),
+    "music-library.md",
+)
+
+LIBRARY_SET: HelpEntry = (
+    "Set preparation",
+    (
+        "Build a set by hand: drag tracks from the table into the list (or use <b>Add "
+        "selection</b>), then drag them inside the list to reorder. Each track plays once.<br>"
+        "The curve shows BPM (blue, left scale) and energy (orange, 1-10, from the Energy tag). "
+        "A transition is <span style='color:#d64545'>red</span> and marked ⚠ when the BPM jumps "
+        "past your tolerance or the keys clash on the Camelot wheel; dashed grey means a BPM or "
+        "key is missing so it can't be checked. Nothing is reordered for you.<br>"
+        "The draft is remembered. <b>Save as playlist…</b> stores it as an app playlist; the "
+        "export buttons write a new Serato crate or Traktor playlist where you choose."
     ),
     "music-library.md",
 )

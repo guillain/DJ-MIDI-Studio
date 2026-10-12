@@ -13,7 +13,9 @@ playlist engine, Serato/Traktor/Rekordbox formats) to one tab:
   (`commands.WriteTrackMetadataCommand`, or `WriteTracksMetadataCommand` when
   "Write tags to selection…" copies chosen fields to every selected track),
   a Categories panel over the
-  taxonomy registry, and a Playlists panel (import/generate/export).
+  taxonomy registry, a Playlists panel (import/generate/export), and a Set
+  panel (`gui/set_preparation.py`, issue #221) where a set is built by
+  dragging table rows in play order.
 
 Opening the library index is lazy (first time the tab is shown), so merely
 constructing the main window never creates or reads `library.sqlite3`.
@@ -32,6 +34,7 @@ from PySide6.QtCore import (
     QFile,
     QItemSelection,
     QItemSelectionModel,
+    QMimeData,
     QModelIndex,
     QPersistentModelIndex,
     QSortFilterProxyModel,
@@ -81,7 +84,12 @@ from djmidi.gui.audio_preview import AudioPreviewBar
 from djmidi.gui.commands import WriteTrackMetadataCommand, WriteTracksMetadataCommand
 from djmidi.gui.duplicates_dialog import DuplicatesDialog
 from djmidi.gui.help_button import help_button, help_row
-from djmidi.library import discard, duplicates, relink, workspace
+from djmidi.gui.set_preparation import (
+    SET_TRACKS_MIME,
+    SetPreparationPanel,
+    encode_paths,
+)
+from djmidi.library import discard, duplicates, relink, set_prep, workspace
 from djmidi.library.analysis import analysis_available, to_camelot
 from djmidi.library.db import LibraryDB, TrackRecord, default_library_db_path
 from djmidi.library.metadata import TrackMetadata, clean_noise_frames
@@ -143,7 +151,7 @@ PATH_DIRECTION_LABELS = {
     "Steady BPM (smallest moves)": "flat",
 }
 
-_CONTENT_MIN_WIDTH = 760
+_CONTENT_MIN_WIDTH = 820
 _CONTENT_MIN_HEIGHT = 440
 
 ALL_CATEGORIES = "All categories"
@@ -480,6 +488,23 @@ class LibraryTableModel(QAbstractTableModel):
             return COLUMNS[section][0]
         return None
 
+    # Dragging rows out (to the Set panel, issue #221) carries their paths.
+    def flags(self, index: QModelIndex | QPersistentModelIndex) -> Qt.ItemFlag:
+        flags = super().flags(index)
+        return flags | Qt.ItemFlag.ItemIsDragEnabled if index.isValid() else flags
+
+    def mimeTypes(self) -> list[str]:
+        return [SET_TRACKS_MIME]
+
+    def mimeData(self, indexes) -> QMimeData:
+        rows = sorted({index.row() for index in indexes if index.isValid()})
+        mime = QMimeData()
+        mime.setData(SET_TRACKS_MIME, encode_paths([self._rows[row].path for row in rows]))
+        return mime
+
+    def supportedDragActions(self) -> Qt.DropAction:
+        return Qt.DropAction.CopyAction
+
     def data(self, index: QModelIndex | QPersistentModelIndex, role: int = Qt.ItemDataRole.DisplayRole):
         if not index.isValid():
             return None
@@ -676,6 +701,17 @@ class MusicLibraryView(QWidget):
         self.side_tabs.addTab(_scrolled(self._build_track_panel()), "Track")
         self.side_tabs.addTab(_scrolled(self._build_categories_panel()), "Categories")
         self.side_tabs.addTab(_scrolled(self._build_playlists_panel()), "Playlists")
+        self.set_panel = SetPreparationPanel(
+            db=lambda: self.db,
+            selected_rows=self.selected_rows,
+            selected_playlist=self._selected_playlist,
+            status=self.status_label.setText,
+        )
+        self.set_panel.saveRequested.connect(self.save_set)
+        self.side_tabs.addTab(_scrolled(self.set_panel), "Set")
+        # Four tabs overflow the side panel's width: grow it instead of
+        # showing squeezed scroll arrows (the tab itself scrolls, issue #19).
+        self.side_tabs.setUsesScrollButtons(False)
         body.addWidget(self.side_tabs)
         body.setStretchFactor(0, 3)
         body.setStretchFactor(1, 2)
@@ -795,6 +831,10 @@ class MusicLibraryView(QWidget):
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.setWordWrap(False)
+        # Rows drag out to the Set panel (issue #221); the table itself
+        # never accepts drops.
+        self.table.setDragEnabled(True)
+        self.table.setDragDropMode(QAbstractItemView.DragDropMode.DragOnly)
         box.addWidget(self.table, 1)
 
         self.filter_edit.textChanged.connect(self._on_filter_changed)
@@ -1103,6 +1143,7 @@ class MusicLibraryView(QWidget):
     def _reload_rows(self) -> None:
         current = self._current_path
         self.table_model.set_rows(workspace.consolidate(self.db))
+        self.set_panel.set_rows(self.table_model.rows())
         self._refresh_category_filter()
         self._refresh_value_filters(self.table_model.rows())
         if current is not None:
@@ -1970,6 +2011,19 @@ class MusicLibraryView(QWidget):
     def selected_playlist_id(self) -> int | None:
         item = self.playlist_list.currentItem()
         return int(item.data(Qt.ItemDataRole.UserRole)) if item is not None else None
+
+    def _selected_playlist(self) -> tuple[int, str] | None:
+        item = self.playlist_list.currentItem()
+        if item is None:
+            return None
+        return int(item.data(Qt.ItemDataRole.UserRole)), item.text().split("  (", 1)[0]
+
+    def save_set(self, name: str, paths: list[str]) -> int:
+        """The Set panel's draft as an app playlist, then exportable like any
+        other from the Playlists panel (issue #221)."""
+        playlist_id = self.create_playlist(name, paths, set_prep.SOURCE_SET)
+        self.status_label.setText(f"Saved the set as “{name}” ({len(paths)} track(s)).")
+        return playlist_id
 
     def _on_playlist_selected(self, current: QListWidgetItem | None, _previous: QListWidgetItem | None) -> None:
         self.playlist_tracks.clear()
