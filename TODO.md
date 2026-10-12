@@ -132,6 +132,13 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Workspace backup and restore** (`v0.48.58-workspace-backup`, issue #187) — `File → Back Up Workspace…` /
+  `Restore Workspace…` (also buttons beside Preferences' files folder) zip `Documents/DJ MIDI Studio`, preferences.json
+  and, when asked, the library index (SQLite online backup API, consistent while open) with a `manifest.json`. Qt-free
+  `djmidi.backup`: restore is a dry-run plan by default (what it adds/overwrites, zip-slip and symlink-escape refused,
+  JSON/SQLite payloads validated before any write), only adds/overwrites, and asks the user to restart afterwards
+  rather than hot-reloading preferences/profiles. Backups already in the workspace are never nested.
+
 - [x] **Reverse function search** (`v0.48.57-function-search`, issue #185) — a **Find function** field at the top
   of the editing column (By Channel/Deck/Controller) answers "which control triggers function X?". Matching lives
   in the Qt-free `djmidi/function_search.py`: one result per (tag, userio event, deck, slot), Serato's 10x

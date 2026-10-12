@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import dataclasses
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QCheckBox,
@@ -34,6 +34,10 @@ from djmidi.plugins import PluginPreferences
 
 class PreferencesDialog(QDialog):
     """Safe, explicit preferences for plugins and integration policies."""
+
+    # Workspace backup/restore (issue #187), handled by MainWindow.
+    backupRequested = Signal()
+    restoreRequested = Signal()
 
     def __init__(self, preferences: PluginPreferences, parent=None) -> None:
         super().__init__(parent)
@@ -97,6 +101,16 @@ class PreferencesDialog(QDialog):
         open_workspace.clicked.connect(lambda: reveal_in_file_manager(user_paths.ensure_workspace()))
         workspace_layout.addWidget(workspace_label, 1)
         workspace_layout.addWidget(open_workspace)
+        backup_workspace = QPushButton("Back up...")
+        backup_workspace.setToolTip("Save your files and preferences in one zip (File → Back Up Workspace).")
+        backup_workspace.clicked.connect(self.backupRequested.emit)
+        restore_workspace = QPushButton("Restore...")
+        restore_workspace.setToolTip("Restore a workspace backup, after confirming what it overwrites.")
+        restore_workspace.clicked.connect(self.restoreRequested.emit)
+        workspace_layout.addWidget(backup_workspace)
+        workspace_layout.addWidget(restore_workspace)
+        self._backup_button = backup_workspace
+        self._restore_button = restore_workspace
         theme = QComboBox()
         theme.addItem("Follow system", "system")
         theme.addItem("Light", "light")
