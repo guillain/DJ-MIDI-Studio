@@ -16,6 +16,7 @@ from __future__ import annotations
 from PySide6.QtGui import QStandardItem, QStandardItemModel
 
 from djmidi import catalog
+from djmidi.function_names import function_name, is_known
 from djmidi.gui import layout as layout_mod
 from djmidi.gui.layout_view import Usage, _deck_sort_key
 
@@ -26,8 +27,17 @@ def _leaf_text(cell: layout_mod.LayoutCell, per_deck: dict[str, set[str]]) -> st
     if not per_deck:
         return f"{cell.label} (not used)"
     decks = ", ".join(f"D{d}" for d in sorted(per_deck, key=_deck_sort_key))
-    tags = sorted({tag for tags in per_deck.values() for tag in tags})
-    return f"{cell.label} — {', '.join(tags)} ({decks})"
+    names = sorted({function_name(tag) for tag in _tags(per_deck)})
+    return f"{cell.label} — {', '.join(names)} ({decks})"
+
+
+def _tags(per_deck: dict[str, set[str]]) -> list[str]:
+    return sorted({tag for tags in per_deck.values() for tag in tags})
+
+
+def _leaf_tooltip(per_deck: dict[str, set[str]]) -> str:
+    """The raw Serato tags behind the readable names (issue #209)."""
+    return "\n".join(f"{function_name(tag)}: {tag}" if is_known(tag) else tag for tag in _tags(per_deck))
 
 
 def build_controller_columns(
@@ -61,6 +71,8 @@ def build_controller_columns(
                     any_used = True
                 leaf = QStandardItem(_leaf_text(cell, per_deck))
                 leaf.setEditable(False)
+                if per_deck:
+                    leaf.setToolTip(_leaf_tooltip(per_deck))
                 leaf.setData(cell.key, CELL_KEY_ROLE)
                 section_item.appendRow(leaf)
             root.appendRow(section_item)

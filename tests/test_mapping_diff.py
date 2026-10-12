@@ -54,9 +54,12 @@ def test_retagging_every_copy_is_one_reassignment_not_ten(real_config):
     entry = diff.entries[0]
     assert entry.trigger == ("14", "Note On", "65")
     assert entry.event == "click"
-    assert entry.old_functions == ("codfather_st (deck 3, slot 1)",)
+    assert entry.old_functions == ("Codfather ST (deck 3, slot 1)",)
     assert entry.new_functions == ("play (deck 3, slot 1)",)
-    assert entry.summary() == "codfather_st (deck 3, slot 1) -> play (deck 3, slot 1)"
+    assert entry.summary() == "Codfather ST (deck 3, slot 1) -> play (deck 3, slot 1)"
+    # The raw tag stays available for the dialog's tooltip.
+    assert entry.old_raw == ("codfather_st (deck 3, slot 1)",)
+    assert entry.raw_summary() == "codfather_st (deck 3, slot 1) -> play (deck 3, slot 1)"
 
 
 def test_dropping_one_duplicate_copy_is_a_count_change(real_config):
@@ -146,3 +149,17 @@ def test_function_label_names_non_default_deck_sets():
     assert function_label(("play", "Default", "1", None)) == "play (deck 1)"
     assert function_label(("play", "Alt", None, "2")) == "play (set Alt, slot 2)"
     assert function_label(("master", None, None, None)) == "master"
+
+
+def test_function_label_uses_readable_names_and_keeps_the_raw_form():
+    key = ("auto_loop_roll_specific_length", "Default", "2", "3")
+    assert function_label(key) == "Loop roll (deck 2, slot 3)"
+    assert function_label(key, raw=True) == "auto_loop_roll_specific_length (deck 2, slot 3)"
+
+
+def test_changed_entry_carries_raw_tags_too(real_config):
+    new = _copy(real_config)
+    next(_elements(new, "14", "74", "click")).translations[0].behaviour = "toggle"
+    (entry,) = diff_configs(real_config, new).entries
+    assert entry.old_raw == entry.new_raw
+    assert entry.raw_summary().startswith(entry.old_raw[0])

@@ -47,7 +47,9 @@ def test_view_lists_matches_with_location_physical_control_and_trigger():
     view.set_query("loop roll deck 2 slot 3")
     assert view.result_count() == 1
     first, second = view.results.item(0).text().split("\n")
-    assert first == "auto loop roll specific length · Deck 2 · Slot 3"
+    assert first == "Loop roll · Deck 2 · Slot 3"
+    # The raw Serato tag stays in the tooltip.
+    assert "auto_loop_roll_specific_length" in view.results.item(0).toolTip()
     assert second.startswith("ch") and " → " in second
     # Several controllers resolve the same trigger: the row names one, the
     # tooltip lists them all.

@@ -14,7 +14,9 @@ def _config() -> MidiConfig:
 
 
 def test_function_text_and_deck_label():
-    assert cs.function_text("auto_loop_specific_length", "8") == "auto loop specific length 8"
+    assert cs.function_text("auto_loop_specific_length", "8") == "Auto loop · slot 8"
+    # Unknown tags print raw.
+    assert cs.function_text("cue_set", "2") == "cue_set · slot 2"
     assert cs.function_text("play", "(none)") == "play"
     assert cs.function_text("play", "") == "play"
     assert cs.deck_label("0") == "D1"
@@ -81,29 +83,34 @@ def test_build_sheets_on_the_real_fixture():
         ("DDJ-XP2", "photo"),
         ("XDJ-XZ", "photo"),
         ("DDJ-800", "table"),
+        ("", "table"),
     ]
-    xp2, xz, ddj800 = sheets
+    xp2, xz, ddj800, glossary = sheets
     assert "PAD MODE 5" in xp2.title
     # Both pad grids, every pad mapped, deck layers merged on one label.
     assert len(xp2.entries) == 32
     pad1 = next(e for e in xp2.entries if e.control == "Pad 1")
-    assert pad1.functions == ("codfather st 0 (D1, D3)",)
-    assert next(e for e in xp2.entries if e.control == "Pad 1 (R)").functions == ("codfather st 0 (D2, D4)",)
+    assert pad1.functions == ("Codfather ST · slot 0 (D1, D3)",)
+    assert next(e for e in xp2.entries if e.control == "Pad 1 (R)").functions == ("Codfather ST · slot 0 (D2, D4)",)
     assert all(e.geometry is not None for e in xp2.entries)
     # The XDJ-XZ binds a SHIFT layer on the same pads.
     xz_pad1 = next(e for e in xz.entries if e.control == "Pad 1")
-    assert xz_pad1.functions == ("codfather st 0 (D1)", "SHIFT: auto loop specific length 6 (D1)")
+    assert xz_pad1.functions == ("Codfather ST · slot 0 (D1)", "SHIFT: Auto loop · slot 6 (D1)")
     # Unmapped markers stay drawable as outlines.
     assert xz.unmapped
     # No geometry: every mapped variant in a table (64 triggers).
     assert len(ddj800.entries) == 64
     assert all(e.geometry is None for e in ddj800.entries)
+    # Paper has no tooltip: a last page maps each readable name to its tag.
+    assert glossary.title == cs.GLOSSARY_TITLE
+    assert ("Codfather ST", ("Serato tag: codfather_st",)) in [(e.control, e.functions) for e in glossary.entries]
 
 
 def test_a_controller_with_nothing_mapped_still_gets_a_page():
     sheets = cs.build_sheets(_config(), ["Korg nanoPAD2", "Hercules DJControl Inpulse 500"])
-    assert [s.kind for s in sheets] == ["photo", "table"]
-    assert all(not s.entries for s in sheets)
+    assert [s.kind for s in sheets] == ["photo", "table", "table"]
+    assert all(not s.entries for s in sheets[:2])
+    assert sheets[2].title == cs.GLOSSARY_TITLE
 
 
 def test_one_page_per_mapped_pad_bank_and_a_table_for_unshown_controls():
@@ -124,5 +131,5 @@ def test_one_page_per_mapped_pad_bank_and_a_table_for_unshown_controls():
     config = MidiConfig(controls=[control("0", "cue_set"), control("16", "loop_roll")])
     sheets = cs.build_sheets(config, ["DDJ-XP2"])
     assert [s.title for s in sheets] == ["DDJ-XP2 — pads PAD MODE 1", "DDJ-XP2 — pads PAD MODE 2"]
-    assert [e.functions for e in sheets[0].entries] == [("cue set (D1)",)]
-    assert [e.functions for e in sheets[1].entries] == [("loop roll (D1)",)]
+    assert [e.functions for e in sheets[0].entries] == [("cue_set (D1)",)]
+    assert [e.functions for e in sheets[1].entries] == [("loop_roll (D1)",)]

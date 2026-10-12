@@ -68,3 +68,30 @@ def test_channel_columns_node_to_item_covers_only_that_channels_controls():
     assert len(controls_in_column) == len(node_to_item.keys() & {id(c) for c in controls_in_column})
     other_controls = [c for c in config.controls if c.channel != channel]
     assert not any(id(c) in node_to_item for c in other_controls)
+
+
+def test_mapping_rows_show_readable_names_with_the_raw_tag_in_the_tooltip():
+    from djmidi.gui.tree_model import mapping_label, mapping_tooltip
+    from djmidi.model import MappingElement
+
+    mapping = MappingElement("auto_loop_roll_specific_length", deck_id="2", slot_id="3")
+    assert mapping_label(mapping) == "Loop roll  (deck 2, slot 3)"
+    assert "auto_loop_roll_specific_length" in mapping_tooltip(mapping)
+    unknown = MappingElement("play", deck_id="1", slot_id="0")
+    assert mapping_label(unknown) == "play  (deck 1, slot 0)"
+
+
+def test_channel_filter_still_matches_the_raw_tag():
+    from djmidi.gui.tree_model import MappingFilterProxy
+
+    _channel, model, _index = build_channel_columns(parse_file(FIXTURE))[0]
+    proxy = MappingFilterProxy()
+    proxy.setRecursiveFilteringEnabled(True)
+    proxy.setSourceModel(model)
+    proxy.setFilterCaseSensitivity(proxy.filterCaseSensitivity().CaseInsensitive)
+    proxy.setFilterFixedString("codfather_st")
+    assert proxy.rowCount() > 0  # rows now read "Codfather ST", the tag still matches
+    proxy.setFilterFixedString("Codfather ST")
+    assert proxy.rowCount() > 0
+    proxy.setFilterFixedString("no_such_tag_anywhere")
+    assert proxy.rowCount() == 0

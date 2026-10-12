@@ -18,6 +18,10 @@ specific length"), and every query token must match something:
 - a bare number matches the deck or slot id (or a number inside the tag),
 - `click` / `output` (or `led`) match the userio event.
 
+A result is shown under its readable name (`function_names`, "Loop roll"),
+and that name's words match too, next to the raw tag's: the raw tag stays in
+the row's tooltip.
+
 Deliberately Qt-free so it's testable without a QApplication; physical
 control names come from `catalog.lookup`, which is Qt-free too.
 """
@@ -28,6 +32,7 @@ import re
 from dataclasses import dataclass, field
 
 from djmidi import catalog
+from djmidi.function_names import function_name
 from djmidi.model import Control, MappingElement, MidiConfig
 
 _TOKEN_RE = re.compile(r"[a-z0-9]+")
@@ -72,7 +77,9 @@ class FunctionResult:
 
     @property
     def label(self) -> str:
-        return readable_label(self.tag)
+        """The readable function name ("Loop roll"), or the raw tag when
+        `function_names` has none."""
+        return function_name(self.tag)
 
     def location(self) -> str:
         parts = []
@@ -166,15 +173,18 @@ def _score(result: FunctionResult, free: list[str], deck, slot, event) -> float 
         return None
     if event is not None and result.event != event:
         return None
-    words = tokenize(result.tag)
-    joined = "".join(words)
+    raw_words = tokenize(result.tag)
+    name_words = tokenize(function_name(result.tag))
+    words = list(dict.fromkeys(raw_words + name_words))
+    joined = "".join(raw_words) + " " + "".join(name_words)
     total = 0.0
     for token in free:
         score = _token_score(token, words, joined, result)
         if not score:
             return None
         total += score
-    if free and " ".join(free) in " ".join(words):
+    phrase = " ".join(free)
+    if free and (phrase in " ".join(raw_words) or phrase in " ".join(name_words)):
         total += _PHRASE_BONUS
     if deck is not None or slot is not None:
         total += _NUMBER

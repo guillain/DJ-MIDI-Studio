@@ -132,6 +132,18 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Readable function names** (`v0.48.72-readable-function-names`, issue #209) — Qt-free
+  `function_names.py`: `FUNCTION_NAMES` maps the only four tags the real Serato exports contain
+  (inventoried from `data/xdj_xz-ddj_xp2-4decks.xml` + `data/serato/*.xml.zip`; a test keeps the table
+  equal to that set) to labels built from the tag's own words — `Auto loop`, `Loop roll`,
+  `Codfather ST`/`FX` (re-cased only: their meaning was never confirmed). Slots stay numbers
+  (`Loop roll · slot 3`), never loop lengths, since slot→length isn't documented; alias values (LED
+  levels) aren't used; unknown tags (Traktor commands included) stay raw. Used by the By Channel /
+  By Deck / By Controller trees (raw tag in each row's tooltip; `tree_model.MappingFilterProxy` keeps
+  the By Channel filter matching raw tags), Find function (readable words searchable too, raw tag in
+  the tooltip), Compare mappings (`DiffEntry.old_raw`/`new_raw`/`raw_summary()` → tooltip; sorting
+  stays on raw tags) and the cheat sheet (`function_text`; a final `Function names` glossary sheet
+  maps each short name to its tag, since paper has no tooltip).
 - [x] **Docs screenshots for the 2026-10 features** (`v0.48.71-docs-screenshots-2026-10`, issue #213) —
   `scripts/capture_docs_screenshots.py` now also captures the cheat-sheet export dialog and a rendered page, the mapping
   diff window, Find function, the duplicates and relink dialogs, the audio preview bar and the sync scene combo, all from

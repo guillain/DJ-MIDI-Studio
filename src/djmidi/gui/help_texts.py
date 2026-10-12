@@ -109,8 +109,9 @@ FUNCTION_SEARCH: HelpEntry = (
     "Find function",
     (
         "The reverse of the trees: type what a control should <i>do</i> and see which control "
-        "does it. Words match the Serato function names (<tt>loop roll</tt> finds "
-        "<tt>auto_loop_roll_specific_length</tt>), case and underscores don't matter.<br><br>"
+        "does it. Words match the short function names and the original Serato tags "
+        "(<tt>loop roll</tt> finds <tt>auto_loop_roll_specific_length</tt>, shown as "
+        "<i>Loop roll</i>; hover a result for its tag), case and underscores don't matter.<br><br>"
         "<tt>deck 2</tt> / <tt>slot 3</tt> keep only that deck or slot (numbers as the file "
         "stores them, like the By Deck tab); a bare number matches either. Add <tt>output</tt> "
         "for LED feedback only.<br><br>"
@@ -324,6 +325,8 @@ MAPPING_DIFF: HelpEntry = (
         "(e.g. <i>alias on: 127 → 100</i>).</li>"
         "<li><b>Duplicate count</b>: Serato repeats every trigger (often 10×); a file that "
         "gained or lost copies shows here once, not as many adds or removes.</li></ul>"
+        "Functions show their short name (<i>Loop roll</i>); hover a change for the original "
+        "Serato tags.<br><br>"
         "Click a row to highlight that control on the layouts and select it in "
         "<b>By Channel</b>. Opened from <b>File → Compare Mapping With…</b> or "
         "<b>File → Compare With Previous Version</b> (the <tt>.bak</tt> kept by the last save)."

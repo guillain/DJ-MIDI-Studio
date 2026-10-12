@@ -12,6 +12,7 @@ from __future__ import annotations
 from PySide6.QtGui import QStandardItem, QStandardItemModel
 
 from djmidi import catalog
+from djmidi.function_names import function_name, label_with_raw
 from djmidi.gui.mapping_group import MappingGroup, build_mapping_groups
 from djmidi.gui.tree_model import NODE_ROLE
 from djmidi.model import MidiConfig
@@ -25,7 +26,16 @@ def _group_label(group: MappingGroup) -> str:
     hits = catalog.lookup(group.channel, group.event_type, group.control_no)
     physical = "; ".join(f"{h.controller}: {h.name}" for h in hits) or "unknown physical control"
     count = f" (x{len(group.members)})" if len(group.members) > 1 else ""
-    return f"{group.tag} [{group.event}] — ch{group.channel} {group.event_type} #{group.control_no} -> {physical}{count}"
+    return f"{function_name(group.tag)} [{group.event}] — ch{group.channel} {group.event_type} #{group.control_no} -> {physical}{count}"
+
+
+def _leaf(group: MappingGroup) -> QStandardItem:
+    """A function row: readable name in the text, raw tag in the tooltip."""
+    leaf = QStandardItem(_group_label(group))
+    leaf.setToolTip(f"{label_with_raw(group.tag, group.slot_id)} [{group.event}]")
+    leaf.setEditable(False)
+    leaf.setData(group, NODE_ROLE)
+    return leaf
 
 
 def _group_by_deck_then_slot(config: MidiConfig) -> dict[str, dict[str, list[MappingGroup]]]:
@@ -50,10 +60,7 @@ def build_deck_tree(config: MidiConfig) -> QStandardItemModel:
             slot_item = QStandardItem(f"Slot {slot_id}")
             slot_item.setEditable(False)
             for group in slots[slot_id]:
-                leaf = QStandardItem(_group_label(group))
-                leaf.setEditable(False)
-                leaf.setData(group, NODE_ROLE)
-                slot_item.appendRow(leaf)
+                slot_item.appendRow(_leaf(group))
             deck_item.appendRow(slot_item)
         root.appendRow(deck_item)
 
@@ -76,10 +83,7 @@ def build_deck_columns(config: MidiConfig) -> list[tuple[str, QStandardItemModel
             slot_item = QStandardItem(f"Slot {slot_id}")
             slot_item.setEditable(False)
             for group in slots[slot_id]:
-                leaf = QStandardItem(_group_label(group))
-                leaf.setEditable(False)
-                leaf.setData(group, NODE_ROLE)
-                slot_item.appendRow(leaf)
+                slot_item.appendRow(_leaf(group))
             root.appendRow(slot_item)
         columns.append((deck_id, model))
     return columns
