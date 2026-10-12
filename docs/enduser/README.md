@@ -76,6 +76,7 @@ Open several, one per controller.
 | 🖨️ | [Cheat Sheet (PDF)](features/cheat-sheet.md) | Print the mapping on each controller's photo |
 | 🔀 | [MIDI Routing, Clock and Metronome](features/midi-routing-and-clock.md) | Route MIDI, MIDI Clock from Ableton Link, MIDI loops |
 | 🪟 | [Workspace and preferences](features/workspace.md) | Dockable tools, Performance Mode, Preferences |
+| 🎤 | [Stage Mode](features/stage-mode.md) | Full-screen, high-contrast emulator and live MIDI, Esc to exit |
 
 Supported out of the box: Serato DJ Pro and Traktor mappings; DDJ-XP2,
 XDJ-XZ, DDJ-1000, DDJ-FLX4, DDJ-FLX10, DDJ-REV1, DDJ-REV5, DDJ-800, Numark

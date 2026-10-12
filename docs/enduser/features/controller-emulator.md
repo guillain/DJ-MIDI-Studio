@@ -91,5 +91,6 @@ built-in one.
 ## Related
 
 - [Live Monitor](live-monitor.md)
+- [Stage Mode](stage-mode.md)
 - [Controller Images](controller-images.md)
 - [Mapping editor](mapping-editor.md)

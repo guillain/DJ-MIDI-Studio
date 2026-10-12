@@ -33,6 +33,7 @@
 | 🖨️ | [Cheat Sheet (PDF)](cheat-sheet.md) | Print each controller's photo with the function of every mapped pad and button |
 | 🔀 | [MIDI Routing, Clock and Metronome](midi-routing-and-clock.md) | Route MIDI, generate Clock from Ableton Link, loop MIDI |
 | 🪟 | [Workspace and preferences](workspace.md) | Tool windows, Performance Mode, Preferences |
+| 🎤 | [Stage Mode](stage-mode.md) | Full-screen, high-contrast emulator and live MIDI for playing on stage |
 
 ## In this section
 
@@ -51,3 +52,4 @@
 | [cheat-sheet.md](cheat-sheet.md) | Printable PDF of the mapping on each controller's photo |
 | [midi-routing-and-clock.md](midi-routing-and-clock.md) | Routes, transforms, MIDI Clock from Link, Metronome |
 | [workspace.md](workspace.md) | Tabs and docks, window controls, Performance Mode, Preferences |
+| [stage-mode.md](stage-mode.md) | Full-screen emulator and compact monitor, Esc to exit |
