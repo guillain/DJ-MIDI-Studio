@@ -108,3 +108,11 @@ def test_plugin_preferences_check_for_updates_defaults_true_and_round_trips(tmp_
     path = tmp_path / "updates.json"
     preferences.save(path)
     assert PluginPreferences.load(path).check_for_updates is False
+
+
+def test_plugin_preferences_sync_on_scene_switch_defaults_false_and_round_trips(tmp_path):
+    assert PluginPreferences.from_json('{"enabled": {}}').sync_on_scene_switch is False
+    preferences = PluginPreferences(sync_on_scene_switch=True)
+    path = tmp_path / "preferences.json"
+    preferences.save(path)
+    assert PluginPreferences.load(path).sync_on_scene_switch is True

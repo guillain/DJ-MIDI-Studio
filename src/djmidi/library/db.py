@@ -64,6 +64,15 @@ CREATE TABLE IF NOT EXISTS user_categories (
 CREATE TABLE IF NOT EXISTS removed_categories (
     canonical TEXT PRIMARY KEY
 );
+
+-- Small per-library UI choices remembered between sessions (issue #211:
+-- the last "Auto: mix path" options), as JSON-encoded values. Living in
+-- the library index keeps them out of preferences.json, and the test
+-- suite's `:memory:` index keeps tests away from the real values.
+CREATE TABLE IF NOT EXISTS library_settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+);
 """
 
 _METADATA_COLUMNS = tuple(f.name for f in fields(TrackMetadata))
@@ -191,6 +200,33 @@ class LibraryDB:
         cur = self._conn.execute(query, params)
         self._conn.commit()
         return cur.rowcount
+
+    def mark_paths_missing(self, paths: Iterable[str]) -> int:
+        """Flag the tracks at `paths` missing (issue #208: copies moved to
+        the Trash). Like a scan, never deletes a row. Returns how many rows
+        changed."""
+        changed = 0
+        with self._conn:
+            for path in paths:
+                cur = self._conn.execute("UPDATE tracks SET missing = 1 WHERE path = ? AND missing = 0", (str(path),))
+                changed += cur.rowcount
+        return changed
+
+    def playlists_containing(self, paths: Iterable[str]) -> dict[str, list[str]]:
+        """Name of every playlist of this app listing each of `paths`
+        (a path no playlist lists is left out)."""
+        result: dict[str, list[str]] = {}
+        for path in paths:
+            rows = self._conn.execute(
+                """
+                SELECT DISTINCT p.name FROM playlist_tracks pt JOIN playlists p ON p.id = pt.playlist_id
+                WHERE pt.path = ? ORDER BY p.name COLLATE NOCASE
+                """,
+                (str(path),),
+            ).fetchall()
+            if rows:
+                result[str(path)] = [r[0] for r in rows]
+        return result
 
     def list_tracks(self, root_id: int | None = None, include_missing: bool = True) -> list[TrackRecord]:
         query = "SELECT id, root_id, path, size, mtime, missing FROM tracks"
@@ -376,3 +412,19 @@ class LibraryDB:
         ]
         removed = [r[0] for r in self._conn.execute("SELECT canonical FROM removed_categories ORDER BY canonical")]
         return saved, removed
+
+    def get_setting(self, key: str, default: object = None) -> object:
+        """A remembered UI choice, or `default` when unset or unreadable."""
+        row = self._conn.execute("SELECT value FROM library_settings WHERE key = ?", (key,)).fetchone()
+        if row is None:
+            return default
+        try:
+            return json.loads(row[0])
+        except ValueError:
+            return default
+
+    def set_setting(self, key: str, value: object) -> None:
+        self._conn.execute(
+            "INSERT OR REPLACE INTO library_settings (key, value) VALUES (?, ?)", (key, json.dumps(value))
+        )
+        self._conn.commit()

@@ -93,6 +93,13 @@ class PreferencesDialog(QDialog):
             "unplugging and replugging it sends the set again."
         )
         self._auto_sync_on_plug_in = auto_sync_on_plug_in
+        sync_on_scene_switch = QCheckBox("Sync when switching scene")
+        sync_on_scene_switch.setChecked(preferences.sync_on_scene_switch)
+        sync_on_scene_switch.setToolTip(
+            "Send each connected controller its set for the new scene as soon as you pick another "
+            "scene beside ⟳ Sync. Off: switching scenes sends nothing until you click ⟳ Sync."
+        )
+        self._sync_on_scene_switch = sync_on_scene_switch
         check_for_updates = QCheckBox("Check for a new version at launch")
         check_for_updates.setChecked(preferences.check_for_updates)
         check_for_updates.setToolTip(
@@ -172,6 +179,7 @@ class PreferencesDialog(QDialog):
         policy_layout.addRow(reopen_last_files)
         policy_layout.addRow(auto_sync_on_startup)
         policy_layout.addRow(auto_sync_on_plug_in)
+        policy_layout.addRow(sync_on_scene_switch)
         policy_layout.addRow(check_for_updates)
         policy_layout.addRow("Your files folder:", workspace_row)
 
@@ -370,6 +378,7 @@ class PreferencesDialog(QDialog):
         self._preferences.reopen_last_files = self._reopen_last_files.isChecked()
         self._preferences.auto_sync_on_startup = self._auto_sync_on_startup.isChecked()
         self._preferences.auto_sync_on_plug_in = self._auto_sync_on_plug_in.isChecked()
+        self._preferences.sync_on_scene_switch = self._sync_on_scene_switch.isChecked()
         self._preferences.check_for_updates = self._check_for_updates.isChecked()
         self._preferences.log_level = self._log_level.currentText()
         self._preferences.log_path = self._log_path.text().strip()

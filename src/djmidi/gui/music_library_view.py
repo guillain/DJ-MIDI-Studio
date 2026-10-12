@@ -6,7 +6,8 @@ playlist engine, Serato/Traktor/Rekordbox formats) to one tab:
 - music folder list + a "Scan & read tags" job, driven a slice at a time by
   a `QTimer` (this project's non-blocking pattern, see `midi_io` polling),
   and a "Find duplicates…" job on the same timer (issue #184, opens a
-  read-only `DuplicatesDialog`);
+  `DuplicatesDialog` whose ticked copies `discard_duplicates` moves to the
+  Trash, issue #208);
 - the consolidated metadata table (sortable/filterable, category column);
 - a Track panel whose tag edits go through a `QUndoStack`
   (`commands.WriteTrackMetadataCommand`, or `WriteTracksMetadataCommand` when
@@ -27,6 +28,8 @@ from pathlib import Path
 
 from PySide6.QtCore import (
     QAbstractTableModel,
+    QEvent,
+    QFile,
     QItemSelection,
     QItemSelectionModel,
     QModelIndex,
@@ -43,6 +46,7 @@ from PySide6.QtWidgets import (
     QComboBox,
     QDialog,
     QDialogButtonBox,
+    QDoubleSpinBox,
     QFileDialog,
     QFormLayout,
     QFrame,
@@ -77,7 +81,7 @@ from djmidi.gui.audio_preview import AudioPreviewBar
 from djmidi.gui.commands import WriteTrackMetadataCommand, WriteTracksMetadataCommand
 from djmidi.gui.duplicates_dialog import DuplicatesDialog
 from djmidi.gui.help_button import help_button, help_row
-from djmidi.library import duplicates, relink, workspace
+from djmidi.library import discard, duplicates, relink, workspace
 from djmidi.library.db import LibraryDB, TrackRecord, default_library_db_path
 from djmidi.library.metadata import TrackMetadata, clean_noise_frames
 from djmidi.library.playlist import is_camelot_compatible
@@ -85,6 +89,26 @@ from djmidi.library.relink import RelinkCandidate, RelinkProposal
 from djmidi.library.scanner import iter_scan_root
 
 _LOGGER = logging.getLogger(__name__)
+
+# How many entries a confirmation lists before "… and N more".
+_LIST_LIMIT = 15
+
+
+def trash_file(path: str) -> bool:
+    """Move `path` to the system Trash (issue #208); never deletes it."""
+    return QFile.moveToTrash(path)
+
+
+def _bullet_list(lines) -> str:
+    items = list(lines)
+    text = "\n".join(f"• {line}" for line in items[:_LIST_LIMIT])
+    if len(items) > _LIST_LIMIT:
+        text += f"\n… and {len(items) - _LIST_LIMIT} more"
+    return text
+
+
+def _group_name(group: duplicates.DuplicateGroup) -> str:
+    return group.label or (Path(group.paths[0]).name if group.paths else group.key)
 
 # Time slice a job may use per timer tick before yielding back to Qt.
 # A bulk tag write shows its progress window only past this delay, so a
@@ -237,6 +261,65 @@ class BulkTagDialog(QDialog):
             QMessageBox.warning(self, "Invalid BPM", "BPM must be a number, e.g. 174 or 128.5.")
             return
         self.accept()
+
+
+class MixPathDialog(QDialog):
+    """The "Auto: mix path…" options (issues #191/#211): BPM direction, BPM
+    tolerance and maximum length, pre-filled with the last values used."""
+
+    def __init__(
+        self,
+        options: workspace.MixPathOptions,
+        track_count: int,
+        parent: QWidget | None = None,
+    ) -> None:
+        super().__init__(parent)
+        self.setWindowTitle("Mix path")
+        self.setMinimumWidth(380)
+        options = options.normalized()
+        box = QVBoxLayout(self)
+        form = QFormLayout()
+        self.direction_combo = QComboBox()
+        self.direction_combo.addItems(list(PATH_DIRECTION_LABELS))
+        labels = {direction: label for label, direction in PATH_DIRECTION_LABELS.items()}
+        self.direction_combo.setCurrentText(labels.get(options.direction, next(iter(PATH_DIRECTION_LABELS))))
+        form.addRow("BPM direction:", self.direction_combo)
+        self.tolerance_spin = QDoubleSpinBox()
+        self.tolerance_spin.setRange(*workspace.MIX_PATH_TOLERANCE_RANGE)
+        self.tolerance_spin.setSingleStep(0.5)
+        self.tolerance_spin.setDecimals(1)
+        self.tolerance_spin.setPrefix("± ")
+        self.tolerance_spin.setSuffix(" %")
+        self.tolerance_spin.setValue(options.bpm_tolerance_pct)
+        self.tolerance_spin.setToolTip("Largest BPM gap allowed between two consecutive tracks.")
+        form.addRow("BPM tolerance:", self.tolerance_spin)
+        self.length_spin = QSpinBox()
+        self.length_spin.setRange(0, workspace.MIX_PATH_MAX_LENGTH_LIMIT)
+        self.length_spin.setSpecialValueText("No limit")
+        self.length_spin.setSuffix(" tracks")
+        self.length_spin.setValue(options.max_length or 0)
+        self.length_spin.setToolTip("Stop the path after this many tracks; the rest go to the leftovers.")
+        form.addRow("Maximum length:", self.length_spin)
+        box.addLayout(form)
+        self.note_label = QLabel(
+            f"Uses only the {track_count} track(s) the current filter shows (plus the selected start "
+            "track). Clear the filters first to build from the whole library."
+        )
+        self.note_label.setWordWrap(True)
+        self.note_label.setEnabled(False)
+        box.addWidget(self.note_label)
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        box.addWidget(buttons)
+
+    def options(self) -> workspace.MixPathOptions:
+        length = self.length_spin.value()
+        return workspace.MixPathOptions(
+            direction=PATH_DIRECTION_LABELS[self.direction_combo.currentText()],
+            bpm_tolerance_pct=self.tolerance_spin.value(),
+            max_length=length or None,
+        ).normalized()
 
 
 class RelinkDialog(QDialog):
@@ -565,6 +648,10 @@ class MusicLibraryView(QWidget):
         self.audio_preview = AudioPreviewBar(self)
         layout.addWidget(self.audio_preview)
         self.table.selectionModel().currentRowChanged.connect(self._preview_current_row)
+        # Issue #210: Space / Left / Right in the table drive the preview,
+        # and auto-advance moves to the next row when a track ends.
+        self.table.installEventFilter(self)
+        self.audio_preview.advanceRequested.connect(self._advance_preview)
         self._update_track_panel(None)
 
     # --- construction ---------------------------------------------------
@@ -904,6 +991,33 @@ class MusicLibraryView(QWidget):
         row = current.data(ROW_ROLE) if current.isValid() else None
         self.audio_preview.set_source(row.path if row is not None and not row.missing else None)
 
+    def eventFilter(self, watched, event) -> bool:
+        if (
+            watched is self.table
+            and event.type() == QEvent.Type.KeyPress
+            and self.audio_preview.handle_key(event.key(), event.modifiers())
+        ):
+            return True
+        return super().eventFilter(watched, event)
+
+    def _advance_preview(self) -> bool:
+        """Select and play the next playable row below the current one (issue #210)."""
+        current = self.table.selectionModel().currentIndex()
+        start = current.row() + 1 if current.isValid() else 0
+        for proxy_row in range(start, self.proxy.rowCount()):
+            index = self.proxy.index(proxy_row, 0)
+            row = index.data(ROW_ROLE)
+            if row is None or row.missing:
+                continue
+            self.table.selectionModel().setCurrentIndex(
+                index,
+                QItemSelectionModel.SelectionFlag.ClearAndSelect | QItemSelectionModel.SelectionFlag.Rows,
+            )
+            self.table.scrollTo(index)
+            self.audio_preview.play()
+            return True
+        return False
+
     def showEvent(self, event) -> None:
         super().showEvent(event)
         try:
@@ -1039,7 +1153,67 @@ class MusicLibraryView(QWidget):
             self.duplicates_dialog.close()
             self.duplicates_dialog.deleteLater()
         self.duplicates_dialog = DuplicatesDialog(groups, self)
+        self.duplicates_dialog.discardRequested.connect(self.discard_duplicates)
         self.duplicates_dialog.show()
+
+    def discard_duplicates(self, paths: list[str]) -> None:
+        """Move ticked duplicate copies to the Trash (issue #208).
+
+        Refuses outright when a group would keep no copy; otherwise confirms
+        with the full list, moves each copy with `trash_file`
+        (`QFile.moveToTrash`, never a hard delete), flags it missing in the
+        index, then offers to point this app's playlists at the kept copy."""
+        dialog = self.duplicates_dialog
+        parent = dialog if dialog is not None else self
+        plan = discard.plan_discard(dialog.groups if dialog is not None else [], paths)
+        if plan.refused:
+            names = "\n".join(f"• {_group_name(group)}" for group in plan.refused[:_LIST_LIMIT])
+            QMessageBox.warning(
+                parent,
+                "Move to Trash",
+                "Every copy of these groups is ticked -- untick at least one copy to keep in each:\n\n" + names,
+            )
+            return
+        if not plan.discards:
+            return
+        answer = QMessageBox.question(
+            parent,
+            "Move to Trash",
+            f"Move {len(plan.discards)} file(s) to the Trash?\n\n"
+            + _bullet_list(f"{path}\n    keeps {kept}" for path, kept in plan.discards)
+            + "\n\nYou can put them back from the Trash. They are flagged missing in this app's index.",
+        )
+        if answer != QMessageBox.StandardButton.Yes:
+            return
+        result = discard.move_to_trash(self.db, plan, trash_file)
+        message = f"Moved {len(result.moved)} duplicate(s) to the Trash."
+        referenced = discard.playlists_referencing(self.db, result.moved)
+        if referenced:
+            names = sorted({name for playlist_names in referenced.values() for name in playlist_names})
+            answer = QMessageBox.question(
+                parent,
+                "Update playlists",
+                f"{len(referenced)} discarded copy(ies) are in this app's playlists:\n\n"
+                + _bullet_list(names)
+                + "\n\nPoint those playlists at the kept copy instead? "
+                "(Serato, Traktor and Rekordbox files are not changed.)",
+            )
+            if answer == QMessageBox.StandardButton.Yes:
+                repointed = discard.repoint_playlists(self.db, result.moved)
+                message += f" Playlists now use the kept copy for {repointed} of them."
+        if result.failed:
+            message += f" {len(result.failed)} could not be moved."
+            QMessageBox.warning(
+                parent,
+                "Move to Trash",
+                "These files were left where they are:\n\n"
+                + _bullet_list(f"{path}: {reason}" for path, reason in result.failed),
+            )
+        if dialog is not None:
+            dialog.remove_paths([path for path, _kept in result.moved])
+        self.status_label.setText(message)
+        self._reload_rows()
+        self._reload_playlists()
 
     def _start_job(self, job: Generator[None]) -> None:
         self._job = job
@@ -1702,19 +1876,22 @@ class MusicLibraryView(QWidget):
         if not candidates:
             self.status_label.setText("No visible tracks to build a playlist from.")
             return
-        label, ok = QInputDialog.getItem(
-            self, "Mix path", "BPM direction:", list(PATH_DIRECTION_LABELS), 0, False
-        )
-        if not ok:
+        options = self._ask_mix_path_options(len(candidates))
+        if options is None:
             return
-        direction = PATH_DIRECTION_LABELS[label]
         row = self._current_row()
         start = None
         if row is not None and not row.missing and row.bpm is not None and row.camelot_key:
             start = row.path
             if row not in candidates:
                 candidates.append(row)
-        path, leftovers = workspace.generate_playlist_path(candidates, start_path=start, direction=direction)
+        path, leftovers = workspace.generate_playlist_path(
+            candidates,
+            start_path=start,
+            direction=options.direction,
+            bpm_tolerance_pct=options.bpm_tolerance_pct,
+            max_length=options.max_length,
+        )
         if not path:
             self.status_label.setText("No visible track has both a BPM and a key -- scan or tag them first.")
             return
@@ -1727,10 +1904,20 @@ class MusicLibraryView(QWidget):
             self.create_playlist(f"{name} (leftovers)", leftovers, workspace.SOURCE_GENERATED)
         self.create_playlist(name, path, workspace.SOURCE_GENERATED)
         self.status_label.setText(
-            f"{len(path)} track(s) in the path; {len(leftovers)} that don't fit are in “{name} (leftovers)”."
+            f"{len(path)} track(s) in the path; {len(leftovers)} other track(s) are in “{name} (leftovers)”."
             if leftovers
             else f"{len(path)} track(s) in the path."
         )
+
+    def _ask_mix_path_options(self, track_count: int) -> workspace.MixPathOptions | None:
+        """Show `MixPathDialog` pre-filled with the last values, and remember
+        the new ones on OK (issue #211). `None` when cancelled."""
+        dialog = MixPathDialog(workspace.load_mix_path_options(self.db), track_count, self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return None
+        options = dialog.options()
+        workspace.save_mix_path_options(self.db, options)
+        return options
 
     def import_playlists(self, playlists: dict[str, list[str]], source: str) -> int:
         first_id = None
