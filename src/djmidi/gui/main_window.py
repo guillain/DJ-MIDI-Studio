@@ -420,6 +420,8 @@ class MainWindow(QMainWindow):
         # Music Library (issue #133/#132): a separate domain from mappings --
         # the DJ's own collection. Opens its index lazily on first show.
         self.music_library_view = MusicLibraryView()
+        # Preview volume / auto-advance persist only in the real app (#210).
+        self.music_library_view.audio_preview.set_settings(self._layout_settings())
 
         self.left_tabs = QTabWidget()
         self._tab_indexes = {

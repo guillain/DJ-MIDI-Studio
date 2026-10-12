@@ -137,6 +137,17 @@ Implemented contract, runtime, test, and documentation work:
   are used; `workspace.generate_playlist_path` passes `max_length` through to `build_playlist_path`. Last values are a
   `workspace.MixPathOptions`, clamped on load and stored in a new `library_settings` table of the library index
   (`LibraryDB.get_setting`/`set_setting`), so tests on the `:memory:` index never touch the real settings.
+- [x] **Audio preview controls** (`v0.48.68-audio-preview-controls`, issue #210) — the Music Library preview bar
+  gained a volume slider and an Auto-advance box (off by default), both remembered via an injected
+  `QSettings`-like object (`MainWindow._layout_settings()`, `None` in tests); Space = play/pause and Left/Right =
+  seek ±10 s while the track table has focus (event filter → `AudioPreviewBar.handle_key`, modified keys fall
+  through); at end of track, auto-advance plays the next non-missing row.
+- [x] **Duplicates: move copies to the Trash** (`v0.48.66-duplicates-trash`, issue #208) — the Duplicate tracks
+  window's file rows are checkable; `Move ticked to Trash…` → Qt-free `library/discard.py`: `plan_discard` pairs
+  each ticked copy with a kept one and refuses a group that would keep none, `move_to_trash` uses an injected
+  trash function (`QFile.moveToTrash` in the app, never a hard delete) and flags moved rows missing, and
+  `repoint_playlists` (offered only when this app's playlists list a moved copy) reuses #190's `relink_tracks`, collapsing a playlist that listed both copies to the first occurrence.
+  Tests use tmp_path files and a fake trash only.
 - [x] **New version notice** (`v0.48.65-update-notice`, issue #193) — Qt-free `update_check.py` asks GitHub's
   `releases/latest` API (urllib, 5 s timeout, no auth) and compares the tag's numeric `X.Y.Z` prefix with
   `importlib.metadata.version("djmidi")`; every failure is silent (debug log). `gui/update_notice.UpdateChecker`

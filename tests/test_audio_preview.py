@@ -10,8 +10,8 @@ import wave
 from pathlib import Path
 
 import pytest
-from PySide6.QtCore import QObject, QUrl, Signal
-from PySide6.QtGui import QHideEvent
+from PySide6.QtCore import QEvent, QObject, Qt, QUrl, Signal
+from PySide6.QtGui import QHideEvent, QKeyEvent
 
 from djmidi.gui import audio_preview
 from djmidi.gui.audio_preview import AudioPreviewBar, format_time, start_position_ms
@@ -245,3 +245,184 @@ def test_hiding_the_tab_and_closing_stop_playback(tmp_path):
     view.audio_preview.play()
     view.close_db()
     assert not created[0].playing
+
+
+# --- volume, keyboard, auto-advance (issue #210) ---------------------------
+
+
+class FakeOutput:
+    def __init__(self) -> None:
+        self.volumes: list[float] = []
+
+    def setVolume(self, volume: float) -> None:
+        self.volumes.append(volume)
+
+
+class FakeOutputPlayer(FakePlayer):
+    mediaStatusChanged = Signal(object)
+
+    def __init__(self, parent: QObject | None = None) -> None:
+        super().__init__(parent)
+        self.output = FakeOutput()
+
+    def audioOutput(self) -> FakeOutput:
+        return self.output
+
+
+class FakeSettings:
+    def __init__(self, values: dict | None = None) -> None:
+        self.values = dict(values or {})
+
+    def value(self, key, default=None):
+        return self.values.get(key, default)
+
+    def setValue(self, key, value) -> None:
+        self.values[key] = value
+
+
+def _bar_with_output() -> tuple[AudioPreviewBar, list[FakeOutputPlayer]]:
+    created: list[FakeOutputPlayer] = []
+
+    def factory(parent: QObject) -> FakeOutputPlayer:
+        created.append(FakeOutputPlayer(parent))
+        return created[-1]
+
+    return AudioPreviewBar(player_factory=factory), created
+
+
+def test_issue_210_pure_helpers():
+    assert audio_preview.clamp_volume("55") == 55
+    assert audio_preview.clamp_volume(150) == 100
+    assert audio_preview.clamp_volume(-3) == 0
+    assert audio_preview.clamp_volume(None) == audio_preview.DEFAULT_VOLUME
+    assert audio_preview.clamp_volume("loud") == audio_preview.DEFAULT_VOLUME
+    assert audio_preview.parse_bool("true") is True
+    assert audio_preview.parse_bool("false") is False
+    assert audio_preview.parse_bool(1) is True
+    assert audio_preview.parse_bool(None) is False
+    assert audio_preview.parse_bool("??", default=True) is True
+    assert audio_preview.relative_seek_target(5_000, -10_000, 60_000) == 0
+    assert audio_preview.relative_seek_target(55_000, 10_000, 60_000) == 60_000
+    assert audio_preview.relative_seek_target(20_000, 10_000, 60_000) == 30_000
+
+
+def test_defaults_without_settings():
+    bar, _created = _bar_with_output()
+    assert bar.volume() == audio_preview.DEFAULT_VOLUME
+    assert not bar.auto_advance
+
+
+def test_volume_is_applied_to_the_output(tmp_path):
+    bar, created = _bar_with_output()
+    bar.volume_slider.setValue(40)
+    bar.set_source(str(tmp_path / "a.wav"))
+    bar.play()
+    assert created[0].output.volumes[-1] == pytest.approx(0.40)
+    bar.volume_slider.setValue(75)
+    assert created[0].output.volumes[-1] == pytest.approx(0.75)
+
+
+def test_settings_are_loaded_and_saved():
+    settings = FakeSettings(
+        {audio_preview.VOLUME_SETTINGS_KEY: "30", audio_preview.AUTO_ADVANCE_SETTINGS_KEY: "true"}
+    )
+    bar, _created = _bar_with_output()
+    bar.set_settings(settings)
+    assert bar.volume() == 30
+    assert bar.auto_advance
+    bar.volume_slider.setValue(65)
+    bar.auto_advance_check.setChecked(False)
+    assert settings.values[audio_preview.VOLUME_SETTINGS_KEY] == 65
+    assert settings.values[audio_preview.AUTO_ADVANCE_SETTINGS_KEY] is False
+
+
+def test_no_settings_means_nothing_is_persisted():
+    bar, _created = _bar_with_output()
+    bar.set_settings(None)
+    bar.volume_slider.setValue(10)  # no crash, nothing to write to
+    assert bar.volume() == 10
+
+
+def test_main_window_in_tests_has_no_preview_settings():
+    from djmidi.gui.main_window import MainWindow
+
+    window = MainWindow()
+    try:
+        assert window.music_library_view.audio_preview._settings is None
+    finally:
+        window.close()
+
+
+def test_space_toggles_and_arrows_seek(tmp_path):
+    bar, created = _bar_with_output()
+    assert not bar.handle_key(Qt.Key.Key_Space)  # no track: the table keeps the key
+    bar.set_source(str(tmp_path / "a.wav"))
+    assert bar.handle_key(Qt.Key.Key_Space)
+    player = created[0]
+    assert player.playing
+    # Arrows only seek once the duration is known.
+    assert not bar.handle_key(Qt.Key.Key_Right)
+    player.durationChanged.emit(60_000)
+    player.positionChanged.emit(25_000)
+    assert bar.handle_key(Qt.Key.Key_Right)
+    assert player.positions[-1] == 35_000
+    assert bar.handle_key(Qt.Key.Key_Left)
+    assert player.positions[-1] == 25_000
+    player.positionChanged.emit(3_000)
+    bar.handle_key(Qt.Key.Key_Left)
+    assert player.positions[-1] == 0
+    # Modified keys stay with the table (Shift+arrow extends the selection).
+    assert not bar.handle_key(Qt.Key.Key_Right, Qt.KeyboardModifier.ShiftModifier)
+    assert bar.handle_key(Qt.Key.Key_Space)
+    assert not player.playing
+
+
+@pytest.mark.skipif(not audio_preview.multimedia_available(), reason="QtMultimedia unavailable")
+def test_end_of_media_requests_advance_only_when_enabled(tmp_path):
+    from PySide6.QtMultimedia import QMediaPlayer
+
+    bar, created = _bar_with_output()
+    requests: list[bool] = []
+    bar.advanceRequested.connect(lambda: requests.append(True))
+    bar.set_source(str(tmp_path / "a.wav"))
+    bar.play()
+    created[0].mediaStatusChanged.emit(QMediaPlayer.MediaStatus.EndOfMedia)
+    assert requests == []
+    bar.auto_advance_check.setChecked(True)
+    created[0].mediaStatusChanged.emit(QMediaPlayer.MediaStatus.LoadedMedia)
+    assert requests == []
+    created[0].mediaStatusChanged.emit(QMediaPlayer.MediaStatus.EndOfMedia)
+    assert requests == [True]
+
+
+def _select_proxy_row(view, proxy_row: int) -> None:
+    from PySide6.QtCore import QItemSelectionModel
+
+    view.table.selectionModel().setCurrentIndex(
+        view.proxy.index(proxy_row, 0),
+        QItemSelectionModel.SelectionFlag.ClearAndSelect | QItemSelectionModel.SelectionFlag.Rows,
+    )
+
+
+def test_table_keys_drive_the_preview(tmp_path):
+    view, _root, created = _library_with_fake_player(tmp_path)
+    _select_proxy_row(view, 0)
+    press = QKeyEvent(QEvent.Type.KeyPress, Qt.Key.Key_Space, Qt.KeyboardModifier.NoModifier, " ")
+    assert view.eventFilter(view.table, press)
+    assert created[0].playing
+    view.close_db()
+
+
+def test_auto_advance_plays_the_next_row(tmp_path):
+    view, _root, created = _library_with_fake_player(tmp_path)
+    _select_proxy_row(view, 0)
+    first = view.audio_preview.source_path
+    view.audio_preview.play()
+    created[0].stop()  # the track ended
+    assert view._advance_preview()
+    assert view.audio_preview.source_path not in (None, first)
+    assert view.table.selectionModel().currentIndex().row() == 1
+    assert created[0].playing
+    # Nothing below the last row: stays put.
+    assert not view._advance_preview()
+    view.close_db()

@@ -255,7 +255,10 @@ LIBRARY_PREVIEW: HelpEntry = (
         "<b>Play</b> the selected track to check its category or key by ear, without "
         "opening your DJ software. Drag the slider to move through it. While a track "
         "plays, selecting another one switches to it. Tick <b>Start at 30%</b> to skip "
-        "the intro. Playback stops when you leave the tab."
+        "the intro. <b>Vol</b> sets the volume (remembered). In the track list, "
+        "<b>Space</b> plays/pauses and <b>Left</b>/<b>Right</b> jump 10 s. Tick "
+        "<b>Auto-advance</b> to play the next track when one ends. Playback stops "
+        "when you leave the tab."
     ),
     "music-library.md",
 )
@@ -282,8 +285,10 @@ LIBRARY_DUPLICATES: HelpEntry = (
         "<i>feat.</i> credits and <i>(Original Mix)</i> are ignored. Other versions "
         "(<i>Extended Mix</i>, <i>Radio Edit</i>, remixes) stay distinct. A candidate, not "
         "proof: compare format, size and bitrate.</li></ul>"
-        "Nothing is deleted or moved: <b>Reveal in Finder</b> (or double-click) shows a copy "
-        "so you can deal with it yourself."
+        "<b>Reveal in Finder</b> (or double-click) shows a copy. Tick the copies you don't want "
+        "and click <b>Move ticked to Trash…</b>: after a confirmation they go to the Trash "
+        "(never deleted outright) and show as missing. One copy of each group must stay. "
+        "Playlists of this app listing a discarded copy can be pointed at the kept one."
     ),
     "music-library.md",
 )
