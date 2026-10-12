@@ -132,6 +132,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **MIDI macros** (`v0.48.81-midi-macros`, issue #228) — Qt-free `midi_macros.py`: named sequences of
+  `SyncMessage`s with an optional per-step delay, one JSON file each in the workspace's new `Macros` folder,
+  port resolved like Sync. A `Macros` menu plays them (optional per-macro keyboard shortcut, app-wide);
+  `MacroPlayer` schedules delays on `QTimer`s so nothing blocks; `MacroManagerDialog` creates/edits them
+  (refuses shortcuts the app's menus already use, can append a recorded sync set, `Test` button).
 - [x] **Readable function names** (`v0.48.72-readable-function-names`, issue #209) — Qt-free
   `function_names.py`: `FUNCTION_NAMES` maps the only four tags the real Serato exports contain
   (inventoried from `data/xdj_xz-ddj_xp2-4decks.xml` + `data/serato/*.xml.zip`; a test keeps the table

@@ -75,6 +75,7 @@ Open several, one per controller.
 | 🖼️ | [Controller Images](features/controller-images.md) | Official diagrams and manuals, offline |
 | 🖨️ | [Cheat Sheet (PDF)](features/cheat-sheet.md) | Print the mapping on each controller's photo |
 | 🔀 | [MIDI Routing, Clock and Metronome](features/midi-routing-and-clock.md) | Route MIDI, MIDI Clock from Ableton Link, MIDI loops |
+| ⏯️ | [MIDI Macros](features/midi-macros.md) | Named MIDI message sequences with optional delays, from a menu or a shortcut |
 | 🪟 | [Workspace and preferences](features/workspace.md) | Dockable tools, Performance Mode, Preferences |
 
 Supported out of the box: Serato DJ Pro and Traktor mappings; DDJ-XP2,

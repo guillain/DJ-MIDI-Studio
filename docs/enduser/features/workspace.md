@@ -59,6 +59,7 @@ and share, `Documents/DJ MIDI Studio` (⚙ Preferences → `Open folder`):
 | --- | --- |
 | `Controllers` | Controller profiles you installed from Controller Setup |
 | `Sync` | One initialization [sync set](controller-sync.md) per controller |
+| `Macros` | Your [MIDI macros](midi-macros.md), one file each |
 | `Drafts` | Controller Setup drafts you saved |
 | `Logs` | Live Monitor logs you saved |
 | `Exports` | Playlists exported from the Music Library, cheat sheets |
