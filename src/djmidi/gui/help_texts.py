@@ -34,7 +34,10 @@ DASHBOARD_FILES: HelpEntry = (
         "<li><b>Sync sets</b>: the initialization messages recorded with <b>● Rec</b> or in "
         "Controller Setup, one per controller, sent by <b>⟳ Sync</b>, at launch and when a controller is plugged in; "
         "edit their messages in <b>⚙ Preferences → Controller sync → Edit messages…</b>.</li></ul>"
-        "Controller profiles you build live in <b>File → Controller Profile</b>."
+        "Controller profiles you build live in <b>File → Controller Profile</b>. "
+        "<b>File → Back Up Workspace…</b> saves your profiles, sync sets, drafts and preferences "
+        "(and, if you want, the library index) in one zip; <b>Restore Workspace…</b> brings them "
+        "back, on another Mac too, after showing what it overwrites."
     ),
     "workspace.md",
 )
@@ -95,6 +98,21 @@ EDIT_PANEL: HelpEntry = (
         "(duplicate copies are info only: they are expected). <b>File → Save Mapping</b> shows the "
         "exact changes before writing, keeps a backup, and <b>File → Restore Previous Version…</b> "
         "restores it."
+    ),
+    "mapping-editor.md",
+)
+
+FUNCTION_SEARCH: HelpEntry = (
+    "Find function",
+    (
+        "The reverse of the trees: type what a control should <i>do</i> and see which control "
+        "does it. Words match the Serato function names (<tt>loop roll</tt> finds "
+        "<tt>auto_loop_roll_specific_length</tt>), case and underscores don't matter.<br><br>"
+        "<tt>deck 2</tt> / <tt>slot 3</tt> keep only that deck or slot (numbers as the file "
+        "stores them, like the By Deck tab); a bare number matches either. Add <tt>output</tt> "
+        "for LED feedback only.<br><br>"
+        "Selecting a result outlines <b>all</b> its controls in red on the layout and selects "
+        "the first one in the current tab, like clicking it on the layout."
     ),
     "mapping-editor.md",
 )
@@ -236,6 +254,22 @@ LIBRARY_CATEGORIES: HelpEntry = (
         "Create, rename, merge and delete categories here, and add aliases so several "
         "spellings (<i>DnB</i>, <i>D&amp;B</i>, <i>Drum and Bass</i>) mean the same "
         "category."
+    ),
+    "music-library.md",
+)
+
+LIBRARY_DUPLICATES: HelpEntry = (
+    "Duplicate tracks",
+    (
+        "<b>Find duplicates…</b> lists two kinds of groups from the scanned folders:"
+        "<ul><li><b>Exact copies</b>: byte-identical files. Only files of the same size are "
+        "read and compared by content hash.</li>"
+        "<li><b>Same artist + title</b>: tags that match once case, accents, punctuation, "
+        "<i>feat.</i> credits and <i>(Original Mix)</i> are ignored. Other versions "
+        "(<i>Extended Mix</i>, <i>Radio Edit</i>, remixes) stay distinct. A candidate, not "
+        "proof: compare format, size and bitrate.</li></ul>"
+        "Nothing is deleted or moved: <b>Reveal in Finder</b> (or double-click) shows a copy "
+        "so you can deal with it yourself."
     ),
     "music-library.md",
 )

@@ -24,7 +24,7 @@ Controllers  controller profiles you installed from Controller Setup (JSON)
 Sync         one initialization sync set per controller (JSON)
 Drafts       Controller Setup drafts you saved
 Logs         Live Monitor logs you saved
-Exports      playlists exported from the Music Library
+Exports      playlists exported from the Music Library, cheat sheets (PDF)
 
 Your Serato / Traktor mappings are not here: they stay where your DJ
 software keeps them, and DJ MIDI Studio remembers where they are.
