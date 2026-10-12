@@ -121,6 +121,26 @@ does not exit during startup or emit import/traceback errors, and then stops
 it. This catches missing frozen modules such as the Mido/rtmidi backend before
 an artifact is uploaded.
 
+In the `Build Executables` workflow the smoke test also passes
+`--screenshot build/smoke-test-logs/startup-<os>.png`: the script launches the
+app with `--startup-screenshot <path>`, the app grabs its main window about two
+seconds after it is shown (`QWidget.grab()`, which renders the widget itself
+and so works on the offscreen platform and without screen-capture permission),
+and the script waits up to 60 seconds (`--screenshot-timeout`) for the PNG.
+The job fails if the executable exits during that wait or never writes the
+picture. Whatever happened, the `djmidi-studio-<os>-startup-screenshot`
+artifact uploads the PNG together with the run's log files and
+`startup-output.txt` (the executable's console output), so a startup crash on
+one OS can be diagnosed without rebuilding locally. The release workflow keeps
+the plain six-second check.
+
+Run it locally against a built executable:
+
+```bash
+uv run python scripts/smoke_test_executable.py --os macos \
+  --screenshot build/smoke-test-logs/startup-macos.png
+```
+
 The application log path is also resilient to stale permissions: if the
 platform-specific user log cannot be opened, the executable falls back to the
 system temporary directory.  Set `DJMIDI_LOG_DIR` when a deterministic log

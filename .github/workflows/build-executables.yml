@@ -75,7 +75,20 @@ jobs:
         shell: bash
         env:
           QT_QPA_PLATFORM: ${{ runner.os == 'Linux' && 'offscreen' || '' }}
-        run: uv run python scripts/smoke_test_executable.py --os "$(echo '${{ runner.os }}' | tr '[:upper:]' '[:lower:]' | sed 's/macos/macos/; s/windows/windows/; s/linux/linux/')"
+        # Fails the job on a startup crash or when the app never paints its
+        # startup screenshot; the PNG and logs are uploaded below either way.
+        run: |
+          os_name="$(echo '${{ runner.os }}' | tr '[:upper:]' '[:lower:]')"
+          uv run python scripts/smoke_test_executable.py --os "$os_name" \
+            --screenshot "build/smoke-test-logs/startup-$os_name.png"
+
+      - name: Upload startup screenshot
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: djmidi-studio-${{ matrix.os }}-startup-screenshot
+          path: build/smoke-test-logs/
+          if-no-files-found: warn
 
       - name: Build package artifacts
         run: uv build
