@@ -140,6 +140,28 @@ Implemented contract, runtime, test, and documentation work:
   `Health report…` job (same `QTimer` slice pattern as duplicates) opening
   `gui/health_report_dialog.py` (per-kind check boxes with counts, text filter, sortable
   table, Show in library / Reveal in Finder / Export CSV…).
+- [x] **Background BPM/key analysis** (`v0.48.77-background-analysis`, issue #224) — Music Library
+  `Analyse BPM/key` estimates tempo/key (librosa, optional `analysis` extra; 60 s clip per track) for
+  tracks missing either tag, as a stoppable `QTimer`-sliced job. Estimates are stored as suggestions
+  only (`analysis_suggestions` table, keyed to the file's mtime), shown amber `? value`, and written
+  only through `Apply analysis suggestions…` (empty tags only, one undoable `WriteTracksMetadataCommand`).
+  Disabled with an explanatory tooltip when librosa is missing.
+- [x] **Live conflict detection** (`v0.48.76-live-conflicts`, issue #223) — Qt-free
+  `validator.find_deck_conflicts`: a trigger whose `click` mappings bind two or more distinct
+  `(tag, slot_id)` functions on the same deck (identical 10x duplicates collapse to one, so the
+  real fixture reports none; output mappings ignored). Live Monitor flags such an input's row in
+  amber with a `CONFLICT deck N: …` prefix and counts hits/triggers under its status; Clear log
+  and loading a mapping reset the counter.
+- [x] **Set preparation** (`v0.48.74-set-preparation`, issue #221) — Qt-free `library/set_prep.py`:
+  a hand-ordered set draft (paths) resolved against the library rows into `SetTrack`s (BPM, Camelot,
+  energy parsed from the `Energy` tag, 1–10), one `Transition` per adjacent pair using
+  `playlist.is_bpm_compatible` (± % tolerance) and `is_camelot_compatible` — `incompatible` only on a
+  known clash, `unknown` when a BPM/key is missing; order helpers (`insert_paths` dedups, `move_rows`,
+  `remove_rows`); the draft + tolerance persisted in `library_settings`. GUI `gui/set_preparation.py`:
+  a fourth Music Library side tab, `Set` — table rows drag in (`LibraryTableModel.mimeData`,
+  `SET_TRACKS_MIME`), the list reorders by internal drag or Move up/down, a painted BPM/energy curve
+  (red = incompatible, dashed = unchecked), `Save as playlist…` (source `set`), and direct Serato crate
+  / Traktor playlist exports through the existing exporters. Never reorders on its own.
 - [x] **Readable function names** (`v0.48.72-readable-function-names`, issue #209) — Qt-free
   `function_names.py`: `FUNCTION_NAMES` maps the only four tags the real Serato exports contain
   (inventoried from `data/xdj_xz-ddj_xp2-4decks.xml` + `data/serato/*.xml.zip`; a test keeps the table

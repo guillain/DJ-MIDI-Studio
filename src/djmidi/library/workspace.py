@@ -15,14 +15,14 @@ from __future__ import annotations
 
 import logging
 import os
-from collections.abc import Generator, Iterable
+from collections.abc import Callable, Generator, Iterable
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 
 from djmidi import taxonomy
 from djmidi.taxonomy import Category
 
-from .analysis import to_camelot
+from .analysis import analyse_clip, to_camelot
 from .db import LibraryDB, StoredCategory, TrackRecord
 from .metadata import TrackMetadata, read_metadata
 from .playlist import (
@@ -66,6 +66,14 @@ class LibraryRow:
     """Canonical `Family%%Name` of an exact/alias taxonomy match only."""
     category_suggestion: str | None = None
     """Canonical name of a *fuzzy* match -- shown, never auto-applied."""
+    bpm_suggestion: float | None = None
+    """Audio-analysis BPM estimate for a track with no BPM tag (issue #224)."""
+    key_suggestion: str | None = None
+    """Audio-analysis key estimate for a track with no key tag (issue #224)."""
+
+    @property
+    def has_analysis_suggestion(self) -> bool:
+        return self.bpm_suggestion is not None or self.key_suggestion is not None
 
     @property
     def title(self) -> str | None:
@@ -105,6 +113,7 @@ def crate_hints(db: LibraryDB) -> dict[str, str]:
 def consolidate(db: LibraryDB) -> list[LibraryRow]:
     roots = {root.id: root.path for root in db.list_roots()}
     crates = crate_hints(db)
+    estimates = db.analysis_suggestions()
     resolved: dict[tuple[str | None, str | None, str | None], taxonomy.CategoryMatch] = {}
     rows: list[LibraryRow] = []
     for record, metadata in db.list_tracks_with_metadata():
@@ -116,6 +125,7 @@ def consolidate(db: LibraryDB) -> list[LibraryRow]:
             resolved[hints] = match
         canonical = match.category.canonical if match.category is not None else None
         confident = match.confidence in ("exact", "alias")
+        estimated_bpm, estimated_key = estimates.get(record.id, (None, None))
         rows.append(
             LibraryRow(
                 track_id=record.id,
@@ -125,6 +135,9 @@ def consolidate(db: LibraryDB) -> list[LibraryRow]:
                 camelot_key=to_camelot(metadata.key) if metadata else None,
                 category=canonical if confident else None,
                 category_suggestion=canonical if match.confidence == "fuzzy" else None,
+                # Only offered while the tag is still empty.
+                bpm_suggestion=estimated_bpm if metadata is None or metadata.bpm is None else None,
+                key_suggestion=estimated_key if metadata is None or not (metadata.key or "").strip() else None,
             )
         )
     return rows
@@ -162,8 +175,73 @@ def refresh_track_metadata(db: LibraryDB, track_path: str) -> None:
         return
     stat = Path(track_path).stat()
     db.upsert_track(record.root_id, track_path, stat.st_size, stat.st_mtime)
+    # This app only changed tags, not the audio: the analysis estimate
+    # still holds (and comes back if the write is undone).
+    db.carry_analysis_suggestion(record.id, record.mtime, stat.st_mtime)
     db.set_cached_metadata(record.id, stat.st_mtime, _safe_read(record))
     db.commit()
+
+
+# --- background BPM/key analysis (issue #224) ---------------------------
+
+# (path, want_bpm, want_key) -> (bpm, key); `analysis.analyse_clip` in the
+# app, a stub in tests (librosa is an optional extra).
+Analyser = Callable[[str, bool, bool], tuple[float | None, str | None]]
+
+
+def _default_analyser(path: str, want_bpm: bool, want_key: bool) -> tuple[float | None, str | None]:
+    return analyse_clip(path, want_bpm=want_bpm, want_key=want_key)
+
+
+def iter_analyse_missing(db: LibraryDB, analyser: Analyser | None = None) -> Generator[int, None, int]:
+    """Estimate BPM/key from audio for every present track missing one of
+    them, yielding the running count (one track per step); returns how many
+    tracks got at least one estimate.
+
+    Results go to the `analysis_suggestions` table only -- never to a file.
+    A track that fails to decode records an empty attempt (logged) so the
+    next run skips it until the file changes. Committed after every track,
+    so a job stopped half-way keeps what it found."""
+    analyser = analyser or _default_analyser
+    cached = {record.id: metadata for record, metadata in db.list_tracks_with_metadata()}
+    found = 0
+    for index, record in enumerate(db.tracks_needing_analysis(), start=1):
+        metadata = cached.get(record.id) or TrackMetadata()
+        want_bpm, want_key = metadata.bpm is None, not (metadata.key or "").strip()
+        try:
+            bpm, key = analyser(record.path, want_bpm, want_key)
+        except Exception:
+            _LOGGER.warning("Could not analyse %s", record.path, exc_info=True)
+            bpm = key = None
+        bpm = round(bpm, 2) if want_bpm and bpm is not None else None
+        key = key if want_key else None
+        db.set_analysis_suggestion(record.id, record.mtime, bpm, key)
+        db.commit()
+        if bpm is not None or key is not None:
+            found += 1
+        yield index
+    return found
+
+
+def analysis_tag_changes(
+    rows: Iterable[LibraryRow],
+) -> dict[str, tuple[dict[str, object], dict[str, object]]]:
+    """path -> (old tags, new tags) applying each present row's analysis
+    suggestions -- the input of the undoable bulk tag write. Only fills
+    tags that are still empty."""
+    changes: dict[str, tuple[dict[str, object], dict[str, object]]] = {}
+    for row in rows:
+        if row.missing:
+            continue
+        new: dict[str, object] = {}
+        if row.bpm_suggestion is not None:
+            new["bpm"] = row.bpm_suggestion
+        if row.key_suggestion is not None:
+            new["key"] = row.key_suggestion
+        if new:
+            metadata = row.metadata or TrackMetadata()
+            changes[row.path] = ({name: getattr(metadata, name) for name in new}, new)
+    return changes
 
 
 # --- taxonomy persistence ----------------------------------------------

@@ -84,10 +84,19 @@ def _require_librosa() -> None:
         )
 
 
+def analysis_available() -> bool:
+    """Whether the optional 'analysis' extra (librosa) is installed."""
+    return librosa is not None
+
+
 def estimate_bpm(path: str | Path) -> float | None:
     """Estimate BPM from audio via beat tracking. Requires the 'analysis' extra."""
     _require_librosa()
     y, sr = librosa.load(str(path), sr=None, mono=True)
+    return _bpm_from_signal(y, sr)
+
+
+def _bpm_from_signal(y, sr) -> float | None:
     tempo, _ = librosa.beat.beat_track(y=y, sr=sr)
     # librosa has returned a bare float in some versions and a 1-element
     # array in others (e.g. 0.10+); normalize either to a plain float.
@@ -114,9 +123,13 @@ def estimate_key(path: str | Path) -> str | None:
     rather than trust it silently (see issue #128).
     """
     _require_librosa()
+    y, sr = librosa.load(str(path), sr=None, mono=True)
+    return _key_from_signal(y, sr)
+
+
+def _key_from_signal(y, sr) -> str | None:
     import numpy as np
 
-    y, sr = librosa.load(str(path), sr=None, mono=True)
     chroma = librosa.feature.chroma_cqt(y=y, sr=sr)
     chroma_mean = chroma.mean(axis=1)
     if not np.any(chroma_mean):
@@ -134,6 +147,33 @@ def estimate_key(path: str | Path) -> str | None:
             best_score = minor_score
             best_key = f"{_PITCH_NAMES[shift]}m"
     return best_key
+
+
+# Background analysis (issue #224) looks at one clip per track instead of
+# the whole file: a full-length decode + beat track runs to ~10 s for a long
+# mix, and each track is one uninterruptible step of a GUI-thread job. A
+# minute from the middle (past any beatless intro) is plenty for a steady
+# electronic beat and for an average chroma profile.
+ANALYSIS_CLIP_SECONDS = 60.0
+
+
+def analyse_clip(
+    path: str | Path,
+    *,
+    want_bpm: bool = True,
+    want_key: bool = True,
+    clip_seconds: float = ANALYSIS_CLIP_SECONDS,
+) -> tuple[float | None, str | None]:
+    """Estimate BPM and/or key from one decoded clip of `path` (a single
+    load for both). Requires the 'analysis' extra; a field not wanted comes
+    back None."""
+    _require_librosa()
+    total = librosa.get_duration(path=str(path))
+    offset = max(0.0, (total - clip_seconds) / 2)
+    y, sr = librosa.load(str(path), sr=None, mono=True, offset=offset, duration=clip_seconds)
+    bpm = _bpm_from_signal(y, sr) if want_bpm else None
+    key = _key_from_signal(y, sr) if want_key else None
+    return bpm, key
 
 
 def resolve_bpm_key(
