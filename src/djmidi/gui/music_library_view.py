@@ -4,7 +4,9 @@ Binds the Qt-free `djmidi.library` layer (scan index, tag cache, taxonomy,
 playlist engine, Serato/Traktor/Rekordbox formats) to one tab:
 
 - music folder list + a "Scan & read tags" job, driven a slice at a time by
-  a `QTimer` (this project's non-blocking pattern, see `midi_io` polling);
+  a `QTimer` (this project's non-blocking pattern, see `midi_io` polling),
+  and a "Find duplicates…" job on the same timer (issue #184, opens a
+  read-only `DuplicatesDialog`);
 - the consolidated metadata table (sortable/filterable, category column);
 - a Track panel whose tag edits go through a `QUndoStack`
   (`commands.WriteTrackMetadataCommand`, or `WriteTracksMetadataCommand` when
@@ -73,11 +75,13 @@ from djmidi import taxonomy, user_paths
 from djmidi.gui import help_texts
 from djmidi.gui.audio_preview import AudioPreviewBar
 from djmidi.gui.commands import WriteTrackMetadataCommand, WriteTracksMetadataCommand
+from djmidi.gui.duplicates_dialog import DuplicatesDialog
 from djmidi.gui.help_button import help_button, help_row
-from djmidi.library import workspace
-from djmidi.library.db import LibraryDB, default_library_db_path
+from djmidi.library import duplicates, relink, workspace
+from djmidi.library.db import LibraryDB, TrackRecord, default_library_db_path
 from djmidi.library.metadata import TrackMetadata, clean_noise_frames
 from djmidi.library.playlist import is_camelot_compatible
+from djmidi.library.relink import RelinkCandidate, RelinkProposal
 from djmidi.library.scanner import iter_scan_root
 
 _LOGGER = logging.getLogger(__name__)
@@ -107,6 +111,13 @@ _COLUMN_INDEX = {key: index for index, (_header, key) in enumerate(COLUMNS)}
 _EDIT_FIELDS = ("title", "artist", "album", "genre", "bpm", "key", "comment", "rating", "energy")
 
 # Below this the tab scrolls rather than squeezing its panels (issue #19).
+# "Auto: mix path…" choices -> playlist.build_playlist_path directions.
+PATH_DIRECTION_LABELS = {
+    "Rising BPM": "up",
+    "Falling BPM": "down",
+    "Steady BPM (smallest moves)": "flat",
+}
+
 _CONTENT_MIN_WIDTH = 760
 _CONTENT_MIN_HEIGHT = 440
 
@@ -226,6 +237,95 @@ class BulkTagDialog(QDialog):
             QMessageBox.warning(self, "Invalid BPM", "BPM must be a number, e.g. 174 or 128.5.")
             return
         self.accept()
+
+
+class RelinkDialog(QDialog):
+    """Review `relink.RelinkProposal`s (issue #190): one checkable row per
+    missing track, its proposed new path (a combo when several files
+    match), and how it matched. Confident proposals start checked; a track
+    with no match is listed but can't be checked."""
+
+    def __init__(self, proposals: list[RelinkProposal], parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        self.setWindowTitle("Relink missing tracks")
+        self.resize(900, 420)
+        self._proposals = proposals
+        box = QVBoxLayout(self)
+        intro = QLabel(
+            "Files that moved since they were indexed. Checked tracks are relinked in this app's index "
+            "only: their playlists and cached tags follow the new path. No audio file or DJ software "
+            "library is modified. Pre-checked rows have exactly one file with the same name and size."
+        )
+        intro.setWordWrap(True)
+        box.addWidget(intro)
+        self.tree = QTreeWidget()
+        self.tree.setHeaderLabels(["Missing track", "Relink to", "Match"])
+        self.tree.setRootIsDecorated(False)
+        self._combos: dict[int, QComboBox] = {}
+        for index, proposal in enumerate(proposals):
+            item = QTreeWidgetItem([proposal.missing.path, "", ""])
+            item.setData(0, Qt.ItemDataRole.UserRole, index)
+            self.tree.addTopLevelItem(item)
+            if not proposal.candidates:
+                item.setText(1, "No matching file found")
+                item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEnabled)
+                continue
+            item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+            item.setCheckState(0, Qt.CheckState.Checked if proposal.confident else Qt.CheckState.Unchecked)
+            item.setText(2, _match_label(proposal.best))
+            if len(proposal.candidates) == 1:
+                item.setText(1, proposal.best.path)
+                continue
+            combo = QComboBox()
+            for candidate in proposal.candidates:
+                combo.addItem(candidate.path)
+            combo.currentIndexChanged.connect(
+                lambda row, item=item, proposal=proposal: item.setText(2, _match_label(proposal.candidates[row]))
+            )
+            self._combos[index] = combo
+            self.tree.setItemWidget(item, 1, combo)
+        self.tree.header().setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
+        self.tree.setColumnWidth(0, 320)
+        self.tree.setColumnWidth(1, 320)
+        box.addWidget(self.tree, 1)
+        self.buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        self.buttons.button(QDialogButtonBox.StandardButton.Ok).setText("Relink checked…")
+        self.buttons.accepted.connect(self.accept)
+        self.buttons.rejected.connect(self.reject)
+        self.tree.itemChanged.connect(self._update_ok)
+        box.addWidget(self.buttons)
+        self._update_ok()
+
+    def _update_ok(self, *_args: object) -> None:
+        self.buttons.button(QDialogButtonBox.StandardButton.Ok).setEnabled(bool(self.choices()))
+
+    def set_choice(self, index: int, checked: bool, candidate_index: int = 0) -> None:
+        item = self.tree.topLevelItem(index)
+        item.setCheckState(0, Qt.CheckState.Checked if checked else Qt.CheckState.Unchecked)
+        if index in self._combos:
+            self._combos[index].setCurrentIndex(candidate_index)
+
+    def choices(self) -> list[tuple[TrackRecord, RelinkCandidate]]:
+        """Checked (missing track, chosen candidate) pairs."""
+        result = []
+        for row in range(self.tree.topLevelItemCount()):
+            item = self.tree.topLevelItem(row)
+            if item.checkState(0) != Qt.CheckState.Checked:
+                continue
+            proposal = self._proposals[item.data(0, Qt.ItemDataRole.UserRole)]
+            combo = self._combos.get(row)
+            candidate = proposal.candidates[combo.currentIndex() if combo is not None else 0]
+            result.append((proposal.missing, candidate))
+        return result
+
+
+def _match_label(candidate: RelinkCandidate) -> str:
+    label = {relink.MATCH_EXACT: "Same name and size", relink.MATCH_NAME: "Same name, other size"}.get(
+        candidate.match, "Same title and artist"
+    )
+    if candidate.tags_agree and candidate.match != relink.MATCH_TAGS:
+        label += " + tags"
+    return label + ("" if candidate.indexed else " (not scanned yet)")
 
 
 def _can_confirm_suggestion(row: workspace.LibraryRow) -> bool:
@@ -430,6 +530,7 @@ class MusicLibraryView(QWidget):
         self._job_timer.setInterval(0)
         self._job_timer.timeout.connect(self._run_job_slice)
         self._current_path: str | None = None
+        self.duplicates_dialog: DuplicatesDialog | None = None
 
         # The whole tab scrolls below its real minimum instead of crushing
         # buttons into slivers (issue #19's standing rule for every tab).
@@ -486,7 +587,23 @@ class MusicLibraryView(QWidget):
             "Index new/changed files and read their tags. Incremental: unchanged files are skipped."
         )
         self.scan_button.clicked.connect(self.start_scan)
-        for button in (self.add_root_button, self.remove_root_button, self.scan_button):
+        self.relink_button = QPushButton("Relink missing…")
+        self.relink_button.setToolTip(
+            "Find where missing tracks moved (same file name and size) and relink them in this app's index."
+        )
+        self.relink_button.clicked.connect(self.start_relink_search)
+        self.duplicates_button = QPushButton("Find duplicates…")
+        self.duplicates_button.setToolTip(
+            "List identical files and tracks sharing artist + title. Read-only: nothing is deleted."
+        )
+        self.duplicates_button.clicked.connect(self.find_duplicates)
+        for button in (
+            self.add_root_button,
+            self.remove_root_button,
+            self.scan_button,
+            self.duplicates_button,
+            self.relink_button,
+        ):
             row.addWidget(button, 0, Qt.AlignmentFlag.AlignTop)
         row.addWidget(help_button(self, *help_texts.LIBRARY_FOLDERS), 0, Qt.AlignmentFlag.AlignTop)
         box.addLayout(row)
@@ -724,6 +841,10 @@ class MusicLibraryView(QWidget):
              "Every visible row, grouped by category, then BPM range, then key."),
             ("match_button", "Auto: match current", self._on_match_clicked,
              "The current track followed by every visible track compatible in BPM and key."),
+            ("path_button", "Auto: mix path…", self._on_path_clicked,
+             ("Every visible track ordered as a mixable path (each step compatible in BPM and key, "
+              "BPM rising, falling or flat), from the current track. Tracks that don't fit go to "
+              "a separate leftovers playlist.")),
             ("import_serato_button", "Import Serato crate…", self._on_import_serato_clicked, ""),
             ("import_traktor_button", "Import Traktor NML…", self._on_import_traktor_clicked, ""),
             ("import_rekordbox_button", "Import Rekordbox export…", self._on_import_rekordbox_clicked, ""),
@@ -875,9 +996,50 @@ class MusicLibraryView(QWidget):
         )
         self._reload_rows()
 
+    def find_duplicates(self) -> None:
+        """Start the duplicate search over the indexed, present tracks."""
+        if self.is_busy():
+            return
+        if not self.db.list_tracks(include_missing=False):
+            self.status_label.setText("Scan a music folder first.")
+            return
+        self._start_job(self._duplicates_job())
+
+    def _duplicates_job(self) -> Generator[None]:
+        # Metadata tier: tag cache only, instant even on a large library.
+        groups = duplicates.find_metadata_duplicates(duplicates.metadata_entries(self.db))
+        sizes = duplicates.size_entries(self.db)
+        total = duplicates.exact_candidate_count(sizes)
+        self.progress_bar.setRange(0, max(total, 1))
+        self.status_label.setText(f"Comparing {total} file(s) of equal size…")
+        yield
+        steps = duplicates.iter_exact_duplicates(sizes)
+        while True:
+            try:
+                done = next(steps)
+            except StopIteration as finished:
+                exact = finished.value
+                break
+            self.progress_bar.setValue(done)
+            self.status_label.setText(f"Comparing files of equal size… {done}/{total}")
+            yield
+        self.status_label.setText(
+            f"Duplicates: {len(exact)} group(s) of identical files, {len(groups)} group(s) sharing artist + title."
+        )
+        self._show_duplicates(exact + groups)
+
+    def _show_duplicates(self, groups: list[duplicates.DuplicateGroup]) -> None:
+        if self.duplicates_dialog is not None:
+            self.duplicates_dialog.close()
+            self.duplicates_dialog.deleteLater()
+        self.duplicates_dialog = DuplicatesDialog(groups, self)
+        self.duplicates_dialog.show()
+
     def _start_job(self, job: Generator[None]) -> None:
         self._job = job
         self.scan_button.setEnabled(False)
+        self.relink_button.setEnabled(False)
+        self.duplicates_button.setEnabled(False)
         self.progress_bar.setVisible(True)
         self._job_timer.start()
 
@@ -885,6 +1047,8 @@ class MusicLibraryView(QWidget):
         self._job_timer.stop()
         self._job = None
         self.scan_button.setEnabled(True)
+        self.relink_button.setEnabled(True)
+        self.duplicates_button.setEnabled(True)
         self.progress_bar.setVisible(False)
 
     def _run_job_slice(self) -> None:
@@ -899,8 +1063,60 @@ class MusicLibraryView(QWidget):
             self._stop_job()
         except Exception:
             _LOGGER.exception("Music library job failed")
-            self.status_label.setText("Scan failed (see the log).")
+            self.status_label.setText("The scan or duplicate search failed (see the log).")
             self._stop_job()
+
+    # --- relinking missing tracks (issue #190) ---------------------------
+
+    def start_relink_search(self) -> None:
+        """Search the roots for missing tracks' new paths, then review them."""
+        if self.is_busy():
+            return
+        self._start_job(self._relink_job())
+
+    def _relink_job(self) -> Generator[None]:
+        self.progress_bar.setRange(0, 0)
+        steps = relink.iter_relink_proposals(self.db)
+        while True:
+            try:
+                count = next(steps)
+            except StopIteration as done:
+                proposals = done.value
+                break
+            self.status_label.setText(f"Looking for moved files… {count} checked")
+            yield
+        if not proposals:
+            self.status_label.setText("No missing tracks to relink.")
+            return
+        found = sum(1 for proposal in proposals if proposal.candidates)
+        self.status_label.setText(f"{len(proposals)} missing track(s), {found} with a possible new location.")
+        # Opened once the job has stopped: a modal dialog inside a timer
+        # slice would re-enter this generator.
+        QTimer.singleShot(0, lambda: self.review_relinks(proposals))
+
+    def review_relinks(self, proposals: list[RelinkProposal]) -> None:
+        dialog = RelinkDialog(proposals, self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+        choices = dialog.choices()
+        if not choices:
+            return
+        answer = QMessageBox.question(
+            self,
+            "Relink missing tracks",
+            f"Relink {len(choices)} track(s) in this app's index?\n\n"
+            "Playlists and cached tags follow the new paths and the stale entries are dropped. "
+            "No audio file or DJ software library is modified. This can't be undone.",
+        )
+        if answer != QMessageBox.StandardButton.Yes:
+            return
+        result = relink.apply_relinks(self.db, choices)
+        message = f"Relinked {result.relinked} track(s)."
+        if result.skipped:
+            message += f" Skipped {len(result.skipped)} whose file is gone or outside the music folders."
+        self.status_label.setText(message)
+        self._reload_rows()
+        self._reload_playlists()
 
     def run_pending_job(self) -> None:
         """Drain the current job synchronously (tests, scripted use)."""
@@ -1471,6 +1687,44 @@ class MusicLibraryView(QWidget):
         if name:
             self.create_playlist(name, paths, workspace.SOURCE_GENERATED)
             self.status_label.setText(f"{len(paths) - 1} compatible track(s) found.")
+
+    def _on_path_clicked(self) -> None:
+        """Issue #191's path mode: every visible track as one mixable path,
+        starting from the current track when it has a BPM and a key. Tracks
+        the path can't place go to a second, "(leftovers)" playlist."""
+        candidates = self.visible_rows()
+        if not candidates:
+            self.status_label.setText("No visible tracks to build a playlist from.")
+            return
+        label, ok = QInputDialog.getItem(
+            self, "Mix path", "BPM direction:", list(PATH_DIRECTION_LABELS), 0, False
+        )
+        if not ok:
+            return
+        direction = PATH_DIRECTION_LABELS[label]
+        row = self._current_row()
+        start = None
+        if row is not None and not row.missing and row.bpm is not None and row.camelot_key:
+            start = row.path
+            if row not in candidates:
+                candidates.append(row)
+        path, leftovers = workspace.generate_playlist_path(candidates, start_path=start, direction=direction)
+        if not path:
+            self.status_label.setText("No visible track has both a BPM and a key -- scan or tag them first.")
+            return
+        first = next((r for r in candidates if r.path == path[0]), None)
+        title = first.title if first is not None and first.title else Path(path[0]).stem
+        name = self._ask_playlist_name(f"Path from {title}")
+        if not name:
+            return
+        if leftovers:
+            self.create_playlist(f"{name} (leftovers)", leftovers, workspace.SOURCE_GENERATED)
+        self.create_playlist(name, path, workspace.SOURCE_GENERATED)
+        self.status_label.setText(
+            f"{len(path)} track(s) in the path; {len(leftovers)} that don't fit are in “{name} (leftovers)”."
+            if leftovers
+            else f"{len(path)} track(s) in the path."
+        )
 
     def import_playlists(self, playlists: dict[str, list[str]], source: str) -> int:
         first_id = None

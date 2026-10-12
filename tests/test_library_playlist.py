@@ -1,7 +1,14 @@
+import random
+import time
+
+import pytest
+
 from djmidi.library.playlist import (
+    PathResult,
     PlaylistTrack,
     bpm_bucket,
     build_playlist_draft,
+    build_playlist_path,
     compatibility_score,
     find_compatible_tracks,
     is_bpm_compatible,
@@ -109,3 +116,122 @@ def test_build_playlist_draft_sorts_missing_values_last_within_group():
     ordered = build_playlist_draft(tracks)
 
     assert [t.identifier for t in ordered] == ["with_key", "no_key", "no_category"]
+
+
+# --- path mode (issue #191) -------------------------------------------------
+
+
+def _synthetic(count: int, seed: int = 191) -> list[PlaylistTrack]:
+    rng = random.Random(seed)
+    categories = ["Tek%%Tribe", "Tek%%HardTek", "Electro%%Dub", None]
+    tracks = []
+    for index in range(count):
+        number = rng.randint(1, 12)
+        letter = rng.choice("AB")
+        tracks.append(
+            PlaylistTrack(
+                identifier=f"/t{index:05d}.mp3",
+                category=rng.choice(categories),
+                bpm=round(rng.uniform(80.0, 180.0), 1),
+                camelot_key=f"{number}{letter}",
+            )
+        )
+    return tracks
+
+
+def _assert_valid_path(result: PathResult, tolerance_pct: float = 6.0) -> None:
+    for previous, current in zip(result.path, result.path[1:], strict=False):
+        assert is_bpm_compatible(previous.bpm, current.bpm, tolerance_pct), (previous, current)
+        assert is_camelot_compatible(previous.camelot_key, current.camelot_key), (previous, current)
+
+
+def test_path_every_adjacent_pair_is_compatible_and_rises():
+    result = build_playlist_path(_synthetic(400), direction="up")
+    _assert_valid_path(result)
+    bpms = [track.bpm for track in result.path]
+    assert bpms == sorted(bpms)
+    assert len(result.path) > 50
+
+
+def test_path_down_never_rises_and_starts_from_the_fastest():
+    tracks = _synthetic(400)
+    result = build_playlist_path(tracks, direction="down")
+    _assert_valid_path(result)
+    bpms = [track.bpm for track in result.path]
+    assert bpms == sorted(bpms, reverse=True)
+    assert result.path[0].bpm == max(track.bpm for track in tracks)
+
+
+def test_path_flat_is_compatible():
+    result = build_playlist_path(_synthetic(400), direction="flat")
+    _assert_valid_path(result)
+    assert len(result.path) > 50
+
+
+def test_path_is_deterministic():
+    tracks = _synthetic(300)
+    first = build_playlist_path(tracks, direction="up")
+    second = build_playlist_path(list(tracks), direction="up")
+    assert first == second
+
+
+def test_path_reports_every_unplaced_track_as_leftover():
+    tracks = [
+        PlaylistTrack("/a.mp3", "Tek%%Tribe", 170.0, "8A"),
+        PlaylistTrack("/b.mp3", "Tek%%Tribe", 172.0, "9A"),
+        PlaylistTrack("/c.mp3", "Tek%%Tribe", 174.0, "3B"),  # incompatible key
+        PlaylistTrack("/d.mp3", "Electro%%Dub", 80.0, "8A"),  # unreachable BPM
+        PlaylistTrack("/e.mp3", "Tek%%Tribe", None, "8A"),  # no BPM
+        PlaylistTrack("/f.mp3", "Tek%%Tribe", 171.0, None),  # no key
+    ]
+    result = build_playlist_path(tracks, start="/a.mp3")
+    assert [track.identifier for track in result.path] == ["/a.mp3", "/b.mp3"]
+    assert {track.identifier for track in result.leftovers} == {"/c.mp3", "/d.mp3", "/e.mp3", "/f.mp3"}
+    assert len(result.path) + len(result.leftovers) == len(tracks)
+
+
+def test_path_prefers_same_key_on_equal_bpm_moves():
+    tracks = [
+        PlaylistTrack("/start.mp3", "Tek%%Tribe", 170.0, "8A"),
+        PlaylistTrack("/other-key.mp3", "Tek%%Tribe", 171.0, "9A"),
+        PlaylistTrack("/same-key.mp3", "Tek%%Tribe", 171.0, "8A"),
+    ]
+    result = build_playlist_path(tracks, start="/start.mp3")
+    assert [track.identifier for track in result.path] == ["/start.mp3", "/same-key.mp3", "/other-key.mp3"]
+
+
+def test_path_lookahead_avoids_a_dead_end():
+    # Greedy would take the cheaper relative-key move to /trap (from which
+    # nothing follows) and strand /far; the beam sees /trap dead-ends.
+    tracks = [
+        PlaylistTrack("/start.mp3", None, 100.0, "8A"),
+        PlaylistTrack("/trap.mp3", None, 101.0, "8B"),
+        PlaylistTrack("/far.mp3", None, 104.0, "9A"),
+        PlaylistTrack("/end.mp3", None, 105.0, "10A"),
+    ]
+    result = build_playlist_path(tracks, start="/start.mp3")
+    assert [track.identifier for track in result.path] == ["/start.mp3", "/far.mp3", "/end.mp3"]
+    assert [track.identifier for track in result.leftovers] == ["/trap.mp3"]
+
+
+def test_path_start_and_max_length_and_errors():
+    tracks = _synthetic(200)
+    result = build_playlist_path(tracks, start=tracks[10].identifier, max_length=5)
+    assert result.path[0] == tracks[10]
+    assert len(result.path) == 5
+    assert len(result.leftovers) == len(tracks) - 5
+    with pytest.raises(ValueError):
+        build_playlist_path(tracks, start="/nope.mp3")
+    with pytest.raises(ValueError):
+        build_playlist_path(tracks, direction="sideways")
+    assert build_playlist_path([]) == PathResult(path=[], leftovers=[])
+
+
+def test_path_is_fast_on_a_few_thousand_tracks():
+    tracks = _synthetic(3000)
+    began = time.perf_counter()
+    result = build_playlist_path(tracks, direction="flat")
+    elapsed = time.perf_counter() - began
+    _assert_valid_path(result)
+    assert len(result.path) + len(result.leftovers) == 3000
+    assert elapsed < 2.0, elapsed

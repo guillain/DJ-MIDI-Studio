@@ -3,11 +3,15 @@ import json
 import pytest
 
 from djmidi.controller_sync import (
+    DEFAULT_SCENE,
     ControllerSyncSet,
+    PlugInSyncTracker,
     SyncMessage,
     SyncResult,
     resolve_output_port,
     run_sync,
+    scene_names,
+    sets_for_scene,
     summarize_results,
     sync_set_from_events,
 )
@@ -167,3 +171,172 @@ def test_sync_sets_from_recording_splits_by_port():
         ("DDJ-XP2", "PIONEER DDJ-XP2", 2),
         ("Other", "Other", 1),
     ]
+
+
+_XP2 = ControllerSyncSet("DDJ-XP2", "PIONEER DDJ-XP2", ())
+_XZ = ControllerSyncSet("XDJ-XZ", "", ())
+
+
+def test_plug_in_tracker_first_call_only_seeds():
+    tracker = PlugInSyncTracker()
+    assert not tracker.seeded
+    assert tracker.due([_XP2], ["PIONEER DDJ-XP2"]) == []
+    assert tracker.seeded
+
+
+def test_plug_in_tracker_sends_on_appearance_once_and_again_after_replug():
+    tracker = PlugInSyncTracker()
+    tracker.seed(["IAC Driver Bus 1"])
+    assert tracker.due([_XP2, _XZ], ["IAC Driver Bus 1", "PIONEER DDJ-XP2"]) == [_XP2]
+    # Staying connected never re-sends.
+    assert tracker.due([_XP2, _XZ], ["IAC Driver Bus 1", "PIONEER DDJ-XP2"]) == []
+    # Unplugged, then replugged: due again.
+    assert tracker.due([_XP2, _XZ], ["IAC Driver Bus 1"]) == []
+    assert tracker.due([_XP2, _XZ], ["IAC Driver Bus 1", "PIONEER DDJ-XP2"]) == [_XP2]
+
+
+def test_plug_in_tracker_seed_prevents_double_sync_at_launch():
+    tracker = PlugInSyncTracker()
+    tracker.seed(["PIONEER DDJ-XP2", "XDJ-XZ"])  # the ports the launch Sync used
+    assert tracker.due([_XP2, _XZ], ["PIONEER DDJ-XP2", "XDJ-XZ"]) == []
+
+
+def test_plug_in_tracker_ignores_unrelated_ports_and_new_sets_for_connected_controllers():
+    tracker = PlugInSyncTracker()
+    tracker.seed(["PIONEER DDJ-XP2"])
+    assert tracker.due([_XP2], ["PIONEER DDJ-XP2", "Some Synth"]) == []
+    # A set recorded while XDJ-XZ is already connected isn't sent back to it.
+    tracker.seed(["PIONEER DDJ-XP2", "XDJ-XZ"])
+    assert tracker.due([_XP2, _XZ], ["PIONEER DDJ-XP2", "XDJ-XZ"]) == []
+
+
+def test_plug_in_tracker_several_controllers_appearing_together():
+    tracker = PlugInSyncTracker()
+    tracker.seed([])
+    assert tracker.due([_XP2, _XZ], ["XDJ-XZ", "PIONEER DDJ-XP2"]) == [_XP2, _XZ]
+
+
+def test_plug_in_tracker_reset_reseeds_without_sending():
+    tracker = PlugInSyncTracker()
+    tracker.seed([])
+    tracker.reset()
+    assert tracker.due([_XP2], ["PIONEER DDJ-XP2"]) == []
+
+
+def test_with_messages_replaces_only_the_messages():
+    original = ControllerSyncSet("DDJ-XP2", "PIONEER DDJ-XP2", (SyncMessage("Note On", 1, 11, 127),))
+    edited = original.with_messages([SyncMessage("Control Change", 2, 7, 0)])
+    assert edited == ControllerSyncSet("DDJ-XP2", "PIONEER DDJ-XP2", (SyncMessage("Control Change", 2, 7, 0),))
+    assert original.messages == (SyncMessage("Note On", 1, 11, 127),)
+
+
+def test_move_message_clamps_and_ignores_bad_index():
+    from djmidi.controller_sync import move_message
+
+    a, b, c = (SyncMessage("Note On", 1, n, 127) for n in (1, 2, 3))
+    assert move_message((a, b, c), 2, -1) == (a, c, b)
+    assert move_message((a, b, c), 0, 1) == (b, a, c)
+    assert move_message((a, b, c), 0, -1) == (a, b, c)
+    assert move_message((a, b, c), 2, 5) == (a, b, c)
+    assert move_message((a, b, c), 7, 1) == (a, b, c)
+
+
+def test_messages_from_rows_validates_and_names_the_bad_row():
+    from djmidi.controller_sync import messages_from_rows
+
+    assert messages_from_rows([("Note On", "1", "11", "127"), ("cc", 2, 7, 0)]) == (
+        SyncMessage("Note On", 1, 11, 127),
+        SyncMessage("Control Change", 2, 7, 0),
+    )
+    assert messages_from_rows([]) == ()
+    with pytest.raises(ValueError, match="Message 2: data1"):
+        messages_from_rows([("Note On", 1, 11, 127), ("Note On", 1, 128, 0)])
+    with pytest.raises(ValueError, match="Message 1"):
+        messages_from_rows([("Note On", 1, 11)])
+
+
+# --- Scenes (issue #188) ----------------------------------------------------
+
+
+def _scene_set(controller: str, scene: str = "Default", note: int = 1) -> ControllerSyncSet:
+    return ControllerSyncSet(controller, "", (SyncMessage.create("Note On", 1, note, 127),), scene)
+
+
+def test_a_set_saved_before_scenes_loads_as_the_default_scene():
+    old = {
+        "controller": "DDJ-XP2",
+        "output_port": "",
+        "messages": [{"event_type": "Note On", "channel": 1, "data1": 11, "data2": 127}],
+    }
+    sync_set = ControllerSyncSet.from_dict(old)
+    assert sync_set.scene == DEFAULT_SCENE
+    assert sync_set.label == "DDJ-XP2"
+    assert ControllerSyncSet.from_dict({**old, "scene": "  "}).scene == DEFAULT_SCENE
+    assert ControllerSyncSet.from_dict(_scene_set("DDJ-XP2", "Tek").to_dict()).scene == "Tek"
+
+
+def test_with_messages_and_in_scene_keep_the_other_fields():
+    tek = _scene_set("DDJ-XP2", "Tek")
+    assert tek.with_messages(()).scene == "Tek"
+    moved = tek.in_scene(" DnB ")
+    assert (moved.scene, moved.messages, moved.label) == ("DnB", tek.messages, "DDJ-XP2 — DnB")
+
+
+def test_sets_for_scene_falls_back_to_each_controllers_default_set():
+    xp2_default, xp2_tek = _scene_set("DDJ-XP2"), _scene_set("DDJ-XP2", "Tek", 2)
+    xz_default = _scene_set("XDJ-XZ")
+    lc1_dnb = _scene_set("CMD LC-1", "DnB")
+    sets = [xp2_tek, xz_default, xp2_default, lc1_dnb]
+    assert sets_for_scene(sets, "Tek") == [xp2_tek, xz_default]
+    assert sets_for_scene(sets, "Default") == [xp2_default, xz_default]
+    # No set for that scene and no Default set: the controller is left out.
+    assert sets_for_scene(sets, "Warm-up") == [xp2_default, xz_default]
+    assert sets_for_scene(sets, "DnB") == [xp2_default, xz_default, lc1_dnb]
+
+
+def test_scene_names_lists_default_first_then_alphabetically():
+    sets = [_scene_set("A", "tek"), _scene_set("B", "DnB"), _scene_set("C")]
+    assert scene_names(sets) == ["Default", "DnB", "tek"]
+    assert scene_names([], "Warm-up") == ["Default", "Warm-up"]
+
+
+def test_preferences_key_sets_by_controller_and_scene():
+    preferences = PluginPreferences()
+    default, tek = _scene_set("DDJ-XP2"), _scene_set("DDJ-XP2", "Tek")
+    preferences.set_sync_set(default)
+    preferences.set_sync_set(tek)
+    replacement = _scene_set("DDJ-XP2", "Tek", 9)
+    preferences.set_sync_set(replacement)
+    assert preferences.controller_sync_sets == [default, replacement]
+    assert preferences.sync_set_for("DDJ-XP2") == default
+    assert preferences.sync_set_for("DDJ-XP2", "Tek") == replacement
+    assert preferences.sync_set_for("DDJ-XP2", "DnB") is None
+
+    preferences.active_sync_scene = "Tek"
+    assert preferences.active_sync_sets() == [replacement]
+    preferences.active_sync_scene = "DnB"
+    assert preferences.active_sync_sets() == [default]
+
+    restored = PluginPreferences.from_json(preferences.to_json())
+    assert restored.active_sync_scene == "DnB"
+    assert restored.controller_sync_sets == [default, replacement]
+
+    restored.remove_sync_set("DDJ-XP2", "Tek")
+    assert restored.controller_sync_sets == [default]
+    restored.set_sync_set(tek)
+    restored.remove_sync_set("DDJ-XP2")  # no scene: every scene of that controller
+    assert restored.controller_sync_sets == []
+
+
+def test_old_preferences_json_loads_into_the_default_scene():
+    old = {
+        "enabled": {},
+        "controller_sync_sets": [
+            {"controller": "DDJ-XP2", "output_port": "", "messages": []},
+            {"controller": "DDJ-XP2", "output_port": "Later", "messages": []},
+        ],
+    }
+    preferences = PluginPreferences.from_json(json.dumps(old))
+    assert preferences.active_sync_scene == DEFAULT_SCENE
+    # One per (controller, scene): the last one wins.
+    assert [(s.key, s.output_port) for s in preferences.controller_sync_sets] == [(("DDJ-XP2", "Default"), "Later")]

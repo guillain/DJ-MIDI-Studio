@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import dataclasses
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QCheckBox,
@@ -27,13 +27,22 @@ from PySide6.QtWidgets import (
 from djmidi import catalog, software, user_paths
 from djmidi.controller_sync import ControllerSyncSet
 from djmidi.gui.file_reveal import reveal_in_file_manager
+from djmidi.gui.sync_set_editor import SyncSetEditorDialog
 from djmidi.logging_config import default_log_path
 from djmidi.midi_io import list_output_ports
 from djmidi.plugins import PluginPreferences
 
+# Controller sync tab columns: Controller, Scene, Output port, Messages.
+_PORT_COLUMN = 2
+_MESSAGES_COLUMN = 3
+
 
 class PreferencesDialog(QDialog):
     """Safe, explicit preferences for plugins and integration policies."""
+
+    # Workspace backup/restore (issue #187), handled by MainWindow.
+    backupRequested = Signal()
+    restoreRequested = Signal()
 
     def __init__(self, preferences: PluginPreferences, parent=None) -> None:
         super().__init__(parent)
@@ -76,6 +85,14 @@ class PreferencesDialog(QDialog):
             "Setup) when the app starts, as if you had clicked ⟳ Sync."
         )
         self._auto_sync_on_startup = auto_sync_on_startup
+        auto_sync_on_plug_in = QCheckBox("Sync a controller when it is plugged in")
+        auto_sync_on_plug_in.setChecked(preferences.auto_sync_on_plug_in)
+        auto_sync_on_plug_in.setToolTip(
+            "Watch for controllers being connected and send each one its recorded initialization "
+            "set once, as soon as it appears. A controller that stays connected is not re-sent; "
+            "unplugging and replugging it sends the set again."
+        )
+        self._auto_sync_on_plug_in = auto_sync_on_plug_in
         workspace_row = QWidget()
         workspace_layout = QHBoxLayout(workspace_row)
         workspace_layout.setContentsMargins(0, 0, 0, 0)
@@ -89,6 +106,16 @@ class PreferencesDialog(QDialog):
         open_workspace.clicked.connect(lambda: reveal_in_file_manager(user_paths.ensure_workspace()))
         workspace_layout.addWidget(workspace_label, 1)
         workspace_layout.addWidget(open_workspace)
+        backup_workspace = QPushButton("Back up...")
+        backup_workspace.setToolTip("Save your files and preferences in one zip (File → Back Up Workspace).")
+        backup_workspace.clicked.connect(self.backupRequested.emit)
+        restore_workspace = QPushButton("Restore...")
+        restore_workspace.setToolTip("Restore a workspace backup, after confirming what it overwrites.")
+        restore_workspace.clicked.connect(self.restoreRequested.emit)
+        workspace_layout.addWidget(backup_workspace)
+        workspace_layout.addWidget(restore_workspace)
+        self._backup_button = backup_workspace
+        self._restore_button = restore_workspace
         theme = QComboBox()
         theme.addItem("Follow system", "system")
         theme.addItem("Light", "light")
@@ -137,6 +164,7 @@ class PreferencesDialog(QDialog):
         policy_layout.addRow(auto_start_live_monitor)
         policy_layout.addRow(reopen_last_files)
         policy_layout.addRow(auto_sync_on_startup)
+        policy_layout.addRow(auto_sync_on_plug_in)
         policy_layout.addRow("Your files folder:", workspace_row)
 
         controller_ids = {
@@ -207,20 +235,23 @@ class PreferencesDialog(QDialog):
         layout = QVBoxLayout(page)
         hint = QLabel(
             "Initialization sets sent by the Sync button (menu bar and Live Monitor), one per "
-            "controller. Record one in Controller Setup: name the controller, start learning, "
-            "press the controls, then \"Save as controller sync set\"."
+            "controller and scene. ⟳ Sync sends each controller its set for the scene chosen "
+            "beside it in the menu bar, or its Default set when it has none for that scene. "
+            "Record one with ● Rec (into the active scene), or in Controller Setup: name the "
+            "controller, start learning, press the controls, then \"Save as controller sync set\"."
         )
         hint.setWordWrap(True)
         layout.addWidget(hint)
         self._sync_sets: list[ControllerSyncSet] = list(preferences.controller_sync_sets)
-        self._sync_table = QTableWidget(0, 3)
-        self._sync_table.setHorizontalHeaderLabels(["Controller", "Output port", "Messages"])
+        self._sync_table = QTableWidget(0, 4)
+        self._sync_table.setHorizontalHeaderLabels(["Controller", "Scene", "Output port", "Messages"])
         self._sync_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self._sync_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         header = self._sync_table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
-        header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
-        header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(_PORT_COLUMN, QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(_MESSAGES_COLUMN, QHeaderView.ResizeMode.ResizeToContents)
         # Port names ("PIONEER DDJ-XP2 ...") need room to stay readable.
         self._sync_table.setMinimumWidth(480)
         self._sync_table.verticalHeader().setVisible(False)
@@ -229,18 +260,24 @@ class PreferencesDialog(QDialog):
             row = self._sync_table.rowCount()
             self._sync_table.insertRow(row)
             self._sync_table.setItem(row, 0, QTableWidgetItem(sync_set.controller))
+            self._sync_table.setItem(row, 1, QTableWidgetItem(sync_set.scene))
             port_combo = QComboBox()
             port_combo.addItem(self._AUTO_PORT_LABEL, "")
             for port in dict.fromkeys([*available, sync_set.output_port]):
                 if port:
                     port_combo.addItem(port if port in available else f"{port} (not connected)", port)
             port_combo.setCurrentIndex(max(port_combo.findData(sync_set.output_port), 0))
-            self._sync_table.setCellWidget(row, 1, port_combo)
-            self._sync_table.setItem(row, 2, QTableWidgetItem(str(len(sync_set.messages))))
+            self._sync_table.setCellWidget(row, _PORT_COLUMN, port_combo)
+            self._sync_table.setItem(row, _MESSAGES_COLUMN, QTableWidgetItem(str(len(sync_set.messages))))
+        self._sync_table.cellDoubleClicked.connect(lambda row, _column: self._edit_sync_set(row))
         layout.addWidget(self._sync_table, 1)
+        edit_button = QPushButton("Edit messages…")
+        edit_button.setToolTip("List, edit, delete or reorder the selected set's messages")
+        edit_button.clicked.connect(self._edit_selected_sync_set)
         remove_button = QPushButton("Remove selected set")
         remove_button.clicked.connect(self._remove_selected_sync_set)
         buttons = QHBoxLayout()
+        buttons.addWidget(edit_button)
         buttons.addWidget(remove_button)
         buttons.addStretch(1)
         layout.addLayout(buttons)
@@ -252,10 +289,28 @@ class PreferencesDialog(QDialog):
             self._sync_table.removeRow(row)
             del self._sync_sets[row]
 
+    def _edit_selected_sync_set(self) -> None:
+        rows = sorted({index.row() for index in self._sync_table.selectedIndexes()})
+        if rows:
+            self._edit_sync_set(rows[0])
+
+    def _edit_sync_set(self, row: int) -> None:
+        """Opens the message editor for one set. Its result only replaces the
+        set in this dialog; Preferences' own Save persists it, Cancel drops it."""
+        if not 0 <= row < len(self._sync_sets):
+            return
+        # Test sends follow the port currently chosen in the combo.
+        current = self._edited_sync_sets()[row]
+        editor = SyncSetEditorDialog(current, list_output_ports(), parent=self)
+        if editor.exec() != QDialog.DialogCode.Accepted:
+            return
+        self._sync_sets[row] = dataclasses.replace(self._sync_sets[row], messages=editor.edited_sync_set().messages)
+        self._sync_table.setItem(row, _MESSAGES_COLUMN, QTableWidgetItem(str(len(self._sync_sets[row].messages))))
+
     def _edited_sync_sets(self) -> list[ControllerSyncSet]:
         edited = []
         for row, sync_set in enumerate(self._sync_sets):
-            combo = self._sync_table.cellWidget(row, 1)
+            combo = self._sync_table.cellWidget(row, _PORT_COLUMN)
             port = combo.currentData() if isinstance(combo, QComboBox) else sync_set.output_port
             edited.append(dataclasses.replace(sync_set, output_port=port or ""))
         return edited
@@ -306,6 +361,7 @@ class PreferencesDialog(QDialog):
         self._preferences.auto_start_live_monitor = self._auto_start_live_monitor.isChecked()
         self._preferences.reopen_last_files = self._reopen_last_files.isChecked()
         self._preferences.auto_sync_on_startup = self._auto_sync_on_startup.isChecked()
+        self._preferences.auto_sync_on_plug_in = self._auto_sync_on_plug_in.isChecked()
         self._preferences.log_level = self._log_level.currentText()
         self._preferences.log_path = self._log_path.text().strip()
         self._preferences.controller_setup_default_file = self._setup_file.text().strip()

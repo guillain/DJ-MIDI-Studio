@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 from mutagen.id3 import ID3, TBPM, TCON, TIT2, TKEY, TPE1
-from PySide6.QtWidgets import QApplication, QInputDialog, QMessageBox
+from PySide6.QtWidgets import QApplication, QDialog, QInputDialog, QMessageBox
 
 from djmidi import taxonomy
 from djmidi.gui import music_library_view as mlv
@@ -14,7 +14,14 @@ from djmidi.gui.music_library_view import (
     MusicLibraryView,
 )
 from djmidi.library import workspace
+from djmidi.library.db import TrackRecord
 from djmidi.library.metadata import read_metadata
+from djmidi.library.relink import (
+    MATCH_EXACT,
+    MATCH_NAME,
+    RelinkCandidate,
+    RelinkProposal,
+)
 from djmidi.library.serato_library import parse_crate
 
 
@@ -220,6 +227,20 @@ def test_playlists_from_selection_generation_and_match(library, monkeypatch):
     matched = view.db.playlist_paths(view.selected_playlist_id())
     assert [Path(p).name for p in matched] == ["a.mp3", "b.mp3"]
     assert view.playlist_list.count() == 3
+
+
+def test_path_playlist_with_leftovers(library, monkeypatch):
+    view, music, _ = library
+    monkeypatch.setattr(QInputDialog, "getItem", lambda *a, **k: ("Rising BPM", True))
+    monkeypatch.setattr(QInputDialog, "getText", lambda *a, **k: ("Path", True))
+    view.select_path(str(music / "Tek" / "Tribe" / "a.mp3"))
+    view._on_path_clicked()
+    names = {record.name: record.id for record in view.db.list_playlists()}
+    assert set(names) == {"Path", "Path (leftovers)"}
+    assert [Path(p).name for p in view.db.playlist_paths(names["Path"])] == ["a.mp3", "b.mp3"]
+    assert [Path(p).name for p in view.db.playlist_paths(names["Path (leftovers)"])] == ["c.mp3"]
+    assert view.selected_playlist_id() == names["Path"]
+    assert "leftovers" in view.status_label.text()
 
 
 def test_playlist_rename_delete_and_crate_export(library, monkeypatch):
@@ -587,3 +608,126 @@ def test_confirm_all_suggestions_only_covers_the_filtered_tracks(library):
     view.filter_edit.setText("Alpha")
     assert view.pending_suggestions() == {}
     assert view.confirm_all_suggestions() == 0
+
+
+def test_relink_missing_tracks_flow(library, monkeypatch):
+    view, music, _ = library
+    old = music / "misc" / "c.mp3"
+    new = music / "moved" / "c.mp3"
+    new.parent.mkdir()
+    old.rename(new)
+    playlist = view.db.create_playlist("Set", [str(old)])
+    view.start_scan()
+    view.run_pending_job()
+
+    reviewed = []
+    monkeypatch.setattr(mlv.RelinkDialog, "exec", lambda self: reviewed.append(self) or QDialog.DialogCode.Accepted)
+    monkeypatch.setattr(QMessageBox, "question", lambda *a, **k: QMessageBox.StandardButton.Yes)
+    view.start_relink_search()
+    assert view.relink_button.isEnabled() is False
+    view.run_pending_job()
+    QApplication.processEvents()
+
+    [dialog] = reviewed
+    assert [(m.path, c.path) for m, c in dialog.choices()] == [(str(old), str(new))]
+    assert view.db.get_track_by_path(old) is None
+    assert view.db.playlist_paths(playlist) == [str(new)]
+    assert view.table_model.rowCount() == 3
+    assert "Relinked 1 track" in view.status_label.text()
+
+
+def test_relink_with_nothing_missing(library):
+    view, _music, _ = library
+    view.start_relink_search()
+    view.run_pending_job()
+    assert view.status_label.text() == "No missing tracks to relink."
+
+
+def test_relink_dialog_choices():
+    def candidate(path, match, indexed=True):
+        return RelinkCandidate(path, 1, 1, 1.0, match, indexed=indexed)
+
+    proposals = [
+        RelinkProposal(TrackRecord(1, 1, "/old/a.mp3", 1, 1.0, True), [candidate("/new/a.mp3", MATCH_EXACT)], True),
+        RelinkProposal(
+            TrackRecord(2, 1, "/old/b.mp3", 1, 1.0, True),
+            [candidate("/x/b.mp3", MATCH_NAME), candidate("/y/b.mp3", MATCH_NAME, indexed=False)],
+        ),
+        RelinkProposal(TrackRecord(3, 1, "/old/c.mp3", 1, 1.0, True), []),
+    ]
+    dialog = mlv.RelinkDialog(proposals)
+    ok = dialog.buttons.button(mlv.QDialogButtonBox.StandardButton.Ok)
+    assert [c.path for _m, c in dialog.choices()] == ["/new/a.mp3"]
+    dialog.set_choice(0, False)
+    assert ok.isEnabled() is False
+    dialog.set_choice(1, True, candidate_index=1)
+    assert [(m.id, c.path) for m, c in dialog.choices()] == [(2, "/y/b.mp3")]
+    assert dialog.tree.topLevelItem(1).text(2) == "Same name, other size (not scanned yet)"
+    assert dialog.tree.topLevelItem(2).text(1) == "No matching file found"
+
+
+def test_find_duplicates_without_scan_asks_for_one():
+    view = MusicLibraryView(db_path=":memory:")
+    view.find_duplicates()
+    assert view.duplicates_dialog is None
+    assert "Scan" in view.status_label.text()
+    view.close_db()
+
+
+def test_find_duplicates_opens_read_only_dialog(library, monkeypatch):
+    """Issue #184: exact copies and same-artist+title tracks are listed,
+    revealable in Finder, and no file is touched."""
+    from djmidi.gui import duplicates_dialog
+
+    view, music, _ = library
+    original = music / "Tek" / "Tribe" / "a.mp3"
+    copy = music / "copies" / "a copy.mp3"
+    copy.parent.mkdir()
+    copy.write_bytes(original.read_bytes())
+    _mp3(music / "misc" / "alpha2.mp3", title="Alpha (Original Mix)", artist="ZED")
+    view.start_scan()
+    view.run_pending_job()
+    before = {p: p.read_bytes() for p in music.rglob("*.mp3")}
+
+    view.find_duplicates()
+    assert view.is_busy()
+    assert not view.duplicates_button.isEnabled()
+    view.run_pending_job()
+    assert view.duplicates_button.isEnabled()
+    dialog = view.duplicates_dialog
+    assert dialog is not None and dialog.isVisible()
+    exact = [g for g in dialog.groups if g.tier == "exact"]
+    by_meta = [g for g in dialog.groups if g.tier == "metadata"]
+    assert [g.paths for g in exact] == [tuple(sorted((str(original), str(copy))))]
+    assert [len(g.paths) for g in by_meta] == [3]
+    assert "1 group(s) of identical files" in view.status_label.text()
+
+    items = dialog.file_items()
+    assert len(items) == 5
+    assert {item.text(1) for item in items} == {"MP3"}
+    group_item = items[0].parent()
+    group_item.setExpanded(True)
+    assert all(group_item.child(i).text(3) != "…" for i in range(group_item.childCount()))
+
+    revealed: list[str] = []
+    monkeypatch.setattr(duplicates_dialog, "reveal_in_file_manager", revealed.append)
+    assert not dialog.reveal_button.isEnabled()
+    dialog.tree.setCurrentItem(items[0])
+    assert dialog.reveal_button.isEnabled()
+    dialog.reveal_button.click()
+    assert revealed == [items[0].data(0, duplicates_dialog.PATH_ROLE)]
+    # Read-only: every file is still there, byte for byte.
+    assert {p: p.read_bytes() for p in music.rglob("*.mp3")} == before
+
+    view.find_duplicates()
+    view.run_pending_job()
+    assert view.duplicates_dialog is not dialog
+
+
+def test_format_size():
+    from djmidi.gui.duplicates_dialog import format_size
+
+    assert format_size(None) == ""
+    assert format_size(512) == "512 B"
+    assert format_size(2048) == "2.0 KB"
+    assert format_size(5 * 1024**3) == "5.0 GB"

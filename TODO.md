@@ -139,6 +139,72 @@ Implemented contract, runtime, test, and documentation work:
   another track while playing switches to it; leaving the tab (non-spontaneous hide) or `close_db()` (app close)
   stops it. PyInstaller's stock `hook-PySide6.QtMultimedia` already collects the `multimedia` plugins, so
   `scripts/build.sh` is unchanged.
+- [x] **Playlist path mode** (`v0.48.63-playlist-path-mode`, issue #191) — issue #131's deferred follow-up:
+  `playlist.build_playlist_path` chains tracks so every step is BPM- (±6 %) and Camelot-compatible and the BPM
+  rises, falls or stays steady, via a deterministic receding-horizon beam search (beam 8, lookahead 3) over a
+  per-Camelot-key BPM index (3,000 synthetic tracks well under 2 s, tested); unplaceable tracks are returned as
+  leftovers. Music Library: `Auto: mix path…` (direction prompt, starts from the selected track) writes the path
+  plus a separate `… (leftovers)` playlist. Simple mode stays the default.
+- [x] **Relink missing library tracks** (`v0.48.62-library-relink`, issue #190) — a moved file used to stay in the
+  index as one `missing` row plus a new one. Qt-free `library/relink.py` proposes, per missing track, indexed or
+  not-yet-scanned files under the roots with the same name (casefold) and size (confident when unique and not claimed
+  by another missing track), the same name only, or the same cached title+artist; `LibraryDB.relink_tracks` moves
+  playlist entries and cached tags to the found row and drops the stale one in a single transaction. Music Library's
+  `Relink missing…` opens a review dialog (confident rows pre-ticked) and asks for confirmation. Index only, no undo.
+
+- [x] **Sync scenes** (`v0.48.61-sync-scenes`, issue #188) — several named sync sets per controller (Tek / DnB /
+  Warm-up…), picked with a scene combo between `● Rec` and `⟳ Sync` (`New scene…` adds one). Sync, launch and
+  plug-in sync send each controller its set for the active scene, falling back to its Default set; `● Rec` and
+  Controller Setup record into the active scene. Existing sets and files load as scene "Default" unchanged;
+  other scenes are stored as `<controller>.<scene>.json`. Preferences → Controller sync shows a Scene column.
+- [x] **Visual diff between two mappings** (`v0.48.60-mapping-diff`, issue #189) — Qt-free `mapping_diff.diff_configs`
+  reduces both sides to a multiset keyed by trigger `(channel, event_type, control, userio event)` and function
+  `(tag, deck_set, deck_id, slot_id)`, counting each translation/alias signature, so Serato's load-bearing 10x
+  duplication diffs cleanly (a lost copy is one `duplicates` entry, `x10 -> x9`). Kinds: re-assigned / added /
+  removed (one per trigger), changed values / duplicate count (one per function, with field-level details such as
+  `alias on: 127 -> 100` or `on 1 of 10 copies`). `File → Compare Mapping With…` and `Compare With Previous Version`
+  (the `.bak`, disabled when absent) open the non-modal `MappingDiffDialog` grouped by kind with catalog names;
+  selecting a row highlights the trigger on the layouts and selects it in By Channel like a layout click. The open
+  mapping is compared as it is in the app, unsaved edits included; `Control.extra_attrs` (Traktor blob positions)
+  is ignored. Page: `docs/enduser/features/mapping-diff.md`.
+- [x] **Edit sync set messages** (`v0.48.59-sync-set-editor`, issue #186) — Preferences → Controller sync →
+  `Edit messages…` (or double-click a set) lists a set's messages (type/channel/data1/data2), edits them with
+  validation, deletes and reorders them, and can send one as a test; saved with the Preferences dialog, no
+  re-recording needed. Qt-free `messages_from_rows` / `move_message` / `ControllerSyncSet.with_messages`.
+- [x] **Workspace backup and restore** (`v0.48.58-workspace-backup`, issue #187) — `File → Back Up Workspace…` /
+  `Restore Workspace…` (also buttons beside Preferences' files folder) zip `Documents/DJ MIDI Studio`, preferences.json
+  and, when asked, the library index (SQLite online backup API, consistent while open) with a `manifest.json`. Qt-free
+  `djmidi.backup`: restore is a dry-run plan by default (what it adds/overwrites, zip-slip and symlink-escape refused,
+  JSON/SQLite payloads validated before any write), only adds/overwrites, and asks the user to restart afterwards
+  rather than hot-reloading preferences/profiles. Backups already in the workspace are never nested.
+
+- [x] **Reverse function search** (`v0.48.57-function-search`, issue #185) — a **Find function** field at the top
+  of the editing column (By Channel/Deck/Controller) answers "which control triggers function X?". Matching lives
+  in the Qt-free `djmidi/function_search.py`: one result per (tag, userio event, deck, slot), Serato's 10x
+  duplicates collapsed into distinct triggers; tokenized, case-insensitive match over the tag with underscores as
+  spaces, `deck N`/`slot N` pinning the ids, `click`/`output` filtering, ranked exact word > prefix > substring,
+  click before output. Selecting a result selects its first control in the current tab (the exact deck/slot row
+  on By Deck) and outlines every bound control on the three layouts. The edit panel now scrolls inside that
+  column (it needs ~850 px and was overlapping itself at 1100x700, checked on an offscreen `MainWindow.grab()`).
+- [x] **Duplicate track detection** (`v0.48.56-library-duplicates`, issue #184) — Qt-free
+  `library/duplicates.py`: a *metadata* tier (normalized artist + title: NFKD/accents, casefold, `feat.`
+  credits and `(Original Mix)`-style suffixes dropped, every other version marker kept, punctuation squashed;
+  no artist or title → never grouped) and an *exact* tier (same size → 64 KB prefix hash → full chunked
+  `blake2b`, a generator yielding per chunk). Music Library's `Find duplicates…` runs it on the tab's `QTimer`
+  job slicer and opens a read-only `DuplicatesDialog` (path/format/size, bitrate read lazily on expand, Reveal in
+  Finder). First slice deliberately read-only (no Trash/delete); duration comparison deferred (not in the tag
+  cache).
+- [x] **Sync on plug-in** (`v0.48.55-sync-on-plug-in`, issue #183) — output ports are listed every 2 s in the
+  real app; when a port appears that a stored sync set resolves to, that set is sent once. Never re-sent while it
+  stays connected, sent again after unplug/replug; the launch Sync seeds the Qt-free `PlugInSyncTracker` so nothing
+  is sent twice. New `auto_sync_on_plug_in` preference (default on) next to "Sync controllers at launch".
+- [x] **Printable mapping cheat sheet** (`v0.48.54-mapping-cheat-sheet`, issue #182) — `File → Export ▸ Cheat Sheet
+  (PDF)...`: per chosen controller, the clean photo with each mapped pad/button's function written on it (resolved
+  like the emulator's dry run, but listing every deck layer and the SHIFT layer), one page per pad bank in use, and
+  a section / control / function table for controllers without `CONTROL_GEOMETRY` or controls with no marker.
+  Qt-free core `gui/cheat_sheet.py`, `QPdfWriter` renderer `gui/cheat_sheet_pdf.py`. The controllers are ticked in
+  a dialog (pre-ticked: connected + shown in Controller Images) because a mapping alone can't say which controller
+  it targets — the real fixture's 64 triggers resolve on four Pioneer models.
 - [x] **Record button + Sync at launch** (`v0.48.53-controller-sync-record`) — requested by the maintainer ("un
   bouton 'record' pour sauvegarder le setup et le jouer automatiquement"; placement and trigger chosen by them):
   a checkable `● Rec` beside `⟳ Sync` listens to every MIDI input and, on `■ Stop`, saves one sync set per port
