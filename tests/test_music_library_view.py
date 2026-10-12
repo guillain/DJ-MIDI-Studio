@@ -410,6 +410,11 @@ def test_no_button_is_squeezed_below_its_minimum(size):
     Library scrolls rather than crushing its buttons into slivers."""
     from PySide6.QtWidgets import QAbstractButton
 
+    from djmidi.gui.theme import apply_theme
+
+    # The compact "?" buttons rely on the app theme (padding 0); apply it here
+    # instead of depending on an earlier test having built a MainWindow.
+    apply_theme(QApplication.instance())
     view = MusicLibraryView(db_path=":memory:")
     view.resize(*size)
     view.show()
