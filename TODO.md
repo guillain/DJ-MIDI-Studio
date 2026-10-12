@@ -132,6 +132,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Played-tracks history** (`v0.48.80-played-history`, issue #227) — Qt-free
+  `library/history.py` reads Serato `History/Sessions/*.session` (crate chunk framing, numbered `adat`
+  fields) and Traktor `History/*.nml` (`EXTENDEDDATA` start date/time, deck, `PLAYEDPUBLIC`) read-only,
+  both formats confirmed on the maintainer's real folders first; the Music Library tab's new History
+  panel lists sessions newest first and selects the indexed tracks never played. Fixtures synthetic.
 - [x] **Readable function names** (`v0.48.72-readable-function-names`, issue #209) — Qt-free
   `function_names.py`: `FUNCTION_NAMES` maps the only four tags the real Serato exports contain
   (inventoried from `data/xdj_xz-ddj_xp2-4decks.xml` + `data/serato/*.xml.zip`; a test keeps the table
