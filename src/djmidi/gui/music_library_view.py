@@ -43,6 +43,7 @@ from PySide6.QtWidgets import (
     QComboBox,
     QDialog,
     QDialogButtonBox,
+    QDoubleSpinBox,
     QFileDialog,
     QFormLayout,
     QFrame,
@@ -237,6 +238,65 @@ class BulkTagDialog(QDialog):
             QMessageBox.warning(self, "Invalid BPM", "BPM must be a number, e.g. 174 or 128.5.")
             return
         self.accept()
+
+
+class MixPathDialog(QDialog):
+    """The "Auto: mix path…" options (issues #191/#211): BPM direction, BPM
+    tolerance and maximum length, pre-filled with the last values used."""
+
+    def __init__(
+        self,
+        options: workspace.MixPathOptions,
+        track_count: int,
+        parent: QWidget | None = None,
+    ) -> None:
+        super().__init__(parent)
+        self.setWindowTitle("Mix path")
+        self.setMinimumWidth(380)
+        options = options.normalized()
+        box = QVBoxLayout(self)
+        form = QFormLayout()
+        self.direction_combo = QComboBox()
+        self.direction_combo.addItems(list(PATH_DIRECTION_LABELS))
+        labels = {direction: label for label, direction in PATH_DIRECTION_LABELS.items()}
+        self.direction_combo.setCurrentText(labels.get(options.direction, next(iter(PATH_DIRECTION_LABELS))))
+        form.addRow("BPM direction:", self.direction_combo)
+        self.tolerance_spin = QDoubleSpinBox()
+        self.tolerance_spin.setRange(*workspace.MIX_PATH_TOLERANCE_RANGE)
+        self.tolerance_spin.setSingleStep(0.5)
+        self.tolerance_spin.setDecimals(1)
+        self.tolerance_spin.setPrefix("± ")
+        self.tolerance_spin.setSuffix(" %")
+        self.tolerance_spin.setValue(options.bpm_tolerance_pct)
+        self.tolerance_spin.setToolTip("Largest BPM gap allowed between two consecutive tracks.")
+        form.addRow("BPM tolerance:", self.tolerance_spin)
+        self.length_spin = QSpinBox()
+        self.length_spin.setRange(0, workspace.MIX_PATH_MAX_LENGTH_LIMIT)
+        self.length_spin.setSpecialValueText("No limit")
+        self.length_spin.setSuffix(" tracks")
+        self.length_spin.setValue(options.max_length or 0)
+        self.length_spin.setToolTip("Stop the path after this many tracks; the rest go to the leftovers.")
+        form.addRow("Maximum length:", self.length_spin)
+        box.addLayout(form)
+        self.note_label = QLabel(
+            f"Uses only the {track_count} track(s) the current filter shows (plus the selected start "
+            "track). Clear the filters first to build from the whole library."
+        )
+        self.note_label.setWordWrap(True)
+        self.note_label.setEnabled(False)
+        box.addWidget(self.note_label)
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        box.addWidget(buttons)
+
+    def options(self) -> workspace.MixPathOptions:
+        length = self.length_spin.value()
+        return workspace.MixPathOptions(
+            direction=PATH_DIRECTION_LABELS[self.direction_combo.currentText()],
+            bpm_tolerance_pct=self.tolerance_spin.value(),
+            max_length=length or None,
+        ).normalized()
 
 
 class RelinkDialog(QDialog):
@@ -1702,19 +1762,22 @@ class MusicLibraryView(QWidget):
         if not candidates:
             self.status_label.setText("No visible tracks to build a playlist from.")
             return
-        label, ok = QInputDialog.getItem(
-            self, "Mix path", "BPM direction:", list(PATH_DIRECTION_LABELS), 0, False
-        )
-        if not ok:
+        options = self._ask_mix_path_options(len(candidates))
+        if options is None:
             return
-        direction = PATH_DIRECTION_LABELS[label]
         row = self._current_row()
         start = None
         if row is not None and not row.missing and row.bpm is not None and row.camelot_key:
             start = row.path
             if row not in candidates:
                 candidates.append(row)
-        path, leftovers = workspace.generate_playlist_path(candidates, start_path=start, direction=direction)
+        path, leftovers = workspace.generate_playlist_path(
+            candidates,
+            start_path=start,
+            direction=options.direction,
+            bpm_tolerance_pct=options.bpm_tolerance_pct,
+            max_length=options.max_length,
+        )
         if not path:
             self.status_label.setText("No visible track has both a BPM and a key -- scan or tag them first.")
             return
@@ -1727,10 +1790,20 @@ class MusicLibraryView(QWidget):
             self.create_playlist(f"{name} (leftovers)", leftovers, workspace.SOURCE_GENERATED)
         self.create_playlist(name, path, workspace.SOURCE_GENERATED)
         self.status_label.setText(
-            f"{len(path)} track(s) in the path; {len(leftovers)} that don't fit are in “{name} (leftovers)”."
+            f"{len(path)} track(s) in the path; {len(leftovers)} other track(s) are in “{name} (leftovers)”."
             if leftovers
             else f"{len(path)} track(s) in the path."
         )
+
+    def _ask_mix_path_options(self, track_count: int) -> workspace.MixPathOptions | None:
+        """Show `MixPathDialog` pre-filled with the last values, and remember
+        the new ones on OK (issue #211). `None` when cancelled."""
+        dialog = MixPathDialog(workspace.load_mix_path_options(self.db), track_count, self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return None
+        options = dialog.options()
+        workspace.save_mix_path_options(self.db, options)
+        return options
 
     def import_playlists(self, playlists: dict[str, list[str]], source: str) -> int:
         first_id = None
