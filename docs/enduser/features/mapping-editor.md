@@ -122,12 +122,16 @@ it over editing copies one by one in By Channel.
    (`<name>.bak`) and the file is written in one atomic step.
 3. `File → Restore Previous Version…` puts that previous version back, even
    in a later session. `File → Show Mapping in Finder` shows where the file is.
+4. `File → Compare With Previous Version` (or `Compare Mapping With…` for
+   any other file) lists what changed, trigger by trigger — see
+   [Compare mappings](mapping-diff.md).
 
 An unedited file saves back byte-for-byte identical.
 
 ## Related
 
 - [Traktor mappings](traktor-mappings.md)
+- [Compare mappings](mapping-diff.md): what changed between two mappings
 - [Controller Emulator](controller-emulator.md): click through the mapping
   on an interactive controller.
 - [Controller Setup](controller-setup.md): add a controller the app doesn't

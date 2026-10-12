@@ -84,6 +84,7 @@ from djmidi.gui.helpful_notes_dialog import HelpfulNotesDialog
 from djmidi.gui.introduction_view import IntroductionView
 from djmidi.gui.layout_view import ControllerLayoutView
 from djmidi.gui.live_monitor import LiveMonitorView
+from djmidi.gui.mapping_diff_dialog import MappingDiffDialog
 from djmidi.gui.mapping_group import MappingGroup
 from djmidi.gui.metronome_view import MetronomeView
 from djmidi.gui.midi_clock_view import MidiClockView
@@ -101,6 +102,7 @@ from djmidi.integration_detection import (
     detect_software_mapping,
 )
 from djmidi.logging_config import configure_logging, current_log_path
+from djmidi.mapping_diff import diff_configs
 from djmidi.midi_io import MidiEvent, MidiMonitor, list_input_ports, list_output_ports
 from djmidi.model import Control, MappingElement, MidiConfig
 from djmidi.plugins import PluginPreferences, default_preferences_path
@@ -286,6 +288,7 @@ class MainWindow(QMainWindow):
         self._show_all_controllers = False
         self._apply_plugin_preferences()
         self._last_save_plan = None
+        self._diff_dialog: MappingDiffDialog | None = None
         self.node_to_item: dict[int, object] = {}
         self.channel_proxies: list[QSortFilterProxyModel] = []
         self._channel_model_owner: dict[int, tuple[QTreeView, QSortFilterProxyModel]] = {}
@@ -695,6 +698,18 @@ class MainWindow(QMainWindow):
         self._rollback_action.setEnabled(False)
         self._rollback_action.triggered.connect(self._on_rollback_last_save)
         file_menu.addAction(self._rollback_action)
+
+        # Issue #189: what changed, trigger by trigger, instead of a raw XML diff.
+        self._compare_action = QAction("Co&mpare Mapping With...", self)
+        self._compare_action.setToolTip("List what another mapping file does differently from the one open.")
+        self._compare_action.setEnabled(False)
+        self._compare_action.triggered.connect(self._on_compare_with_file)
+        file_menu.addAction(self._compare_action)
+        self._compare_backup_action = QAction("Compare With Previous &Version", self)
+        self._compare_backup_action.setToolTip("List what changed since the version saved before the last save.")
+        self._compare_backup_action.setEnabled(False)
+        self._compare_backup_action.triggered.connect(self._on_compare_with_backup)
+        file_menu.addAction(self._compare_backup_action)
 
         self._reveal_action = QAction(_REVEAL_LABEL, self)
         self._reveal_action.setEnabled(False)
@@ -2250,6 +2265,81 @@ class MainWindow(QMainWindow):
         self._load_mapping_from_path(restored)
         self.statusBar().showMessage(f"Restored the previous version of {restored.name}")
 
+    def _on_compare_with_file(self) -> None:
+        if self.config is None:
+            return
+        path_str, _ = QFileDialog.getOpenFileName(
+            self,
+            "Compare with mapping",
+            str(self._mapping_start_dir()),
+            "Supported mapping files (*.xml *.nml *.tsi *.bak);;All files (*)",
+        )
+        if path_str:
+            self._compare_with_path(Path(path_str))
+
+    def _on_compare_with_backup(self) -> None:
+        if self.config is None or self.current_path is None:
+            return
+        backup = file_locations.backup_path(self.current_path)
+        if not backup.is_file():
+            self._refresh_file_actions()
+            return
+        self._compare_with_path(backup, name=f"previous version ({backup.name})")
+
+    def _parse_other_mapping(self, path: Path) -> MidiConfig:
+        """Parse a file to compare against: as the software detection says
+        when it is sure, else with the open mapping's software (a `.bak` has
+        no telling suffix but is always the same format)."""
+        text = path.read_text(encoding="utf-8")
+        definition = software.get_definition(self.software_id)
+        detection = detect_software_mapping(text, path.suffix)
+        if detection.best is not None and detection.status == "match":
+            definition = next(
+                (d for d in software.active_definitions() if d.plugin_id == detection.best.plugin_id),
+                definition,
+            )
+        return definition.parser(text)
+
+    def _compare_with_path(self, path: Path, name: str | None = None) -> MappingDiffDialog | None:
+        """Diff `path` (the reference) against the mapping as it is in the
+        app now, unsaved edits included, and show the result."""
+        assert self.config is not None
+        try:
+            other = self._parse_other_mapping(path)
+        except Exception as exc:
+            _LOGGER.exception("Failed to read %s for comparison", path)
+            QMessageBox.critical(self, "Failed to compare", str(exc))
+            return None
+        diff = diff_configs(other, self.config)
+        current = self.current_path.name if self.current_path is not None else "the open mapping"
+        if self.undo_stack.count() and not self.undo_stack.isClean():
+            current += " (with unsaved edits)"
+        if self._diff_dialog is not None:
+            self._diff_dialog.close()
+        dialog = MappingDiffDialog(diff, name or path.name, current, self)
+        dialog.triggerSelected.connect(self._on_diff_trigger_selected)
+        self._diff_dialog = dialog
+        dialog.show()
+        self.statusBar().showMessage(f"Compared with {path.name}: {len(diff.entries)} difference(s)")
+        return dialog
+
+    def _on_diff_trigger_selected(self, channel: str, event_type: str, control_no: str) -> None:
+        """Like a layout click: select the control in By Channel when the open
+        mapping has it (a removed one only exists in the other file) and
+        highlight it on the layouts either way."""
+        if self.config is not None:
+            match = next(
+                (
+                    c
+                    for c in self.config.controls
+                    if (c.channel, c.event_type, c.control) == (channel, event_type, control_no)
+                ),
+                None,
+            )
+            if match is not None and self._select_control_in_channel_columns(match):
+                self.left_tabs.setCurrentIndex(self._tab_indexes["channel"])
+        self._update_layout_selection(channel, event_type, control_no)
+
     def _on_backup_workspace(self) -> Path | None:
         """File → Back Up Workspace (issue #187): one zip of the workspace
         folder, preferences.json and, if asked, the library index."""
@@ -2510,6 +2600,8 @@ class MainWindow(QMainWindow):
         has_file = self.current_path is not None
         backup = file_locations.backup_path(self.current_path) if has_file else None
         self._rollback_action.setEnabled(backup is not None and backup.is_file())
+        self._compare_action.setEnabled(self.config is not None)
+        self._compare_backup_action.setEnabled(self.config is not None and backup is not None and backup.is_file())
         self._reveal_action.setEnabled(has_file)
         self._cheat_sheet_action.setEnabled(self.config is not None)
         self.introduction_view.set_files_summary(

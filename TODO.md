@@ -132,6 +132,16 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Visual diff between two mappings** (`v0.48.60-mapping-diff`, issue #189) — Qt-free `mapping_diff.diff_configs`
+  reduces both sides to a multiset keyed by trigger `(channel, event_type, control, userio event)` and function
+  `(tag, deck_set, deck_id, slot_id)`, counting each translation/alias signature, so Serato's load-bearing 10x
+  duplication diffs cleanly (a lost copy is one `duplicates` entry, `x10 -> x9`). Kinds: re-assigned / added /
+  removed (one per trigger), changed values / duplicate count (one per function, with field-level details such as
+  `alias on: 127 -> 100` or `on 1 of 10 copies`). `File → Compare Mapping With…` and `Compare With Previous Version`
+  (the `.bak`, disabled when absent) open the non-modal `MappingDiffDialog` grouped by kind with catalog names;
+  selecting a row highlights the trigger on the layouts and selects it in By Channel like a layout click. The open
+  mapping is compared as it is in the app, unsaved edits included; `Control.extra_attrs` (Traktor blob positions)
+  is ignored. Page: `docs/enduser/features/mapping-diff.md`.
 - [x] **Edit sync set messages** (`v0.48.59-sync-set-editor`, issue #186) — Preferences → Controller sync →
   `Edit messages…` (or double-click a set) lists a set's messages (type/channel/data1/data2), edits them with
   validation, deletes and reorders them, and can send one as a test; saved with the Preferences dialog, no
