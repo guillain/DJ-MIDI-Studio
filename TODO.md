@@ -132,6 +132,18 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Readable function names** (`v0.48.67-readable-function-names`, issue #209) — Qt-free
+  `function_names.py`: `FUNCTION_NAMES` maps the only four tags the real Serato exports contain
+  (inventoried from `data/xdj_xz-ddj_xp2-4decks.xml` + `data/serato/*.xml.zip`; a test keeps the table
+  equal to that set) to labels built from the tag's own words — `Auto loop`, `Loop roll`,
+  `Codfather ST`/`FX` (re-cased only: their meaning was never confirmed). Slots stay numbers
+  (`Loop roll · slot 3`), never loop lengths, since slot→length isn't documented; alias values (LED
+  levels) aren't used; unknown tags (Traktor commands included) stay raw. Used by the By Channel /
+  By Deck / By Controller trees (raw tag in each row's tooltip; `tree_model.MappingFilterProxy` keeps
+  the By Channel filter matching raw tags), Find function (readable words searchable too, raw tag in
+  the tooltip), Compare mappings (`DiffEntry.old_raw`/`new_raw`/`raw_summary()` → tooltip; sorting
+  stays on raw tags) and the cheat sheet (`function_text`; a final `Function names` glossary sheet
+  maps each short name to its tag, since paper has no tooltip).
 - [x] **New version notice** (`v0.48.65-update-notice`, issue #193) — Qt-free `update_check.py` asks GitHub's
   `releases/latest` API (urllib, 5 s timeout, no auth) and compares the tag's numeric `X.Y.Z` prefix with
   `importlib.metadata.version("djmidi")`; every failure is silent (debug log). `gui/update_notice.UpdateChecker`

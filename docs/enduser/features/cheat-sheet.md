@@ -37,13 +37,17 @@ connected right now and the one shown in
 ## What each page shows
 
 - The clean controller photo, with each mapped control labelled in place:
-  the function name as Serato or Traktor calls it (`codfather st 0`,
-  `auto loop specific length 8`) and the decks it applies to (`D1, D3`).
+  the function's [readable name](function-names.md) and slot
+  (`Codfather ST · slot 0`, `Auto loop · slot 8`) — or the tag as Serato or
+  Traktor calls it when it has no short name — and the decks it applies to
+  (`D1, D3`).
 - A control too small to hold its label gets a red number instead, and
   the number is explained in a legend under the photo.
 - Unmapped controls keep a faint outline, so the page still reads as the
   device.
 - The footer names the mapping file and the export date.
+- A last **Function names** page lists every short name used with the
+  Serato tag it stands for.
 
 Functions come from the mapping's input (press) bindings, resolved the
 same way as the [Controller Emulator](controller-emulator.md)'s dry run;
@@ -69,6 +73,7 @@ page saying so.
 ## Related
 
 - [Controller Emulator](controller-emulator.md)
+- [Readable function names](function-names.md)
 - [Controller Images](controller-images.md)
 - [Mapping editor](mapping-editor.md)
 - [Workspace and preferences](workspace.md)

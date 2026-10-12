@@ -73,8 +73,9 @@ at the top of the editing column on the three mapping tabs, answers the
 reverse: type what you want a control to *do* and the list shows every
 control bound to it.
 
-- Words match the Serato function names, ignoring case and underscores:
-  `loop roll` finds `auto_loop_roll_specific_length`.
+- Words match the [readable function names](function-names.md) and the
+  original Serato tags, ignoring case and underscores: `loop roll` finds
+  `auto_loop_roll_specific_length`, shown as `Loop roll`.
 - `deck 2` or `slot 3` keep only that deck or slot, numbered as the file
   stores them (the same numbers the By Deck tab shows); a bare number
   matches either one.
@@ -132,6 +133,8 @@ An unedited file saves back byte-for-byte identical.
 
 - [Traktor mappings](traktor-mappings.md)
 - [Compare mappings](mapping-diff.md): what changed between two mappings
+- [Readable function names](function-names.md): the short names the trees
+  and Find function show.
 - [Controller Emulator](controller-emulator.md): click through the mapping
   on an interactive controller.
 - [Controller Setup](controller-setup.md): add a controller the app doesn't

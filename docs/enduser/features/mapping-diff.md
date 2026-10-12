@@ -36,11 +36,14 @@ output), and the change. Rows are grouped by kind:
 
 | Group | Means |
 | --- | --- |
-| **Re-assigned** | The trigger now drives a different function, e.g. `codfather_st (deck 3, slot 1) -> play (deck 3, slot 1)` |
+| **Re-assigned** | The trigger now drives a different function, e.g. `Codfather ST (deck 3, slot 1) -> play (deck 3, slot 1)` |
 | **Added** | A function bound only in your mapping |
 | **Removed** | A function bound only in the other file |
 | **Changed values** | Same function on the same trigger, with different translation or alias values, e.g. `alias on: 127 -> 100` or `behaviour: explicit -> toggle` |
 | **Duplicate count** | Identical content, but a different number of copies (see below) |
+
+Functions show their [readable name](function-names.md); hover a change to
+see it with the original Serato tags.
 
 The order of controls in the file does not matter: two files with the same
 bindings in a different order compare equal.
@@ -65,5 +68,6 @@ window stays open beside the main one, so you can walk through the list.
 ## Related
 
 - [Mapping editor](mapping-editor.md): editing, validation, the diff shown before each save, and restoring the previous version.
+- [Readable function names](function-names.md): the short names used in the list.
 - [Traktor mappings](traktor-mappings.md): comparing `.tsi` files works the same way.
 - [Workspace and preferences](workspace.md#your-files): every file action in the File menu.
