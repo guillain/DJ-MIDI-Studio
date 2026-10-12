@@ -132,6 +132,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Playlist comparison** (`v0.48.82-playlist-compare`, issue #229) — Qt-free
+  `library/playlist_compare.py`: an app playlist vs a Serato crate or one playlist of a Traktor `.nml`,
+  matched by NFC-normalized path occurrence by occurrence; reports tracks only on each side and the
+  shared tracks out of order (complement of a longest increasing subsequence, so one move flags one
+  track). Music Library: *Compare with crate…* / *Compare with Traktor…* + a read-only three-tab
+  `PlaylistCompareDialog`; export stays separate.
 - [x] **Readable function names** (`v0.48.72-readable-function-names`, issue #209) — Qt-free
   `function_names.py`: `FUNCTION_NAMES` maps the only four tags the real Serato exports contain
   (inventoried from `data/xdj_xz-ddj_xp2-4decks.xml` + `data/serato/*.xml.zip`; a test keeps the table
