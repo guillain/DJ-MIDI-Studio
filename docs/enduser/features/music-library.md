@@ -185,8 +185,21 @@ The **Playlists** panel:
 | `New from selection` | A playlist of the selected rows |
 | `Auto: sort visible` | Every visible row, grouped by category, then BPM range, then key |
 | `Auto: match current` | The selected track followed by every visible track within ±6 % BPM and a harmonically compatible Camelot key |
-| `Auto: mix path…` | The visible tracks chained into a set you can actually mix: each track is within ±6 % BPM and a compatible Camelot key of the one before, and the BPM rises, falls or stays steady (you choose). Starts from the selected track (else the slowest, or the fastest when falling); tracks that can't be chained go to a second `… (leftovers)` playlist |
+| `Auto: mix path…` | The visible tracks chained into a set you can actually mix: each track is within the BPM tolerance (±6 % by default) and a compatible Camelot key of the one before, and the BPM rises, falls or stays steady. Starts from the selected track (else the slowest, or the fastest when falling); tracks that can't be chained — or come after the maximum length — go to a second `… (leftovers)` playlist |
 | `Rename…` / `Delete` | Manage the selected playlist |
+
+`Auto: mix path…` opens a small dialog first:
+
+| Option | Meaning |
+| --- | --- |
+| BPM direction | Rising, falling, or steady (smallest moves, either way) |
+| BPM tolerance | The largest BPM gap allowed between two consecutive tracks, from ±0.5 % to ±20 % (default ±6 %) |
+| Maximum length | Stop the path after this many tracks (`No limit` by default); the rest go to the leftovers |
+
+It only uses the tracks the current filter shows (the dialog says how
+many) — clear the filters first to build from the whole library. Your last
+choices are remembered with the library index, so the next path starts from
+the same settings.
 
 A rising or falling path never steps back, so it skips tracks to keep the
 BPM moving one way — filter the table to one category first for the longest

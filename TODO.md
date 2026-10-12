@@ -132,6 +132,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Mix path tolerance and length controls** (`v0.48.69-mix-path-controls`, issue #211) — `Auto: mix path…` now opens
+  `MixPathDialog` (BPM direction, BPM tolerance ±%, maximum length) with a note that only the currently filtered tracks
+  are used; `workspace.generate_playlist_path` passes `max_length` through to `build_playlist_path`. Last values are a
+  `workspace.MixPathOptions`, clamped on load and stored in a new `library_settings` table of the library index
+  (`LibraryDB.get_setting`/`set_setting`), so tests on the `:memory:` index never touch the real settings.
 - [x] **New version notice** (`v0.48.65-update-notice`, issue #193) — Qt-free `update_check.py` asks GitHub's
   `releases/latest` API (urllib, 5 s timeout, no auth) and compares the tag's numeric `X.Y.Z` prefix with
   `importlib.metadata.version("djmidi")`; every failure is silent (debug log). `gui/update_notice.UpdateChecker`
