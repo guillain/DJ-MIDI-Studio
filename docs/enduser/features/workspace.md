@@ -172,8 +172,12 @@ at launch`).
 result: a new version (with a button to open its page), up to date, or
 GitHub couldn't be reached.
 
+`Help → Report a Problem…` prepares a bug report you can read and edit
+before it opens as a GitHub issue — see [Report a Problem](report-a-problem.md).
+
 ## Related
 
+- [Report a Problem](report-a-problem.md)
 - [User guide](../user-guide.md)
 - [Controller Sync](controller-sync.md)
 - [MIDI Routing, Clock and Metronome](midi-routing-and-clock.md)

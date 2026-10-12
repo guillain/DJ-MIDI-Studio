@@ -7,15 +7,18 @@ playlist engine, Serato/Traktor/Rekordbox formats) to one tab:
   a `QTimer` (this project's non-blocking pattern, see `midi_io` polling),
   and a "Find duplicates…" job on the same timer (issue #184, opens a
   `DuplicatesDialog` whose ticked copies `discard_duplicates` moves to the
-  Trash, issue #208);
+  Trash, issue #208), and a "Health report…" job (issue #225, opens a
+  read-only `HealthReportDialog`: unreadable, empty-tag, cover-less,
+  low-bitrate and zero-length files, filterable, exportable to CSV);
 - the consolidated metadata table (sortable/filterable, category column);
 - a Track panel whose tag edits go through a `QUndoStack`
   (`commands.WriteTrackMetadataCommand`, or `WriteTracksMetadataCommand` when
   "Write tags to selection…" copies chosen fields to every selected track),
   a Categories panel over the
-  taxonomy registry, a Playlists panel (import/generate/export), and a
-  History panel (issue #227: Serato/Traktor play history, read-only, plus
-  the indexed tracks never played).
+  taxonomy registry, a Playlists panel (import/generate/export), a History
+  panel (issue #227: Serato/Traktor play history, read-only, plus the
+  indexed tracks never played), and a Set panel (`gui/set_preparation.py`,
+  issue #221) where a set is built by dragging table rows in play order.
 
 Opening the library index is lazy (first time the tab is shown), so merely
 constructing the main window never creates or reads `library.sqlite3`.
@@ -34,6 +37,7 @@ from PySide6.QtCore import (
     QFile,
     QItemSelection,
     QItemSelectionModel,
+    QMimeData,
     QModelIndex,
     QPersistentModelIndex,
     QSortFilterProxyModel,
@@ -82,8 +86,23 @@ from djmidi.gui import help_texts
 from djmidi.gui.audio_preview import AudioPreviewBar
 from djmidi.gui.commands import WriteTrackMetadataCommand, WriteTracksMetadataCommand
 from djmidi.gui.duplicates_dialog import DuplicatesDialog
+from djmidi.gui.health_report_dialog import HealthReportDialog
 from djmidi.gui.help_button import help_button, help_row
-from djmidi.library import discard, duplicates, history, relink, workspace
+from djmidi.gui.set_preparation import (
+    SET_TRACKS_MIME,
+    SetPreparationPanel,
+    encode_paths,
+)
+from djmidi.library import (
+    discard,
+    duplicates,
+    health,
+    history,
+    relink,
+    set_prep,
+    workspace,
+)
+from djmidi.library.analysis import analysis_available, to_camelot
 from djmidi.library.db import LibraryDB, TrackRecord, default_library_db_path
 from djmidi.library.metadata import TrackMetadata, clean_noise_frames
 from djmidi.library.playlist import is_camelot_compatible
@@ -144,7 +163,7 @@ PATH_DIRECTION_LABELS = {
     "Steady BPM (smallest moves)": "flat",
 }
 
-_CONTENT_MIN_WIDTH = 760
+_CONTENT_MIN_WIDTH = 920
 _CONTENT_MIN_HEIGHT = 440
 
 ALL_CATEGORIES = "All categories"
@@ -155,6 +174,14 @@ ALL_CAMELOT = "All Camelot"
 # Wheel order: 1A, 1B, 2A, … 12B.
 CAMELOT_CODES = tuple(f"{number}{letter}" for number in range(1, 13) for letter in "AB")
 _BPM_FILTER_MAX = 300
+
+_ANALYSE_LABEL = "Analyse BPM/key"
+_STOP_ANALYSIS_LABEL = "Stop analysis"
+_ANALYSIS_UNAVAILABLE = (
+    "Audio analysis needs the optional 'analysis' extra (librosa), which isn't installed. "
+    "From a source checkout: uv sync --extra analysis."
+)
+_SUGGESTION_COLOR = "#b07a00"
 
 ROW_ROLE = Qt.ItemDataRole.UserRole + 1
 SORT_ROLE = Qt.ItemDataRole.UserRole + 2
@@ -417,6 +444,29 @@ def _can_confirm_suggestion(row: workspace.LibraryRow) -> bool:
     return bool(row.category is None and row.category_suggestion and row.metadata and row.metadata.genre)
 
 
+def _analysis_suggestion_text(row: workspace.LibraryRow, key: str) -> str | None:
+    """The audio-analysis estimate a BPM/Key/Camelot cell shows in place of
+    an empty tag (issue #224), or None."""
+    if key == "bpm" and row.bpm_suggestion is not None:
+        return _format_bpm(row.bpm_suggestion)
+    if key == "key" and row.key_suggestion:
+        return row.key_suggestion
+    if key == "camelot" and row.camelot_key is None and row.key_suggestion:
+        return to_camelot(row.key_suggestion)
+    return None
+
+
+def _analysis_text(row: workspace.LibraryRow) -> str:
+    """Track panel line for the selected track's audio-analysis estimates."""
+    parts = []
+    if row.bpm_suggestion is not None:
+        parts.append(f"{_format_bpm(row.bpm_suggestion)} BPM")
+    if row.key_suggestion:
+        camelot = to_camelot(row.key_suggestion)
+        parts.append(row.key_suggestion + (f" ({camelot})" if camelot else ""))
+    return "Estimated: " + ", ".join(parts) if parts else "—"
+
+
 def _same_bpm(a: float | None, b: float | None) -> bool:
     if a is None or b is None:
         return a is b
@@ -450,6 +500,23 @@ class LibraryTableModel(QAbstractTableModel):
             return COLUMNS[section][0]
         return None
 
+    # Dragging rows out (to the Set panel, issue #221) carries their paths.
+    def flags(self, index: QModelIndex | QPersistentModelIndex) -> Qt.ItemFlag:
+        flags = super().flags(index)
+        return flags | Qt.ItemFlag.ItemIsDragEnabled if index.isValid() else flags
+
+    def mimeTypes(self) -> list[str]:
+        return [SET_TRACKS_MIME]
+
+    def mimeData(self, indexes) -> QMimeData:
+        rows = sorted({index.row() for index in indexes if index.isValid()})
+        mime = QMimeData()
+        mime.setData(SET_TRACKS_MIME, encode_paths([self._rows[row].path for row in rows]))
+        return mime
+
+    def supportedDragActions(self) -> Qt.DropAction:
+        return Qt.DropAction.CopyAction
+
     def data(self, index: QModelIndex | QPersistentModelIndex, role: int = Qt.ItemDataRole.DisplayRole):
         if not index.isValid():
             return None
@@ -466,10 +533,14 @@ class LibraryTableModel(QAbstractTableModel):
     @staticmethod
     def _decoration(row: workspace.LibraryRow, key: str, role: int):
         suggested = key == "category" and row.category is None and bool(row.category_suggestion)
+        estimated = _analysis_suggestion_text(row, key) is not None
+        if estimated and role == Qt.ItemDataRole.ToolTipRole and not row.missing:
+            return "Estimated from the audio -- not in the file. Apply it from the Track panel."
+        suggested = suggested or estimated
         if role == Qt.ItemDataRole.ForegroundRole:
             if row.missing:
                 return QBrush(QColor("#888888"))
-            return QBrush(QColor("#b07a00")) if suggested else None
+            return QBrush(QColor(_SUGGESTION_COLOR)) if suggested else None
         if role == Qt.ItemDataRole.FontRole and suggested:
             font = QFont()
             font.setItalic(True)
@@ -496,6 +567,9 @@ class LibraryTableModel(QAbstractTableModel):
             if row.category_suggestion:
                 return f"? {category_label(row.category_suggestion)}"
             return ""
+        estimate = _analysis_suggestion_text(row, key)
+        if estimate is not None:
+            return f"? {estimate}"
         if key == "camelot":
             return row.camelot_key or ""
         if key == "bpm":
@@ -611,12 +685,14 @@ class MusicLibraryView(QWidget):
         self._db: LibraryDB | None = None
         self.undo_stack = QUndoStack(self)
         self._job: Iterator[None] | None = None
+        self._analysing = False
         self._job_timer = QTimer(self)
         self._job_timer.setInterval(0)
         self._job_timer.timeout.connect(self._run_job_slice)
         self._current_path: str | None = None
         self.duplicates_dialog: DuplicatesDialog | None = None
         self._history_sessions: list[history.HistorySession] = []
+        self.health_dialog: HealthReportDialog | None = None
 
         # The whole tab scrolls below its real minimum instead of crushing
         # buttons into slivers (issue #19's standing rule for every tab).
@@ -639,7 +715,18 @@ class MusicLibraryView(QWidget):
         self.side_tabs.addTab(_scrolled(self._build_track_panel()), "Track")
         self.side_tabs.addTab(_scrolled(self._build_categories_panel()), "Categories")
         self.side_tabs.addTab(_scrolled(self._build_playlists_panel()), "Playlists")
-        self.side_tabs.addTab(_scrolled(self._build_history_panel()), "History")
+        self._history_tab = self.side_tabs.addTab(_scrolled(self._build_history_panel()), "History")
+        self.set_panel = SetPreparationPanel(
+            db=lambda: self.db,
+            selected_rows=self.selected_rows,
+            selected_playlist=self._selected_playlist,
+            status=self.status_label.setText,
+        )
+        self.set_panel.saveRequested.connect(self.save_set)
+        self.side_tabs.addTab(_scrolled(self.set_panel), "Set")
+        # Five tabs overflow the side panel's width: grow it instead of
+        # showing squeezed scroll arrows (the tab itself scrolls, issue #19).
+        self.side_tabs.setUsesScrollButtons(False)
         body.addWidget(self.side_tabs)
         body.setStretchFactor(0, 3)
         body.setStretchFactor(1, 2)
@@ -688,7 +775,25 @@ class MusicLibraryView(QWidget):
             "List identical files and tracks sharing artist + title. Read-only: nothing is deleted."
         )
         self.duplicates_button.clicked.connect(self.find_duplicates)
-        # Two button columns rather than one row: five buttons side by side
+        self.health_button = QPushButton("Health report…")
+        self.health_button.setToolTip(
+            "List unreadable files, empty title/artist, missing artwork, low bitrate (≤128 kbps) "
+            "and zero-length files. Read-only."
+        )
+        self.health_button.clicked.connect(self.start_health_report)
+        # Issue #224: needs the optional 'analysis' extra; greyed out with
+        # the reason as tooltip when librosa isn't installed.
+        self.analyse_button = QPushButton(_ANALYSE_LABEL)
+        self.analyse_button.clicked.connect(self._on_analyse_clicked)
+        if analysis_available():
+            self.analyse_button.setToolTip(
+                "Estimate BPM and key from the audio for tracks whose tags lack them. Results are "
+                "shown as amber suggestions only; nothing is written until you apply them."
+            )
+        else:
+            self.analyse_button.setEnabled(False)
+            self.analyse_button.setToolTip(_ANALYSIS_UNAVAILABLE)
+        # Two button columns rather than one row: six buttons side by side
         # need more width than the tab's minimum content width guarantees.
         buttons = QGridLayout()
         for index, button in enumerate(
@@ -698,6 +803,8 @@ class MusicLibraryView(QWidget):
                 self.remove_root_button,
                 self.duplicates_button,
                 self.relink_button,
+                self.health_button,
+                self.analyse_button,
             )
         ):
             buttons.addWidget(button, index // 2, index % 2)
@@ -746,6 +853,10 @@ class MusicLibraryView(QWidget):
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.setWordWrap(False)
+        # Rows drag out to the Set panel (issue #221); the table itself
+        # never accepts drops.
+        self.table.setDragEnabled(True)
+        self.table.setDragDropMode(QAbstractItemView.DragDropMode.DragOnly)
         box.addWidget(self.table, 1)
 
         self.filter_edit.textChanged.connect(self._on_filter_changed)
@@ -832,6 +943,9 @@ class MusicLibraryView(QWidget):
         self.category_value_label = QLabel()
         self.category_value_label.setWordWrap(True)
         form.addRow("Category", self.category_value_label)
+        self.analysis_value_label = QLabel()
+        self.analysis_value_label.setWordWrap(True)
+        form.addRow("Analysis", self.analysis_value_label)
         box.addLayout(form)
 
         self.accept_suggestion_button = QPushButton("Confirm suggested category")
@@ -876,6 +990,13 @@ class MusicLibraryView(QWidget):
         )
         self.write_selection_button.clicked.connect(self._on_write_selection_clicked)
         box.addWidget(self.write_selection_button)
+        self.apply_analysis_button = QPushButton("Apply analysis suggestions…")
+        self.apply_analysis_button.setToolTip(
+            "Writes the estimated BPM/key of the selected tracks into their empty tags, after "
+            "listing them, as one undoable step. Tags already set are never overwritten."
+        )
+        self.apply_analysis_button.clicked.connect(self._on_apply_analysis_clicked)
+        box.addWidget(self.apply_analysis_button)
         self.table.selectionModel().selectionChanged.connect(self._update_selection_actions)
 
         self.clean_button = QPushButton("Clean noise frames…")
@@ -1074,6 +1195,7 @@ class MusicLibraryView(QWidget):
     def _reload_rows(self) -> None:
         current = self._current_path
         self.table_model.set_rows(workspace.consolidate(self.db))
+        self.set_panel.set_rows(self.table_model.rows())
         self._refresh_category_filter()
         self._refresh_value_filters(self.table_model.rows())
         if current is not None:
@@ -1251,20 +1373,130 @@ class MusicLibraryView(QWidget):
         self._reload_rows()
         self._reload_playlists()
 
+    # --- health report (issue #225) ----------------------------------------
+
+    def start_health_report(self) -> None:
+        """Check every indexed, present track, then show the report."""
+        if self.is_busy():
+            return
+        entries = health.health_entries(self.db)
+        if not entries:
+            self.status_label.setText("Scan a music folder first.")
+            return
+        self._start_job(self._health_job(entries))
+
+    def _health_job(self, entries: list[tuple[str, int | None]]) -> Generator[None]:
+        total = len(entries)
+        self.progress_bar.setRange(0, total)
+        steps = health.iter_health_check(entries)
+        while True:
+            try:
+                done = next(steps)
+            except StopIteration as finished:
+                report = finished.value
+                break
+            self.progress_bar.setValue(done)
+            if done % 50 == 0:
+                self.status_label.setText(f"Checking files… {done}/{total}")
+            yield
+        self.status_label.setText(
+            f"Health report: {report.affected_files} of {report.checked} file(s) with at least one issue."
+        )
+        self._show_health_report(report)
+
+    def _show_health_report(self, report: health.HealthReport) -> None:
+        if self.health_dialog is not None:
+            self.health_dialog.close()
+            self.health_dialog.deleteLater()
+        self.health_dialog = HealthReportDialog(report, self)
+        self.health_dialog.showTrackRequested.connect(self.show_track)
+        self.health_dialog.show()
+
+    def show_track(self, path: str) -> bool:
+        """Select `path` in the table, clearing the filters if they hide it."""
+        if not self.select_path(path):
+            self.reset_filters()
+            if not self.select_path(path):
+                self.status_label.setText(f"Not in the library table: {path}")
+                return False
+        self.table.scrollTo(self.table.currentIndex())
+        return True
+    # --- background BPM/key analysis (issue #224) ----------------------
+
+    def is_analysing(self) -> bool:
+        return self._job is not None and self._analysing
+
+    def _on_analyse_clicked(self) -> None:
+        if self.is_analysing():
+            self.stop_analysis()
+        else:
+            self.start_analysis()
+
+    def start_analysis(self, analyser: workspace.Analyser | None = None) -> None:
+        """Estimate BPM/key for tracks missing them, one track per timer
+        slice. `analyser` replaces the librosa one (tests)."""
+        if self.is_busy():
+            return
+        if analyser is None and not analysis_available():
+            self.status_label.setText(_ANALYSIS_UNAVAILABLE)
+            return
+        pending = len(self.db.tracks_needing_analysis())
+        if not pending:
+            self.status_label.setText("Every track has a BPM and a key tag (or was analysed already).")
+            return
+        self._analysing = True
+        self._start_job(self._analysis_job(pending, analyser))
+        self.analyse_button.setText(_STOP_ANALYSIS_LABEL)
+        self.analyse_button.setEnabled(True)
+
+    def stop_analysis(self) -> None:
+        """Stop after the current track; estimates found so far are kept."""
+        if not self.is_analysing():
+            return
+        self._stop_job()
+        self.status_label.setText("Analysis stopped. Estimates found so far are kept.")
+        self._reload_rows()
+
+    def _analysis_job(self, pending: int, analyser: workspace.Analyser | None) -> Generator[None]:
+        self.progress_bar.setRange(0, pending)
+        self.status_label.setText(f"Analysing audio… 0/{pending}")
+        yield
+        steps = workspace.iter_analyse_missing(self.db, analyser)
+        while True:
+            try:
+                count = next(steps)
+            except StopIteration as done:
+                found = done.value
+                break
+            self.progress_bar.setValue(count)
+            self.status_label.setText(f"Analysing audio… {count}/{pending}")
+            yield
+        self.status_label.setText(
+            f"Analysis done: estimates for {found} of {pending} track(s), shown in amber. "
+            "Select tracks and use Apply analysis suggestions… to write them."
+        )
+        self._reload_rows()
+
     def _start_job(self, job: Generator[None]) -> None:
         self._job = job
         self.scan_button.setEnabled(False)
         self.relink_button.setEnabled(False)
         self.duplicates_button.setEnabled(False)
+        self.health_button.setEnabled(False)
+        self.analyse_button.setEnabled(False)
         self.progress_bar.setVisible(True)
         self._job_timer.start()
 
     def _stop_job(self) -> None:
         self._job_timer.stop()
         self._job = None
+        self._analysing = False
         self.scan_button.setEnabled(True)
         self.relink_button.setEnabled(True)
         self.duplicates_button.setEnabled(True)
+        self.health_button.setEnabled(True)
+        self.analyse_button.setText(_ANALYSE_LABEL)
+        self.analyse_button.setEnabled(analysis_available())
         self.progress_bar.setVisible(False)
 
     def _run_job_slice(self) -> None:
@@ -1279,7 +1511,7 @@ class MusicLibraryView(QWidget):
             self._stop_job()
         except Exception:
             _LOGGER.exception("Music library job failed")
-            self.status_label.setText("The scan or duplicate search failed (see the log).")
+            self.status_label.setText("The scan, duplicate search or health check failed (see the log).")
             self._stop_job()
 
     # --- relinking missing tracks (issue #190) ---------------------------
@@ -1526,18 +1758,22 @@ class MusicLibraryView(QWidget):
             self.track_path_label.setText("Select a track in the table.")
             self.camelot_label.setText("")
             self.category_value_label.setText("")
+            self.analysis_value_label.setText("")
             self.accept_suggestion_button.setEnabled(False)
             return
         self.track_path_label.setText(row.path + ("  (missing on disk)" if row.missing else ""))
         self.camelot_label.setText(row.camelot_key or "—")
         self.category_value_label.setText(self._category_text(row))
+        self.analysis_value_label.setText(_analysis_text(row))
         self.accept_suggestion_button.setEnabled(_can_confirm_suggestion(row))
 
     def _writable_selection(self) -> list[workspace.LibraryRow]:
         return [row for row in self.selected_rows() if not row.missing]
 
     def _update_selection_actions(self, *_args: object) -> None:
-        self.write_selection_button.setEnabled(bool(self._writable_selection()))
+        writable = self._writable_selection()
+        self.write_selection_button.setEnabled(bool(writable))
+        self.apply_analysis_button.setEnabled(any(row.has_analysis_suggestion for row in writable))
 
     @staticmethod
     def _category_text(row: workspace.LibraryRow) -> str:
@@ -1611,6 +1847,9 @@ class MusicLibraryView(QWidget):
         if not changes:
             self.status_label.setText("Selected tracks already have these tags.")
             return 0
+        return self._push_bulk_write(changes)
+
+    def _push_bulk_write(self, changes: dict[str, tuple[dict[str, object], dict[str, object]]]) -> int:
         command = WriteTracksMetadataCommand(
             changes, self._on_tracks_written, progress_factory=self._tag_write_progress
         )
@@ -1629,6 +1868,32 @@ class MusicLibraryView(QWidget):
                 f"{len(command.written)} track(s) written, {len(command.failures)} failed:\n\n{details}",
             )
         return len(command.written)
+
+    def _on_apply_analysis_clicked(self) -> None:
+        changes = workspace.analysis_tag_changes(self._writable_selection())
+        if not changes:
+            return
+        lines = [
+            f"{Path(path).name}: " + ", ".join(f"{_field_label(name)} {_field_text(name, value)}" for name, value in new.items())
+            for path, (_old, new) in changes.items()
+        ]
+        answer = QMessageBox.question(
+            self,
+            "Apply analysis suggestions",
+            f"Write the estimated BPM/key into {len(changes)} track(s)? Only empty tags are filled; "
+            "Undo writes them back empty.\n\n" + _bullet_list(lines),
+        )
+        if answer == QMessageBox.StandardButton.Yes:
+            self.apply_analysis_suggestions()
+
+    def apply_analysis_suggestions(self) -> int:
+        """Write the selected tracks' audio-analysis estimates into their
+        empty BPM/key tags as one undo step (no confirmation -- the button
+        asks first). Returns the number of files written."""
+        changes = workspace.analysis_tag_changes(self._writable_selection())
+        if not changes:
+            return 0
+        return self._push_bulk_write(changes)
 
     def _tag_write_progress(self, label: str, total: int, cancellable: bool = True) -> Callable[[int, int], bool]:
         """A progress window for one pass of a bulk tag write (write, undo or
@@ -1850,6 +2115,19 @@ class MusicLibraryView(QWidget):
     def selected_playlist_id(self) -> int | None:
         item = self.playlist_list.currentItem()
         return int(item.data(Qt.ItemDataRole.UserRole)) if item is not None else None
+
+    def _selected_playlist(self) -> tuple[int, str] | None:
+        item = self.playlist_list.currentItem()
+        if item is None:
+            return None
+        return int(item.data(Qt.ItemDataRole.UserRole)), item.text().split("  (", 1)[0]
+
+    def save_set(self, name: str, paths: list[str]) -> int:
+        """The Set panel's draft as an app playlist, then exportable like any
+        other from the Playlists panel (issue #221)."""
+        playlist_id = self.create_playlist(name, paths, set_prep.SOURCE_SET)
+        self.status_label.setText(f"Saved the set as “{name}” ({len(paths)} track(s)).")
+        return playlist_id
 
     def _on_playlist_selected(self, current: QListWidgetItem | None, _previous: QListWidgetItem | None) -> None:
         self.playlist_tracks.clear()
@@ -2079,7 +2357,7 @@ class MusicLibraryView(QWidget):
         self._history_sessions = sessions
         self._fill_history_tree()
         self._update_history_summary()
-        self.side_tabs.setCurrentIndex(self.side_tabs.count() - 1)
+        self.side_tabs.setCurrentIndex(self._history_tab)
         return len(sessions)
 
     def _on_load_history_clicked(self) -> None:

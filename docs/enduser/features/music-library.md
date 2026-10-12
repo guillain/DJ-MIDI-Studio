@@ -15,9 +15,12 @@
 - [Listen to a track](#listen-to-a-track)
 - [Edit tags](#edit-tags)
 - [Write tags to many tracks at once](#write-tags-to-many-tracks-at-once)
+- [Estimate missing BPM and keys](#estimate-missing-bpm-and-keys)
 - [Find duplicate tracks](#find-duplicate-tracks)
+- [Check library health](#check-library-health)
 - [Genre categories](#genre-categories)
 - [Playlists](#playlists)
+- [Prepare a set](#prepare-a-set)
 - [Import and export with DJ software](#import-and-export-with-dj-software)
 - [Play history](#play-history)
 - [Safety: what is never touched](#safety-what-is-never-touched)
@@ -149,6 +152,32 @@ closes.
 
 ![Write tags to selection](../../images/layout/music-library-bulk-tags.png)
 
+## Estimate missing BPM and keys
+
+Tracks with no BPM or key tag can't be filtered by tempo or matched on the
+Camelot wheel. `Analyse BPM/key` listens to them and suggests the values:
+
+1. Scan your folders first, so the tags are known.
+2. Click `Analyse BPM/key`. Only tracks missing a BPM or a key are analysed
+   (a minute from the middle of each track); the window stays usable, and
+   the button turns into `Stop analysis` until it's done. Stopping keeps
+   what was found so far.
+3. Estimates appear in amber with a `?` in the BPM, Key and Camelot
+   columns, and on the Track panel's `Analysis` line. They are **not** in
+   your files yet.
+4. Select the tracks whose estimates you trust and click
+   `Apply analysis suggestions…`. The list is shown before anything is
+   written; only empty BPM/key tags are filled, never one you already set.
+   The whole batch is one `Undo` step.
+
+Key estimates are right most of the time, but heavy bass can fool them:
+listen before applying them to a set you care about. A track is analysed
+once; it is looked at again only if the file changes outside this app.
+
+The button is greyed out, with the reason in its tooltip, when the optional
+audio-analysis component isn't installed (from a source checkout:
+`uv sync --extra analysis`).
+
 ## Find duplicate tracks
 
 Click `Find duplicates…` (next to `Scan & read tags`, after a scan). The
@@ -179,6 +208,35 @@ Trash…`:
 Track lengths are not compared yet.
 
 ![Duplicate tracks: an exact copy and two same artist + title groups](../../images/layout/music-library-duplicates.png)
+
+## Check library health
+
+Click `Health report…` (next to `Find duplicates…`, after a scan). Every
+scanned file is opened once — only its header and tags, no audio is played
+or decoded — with a progress bar, then a **Library health report** window
+lists one row per problem:
+
+| Issue | Meaning |
+| --- | --- |
+| Unreadable / corrupt | The file can't be parsed (damaged or truncated, or not really audio) or can't be opened. Nothing else is checked for it |
+| Zero length | An empty (0-byte) file, or one whose stream lasts 0 seconds |
+| Empty title / Empty artist | The tag is missing or blank |
+| Missing artwork | No cover picture embedded in the file |
+| Low bitrate | 128 kbps or less. Formats that don't report a bitrate are never flagged |
+
+A file can appear on several rows, one per problem. Narrow the list with
+the issue check boxes (each shows its count) and the filter box, which
+matches the path and the detail. Click a column header to sort.
+
+- `Show in library` (or a double-click) selects the track in the library
+  table — clearing its filters if they hide it — so you can fix its tags in
+  the Track panel.
+- `Reveal in Finder` shows the file in your file manager.
+- `Export CSV…` saves the rows currently shown (`path`, `issue`, `detail`)
+  as a CSV file that opens in any spreadsheet app.
+
+The report never changes a file. Run it again after fixing things to see
+the updated list.
 
 ## Genre categories
 
@@ -229,6 +287,34 @@ paths, and check the leftovers playlist for what didn't fit.
 
 ![Music Library: Playlists panel](../../images/layout/music-library-playlists.png)
 
+## Prepare a set
+
+The **Set** panel is a draft you order by hand, for when you want to choose
+every track yourself and only need the app to check the mixes:
+
+- Drag rows from the table into the list (or select them and click `Add
+  selection`). Drop them where they should play; each track appears once.
+- Drag tracks inside the list (or use `Move up` / `Move down`) to reorder.
+  `Remove`, `Clear` and `Load playlist` (the one selected in the Playlists
+  panel) edit the whole draft.
+- The curve above the list shows the BPM (blue, left scale) and the energy
+  (orange, 1–10, read from the `Energy` tag, e.g. Mixed In Key's) across the
+  set.
+
+Each transition is checked with the same rules as the automatic playlists:
+
+| Look | Meaning |
+| --- | --- |
+| Red segment on the curve, `⚠` and red text in the list | The BPM jumps past your tolerance (`BPM tolerance ±`, 6 % by default), or the keys clash on the Camelot wheel. Hover the track for the reason |
+| Dashed grey segment | A BPM or key is missing, so it can't be checked |
+| Blue segment | Compatible |
+
+Nothing is reordered for you, and the draft is remembered with the library
+index until you change it. `Save as playlist…` stores it as an app playlist
+(shown with the source `set` in the Playlists panel); `Export as Serato
+crate…` and `Export as Traktor playlist…` write a new file where you choose,
+exactly like the Playlists panel's exports.
+
 ## Import and export with DJ software
 
 | Software | Import (read-only) | Export |
@@ -272,6 +358,7 @@ ever read.
 - `Find duplicates…` only reads files. Copies you tick go to the Trash after
   a confirmation, never deleted outright, and one copy of each group always
   stays.
+- `Health report…` only reads files.
 
 ## Related
 
