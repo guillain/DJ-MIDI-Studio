@@ -854,3 +854,92 @@ def test_format_size():
     assert format_size(512) == "512 B"
     assert format_size(2048) == "2.0 KB"
     assert format_size(5 * 1024**3) == "5.0 GB"
+
+
+def test_health_report_without_scan_asks_for_one():
+    view = MusicLibraryView(db_path=":memory:")
+    view.start_health_report()
+    assert view.health_dialog is None
+    assert "Scan" in view.status_label.text()
+    view.close_db()
+
+
+def test_health_report_lists_filters_and_exports(library, monkeypatch, tmp_path):
+    """Issue #225: a read-only report of problem files, filterable by issue
+    kind and text, exportable to CSV, and linked back to the table."""
+    import csv
+
+    from djmidi.gui import health_report_dialog
+    from djmidi.library import health
+
+    view, music, _ = library
+    empty = music / "misc" / "empty.mp3"
+    empty.write_bytes(b"")
+    corrupt = music / "misc" / "corrupt.mp3"
+    corrupt.write_bytes(b"not audio" * 50)
+    view.start_scan()
+    view.run_pending_job()
+    before = {p: p.read_bytes() for p in music.rglob("*.mp3")}
+
+    view.start_health_report()
+    assert view.is_busy() and not view.health_button.isEnabled()
+    view.run_pending_job()
+    assert view.health_button.isEnabled()
+    dialog = view.health_dialog
+    assert dialog is not None and dialog.isVisible()
+    report = dialog.report
+    assert report.checked == 5
+    by_path: dict[str, list[str]] = {}
+    for issue in report.issues:
+        by_path.setdefault(issue.path, []).append(issue.kind)
+    assert by_path[str(empty)] == [health.ISSUE_ZERO_LENGTH]
+    assert by_path[str(corrupt)] == [health.ISSUE_UNREADABLE]
+    # The fixture's MP3s are 128 kbps and tagged, without a cover.
+    assert sorted(by_path[str(music / "misc" / "c.mp3")]) == sorted(
+        [health.ISSUE_NO_ARTWORK, health.ISSUE_LOW_BITRATE]
+    )
+    assert "5 of 5 file(s) with at least one issue" in view.status_label.text()
+    assert {p: p.read_bytes() for p in music.rglob("*.mp3")} == before
+
+    assert dialog.model.rowCount() == len(report.issues)
+    for kind, checkbox in dialog.kind_checkboxes.items():
+        checkbox.setChecked(kind == health.ISSUE_ZERO_LENGTH)
+    assert [i.path for i in dialog.visible_issues()] == [str(empty)]
+    for checkbox in dialog.kind_checkboxes.values():
+        checkbox.setChecked(True)
+    dialog.filter_edit.setText("tribe")
+    assert {i.path for i in dialog.visible_issues()} == {
+        str(music / "Tek" / "Tribe" / "a.mp3"),
+        str(music / "Tek" / "Tribe" / "b.mp3"),
+    }
+    assert not dialog.kind_checkboxes[health.ISSUE_EMPTY_TITLE].isEnabled()
+
+    target = tmp_path / "health.csv"
+    assert dialog.export_to(str(target)) == 4
+    with open(target, encoding="utf-8-sig", newline="") as handle:
+        rows = list(csv.reader(handle))
+    assert rows[0] == ["path", "issue", "detail"] and len(rows) == 5
+
+    monkeypatch.setattr(
+        health_report_dialog.QFileDialog, "getSaveFileName", lambda *a, **k: (str(tmp_path / "ui.csv"), "")
+    )
+    dialog.export_button.click()
+    assert (tmp_path / "ui.csv").exists()
+
+    revealed: list[str] = []
+    monkeypatch.setattr(health_report_dialog, "reveal_in_file_manager", revealed.append)
+    assert not dialog.show_button.isEnabled()
+    dialog.table.setCurrentIndex(dialog.model.index(0, 0))
+    assert dialog.show_button.isEnabled()
+    target_path = dialog.current_issue().path
+    dialog.reveal_button.click()
+    assert revealed == [target_path]
+    # A table filter hiding the track is cleared to show it.
+    view.filter_edit.setText("charlie")
+    dialog.show_button.click()
+    assert view._current_row().path == target_path
+    assert view.filter_edit.text() == ""
+
+    view.start_health_report()
+    view.run_pending_job()
+    assert view.health_dialog is not dialog

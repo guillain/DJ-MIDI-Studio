@@ -214,7 +214,8 @@ LIBRARY_FOLDERS: HelpEntry = (
         "<b>Add folder…</b>, then <b>Scan &amp; read tags</b>. Later scans only re-read "
         "files that changed; a file that disappears (an unplugged drive) is greyed out as "
         "missing instead of being forgotten. <b>Relink missing…</b> finds where moved files "
-        "went (same name and size) and relinks them, playlists included.<br><br>"
+        "went (same name and size) and relinks them, playlists included. <b>Health report…</b> "
+        "lists files that need attention (corrupt, untagged, no cover, low bitrate).<br><br>"
         "The index stores paths, sizes, dates and a cache of the tags, never the audio. "
         "Serato, Traktor and Rekordbox library files are only ever read."
     ),
@@ -291,6 +292,23 @@ LIBRARY_DUPLICATES: HelpEntry = (
         "and click <b>Move ticked to Trash…</b>: after a confirmation they go to the Trash "
         "(never deleted outright) and show as missing. One copy of each group must stay. "
         "Playlists of this app listing a discarded copy can be pointed at the kept one."
+    ),
+    "music-library.md",
+)
+
+LIBRARY_HEALTH: HelpEntry = (
+    "Library health report",
+    (
+        "<b>Health report…</b> opens every scanned file's header and tags once (read-only, "
+        "no audio decoded) and lists:"
+        "<ul><li><b>Unreadable / corrupt</b>: the file can't be parsed or opened.</li>"
+        "<li><b>Zero length</b>: an empty (0-byte) file or a 0&nbsp;s duration.</li>"
+        "<li><b>Empty title</b> / <b>Empty artist</b>: the tag is missing or blank.</li>"
+        "<li><b>Missing artwork</b>: no embedded cover picture.</li>"
+        "<li><b>Low bitrate</b>: 128&nbsp;kbps or less.</li></ul>"
+        "Untick an issue type or type in the filter box to narrow the list. "
+        "<b>Show in library</b> (or double-click) selects the track in the table to fix its tags; "
+        "<b>Reveal in Finder</b> shows the file. <b>Export CSV…</b> saves the rows shown."
     ),
     "music-library.md",
 )
