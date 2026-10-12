@@ -1575,12 +1575,14 @@ def test_file_menu_is_organized_by_object():
     try:
         file_menu = next(a.menu() for a in window.menuBar().actions() if a.text() == "&File")
         labels = [a.text() for a in file_menu.actions() if not a.isSeparator()]
-        assert labels[:6] == [
+        assert labels[:8] == [
             "&Open Mapping...",
             "Open &Recent Mapping",
             "&Save Mapping",
             "Save Mapping &As...",
             "Restore &Previous Version...",
+            "Co&mpare Mapping With...",
+            "Compare With Previous &Version",
             window._reveal_action.text(),
         ]
         assert {"&Controller Profile", "&Import", "&Export"} <= set(labels)
