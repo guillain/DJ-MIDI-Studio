@@ -62,8 +62,11 @@ from djmidi.controller_sync import (
     summarize_results,
     sync_sets_from_recording,
 )
+from djmidi.gui import cheat_sheet
 from djmidi.gui import jog as jog_mod
 from djmidi.gui import layout as layout_mod
+from djmidi.gui.cheat_sheet_dialog import CheatSheetExportDialog
+from djmidi.gui.cheat_sheet_pdf import write_cheat_sheet_pdf
 from djmidi.gui.controller_emulator import ControllerEmulatorView
 from djmidi.gui.controller_image_view import ControllerImageView
 from djmidi.gui.controller_setup import ControllerSetupView
@@ -700,6 +703,14 @@ class MainWindow(QMainWindow):
         log_action = QAction("Live Monitor Log...", self)
         log_action.triggered.connect(self.live_monitor_view._save_log)
         export_menu.addAction(log_action)
+        export_menu.addSeparator()
+        self._cheat_sheet_action = QAction("Cheat Sheet (PDF)...", self)
+        self._cheat_sheet_action.setToolTip(
+            "Print each controller's photo with the function the loaded mapping binds to every control"
+        )
+        self._cheat_sheet_action.setEnabled(False)
+        self._cheat_sheet_action.triggered.connect(lambda _checked=False: self._on_export_cheat_sheet())
+        export_menu.addAction(self._cheat_sheet_action)
         self._rebuild_recent_menu()
 
         edit_menu = self.menuBar().addMenu("&Edit")
@@ -2182,6 +2193,58 @@ class MainWindow(QMainWindow):
         folder.mkdir(parents=True, exist_ok=True)
         reveal_in_file_manager(folder)
 
+    def _cheat_sheet_preselection(self, candidates: list[str]) -> set[str]:
+        """Which candidate controllers the cheat-sheet dialog ticks first:
+        the ones connected right now (by MIDI port name) and the one the
+        Controller Images tab shows; failing both, the best-matching one."""
+        guessed: set[str] = set()
+        for port in list_input_ports():
+            guessed.update(match.controller.name for match in catalog.detect_controller(port))
+        guessed.add(self.controller_image_view.current_controller_name())
+        chosen = guessed & set(candidates)
+        return chosen or set(candidates[:1])
+
+    def _on_export_cheat_sheet(
+        self, controllers: list[str] | None = None, path: Path | None = None
+    ) -> Path | None:
+        """File -> Export -> Cheat Sheet (PDF) (issue #182). `controllers`
+        and `path` skip the dialogs (tests)."""
+        if self.config is None:
+            QMessageBox.information(self, "Cheat Sheet", "Open a mapping first.")
+            return None
+        if controllers is None:
+            candidates = cheat_sheet.candidate_controllers(self.config)
+            if not candidates:
+                QMessageBox.information(
+                    self, "Cheat Sheet", "No registered controller recognizes the triggers of this mapping."
+                )
+                return None
+            names = [name for name, _count in candidates]
+            dialog = CheatSheetExportDialog(candidates, self._cheat_sheet_preselection(names), self)
+            if dialog.exec() != QDialog.DialogCode.Accepted:
+                return None
+            controllers = dialog.selected_controllers()
+        if path is None:
+            stem = self.current_path.stem if self.current_path is not None else "mapping"
+            path_str, _ = QFileDialog.getSaveFileName(
+                self,
+                "Export cheat sheet",
+                str(user_paths.subfolder(user_paths.EXPORTS) / f"{stem}-cheat-sheet.pdf"),
+                "PDF files (*.pdf)",
+            )
+            if not path_str:
+                return None
+            path = Path(path_str)
+        sheets = cheat_sheet.build_sheets(self.config, controllers)
+        source = self.current_path.name if self.current_path is not None else None
+        try:
+            pages = write_cheat_sheet_pdf(path, sheets, source)
+        except OSError as exc:
+            QMessageBox.warning(self, "Cheat Sheet", f"Could not write {path}:\n{exc}")
+            return None
+        self.statusBar().showMessage(f"Cheat sheet exported: {path} ({pages} page(s))")
+        return path
+
     def _on_reveal_mapping(self) -> None:
         if self.current_path is not None:
             reveal_in_file_manager(self.current_path)
@@ -2224,6 +2287,7 @@ class MainWindow(QMainWindow):
         backup = file_locations.backup_path(self.current_path) if has_file else None
         self._rollback_action.setEnabled(backup is not None and backup.is_file())
         self._reveal_action.setEnabled(has_file)
+        self._cheat_sheet_action.setEnabled(self.config is not None)
         self.introduction_view.set_files_summary(
             mapping=self.current_path,
             backup=backup if backup is not None and backup.is_file() else None,
