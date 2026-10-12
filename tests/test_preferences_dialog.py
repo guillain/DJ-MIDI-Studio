@@ -188,3 +188,12 @@ def test_controller_sync_tab_shows_each_set_scene_and_keeps_it_on_save(monkeypat
     assert [dialog._sync_table.item(row, 1).text() for row in range(2)] == ["Default", "Tek"]
     dialog._save()
     assert [s.key for s in preferences.controller_sync_sets] == [("DDJ-XP2", "Default"), ("DDJ-XP2", "Tek")]
+
+
+def test_preferences_dialog_reflects_and_saves_check_for_updates():
+    preferences = PluginPreferences()
+    dialog = PreferencesDialog(preferences)
+    assert dialog._check_for_updates.isChecked() is True
+    dialog._check_for_updates.setChecked(False)
+    dialog._save()
+    assert preferences.check_for_updates is False

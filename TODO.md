@@ -132,6 +132,14 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **New version notice** (`v0.48.65-update-notice`, issue #193) — Qt-free `update_check.py` asks GitHub's
+  `releases/latest` API (urllib, 5 s timeout, no auth) and compares the tag's numeric `X.Y.Z` prefix with
+  `importlib.metadata.version("djmidi")`; every failure is silent (debug log). `gui/update_notice.UpdateChecker`
+  runs it in a `QThreadPool` worker. At launch (real app only, `PluginPreferences.check_for_updates`, default on,
+  at most once per 24 h via QSettings `updates/last_check`, only successful checks counted) a newer release shows
+  a status bar message plus a permanent `Update available: vX.Y.Z` link; `Help → Check for Updates…` checks now
+  and reports the result in a dialog. Never downloads or installs; `build.sh` gained `--copy-metadata djmidi` so
+  frozen builds know their own version.
 - [x] **Quick audio preview in the Music Library tab** (`v0.48.64-library-audio-preview`, issue #192) — a
   `gui/audio_preview.AudioPreviewBar` under the library table (play/pause, stop, seek slider, position/duration,
   "Start at 30%") plays the current track through QtMultimedia's `QMediaPlayer` + `QAudioOutput`. Guarded import:

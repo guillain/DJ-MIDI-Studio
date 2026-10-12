@@ -14,6 +14,7 @@
 - [Performance Mode](#performance-mode)
 - [Preferences](#preferences)
 - [Helpful Notes and Help](#helpful-notes-and-help)
+- [New version notice](#new-version-notice)
 - [Related](#related)
 
 ## Tabs and tool windows
@@ -131,6 +132,7 @@ The **⚙** button at the top right of the menu bar opens Preferences (the
 
 | Tab | Settings |
 | --- | --- |
+| General | Theme (`Follow system`, `Light`, `Dark`), integration detection (`Ask before enabling` or `Suggest detected integration`), log level and log file, `Enable MIDI routing policies`, `Trust external plugins`, `Auto-start Live Monitor when a mapping is loaded`, `Reopen my last mapping and Controller Setup draft at launch`, `Sync controllers at launch`, `Check for a new version at launch`, `Controller Setup default file`, your files folder (`Open folder`) |
 | General | Theme (`Follow system`, `Light`, `Dark`), integration detection (`Ask before enabling` or `Suggest detected integration`), log level and log file, `Enable MIDI routing policies`, `Trust external plugins`, `Auto-start Live Monitor when a mapping is loaded`, `Reopen my last mapping and Controller Setup draft at launch`, `Controller Setup default file`, your files folder (`Open folder`, `Back up...`, `Restore...`) |
 | Plugins | Enable or disable each controller and software plugin; `Enable all controllers` / `Disable all controllers` |
 | Controller sync | Your [sync sets](controller-sync.md#manage-sync-sets) |
@@ -152,6 +154,23 @@ and the official online references, all offline except the latter.
 Every tab and tool window also has **`?` buttons** next to the controls they
 explain: click one for a short explanation of that area, and `Open full
 guide` for its page of this documentation (bundled, so it works offline).
+
+## New version notice
+
+Once a day at most, a few seconds after launch, the app asks GitHub whether a
+newer DJ MIDI Studio release exists. If there is one, the status bar shows
+it, with an **Update available: vX.Y.Z** link on the right that opens the
+release page in your browser. Nothing is ever downloaded or installed for
+you: you get the new version from that page, when you choose.
+
+The check runs in the background, so it never slows the app down, and it is
+silent when you are offline or GitHub doesn't answer — handy at a gig with
+no network. Turn it off in ⚙ Preferences → General (`Check for a new version
+at launch`).
+
+`Help → Check for Updates…` checks right away and always tells you the
+result: a new version (with a button to open its page), up to date, or
+GitHub couldn't be reached.
 
 ## Related
 

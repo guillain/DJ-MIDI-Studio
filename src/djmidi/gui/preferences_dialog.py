@@ -93,6 +93,13 @@ class PreferencesDialog(QDialog):
             "unplugging and replugging it sends the set again."
         )
         self._auto_sync_on_plug_in = auto_sync_on_plug_in
+        check_for_updates = QCheckBox("Check for a new version at launch")
+        check_for_updates.setChecked(preferences.check_for_updates)
+        check_for_updates.setToolTip(
+            "Once a day at most, ask GitHub whether a newer DJ MIDI Studio release exists and show "
+            "a notice in the status bar. Nothing is downloaded or installed; offline is silent."
+        )
+        self._check_for_updates = check_for_updates
         workspace_row = QWidget()
         workspace_layout = QHBoxLayout(workspace_row)
         workspace_layout.setContentsMargins(0, 0, 0, 0)
@@ -165,6 +172,7 @@ class PreferencesDialog(QDialog):
         policy_layout.addRow(reopen_last_files)
         policy_layout.addRow(auto_sync_on_startup)
         policy_layout.addRow(auto_sync_on_plug_in)
+        policy_layout.addRow(check_for_updates)
         policy_layout.addRow("Your files folder:", workspace_row)
 
         controller_ids = {
@@ -362,6 +370,7 @@ class PreferencesDialog(QDialog):
         self._preferences.reopen_last_files = self._reopen_last_files.isChecked()
         self._preferences.auto_sync_on_startup = self._auto_sync_on_startup.isChecked()
         self._preferences.auto_sync_on_plug_in = self._auto_sync_on_plug_in.isChecked()
+        self._preferences.check_for_updates = self._check_for_updates.isChecked()
         self._preferences.log_level = self._log_level.currentText()
         self._preferences.log_path = self._log_path.text().strip()
         self._preferences.controller_setup_default_file = self._setup_file.text().strip()

@@ -103,6 +103,7 @@ if [[ "$BUILD_EXECUTABLE" -eq 1 ]]; then
     --collect-all aalink \
     --hidden-import rtmidi \
     --hidden-import aalink \
+    --copy-metadata djmidi \
     --add-data "$NATIVE_ROOT_DIR/controllers${DATA_SEP}controllers" \
     --add-data "$NATIVE_ROOT_DIR/docs${DATA_SEP}docs" \
     --osx-bundle-identifier "com.guillain.djmidi" \
