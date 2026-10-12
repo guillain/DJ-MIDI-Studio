@@ -438,7 +438,13 @@ class MainWindow(QMainWindow):
             "controller": self.left_tabs.addTab(controller_pair, "By Controller"),
             "library": self.left_tabs.addTab(self.music_library_view, "Music Library"),
         }
-        self.edit_panel = EditPanel(self.undo_stack, self._on_command_applied, self._on_group_edit_applied)
+        self.edit_panel = EditPanel(
+            self.undo_stack,
+            self._on_command_applied,
+            self._on_group_edit_applied,
+            config_provider=lambda: self.config,
+            ensure_listening=self._ensure_learn_listening,
+        )
 
         self.issues_table = QTableWidget(0, 3)
         self.issues_table.setHorizontalHeaderLabels(["Severity", "Message", "Location"])
@@ -1790,10 +1796,12 @@ class MainWindow(QMainWindow):
         # columns need a full rebuild rather than a single relabel.
         current_group = self.edit_panel.current_node
         if isinstance(current_group, MappingGroup):
-            for _, _, mapping in current_group.members:
-                item = self.node_to_item.get(id(mapping))
-                if item is not None:
-                    relabel_item(item, mapping)
+            for control, _, mapping in current_group.members:
+                # The control too: a MIDI Learn moves the members' trigger.
+                for node in (control, mapping):
+                    item = self.node_to_item.get(id(node))
+                    if item is not None:
+                        relabel_item(item, node)
         QTimer.singleShot(0, self._refresh_edit_panel)
         QTimer.singleShot(0, self._refresh_layout_usage)
         QTimer.singleShot(0, self._refresh_deck_view)
@@ -2101,7 +2109,16 @@ class MainWindow(QMainWindow):
         self.deck_layout_view.set_selected_keys(keys)
         self.controller_layout_view.set_selected_keys(keys)
 
+    def _ensure_learn_listening(self) -> bool:
+        """MIDI Learn listens through the Live Monitor: start it on every
+        input if it isn't running yet, and report whether anything is open."""
+        self.live_monitor_view.ensure_monitoring_started()
+        return self.live_monitor_view.is_running
+
     def _on_live_midi_event(self, event: MidiEvent) -> None:
+        # An active MIDI Learn consumes the press it learns; the layouts still
+        # react to it below like any other live hit.
+        self.edit_panel.feed_learn_event(event)
         try:
             value = int(event.data2)
         except (TypeError, ValueError):

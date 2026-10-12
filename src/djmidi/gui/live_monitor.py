@@ -296,6 +296,10 @@ class LiveMonitorView(QWidget):
         _LOGGER.info("Saved %d MIDI event(s) to CSV", len(self._events))
         self._status_label.setText(f"Saved {len(self._events)} MIDI event(s).")
 
+    @property
+    def is_running(self) -> bool:
+        return self._running
+
     def ensure_monitoring_started(self) -> None:
         """Best-effort auto-start used when a mapping is loaded, so the By
         Channel/Deck/Controller layouts reflect live controller presses
