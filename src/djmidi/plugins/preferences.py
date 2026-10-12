@@ -46,6 +46,9 @@ class PluginPreferences:
     auto_sync_on_startup: bool = True
     # Send a controller its sync set when its output port appears (issue #183).
     auto_sync_on_plug_in: bool = True
+    # Send the newly active scene's sets as soon as the scene combo changes
+    # (issue #212). Off by default: a scene switch mid-set stays silent unless asked.
+    sync_on_scene_switch: bool = False
     # Look for a newer GitHub release at launch, at most once a day (issue #193).
     check_for_updates: bool = True
     # Session JSON or Serato XML Controller Setup loads when first shown ("" = none).
@@ -109,6 +112,7 @@ class PluginPreferences:
                 "reopen_last_files": self.reopen_last_files,
                 "auto_sync_on_startup": self.auto_sync_on_startup,
                 "auto_sync_on_plug_in": self.auto_sync_on_plug_in,
+                "sync_on_scene_switch": self.sync_on_scene_switch,
                 "check_for_updates": self.check_for_updates,
                 "controller_setup_default_file": self.controller_setup_default_file,
                 "controller_sync_sets": [sync_set.to_dict() for sync_set in self.controller_sync_sets],
@@ -163,6 +167,7 @@ class PluginPreferences:
             reopen_last_files=bool(raw.get("reopen_last_files", True)),
             auto_sync_on_startup=bool(raw.get("auto_sync_on_startup", True)),
             auto_sync_on_plug_in=bool(raw.get("auto_sync_on_plug_in", True)),
+            sync_on_scene_switch=bool(raw.get("sync_on_scene_switch", False)),
             check_for_updates=bool(raw.get("check_for_updates", True)),
             controller_setup_default_file=str(raw.get("controller_setup_default_file", "")),
             controller_sync_sets=list(sync_sets.values()),

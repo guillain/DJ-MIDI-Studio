@@ -308,3 +308,50 @@ def test_menu_corner_fits_at_1100_px(tmp_path):
     for button in (window._record_button, window._sync_button, window._preferences_button):
         assert button.isVisible() and button.width() >= button.minimumSizeHint().width()
     window.close()
+
+
+def _scene_switch_window(tmp_path, monkeypatch, *, enabled):
+    window = _window(tmp_path)
+    window.preferences.sync_on_scene_switch = enabled
+    window.preferences.set_sync_set(ControllerSyncSet("DDJ-XP2", "", (SyncMessage("Note On", 1, 1, 127),)))
+    window.preferences.set_sync_set(
+        ControllerSyncSet("DDJ-XP2", "", (SyncMessage("Note On", 1, 2, 127),), scene="Tek")
+    )
+    window._refresh_sync_scene_combo()
+    sent = []
+    monkeypatch.setattr(main_window_module, "list_output_ports", lambda: ["PIONEER DDJ-XP2"])
+    monkeypatch.setattr("djmidi.midi_io.send_midi_message", lambda **kwargs: sent.append(kwargs["data1"]))
+    monkeypatch.setattr(QMessageBox, "information", lambda *args: (_ for _ in ()).throw(AssertionError))
+    return window, sent
+
+
+def test_switching_scene_sends_nothing_by_default(tmp_path, monkeypatch):
+    window, sent = _scene_switch_window(tmp_path, monkeypatch, enabled=False)
+    window._on_sync_scene_activated(window._sync_scene_combo.findText("Tek"))
+    assert window.preferences.active_sync_scene == "Tek"
+    assert sent == []
+
+
+def test_switching_scene_syncs_the_new_scene_when_enabled(tmp_path, monkeypatch):
+    window, sent = _scene_switch_window(tmp_path, monkeypatch, enabled=True)
+    window._on_sync_scene_activated(window._sync_scene_combo.findText("Tek"))
+    assert sent == [2]
+    assert "Synced 1/1 controller(s)" in window.statusBar().currentMessage()
+
+    # Re-picking the active scene doesn't resend; switching back does.
+    window._on_sync_scene_activated(window._sync_scene_combo.findText("Tek"))
+    assert sent == [2]
+    window._on_sync_scene_activated(window._sync_scene_combo.findText("Default"))
+    assert sent == [2, 1]
+
+
+def test_switching_to_a_scene_with_nothing_to_send_stays_silent(tmp_path, monkeypatch):
+    window, sent = _scene_switch_window(tmp_path, monkeypatch, enabled=True)
+    window.preferences.controller_sync_sets = [
+        s for s in window.preferences.controller_sync_sets if s.scene == "Tek"
+    ]
+    monkeypatch.setattr(main_window_module.QInputDialog, "getText", lambda *args: ("DnB", True))
+    window._on_sync_scene_activated(window._sync_scene_combo.findText("New scene…"))
+    assert window.preferences.active_sync_scene == "DnB"
+    assert sent == []
+    assert window.statusBar().currentMessage() == "Sync scene: DnB"
