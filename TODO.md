@@ -132,6 +132,14 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Duplicate track detection** (`v0.48.56-library-duplicates`, issue #184) — Qt-free
+  `library/duplicates.py`: a *metadata* tier (normalized artist + title: NFKD/accents, casefold, `feat.`
+  credits and `(Original Mix)`-style suffixes dropped, every other version marker kept, punctuation squashed;
+  no artist or title → never grouped) and an *exact* tier (same size → 64 KB prefix hash → full chunked
+  `blake2b`, a generator yielding per chunk). Music Library's `Find duplicates…` runs it on the tab's `QTimer`
+  job slicer and opens a read-only `DuplicatesDialog` (path/format/size, bitrate read lazily on expand, Reveal in
+  Finder). First slice deliberately read-only (no Trash/delete); duration comparison deferred (not in the tag
+  cache).
 - [x] **Sync on plug-in** (`v0.48.55-sync-on-plug-in`, issue #183) — output ports are listed every 2 s in the
   real app; when a port appears that a stored sync set resolves to, that set is sent once. Never re-sent while it
   stays connected, sent again after unplug/replug; the launch Sync seeds the Qt-free `PlugInSyncTracker` so nothing
