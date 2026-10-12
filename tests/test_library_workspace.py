@@ -187,6 +187,17 @@ def test_generate_playlist_default_order_and_seeded():
         workspace.generate_playlist(rows, seed_path="/gone.mp3")
 
 
+def test_generate_playlist_path_mode():
+    rows = [
+        _row("/c.mp3", "Tek%%Tribe", 175, "9A"),
+        _row("/a.mp3", "Dub%%Roots", 80, "8A"),
+        _row("/b.mp3", "Tek%%Tribe", 172, "8A"),
+        _row("/gone.mp3", "Tek%%Tribe", 172, "8A", missing=True),
+    ]
+    assert workspace.generate_playlist_path(rows, start_path="/b.mp3") == (["/b.mp3", "/c.mp3"], ["/a.mp3"])
+    assert workspace.generate_playlist_path(rows, direction="down") == (["/c.mp3", "/b.mp3"], ["/a.mp3"])
+
+
 def test_volume_root():
     assert workspace.volume_root("/Volumes/DJ/Music/a.mp3") == Path("/Volumes/DJ")
     assert workspace.volume_root("/Users/me/Music/a.mp3") == Path("/")

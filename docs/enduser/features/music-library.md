@@ -168,7 +168,12 @@ The **Playlists** panel:
 | `New from selection` | A playlist of the selected rows |
 | `Auto: sort visible` | Every visible row, grouped by category, then BPM range, then key |
 | `Auto: match current` | The selected track followed by every visible track within ±6 % BPM and a harmonically compatible Camelot key |
+| `Auto: mix path…` | The visible tracks chained into a set you can actually mix: each track is within ±6 % BPM and a compatible Camelot key of the one before, and the BPM rises, falls or stays steady (you choose). Starts from the selected track (else the slowest, or the fastest when falling); tracks that can't be chained go to a second `… (leftovers)` playlist |
 | `Rename…` / `Delete` | Manage the selected playlist |
+
+A rising or falling path never steps back, so it skips tracks to keep the
+BPM moving one way — filter the table to one category first for the longest
+paths, and check the leftovers playlist for what didn't fit.
 
 ![Music Library: Playlists panel](../../images/layout/music-library-playlists.png)
 

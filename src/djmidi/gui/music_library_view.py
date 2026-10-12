@@ -110,6 +110,13 @@ _COLUMN_INDEX = {key: index for index, (_header, key) in enumerate(COLUMNS)}
 _EDIT_FIELDS = ("title", "artist", "album", "genre", "bpm", "key", "comment", "rating", "energy")
 
 # Below this the tab scrolls rather than squeezing its panels (issue #19).
+# "Auto: mix path…" choices -> playlist.build_playlist_path directions.
+PATH_DIRECTION_LABELS = {
+    "Rising BPM": "up",
+    "Falling BPM": "down",
+    "Steady BPM (smallest moves)": "flat",
+}
+
 _CONTENT_MIN_WIDTH = 760
 _CONTENT_MIN_HEIGHT = 440
 
@@ -835,6 +842,10 @@ class MusicLibraryView(QWidget):
              "Every visible row, grouped by category, then BPM range, then key."),
             ("match_button", "Auto: match current", self._on_match_clicked,
              "The current track followed by every visible track compatible in BPM and key."),
+            ("path_button", "Auto: mix path…", self._on_path_clicked,
+             ("Every visible track ordered as a mixable path (each step compatible in BPM and key, "
+              "BPM rising, falling or flat), from the current track. Tracks that don't fit go to "
+              "a separate leftovers playlist.")),
             ("import_serato_button", "Import Serato crate…", self._on_import_serato_clicked, ""),
             ("import_traktor_button", "Import Traktor NML…", self._on_import_traktor_clicked, ""),
             ("import_rekordbox_button", "Import Rekordbox export…", self._on_import_rekordbox_clicked, ""),
@@ -1665,6 +1676,44 @@ class MusicLibraryView(QWidget):
         if name:
             self.create_playlist(name, paths, workspace.SOURCE_GENERATED)
             self.status_label.setText(f"{len(paths) - 1} compatible track(s) found.")
+
+    def _on_path_clicked(self) -> None:
+        """Issue #191's path mode: every visible track as one mixable path,
+        starting from the current track when it has a BPM and a key. Tracks
+        the path can't place go to a second, "(leftovers)" playlist."""
+        candidates = self.visible_rows()
+        if not candidates:
+            self.status_label.setText("No visible tracks to build a playlist from.")
+            return
+        label, ok = QInputDialog.getItem(
+            self, "Mix path", "BPM direction:", list(PATH_DIRECTION_LABELS), 0, False
+        )
+        if not ok:
+            return
+        direction = PATH_DIRECTION_LABELS[label]
+        row = self._current_row()
+        start = None
+        if row is not None and not row.missing and row.bpm is not None and row.camelot_key:
+            start = row.path
+            if row not in candidates:
+                candidates.append(row)
+        path, leftovers = workspace.generate_playlist_path(candidates, start_path=start, direction=direction)
+        if not path:
+            self.status_label.setText("No visible track has both a BPM and a key -- scan or tag them first.")
+            return
+        first = next((r for r in candidates if r.path == path[0]), None)
+        title = first.title if first is not None and first.title else Path(path[0]).stem
+        name = self._ask_playlist_name(f"Path from {title}")
+        if not name:
+            return
+        if leftovers:
+            self.create_playlist(f"{name} (leftovers)", leftovers, workspace.SOURCE_GENERATED)
+        self.create_playlist(name, path, workspace.SOURCE_GENERATED)
+        self.status_label.setText(
+            f"{len(path)} track(s) in the path; {len(leftovers)} that don't fit are in “{name} (leftovers)”."
+            if leftovers
+            else f"{len(path)} track(s) in the path."
+        )
 
     def import_playlists(self, playlists: dict[str, list[str]], source: str) -> int:
         first_id = None

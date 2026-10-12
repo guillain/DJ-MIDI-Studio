@@ -229,6 +229,20 @@ def test_playlists_from_selection_generation_and_match(library, monkeypatch):
     assert view.playlist_list.count() == 3
 
 
+def test_path_playlist_with_leftovers(library, monkeypatch):
+    view, music, _ = library
+    monkeypatch.setattr(QInputDialog, "getItem", lambda *a, **k: ("Rising BPM", True))
+    monkeypatch.setattr(QInputDialog, "getText", lambda *a, **k: ("Path", True))
+    view.select_path(str(music / "Tek" / "Tribe" / "a.mp3"))
+    view._on_path_clicked()
+    names = {record.name: record.id for record in view.db.list_playlists()}
+    assert set(names) == {"Path", "Path (leftovers)"}
+    assert [Path(p).name for p in view.db.playlist_paths(names["Path"])] == ["a.mp3", "b.mp3"]
+    assert [Path(p).name for p in view.db.playlist_paths(names["Path (leftovers)"])] == ["c.mp3"]
+    assert view.selected_playlist_id() == names["Path"]
+    assert "leftovers" in view.status_label.text()
+
+
 def test_playlist_rename_delete_and_crate_export(library, monkeypatch):
     view, music, tmp_path = library
     playlist_id = view.create_playlist("Set", [str(music / "misc" / "c.mp3")])

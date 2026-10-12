@@ -132,6 +132,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Playlist path mode** (`v0.48.63-playlist-path-mode`, issue #191) — issue #131's deferred follow-up:
+  `playlist.build_playlist_path` chains tracks so every step is BPM- (±6 %) and Camelot-compatible and the BPM
+  rises, falls or stays steady, via a deterministic receding-horizon beam search (beam 8, lookahead 3) over a
+  per-Camelot-key BPM index (3,000 synthetic tracks well under 2 s, tested); unplaceable tracks are returned as
+  leftovers. Music Library: `Auto: mix path…` (direction prompt, starts from the selected track) writes the path
+  plus a separate `… (leftovers)` playlist. Simple mode stays the default.
 - [x] **Relink missing library tracks** (`v0.48.62-library-relink`, issue #190) — a moved file used to stay in the
   index as one `missing` row plus a new one. Qt-free `library/relink.py` proposes, per missing track, indexed or
   not-yet-scanned files under the roots with the same name (casefold) and size (confident when unique and not claimed
