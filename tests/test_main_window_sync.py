@@ -141,3 +141,58 @@ def test_startup_sync_is_silent_without_sets_and_sends_stored_ones(tmp_path, mon
     monkeypatch.setattr("djmidi.midi_io.send_midi_message", lambda **kwargs: sent.append(kwargs))
     assert [result.ok for result in window._sync_at_startup()] == [True]
     assert len(sent) == 1
+
+
+def test_plug_in_poll_syncs_a_controller_once_when_it_appears(tmp_path, monkeypatch):
+    window = _window(tmp_path)
+    window.preferences.set_sync_set(ControllerSyncSet("DDJ-XP2", "", (SyncMessage("Note On", 1, 11, 127),)))
+    ports = []
+    sent = []
+    monkeypatch.setattr(main_window_module, "list_output_ports", lambda: list(ports))
+    monkeypatch.setattr("djmidi.midi_io.send_midi_message", lambda **kwargs: sent.append(kwargs))
+
+    window._update_plug_in_watch()  # seeds with nothing connected
+    assert window._plug_in_timer.isActive()
+    assert window._poll_plugged_controllers() == []
+
+    ports.append("PIONEER DDJ-XP2")
+    assert [result.ok for result in window._poll_plugged_controllers()] == [True]
+    assert window._poll_plugged_controllers() == []
+    assert len(sent) == 1
+    assert window.statusBar().currentMessage().startswith("Plugged in")
+
+    ports.clear()
+    window._poll_plugged_controllers()
+    ports.append("PIONEER DDJ-XP2")
+    window._poll_plugged_controllers()
+    assert len(sent) == 2
+    window.close()
+
+
+def test_startup_sync_seeds_plug_in_tracker_so_nothing_is_sent_twice(tmp_path, monkeypatch):
+    window = _window(tmp_path)
+    window.preferences.set_sync_set(ControllerSyncSet("DDJ-XP2", "", (SyncMessage("Note On", 1, 11, 127),)))
+    sent = []
+    monkeypatch.setattr(main_window_module, "list_output_ports", lambda: ["PIONEER DDJ-XP2"])
+    monkeypatch.setattr("djmidi.midi_io.send_midi_message", lambda **kwargs: sent.append(kwargs))
+
+    window._start_controller_sync()
+    assert window._poll_plugged_controllers() == []
+    assert len(sent) == 1
+    window.close()
+
+
+def test_plug_in_watch_follows_the_preference(tmp_path, monkeypatch):
+    window = _window(tmp_path)
+    monkeypatch.setattr(main_window_module, "list_output_ports", list)
+    window.preferences.auto_sync_on_startup = False
+    window.preferences.auto_sync_on_plug_in = False
+    window._start_controller_sync()
+    assert not window._plug_in_timer.isActive()
+    window.preferences.auto_sync_on_plug_in = True
+    window._update_plug_in_watch()
+    assert window._plug_in_timer.isActive()
+    window.preferences.auto_sync_on_plug_in = False
+    window._update_plug_in_watch()
+    assert not window._plug_in_timer.isActive()
+    assert not window._plug_in_tracker.seeded

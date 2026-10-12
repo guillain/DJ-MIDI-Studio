@@ -76,6 +76,14 @@ class PreferencesDialog(QDialog):
             "Setup) when the app starts, as if you had clicked ⟳ Sync."
         )
         self._auto_sync_on_startup = auto_sync_on_startup
+        auto_sync_on_plug_in = QCheckBox("Sync a controller when it is plugged in")
+        auto_sync_on_plug_in.setChecked(preferences.auto_sync_on_plug_in)
+        auto_sync_on_plug_in.setToolTip(
+            "Watch for controllers being connected and send each one its recorded initialization "
+            "set once, as soon as it appears. A controller that stays connected is not re-sent; "
+            "unplugging and replugging it sends the set again."
+        )
+        self._auto_sync_on_plug_in = auto_sync_on_plug_in
         workspace_row = QWidget()
         workspace_layout = QHBoxLayout(workspace_row)
         workspace_layout.setContentsMargins(0, 0, 0, 0)
@@ -137,6 +145,7 @@ class PreferencesDialog(QDialog):
         policy_layout.addRow(auto_start_live_monitor)
         policy_layout.addRow(reopen_last_files)
         policy_layout.addRow(auto_sync_on_startup)
+        policy_layout.addRow(auto_sync_on_plug_in)
         policy_layout.addRow("Your files folder:", workspace_row)
 
         controller_ids = {
@@ -306,6 +315,7 @@ class PreferencesDialog(QDialog):
         self._preferences.auto_start_live_monitor = self._auto_start_live_monitor.isChecked()
         self._preferences.reopen_last_files = self._reopen_last_files.isChecked()
         self._preferences.auto_sync_on_startup = self._auto_sync_on_startup.isChecked()
+        self._preferences.auto_sync_on_plug_in = self._auto_sync_on_plug_in.isChecked()
         self._preferences.log_level = self._log_level.currentText()
         self._preferences.log_path = self._log_path.text().strip()
         self._preferences.controller_setup_default_file = self._setup_file.text().strip()
