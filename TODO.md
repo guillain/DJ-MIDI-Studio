@@ -132,6 +132,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Duplicates: move copies to the Trash** (`v0.48.66-duplicates-trash`, issue #208) — the Duplicate tracks
+  window's file rows are checkable; `Move ticked to Trash…` → Qt-free `library/discard.py`: `plan_discard` pairs
+  each ticked copy with a kept one and refuses a group that would keep none, `move_to_trash` uses an injected
+  trash function (`QFile.moveToTrash` in the app, never a hard delete) and flags moved rows missing, and
+  `repoint_playlists` (offered only when this app's playlists list a moved copy) reuses #190's `relink_tracks`.
+  Tests use tmp_path files and a fake trash only.
 - [x] **New version notice** (`v0.48.65-update-notice`, issue #193) — Qt-free `update_check.py` asks GitHub's
   `releases/latest` API (urllib, 5 s timeout, no auth) and compares the tag's numeric `X.Y.Z` prefix with
   `importlib.metadata.version("djmidi")`; every failure is silent (debug log). `gui/update_notice.UpdateChecker`
