@@ -1,7 +1,9 @@
 """Live Monitor tab: watches real MIDI traffic (polled, see midi_io.py) and
 shows it as a log, resolving each event through the same catalog.py lookup
 used everywhere else, plus the loaded config's Serato function if one
-matches. Doesn't have its own Layout view — it drives the three existing
+matches. An input whose trigger fires two or more different functions on the
+same deck of the loaded mapping (validator.find_deck_conflicts) is flagged in
+its log row and counted. Doesn't have its own Layout view — it drives the three existing
 ControllerLayoutViews via MainWindow.highlight_live_event()."""
 
 from __future__ import annotations
@@ -13,6 +15,7 @@ from collections.abc import Callable
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QTimer, Signal
+from PySide6.QtGui import QBrush, QColor
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QCheckBox,
@@ -38,9 +41,12 @@ from djmidi.gui.port_list_utils import refresh_checked_port_list
 from djmidi.gui.scroll_utils import AutoSizeScrollArea
 from djmidi.midi_io import MidiEvent, MidiMonitor, list_input_ports
 from djmidi.model import MidiConfig
+from djmidi.validator import DeckConflict, TriggerKey, find_deck_conflicts
 
 _MAX_ROWS = 500
 _POLL_INTERVAL_MS = 30
+# Amber, readable on both light and dark themes behind default text.
+_CONFLICT_BRUSH = QBrush(QColor(255, 176, 32, 90))
 
 _VIRTUAL_MONITOR_HELP = (
     "Creates a virtual MIDI destination named "
@@ -64,6 +70,9 @@ class LiveMonitorView(QWidget):
         self._monitor = MidiMonitor()
         self._config: MidiConfig | None = None
         self._function_lookup: dict[tuple[str, str, str], list[str]] = {}
+        self._conflicts: dict[TriggerKey, list[DeckConflict]] = {}
+        self._conflict_hits = 0
+        self._conflict_triggers: set[TriggerKey] = set()
         self._events: list[MidiEvent] = []
         self._running = False
 
@@ -88,6 +97,13 @@ class LiveMonitorView(QWidget):
         self._start_button = QPushButton("Start monitoring")
         self._start_button.clicked.connect(self._toggle_running)
         self._status_label = QLabel("Stopped")
+        self._conflict_label = QLabel()
+        self._conflict_label.setWordWrap(True)
+        self._conflict_label.setToolTip(
+            "Live inputs that fire two or more different functions on the same deck "
+            "in the loaded mapping. Serato's identical repeated triggers are not conflicts."
+        )
+        self._update_conflict_label()
         clear_button = QPushButton("Clear log")
         clear_button.clicked.connect(self._clear_log)
         save_button = QPushButton("Save log…")
@@ -106,6 +122,7 @@ class LiveMonitorView(QWidget):
         controls_layout.addWidget(virtual_help)
         controls_layout.addWidget(self._start_button)
         controls_layout.addWidget(self._status_label)
+        controls_layout.addWidget(self._conflict_label)
         controls_layout.addWidget(clear_button)
         controls_layout.addWidget(save_button)
         controls_layout.addWidget(self._sync_button)
@@ -158,6 +175,8 @@ class LiveMonitorView(QWidget):
     def set_config(self, config: MidiConfig | None) -> None:
         self._config = config
         self._function_lookup = {}
+        self._conflicts = find_deck_conflicts(config) if config is not None else {}
+        self._reset_conflict_count()
         if config is not None:
             for group in build_mapping_groups(config):
                 key = (group.channel, group.event_type, group.control_no)
@@ -237,8 +256,14 @@ class LiveMonitorView(QWidget):
             source = event.port.casefold()
             hits = [hit for hit in hits if hit.controller.casefold() in source]
         physical = "; ".join(h.name for h in hits)
-        functions = self._function_lookup.get((event.channel, event.event_type, event.data1), [])
-        detail = " | ".join(part for part in (physical, "; ".join(functions)) if part) or "(unknown)"
+        trigger = (event.channel, event.event_type, event.data1)
+        functions = self._function_lookup.get(trigger, [])
+        conflicts = self._conflicts.get(trigger, []) if event.direction == "in" else []
+        conflict_text = ""
+        if conflicts:
+            conflict_text = "CONFLICT " + "; ".join(c.describe() for c in conflicts)
+            self._count_conflict(event, trigger)
+        detail = " | ".join(part for part in (conflict_text, physical, "; ".join(functions)) if part) or "(unknown)"
 
         row = self._log.rowCount()
         self._log.insertRow(row)
@@ -253,15 +278,48 @@ class LiveMonitorView(QWidget):
             detail,
         ]
         for col, value in enumerate(values):
-            self._log.setItem(row, col, QTableWidgetItem(value))
+            item = QTableWidgetItem(value)
+            if conflicts:
+                item.setBackground(_CONFLICT_BRUSH)
+                item.setToolTip(conflict_text)
+            self._log.setItem(row, col, item)
         self._log.scrollToBottom()
 
         while self._log.rowCount() > _MAX_ROWS:
             self._log.removeRow(0)
 
+    def _count_conflict(self, event: MidiEvent, trigger: TriggerKey) -> None:
+        # A Note On with velocity 0 is a release: still flagged in its row, but
+        # not counted again, so one press = one conflict hit.
+        if event.event_type == "Note On" and event.data2 == "0":
+            return
+        self._conflict_hits += 1
+        self._conflict_triggers.add(trigger)
+        self._update_conflict_label()
+
+    def _reset_conflict_count(self) -> None:
+        self._conflict_hits = 0
+        self._conflict_triggers = set()
+        self._update_conflict_label()
+
+    def _update_conflict_label(self) -> None:
+        if not self._conflicts:
+            self._conflict_label.setText("Conflicts: none in the loaded mapping")
+            return
+        self._conflict_label.setText(
+            f"Conflicts: {self._conflict_hits} live hit(s) on {len(self._conflict_triggers)} "
+            f"trigger(s) ({len(self._conflicts)} conflicting trigger(s) in the mapping)"
+        )
+
+    def conflict_counts(self) -> tuple[int, int]:
+        """(live conflicting hits, distinct conflicting triggers hit) since the
+        last Clear log or mapping load."""
+        return self._conflict_hits, len(self._conflict_triggers)
+
     def _clear_log(self) -> None:
         self._events.clear()
         self._log.setRowCount(0)
+        self._reset_conflict_count()
 
     def _save_log(self) -> None:
         if not self._events:

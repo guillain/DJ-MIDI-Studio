@@ -355,3 +355,23 @@ def test_switching_to_a_scene_with_nothing_to_send_stays_silent(tmp_path, monkey
     assert window.preferences.active_sync_scene == "DnB"
     assert sent == []
     assert window.statusBar().currentMessage() == "Sync scene: DnB"
+
+
+def test_saving_pad_colours_merges_them_into_the_active_scene_set(tmp_path):
+    from djmidi import pad_colours
+    from djmidi.pad_colours import PadSlot
+
+    controller = "Hercules DJControl Inpulse 500"
+    window = _window(tmp_path)
+    window.preferences.active_sync_scene = "Tek"
+    keep = SyncMessage("Control Change", 1, 14, 64)
+    window.preferences.set_sync_set(
+        ControllerSyncSet(controller, "", (keep, SyncMessage("Note On", 7, 0, 0x60)), "Tek")
+    )
+    palette = pad_colours.palette_for(controller)
+
+    saved = window._on_pad_colours_save_requested(controller, {PadSlot(1, 1): palette.colour_named("Blue")})
+
+    assert saved.messages == (keep, SyncMessage("Note On", 7, 0, 0x03))
+    assert PluginPreferences.load(window.preferences_path).sync_set_for(controller, "Tek") == saved
+    assert window._on_pad_colours_save_requested("DDJ-XP2", {PadSlot(1, 1): palette.colours[0]}) is None

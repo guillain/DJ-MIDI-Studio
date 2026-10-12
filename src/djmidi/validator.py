@@ -22,6 +22,62 @@ class ValidationIssue:
     location: str
 
 
+TriggerKey = tuple[str, str, str]  # (channel, event_type, control), as on model.Control
+
+
+@dataclass(frozen=True)
+class DeckConflict:
+    """One deck on which a single trigger fires two or more *different* functions.
+
+    `functions` lists each distinct `(tag, slot_id)` the trigger's "click" mappings
+    bind on that deck, sorted for stable display."""
+
+    deck_id: str
+    functions: tuple[tuple[str, str], ...]
+
+    def describe(self) -> str:
+        names = ", ".join(f"{tag} (slot {slot})" for tag, slot in self.functions)
+        return f"deck {self.deck_id}: {names}"
+
+
+def _group_by_trigger(config: MidiConfig) -> dict[TriggerKey, list[Control]]:
+    groups: dict[TriggerKey, list[Control]] = {}
+    for control in config.controls:
+        key = (control.channel, control.event_type, control.control)
+        groups.setdefault(key, []).append(control)
+    return groups
+
+
+def find_deck_conflicts(config: MidiConfig) -> dict[TriggerKey, list[DeckConflict]]:
+    """Triggers whose input ("click") mappings resolve to two or more different
+    functions on the same deck -- what Live Monitor flags when such a trigger
+    arrives live (issue #223).
+
+    A function is a `(tag, slot_id)` pair, so Serato's verbatim 10x repetition of
+    every trigger collapses to one function and is never a conflict (see
+    `_check_duplicate_triggers`); output ("output", LED feedback) mappings are
+    ignored since they don't fire anything. Triggers with no conflict are absent
+    from the result."""
+    result: dict[TriggerKey, list[DeckConflict]] = {}
+    for key, controls in _group_by_trigger(config).items():
+        by_deck: dict[str, set[tuple[str, str]]] = {}
+        for control in controls:
+            for userio in control.userios:
+                if userio.event != "click":
+                    continue
+                for mapping in userio.mappings:
+                    deck = mapping.deck_id or "(none)"
+                    by_deck.setdefault(deck, set()).add((mapping.tag, mapping.slot_id or "(none)"))
+        conflicts = [
+            DeckConflict(deck_id=deck, functions=tuple(sorted(functions)))
+            for deck, functions in sorted(by_deck.items())
+            if len(functions) > 1
+        ]
+        if conflicts:
+            result[key] = conflicts
+    return result
+
+
 def _control_location(control) -> str:
     return f"control[channel={control.channel}, event_type={control.event_type}, control={control.control}]"
 
@@ -38,10 +94,7 @@ def _check_duplicate_triggers(config: MidiConfig) -> list[ValidationIssue]:
     been confirmed to break the config in Serato — so this is flagged as informational
     only, not something to clean up. If occurrences disagree with each other, that's a
     real conflict: only one will actually be honoured by Serato."""
-    groups: dict[tuple[str, str, str], list[Control]] = {}
-    for control in config.controls:
-        key = (control.channel, control.event_type, control.control)
-        groups.setdefault(key, []).append(control)
+    groups = _group_by_trigger(config)
 
     issues: list[ValidationIssue] = []
     for key, controls in groups.items():

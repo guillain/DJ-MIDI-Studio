@@ -45,6 +45,23 @@ DASHBOARD_FILES: HelpEntry = (
     "workspace.md",
 )
 
+MIDI_MACROS: HelpEntry = (
+    "MIDI Macros",
+    (
+        "A macro is a named list of MIDI messages played in one go from the <b>Macros</b> menu "
+        "or its keyboard shortcut, from any tab.<ul>"
+        "<li><b>Output port</b>: where the messages go -- a port, or a controller name matched "
+        "against the connected ports like <b>⟳ Sync</b> does.</li>"
+        "<li><b>Steps</b>: type, channel (1–16), data 1/2 (0–127) and an optional delay "
+        "(ms) waited before the step is sent; <b>Add sync set…</b> appends a recorded sync "
+        "set's messages.</li>"
+        "<li><b>Shortcut</b>: optional; one the app's menus already use is refused.</li></ul>"
+        "<b>Test</b> plays the macro as edited. Each macro is a file in "
+        "<tt>Documents/DJ MIDI Studio/Macros</tt>."
+    ),
+    "midi-macros.md",
+)
+
 DASHBOARD_CONTROLLERS: HelpEntry = (
     "Known controllers",
     (
@@ -153,7 +170,10 @@ CONTROLLER_EMULATOR: HelpEntry = (
         "<li>Layers: <b>Controller</b> photo, <b>MIDI</b> picture (alone) and <b>Layout</b> "
         "(the clickable controls).</li>"
         "<li>The emulator also follows the real controller when the Live Monitor is "
-        "running.</li></ul>"
+        "running.</li>"
+        "<li><b>Pad colours</b> (only for controllers whose documentation lists them, "
+        "e.g. Hercules DJControl Inpulse 500): pick a colour, switch <b>Paint</b> on, "
+        "click pads, then <b>Save to sync set</b>.</li></ul>"
         "Open more emulators with <b>View → New Controller Emulator…</b>."
     ),
     "controller-emulator.md",
@@ -168,7 +188,10 @@ LIVE_MONITOR: HelpEntry = (
         "It starts on its own when a mapping is loaded (⚙ Preferences). To choose ports "
         "yourself: <b>Refresh ports</b>, tick inputs, <b>Start monitoring</b>.<br><br>"
         "To see the LED messages Serato sends back, tick <b>Create virtual monitor</b> and "
-        "add <i>DJMidiStudio Monitor</i> as an extra MIDI output in Serato."
+        "add <i>DJMidiStudio Monitor</i> as an extra MIDI output in Serato.<br><br>"
+        "A press that fires two or more different functions on the same deck is shown in "
+        "amber as <b>CONFLICT</b> and counted; Serato's identical repeated triggers are not "
+        "conflicts."
     ),
     "live-monitor.md",
 )
@@ -217,7 +240,11 @@ LIBRARY_FOLDERS: HelpEntry = (
         "<b>Add folder…</b>, then <b>Scan &amp; read tags</b>. Later scans only re-read "
         "files that changed; a file that disappears (an unplugged drive) is greyed out as "
         "missing instead of being forgotten. <b>Relink missing…</b> finds where moved files "
-        "went (same name and size) and relinks them, playlists included.<br><br>"
+        "went (same name and size) and relinks them, playlists included. <b>Health report…</b> "
+        "lists files that need attention (corrupt, untagged, no cover, low bitrate). "
+        "<b>Analyse BPM/key</b> estimates the tempo and key of tracks whose tags lack "
+        "them (needs the optional analysis component); the estimates are amber "
+        "suggestions until you apply them from the Track panel.<br><br>"
         "The index stores paths, sizes, dates and a cache of the tags, never the audio. "
         "Serato, Traktor and Rekordbox library files are only ever read."
     ),
@@ -247,6 +274,8 @@ LIBRARY_TRACK: HelpEntry = (
         "<b>Undo</b> writes the old values back.<br><br>"
         "<b>Write tags to selection…</b> writes chosen tags to every selected track as "
         "one undo step, with a progress window you can cancel. "
+        "<b>Apply analysis suggestions…</b> writes the selected tracks' estimated BPM/key "
+        "into their empty tags, after listing them, as one undo step. "
         "<b>Confirm suggested category</b> turns an amber suggestion into a permanent "
         "alias; <b>Confirm all suggestions</b> does it for every track shown, after listing them. <b>Clean noise frames…</b> lists leftover junk tags and removes them only "
         "after you confirm."
@@ -298,6 +327,23 @@ LIBRARY_DUPLICATES: HelpEntry = (
     "music-library.md",
 )
 
+LIBRARY_HEALTH: HelpEntry = (
+    "Library health report",
+    (
+        "<b>Health report…</b> opens every scanned file's header and tags once (read-only, "
+        "no audio decoded) and lists:"
+        "<ul><li><b>Unreadable / corrupt</b>: the file can't be parsed or opened.</li>"
+        "<li><b>Zero length</b>: an empty (0-byte) file or a 0&nbsp;s duration.</li>"
+        "<li><b>Empty title</b> / <b>Empty artist</b>: the tag is missing or blank.</li>"
+        "<li><b>Missing artwork</b>: no embedded cover picture.</li>"
+        "<li><b>Low bitrate</b>: 128&nbsp;kbps or less.</li></ul>"
+        "Untick an issue type or type in the filter box to narrow the list. "
+        "<b>Show in library</b> (or double-click) selects the track in the table to fix its tags; "
+        "<b>Reveal in Finder</b> shows the file. <b>Export CSV…</b> saves the rows shown."
+    ),
+    "music-library.md",
+)
+
 LIBRARY_PLAYLISTS: HelpEntry = (
     "Playlists",
     (
@@ -312,7 +358,39 @@ LIBRARY_PLAYLISTS: HelpEntry = (
         "to a separate <i>(leftovers)</i> playlist. Only the tracks the current filter shows "
         "are used.</li></ul>"
         "Import Serato crates, Traktor playlists or a Rekordbox USB export (read only); "
-        "export to a new Serato crate or Traktor playlist file where you choose."
+        "export to a new Serato crate or Traktor playlist file where you choose. "
+        "<b>Compare with crate…</b> / <b>Compare with Traktor…</b> list the tracks only on each "
+        "side and the tracks in a different order, without changing either side."
+    ),
+    "music-library.md",
+)
+
+LIBRARY_HISTORY: HelpEntry = (
+    "Play history",
+    (
+        "<b>Load DJ history</b> reads Serato's and Traktor's own history from "
+        "<i>~/Music/_Serato_/History</i> and <i>~/Music/_Traktor/History</i>; "
+        "<b>Load from folder…</b> takes another one. Each session lists the tracks "
+        "played, with the time and deck; double-click one to select it in the table. "
+        "Grey rows were only loaded (or pre-listened in Traktor), or aren't in your "
+        "indexed folders.<br><br>"
+        "<b>Select never played</b> selects the visible tracks no session played, ready "
+        "for a playlist. History files are only ever read, never changed."
+    ),
+    "music-library.md",
+)
+
+LIBRARY_SET: HelpEntry = (
+    "Set preparation",
+    (
+        "Build a set by hand: drag tracks from the table into the list (or use <b>Add "
+        "selection</b>), then drag them inside the list to reorder. Each track plays once.<br>"
+        "The curve shows BPM (blue, left scale) and energy (orange, 1-10, from the Energy tag). "
+        "A transition is <span style='color:#d64545'>red</span> and marked ⚠ when the BPM jumps "
+        "past your tolerance or the keys clash on the Camelot wheel; dashed grey means a BPM or "
+        "key is missing so it can't be checked. Nothing is reordered for you.<br>"
+        "The draft is remembered. <b>Save as playlist…</b> stores it as an app playlist; the "
+        "export buttons write a new Serato crate or Traktor playlist where you choose."
     ),
     "music-library.md",
 )

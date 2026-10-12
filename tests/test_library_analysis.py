@@ -102,6 +102,18 @@ def test_estimate_key_on_synthetic_audio_returns_a_plausible_key_or_none(tmp_pat
     assert key is None or re.fullmatch(r"[A-G]#?m?", key)
 
 
+def test_analyse_clip_estimates_only_the_wanted_fields(tmp_path):
+    pytest.importorskip("librosa")
+    from djmidi.library.analysis import analyse_clip
+
+    path = _make_click_track_wav(tmp_path, duration_seconds=8.0, bpm=128.0)
+
+    bpm, key = analyse_clip(path, want_key=False, clip_seconds=4.0)
+
+    assert key is None
+    assert bpm is not None and any(abs(bpm - 128.0 * factor) < 5.0 for factor in (0.5, 1.0, 2.0))
+
+
 def test_estimate_bpm_without_librosa_raises_clear_error(monkeypatch):
     import djmidi.library.analysis as analysis_module
 

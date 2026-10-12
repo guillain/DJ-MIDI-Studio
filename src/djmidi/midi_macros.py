@@ -1,0 +1,313 @@
+"""MIDI macros (issue #228): named, user-defined sequences of MIDI messages
+played on demand from the Macros menu or a keyboard shortcut.
+
+Qt-free so the file store, the GUI and tests share one contract. A macro
+reuses the controller Sync building blocks -- :class:`SyncMessage` for each
+message and :func:`resolve_output_port` to find its port -- and adds what a
+sync set deliberately leaves out: an optional delay before each message, so
+a macro can, say, press a button, wait 200 ms and release it.
+
+Storage mirrors the sync sets: one JSON file per macro in the user's
+``Macros`` folder (:func:`load_macros` / :func:`save_macros`), the name only
+a label (loading reads the macro's name from the file's content).
+
+Playing is split in two so the GUI never blocks its event loop on a delay:
+:func:`macro_schedule` turns the per-step delays into absolute offsets the
+GUI feeds to timers, and :func:`run_macro` plays the same schedule
+synchronously with an injectable ``sleep`` (tests, scripts).
+"""
+
+from __future__ import annotations
+
+import json
+import logging
+import time
+from collections.abc import Callable, Iterable, Sequence
+from dataclasses import dataclass, field
+from pathlib import Path
+
+from djmidi.controller_sync import ControllerSyncSet, SyncMessage, resolve_output_port
+
+_LOGGER = logging.getLogger(__name__)
+
+FORMAT_VERSION = 1
+# A macro is a quick on-stage action, not a sequencer: one minute per step
+# is far beyond any sensible use and bounds a typo like "20000000".
+MAX_DELAY_MS = 60_000
+
+
+def _delay(value: object) -> int:
+    text = str(value if value is not None else "").strip() or "0"
+    try:
+        number = int(text)
+    except ValueError as exc:
+        raise ValueError("delay must be an integer number of milliseconds") from exc
+    if not 0 <= number <= MAX_DELAY_MS:
+        raise ValueError(f"delay must be in [0, {MAX_DELAY_MS}] ms")
+    return number
+
+
+@dataclass(frozen=True)
+class MacroStep:
+    message: SyncMessage
+    # Pause before this message is sent, in milliseconds.
+    delay_ms: int = 0
+
+    def to_dict(self) -> dict[str, object]:
+        return {**self.message.to_dict(), "delay_ms": self.delay_ms}
+
+    @classmethod
+    def from_dict(cls, raw: object) -> MacroStep:
+        if not isinstance(raw, dict):
+            raise TypeError("A macro step must be an object")
+        return cls(SyncMessage.from_dict(raw), _delay(raw.get("delay_ms", 0)))
+
+
+@dataclass(frozen=True)
+class MidiMacro:
+    name: str
+    # Output port, or a controller name: resolved like a sync set's port
+    # (exact match, else case/punctuation-insensitive containment).
+    output_port: str = ""
+    steps: tuple[MacroStep, ...] = field(default_factory=tuple)
+    # QKeySequence portable text ("Ctrl+Shift+1"), "" for none.
+    shortcut: str = ""
+
+    @property
+    def duration_ms(self) -> int:
+        return sum(step.delay_ms for step in self.steps)
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "version": FORMAT_VERSION,
+            "name": self.name,
+            "output_port": self.output_port,
+            "shortcut": self.shortcut,
+            "steps": [step.to_dict() for step in self.steps],
+        }
+
+    @classmethod
+    def from_dict(cls, raw: object) -> MidiMacro:
+        if not isinstance(raw, dict):
+            raise TypeError("A macro must be an object")
+        name = raw.get("name")
+        if not isinstance(name, str) or not name.strip():
+            raise ValueError("A macro needs a name")
+        steps = raw.get("steps", [])
+        if not isinstance(steps, list):
+            raise TypeError("A macro's steps must be a list")
+        return cls(
+            name=name.strip(),
+            output_port=str(raw.get("output_port", "") or ""),
+            steps=tuple(MacroStep.from_dict(step) for step in steps),
+            shortcut=str(raw.get("shortcut", "") or "").strip(),
+        )
+
+
+def steps_from_rows(rows: Iterable[Sequence[object]]) -> tuple[MacroStep, ...]:
+    """Validates edited ``(event_type, channel, data1, data2, delay_ms)`` rows,
+    raising ``ValueError`` naming the first bad one (1-based)."""
+    steps: list[MacroStep] = []
+    for number, row in enumerate(rows, start=1):
+        try:
+            event_type, channel, data1, data2, delay_ms = row
+            steps.append(MacroStep(SyncMessage.create(event_type, channel, data1, data2), _delay(delay_ms)))
+        except ValueError as exc:
+            raise ValueError(f"Step {number}: {exc}") from None
+    return tuple(steps)
+
+
+def validate_macros(macros: Sequence[MidiMacro]) -> list[str]:
+    """Problems that must be fixed before saving: a blank or duplicate name
+    (case-insensitive -- names become file names), a shortcut used twice."""
+    problems: list[str] = []
+    names: set[str] = set()
+    shortcuts: dict[str, str] = {}
+    for macro in macros:
+        name = macro.name.strip()
+        if not name:
+            problems.append("A macro has no name")
+            continue
+        if name.casefold() in names:
+            problems.append(f"Two macros are named \"{name}\"")
+        names.add(name.casefold())
+        if macro.shortcut:
+            other = shortcuts.get(macro.shortcut.casefold())
+            if other is not None:
+                problems.append(f"\"{name}\" and \"{other}\" use the same shortcut {macro.shortcut}")
+            else:
+                shortcuts[macro.shortcut.casefold()] = name
+    return problems
+
+
+def macro_schedule(macro: MidiMacro) -> list[tuple[int, SyncMessage]]:
+    """Each message with its offset in ms from the start of the macro."""
+    offset = 0
+    schedule: list[tuple[int, SyncMessage]] = []
+    for step in macro.steps:
+        offset += step.delay_ms
+        schedule.append((offset, step.message))
+    return schedule
+
+
+def resolve_macro_port(macro: MidiMacro, available_ports: Sequence[str]) -> str | None:
+    """The connected port ``macro`` plays to, or ``None``."""
+    target = macro.output_port.strip()
+    if not target:
+        return None
+    return resolve_output_port(ControllerSyncSet(target, target), available_ports)
+
+
+def send_message(message: SyncMessage, port: str, sender: Callable[..., None] | None = None) -> None:
+    if sender is None:
+        from djmidi.midi_io import send_midi_message
+
+        sender = send_midi_message
+    sender(
+        output_port_name=port,
+        event_type=message.event_type,
+        channel_1_based=message.channel,
+        data1=message.data1,
+        data2=message.data2,
+    )
+
+
+@dataclass(frozen=True)
+class MacroResult:
+    name: str
+    port: str | None
+    sent: int = 0
+    total: int = 0
+    error: str = ""
+
+    @property
+    def ok(self) -> bool:
+        return self.port is not None and not self.error
+
+    def summary(self) -> str:
+        """One status-bar line."""
+        if self.ok:
+            return f"Macro \"{self.name}\": sent {self.sent} message(s) to {self.port}"
+        if self.port is None:
+            return f"Macro \"{self.name}\" not played: {self.error}"
+        return f"Macro \"{self.name}\" stopped after {self.sent}/{self.total} message(s): {self.error}"
+
+
+def unplayable_result(macro: MidiMacro, available_ports: Sequence[str]) -> MacroResult | None:
+    """The failed result to report instead of playing ``macro``, or ``None``
+    when it can play (it has steps and its port is connected)."""
+    if not macro.steps:
+        return MacroResult(macro.name, None, error="no message to send")
+    if not macro.output_port.strip():
+        return MacroResult(macro.name, None, total=len(macro.steps), error="no output port chosen")
+    if resolve_macro_port(macro, available_ports) is None:
+        return MacroResult(macro.name, None, total=len(macro.steps), error=f"{macro.output_port} is not connected")
+    return None
+
+
+def run_macro(
+    macro: MidiMacro,
+    available_ports: Sequence[str],
+    sender: Callable[..., None] | None = None,
+    sleep: Callable[[float], None] = time.sleep,
+) -> MacroResult:
+    """Plays ``macro`` synchronously, sleeping each step's delay. A failing
+    send stops the macro (later steps may depend on it) and is reported."""
+    failed = unplayable_result(macro, available_ports)
+    if failed is not None:
+        return failed
+    port = resolve_macro_port(macro, available_ports)
+    assert port is not None  # checked by unplayable_result
+    sent = 0
+    for step in macro.steps:
+        if step.delay_ms:
+            sleep(step.delay_ms / 1000)
+        try:
+            send_message(step.message, port, sender)
+        except Exception as exc:  # noqa: BLE001 - report the failure instead of crashing the caller
+            _LOGGER.warning("Macro %r: sending to %r failed after %d message(s): %s", macro.name, port, sent, exc)
+            return MacroResult(macro.name, port, sent, len(macro.steps), str(exc))
+        sent += 1
+    return MacroResult(macro.name, port, sent, len(macro.steps))
+
+
+def macro_from_sync_set(name: str, sync_set: ControllerSyncSet) -> MidiMacro:
+    """A macro starting from a recorded sync set's messages (no delays)."""
+    return MidiMacro(name, sync_set.output_port or sync_set.controller, tuple(MacroStep(m) for m in sync_set.messages))
+
+
+# --- file store ------------------------------------------------------------
+
+
+def _slug(text: str) -> str:
+    slug = "".join(char if char.isalnum() else "-" for char in text.lower()).strip("-")
+    while "--" in slug:
+        slug = slug.replace("--", "-")
+    return slug or "macro"
+
+
+def macro_file_name(name: str) -> str:
+    return f"{_slug(name)}.json"
+
+
+def load_macros(directory: str | Path) -> list[MidiMacro]:
+    """Every readable macro in ``directory``, sorted by name; a broken file
+    is logged and skipped rather than losing the others, and of two files
+    holding the same name the last one (by file name) wins."""
+    folder = Path(directory)
+    if not folder.is_dir():
+        return []
+    macros: dict[str, MidiMacro] = {}
+    for path in sorted(folder.glob("*.json")):
+        try:
+            macro = MidiMacro.from_dict(json.loads(path.read_text(encoding="utf-8")))
+        except (OSError, ValueError, TypeError, KeyError) as exc:
+            _LOGGER.warning("Skipped macro file %s: %s", path, exc)
+            continue
+        macros[macro.name.casefold()] = macro
+    return sorted(macros.values(), key=lambda macro: macro.name.casefold())
+
+
+def save_macros(directory: str | Path, macros: Iterable[MidiMacro]) -> None:
+    """One file per macro; files of macros that are gone are removed, so the
+    folder always mirrors the app's list (a file that isn't a readable macro
+    is left alone -- it may be one the user is still editing by hand). Two
+    names slugging to the same file get a numbered suffix rather than
+    overwriting each other."""
+    folder = Path(directory)
+    folder.mkdir(parents=True, exist_ok=True)
+    keep: set[str] = set()
+    for macro in macros:
+        name = macro_file_name(macro.name)
+        stem, number = name.removesuffix(".json"), 2
+        while name in keep:
+            name, number = f"{stem}-{number}.json", number + 1
+        keep.add(name)
+        (folder / name).write_text(json.dumps(macro.to_dict(), indent=2) + "\n", encoding="utf-8")
+    for path in folder.glob("*.json"):
+        if path.name in keep:
+            continue
+        try:
+            MidiMacro.from_dict(json.loads(path.read_text(encoding="utf-8")))
+        except (OSError, ValueError, TypeError, KeyError):
+            continue
+        path.unlink()
+
+
+__all__ = [
+    "MAX_DELAY_MS",
+    "MacroResult",
+    "MacroStep",
+    "MidiMacro",
+    "load_macros",
+    "macro_file_name",
+    "macro_from_sync_set",
+    "macro_schedule",
+    "resolve_macro_port",
+    "run_macro",
+    "save_macros",
+    "send_message",
+    "steps_from_rows",
+    "unplayable_result",
+    "validate_macros",
+]

@@ -35,6 +35,19 @@ CREATE TABLE IF NOT EXISTS track_metadata (
     comment TEXT, rating TEXT, energy TEXT
 );
 
+-- Audio-analysis estimates for tracks missing a BPM or key tag (issue
+-- #224). Suggestions only: nothing here reaches a file until the user
+-- applies it through the undoable tag write. Keyed to the file's mtime so
+-- a file changed since (e.g. tagged in Serato) drops its stale estimate;
+-- a row with both values NULL records an attempt that found nothing, so
+-- the job doesn't retry that file every run.
+CREATE TABLE IF NOT EXISTS analysis_suggestions (
+    track_id INTEGER PRIMARY KEY REFERENCES tracks(id) ON DELETE CASCADE,
+    mtime REAL NOT NULL,
+    bpm REAL,
+    key TEXT
+);
+
 -- This app's own playlists (imported from Serato/Traktor/Rekordbox,
 -- generated, or hand-built). Never a live DJ-software playlist file --
 -- exporting one writes a new file at a path the user picks.
@@ -344,6 +357,52 @@ class LibraryDB:
                 metadata = TrackMetadata(**dict(zip(_METADATA_COLUMNS, r[7:], strict=True)))
             result.append((record, metadata))
         return result
+
+    # --- analysis suggestions (issue #224) ------------------------------
+
+    def tracks_needing_analysis(self) -> list[TrackRecord]:
+        """Present tracks whose up-to-date cached tags lack a BPM or a key
+        and that haven't been analysed since the file last changed."""
+        rows = self._conn.execute(
+            """
+            SELECT t.id, t.root_id, t.path, t.size, t.mtime, t.missing
+            FROM tracks t
+            JOIN track_metadata m ON m.track_id = t.id AND m.mtime = t.mtime
+            LEFT JOIN analysis_suggestions s ON s.track_id = t.id AND s.mtime = t.mtime
+            WHERE t.missing = 0 AND s.track_id IS NULL
+              AND (m.bpm IS NULL OR m.key IS NULL OR TRIM(m.key) = '')
+            ORDER BY t.path
+            """
+        ).fetchall()
+        return [
+            TrackRecord(id=r[0], root_id=r[1], path=r[2], size=r[3], mtime=r[4], missing=bool(r[5])) for r in rows
+        ]
+
+    def set_analysis_suggestion(self, track_id: int, mtime: float, bpm: float | None, key: str | None) -> None:
+        self._conn.execute(
+            "INSERT OR REPLACE INTO analysis_suggestions (track_id, mtime, bpm, key) VALUES (?, ?, ?, ?)",
+            (track_id, mtime, bpm, key),
+        )
+
+    def carry_analysis_suggestion(self, track_id: int, old_mtime: float, new_mtime: float) -> None:
+        """Keep a track's estimate current across a tag-only write this app
+        made itself (the file's mtime moved, its audio didn't)."""
+        self._conn.execute(
+            "UPDATE analysis_suggestions SET mtime = ? WHERE track_id = ? AND mtime = ?",
+            (new_mtime, track_id, old_mtime),
+        )
+
+    def analysis_suggestions(self) -> dict[int, tuple[float | None, str | None]]:
+        """Track id -> (suggested BPM, suggested key), current estimates only
+        (a file changed since its analysis is left out)."""
+        rows = self._conn.execute(
+            """
+            SELECT s.track_id, s.bpm, s.key FROM analysis_suggestions s
+            JOIN tracks t ON t.id = s.track_id AND t.mtime = s.mtime
+            WHERE s.bpm IS NOT NULL OR s.key IS NOT NULL
+            """
+        ).fetchall()
+        return {r[0]: (r[1], r[2]) for r in rows}
 
     # --- playlists --------------------------------------------------------
 

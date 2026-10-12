@@ -66,3 +66,46 @@ def test_run_falls_back_to_saved_preference_log_path_without_cli_override():
     mock_configure.assert_called_once_with("INFO", "/saved/preference.log")
 
 
+
+
+def test_startup_screenshot_flag_schedules_a_window_grab(tmp_path):
+    target = tmp_path / "startup.png"
+    with patch("djmidi.gui.app.QApplication") as mock_qapp, \
+         patch("djmidi.gui.app.MainWindow") as mock_window, \
+         patch("djmidi.gui.app.configure_logging"), \
+         patch("djmidi.gui.app.QTimer") as mock_timer, \
+         patch("djmidi.gui.app.save_window_screenshot") as mock_save:
+        mock_qapp.return_value.exec.return_value = 0
+        from djmidi.gui.app import STARTUP_SCREENSHOT_DELAY_MS, run
+        run(["--startup-screenshot", str(target)])
+        delay, callback = mock_timer.singleShot.call_args.args
+        callback()
+    assert delay == STARTUP_SCREENSHOT_DELAY_MS
+    mock_save.assert_called_once_with(mock_window.return_value, str(target))
+
+
+def test_no_screenshot_is_scheduled_without_the_flag():
+    with patch("djmidi.gui.app.QApplication") as mock_qapp, \
+         patch("djmidi.gui.app.MainWindow"), \
+         patch("djmidi.gui.app.configure_logging"), \
+         patch("djmidi.gui.app.QTimer") as mock_timer:
+        mock_qapp.return_value.exec.return_value = 0
+        from djmidi.gui.app import run
+        run([])
+    mock_timer.singleShot.assert_not_called()
+
+
+def test_save_window_screenshot_writes_a_png_atomically(tmp_path):
+    from PySide6.QtGui import QImage
+    from PySide6.QtWidgets import QLabel
+
+    from djmidi.gui.app import save_window_screenshot
+
+    widget = QLabel("DJ MIDI Studio")
+    widget.resize(120, 40)
+    target = tmp_path / "nested" / "startup.png"
+    assert save_window_screenshot(widget, target)
+    image = QImage(str(target))
+    assert not image.isNull()
+    assert (image.width(), image.height()) == (120, 40)
+    assert list(target.parent.iterdir()) == [target]

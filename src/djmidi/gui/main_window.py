@@ -8,6 +8,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
+import PySide6
 from PySide6.QtCore import (
     QCoreApplication,
     QEvent,
@@ -19,6 +20,7 @@ from PySide6.QtCore import (
     Qt,
     QTimer,
     QUrl,
+    qVersion,
 )
 from PySide6.QtGui import (
     QAction,
@@ -56,7 +58,16 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from djmidi import backup, catalog, file_locations, software, sync_store, user_paths
+from djmidi import (
+    backup,
+    catalog,
+    file_locations,
+    midi_macros,
+    pad_colours,
+    software,
+    sync_store,
+    user_paths,
+)
 from djmidi.catalog.profile import load_user_profiles
 from djmidi.controller_sync import (
     ControllerSyncSet,
@@ -87,6 +98,8 @@ from djmidi.gui.helpful_notes_dialog import HelpfulNotesDialog
 from djmidi.gui.introduction_view import IntroductionView
 from djmidi.gui.layout_view import ControllerLayoutView
 from djmidi.gui.live_monitor import LiveMonitorView
+from djmidi.gui.macro_editor import MacroManagerDialog
+from djmidi.gui.macro_player import MacroPlayer
 from djmidi.gui.mapping_diff_dialog import MappingDiffDialog
 from djmidi.gui.mapping_group import MappingGroup
 from djmidi.gui.metronome_view import MetronomeView
@@ -94,6 +107,7 @@ from djmidi.gui.midi_clock_view import MidiClockView
 from djmidi.gui.midi_routing_view import MidiRoutingView
 from djmidi.gui.music_library_view import MusicLibraryView
 from djmidi.gui.preferences_dialog import PreferencesDialog
+from djmidi.gui.report_problem_dialog import ReportProblemDialog
 from djmidi.gui.safe_update_dialog import SafeUpdateDialog
 from djmidi.gui.scroll_utils import AutoSizeScrollArea
 from djmidi.gui.splitter_utils import replace_splitter, scrollable_columns
@@ -110,11 +124,12 @@ from djmidi.integration_detection import (
     detect_controller_ports,
     detect_software_mapping,
 )
-from djmidi.logging_config import configure_logging, current_log_path
+from djmidi.logging_config import configure_logging, current_log_path, default_log_path
 from djmidi.mapping_diff import diff_configs
 from djmidi.midi_io import MidiEvent, MidiMonitor, list_input_ports, list_output_ports
 from djmidi.model import Control, MappingElement, MidiConfig
 from djmidi.plugins import PluginPreferences, default_preferences_path
+from djmidi.problem_report import ReportContext, collect_context
 from djmidi.safe_update import prepare_update
 from djmidi.update_check import ReleaseInfo, current_version, is_check_due, is_newer
 from djmidi.validator import ValidationIssue, validate
@@ -294,6 +309,10 @@ class MainWindow(QMainWindow):
         self.preferences.controller_sync_sets = sync_store.adopt_sync_sets(
             user_paths.sync_dir(), list(self.preferences.controller_sync_sets)
         )
+        # MIDI macros (issue #228): one file per macro in the Macros folder.
+        self.macros: list[midi_macros.MidiMacro] = midi_macros.load_macros(user_paths.macros_dir())
+        self._macro_player = MacroPlayer(parent=self)
+        self._macro_player.finished.connect(self._on_macro_finished)
         # "Show all controllers" (View menu) bypasses the per-controller
         # Preferences enablement so the mapping tabs list every registered
         # controller again; the real state is restored from QSettings in
@@ -854,6 +873,12 @@ class MainWindow(QMainWindow):
         self._performance_mode_action.toggled.connect(self._on_performance_mode_toggled)
         view_menu.addAction(self._performance_mode_action)
 
+        # MIDI macros (issue #228): one entry per macro, each with its own
+        # shortcut, rebuilt by _rebuild_macro_menu whenever the list changes.
+        self._macro_menu = self.menuBar().addMenu("&Macros")
+        self._macro_actions: list[QAction] = []
+        self._rebuild_macro_menu()
+
         # Preferences moved out of the menu bar (issue #137) into an
         # always-visible corner icon instead of a menu someone has to open
         # first to discover it. Kept as an instance attribute -- unlike
@@ -946,6 +971,13 @@ class MainWindow(QMainWindow):
         self._check_updates_action.setToolTip("Ask GitHub whether a newer DJ MIDI Studio release exists.")
         self._check_updates_action.triggered.connect(self._on_check_for_updates)
         help_menu.addAction(self._check_updates_action)
+        self._report_problem_action = QAction("&Report a Problem...", self)
+        self._report_problem_action.setToolTip(
+            "Preview a bug report with your app version, system and recent log lines, "
+            "then open it as a pre-filled GitHub issue."
+        )
+        self._report_problem_action.triggered.connect(self._on_report_problem)
+        help_menu.addAction(self._report_problem_action)
 
     def _show_helpful_notes(self) -> None:
         self.helpful_notes_dialog.show()
@@ -1158,7 +1190,12 @@ class MainWindow(QMainWindow):
         replaying _create_emulator_instance() calls in _restore_user_layout,
         not by objectName matching a prior session's random id."""
         instance_id = f"emulator_{uuid4().hex[:8]}"
-        view = ControllerEmulatorView(config_provider=lambda: self.config, initial_controller=controller)
+        view = ControllerEmulatorView(
+            config_provider=lambda: self.config,
+            initial_controller=controller,
+            sync_set_provider=lambda name: self.preferences.sync_set_for(name, self.preferences.active_sync_scene),
+        )
+        view.padColoursSaveRequested.connect(self._on_pad_colours_save_requested)
         dock = QDockWidget("Controller Emulator", self)
         dock.setObjectName(f"{instance_id}Dock")
         dock.setAllowedAreas(Qt.DockWidgetArea.AllDockWidgetAreas)
@@ -1364,6 +1401,42 @@ class MainWindow(QMainWindow):
             return
         self.statusBar().showMessage("Checking for updates...")
 
+    def _problem_report_context(self) -> ReportContext:
+        """Facts for Help → Report a Problem: versions, the plugins enabled in
+        Preferences and the log tail — never mapping or library content."""
+        controllers = [
+            definition.name
+            for definition in catalog.all_controller_definitions()
+            if self.preferences.is_enabled(definition.plugin_id or definition.name)
+        ]
+        softwares = [
+            definition.name
+            for definition in software.all_definitions()
+            if self.preferences.is_enabled(definition.plugin_id)
+        ]
+        log_path = current_log_path() or default_log_path()
+        return collect_context(
+            app_version=current_version(),
+            qt_version=f"{qVersion()} (PySide6 {PySide6.__version__})",
+            controller_plugins=controllers,
+            software_plugins=softwares,
+            log_path=log_path if log_path.exists() else None,
+        )
+
+    def _on_report_problem(self) -> None:
+        dialog = ReportProblemDialog(self._problem_report_context(), self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+        if dialog.last_inlined:
+            self.statusBar().showMessage(
+                "Problem report copied to the clipboard and opened as a GitHub issue.", 10_000
+            )
+        else:
+            self.statusBar().showMessage(
+                "The report was too long for the link: it's on your clipboard — paste it into the issue.",
+                15_000,
+            )
+
     def _on_update_check_finished(self, release: ReleaseInfo | None, manual: bool) -> None:
         local = current_version()
         newer = release is not None and is_newer(release.version, local)
@@ -1506,6 +1579,35 @@ class MainWindow(QMainWindow):
             f"Sync set saved for {sync_set.label} ({len(sync_set.messages)} message(s))", 10_000
         )
 
+    def _on_pad_colours_save_requested(self, controller: str, colours: dict) -> ControllerSyncSet | None:
+        """A Controller Emulator's painted pad colours (issue #232): merged
+        into the controller's sync set for the active scene -- each pad's
+        previous colour message is replaced, everything else in the set is
+        kept, so no confirmation is needed."""
+        palette = pad_colours.palette_for(controller)
+        if palette is None or not colours:
+            return None
+        scene = self.preferences.active_sync_scene
+        sync_set = pad_colours.merge_into_sync_set(
+            palette, self.preferences.sync_set_for(controller, scene), colours, scene
+        )
+        self.preferences.set_sync_set(sync_set)
+        self._save_preferences()
+        self._reload_emulator_pad_colours()
+        self.statusBar().showMessage(
+            f"{len(colours)} pad colour(s) saved in the sync set for {sync_set.label} "
+            f"({len(sync_set.messages)} message(s))",
+            10_000,
+        )
+        return sync_set
+
+    def _reload_emulator_pad_colours(self) -> None:
+        """Every open Controller Emulator re-reads its saved pad colours."""
+        for dock in self._emulator_docks.values():
+            view = dock.widget()
+            if isinstance(view, ControllerEmulatorView):
+                view.reload_pad_colours()
+
     _NEW_SCENE_DATA = "\x00new-scene"
 
     def _refresh_sync_scene_combo(self) -> None:
@@ -1545,6 +1647,8 @@ class MainWindow(QMainWindow):
         changed = scene != self.preferences.active_sync_scene
         self.preferences.active_sync_scene = scene
         self._save_preferences()
+        if changed:
+            self._reload_emulator_pad_colours()
         message = f"Sync scene: {scene}"
         results: list[SyncResult] = []
         if changed and self.preferences.sync_on_scene_switch:
@@ -2689,6 +2793,78 @@ class MainWindow(QMainWindow):
             self._on_preferences(tab="Controller sync")
         elif action.startswith("recent:"):
             self._load_mapping_from_path(Path(action.removeprefix("recent:")))
+
+    # --- MIDI macros (issue #228) ---------------------------------------------
+
+    def _rebuild_macro_menu(self) -> None:
+        menu = self._macro_menu
+        menu.clear()
+        self._macro_actions = []
+        for macro in self.macros:
+            action = QAction(macro.name, self)
+            if macro.shortcut:
+                action.setShortcut(QKeySequence(macro.shortcut))
+                # Floating tool docks are separate windows: keep the shortcut
+                # working while one of them has the focus.
+                action.setShortcutContext(Qt.ShortcutContext.ApplicationShortcut)
+            steps = len(macro.steps)
+            action.setToolTip(f"{steps} message(s) to {macro.output_port or 'no port'}")
+            action.triggered.connect(lambda _checked=False, name=macro.name: self._play_macro(name))
+            menu.addAction(action)
+            self._macro_actions.append(action)
+        if not self.macros:
+            empty = menu.addAction("No macro yet")
+            empty.setEnabled(False)
+        menu.addSeparator()
+        manage = menu.addAction("Manage Macros…")
+        manage.triggered.connect(lambda: self._on_manage_macros())
+        reveal = menu.addAction("Show Macros Folder")
+        reveal.triggered.connect(self._on_reveal_macros)
+
+    def _reserved_shortcuts(self) -> list[str]:
+        """The shortcuts of every menu action that isn't a macro."""
+        macro_actions = set(self._macro_actions)
+        shortcuts: list[str] = []
+        stack = [action for action in self.menuBar().actions()]
+        while stack:
+            action = stack.pop()
+            if action.menu() is not None:
+                stack.extend(action.menu().actions())
+            elif action not in macro_actions and not action.shortcut().isEmpty():
+                shortcuts.append(action.shortcut().toString(QKeySequence.SequenceFormat.PortableText))
+        return shortcuts
+
+    def _on_manage_macros(self, dialog_factory=None) -> bool:
+        """Opens the macro editor; on OK saves the macros and rebuilds the menu."""
+        factory = dialog_factory or MacroManagerDialog
+        dialog = factory(
+            self.macros,
+            list_output_ports(),
+            list(self.preferences.controller_sync_sets),
+            self._reserved_shortcuts(),
+            parent=self,
+        )
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return False
+        self.macros = list(dialog.edited_macros())
+        midi_macros.save_macros(user_paths.macros_dir(), self.macros)
+        self._rebuild_macro_menu()
+        self.statusBar().showMessage(f"{len(self.macros)} macro(s) saved", 5000)
+        return True
+
+    def _play_macro(self, name: str) -> midi_macros.MacroResult | None:
+        macro = next((macro for macro in self.macros if macro.name == name), None)
+        if macro is None:
+            return None
+        return self._macro_player.play(macro, list_output_ports())
+
+    def _on_macro_finished(self, result: midi_macros.MacroResult) -> None:
+        self.statusBar().showMessage(result.summary(), 8000)
+
+    def _on_reveal_macros(self) -> None:
+        folder = user_paths.macros_dir()
+        folder.mkdir(parents=True, exist_ok=True)
+        reveal_in_file_manager(folder)
 
     def _on_reveal_installed_profiles(self) -> None:
         folder = user_paths.controllers_dir()
