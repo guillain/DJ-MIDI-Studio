@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 from mutagen.id3 import ID3, TBPM, TCON, TIT2, TKEY, TPE1
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication, QDialog, QInputDialog, QMessageBox
 
 from djmidi import taxonomy
@@ -13,6 +14,7 @@ from djmidi.gui.music_library_view import (
     UNCATEGORIZED,
     MusicLibraryView,
 )
+from djmidi.gui.set_preparation import SET_TRACKS_MIME, decode_paths
 from djmidi.library import workspace
 from djmidi.library.db import TrackRecord
 from djmidi.library.metadata import read_metadata
@@ -408,6 +410,11 @@ def test_no_button_is_squeezed_below_its_minimum(size):
     Library scrolls rather than crushing its buttons into slivers."""
     from PySide6.QtWidgets import QAbstractButton
 
+    from djmidi.gui.theme import apply_theme
+
+    # The compact "?" buttons rely on the app theme (padding 0); apply it here
+    # instead of depending on an earlier test having built a MainWindow.
+    apply_theme(QApplication.instance())
     view = MusicLibraryView(db_path=":memory:")
     view.resize(*size)
     view.show()
@@ -930,3 +937,302 @@ def test_compare_without_selection_or_on_bad_file(library, monkeypatch):
     monkeypatch.setattr(QMessageBox, "warning", lambda *a, **k: warned.append(a))
     view._on_compare_traktor_clicked()
     assert warned
+def test_history_panel_lists_sessions_and_never_played(library):
+    """Issue #227: Serato history read-only, never-played tracks selectable."""
+    import struct
+
+    from djmidi.library import history
+    from djmidi.library.serato_library import write_chunks
+
+    view, music, tmp_path = library
+    played = str(music / "Tek" / "Tribe" / "a.mp3")
+
+    def field(field_id: int, value: bytes) -> bytes:
+        return struct.pack(">II", field_id, len(value)) + value
+
+    row = b"".join(
+        [
+            field(2, (played + "\0").encode("utf-16-be")),
+            field(6, "Alpha\0".encode("utf-16-be")),
+            field(28, struct.pack(">Q", 1_700_000_000)),
+            field(31, struct.pack(">I", 1)),
+            field(50, b"\x01"),
+        ]
+    )
+    sessions = tmp_path / "Sessions"
+    sessions.mkdir()
+    session_file = sessions / "1.session"
+    session_file.write_bytes(write_chunks([("vrsn", b""), ("oent", write_chunks([("adat", row)]))]))
+    before = session_file.read_bytes()
+
+    assert view.load_history({history.SOURCE_SERATO: sessions}) == 1
+    assert session_file.read_bytes() == before
+    assert view.side_tabs.tabText(view.side_tabs.currentIndex()) == "History"
+    assert view.history_tree.topLevelItemCount() == 1
+    child = view.history_tree.topLevelItem(0).child(0)
+    assert child.data(0, mlv.Qt.ItemDataRole.UserRole) == played
+    assert "1 play(s) of 1 track(s)" in view.history_summary.text()
+    assert "2 of 3 indexed track(s) never played" in view.history_summary.text()
+
+    assert view.select_never_played() == 2
+    assert {row.title for row in view.selected_rows()} == {"Bravo", "Charlie"}
+
+    view._on_history_item_activated(child, 0)
+    assert view._current_row().title == "Alpha"
+
+
+def test_history_without_default_folders_explains(library, monkeypatch):
+    from djmidi.library import history
+
+    view, _music, _ = library
+    monkeypatch.setattr(history, "default_history_dirs", dict)
+    view._on_load_history_clicked()
+    assert "Load from folder" in view.history_summary.text()
+    assert not view.select_never_played_button.isEnabled()
+def test_health_report_without_scan_asks_for_one():
+    view = MusicLibraryView(db_path=":memory:")
+    view.start_health_report()
+    assert view.health_dialog is None
+    assert "Scan" in view.status_label.text()
+    view.close_db()
+
+
+def test_health_report_lists_filters_and_exports(library, monkeypatch, tmp_path):
+    """Issue #225: a read-only report of problem files, filterable by issue
+    kind and text, exportable to CSV, and linked back to the table."""
+    import csv
+
+    from djmidi.gui import health_report_dialog
+    from djmidi.library import health
+
+    view, music, _ = library
+    empty = music / "misc" / "empty.mp3"
+    empty.write_bytes(b"")
+    corrupt = music / "misc" / "corrupt.mp3"
+    corrupt.write_bytes(b"not audio" * 50)
+    view.start_scan()
+    view.run_pending_job()
+    before = {p: p.read_bytes() for p in music.rglob("*.mp3")}
+
+    view.start_health_report()
+    assert view.is_busy() and not view.health_button.isEnabled()
+    view.run_pending_job()
+    assert view.health_button.isEnabled()
+    dialog = view.health_dialog
+    assert dialog is not None and dialog.isVisible()
+    report = dialog.report
+    assert report.checked == 5
+    by_path: dict[str, list[str]] = {}
+    for issue in report.issues:
+        by_path.setdefault(issue.path, []).append(issue.kind)
+    assert by_path[str(empty)] == [health.ISSUE_ZERO_LENGTH]
+    assert by_path[str(corrupt)] == [health.ISSUE_UNREADABLE]
+    # The fixture's MP3s are 128 kbps and tagged, without a cover.
+    assert sorted(by_path[str(music / "misc" / "c.mp3")]) == sorted(
+        [health.ISSUE_NO_ARTWORK, health.ISSUE_LOW_BITRATE]
+    )
+    assert "5 of 5 file(s) with at least one issue" in view.status_label.text()
+    assert {p: p.read_bytes() for p in music.rglob("*.mp3")} == before
+
+    assert dialog.model.rowCount() == len(report.issues)
+    for kind, checkbox in dialog.kind_checkboxes.items():
+        checkbox.setChecked(kind == health.ISSUE_ZERO_LENGTH)
+    assert [i.path for i in dialog.visible_issues()] == [str(empty)]
+    for checkbox in dialog.kind_checkboxes.values():
+        checkbox.setChecked(True)
+    dialog.filter_edit.setText("tribe")
+    assert {i.path for i in dialog.visible_issues()} == {
+        str(music / "Tek" / "Tribe" / "a.mp3"),
+        str(music / "Tek" / "Tribe" / "b.mp3"),
+    }
+    assert not dialog.kind_checkboxes[health.ISSUE_EMPTY_TITLE].isEnabled()
+
+    target = tmp_path / "health.csv"
+    assert dialog.export_to(str(target)) == 4
+    with open(target, encoding="utf-8-sig", newline="") as handle:
+        rows = list(csv.reader(handle))
+    assert rows[0] == ["path", "issue", "detail"] and len(rows) == 5
+
+    monkeypatch.setattr(
+        health_report_dialog.QFileDialog, "getSaveFileName", lambda *a, **k: (str(tmp_path / "ui.csv"), "")
+    )
+    dialog.export_button.click()
+    assert (tmp_path / "ui.csv").exists()
+
+    revealed: list[str] = []
+    monkeypatch.setattr(health_report_dialog, "reveal_in_file_manager", revealed.append)
+    assert not dialog.show_button.isEnabled()
+    dialog.table.setCurrentIndex(dialog.model.index(0, 0))
+    assert dialog.show_button.isEnabled()
+    target_path = dialog.current_issue().path
+    dialog.reveal_button.click()
+    assert revealed == [target_path]
+    # A table filter hiding the track is cleared to show it.
+    view.filter_edit.setText("charlie")
+    dialog.show_button.click()
+    assert view._current_row().path == target_path
+    assert view.filter_edit.text() == ""
+
+    view.start_health_report()
+    view.run_pending_job()
+    assert view.health_dialog is not dialog
+# --- background BPM/key analysis (issue #224) ----------------------------
+
+
+@pytest.fixture
+def untagged_library(tmp_path):
+    music = tmp_path / "music"
+    _mp3(music / "tagged.mp3", title="Tagged", bpm="172", key="Am")
+    _mp3(music / "bare.mp3", title="Bare")
+    view = MusicLibraryView(db_path=":memory:")
+    view.add_root(music)
+    view.start_scan()
+    view.run_pending_job()
+    yield view, music
+    view.close_db()
+
+
+def test_analyse_button_explains_when_librosa_is_missing(monkeypatch):
+    monkeypatch.setattr(mlv, "analysis_available", lambda: False)
+    view = MusicLibraryView(db_path=":memory:")
+    assert not view.analyse_button.isEnabled()
+    assert "analysis" in view.analyse_button.toolTip()
+    view.start_analysis()
+    assert not view.is_busy()
+    view.close_db()
+
+
+def test_analysis_job_stores_suggestions_without_writing_files(untagged_library):
+    view, music = untagged_library
+    bare = str(music / "bare.mp3")
+    view.start_analysis(analyser=lambda path, want_bpm, want_key: (140.0, "Dm"))
+    assert view.is_analysing()
+    assert view.analyse_button.text() == "Stop analysis"
+    view.run_pending_job()
+    assert not view.is_busy()
+    assert view.analyse_button.text() == "Analyse BPM/key"
+    assert "estimates for 1 of 1" in view.status_label.text()
+    row = next(row for row in view.table_model.rows() if row.path == bare)
+    assert (row.bpm_suggestion, row.key_suggestion) == (140.0, "Dm")
+    assert read_metadata(bare).bpm is None
+    # Shown as "? value" in the BPM / Key / Camelot cells, amber.
+    source_row = view.table_model.rows().index(row)
+    cell = view.table_model.index(source_row, mlv._COLUMN_INDEX["bpm"])
+    assert cell.data() == "? 140"
+    assert view.table_model.index(source_row, mlv._COLUMN_INDEX["camelot"]).data() == "? 7A"
+    # Nothing left to analyse on a second run.
+    view.start_analysis(analyser=lambda *args: pytest.fail("should not re-analyse"))
+    assert not view.is_busy()
+
+
+def test_stopping_the_analysis_keeps_what_was_found(untagged_library):
+    view, music = untagged_library
+    _mp3(music / "bare2.mp3", title="Bare 2")
+    view.start_scan()
+    view.run_pending_job()
+    view.start_analysis(analyser=lambda path, want_bpm, want_key: (140.0, None))
+    view._job_timer.stop()  # step by hand: a whole slice would finish both
+    next(view._job)  # announce
+    next(view._job)  # one track
+    view.stop_analysis()
+    assert not view.is_busy()
+    assert "stopped" in view.status_label.text()
+    assert sum(row.bpm_suggestion is not None for row in view.table_model.rows()) == 1
+
+
+def test_apply_analysis_suggestions_is_one_undoable_write(untagged_library):
+    view, music = untagged_library
+    bare, tagged = str(music / "bare.mp3"), str(music / "tagged.mp3")
+    view.start_analysis(analyser=lambda path, want_bpm, want_key: (140.0, "Dm"))
+    view.run_pending_job()
+    _select_paths(view, [bare, tagged])
+    assert view.apply_analysis_button.isEnabled()
+    assert view.apply_analysis_suggestions() == 1
+    tags = read_metadata(bare)
+    assert (tags.bpm, tags.key) == (140.0, "Dm")
+    assert read_metadata(tagged).bpm == 172.0  # tagged tracks are never overwritten
+    row = next(row for row in view.table_model.rows() if row.path == bare)
+    assert not row.has_analysis_suggestion  # the tag now holds the value
+    view.undo_stack.undo()
+    tags = read_metadata(bare)
+    assert (tags.bpm, tags.key) == (None, None)
+    # The estimate survives this app's own tag writes, so undo brings it back.
+    row = next(row for row in view.table_model.rows() if row.path == bare)
+    assert (row.bpm_suggestion, row.key_suggestion) == (140.0, "Dm")
+# --- Set panel (issue #221) ----------------------------------------------
+
+
+def _paths_by_title(view) -> dict[str, str]:
+    return {row.title: row.path for row in view.table_model.rows()}
+
+
+def test_set_panel_flags_incompatible_transitions(library):
+    view, _music, _ = library
+    panel = view.set_panel
+    by_title = _paths_by_title(view)
+    panel.insert_paths([by_title["Alpha"], by_title["Bravo"], by_title["Charlie"]])
+    assert [t.status for t in panel.transitions] == ["ok", "incompatible"]
+    assert panel.list.count() == 3
+    assert panel.list.item(1).text().startswith("2. Yan — Bravo")
+    assert panel.list.item(2).text().startswith("⚠ 3. Xu — Charlie")
+    assert "BPM jump" in panel.list.item(2).toolTip()
+    assert "1 incompatible transition(s)" in panel.summary_label.text()
+    assert len(panel.curve.tracks) == 3
+    # Dropping Charlie first leaves only compatible transitions.
+    panel.list.item(2).setSelected(True)
+    panel.move_selected(-5)
+    assert panel.paths()[0] == by_title["Charlie"]
+    assert panel.list.item(0).isSelected()
+    assert [t.status for t in panel.transitions] == ["incompatible", "ok"]
+
+
+def test_set_panel_drag_payload_and_internal_reorder(library):
+    view, _music, _ = library
+    panel = view.set_panel
+    indexes = [view.table_model.index(row, 0) for row in range(view.table_model.rowCount())]
+    mime = view.table_model.mimeData(indexes)
+    paths = decode_paths(mime.data(SET_TRACKS_MIME).data())
+    assert paths == [row.path for row in view.table_model.rows()]
+    assert view.table_model.flags(indexes[0]) & Qt.ItemFlag.ItemIsDragEnabled
+    panel.list.pathsDropped.emit(paths[:2], 0)
+    panel.list.pathsDropped.emit([paths[2], paths[0]], 1)
+    assert panel.paths() == [paths[0], paths[2], paths[1]]
+    # An internal drag reorders the widget; the panel follows its order.
+    item = panel.list.takeItem(0)
+    panel.list.insertItem(2, item)
+    panel.list.orderChanged.emit()
+    assert panel.paths() == [paths[2], paths[1], paths[0]]
+
+
+def test_set_draft_survives_reopen_and_saves_as_playlist(tmp_path, monkeypatch):
+    music = tmp_path / "music"
+    a = _mp3(music / "a.mp3", title="Alpha", bpm="140", key="Am")
+    b = _mp3(music / "b.mp3", title="Bravo", bpm="141", key="Em")
+    db_path = tmp_path / "library.sqlite3"
+    view = MusicLibraryView(db_path=db_path)
+    view.add_root(music)
+    view.start_scan()
+    view.run_pending_job()
+    view.set_panel.insert_paths([str(b), str(a)])
+    view.set_panel.tolerance_spin.setValue(3.0)
+    view.close_db()
+
+    reopened = MusicLibraryView(db_path=db_path)
+    reopened.ensure_open()
+    panel = reopened.set_panel
+    assert panel.paths() == [str(b), str(a)]
+    assert panel.tolerance_spin.value() == 3.0
+    monkeypatch.setattr(QInputDialog, "getText", lambda *a, **k: ("Friday", True))
+    panel.save_button.click()
+    record = next(p for p in reopened.db.list_playlists() if p.name == "Friday")
+    assert record.source == "set"
+    assert reopened.db.playlist_paths(record.id) == [str(b), str(a)]
+    # Loading a playlist replaces the draft.
+    panel.clear()
+    assert panel.paths() == []
+    panel.load_button.click()
+    assert panel.paths() == [str(b), str(a)]
+    crate = tmp_path / "out.crate"
+    panel.export_crate(str(crate))
+    assert [Path(p).name for p in parse_crate(crate)] == ["b.mp3", "a.mp3"]
+    reopened.close_db()

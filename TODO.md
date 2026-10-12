@@ -138,6 +138,51 @@ Implemented contract, runtime, test, and documentation work:
   shared tracks out of order (complement of a longest increasing subsequence, so one move flags one
   track). Music Library: *Compare with crate…* / *Compare with Traktor…* + a read-only three-tab
   `PlaylistCompareDialog`; export stays separate.
+- [x] **MIDI macros** (`v0.48.81-midi-macros`, issue #228) — Qt-free `midi_macros.py`: named sequences of
+  `SyncMessage`s with an optional per-step delay, one JSON file each in the workspace's new `Macros` folder,
+  port resolved like Sync. A `Macros` menu plays them (optional per-macro keyboard shortcut, app-wide);
+  `MacroPlayer` schedules delays on `QTimer`s so nothing blocks; `MacroManagerDialog` creates/edits them
+  (refuses shortcuts the app's menus already use, can append a recorded sync set, `Test` button).
+- [x] **Played-tracks history** (`v0.48.80-played-history`, issue #227) — Qt-free
+  `library/history.py` reads Serato `History/Sessions/*.session` (crate chunk framing, numbered `adat`
+  fields) and Traktor `History/*.nml` (`EXTENDEDDATA` start date/time, deck, `PLAYEDPUBLIC`) read-only,
+  both formats confirmed on the maintainer's real folders first; the Music Library tab's new History
+  panel lists sessions newest first and selects the indexed tracks never played. Fixtures synthetic.
+- [x] **Report a problem** (`v0.48.79-report-a-problem`, issue #226) — `Help → Report a Problem…`:
+  Qt-free `problem_report.py` collects app/OS/Python/Qt versions, enabled plugins and the last 40 log
+  lines (home paths rewritten to `~`, no mapping/library content) into an editable preview
+  (`gui/report_problem_dialog.py`); the edited text is copied to the clipboard and opened as a
+  pre-filled GitHub issue, the log block dropped from the URL when it would exceed 6000 chars.
+- [x] **Library health report** (`v0.48.78-library-health`, issue #225) — Qt-free
+  `library/health.py`: `iter_health_check` opens each present indexed track once with mutagen
+  (header + tags, read-only) and reports unreadable/corrupt, zero-length (0 bytes or 0 s),
+  empty title/artist, missing embedded artwork and low bitrate (≤128 kbps) as `HealthIssue`
+  rows; `filter_issues`/`export_csv` back the filters and CSV export. Music Library tab gains a
+  `Health report…` job (same `QTimer` slice pattern as duplicates) opening
+  `gui/health_report_dialog.py` (per-kind check boxes with counts, text filter, sortable
+  table, Show in library / Reveal in Finder / Export CSV…).
+- [x] **Background BPM/key analysis** (`v0.48.77-background-analysis`, issue #224) — Music Library
+  `Analyse BPM/key` estimates tempo/key (librosa, optional `analysis` extra; 60 s clip per track) for
+  tracks missing either tag, as a stoppable `QTimer`-sliced job. Estimates are stored as suggestions
+  only (`analysis_suggestions` table, keyed to the file's mtime), shown amber `? value`, and written
+  only through `Apply analysis suggestions…` (empty tags only, one undoable `WriteTracksMetadataCommand`).
+  Disabled with an explanatory tooltip when librosa is missing.
+- [x] **Live conflict detection** (`v0.48.76-live-conflicts`, issue #223) — Qt-free
+  `validator.find_deck_conflicts`: a trigger whose `click` mappings bind two or more distinct
+  `(tag, slot_id)` functions on the same deck (identical 10x duplicates collapse to one, so the
+  real fixture reports none; output mappings ignored). Live Monitor flags such an input's row in
+  amber with a `CONFLICT deck N: …` prefix and counts hits/triggers under its status; Clear log
+  and loading a mapping reset the counter.
+- [x] **Set preparation** (`v0.48.74-set-preparation`, issue #221) — Qt-free `library/set_prep.py`:
+  a hand-ordered set draft (paths) resolved against the library rows into `SetTrack`s (BPM, Camelot,
+  energy parsed from the `Energy` tag, 1–10), one `Transition` per adjacent pair using
+  `playlist.is_bpm_compatible` (± % tolerance) and `is_camelot_compatible` — `incompatible` only on a
+  known clash, `unknown` when a BPM/key is missing; order helpers (`insert_paths` dedups, `move_rows`,
+  `remove_rows`); the draft + tolerance persisted in `library_settings`. GUI `gui/set_preparation.py`:
+  a fourth Music Library side tab, `Set` — table rows drag in (`LibraryTableModel.mimeData`,
+  `SET_TRACKS_MIME`), the list reorders by internal drag or Move up/down, a painted BPM/energy curve
+  (red = incompatible, dashed = unchecked), `Save as playlist…` (source `set`), and direct Serato crate
+  / Traktor playlist exports through the existing exporters. Never reorders on its own.
 - [x] **Readable function names** (`v0.48.72-readable-function-names`, issue #209) — Qt-free
   `function_names.py`: `FUNCTION_NAMES` maps the only four tags the real Serato exports contain
   (inventoried from `data/xdj_xz-ddj_xp2-4decks.xml` + `data/serato/*.xml.zip`; a test keeps the table
