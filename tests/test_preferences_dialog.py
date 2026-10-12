@@ -121,3 +121,52 @@ def test_preferences_dialog_reflects_and_saves_auto_sync_on_plug_in():
     dialog._auto_sync_on_plug_in.setChecked(False)
     dialog._save()
     assert preferences.auto_sync_on_plug_in is False
+
+
+def test_controller_sync_tab_edits_messages_through_the_editor(monkeypatch):
+    from djmidi.controller_sync import ControllerSyncSet, SyncMessage
+    from djmidi.gui import preferences_dialog, sync_set_editor
+
+    monkeypatch.setattr(preferences_dialog, "list_output_ports", lambda: ["PIONEER DDJ-XP2"])
+    preferences = PluginPreferences()
+    messages = (SyncMessage("Note On", 1, 11, 127), SyncMessage("Note On", 1, 12, 127))
+    preferences.set_sync_set(ControllerSyncSet("DDJ-XP2", "", messages))
+    dialog = PreferencesDialog(preferences)
+    dialog._sync_table.cellWidget(0, 1).setCurrentIndex(1)  # PIONEER DDJ-XP2
+
+    seen_ports = []
+
+    def fake_exec(editor):
+        seen_ports.append(editor._test_port)
+        editor.table.selectRow(0)
+        editor._delete_selected()
+        editor.accept()
+        return editor.result()
+
+    monkeypatch.setattr(sync_set_editor.SyncSetEditorDialog, "exec", fake_exec)
+    dialog._sync_table.selectRow(0)
+    dialog._edit_selected_sync_set()
+
+    assert seen_ports == ["PIONEER DDJ-XP2"]
+    assert dialog._sync_table.item(0, 2).text() == "1"
+    assert preferences.controller_sync_sets[0].messages == messages  # not saved yet
+    dialog._save()
+    assert preferences.controller_sync_sets[0].messages == (SyncMessage("Note On", 1, 12, 127),)
+    assert preferences.controller_sync_sets[0].output_port == "PIONEER DDJ-XP2"
+
+
+def test_controller_sync_tab_editor_cancel_keeps_messages(monkeypatch):
+    from djmidi.controller_sync import ControllerSyncSet, SyncMessage
+    from djmidi.gui import preferences_dialog, sync_set_editor
+
+    monkeypatch.setattr(preferences_dialog, "list_output_ports", list)
+    preferences = PluginPreferences()
+    messages = (SyncMessage("Note On", 1, 11, 127),)
+    preferences.set_sync_set(ControllerSyncSet("DDJ-XP2", "", messages))
+    dialog = PreferencesDialog(preferences)
+    monkeypatch.setattr(
+        sync_set_editor.SyncSetEditorDialog, "exec", lambda editor: QDialog.DialogCode.Rejected
+    )
+    dialog._edit_sync_set(0)
+    dialog._save()
+    assert preferences.controller_sync_sets[0].messages == messages

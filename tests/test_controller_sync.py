@@ -218,3 +218,35 @@ def test_plug_in_tracker_reset_reseeds_without_sending():
     tracker.seed([])
     tracker.reset()
     assert tracker.due([_XP2], ["PIONEER DDJ-XP2"]) == []
+
+
+def test_with_messages_replaces_only_the_messages():
+    original = ControllerSyncSet("DDJ-XP2", "PIONEER DDJ-XP2", (SyncMessage("Note On", 1, 11, 127),))
+    edited = original.with_messages([SyncMessage("Control Change", 2, 7, 0)])
+    assert edited == ControllerSyncSet("DDJ-XP2", "PIONEER DDJ-XP2", (SyncMessage("Control Change", 2, 7, 0),))
+    assert original.messages == (SyncMessage("Note On", 1, 11, 127),)
+
+
+def test_move_message_clamps_and_ignores_bad_index():
+    from djmidi.controller_sync import move_message
+
+    a, b, c = (SyncMessage("Note On", 1, n, 127) for n in (1, 2, 3))
+    assert move_message((a, b, c), 2, -1) == (a, c, b)
+    assert move_message((a, b, c), 0, 1) == (b, a, c)
+    assert move_message((a, b, c), 0, -1) == (a, b, c)
+    assert move_message((a, b, c), 2, 5) == (a, b, c)
+    assert move_message((a, b, c), 7, 1) == (a, b, c)
+
+
+def test_messages_from_rows_validates_and_names_the_bad_row():
+    from djmidi.controller_sync import messages_from_rows
+
+    assert messages_from_rows([("Note On", "1", "11", "127"), ("cc", 2, 7, 0)]) == (
+        SyncMessage("Note On", 1, 11, 127),
+        SyncMessage("Control Change", 2, 7, 0),
+    )
+    assert messages_from_rows([]) == ()
+    with pytest.raises(ValueError, match="Message 2: data1"):
+        messages_from_rows([("Note On", 1, 11, 127), ("Note On", 1, 128, 0)])
+    with pytest.raises(ValueError, match="Message 1"):
+        messages_from_rows([("Note On", 1, 11)])

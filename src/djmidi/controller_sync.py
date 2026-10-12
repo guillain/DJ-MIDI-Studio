@@ -102,6 +102,36 @@ class ControllerSyncSet:
             messages=tuple(SyncMessage.from_dict(message) for message in messages),
         )
 
+    def with_messages(self, messages: Iterable[SyncMessage]) -> ControllerSyncSet:
+        """A copy with its messages replaced (the Preferences editor's result)."""
+        return ControllerSyncSet(self.controller, self.output_port, tuple(messages))
+
+
+def move_message(messages: Sequence[SyncMessage], index: int, offset: int) -> tuple[SyncMessage, ...]:
+    """Moves ``messages[index]`` by ``offset`` places (``-1`` = up), clamped to
+    the list's ends; an out-of-range ``index`` returns the list unchanged."""
+    items = list(messages)
+    if not 0 <= index < len(items):
+        return tuple(items)
+    target = max(0, min(len(items) - 1, index + offset))
+    items.insert(target, items.pop(index))
+    return tuple(items)
+
+
+def messages_from_rows(rows: Iterable[Sequence[object]]) -> tuple[SyncMessage, ...]:
+    """Validates edited ``(event_type, channel, data1, data2)`` rows.
+
+    Raises ``ValueError`` naming the first bad row (1-based), so an editor can
+    point at it instead of silently dropping the message."""
+    messages: list[SyncMessage] = []
+    for number, row in enumerate(rows, start=1):
+        try:
+            event_type, channel, data1, data2 = row
+            messages.append(SyncMessage.create(event_type, channel, data1, data2))
+        except ValueError as exc:
+            raise ValueError(f"Message {number}: {exc}") from None
+    return tuple(messages)
+
 
 def sync_set_from_events(controller: str, events: Iterable[object], output_port: str = "") -> ControllerSyncSet:
     """Builds a sync set from recorded ``midi_io.MidiEvent``-like objects.
@@ -295,6 +325,8 @@ __all__ = [
     "PlugInSyncTracker",
     "SyncMessage",
     "SyncResult",
+    "messages_from_rows",
+    "move_message",
     "resolve_output_port",
     "run_sync",
     "summarize_results",

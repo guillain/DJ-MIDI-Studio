@@ -132,6 +132,10 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Edit sync set messages** (`v0.48.59-sync-set-editor`, issue #186) — Preferences → Controller sync →
+  `Edit messages…` (or double-click a set) lists a set's messages (type/channel/data1/data2), edits them with
+  validation, deletes and reorders them, and can send one as a test; saved with the Preferences dialog, no
+  re-recording needed. Qt-free `messages_from_rows` / `move_message` / `ControllerSyncSet.with_messages`.
 - [x] **Workspace backup and restore** (`v0.48.58-workspace-backup`, issue #187) — `File → Back Up Workspace…` /
   `Restore Workspace…` (also buttons beside Preferences' files folder) zip `Documents/DJ MIDI Studio`, preferences.json
   and, when asked, the library index (SQLite online backup API, consistent while open) with a `manifest.json`. Qt-free
