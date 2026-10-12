@@ -14,14 +14,16 @@ from pathlib import Path
 
 CONTROLLERS = "Controllers"
 SYNC = "Sync"
+MACROS = "Macros"
 DRAFTS = "Drafts"
 LOGS = "Logs"
 EXPORTS = "Exports"
-SUBFOLDERS = (CONTROLLERS, SYNC, DRAFTS, LOGS, EXPORTS)
+SUBFOLDERS = (CONTROLLERS, SYNC, MACROS, DRAFTS, LOGS, EXPORTS)
 _README = """DJ MIDI Studio -- your files
 
 Controllers  controller profiles you installed from Controller Setup (JSON)
 Sync         one initialization sync set per controller (JSON)
+Macros       your MIDI macros, one per file (JSON)
 Drafts       Controller Setup drafts you saved
 Logs         Live Monitor logs you saved
 Exports      playlists exported from the Music Library, cheat sheets (PDF)
@@ -49,6 +51,11 @@ def sync_dir() -> Path:
     return subfolder(SYNC)
 
 
+def macros_dir() -> Path:
+    """MIDI macros (issue #228), one JSON file per macro."""
+    return subfolder(MACROS)
+
+
 def ensure_workspace() -> Path:
     """Create the folder and its subfolders (with a short README) if missing."""
     root = workspace_dir()
@@ -65,10 +72,12 @@ __all__ = [
     "DRAFTS",
     "EXPORTS",
     "LOGS",
+    "MACROS",
     "SUBFOLDERS",
     "SYNC",
     "controllers_dir",
     "ensure_workspace",
+    "macros_dir",
     "subfolder",
     "sync_dir",
     "workspace_dir",
