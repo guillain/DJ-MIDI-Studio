@@ -211,7 +211,8 @@ LIBRARY_FOLDERS: HelpEntry = (
     (
         "<b>Add folder…</b>, then <b>Scan &amp; read tags</b>. Later scans only re-read "
         "files that changed; a file that disappears (an unplugged drive) is greyed out as "
-        "missing instead of being forgotten.<br><br>"
+        "missing instead of being forgotten. <b>Relink missing…</b> finds where moved files "
+        "went (same name and size) and relinks them, playlists included.<br><br>"
         "The index stores paths, sizes, dates and a cache of the tags, never the audio. "
         "Serato, Traktor and Rekordbox library files are only ever read."
     ),

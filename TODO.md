@@ -132,6 +132,13 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Relink missing library tracks** (`v0.48.62-library-relink`, issue #190) — a moved file used to stay in the
+  index as one `missing` row plus a new one. Qt-free `library/relink.py` proposes, per missing track, indexed or
+  not-yet-scanned files under the roots with the same name (casefold) and size (confident when unique and not claimed
+  by another missing track), the same name only, or the same cached title+artist; `LibraryDB.relink_tracks` moves
+  playlist entries and cached tags to the found row and drops the stale one in a single transaction. Music Library's
+  `Relink missing…` opens a review dialog (confident rows pre-ticked) and asks for confirmation. Index only, no undo.
+
 - [x] **Sync scenes** (`v0.48.61-sync-scenes`, issue #188) — several named sync sets per controller (Tek / DnB /
   Warm-up…), picked with a scene combo between `● Rec` and `⟳ Sync` (`New scene…` adds one). Sync, launch and
   plug-in sync send each controller its set for the active scene, falling back to its Default set; `● Rec` and

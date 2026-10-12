@@ -10,6 +10,7 @@
 
 - [What it does](#what-it-does)
 - [Scan your music](#scan-your-music)
+- [Relink moved tracks](#relink-moved-tracks)
 - [Browse, sort and filter](#browse-sort-and-filter)
 - [Edit tags](#edit-tags)
 - [Write tags to many tracks at once](#write-tags-to-many-tracks-at-once)
@@ -39,6 +40,26 @@ forgotten. MP3, WAV, AIFF, FLAC, M4A, OGG and AAC files are indexed.
 
 The index lives beside the preferences file as `library.sqlite3`; it
 records file paths, sizes, dates and a cache of the tags, never the audio.
+
+## Relink moved tracks
+
+When you move or rename folders, the old paths show up as *missing* and the
+files appear again under their new paths. `Relink missing…` finds where each
+missing track went and lists it with its proposed new path:
+
+- Rows with exactly one file of the **same name and size** are ticked
+  already.
+- Several possible files, a file with the same name but another size, or a
+  differently named file whose title and artist tags match are listed but
+  left unticked. Pick the right file in the `Relink to` list and tick it.
+- `(not scanned yet)` means the file sits in one of your music folders but
+  hasn't been scanned; relinking indexes it.
+
+Click `Relink checked…` and confirm. Playlists that listed the old path now
+use the new one, the cached tags follow, and the stale entry disappears.
+Only this app's index changes: no audio file and no Serato, Traktor or
+Rekordbox library is touched. Relinking can't be undone, so check the list
+before confirming.
 
 ## Browse, sort and filter
 
