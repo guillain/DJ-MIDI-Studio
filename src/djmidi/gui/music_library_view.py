@@ -27,6 +27,7 @@ from pathlib import Path
 
 from PySide6.QtCore import (
     QAbstractTableModel,
+    QEvent,
     QItemSelection,
     QItemSelectionModel,
     QModelIndex,
@@ -565,6 +566,10 @@ class MusicLibraryView(QWidget):
         self.audio_preview = AudioPreviewBar(self)
         layout.addWidget(self.audio_preview)
         self.table.selectionModel().currentRowChanged.connect(self._preview_current_row)
+        # Issue #210: Space / Left / Right in the table drive the preview,
+        # and auto-advance moves to the next row when a track ends.
+        self.table.installEventFilter(self)
+        self.audio_preview.advanceRequested.connect(self._advance_preview)
         self._update_track_panel(None)
 
     # --- construction ---------------------------------------------------
@@ -903,6 +908,33 @@ class MusicLibraryView(QWidget):
     def _preview_current_row(self, current: QModelIndex, _previous: QModelIndex) -> None:
         row = current.data(ROW_ROLE) if current.isValid() else None
         self.audio_preview.set_source(row.path if row is not None and not row.missing else None)
+
+    def eventFilter(self, watched, event) -> bool:
+        if (
+            watched is self.table
+            and event.type() == QEvent.Type.KeyPress
+            and self.audio_preview.handle_key(event.key(), event.modifiers())
+        ):
+            return True
+        return super().eventFilter(watched, event)
+
+    def _advance_preview(self) -> bool:
+        """Select and play the next playable row below the current one (issue #210)."""
+        current = self.table.selectionModel().currentIndex()
+        start = current.row() + 1 if current.isValid() else 0
+        for proxy_row in range(start, self.proxy.rowCount()):
+            index = self.proxy.index(proxy_row, 0)
+            row = index.data(ROW_ROLE)
+            if row is None or row.missing:
+                continue
+            self.table.selectionModel().setCurrentIndex(
+                index,
+                QItemSelectionModel.SelectionFlag.ClearAndSelect | QItemSelectionModel.SelectionFlag.Rows,
+            )
+            self.table.scrollTo(index)
+            self.audio_preview.play()
+            return True
+        return False
 
     def showEvent(self, event) -> None:
         super().showEvent(event)
