@@ -10,9 +10,11 @@
 
 - [What it does](#what-it-does)
 - [Scan your music](#scan-your-music)
+- [Relink moved tracks](#relink-moved-tracks)
 - [Browse, sort and filter](#browse-sort-and-filter)
 - [Edit tags](#edit-tags)
 - [Write tags to many tracks at once](#write-tags-to-many-tracks-at-once)
+- [Find duplicate tracks](#find-duplicate-tracks)
 - [Genre categories](#genre-categories)
 - [Playlists](#playlists)
 - [Import and export with DJ software](#import-and-export-with-dj-software)
@@ -38,6 +40,26 @@ forgotten. MP3, WAV, AIFF, FLAC, M4A, OGG and AAC files are indexed.
 
 The index lives beside the preferences file as `library.sqlite3`; it
 records file paths, sizes, dates and a cache of the tags, never the audio.
+
+## Relink moved tracks
+
+When you move or rename folders, the old paths show up as *missing* and the
+files appear again under their new paths. `Relink missing…` finds where each
+missing track went and lists it with its proposed new path:
+
+- Rows with exactly one file of the **same name and size** are ticked
+  already.
+- Several possible files, a file with the same name but another size, or a
+  differently named file whose title and artist tags match are listed but
+  left unticked. Pick the right file in the `Relink to` list and tick it.
+- `(not scanned yet)` means the file sits in one of your music folders but
+  hasn't been scanned; relinking indexes it.
+
+Click `Relink checked…` and confirm. Playlists that listed the old path now
+use the new one, the cached tags follow, and the stale entry disappears.
+Only this app's index changes: no audio file and no Serato, Traktor or
+Rekordbox library is touched. Relinking can't be undone, so check the list
+before confirming.
 
 ## Browse, sort and filter
 
@@ -100,6 +122,25 @@ closes.
 
 ![Write tags to selection](../../images/layout/music-library-bulk-tags.png)
 
+## Find duplicate tracks
+
+Click `Find duplicates…` (next to `Scan & read tags`, after a scan). The
+search runs in the background with a progress bar, then a **Duplicate
+tracks** window lists two kinds of groups:
+
+| Group | Meaning |
+| --- | --- |
+| Exact copies | Byte-identical files. Only files of exactly the same size are read and compared, so this stays quick on a large collection |
+| Same artist + title | Tags that match once case, accents, punctuation, `feat.` credits and an `(Original Mix)` suffix are ignored. Other versions — `(Extended Mix)`, `(Radio Edit)`, remixes, `(Live)` — stay separate. These are candidates, not proof: compare them before acting |
+
+Each file shows its path, format and size; expand a group to see each
+file's bitrate. Select a file and click `Reveal in Finder` (or double-click
+it) to see it in your file manager.
+
+Nothing is deleted or moved from this window: you decide which copy to keep
+and remove the others yourself, in Finder or in your DJ software. Track
+lengths are not compared yet.
+
 ## Genre categories
 
 Tracks are sorted into two-level categories, `Family / Name` (for example
@@ -153,6 +194,7 @@ Imported Serato crate names also help categorize tracks.
 - Serato, Traktor and Rekordbox library files are only ever read. Exports
   always create a new file at the location you choose.
 - Undo writes the old values back through the same careful path.
+- `Find duplicates…` only reads files; it never deletes or moves one.
 
 ## Related
 
