@@ -12,6 +12,7 @@
 - [Record a sync set](#record-a-sync-set)
 - [Sync your controllers](#sync-your-controllers)
 - [Sync at launch](#sync-at-launch)
+- [Sync when a controller is plugged in](#sync-when-a-controller-is-plugged-in)
 - [How Sync finds each controller](#how-sync-finds-each-controller)
 - [Manage sync sets](#manage-sync-sets)
 - [Related](#related)
@@ -63,6 +64,20 @@ With ⚙ **Preferences** → **Sync controllers at launch** ticked (the
 default), every stored set is sent once when the app starts, as if you had
 clicked `⟳ Sync`. Nothing happens when no set is recorded. Untick it to
 sync only on demand.
+
+## Sync when a controller is plugged in
+
+With ⚙ **Preferences** → **Sync a controller when it is plugged in** ticked
+(the default), the app checks for newly connected controllers every two
+seconds. As soon as a controller with a stored set appears, its set is sent
+once and the status bar says so (`Plugged in -- Synced …`).
+
+- A controller that stays connected is never sent its set again.
+- Unplug it and plug it back in: its set is sent again.
+- Controllers already connected when the app starts are handled by
+  [Sync at launch](#sync-at-launch), never twice.
+
+Untick it if you prefer to click `⟳ Sync` yourself after plugging in.
 
 ## How Sync finds each controller
 

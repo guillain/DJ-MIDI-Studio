@@ -43,6 +43,7 @@ organized by what it is:
 | `Controller Profile ▸` | The controller profile you build in Controller Setup: new, open or save a draft, learn triggers from a mapping |
 | `Import ▸` / `Export ▸` | Serato crates, Traktor playlists and Rekordbox exports for the Music Library, and the Live Monitor log |
 | `Back Up Workspace…`, `Restore Workspace…` | Everything below plus your preferences, in one zip — see [Back up and restore](#back-up-and-restore) |
+| `Import ▸` / `Export ▸` | Serato crates, Traktor playlists and Rekordbox exports for the Music Library, the Live Monitor log, and the [Cheat Sheet (PDF)](cheat-sheet.md) |
 
 The Dashboard's **Your files** card, first on the row with *Known
 controllers* and *MIDI tools*, shows the same things at a glance: the
@@ -58,7 +59,7 @@ and share, `Documents/DJ MIDI Studio` (⚙ Preferences → `Open folder`):
 | `Sync` | One initialization [sync set](controller-sync.md) per controller |
 | `Drafts` | Controller Setup drafts you saved |
 | `Logs` | Live Monitor logs you saved |
-| `Exports` | Playlists exported from the Music Library |
+| `Exports` | Playlists exported from the Music Library, cheat sheets |
 
 Your Serato and Traktor mappings are not moved there: they stay where your
 DJ software keeps them, and the app only remembers where they are.
