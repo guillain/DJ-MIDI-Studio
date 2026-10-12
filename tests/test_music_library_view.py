@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 from mutagen.id3 import ID3, TBPM, TCON, TIT2, TKEY, TPE1
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication, QDialog, QInputDialog, QMessageBox
 
 from djmidi import taxonomy
@@ -13,6 +14,7 @@ from djmidi.gui.music_library_view import (
     UNCATEGORIZED,
     MusicLibraryView,
 )
+from djmidi.gui.set_preparation import SET_TRACKS_MIME, decode_paths
 from djmidi.library import workspace
 from djmidi.library.db import TrackRecord
 from djmidi.library.metadata import read_metadata
@@ -408,6 +410,11 @@ def test_no_button_is_squeezed_below_its_minimum(size):
     Library scrolls rather than crushing its buttons into slivers."""
     from PySide6.QtWidgets import QAbstractButton
 
+    from djmidi.gui.theme import apply_theme
+
+    # The compact "?" buttons rely on the app theme (padding 0); apply it here
+    # instead of depending on an earlier test having built a MainWindow.
+    apply_theme(QApplication.instance())
     view = MusicLibraryView(db_path=":memory:")
     view.resize(*size)
     view.show()
@@ -854,3 +861,82 @@ def test_format_size():
     assert format_size(512) == "512 B"
     assert format_size(2048) == "2.0 KB"
     assert format_size(5 * 1024**3) == "5.0 GB"
+
+
+# --- Set panel (issue #221) ----------------------------------------------
+
+
+def _paths_by_title(view) -> dict[str, str]:
+    return {row.title: row.path for row in view.table_model.rows()}
+
+
+def test_set_panel_flags_incompatible_transitions(library):
+    view, _music, _ = library
+    panel = view.set_panel
+    by_title = _paths_by_title(view)
+    panel.insert_paths([by_title["Alpha"], by_title["Bravo"], by_title["Charlie"]])
+    assert [t.status for t in panel.transitions] == ["ok", "incompatible"]
+    assert panel.list.count() == 3
+    assert panel.list.item(1).text().startswith("2. Yan — Bravo")
+    assert panel.list.item(2).text().startswith("⚠ 3. Xu — Charlie")
+    assert "BPM jump" in panel.list.item(2).toolTip()
+    assert "1 incompatible transition(s)" in panel.summary_label.text()
+    assert len(panel.curve.tracks) == 3
+    # Dropping Charlie first leaves only compatible transitions.
+    panel.list.item(2).setSelected(True)
+    panel.move_selected(-5)
+    assert panel.paths()[0] == by_title["Charlie"]
+    assert panel.list.item(0).isSelected()
+    assert [t.status for t in panel.transitions] == ["incompatible", "ok"]
+
+
+def test_set_panel_drag_payload_and_internal_reorder(library):
+    view, _music, _ = library
+    panel = view.set_panel
+    indexes = [view.table_model.index(row, 0) for row in range(view.table_model.rowCount())]
+    mime = view.table_model.mimeData(indexes)
+    paths = decode_paths(mime.data(SET_TRACKS_MIME).data())
+    assert paths == [row.path for row in view.table_model.rows()]
+    assert view.table_model.flags(indexes[0]) & Qt.ItemFlag.ItemIsDragEnabled
+    panel.list.pathsDropped.emit(paths[:2], 0)
+    panel.list.pathsDropped.emit([paths[2], paths[0]], 1)
+    assert panel.paths() == [paths[0], paths[2], paths[1]]
+    # An internal drag reorders the widget; the panel follows its order.
+    item = panel.list.takeItem(0)
+    panel.list.insertItem(2, item)
+    panel.list.orderChanged.emit()
+    assert panel.paths() == [paths[2], paths[1], paths[0]]
+
+
+def test_set_draft_survives_reopen_and_saves_as_playlist(tmp_path, monkeypatch):
+    music = tmp_path / "music"
+    a = _mp3(music / "a.mp3", title="Alpha", bpm="140", key="Am")
+    b = _mp3(music / "b.mp3", title="Bravo", bpm="141", key="Em")
+    db_path = tmp_path / "library.sqlite3"
+    view = MusicLibraryView(db_path=db_path)
+    view.add_root(music)
+    view.start_scan()
+    view.run_pending_job()
+    view.set_panel.insert_paths([str(b), str(a)])
+    view.set_panel.tolerance_spin.setValue(3.0)
+    view.close_db()
+
+    reopened = MusicLibraryView(db_path=db_path)
+    reopened.ensure_open()
+    panel = reopened.set_panel
+    assert panel.paths() == [str(b), str(a)]
+    assert panel.tolerance_spin.value() == 3.0
+    monkeypatch.setattr(QInputDialog, "getText", lambda *a, **k: ("Friday", True))
+    panel.save_button.click()
+    record = next(p for p in reopened.db.list_playlists() if p.name == "Friday")
+    assert record.source == "set"
+    assert reopened.db.playlist_paths(record.id) == [str(b), str(a)]
+    # Loading a playlist replaces the draft.
+    panel.clear()
+    assert panel.paths() == []
+    panel.load_button.click()
+    assert panel.paths() == [str(b), str(a)]
+    crate = tmp_path / "out.crate"
+    panel.export_crate(str(crate))
+    assert [Path(p).name for p in parse_crate(crate)] == ["b.mp3", "a.mp3"]
+    reopened.close_db()

@@ -138,6 +138,16 @@ Implemented contract, runtime, test, and documentation work:
   real fixture reports none; output mappings ignored). Live Monitor flags such an input's row in
   amber with a `CONFLICT deck N: …` prefix and counts hits/triggers under its status; Clear log
   and loading a mapping reset the counter.
+- [x] **Set preparation** (`v0.48.74-set-preparation`, issue #221) — Qt-free `library/set_prep.py`:
+  a hand-ordered set draft (paths) resolved against the library rows into `SetTrack`s (BPM, Camelot,
+  energy parsed from the `Energy` tag, 1–10), one `Transition` per adjacent pair using
+  `playlist.is_bpm_compatible` (± % tolerance) and `is_camelot_compatible` — `incompatible` only on a
+  known clash, `unknown` when a BPM/key is missing; order helpers (`insert_paths` dedups, `move_rows`,
+  `remove_rows`); the draft + tolerance persisted in `library_settings`. GUI `gui/set_preparation.py`:
+  a fourth Music Library side tab, `Set` — table rows drag in (`LibraryTableModel.mimeData`,
+  `SET_TRACKS_MIME`), the list reorders by internal drag or Move up/down, a painted BPM/energy curve
+  (red = incompatible, dashed = unchecked), `Save as playlist…` (source `set`), and direct Serato crate
+  / Traktor playlist exports through the existing exporters. Never reorders on its own.
 - [x] **Readable function names** (`v0.48.72-readable-function-names`, issue #209) — Qt-free
   `function_names.py`: `FUNCTION_NAMES` maps the only four tags the real Serato exports contain
   (inventoried from `data/xdj_xz-ddj_xp2-4decks.xml` + `data/serato/*.xml.zip`; a test keeps the table
