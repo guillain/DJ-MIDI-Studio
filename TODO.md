@@ -132,6 +132,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Sync when switching scene** (`v0.48.70-sync-on-scene-switch`, issue #212) — new
+  `PluginPreferences.sync_on_scene_switch` (default off), a Preferences checkbox next to the other sync
+  options; when on, changing the sync scene combo sends the new scene's sets to connected controllers right
+  away through the same `active_sync_sets()` + `run_sync` path (status bar only, nothing when the scene did
+  not change or has nothing to send).
 - [x] **Mix path tolerance and length controls** (`v0.48.69-mix-path-controls`, issue #211) — `Auto: mix path…` now opens
   `MixPathDialog` (BPM direction, BPM tolerance ±%, maximum length) with a note that only the currently filtered tracks
   are used; `workspace.generate_playlist_path` passes `max_length` through to `build_playlist_path`. Last values are a
