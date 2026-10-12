@@ -6,7 +6,8 @@ playlist engine, Serato/Traktor/Rekordbox formats) to one tab:
 - music folder list + a "Scan & read tags" job, driven a slice at a time by
   a `QTimer` (this project's non-blocking pattern, see `midi_io` polling),
   and a "Find duplicates…" job on the same timer (issue #184, opens a
-  read-only `DuplicatesDialog`);
+  `DuplicatesDialog` whose ticked copies `discard_duplicates` moves to the
+  Trash, issue #208);
 - the consolidated metadata table (sortable/filterable, category column);
 - a Track panel whose tag edits go through a `QUndoStack`
   (`commands.WriteTrackMetadataCommand`, or `WriteTracksMetadataCommand` when
@@ -27,6 +28,7 @@ from pathlib import Path
 
 from PySide6.QtCore import (
     QAbstractTableModel,
+    QFile,
     QItemSelection,
     QItemSelectionModel,
     QModelIndex,
@@ -77,7 +79,7 @@ from djmidi.gui.audio_preview import AudioPreviewBar
 from djmidi.gui.commands import WriteTrackMetadataCommand, WriteTracksMetadataCommand
 from djmidi.gui.duplicates_dialog import DuplicatesDialog
 from djmidi.gui.help_button import help_button, help_row
-from djmidi.library import duplicates, relink, workspace
+from djmidi.library import discard, duplicates, relink, workspace
 from djmidi.library.db import LibraryDB, TrackRecord, default_library_db_path
 from djmidi.library.metadata import TrackMetadata, clean_noise_frames
 from djmidi.library.playlist import is_camelot_compatible
@@ -85,6 +87,26 @@ from djmidi.library.relink import RelinkCandidate, RelinkProposal
 from djmidi.library.scanner import iter_scan_root
 
 _LOGGER = logging.getLogger(__name__)
+
+# How many entries a confirmation lists before "… and N more".
+_LIST_LIMIT = 15
+
+
+def trash_file(path: str) -> bool:
+    """Move `path` to the system Trash (issue #208); never deletes it."""
+    return QFile.moveToTrash(path)
+
+
+def _bullet_list(lines) -> str:
+    items = list(lines)
+    text = "\n".join(f"• {line}" for line in items[:_LIST_LIMIT])
+    if len(items) > _LIST_LIMIT:
+        text += f"\n… and {len(items) - _LIST_LIMIT} more"
+    return text
+
+
+def _group_name(group: duplicates.DuplicateGroup) -> str:
+    return group.label or (Path(group.paths[0]).name if group.paths else group.key)
 
 # Time slice a job may use per timer tick before yielding back to Qt.
 # A bulk tag write shows its progress window only past this delay, so a
@@ -1039,7 +1061,67 @@ class MusicLibraryView(QWidget):
             self.duplicates_dialog.close()
             self.duplicates_dialog.deleteLater()
         self.duplicates_dialog = DuplicatesDialog(groups, self)
+        self.duplicates_dialog.discardRequested.connect(self.discard_duplicates)
         self.duplicates_dialog.show()
+
+    def discard_duplicates(self, paths: list[str]) -> None:
+        """Move ticked duplicate copies to the Trash (issue #208).
+
+        Refuses outright when a group would keep no copy; otherwise confirms
+        with the full list, moves each copy with `trash_file`
+        (`QFile.moveToTrash`, never a hard delete), flags it missing in the
+        index, then offers to point this app's playlists at the kept copy."""
+        dialog = self.duplicates_dialog
+        parent = dialog if dialog is not None else self
+        plan = discard.plan_discard(dialog.groups if dialog is not None else [], paths)
+        if plan.refused:
+            names = "\n".join(f"• {_group_name(group)}" for group in plan.refused[:_LIST_LIMIT])
+            QMessageBox.warning(
+                parent,
+                "Move to Trash",
+                "Every copy of these groups is ticked -- untick at least one copy to keep in each:\n\n" + names,
+            )
+            return
+        if not plan.discards:
+            return
+        answer = QMessageBox.question(
+            parent,
+            "Move to Trash",
+            f"Move {len(plan.discards)} file(s) to the Trash?\n\n"
+            + _bullet_list(f"{path}\n    keeps {kept}" for path, kept in plan.discards)
+            + "\n\nYou can put them back from the Trash. They are flagged missing in this app's index.",
+        )
+        if answer != QMessageBox.StandardButton.Yes:
+            return
+        result = discard.move_to_trash(self.db, plan, trash_file)
+        message = f"Moved {len(result.moved)} duplicate(s) to the Trash."
+        referenced = discard.playlists_referencing(self.db, result.moved)
+        if referenced:
+            names = sorted({name for playlist_names in referenced.values() for name in playlist_names})
+            answer = QMessageBox.question(
+                parent,
+                "Update playlists",
+                f"{len(referenced)} discarded copy(ies) are in this app's playlists:\n\n"
+                + _bullet_list(names)
+                + "\n\nPoint those playlists at the kept copy instead? "
+                "(Serato, Traktor and Rekordbox files are not changed.)",
+            )
+            if answer == QMessageBox.StandardButton.Yes:
+                repointed = discard.repoint_playlists(self.db, result.moved)
+                message += f" Playlists now use the kept copy for {repointed} of them."
+        if result.failed:
+            message += f" {len(result.failed)} could not be moved."
+            QMessageBox.warning(
+                parent,
+                "Move to Trash",
+                "These files were left where they are:\n\n"
+                + _bullet_list(f"{path}: {reason}" for path, reason in result.failed),
+            )
+        if dialog is not None:
+            dialog.remove_paths([path for path, _kept in result.moved])
+        self.status_label.setText(message)
+        self._reload_rows()
+        self._reload_playlists()
 
     def _start_job(self, job: Generator[None]) -> None:
         self._job = job

@@ -154,9 +154,19 @@ Each file shows its path, format and size; expand a group to see each
 file's bitrate. Select a file and click `Reveal in Finder` (or double-click
 it) to see it in your file manager.
 
-Nothing is deleted or moved from this window: you decide which copy to keep
-and remove the others yourself, in Finder or in your DJ software. Track
-lengths are not compared yet.
+To clean up, tick the copies you don't want and click `Move ticked to
+Trash…`:
+
+- At least one copy of every group must stay: if you tick every file of a
+  group, nothing is moved and the window tells you which group to fix.
+- A confirmation lists each file to discard and the copy kept in its place.
+- Files go to the system **Trash** — never deleted outright — so you can put
+  them back from there. They show as missing in the library afterwards.
+- If one of this app's playlists lists a discarded copy, you are asked
+  whether to point it at the kept copy instead. Serato, Traktor and
+  Rekordbox playlists are not changed: update those in your DJ software.
+
+Track lengths are not compared yet.
 
 ## Genre categories
 
@@ -211,7 +221,9 @@ Imported Serato crate names also help categorize tracks.
 - Serato, Traktor and Rekordbox library files are only ever read. Exports
   always create a new file at the location you choose.
 - Undo writes the old values back through the same careful path.
-- `Find duplicates…` only reads files; it never deletes or moves one.
+- `Find duplicates…` only reads files. Copies you tick go to the Trash after
+  a confirmation, never deleted outright, and one copy of each group always
+  stays.
 
 ## Related
 
