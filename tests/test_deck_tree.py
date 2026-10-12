@@ -38,3 +38,14 @@ def test_deck_columns_match_flat_deck_tree_content():
     assert flat.rowCount() == len(columns)
     for i, (deck_id, _model) in enumerate(columns):
         assert flat.item(i).text() == f"Deck {deck_id}"
+
+
+def test_deck_leaves_show_readable_names_with_the_raw_tag_in_the_tooltip():
+    _deck_id, model = build_deck_columns(parse_file(FIXTURE))[0]
+    leaf = model.item(0).child(0)
+    group = leaf.data(NODE_ROLE)
+    from djmidi.function_names import FUNCTION_NAMES
+
+    assert leaf.text().startswith(f"{FUNCTION_NAMES[group.tag]} [")
+    assert group.tag not in leaf.text()
+    assert group.tag in leaf.toolTip()

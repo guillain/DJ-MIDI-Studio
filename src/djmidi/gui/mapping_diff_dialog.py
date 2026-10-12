@@ -81,7 +81,10 @@ class MappingDiffDialog(QDialog):
                 )
                 item.setData(0, ENTRY_ROLE, entry)
                 item.setToolTip(0, item.text(0).replace(" / ", "\n"))
-                item.setToolTip(2, entry.summary())
+                raw = entry.raw_summary()
+                # The raw tags stay one hover away when a readable name replaced them.
+                tooltip = entry.summary() if raw == entry.summary() else f"{entry.summary()}\nRaw: {raw}"
+                item.setToolTip(2, tooltip)
                 group.addChild(item)
             group.setExpanded(True)
         self.tree.setColumnWidth(0, 300)

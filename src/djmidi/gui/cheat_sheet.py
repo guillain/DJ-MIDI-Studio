@@ -20,7 +20,12 @@ Which controllers a mapping is "for" can't be inferred from the file
 alone: on the real 4-deck fixture the same 64 triggers resolve on DDJ-XP2,
 DDJ-1000, DDJ-FLX10 and DDJ-800 alike. candidate_controllers() therefore
 only ranks the possibilities; the caller (the export dialog) lets the user
-choose."""
+choose.
+
+Functions print under their readable name (djmidi.function_names, issue
+#209: "Loop roll · slot 3"); since paper has no tooltip, a final "Function
+names" table sheet lists each readable name used with the raw tag it stands
+for."""
 
 from __future__ import annotations
 
@@ -29,6 +34,7 @@ from collections import Counter
 from dataclasses import dataclass, field, replace
 
 from djmidi import catalog
+from djmidi.function_names import FUNCTION_NAMES, function_label
 from djmidi.gui import geometry as geometry_mod
 from djmidi.gui import layout as layout_mod
 from djmidi.gui.mapping_group import build_mapping_groups
@@ -73,15 +79,14 @@ class Sheet:
     unmapped: tuple[geometry_mod.ControlGeometry, ...] = field(default_factory=tuple)
 
 
+GLOSSARY_TITLE = "Function names"
+
+
 def function_text(tag: str, slot_id: str) -> str:
-    """A Serato/Traktor function tag as printed: underscores to spaces, the
-    slot appended when the mapping element has one ("auto loop specific
-    length 8"). Deliberately no hand-written glossary of nicer names --
-    the tag is what the DJ sees in Serato's own MIDI mapping UI."""
-    text = tag.replace("_", " ").strip()
-    if slot_id and slot_id != "(none)":
-        text = f"{text} {slot_id}"
-    return text
+    """A Serato/Traktor function as printed: its readable name with the
+    slot when the mapping element has one ("Auto loop · slot 8"), or the raw
+    tag for a tag djmidi.function_names doesn't know."""
+    return function_label(tag, slot_id)
 
 
 def deck_label(deck_id: str) -> str:
@@ -274,6 +279,20 @@ def _table_entries(
     return entries
 
 
+def glossary_sheet(config: MidiConfig) -> Sheet | None:
+    """A table of every readable function name the mapping's input
+    elements use, next to its raw tag -- the printed stand-in for the
+    tooltips the app shows. None when every function prints raw anyway."""
+    tags = sorted(
+        {group.tag for group in build_mapping_groups(config) if group.event == "click" and group.tag in FUNCTION_NAMES},
+        key=lambda tag: FUNCTION_NAMES[tag],
+    )
+    if not tags:
+        return None
+    entries = tuple(SheetEntry("Name", FUNCTION_NAMES[tag], (f"Serato tag: {tag}",)) for tag in tags)
+    return Sheet("", GLOSSARY_TITLE, "table", entries)
+
+
 def build_sheets(config: MidiConfig, controllers: list[str]) -> list[Sheet]:
     """The cheat sheet's logical pages for `controllers`, in that order.
 
@@ -282,7 +301,8 @@ def build_sheets(config: MidiConfig, controllers: list[str]) -> list[Sheet]:
     marker; one more pad-only photo sheet per further mapped bank; then a
     table sheet of whatever mapped entries no marker showed, if any.
     Without geometry: a single table sheet (even an empty one, so every
-    chosen controller gets a page)."""
+    chosen controller gets a page). Last, the glossary_sheet() when any
+    function prints under a readable name."""
     index = build_function_index(config)
     sheets: list[Sheet] = []
     for controller in controllers:
@@ -350,6 +370,8 @@ def build_sheets(config: MidiConfig, controllers: list[str]) -> list[Sheet]:
                     tuple(rest),
                 )
             )
+    if controllers and (glossary := glossary_sheet(config)) is not None:
+        sheets.append(glossary)
     return sheets
 
 
@@ -362,6 +384,7 @@ __all__ = [
     "deck_label",
     "format_functions",
     "function_text",
+    "glossary_sheet",
     "marker_variants",
     "pad_banks",
 ]

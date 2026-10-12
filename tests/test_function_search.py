@@ -67,6 +67,24 @@ def test_event_word_filters_click_or_output(config):
     assert search_functions(config, "loop roll led") == []
 
 
+def test_results_carry_the_readable_name(config):
+    (result,) = search_functions(config, "loop roll deck 2 slot 3")
+    assert result.label == "Loop roll"
+    assert result.tag == "auto_loop_roll_specific_length"
+
+
+def test_readable_name_words_match_too(monkeypatch):
+    from djmidi import function_names
+
+    monkeypatch.setitem(function_names.FUNCTION_NAMES, "xfn_42", "Beat jump")
+    config = MidiConfig(
+        controls=[Control("1", "Note On", "1", [UserIO("click", [MappingElement("xfn_42", deck_id="0")])])]
+    )
+    (result,) = search_functions(config, "beat jump")
+    assert result.label == "Beat jump"
+    assert [r.tag for r in search_functions(config, "xfn")] == ["xfn_42"]
+
+
 def test_ranking_prefers_whole_words_then_click(config):
     results = search_functions(config, "loop")
     tags = [r.tag for r in results]

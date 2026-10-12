@@ -43,8 +43,10 @@ def test_leaf_carries_cell_key_and_reflects_usage_in_text():
     pad_section = model.item(0)
     pad1_leaf = pad_section.child(0)
     assert pad1_leaf.data(CELL_KEY_ROLE) == ("DDJ-XP2", "PAD", "Pad 1")
-    assert "codfather_st" in pad1_leaf.text()
+    assert "Codfather ST" in pad1_leaf.text()
     assert "D2" in pad1_leaf.text()
+    # Readable name in the text, raw Serato tag in the tooltip (issue #209).
+    assert "codfather_st" in pad1_leaf.toolTip()
 
     pad2_leaf = pad_section.child(1)
     assert "not used" in pad2_leaf.text()

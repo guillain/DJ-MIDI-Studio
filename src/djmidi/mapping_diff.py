@@ -27,6 +27,11 @@ for the last two:
 
 `Control.extra_attrs` is deliberately ignored: for Traktor it holds the
 binding's position in the `.tsi` blob, which says nothing about behaviour.
+Functions are named with `function_names` ("Codfather ST (deck 3, slot 1)");
+each entry also keeps the raw-tag wording (`old_raw`/`new_raw`,
+`raw_summary()`) for the dialog's tooltip, and entries sort on the raw tag so
+the order doesn't depend on the label table.
+
 Qt-free; the GUI's comparison dialog only renders `MappingDiff.entries`.
 """
 
@@ -35,6 +40,7 @@ from __future__ import annotations
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 
+from djmidi.function_names import function_name
 from djmidi.model import MappingElement, MidiConfig, Translation
 
 KINDS = ("reassigned", "added", "removed", "changed", "duplicates")
@@ -64,6 +70,10 @@ class DiffEntry:
     old_functions: tuple[str, ...] = ()
     new_functions: tuple[str, ...] = ()
     details: tuple[str, ...] = ()
+    # The same functions with their raw Serato/Traktor tag, aligned with
+    # old_functions/new_functions.
+    old_raw: tuple[str, ...] = ()
+    new_raw: tuple[str, ...] = ()
 
     @property
     def trigger(self) -> tuple[str, str, str]:
@@ -73,8 +83,15 @@ class DiffEntry:
 
     def summary(self) -> str:
         """One readable line: what the trigger did, and what it does now."""
-        old = ", ".join(self.old_functions)
-        new = ", ".join(self.new_functions)
+        return self._summarize(self.old_functions, self.new_functions)
+
+    def raw_summary(self) -> str:
+        """`summary()` with the raw function tags instead of readable names."""
+        return self._summarize(self.old_raw or self.old_functions, self.new_raw or self.new_functions)
+
+    def _summarize(self, old_functions: tuple[str, ...], new_functions: tuple[str, ...]) -> str:
+        old = ", ".join(old_functions)
+        new = ", ".join(new_functions)
         if self.kind == "reassigned":
             return f"{old} -> {new}"
         if self.kind == "added":
@@ -100,10 +117,12 @@ class MappingDiff:
         return {kind: len(self.by_kind(kind)) for kind in KINDS}
 
 
-def function_label(key: FunctionKey) -> str:
-    """`auto_loop_specific_length (deck 3, slot 8)`; a non-default deck set is
+def function_label(key: FunctionKey, raw: bool = False) -> str:
+    """`Auto loop (deck 3, slot 8)`, or with `raw` the tag itself
+    (`auto_loop_specific_length (deck 3, slot 8)`); a non-default deck set is
     named too, since Serato keeps one binding per set."""
     tag, deck_set, deck_id, slot_id = key
+    name = tag if raw else function_name(tag)
     parts = []
     if deck_set and deck_set != "Default":
         parts.append(f"set {deck_set}")
@@ -111,7 +130,11 @@ def function_label(key: FunctionKey) -> str:
         parts.append(f"deck {deck_id}")
     if slot_id:
         parts.append(f"slot {slot_id}")
-    return f"{tag} ({', '.join(parts)})" if parts else tag
+    return f"{name} ({', '.join(parts)})" if parts else name
+
+
+def _raw_label(key: FunctionKey) -> str:
+    return function_label(key, raw=True)
 
 
 def _attrs(attrs: dict[str, str]) -> tuple[tuple[str, str], ...]:
@@ -220,8 +243,8 @@ def diff_configs(old: MidiConfig, new: MidiConfig) -> MappingDiff:
     for trigger in old_index.keys() | new_index.keys():
         before = old_index.get(trigger, {})
         after = new_index.get(trigger, {})
-        lost = sorted((key for key in before if key not in after), key=function_label)
-        gained = sorted((key for key in after if key not in before), key=function_label)
+        lost = sorted((key for key in before if key not in after), key=_raw_label)
+        gained = sorted((key for key in after if key not in before), key=_raw_label)
         common = {
             "channel": trigger[0],
             "event_type": trigger[1],
@@ -230,25 +253,53 @@ def diff_configs(old: MidiConfig, new: MidiConfig) -> MappingDiff:
         }
         old_labels = tuple(function_label(key) for key in lost)
         new_labels = tuple(function_label(key) for key in gained)
+        old_raw = tuple(_raw_label(key) for key in lost)
+        new_raw = tuple(_raw_label(key) for key in gained)
         if lost and gained:
-            entries.append(DiffEntry("reassigned", **common, old_functions=old_labels, new_functions=new_labels))
+            entries.append(
+                DiffEntry(
+                    "reassigned",
+                    **common,
+                    old_functions=old_labels,
+                    new_functions=new_labels,
+                    old_raw=old_raw,
+                    new_raw=new_raw,
+                )
+            )
         elif gained:
-            entries.append(DiffEntry("added", **common, new_functions=new_labels))
+            entries.append(DiffEntry("added", **common, new_functions=new_labels, new_raw=new_raw))
         elif lost:
-            entries.append(DiffEntry("removed", **common, old_functions=old_labels))
-        for key in sorted((k for k in before if k in after), key=function_label):
+            entries.append(DiffEntry("removed", **common, old_functions=old_labels, old_raw=old_raw))
+        for key in sorted((k for k in before if k in after), key=_raw_label):
             old_counter, new_counter = before[key], after[key]
             label = (function_label(key),)
+            raw = (_raw_label(key),)
             if set(old_counter) != set(new_counter):
                 details = tuple(_changed_details(old_counter, new_counter))
                 entries.append(
-                    DiffEntry("changed", **common, old_functions=label, new_functions=label, details=details)
+                    DiffEntry(
+                        "changed",
+                        **common,
+                        old_functions=label,
+                        new_functions=label,
+                        details=details,
+                        old_raw=raw,
+                        new_raw=raw,
+                    )
                 )
             elif old_counter != new_counter:
                 old_total, new_total = sum(old_counter.values()), sum(new_counter.values())
                 detail = f"copies: x{old_total} -> x{new_total}" if old_total != new_total else "copy mix changed"
                 entries.append(
-                    DiffEntry("duplicates", **common, old_functions=label, new_functions=label, details=(detail,))
+                    DiffEntry(
+                        "duplicates",
+                        **common,
+                        old_functions=label,
+                        new_functions=label,
+                        details=(detail,),
+                        old_raw=raw,
+                        new_raw=raw,
+                    )
                 )
     entries.sort(key=_sort_key)
     return MappingDiff(entries)

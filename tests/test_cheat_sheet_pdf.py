@@ -23,10 +23,10 @@ def test_pdf_has_one_page_per_sheet_on_the_real_fixture(tmp_path):
     sheets = cs.build_sheets(parse_file(FIXTURE), ["DDJ-XP2", "XDJ-XZ"])
     target = tmp_path / "cheat.pdf"
     pages = write_cheat_sheet_pdf(target, sheets, FIXTURE.name)
-    assert pages == 2
+    assert pages == 3  # two photo pages + the function-name glossary
     assert target.read_bytes().startswith(b"%PDF")
     assert target.stat().st_size > 50_000  # the two photos are embedded
-    assert _page_count(target) == 2
+    assert _page_count(target) == 3
 
 
 def test_long_tables_paginate(tmp_path):
@@ -35,8 +35,8 @@ def test_long_tables_paginate(tmp_path):
     sheets = cs.build_sheets(parse_file(FIXTURE), ["DDJ-800"])
     target = tmp_path / "table.pdf"
     pages = write_cheat_sheet_pdf(target, sheets)
-    assert pages == 2
-    assert _page_count(target) == 2
+    assert pages == 3  # two table pages + the function-name glossary
+    assert _page_count(target) == 3
 
 
 def test_rendered_page_draws_the_photo_and_labels():
@@ -72,8 +72,8 @@ def test_file_export_menu_offers_the_cheat_sheet(tmp_path):
         assert window._cheat_sheet_action.isEnabled()
         target = tmp_path / "sheet.pdf"
         assert window._on_export_cheat_sheet(["XDJ-XZ"], target) == target
-        assert _page_count(target) == 1
-        assert "1 page" in window.statusBar().currentMessage()
+        assert _page_count(target) == 2  # the photo page + the function-name glossary
+        assert "2 page" in window.statusBar().currentMessage()
     finally:
         window.close()
 

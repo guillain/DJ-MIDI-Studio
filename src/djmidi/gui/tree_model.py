@@ -1,8 +1,11 @@
 from __future__ import annotations
 
-from PySide6.QtCore import Qt
+import re
+
+from PySide6.QtCore import QModelIndex, QPersistentModelIndex, QSortFilterProxyModel, Qt
 from PySide6.QtGui import QStandardItem, QStandardItemModel
 
+from djmidi.function_names import function_name, label_with_raw
 from djmidi.model import Control, MappingElement, MidiConfig, UserIO
 
 NODE_ROLE = Qt.ItemDataRole.UserRole + 1
@@ -17,11 +20,40 @@ def userio_label(userio: UserIO) -> str:
 
 
 def mapping_label(mapping: MappingElement) -> str:
-    return f"{mapping.tag}  (deck {mapping.deck_id}, slot {mapping.slot_id})"
+    """Readable function name (issue #209) + deck/slot; the raw tag is in
+    the row's tooltip (mapping_tooltip)."""
+    return f"{function_name(mapping.tag)}  (deck {mapping.deck_id}, slot {mapping.slot_id})"
+
+
+def mapping_tooltip(mapping: MappingElement) -> str:
+    return f"{label_with_raw(mapping.tag)} — deck {mapping.deck_id}, slot {mapping.slot_id}"
+
+
+class MappingFilterProxy(QSortFilterProxyModel):
+    """The By Channel columns' search filter: a mapping row shows its
+    readable function name, but typing its raw Serato tag
+    (`auto_loop_roll_specific_length`) must still find it, so a row also
+    matches on its MappingElement's tag."""
+
+    def filterAcceptsRow(self, source_row: int, source_parent: QModelIndex | QPersistentModelIndex) -> bool:
+        if super().filterAcceptsRow(source_row, source_parent):
+            return True
+        needle = self.filterRegularExpression().pattern()
+        if not needle:
+            return False
+        node = self.sourceModel().index(source_row, 0, source_parent).data(NODE_ROLE)
+        return isinstance(node, MappingElement) and _fixed_string_in(needle, node.tag)
+
+
+def _fixed_string_in(pattern: str, text: str) -> bool:
+    """`setFilterFixedString` stores the text as an escaped regex, so the
+    pattern is searched as-is, case-insensitively like the proxy itself."""
+    return bool(re.search(pattern, text, re.IGNORECASE))
 
 
 def _mapping_item(mapping: MappingElement) -> QStandardItem:
     item = QStandardItem(mapping_label(mapping))
+    item.setToolTip(mapping_tooltip(mapping))
     item.setData(mapping, NODE_ROLE)
     item.setEditable(False)
     return item
@@ -136,3 +168,4 @@ def relabel_item(item: QStandardItem, node: object) -> None:
         item.setText(userio_label(node))
     elif isinstance(node, MappingElement):
         item.setText(mapping_label(node))
+        item.setToolTip(mapping_tooltip(node))

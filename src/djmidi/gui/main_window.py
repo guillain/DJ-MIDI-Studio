@@ -99,7 +99,12 @@ from djmidi.gui.scroll_utils import AutoSizeScrollArea
 from djmidi.gui.splitter_utils import replace_splitter, scrollable_columns
 from djmidi.gui.theme import apply_theme, mapping_tree_stylesheet
 from djmidi.gui.theme import signals as theme_signals
-from djmidi.gui.tree_model import NODE_ROLE, build_channel_columns, relabel_item
+from djmidi.gui.tree_model import (
+    NODE_ROLE,
+    MappingFilterProxy,
+    build_channel_columns,
+    relabel_item,
+)
 from djmidi.gui.update_notice import UpdateChecker
 from djmidi.integration_detection import (
     detect_controller_ports,
@@ -1705,7 +1710,7 @@ class MainWindow(QMainWindow):
         for _channel, model, node_to_item in build_channel_columns(self.config):
             self.node_to_item.update(node_to_item)
 
-            proxy = QSortFilterProxyModel(self)
+            proxy = MappingFilterProxy(self)
             proxy.setRecursiveFilteringEnabled(True)
             proxy.setFilterCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
             proxy.setSourceModel(model)
