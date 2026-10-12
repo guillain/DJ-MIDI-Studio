@@ -16,6 +16,7 @@
 - [Edit tags](#edit-tags)
 - [Write tags to many tracks at once](#write-tags-to-many-tracks-at-once)
 - [Find duplicate tracks](#find-duplicate-tracks)
+- [Check library health](#check-library-health)
 - [Genre categories](#genre-categories)
 - [Playlists](#playlists)
 - [Import and export with DJ software](#import-and-export-with-dj-software)
@@ -179,6 +180,35 @@ Track lengths are not compared yet.
 
 ![Duplicate tracks: an exact copy and two same artist + title groups](../../images/layout/music-library-duplicates.png)
 
+## Check library health
+
+Click `Health report…` (next to `Find duplicates…`, after a scan). Every
+scanned file is opened once — only its header and tags, no audio is played
+or decoded — with a progress bar, then a **Library health report** window
+lists one row per problem:
+
+| Issue | Meaning |
+| --- | --- |
+| Unreadable / corrupt | The file can't be parsed (damaged or truncated, or not really audio) or can't be opened. Nothing else is checked for it |
+| Zero length | An empty (0-byte) file, or one whose stream lasts 0 seconds |
+| Empty title / Empty artist | The tag is missing or blank |
+| Missing artwork | No cover picture embedded in the file |
+| Low bitrate | 128 kbps or less. Formats that don't report a bitrate are never flagged |
+
+A file can appear on several rows, one per problem. Narrow the list with
+the issue check boxes (each shows its count) and the filter box, which
+matches the path and the detail. Click a column header to sort.
+
+- `Show in library` (or a double-click) selects the track in the library
+  table — clearing its filters if they hide it — so you can fix its tags in
+  the Track panel.
+- `Reveal in Finder` shows the file in your file manager.
+- `Export CSV…` saves the rows currently shown (`path`, `issue`, `detail`)
+  as a CSV file that opens in any spreadsheet app.
+
+The report never changes a file. Run it again after fixing things to see
+the updated list.
+
 ## Genre categories
 
 Tracks are sorted into two-level categories, `Family / Name` (for example
@@ -248,6 +278,7 @@ Imported Serato crate names also help categorize tracks.
 - `Find duplicates…` only reads files. Copies you tick go to the Trash after
   a confirmation, never deleted outright, and one copy of each group always
   stays.
+- `Health report…` only reads files.
 
 ## Related
 

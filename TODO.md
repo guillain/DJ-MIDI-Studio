@@ -132,6 +132,14 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Library health report** (`v0.48.78-library-health`, issue #225) — Qt-free
+  `library/health.py`: `iter_health_check` opens each present indexed track once with mutagen
+  (header + tags, read-only) and reports unreadable/corrupt, zero-length (0 bytes or 0 s),
+  empty title/artist, missing embedded artwork and low bitrate (≤128 kbps) as `HealthIssue`
+  rows; `filter_issues`/`export_csv` back the filters and CSV export. Music Library tab gains a
+  `Health report…` job (same `QTimer` slice pattern as duplicates) opening
+  `gui/health_report_dialog.py` (per-kind check boxes with counts, text filter, sortable
+  table, Show in library / Reveal in Finder / Export CSV…).
 - [x] **Readable function names** (`v0.48.72-readable-function-names`, issue #209) — Qt-free
   `function_names.py`: `FUNCTION_NAMES` maps the only four tags the real Serato exports contain
   (inventoried from `data/xdj_xz-ddj_xp2-4decks.xml` + `data/serato/*.xml.zip`; a test keeps the table
