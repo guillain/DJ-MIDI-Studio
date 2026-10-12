@@ -132,6 +132,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **CI startup screenshot** (`v0.48.84-build-smoke-screenshot`, issue #231) — the app's new
+  `--startup-screenshot PATH` flag grabs the main window 2 s after startup;
+  `scripts/smoke_test_executable.py --screenshot` waits for that PNG and fails on an early exit or a
+  missing picture, and `Build Executables` uploads it (plus logs and console output) per OS as
+  `djmidi-studio-<os>-startup-screenshot`, even when the job fails. The release workflow is unchanged.
 - [x] **Readable function names** (`v0.48.72-readable-function-names`, issue #209) — Qt-free
   `function_names.py`: `FUNCTION_NAMES` maps the only four tags the real Serato exports contain
   (inventoried from `data/xdj_xz-ddj_xp2-4decks.xml` + `data/serato/*.xml.zip`; a test keeps the table
