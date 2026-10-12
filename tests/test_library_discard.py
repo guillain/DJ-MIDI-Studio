@@ -141,6 +141,23 @@ def test_repoint_playlists_to_the_kept_copy(setup):
     assert discard.repoint_playlists(db, result.moved) == 0
 
 
+def test_repoint_does_not_list_the_kept_copy_twice(setup):
+    db, files, fake_trash, _trashed, _bin = setup
+    copy, kept = str(files["a copy.mp3"]), str(files["a.mp3"])
+    b, b2 = str(files["b.mp3"]), str(files["b2.mp3"])
+    copy_first = db.create_playlist("Copy first", [b, copy, b2, kept])
+    kept_first = db.create_playlist("Kept first", [kept, b, copy])
+    only_copy = db.create_playlist("Only copy", [copy, b])
+    plan = discard.plan_discard([_group(TIER_EXACT, files["a.mp3"], files["a copy.mp3"])], [copy])
+    result = discard.move_to_trash(db, plan, fake_trash)
+
+    assert discard.repoint_playlists(db, result.moved) == 1
+    # The first occurrence keeps its position, the other entry is dropped.
+    assert db.playlist_paths(copy_first) == [b, kept, b2]
+    assert db.playlist_paths(kept_first) == [kept, b]
+    assert db.playlist_paths(only_copy) == [kept, b]
+
+
 def test_mark_paths_missing_never_deletes(setup):
     db, files, *_ = setup
     assert db.mark_paths_missing([str(files["b.mp3"]), "/nowhere.mp3"]) == 1

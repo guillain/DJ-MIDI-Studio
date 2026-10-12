@@ -114,15 +114,44 @@ def repoint_playlists(db: LibraryDB, moved: Iterable[tuple[str, str]]) -> int:
     """Point this app's playlists at each kept copy instead of the discarded
     one, via `LibraryDB.relink_tracks`. Returns how many copies were
     repointed (a copy no longer missing, or whose kept copy isn't indexed
-    and present, is skipped)."""
+    and present, is skipped).
+
+    A playlist that listed both the discarded and the kept copy keeps only
+    the first of them (as the kept copy), so the track isn't listed twice;
+    `relink_tracks` itself is unchanged for #190's relinking."""
     links: list[tuple[int, str, int, int, float]] = []
+    kept_for: dict[str, str] = {}
     for path, kept in moved:
         gone = db.get_track_by_path(path)
         target = db.get_track_by_path(kept)
         if gone is None or not gone.missing or target is None or target.missing:
             continue
         links.append((gone.id, target.path, target.root_id, target.size, target.mtime))
-    return db.relink_tracks(links)
+        kept_for[path] = target.path
+    # Playlists listing a discarded copy next to its kept copy, collapsed
+    # before relinking (afterwards both entries would read the kept path).
+    collapsed: dict[int, list[str]] = {}
+    for playlist in db.list_playlists():
+        paths = db.playlist_paths(playlist.id)
+        listed = set(paths)
+        if not any(path in listed and kept in listed for path, kept in kept_for.items()):
+            continue
+        merged: list[str] = []
+        seen: set[str] = set()
+        for entry in paths:
+            kept = kept_for.get(entry)
+            if kept is None and entry not in kept_for.values():
+                merged.append(entry)
+                continue
+            target = kept or entry
+            if target not in seen:
+                seen.add(target)
+                merged.append(target)
+        collapsed[playlist.id] = merged
+    applied = db.relink_tracks(links)
+    for playlist_id, paths in collapsed.items():
+        db.set_playlist_paths(playlist_id, paths)
+    return applied
 
 
 __all__ = [
