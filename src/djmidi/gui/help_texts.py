@@ -285,8 +285,10 @@ LIBRARY_DUPLICATES: HelpEntry = (
         "<i>feat.</i> credits and <i>(Original Mix)</i> are ignored. Other versions "
         "(<i>Extended Mix</i>, <i>Radio Edit</i>, remixes) stay distinct. A candidate, not "
         "proof: compare format, size and bitrate.</li></ul>"
-        "Nothing is deleted or moved: <b>Reveal in Finder</b> (or double-click) shows a copy "
-        "so you can deal with it yourself."
+        "<b>Reveal in Finder</b> (or double-click) shows a copy. Tick the copies you don't want "
+        "and click <b>Move ticked to Trash…</b>: after a confirmation they go to the Trash "
+        "(never deleted outright) and show as missing. One copy of each group must stay. "
+        "Playlists of this app listing a discarded copy can be pointed at the kept one."
     ),
     "music-library.md",
 )
