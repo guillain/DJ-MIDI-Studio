@@ -132,6 +132,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Mix path tolerance and length controls** (`v0.48.69-mix-path-controls`, issue #211) — `Auto: mix path…` now opens
+  `MixPathDialog` (BPM direction, BPM tolerance ±%, maximum length) with a note that only the currently filtered tracks
+  are used; `workspace.generate_playlist_path` passes `max_length` through to `build_playlist_path`. Last values are a
+  `workspace.MixPathOptions`, clamped on load and stored in a new `library_settings` table of the library index
+  (`LibraryDB.get_setting`/`set_setting`), so tests on the `:memory:` index never touch the real settings.
 - [x] **Audio preview controls** (`v0.48.68-audio-preview-controls`, issue #210) — the Music Library preview bar
   gained a volume slider and an Auto-advance box (off by default), both remembered via an injected
   `QSettings`-like object (`MainWindow._layout_settings()`, `None` in tests); Space = play/pause and Left/Right =

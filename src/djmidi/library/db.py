@@ -64,6 +64,15 @@ CREATE TABLE IF NOT EXISTS user_categories (
 CREATE TABLE IF NOT EXISTS removed_categories (
     canonical TEXT PRIMARY KEY
 );
+
+-- Small per-library UI choices remembered between sessions (issue #211:
+-- the last "Auto: mix path" options), as JSON-encoded values. Living in
+-- the library index keeps them out of preferences.json, and the test
+-- suite's `:memory:` index keeps tests away from the real values.
+CREATE TABLE IF NOT EXISTS library_settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+);
 """
 
 _METADATA_COLUMNS = tuple(f.name for f in fields(TrackMetadata))
@@ -403,3 +412,19 @@ class LibraryDB:
         ]
         removed = [r[0] for r in self._conn.execute("SELECT canonical FROM removed_categories ORDER BY canonical")]
         return saved, removed
+
+    def get_setting(self, key: str, default: object = None) -> object:
+        """A remembered UI choice, or `default` when unset or unreadable."""
+        row = self._conn.execute("SELECT value FROM library_settings WHERE key = ?", (key,)).fetchone()
+        if row is None:
+            return default
+        try:
+            return json.loads(row[0])
+        except ValueError:
+            return default
+
+    def set_setting(self, key: str, value: object) -> None:
+        self._conn.execute(
+            "INSERT OR REPLACE INTO library_settings (key, value) VALUES (?, ?)", (key, json.dumps(value))
+        )
+        self._conn.commit()

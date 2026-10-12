@@ -231,7 +231,7 @@ def test_playlists_from_selection_generation_and_match(library, monkeypatch):
 
 def test_path_playlist_with_leftovers(library, monkeypatch):
     view, music, _ = library
-    monkeypatch.setattr(QInputDialog, "getItem", lambda *a, **k: ("Rising BPM", True))
+    monkeypatch.setattr(mlv.MixPathDialog, "exec", lambda self: QDialog.DialogCode.Accepted)
     monkeypatch.setattr(QInputDialog, "getText", lambda *a, **k: ("Path", True))
     view.select_path(str(music / "Tek" / "Tribe" / "a.mp3"))
     view._on_path_clicked()
@@ -241,6 +241,47 @@ def test_path_playlist_with_leftovers(library, monkeypatch):
     assert [Path(p).name for p in view.db.playlist_paths(names["Path (leftovers)"])] == ["c.mp3"]
     assert view.selected_playlist_id() == names["Path"]
     assert "leftovers" in view.status_label.text()
+
+
+def test_mix_path_dialog_applies_and_remembers_options(library, monkeypatch):
+    view, _music, _ = library
+    shown = []
+
+    def accept(dialog):
+        shown.append(dialog)
+        if len(shown) == 1:
+            assert dialog.tolerance_spin.value() == 6.0
+            assert dialog.length_spin.text() == "No limit"
+            dialog.direction_combo.setCurrentText("Falling BPM")
+            dialog.tolerance_spin.setValue(2.5)
+            dialog.length_spin.setValue(1)
+        return QDialog.DialogCode.Accepted
+
+    monkeypatch.setattr(mlv.MixPathDialog, "exec", accept)
+    monkeypatch.setattr(QInputDialog, "getText", lambda *a, **k: ("Short", True))
+    view._on_path_clicked()
+    assert "3 track(s) the current filter shows" in shown[0].note_label.text()
+    names = {record.name: record.id for record in view.db.list_playlists()}
+    # Falling from the fastest track, cut after one: the rest are leftovers.
+    assert [Path(p).name for p in view.db.playlist_paths(names["Short"])] == ["b.mp3"]
+    assert len(view.db.playlist_paths(names["Short (leftovers)"])) == 2
+
+    # Reopening pre-fills the last values.
+    view._on_path_clicked()
+    second = shown[1]
+    assert second.direction_combo.currentText() == "Falling BPM"
+    assert second.tolerance_spin.value() == 2.5
+    assert second.length_spin.value() == 1
+    assert workspace.load_mix_path_options(view.db) == workspace.MixPathOptions("down", 2.5, 1)
+
+
+def test_mix_path_dialog_cancel_keeps_options(library, monkeypatch):
+    view, _music, _ = library
+    workspace.save_mix_path_options(view.db, workspace.MixPathOptions("flat", 4.0, 10))
+    monkeypatch.setattr(mlv.MixPathDialog, "exec", lambda self: QDialog.DialogCode.Rejected)
+    view._on_path_clicked()
+    assert view.db.list_playlists() == []
+    assert workspace.load_mix_path_options(view.db) == workspace.MixPathOptions("flat", 4.0, 10)
 
 
 def test_playlist_rename_delete_and_crate_export(library, monkeypatch):

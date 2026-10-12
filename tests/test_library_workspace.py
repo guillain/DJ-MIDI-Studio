@@ -196,6 +196,33 @@ def test_generate_playlist_path_mode():
     ]
     assert workspace.generate_playlist_path(rows, start_path="/b.mp3") == (["/b.mp3", "/c.mp3"], ["/a.mp3"])
     assert workspace.generate_playlist_path(rows, direction="down") == (["/c.mp3", "/b.mp3"], ["/a.mp3"])
+    assert workspace.generate_playlist_path(rows, direction="down", max_length=1) == (
+        ["/c.mp3"],
+        ["/a.mp3", "/b.mp3"],
+    )
+    # 172 -> 175 is a ~1.7 % jump: too far for a 1 % tolerance.
+    assert workspace.generate_playlist_path(rows, start_path="/b.mp3", bpm_tolerance_pct=1.0)[0] == ["/b.mp3"]
+
+
+def test_mix_path_options_default_roundtrip_and_clamping():
+    db = LibraryDB(":memory:")
+    assert workspace.load_mix_path_options(db) == workspace.MixPathOptions()
+    workspace.save_mix_path_options(db, workspace.MixPathOptions("down", 3.5, 20))
+    assert workspace.load_mix_path_options(db) == workspace.MixPathOptions("down", 3.5, 20)
+
+    low, high = workspace.MIX_PATH_TOLERANCE_RANGE
+    clamped = workspace.MixPathOptions("sideways", 99.0, 0).normalized()
+    assert clamped == workspace.MixPathOptions("up", high, None)
+    assert workspace.MixPathOptions("flat", 0.0, 10**6).normalized() == workspace.MixPathOptions(
+        "flat", low, workspace.MIX_PATH_MAX_LENGTH_LIMIT
+    )
+
+    # A garbled stored value falls back to defaults rather than raising.
+    db.set_setting("mix_path_options", {"direction": "up", "bpm_tolerance_pct": "abc", "max_length": "x"})
+    assert workspace.load_mix_path_options(db) == workspace.MixPathOptions()
+    db.set_setting("mix_path_options", ["not", "a", "dict"])
+    assert workspace.load_mix_path_options(db) == workspace.MixPathOptions()
+    db.close()
 
 
 def test_volume_root():
