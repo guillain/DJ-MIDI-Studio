@@ -34,6 +34,8 @@ how many it recognizes, and ticks the likely ones for you: the controllers
 connected right now and the one shown in
 [Controller Images](controller-images.md). Untick or tick as you like.
 
+![Export Cheat Sheet: choose the controllers](../../images/layout/cheat-sheet-dialog.png)
+
 ## What each page shows
 
 - The clean controller photo, with each mapped control labelled in place:
@@ -52,6 +54,8 @@ connected right now and the one shown in
 Functions come from the mapping's input (press) bindings, resolved the
 same way as the [Controller Emulator](controller-emulator.md)'s dry run;
 LED feedback bindings are not listed.
+
+![A printed page: the DDJ-XP2 with its PAD MODE 5 bank](../../images/layout/cheat-sheet-page.png)
 
 ## Pad banks and SHIFT
 

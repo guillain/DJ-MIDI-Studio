@@ -14,6 +14,15 @@ never a crash. The player itself is only created on the first Play, so
 building the tab (and every test that constructs `MainWindow`) never opens
 an audio device. Tests inject a fake through `player_factory`.
 
+Issue #210 added a volume slider and an "Auto-advance" box (off by
+default), both remembered through an injected settings object
+(`set_settings`, `QSettings`-like `value`/`setValue`; `MainWindow` passes
+its `_layout_settings()`, which is `None` in tests, so tests never touch a
+real user's settings), plus keyboard control routed from the library table
+through `handle_key`: Space plays/pauses, Left/Right seek by
+`SEEK_STEP_MS`. When auto-advance is on and a track plays to its end, the
+bar emits `advanceRequested`; the tab picks the next row and calls `play`.
+
 Read-only by construction: the bar only ever hands a file path to the
 player, it never writes anything.
 """
@@ -25,7 +34,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-from PySide6.QtCore import QObject, Qt, QUrl
+from PySide6.QtCore import QObject, Qt, QUrl, Signal
 from PySide6.QtWidgets import (
     QCheckBox,
     QHBoxLayout,
@@ -53,6 +62,16 @@ _LOGGER = logging.getLogger(__name__)
 #: past most intros, where the groove (and the key) is established.
 START_OFFSET_FRACTION = 0.30
 
+#: Left/Right arrow seek step (issue #210).
+SEEK_STEP_MS = 10_000
+
+#: Volume slider range is 0..100 percent; the first-run default.
+DEFAULT_VOLUME = 80
+
+#: Settings keys (issue #210); stored in `MainWindow`'s `QSettings`.
+VOLUME_SETTINGS_KEY = "library/preview_volume"
+AUTO_ADVANCE_SETTINGS_KEY = "library/preview_auto_advance"
+
 UNAVAILABLE_TOOLTIP = "Audio preview unavailable: PySide6's QtMultimedia module could not be loaded."
 
 
@@ -78,6 +97,39 @@ def format_time(ms: int) -> str:
     return f"{minutes}:{seconds:02d}"
 
 
+def clamp_volume(value: object, default: int = DEFAULT_VOLUME) -> int:
+    """A stored volume (int, or the string `QSettings` may give back) as 0..100."""
+    try:
+        volume = int(float(value))  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        return default
+    return min(max(volume, 0), 100)
+
+
+def parse_bool(value: object, default: bool = False) -> bool:
+    """A stored flag: `QSettings` returns "true"/"false" strings on some platforms."""
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        lowered = value.strip().lower()
+        if lowered in {"true", "1", "yes"}:
+            return True
+        if lowered in {"false", "0", "no"}:
+            return False
+        return default
+    if isinstance(value, int):
+        return bool(value)
+    return default
+
+
+def relative_seek_target(position_ms: int, delta_ms: int, duration_ms: int) -> int:
+    """`position + delta`, clamped to the track (0..duration)."""
+    target = max(int(position_ms) + int(delta_ms), 0)
+    if duration_ms > 0:
+        target = min(target, int(duration_ms))
+    return target
+
+
 def _default_player_factory(parent: QObject) -> Any:
     """A `QMediaPlayer` wired to the default audio output."""
     player = QMediaPlayer(parent)
@@ -94,8 +146,13 @@ class AudioPreviewBar(QWidget):
     `player_factory(parent)` returns an object with `QMediaPlayer`'s
     interface subset used here: `setSource`, `play`, `pause`, `stop`,
     `setPosition`, `isPlaying`, and the `durationChanged`/`positionChanged`/
-    `playbackStateChanged`/`errorOccurred` signals.
+    `playbackStateChanged`/`errorOccurred` signals. Optional: `audioOutput()`
+    (whose `setVolume(float)` the volume slider drives) and the
+    `mediaStatusChanged` signal (end of track, for auto-advance).
     """
+
+    #: Auto-advance is on and the current track played to its end.
+    advanceRequested = Signal()
 
     def __init__(
         self,
@@ -111,6 +168,7 @@ class AudioPreviewBar(QWidget):
         self._duration = 0
         self._pending_offset = False
         self._error: str | None = None
+        self._settings: Any = None
 
         row = QHBoxLayout(self)
         row.setContentsMargins(0, 0, 0, 0)
@@ -126,17 +184,31 @@ class AudioPreviewBar(QWidget):
         self.time_label = QLabel()
         self.offset_check = QCheckBox(f"Start at {round(START_OFFSET_FRACTION * 100)}%")
         self.offset_check.setToolTip("Skip the intro: playback starts 30% into the track.")
+        self.volume_label = QLabel("Vol")
+        self.volume_slider = QSlider(Qt.Orientation.Horizontal)
+        self.volume_slider.setRange(0, 100)
+        self.volume_slider.setValue(DEFAULT_VOLUME)
+        self.volume_slider.setFixedWidth(80)
+        self.volume_slider.valueChanged.connect(self._on_volume_changed)
+        self.auto_advance_check = QCheckBox("Auto-advance")
+        self.auto_advance_check.setChecked(False)
+        self.auto_advance_check.toggled.connect(self._on_auto_advance_toggled)
         row.addWidget(self.play_button)
         row.addWidget(self.stop_button)
         row.addWidget(self.seek_slider, 1)
         row.addWidget(self.time_label)
+        row.addWidget(self.volume_label)
+        row.addWidget(self.volume_slider)
         row.addWidget(self.offset_check)
+        row.addWidget(self.auto_advance_check)
         row.addWidget(help_button(self, *help_texts.LIBRARY_PREVIEW))
         self._tooltips = {
-            self.play_button: "Play or pause the selected track.",
+            self.play_button: "Play or pause the selected track (Space in the table).",
             self.stop_button: "Stop and rewind.",
-            self.seek_slider: "Drag to move through the track.",
+            self.seek_slider: "Drag to move through the track (Left/Right in the table: 10 s).",
             self.offset_check: self.offset_check.toolTip(),
+            self.volume_slider: "Preview volume, remembered for next time.",
+            self.auto_advance_check: "When a track ends, play the next one in the table.",
         }
         self._update_controls()
 
@@ -152,6 +224,25 @@ class AudioPreviewBar(QWidget):
 
     def is_playing(self) -> bool:
         return self._player is not None and bool(self._player.isPlaying())
+
+    @property
+    def auto_advance(self) -> bool:
+        return self.auto_advance_check.isChecked()
+
+    def volume(self) -> int:
+        return self.volume_slider.value()
+
+    def set_settings(self, settings: Any) -> None:
+        """Remember volume/auto-advance in `settings` (QSettings-like; None = don't).
+
+        Loads the stored values right away. Tests leave this unset (or pass
+        a plain fake), so a real user's settings are never read or written.
+        """
+        self._settings = None  # don't write back while loading
+        if settings is not None:
+            self.volume_slider.setValue(clamp_volume(settings.value(VOLUME_SETTINGS_KEY, DEFAULT_VOLUME)))
+            self.auto_advance_check.setChecked(parse_bool(settings.value(AUTO_ADVANCE_SETTINGS_KEY, False)))
+        self._settings = settings
 
     def set_source(self, path: str | Path | None) -> None:
         """Preview `path` (None clears). Keeps auditioning if already playing."""
@@ -187,7 +278,11 @@ class AudioPreviewBar(QWidget):
             player.positionChanged.connect(self._on_position_changed)
             player.playbackStateChanged.connect(self._update_controls)
             player.errorOccurred.connect(self._on_error)
+            status_signal = getattr(player, "mediaStatusChanged", None)
+            if status_signal is not None:
+                status_signal.connect(self._on_media_status_changed)
             self._player = player
+            self._apply_volume()
             if self._path:
                 player.setSource(QUrl.fromLocalFile(self._path))
         return self._player
@@ -227,6 +322,48 @@ class AudioPreviewBar(QWidget):
         if self._player is not None:
             self._player.setPosition(int(position_ms))
 
+    def seek_relative(self, delta_ms: int) -> None:
+        """Move by `delta_ms` from the current position, clamped to the track."""
+        if self._player is None or self._duration <= 0:
+            return
+        target = relative_seek_target(self.seek_slider.value(), delta_ms, self._duration)
+        self.seek(target)
+        self.seek_slider.setValue(target)
+        self._update_time_label(target)
+
+    def handle_key(self, key: int, modifiers: Qt.KeyboardModifier = Qt.KeyboardModifier.NoModifier) -> bool:
+        """Space = play/pause, Left/Right = seek; True when the key was used.
+
+        Only plain (unmodified) keys, and only with a track to act on, so
+        Shift+arrows and friends keep their usual table meaning.
+        """
+        if modifiers & ~Qt.KeyboardModifier.KeypadModifier:
+            return False
+        if not (self.available and self._path):
+            return False
+        if key == Qt.Key.Key_Space:
+            self.toggle_play()
+            return True
+        if key in (Qt.Key.Key_Left, Qt.Key.Key_Right) and self._duration > 0:
+            self.seek_relative(SEEK_STEP_MS if key == Qt.Key.Key_Right else -SEEK_STEP_MS)
+            return True
+        return False
+
+    def _on_volume_changed(self, value: int) -> None:
+        self._apply_volume()
+        if self._settings is not None:
+            self._settings.setValue(VOLUME_SETTINGS_KEY, int(value))
+
+    def _on_auto_advance_toggled(self, checked: bool) -> None:
+        if self._settings is not None:
+            self._settings.setValue(AUTO_ADVANCE_SETTINGS_KEY, bool(checked))
+
+    def _apply_volume(self) -> None:
+        output_getter = getattr(self._player, "audioOutput", None)
+        output = output_getter() if callable(output_getter) else None
+        if output is not None and hasattr(output, "setVolume"):
+            output.setVolume(self.volume_slider.value() / 100.0)
+
     # --- player signals -------------------------------------------------
 
     def _on_duration_changed(self, duration: int) -> None:
@@ -241,6 +378,12 @@ class AudioPreviewBar(QWidget):
         if not self.seek_slider.isSliderDown():
             self.seek_slider.setValue(int(position))
             self._update_time_label(int(position))
+
+    def _on_media_status_changed(self, status: object) -> None:
+        if QMediaPlayer is None or status != QMediaPlayer.MediaStatus.EndOfMedia:
+            return
+        if self.auto_advance:
+            self.advanceRequested.emit()
 
     def _on_slider_moved(self, value: int) -> None:
         self._update_time_label(value)
@@ -270,6 +413,8 @@ class AudioPreviewBar(QWidget):
         self.stop_button.setEnabled(has_track)
         self.seek_slider.setEnabled(has_track and self._duration > 0)
         self.offset_check.setEnabled(available)
+        self.volume_slider.setEnabled(available)
+        self.auto_advance_check.setEnabled(available)
         self.play_button.setText("❚❚ Pause" if self.is_playing() else "▶ Play")
         for widget, tooltip in self._tooltips.items():
             widget.setToolTip(tooltip if available else UNAVAILABLE_TOOLTIP)

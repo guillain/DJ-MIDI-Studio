@@ -87,6 +87,8 @@ shares that trigger). Selecting a result outlines **all** its controls in
 red on the layouts and selects the first one in the current tab, like
 clicking it on the layout.
 
+![Find function: “loop roll” and the controls it outlines](../../images/layout/function-search.png)
+
 ## The controller layout
 
 Under each tree, a dark performance-style drawing of the controller shows

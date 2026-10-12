@@ -123,6 +123,15 @@ def test_preferences_dialog_reflects_and_saves_auto_sync_on_plug_in():
     assert preferences.auto_sync_on_plug_in is False
 
 
+def test_preferences_dialog_reflects_and_saves_sync_on_scene_switch():
+    preferences = PluginPreferences()
+    dialog = PreferencesDialog(preferences)
+    assert dialog._sync_on_scene_switch.isChecked() is False
+    dialog._sync_on_scene_switch.setChecked(True)
+    dialog._save()
+    assert preferences.sync_on_scene_switch is True
+
+
 def test_controller_sync_tab_edits_messages_through_the_editor(monkeypatch):
     from djmidi.controller_sync import ControllerSyncSet, SyncMessage
     from djmidi.gui import preferences_dialog, sync_set_editor

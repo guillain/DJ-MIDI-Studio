@@ -425,6 +425,8 @@ class MainWindow(QMainWindow):
         # Music Library (issue #133/#132): a separate domain from mappings --
         # the DJ's own collection. Opens its index lazily on first show.
         self.music_library_view = MusicLibraryView()
+        # Preview volume / auto-advance persist only in the real app (#210).
+        self.music_library_view.audio_preview.set_settings(self._layout_settings())
 
         self.left_tabs = QTabWidget()
         self._tab_indexes = {
@@ -1526,13 +1528,26 @@ class MainWindow(QMainWindow):
             data = name
         self._set_active_sync_scene(str(data))
 
-    def _set_active_sync_scene(self, scene: str) -> None:
-        """Makes ``scene`` active (persisted). Nothing is sent: ⟳ Sync does
-        that, so switching scenes mid-set never surprises a controller."""
+    def _set_active_sync_scene(self, scene: str) -> list[SyncResult]:
+        """Makes ``scene`` active (persisted). By default nothing is sent --
+        ⟳ Sync does that, so switching scenes mid-set never surprises a
+        controller -- unless "Sync when switching scene" (issue #212) is on:
+        then an actual change sends the new scene's sets right away, silently
+        like the launch-time Sync (status bar only, no dialog without sets).
+        Re-picking the scene that is already active sends nothing."""
         scene = normalize_scene(scene)
+        changed = scene != self.preferences.active_sync_scene
         self.preferences.active_sync_scene = scene
         self._save_preferences()
-        self.statusBar().showMessage(f"Sync scene: {scene}", 5_000)
+        message = f"Sync scene: {scene}"
+        results: list[SyncResult] = []
+        if changed and self.preferences.sync_on_scene_switch:
+            sync_sets = self.preferences.active_sync_sets()
+            if sync_sets:
+                results = run_sync(sync_sets, list_output_ports())
+                message += f" -- {summarize_results(results)}"
+        self.statusBar().showMessage(message, 10_000 if results else 5_000)
+        return results
 
     def _apply_plugin_preferences(self) -> None:
         controller_ids = {

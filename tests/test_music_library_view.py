@@ -231,7 +231,7 @@ def test_playlists_from_selection_generation_and_match(library, monkeypatch):
 
 def test_path_playlist_with_leftovers(library, monkeypatch):
     view, music, _ = library
-    monkeypatch.setattr(QInputDialog, "getItem", lambda *a, **k: ("Rising BPM", True))
+    monkeypatch.setattr(mlv.MixPathDialog, "exec", lambda self: QDialog.DialogCode.Accepted)
     monkeypatch.setattr(QInputDialog, "getText", lambda *a, **k: ("Path", True))
     view.select_path(str(music / "Tek" / "Tribe" / "a.mp3"))
     view._on_path_clicked()
@@ -241,6 +241,47 @@ def test_path_playlist_with_leftovers(library, monkeypatch):
     assert [Path(p).name for p in view.db.playlist_paths(names["Path (leftovers)"])] == ["c.mp3"]
     assert view.selected_playlist_id() == names["Path"]
     assert "leftovers" in view.status_label.text()
+
+
+def test_mix_path_dialog_applies_and_remembers_options(library, monkeypatch):
+    view, _music, _ = library
+    shown = []
+
+    def accept(dialog):
+        shown.append(dialog)
+        if len(shown) == 1:
+            assert dialog.tolerance_spin.value() == 6.0
+            assert dialog.length_spin.text() == "No limit"
+            dialog.direction_combo.setCurrentText("Falling BPM")
+            dialog.tolerance_spin.setValue(2.5)
+            dialog.length_spin.setValue(1)
+        return QDialog.DialogCode.Accepted
+
+    monkeypatch.setattr(mlv.MixPathDialog, "exec", accept)
+    monkeypatch.setattr(QInputDialog, "getText", lambda *a, **k: ("Short", True))
+    view._on_path_clicked()
+    assert "3 track(s) the current filter shows" in shown[0].note_label.text()
+    names = {record.name: record.id for record in view.db.list_playlists()}
+    # Falling from the fastest track, cut after one: the rest are leftovers.
+    assert [Path(p).name for p in view.db.playlist_paths(names["Short"])] == ["b.mp3"]
+    assert len(view.db.playlist_paths(names["Short (leftovers)"])) == 2
+
+    # Reopening pre-fills the last values.
+    view._on_path_clicked()
+    second = shown[1]
+    assert second.direction_combo.currentText() == "Falling BPM"
+    assert second.tolerance_spin.value() == 2.5
+    assert second.length_spin.value() == 1
+    assert workspace.load_mix_path_options(view.db) == workspace.MixPathOptions("down", 2.5, 1)
+
+
+def test_mix_path_dialog_cancel_keeps_options(library, monkeypatch):
+    view, _music, _ = library
+    workspace.save_mix_path_options(view.db, workspace.MixPathOptions("flat", 4.0, 10))
+    monkeypatch.setattr(mlv.MixPathDialog, "exec", lambda self: QDialog.DialogCode.Rejected)
+    view._on_path_clicked()
+    assert view.db.list_playlists() == []
+    assert workspace.load_mix_path_options(view.db) == workspace.MixPathOptions("flat", 4.0, 10)
 
 
 def test_playlist_rename_delete_and_crate_export(library, monkeypatch):
@@ -722,6 +763,88 @@ def test_find_duplicates_opens_read_only_dialog(library, monkeypatch):
     view.find_duplicates()
     view.run_pending_job()
     assert view.duplicates_dialog is not dialog
+
+
+def test_discard_duplicates_moves_ticked_copies_to_trash(library, monkeypatch):
+    """Issue #208: ticked copies go to the (here fake, tmp_path) Trash after
+    a confirmation, a group keeping no copy is refused, moved rows turn
+    missing and playlists can follow the kept copy."""
+    from PySide6.QtCore import Qt
+
+    view, music, tmp_path = library
+    original = music / "Tek" / "Tribe" / "a.mp3"
+    copy = music / "copies" / "a copy.mp3"
+    copy.parent.mkdir()
+    copy.write_bytes(original.read_bytes())
+    view.start_scan()
+    view.run_pending_job()
+    playlist = view.db.create_playlist("Friday", [str(copy), str(music / "misc" / "c.mp3")])
+
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+
+    def fake_trash(path: str) -> bool:
+        Path(path).rename(bin_dir / Path(path).name)
+        return True
+
+    monkeypatch.setattr(mlv, "trash_file", fake_trash)
+    questions: list[str] = []
+    warnings: list[str] = []
+    monkeypatch.setattr(
+        QMessageBox, "question", lambda _p, _t, text, *a, **k: questions.append(text) or QMessageBox.StandardButton.Yes
+    )
+    monkeypatch.setattr(QMessageBox, "warning", lambda _p, _t, text, *a, **k: warnings.append(text))
+
+    view.find_duplicates()
+    view.run_pending_job()
+    dialog = view.duplicates_dialog
+    assert not dialog.trash_button.isEnabled()
+
+    # Ticking every copy of the exact group is refused; nothing moves.
+    dialog.set_checked(str(original), True)
+    dialog.set_checked(str(copy), True)
+    assert dialog.trash_button.isEnabled()
+    dialog.trash_button.click()
+    assert warnings and "untick at least one" in warnings[0]
+    assert questions == []
+    assert original.is_file() and copy.is_file()
+
+    dialog.set_checked(str(original), False)
+    assert dialog.checked_paths() == [str(copy)]
+    dialog.trash_button.click()
+    assert str(copy) in questions[0] and f"keeps {original}" in questions[0]
+    assert "Friday" in questions[1]
+    assert not copy.exists() and (bin_dir / "a copy.mp3").is_file()
+    assert original.is_file()
+    assert view.db.playlist_paths(playlist) == [str(original), str(music / "misc" / "c.mp3")]
+    assert view.db.get_track_by_path(copy) is None
+    assert "Moved 1 duplicate(s) to the Trash." in view.status_label.text()
+    assert all(item.data(0, Qt.ItemDataRole.UserRole + 1) != str(copy) for item in dialog.file_items())
+    assert [g for g in dialog.groups if g.tier == "exact"] == []
+
+
+def test_discard_duplicates_cancelled_or_without_playlists(library, monkeypatch):
+    view, music, _ = library
+    original = music / "Tek" / "Tribe" / "a.mp3"
+    copy = music / "a copy.mp3"
+    copy.write_bytes(original.read_bytes())
+    view.start_scan()
+    view.run_pending_job()
+    moved: list[str] = []
+    monkeypatch.setattr(mlv, "trash_file", lambda path: moved.append(path) or Path(path).unlink() is None)
+    answers = [QMessageBox.StandardButton.No]
+    monkeypatch.setattr(QMessageBox, "question", lambda *a, **k: answers.pop(0))
+    view.find_duplicates()
+    view.run_pending_job()
+    view.duplicates_dialog.set_checked(str(copy), True)
+    view.duplicates_dialog.trash_button.click()
+    assert moved == [] and copy.is_file()
+
+    answers.append(QMessageBox.StandardButton.Yes)
+    view.duplicates_dialog.trash_button.click()
+    # No playlist lists the copy: no second question; the row stays, missing.
+    assert moved == [str(copy)] and answers == []
+    assert view.db.get_track_by_path(copy).missing is True
 
 
 def test_format_size():

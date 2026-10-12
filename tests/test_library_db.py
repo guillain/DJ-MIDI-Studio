@@ -78,3 +78,15 @@ def test_list_tracks_can_exclude_missing():
     present_only = db.list_tracks(root_id=root.id, include_missing=False)
 
     assert [t.path for t in present_only] == ["/music/root/a.mp3"]
+
+
+def test_settings_roundtrip_and_survive_reopen(tmp_path):
+    path = tmp_path / "library.sqlite3"
+    db = LibraryDB(path)
+    assert db.get_setting("missing", "fallback") == "fallback"
+    db.set_setting("mix", {"direction": "down", "max_length": None})
+    db.set_setting("mix", {"direction": "up", "max_length": 12})
+    db.close()
+    reopened = LibraryDB(path)
+    assert reopened.get_setting("mix") == {"direction": "up", "max_length": 12}
+    reopened.close()

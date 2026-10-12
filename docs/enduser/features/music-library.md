@@ -62,6 +62,8 @@ Only this app's index changes: no audio file and no Serato, Traktor or
 Rekordbox library is touched. Relinking can't be undone, so check the list
 before confirming.
 
+![Relink missing tracks: two moved files, ticked](../../images/layout/music-library-relink.png)
+
 ## Browse, sort and filter
 
 - Click a column header to sort (BPM sorts numerically).
@@ -98,6 +100,13 @@ a category or a key by ear without opening your DJ software:
 - While a track plays, selecting another one switches to it straight away —
   handy for auditioning a list with the arrow keys.
 - Tick **Start at 30%** to skip the intro.
+- **Vol** sets the preview volume; it is remembered for next time.
+- With the track list focused, **Space** plays or pauses and **←** / **→**
+  jump back or forward 10 seconds.
+- Tick **Auto-advance** (off by default, remembered) to play the next track
+  in the list when one ends; missing files are skipped.
+
+![Preview bar playing a track](../../images/layout/music-library-preview.png)
 
 Playback stops when you leave the tab or close the app. If your system
 can't play audio through Qt, the bar stays greyed out with a tooltip
@@ -154,9 +163,21 @@ Each file shows its path, format and size; expand a group to see each
 file's bitrate. Select a file and click `Reveal in Finder` (or double-click
 it) to see it in your file manager.
 
-Nothing is deleted or moved from this window: you decide which copy to keep
-and remove the others yourself, in Finder or in your DJ software. Track
-lengths are not compared yet.
+To clean up, tick the copies you don't want and click `Move ticked to
+Trash…`:
+
+- At least one copy of every group must stay: if you tick every file of a
+  group, nothing is moved and the window tells you which group to fix.
+- A confirmation lists each file to discard and the copy kept in its place.
+- Files go to the system **Trash** — never deleted outright — so you can put
+  them back from there. They show as missing in the library afterwards.
+- If one of this app's playlists lists a discarded copy, you are asked
+  whether to point it at the kept copy instead. Serato, Traktor and
+  Rekordbox playlists are not changed: update those in your DJ software.
+
+Track lengths are not compared yet.
+
+![Duplicate tracks: an exact copy and two same artist + title groups](../../images/layout/music-library-duplicates.png)
 
 ## Genre categories
 
@@ -185,8 +206,21 @@ The **Playlists** panel:
 | `New from selection` | A playlist of the selected rows |
 | `Auto: sort visible` | Every visible row, grouped by category, then BPM range, then key |
 | `Auto: match current` | The selected track followed by every visible track within ±6 % BPM and a harmonically compatible Camelot key |
-| `Auto: mix path…` | The visible tracks chained into a set you can actually mix: each track is within ±6 % BPM and a compatible Camelot key of the one before, and the BPM rises, falls or stays steady (you choose). Starts from the selected track (else the slowest, or the fastest when falling); tracks that can't be chained go to a second `… (leftovers)` playlist |
+| `Auto: mix path…` | The visible tracks chained into a set you can actually mix: each track is within the BPM tolerance (±6 % by default) and a compatible Camelot key of the one before, and the BPM rises, falls or stays steady. Starts from the selected track (else the slowest, or the fastest when falling); tracks that can't be chained — or come after the maximum length — go to a second `… (leftovers)` playlist |
 | `Rename…` / `Delete` | Manage the selected playlist |
+
+`Auto: mix path…` opens a small dialog first:
+
+| Option | Meaning |
+| --- | --- |
+| BPM direction | Rising, falling, or steady (smallest moves, either way) |
+| BPM tolerance | The largest BPM gap allowed between two consecutive tracks, from ±0.5 % to ±20 % (default ±6 %) |
+| Maximum length | Stop the path after this many tracks (`No limit` by default); the rest go to the leftovers |
+
+It only uses the tracks the current filter shows (the dialog says how
+many) — clear the filters first to build from the whole library. Your last
+choices are remembered with the library index, so the next path starts from
+the same settings.
 
 A rising or falling path never steps back, so it skips tracks to keep the
 BPM moving one way — filter the table to one category first for the longest
@@ -211,7 +245,9 @@ Imported Serato crate names also help categorize tracks.
 - Serato, Traktor and Rekordbox library files are only ever read. Exports
   always create a new file at the location you choose.
 - Undo writes the old values back through the same careful path.
-- `Find duplicates…` only reads files; it never deletes or moves one.
+- `Find duplicates…` only reads files. Copies you tick go to the Trash after
+  a confirmation, never deleted outright, and one copy of each group always
+  stays.
 
 ## Related
 

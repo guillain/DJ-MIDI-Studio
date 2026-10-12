@@ -26,6 +26,7 @@ from .analysis import to_camelot
 from .db import LibraryDB, StoredCategory, TrackRecord
 from .metadata import TrackMetadata, read_metadata
 from .playlist import (
+    PATH_DIRECTIONS,
     PlaylistTrack,
     build_playlist_draft,
     build_playlist_path,
@@ -267,12 +268,72 @@ def generate_playlist_path(
     start_path: str | None = None,
     direction: str = "up",
     bpm_tolerance_pct: float = 6.0,
+    max_length: int | None = None,
 ) -> tuple[list[str], list[str]]:
     """Issue #191's path mode: `(path, leftovers)` -- the path in play
-    order, then every track that couldn't be placed on it."""
+    order, then every track that couldn't be placed on it (including, with
+    `max_length`, every track cut off past that length)."""
     tracks = to_playlist_tracks(row for row in rows if not row.missing)
-    result = build_playlist_path(tracks, start_path, tolerance_pct=bpm_tolerance_pct, direction=direction)
+    result = build_playlist_path(
+        tracks, start_path, tolerance_pct=bpm_tolerance_pct, direction=direction, max_length=max_length
+    )
     return [track.identifier for track in result.path], [track.identifier for track in result.leftovers]
+
+
+# "Auto: mix path" dialog bounds (issue #211). 0 for the length means no limit.
+MIX_PATH_TOLERANCE_RANGE = (0.5, 20.0)
+MIX_PATH_MAX_LENGTH_LIMIT = 9999
+_MIX_PATH_SETTING = "mix_path_options"
+
+
+@dataclass(frozen=True)
+class MixPathOptions:
+    """The last "Auto: mix path" choices, remembered in the library index."""
+
+    direction: str = "up"
+    bpm_tolerance_pct: float = 6.0
+    max_length: int | None = None
+
+    def normalized(self) -> MixPathOptions:
+        """Clamped to the dialog's bounds; anything unusable falls back to
+        the default, so a stale or hand-edited value never breaks the dialog."""
+        default = MixPathOptions()
+        direction = self.direction if self.direction in PATH_DIRECTIONS else default.direction
+        try:
+            low, high = MIX_PATH_TOLERANCE_RANGE
+            tolerance = min(max(float(self.bpm_tolerance_pct), low), high)
+        except (TypeError, ValueError):
+            tolerance = default.bpm_tolerance_pct
+        length = self.max_length
+        if isinstance(length, bool) or not isinstance(length, int) or length <= 0:
+            length = None
+        else:
+            length = min(length, MIX_PATH_MAX_LENGTH_LIMIT)
+        return MixPathOptions(direction, tolerance, length)
+
+
+def load_mix_path_options(db: LibraryDB) -> MixPathOptions:
+    stored = db.get_setting(_MIX_PATH_SETTING)
+    if not isinstance(stored, dict):
+        return MixPathOptions()
+    default = MixPathOptions()
+    return MixPathOptions(
+        direction=stored.get("direction", default.direction),
+        bpm_tolerance_pct=stored.get("bpm_tolerance_pct", default.bpm_tolerance_pct),
+        max_length=stored.get("max_length"),
+    ).normalized()
+
+
+def save_mix_path_options(db: LibraryDB, options: MixPathOptions) -> None:
+    options = options.normalized()
+    db.set_setting(
+        _MIX_PATH_SETTING,
+        {
+            "direction": options.direction,
+            "bpm_tolerance_pct": options.bpm_tolerance_pct,
+            "max_length": options.max_length,
+        },
+    )
 
 
 def volume_root(path: str | os.PathLike[str]) -> Path:
