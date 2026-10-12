@@ -132,6 +132,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Sync scenes** (`v0.48.61-sync-scenes`, issue #188) — several named sync sets per controller (Tek / DnB /
+  Warm-up…), picked with a scene combo between `● Rec` and `⟳ Sync` (`New scene…` adds one). Sync, launch and
+  plug-in sync send each controller its set for the active scene, falling back to its Default set; `● Rec` and
+  Controller Setup record into the active scene. Existing sets and files load as scene "Default" unchanged;
+  other scenes are stored as `<controller>.<scene>.json`. Preferences → Controller sync shows a Scene column.
 - [x] **Visual diff between two mappings** (`v0.48.60-mapping-diff`, issue #189) — Qt-free `mapping_diff.diff_configs`
   reduces both sides to a multiset keyed by trigger `(channel, event_type, control, userio event)` and function
   `(tag, deck_set, deck_id, slot_id)`, counting each translation/alias signature, so Serato's load-bearing 10x
