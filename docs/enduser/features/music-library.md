@@ -62,6 +62,8 @@ Only this app's index changes: no audio file and no Serato, Traktor or
 Rekordbox library is touched. Relinking can't be undone, so check the list
 before confirming.
 
+![Relink missing tracks: two moved files, ticked](../../images/layout/music-library-relink.png)
+
 ## Browse, sort and filter
 
 - Click a column header to sort (BPM sorts numerically).
@@ -103,6 +105,8 @@ a category or a key by ear without opening your DJ software:
   jump back or forward 10 seconds.
 - Tick **Auto-advance** (off by default, remembered) to play the next track
   in the list when one ends; missing files are skipped.
+
+![Preview bar playing a track](../../images/layout/music-library-preview.png)
 
 Playback stops when you leave the tab or close the app. If your system
 can't play audio through Qt, the bar stays greyed out with a tooltip
@@ -172,6 +176,8 @@ Trash…`:
   Rekordbox playlists are not changed: update those in your DJ software.
 
 Track lengths are not compared yet.
+
+![Duplicate tracks: an exact copy and two same artist + title groups](../../images/layout/music-library-duplicates.png)
 
 ## Genre categories
 

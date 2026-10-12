@@ -132,6 +132,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Docs screenshots for the 2026-10 features** (`v0.48.71-docs-screenshots-2026-10`, issue #213) —
+  `scripts/capture_docs_screenshots.py` now also captures the cheat-sheet export dialog and a rendered page, the mapping
+  diff window, Find function, the duplicates and relink dialogs, the audio preview bar and the sync scene combo, all from
+  the data/ fixture mapping or the synthetic demo library (never real preferences/library); each image is referenced
+  from its `docs/enduser/features/` page. `tests/test_capture_docs_screenshots.py` covers the script's helpers.
 - [x] **Sync when switching scene** (`v0.48.70-sync-on-scene-switch`, issue #212) — new
   `PluginPreferences.sync_on_scene_switch` (default off), a Preferences checkbox next to the other sync
   options; when on, changing the sync scene combo sends the new scene's sets to connected controllers right

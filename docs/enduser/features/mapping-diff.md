@@ -27,6 +27,8 @@ included, so you can check what you are about to save. The window title
 line reads *From `<the other file>` to `<the open mapping>`*: everything is
 described as going from the other file to yours.
 
+![Compare mappings: re-assigned, added and changed triggers](../../images/layout/mapping-diff.png)
+
 ## What the list shows
 
 Each row names the physical control (from every controller profile that

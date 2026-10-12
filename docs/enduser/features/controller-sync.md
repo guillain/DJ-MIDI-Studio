@@ -108,6 +108,8 @@ bar reports it (`Sync scene: Tek -- Synced …`). Re-picking the scene that is
 already active sends nothing, and a scene with nothing to send stays silent. The active scene is remembered across restarts. Sets
 recorded before scenes existed are your `Default` scene.
 
+![The sync scene combo, open, with three scenes](../../images/layout/sync-scene-combo.png)
+
 ## How Sync finds each controller
 
 1. The output port the set was recorded on, if it is connected.
