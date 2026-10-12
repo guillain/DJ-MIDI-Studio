@@ -132,6 +132,14 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Reverse function search** (`v0.48.57-function-search`, issue #185) — a **Find function** field at the top
+  of the editing column (By Channel/Deck/Controller) answers "which control triggers function X?". Matching lives
+  in the Qt-free `djmidi/function_search.py`: one result per (tag, userio event, deck, slot), Serato's 10x
+  duplicates collapsed into distinct triggers; tokenized, case-insensitive match over the tag with underscores as
+  spaces, `deck N`/`slot N` pinning the ids, `click`/`output` filtering, ranked exact word > prefix > substring,
+  click before output. Selecting a result selects its first control in the current tab (the exact deck/slot row
+  on By Deck) and outlines every bound control on the three layouts. The edit panel now scrolls inside that
+  column (it needs ~850 px and was overlapping itself at 1100x700, checked on an offscreen `MainWindow.grab()`).
 - [x] **Duplicate track detection** (`v0.48.56-library-duplicates`, issue #184) — Qt-free
   `library/duplicates.py`: a *metadata* tier (normalized artist + title: NFKD/accents, casefold, `feat.`
   credits and `(Original Mix)`-style suffixes dropped, every other version marker kept, punctuation squashed;

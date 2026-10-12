@@ -33,6 +33,7 @@ from PySide6.QtWidgets import (
     QDialog,
     QDockWidget,
     QFileDialog,
+    QFrame,
     QHBoxLayout,
     QInputDialog,
     QLabel,
@@ -62,6 +63,7 @@ from djmidi.controller_sync import (
     summarize_results,
     sync_sets_from_recording,
 )
+from djmidi.function_search import FunctionResult
 from djmidi.gui import cheat_sheet
 from djmidi.gui import jog as jog_mod
 from djmidi.gui import layout as layout_mod
@@ -74,6 +76,7 @@ from djmidi.gui.controller_tree import CELL_KEY_ROLE, build_controller_columns
 from djmidi.gui.deck_tree import build_deck_columns
 from djmidi.gui.edit_panel import EditPanel
 from djmidi.gui.file_reveal import reveal_in_file_manager
+from djmidi.gui.function_search_view import FunctionSearchView
 from djmidi.gui.geometry import resolve_geometry_label
 from djmidi.gui.helpful_notes_dialog import HelpfulNotesDialog
 from djmidi.gui.introduction_view import IntroductionView
@@ -86,6 +89,7 @@ from djmidi.gui.midi_routing_view import MidiRoutingView
 from djmidi.gui.music_library_view import MusicLibraryView
 from djmidi.gui.preferences_dialog import PreferencesDialog
 from djmidi.gui.safe_update_dialog import SafeUpdateDialog
+from djmidi.gui.scroll_utils import AutoSizeScrollArea
 from djmidi.gui.splitter_utils import replace_splitter, scrollable_columns
 from djmidi.gui.theme import apply_theme, mapping_tree_stylesheet
 from djmidi.gui.theme import signals as theme_signals
@@ -411,11 +415,31 @@ class MainWindow(QMainWindow):
         self.issues_table.horizontalHeader().setStretchLastSection(True)
         self.issues_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
 
+        # Reverse search (issue #185): "which control triggers function X?".
+        # Lives in the editing column so it's there on all three mapping tabs
+        # without adding a field to each one.
+        self.function_search_view = FunctionSearchView()
+        self.function_search_view.resultSelected.connect(self._on_function_result_selected)
+
+        # The edit panel's real minimum height (~850 px) exceeds what this
+        # column gets at the default 1100x700, so it scrolls instead of
+        # overlapping its own group boxes (issue #19's rule) -- more so now
+        # that Find function shares the column.
+        self._edit_panel_scroll = AutoSizeScrollArea()
+        self._edit_panel_scroll.setWidgetResizable(True)
+        self._edit_panel_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        self._edit_panel_scroll.setWidget(self.edit_panel)
+
         self._right_splitter = QSplitter(Qt.Orientation.Vertical)
-        self._right_splitter.addWidget(self.edit_panel)
+        self._right_splitter.addWidget(self.function_search_view)
+        self._right_splitter.addWidget(self._edit_panel_scroll)
         self._right_splitter.addWidget(self.issues_table)
-        self._right_splitter.setStretchFactor(0, 2)
-        self._right_splitter.setStretchFactor(1, 1)
+        self._right_splitter.setStretchFactor(0, 0)
+        self._right_splitter.setStretchFactor(1, 2)
+        self._right_splitter.setStretchFactor(2, 1)
+        # Search a short strip, the edit panel most of the column, the issue
+        # table a strip (Qt rescales these to the real height).
+        self._right_splitter.setSizes([150, 600, 150])
 
         # The edit / validation column only makes sense on the tree tabs; on
         # Dashboard / Controller Setup / Controller Images there is no node to
@@ -1474,6 +1498,7 @@ class MainWindow(QMainWindow):
         self._rebuild_channel_columns()
         self._refresh_layout_usage()
         self._refresh_deck_view()
+        self.function_search_view.set_config(self.config)
         self.live_monitor_view.set_config(self.config)
         if self.preferences.auto_start_live_monitor:
             self.live_monitor_view.ensure_monitoring_started()
@@ -1793,6 +1818,63 @@ class MainWindow(QMainWindow):
         # but do it directly too in case the selection didn't actually change
         # (clicking the same physical control's other half again).
         self._update_layout_selection(matches[0].channel, matches[0].event_type, matches[0].control)
+
+    def _on_function_result_selected(self, result: FunctionResult) -> None:
+        """A Find-function result: select its first control in the current
+        mapping tab (like a layout cell click), then outline *every* control
+        bound to it on the three layouts -- after the selection, whose own
+        selectionChanged handler narrows the outline to one control."""
+        if self.config is None or not result.controls:
+            return
+        tab = next(
+            (key for key in ("channel", "deck", "controller") if self._tab_indexes[key] == self.left_tabs.currentIndex()),
+            "channel",
+        )
+        first = result.controls[0]
+        first_keys = [
+            layout_mod.presentation_key_for_hit(hit)
+            for hit in catalog.lookup(first.channel, first.event_type, first.control)
+        ]
+        selected = False
+        if tab == "deck":
+            selected = self._select_deck_group_for_mappings(result.mappings)
+        elif tab == "controller":
+            selected = any(self._select_controller_cell(key) for key in first_keys)
+            # The tree row stands for a whole cell, and its own handler picks
+            # *some* control on it; point the edit panel at this exact one.
+            self._select_control_in_channel_columns(first)
+        if not selected:
+            tab = "channel"
+            self._select_control_in_channel_columns(first)
+        self.left_tabs.setCurrentIndex(self._tab_indexes[tab])
+        keys = {
+            layout_mod.presentation_key_for_hit(hit)
+            for control in result.controls
+            for hit in catalog.lookup(control.channel, control.event_type, control.control)
+        }
+        self.layout_view.set_selected_keys(keys)
+        self.deck_layout_view.set_selected_keys(keys)
+        self.controller_layout_view.set_selected_keys(keys)
+        self.statusBar().showMessage(
+            f"'{result.label}' ({result.location()}): {len(result.triggers)} control(s), "
+            f"{len(keys)} highlighted on the layout"
+        )
+
+    def _select_deck_group_for_mappings(self, mappings: list[MappingElement]) -> bool:
+        """Selects the By Deck row whose group holds one of `mappings` --
+        the exact deck/slot row, unlike _select_deck_group's first cell hit."""
+        wanted = {id(mapping) for mapping in mappings}
+        for view in self._deck_tree_views:
+            model = view.model()
+            for row in range(model.rowCount()):
+                slot_index = model.index(row, 0)
+                for child_row in range(model.rowCount(slot_index)):
+                    index = model.index(child_row, 0, slot_index)
+                    group = index.data(NODE_ROLE)
+                    if isinstance(group, MappingGroup) and any(id(m) in wanted for _, _, m in group.members):
+                        self._select_model_index(view, index)
+                        return True
+        return False
 
     def _update_layout_selection(self, channel: str | None, event_type: str | None, control_no: str | None) -> None:
         keys: set[layout_mod.CellKey] = set()
