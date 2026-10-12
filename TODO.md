@@ -132,6 +132,10 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Sync on plug-in** (`v0.48.55-sync-on-plug-in`, issue #183) — output ports are listed every 2 s in the
+  real app; when a port appears that a stored sync set resolves to, that set is sent once. Never re-sent while it
+  stays connected, sent again after unplug/replug; the launch Sync seeds the Qt-free `PlugInSyncTracker` so nothing
+  is sent twice. New `auto_sync_on_plug_in` preference (default on) next to "Sync controllers at launch".
 - [x] **Printable mapping cheat sheet** (`v0.48.54-mapping-cheat-sheet`, issue #182) — `File → Export ▸ Cheat Sheet
   (PDF)...`: per chosen controller, the clean photo with each mapped pad/button's function written on it (resolved
   like the emulator's dry run, but listing every deck layer and the SHIFT layer), one page per pad bank in use, and

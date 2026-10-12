@@ -4,6 +4,7 @@ import pytest
 
 from djmidi.controller_sync import (
     ControllerSyncSet,
+    PlugInSyncTracker,
     SyncMessage,
     SyncResult,
     resolve_output_port,
@@ -167,3 +168,53 @@ def test_sync_sets_from_recording_splits_by_port():
         ("DDJ-XP2", "PIONEER DDJ-XP2", 2),
         ("Other", "Other", 1),
     ]
+
+
+_XP2 = ControllerSyncSet("DDJ-XP2", "PIONEER DDJ-XP2", ())
+_XZ = ControllerSyncSet("XDJ-XZ", "", ())
+
+
+def test_plug_in_tracker_first_call_only_seeds():
+    tracker = PlugInSyncTracker()
+    assert not tracker.seeded
+    assert tracker.due([_XP2], ["PIONEER DDJ-XP2"]) == []
+    assert tracker.seeded
+
+
+def test_plug_in_tracker_sends_on_appearance_once_and_again_after_replug():
+    tracker = PlugInSyncTracker()
+    tracker.seed(["IAC Driver Bus 1"])
+    assert tracker.due([_XP2, _XZ], ["IAC Driver Bus 1", "PIONEER DDJ-XP2"]) == [_XP2]
+    # Staying connected never re-sends.
+    assert tracker.due([_XP2, _XZ], ["IAC Driver Bus 1", "PIONEER DDJ-XP2"]) == []
+    # Unplugged, then replugged: due again.
+    assert tracker.due([_XP2, _XZ], ["IAC Driver Bus 1"]) == []
+    assert tracker.due([_XP2, _XZ], ["IAC Driver Bus 1", "PIONEER DDJ-XP2"]) == [_XP2]
+
+
+def test_plug_in_tracker_seed_prevents_double_sync_at_launch():
+    tracker = PlugInSyncTracker()
+    tracker.seed(["PIONEER DDJ-XP2", "XDJ-XZ"])  # the ports the launch Sync used
+    assert tracker.due([_XP2, _XZ], ["PIONEER DDJ-XP2", "XDJ-XZ"]) == []
+
+
+def test_plug_in_tracker_ignores_unrelated_ports_and_new_sets_for_connected_controllers():
+    tracker = PlugInSyncTracker()
+    tracker.seed(["PIONEER DDJ-XP2"])
+    assert tracker.due([_XP2], ["PIONEER DDJ-XP2", "Some Synth"]) == []
+    # A set recorded while XDJ-XZ is already connected isn't sent back to it.
+    tracker.seed(["PIONEER DDJ-XP2", "XDJ-XZ"])
+    assert tracker.due([_XP2, _XZ], ["PIONEER DDJ-XP2", "XDJ-XZ"]) == []
+
+
+def test_plug_in_tracker_several_controllers_appearing_together():
+    tracker = PlugInSyncTracker()
+    tracker.seed([])
+    assert tracker.due([_XP2, _XZ], ["XDJ-XZ", "PIONEER DDJ-XP2"]) == [_XP2, _XZ]
+
+
+def test_plug_in_tracker_reset_reseeds_without_sending():
+    tracker = PlugInSyncTracker()
+    tracker.seed([])
+    tracker.reset()
+    assert tracker.due([_XP2], ["PIONEER DDJ-XP2"]) == []
