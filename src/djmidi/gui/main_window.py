@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import shutil
+import sqlite3
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
@@ -30,9 +31,11 @@ from PySide6.QtGui import (
 )
 from PySide6.QtWidgets import (
     QApplication,
+    QCheckBox,
     QDialog,
     QDockWidget,
     QFileDialog,
+    QFrame,
     QHBoxLayout,
     QInputDialog,
     QLabel,
@@ -52,17 +55,22 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from djmidi import catalog, file_locations, software, sync_store, user_paths
+from djmidi import backup, catalog, file_locations, software, sync_store, user_paths
 from djmidi.catalog.profile import load_user_profiles
 from djmidi.controller_sync import (
     ControllerSyncSet,
+    PlugInSyncTracker,
     SyncResult,
     run_sync,
     summarize_results,
     sync_sets_from_recording,
 )
+from djmidi.function_search import FunctionResult
+from djmidi.gui import cheat_sheet
 from djmidi.gui import jog as jog_mod
 from djmidi.gui import layout as layout_mod
+from djmidi.gui.cheat_sheet_dialog import CheatSheetExportDialog
+from djmidi.gui.cheat_sheet_pdf import write_cheat_sheet_pdf
 from djmidi.gui.controller_emulator import ControllerEmulatorView
 from djmidi.gui.controller_image_view import ControllerImageView
 from djmidi.gui.controller_setup import ControllerSetupView
@@ -70,6 +78,7 @@ from djmidi.gui.controller_tree import CELL_KEY_ROLE, build_controller_columns
 from djmidi.gui.deck_tree import build_deck_columns
 from djmidi.gui.edit_panel import EditPanel
 from djmidi.gui.file_reveal import reveal_in_file_manager
+from djmidi.gui.function_search_view import FunctionSearchView
 from djmidi.gui.geometry import resolve_geometry_label
 from djmidi.gui.helpful_notes_dialog import HelpfulNotesDialog
 from djmidi.gui.introduction_view import IntroductionView
@@ -83,6 +92,7 @@ from djmidi.gui.midi_routing_view import MidiRoutingView
 from djmidi.gui.music_library_view import MusicLibraryView
 from djmidi.gui.preferences_dialog import PreferencesDialog
 from djmidi.gui.safe_update_dialog import SafeUpdateDialog
+from djmidi.gui.scroll_utils import AutoSizeScrollArea
 from djmidi.gui.splitter_utils import replace_splitter, scrollable_columns
 from djmidi.gui.theme import apply_theme, mapping_tree_stylesheet
 from djmidi.gui.theme import signals as theme_signals
@@ -134,6 +144,8 @@ _LAST_SOFTWARE_SETTINGS_KEY = "files/last_mapping_software"
 _LAST_DRAFT_SETTINGS_KEY = "files/last_draft"
 # Lets controllers' MIDI ports settle before the launch-time Sync.
 _STARTUP_SYNC_DELAY_MS = 1500
+# How often output ports are listed to spot a controller being plugged in.
+_PLUG_IN_POLL_MS = 2000
 
 _LOCAL_HELP_DOCUMENTS = [
     ("Documentation Home", "docs/README.md"),
@@ -165,6 +177,16 @@ _LOCAL_CONTROLLER_DOCUMENTS = [
 
 
 _LOGGER = logging.getLogger(__name__)
+_BACKUP_FILTER = "DJ MIDI Studio backup (*.zip);;All files (*)"
+
+
+def _human_size(size: int) -> str:
+    value = float(size)
+    for unit in ("bytes", "KB", "MB", "GB"):
+        if value < 1024 or unit == "GB":
+            return f"{value:.0f} {unit}" if unit == "bytes" else f"{value:.1f} {unit}"
+        value /= 1024
+    return f"{size} bytes"
 
 # Performance Mode: how much to shrink the tree pane (never fully to 0 -- the
 # pair splitters are non-collapsible by design) and how much to enlarge the
@@ -408,11 +430,31 @@ class MainWindow(QMainWindow):
         self.issues_table.horizontalHeader().setStretchLastSection(True)
         self.issues_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
 
+        # Reverse search (issue #185): "which control triggers function X?".
+        # Lives in the editing column so it's there on all three mapping tabs
+        # without adding a field to each one.
+        self.function_search_view = FunctionSearchView()
+        self.function_search_view.resultSelected.connect(self._on_function_result_selected)
+
+        # The edit panel's real minimum height (~850 px) exceeds what this
+        # column gets at the default 1100x700, so it scrolls instead of
+        # overlapping its own group boxes (issue #19's rule) -- more so now
+        # that Find function shares the column.
+        self._edit_panel_scroll = AutoSizeScrollArea()
+        self._edit_panel_scroll.setWidgetResizable(True)
+        self._edit_panel_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        self._edit_panel_scroll.setWidget(self.edit_panel)
+
         self._right_splitter = QSplitter(Qt.Orientation.Vertical)
-        self._right_splitter.addWidget(self.edit_panel)
+        self._right_splitter.addWidget(self.function_search_view)
+        self._right_splitter.addWidget(self._edit_panel_scroll)
         self._right_splitter.addWidget(self.issues_table)
-        self._right_splitter.setStretchFactor(0, 2)
-        self._right_splitter.setStretchFactor(1, 1)
+        self._right_splitter.setStretchFactor(0, 0)
+        self._right_splitter.setStretchFactor(1, 2)
+        self._right_splitter.setStretchFactor(2, 1)
+        # Search a short strip, the edit panel most of the column, the issue
+        # table a strip (Qt rescales these to the real height).
+        self._right_splitter.setSizes([150, 600, 150])
 
         # The edit / validation column only makes sense on the tree tabs; on
         # Dashboard / Controller Setup / Controller Images there is no node to
@@ -447,9 +489,9 @@ class MainWindow(QMainWindow):
         self._restore_user_layout()
         self.controller_setup_view.draftFileChanged.connect(self._remember_draft)
         self._prepare_reopen_last_files()
-        if self._layout_settings() is not None and self.preferences.auto_sync_on_startup:
+        if self._layout_settings() is not None:
             # Real app only, like reopening files: tests never touch MIDI here.
-            QTimer.singleShot(_STARTUP_SYNC_DELAY_MS, self._sync_at_startup)
+            QTimer.singleShot(_STARTUP_SYNC_DELAY_MS, self._start_controller_sync)
         QTimer.singleShot(0, self._initialize_pair_splitters)
         QTimer.singleShot(0, self._show_helpful_notes_if_enabled)
         self.introduction_view.set_loaded_config_info(None)
@@ -712,6 +754,24 @@ class MainWindow(QMainWindow):
         log_action = QAction("Live Monitor Log...", self)
         log_action.triggered.connect(self.live_monitor_view._save_log)
         export_menu.addAction(log_action)
+        export_menu.addSeparator()
+        self._cheat_sheet_action = QAction("Cheat Sheet (PDF)...", self)
+        self._cheat_sheet_action.setToolTip(
+            "Print each controller's photo with the function the loaded mapping binds to every control"
+        )
+        self._cheat_sheet_action.setEnabled(False)
+        self._cheat_sheet_action.triggered.connect(lambda _checked=False: self._on_export_cheat_sheet())
+        export_menu.addAction(self._cheat_sheet_action)
+
+        file_menu.addSeparator()
+        backup_action = QAction("&Back Up Workspace...", self)
+        backup_action.setToolTip("Save your profiles, sync sets, drafts, preferences (and optionally the library index) in one zip.")
+        backup_action.triggered.connect(self._on_backup_workspace)
+        file_menu.addAction(backup_action)
+        restore_action = QAction("Restore &Workspace...", self)
+        restore_action.setToolTip("Restore a workspace backup, after confirming what it overwrites.")
+        restore_action.triggered.connect(self._on_restore_workspace)
+        file_menu.addAction(restore_action)
         self._rebuild_recent_menu()
 
         edit_menu = self.menuBar().addMenu("&Edit")
@@ -794,6 +854,12 @@ class MainWindow(QMainWindow):
         self._record_button.toggled.connect(self._on_record_toggled)
         self._record_monitor = MidiMonitor()
         self._record_events: list[MidiEvent] = []
+        # Sync-on-plug-in (issue #183): started by _start_controller_sync in
+        # the real app only; _poll_plugged_controllers stays callable by tests.
+        self._plug_in_tracker = PlugInSyncTracker()
+        self._plug_in_timer = QTimer(self)
+        self._plug_in_timer.setInterval(_PLUG_IN_POLL_MS)
+        self._plug_in_timer.timeout.connect(self._poll_plugged_controllers)
         self._record_timer = QTimer(self)
         self._record_timer.setInterval(20)
         self._record_timer.timeout.connect(self._poll_recording)
@@ -1133,6 +1199,10 @@ class MainWindow(QMainWindow):
 
     def _on_preferences(self, tab: str | None = None) -> None:
         dialog = PreferencesDialog(self.preferences, self)
+        dialog.backupRequested.connect(self._on_backup_workspace)
+        # A restore rewrote preferences.json: close without saving, or OK
+        # would overwrite it with this session's preferences.
+        dialog.restoreRequested.connect(lambda: self._on_restore_workspace() and dialog.reject())
         if tab:
             for index in range(dialog.tabs.count()):
                 if dialog.tabs.tabText(index) == tab:
@@ -1148,6 +1218,8 @@ class MainWindow(QMainWindow):
             self.controller_setup_view.set_default_file(self.preferences.controller_setup_default_file)
             log_path = self.preferences.log_path or current_log_path()
             configure_logging(self.preferences.log_level, log_path)
+            if self._layout_settings() is not None:
+                self._update_plug_in_watch()
             if self.preferences.auto_start_live_monitor and self.config is not None:
                 # Turning the setting on with a mapping already loaded starts
                 # monitoring immediately, matching "Enable MIDI routing
@@ -1172,13 +1244,49 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(summarize_results(results), 10_000)
         return results
 
-    def _sync_at_startup(self) -> list[SyncResult]:
-        """Launch-time Sync: silent when nothing is recorded, status bar only."""
+    def _sync_at_startup(self, ports: list[str] | None = None) -> list[SyncResult]:
+        """Launch-time Sync: silent when nothing is recorded, status bar only.
+        Seeds the plug-in tracker with the same port list, so a controller
+        synced here isn't synced again by the first plug-in poll."""
+        if ports is None:
+            ports = list_output_ports()
+        self._plug_in_tracker.seed(ports)
         sync_sets = list(self.preferences.controller_sync_sets)
         if not sync_sets:
             return []
-        results = run_sync(sync_sets, list_output_ports())
+        results = run_sync(sync_sets, ports)
         self.statusBar().showMessage(summarize_results(results), 10_000)
+        return results
+
+    def _start_controller_sync(self) -> None:
+        """Launch-time entry point (real app only): the Sync at launch, if
+        enabled, then watching for controllers being plugged in."""
+        if self.preferences.auto_sync_on_startup:
+            self._sync_at_startup()
+        self._update_plug_in_watch()
+
+    def _update_plug_in_watch(self) -> None:
+        """Starts or stops the plug-in poll to match the preference. Starting
+        it seeds the tracker with what's connected now (without sending), so
+        only controllers plugged in from then on are synced."""
+        if not self.preferences.auto_sync_on_plug_in:
+            self._plug_in_timer.stop()
+            self._plug_in_tracker.reset()
+            return
+        if self._plug_in_timer.isActive():
+            return
+        if not self._plug_in_tracker.seeded:
+            self._plug_in_tracker.seed(list_output_ports())
+        self._plug_in_timer.start()
+
+    def _poll_plugged_controllers(self) -> list[SyncResult]:
+        """Sends a sync set once to each controller whose port just appeared."""
+        ports = list_output_ports()
+        due = self._plug_in_tracker.due(self.preferences.controller_sync_sets, ports)
+        if not due:
+            return []
+        results = run_sync(due, ports)
+        self.statusBar().showMessage("Plugged in -- " + summarize_results(results), 10_000)
         return results
 
     def _on_record_toggled(self, recording: bool) -> None:
@@ -1431,6 +1539,7 @@ class MainWindow(QMainWindow):
         self._rebuild_channel_columns()
         self._refresh_layout_usage()
         self._refresh_deck_view()
+        self.function_search_view.set_config(self.config)
         self.live_monitor_view.set_config(self.config)
         if self.preferences.auto_start_live_monitor:
             self.live_monitor_view.ensure_monitoring_started()
@@ -1751,6 +1860,63 @@ class MainWindow(QMainWindow):
         # (clicking the same physical control's other half again).
         self._update_layout_selection(matches[0].channel, matches[0].event_type, matches[0].control)
 
+    def _on_function_result_selected(self, result: FunctionResult) -> None:
+        """A Find-function result: select its first control in the current
+        mapping tab (like a layout cell click), then outline *every* control
+        bound to it on the three layouts -- after the selection, whose own
+        selectionChanged handler narrows the outline to one control."""
+        if self.config is None or not result.controls:
+            return
+        tab = next(
+            (key for key in ("channel", "deck", "controller") if self._tab_indexes[key] == self.left_tabs.currentIndex()),
+            "channel",
+        )
+        first = result.controls[0]
+        first_keys = [
+            layout_mod.presentation_key_for_hit(hit)
+            for hit in catalog.lookup(first.channel, first.event_type, first.control)
+        ]
+        selected = False
+        if tab == "deck":
+            selected = self._select_deck_group_for_mappings(result.mappings)
+        elif tab == "controller":
+            selected = any(self._select_controller_cell(key) for key in first_keys)
+            # The tree row stands for a whole cell, and its own handler picks
+            # *some* control on it; point the edit panel at this exact one.
+            self._select_control_in_channel_columns(first)
+        if not selected:
+            tab = "channel"
+            self._select_control_in_channel_columns(first)
+        self.left_tabs.setCurrentIndex(self._tab_indexes[tab])
+        keys = {
+            layout_mod.presentation_key_for_hit(hit)
+            for control in result.controls
+            for hit in catalog.lookup(control.channel, control.event_type, control.control)
+        }
+        self.layout_view.set_selected_keys(keys)
+        self.deck_layout_view.set_selected_keys(keys)
+        self.controller_layout_view.set_selected_keys(keys)
+        self.statusBar().showMessage(
+            f"'{result.label}' ({result.location()}): {len(result.triggers)} control(s), "
+            f"{len(keys)} highlighted on the layout"
+        )
+
+    def _select_deck_group_for_mappings(self, mappings: list[MappingElement]) -> bool:
+        """Selects the By Deck row whose group holds one of `mappings` --
+        the exact deck/slot row, unlike _select_deck_group's first cell hit."""
+        wanted = {id(mapping) for mapping in mappings}
+        for view in self._deck_tree_views:
+            model = view.model()
+            for row in range(model.rowCount()):
+                slot_index = model.index(row, 0)
+                for child_row in range(model.rowCount(slot_index)):
+                    index = model.index(child_row, 0, slot_index)
+                    group = index.data(NODE_ROLE)
+                    if isinstance(group, MappingGroup) and any(id(m) in wanted for _, _, m in group.members):
+                        self._select_model_index(view, index)
+                        return True
+        return False
+
     def _update_layout_selection(self, channel: str | None, event_type: str | None, control_no: str | None) -> None:
         keys: set[layout_mod.CellKey] = set()
         if channel and event_type and control_no:
@@ -1950,6 +2116,7 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event) -> None:
         self._record_timer.stop()
+        self._plug_in_timer.stop()
         self._record_monitor.close_all()
         settings = self._layout_settings()
         if settings is not None:
@@ -2173,6 +2340,122 @@ class MainWindow(QMainWindow):
                 self.left_tabs.setCurrentIndex(self._tab_indexes["channel"])
         self._update_layout_selection(channel, event_type, control_no)
 
+    def _on_backup_workspace(self) -> Path | None:
+        """File → Back Up Workspace (issue #187): one zip of the workspace
+        folder, preferences.json and, if asked, the library index."""
+        include_library = False
+        size = backup.library_db_size()
+        if size is not None:
+            answer = QMessageBox.question(
+                self,
+                "Back up workspace",
+                f"Also include the music library index ({_human_size(size)})?\n\n"
+                "It lists your tracks, categories and playlists -- never the audio files -- "
+                "but it can be large, and a fresh scan rebuilds it.",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No | QMessageBox.StandardButton.Cancel,
+                QMessageBox.StandardButton.No,
+            )
+            if answer == QMessageBox.StandardButton.Cancel:
+                return None
+            include_library = answer == QMessageBox.StandardButton.Yes
+        exports = user_paths.subfolder(user_paths.EXPORTS)
+        exports.mkdir(parents=True, exist_ok=True)
+        path_str, _ = QFileDialog.getSaveFileName(
+            self, "Back Up Workspace", str(exports / backup.default_backup_name()), _BACKUP_FILTER
+        )
+        if not path_str:
+            return None
+        target = Path(path_str)
+        if target.suffix.lower() != ".zip":
+            target = target.with_name(target.name + backup.BACKUP_SUFFIX)
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        try:
+            manifest = backup.create_backup(target, include_library=include_library)
+        except (OSError, sqlite3.Error) as exc:
+            _LOGGER.exception("Workspace backup to %s failed", target)
+            QMessageBox.critical(self, "Backup failed", str(exc))
+            return None
+        finally:
+            QApplication.restoreOverrideCursor()
+        _LOGGER.info("Backed up %d files to %s", len(manifest.entries), target)
+        self.statusBar().showMessage(f"Backed up {len(manifest.entries)} files to {target}", 10_000)
+        return target
+
+    def _confirm_restore(self, plan: backup.RestorePlan) -> bool | None:
+        """Ask before a restore writes anything. Returns whether to include
+        the library index, or None when cancelled."""
+        overwrites = plan.overwrites
+        lines = [
+            (
+                f"Backup made {plan.manifest.created_at or 'at an unknown date'} "
+                f"with DJ MIDI Studio {plan.manifest.app_version}."
+            ),
+            f"{len(plan.creates)} file(s) will be added, {len(overwrites)} existing file(s) overwritten.",
+        ]
+        if overwrites:
+            shown = [str(item.target) for item in overwrites[:8]]
+            if len(overwrites) > len(shown):
+                shown.append(f"... and {len(overwrites) - len(shown)} more")
+            lines.append("Overwritten:\n" + "\n".join(shown))
+        lines.append("Files that are not in the backup are kept.")
+        box = QMessageBox(self)
+        box.setIcon(QMessageBox.Icon.Warning)
+        box.setWindowTitle("Restore workspace")
+        box.setText("Restore this backup over your current files?")
+        box.setInformativeText("\n\n".join(lines))
+        library_check = None
+        if plan.manifest.has(backup.LIBRARY):
+            library_check = QCheckBox("Also restore the music library index (replaces the current one)")
+            library_check.setChecked(backup.library_db_size() is None)
+            box.setCheckBox(library_check)
+        restore_button = box.addButton("Restore", QMessageBox.ButtonRole.AcceptRole)
+        box.addButton(QMessageBox.StandardButton.Cancel)
+        box.exec()
+        if box.clickedButton() is not restore_button:
+            return None
+        return library_check is not None and library_check.isChecked()
+
+    def _on_restore_workspace(self) -> bool:
+        """File → Restore Workspace (issue #187). The restored preferences,
+        profiles and library are picked up at the next launch."""
+        exports = user_paths.subfolder(user_paths.EXPORTS)
+        path_str, _ = QFileDialog.getOpenFileName(
+            self, "Restore Workspace", str(exports if exports.is_dir() else Path.home()), _BACKUP_FILTER
+        )
+        if not path_str:
+            return False
+        try:
+            plan = backup.restore_backup(path_str)
+        except (backup.BackupError, OSError) as exc:
+            QMessageBox.critical(self, "Cannot restore this backup", str(exc))
+            return False
+        include_library = self._confirm_restore(plan)
+        if include_library is None:
+            return False
+        if include_library:
+            self.music_library_view.close_db()
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        try:
+            backup.restore_backup(path_str, dry_run=False, include_library=include_library)
+        except (backup.BackupError, OSError, sqlite3.Error) as exc:
+            _LOGGER.exception("Workspace restore from %s failed", path_str)
+            QMessageBox.critical(self, "Restore failed", str(exc))
+            return False
+        finally:
+            QApplication.restoreOverrideCursor()
+        _LOGGER.info("Restored workspace backup %s", path_str)
+        self.statusBar().showMessage(f"Restored {Path(path_str).name}", 10_000)
+        answer = QMessageBox.question(
+            self,
+            "Workspace restored",
+            "Your files are restored. Restart DJ MIDI Studio to load the restored preferences, "
+            "controller profiles and library -- until then, saving preferences would overwrite "
+            "the restored ones.\n\nQuit now?",
+        )
+        if answer == QMessageBox.StandardButton.Yes:
+            self.close()
+        return True
+
     def _remember_draft(self, path: str) -> None:
         settings = self._layout_settings()
         if settings is not None:
@@ -2224,6 +2507,58 @@ class MainWindow(QMainWindow):
         folder.mkdir(parents=True, exist_ok=True)
         reveal_in_file_manager(folder)
 
+    def _cheat_sheet_preselection(self, candidates: list[str]) -> set[str]:
+        """Which candidate controllers the cheat-sheet dialog ticks first:
+        the ones connected right now (by MIDI port name) and the one the
+        Controller Images tab shows; failing both, the best-matching one."""
+        guessed: set[str] = set()
+        for port in list_input_ports():
+            guessed.update(match.controller.name for match in catalog.detect_controller(port))
+        guessed.add(self.controller_image_view.current_controller_name())
+        chosen = guessed & set(candidates)
+        return chosen or set(candidates[:1])
+
+    def _on_export_cheat_sheet(
+        self, controllers: list[str] | None = None, path: Path | None = None
+    ) -> Path | None:
+        """File -> Export -> Cheat Sheet (PDF) (issue #182). `controllers`
+        and `path` skip the dialogs (tests)."""
+        if self.config is None:
+            QMessageBox.information(self, "Cheat Sheet", "Open a mapping first.")
+            return None
+        if controllers is None:
+            candidates = cheat_sheet.candidate_controllers(self.config)
+            if not candidates:
+                QMessageBox.information(
+                    self, "Cheat Sheet", "No registered controller recognizes the triggers of this mapping."
+                )
+                return None
+            names = [name for name, _count in candidates]
+            dialog = CheatSheetExportDialog(candidates, self._cheat_sheet_preselection(names), self)
+            if dialog.exec() != QDialog.DialogCode.Accepted:
+                return None
+            controllers = dialog.selected_controllers()
+        if path is None:
+            stem = self.current_path.stem if self.current_path is not None else "mapping"
+            path_str, _ = QFileDialog.getSaveFileName(
+                self,
+                "Export cheat sheet",
+                str(user_paths.subfolder(user_paths.EXPORTS) / f"{stem}-cheat-sheet.pdf"),
+                "PDF files (*.pdf)",
+            )
+            if not path_str:
+                return None
+            path = Path(path_str)
+        sheets = cheat_sheet.build_sheets(self.config, controllers)
+        source = self.current_path.name if self.current_path is not None else None
+        try:
+            pages = write_cheat_sheet_pdf(path, sheets, source)
+        except OSError as exc:
+            QMessageBox.warning(self, "Cheat Sheet", f"Could not write {path}:\n{exc}")
+            return None
+        self.statusBar().showMessage(f"Cheat sheet exported: {path} ({pages} page(s))")
+        return path
+
     def _on_reveal_mapping(self) -> None:
         if self.current_path is not None:
             reveal_in_file_manager(self.current_path)
@@ -2268,6 +2603,7 @@ class MainWindow(QMainWindow):
         self._compare_action.setEnabled(self.config is not None)
         self._compare_backup_action.setEnabled(self.config is not None and backup is not None and backup.is_file())
         self._reveal_action.setEnabled(has_file)
+        self._cheat_sheet_action.setEnabled(self.config is not None)
         self.introduction_view.set_files_summary(
             mapping=self.current_path,
             backup=backup if backup is not None and backup.is_file() else None,

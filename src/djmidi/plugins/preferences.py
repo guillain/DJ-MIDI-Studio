@@ -39,6 +39,8 @@ class PluginPreferences:
     reopen_last_files: bool = True
     # Send every stored controller sync set once at launch (Record → auto-play).
     auto_sync_on_startup: bool = True
+    # Send a controller its sync set when its output port appears (issue #183).
+    auto_sync_on_plug_in: bool = True
     # Session JSON or Serato XML Controller Setup loads when first shown ("" = none).
     controller_setup_default_file: str = ""
     # One-click "Sync" sets, at most one per controller (see controller_sync).
@@ -85,6 +87,7 @@ class PluginPreferences:
                 "auto_start_live_monitor": self.auto_start_live_monitor,
                 "reopen_last_files": self.reopen_last_files,
                 "auto_sync_on_startup": self.auto_sync_on_startup,
+                "auto_sync_on_plug_in": self.auto_sync_on_plug_in,
                 "controller_setup_default_file": self.controller_setup_default_file,
                 "controller_sync_sets": [sync_set.to_dict() for sync_set in self.controller_sync_sets],
             },
@@ -136,6 +139,7 @@ class PluginPreferences:
             auto_start_live_monitor=bool(raw.get("auto_start_live_monitor", True)),
             reopen_last_files=bool(raw.get("reopen_last_files", True)),
             auto_sync_on_startup=bool(raw.get("auto_sync_on_startup", True)),
+            auto_sync_on_plug_in=bool(raw.get("auto_sync_on_plug_in", True)),
             controller_setup_default_file=str(raw.get("controller_setup_default_file", "")),
             controller_sync_sets=list(sync_sets.values()),
         )

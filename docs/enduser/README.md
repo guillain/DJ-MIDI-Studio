@@ -72,6 +72,7 @@ Open several, one per controller.
 | 🎧 | [Traktor mappings](features/traktor-mappings.md) | Open Traktor `.tsi` mappings and re-assign MIDI triggers |
 | 🔍 | [Compare mappings](features/mapping-diff.md) | What changed between two mappings, by physical control |
 | 🖼️ | [Controller Images](features/controller-images.md) | Official diagrams and manuals, offline |
+| 🖨️ | [Cheat Sheet (PDF)](features/cheat-sheet.md) | Print the mapping on each controller's photo |
 | 🔀 | [MIDI Routing, Clock and Metronome](features/midi-routing-and-clock.md) | Route MIDI, MIDI Clock from Ableton Link, MIDI loops |
 | 🪟 | [Workspace and preferences](features/workspace.md) | Dockable tools, Performance Mode, Preferences |
 

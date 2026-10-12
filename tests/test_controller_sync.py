@@ -4,6 +4,7 @@ import pytest
 
 from djmidi.controller_sync import (
     ControllerSyncSet,
+    PlugInSyncTracker,
     SyncMessage,
     SyncResult,
     resolve_output_port,
@@ -167,3 +168,85 @@ def test_sync_sets_from_recording_splits_by_port():
         ("DDJ-XP2", "PIONEER DDJ-XP2", 2),
         ("Other", "Other", 1),
     ]
+
+
+_XP2 = ControllerSyncSet("DDJ-XP2", "PIONEER DDJ-XP2", ())
+_XZ = ControllerSyncSet("XDJ-XZ", "", ())
+
+
+def test_plug_in_tracker_first_call_only_seeds():
+    tracker = PlugInSyncTracker()
+    assert not tracker.seeded
+    assert tracker.due([_XP2], ["PIONEER DDJ-XP2"]) == []
+    assert tracker.seeded
+
+
+def test_plug_in_tracker_sends_on_appearance_once_and_again_after_replug():
+    tracker = PlugInSyncTracker()
+    tracker.seed(["IAC Driver Bus 1"])
+    assert tracker.due([_XP2, _XZ], ["IAC Driver Bus 1", "PIONEER DDJ-XP2"]) == [_XP2]
+    # Staying connected never re-sends.
+    assert tracker.due([_XP2, _XZ], ["IAC Driver Bus 1", "PIONEER DDJ-XP2"]) == []
+    # Unplugged, then replugged: due again.
+    assert tracker.due([_XP2, _XZ], ["IAC Driver Bus 1"]) == []
+    assert tracker.due([_XP2, _XZ], ["IAC Driver Bus 1", "PIONEER DDJ-XP2"]) == [_XP2]
+
+
+def test_plug_in_tracker_seed_prevents_double_sync_at_launch():
+    tracker = PlugInSyncTracker()
+    tracker.seed(["PIONEER DDJ-XP2", "XDJ-XZ"])  # the ports the launch Sync used
+    assert tracker.due([_XP2, _XZ], ["PIONEER DDJ-XP2", "XDJ-XZ"]) == []
+
+
+def test_plug_in_tracker_ignores_unrelated_ports_and_new_sets_for_connected_controllers():
+    tracker = PlugInSyncTracker()
+    tracker.seed(["PIONEER DDJ-XP2"])
+    assert tracker.due([_XP2], ["PIONEER DDJ-XP2", "Some Synth"]) == []
+    # A set recorded while XDJ-XZ is already connected isn't sent back to it.
+    tracker.seed(["PIONEER DDJ-XP2", "XDJ-XZ"])
+    assert tracker.due([_XP2, _XZ], ["PIONEER DDJ-XP2", "XDJ-XZ"]) == []
+
+
+def test_plug_in_tracker_several_controllers_appearing_together():
+    tracker = PlugInSyncTracker()
+    tracker.seed([])
+    assert tracker.due([_XP2, _XZ], ["XDJ-XZ", "PIONEER DDJ-XP2"]) == [_XP2, _XZ]
+
+
+def test_plug_in_tracker_reset_reseeds_without_sending():
+    tracker = PlugInSyncTracker()
+    tracker.seed([])
+    tracker.reset()
+    assert tracker.due([_XP2], ["PIONEER DDJ-XP2"]) == []
+
+
+def test_with_messages_replaces_only_the_messages():
+    original = ControllerSyncSet("DDJ-XP2", "PIONEER DDJ-XP2", (SyncMessage("Note On", 1, 11, 127),))
+    edited = original.with_messages([SyncMessage("Control Change", 2, 7, 0)])
+    assert edited == ControllerSyncSet("DDJ-XP2", "PIONEER DDJ-XP2", (SyncMessage("Control Change", 2, 7, 0),))
+    assert original.messages == (SyncMessage("Note On", 1, 11, 127),)
+
+
+def test_move_message_clamps_and_ignores_bad_index():
+    from djmidi.controller_sync import move_message
+
+    a, b, c = (SyncMessage("Note On", 1, n, 127) for n in (1, 2, 3))
+    assert move_message((a, b, c), 2, -1) == (a, c, b)
+    assert move_message((a, b, c), 0, 1) == (b, a, c)
+    assert move_message((a, b, c), 0, -1) == (a, b, c)
+    assert move_message((a, b, c), 2, 5) == (a, b, c)
+    assert move_message((a, b, c), 7, 1) == (a, b, c)
+
+
+def test_messages_from_rows_validates_and_names_the_bad_row():
+    from djmidi.controller_sync import messages_from_rows
+
+    assert messages_from_rows([("Note On", "1", "11", "127"), ("cc", 2, 7, 0)]) == (
+        SyncMessage("Note On", 1, 11, 127),
+        SyncMessage("Control Change", 2, 7, 0),
+    )
+    assert messages_from_rows([]) == ()
+    with pytest.raises(ValueError, match="Message 2: data1"):
+        messages_from_rows([("Note On", 1, 11, 127), ("Note On", 1, 128, 0)])
+    with pytest.raises(ValueError, match="Message 1"):
+        messages_from_rows([("Note On", 1, 11)])

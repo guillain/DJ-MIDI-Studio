@@ -102,6 +102,36 @@ class ControllerSyncSet:
             messages=tuple(SyncMessage.from_dict(message) for message in messages),
         )
 
+    def with_messages(self, messages: Iterable[SyncMessage]) -> ControllerSyncSet:
+        """A copy with its messages replaced (the Preferences editor's result)."""
+        return ControllerSyncSet(self.controller, self.output_port, tuple(messages))
+
+
+def move_message(messages: Sequence[SyncMessage], index: int, offset: int) -> tuple[SyncMessage, ...]:
+    """Moves ``messages[index]`` by ``offset`` places (``-1`` = up), clamped to
+    the list's ends; an out-of-range ``index`` returns the list unchanged."""
+    items = list(messages)
+    if not 0 <= index < len(items):
+        return tuple(items)
+    target = max(0, min(len(items) - 1, index + offset))
+    items.insert(target, items.pop(index))
+    return tuple(items)
+
+
+def messages_from_rows(rows: Iterable[Sequence[object]]) -> tuple[SyncMessage, ...]:
+    """Validates edited ``(event_type, channel, data1, data2)`` rows.
+
+    Raises ``ValueError`` naming the first bad row (1-based), so an editor can
+    point at it instead of silently dropping the message."""
+    messages: list[SyncMessage] = []
+    for number, row in enumerate(rows, start=1):
+        try:
+            event_type, channel, data1, data2 = row
+            messages.append(SyncMessage.create(event_type, channel, data1, data2))
+        except ValueError as exc:
+            raise ValueError(f"Message {number}: {exc}") from None
+    return tuple(messages)
+
 
 def sync_set_from_events(controller: str, events: Iterable[object], output_port: str = "") -> ControllerSyncSet:
     """Builds a sync set from recorded ``midi_io.MidiEvent``-like objects.
@@ -232,6 +262,52 @@ def run_sync(
     return results
 
 
+class PlugInSyncTracker:
+    """Decides which sync sets to send when a controller is plugged in.
+
+    Remembers the output ports seen on the previous poll; a set is due only
+    when the port it resolves to (:func:`resolve_output_port`) wasn't there
+    last time -- so a controller staying connected is never re-synced, and
+    unplugging then replugging it syncs it again. Tracking ports rather than
+    controllers also means a set recorded (or edited) while its controller
+    is already connected isn't sent back to it on the next poll.
+
+    The first :meth:`due` call only records the ports (a controller already
+    connected when watching starts wasn't "plugged in"); :meth:`seed` does
+    the same explicitly, e.g. with the port list the launch-time Sync just
+    used, so a controller isn't synced twice at launch.
+    """
+
+    def __init__(self) -> None:
+        self._known: frozenset[str] | None = None
+
+    @property
+    def seeded(self) -> bool:
+        return self._known is not None
+
+    def seed(self, available_ports: Iterable[str]) -> None:
+        self._known = frozenset(available_ports)
+
+    def reset(self) -> None:
+        """Forgets the ports, so the next :meth:`due` call only re-seeds."""
+        self._known = None
+
+    def due(self, sync_sets: Iterable[ControllerSyncSet], available_ports: Sequence[str]) -> list[ControllerSyncSet]:
+        """The sets whose controller appeared since the previous call."""
+        previous = self._known
+        self.seed(available_ports)
+        if previous is None:
+            return []
+        appeared = [port for port in available_ports if port not in previous]
+        if not appeared:
+            return []
+        return [
+            sync_set
+            for sync_set in sync_sets
+            if (port := resolve_output_port(sync_set, available_ports)) is not None and port in appeared
+        ]
+
+
 def summarize_results(results: Sequence[SyncResult]) -> str:
     """One status-bar line, e.g. ``"Synced 1/2 controller(s): DDJ-XP2 (12 msg), XDJ-XZ (not connected)"``."""
     if not results:
@@ -246,8 +322,11 @@ def summarize_results(results: Sequence[SyncResult]) -> str:
 
 __all__ = [
     "ControllerSyncSet",
+    "PlugInSyncTracker",
     "SyncMessage",
     "SyncResult",
+    "messages_from_rows",
+    "move_message",
     "resolve_output_port",
     "run_sync",
     "summarize_results",
