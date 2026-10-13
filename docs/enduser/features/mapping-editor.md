@@ -142,6 +142,8 @@ learning on a function moves every function of that control with it.
 1. `Edit → Validate` checks the structure and looks for conflicts; results
    appear as errors, warnings and info in the right-hand panel. Duplicate
    copies are reported as *info* only, since they are expected.
+   **Ready for live…** (next to it, or `Edit → Ready for Live…`) runs a
+   pre-gig check — see [Ready for live](live-ready-check.md).
 2. `File → Save Mapping` or `Save Mapping As…` shows the exact changes (a
    diff) before writing. The version it replaces is kept next to the file
    (`<name>.bak`) and the file is written in one atomic step.
@@ -157,6 +159,7 @@ An unedited file saves back byte-for-byte identical.
 
 - [Traktor mappings](traktor-mappings.md)
 - [Compare mappings](mapping-diff.md): what changed between two mappings
+- [Ready for live](live-ready-check.md): a pre-gig check of the mapping.
 - [Readable function names](function-names.md): the short names the trees
   and Find function show.
 - [Controller Emulator](controller-emulator.md): click through the mapping

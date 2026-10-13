@@ -78,6 +78,23 @@ CREATE TABLE IF NOT EXISTS removed_categories (
     canonical TEXT PRIMARY KEY
 );
 
+-- Smart playlists (issue #259): the saved rule set (JSON, see
+-- `smart_playlist.SmartRules`) of a `playlists` row whose `playlist_tracks`
+-- hold the last evaluation, so export/compare treat it like any playlist.
+CREATE TABLE IF NOT EXISTS smart_playlists (
+    playlist_id INTEGER PRIMARY KEY REFERENCES playlists(id) ON DELETE CASCADE,
+    rules TEXT NOT NULL
+);
+
+-- Per-path play counts from the last DJ history the user loaded (issue
+-- #259; read from Serato/Traktor history, never written back), so a smart
+-- playlist's "not played for N days" rule still works after a restart.
+CREATE TABLE IF NOT EXISTS play_stats (
+    path TEXT PRIMARY KEY,
+    play_count INTEGER NOT NULL,
+    last_played TEXT
+);
+
 -- Small per-library UI choices remembered between sessions (issue #211:
 -- the last "Auto: mix path" options), as JSON-encoded values. Living in
 -- the library index keeps them out of preferences.json, and the test
@@ -448,6 +465,7 @@ class LibraryDB:
         self._conn.commit()
 
     def delete_playlist(self, playlist_id: int) -> None:
+        self._conn.execute("DELETE FROM smart_playlists WHERE playlist_id = ?", (playlist_id,))
         self._conn.execute("DELETE FROM playlist_tracks WHERE playlist_id = ?", (playlist_id,))
         self._conn.execute("DELETE FROM playlists WHERE id = ?", (playlist_id,))
         self._conn.commit()
@@ -467,6 +485,39 @@ class LibraryDB:
             "SELECT path FROM playlist_tracks WHERE playlist_id = ? ORDER BY position", (playlist_id,)
         ).fetchall()
         return [r[0] for r in rows]
+
+    # --- smart playlists (issue #259) --------------------------------------
+
+    def set_smart_rules(self, playlist_id: int, rules_json: str) -> None:
+        self._conn.execute(
+            "INSERT OR REPLACE INTO smart_playlists (playlist_id, rules) VALUES (?, ?)", (playlist_id, rules_json)
+        )
+        self._conn.commit()
+
+    def smart_rules(self, playlist_id: int) -> str | None:
+        row = self._conn.execute("SELECT rules FROM smart_playlists WHERE playlist_id = ?", (playlist_id,)).fetchone()
+        return row[0] if row is not None else None
+
+    def list_smart_rules(self) -> dict[int, str]:
+        """Playlist id -> saved rules JSON, for every smart playlist."""
+        return {r[0]: r[1] for r in self._conn.execute("SELECT playlist_id, rules FROM smart_playlists")}
+
+    def set_play_stats(self, stats: Iterable[tuple[str, int, str | None]]) -> None:
+        """Replace the stored play counts with ``(path, count, last played as
+        ISO-8601 or None)`` rows from a freshly loaded history."""
+        with self._conn:
+            self._conn.execute("DELETE FROM play_stats")
+            self._conn.executemany(
+                "INSERT OR REPLACE INTO play_stats (path, play_count, last_played) VALUES (?, ?, ?)",
+                [(str(path), int(count), last) for path, count, last in stats],
+            )
+
+    def play_stats(self) -> dict[str, tuple[int, str | None]]:
+        rows = self._conn.execute("SELECT path, play_count, last_played FROM play_stats")
+        return {r[0]: (r[1], r[2]) for r in rows}
+
+    def has_play_stats(self) -> bool:
+        return self._conn.execute("SELECT 1 FROM play_stats LIMIT 1").fetchone() is not None
 
     # --- taxonomy overrides ----------------------------------------------
 

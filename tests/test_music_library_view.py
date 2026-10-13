@@ -772,6 +772,52 @@ def test_find_duplicates_opens_read_only_dialog(library, monkeypatch):
     assert view.duplicates_dialog is not dialog
 
 
+def test_find_duplicates_lists_other_versions_as_suggestions(library, monkeypatch):
+    """Issue #257: radio edit / extended versions of one song are listed in
+    their own section, with their titles, and can never be ticked."""
+    from PySide6.QtCore import Qt
+
+    from djmidi.gui import duplicates_dialog
+
+    view, music, _ = library
+    radio = _mp3(music / "misc" / "alpha radio.mp3", title="Alpha (Radio Edit)", artist="Zed")
+    extended = _mp3(music / "misc" / "alpha ext.mp3", title="Alpha [Extended Mix]", artist="ZED")
+    view.start_scan()
+    view.run_pending_job()
+
+    view.find_duplicates()
+    view.run_pending_job()
+    dialog = view.duplicates_dialog
+    versions = [g for g in dialog.groups if g.tier == "versions"]
+    assert len(versions) == 1
+    assert set(versions[0].paths) == {str(music / "Tek" / "Tribe" / "a.mp3"), str(radio), str(extended)}
+    assert "1 song(s) with other versions" in view.status_label.text()
+    assert "1 song(s) with several versions" in dialog.summary_label.text()
+
+    version_items = [item for item in dialog.file_items() if "—" in item.text(0)]
+    assert {item.text(0).split(" — ")[0] for item in version_items} == {
+        "Alpha",
+        "Alpha (Radio Edit)",
+        "Alpha [Extended Mix]",
+    }
+    assert not any(item.flags() & Qt.ItemFlag.ItemIsUserCheckable for item in version_items)
+    dialog.set_checked(str(radio), True)
+    assert dialog.checked_paths() == []
+    assert not dialog.trash_button.isEnabled()
+
+    revealed: list[str] = []
+    monkeypatch.setattr(duplicates_dialog, "reveal_in_file_manager", revealed.append)
+    dialog._reveal(version_items[0])
+    assert revealed == [version_items[0].data(0, duplicates_dialog.PATH_ROLE)]
+
+    # A version moved away elsewhere leaves a two-version group; a second one
+    # removes the suggestion.
+    dialog.remove_paths([str(radio)])
+    assert [len(g.paths) for g in dialog.groups if g.tier == "versions"] == [2]
+    dialog.remove_paths([str(extended)])
+    assert not [g for g in dialog.groups if g.tier == "versions"]
+
+
 def test_discard_duplicates_moves_ticked_copies_to_trash(library, monkeypatch):
     """Issue #208: ticked copies go to the (here fake, tmp_path) Trash after
     a confirmation, a group keeping no copy is refused, moved rows turn
@@ -1305,3 +1351,54 @@ def test_rename_dialog_preview_and_template_errors(library):
     assert ok.isEnabled() is False
     assert "/" in dialog.summary_label.text()
     assert dialog.renames() == []
+def _png_file(path: Path) -> Path:
+    from PySide6.QtGui import QImage
+
+    image = QImage(4, 4, QImage.Format.Format_RGB32)
+    image.fill(0xFF3366)
+    assert image.save(str(path), "PNG")
+    return path
+
+
+def test_cover_art_set_remove_and_undo(library, monkeypatch):
+    from djmidi.library.cover_art import read_cover_art
+
+    view, music, tmp_path = library
+    path = str(music / "Tek" / "Tribe" / "a.mp3")
+    view.select_path(path)
+    assert view.cover_label.text() == "No cover"
+    assert view.set_cover_button.isEnabled()
+    assert not view.remove_cover_button.isEnabled()
+
+    image = _png_file(tmp_path / "cover.png")
+    assert view.set_cover_from_file(str(image))
+    assert read_cover_art(path).data == image.read_bytes()
+    assert not view.cover_label.pixmap().isNull()
+    assert view.remove_cover_button.isEnabled()
+    assert read_metadata(path).title == "Alpha"
+
+    assert view.remove_cover()
+    assert read_cover_art(path) is None
+    view.undo_stack.undo()
+    assert read_cover_art(path).data == image.read_bytes()
+    view.undo_stack.undo()
+    assert read_cover_art(path) is None
+    assert view.cover_label.text() == "No cover"
+    view.undo_stack.redo()
+    assert read_cover_art(path).data == image.read_bytes()
+
+    warnings = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda *args: warnings.append(args))
+    bad = tmp_path / "cover.gif"
+    bad.write_bytes(b"GIF89a" + b"\x00" * 10)
+    assert not view.set_cover_from_file(str(bad))
+    assert warnings
+
+
+def test_cover_buttons_disabled_without_a_track():
+    view = MusicLibraryView(db_path=":memory:")
+    view.show()
+    assert not view.set_cover_button.isEnabled()
+    assert not view.remove_cover_button.isEnabled()
+    assert not view.remove_cover()
+    view.close_db()

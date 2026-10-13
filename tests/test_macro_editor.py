@@ -8,7 +8,8 @@ from djmidi.gui import main_window as main_window_module
 from djmidi.gui.macro_editor import MacroManagerDialog
 from djmidi.gui.macro_player import MacroPlayer
 from djmidi.gui.main_window import MainWindow
-from djmidi.midi_macros import MacroStep, MidiMacro
+from djmidi.midi_io import MidiEvent
+from djmidi.midi_macros import MacroStep, MacroTrigger, MidiMacro
 from djmidi.plugins import PluginPreferences
 
 PRESS = SyncMessage("Note On", 1, 11, 127)
@@ -169,8 +170,9 @@ def test_manage_macros_saves_files_and_rebuilds_menu(tmp_path, monkeypatch):
     monkeypatch.setattr(main_window_module, "list_output_ports", list)
 
     class _Accepting:
-        def __init__(self, macros, ports, sync_sets, reserved, parent=None):
+        def __init__(self, macros, ports, sync_sets, reserved, parent=None, ensure_listening=None):
             assert "Ctrl+S" in reserved
+            assert ensure_listening is not None
 
         def exec(self):
             return QDialog.DialogCode.Accepted
@@ -183,5 +185,81 @@ def test_manage_macros_saves_files_and_rebuilds_menu(tmp_path, monkeypatch):
         assert window._on_manage_macros(_Accepting)
         assert [action.text() for action in window._macro_actions] == ["New one"]
         assert midi_macros.load_macros(user_paths.macros_dir()) == [_macro("New one")]
+    finally:
+        window.close()
+
+
+# --- MIDI Learn (issue #252) ------------------------------------------------------
+
+
+def _press(data1="40", data2="127", port="DDJ-XP2", event_type="Note On"):
+    return MidiEvent("in", "1", event_type, data1, data2, 0.0, port)
+
+
+def test_dialog_learns_a_trigger_from_the_next_press():
+    dialog = MacroManagerDialog([_macro("A")], [PORT], ensure_listening=lambda: True)
+    assert dialog.trigger_label.text() == "None" and not dialog.clear_trigger_button.isEnabled()
+    assert not dialog.feed_learn_event(_press())  # not learning: ignored
+    dialog.learn_button.click()
+    assert dialog.is_learning and dialog.learn_button.text() == "Cancel"
+    assert not dialog.feed_learn_event(_press(data2="0"))  # a release doesn't count
+    assert dialog.feed_learn_event(_press())
+    assert not dialog.is_learning
+    assert dialog.trigger_label.text() == "Note 40, ch 1 on DDJ-XP2"
+    dialog.accept()
+    assert dialog.edited_macros()[0].trigger == MacroTrigger("Note On", 1, 40, "DDJ-XP2")
+
+
+def test_dialog_learn_reports_no_input_cancels_and_clears():
+    trigger = MacroTrigger("Note On", 1, 40, "DDJ-XP2")
+    dialog = MacroManagerDialog([MidiMacro("A", PORT, (), "", trigger)], [PORT], ensure_listening=lambda: False)
+    assert not dialog.start_learn()
+    assert "No MIDI input" in dialog.status.text()
+    dialog.clear_trigger_button.click()
+    dialog.accept()
+    assert dialog.edited_macros()[0].trigger is None
+
+    unavailable = MacroManagerDialog([_macro("A")], [PORT])
+    assert not unavailable.learn_button.isEnabled()
+
+    learning = MacroManagerDialog([_macro("A"), _macro("B", shortcut="")], [PORT], ensure_listening=lambda: True)
+    learning.start_learn()
+    learning.learn_button.click()
+    assert not learning.is_learning and learning.status.text() == "Learn cancelled."
+    learning.start_learn()
+    learning.macro_list.setCurrentRow(1)  # switching macro stops listening
+    assert not learning.is_learning
+
+
+def test_controller_press_plays_its_macro_unless_the_editor_is_open(tmp_path, monkeypatch):
+    bound = MidiMacro("Bound", PORT, (MacroStep(PRESS),), trigger=MacroTrigger("Note On", 1, 40, "DDJ-XP2"))
+    midi_macros.save_macros(user_paths.macros_dir(), [bound])
+    window = _window(tmp_path)
+    sent = []
+    monkeypatch.setattr(main_window_module, "list_output_ports", lambda: [PORT])
+    monkeypatch.setattr("djmidi.midi_io.send_midi_message", lambda **kw: sent.append(kw))
+    try:
+        window._on_live_midi_event(_press(data2="0"))
+        assert sent == []
+        window._on_live_midi_event(_press())
+        assert len(sent) == 1
+        assert window.statusBar().currentMessage().startswith('Macro "Bound": sent 1')
+
+        class _Learning:
+            def __init__(self, *args, **kwargs):
+                self.fed = []
+
+            def exec(self):
+                window._on_live_midi_event(_press())
+                return QDialog.DialogCode.Rejected
+
+            def feed_learn_event(self, event):
+                self.fed.append(event)
+                return True
+
+        dialogs = []
+        assert not window._on_manage_macros(lambda *a, **kw: dialogs.append(_Learning()) or dialogs[-1])
+        assert len(dialogs[0].fed) == 1 and len(sent) == 1  # routed to the editor, not played
+        assert window._macro_dialog is None
     finally:
         window.close()
