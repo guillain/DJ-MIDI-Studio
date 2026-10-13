@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
+from PySide6.QtCore import QTimer
 from PySide6.QtGui import QUndoStack
 from PySide6.QtWidgets import (
     QFormLayout,
@@ -9,6 +10,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QLineEdit,
+    QMessageBox,
     QPushButton,
     QSizePolicy,
     QTableWidget,
@@ -17,7 +19,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from djmidi import catalog
+from djmidi import catalog, midi_learn
 from djmidi.gui import help_texts
 from djmidi.gui.commands import (
     AddAliasCommand,
@@ -30,7 +32,11 @@ from djmidi.gui.commands import (
 )
 from djmidi.gui.help_button import help_row
 from djmidi.gui.mapping_group import MappingGroup
-from djmidi.model import Alias, Control, MappingElement, Translation, UserIO
+from djmidi.midi_io import MidiEvent
+from djmidi.midi_learn import LearnedTrigger
+from djmidi.model import Alias, Control, MappingElement, MidiConfig, Translation, UserIO
+
+ConfirmConflict = Callable[[LearnedTrigger, list[str]], bool]
 
 
 class EditPanel(QWidget):
@@ -43,11 +49,30 @@ class EditPanel(QWidget):
         on_applied: Callable[[object], None],
         on_group_applied: OnGroupApplied | None = None,
         parent: QWidget | None = None,
+        config_provider: Callable[[], MidiConfig | None] | None = None,
+        ensure_listening: Callable[[], bool] | None = None,
     ) -> None:
         super().__init__(parent)
         self._undo_stack = undo_stack
         self._on_applied = on_applied
         self._on_group_applied = on_group_applied or (lambda: None)
+        self._config_provider = config_provider or (lambda: None)
+        # MIDI Learn (issue #220) reuses the Live Monitor's input stream rather
+        # than opening ports of its own: `ensure_listening` starts monitoring
+        # if needed and says whether any input is open, and MainWindow feeds
+        # every live event to `feed_learn_event`.
+        self._ensure_listening = ensure_listening or (lambda: False)
+        self.confirm_conflict: ConfirmConflict = self._ask_conflict
+        self._learn_controls: Callable[[], list[Control]] | None = None
+        self._learn_apply: Callable[[LearnedTrigger], None] | None = None
+        self._learn_button: QPushButton | None = None
+        self._learn_status: QLabel | None = None
+        self._learn_message = ""
+        self._learning = False
+        self._learn_timer = QTimer(self)
+        self._learn_timer.setSingleShot(True)
+        self._learn_timer.setInterval(midi_learn.LEARN_TIMEOUT_MS)
+        self._learn_timer.timeout.connect(lambda: self.cancel_learn("No control pressed — Learn timed out."))
         self._node: object | None = None
         self._layout = QVBoxLayout(self)
         self._layout.addLayout(help_row(self, *help_texts.EDIT_PANEL))
@@ -71,7 +96,16 @@ class EditPanel(QWidget):
             self._body = None
 
     def set_node(self, node: object | None) -> None:
+        self.cancel_learn(None)
+        if node is not self._node:
+            # A Learn result stays visible across the rebuild its own edit
+            # triggers, but not once the user moves to another item.
+            self._learn_message = ""
         self._clear_body()
+        self._learn_button = None
+        self._learn_status = None
+        self._learn_controls = None
+        self._learn_apply = None
         self._node = node
         if isinstance(node, Control):
             self._body = self._build_control_form(node)
@@ -142,6 +176,7 @@ class EditPanel(QWidget):
         form.addRow("Channel", channel)
         form.addRow("Event type", event_type)
         form.addRow("Control", control_no)
+        form.addRow(self._build_learn_row(lambda: [control], lambda trigger: self._learn_into_controls([control], trigger)))
         layout.addWidget(trigger_box)
 
         layout.addWidget(self._build_physical_control_box(control.channel, control.event_type, control.control))
@@ -178,6 +213,22 @@ class EditPanel(QWidget):
         form.addRow("Deck id", deck_id)
         form.addRow("Slot id", slot_id)
         layout.addWidget(deck_box)
+
+        # The trigger belongs to the parent <control>, so learning here moves
+        # that whole control (with every function it holds).
+        parent_control = midi_learn.find_parent_control(self._config_provider(), mapping)
+        if parent_control is not None:
+            learn_box = QGroupBox(
+                f"Trigger: ch{parent_control.channel} {parent_control.event_type} #{parent_control.control}"
+            )
+            learn_layout = QVBoxLayout(learn_box)
+            learn_layout.addWidget(
+                self._build_learn_row(
+                    lambda: [parent_control],
+                    lambda trigger: self._learn_into_controls([parent_control], trigger),
+                )
+            )
+            layout.addWidget(learn_box)
 
         translations_box = QGroupBox("Translations")
         translations_layout = QVBoxLayout(translations_box)
@@ -288,6 +339,10 @@ class EditPanel(QWidget):
         info_box = QGroupBox(f"<{group.tag}> [{group.event}] — {len(group.members)} linked control(s)")
         info_form = QFormLayout(info_box)
         info_form.addRow("Trigger", QLabel(f"ch{group.channel} {group.event_type} #{group.control_no}"))
+        group_controls = midi_learn.unique_controls(control for control, _, _ in group.members)
+        info_form.addRow(
+            self._build_learn_row(lambda: group_controls, lambda trigger: self._learn_into_group(group, trigger))
+        )
         layout.addWidget(info_box)
 
         layout.addWidget(self._build_physical_control_box(group.channel, group.event_type, group.control_no))
@@ -418,3 +473,128 @@ class EditPanel(QWidget):
         layout.addWidget(translations_box)
         layout.addWidget(aliases_box)
         return container
+
+    # ─── MIDI Learn ────────────────────────────────────────────────────────────
+
+    @property
+    def is_learning(self) -> bool:
+        return self._learning
+
+    def _build_learn_row(
+        self, controls: Callable[[], list[Control]], apply: Callable[[LearnedTrigger], None]
+    ) -> QWidget:
+        row = QWidget()
+        row_layout = QHBoxLayout(row)
+        row_layout.setContentsMargins(0, 0, 0, 0)
+        button = QPushButton("Learn")
+        button.setToolTip(
+            "Listen for the next control pressed on your controller and move this trigger to it. "
+            f"Click again (or wait {midi_learn.LEARN_TIMEOUT_MS // 1000} s) to cancel."
+        )
+        status = QLabel(self._learn_message)
+        status.setWordWrap(True)
+        row_layout.addWidget(button)
+        row_layout.addWidget(status, 1)
+        button.clicked.connect(self._on_learn_clicked)
+        self._learn_button = button
+        self._learn_status = status
+        self._learn_controls = controls
+        self._learn_apply = apply
+        return row
+
+    def _set_learn_message(self, message: str) -> None:
+        self._learn_message = message
+        if self._learn_status is not None:
+            self._learn_status.setText(message)
+
+    def _on_learn_clicked(self) -> None:
+        if self._learning:
+            self.cancel_learn("Learn cancelled.")
+        else:
+            self.start_learn()
+
+    def start_learn(self) -> bool:
+        if self._learn_apply is None or self._learning:
+            return False
+        if not self._ensure_listening():
+            self._set_learn_message("No MIDI input is open: connect a controller, or pick one in Live Monitor.")
+            return False
+        self._learning = True
+        if self._learn_button is not None:
+            self._learn_button.setText("Cancel")
+        self._set_learn_message(f"Press a control on your controller… ({midi_learn.LEARN_TIMEOUT_MS // 1000} s)")
+        self._learn_timer.start()
+        return True
+
+    def cancel_learn(self, message: str | None = "Learn cancelled.") -> None:
+        if not self._learning:
+            return
+        self._learning = False
+        self._learn_timer.stop()
+        if self._learn_button is not None:
+            self._learn_button.setText("Learn")
+        if message is not None:
+            self._set_learn_message(message)
+
+    def feed_learn_event(self, event: MidiEvent) -> bool:
+        """Called for every live MIDI event; returns True when the event was
+        consumed by an active Learn (only a press is: a release is ignored)."""
+        if not self._learning or self._learn_controls is None or self._learn_apply is None:
+            return False
+        trigger = midi_learn.trigger_from_event(event)
+        if trigger is None:
+            return False
+        controls = self._learn_controls()
+        apply = self._learn_apply
+        self.cancel_learn(None)
+        if all(midi_learn.trigger_of(control) == trigger for control in controls):
+            self._set_learn_message(f"Already on {trigger.label()}.")
+            return True
+        conflicts = midi_learn.find_trigger_conflicts(self._config_provider(), trigger, controls)
+        if conflicts and not self.confirm_conflict(trigger, midi_learn.describe_conflicts(conflicts)):
+            self._set_learn_message(f"Not reassigned: {trigger.label()} is already used.")
+            return True
+        warning = f" (also used by {len(conflicts)} other control(s))" if conflicts else ""
+        self._set_learn_message(f"Learned {trigger.label()}{warning}.")
+        apply(trigger)
+        return True
+
+    def _ask_conflict(self, trigger: LearnedTrigger, lines: list[str]) -> bool:
+        listing = "\n".join(f"• {line}" for line in lines)
+        answer = QMessageBox.warning(
+            self,
+            "Trigger already used",
+            f"{trigger.label()} is already bound to:\n\n{listing}\n\n"
+            "Reassign anyway? Both will fire on the same control.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+        return answer == QMessageBox.StandardButton.Yes
+
+    def _learn_into_controls(self, controls: list[Control], trigger: LearnedTrigger) -> None:
+        """One undo step: a macro of the existing SetAttrCommand per changed field."""
+        self._undo_stack.beginMacro(f"MIDI Learn → {trigger.label()}")
+        for control in controls:
+            for attr in ("channel", "event_type", "control"):
+                self._push(control, attr, getattr(control, attr), getattr(trigger, attr), control)
+        self._undo_stack.endMacro()
+
+    def _learn_into_group(self, group: MappingGroup, trigger: LearnedTrigger) -> None:
+        """Moves every linked duplicate at once (a macro of SetGroupAttrCommand),
+        plus the group's own trigger fields so the refreshed panel shows it."""
+        controls = midi_learn.unique_controls(control for control, _, _ in group.members)
+        fields = (("channel", "channel"), ("event_type", "event_type"), ("control", "control_no"))
+        self._undo_stack.beginMacro(f"MIDI Learn → {trigger.label()} ({len(controls)} linked)")
+        for control_attr, group_attr in fields:
+            new_value = getattr(trigger, control_attr)
+            old_values = [getattr(control, control_attr) for control in controls]
+            if any(old != new_value for old in old_values):
+                self._undo_stack.push(
+                    SetGroupAttrCommand(controls, control_attr, old_values, new_value, self._on_group_applied)
+                )
+            old_group_value = getattr(group, group_attr)
+            if old_group_value != new_value:
+                self._undo_stack.push(
+                    SetGroupAttrCommand([group], group_attr, [old_group_value], new_value, self._on_group_applied)
+                )
+        self._undo_stack.endMacro()

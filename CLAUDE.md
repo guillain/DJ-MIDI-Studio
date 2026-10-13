@@ -42,6 +42,10 @@ Since `v0.47.59` the emulator also reacts to **live** MIDI, passively: `Controll
 
 `Help` menu links to the source docs (Serato's MIDI mapping guide is Cloudflare-protected and can't be fetched programmatically — `WebFetch`/`curl` both get a bot-challenge page, not the article).
 
+### MIDI Learn (`midi_learn.py`, issue #220)
+
+The edit panel's Control, function (`MappingElement`, resolved to its parent `<control>` via `find_parent_control`, since the trigger lives on the control) and By Deck `MappingGroup` forms carry a `Learn` button. It opens no ports of its own: `EditPanel(ensure_listening=...)` is `MainWindow._ensure_learn_listening` (auto-starts the Live Monitor, returns `LiveMonitorView.is_running`), and `_on_live_midi_event` feeds every event to `EditPanel.feed_learn_event` before its usual layout work. Qt-free `midi_learn.trigger_from_event` learns only an input-direction Note On with velocity > 0 or a CC; `find_trigger_conflicts` (other controls on that trigger, the moved ones excluded) drives an overridable `EditPanel.confirm_conflict` dialog. The write is a `QUndoStack` macro of the existing `SetAttrCommand` / `SetGroupAttrCommand` — one undo step; for a group it moves every member control (`unique_controls`) and the group's own `channel`/`event_type`/`control_no` so the refreshed panel shows the new trigger. `LEARN_TIMEOUT_MS` (10 s) timeout; any `set_node` cancels a pending Learn.
+
 ### `library/` — music-library scan and index (foundation)
 
 A new, separate domain from everything else in this project: rather than editing MIDI *mappings*, this manages the DJ's actual music collection (tagging, genre normalization, BPM/key, and Serato/Traktor/rekordbox playlist tooling) — scoped in GitHub milestone "Music library management" (#5) and tracking issue #133, after the maintainer's own real collection (674 GB, 85,607 audio files) proved too disorganized to build mixable playlists from by hand.

@@ -132,6 +132,15 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **MIDI Learn in the mapping editor** (`v0.48.86-midi-learn`, issue #220) — Qt-free
+  `midi_learn.py` (`trigger_from_event`: only a Note On with velocity > 0 or a CC, input
+  direction; `find_trigger_conflicts`/`describe_conflicts`; `find_parent_control`) behind a
+  `Learn` button in the edit panel's Control, function and By Deck group forms. Events come from
+  the Live Monitor (`MainWindow._on_live_midi_event` → `EditPanel.feed_learn_event`, auto-started
+  via `_ensure_learn_listening`); 10 s timeout, the button doubles as Cancel; a conflicting
+  trigger asks first. The reassignment is a `QUndoStack` macro of the existing
+  `SetAttrCommand`/`SetGroupAttrCommand` (one undo step; group-aware, also updating the
+  `MappingGroup`'s own trigger fields).
 - [x] **Pad LED colours** (`v0.48.85-pad-colours`, issue #232) — research first: of the 14 bundled
   controller PDFs (300 DPI renders), only the Hercules DJControl Inpulse 500 sheet prints a
   velocity → colour table (p. 5/14, 19 colours); every Pioneer/AlphaTheta list only says "color
