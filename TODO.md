@@ -132,6 +132,13 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Hercules DJControl Inpulse 500 profile fix** (`v0.48.89-inpulse-500-profile-fix`, issue #247) — the
+  catalog is re-transcribed from the bundled official MIDI Commands sheet (300 DPI renders): deck buttons on
+  ch 2/3 (+SHIFT 5/6), the 8-mode pad banks on ch 7/8 (+8 with SHIFT), PAD MODE 1-8 and long-press notes,
+  PFL/FX/crossfader-curve/browse/LOAD buttons. Four self-contradictory sheet rows are dropped (Guides and
+  Assistant share `90 01`; deck 2 Mode 4A and Load 2 +SHIFT have mismatched channel/status). `pad_colours`
+  now derives its LED notes from the catalog's `pad_trigger()`, and the emulator's PAD MODE buttons steer
+  pad clicks to the chosen bank. Hardware verification still pending.
 - [x] **Pad LED colours** (`v0.48.85-pad-colours`, issue #232) — research first: of the 14 bundled
   controller PDFs (300 DPI renders), only the Hercules DJControl Inpulse 500 sheet prints a
   velocity → colour table (p. 5/14, 19 colours); every Pioneer/AlphaTheta list only says "color
