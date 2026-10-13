@@ -108,6 +108,7 @@ from djmidi.gui.helpful_notes_dialog import HelpfulNotesDialog
 from djmidi.gui.introduction_view import IntroductionView
 from djmidi.gui.layout_view import ControllerLayoutView
 from djmidi.gui.live_monitor import LiveMonitorView
+from djmidi.gui.live_ready_dialog import LiveReadyDialog
 from djmidi.gui.macro_editor import MacroManagerDialog
 from djmidi.gui.macro_player import MacroPlayer
 from djmidi.gui.mapping_diff_dialog import MappingDiffDialog
@@ -135,6 +136,7 @@ from djmidi.integration_detection import (
     detect_controller_ports,
     detect_software_mapping,
 )
+from djmidi.live_ready import check_live_ready
 from djmidi.logging_config import configure_logging, current_log_path, default_log_path
 from djmidi.mapping_diff import diff_configs
 from djmidi.midi_io import MidiEvent, MidiMonitor, list_input_ports, list_output_ports
@@ -485,6 +487,28 @@ class MainWindow(QMainWindow):
         self.issues_table.horizontalHeader().setStretchLastSection(True)
         self.issues_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
 
+        # The validation area: the issue table under a strip with the two
+        # checks (issue #254 added "Ready for live", a pre-gig report).
+        self.validate_button = QPushButton("Validate")
+        self.validate_button.setToolTip("Check the mapping's structure and conflicts (Edit → Validate).")
+        self.validate_button.clicked.connect(self._on_validate)
+        self.live_ready_button = QPushButton("Ready for live…")
+        self.live_ready_button.setToolTip(
+            "Before a gig: missing Play/Cue/Sync/Load per deck, conflicts, buttons without LED feedback."
+        )
+        self.live_ready_button.clicked.connect(self._on_live_ready_check)
+        validation_bar = QHBoxLayout()
+        validation_bar.setContentsMargins(0, 0, 0, 0)
+        validation_bar.addWidget(self.validate_button)
+        validation_bar.addWidget(self.live_ready_button)
+        validation_bar.addStretch(1)
+        self._validation_area = QWidget()
+        validation_layout = QVBoxLayout(self._validation_area)
+        validation_layout.setContentsMargins(0, 0, 0, 0)
+        validation_layout.addLayout(validation_bar)
+        validation_layout.addWidget(self.issues_table, 1)
+        self._live_ready_dialog: LiveReadyDialog | None = None
+
         # Reverse search (issue #185): "which control triggers function X?".
         # Lives in the editing column so it's there on all three mapping tabs
         # without adding a field to each one.
@@ -503,7 +527,7 @@ class MainWindow(QMainWindow):
         self._right_splitter = QSplitter(Qt.Orientation.Vertical)
         self._right_splitter.addWidget(self.function_search_view)
         self._right_splitter.addWidget(self._edit_panel_scroll)
-        self._right_splitter.addWidget(self.issues_table)
+        self._right_splitter.addWidget(self._validation_area)
         self._right_splitter.setStretchFactor(0, 0)
         self._right_splitter.setStretchFactor(1, 2)
         self._right_splitter.setStretchFactor(2, 1)
@@ -854,6 +878,11 @@ class MainWindow(QMainWindow):
         validate_action = QAction("&Validate", self)
         validate_action.triggered.connect(self._on_validate)
         edit_menu.addAction(validate_action)
+
+        live_ready_action = QAction("Ready for &Live…", self)
+        live_ready_action.setStatusTip("Check the mapping before a gig (read-only).")
+        live_ready_action.triggered.connect(self._on_live_ready_check)
+        edit_menu.addAction(live_ready_action)
 
         view_menu = self.menuBar().addMenu("&View")
         # Issue #222: one keyboard search over everything below. Ctrl maps to
@@ -3125,6 +3154,29 @@ class MainWindow(QMainWindow):
             sync_sets=[sync_set.label for sync_set in self.preferences.controller_sync_sets],
             recents=file_locations.existing_recents(self._recent_mappings),
         )
+
+    def _on_live_ready_check(self) -> LiveReadyDialog | None:
+        """Issue #254: the pre-gig report, in a non-modal window. Read-only."""
+        if self.config is None:
+            self.statusBar().showMessage("Ready for live: open a mapping first.")
+            return None
+        report = check_live_ready(self.config)
+        if self._live_ready_dialog is not None:
+            self._live_ready_dialog.close()
+            self._live_ready_dialog.deleteLater()
+        dialog = LiveReadyDialog(report, self)
+        dialog.showControlRequested.connect(self._on_live_ready_show_control)
+        self._live_ready_dialog = dialog
+        dialog.show()
+        counts = report.counts()
+        self.statusBar().showMessage(
+            f"Ready for live: {counts['error']} error(s), {counts['warning']} warning(s), {counts['info']} info"
+        )
+        return dialog
+
+    def _on_live_ready_show_control(self, control: Control) -> None:
+        if self._select_control_in_channel_columns(control):
+            self.left_tabs.setCurrentIndex(self._tab_indexes["channel"])
 
     def _on_validate(self) -> None:
         if self.config is None:
