@@ -863,6 +863,89 @@ def test_format_size():
     assert format_size(5 * 1024**3) == "5.0 GB"
 
 
+# --- background BPM/key analysis (issue #224) ----------------------------
+
+
+@pytest.fixture
+def untagged_library(tmp_path):
+    music = tmp_path / "music"
+    _mp3(music / "tagged.mp3", title="Tagged", bpm="172", key="Am")
+    _mp3(music / "bare.mp3", title="Bare")
+    view = MusicLibraryView(db_path=":memory:")
+    view.add_root(music)
+    view.start_scan()
+    view.run_pending_job()
+    yield view, music
+    view.close_db()
+
+
+def test_analyse_button_explains_when_librosa_is_missing(monkeypatch):
+    monkeypatch.setattr(mlv, "analysis_available", lambda: False)
+    view = MusicLibraryView(db_path=":memory:")
+    assert not view.analyse_button.isEnabled()
+    assert "analysis" in view.analyse_button.toolTip()
+    view.start_analysis()
+    assert not view.is_busy()
+    view.close_db()
+
+
+def test_analysis_job_stores_suggestions_without_writing_files(untagged_library):
+    view, music = untagged_library
+    bare = str(music / "bare.mp3")
+    view.start_analysis(analyser=lambda path, want_bpm, want_key: (140.0, "Dm"))
+    assert view.is_analysing()
+    assert view.analyse_button.text() == "Stop analysis"
+    view.run_pending_job()
+    assert not view.is_busy()
+    assert view.analyse_button.text() == "Analyse BPM/key"
+    assert "estimates for 1 of 1" in view.status_label.text()
+    row = next(row for row in view.table_model.rows() if row.path == bare)
+    assert (row.bpm_suggestion, row.key_suggestion) == (140.0, "Dm")
+    assert read_metadata(bare).bpm is None
+    # Shown as "? value" in the BPM / Key / Camelot cells, amber.
+    source_row = view.table_model.rows().index(row)
+    cell = view.table_model.index(source_row, mlv._COLUMN_INDEX["bpm"])
+    assert cell.data() == "? 140"
+    assert view.table_model.index(source_row, mlv._COLUMN_INDEX["camelot"]).data() == "? 7A"
+    # Nothing left to analyse on a second run.
+    view.start_analysis(analyser=lambda *args: pytest.fail("should not re-analyse"))
+    assert not view.is_busy()
+
+
+def test_stopping_the_analysis_keeps_what_was_found(untagged_library):
+    view, music = untagged_library
+    _mp3(music / "bare2.mp3", title="Bare 2")
+    view.start_scan()
+    view.run_pending_job()
+    view.start_analysis(analyser=lambda path, want_bpm, want_key: (140.0, None))
+    view._job_timer.stop()  # step by hand: a whole slice would finish both
+    next(view._job)  # announce
+    next(view._job)  # one track
+    view.stop_analysis()
+    assert not view.is_busy()
+    assert "stopped" in view.status_label.text()
+    assert sum(row.bpm_suggestion is not None for row in view.table_model.rows()) == 1
+
+
+def test_apply_analysis_suggestions_is_one_undoable_write(untagged_library):
+    view, music = untagged_library
+    bare, tagged = str(music / "bare.mp3"), str(music / "tagged.mp3")
+    view.start_analysis(analyser=lambda path, want_bpm, want_key: (140.0, "Dm"))
+    view.run_pending_job()
+    _select_paths(view, [bare, tagged])
+    assert view.apply_analysis_button.isEnabled()
+    assert view.apply_analysis_suggestions() == 1
+    tags = read_metadata(bare)
+    assert (tags.bpm, tags.key) == (140.0, "Dm")
+    assert read_metadata(tagged).bpm == 172.0  # tagged tracks are never overwritten
+    row = next(row for row in view.table_model.rows() if row.path == bare)
+    assert not row.has_analysis_suggestion  # the tag now holds the value
+    view.undo_stack.undo()
+    tags = read_metadata(bare)
+    assert (tags.bpm, tags.key) == (None, None)
+    # The estimate survives this app's own tag writes, so undo brings it back.
+    row = next(row for row in view.table_model.rows() if row.path == bare)
+    assert (row.bpm_suggestion, row.key_suggestion) == (140.0, "Dm")
 # --- Set panel (issue #221) ----------------------------------------------
 
 

@@ -90,6 +90,7 @@ from djmidi.gui.set_preparation import (
     encode_paths,
 )
 from djmidi.library import discard, duplicates, relink, set_prep, workspace
+from djmidi.library.analysis import analysis_available, to_camelot
 from djmidi.library.db import LibraryDB, TrackRecord, default_library_db_path
 from djmidi.library.metadata import TrackMetadata, clean_noise_frames
 from djmidi.library.playlist import is_camelot_compatible
@@ -161,6 +162,14 @@ ALL_CAMELOT = "All Camelot"
 # Wheel order: 1A, 1B, 2A, … 12B.
 CAMELOT_CODES = tuple(f"{number}{letter}" for number in range(1, 13) for letter in "AB")
 _BPM_FILTER_MAX = 300
+
+_ANALYSE_LABEL = "Analyse BPM/key"
+_STOP_ANALYSIS_LABEL = "Stop analysis"
+_ANALYSIS_UNAVAILABLE = (
+    "Audio analysis needs the optional 'analysis' extra (librosa), which isn't installed. "
+    "From a source checkout: uv sync --extra analysis."
+)
+_SUGGESTION_COLOR = "#b07a00"
 
 ROW_ROLE = Qt.ItemDataRole.UserRole + 1
 SORT_ROLE = Qt.ItemDataRole.UserRole + 2
@@ -423,6 +432,29 @@ def _can_confirm_suggestion(row: workspace.LibraryRow) -> bool:
     return bool(row.category is None and row.category_suggestion and row.metadata and row.metadata.genre)
 
 
+def _analysis_suggestion_text(row: workspace.LibraryRow, key: str) -> str | None:
+    """The audio-analysis estimate a BPM/Key/Camelot cell shows in place of
+    an empty tag (issue #224), or None."""
+    if key == "bpm" and row.bpm_suggestion is not None:
+        return _format_bpm(row.bpm_suggestion)
+    if key == "key" and row.key_suggestion:
+        return row.key_suggestion
+    if key == "camelot" and row.camelot_key is None and row.key_suggestion:
+        return to_camelot(row.key_suggestion)
+    return None
+
+
+def _analysis_text(row: workspace.LibraryRow) -> str:
+    """Track panel line for the selected track's audio-analysis estimates."""
+    parts = []
+    if row.bpm_suggestion is not None:
+        parts.append(f"{_format_bpm(row.bpm_suggestion)} BPM")
+    if row.key_suggestion:
+        camelot = to_camelot(row.key_suggestion)
+        parts.append(row.key_suggestion + (f" ({camelot})" if camelot else ""))
+    return "Estimated: " + ", ".join(parts) if parts else "—"
+
+
 def _same_bpm(a: float | None, b: float | None) -> bool:
     if a is None or b is None:
         return a is b
@@ -489,10 +521,14 @@ class LibraryTableModel(QAbstractTableModel):
     @staticmethod
     def _decoration(row: workspace.LibraryRow, key: str, role: int):
         suggested = key == "category" and row.category is None and bool(row.category_suggestion)
+        estimated = _analysis_suggestion_text(row, key) is not None
+        if estimated and role == Qt.ItemDataRole.ToolTipRole and not row.missing:
+            return "Estimated from the audio -- not in the file. Apply it from the Track panel."
+        suggested = suggested or estimated
         if role == Qt.ItemDataRole.ForegroundRole:
             if row.missing:
                 return QBrush(QColor("#888888"))
-            return QBrush(QColor("#b07a00")) if suggested else None
+            return QBrush(QColor(_SUGGESTION_COLOR)) if suggested else None
         if role == Qt.ItemDataRole.FontRole and suggested:
             font = QFont()
             font.setItalic(True)
@@ -519,6 +555,9 @@ class LibraryTableModel(QAbstractTableModel):
             if row.category_suggestion:
                 return f"? {category_label(row.category_suggestion)}"
             return ""
+        estimate = _analysis_suggestion_text(row, key)
+        if estimate is not None:
+            return f"? {estimate}"
         if key == "camelot":
             return row.camelot_key or ""
         if key == "bpm":
@@ -634,6 +673,7 @@ class MusicLibraryView(QWidget):
         self._db: LibraryDB | None = None
         self.undo_stack = QUndoStack(self)
         self._job: Iterator[None] | None = None
+        self._analysing = False
         self._job_timer = QTimer(self)
         self._job_timer.setInterval(0)
         self._job_timer.timeout.connect(self._run_job_slice)
@@ -720,7 +760,19 @@ class MusicLibraryView(QWidget):
             "List identical files and tracks sharing artist + title. Read-only: nothing is deleted."
         )
         self.duplicates_button.clicked.connect(self.find_duplicates)
-        # Two button columns rather than one row: five buttons side by side
+        # Issue #224: needs the optional 'analysis' extra; greyed out with
+        # the reason as tooltip when librosa isn't installed.
+        self.analyse_button = QPushButton(_ANALYSE_LABEL)
+        self.analyse_button.clicked.connect(self._on_analyse_clicked)
+        if analysis_available():
+            self.analyse_button.setToolTip(
+                "Estimate BPM and key from the audio for tracks whose tags lack them. Results are "
+                "shown as amber suggestions only; nothing is written until you apply them."
+            )
+        else:
+            self.analyse_button.setEnabled(False)
+            self.analyse_button.setToolTip(_ANALYSIS_UNAVAILABLE)
+        # Two button columns rather than one row: six buttons side by side
         # need more width than the tab's minimum content width guarantees.
         buttons = QGridLayout()
         for index, button in enumerate(
@@ -730,6 +782,7 @@ class MusicLibraryView(QWidget):
                 self.remove_root_button,
                 self.duplicates_button,
                 self.relink_button,
+                self.analyse_button,
             )
         ):
             buttons.addWidget(button, index // 2, index % 2)
@@ -868,6 +921,9 @@ class MusicLibraryView(QWidget):
         self.category_value_label = QLabel()
         self.category_value_label.setWordWrap(True)
         form.addRow("Category", self.category_value_label)
+        self.analysis_value_label = QLabel()
+        self.analysis_value_label.setWordWrap(True)
+        form.addRow("Analysis", self.analysis_value_label)
         box.addLayout(form)
 
         self.accept_suggestion_button = QPushButton("Confirm suggested category")
@@ -912,6 +968,13 @@ class MusicLibraryView(QWidget):
         )
         self.write_selection_button.clicked.connect(self._on_write_selection_clicked)
         box.addWidget(self.write_selection_button)
+        self.apply_analysis_button = QPushButton("Apply analysis suggestions…")
+        self.apply_analysis_button.setToolTip(
+            "Writes the estimated BPM/key of the selected tracks into their empty tags, after "
+            "listing them, as one undoable step. Tags already set are never overwritten."
+        )
+        self.apply_analysis_button.clicked.connect(self._on_apply_analysis_clicked)
+        box.addWidget(self.apply_analysis_button)
         self.table.selectionModel().selectionChanged.connect(self._update_selection_actions)
 
         self.clean_button = QPushButton("Clean noise frames…")
@@ -1256,20 +1319,80 @@ class MusicLibraryView(QWidget):
         self._reload_rows()
         self._reload_playlists()
 
+    # --- background BPM/key analysis (issue #224) ----------------------
+
+    def is_analysing(self) -> bool:
+        return self._job is not None and self._analysing
+
+    def _on_analyse_clicked(self) -> None:
+        if self.is_analysing():
+            self.stop_analysis()
+        else:
+            self.start_analysis()
+
+    def start_analysis(self, analyser: workspace.Analyser | None = None) -> None:
+        """Estimate BPM/key for tracks missing them, one track per timer
+        slice. `analyser` replaces the librosa one (tests)."""
+        if self.is_busy():
+            return
+        if analyser is None and not analysis_available():
+            self.status_label.setText(_ANALYSIS_UNAVAILABLE)
+            return
+        pending = len(self.db.tracks_needing_analysis())
+        if not pending:
+            self.status_label.setText("Every track has a BPM and a key tag (or was analysed already).")
+            return
+        self._analysing = True
+        self._start_job(self._analysis_job(pending, analyser))
+        self.analyse_button.setText(_STOP_ANALYSIS_LABEL)
+        self.analyse_button.setEnabled(True)
+
+    def stop_analysis(self) -> None:
+        """Stop after the current track; estimates found so far are kept."""
+        if not self.is_analysing():
+            return
+        self._stop_job()
+        self.status_label.setText("Analysis stopped. Estimates found so far are kept.")
+        self._reload_rows()
+
+    def _analysis_job(self, pending: int, analyser: workspace.Analyser | None) -> Generator[None]:
+        self.progress_bar.setRange(0, pending)
+        self.status_label.setText(f"Analysing audio… 0/{pending}")
+        yield
+        steps = workspace.iter_analyse_missing(self.db, analyser)
+        while True:
+            try:
+                count = next(steps)
+            except StopIteration as done:
+                found = done.value
+                break
+            self.progress_bar.setValue(count)
+            self.status_label.setText(f"Analysing audio… {count}/{pending}")
+            yield
+        self.status_label.setText(
+            f"Analysis done: estimates for {found} of {pending} track(s), shown in amber. "
+            "Select tracks and use Apply analysis suggestions… to write them."
+        )
+        self._reload_rows()
+
     def _start_job(self, job: Generator[None]) -> None:
         self._job = job
         self.scan_button.setEnabled(False)
         self.relink_button.setEnabled(False)
         self.duplicates_button.setEnabled(False)
+        self.analyse_button.setEnabled(False)
         self.progress_bar.setVisible(True)
         self._job_timer.start()
 
     def _stop_job(self) -> None:
         self._job_timer.stop()
         self._job = None
+        self._analysing = False
         self.scan_button.setEnabled(True)
         self.relink_button.setEnabled(True)
         self.duplicates_button.setEnabled(True)
+        self.analyse_button.setText(_ANALYSE_LABEL)
+        self.analyse_button.setEnabled(analysis_available())
         self.progress_bar.setVisible(False)
 
     def _run_job_slice(self) -> None:
@@ -1531,18 +1654,22 @@ class MusicLibraryView(QWidget):
             self.track_path_label.setText("Select a track in the table.")
             self.camelot_label.setText("")
             self.category_value_label.setText("")
+            self.analysis_value_label.setText("")
             self.accept_suggestion_button.setEnabled(False)
             return
         self.track_path_label.setText(row.path + ("  (missing on disk)" if row.missing else ""))
         self.camelot_label.setText(row.camelot_key or "—")
         self.category_value_label.setText(self._category_text(row))
+        self.analysis_value_label.setText(_analysis_text(row))
         self.accept_suggestion_button.setEnabled(_can_confirm_suggestion(row))
 
     def _writable_selection(self) -> list[workspace.LibraryRow]:
         return [row for row in self.selected_rows() if not row.missing]
 
     def _update_selection_actions(self, *_args: object) -> None:
-        self.write_selection_button.setEnabled(bool(self._writable_selection()))
+        writable = self._writable_selection()
+        self.write_selection_button.setEnabled(bool(writable))
+        self.apply_analysis_button.setEnabled(any(row.has_analysis_suggestion for row in writable))
 
     @staticmethod
     def _category_text(row: workspace.LibraryRow) -> str:
@@ -1616,6 +1743,9 @@ class MusicLibraryView(QWidget):
         if not changes:
             self.status_label.setText("Selected tracks already have these tags.")
             return 0
+        return self._push_bulk_write(changes)
+
+    def _push_bulk_write(self, changes: dict[str, tuple[dict[str, object], dict[str, object]]]) -> int:
         command = WriteTracksMetadataCommand(
             changes, self._on_tracks_written, progress_factory=self._tag_write_progress
         )
@@ -1634,6 +1764,32 @@ class MusicLibraryView(QWidget):
                 f"{len(command.written)} track(s) written, {len(command.failures)} failed:\n\n{details}",
             )
         return len(command.written)
+
+    def _on_apply_analysis_clicked(self) -> None:
+        changes = workspace.analysis_tag_changes(self._writable_selection())
+        if not changes:
+            return
+        lines = [
+            f"{Path(path).name}: " + ", ".join(f"{_field_label(name)} {_field_text(name, value)}" for name, value in new.items())
+            for path, (_old, new) in changes.items()
+        ]
+        answer = QMessageBox.question(
+            self,
+            "Apply analysis suggestions",
+            f"Write the estimated BPM/key into {len(changes)} track(s)? Only empty tags are filled; "
+            "Undo writes them back empty.\n\n" + _bullet_list(lines),
+        )
+        if answer == QMessageBox.StandardButton.Yes:
+            self.apply_analysis_suggestions()
+
+    def apply_analysis_suggestions(self) -> int:
+        """Write the selected tracks' audio-analysis estimates into their
+        empty BPM/key tags as one undo step (no confirmation -- the button
+        asks first). Returns the number of files written."""
+        changes = workspace.analysis_tag_changes(self._writable_selection())
+        if not changes:
+            return 0
+        return self._push_bulk_write(changes)
 
     def _tag_write_progress(self, label: str, total: int, cancellable: bool = True) -> Callable[[int, int], bool]:
         """A progress window for one pass of a bulk tag write (write, undo or

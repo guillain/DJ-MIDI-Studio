@@ -132,6 +132,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Background BPM/key analysis** (`v0.48.77-background-analysis`, issue #224) — Music Library
+  `Analyse BPM/key` estimates tempo/key (librosa, optional `analysis` extra; 60 s clip per track) for
+  tracks missing either tag, as a stoppable `QTimer`-sliced job. Estimates are stored as suggestions
+  only (`analysis_suggestions` table, keyed to the file's mtime), shown amber `? value`, and written
+  only through `Apply analysis suggestions…` (empty tags only, one undoable `WriteTracksMetadataCommand`).
+  Disabled with an explanatory tooltip when librosa is missing.
 - [x] **Live conflict detection** (`v0.48.76-live-conflicts`, issue #223) — Qt-free
   `validator.find_deck_conflicts`: a trigger whose `click` mappings bind two or more distinct
   `(tag, slot_id)` functions on the same deck (identical 10x duplicates collapse to one, so the
