@@ -863,6 +863,80 @@ def test_format_size():
     assert format_size(5 * 1024**3) == "5.0 GB"
 
 
+def test_compare_playlist_with_serato_crate(library, monkeypatch):
+    view, music, tmp_path = library
+    a, b, c = (str(p) for p in (music / "Tek/Tribe/a.mp3", music / "Tek/Tribe/b.mp3", music / "misc/c.mp3"))
+    crate = tmp_path / "Friday.crate"
+    workspace.export_serato_crate(crate, [c, a])
+    # A crate's paths resolve through the volume root (macOS tmp dirs live
+    # behind a /private symlink), so build the app playlist from what the
+    # crate reads back plus one track it doesn't list.
+    c_crate, a_crate = workspace.read_serato_crate(crate)
+    view.create_playlist("Set", [a_crate, b, c_crate])
+    view.playlist_list.setCurrentRow(0)
+    before = crate.read_bytes()
+    shown = []
+    monkeypatch.setattr(mlv.QFileDialog, "getOpenFileName", lambda *a, **k: (str(crate), ""))
+    monkeypatch.setattr(mlv.PlaylistCompareDialog, "exec", lambda self: shown.append(self) or 0)
+    view._on_compare_serato_clicked()
+    dialog = shown[0]
+    assert "Friday" in dialog.summary_label.text()
+    assert crate.read_bytes() == before  # read-only
+    assert dialog.only_app_list.count() == 1 and "b.mp3" in dialog.only_app_list.item(0).toolTip()
+    assert dialog.moved_list.count() == 1 and "#1 → #2" in dialog.moved_list.item(0).text()
+    assert not dialog.only_other_list.isEnabled()
+    assert "1 moved" in view.status_label.text()
+
+
+def test_compare_playlist_with_traktor_playlist(library, monkeypatch, tmp_path):
+    view, music, _ = library
+    track = str(music / "misc" / "c.mp3")
+    view.create_playlist("Set", [track])
+    view.playlist_list.setCurrentRow(0)
+    nml = tmp_path / "Set.nml"
+    workspace.export_traktor_playlist(nml, "Set", [track])
+    monkeypatch.setattr(mlv.QFileDialog, "getOpenFileName", lambda *a, **k: (str(nml), ""))
+    shown = []
+    monkeypatch.setattr(mlv.PlaylistCompareDialog, "exec", lambda self: shown.append(self) or 0)
+    view._on_compare_traktor_clicked()
+    assert "same 1 track" in shown[0].summary_label.text()
+    assert "Charlie" in shown[0].summary_label.text() or "matches" in view.status_label.text()
+
+
+def test_compare_traktor_picks_among_several_playlists(library, monkeypatch):
+    view, music, _ = library
+    a, c = str(music / "Tek/Tribe/a.mp3"), str(music / "misc/c.mp3")
+    playlist_id = view.create_playlist("Two", [a, c])
+    view.playlist_list.setCurrentRow(0)
+    monkeypatch.setattr(mlv.QFileDialog, "getOpenFileName", lambda *a, **k: ("x.nml", ""))
+    monkeypatch.setattr(workspace, "read_traktor_playlists", lambda path: {"One": [a], "Two": [c, a]})
+    asked = []
+
+    def get_item(_parent, _title, _label, names, start, _editable):
+        asked.append(names[start])
+        return "Two", True
+
+    monkeypatch.setattr(QInputDialog, "getItem", get_item)
+    results = []
+    monkeypatch.setattr(view, "compare_playlist", lambda *args: results.append(args))
+    view._on_compare_traktor_clicked()
+    assert asked == ["Two"]  # the same-name playlist is preselected
+    assert results == [(playlist_id, "Traktor “Two”", [c, a])]
+
+
+def test_compare_without_selection_or_on_bad_file(library, monkeypatch):
+    view, _, tmp_path = library
+    view._on_compare_serato_clicked()
+    assert "Select a playlist" in view.status_label.text()
+    view.create_playlist("Set", [])
+    view.playlist_list.setCurrentRow(0)
+    bad = tmp_path / "bad.nml"
+    bad.write_text("not xml")
+    warned = []
+    monkeypatch.setattr(mlv.QFileDialog, "getOpenFileName", lambda *a, **k: (str(bad), ""))
+    monkeypatch.setattr(QMessageBox, "warning", lambda *a, **k: warned.append(a))
+    view._on_compare_traktor_clicked()
+    assert warned
 def test_history_panel_lists_sessions_and_never_played(library):
     """Issue #227: Serato history read-only, never-played tracks selectable."""
     import struct

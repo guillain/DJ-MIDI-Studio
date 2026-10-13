@@ -132,6 +132,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Playlist comparison** (`v0.48.82-playlist-compare`, issue #229) — Qt-free
+  `library/playlist_compare.py`: an app playlist vs a Serato crate or one playlist of a Traktor `.nml`,
+  matched by NFC-normalized path occurrence by occurrence; reports tracks only on each side and the
+  shared tracks out of order (complement of a longest increasing subsequence, so one move flags one
+  track). Music Library: *Compare with crate…* / *Compare with Traktor…* + a read-only three-tab
+  `PlaylistCompareDialog`; export stays separate.
 - [x] **MIDI macros** (`v0.48.81-midi-macros`, issue #228) — Qt-free `midi_macros.py`: named sequences of
   `SyncMessage`s with an optional per-step delay, one JSON file each in the workspace's new `Macros` folder,
   port resolved like Sync. A `Macros` menu plays them (optional per-macro keyboard shortcut, app-wide);

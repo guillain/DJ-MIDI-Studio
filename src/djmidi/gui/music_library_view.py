@@ -106,6 +106,7 @@ from djmidi.library.analysis import analysis_available, to_camelot
 from djmidi.library.db import LibraryDB, TrackRecord, default_library_db_path
 from djmidi.library.metadata import TrackMetadata, clean_noise_frames
 from djmidi.library.playlist import is_camelot_compatible
+from djmidi.library.playlist_compare import PlaylistComparison, compare_playlists
 from djmidi.library.relink import RelinkCandidate, RelinkProposal
 from djmidi.library.scanner import iter_scan_root
 
@@ -349,6 +350,78 @@ class MixPathDialog(QDialog):
             bpm_tolerance_pct=self.tolerance_spin.value(),
             max_length=length or None,
         ).normalized()
+
+
+class PlaylistCompareDialog(QDialog):
+    """Read-only result of comparing an app playlist with a Serato crate or a
+    Traktor playlist (issue #229): one tab per difference kind. Nothing here
+    changes either side -- export stays a separate button."""
+
+    def __init__(
+        self,
+        comparison: PlaylistComparison,
+        app_name: str,
+        other_name: str,
+        label_for: Callable[[str], str],
+        parent: QWidget | None = None,
+    ) -> None:
+        super().__init__(parent)
+        self.setWindowTitle("Compare playlists")
+        self.resize(640, 460)
+        box = QVBoxLayout(self)
+        shared = len(comparison.in_both)
+        if comparison.identical:
+            summary = f"“{app_name}” and {other_name} list the same {shared} track(s) in the same order."
+        else:
+            summary = (
+                f"“{app_name}” and {other_name}: {shared} track(s) in both, "
+                f"{len(comparison.only_in_app)} only in the app playlist, "
+                f"{len(comparison.only_in_other)} only in {other_name}, "
+                f"{len(comparison.moved)} in a different order."
+            )
+        self.summary_label = QLabel(summary)
+        self.summary_label.setWordWrap(True)
+        box.addWidget(self.summary_label)
+        self.tabs = QTabWidget()
+        self.only_app_list = self._add_tab(
+            f"Only in app ({len(comparison.only_in_app)})",
+            [f"#{t.app_position}  {label_for(t.path)}" for t in comparison.only_in_app],
+            comparison.only_in_app,
+        )
+        self.only_other_list = self._add_tab(
+            f"Only in {other_name} ({len(comparison.only_in_other)})",
+            [f"#{t.other_position}  {label_for(t.path)}" for t in comparison.only_in_other],
+            comparison.only_in_other,
+        )
+        self.moved_list = self._add_tab(
+            f"Order differences ({len(comparison.moved)})",
+            [f"#{t.app_position} → #{t.other_position}  {label_for(t.path)}" for t in comparison.moved],
+            comparison.moved,
+        )
+        box.addWidget(self.tabs, 1)
+        note = QLabel(
+            "Positions read “app → other”. Order differences list only the tracks out of place "
+            "relative to the others; tracks missing on one side don't count as moves. "
+            "Nothing is changed: export the playlist to update the other side."
+        )
+        note.setWordWrap(True)
+        note.setEnabled(False)
+        box.addWidget(note)
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
+        buttons.rejected.connect(self.reject)
+        box.addWidget(buttons)
+
+    def _add_tab(self, title: str, lines: list[str], tracks) -> QListWidget:
+        widget = QListWidget()
+        for line, track in zip(lines, tracks, strict=True):
+            item = QListWidgetItem(line)
+            item.setToolTip(track.path)
+            widget.addItem(item)
+        if not lines:
+            widget.addItem(QListWidgetItem("(none)"))
+            widget.setEnabled(False)
+        self.tabs.addTab(widget, title)
+        return widget
 
 
 class RelinkDialog(QDialog):
@@ -1071,6 +1144,12 @@ class MusicLibraryView(QWidget):
             ("export_traktor_button", "Export as Traktor playlist…", self._on_export_traktor_clicked,
              ("Writes a new single-playlist .nml where you choose, for Traktor's Import Playlist. "
               "Never touches collection.nml.")),
+            ("compare_serato_button", "Compare with crate…", self._on_compare_serato_clicked,
+             ("Compares the selected playlist with a Serato crate: tracks only on each side and "
+              "order differences. Read-only.")),
+            ("compare_traktor_button", "Compare with Traktor…", self._on_compare_traktor_clicked,
+             ("Compares the selected playlist with a playlist of a Traktor .nml: tracks only on "
+              "each side and order differences. Read-only.")),
             ("rename_playlist_button", "Rename…", self._on_rename_playlist_clicked, ""),
             ("delete_playlist_button", "Delete", self._on_delete_playlist_clicked, ""),
         ]
@@ -2319,6 +2398,72 @@ class MusicLibraryView(QWidget):
                 self.export_playlist_as_nml(playlist_id, path, name)
             except OSError as exc:
                 QMessageBox.warning(self, "Export failed", f"{path}\n\n{exc}")
+
+    # Compare (issue #229): read-only, never writes either side.
+
+    def _selected_playlist_name(self) -> str:
+        return self.playlist_list.currentItem().text().split("  (", 1)[0]
+
+    def compare_playlist(self, playlist_id: int, other_name: str, other_paths: list[str]) -> PlaylistComparison:
+        """Compares an app playlist with `other_paths` and shows the result."""
+        comparison = compare_playlists(self.db.playlist_paths(playlist_id), other_paths)
+        name = next((p.name for p in self.db.list_playlists() if p.id == playlist_id), "")
+        indexed = {row.path: row for row in self.table_model.rows()}
+        self.status_label.setText(
+            f"“{name}” matches {other_name}."
+            if comparison.identical
+            else f"Compared with {other_name}: {len(comparison.only_in_app)} only in app, "
+            f"{len(comparison.only_in_other)} only in {other_name}, {len(comparison.moved)} moved."
+        )
+        PlaylistCompareDialog(
+            comparison, name, other_name, lambda path: _playlist_track_label(path, indexed.get(path)), self
+        ).exec()
+        return comparison
+
+    def _on_compare_serato_clicked(self) -> None:
+        playlist_id = self.selected_playlist_id()
+        if playlist_id is None:
+            self.status_label.setText("Select a playlist to compare first.")
+            return
+        path, _ = QFileDialog.getOpenFileName(self, "Compare with Serato crate", "", "Serato crates (*.crate)")
+        if not path:
+            return
+        try:
+            other = workspace.read_serato_crate(path)
+        except Exception as exc:
+            _LOGGER.exception("Crate read failed: %s", path)
+            QMessageBox.warning(self, "Compare failed", f"{path}\n\n{exc}")
+            return
+        self.compare_playlist(playlist_id, f"crate “{Path(path).stem}”", other)
+
+    def _on_compare_traktor_clicked(self) -> None:
+        playlist_id = self.selected_playlist_id()
+        if playlist_id is None:
+            self.status_label.setText("Select a playlist to compare first.")
+            return
+        path, _ = QFileDialog.getOpenFileName(
+            self, "Compare with Traktor playlist", "", "Traktor collection or playlist (*.nml)"
+        )
+        if not path:
+            return
+        try:
+            playlists = workspace.read_traktor_playlists(path)
+        except Exception as exc:
+            _LOGGER.exception("Traktor read failed: %s", path)
+            QMessageBox.warning(self, "Compare failed", f"{path}\n\n{exc}")
+            return
+        if not playlists:
+            QMessageBox.information(self, "Compare playlists", f"{path}\n\nThis file has no playlist.")
+            return
+        names = list(playlists)
+        choice = names[0]
+        if len(names) > 1:
+            own = self._selected_playlist_name()
+            start = names.index(own) if own in names else 0
+            choice, ok = QInputDialog.getItem(self, "Traktor playlist", "Compare with:", names, start, False)
+            if not ok:
+                return
+        self.compare_playlist(playlist_id, f"Traktor “{choice}”", playlists[choice])
 
     def _on_rename_playlist_clicked(self) -> None:
         playlist_id = self.selected_playlist_id()

@@ -352,7 +352,9 @@ LIBRARY_PLAYLISTS: HelpEntry = (
         "to a separate <i>(leftovers)</i> playlist. Only the tracks the current filter shows "
         "are used.</li></ul>"
         "Import Serato crates, Traktor playlists or a Rekordbox USB export (read only); "
-        "export to a new Serato crate or Traktor playlist file where you choose."
+        "export to a new Serato crate or Traktor playlist file where you choose. "
+        "<b>Compare with crate…</b> / <b>Compare with Traktor…</b> list the tracks only on each "
+        "side and the tracks in a different order, without changing either side."
     ),
     "music-library.md",
 )

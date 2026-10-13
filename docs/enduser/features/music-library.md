@@ -22,6 +22,7 @@
 - [Playlists](#playlists)
 - [Prepare a set](#prepare-a-set)
 - [Import and export with DJ software](#import-and-export-with-dj-software)
+- [Compare with a Serato crate or Traktor playlist](#compare-with-a-serato-crate-or-traktor-playlist)
 - [Play history](#play-history)
 - [Safety: what is never touched](#safety-what-is-never-touched)
 - [Related](#related)
@@ -325,6 +326,35 @@ exactly like the Playlists panel's exports.
 
 Imported Serato crate names also help categorize tracks.
 
+## Compare with a Serato crate or Traktor playlist
+
+Select one of the app's playlists, then:
+
+| Button | Compares it with |
+| --- | --- |
+| `Compare with crate…` | A Serato crate you pick (`_Serato_/Subcrates/*.crate`) |
+| `Compare with Traktor…` | One playlist of a Traktor `.nml` you pick (`collection.nml`, or a single-playlist `.nml`); when the file holds several, you choose which — a playlist with the same name is preselected |
+
+A window lists the differences in three tabs:
+
+| Tab | Shows |
+| --- | --- |
+| `Only in app` | Tracks of the app playlist the other side doesn't list, with their position in the app playlist |
+| `Only in …` | Tracks the crate or Traktor playlist lists but the app playlist doesn't, with their position there |
+| `Order differences` | Tracks both sides list but in a different order, as `#app position → #other position` |
+
+Order differences only list the tracks that are out of place compared with
+the others: moving one track flags that one track, and a track missing on
+one side never makes the rest look reordered.
+
+Tracks are matched by their file path, so a track that was moved on disk, or
+is listed through a different drive name, shows up on both sides. A track
+listed twice is matched copy by copy.
+
+Comparing is read-only: neither the app playlist nor the Serato or Traktor
+file is changed. To bring the other side in line, use `Export as Serato
+crate…` or `Export as Traktor playlist…`.
+
 ## Play history
 
 The **History** panel shows what you actually played, read from your DJ
@@ -352,7 +382,8 @@ ever read.
 
 - Tag writes change only the fields you edit. Serato and Traktor data stored
   inside your audio files (cue points, beat grids, analysis) is preserved.
-- Serato, Traktor and Rekordbox library and history files are only ever read. Exports
+- Serato, Traktor and Rekordbox library and history files are only ever read
+  (imports and comparisons alike). Exports
   always create a new file at the location you choose.
 - Undo writes the old values back through the same careful path.
 - `Find duplicates…` only reads files. Copies you tick go to the Trash after
