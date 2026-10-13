@@ -93,7 +93,9 @@ never guesses colour values.
 
 1. Pick the **deck**, the **pad mode** and whether the colour is for the
    **SHIFT** layer. The documentation gives each pad mode and SHIFT layer its
-   own LED, so each one keeps its own colours.
+   own LED, so each one keeps its own colours. These are the same notes the
+   pads send, as listed in the
+   [controller's profile](../controller-profiles.md#hercules-djcontrol-inpulse-500).
 2. Pick a colour (the 19 documented ones, from `No light` to `White`) and
    switch **Paint** on.
 3. Click pads. Each one takes the colour in the emulator. With
@@ -118,5 +120,6 @@ built-in one.
 ## Related
 
 - [Live Monitor](live-monitor.md)
+- [Stage Mode](stage-mode.md)
 - [Controller Images](controller-images.md)
 - [Mapping editor](mapping-editor.md)
