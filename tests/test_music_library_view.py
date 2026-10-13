@@ -17,7 +17,7 @@ from djmidi.gui.music_library_view import (
 from djmidi.gui.set_preparation import SET_TRACKS_MIME, decode_paths
 from djmidi.library import workspace
 from djmidi.library.db import TrackRecord
-from djmidi.library.metadata import read_metadata
+from djmidi.library.metadata import read_metadata, write_metadata
 from djmidi.library.relink import (
     MATCH_EXACT,
     MATCH_NAME,
@@ -461,6 +461,66 @@ def test_write_tags_to_selection_is_one_undo_step(library):
     assert read_metadata(a).genre == "Techno" and read_metadata(b).album is None
 
 
+
+def test_change_history_logs_tag_writes_and_reverts_after_reopen(library, monkeypatch):
+    """Issue #261: bulk writes (and their undo) land in the persistent log;
+    the Change history window reverts one, skipping a file edited since."""
+    view, music, _ = library
+    a, b = str(music / "Tek" / "Tribe" / "a.mp3"), str(music / "Tek" / "Tribe" / "b.mp3")
+    _select_paths(view, [a, b])
+    view.write_tags_to_selection({"genre": "Tribe"})
+    [entry] = view.db.list_changes()
+    assert entry.kind == "tags" and entry.item_count == 2
+    # The session undo stack is gone after a restart; the log is not.
+    view.undo_stack.clear()
+    write_metadata(b, genre="Edited elsewhere")
+    monkeypatch.setattr(QMessageBox, "question", lambda *a, **k: QMessageBox.StandardButton.Yes)
+    warnings: list[str] = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda _p, _t, text, *a, **k: warnings.append(text))
+    dialog = view.show_change_history()
+    assert dialog.entries.topLevelItemCount() == 1
+    assert dialog.items.topLevelItemCount() == 2
+    assert "genre: Techno → Tribe" in dialog.items.topLevelItem(0).text(1)
+    assert dialog.revert_button.isEnabled()
+    dialog.revert_button.click()
+    assert read_metadata(a).genre == "Techno"
+    assert read_metadata(b).genre == "Edited elsewhere"
+    assert warnings and "genre changed since" in warnings[0]
+    assert {row.path: row.metadata.genre for row in view.table_model.rows()}[a] == "Techno"
+    assert dialog.entries.topLevelItemCount() == 2  # the revert is logged too
+    assert view.show_change_history() is dialog
+    view.close_db()
+    assert view.history_dialog is None
+
+
+def test_discard_is_logged_in_the_change_history(library, monkeypatch):
+    view, music, tmp_path = library
+    original = music / "Tek" / "Tribe" / "a.mp3"
+    copy = music / "a copy.mp3"
+    copy.write_bytes(original.read_bytes())
+    view.start_scan()
+    view.run_pending_job()
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+
+    def fake_trash(path: str) -> str:
+        target = bin_dir / Path(path).name
+        Path(path).rename(target)
+        return str(target)
+
+    monkeypatch.setattr(mlv, "trash_file", fake_trash)
+    monkeypatch.setattr(QMessageBox, "question", lambda *a, **k: QMessageBox.StandardButton.Yes)
+    monkeypatch.setattr(QMessageBox, "information", lambda *a, **k: None)
+    view.find_duplicates()
+    view.run_pending_job()
+    view.duplicates_dialog.set_checked(str(copy), True)
+    view.duplicates_dialog.trash_button.click()
+    [entry] = view.db.list_changes()
+    assert entry.kind == "trash"
+    dialog = view.show_change_history()
+    dialog.revert(entry.id)
+    assert copy.is_file()
+    assert view.db.get_track_by_path(copy).missing is False
 
 def test_write_tags_to_selection_shows_progress_and_stops_on_cancel(library, monkeypatch):
     """Writing tags to thousands of files is long: every pass gets a progress

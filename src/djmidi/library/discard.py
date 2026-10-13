@@ -48,6 +48,9 @@ class TrashResult:
     """``(discarded copy, kept copy)`` actually moved to the Trash."""
     failed: list[tuple[str, str]] = field(default_factory=list)
     """``(path, reason)`` left where it was."""
+    trash_paths: dict[str, str] = field(default_factory=dict)
+    """Where the Trash put each moved copy, when `trash` said so (issue
+    #261: the change history needs it to put a copy back)."""
 
 
 def plan_discard(groups: Iterable[DuplicateGroup], discard_paths: Iterable[str]) -> DiscardPlan:
@@ -73,10 +76,11 @@ def plan_discard(groups: Iterable[DuplicateGroup], discard_paths: Iterable[str])
     return DiscardPlan(discards=tuple(discards), refused=refused)
 
 
-def move_to_trash(db: LibraryDB, plan: DiscardPlan, trash: Callable[[str], bool]) -> TrashResult:
+def move_to_trash(db: LibraryDB, plan: DiscardPlan, trash: Callable[[str], bool | str]) -> TrashResult:
     """Move every planned copy to the Trash and flag it missing.
 
-    `trash(path)` returns True when the file went to the Trash. A refused
+    `trash(path)` returns True -- or the file's new path inside the Trash,
+    recorded in `trash_paths` -- when the file went to the Trash. A refused
     plan moves nothing; a copy whose file or kept copy is gone, or that
     `trash` couldn't move (False or OSError), is reported in `failed` and
     the others still go."""
@@ -100,6 +104,8 @@ def move_to_trash(db: LibraryDB, plan: DiscardPlan, trash: Callable[[str], bool]
             result.failed.append((path, "could not move it to the Trash"))
             continue
         result.moved.append((path, kept))
+        if isinstance(moved, str):
+            result.trash_paths[path] = moved
     db.mark_paths_missing(path for path, _kept in result.moved)
     return result
 

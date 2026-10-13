@@ -146,6 +146,11 @@ class RemoveGroupAliasCommand(QUndoCommand):
         self._on_applied()
 
 
+# Logs a tag write in the persistent change history (issue #261):
+# (summary, {path: (old values, new values)}) for the files written.
+ChangeRecorder = Callable[[str, dict[str, tuple[dict[str, object], dict[str, object]]]], None]
+
+
 class WriteTrackMetadataCommand(QUndoCommand):
     """Undoable write of managed tags to one real audio file (Music Library
     tab, issue #132). Undo writes the previous values back through the same
@@ -159,6 +164,7 @@ class WriteTrackMetadataCommand(QUndoCommand):
         new_values: dict[str, object],
         on_applied: Callable[[str], None],
         writer: Callable[..., None] | None = None,
+        recorder: ChangeRecorder | None = None,
     ) -> None:
         changed = sorted(new_values)
         super().__init__(f"Edit {', '.join(changed)} of {path.rsplit('/', 1)[-1]}")
@@ -169,13 +175,18 @@ class WriteTrackMetadataCommand(QUndoCommand):
         if writer is None:
             from djmidi.library.metadata import write_metadata as writer
         self._writer = writer
+        self._recorder = recorder
 
     def redo(self) -> None:
         self._writer(self._path, **self._new)
+        if self._recorder is not None:
+            self._recorder(self.text(), {self._path: (self._old, self._new)})
         self._on_applied(self._path)
 
     def undo(self) -> None:
         self._writer(self._path, **self._old)
+        if self._recorder is not None:
+            self._recorder(f"Undo: {self.text()}", {self._path: (self._new, self._old)})
         self._on_applied(self._path)
 
 
@@ -205,6 +216,7 @@ class WriteTracksMetadataCommand(QUndoCommand):
         on_applied: Callable[[list[str]], None],
         writer: Callable[..., None] | None = None,
         progress_factory: ProgressFactory | None = None,
+        recorder: ChangeRecorder | None = None,
     ) -> None:
         fields = sorted({name for _old, new in changes.values() for name in new})
         super().__init__(f"Edit {', '.join(fields)} of {len(changes)} tracks")
@@ -214,6 +226,7 @@ class WriteTracksMetadataCommand(QUndoCommand):
             from djmidi.library.metadata import write_metadata as writer
         self._writer = writer
         self._progress_factory = progress_factory
+        self._recorder = recorder
         self.written: list[str] = []
         self.failures: dict[str, str] = {}
         self.cancelled = False
@@ -242,8 +255,14 @@ class WriteTracksMetadataCommand(QUndoCommand):
         if not self.written:
             self.setObsolete(True)
             return
+        if self._recorder is not None:
+            self._recorder(self.text(), {path: self._changes[path] for path in self.written})
         self._on_applied(self.written)
 
     def undo(self) -> None:
         restored = self._write_all("Restoring tags…", [(path, self._changes[path][0]) for path in self.written])
+        if self._recorder is not None and restored:
+            self._recorder(
+                f"Undo: {self.text()}", {path: (self._changes[path][1], self._changes[path][0]) for path in restored}
+            )
         self._on_applied(restored)
