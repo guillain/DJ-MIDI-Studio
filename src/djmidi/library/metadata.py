@@ -39,6 +39,12 @@ def read_metadata(path: str | Path) -> TrackMetadata | None:
     audio = mutagen.File(path)
     if audio is None:
         return None
+    return metadata_from_audio(audio)
+
+
+def metadata_from_audio(audio: mutagen.FileType) -> TrackMetadata:
+    """Normalized tags of an already-opened mutagen file (lets a caller that
+    needs the stream info too, like the health report, open it only once)."""
     if isinstance(audio.tags, ID3):
         return _read_id3(audio.tags)
     if isinstance(audio, MP4):

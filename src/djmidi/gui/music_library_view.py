@@ -7,7 +7,9 @@ playlist engine, Serato/Traktor/Rekordbox formats) to one tab:
   a `QTimer` (this project's non-blocking pattern, see `midi_io` polling),
   and a "Find duplicates…" job on the same timer (issue #184, opens a
   `DuplicatesDialog` whose ticked copies `discard_duplicates` moves to the
-  Trash, issue #208);
+  Trash, issue #208), and a "Health report…" job (issue #225, opens a
+  read-only `HealthReportDialog`: unreadable, empty-tag, cover-less,
+  low-bitrate and zero-length files, filterable, exportable to CSV);
 - the consolidated metadata table (sortable/filterable, category column);
 - a Track panel whose tag edits go through a `QUndoStack`
   (`commands.WriteTrackMetadataCommand`, or `WriteTracksMetadataCommand` when
@@ -83,13 +85,14 @@ from djmidi.gui import help_texts
 from djmidi.gui.audio_preview import AudioPreviewBar
 from djmidi.gui.commands import WriteTrackMetadataCommand, WriteTracksMetadataCommand
 from djmidi.gui.duplicates_dialog import DuplicatesDialog
+from djmidi.gui.health_report_dialog import HealthReportDialog
 from djmidi.gui.help_button import help_button, help_row
 from djmidi.gui.set_preparation import (
     SET_TRACKS_MIME,
     SetPreparationPanel,
     encode_paths,
 )
-from djmidi.library import discard, duplicates, relink, set_prep, workspace
+from djmidi.library import discard, duplicates, health, relink, set_prep, workspace
 from djmidi.library.analysis import analysis_available, to_camelot
 from djmidi.library.db import LibraryDB, TrackRecord, default_library_db_path
 from djmidi.library.metadata import TrackMetadata, clean_noise_frames
@@ -679,6 +682,7 @@ class MusicLibraryView(QWidget):
         self._job_timer.timeout.connect(self._run_job_slice)
         self._current_path: str | None = None
         self.duplicates_dialog: DuplicatesDialog | None = None
+        self.health_dialog: HealthReportDialog | None = None
 
         # The whole tab scrolls below its real minimum instead of crushing
         # buttons into slivers (issue #19's standing rule for every tab).
@@ -760,6 +764,12 @@ class MusicLibraryView(QWidget):
             "List identical files and tracks sharing artist + title. Read-only: nothing is deleted."
         )
         self.duplicates_button.clicked.connect(self.find_duplicates)
+        self.health_button = QPushButton("Health report…")
+        self.health_button.setToolTip(
+            "List unreadable files, empty title/artist, missing artwork, low bitrate (≤128 kbps) "
+            "and zero-length files. Read-only."
+        )
+        self.health_button.clicked.connect(self.start_health_report)
         # Issue #224: needs the optional 'analysis' extra; greyed out with
         # the reason as tooltip when librosa isn't installed.
         self.analyse_button = QPushButton(_ANALYSE_LABEL)
@@ -782,6 +792,7 @@ class MusicLibraryView(QWidget):
                 self.remove_root_button,
                 self.duplicates_button,
                 self.relink_button,
+                self.health_button,
                 self.analyse_button,
             )
         ):
@@ -1319,6 +1330,54 @@ class MusicLibraryView(QWidget):
         self._reload_rows()
         self._reload_playlists()
 
+    # --- health report (issue #225) ----------------------------------------
+
+    def start_health_report(self) -> None:
+        """Check every indexed, present track, then show the report."""
+        if self.is_busy():
+            return
+        entries = health.health_entries(self.db)
+        if not entries:
+            self.status_label.setText("Scan a music folder first.")
+            return
+        self._start_job(self._health_job(entries))
+
+    def _health_job(self, entries: list[tuple[str, int | None]]) -> Generator[None]:
+        total = len(entries)
+        self.progress_bar.setRange(0, total)
+        steps = health.iter_health_check(entries)
+        while True:
+            try:
+                done = next(steps)
+            except StopIteration as finished:
+                report = finished.value
+                break
+            self.progress_bar.setValue(done)
+            if done % 50 == 0:
+                self.status_label.setText(f"Checking files… {done}/{total}")
+            yield
+        self.status_label.setText(
+            f"Health report: {report.affected_files} of {report.checked} file(s) with at least one issue."
+        )
+        self._show_health_report(report)
+
+    def _show_health_report(self, report: health.HealthReport) -> None:
+        if self.health_dialog is not None:
+            self.health_dialog.close()
+            self.health_dialog.deleteLater()
+        self.health_dialog = HealthReportDialog(report, self)
+        self.health_dialog.showTrackRequested.connect(self.show_track)
+        self.health_dialog.show()
+
+    def show_track(self, path: str) -> bool:
+        """Select `path` in the table, clearing the filters if they hide it."""
+        if not self.select_path(path):
+            self.reset_filters()
+            if not self.select_path(path):
+                self.status_label.setText(f"Not in the library table: {path}")
+                return False
+        self.table.scrollTo(self.table.currentIndex())
+        return True
     # --- background BPM/key analysis (issue #224) ----------------------
 
     def is_analysing(self) -> bool:
@@ -1380,6 +1439,7 @@ class MusicLibraryView(QWidget):
         self.scan_button.setEnabled(False)
         self.relink_button.setEnabled(False)
         self.duplicates_button.setEnabled(False)
+        self.health_button.setEnabled(False)
         self.analyse_button.setEnabled(False)
         self.progress_bar.setVisible(True)
         self._job_timer.start()
@@ -1391,6 +1451,7 @@ class MusicLibraryView(QWidget):
         self.scan_button.setEnabled(True)
         self.relink_button.setEnabled(True)
         self.duplicates_button.setEnabled(True)
+        self.health_button.setEnabled(True)
         self.analyse_button.setText(_ANALYSE_LABEL)
         self.analyse_button.setEnabled(analysis_available())
         self.progress_bar.setVisible(False)
@@ -1407,7 +1468,7 @@ class MusicLibraryView(QWidget):
             self._stop_job()
         except Exception:
             _LOGGER.exception("Music library job failed")
-            self.status_label.setText("The scan or duplicate search failed (see the log).")
+            self.status_label.setText("The scan, duplicate search or health check failed (see the log).")
             self._stop_job()
 
     # --- relinking missing tracks (issue #190) ---------------------------

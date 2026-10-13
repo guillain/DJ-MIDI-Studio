@@ -132,6 +132,14 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Library health report** (`v0.48.78-library-health`, issue #225) — Qt-free
+  `library/health.py`: `iter_health_check` opens each present indexed track once with mutagen
+  (header + tags, read-only) and reports unreadable/corrupt, zero-length (0 bytes or 0 s),
+  empty title/artist, missing embedded artwork and low bitrate (≤128 kbps) as `HealthIssue`
+  rows; `filter_issues`/`export_csv` back the filters and CSV export. Music Library tab gains a
+  `Health report…` job (same `QTimer` slice pattern as duplicates) opening
+  `gui/health_report_dialog.py` (per-kind check boxes with counts, text filter, sortable
+  table, Show in library / Reveal in Finder / Export CSV…).
 - [x] **Background BPM/key analysis** (`v0.48.77-background-analysis`, issue #224) — Music Library
   `Analyse BPM/key` estimates tempo/key (librosa, optional `analysis` extra; 60 s clip per track) for
   tracks missing either tag, as a stoppable `QTimer`-sliced job. Estimates are stored as suggestions
