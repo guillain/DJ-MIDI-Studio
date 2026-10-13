@@ -132,6 +132,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Stage Mode** (`v0.48.88-stage-mode`, issue #230) — `View → Stage Mode` (`Ctrl+Shift+F`)
+  opens a full-screen, high-contrast window with only a Controller Emulator and a compact Live
+  Monitor (latest event large, last six below, jog ticks excluded); Esc exits; session-only.
+  Qt-free `stage.py` (line formatting, bounded log) + `gui/stage_window.py`; every live emulator
+  update now goes through `MainWindow._emulator_views()` so the stage emulator follows the
+  hardware like a dock. Docs: `docs/enduser/features/stage-mode.md` + `stage-mode.png`.
 - [x] **Command palette** (`v0.48.87-command-palette`, issue #222) — Cmd+K (`Ctrl+K`) opens one
   keyboard-only search over every enabled menu action, every tab, the loaded mapping's functions
   (reusing `function_search`) and the Music Library's tracks; Enter runs/opens, Esc closes. Qt-free

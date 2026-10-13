@@ -121,6 +121,7 @@ from djmidi.gui.report_problem_dialog import ReportProblemDialog
 from djmidi.gui.safe_update_dialog import SafeUpdateDialog
 from djmidi.gui.scroll_utils import AutoSizeScrollArea
 from djmidi.gui.splitter_utils import replace_splitter, scrollable_columns
+from djmidi.gui.stage_window import StageWindow
 from djmidi.gui.theme import apply_theme, mapping_tree_stylesheet
 from djmidi.gui.theme import signals as theme_signals
 from djmidi.gui.tree_model import (
@@ -346,6 +347,10 @@ class MainWindow(QMainWindow):
         self._last_controller_detection: tuple[str, ...] = ()
         self._performance_mode = False
         self._performance_saved_ratios: dict[int, float] | None = None
+        # Stage Mode (issue #230): the full-screen emulator + compact monitor
+        # window while it is open, else None. Session-only, like Performance
+        # Mode -- never persisted.
+        self._stage_window: StageWindow | None = None
 
         self.undo_stack = QUndoStack(self)
 
@@ -891,6 +896,14 @@ class MainWindow(QMainWindow):
         )
         self._performance_mode_action.toggled.connect(self._on_performance_mode_toggled)
         view_menu.addAction(self._performance_mode_action)
+        self._stage_mode_action = QAction("Stage Mode", self, checkable=True)
+        self._stage_mode_action.setShortcut(QKeySequence("Ctrl+Shift+F"))
+        self._stage_mode_action.setToolTip(
+            "Full-screen, high-contrast Controller Emulator and compact Live Monitor "
+            "for on-stage use -- Esc to exit (session-only, not remembered across restarts)"
+        )
+        self._stage_mode_action.toggled.connect(self._on_stage_mode_toggled)
+        view_menu.addAction(self._stage_mode_action)
 
         # MIDI macros (issue #228): one entry per macro, each with its own
         # shortcut, rebuilt by _rebuild_macro_menu whenever the list changes.
@@ -1718,6 +1731,50 @@ class MainWindow(QMainWindow):
             else "Performance mode off"
         )
 
+    def _on_stage_mode_toggled(self, checked: bool) -> None:
+        """Open or close the full-screen Stage Mode window (issue #230). It
+        shows the controller of the first open emulator, else the one the
+        Controller Images tab shows, and starts live monitoring (a no-op when a
+        session already runs) since a stage view without live input would
+        be empty."""
+        if checked:
+            if self._stage_window is not None:
+                return
+            controller = next(
+                (view.current_controller() for view in self._emulator_views()),
+                self.controller_image_view.current_controller_name(),
+            )
+            window = StageWindow(config_provider=lambda: self.config, initial_controller=controller)
+            window.closed.connect(self._on_stage_window_closed)
+            self._stage_window = window
+            window.showFullScreen()
+            self.live_monitor_view.ensure_monitoring_started()
+            self.statusBar().showMessage("Stage mode on — press Esc to exit")
+        elif self._stage_window is not None:
+            # close() emits closed -> _on_stage_window_closed, which clears
+            # the reference and unchecks the action (already unchecked here).
+            self._stage_window.close()
+
+    def _on_stage_window_closed(self) -> None:
+        window = self._stage_window
+        self._stage_window = None
+        if window is not None:
+            window.deleteLater()
+        if self._stage_mode_action.isChecked():
+            self._stage_mode_action.setChecked(False)
+        self.statusBar().showMessage("Stage mode off")
+
+    def _emulator_views(self) -> list[ControllerEmulatorView]:
+        """Every live Controller Emulator: each emulator dock's view plus
+        the Stage Mode window's, so live MIDI reaches all of them alike."""
+        views = [
+            view for dock in self._emulator_docks.values()
+            if isinstance(view := dock.widget(), ControllerEmulatorView)
+        ]
+        if self._stage_window is not None:
+            views.append(self._stage_window.emulator_view)
+        return views
+
     def _on_left_tab_changed(self, index: int) -> None:
         """Show the edit / validation column only on the tree tabs."""
         self._right_splitter.setVisible(index in self._editing_tab_indexes)
@@ -2247,6 +2304,20 @@ class MainWindow(QMainWindow):
         except (TypeError, ValueError):
             value = None
 
+        # Stage Mode's compact monitor gets every event except jog-wheel
+        # ticks: a platter turn sends dozens per second, which would push
+        # every meaningful press off its few large lines.
+        if self._stage_window is not None and not jog_mod.jog_cell_keys_for_event(
+            event.channel, event.event_type, event.data1
+        ):
+            lookup_type = "Note On" if event.event_type == "Note Off" else event.event_type
+            stage_hits = (
+                catalog.lookup(event.channel, lookup_type, event.data1)
+                if event.channel and event.data1
+                else []
+            )
+            self._stage_window.add_event(event, stage_hits)
+
         # Output-direction traffic (Serato -> controller LED feedback, seen on
         # the virtual monitor port) drives a *latched* LED highlight, kept
         # separate from the input-direction momentary "held" state so an
@@ -2280,11 +2351,9 @@ class MainWindow(QMainWindow):
                 ):
                     for key in jog_keys:
                         lv.spin_jog(key, delta)
-                for dock in self._emulator_docks.values():
-                    view = dock.widget()
-                    if isinstance(view, ControllerEmulatorView):
-                        for key in jog_keys:
-                            view.spin_jog_from_key(key, delta)
+                for view in self._emulator_views():
+                    for key in jog_keys:
+                        view.spin_jog_from_key(key, delta)
                 # The Controller Images overlay only carries the one
                 # "Jog wheel" geometry entry (no left/right split), so strip
                 # the mirror suffix and spin it when this tab shows that
@@ -2348,10 +2417,7 @@ class MainWindow(QMainWindow):
         # Every open Controller Emulator dock -- the flash_live_hit /
         # set_live_active_from_hit calls self-filter to the controller each
         # instance shows, so this can run unconditionally over all of them.
-        for dock in self._emulator_docks.values():
-            view = dock.widget()
-            if not isinstance(view, ControllerEmulatorView):
-                continue
+        for view in self._emulator_views():
             for hit in hits:
                 if is_press or is_release:
                     view.set_live_active_from_hit(hit, is_press)
@@ -2384,10 +2450,7 @@ class MainWindow(QMainWindow):
                 if label is not None:
                     self.controller_image_view.set_led(label, led_on)
 
-        for dock in self._emulator_docks.values():
-            view = dock.widget()
-            if not isinstance(view, ControllerEmulatorView):
-                continue
+        for view in self._emulator_views():
             for hit in hits:
                 view.set_led_from_hit(hit, led_on)
 
@@ -2415,15 +2478,15 @@ class MainWindow(QMainWindow):
         self.controller_layout_view.refresh_controllers()
         self.controller_image_view.refresh_controllers()
         self.introduction_view.refresh_controllers()
-        for dock in self._emulator_docks.values():
-            widget = dock.widget()
-            if isinstance(widget, ControllerEmulatorView):
-                widget.refresh_controllers()
+        for view in self._emulator_views():
+            view.refresh_controllers()
         if self.config is not None:
             self._refresh_layout_usage()
         self.statusBar().showMessage(f"'{name}' applied for this session.")
 
     def closeEvent(self, event) -> None:
+        if self._stage_window is not None:
+            self._stage_window.close()
         self._record_timer.stop()
         self._plug_in_timer.stop()
         self._record_monitor.close_all()

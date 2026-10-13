@@ -193,6 +193,22 @@ CONTROLLER_EMULATOR: HelpEntry = (
     "controller-emulator.md",
 )
 
+STAGE_MODE: HelpEntry = (
+    "Stage Mode",
+    (
+        "A full-screen, high-contrast view for playing live: one Controller Emulator and "
+        "a compact Live Monitor, nothing else.<ul>"
+        "<li>The emulator follows the real controller like any other emulator; pick the "
+        "controller in its list.</li>"
+        "<li>The monitor shows the latest event in large type and the last few below it. "
+        "The full log stays in the Live Monitor window.</li>"
+        "<li>Live monitoring starts on its own when Stage Mode opens.</li></ul>"
+        "Press <b>Esc</b> (or <b>Exit</b>) to leave. Open it again with "
+        "<b>View → Stage Mode</b>; it is not remembered across restarts."
+    ),
+    "stage-mode.md",
+)
+
 LIVE_MONITOR: HelpEntry = (
     "Live Monitor",
     (
