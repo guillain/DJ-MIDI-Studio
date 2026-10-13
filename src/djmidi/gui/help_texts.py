@@ -344,6 +344,24 @@ LIBRARY_HEALTH: HelpEntry = (
     "music-library.md",
 )
 
+LIBRARY_STATS: HelpEntry = (
+    "Library statistics",
+    (
+        "<b>Statistics…</b> charts the tracks the table currently shows (its filters apply; "
+        "missing files are left out):"
+        "<ul><li><b>Categories</b> and <b>Genres</b>: tracks per confirmed category and per "
+        "genre tag.</li>"
+        "<li><b>BPM</b>: a histogram in 5&nbsp;BPM steps.</li>"
+        "<li><b>Keys</b>: the 24 Camelot keys in wheel order.</li>"
+        "<li><b>Added per month</b>: by file modification date.</li>"
+        "<li><b>Most played</b>: play counts and never-played tracks, once DJ history is loaded "
+        "in the History panel.</li></ul>"
+        "Hover a bar for its exact count. The window is a snapshot: reopen it after a scan or a "
+        "filter change. Read-only."
+    ),
+    "music-library.md",
+)
+
 LIBRARY_PLAYLISTS: HelpEntry = (
     "Playlists",
     (
