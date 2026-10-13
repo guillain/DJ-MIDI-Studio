@@ -141,6 +141,25 @@ Implemented contract, runtime, test, and documentation work:
   (info). `gui/live_ready_dialog.py` report window (severity filters, Show control, Copy
   report) from a new button strip above the validation table and `Edit → Ready for Live…`.
   Read-only, never auto-fixes. Docs: `docs/enduser/features/live-ready-check.md`.
+- [x] **Layered mapping overview** (`v0.48.92-layer-map`, issue #253) — `View → Layer Map…`:
+  Qt-free `gui/layer_map.py` (`build_layer_map`: one row per physical control, one column per
+  layer — Normal, SHIFT, other qualifiers, each pad bank ± SHIFT — all derived from
+  `layout.reverse_lookup()` names, never invented; cells `mapped`/`partial`/`free` from
+  `cheat_sheet.build_function_index`, LED-only sections excluded) behind a thin read-only
+  `LayerMapDialog` (controller/section filters, *Only controls with a free layer*, *Refresh*).
+- [x] **MIDI Learn for macros** (`v0.48.91-macro-midi-learn`, issue #252) — `MidiMacro.trigger`
+  (`MacroTrigger`: Note On/CC, channel, data1, input port; persisted in the macro's JSON only when
+  set), learned by a `Learn` button in Manage Macros (live events routed to the open dialog via
+  `MainWindow._macro_dialog`, reusing `midi_learn.trigger_from_event` and the Live Monitor
+  auto-start of #220). A live press fires `macros_for_event` through the existing `MacroPlayer`;
+  validation refuses shared triggers and self-retriggering macros on a loopback port.
+- [x] **First-run setup wizard** (`v0.48.90-first-run-wizard`, issue #251) — Qt-free
+  `first_run.py` (first-launch gate, controller detection by port name merged per controller,
+  read-only listing of `~/Music/_Serato_/MIDI/Xml`) behind a skippable `QWizard`: pick the
+  detected profile for the Dashboard, open the newest Serato mapping, start a `● Rec` sync-set
+  recording. Shown once, only in the real app with no preferences file (QSettings flag
+  `ui/first_run_wizard_done`), never under `--startup-screenshot`; `Help → First-Run Setup…`
+  reopens it.
 - [x] **Hercules DJControl Inpulse 500 profile fix** (`v0.48.89-inpulse-500-profile-fix`, issue #247) — the
   catalog is re-transcribed from the bundled official MIDI Commands sheet (300 DPI renders): deck buttons on
   ch 2/3 (+SHIFT 5/6), the 8-mode pad banks on ch 7/8 (+8 with SHIFT), PAD MODE 1-8 and long-press notes,

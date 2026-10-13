@@ -62,6 +62,7 @@ from djmidi import (
     backup,
     catalog,
     file_locations,
+    first_run,
     midi_macros,
     pad_colours,
     software,
@@ -88,6 +89,7 @@ from djmidi.controller_sync import (
     summarize_results,
     sync_sets_from_recording,
 )
+from djmidi.first_run import FirstRunChoices
 from djmidi.function_search import FunctionResult
 from djmidi.gui import cheat_sheet
 from djmidi.gui import jog as jog_mod
@@ -102,10 +104,12 @@ from djmidi.gui.controller_tree import CELL_KEY_ROLE, build_controller_columns
 from djmidi.gui.deck_tree import build_deck_columns
 from djmidi.gui.edit_panel import EditPanel
 from djmidi.gui.file_reveal import reveal_in_file_manager
+from djmidi.gui.first_run_wizard import FirstRunWizard
 from djmidi.gui.function_search_view import FunctionSearchView
 from djmidi.gui.geometry import resolve_geometry_label
 from djmidi.gui.helpful_notes_dialog import HelpfulNotesDialog
 from djmidi.gui.introduction_view import IntroductionView
+from djmidi.gui.layer_map_dialog import LayerMapDialog
 from djmidi.gui.layout_view import ControllerLayoutView
 from djmidi.gui.live_monitor import LiveMonitorView
 from djmidi.gui.live_ready_dialog import LiveReadyDialog
@@ -288,6 +292,11 @@ class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         self.preferences_path = default_preferences_path()
+        # Read before anything saves preferences: no file = a first launch,
+        # which offers the first-run wizard (issue #251).
+        self._preferences_existed = self.preferences_path.exists()
+        # The build smoke test turns it off: its screenshot must not wait on a modal wizard.
+        self.first_run_wizard_enabled = True
         self.preferences = PluginPreferences.load(self.preferences_path)
         application = QApplication.instance()
         if application is not None:
@@ -326,6 +335,9 @@ class MainWindow(QMainWindow):
         self.macros: list[midi_macros.MidiMacro] = midi_macros.load_macros(user_paths.macros_dir())
         self._macro_player = MacroPlayer(parent=self)
         self._macro_player.finished.connect(self._on_macro_finished)
+        # The open Manage Macros dialog, fed live events for its Learn button
+        # (issue #252); macros don't fire from the controller while it's open.
+        self._macro_dialog: MacroManagerDialog | None = None
         # "Show all controllers" (View menu) bypasses the per-controller
         # Preferences enablement so the mapping tabs list every registered
         # controller again; the real state is restored from QSettings in
@@ -562,6 +574,7 @@ class MainWindow(QMainWindow):
         self._build_menu()
         self.introduction_view.fileActionRequested.connect(self._on_dashboard_file_action)
         self._refresh_file_actions()
+        self._layer_map_dialog: LayerMapDialog | None = None
         self.helpful_notes_dialog = HelpfulNotesDialog(self)
         self.helpful_notes_dialog.closedPersistently.connect(self._persist_helpful_notes_closed)
         self.helpful_notes_dialog.closedForSession.connect(self._allow_helpful_notes_next_start)
@@ -571,6 +584,8 @@ class MainWindow(QMainWindow):
         if self._layout_settings() is not None:
             # Real app only, like reopening files: tests never touch MIDI here.
             QTimer.singleShot(_STARTUP_SYNC_DELAY_MS, self._start_controller_sync)
+            # Controller-triggered macros (issue #252) need the inputs open.
+            QTimer.singleShot(0, self._ensure_macro_triggers_listening)
         self._update_checker = UpdateChecker(self)
         self._update_checker.finished.connect(self._on_update_check_finished)
         self._update_label = QLabel()
@@ -582,7 +597,7 @@ class MainWindow(QMainWindow):
             # Real app only, like Sync at launch: tests never touch the network.
             QTimer.singleShot(_STARTUP_UPDATE_CHECK_DELAY_MS, self._check_for_updates_at_startup)
         QTimer.singleShot(0, self._initialize_pair_splitters)
-        QTimer.singleShot(0, self._show_helpful_notes_if_enabled)
+        QTimer.singleShot(0, self._show_startup_dialog)
         self.introduction_view.set_loaded_config_info(None)
 
     @staticmethod
@@ -908,6 +923,14 @@ class MainWindow(QMainWindow):
         )
         self._new_emulator_action.triggered.connect(lambda: self._create_emulator_instance())
         view_menu.addAction(self._new_emulator_action)
+        self._layer_map_action = QAction("Layer Map…", self)
+        self._layer_map_action.setToolTip(
+            "What each control of a controller does in every layer (normal, SHIFT, "
+            "pad modes), with the free combinations highlighted"
+        )
+        self._layer_map_action.setEnabled(False)
+        self._layer_map_action.triggered.connect(lambda _checked=False: self._on_show_layer_map())
+        view_menu.addAction(self._layer_map_action)
         view_menu.addSeparator()
         self._show_all_controllers_action = QAction("Show all controllers", self, checkable=True)
         self._show_all_controllers_action.setChecked(self._show_all_controllers)
@@ -1028,6 +1051,12 @@ class MainWindow(QMainWindow):
             online_menu.addAction(action)
 
         help_menu.addSeparator()
+        self._first_run_action = QAction("First-Run &Setup...", self)
+        self._first_run_action.setToolTip(
+            "Detect your controllers, open your Serato mapping and record a controller sync set."
+        )
+        self._first_run_action.triggered.connect(lambda: self._on_first_run_wizard())
+        help_menu.addAction(self._first_run_action)
         self._check_updates_action = QAction("Check for &Updates...", self)
         self._check_updates_action.setToolTip("Ask GitHub whether a newer DJ MIDI Studio release exists.")
         self._check_updates_action.triggered.connect(self._on_check_for_updates)
@@ -1044,6 +1073,48 @@ class MainWindow(QMainWindow):
         self.helpful_notes_dialog.show()
         self.helpful_notes_dialog.raise_()
         self.helpful_notes_dialog.activateWindow()
+
+    def _show_startup_dialog(self) -> None:
+        """The first-run wizard on a genuine first launch, else Helpful Notes."""
+        if self._should_show_first_run_wizard():
+            self._on_first_run_wizard()
+        else:
+            self._show_helpful_notes_if_enabled()
+
+    def _should_show_first_run_wizard(self) -> bool:
+        """Real app only (tests and doc captures have no settings), and only
+        without a preferences file and before the wizard was finished/skipped."""
+        settings = self._layout_settings()
+        if settings is None or not self.first_run_wizard_enabled:
+            return False
+        done = settings.value(first_run.WIZARD_DONE_SETTINGS_KEY, False, type=bool)
+        return first_run.should_show_wizard(self._preferences_existed, bool(done))
+
+    def _on_first_run_wizard(self, wizard: FirstRunWizard | None = None) -> FirstRunChoices | None:
+        """Runs the wizard (Help → First-Run Setup, or a first launch) and
+        applies its choices; finished or skipped, it won't open by itself again."""
+        if wizard is None:
+            wizard = FirstRunWizard(list_input_ports, parent=self)
+        accepted = wizard.exec() == QDialog.DialogCode.Accepted
+        settings = self._layout_settings()
+        if settings is not None:
+            settings.setValue(first_run.WIZARD_DONE_SETTINGS_KEY, True)
+            settings.sync()
+        if not accepted:
+            return None
+        choices = wizard.choices()
+        self._apply_first_run_choices(choices)
+        return choices
+
+    def _apply_first_run_choices(self, choices: FirstRunChoices) -> None:
+        if choices.controller:
+            self.introduction_view.set_controller(choices.controller)
+        if choices.mapping is not None:
+            # Opening only reads the file; the Serato folder is never written
+            # unless the user saves the mapping themselves.
+            self._load_mapping_from_path(choices.mapping, software_id="serato")
+        if choices.record_sync_set and not self._record_button.isChecked():
+            self._record_button.setChecked(True)
 
     def _show_helpful_notes_if_enabled(self) -> None:
         settings = self._layout_settings()
@@ -2326,8 +2397,13 @@ class MainWindow(QMainWindow):
 
     def _on_live_midi_event(self, event: MidiEvent) -> None:
         # An active MIDI Learn consumes the press it learns; the layouts still
-        # react to it below like any other live hit.
-        self.edit_panel.feed_learn_event(event)
+        # react to it below like any other live hit. Otherwise a press bound
+        # to a macro (issue #252) plays it -- never while the macro editor is
+        # open, whose own Learn may be waiting for exactly that press.
+        if self._macro_dialog is not None:
+            self._macro_dialog.feed_learn_event(event)
+        elif not self.edit_panel.feed_learn_event(event):
+            self._play_triggered_macros(event)
         try:
             value = int(event.data2)
         except (TypeError, ValueError):
@@ -2954,12 +3030,19 @@ class MainWindow(QMainWindow):
             list(self.preferences.controller_sync_sets),
             self._reserved_shortcuts(),
             parent=self,
+            ensure_listening=self._ensure_learn_listening,
         )
-        if dialog.exec() != QDialog.DialogCode.Accepted:
+        self._macro_dialog = dialog
+        try:
+            accepted = dialog.exec() == QDialog.DialogCode.Accepted
+        finally:
+            self._macro_dialog = None
+        if not accepted:
             return False
         self.macros = list(dialog.edited_macros())
         midi_macros.save_macros(user_paths.macros_dir(), self.macros)
         self._rebuild_macro_menu()
+        self._ensure_macro_triggers_listening()
         self.statusBar().showMessage(f"{len(self.macros)} macro(s) saved", 5000)
         return True
 
@@ -2968,6 +3051,21 @@ class MainWindow(QMainWindow):
         if macro is None:
             return None
         return self._macro_player.play(macro, list_output_ports())
+
+    def _play_triggered_macros(self, event: MidiEvent) -> list[str]:
+        """Plays every macro bound to this controller press; returns their names."""
+        fired = midi_macros.macros_for_event(self.macros, event)
+        if fired:
+            ports = list_output_ports()
+            for macro in fired:
+                self._macro_player.play(macro, ports)
+        return [macro.name for macro in fired]
+
+    def _ensure_macro_triggers_listening(self) -> None:
+        """A controller-triggered macro only fires while its input is open:
+        start the Live Monitor when one exists, if the user lets it auto-start."""
+        if self.preferences.auto_start_live_monitor and any(macro.trigger for macro in self.macros):
+            self.live_monitor_view.ensure_monitoring_started()
 
     def _on_macro_finished(self, result: midi_macros.MacroResult) -> None:
         self.statusBar().showMessage(result.summary(), 8000)
@@ -3033,6 +3131,28 @@ class MainWindow(QMainWindow):
             return None
         self.statusBar().showMessage(f"Cheat sheet exported: {path} ({pages} page(s))")
         return path
+
+    def _on_show_layer_map(self) -> LayerMapDialog | None:
+        """View -> Layer Map (issue #253): a non-modal, read-only overview
+        of every layer of one controller. The controllers recognizing the
+        mapping come first (most triggers first), then every other one, so a
+        DJ can also look for room on a controller the mapping doesn't use
+        yet. Returns the dialog (tests)."""
+        if self.config is None:
+            QMessageBox.information(self, "Layer Map", "Open a mapping first.")
+            return None
+        candidates = cheat_sheet.candidate_controllers(self.config)
+        known = {name for name, _count in candidates}
+        controllers = candidates + [(name, 0) for name in catalog.CONTROLLER_NAMES if name not in known]
+        preselected = self._cheat_sheet_preselection([name for name, _count in candidates]) if candidates else set()
+        first = next((name for name, _count in candidates if name in preselected), None)
+        if self._layer_map_dialog is not None:
+            self._layer_map_dialog.close()
+            self._layer_map_dialog.deleteLater()
+        dialog = LayerMapDialog(lambda: self.config, controllers, first, self)
+        self._layer_map_dialog = dialog
+        dialog.show()
+        return dialog
 
     def _on_reveal_mapping(self) -> None:
         if self.current_path is not None:
@@ -3148,6 +3268,7 @@ class MainWindow(QMainWindow):
         self._compare_backup_action.setEnabled(self.config is not None and backup is not None and backup.is_file())
         self._reveal_action.setEnabled(has_file)
         self._cheat_sheet_action.setEnabled(self.config is not None)
+        self._layer_map_action.setEnabled(self.config is not None)
         self.introduction_view.set_files_summary(
             mapping=self.current_path,
             backup=backup if backup is not None and backup.is_file() else None,

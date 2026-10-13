@@ -55,11 +55,28 @@ MIDI_MACROS: HelpEntry = (
         "<li><b>Steps</b>: type, channel (1–16), data 1/2 (0–127) and an optional delay "
         "(ms) waited before the step is sent; <b>Add sync set…</b> appends a recorded sync "
         "set's messages.</li>"
-        "<li><b>Shortcut</b>: optional; one the app's menus already use is refused.</li></ul>"
+        "<li><b>Shortcut</b>: optional; one the app's menus already use is refused.</li>"
+        "<li><b>Trigger</b>: <b>Learn</b>, then press a button on your controller: that "
+        "press plays the macro from then on (the Live Monitor must be listening).</li></ul>"
         "<b>Test</b> plays the macro as edited. Each macro is a file in "
         "<tt>Documents/DJ MIDI Studio/Macros</tt>."
     ),
     "midi-macros.md",
+)
+
+LAYER_MAP: HelpEntry = (
+    "Layer Map",
+    (
+        "One row per physical control, one column per <b>layer</b>: <i>Normal</i>, "
+        "<i>SHIFT</i>, and each pad mode (with and without SHIFT) the controller's profile "
+        "knows. Each cell shows what the loaded mapping does there, for every deck that "
+        "shares the control (<i>D1, D3</i>).<ul>"
+        "<li><b>free</b> (green): no deck uses this combination, so a new function fits.</li>"
+        "<li>amber: mapped on some decks only; hover to see the MIDI channels still free.</li>"
+        "<li><b>—</b>: this control has no such layer.</li></ul>"
+        "Read-only. <b>Refresh</b> re-reads the mapping after edits."
+    ),
+    "layer-map.md",
 )
 
 DASHBOARD_CONTROLLERS: HelpEntry = (

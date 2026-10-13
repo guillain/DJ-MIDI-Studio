@@ -85,6 +85,8 @@ def run(argv: list[str] | None = None) -> int:
     app.setApplicationName("DJ MIDI Studio")
     apply_theme(app, preferences.theme)
     window = MainWindow()
+    if arguments.startup_screenshot:
+        window.first_run_wizard_enabled = False
     window.show()
     if arguments.startup_screenshot:
         QTimer.singleShot(
