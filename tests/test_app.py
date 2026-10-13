@@ -82,6 +82,8 @@ def test_startup_screenshot_flag_schedules_a_window_grab(tmp_path):
         callback()
     assert delay == STARTUP_SCREENSHOT_DELAY_MS
     mock_save.assert_called_once_with(mock_window.return_value, str(target))
+    # The smoke screenshot must never wait on the modal first-run wizard (issue #251).
+    assert mock_window.return_value.first_run_wizard_enabled is False
 
 
 def test_no_screenshot_is_scheduled_without_the_flag():

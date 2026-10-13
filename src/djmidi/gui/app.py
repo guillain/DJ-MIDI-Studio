@@ -12,6 +12,7 @@ from PySide6.QtWidgets import QApplication, QWidget
 from djmidi import startup_timing
 from djmidi.gui.main_window import MainWindow
 from djmidi.gui.theme import apply_theme
+from djmidi.gui.translation import install_translators
 from djmidi.logging_config import configure_logging
 from djmidi.plugins.preferences import PluginPreferences, default_preferences_path
 
@@ -97,8 +98,12 @@ def run(argv: list[str] | None = None) -> int:
     app.setApplicationName("DJ MIDI Studio")
     apply_theme(app, preferences.theme)
     timer.mark("Qt application")
+    # Before any widget exists: tr() is resolved when a widget sets its text.
+    install_translators(app, preferences.language)
     window = MainWindow()
     timer.mark("main window built")
+    if arguments.startup_screenshot:
+        window.first_run_wizard_enabled = False
     window.show()
     timer.mark("window shown")
     # The first event-loop turn is when the shown window actually paints.

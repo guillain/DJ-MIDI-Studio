@@ -34,6 +34,22 @@ between two versions of a track would cost a mix:
 A track with no artist or no title after normalization is never grouped by
 metadata: "Unknown artist / Track 01" is not evidence of a duplicate.
 
+A third, separate tier answers a different question (issue #257):
+
+- **versions** (`find_version_variants`): "same song, different version"
+  -- ``(Radio Edit)``, ``(Extended Mix)``, ``[Remastered 2011]``,
+  ``- Club Mix``… Titles are compared once every *trailing* version marker
+  is stripped (`song_title`): a ``(…)``/``[…]`` group or a `` - …`` suffix
+  is a marker when one of its words is in `VERSION_WORDS`, and markers are
+  peeled off from the end one at a time, so ``Song (Radio Edit) [Remastered]``
+  is ``Song`` while ``Song (Part 2)`` and ``Song (Live) Forever`` keep their
+  text. Grouped by artist + that song title, a group is kept only when it
+  holds at least two *different* versions (distinct `metadata_key`) -- two
+  copies of the same radio edit are the metadata tier's business. These are
+  suggestions only: the GUI lists them apart from the duplicates, with no
+  tick box, and `discard.plan_discard` ignores this tier, so nothing here
+  can ever send a file to the Trash.
+
 Duration is not compared yet -- the tag cache doesn't hold it, and reading
 it would open every file; the exact tier is the stronger signal anyway.
 """
@@ -55,6 +71,7 @@ _LOGGER = logging.getLogger(__name__)
 
 TIER_EXACT = "exact"
 TIER_METADATA = "metadata"
+TIER_VERSIONS = "versions"
 
 CHUNK_BYTES = 1 << 20
 PREFIX_BYTES = 64 * 1024
@@ -72,6 +89,44 @@ _TITLE_ORIGINAL_RE = re.compile(
     re.IGNORECASE,
 )
 _NON_ALNUM_RE = re.compile(r"[^0-9a-z]+")
+
+VERSION_WORDS = frozenset(
+    {
+        "acapella",
+        "acoustic",
+        "album",
+        "bootleg",
+        "clean",
+        "club",
+        "dirty",
+        "dub",
+        "edit",
+        "explicit",
+        "extended",
+        "instrumental",
+        "live",
+        "mix",
+        "mono",
+        "original",
+        "radio",
+        "remaster",
+        "remastered",
+        "remix",
+        "rework",
+        "rmx",
+        "single",
+        "stereo",
+        "version",
+        "vip",
+    }
+)
+"""Words that make a trailing title group a version marker (folded form)."""
+
+# A trailing "(…)" / "[…]" group, or a " - …" suffix (hyphen, en or em dash
+# with spaces around it, so "Jay-Z" or "Re-Edit" never split). A dash
+# suffix never spans another spaced dash: only the last one is peeled.
+_DASH = r"\s[-\u2013\u2014]\s"
+_TRAILING_MARKER_RE = re.compile(rf"\s*(?:[(\[]([^()\[\]]*)[)\]]|{_DASH}\s*((?:(?!{_DASH})[^()\[\]])+?))\s*$")
 
 
 def _fold(text: str) -> str:
@@ -104,6 +159,41 @@ def normalize_title(title: str | None) -> str:
     return _squash(text)
 
 
+def strip_version_markers(title: str) -> str:
+    """`title` with every trailing version marker removed (see the module
+    docstring); case and spelling of what's left are untouched. A title
+    that is nothing but markers is returned as is."""
+    text = title.strip()
+    while True:
+        match = _TRAILING_MARKER_RE.search(text)
+        if match is None:
+            return text
+        inner = match.group(1) if match.group(1) is not None else match.group(2)
+        rest = text[: match.start()].rstrip()
+        if not set(_squash(_fold(inner)).split()) & VERSION_WORDS or not rest:
+            return text
+        text = rest
+
+
+def song_title(title: str | None) -> str:
+    """`normalize_title` with every trailing version marker stripped too."""
+    if not title:
+        return ""
+    text = _fold(title)
+    text = _TITLE_FEAT_GROUP_RE.sub("", text)
+    text = _TITLE_FEAT_TAIL_RE.sub("", text)
+    return _squash(strip_version_markers(text))
+
+
+def song_key(artist: str | None, title: str | None) -> tuple[str, str] | None:
+    """`(artist, song title)` in comparison form, or None if either is empty."""
+    norm_artist = normalize_artist(artist)
+    norm_title = song_title(title)
+    if not norm_artist or not norm_title:
+        return None
+    return norm_artist, norm_title
+
+
 def metadata_key(artist: str | None, title: str | None) -> tuple[str, str] | None:
     """`(artist, title)` in comparison form, or None if either is empty."""
     norm_artist = normalize_artist(artist)
@@ -125,7 +215,9 @@ class DuplicateGroup:
     """Shared file size in bytes (exact tier only)."""
     label: str = ""
     """Display name: the first file's own ``Artist — Title`` tags (metadata
-    tier only -- `key` is the lowercased comparison form)."""
+    and versions tiers -- `key` is the lowercased comparison form)."""
+    variants: tuple[str, ...] = ()
+    """Each path's own title tag, aligned with `paths` (versions tier only)."""
 
 
 def find_metadata_duplicates(entries: Iterable[tuple[str, str | None, str | None]]) -> list[DuplicateGroup]:
@@ -146,6 +238,39 @@ def find_metadata_duplicates(entries: Iterable[tuple[str, str | None, str | None
         for (artist, title), paths in groups.items()
         if len(paths) > 1
     ]
+    result.sort(key=lambda group: (-len(group.paths), group.key))
+    return result
+
+
+def find_version_variants(entries: Iterable[tuple[str, str | None, str | None]]) -> list[DuplicateGroup]:
+    """Group `(path, artist, title)` entries that are other versions of the
+    same song: same artist, same title once version markers are stripped,
+    and at least two different versions (see the module docstring).
+
+    Returns groups largest first, then by key; within a group, files are
+    ordered by title then path, so the versions read side by side."""
+    groups: dict[tuple[str, str], list[tuple[str, str, tuple[str, str] | None]]] = defaultdict(list)
+    labels: dict[tuple[str, str], str] = {}
+    for path, artist, title in entries:
+        key = song_key(artist, title)
+        if key is None:
+            continue
+        groups[key].append((path, title.strip(), metadata_key(artist, title)))
+        labels.setdefault(key, f"{artist.strip()} — {strip_version_markers(title)}")
+    result = []
+    for (artist, title), members in groups.items():
+        if len({version for _path, _title, version in members}) < 2:
+            continue
+        members.sort(key=lambda member: (member[1].casefold(), member[0]))
+        result.append(
+            DuplicateGroup(
+                tier=TIER_VERSIONS,
+                key=f"{artist} — {title}",
+                paths=tuple(path for path, _title, _version in members),
+                label=labels[(artist, title)],
+                variants=tuple(variant for _path, variant, _version in members),
+            )
+        )
     result.sort(key=lambda group: (-len(group.paths), group.key))
     return result
 
@@ -283,15 +408,21 @@ __all__ = [
     "PREFIX_BYTES",
     "TIER_EXACT",
     "TIER_METADATA",
+    "TIER_VERSIONS",
+    "VERSION_WORDS",
     "DuplicateGroup",
     "audio_bitrate",
     "exact_candidate_count",
     "find_exact_duplicates",
     "find_metadata_duplicates",
+    "find_version_variants",
     "iter_exact_duplicates",
     "metadata_entries",
     "metadata_key",
     "normalize_artist",
     "normalize_title",
     "size_entries",
+    "song_key",
+    "song_title",
+    "strip_version_markers",
 ]

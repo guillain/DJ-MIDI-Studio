@@ -3,14 +3,18 @@ import json
 import pytest
 
 from djmidi.controller_sync import ControllerSyncSet, SyncMessage
+from djmidi.midi_io import MidiEvent
 from djmidi.midi_macros import (
     MacroStep,
+    MacroTrigger,
     MidiMacro,
     load_macros,
     macro_file_name,
     macro_from_sync_set,
     macro_schedule,
+    macros_for_event,
     resolve_macro_port,
+    retriggers_itself,
     run_macro,
     save_macros,
     steps_from_rows,
@@ -132,3 +136,68 @@ def test_store_keeps_colliding_slugs_apart(tmp_path):
     assert len(load_macros(tmp_path)) == 2
     assert macro_file_name("  ") == "macro.json"
     assert load_macros(tmp_path / "missing") == []
+
+
+# --- controller triggers (issue #252) -------------------------------------------
+
+
+def _event(event_type="Note On", channel="1", data1="40", data2="127", port="DDJ-XP2", direction="in"):
+    return MidiEvent(direction, channel, event_type, data1, data2, 0.0, port)
+
+
+def test_trigger_learned_from_a_press_only():
+    assert MacroTrigger.from_event(_event()) == MacroTrigger("Note On", 1, 40, "DDJ-XP2")
+    assert MacroTrigger.from_event(_event("Control Change", "3", "7", "0")) == MacroTrigger("Control Change", 3, 7, "DDJ-XP2")
+    assert MacroTrigger.from_event(_event(data2="0")) is None  # velocity-0 Note On is a release
+    assert MacroTrigger.from_event(_event("Note Off", data2="0")) is None
+    assert MacroTrigger.from_event(_event(direction="out")) is None  # LED feedback
+
+
+def test_trigger_round_trips_and_old_files_still_load():
+    trigger = MacroTrigger("Note On", 1, 40, "DDJ-XP2")
+    macro = MidiMacro("Fx", "DDJ-XP2", (MacroStep(PRESS),), trigger=trigger)
+    raw = json.loads(json.dumps(macro.to_dict()))
+    assert raw["trigger"] == {"event_type": "Note On", "channel": 1, "data1": 40, "port": "DDJ-XP2"}
+    assert MidiMacro.from_dict(raw) == macro
+    assert "trigger" not in _macro().to_dict()
+    assert MidiMacro.from_dict({"name": "x", "trigger": None}).trigger is None
+    with pytest.raises(ValueError):
+        MacroTrigger.from_dict({"event_type": "Note Off", "channel": 1, "data1": 40})
+    with pytest.raises(ValueError):
+        MacroTrigger.from_dict({"event_type": "Note On", "channel": 17, "data1": 40})
+
+
+def test_trigger_matches_presses_on_its_port_only():
+    trigger = MacroTrigger("Note On", 1, 40, "PIONEER DDJ-XP2")
+    assert trigger.matches(_event(port="pioneer ddj-xp2"))
+    assert not trigger.matches(_event(port="XDJ-XZ"))
+    assert not trigger.matches(_event(data2="0"))
+    assert not trigger.matches(_event(data1="41"))
+    assert not trigger.matches(_event("Control Change"))
+    assert MacroTrigger("Note On", 1, 40).matches(_event(port="XDJ-XZ"))  # blank port: any input
+
+
+def test_macros_for_event_and_store_keep_the_binding(tmp_path):
+    bound = MidiMacro("Bound", "P", (MacroStep(PRESS),), trigger=MacroTrigger("Control Change", 2, 7, "DDJ-XP2"))
+    unbound = _macro("Unbound")
+    assert macros_for_event([bound, unbound], _event("Control Change", "2", "7", "0")) == [bound]
+    assert macros_for_event([bound, unbound], _event()) == []
+    save_macros(tmp_path, [bound, unbound])
+    assert load_macros(tmp_path) == [bound, unbound]
+
+
+def test_validate_flags_shared_triggers_and_self_loops():
+    trigger = MacroTrigger("Note On", 1, 40, "DDJ-XP2")
+    a = MidiMacro("A", "XDJ-XZ", (MacroStep(PRESS),), trigger=trigger)
+    b = MidiMacro("B", "XDJ-XZ", (MacroStep(PRESS),), trigger=MacroTrigger("Note On", 1, 40))
+    other_port = MidiMacro("C", "XDJ-XZ", (MacroStep(PRESS),), trigger=MacroTrigger("Note On", 1, 40, "XDJ-XZ"))
+    assert validate_macros([a, other_port]) == []
+    assert any("same controller trigger" in problem for problem in validate_macros([a, b]))
+
+    echo = SyncMessage("Note On", 1, 40, 127)
+    looping = MidiMacro("Loop", "IAC Bus", (MacroStep(echo),), trigger=MacroTrigger("Note On", 1, 40, "IAC Bus"))
+    assert retriggers_itself(looping)
+    assert any("would loop" in problem for problem in validate_macros([looping]))
+    released = MidiMacro("Rel", "IAC Bus", (MacroStep(SyncMessage("Note On", 1, 40, 0)),), trigger=looping.trigger)
+    assert not retriggers_itself(released)
+    assert not retriggers_itself(MidiMacro("Out", "XDJ-XZ", (MacroStep(echo),), trigger=looping.trigger))

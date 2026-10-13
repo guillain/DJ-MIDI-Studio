@@ -146,6 +146,11 @@ class RemoveGroupAliasCommand(QUndoCommand):
         self._on_applied()
 
 
+# Logs a tag write in the persistent change history (issue #261):
+# (summary, {path: (old values, new values)}) for the files written.
+ChangeRecorder = Callable[[str, dict[str, tuple[dict[str, object], dict[str, object]]]], None]
+
+
 class WriteTrackMetadataCommand(QUndoCommand):
     """Undoable write of managed tags to one real audio file (Music Library
     tab, issue #132). Undo writes the previous values back through the same
@@ -159,6 +164,7 @@ class WriteTrackMetadataCommand(QUndoCommand):
         new_values: dict[str, object],
         on_applied: Callable[[str], None],
         writer: Callable[..., None] | None = None,
+        recorder: ChangeRecorder | None = None,
     ) -> None:
         changed = sorted(new_values)
         super().__init__(f"Edit {', '.join(changed)} of {path.rsplit('/', 1)[-1]}")
@@ -169,13 +175,55 @@ class WriteTrackMetadataCommand(QUndoCommand):
         if writer is None:
             from djmidi.library.metadata import write_metadata as writer
         self._writer = writer
+        self._recorder = recorder
 
     def redo(self) -> None:
         self._writer(self._path, **self._new)
+        if self._recorder is not None:
+            self._recorder(self.text(), {self._path: (self._old, self._new)})
         self._on_applied(self._path)
 
     def undo(self) -> None:
         self._writer(self._path, **self._old)
+        if self._recorder is not None:
+            self._recorder(f"Undo: {self.text()}", {self._path: (self._new, self._old)})
+        self._on_applied(self._path)
+
+
+class WriteTrackCoverCommand(QUndoCommand):
+    """Undoable set/removal of one audio file's front cover (Music Library
+    Track panel, issue #256). The previous front cover is read once, when
+    the command is built, and undo writes it back (or removes the new one
+    when there was none) through the same surgical `write_cover_art`, so
+    other pictures, tags and Serato/Traktor frames stay untouched."""
+
+    def __init__(
+        self,
+        path: str,
+        new_cover: object | None,
+        on_applied: Callable[[str], None],
+        writer: Callable[[str, object | None], None] | None = None,
+        reader: Callable[[str], object | None] | None = None,
+    ) -> None:
+        verb = "Set" if new_cover is not None else "Remove"
+        super().__init__(f"{verb} cover of {path.rsplit('/', 1)[-1]}")
+        if writer is None or reader is None:
+            from djmidi.library.cover_art import read_front_cover, write_cover_art
+
+            writer = writer or write_cover_art
+            reader = reader or read_front_cover
+        self._path = path
+        self._old = reader(path)
+        self._new = new_cover
+        self._writer = writer
+        self._on_applied = on_applied
+
+    def redo(self) -> None:
+        self._writer(self._path, self._new)
+        self._on_applied(self._path)
+
+    def undo(self) -> None:
+        self._writer(self._path, self._old)
         self._on_applied(self._path)
 
 
@@ -205,6 +253,7 @@ class WriteTracksMetadataCommand(QUndoCommand):
         on_applied: Callable[[list[str]], None],
         writer: Callable[..., None] | None = None,
         progress_factory: ProgressFactory | None = None,
+        recorder: ChangeRecorder | None = None,
     ) -> None:
         fields = sorted({name for _old, new in changes.values() for name in new})
         super().__init__(f"Edit {', '.join(fields)} of {len(changes)} tracks")
@@ -214,6 +263,7 @@ class WriteTracksMetadataCommand(QUndoCommand):
             from djmidi.library.metadata import write_metadata as writer
         self._writer = writer
         self._progress_factory = progress_factory
+        self._recorder = recorder
         self.written: list[str] = []
         self.failures: dict[str, str] = {}
         self.cancelled = False
@@ -242,8 +292,53 @@ class WriteTracksMetadataCommand(QUndoCommand):
         if not self.written:
             self.setObsolete(True)
             return
+        if self._recorder is not None:
+            self._recorder(self.text(), {path: self._changes[path] for path in self.written})
         self._on_applied(self.written)
 
     def undo(self) -> None:
         restored = self._write_all("Restoring tags…", [(path, self._changes[path][0]) for path in self.written])
+        if self._recorder is not None and restored:
+            self._recorder(
+                f"Undo: {self.text()}", {path: (self._changes[path][1], self._changes[path][0]) for path in restored}
+            )
         self._on_applied(restored)
+
+
+class RenameFilesCommand(QUndoCommand):
+    """Undoable rename of audio files from a tag template (Music Library
+    tab, issue #260). `apply(pairs)` renames ``(old, new)`` pairs and returns
+    a `library.rename.RenameResult`; undo calls it again with every pair it
+    actually renamed swapped back. A pair that fails (on redo or undo) is
+    recorded in `failures` instead of aborting the rest; if nothing at all
+    was renamed the command marks itself obsolete so `QUndoStack.push`
+    drops it."""
+
+    def __init__(
+        self,
+        pairs: list[tuple[str, str]],
+        apply: Callable[[list[tuple[str, str]]], object],
+        on_applied: Callable[[list[tuple[str, str]]], None],
+    ) -> None:
+        super().__init__(f"Rename {len(pairs)} file(s)")
+        self._pairs = list(pairs)
+        self._apply = apply
+        self._on_applied = on_applied
+        self.renamed: list[tuple[str, str]] = []
+        self.failures: list[tuple[str, str]] = []
+
+    def redo(self) -> None:
+        result = self._apply(self._pairs)
+        self.renamed = list(result.renamed)
+        self.failures = list(result.failed)
+        if not self.renamed:
+            self.setObsolete(True)
+            return
+        # A later redo (after an undo) replays only what this one renamed.
+        self._pairs = list(self.renamed)
+        self._on_applied(self.renamed)
+
+    def undo(self) -> None:
+        result = self._apply([(new, old) for old, new in reversed(self.renamed)])
+        self.failures = list(result.failed)
+        self._on_applied(list(result.renamed))

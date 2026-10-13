@@ -36,7 +36,9 @@ bash scripts/test.sh all
 
 ## macOS Security
 
-Before publishing a macOS artifact:
+With the Apple secrets configured, the release workflow does steps 1-5
+automatically ([macOS signing and notarization](macos-signing.md)). Before
+publishing a macOS artifact:
 
 1. Sign it with a `Developer ID Application` certificate.
 2. Verify it with `codesign --verify --deep --strict`.
