@@ -14,6 +14,7 @@
 - [Browse, sort and filter](#browse-sort-and-filter)
 - [Listen to a track](#listen-to-a-track)
 - [Edit tags](#edit-tags)
+- [Cover art](#cover-art)
 - [Write tags to many tracks at once](#write-tags-to-many-tracks-at-once)
 - [Estimate missing BPM and keys](#estimate-missing-bpm-and-keys)
 - [Find duplicate tracks](#find-duplicate-tracks)
@@ -127,6 +128,20 @@ BPM, key, comment, rating and energy. Edit any field and click `Write tags`
 haven't written yet. `Clean noise frames…` lists leftover junk tags (old
 ID3v1 comment copies, old player preferences, ReplayGain values…) and
 removes them only after you confirm.
+
+## Cover art
+
+The **Track** panel shows the selected track's embedded cover (the front
+cover, or any other embedded picture when there is no front cover).
+
+- `Set cover…` embeds a JPEG or PNG image (up to 16 MB) as the track's front
+  cover, replacing the previous front cover.
+- `Remove cover` removes the front cover.
+
+Both are undoable with `Undo` / `Redo`. Only the front-cover picture changes:
+other embedded pictures (back cover, artist photo…), every tag and the
+Serato/Traktor data stay exactly as they were. Works with MP3, AIFF, FLAC,
+OGG and M4A files.
 
 ## Write tags to many tracks at once
 
@@ -386,6 +401,7 @@ ever read.
   (imports and comparisons alike). Exports
   always create a new file at the location you choose.
 - Undo writes the old values back through the same careful path.
+- `Set cover…` / `Remove cover` change only the front-cover picture.
 - `Find duplicates…` only reads files. Copies you tick go to the Trash after
   a confirmation, never deleted outright, and one copy of each group always
   stays.

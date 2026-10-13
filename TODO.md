@@ -132,6 +132,13 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Cover art in the Music Library** (`v0.48.95-cover-art`, issue #256) — Qt-free
+  `library/cover_art.py` (`read_cover_art` for display with a fallback to any embedded picture,
+  `read_front_cover` for the managed slot, `write_cover_art` replacing/removing only the front
+  cover: ID3 `APIC` type 3, FLAC picture type 3, Vorbis `metadata_block_picture` type 3, first MP4
+  `covr`; JPEG/PNG by magic bytes, 16 MB cap). Track panel preview + `Set cover…`/`Remove cover`
+  through the undoable `WriteTrackCoverCommand`; Serato/Traktor frames and other pictures tested
+  byte-identical.
 - [x] **MIDI Learn in the mapping editor** (`v0.48.86-midi-learn`, issue #220) — Qt-free
   `midi_learn.py` (`trigger_from_event`: only a Note On with velocity > 0 or a CC, input
   direction; `find_trigger_conflicts`/`describe_conflicts`; `find_parent_control`) behind a
