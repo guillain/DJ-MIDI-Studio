@@ -88,6 +88,8 @@ def run(argv: list[str] | None = None) -> int:
     # Before any widget exists: tr() is resolved when a widget sets its text.
     install_translators(app, preferences.language)
     window = MainWindow()
+    if arguments.startup_screenshot:
+        window.first_run_wizard_enabled = False
     window.show()
     if arguments.startup_screenshot:
         QTimer.singleShot(

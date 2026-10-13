@@ -136,6 +136,88 @@ Implemented contract, runtime, test, and documentation work:
   (`scripts/update_translations.sh`), a `Language` preference (System / English / Français, default English,
   applied at launch) and French for the menus, main tabs, menu-bar buttons and the Preferences dialog (plus Qt's
   own standard buttons). Tab content, tool windows, messages and help texts stay English for now.
+- [x] **macOS signing and notarization plumbing** (`v0.48.101-macos-signing`, issue #262) —
+  `scripts/macos_signing.sh` (import certificate into a throwaway keychain, inside-out hardened-runtime
+  signing with `packaging/macos/entitlements.plist`, `notarytool` + staple + `spctl`, cleanup), called
+  from `build.sh` and `draft-release.yml`; every step skips cleanly without secrets, partial secrets
+  fail. Secrets listed in `docs/developer/cicd/macos-signing.md`; dry-run tests in
+  `tests/test_macos_signing.py`. Real Developer ID signing/notarization still needs the Apple account.
+- [x] **Change history for risky library writes** (`v0.48.100-change-history`, issue #261) —
+  Qt-free `library/change_log.py` over two new `LibraryDB` tables (`change_log`,
+  `change_items`, before/after JSON per file): every tag write (single, bulk, analysis,
+  and their undos, via a `recorder` hook on `WriteTrack(s)MetadataCommand`) and every
+  duplicate moved to the Trash (`trash_file` now returns the path inside the Trash) is
+  logged; the Music Library tab's `Change history…` window inspects and reverts entries
+  after a restart. Reverts only touch files still in the state this app left them in
+  and are logged themselves. `record_change` / `record_renames` / `register_reverter`
+  are the hooks for cover art (#256) and renaming (#260), built in parallel.
+- [x] **Template-based file renaming** (`v0.48.99-rename-files`, issue #260) — Qt-free
+  `library/rename.py` (`plan_renames`/`plan_from_db` preview with conflict, missing-tag and
+  refused statuses; `apply_renames` re-checks then renames inside each file's own folder and
+  updates the index via `LibraryDB.rename_track_paths`; `export_mapping_csv` old → new CSV)
+  behind the Music Library's `Rename files…` dialog and an undoable `RenameFilesCommand`.
+  Never renames outside library roots or inside `_Serato_`/`PIONEER`/`_Traktor`/… folders.
+- [x] **Smart playlists** (`v0.48.98-smart-playlists`, issue #259) — Qt-free
+  `library/smart_playlist.py` (`SmartRules`: category/family, genre, text, BPM range, Camelot
+  key exact or compatible, not played for N days, order, limit; `evaluate`; JSON round trip)
+  stored as a `"smart"` playlist row plus a `smart_playlists` rules table in `LibraryDB`, the
+  evaluation written into `playlist_tracks` so export/compare need no change. Re-evaluated after
+  every scan, every history load and on `Refresh smart playlists`; `New smart playlist…` /
+  `Edit smart rules…` open `SmartPlaylistDialog`. Loaded history's play counts now persist in a
+  `play_stats` table for the not-played rule.
+- [x] **Library statistics** (`v0.48.97-library-stats`, issue #258) — Qt-free
+  `library/stats.py` (`compute_library_stats`: confirmed categories, genre tags grouped
+  case/space-insensitively, 5-BPM histogram, Camelot wheel distribution, files added per
+  month by file mtime, most/never played from loaded play history #227) behind a
+  `Statistics…` button in the Music Library tab opening `LibraryStatsDialog` — `QPainter`
+  bar charts, one tab per statistic, scoped by the table's filters, read-only snapshot.
+- [x] **Near-duplicate track suggestions** (`v0.48.96-near-duplicates`, issue #257) — the
+  duplicates finder gains a third, suggestion-only tier: `duplicates.find_version_variants`
+  groups tracks by artist + title once trailing version markers (`(Radio Edit)`,
+  `(Extended Mix)`, `[Remastered 2011]`, `- Club Mix`, remixes…) are stripped, keeping a group
+  only when it holds two different versions. Listed in their own section of the Duplicate
+  tracks window with each file's title, never tickable, and ignored by `discard.plan_discard`.
+- [x] **Cover art in the Music Library** (`v0.48.95-cover-art`, issue #256) — Qt-free
+  `library/cover_art.py` (`read_cover_art` for display with a fallback to any embedded picture,
+  `read_front_cover` for the managed slot, `write_cover_art` replacing/removing only the front
+  cover: ID3 `APIC` type 3, FLAC picture type 3, Vorbis `metadata_block_picture` type 3, first MP4
+  `covr`; JPEG/PNG by magic bytes, 16 MB cap). Track panel preview + `Set cover…`/`Remove cover`
+  through the undoable `WriteTrackCoverCommand`; Serato/Traktor frames and other pictures tested
+  byte-identical.
+- [x] **MIDI round-trip latency monitor** (`v0.48.94-midi-latency`, issue #255) — Qt-free
+  `midi_latency.py` (`LatencyProbe` state machine with injected send/receive/clock, `run_probe`,
+  `compute_stats`: min/median/max/mean + jitter, `open_port_pair` for real mido ports) behind
+  `View → MIDI Latency Test…`. Per-ping velocity matching so late echoes aren't miscounted; Note Off
+  after each ping; the worker thread keeps Qt timer granularity out of the timing. The dialog and
+  the feature page both state the result only means something with an echoing port/device.
+- [x] **"Ready for live" mapping checker** (`v0.48.93-live-ready-check`, issue #254) — Qt-free
+  `live_ready.py` (`check_live_ready` → `ReadyReport` of `ReadyFinding`s with severity, message
+  and plain-language hint): per-deck missing `ESSENTIAL_FUNCTIONS` (Play/Cue/Sync/Load,
+  recognised from tag words since no real Serato export maps them — warning), trigger
+  conflicts reused from `validator.find_deck_conflicts` plus disagreeing copies (error), and
+  input bindings without an output mapping when the function is known to have LED feedback
+  (info). `gui/live_ready_dialog.py` report window (severity filters, Show control, Copy
+  report) from a new button strip above the validation table and `Edit → Ready for Live…`.
+  Read-only, never auto-fixes. Docs: `docs/enduser/features/live-ready-check.md`.
+- [x] **Layered mapping overview** (`v0.48.92-layer-map`, issue #253) — `View → Layer Map…`:
+  Qt-free `gui/layer_map.py` (`build_layer_map`: one row per physical control, one column per
+  layer — Normal, SHIFT, other qualifiers, each pad bank ± SHIFT — all derived from
+  `layout.reverse_lookup()` names, never invented; cells `mapped`/`partial`/`free` from
+  `cheat_sheet.build_function_index`, LED-only sections excluded) behind a thin read-only
+  `LayerMapDialog` (controller/section filters, *Only controls with a free layer*, *Refresh*).
+- [x] **MIDI Learn for macros** (`v0.48.91-macro-midi-learn`, issue #252) — `MidiMacro.trigger`
+  (`MacroTrigger`: Note On/CC, channel, data1, input port; persisted in the macro's JSON only when
+  set), learned by a `Learn` button in Manage Macros (live events routed to the open dialog via
+  `MainWindow._macro_dialog`, reusing `midi_learn.trigger_from_event` and the Live Monitor
+  auto-start of #220). A live press fires `macros_for_event` through the existing `MacroPlayer`;
+  validation refuses shared triggers and self-retriggering macros on a loopback port.
+- [x] **First-run setup wizard** (`v0.48.90-first-run-wizard`, issue #251) — Qt-free
+  `first_run.py` (first-launch gate, controller detection by port name merged per controller,
+  read-only listing of `~/Music/_Serato_/MIDI/Xml`) behind a skippable `QWizard`: pick the
+  detected profile for the Dashboard, open the newest Serato mapping, start a `● Rec` sync-set
+  recording. Shown once, only in the real app with no preferences file (QSettings flag
+  `ui/first_run_wizard_done`), never under `--startup-screenshot`; `Help → First-Run Setup…`
+  reopens it.
 - [x] **Hercules DJControl Inpulse 500 profile fix** (`v0.48.89-inpulse-500-profile-fix`, issue #247) — the
   catalog is re-transcribed from the bundled official MIDI Commands sheet (300 DPI renders): deck buttons on
   ch 2/3 (+SHIFT 5/6), the 8-mode pad banks on ch 7/8 (+8 with SHIFT), PAD MODE 1-8 and long-press notes,

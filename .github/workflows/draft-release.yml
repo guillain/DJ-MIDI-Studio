@@ -117,10 +117,31 @@ jobs:
       - name: Install dependencies
         run: uv sync --group dev
 
+      # macOS signing/notarization (issue #262, docs/developer/cicd/macos-signing.md).
+      # Every secret below is optional: with none configured, each step prints
+      # "skipping" and the release ships the unsigned app exactly as before.
+      # Secrets reach the scripts through env only, never through `if:` or the
+      # command line, so they can't leak into logs.
+      - name: Import macOS signing certificate
+        if: runner.os == 'macOS'
+        shell: bash
+        env:
+          MACOS_CERTIFICATE_P12_BASE64: ${{ secrets.MACOS_CERTIFICATE_P12_BASE64 }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+        run: bash scripts/macos_signing.sh import-certificate
+
       - name: Build executable
         shell: bash
+        env:
+          MACOS_NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
+          MACOS_NOTARY_ISSUER_ID: ${{ secrets.MACOS_NOTARY_ISSUER_ID }}
+          MACOS_NOTARY_KEY_P8_BASE64: ${{ secrets.MACOS_NOTARY_KEY_P8_BASE64 }}
+          MACOS_NOTARY_APPLE_ID: ${{ secrets.MACOS_NOTARY_APPLE_ID }}
+          MACOS_NOTARY_TEAM_ID: ${{ secrets.MACOS_NOTARY_TEAM_ID }}
+          MACOS_NOTARY_PASSWORD: ${{ secrets.MACOS_NOTARY_PASSWORD }}
         run: |
-          chmod +x scripts/build.sh scripts/release_artifacts.sh
+          chmod +x scripts/build.sh scripts/release_artifacts.sh scripts/macos_signing.sh
           scripts/build.sh --skip-python-package
 
       - name: Smoke test executable startup
@@ -135,10 +156,20 @@ jobs:
       - name: Create executable archive
         shell: bash
         run: |
-          # A Developer ID identity is not available on the public runner.
-          # Keep the first release publishable while clearly documenting the
-          # resulting Gatekeeper warning in the release documentation.
-          scripts/release_artifacts.sh --allow-unsigned
+          # With a Developer ID identity imported above, refuse to package an
+          # app whose signature doesn't verify. Without one (no Apple secrets
+          # configured), keep the release publishable as an unsigned build,
+          # with the Gatekeeper warning documented for users.
+          if [[ "${{ runner.os }}" == "macOS" && -n "${MACOS_SIGNING_IDENTITY:-}" ]]; then
+            scripts/release_artifacts.sh
+          else
+            scripts/release_artifacts.sh --allow-unsigned
+          fi
+
+      - name: Delete temporary signing keychain
+        if: always() && runner.os == 'macOS'
+        shell: bash
+        run: bash scripts/macos_signing.sh cleanup
 
       - name: Upload executable archive
         uses: actions/upload-artifact@v7

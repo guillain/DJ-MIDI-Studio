@@ -11,6 +11,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 APP_NAME="DJMidiStudio"
 BUILD_PY_PACKAGE=1
 BUILD_EXECUTABLE=1
+NOTARIZE=1
 MACOS_SIGNING_IDENTITY="${MACOS_SIGNING_IDENTITY:-}"
 
 while [[ $# -gt 0 ]]; do
@@ -20,6 +21,9 @@ while [[ $# -gt 0 ]]; do
       ;;
     --skip-executable)
       BUILD_EXECUTABLE=0
+      ;;
+    --skip-notarize)
+      NOTARIZE=0
       ;;
     --sign-identity)
       if [[ $# -lt 2 ]]; then
@@ -34,6 +38,10 @@ while [[ $# -gt 0 ]]; do
 Usage:
   scripts/build.sh [--skip-python-package] [--skip-executable]
                     [--sign-identity "Developer ID Application: ..."]
+                    [--skip-notarize]
+
+macOS signing/notarization (scripts/macos_signing.sh) runs only when its
+credentials are in the environment; see docs/developer/cicd/macos-signing.md.
 
 Build outputs:
   - Python package artifacts: dist/*.whl, dist/*.tar.gz
@@ -140,14 +148,15 @@ if [[ "$BUILD_EXECUTABLE" -eq 1 ]]; then
     /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $APP_VERSION" "$PLIST_PATH" 2>/dev/null \
       || /usr/libexec/PlistBuddy -c "Add :CFBundleVersion string $APP_VERSION" "$PLIST_PATH"
 
-    if [[ -n "$MACOS_SIGNING_IDENTITY" ]]; then
-      echo "==> Signing macOS app with identity: $MACOS_SIGNING_IDENTITY"
-      codesign --deep --force --verbose --options runtime --timestamp \
-        --sign "$MACOS_SIGNING_IDENTITY" "$APP_PATH"
-      codesign --verify --deep --strict --verbose=2 "$APP_PATH"
-    else
-      echo "WARNING: macOS app is unsigned (adhoc), not suitable for distribution."
-      echo "         Set MACOS_SIGNING_IDENTITY or pass --sign-identity."
+    # Signing and notarization live in scripts/macos_signing.sh (issue
+    # #262); each step skips cleanly when its credentials are absent, so a
+    # build without an Apple Developer account still produces the same
+    # unsigned app as before.
+    MACOS_SIGNING_IDENTITY="$MACOS_SIGNING_IDENTITY" \
+      bash "$ROOT_DIR/scripts/macos_signing.sh" sign "$APP_PATH"
+    if [[ "$NOTARIZE" -eq 1 ]]; then
+      MACOS_SIGNING_IDENTITY="$MACOS_SIGNING_IDENTITY" \
+        bash "$ROOT_DIR/scripts/macos_signing.sh" notarize "$APP_PATH"
     fi
   fi
 

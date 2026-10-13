@@ -17,7 +17,7 @@ from djmidi.gui.music_library_view import (
 from djmidi.gui.set_preparation import SET_TRACKS_MIME, decode_paths
 from djmidi.library import workspace
 from djmidi.library.db import TrackRecord
-from djmidi.library.metadata import read_metadata
+from djmidi.library.metadata import read_metadata, write_metadata
 from djmidi.library.relink import (
     MATCH_EXACT,
     MATCH_NAME,
@@ -462,6 +462,66 @@ def test_write_tags_to_selection_is_one_undo_step(library):
 
 
 
+def test_change_history_logs_tag_writes_and_reverts_after_reopen(library, monkeypatch):
+    """Issue #261: bulk writes (and their undo) land in the persistent log;
+    the Change history window reverts one, skipping a file edited since."""
+    view, music, _ = library
+    a, b = str(music / "Tek" / "Tribe" / "a.mp3"), str(music / "Tek" / "Tribe" / "b.mp3")
+    _select_paths(view, [a, b])
+    view.write_tags_to_selection({"genre": "Tribe"})
+    [entry] = view.db.list_changes()
+    assert entry.kind == "tags" and entry.item_count == 2
+    # The session undo stack is gone after a restart; the log is not.
+    view.undo_stack.clear()
+    write_metadata(b, genre="Edited elsewhere")
+    monkeypatch.setattr(QMessageBox, "question", lambda *a, **k: QMessageBox.StandardButton.Yes)
+    warnings: list[str] = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda _p, _t, text, *a, **k: warnings.append(text))
+    dialog = view.show_change_history()
+    assert dialog.entries.topLevelItemCount() == 1
+    assert dialog.items.topLevelItemCount() == 2
+    assert "genre: Techno → Tribe" in dialog.items.topLevelItem(0).text(1)
+    assert dialog.revert_button.isEnabled()
+    dialog.revert_button.click()
+    assert read_metadata(a).genre == "Techno"
+    assert read_metadata(b).genre == "Edited elsewhere"
+    assert warnings and "genre changed since" in warnings[0]
+    assert {row.path: row.metadata.genre for row in view.table_model.rows()}[a] == "Techno"
+    assert dialog.entries.topLevelItemCount() == 2  # the revert is logged too
+    assert view.show_change_history() is dialog
+    view.close_db()
+    assert view.history_dialog is None
+
+
+def test_discard_is_logged_in_the_change_history(library, monkeypatch):
+    view, music, tmp_path = library
+    original = music / "Tek" / "Tribe" / "a.mp3"
+    copy = music / "a copy.mp3"
+    copy.write_bytes(original.read_bytes())
+    view.start_scan()
+    view.run_pending_job()
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+
+    def fake_trash(path: str) -> str:
+        target = bin_dir / Path(path).name
+        Path(path).rename(target)
+        return str(target)
+
+    monkeypatch.setattr(mlv, "trash_file", fake_trash)
+    monkeypatch.setattr(QMessageBox, "question", lambda *a, **k: QMessageBox.StandardButton.Yes)
+    monkeypatch.setattr(QMessageBox, "information", lambda *a, **k: None)
+    view.find_duplicates()
+    view.run_pending_job()
+    view.duplicates_dialog.set_checked(str(copy), True)
+    view.duplicates_dialog.trash_button.click()
+    [entry] = view.db.list_changes()
+    assert entry.kind == "trash"
+    dialog = view.show_change_history()
+    dialog.revert(entry.id)
+    assert copy.is_file()
+    assert view.db.get_track_by_path(copy).missing is False
+
 def test_write_tags_to_selection_shows_progress_and_stops_on_cancel(library, monkeypatch):
     """Writing tags to thousands of files is long: every pass gets a progress
     window, and Cancel keeps what's already written (undoable)."""
@@ -770,6 +830,52 @@ def test_find_duplicates_opens_read_only_dialog(library, monkeypatch):
     view.find_duplicates()
     view.run_pending_job()
     assert view.duplicates_dialog is not dialog
+
+
+def test_find_duplicates_lists_other_versions_as_suggestions(library, monkeypatch):
+    """Issue #257: radio edit / extended versions of one song are listed in
+    their own section, with their titles, and can never be ticked."""
+    from PySide6.QtCore import Qt
+
+    from djmidi.gui import duplicates_dialog
+
+    view, music, _ = library
+    radio = _mp3(music / "misc" / "alpha radio.mp3", title="Alpha (Radio Edit)", artist="Zed")
+    extended = _mp3(music / "misc" / "alpha ext.mp3", title="Alpha [Extended Mix]", artist="ZED")
+    view.start_scan()
+    view.run_pending_job()
+
+    view.find_duplicates()
+    view.run_pending_job()
+    dialog = view.duplicates_dialog
+    versions = [g for g in dialog.groups if g.tier == "versions"]
+    assert len(versions) == 1
+    assert set(versions[0].paths) == {str(music / "Tek" / "Tribe" / "a.mp3"), str(radio), str(extended)}
+    assert "1 song(s) with other versions" in view.status_label.text()
+    assert "1 song(s) with several versions" in dialog.summary_label.text()
+
+    version_items = [item for item in dialog.file_items() if "—" in item.text(0)]
+    assert {item.text(0).split(" — ")[0] for item in version_items} == {
+        "Alpha",
+        "Alpha (Radio Edit)",
+        "Alpha [Extended Mix]",
+    }
+    assert not any(item.flags() & Qt.ItemFlag.ItemIsUserCheckable for item in version_items)
+    dialog.set_checked(str(radio), True)
+    assert dialog.checked_paths() == []
+    assert not dialog.trash_button.isEnabled()
+
+    revealed: list[str] = []
+    monkeypatch.setattr(duplicates_dialog, "reveal_in_file_manager", revealed.append)
+    dialog._reveal(version_items[0])
+    assert revealed == [version_items[0].data(0, duplicates_dialog.PATH_ROLE)]
+
+    # A version moved away elsewhere leaves a two-version group; a second one
+    # removes the suggestion.
+    dialog.remove_paths([str(radio)])
+    assert [len(g.paths) for g in dialog.groups if g.tier == "versions"] == [2]
+    dialog.remove_paths([str(extended)])
+    assert not [g for g in dialog.groups if g.tier == "versions"]
 
 
 def test_discard_duplicates_moves_ticked_copies_to_trash(library, monkeypatch):
@@ -1236,3 +1342,123 @@ def test_set_draft_survives_reopen_and_saves_as_playlist(tmp_path, monkeypatch):
     panel.export_crate(str(crate))
     assert [Path(p).name for p in parse_crate(crate)] == ["b.mp3", "a.mp3"]
     reopened.close_db()
+
+
+# --- Rename files… (issue #260): every file renamed lives under tmp_path ---
+
+
+def test_rename_files_flow_with_undo_and_csv(library, monkeypatch):
+    view, music, tmp_path = library
+    tribe = music / "Tek" / "Tribe"
+    playlist = view.db.create_playlist("Friday", [str(tribe / "a.mp3")])
+    view.select_paths([str(tribe / "a.mp3"), str(tribe / "b.mp3")])
+    assert view.rename_files_button.isEnabled()
+
+    shown = []
+
+    def accept(dialog):
+        shown.append(dialog)
+        dialog.template_edit.setText("{artist} - {title} ({camelot})")
+        return QDialog.DialogCode.Accepted
+
+    csv_path = tmp_path / "renamed.csv"
+    monkeypatch.setattr(mlv.RenameFilesDialog, "exec", accept)
+    monkeypatch.setattr(mlv.QFileDialog, "getSaveFileName", lambda *a, **k: (str(csv_path), ""))
+    view._on_rename_files_clicked()
+
+    [dialog] = shown
+    assert dialog.tree.topLevelItemCount() == 2
+    new_a, new_b = tribe / "Zed - Alpha (8A).mp3", tribe / "Yan - Bravo (9A).mp3"
+    assert new_a.is_file() and new_b.is_file()
+    assert not (tribe / "a.mp3").exists()
+    paths = {row.path for row in view.table_model.rows()}
+    assert {str(new_a), str(new_b)} <= paths and str(tribe / "a.mp3") not in paths
+    assert {row.path for row in view.selected_rows()} == {str(new_a), str(new_b)}
+    assert view.db.playlist_paths(playlist) == [str(new_a)]
+    assert f"{tribe / 'a.mp3'},{new_a}" in csv_path.read_text(encoding="utf-8-sig").splitlines()
+    assert view.db.get_setting("rename_template") == "{artist} - {title} ({camelot})"
+
+    view.undo_stack.undo()
+    assert (tribe / "a.mp3").is_file() and (tribe / "b.mp3").is_file()
+    assert not new_a.exists()
+    assert view.db.playlist_paths(playlist) == [str(tribe / "a.mp3")]
+    view.undo_stack.redo()
+    assert new_a.is_file()
+
+
+def test_rename_files_reports_failures_and_skips_empty_batches(library, monkeypatch):
+    view, music, _tmp = library
+    warnings = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda *a, **k: warnings.append(a[2]))
+    assert view.rename_files([]) == []
+    gone = music / "misc" / "gone.mp3"
+    assert view.rename_files([(str(gone), str(music / "misc" / "x.mp3"))]) == []
+    assert "file not found" in warnings[0]
+    assert view.undo_stack.count() == 0
+
+
+def test_rename_dialog_preview_and_template_errors(library):
+    view, music, _tmp = library
+    paths = [str(music / "Tek" / "Tribe" / "a.mp3"), str(music / "misc" / "c.mp3")]
+    dialog = mlv.RenameFilesDialog(lambda text: mlv.rename.plan_from_db(view.db, paths, text), "{artist} - {album}")
+    ok = dialog.buttons.button(mlv.QDialogButtonBox.StandardButton.Ok)
+    assert ok.isEnabled() is False
+    assert dialog.tree.topLevelItem(0).text(2) == "Skipped: no album tag"
+    dialog.template_edit.setText("{artist} - {title}")
+    assert ok.isEnabled() and ok.text() == "Rename 2 file(s)"
+    assert dialog.tree.topLevelItem(1).text(1) == "Xu - Charlie.mp3"
+    dialog.template_edit.setText("{artist}/{title}")
+    assert ok.isEnabled() is False
+    assert "/" in dialog.summary_label.text()
+    assert dialog.renames() == []
+def _png_file(path: Path) -> Path:
+    from PySide6.QtGui import QImage
+
+    image = QImage(4, 4, QImage.Format.Format_RGB32)
+    image.fill(0xFF3366)
+    assert image.save(str(path), "PNG")
+    return path
+
+
+def test_cover_art_set_remove_and_undo(library, monkeypatch):
+    from djmidi.library.cover_art import read_cover_art
+
+    view, music, tmp_path = library
+    path = str(music / "Tek" / "Tribe" / "a.mp3")
+    view.select_path(path)
+    assert view.cover_label.text() == "No cover"
+    assert view.set_cover_button.isEnabled()
+    assert not view.remove_cover_button.isEnabled()
+
+    image = _png_file(tmp_path / "cover.png")
+    assert view.set_cover_from_file(str(image))
+    assert read_cover_art(path).data == image.read_bytes()
+    assert not view.cover_label.pixmap().isNull()
+    assert view.remove_cover_button.isEnabled()
+    assert read_metadata(path).title == "Alpha"
+
+    assert view.remove_cover()
+    assert read_cover_art(path) is None
+    view.undo_stack.undo()
+    assert read_cover_art(path).data == image.read_bytes()
+    view.undo_stack.undo()
+    assert read_cover_art(path) is None
+    assert view.cover_label.text() == "No cover"
+    view.undo_stack.redo()
+    assert read_cover_art(path).data == image.read_bytes()
+
+    warnings = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda *args: warnings.append(args))
+    bad = tmp_path / "cover.gif"
+    bad.write_bytes(b"GIF89a" + b"\x00" * 10)
+    assert not view.set_cover_from_file(str(bad))
+    assert warnings
+
+
+def test_cover_buttons_disabled_without_a_track():
+    view = MusicLibraryView(db_path=":memory:")
+    view.show()
+    assert not view.set_cover_button.isEnabled()
+    assert not view.remove_cover_button.isEnabled()
+    assert not view.remove_cover()
+    view.close_db()

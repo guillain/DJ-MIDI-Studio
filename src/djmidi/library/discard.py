@@ -7,7 +7,9 @@ ticked in the Duplicate tracks window:
   unticked file of the first group listing it, exact-copy groups before
   same-artist+title ones) and lists every group that would keep **no** file
   -- the GUI refuses the whole operation then, so a track can never vanish
-  from the library by ticking all of its copies.
+  from the library by ticking all of its copies. Version groups
+  (`TIER_VERSIONS`, issue #257) are ignored: another version of a song is
+  a suggestion, never a "copy" to keep in a discarded file's place.
 - `move_to_trash` hands each copy to an injected `trash` callable -- the GUI
   passes `QFile.moveToTrash`, so files go to the system Trash and can be
   put back; nothing here ever deletes a file itself -- and flags each moved
@@ -27,7 +29,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from .db import LibraryDB
-from .duplicates import TIER_EXACT, DuplicateGroup
+from .duplicates import TIER_EXACT, TIER_VERSIONS, DuplicateGroup
 
 
 @dataclass(frozen=True)
@@ -48,11 +50,16 @@ class TrashResult:
     """``(discarded copy, kept copy)`` actually moved to the Trash."""
     failed: list[tuple[str, str]] = field(default_factory=list)
     """``(path, reason)`` left where it was."""
+    trash_paths: dict[str, str] = field(default_factory=dict)
+    """Where the Trash put each moved copy, when `trash` said so (issue
+    #261: the change history needs it to put a copy back)."""
 
 
 def plan_discard(groups: Iterable[DuplicateGroup], discard_paths: Iterable[str]) -> DiscardPlan:
     """Pair each path of `discard_paths` with a kept copy; see module docstring."""
-    ordered = sorted(groups, key=lambda group: group.tier != TIER_EXACT)
+    ordered = sorted(
+        (group for group in groups if group.tier != TIER_VERSIONS), key=lambda group: group.tier != TIER_EXACT
+    )
     ticked = list(dict.fromkeys(str(path) for path in discard_paths))
     ticked_set = set(ticked)
     refused = tuple(group for group in ordered if ticked_set.intersection(group.paths) and ticked_set >= set(group.paths))
@@ -73,10 +80,11 @@ def plan_discard(groups: Iterable[DuplicateGroup], discard_paths: Iterable[str])
     return DiscardPlan(discards=tuple(discards), refused=refused)
 
 
-def move_to_trash(db: LibraryDB, plan: DiscardPlan, trash: Callable[[str], bool]) -> TrashResult:
+def move_to_trash(db: LibraryDB, plan: DiscardPlan, trash: Callable[[str], bool | str]) -> TrashResult:
     """Move every planned copy to the Trash and flag it missing.
 
-    `trash(path)` returns True when the file went to the Trash. A refused
+    `trash(path)` returns True -- or the file's new path inside the Trash,
+    recorded in `trash_paths` -- when the file went to the Trash. A refused
     plan moves nothing; a copy whose file or kept copy is gone, or that
     `trash` couldn't move (False or OSError), is reported in `failed` and
     the others still go."""
@@ -100,6 +108,8 @@ def move_to_trash(db: LibraryDB, plan: DiscardPlan, trash: Callable[[str], bool]
             result.failed.append((path, "could not move it to the Trash"))
             continue
         result.moved.append((path, kept))
+        if isinstance(moved, str):
+            result.trash_paths[path] = moved
     db.mark_paths_missing(path for path, _kept in result.moved)
     return result
 
