@@ -16,13 +16,14 @@ every Pioneer / AlphaTheta MIDI message list only says a pad is "lit in
 color specified in color number (1-127)" without saying which number is
 which colour, so no Pioneer palette exists here.
 
-The pad notes come from the same Hercules sheet, not from
-``catalog/hercules_inpulse_500.py``, whose community-sourced pad entries
-(channels 1/2, notes 40-47) don't match that document (deck 1 pads on
-status 0x96, deck 2 on 0x97, note = 16 * (mode - 1) + (pad - 1), +8 with
-SHIFT). The LED note equals the pad's input note there ("MIDI OUT" columns
-repeat the "MIDI IN" ones), and each pad mode / SHIFT layer has its own
-note, so a colour is stored per deck, pad, mode and layer.
+The pad notes come from ``catalog/hercules_inpulse_500.py``'s
+:func:`~djmidi.catalog.hercules_inpulse_500.pad_trigger`, transcribed from
+that same sheet (issue #247): deck 1 pads on status 0x96, deck 2 on 0x97,
+note = 16 * (mode - 1) + (pad - 1), +8 with SHIFT. The LED note equals the
+pad's input note there ("MIDI OUT" columns repeat the "MIDI IN" ones), so
+the palette reuses the catalog's addressing rather than a second copy of
+it, and each pad mode / SHIFT layer has its own note -- a colour is stored
+per deck, pad, mode and layer.
 """
 
 from __future__ import annotations
@@ -31,6 +32,7 @@ import re
 from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
 
+from djmidi.catalog import hercules_inpulse_500 as _inpulse_500
 from djmidi.controller_sync import ControllerSyncSet, SyncMessage, normalize_scene
 
 
@@ -129,9 +131,7 @@ _INPULSE_500_COLOURS = (
 
 
 def _inpulse_500_led_address(slot: PadSlot) -> tuple[int, int]:
-    # Deck 1 pads on status 0x96 (channel 7), deck 2 on 0x97 (channel 8);
-    # 16 notes per pad mode, the SHIFT layer 8 above the plain one.
-    return 6 + slot.deck, 16 * (slot.mode - 1) + (slot.pad - 1) + (8 if slot.shift else 0)
+    return _inpulse_500.pad_trigger(slot.deck, slot.pad, slot.mode, slot.shift)
 
 
 _PALETTES: dict[str, PadColourPalette] = {}
@@ -152,11 +152,11 @@ def palette_controllers() -> list[str]:
 
 register_palette(
     PadColourPalette(
-        controller="Hercules DJControl Inpulse 500",
+        controller=_inpulse_500.CONTROLLER,
         colours=_INPULSE_500_COLOURS,
-        decks=2,
-        pads=8,
-        modes=8,
+        decks=_inpulse_500.DECKS,
+        pads=_inpulse_500.PADS,
+        modes=_inpulse_500.PAD_MODES,
         led_address=_inpulse_500_led_address,
         source="hardware/hercules/DJControl-Inpulse-500/hercules-djcontrol-inpulse-500-product-sheet-fr.pdf",
     )
