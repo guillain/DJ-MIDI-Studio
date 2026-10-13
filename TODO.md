@@ -132,6 +132,13 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Hercules DJControl Inpulse 500 profile fix** (`v0.48.89-inpulse-500-profile-fix`, issue #247) — the
+  catalog is re-transcribed from the bundled official MIDI Commands sheet (300 DPI renders): deck buttons on
+  ch 2/3 (+SHIFT 5/6), the 8-mode pad banks on ch 7/8 (+8 with SHIFT), PAD MODE 1-8 and long-press notes,
+  PFL/FX/crossfader-curve/browse/LOAD buttons. Four self-contradictory sheet rows are dropped (Guides and
+  Assistant share `90 01`; deck 2 Mode 4A and Load 2 +SHIFT have mismatched channel/status). `pad_colours`
+  now derives its LED notes from the catalog's `pad_trigger()`, and the emulator's PAD MODE buttons steer
+  pad clicks to the chosen bank. Hardware verification still pending.
 - [x] **Stage Mode** (`v0.48.88-stage-mode`, issue #230) — `View → Stage Mode` (`Ctrl+Shift+F`)
   opens a full-screen, high-contrast window with only a Controller Emulator and a compact Live
   Monitor (latest event large, last six below, jog ticks excluded); Esc exits; session-only.

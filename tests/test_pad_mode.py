@@ -31,3 +31,8 @@ def test_non_pad_mode_labels_and_unmodelled_controllers_return_none():
     assert pad_mode.mode_token_for_button("DDJ-1000", "HOT CUE") is None
     assert pad_mode.is_pad_mode_button("DDJ-1000", "HOT CUE") is False
     assert pad_mode.is_pad_mode_button("DDJ-XP2", "PAD MODE 4") is True
+
+
+def test_inpulse_500_pad_mode_buttons_map_to_variant_tokens():
+    for n in range(1, 9):
+        assert pad_mode.mode_token_for_button("Hercules DJControl Inpulse 500", f"PAD MODE {n}") == f"(PAD MODE {n})"
