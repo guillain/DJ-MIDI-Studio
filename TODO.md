@@ -132,6 +132,14 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Smart playlists** (`v0.48.98-smart-playlists`, issue #259) — Qt-free
+  `library/smart_playlist.py` (`SmartRules`: category/family, genre, text, BPM range, Camelot
+  key exact or compatible, not played for N days, order, limit; `evaluate`; JSON round trip)
+  stored as a `"smart"` playlist row plus a `smart_playlists` rules table in `LibraryDB`, the
+  evaluation written into `playlist_tracks` so export/compare need no change. Re-evaluated after
+  every scan, every history load and on `Refresh smart playlists`; `New smart playlist…` /
+  `Edit smart rules…` open `SmartPlaylistDialog`. Loaded history's play counts now persist in a
+  `play_stats` table for the not-played rule.
 - [x] **MIDI Learn in the mapping editor** (`v0.48.86-midi-learn`, issue #220) — Qt-free
   `midi_learn.py` (`trigger_from_event`: only a Note On with velocity > 0 or a CC, input
   direction; `find_trigger_conflicts`/`describe_conflicts`; `find_parent_control`) behind a
