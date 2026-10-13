@@ -31,6 +31,7 @@
 | 🏷️ | [Readable function names](function-names.md) | `Loop roll` instead of `auto_loop_roll_specific_length`, original tag on hover |
 | 🖼️ | [Controller Images](controller-images.md) | Official diagrams and manuals, offline, with real control positions |
 | 🖨️ | [Cheat Sheet (PDF)](cheat-sheet.md) | Print each controller's photo with the function of every mapped pad and button |
+| 🧩 | [Layer Map](layer-map.md) | Every control in every layer (normal, SHIFT, pad modes), free combinations highlighted |
 | 🔀 | [MIDI Routing, Clock and Metronome](midi-routing-and-clock.md) | Route MIDI, generate Clock from Ableton Link, loop MIDI |
 | ⏯️ | [MIDI Macros](midi-macros.md) | Named MIDI message sequences, played from a menu or a keyboard shortcut |
 | 🪟 | [Workspace and preferences](workspace.md) | Tool windows, Performance Mode, Preferences |
@@ -51,6 +52,7 @@
 | [function-names.md](function-names.md) | Short names for Serato function tags, where they show, finding the original tag |
 | [controller-images.md](controller-images.md) | Reference pictures, real layout overlay, MIDI info |
 | [cheat-sheet.md](cheat-sheet.md) | Printable PDF of the mapping on each controller's photo |
+| [layer-map.md](layer-map.md) | Controls × layers table, free and partly free combinations, filters |
 | [midi-routing-and-clock.md](midi-routing-and-clock.md) | Routes, transforms, MIDI Clock from Link, Metronome |
 | [midi-macros.md](midi-macros.md) | Creating, playing and storing MIDI macros, delays, shortcuts |
 | [workspace.md](workspace.md) | Tabs and docks, window controls, Performance Mode, Preferences |
