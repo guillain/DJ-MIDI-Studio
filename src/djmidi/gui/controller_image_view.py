@@ -220,7 +220,8 @@ class ControllerImageView(QWidget):
         # looked at just to see a real photo, so a click must never send
         # real MIDI unless the user has deliberately switched this on --
         # and only makes sense while a clickable overlay is even showing.
-        self._live_send = LiveSendControl()
+        # Starts on a hidden tab: scan ports when first shown (issue #264).
+        self._live_send = LiveSendControl(defer_port_scan=True)
 
         controls = QHBoxLayout()
         controls.addWidget(self._combo)

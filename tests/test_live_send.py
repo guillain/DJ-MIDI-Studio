@@ -171,3 +171,26 @@ def test_restyle_on_a_destroyed_instance_does_not_crash(monkeypatch):
         theme.apply_theme(QApplication.instance(), "dark")
     finally:
         theme.apply_theme(QApplication.instance(), "dark")
+
+
+def test_deferred_port_scan_waits_until_first_needed(monkeypatch):
+    """Issue #264: views on hidden tabs don't list MIDI ports at startup."""
+    calls = []
+    monkeypatch.setattr(live_send_mod.midi_io, "list_output_ports", lambda: calls.append(1) or ["Port A"])
+    control = LiveSendControl(defer_port_scan=True)
+    assert calls == []
+    assert control.selected_port() == "Port A"
+    assert control.selected_port() == "Port A"
+    assert calls == [1]
+
+
+def test_deferred_port_scan_runs_when_first_shown(monkeypatch):
+    calls = []
+    monkeypatch.setattr(live_send_mod.midi_io, "list_output_ports", lambda: calls.append(1) or ["Port A"])
+    control = LiveSendControl(defer_port_scan=True)
+    control.show()
+    try:
+        assert calls == [1]
+        assert control._port_combo.currentText() == "Port A"
+    finally:
+        control.hide()

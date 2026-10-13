@@ -55,6 +55,10 @@ class IntroductionView(QWidget):
         self._usage_summary: dict[str, tuple[int, int, int]] = {}
         self._card_stats: dict[str, QLabel] = {}
         self._availability_labels: dict[str, QLabel] = {}
+        # Card photo label -> image path, until that card is first shown
+        # (issue #264): loading and smooth-scaling every 2000 px reference
+        # photo up front was ~0.3 s of startup for cards nobody had opened.
+        self._pending_card_images: dict[QLabel, Path | None] = {}
         self._midi_port_names: list[str] = []
         self._loaded_software_id: str | None = None
 
@@ -98,6 +102,7 @@ class IntroductionView(QWidget):
         self._controller_tabs = QTabWidget()
         self._controller_tabs.setDocumentMode(True)
         self._controller_tabs.setTabPosition(QTabWidget.TabPosition.North)
+        self._controller_tabs.currentChanged.connect(self._load_card_image)
 
         cards_box = QGroupBox("Controller overview")
         cards_box_layout = QVBoxLayout(cards_box)
@@ -386,9 +391,11 @@ class IntroductionView(QWidget):
         self._controller_tabs.clear()
         self._card_stats = {}
         self._availability_labels = {}
+        self._pending_card_images = {}
 
         for name in names:
             self._controller_tabs.addTab(self._build_controller_card(name), name)
+        self._load_card_image(self._controller_tabs.currentIndex())
 
         self._refresh_card_stats()
         self.refresh_midi_availability(self._midi_port_names)
@@ -409,14 +416,7 @@ class IntroductionView(QWidget):
         image.setMinimumSize(320, 170)
         image.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         image_name = image_for_controller(controller)
-        path = CONTROLLERS_DIR / image_name if image_name else None
-        pixmap = QPixmap(str(path)) if path is not None and path.exists() else QPixmap()
-        if pixmap.isNull():
-            image.setText("Image unavailable")
-            image.setFrameShape(QFrame.Shape.Box)
-        else:
-            image.setPixmap(pixmap.scaled(520, 300, Qt.AspectRatioMode.KeepAspectRatio,
-                                          Qt.TransformationMode.SmoothTransformation))
+        self._pending_card_images[image] = CONTROLLERS_DIR / image_name if image_name else None
         image.setStyleSheet("background: #0a1019; border: 1px solid #30445f; border-radius: 8px;")
         layout.addWidget(image)
 
@@ -453,6 +453,16 @@ class IntroductionView(QWidget):
         layout.addLayout(details, 0)
         return card
 
+    def _load_card_image(self, index: int) -> None:
+        """Load the photo of the card at ``index`` the first time it shows."""
+        card = self._controller_tabs.widget(index)
+        if card is None:
+            return
+        for image, path in list(self._pending_card_images.items()):
+            if card.isAncestorOf(image):
+                del self._pending_card_images[image]
+                _set_card_image(image, path)
+
     def _refresh_card_stats(self) -> None:
         for controller, label in self._card_stats.items():
             used_cells, deck_count, function_count = self._usage_summary.get(controller, (0, 0, 0))
@@ -469,3 +479,13 @@ class IntroductionView(QWidget):
 
 
 __all__ = ["IntroductionView"]
+
+
+def _set_card_image(image: QLabel, path: Path | None) -> None:
+    pixmap = QPixmap(str(path)) if path is not None and path.exists() else QPixmap()
+    if pixmap.isNull():
+        image.setText("Image unavailable")
+        image.setFrameShape(QFrame.Shape.Box)
+    else:
+        image.setPixmap(pixmap.scaled(520, 300, Qt.AspectRatioMode.KeepAspectRatio,
+                                      Qt.TransformationMode.SmoothTransformation))

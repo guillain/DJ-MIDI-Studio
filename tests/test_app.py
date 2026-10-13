@@ -88,11 +88,15 @@ def test_no_screenshot_is_scheduled_without_the_flag():
     with patch("djmidi.gui.app.QApplication") as mock_qapp, \
          patch("djmidi.gui.app.MainWindow"), \
          patch("djmidi.gui.app.configure_logging"), \
-         patch("djmidi.gui.app.QTimer") as mock_timer:
+         patch("djmidi.gui.app.QTimer") as mock_timer, \
+         patch("djmidi.gui.app.save_window_screenshot") as mock_save:
         mock_qapp.return_value.exec.return_value = 0
         from djmidi.gui.app import run
         run([])
-    mock_timer.singleShot.assert_not_called()
+        # The only deferred callback is the startup timing log (issue #264).
+        for call in mock_timer.singleShot.call_args_list:
+            call.args[1]()
+    mock_save.assert_not_called()
 
 
 def test_save_window_screenshot_writes_a_png_atomically(tmp_path):
@@ -109,3 +113,22 @@ def test_save_window_screenshot_writes_a_png_atomically(tmp_path):
     assert not image.isNull()
     assert (image.width(), image.height()) == (120, 40)
     assert list(target.parent.iterdir()) == [target]
+
+
+def test_run_logs_time_to_first_window_after_the_first_event_loop_turn(caplog):
+    import logging
+
+    with patch("djmidi.gui.app.QApplication") as mock_qapp, \
+         patch("djmidi.gui.app.MainWindow"), \
+         patch("djmidi.gui.app.configure_logging"), \
+         patch("djmidi.gui.app.QTimer") as mock_timer:
+        mock_qapp.return_value.exec.return_value = 0
+        from djmidi.gui.app import run
+        run([])
+        delay, callback = mock_timer.singleShot.call_args_list[0].args
+        with caplog.at_level(logging.INFO, logger="djmidi.gui.app"):
+            callback()
+    assert delay == 0
+    message = next(r.getMessage() for r in caplog.records if "time to first window" in r.getMessage())
+    for phase in ("imports", "Qt application", "main window built", "window shown", "first window"):
+        assert phase in message
