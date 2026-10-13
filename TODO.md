@@ -132,7 +132,7 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
-- [x] **Stage Mode** (`v0.48.83-stage-mode`, issue #230) — `View → Stage Mode` (`Ctrl+Shift+F`)
+- [x] **Stage Mode** (`v0.48.88-stage-mode`, issue #230) — `View → Stage Mode` (`Ctrl+Shift+F`)
   opens a full-screen, high-contrast window with only a Controller Emulator and a compact Live
   Monitor (latest event large, last six below, jog ticks excluded); Esc exits; session-only.
   Qt-free `stage.py` (line formatting, bounded log) + `gui/stage_window.py`; every live emulator
