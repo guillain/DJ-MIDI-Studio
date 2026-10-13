@@ -15,6 +15,7 @@
 - [Knobs, faders and jog wheels](#knobs-faders-and-jog-wheels)
 - [Send real MIDI (Live send)](#send-real-midi-live-send)
 - [Live feedback from the hardware](#live-feedback-from-the-hardware)
+- [Pad colours](#pad-colours)
 - [Every controller](#every-controller)
 - [Related](#related)
 
@@ -80,6 +81,32 @@ Each emulator also follows the real controller, for the controller it shows:
 a hardware hit flashes the matching control, a held button stays amber until
 released, and LED messages sent by Serato latch the amber highlight (see
 [Live Monitor](live-monitor.md#see-what-serato-sends-back-led-feedback)).
+
+## Pad colours
+
+Some controllers light each pad in a colour chosen by the MIDI velocity sent
+to it. When the controller's official MIDI documentation lists which velocity
+gives which colour, the emulator shows a **Pad colours** row. Today that is
+only the **Hercules DJControl Inpulse 500**: the Pioneer / AlphaTheta MIDI
+message lists only say "colour number 1-127" without the table, and the app
+never guesses colour values.
+
+1. Pick the **deck**, the **pad mode** and whether the colour is for the
+   **SHIFT** layer. The documentation gives each pad mode and SHIFT layer its
+   own LED, so each one keeps its own colours.
+2. Pick a colour (the 19 documented ones, from `No light` to `White`) and
+   switch **Paint** on.
+3. Click pads. Each one takes the colour in the emulator. With
+   [Live send](#send-real-midi-live-send) on, the controller lights up too.
+   While Paint is on, a pad click doesn't resolve the pad.
+4. Click **Save to sync set**. The colours are stored in the controller's
+   [sync set](controller-sync.md) for the active scene, so every Sync
+   lights the pads again. A pad that already had a colour in the set gets
+   the new one, and the set's other messages are kept.
+
+The row reads saved colours back from the sync set when the emulator shows
+the controller or when you switch scene. Switching scene drops colours you
+haven't saved.
 
 ## Every controller
 
