@@ -863,6 +863,58 @@ def test_format_size():
     assert format_size(5 * 1024**3) == "5.0 GB"
 
 
+def test_history_panel_lists_sessions_and_never_played(library):
+    """Issue #227: Serato history read-only, never-played tracks selectable."""
+    import struct
+
+    from djmidi.library import history
+    from djmidi.library.serato_library import write_chunks
+
+    view, music, tmp_path = library
+    played = str(music / "Tek" / "Tribe" / "a.mp3")
+
+    def field(field_id: int, value: bytes) -> bytes:
+        return struct.pack(">II", field_id, len(value)) + value
+
+    row = b"".join(
+        [
+            field(2, (played + "\0").encode("utf-16-be")),
+            field(6, "Alpha\0".encode("utf-16-be")),
+            field(28, struct.pack(">Q", 1_700_000_000)),
+            field(31, struct.pack(">I", 1)),
+            field(50, b"\x01"),
+        ]
+    )
+    sessions = tmp_path / "Sessions"
+    sessions.mkdir()
+    session_file = sessions / "1.session"
+    session_file.write_bytes(write_chunks([("vrsn", b""), ("oent", write_chunks([("adat", row)]))]))
+    before = session_file.read_bytes()
+
+    assert view.load_history({history.SOURCE_SERATO: sessions}) == 1
+    assert session_file.read_bytes() == before
+    assert view.side_tabs.tabText(view.side_tabs.currentIndex()) == "History"
+    assert view.history_tree.topLevelItemCount() == 1
+    child = view.history_tree.topLevelItem(0).child(0)
+    assert child.data(0, mlv.Qt.ItemDataRole.UserRole) == played
+    assert "1 play(s) of 1 track(s)" in view.history_summary.text()
+    assert "2 of 3 indexed track(s) never played" in view.history_summary.text()
+
+    assert view.select_never_played() == 2
+    assert {row.title for row in view.selected_rows()} == {"Bravo", "Charlie"}
+
+    view._on_history_item_activated(child, 0)
+    assert view._current_row().title == "Alpha"
+
+
+def test_history_without_default_folders_explains(library, monkeypatch):
+    from djmidi.library import history
+
+    view, _music, _ = library
+    monkeypatch.setattr(history, "default_history_dirs", dict)
+    view._on_load_history_clicked()
+    assert "Load from folder" in view.history_summary.text()
+    assert not view.select_never_played_button.isEnabled()
 def test_health_report_without_scan_asks_for_one():
     view = MusicLibraryView(db_path=":memory:")
     view.start_health_report()

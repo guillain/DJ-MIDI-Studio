@@ -340,6 +340,21 @@ LIBRARY_PLAYLISTS: HelpEntry = (
     "music-library.md",
 )
 
+LIBRARY_HISTORY: HelpEntry = (
+    "Play history",
+    (
+        "<b>Load DJ history</b> reads Serato's and Traktor's own history from "
+        "<i>~/Music/_Serato_/History</i> and <i>~/Music/_Traktor/History</i>; "
+        "<b>Load from folder…</b> takes another one. Each session lists the tracks "
+        "played, with the time and deck; double-click one to select it in the table. "
+        "Grey rows were only loaded (or pre-listened in Traktor), or aren't in your "
+        "indexed folders.<br><br>"
+        "<b>Select never played</b> selects the visible tracks no session played, ready "
+        "for a playlist. History files are only ever read, never changed."
+    ),
+    "music-library.md",
+)
+
 LIBRARY_SET: HelpEntry = (
     "Set preparation",
     (

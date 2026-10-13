@@ -22,6 +22,7 @@
 - [Playlists](#playlists)
 - [Prepare a set](#prepare-a-set)
 - [Import and export with DJ software](#import-and-export-with-dj-software)
+- [Play history](#play-history)
 - [Safety: what is never touched](#safety-what-is-never-touched)
 - [Related](#related)
 
@@ -324,11 +325,34 @@ exactly like the Playlists panel's exports.
 
 Imported Serato crate names also help categorize tracks.
 
+## Play history
+
+The **History** panel shows what you actually played, read from your DJ
+software's own history:
+
+| Button | Result |
+| --- | --- |
+| `Load DJ history` | Reads Serato (`~/Music/_Serato_/History`) and Traktor (`~/Music/_Traktor/History`) when they exist |
+| `Load from folder…` | Reads another Serato `History`/`Sessions` folder or Traktor `History` folder (on an external drive, say) |
+| `Select never played` | Selects, in the table, every visible track no session played — ready for `New from selection` |
+
+Each session is listed newest first with its date and track count; open it
+to see each track's start time and deck. Double-click a track to select it
+in the table. Grey rows were only loaded and not marked as played (Serato's
+*played* checkbox off, or a Traktor track only pre-listened in the
+headphones), or point at a file outside your indexed folders — for example
+a session recorded on another computer. Only played rows count: a track
+that was only ever loaded still counts as never played.
+
+The summary line gives the totals: sessions, plays, distinct tracks, and
+how many of your indexed tracks were never played. History files are only
+ever read.
+
 ## Safety: what is never touched
 
 - Tag writes change only the fields you edit. Serato and Traktor data stored
   inside your audio files (cue points, beat grids, analysis) is preserved.
-- Serato, Traktor and Rekordbox library files are only ever read. Exports
+- Serato, Traktor and Rekordbox library and history files are only ever read. Exports
   always create a new file at the location you choose.
 - Undo writes the old values back through the same careful path.
 - `Find duplicates…` only reads files. Copies you tick go to the Trash after
