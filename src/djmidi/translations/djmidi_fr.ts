@@ -184,6 +184,14 @@
         <translation>Afficha&amp;ge</translation>
     </message>
     <message>
+        <source>Command Palette...</source>
+        <translation>Palette de commandes...</translation>
+    </message>
+    <message>
+        <source>Search every action, tab, mapping function and library track</source>
+        <translation>Rechercher parmi les actions, onglets, fonctions de mapping et morceaux de la bibliothèque</translation>
+    </message>
+    <message>
         <source>Helpful Notes...</source>
         <translation>Notes utiles...</translation>
     </message>
