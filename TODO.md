@@ -132,6 +132,17 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Faster startup** (`v0.48.103-faster-startup`, issue #264) — Qt-free
+  `startup_timing.py` (`StartupTimer`; `djmidi.main()` starts it before the GUI import,
+  `gui.app.run()` marks each phase and logs `Startup: time to first window … ms` with a
+  per-phase breakdown on the first event-loop turn). Measured offscreen on a loaded machine:
+  `MainWindow()` 0.78 s → 0.48 s, by deferring the two costs that dominated — the Dashboard's
+  14 controller-card photos (2000 px PNGs smooth-scaled, ~0.3 s; now loaded when a card is
+  first shown) and four `LiveSendControl` MIDI output-port scans (~25 ms each; the By… and
+  Controller Images views now pass `defer_port_scan=True`, scanning on first show or first
+  `selected_port()`). The tab widgets themselves stay eagerly built: live MIDI, selection
+  sync and controller detection drive the By… and Controller Images views from any tab, and
+  Music Library already opens its DB lazily.
 - [x] **Hercules DJControl Inpulse 500 profile fix** (`v0.48.89-inpulse-500-profile-fix`, issue #247) — the
   catalog is re-transcribed from the bundled official MIDI Commands sheet (300 DPI renders): deck buttons on
   ch 2/3 (+SHIFT 5/6), the 8-mode pad banks on ch 7/8 (+8 with SHIFT), PAD MODE 1-8 and long-press notes,

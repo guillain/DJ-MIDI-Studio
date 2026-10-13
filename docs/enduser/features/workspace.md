@@ -15,6 +15,7 @@
 - [Preferences](#preferences)
 - [Helpful Notes and Help](#helpful-notes-and-help)
 - [New version notice](#new-version-notice)
+- [Startup time](#startup-time)
 - [Related](#related)
 
 ## Tabs and tool windows
@@ -176,6 +177,22 @@ GitHub couldn't be reached.
 
 `Help → Report a Problem…` prepares a bug report you can read and edit
 before it opens as a GitHub issue — see [Report a Problem](report-a-problem.md).
+
+## Startup time
+
+At each launch the execution log (set up in
+[Preferences → General](#preferences)) records how long the app took to
+show its window, with a breakdown per step:
+
+```text
+Startup: time to first window 740 ms -- imports 210 ms, preferences and logging 5 ms, Qt application 30 ms, main window built 470 ms, window shown 20 ms, first window 5 ms (total 740 ms)
+```
+
+To start faster, the app only does some work when you first need it: the
+Dashboard loads each controller card's photo when you open that card, and
+the `By…` and `Controller Images` tabs list your MIDI output ports (for
+**Live send**) when you first open them. Include this line when you
+[report](report-a-problem.md) a slow start.
 
 ## Related
 
