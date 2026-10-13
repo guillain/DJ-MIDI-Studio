@@ -132,6 +132,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Library statistics** (`v0.48.97-library-stats`, issue #258) — Qt-free
+  `library/stats.py` (`compute_library_stats`: confirmed categories, genre tags grouped
+  case/space-insensitively, 5-BPM histogram, Camelot wheel distribution, files added per
+  month by file mtime, most/never played from loaded play history #227) behind a
+  `Statistics…` button in the Music Library tab opening `LibraryStatsDialog` — `QPainter`
+  bar charts, one tab per statistic, scoped by the table's filters, read-only snapshot.
 - [x] **MIDI Learn in the mapping editor** (`v0.48.86-midi-learn`, issue #220) — Qt-free
   `midi_learn.py` (`trigger_from_event`: only a Note On with velocity > 0 or a CC, input
   direction; `find_trigger_conflicts`/`describe_conflicts`; `find_parent_control`) behind a
