@@ -69,6 +69,15 @@ from djmidi import (
     user_paths,
 )
 from djmidi.catalog.profile import load_user_profiles
+from djmidi.command_palette import (
+    KIND_ACTION,
+    KIND_FUNCTION,
+    KIND_TAB,
+    KIND_TRACK,
+    PaletteEntry,
+    PaletteIndex,
+    track_entry,
+)
 from djmidi.controller_sync import (
     ControllerSyncSet,
     PlugInSyncTracker,
@@ -85,6 +94,7 @@ from djmidi.gui import jog as jog_mod
 from djmidi.gui import layout as layout_mod
 from djmidi.gui.cheat_sheet_dialog import CheatSheetExportDialog
 from djmidi.gui.cheat_sheet_pdf import write_cheat_sheet_pdf
+from djmidi.gui.command_palette import CommandPaletteDialog, menu_entries
 from djmidi.gui.controller_emulator import ControllerEmulatorView
 from djmidi.gui.controller_image_view import ControllerImageView
 from djmidi.gui.controller_setup import ControllerSetupView
@@ -111,6 +121,7 @@ from djmidi.gui.report_problem_dialog import ReportProblemDialog
 from djmidi.gui.safe_update_dialog import SafeUpdateDialog
 from djmidi.gui.scroll_utils import AutoSizeScrollArea
 from djmidi.gui.splitter_utils import replace_splitter, scrollable_columns
+from djmidi.gui.stage_window import StageWindow
 from djmidi.gui.theme import apply_theme, mapping_tree_stylesheet
 from djmidi.gui.theme import signals as theme_signals
 from djmidi.gui.tree_model import (
@@ -336,6 +347,10 @@ class MainWindow(QMainWindow):
         self._last_controller_detection: tuple[str, ...] = ()
         self._performance_mode = False
         self._performance_saved_ratios: dict[int, float] | None = None
+        # Stage Mode (issue #230): the full-screen emulator + compact monitor
+        # window while it is open, else None. Session-only, like Performance
+        # Mode -- never persisted.
+        self._stage_window: StageWindow | None = None
 
         self.undo_stack = QUndoStack(self)
 
@@ -457,7 +472,13 @@ class MainWindow(QMainWindow):
             "controller": self.left_tabs.addTab(controller_pair, "By Controller"),
             "library": self.left_tabs.addTab(self.music_library_view, "Music Library"),
         }
-        self.edit_panel = EditPanel(self.undo_stack, self._on_command_applied, self._on_group_edit_applied)
+        self.edit_panel = EditPanel(
+            self.undo_stack,
+            self._on_command_applied,
+            self._on_group_edit_applied,
+            config_provider=lambda: self.config,
+            ensure_listening=self._ensure_learn_listening,
+        )
 
         self.issues_table = QTableWidget(0, 3)
         self.issues_table.setHorizontalHeaderLabels(["Severity", "Message", "Location"])
@@ -835,6 +856,15 @@ class MainWindow(QMainWindow):
         edit_menu.addAction(validate_action)
 
         view_menu = self.menuBar().addMenu("&View")
+        # Issue #222: one keyboard search over everything below. Ctrl maps to
+        # Cmd on macOS; application-wide so it also works from a floating dock.
+        self._command_palette_action = QAction("Command Palette...", self)
+        self._command_palette_action.setShortcut(QKeySequence("Ctrl+K"))
+        self._command_palette_action.setShortcutContext(Qt.ShortcutContext.ApplicationShortcut)
+        self._command_palette_action.setToolTip("Search every action, tab, mapping function and library track")
+        self._command_palette_action.triggered.connect(lambda _checked=False: self.open_command_palette())
+        view_menu.addAction(self._command_palette_action)
+        view_menu.addSeparator()
         helpful_notes_action = QAction("Helpful Notes...", self)
         helpful_notes_action.triggered.connect(self._show_helpful_notes)
         view_menu.addAction(helpful_notes_action)
@@ -866,6 +896,14 @@ class MainWindow(QMainWindow):
         )
         self._performance_mode_action.toggled.connect(self._on_performance_mode_toggled)
         view_menu.addAction(self._performance_mode_action)
+        self._stage_mode_action = QAction("Stage Mode", self, checkable=True)
+        self._stage_mode_action.setShortcut(QKeySequence("Ctrl+Shift+F"))
+        self._stage_mode_action.setToolTip(
+            "Full-screen, high-contrast Controller Emulator and compact Live Monitor "
+            "for on-stage use -- Esc to exit (session-only, not remembered across restarts)"
+        )
+        self._stage_mode_action.toggled.connect(self._on_stage_mode_toggled)
+        view_menu.addAction(self._stage_mode_action)
 
         # MIDI macros (issue #228): one entry per macro, each with its own
         # shortcut, rebuilt by _rebuild_macro_menu whenever the list changes.
@@ -1693,6 +1731,50 @@ class MainWindow(QMainWindow):
             else "Performance mode off"
         )
 
+    def _on_stage_mode_toggled(self, checked: bool) -> None:
+        """Open or close the full-screen Stage Mode window (issue #230). It
+        shows the controller of the first open emulator, else the one the
+        Controller Images tab shows, and starts live monitoring (a no-op when a
+        session already runs) since a stage view without live input would
+        be empty."""
+        if checked:
+            if self._stage_window is not None:
+                return
+            controller = next(
+                (view.current_controller() for view in self._emulator_views()),
+                self.controller_image_view.current_controller_name(),
+            )
+            window = StageWindow(config_provider=lambda: self.config, initial_controller=controller)
+            window.closed.connect(self._on_stage_window_closed)
+            self._stage_window = window
+            window.showFullScreen()
+            self.live_monitor_view.ensure_monitoring_started()
+            self.statusBar().showMessage("Stage mode on — press Esc to exit")
+        elif self._stage_window is not None:
+            # close() emits closed -> _on_stage_window_closed, which clears
+            # the reference and unchecks the action (already unchecked here).
+            self._stage_window.close()
+
+    def _on_stage_window_closed(self) -> None:
+        window = self._stage_window
+        self._stage_window = None
+        if window is not None:
+            window.deleteLater()
+        if self._stage_mode_action.isChecked():
+            self._stage_mode_action.setChecked(False)
+        self.statusBar().showMessage("Stage mode off")
+
+    def _emulator_views(self) -> list[ControllerEmulatorView]:
+        """Every live Controller Emulator: each emulator dock's view plus
+        the Stage Mode window's, so live MIDI reaches all of them alike."""
+        views = [
+            view for dock in self._emulator_docks.values()
+            if isinstance(view := dock.widget(), ControllerEmulatorView)
+        ]
+        if self._stage_window is not None:
+            views.append(self._stage_window.emulator_view)
+        return views
+
     def _on_left_tab_changed(self, index: int) -> None:
         """Show the edit / validation column only on the tree tabs."""
         self._right_splitter.setVisible(index in self._editing_tab_indexes)
@@ -1894,10 +1976,12 @@ class MainWindow(QMainWindow):
         # columns need a full rebuild rather than a single relabel.
         current_group = self.edit_panel.current_node
         if isinstance(current_group, MappingGroup):
-            for _, _, mapping in current_group.members:
-                item = self.node_to_item.get(id(mapping))
-                if item is not None:
-                    relabel_item(item, mapping)
+            for control, _, mapping in current_group.members:
+                # The control too: a MIDI Learn moves the members' trigger.
+                for node in (control, mapping):
+                    item = self.node_to_item.get(id(node))
+                    if item is not None:
+                        relabel_item(item, node)
         QTimer.singleShot(0, self._refresh_edit_panel)
         QTimer.singleShot(0, self._refresh_layout_usage)
         QTimer.singleShot(0, self._refresh_deck_view)
@@ -2205,11 +2289,34 @@ class MainWindow(QMainWindow):
         self.deck_layout_view.set_selected_keys(keys)
         self.controller_layout_view.set_selected_keys(keys)
 
+    def _ensure_learn_listening(self) -> bool:
+        """MIDI Learn listens through the Live Monitor: start it on every
+        input if it isn't running yet, and report whether anything is open."""
+        self.live_monitor_view.ensure_monitoring_started()
+        return self.live_monitor_view.is_running
+
     def _on_live_midi_event(self, event: MidiEvent) -> None:
+        # An active MIDI Learn consumes the press it learns; the layouts still
+        # react to it below like any other live hit.
+        self.edit_panel.feed_learn_event(event)
         try:
             value = int(event.data2)
         except (TypeError, ValueError):
             value = None
+
+        # Stage Mode's compact monitor gets every event except jog-wheel
+        # ticks: a platter turn sends dozens per second, which would push
+        # every meaningful press off its few large lines.
+        if self._stage_window is not None and not jog_mod.jog_cell_keys_for_event(
+            event.channel, event.event_type, event.data1
+        ):
+            lookup_type = "Note On" if event.event_type == "Note Off" else event.event_type
+            stage_hits = (
+                catalog.lookup(event.channel, lookup_type, event.data1)
+                if event.channel and event.data1
+                else []
+            )
+            self._stage_window.add_event(event, stage_hits)
 
         # Output-direction traffic (Serato -> controller LED feedback, seen on
         # the virtual monitor port) drives a *latched* LED highlight, kept
@@ -2244,11 +2351,9 @@ class MainWindow(QMainWindow):
                 ):
                     for key in jog_keys:
                         lv.spin_jog(key, delta)
-                for dock in self._emulator_docks.values():
-                    view = dock.widget()
-                    if isinstance(view, ControllerEmulatorView):
-                        for key in jog_keys:
-                            view.spin_jog_from_key(key, delta)
+                for view in self._emulator_views():
+                    for key in jog_keys:
+                        view.spin_jog_from_key(key, delta)
                 # The Controller Images overlay only carries the one
                 # "Jog wheel" geometry entry (no left/right split), so strip
                 # the mirror suffix and spin it when this tab shows that
@@ -2312,10 +2417,7 @@ class MainWindow(QMainWindow):
         # Every open Controller Emulator dock -- the flash_live_hit /
         # set_live_active_from_hit calls self-filter to the controller each
         # instance shows, so this can run unconditionally over all of them.
-        for dock in self._emulator_docks.values():
-            view = dock.widget()
-            if not isinstance(view, ControllerEmulatorView):
-                continue
+        for view in self._emulator_views():
             for hit in hits:
                 if is_press or is_release:
                     view.set_live_active_from_hit(hit, is_press)
@@ -2348,10 +2450,7 @@ class MainWindow(QMainWindow):
                 if label is not None:
                     self.controller_image_view.set_led(label, led_on)
 
-        for dock in self._emulator_docks.values():
-            view = dock.widget()
-            if not isinstance(view, ControllerEmulatorView):
-                continue
+        for view in self._emulator_views():
             for hit in hits:
                 view.set_led_from_hit(hit, led_on)
 
@@ -2379,15 +2478,15 @@ class MainWindow(QMainWindow):
         self.controller_layout_view.refresh_controllers()
         self.controller_image_view.refresh_controllers()
         self.introduction_view.refresh_controllers()
-        for dock in self._emulator_docks.values():
-            widget = dock.widget()
-            if isinstance(widget, ControllerEmulatorView):
-                widget.refresh_controllers()
+        for view in self._emulator_views():
+            view.refresh_controllers()
         if self.config is not None:
             self._refresh_layout_usage()
         self.statusBar().showMessage(f"'{name}' applied for this session.")
 
     def closeEvent(self, event) -> None:
+        if self._stage_window is not None:
+            self._stage_window.close()
         self._record_timer.stop()
         self._plug_in_timer.stop()
         self._record_monitor.close_all()
@@ -2909,6 +3008,75 @@ class MainWindow(QMainWindow):
     def _on_reveal_mapping(self) -> None:
         if self.current_path is not None:
             reveal_in_file_manager(self.current_path)
+
+    # --- command palette (issue #222) -----------------------------------------
+
+    def _palette_index(self) -> PaletteIndex:
+        entries = menu_entries(self.menuBar(), skip={self._command_palette_action})
+        for index in range(self.left_tabs.count()):
+            entries.append(
+                PaletteEntry(KIND_TAB, self.left_tabs.tabText(index), detail="Go to tab", payload=index)
+            )
+        functions = self.function_search_view._index if self.config is not None else []
+        return PaletteIndex(entries, functions, self._palette_track_entries())
+
+    def _palette_track_entries(self) -> list[PaletteEntry]:
+        """The Music Library's rows as palette entries -- only once the tab
+        has opened its index this session (the palette never opens the DB
+        itself), rebuilt only when the rows were reloaded."""
+        library = self.music_library_view
+        if library._db is None:
+            return []
+        rows = library.table_model._rows
+        cached = getattr(self, "_palette_track_cache", None)
+        if cached is not None and cached[0] is rows:
+            return cached[1]
+        entries = []
+        for row in rows:
+            metadata = row.metadata
+            facts = [f"{row.bpm:g} BPM" if row.bpm else "", row.camelot_key or ""]
+            detail = " · ".join([fact for fact in facts if fact] + [row.path])
+            entries.append(
+                track_entry(
+                    row.path,
+                    metadata.title if metadata else None,
+                    metadata.artist if metadata else None,
+                    metadata.album if metadata else None,
+                    detail=detail,
+                    payload=row.path,
+                )
+            )
+        self._palette_track_cache = (rows, entries)
+        return entries
+
+    def open_command_palette(self, query: str = "") -> CommandPaletteDialog:
+        """Show the palette (window-modal, non-blocking: `open()`, not
+        `exec()`, so tests can drive it) and run what the user picks."""
+        dialog = CommandPaletteDialog(self._palette_index(), self)
+        dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        dialog.entryChosen.connect(self._run_palette_entry)
+        if query:
+            dialog.set_query(query)
+        self._command_palette = dialog
+        dialog.open()
+        dialog.search_field.setFocus()
+        return dialog
+
+    def _run_palette_entry(self, entry: PaletteEntry) -> None:
+        if entry.kind == KIND_ACTION:
+            entry.payload.trigger()
+        elif entry.kind == KIND_TAB:
+            self.left_tabs.setCurrentIndex(entry.payload)
+        elif entry.kind == KIND_FUNCTION:
+            self._on_function_result_selected(entry.payload)
+        elif entry.kind == KIND_TRACK:
+            self.left_tabs.setCurrentIndex(self._tab_indexes["library"])
+            library = self.music_library_view
+            # A filter may hide the track: clear them rather than miss it.
+            if not library.select_path(entry.payload):
+                library.reset_filters()
+                library.select_path(entry.payload)
+            library.table.setFocus()
 
     def _run_in_tab(self, tab_key: str, handler) -> None:
         """Show the tab an action belongs to, then run it, so a File menu

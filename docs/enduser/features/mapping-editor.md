@@ -15,6 +15,7 @@
 - [Find which control triggers a function](#find-which-control-triggers-a-function)
 - [The controller layout](#the-controller-layout)
 - [Edit safely](#edit-safely)
+- [MIDI Learn](#midi-learn)
 - [Validate and save](#validate-and-save)
 - [Related](#related)
 
@@ -114,6 +115,27 @@ Serato repeats each trigger several times in a mapping, and those copies
 must stay identical, so deleting them breaks the mapping. In **By Deck**,
 one edit updates every copy at once, so they can never drift apart. Prefer
 it over editing copies one by one in By Channel.
+
+## MIDI Learn
+
+To move a function to another button, let the controller tell the app which
+one:
+
+1. Select the function: a group in **By Deck** (moves every duplicate copy
+   at once), or a control or function in **By Channel**.
+2. Click **Learn** in the editing panel, then press the new control on your
+   controller within 10 seconds. Click **Cancel** to stop early.
+3. The trigger (MIDI channel, Note/CC and number) is replaced. It is one
+   ordinary edit: `Edit → Undo` puts the old trigger back.
+
+Only a press is learned: releasing a button or LED feedback never counts.
+Learn listens through the [Live Monitor](live-monitor.md) and starts it on
+every input if it isn't running; with no MIDI input connected, it says so.
+
+If the control you press is already used by another function, the app lists
+what it is bound to and asks before reassigning: say **No** to keep the old
+trigger. In By Channel, the trigger belongs to the whole control, so
+learning on a function moves every function of that control with it.
 
 ## Validate and save
 
