@@ -8,6 +8,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
+import PySide6
 from PySide6.QtCore import (
     QCoreApplication,
     QEvent,
@@ -19,6 +20,7 @@ from PySide6.QtCore import (
     Qt,
     QTimer,
     QUrl,
+    qVersion,
 )
 from PySide6.QtGui import (
     QAction,
@@ -94,6 +96,7 @@ from djmidi.gui.midi_clock_view import MidiClockView
 from djmidi.gui.midi_routing_view import MidiRoutingView
 from djmidi.gui.music_library_view import MusicLibraryView
 from djmidi.gui.preferences_dialog import PreferencesDialog
+from djmidi.gui.report_problem_dialog import ReportProblemDialog
 from djmidi.gui.safe_update_dialog import SafeUpdateDialog
 from djmidi.gui.scroll_utils import AutoSizeScrollArea
 from djmidi.gui.splitter_utils import replace_splitter, scrollable_columns
@@ -110,11 +113,12 @@ from djmidi.integration_detection import (
     detect_controller_ports,
     detect_software_mapping,
 )
-from djmidi.logging_config import configure_logging, current_log_path
+from djmidi.logging_config import configure_logging, current_log_path, default_log_path
 from djmidi.mapping_diff import diff_configs
 from djmidi.midi_io import MidiEvent, MidiMonitor, list_input_ports, list_output_ports
 from djmidi.model import Control, MappingElement, MidiConfig
 from djmidi.plugins import PluginPreferences, default_preferences_path
+from djmidi.problem_report import ReportContext, collect_context
 from djmidi.safe_update import prepare_update
 from djmidi.update_check import ReleaseInfo, current_version, is_check_due, is_newer
 from djmidi.validator import ValidationIssue, validate
@@ -940,6 +944,13 @@ class MainWindow(QMainWindow):
         self._check_updates_action.setToolTip("Ask GitHub whether a newer DJ MIDI Studio release exists.")
         self._check_updates_action.triggered.connect(self._on_check_for_updates)
         help_menu.addAction(self._check_updates_action)
+        self._report_problem_action = QAction("&Report a Problem...", self)
+        self._report_problem_action.setToolTip(
+            "Preview a bug report with your app version, system and recent log lines, "
+            "then open it as a pre-filled GitHub issue."
+        )
+        self._report_problem_action.triggered.connect(self._on_report_problem)
+        help_menu.addAction(self._report_problem_action)
 
     def _show_helpful_notes(self) -> None:
         self.helpful_notes_dialog.show()
@@ -1357,6 +1368,42 @@ class MainWindow(QMainWindow):
             self.statusBar().showMessage("Already checking for updates...", 5_000)
             return
         self.statusBar().showMessage("Checking for updates...")
+
+    def _problem_report_context(self) -> ReportContext:
+        """Facts for Help → Report a Problem: versions, the plugins enabled in
+        Preferences and the log tail — never mapping or library content."""
+        controllers = [
+            definition.name
+            for definition in catalog.all_controller_definitions()
+            if self.preferences.is_enabled(definition.plugin_id or definition.name)
+        ]
+        softwares = [
+            definition.name
+            for definition in software.all_definitions()
+            if self.preferences.is_enabled(definition.plugin_id)
+        ]
+        log_path = current_log_path() or default_log_path()
+        return collect_context(
+            app_version=current_version(),
+            qt_version=f"{qVersion()} (PySide6 {PySide6.__version__})",
+            controller_plugins=controllers,
+            software_plugins=softwares,
+            log_path=log_path if log_path.exists() else None,
+        )
+
+    def _on_report_problem(self) -> None:
+        dialog = ReportProblemDialog(self._problem_report_context(), self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+        if dialog.last_inlined:
+            self.statusBar().showMessage(
+                "Problem report copied to the clipboard and opened as a GitHub issue.", 10_000
+            )
+        else:
+            self.statusBar().showMessage(
+                "The report was too long for the link: it's on your clipboard — paste it into the issue.",
+                15_000,
+            )
 
     def _on_update_check_finished(self, release: ReleaseInfo | None, manual: bool) -> None:
         local = current_version()

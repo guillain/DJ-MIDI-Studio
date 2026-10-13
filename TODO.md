@@ -132,6 +132,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Report a problem** (`v0.48.79-report-a-problem`, issue #226) — `Help → Report a Problem…`:
+  Qt-free `problem_report.py` collects app/OS/Python/Qt versions, enabled plugins and the last 40 log
+  lines (home paths rewritten to `~`, no mapping/library content) into an editable preview
+  (`gui/report_problem_dialog.py`); the edited text is copied to the clipboard and opened as a
+  pre-filled GitHub issue, the log block dropped from the URL when it would exceed 6000 chars.
 - [x] **Library health report** (`v0.48.78-library-health`, issue #225) — Qt-free
   `library/health.py`: `iter_health_check` opens each present indexed track once with mutagen
   (header + tags, read-only) and reports unreadable/corrupt, zero-length (0 bytes or 0 s),
