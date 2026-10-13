@@ -55,11 +55,46 @@ MIDI_MACROS: HelpEntry = (
         "<li><b>Steps</b>: type, channel (1–16), data 1/2 (0–127) and an optional delay "
         "(ms) waited before the step is sent; <b>Add sync set…</b> appends a recorded sync "
         "set's messages.</li>"
-        "<li><b>Shortcut</b>: optional; one the app's menus already use is refused.</li></ul>"
+        "<li><b>Shortcut</b>: optional; one the app's menus already use is refused.</li>"
+        "<li><b>Trigger</b>: <b>Learn</b>, then press a button on your controller: that "
+        "press plays the macro from then on (the Live Monitor must be listening).</li></ul>"
         "<b>Test</b> plays the macro as edited. Each macro is a file in "
         "<tt>Documents/DJ MIDI Studio/Macros</tt>."
     ),
     "midi-macros.md",
+)
+
+MIDI_LATENCY: HelpEntry = (
+    "MIDI Latency Test",
+    (
+        "Sends a Note On to the <b>output</b> and times the matching Note On coming back on "
+        "the <b>input</b>, then shows min / median / max and jitter over all pings.<br><br>"
+        "<b>Only meaningful with something that echoes</b>: the IAC Driver bus or a virtual "
+        "MIDI cable chosen as both output and input, a MIDI thru, or a controller known to echo "
+        "its LED messages. A controller that doesn't echo makes every ping time out -- that "
+        "says nothing about its real latency.<ul>"
+        "<li><b>Interval</b>: time between two ping starts; <b>Timeout</b>: how long a ping "
+        "waits before it counts as lost.</li>"
+        "<li>Each ping uses its own velocity so a late echo is never counted for the next "
+        "one; untick the velocity box for a device that echoes a different value.</li>"
+        "<li>A Note Off follows every ping, so an echoing LED isn't left lit.</li></ul>"
+    ),
+    "midi-latency.md",
+)
+
+LAYER_MAP: HelpEntry = (
+    "Layer Map",
+    (
+        "One row per physical control, one column per <b>layer</b>: <i>Normal</i>, "
+        "<i>SHIFT</i>, and each pad mode (with and without SHIFT) the controller's profile "
+        "knows. Each cell shows what the loaded mapping does there, for every deck that "
+        "shares the control (<i>D1, D3</i>).<ul>"
+        "<li><b>free</b> (green): no deck uses this combination, so a new function fits.</li>"
+        "<li>amber: mapped on some decks only; hover to see the MIDI channels still free.</li>"
+        "<li><b>—</b>: this control has no such layer.</li></ul>"
+        "Read-only. <b>Refresh</b> re-reads the mapping after edits."
+    ),
+    "layer-map.md",
 )
 
 DASHBOARD_CONTROLLERS: HelpEntry = (
@@ -118,11 +153,30 @@ EDIT_PANEL: HelpEntry = (
         "controller (10 s, click again to cancel); it warns before reusing a control "
         "another function already uses.<br><br>"
         "<b>Edit → Validate</b> lists errors, warnings and info in the table below "
-        "(duplicate copies are info only: they are expected). <b>File → Save Mapping</b> shows the "
+        "(duplicate copies are info only: they are expected); <b>Edit → Ready for Live…</b> checks "
+        "for missing Play/Cue/Sync/Load, conflicts and unlit buttons before a gig. "
+        "<b>File → Save Mapping</b> shows the "
         "exact changes before writing, keeps a backup, and <b>File → Restore Previous Version…</b> "
         "restores it."
     ),
     "mapping-editor.md",
+)
+
+LIVE_READY: HelpEntry = (
+    "Ready for live",
+    (
+        "A read-only check of the loaded mapping before a gig. It lists:"
+        "<ul><li><b>Errors</b>: a control that fires several functions on the same deck, or "
+        "copies of one control that disagree.</li>"
+        "<li><b>Warnings</b>: a deck with no <b>Play</b>, <b>Cue</b>, <b>Sync</b> or <b>Load</b> "
+        "mapping. A Serato file only lists what you remapped, so ignore these if Serato's "
+        "built-in support for your controller already covers them.</li>"
+        "<li><b>Info</b>: a mapped button whose function can light up, but which has no LED "
+        "feedback mapping.</li></ul>"
+        "Each row says what to do; nothing is fixed for you. <b>Show control</b> (or double-click) "
+        "selects the control in <b>By Channel</b>; <b>Copy report</b> copies the list as text."
+    ),
+    "live-ready-check.md",
 )
 
 FUNCTION_SEARCH: HelpEntry = (
@@ -139,6 +193,20 @@ FUNCTION_SEARCH: HelpEntry = (
         "the first one in the current tab, like clicking it on the layout."
     ),
     "mapping-editor.md",
+)
+
+COMMAND_PALETTE: HelpEntry = (
+    "Command palette",
+    (
+        "<b>Cmd+K</b> (Ctrl+K on Windows/Linux) opens one search over every menu action, every tab, "
+        "the loaded mapping's functions and the Music Library's tracks. Type a few letters "
+        "(<tt>cheat</tt>, <tt>opmap</tt> for <i>Open Mapping</i>, <tt>loop roll deck 2</tt>, an artist), "
+        "move with <b>↑/↓</b>, run with <b>Enter</b>, close with <b>Esc</b>.<br><br>"
+        "Actions and tabs come first on a tie; functions use the Find function search (so "
+        "<tt>deck 2</tt> and <tt>output</tt> work); tracks show from two letters on, once the "
+        "Music Library tab has been opened this session. Disabled menu entries are left out."
+    ),
+    "command-palette.md",
 )
 
 CONTROLLER_IMAGES: HelpEntry = (
@@ -177,6 +245,22 @@ CONTROLLER_EMULATOR: HelpEntry = (
         "Open more emulators with <b>View → New Controller Emulator…</b>."
     ),
     "controller-emulator.md",
+)
+
+STAGE_MODE: HelpEntry = (
+    "Stage Mode",
+    (
+        "A full-screen, high-contrast view for playing live: one Controller Emulator and "
+        "a compact Live Monitor, nothing else.<ul>"
+        "<li>The emulator follows the real controller like any other emulator; pick the "
+        "controller in its list.</li>"
+        "<li>The monitor shows the latest event in large type and the last few below it. "
+        "The full log stays in the Live Monitor window.</li>"
+        "<li>Live monitoring starts on its own when Stage Mode opens.</li></ul>"
+        "Press <b>Esc</b> (or <b>Exit</b>) to leave. Open it again with "
+        "<b>View → Stage Mode</b>; it is not remembered across restarts."
+    ),
+    "stage-mode.md",
 )
 
 LIVE_MONITOR: HelpEntry = (
@@ -272,6 +356,8 @@ LIBRARY_TRACK: HelpEntry = (
         "Edit the selected track's tags and click <b>Write tags</b>: only the changed "
         "fields are written, and Serato/Traktor data inside the file is preserved. "
         "<b>Undo</b> writes the old values back.<br><br>"
+        "<b>Set cover…</b> embeds a JPEG/PNG as the front cover and <b>Remove cover</b> "
+        "removes it (both undoable); other pictures and tags are untouched.<br><br>"
         "<b>Write tags to selection…</b> writes chosen tags to every selected track as "
         "one undo step, with a progress window you can cancel. "
         "<b>Apply analysis suggestions…</b> writes the selected tracks' estimated BPM/key "
