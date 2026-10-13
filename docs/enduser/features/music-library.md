@@ -18,6 +18,7 @@
 - [Find duplicate tracks](#find-duplicate-tracks)
 - [Genre categories](#genre-categories)
 - [Playlists](#playlists)
+- [Prepare a set](#prepare-a-set)
 - [Import and export with DJ software](#import-and-export-with-dj-software)
 - [Safety: what is never touched](#safety-what-is-never-touched)
 - [Related](#related)
@@ -227,6 +228,34 @@ BPM moving one way — filter the table to one category first for the longest
 paths, and check the leftovers playlist for what didn't fit.
 
 ![Music Library: Playlists panel](../../images/layout/music-library-playlists.png)
+
+## Prepare a set
+
+The **Set** panel is a draft you order by hand, for when you want to choose
+every track yourself and only need the app to check the mixes:
+
+- Drag rows from the table into the list (or select them and click `Add
+  selection`). Drop them where they should play; each track appears once.
+- Drag tracks inside the list (or use `Move up` / `Move down`) to reorder.
+  `Remove`, `Clear` and `Load playlist` (the one selected in the Playlists
+  panel) edit the whole draft.
+- The curve above the list shows the BPM (blue, left scale) and the energy
+  (orange, 1–10, read from the `Energy` tag, e.g. Mixed In Key's) across the
+  set.
+
+Each transition is checked with the same rules as the automatic playlists:
+
+| Look | Meaning |
+| --- | --- |
+| Red segment on the curve, `⚠` and red text in the list | The BPM jumps past your tolerance (`BPM tolerance ±`, 6 % by default), or the keys clash on the Camelot wheel. Hover the track for the reason |
+| Dashed grey segment | A BPM or key is missing, so it can't be checked |
+| Blue segment | Compatible |
+
+Nothing is reordered for you, and the draft is remembered with the library
+index until you change it. `Save as playlist…` stores it as an app playlist
+(shown with the source `set` in the Playlists panel); `Export as Serato
+crate…` and `Export as Traktor playlist…` write a new file where you choose,
+exactly like the Playlists panel's exports.
 
 ## Import and export with DJ software
 
