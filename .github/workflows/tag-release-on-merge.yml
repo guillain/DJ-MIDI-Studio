@@ -65,5 +65,8 @@ jobs:
     uses: ./.github/workflows/draft-release.yml
     with:
       tag_name: ${{ needs.tag-release.outputs.tag }}
+    # The optional macOS signing/notarization secrets (issue #262); a reusable
+    # workflow sees none of the caller's secrets unless they are passed on.
+    secrets: inherit
     permissions:
       contents: write
