@@ -10,9 +10,12 @@ in that instance resolve against the chosen mode's bank instead.
 
 The mechanism is a per-controller table mapping a mode button's cell label
 to the substring its pad variants' names carry while that mode is active
-(``prefer_token`` in ``pick_default_variant``). Only DDJ-XP2 and XDJ-XZ
-have pad-mode-select buttons in the catalog; the other controllers'
-mode-select buttons aren't modelled, so this is a no-op there.
+(``prefer_token`` in ``pick_default_variant``). Only DDJ-XP2, XDJ-XZ and
+the Hercules DJControl Inpulse 500 have pad-mode-select buttons in the
+catalog; the other controllers' mode-select buttons aren't modelled, so
+this is a no-op there. The Inpulse 500's SHIFT+mode-button modes 5-8 send
+their own notes, so the catalog lists them as eight separate PAD MODE
+cells, each selecting its own bank.
 
 DDJ-XP2's four physical PAD MODE buttons each double as two modes via
 single vs. double click (PAD MODE 1/5, 2/6, ...); the emulator is
@@ -34,6 +37,7 @@ _PAD_MODE_TOKENS: dict[str, dict[str, str]] = {
         "SLIP LOOP": "(SLIP LOOP mode)",
         "BEAT JUMP": "(BEAT JUMP mode)",
     },
+    "Hercules DJControl Inpulse 500": {f"PAD MODE {n}": f"(PAD MODE {n})" for n in range(1, 9)},
 }
 
 

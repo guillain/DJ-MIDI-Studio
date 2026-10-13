@@ -77,6 +77,7 @@ page saying so.
 ## Related
 
 - [Controller Emulator](controller-emulator.md)
+- [Layer Map](layer-map.md)
 - [Readable function names](function-names.md)
 - [Controller Images](controller-images.md)
 - [Mapping editor](mapping-editor.md)

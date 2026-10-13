@@ -13,6 +13,7 @@
 - [Behringer CMD Micro](#behringer-cmd-micro)
 - [Behringer CMD Studio 4a](#behringer-cmd-studio-4a)
 - [Korg nanoPAD2](#korg-nanopad2)
+- [Hercules DJControl Inpulse 500](#hercules-djcontrol-inpulse-500)
 - [Pad modes](#pad-modes)
 - [Add your own controller](#add-your-own-controller)
 - [JSON profiles](#json-profiles)
@@ -31,7 +32,7 @@
 | Pioneer DDJ-800 | Official MIDI Message List E3 | Grid | — | Not yet |
 | Pioneer DDJ-FLX4 | Conservative DDJ-400-family values; official list archived, not yet cross-checked | Grid | — | Not yet |
 | Numark Mixtrack Pro FX | Conservative community values; user guide for the layout | ✅ | — | Not yet |
-| Hercules DJControl Inpulse 500 | Conservative values; product sheet | Grid | — | Not yet |
+| Hercules DJControl Inpulse 500 | Official MIDI Commands sheet (2022) | Grid | — | Not yet |
 | Behringer CMD LC-1 | Captured from a real unit with Controller Setup (no vendor list exists), checked against a real Serato export | ✅ | — | ✅ |
 | Behringer CMD Micro | Captured from a real unit (no vendor list exists), checked against a real Traktor export | ✅ | — | ✅ |
 | Behringer CMD Studio 4a | Captured from a real unit in all 4 deck layers (no vendor list exists), checked against a real Traktor export | ✅ | — | ✅ |
@@ -109,14 +110,37 @@ Controller Images, the `MIDI` layer shows a Korg editor layout
 (notes 36–51) that differs from the captured unit: use it for pad positions,
 not note numbers.
 
+## Hercules DJControl Inpulse 500
+
+Transcribed from the official Hercules "MIDI Commands" sheet bundled with
+the app (`Help → Controller References`); not yet checked on a real unit.
+Deck 1 buttons send on MIDI channel 2 and deck 2 on channel 3, with the
+SHIFT layer on channels 5 and 6 (e.g. `PLAY/PAUSE` is note 7 on both
+decks). The pads send on channel 7 (deck 1) and 8 (deck 2): each of the 8
+pad modes has its own 16 notes, the first 8 for the plain pads and the next
+8 for SHIFT, so a pad is named with its mode, e.g.
+`Deck 1 Pad 3 (PAD MODE 6)`. The four mode buttons select modes 1–4, and
+modes 5–8 with SHIFT; a long press sends a separate note. The mixer's PFL,
+FX 1–4, crossfader-curve switch, the browse push and the two LOAD buttons
+are named too.
+
+Left out because the sheet contradicts itself on them: `Guides` and
+`Assistant` (both printed as the same note), deck 2's long press on mode
+button 4 and `LOAD 2` with SHIFT (channel and status byte disagree).
+Profiles before v0.48.89 used community values for this controller (pads
+on notes 40–47) that don't match the sheet.
+
 ## Pad modes
 
 The Pioneer pad-grid profiles (DDJ-XP2, XDJ-XZ, DDJ-1000, DDJ-FLX4,
 DDJ-FLX10, DDJ-REV1) resolve pad modes 1 to 8. On the DDJ-XP2, modes 5–8 are
 reached by double-clicking `PAD MODE 1–4`; the hardware then sends a
-distinct note for the second click. The Numark and Hercules profiles cover
-their main eight-pad bank only: their mode-switch messages aren't documented,
-so they aren't guessed.
+distinct note for the second click. The Hercules DJControl Inpulse 500
+resolves its 8 pad modes too, and in the
+[Controller Emulator](features/controller-emulator.md) clicking one of its
+`PAD MODE` buttons steers later pad clicks to that mode's notes. The Numark
+profile covers its main eight-pad bank only: its mode-switch messages aren't
+documented, so they aren't guessed.
 
 ## Add your own controller
 
