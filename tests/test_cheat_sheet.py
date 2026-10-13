@@ -107,7 +107,9 @@ def test_build_sheets_on_the_real_fixture():
 
 
 def test_a_controller_with_nothing_mapped_still_gets_a_page():
-    sheets = cs.build_sheets(_config(), ["Korg nanoPAD2", "Hercules DJControl Inpulse 500"])
+    # DDJ-FLX4: no geometry and no trigger shared with the fixture (the
+    # Inpulse 500 shares channel 8 pad notes with DDJ-XP2 since #247).
+    sheets = cs.build_sheets(_config(), ["Korg nanoPAD2", "DDJ-FLX4"])
     assert [s.kind for s in sheets] == ["photo", "table", "table"]
     assert all(not s.entries for s in sheets[:2])
     assert sheets[2].title == cs.GLOSSARY_TITLE
