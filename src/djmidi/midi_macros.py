@@ -11,6 +11,14 @@ Storage mirrors the sync sets: one JSON file per macro in the user's
 ``Macros`` folder (:func:`load_macros` / :func:`save_macros`), the name only
 a label (loading reads the macro's name from the file's content).
 
+A macro can also be bound to a controller button (issue #252, MIDI Learn
+for macros): :class:`MacroTrigger` is the Note On / Control Change the
+macro editor's Learn button captured, stored in the macro's own file, and
+:func:`macros_for_event` finds the macros a live press fires. Only a press
+counts -- the same rule as the mapping editor's MIDI Learn
+(:func:`djmidi.midi_learn.trigger_from_event`) -- so a button's release
+never plays its macro a second time.
+
 Playing is split in two so the GUI never blocks its event loop on a delay:
 :func:`macro_schedule` turns the per-step delays into absolute offsets the
 GUI feeds to timers, and :func:`run_macro` plays the same schedule
@@ -25,8 +33,13 @@ import time
 from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from djmidi.controller_sync import ControllerSyncSet, SyncMessage, resolve_output_port
+from djmidi.midi_learn import trigger_from_event
+
+if TYPE_CHECKING:
+    from djmidi.midi_io import MidiEvent
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -45,6 +58,82 @@ def _delay(value: object) -> int:
     if not 0 <= number <= MAX_DELAY_MS:
         raise ValueError(f"delay must be in [0, {MAX_DELAY_MS}] ms")
     return number
+
+
+TRIGGER_EVENT_TYPES = ("Note On", "Control Change")
+
+
+def _port_key(port: str) -> str:
+    """A port name compared case/punctuation-insensitively."""
+    return "".join(char for char in port.casefold() if char.isalnum())
+
+
+def _bounded(value: object, label: str, low: int, high: int) -> int:
+    try:
+        number = int(str(value).strip())
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{label} must be an integer") from exc
+    if not low <= number <= high:
+        raise ValueError(f"{label} must be in [{low}, {high}]")
+    return number
+
+
+@dataclass(frozen=True)
+class MacroTrigger:
+    """The controller press that fires a macro: a Note On (any velocity
+    above 0) or a Control Change (any value) on ``channel``/``data1``.
+    ``port`` is the input port it was learned on; blank matches every input
+    -- two controllers on one setup often send the same note, so a learned
+    trigger keeps its port by default."""
+
+    event_type: str
+    channel: int  # 1-based
+    data1: int
+    port: str = ""
+
+    @classmethod
+    def create(cls, event_type: object, channel: object, data1: object, port: object = "") -> MacroTrigger:
+        kind = str(event_type or "").strip()
+        if kind not in TRIGGER_EVENT_TYPES:
+            raise ValueError(f"a trigger must be a {' or a '.join(TRIGGER_EVENT_TYPES)}")
+        return cls(kind, _bounded(channel, "channel", 1, 16), _bounded(data1, "data1", 0, 127), str(port or "").strip())
+
+    @classmethod
+    def from_event(cls, event: MidiEvent) -> MacroTrigger | None:
+        """The trigger a live event would bind, or ``None`` when it isn't a
+        press (a release, a velocity-0 Note On, LED feedback)."""
+        learned = trigger_from_event(event)
+        if learned is None:
+            return None
+        try:
+            return cls.create(learned.event_type, learned.channel, learned.control, event.port)
+        except ValueError:
+            return None
+
+    def matches(self, event: MidiEvent) -> bool:
+        """Whether a live event is a press of this trigger."""
+        pressed = MacroTrigger.from_event(event)
+        if pressed is None or (pressed.event_type, pressed.channel, pressed.data1) != (
+            self.event_type,
+            self.channel,
+            self.data1,
+        ):
+            return False
+        return not self.port or _port_key(self.port) == _port_key(pressed.port)
+
+    def label(self) -> str:
+        kind = "Note" if self.event_type == "Note On" else "CC"
+        where = f" on {self.port}" if self.port else ""
+        return f"{kind} {self.data1}, ch {self.channel}{where}"
+
+    def to_dict(self) -> dict[str, object]:
+        return {"event_type": self.event_type, "channel": self.channel, "data1": self.data1, "port": self.port}
+
+    @classmethod
+    def from_dict(cls, raw: object) -> MacroTrigger:
+        if not isinstance(raw, dict):
+            raise TypeError("A macro trigger must be an object")
+        return cls.create(raw.get("event_type"), raw.get("channel"), raw.get("data1"), raw.get("port", ""))
 
 
 @dataclass(frozen=True)
@@ -72,19 +161,25 @@ class MidiMacro:
     steps: tuple[MacroStep, ...] = field(default_factory=tuple)
     # QKeySequence portable text ("Ctrl+Shift+1"), "" for none.
     shortcut: str = ""
+    # Controller press that plays the macro (issue #252), None for none.
+    trigger: MacroTrigger | None = None
 
     @property
     def duration_ms(self) -> int:
         return sum(step.delay_ms for step in self.steps)
 
     def to_dict(self) -> dict[str, object]:
-        return {
+        raw: dict[str, object] = {
             "version": FORMAT_VERSION,
             "name": self.name,
             "output_port": self.output_port,
             "shortcut": self.shortcut,
             "steps": [step.to_dict() for step in self.steps],
         }
+        # Only written when set, so a macro without one keeps its old file shape.
+        if self.trigger is not None:
+            raw["trigger"] = self.trigger.to_dict()
+        return raw
 
     @classmethod
     def from_dict(cls, raw: object) -> MidiMacro:
@@ -101,6 +196,7 @@ class MidiMacro:
             output_port=str(raw.get("output_port", "") or ""),
             steps=tuple(MacroStep.from_dict(step) for step in steps),
             shortcut=str(raw.get("shortcut", "") or "").strip(),
+            trigger=MacroTrigger.from_dict(raw["trigger"]) if raw.get("trigger") else None,
         )
 
 
@@ -117,12 +213,36 @@ def steps_from_rows(rows: Iterable[Sequence[object]]) -> tuple[MacroStep, ...]:
     return tuple(steps)
 
 
+def _triggers_overlap(a: MacroTrigger, b: MacroTrigger) -> bool:
+    if (a.event_type, a.channel, a.data1) != (b.event_type, b.channel, b.data1):
+        return False
+    return not a.port or not b.port or _port_key(a.port) == _port_key(b.port)
+
+
+def retriggers_itself(macro: MidiMacro) -> bool:
+    """Whether playing ``macro`` sends its own trigger back to the port it
+    listens on -- a virtual loopback port (IAC, loopMIDI) would then fire it
+    forever. Only checked when both ports are named and equal."""
+    trigger = macro.trigger
+    if trigger is None or not trigger.port or _port_key(trigger.port) != _port_key(macro.output_port):
+        return False
+    for step in macro.steps:
+        message = step.message
+        if (message.event_type, message.channel, message.data1) != (trigger.event_type, trigger.channel, trigger.data1):
+            continue
+        if message.event_type == "Control Change" or message.data2 > 0:
+            return True
+    return False
+
+
 def validate_macros(macros: Sequence[MidiMacro]) -> list[str]:
     """Problems that must be fixed before saving: a blank or duplicate name
-    (case-insensitive -- names become file names), a shortcut used twice."""
+    (case-insensitive -- names become file names), a shortcut or controller
+    trigger used twice, a macro that would retrigger itself."""
     problems: list[str] = []
     names: set[str] = set()
     shortcuts: dict[str, str] = {}
+    triggers: list[tuple[MacroTrigger, str]] = []
     for macro in macros:
         name = macro.name.strip()
         if not name:
@@ -137,7 +257,20 @@ def validate_macros(macros: Sequence[MidiMacro]) -> list[str]:
                 problems.append(f"\"{name}\" and \"{other}\" use the same shortcut {macro.shortcut}")
             else:
                 shortcuts[macro.shortcut.casefold()] = name
+        if macro.trigger is not None:
+            other = next((owner for trigger, owner in triggers if _triggers_overlap(trigger, macro.trigger)), None)
+            if other is not None:
+                problems.append(f"\"{name}\" and \"{other}\" use the same controller trigger {macro.trigger.label()}")
+            else:
+                triggers.append((macro.trigger, name))
+            if retriggers_itself(macro):
+                problems.append(f"\"{name}\" sends its own trigger back to {macro.output_port} and would loop")
     return problems
+
+
+def macros_for_event(macros: Iterable[MidiMacro], event: MidiEvent) -> list[MidiMacro]:
+    """The macros a live MIDI event fires (only presses do)."""
+    return [macro for macro in macros if macro.trigger is not None and macro.trigger.matches(event)]
 
 
 def macro_schedule(macro: MidiMacro) -> list[tuple[int, SyncMessage]]:
@@ -298,12 +431,15 @@ __all__ = [
     "MAX_DELAY_MS",
     "MacroResult",
     "MacroStep",
+    "MacroTrigger",
     "MidiMacro",
     "load_macros",
     "macro_file_name",
     "macro_from_sync_set",
     "macro_schedule",
+    "macros_for_event",
     "resolve_macro_port",
+    "retriggers_itself",
     "run_macro",
     "save_macros",
     "send_message",

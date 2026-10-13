@@ -72,13 +72,18 @@ what the mapping does, switch pad modes, latch SHIFT, and turn on
 | 🗺️ | [Mapping editor](docs/enduser/features/mapping-editor.md) | Serato mappings by channel, deck or physical control; grouped edits, validation, diff before save, rollback |
 | 🎧 | [Traktor mappings](docs/enduser/features/traktor-mappings.md) | Open Traktor `.tsi` mappings and re-assign MIDI triggers byte-safely |
 | 🔍 | [Compare mappings](docs/enduser/features/mapping-diff.md) | What changed between two mappings or since the last save, by physical control, highlighted on the layouts |
+| ✅ | [Ready for live](docs/enduser/features/live-ready-check.md) | A pre-gig check: decks missing Play/Cue/Sync/Load, conflicting controls, buttons without LED feedback — explained, never auto-fixed |
 | 🏷️ | [Readable function names](docs/enduser/features/function-names.md) | `Loop roll` instead of `auto_loop_roll_specific_length` in the trees, search, diff and cheat sheet — original tag on hover |
+| ⌨️ | [Command palette](docs/enduser/features/command-palette.md) | Cmd+K, a few letters, Enter: every menu action, tab, mapping function and library track, keyboard-only |
 | 🖼️ | [Controller Images](docs/enduser/features/controller-images.md) | Official diagrams and manuals, offline, with real control positions |
 | 🖨️ | [Cheat Sheet (PDF)](docs/enduser/features/cheat-sheet.md) | Print the mapping on each controller's photo, one page per pad bank |
+| 🧩 | [Layer Map](docs/enduser/features/layer-map.md) | What each control does in every layer — normal, SHIFT, each pad mode — with the free combinations highlighted |
 | 🔀 | [MIDI Routing, Clock and Metronome](docs/enduser/features/midi-routing-and-clock.md) | Route MIDI, generate 24 PPQN MIDI Clock from Ableton Link, loop MIDI |
 | ⏯️ | [MIDI Macros](docs/enduser/features/midi-macros.md) | Named MIDI message sequences with optional delays, from a menu or a keyboard shortcut |
 | ⏱️ | [MIDI Latency Test](docs/enduser/features/midi-latency.md) | Round-trip min / median / max and jitter through a port or device that echoes |
+| 🧭 | [First-run setup](docs/enduser/features/first-run-wizard.md) | Detect your controllers, open your Serato mapping, record a sync set — on first launch or from Help |
 | 🪟 | [Workspace and preferences](docs/enduser/features/workspace.md) | Dockable tools, Performance Mode, light/dark theme |
+| 🎤 | [Stage Mode](docs/enduser/features/stage-mode.md) | Full-screen, high-contrast Controller Emulator and live MIDI for playing on stage — Esc to exit |
 | 🐞 | [Report a Problem](docs/enduser/features/report-a-problem.md) | Versions, plugins and recent log in an editable preview, opened as a pre-filled GitHub issue |
 
 ## Supported hardware and software
