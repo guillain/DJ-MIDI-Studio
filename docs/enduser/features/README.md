@@ -36,6 +36,7 @@
 | ⏯️ | [MIDI Macros](midi-macros.md) | Named MIDI message sequences, played from a menu or a keyboard shortcut |
 | 🪟 | [Workspace and preferences](workspace.md) | Tool windows, Performance Mode, Preferences |
 | 🎤 | [Stage Mode](stage-mode.md) | Full-screen, high-contrast emulator and live MIDI for playing on stage |
+| 🌐 | [Interface language](interface-language.md) | French menus, tabs and Preferences, or follow the system language |
 | 🐞 | [Report a Problem](report-a-problem.md) | An editable bug report with your versions and recent log, opened as a GitHub issue |
 
 ## In this section
@@ -58,4 +59,5 @@
 | [midi-macros.md](midi-macros.md) | Creating, playing and storing MIDI macros, delays, shortcuts |
 | [workspace.md](workspace.md) | Tabs and docks, window controls, Performance Mode, Preferences |
 | [stage-mode.md](stage-mode.md) | Full-screen emulator and compact monitor, Esc to exit |
+| [interface-language.md](interface-language.md) | Choosing English, French or the system language, what is translated |
 | [report-a-problem.md](report-a-problem.md) | What a problem report contains and never contains, sending it |

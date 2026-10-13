@@ -79,6 +79,7 @@ Open several, one per controller.
 | ⏯️ | [MIDI Macros](features/midi-macros.md) | Named MIDI message sequences with optional delays, from a menu or a shortcut |
 | 🪟 | [Workspace and preferences](features/workspace.md) | Dockable tools, Performance Mode, Preferences |
 | 🎤 | [Stage Mode](features/stage-mode.md) | Full-screen, high-contrast emulator and live MIDI, Esc to exit |
+| 🌐 | [Interface language](features/interface-language.md) | French menus, tabs and Preferences, or follow the system language |
 | 🐞 | [Report a Problem](features/report-a-problem.md) | An editable bug report, opened as a pre-filled GitHub issue |
 
 Supported out of the box: Serato DJ Pro and Traktor mappings; DDJ-XP2,

@@ -134,7 +134,7 @@ The **⚙** button at the top right of the menu bar opens Preferences (the
 
 | Tab | Settings |
 | --- | --- |
-| General | Theme (`Follow system`, `Light`, `Dark`), integration detection (`Ask before enabling` or `Suggest detected integration`), log level and log file, `Enable MIDI routing policies`, `Trust external plugins`, `Auto-start Live Monitor when a mapping is loaded`, `Reopen my last mapping and Controller Setup draft at launch`, `Sync controllers at launch`, `Check for a new version at launch`, `Controller Setup default file`, your files folder (`Open folder`) |
+| General | Theme (`Follow system`, `Light`, `Dark`), [Language](interface-language.md) (`System`, `English`, `Français`, applied at the next launch), integration detection (`Ask before enabling` or `Suggest detected integration`), log level and log file, `Enable MIDI routing policies`, `Trust external plugins`, `Auto-start Live Monitor when a mapping is loaded`, `Reopen my last mapping and Controller Setup draft at launch`, `Sync controllers at launch`, `Check for a new version at launch`, `Controller Setup default file`, your files folder (`Open folder`) |
 | General | Theme (`Follow system`, `Light`, `Dark`), integration detection (`Ask before enabling` or `Suggest detected integration`), log level and log file, `Enable MIDI routing policies`, `Trust external plugins`, `Auto-start Live Monitor when a mapping is loaded`, `Reopen my last mapping and Controller Setup draft at launch`, `Controller Setup default file`, your files folder (`Open folder`, `Back up...`, `Restore...`) |
 | Plugins | Enable or disable each controller and software plugin; `Enable all controllers` / `Disable all controllers` |
 | Controller sync | Your [sync sets](controller-sync.md#manage-sync-sets) |
@@ -180,6 +180,7 @@ before it opens as a GitHub issue — see [Report a Problem](report-a-problem.md
 ## Related
 
 - [Report a Problem](report-a-problem.md)
+- [Interface language](interface-language.md)
 - [User guide](../user-guide.md)
 - [Controller Sync](controller-sync.md)
 - [MIDI Routing, Clock and Metronome](midi-routing-and-clock.md)

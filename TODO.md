@@ -132,6 +132,10 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **French UI translation** (`v0.48.102-french-ui`, issue #263) — Qt `.ts`/`.qm` pipeline
+  (`scripts/update_translations.sh`), a `Language` preference (System / English / Français, default English,
+  applied at launch) and French for the menus, main tabs, menu-bar buttons and the Preferences dialog (plus Qt's
+  own standard buttons). Tab content, tool windows, messages and help texts stay English for now.
 - [x] **Hercules DJControl Inpulse 500 profile fix** (`v0.48.89-inpulse-500-profile-fix`, issue #247) — the
   catalog is re-transcribed from the bundled official MIDI Commands sheet (300 DPI renders): deck buttons on
   ch 2/3 (+SHIFT 5/6), the 8-mode pad banks on ch 7/8 (+8 with SHIFT), PAD MODE 1-8 and long-press notes,
