@@ -132,6 +132,13 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **First-run setup wizard** (`v0.48.90-first-run-wizard`, issue #251) — Qt-free
+  `first_run.py` (first-launch gate, controller detection by port name merged per controller,
+  read-only listing of `~/Music/_Serato_/MIDI/Xml`) behind a skippable `QWizard`: pick the
+  detected profile for the Dashboard, open the newest Serato mapping, start a `● Rec` sync-set
+  recording. Shown once, only in the real app with no preferences file (QSettings flag
+  `ui/first_run_wizard_done`), never under `--startup-screenshot`; `Help → First-Run Setup…`
+  reopens it.
 - [x] **MIDI Learn in the mapping editor** (`v0.48.86-midi-learn`, issue #220) — Qt-free
   `midi_learn.py` (`trigger_from_event`: only a Note On with velocity > 0 or a CC, input
   direction; `find_trigger_conflicts`/`describe_conflicts`; `find_parent_control`) behind a

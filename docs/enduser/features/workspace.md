@@ -173,11 +173,15 @@ at launch`).
 result: a new version (with a button to open its page), up to date, or
 GitHub couldn't be reached.
 
+`Help → First-Run Setup…` reopens the wizard shown on the very first launch
+— see [First-run setup](first-run-wizard.md).
+
 `Help → Report a Problem…` prepares a bug report you can read and edit
 before it opens as a GitHub issue — see [Report a Problem](report-a-problem.md).
 
 ## Related
 
+- [First-run setup](first-run-wizard.md)
 - [Report a Problem](report-a-problem.md)
 - [User guide](../user-guide.md)
 - [Controller Sync](controller-sync.md)
