@@ -9,6 +9,11 @@ group that would keep no copy, moves them with `QFile.moveToTrash` (never a
 hard delete) and calls `remove_paths` back. This dialog never touches a
 file itself.
 
+A third section, *Other versions of the same song* (issue #257), lists
+`TIER_VERSIONS` groups -- radio edit / extended / remaster of one song --
+as suggestions only: each file shows its own title, can be revealed, but
+has no tick box, so it can never be moved to the Trash from here.
+
 Bitrates are read lazily, when a group is expanded: it opens the file's
 stream header, cheap per file but not across a whole 85k-track library.
 """
@@ -38,6 +43,7 @@ from djmidi.gui.help_button import help_button
 from djmidi.library.duplicates import (
     TIER_EXACT,
     TIER_METADATA,
+    TIER_VERSIONS,
     DuplicateGroup,
     audio_bitrate,
 )
@@ -49,6 +55,7 @@ COLUMNS = ("Track / file", "Format", "Size", "Bitrate")
 _TIER_TITLES = {
     TIER_EXACT: "Exact copies (identical files)",
     TIER_METADATA: "Same artist + title",
+    TIER_VERSIONS: "Other versions of the same song (suggestions, not duplicates)",
 }
 
 
@@ -84,10 +91,13 @@ class DuplicatesDialog(QDialog):
 
         header = QHBoxLayout()
         exact = sum(1 for group in self.groups if group.tier == TIER_EXACT)
-        metadata = len(self.groups) - exact
+        metadata = sum(1 for group in self.groups if group.tier == TIER_METADATA)
+        versions = sum(1 for group in self.groups if group.tier == TIER_VERSIONS)
         self.summary_label = QLabel(
-            f"{exact} group(s) of identical files, {metadata} group(s) sharing artist + title. "
-            "Tick the copies you don't want and move them to the Trash (at least one copy per group stays)."
+            f"{exact} group(s) of identical files, {metadata} group(s) sharing artist + title, "
+            f"{versions} song(s) with several versions. "
+            "Tick the copies you don't want and move them to the Trash (at least one copy per group stays). "
+            "Other versions are suggestions to review only."
         )
         self.summary_label.setWordWrap(True)
         header.addWidget(self.summary_label, 1)
@@ -129,27 +139,35 @@ class DuplicatesDialog(QDialog):
             self._syncing = False
 
     def _fill_tree(self) -> None:
-        for tier in (TIER_EXACT, TIER_METADATA):
+        for tier in (TIER_EXACT, TIER_METADATA, TIER_VERSIONS):
             tier_groups = [group for group in self.groups if group.tier == tier]
             tier_item = QTreeWidgetItem([f"{_TIER_TITLES[tier]} — {len(tier_groups)} group(s)"])
             tier_item.setFirstColumnSpanned(True)
             self.tree.addTopLevelItem(tier_item)
             for group in tier_groups:
-                label = (
-                    f"{len(group.paths)} identical files"
-                    if tier == TIER_EXACT
-                    else f"{group.label or group.key} ({len(group.paths)} files)"
-                )
+                if tier == TIER_EXACT:
+                    label = f"{len(group.paths)} identical files"
+                elif tier == TIER_VERSIONS:
+                    label = f"{group.label or group.key} ({len(group.paths)} versions)"
+                else:
+                    label = f"{group.label or group.key} ({len(group.paths)} files)"
                 group_item = QTreeWidgetItem([label, "", format_size(group.size), ""])
                 tier_item.addChild(group_item)
-                for path in group.paths:
+                for index, path in enumerate(group.paths):
                     size = group.size if group.size is not None else _file_size(path)
+                    text = path
+                    if tier == TIER_VERSIONS and index < len(group.variants):
+                        text = f"{group.variants[index]} — {path}"
                     child = QTreeWidgetItem(
-                        [path, Path(path).suffix.lstrip(".").upper(), format_size(size), _BITRATE_PENDING]
+                        [text, Path(path).suffix.lstrip(".").upper(), format_size(size), _BITRATE_PENDING]
                     )
                     child.setData(0, PATH_ROLE, path)
-                    child.setFlags(child.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-                    child.setCheckState(0, Qt.CheckState.Unchecked)
+                    if tier == TIER_VERSIONS:
+                        # Versions are suggestions: never tickable for the Trash.
+                        child.setFlags(child.flags() & ~Qt.ItemFlag.ItemIsUserCheckable)
+                    else:
+                        child.setFlags(child.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+                        child.setCheckState(0, Qt.CheckState.Unchecked)
                     child.setToolTip(0, path)
                     group_item.addChild(child)
             tier_item.setExpanded(True)
@@ -180,7 +198,7 @@ class DuplicatesDialog(QDialog):
 
     def set_checked(self, path: str, checked: bool) -> None:
         for item in self.file_items():
-            if item.data(0, PATH_ROLE) == path:
+            if item.data(0, PATH_ROLE) == path and item.flags() & Qt.ItemFlag.ItemIsUserCheckable:
                 item.setCheckState(0, Qt.CheckState.Checked if checked else Qt.CheckState.Unchecked)
 
     def _on_item_changed(self, item: QTreeWidgetItem, column: int) -> None:
@@ -204,11 +222,16 @@ class DuplicatesDialog(QDialog):
     def remove_paths(self, paths: list[str]) -> None:
         """Drop moved copies from the tree; a group left with one file goes."""
         gone = set(paths)
-        self.groups = [
-            replace(group, paths=kept)
-            for group in self.groups
-            if len(kept := tuple(path for path in group.paths if path not in gone)) > 1
-        ]
+        groups = []
+        for group in self.groups:
+            kept = [index for index, path in enumerate(group.paths) if path not in gone]
+            if len(kept) < 2:
+                continue
+            variants = tuple(group.variants[index] for index in kept if index < len(group.variants))
+            if group.tier == TIER_VERSIONS and len(set(variants)) < 2:
+                continue
+            groups.append(replace(group, paths=tuple(group.paths[index] for index in kept), variants=variants))
+        self.groups = groups
         self.tree.clear()
         self._populate()
         self._update_buttons()

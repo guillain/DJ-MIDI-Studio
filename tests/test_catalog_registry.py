@@ -215,8 +215,11 @@ def test_non_pioneer_controller_plugins_resolve_pad_controls():
     numark_hits = catalog.lookup("1", "Note On", "36")
     assert any(hit.controller == "Numark Mixtrack Pro FX" and hit.name == "Deck 1 Pad 1" for hit in numark_hits)
 
-    hercules_hits = catalog.lookup("2", "Note On", "47")
-    assert any(hit.controller == "Hercules DJControl Inpulse 500" and hit.name == "Deck 2 Pad 8" for hit in hercules_hits)
+    hercules_hits = catalog.lookup("8", "Note On", "7")
+    assert any(
+        hit.controller == "Hercules DJControl Inpulse 500" and hit.name == "Deck 2 Pad 8 (PAD MODE 1)"
+        for hit in hercules_hits
+    )
 
 
 def test_controller_detection_ranks_matching_port_name():

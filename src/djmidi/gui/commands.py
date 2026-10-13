@@ -190,6 +190,43 @@ class WriteTrackMetadataCommand(QUndoCommand):
         self._on_applied(self._path)
 
 
+class WriteTrackCoverCommand(QUndoCommand):
+    """Undoable set/removal of one audio file's front cover (Music Library
+    Track panel, issue #256). The previous front cover is read once, when
+    the command is built, and undo writes it back (or removes the new one
+    when there was none) through the same surgical `write_cover_art`, so
+    other pictures, tags and Serato/Traktor frames stay untouched."""
+
+    def __init__(
+        self,
+        path: str,
+        new_cover: object | None,
+        on_applied: Callable[[str], None],
+        writer: Callable[[str, object | None], None] | None = None,
+        reader: Callable[[str], object | None] | None = None,
+    ) -> None:
+        verb = "Set" if new_cover is not None else "Remove"
+        super().__init__(f"{verb} cover of {path.rsplit('/', 1)[-1]}")
+        if writer is None or reader is None:
+            from djmidi.library.cover_art import read_front_cover, write_cover_art
+
+            writer = writer or write_cover_art
+            reader = reader or read_front_cover
+        self._path = path
+        self._old = reader(path)
+        self._new = new_cover
+        self._writer = writer
+        self._on_applied = on_applied
+
+    def redo(self) -> None:
+        self._writer(self._path, self._new)
+        self._on_applied(self._path)
+
+    def undo(self) -> None:
+        self._writer(self._path, self._old)
+        self._on_applied(self._path)
+
+
 # A progress callback: (files done, total) -> False to stop after the
 # current file. Made fresh by a factory for every redo/undo pass, so each
 # pass (the first write, an undo hours later, a redo) gets its own dialog.
@@ -266,3 +303,42 @@ class WriteTracksMetadataCommand(QUndoCommand):
                 f"Undo: {self.text()}", {path: (self._changes[path][1], self._changes[path][0]) for path in restored}
             )
         self._on_applied(restored)
+
+
+class RenameFilesCommand(QUndoCommand):
+    """Undoable rename of audio files from a tag template (Music Library
+    tab, issue #260). `apply(pairs)` renames ``(old, new)`` pairs and returns
+    a `library.rename.RenameResult`; undo calls it again with every pair it
+    actually renamed swapped back. A pair that fails (on redo or undo) is
+    recorded in `failures` instead of aborting the rest; if nothing at all
+    was renamed the command marks itself obsolete so `QUndoStack.push`
+    drops it."""
+
+    def __init__(
+        self,
+        pairs: list[tuple[str, str]],
+        apply: Callable[[list[tuple[str, str]]], object],
+        on_applied: Callable[[list[tuple[str, str]]], None],
+    ) -> None:
+        super().__init__(f"Rename {len(pairs)} file(s)")
+        self._pairs = list(pairs)
+        self._apply = apply
+        self._on_applied = on_applied
+        self.renamed: list[tuple[str, str]] = []
+        self.failures: list[tuple[str, str]] = []
+
+    def redo(self) -> None:
+        result = self._apply(self._pairs)
+        self.renamed = list(result.renamed)
+        self.failures = list(result.failed)
+        if not self.renamed:
+            self.setObsolete(True)
+            return
+        # A later redo (after an undo) replays only what this one renamed.
+        self._pairs = list(self.renamed)
+        self._on_applied(self.renamed)
+
+    def undo(self) -> None:
+        result = self._apply([(new, old) for old, new in reversed(self.renamed)])
+        self.failures = list(result.failed)
+        self._on_applied(list(result.renamed))

@@ -10,7 +10,12 @@ import pytest
 
 from djmidi.library import discard
 from djmidi.library.db import LibraryDB
-from djmidi.library.duplicates import TIER_EXACT, TIER_METADATA, DuplicateGroup
+from djmidi.library.duplicates import (
+    TIER_EXACT,
+    TIER_METADATA,
+    TIER_VERSIONS,
+    DuplicateGroup,
+)
 
 
 def _group(tier: str, *paths: Path) -> DuplicateGroup:
@@ -65,6 +70,20 @@ def test_plan_refuses_a_group_that_keeps_nothing(setup):
     plan = discard.plan_discard([exact, other], [str(files["a.mp3"]), str(files["a copy.mp3"]), str(files["b.mp3"])])
     assert plan.refused == (exact,)
     assert not plan.ok
+
+
+def test_plan_ignores_version_suggestions(setup):
+    """Issue #257: another version of a song is never a kept copy, and a
+    versions group never refuses or enables a discard on its own."""
+    _db, files, *_ = setup
+    versions = _group(TIER_VERSIONS, files["a.mp3"], files["b.mp3"])
+    plan = discard.plan_discard([versions], [str(files["a.mp3"]), str(files["b.mp3"])])
+    assert plan.discards == ()
+    assert plan.refused == ()
+    assert not plan.ok
+    exact = _group(TIER_EXACT, files["a.mp3"], files["a copy.mp3"])
+    plan = discard.plan_discard([versions, exact], [str(files["a.mp3"])])
+    assert plan.discards == ((str(files["a.mp3"]), str(files["a copy.mp3"])),)
 
 
 def test_plan_with_nothing_ticked_is_not_ok(setup):
