@@ -121,7 +121,8 @@ instead of squeezing its buttons when the window is small.
 `View → Performance Mode` hides the trees of `By Channel`, `By Deck` and
 `By Controller` and zooms their controller layouts, for a clean view on
 stage. Turn it off to get your previous layout back exactly. It isn't kept
-after a restart.
+after a restart. For a full-screen view with just your controller and the
+live MIDI, use [Stage Mode](stage-mode.md) instead.
 
 `View → Show all controllers` temporarily shows every registered controller,
 including the ones you disabled in Preferences.

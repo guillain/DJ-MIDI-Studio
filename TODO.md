@@ -139,6 +139,24 @@ Implemented contract, runtime, test, and documentation work:
   recording. Shown once, only in the real app with no preferences file (QSettings flag
   `ui/first_run_wizard_done`), never under `--startup-screenshot`; `Help → First-Run Setup…`
   reopens it.
+- [x] **Hercules DJControl Inpulse 500 profile fix** (`v0.48.89-inpulse-500-profile-fix`, issue #247) — the
+  catalog is re-transcribed from the bundled official MIDI Commands sheet (300 DPI renders): deck buttons on
+  ch 2/3 (+SHIFT 5/6), the 8-mode pad banks on ch 7/8 (+8 with SHIFT), PAD MODE 1-8 and long-press notes,
+  PFL/FX/crossfader-curve/browse/LOAD buttons. Four self-contradictory sheet rows are dropped (Guides and
+  Assistant share `90 01`; deck 2 Mode 4A and Load 2 +SHIFT have mismatched channel/status). `pad_colours`
+  now derives its LED notes from the catalog's `pad_trigger()`, and the emulator's PAD MODE buttons steer
+  pad clicks to the chosen bank. Hardware verification still pending.
+- [x] **Stage Mode** (`v0.48.88-stage-mode`, issue #230) — `View → Stage Mode` (`Ctrl+Shift+F`)
+  opens a full-screen, high-contrast window with only a Controller Emulator and a compact Live
+  Monitor (latest event large, last six below, jog ticks excluded); Esc exits; session-only.
+  Qt-free `stage.py` (line formatting, bounded log) + `gui/stage_window.py`; every live emulator
+  update now goes through `MainWindow._emulator_views()` so the stage emulator follows the
+  hardware like a dock. Docs: `docs/enduser/features/stage-mode.md` + `stage-mode.png`.
+- [x] **Command palette** (`v0.48.87-command-palette`, issue #222) — Cmd+K (`Ctrl+K`) opens one
+  keyboard-only search over every enabled menu action, every tab, the loaded mapping's functions
+  (reusing `function_search`) and the Music Library's tracks; Enter runs/opens, Esc closes. Qt-free
+  ranking in `command_palette.py` (exact > prefix > substring > subsequence, kind order breaks ties),
+  thin `gui/command_palette.py` dialog; tracks only once the library tab opened its index.
 - [x] **MIDI Learn in the mapping editor** (`v0.48.86-midi-learn`, issue #220) — Qt-free
   `midi_learn.py` (`trigger_from_event`: only a Note On with velocity > 0 or a CC, input
   direction; `find_trigger_conflicts`/`describe_conflicts`; `find_parent_control`) behind a

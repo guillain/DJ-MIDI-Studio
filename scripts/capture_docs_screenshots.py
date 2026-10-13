@@ -43,7 +43,9 @@ from djmidi.gui.cheat_sheet_pdf import render_sheet_image
 from djmidi.gui.main_window import MainWindow
 from djmidi.gui.music_library_view import BulkTagDialog, RelinkDialog
 from djmidi.gui.preferences_dialog import PreferencesDialog
+from djmidi.gui.stage_window import StageWindow
 from djmidi.library import relink, workspace
+from djmidi.midi_io import MidiEvent
 from djmidi.parser import parse_file
 from djmidi.plugins.preferences import PluginPreferences
 from djmidi.software.traktor import parse_string as parse_traktor
@@ -272,6 +274,7 @@ def main() -> int:
         _capture_music_library(app, window)
         _capture_traktor_mapping(app, window)
         _capture_preferences_sync(app)
+        _capture_stage_mode(app, window)
         # Last: it records sync sets and switches the active scene, which
         # the menu bar of every later window capture would show.
         _capture_sync_scene_combo(app, window)
@@ -279,6 +282,24 @@ def main() -> int:
         window.close()
         app.processEvents()
     return 0
+
+
+def _capture_stage_mode(app: QApplication, window: MainWindow) -> None:
+    """Stage Mode (issue #230): a few synthetic XDJ-XZ hits in the compact
+    monitor. Captured as a normal window at a fixed size, not full screen --
+    the offscreen platform's "screen" is a small square."""
+    stage = StageWindow(config_provider=lambda: window.config, initial_controller="XDJ-XZ")
+    stage.resize(1600, 900)
+    stage.show()
+    port = "XDJ-XZ"
+    for data1, data2 in (("11", "127"), ("11", "0"), ("12", "127"), ("12", "0")):
+        event = MidiEvent("in", "1", "Note On", data1, data2, 0.0, port)
+        stage.add_event(event, catalog.lookup("1", "Note On", data1))
+    app.processEvents()
+    _save(stage, "stage-mode.png")
+    stage.close()
+    stage.deleteLater()
+    app.processEvents()
 
 
 def _capture_function_search(app: QApplication, window: MainWindow) -> None:

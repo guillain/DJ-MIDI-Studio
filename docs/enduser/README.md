@@ -72,12 +72,14 @@ Open several, one per controller.
 | 🎧 | [Traktor mappings](features/traktor-mappings.md) | Open Traktor `.tsi` mappings and re-assign MIDI triggers |
 | 🔍 | [Compare mappings](features/mapping-diff.md) | What changed between two mappings, by physical control |
 | 🏷️ | [Readable function names](features/function-names.md) | Short names for Serato function tags, original tag on hover |
+| ⌨️ | [Command palette](features/command-palette.md) | Cmd+K: one search over actions, tabs, functions and tracks |
 | 🖼️ | [Controller Images](features/controller-images.md) | Official diagrams and manuals, offline |
 | 🖨️ | [Cheat Sheet (PDF)](features/cheat-sheet.md) | Print the mapping on each controller's photo |
 | 🔀 | [MIDI Routing, Clock and Metronome](features/midi-routing-and-clock.md) | Route MIDI, MIDI Clock from Ableton Link, MIDI loops |
 | ⏯️ | [MIDI Macros](features/midi-macros.md) | Named MIDI message sequences with optional delays, from a menu or a shortcut |
 | 🧭 | [First-run setup](features/first-run-wizard.md) | Detect your controllers, open your Serato mapping, record a sync set |
 | 🪟 | [Workspace and preferences](features/workspace.md) | Dockable tools, Performance Mode, Preferences |
+| 🎤 | [Stage Mode](features/stage-mode.md) | Full-screen, high-contrast emulator and live MIDI, Esc to exit |
 | 🐞 | [Report a Problem](features/report-a-problem.md) | An editable bug report, opened as a pre-filled GitHub issue |
 
 Supported out of the box: Serato DJ Pro and Traktor mappings; DDJ-XP2,
