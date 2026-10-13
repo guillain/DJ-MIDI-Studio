@@ -15,6 +15,7 @@
 - [Listen to a track](#listen-to-a-track)
 - [Edit tags](#edit-tags)
 - [Write tags to many tracks at once](#write-tags-to-many-tracks-at-once)
+- [Rename files from their tags](#rename-files-from-their-tags)
 - [Estimate missing BPM and keys](#estimate-missing-bpm-and-keys)
 - [Find duplicate tracks](#find-duplicate-tracks)
 - [Check library health](#check-library-health)
@@ -152,6 +153,37 @@ open until the table has been refreshed, so the app is ready as soon as it
 closes.
 
 ![Write tags to selection](../../images/layout/music-library-bulk-tags.png)
+
+## Rename files from their tags
+
+To give badly named files (`Track 01.mp3`, `a8f3c2.mp3`) a readable name:
+
+1. Select the tracks in the table and click `Rename files…`.
+2. Type a template, for example `{artist} - {title}`. Fields: `{artist}`,
+   `{title}`, `{album}`, `{genre}`, `{bpm}`, `{key}`, `{camelot}` and
+   `{filename}` (the current name without its extension). The last template
+   you used is remembered.
+3. Check the preview: every selected file with its new name and a status.
+   - `Rename`: the file will be renamed.
+   - `Unchanged`: it already has that name.
+   - `Skipped`: a field of the template isn't tagged (e.g. no album).
+   - `Conflict`: the new name is already taken -- by a file on disk, a
+     track in the library, or another selected track. That file is left as
+     it is.
+   - `Refused`: the file is missing, outside your music folders, or inside a
+     DJ software folder (`_Serato_`, `PIONEER`, `_Traktor`, …).
+4. Click `Rename N file(s)`.
+
+Files are renamed inside their own folder and keep their extension.
+Characters a file name can't hold (`/ \ : * ? " < > |`) become `_`. The
+whole batch is one `Undo` step, which renames the files back. Playlists of
+this app follow the new names.
+
+> ⚠ Serato, Traktor and Rekordbox remember each track by its full path, so
+> renamed files show as missing there until you relink them. Their libraries
+> are not modified. With `Save an old → new path CSV for relinking` ticked
+> (the default), the app asks where to save a CSV of every renamed file's
+> old and new path once the renames are done.
 
 ## Estimate missing BPM and keys
 
@@ -390,6 +422,8 @@ ever read.
   a confirmation, never deleted outright, and one copy of each group always
   stays.
 - `Health report…` only reads files.
+- `Rename files…` renames only files inside your music folders, never inside
+  a DJ software folder, never over an existing file, and only after a preview.
 
 ## Related
 
