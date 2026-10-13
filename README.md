@@ -77,6 +77,7 @@ what the mapping does, switch pad modes, latch SHIFT, and turn on
 | 🖨️ | [Cheat Sheet (PDF)](docs/enduser/features/cheat-sheet.md) | Print the mapping on each controller's photo, one page per pad bank |
 | 🔀 | [MIDI Routing, Clock and Metronome](docs/enduser/features/midi-routing-and-clock.md) | Route MIDI, generate 24 PPQN MIDI Clock from Ableton Link, loop MIDI |
 | ⏯️ | [MIDI Macros](docs/enduser/features/midi-macros.md) | Named MIDI message sequences with optional delays, from a menu or a keyboard shortcut |
+| ⏱️ | [MIDI Latency Test](docs/enduser/features/midi-latency.md) | Round-trip min / median / max and jitter through a port or device that echoes |
 | 🪟 | [Workspace and preferences](docs/enduser/features/workspace.md) | Dockable tools, Performance Mode, light/dark theme |
 | 🐞 | [Report a Problem](docs/enduser/features/report-a-problem.md) | Versions, plugins and recent log in an editable preview, opened as a pre-filled GitHub issue |
 
