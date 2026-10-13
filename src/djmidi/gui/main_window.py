@@ -172,7 +172,6 @@ _REFERENCE_LINKS = [
     ),
 ]
 
-_REVEAL_LABEL = "Show Mapping in Finder" if sys.platform == "darwin" else "Show Mapping in File Manager"
 _RECENT_SETTINGS_KEY = "files/recent_mappings"
 _LAST_DIR_SETTINGS_KEY = "files/last_mapping_dir"
 _LAST_MAPPING_SETTINGS_KEY = "files/last_mapping"
@@ -464,13 +463,13 @@ class MainWindow(QMainWindow):
 
         self.left_tabs = QTabWidget()
         self._tab_indexes = {
-            "intro": self.left_tabs.addTab(self.introduction_view, "Dashboard"),
-            "setup": self.left_tabs.addTab(self.controller_setup_view, "Controller Setup"),
-            "images": self.left_tabs.addTab(self.controller_image_view, "Controller Images"),
-            "channel": self.left_tabs.addTab(channel_pair, "By Channel"),
-            "deck": self.left_tabs.addTab(deck_pair, "By Deck"),
-            "controller": self.left_tabs.addTab(controller_pair, "By Controller"),
-            "library": self.left_tabs.addTab(self.music_library_view, "Music Library"),
+            "intro": self.left_tabs.addTab(self.introduction_view, self.tr("Dashboard")),
+            "setup": self.left_tabs.addTab(self.controller_setup_view, self.tr("Controller Setup")),
+            "images": self.left_tabs.addTab(self.controller_image_view, self.tr("Controller Images")),
+            "channel": self.left_tabs.addTab(channel_pair, self.tr("By Channel")),
+            "deck": self.left_tabs.addTab(deck_pair, self.tr("By Deck")),
+            "controller": self.left_tabs.addTab(controller_pair, self.tr("By Controller")),
+            "library": self.left_tabs.addTab(self.music_library_view, self.tr("Music Library")),
         }
         self.edit_panel = EditPanel(
             self.undo_stack,
@@ -741,86 +740,89 @@ class MainWindow(QMainWindow):
         # Organized by object (issue #175): the DJ software mapping first,
         # then the controller profile being built, then imports/exports that
         # used to live only behind buttons in their tabs.
-        file_menu = self.menuBar().addMenu("&File")
+        file_menu = self.menuBar().addMenu(self.tr("&File"))
 
-        open_action = QAction("&Open Mapping...", self)
+        open_action = QAction(self.tr("&Open Mapping..."), self)
         open_action.setShortcut(QKeySequence.StandardKey.Open)
         open_action.triggered.connect(self._on_open)
         file_menu.addAction(open_action)
-        self._recent_menu = file_menu.addMenu("Open &Recent Mapping")
+        self._recent_menu = file_menu.addMenu(self.tr("Open &Recent Mapping"))
 
-        save_action = QAction("&Save Mapping", self)
+        save_action = QAction(self.tr("&Save Mapping"), self)
         save_action.setShortcut(QKeySequence.StandardKey.Save)
         save_action.triggered.connect(self._on_save)
         file_menu.addAction(save_action)
 
-        save_as_action = QAction("Save Mapping &As...", self)
+        save_as_action = QAction(self.tr("Save Mapping &As..."), self)
         save_as_action.triggered.connect(self._on_save_as)
         file_menu.addAction(save_as_action)
 
-        self._rollback_action = QAction("Restore &Previous Version...", self)
-        self._rollback_action.setToolTip("Replace the mapping with the version saved before its last save.")
+        self._rollback_action = QAction(self.tr("Restore &Previous Version..."), self)
+        self._rollback_action.setToolTip(self.tr("Replace the mapping with the version saved before its last save."))
         self._rollback_action.setEnabled(False)
         self._rollback_action.triggered.connect(self._on_rollback_last_save)
         file_menu.addAction(self._rollback_action)
 
         # Issue #189: what changed, trigger by trigger, instead of a raw XML diff.
-        self._compare_action = QAction("Co&mpare Mapping With...", self)
-        self._compare_action.setToolTip("List what another mapping file does differently from the one open.")
+        self._compare_action = QAction(self.tr("Co&mpare Mapping With..."), self)
+        self._compare_action.setToolTip(self.tr("List what another mapping file does differently from the one open."))
         self._compare_action.setEnabled(False)
         self._compare_action.triggered.connect(self._on_compare_with_file)
         file_menu.addAction(self._compare_action)
-        self._compare_backup_action = QAction("Compare With Previous &Version", self)
-        self._compare_backup_action.setToolTip("List what changed since the version saved before the last save.")
+        self._compare_backup_action = QAction(self.tr("Compare With Previous &Version"), self)
+        self._compare_backup_action.setToolTip(self.tr("List what changed since the version saved before the last save."))
         self._compare_backup_action.setEnabled(False)
         self._compare_backup_action.triggered.connect(self._on_compare_with_backup)
         file_menu.addAction(self._compare_backup_action)
 
-        self._reveal_action = QAction(_REVEAL_LABEL, self)
+        reveal_label = (
+            self.tr("Show Mapping in Finder") if sys.platform == "darwin" else self.tr("Show Mapping in File Manager")
+        )
+        self._reveal_action = QAction(reveal_label, self)
         self._reveal_action.setEnabled(False)
         self._reveal_action.triggered.connect(self._on_reveal_mapping)
         file_menu.addAction(self._reveal_action)
 
         file_menu.addSeparator()
-        profile_menu = file_menu.addMenu("&Controller Profile")
+        profile_menu = file_menu.addMenu(self.tr("&Controller Profile"))
         setup = self.controller_setup_view
         for label, handler in (
-            ("New Draft", setup._on_new_session_clicked),
-            ("Open Draft...", setup._on_load_session_clicked),
-            ("Save Draft...", setup._on_save_session_clicked),
-            ("Learn Triggers from a Mapping...", setup._on_import_xml_clicked),
-            ("Install Profile", setup._on_apply_clicked),
+            (self.tr("New Draft"), setup._on_new_session_clicked),
+            (self.tr("Open Draft..."), setup._on_load_session_clicked),
+            (self.tr("Save Draft..."), setup._on_save_session_clicked),
+            (self.tr("Learn Triggers from a Mapping..."), setup._on_import_xml_clicked),
+            (self.tr("Install Profile"), setup._on_apply_clicked),
         ):
             action = QAction(label, self)
             action.triggered.connect(lambda _checked=False, h=handler: self._run_in_tab("setup", h))
             profile_menu.addAction(action)
-        installed_action = QAction("Show Installed Profiles", self)
+        installed_action = QAction(self.tr("Show Installed Profiles"), self)
         installed_action.triggered.connect(self._on_reveal_installed_profiles)
         profile_menu.addAction(installed_action)
 
         library = self.music_library_view
-        import_menu = file_menu.addMenu("&Import")
+        import_menu = file_menu.addMenu(self.tr("&Import"))
         for label, handler in (
-            ("Serato Crates into the Music Library...", library._on_import_serato_clicked),
-            ("Traktor Playlists into the Music Library...", library._on_import_traktor_clicked),
-            ("Rekordbox USB Export into the Music Library...", library._on_import_rekordbox_clicked),
+            (self.tr("Serato Crates into the Music Library..."), library._on_import_serato_clicked),
+            (self.tr("Traktor Playlists into the Music Library..."), library._on_import_traktor_clicked),
+            (self.tr("Rekordbox USB Export into the Music Library..."), library._on_import_rekordbox_clicked),
         ):
             action = QAction(label, self)
             action.triggered.connect(lambda _checked=False, h=handler: self._run_in_tab("library", h))
             import_menu.addAction(action)
-        export_menu = file_menu.addMenu("&Export")
+        export_menu = file_menu.addMenu(self.tr("&Export"))
         for label, handler in (
-            ("Selected Playlist as a Serato Crate...", library._on_export_serato_clicked),
-            ("Selected Playlist as a Traktor Playlist...", library._on_export_traktor_clicked),
+            (self.tr("Selected Playlist as a Serato Crate..."), library._on_export_serato_clicked),
+            (self.tr("Selected Playlist as a Traktor Playlist..."), library._on_export_traktor_clicked),
         ):
             action = QAction(label, self)
             action.triggered.connect(lambda _checked=False, h=handler: self._run_in_tab("library", h))
             export_menu.addAction(action)
-        log_action = QAction("Live Monitor Log...", self)
+        log_action = QAction(self.tr("Live Monitor Log..."), self)
         log_action.triggered.connect(self.live_monitor_view._save_log)
         export_menu.addAction(log_action)
         export_menu.addSeparator()
-        self._cheat_sheet_action = QAction("Cheat Sheet (PDF)...", self)
+        self._cheat_sheet_action = QAction(self.tr("Cheat Sheet (PDF)..."), self)
         self._cheat_sheet_action.setToolTip(
             "Print each controller's photo with the function the loaded mapping binds to every control"
         )
@@ -829,50 +831,50 @@ class MainWindow(QMainWindow):
         export_menu.addAction(self._cheat_sheet_action)
 
         file_menu.addSeparator()
-        backup_action = QAction("&Back Up Workspace...", self)
-        backup_action.setToolTip("Save your profiles, sync sets, drafts, preferences (and optionally the library index) in one zip.")
+        backup_action = QAction(self.tr("&Back Up Workspace..."), self)
+        backup_action.setToolTip(self.tr("Save your profiles, sync sets, drafts, preferences (and optionally the library index) in one zip."))
         backup_action.triggered.connect(self._on_backup_workspace)
         file_menu.addAction(backup_action)
-        restore_action = QAction("Restore &Workspace...", self)
-        restore_action.setToolTip("Restore a workspace backup, after confirming what it overwrites.")
+        restore_action = QAction(self.tr("Restore &Workspace..."), self)
+        restore_action.setToolTip(self.tr("Restore a workspace backup, after confirming what it overwrites."))
         restore_action.triggered.connect(self._on_restore_workspace)
         file_menu.addAction(restore_action)
         self._rebuild_recent_menu()
 
-        edit_menu = self.menuBar().addMenu("&Edit")
+        edit_menu = self.menuBar().addMenu(self.tr("&Edit"))
 
-        undo_action = self.undo_stack.createUndoAction(self, "&Undo")
+        undo_action = self.undo_stack.createUndoAction(self, self.tr("&Undo"))
         undo_action.setShortcut(QKeySequence.StandardKey.Undo)
         edit_menu.addAction(undo_action)
 
-        redo_action = self.undo_stack.createRedoAction(self, "&Redo")
+        redo_action = self.undo_stack.createRedoAction(self, self.tr("&Redo"))
         redo_action.setShortcut(QKeySequence.StandardKey.Redo)
         edit_menu.addAction(redo_action)
 
         edit_menu.addSeparator()
 
-        validate_action = QAction("&Validate", self)
+        validate_action = QAction(self.tr("&Validate"), self)
         validate_action.triggered.connect(self._on_validate)
         edit_menu.addAction(validate_action)
 
-        view_menu = self.menuBar().addMenu("&View")
+        view_menu = self.menuBar().addMenu(self.tr("&View"))
         # Issue #222: one keyboard search over everything below. Ctrl maps to
         # Cmd on macOS; application-wide so it also works from a floating dock.
-        self._command_palette_action = QAction("Command Palette...", self)
+        self._command_palette_action = QAction(self.tr("Command Palette..."), self)
         self._command_palette_action.setShortcut(QKeySequence("Ctrl+K"))
         self._command_palette_action.setShortcutContext(Qt.ShortcutContext.ApplicationShortcut)
-        self._command_palette_action.setToolTip("Search every action, tab, mapping function and library track")
+        self._command_palette_action.setToolTip(self.tr("Search every action, tab, mapping function and library track"))
         self._command_palette_action.triggered.connect(lambda _checked=False: self.open_command_palette())
         view_menu.addAction(self._command_palette_action)
         view_menu.addSeparator()
-        helpful_notes_action = QAction("Helpful Notes...", self)
+        helpful_notes_action = QAction(self.tr("Helpful Notes..."), self)
         helpful_notes_action.triggered.connect(self._show_helpful_notes)
         view_menu.addAction(helpful_notes_action)
         view_menu.addSeparator()
         for key in ("monitor", "routing", "clock", "metronome"):
             dock = self._tool_docks[key]
             view_menu.addAction(dock.toggleViewAction())
-        self._new_emulator_action = QAction("New Controller Emulator…", self)
+        self._new_emulator_action = QAction(self.tr("New Controller Emulator…"), self)
         self._new_emulator_action.setToolTip(
             "Open another Controller Emulator window -- several may be open at "
             "once, each bound to its own controller"
@@ -880,7 +882,7 @@ class MainWindow(QMainWindow):
         self._new_emulator_action.triggered.connect(lambda: self._create_emulator_instance())
         view_menu.addAction(self._new_emulator_action)
         view_menu.addSeparator()
-        self._show_all_controllers_action = QAction("Show all controllers", self, checkable=True)
+        self._show_all_controllers_action = QAction(self.tr("Show all controllers"), self, checkable=True)
         self._show_all_controllers_action.setChecked(self._show_all_controllers)
         self._show_all_controllers_action.setToolTip(
             "Ignore the per-controller Preferences enablement and list every registered controller"
@@ -889,7 +891,7 @@ class MainWindow(QMainWindow):
         view_menu.addAction(self._show_all_controllers_action)
 
         view_menu.addSeparator()
-        self._performance_mode_action = QAction("Performance Mode", self, checkable=True)
+        self._performance_mode_action = QAction(self.tr("Performance Mode"), self, checkable=True)
         self._performance_mode_action.setToolTip(
             "Hide the mapping tree and enlarge the schematic layout for on-stage use "
             "(session-only, not remembered across restarts)"
@@ -907,7 +909,7 @@ class MainWindow(QMainWindow):
 
         # MIDI macros (issue #228): one entry per macro, each with its own
         # shortcut, rebuilt by _rebuild_macro_menu whenever the list changes.
-        self._macro_menu = self.menuBar().addMenu("&Macros")
+        self._macro_menu = self.menuBar().addMenu(self.tr("&Macros"))
         self._macro_actions: list[QAction] = []
         self._rebuild_macro_menu()
 
@@ -920,11 +922,11 @@ class MainWindow(QMainWindow):
         self._preferences_button = QPushButton("⚙")
         self._preferences_button.setFixedSize(28, 28)
         self._preferences_button.setProperty("compact", True)
-        self._preferences_button.setToolTip("Preferences...")
+        self._preferences_button.setToolTip(self.tr("Preferences..."))
         self._preferences_button.clicked.connect(lambda: self._on_preferences())
         # One-click controller initialization (Sync), beside the gear so it's
         # reachable from every tab; Live Monitor carries the same action.
-        self._sync_button = QPushButton("⟳ Sync")
+        self._sync_button = QPushButton(self.tr("⟳ Sync"))
         self._sync_button.setFixedHeight(28)
         self._sync_button.setToolTip(
             "Sync controllers: send each connected controller its recorded initialization set"
@@ -944,7 +946,7 @@ class MainWindow(QMainWindow):
         self._sync_scene_combo.activated.connect(self._on_sync_scene_activated)
         # Record the controllers' setup in one click: listen to every MIDI
         # input while checked, save one sync set per controller on release.
-        self._record_button = QPushButton("● Rec")
+        self._record_button = QPushButton(self.tr("● Rec"))
         self._record_button.setCheckable(True)
         self._record_button.setFixedHeight(28)
         self._record_button.setToolTip(
@@ -974,8 +976,8 @@ class MainWindow(QMainWindow):
         corner_layout.addWidget(self._preferences_button)
         self.menuBar().setCornerWidget(self._menu_corner, Qt.Corner.TopRightCorner)
 
-        help_menu = self.menuBar().addMenu("&Help")
-        documentation_menu = help_menu.addMenu("Project Documentation")
+        help_menu = self.menuBar().addMenu(self.tr("&Help"))
+        documentation_menu = help_menu.addMenu(self.tr("Project Documentation"))
         for title, relative_path in _LOCAL_HELP_DOCUMENTS:
             action = QAction(title, self)
             action.triggered.connect(
@@ -983,7 +985,7 @@ class MainWindow(QMainWindow):
             )
             documentation_menu.addAction(action)
 
-        controller_menu = help_menu.addMenu("Controller References")
+        controller_menu = help_menu.addMenu(self.tr("Controller References"))
         for title, relative_path in _LOCAL_CONTROLLER_DOCUMENTS:
             action = QAction(title, self)
             action.triggered.connect(
@@ -992,18 +994,18 @@ class MainWindow(QMainWindow):
             controller_menu.addAction(action)
 
         help_menu.addSeparator()
-        online_menu = help_menu.addMenu("Official and External References")
+        online_menu = help_menu.addMenu(self.tr("Official and External References"))
         for title, url in _REFERENCE_LINKS:
             action = QAction(title, self)
             action.triggered.connect(lambda checked=False, u=url: QDesktopServices.openUrl(QUrl(u)))
             online_menu.addAction(action)
 
         help_menu.addSeparator()
-        self._check_updates_action = QAction("Check for &Updates...", self)
-        self._check_updates_action.setToolTip("Ask GitHub whether a newer DJ MIDI Studio release exists.")
+        self._check_updates_action = QAction(self.tr("Check for &Updates..."), self)
+        self._check_updates_action.setToolTip(self.tr("Ask GitHub whether a newer DJ MIDI Studio release exists."))
         self._check_updates_action.triggered.connect(self._on_check_for_updates)
         help_menu.addAction(self._check_updates_action)
-        self._report_problem_action = QAction("&Report a Problem...", self)
+        self._report_problem_action = QAction(self.tr("&Report a Problem..."), self)
         self._report_problem_action.setToolTip(
             "Preview a bug report with your app version, system and recent log lines, "
             "then open it as a pre-filled GitHub issue."
@@ -1323,8 +1325,9 @@ class MainWindow(QMainWindow):
         # would overwrite it with this session's preferences.
         dialog.restoreRequested.connect(lambda: self._on_restore_workspace() and dialog.reject())
         if tab:
+            # Matched on the untranslated key (tab data), not the shown title.
             for index in range(dialog.tabs.count()):
-                if dialog.tabs.tabText(index) == tab:
+                if dialog.tabs.tabBar().tabData(index) == tab:
                     dialog.tabs.setCurrentIndex(index)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             self._save_preferences()
@@ -1536,7 +1539,7 @@ class MainWindow(QMainWindow):
             self._record_button.setChecked(False)
             self._record_button.blockSignals(False)
             return
-        self._record_button.setText("■ Stop")
+        self._record_button.setText(self.tr("■ Stop"))
         self._record_timer.start()
         _LOGGER.info("Record: listening on %s", opened)
         self.statusBar().showMessage(
@@ -1551,7 +1554,7 @@ class MainWindow(QMainWindow):
         self._record_timer.stop()
         self._poll_recording()
         self._record_monitor.close_all()
-        self._record_button.setText("● Rec")
+        self._record_button.setText(self.tr("● Rec"))
         scene = self.preferences.active_sync_scene
         sync_sets = [
             sync_set.in_scene(scene)

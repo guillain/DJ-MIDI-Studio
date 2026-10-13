@@ -28,6 +28,7 @@ from djmidi import catalog, software, user_paths
 from djmidi.controller_sync import ControllerSyncSet
 from djmidi.gui.file_reveal import reveal_in_file_manager
 from djmidi.gui.sync_set_editor import SyncSetEditorDialog
+from djmidi.i18n import LANGUAGE_CHOICES
 from djmidi.logging_config import default_log_path
 from djmidi.midi_io import list_output_ports
 from djmidi.plugins import PluginPreferences
@@ -46,65 +47,77 @@ class PreferencesDialog(QDialog):
 
     def __init__(self, preferences: PluginPreferences, parent=None) -> None:
         super().__init__(parent)
-        self.setWindowTitle("DJ MIDI Studio Preferences")
+        self.setWindowTitle(self.tr("DJ MIDI Studio Preferences"))
         self._preferences = preferences
         self._plugin_checks: dict[str, QCheckBox] = {}
         self._controller_plugin_ids: set[str] = set()
 
         detection = QComboBox()
-        detection.addItem("Ask before enabling", "ask")
-        detection.addItem("Suggest detected integration", "suggest")
+        detection.addItem(self.tr("Ask before enabling"), "ask")
+        detection.addItem(self.tr("Suggest detected integration"), "suggest")
         detection.setCurrentIndex(max(detection.findData(preferences.detection_policy), 0))
         self._detection = detection
 
-        routing = QCheckBox("Enable MIDI routing policies")
+        routing = QCheckBox(self.tr("Enable MIDI routing policies"))
         routing.setChecked(preferences.routing_enabled)
         self._routing = routing
-        trust = QCheckBox("Trust external plugins")
+        trust = QCheckBox(self.tr("Trust external plugins"))
         trust.setChecked(preferences.trust_external_plugins)
         self._trust = trust
-        auto_start_live_monitor = QCheckBox("Auto-start Live Monitor when a mapping is loaded")
+        auto_start_live_monitor = QCheckBox(self.tr("Auto-start Live Monitor when a mapping is loaded"))
         auto_start_live_monitor.setChecked(preferences.auto_start_live_monitor)
         auto_start_live_monitor.setToolTip(
-            "Automatically listen on every available MIDI input when a mapping is loaded, so "
-            "By Channel/Deck/Controller reflect live controller presses without opening Live "
-            "Monitor and clicking Start monitoring. Turn off to require that manual step."
+            self.tr(
+                "Automatically listen on every available MIDI input when a mapping is loaded, so "
+                "By Channel/Deck/Controller reflect live controller presses without opening Live "
+                "Monitor and clicking Start monitoring. Turn off to require that manual step."
+            )
         )
         self._auto_start_live_monitor = auto_start_live_monitor
-        reopen_last_files = QCheckBox("Reopen my last mapping and Controller Setup draft at launch")
+        reopen_last_files = QCheckBox(self.tr("Reopen my last mapping and Controller Setup draft at launch"))
         reopen_last_files.setChecked(preferences.reopen_last_files)
         reopen_last_files.setToolTip(
-            "Load the mapping you had open last (with the same DJ software, without asking again) and "
-            "the Controller Setup draft you saved or opened last, so you pick up where you left off."
+            self.tr(
+                "Load the mapping you had open last (with the same DJ software, without asking again) and "
+                "the Controller Setup draft you saved or opened last, so you pick up where you left off."
+            )
         )
         self._reopen_last_files = reopen_last_files
-        auto_sync_on_startup = QCheckBox("Sync controllers at launch")
+        auto_sync_on_startup = QCheckBox(self.tr("Sync controllers at launch"))
         auto_sync_on_startup.setChecked(preferences.auto_sync_on_startup)
         auto_sync_on_startup.setToolTip(
-            "Send each connected controller its recorded initialization set (● Rec / Controller "
-            "Setup) when the app starts, as if you had clicked ⟳ Sync."
+            self.tr(
+                "Send each connected controller its recorded initialization set (● Rec / Controller "
+                "Setup) when the app starts, as if you had clicked ⟳ Sync."
+            )
         )
         self._auto_sync_on_startup = auto_sync_on_startup
-        auto_sync_on_plug_in = QCheckBox("Sync a controller when it is plugged in")
+        auto_sync_on_plug_in = QCheckBox(self.tr("Sync a controller when it is plugged in"))
         auto_sync_on_plug_in.setChecked(preferences.auto_sync_on_plug_in)
         auto_sync_on_plug_in.setToolTip(
-            "Watch for controllers being connected and send each one its recorded initialization "
-            "set once, as soon as it appears. A controller that stays connected is not re-sent; "
-            "unplugging and replugging it sends the set again."
+            self.tr(
+                "Watch for controllers being connected and send each one its recorded initialization "
+                "set once, as soon as it appears. A controller that stays connected is not re-sent; "
+                "unplugging and replugging it sends the set again."
+            )
         )
         self._auto_sync_on_plug_in = auto_sync_on_plug_in
-        sync_on_scene_switch = QCheckBox("Sync when switching scene")
+        sync_on_scene_switch = QCheckBox(self.tr("Sync when switching scene"))
         sync_on_scene_switch.setChecked(preferences.sync_on_scene_switch)
         sync_on_scene_switch.setToolTip(
-            "Send each connected controller its set for the new scene as soon as you pick another "
-            "scene beside ⟳ Sync. Off: switching scenes sends nothing until you click ⟳ Sync."
+            self.tr(
+                "Send each connected controller its set for the new scene as soon as you pick another "
+                "scene beside ⟳ Sync. Off: switching scenes sends nothing until you click ⟳ Sync."
+            )
         )
         self._sync_on_scene_switch = sync_on_scene_switch
-        check_for_updates = QCheckBox("Check for a new version at launch")
+        check_for_updates = QCheckBox(self.tr("Check for a new version at launch"))
         check_for_updates.setChecked(preferences.check_for_updates)
         check_for_updates.setToolTip(
-            "Once a day at most, ask GitHub whether a newer DJ MIDI Studio release exists and show "
-            "a notice in the status bar. Nothing is downloaded or installed; offline is silent."
+            self.tr(
+                "Once a day at most, ask GitHub whether a newer DJ MIDI Studio release exists and show "
+                "a notice in the status bar. Nothing is downloaded or installed; offline is silent."
+            )
         )
         self._check_for_updates = check_for_updates
         workspace_row = QWidget()
@@ -113,29 +126,39 @@ class PreferencesDialog(QDialog):
         workspace_label = QLabel(str(user_paths.workspace_dir()))
         workspace_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         workspace_label.setToolTip(
-            "Your controller profiles, sync sets, Controller Setup drafts, saved logs and exports. "
-            "Your Serato / Traktor mappings stay where your DJ software keeps them."
+            self.tr(
+                "Your controller profiles, sync sets, Controller Setup drafts, saved logs and exports. "
+                "Your Serato / Traktor mappings stay where your DJ software keeps them."
+            )
         )
-        open_workspace = QPushButton("Open folder")
+        open_workspace = QPushButton(self.tr("Open folder"))
         open_workspace.clicked.connect(lambda: reveal_in_file_manager(user_paths.ensure_workspace()))
         workspace_layout.addWidget(workspace_label, 1)
         workspace_layout.addWidget(open_workspace)
-        backup_workspace = QPushButton("Back up...")
-        backup_workspace.setToolTip("Save your files and preferences in one zip (File → Back Up Workspace).")
+        backup_workspace = QPushButton(self.tr("Back up..."))
+        backup_workspace.setToolTip(self.tr("Save your files and preferences in one zip (File → Back Up Workspace)."))
         backup_workspace.clicked.connect(self.backupRequested.emit)
-        restore_workspace = QPushButton("Restore...")
-        restore_workspace.setToolTip("Restore a workspace backup, after confirming what it overwrites.")
+        restore_workspace = QPushButton(self.tr("Restore..."))
+        restore_workspace.setToolTip(self.tr("Restore a workspace backup, after confirming what it overwrites."))
         restore_workspace.clicked.connect(self.restoreRequested.emit)
         workspace_layout.addWidget(backup_workspace)
         workspace_layout.addWidget(restore_workspace)
         self._backup_button = backup_workspace
         self._restore_button = restore_workspace
         theme = QComboBox()
-        theme.addItem("Follow system", "system")
-        theme.addItem("Light", "light")
-        theme.addItem("Dark", "dark")
+        theme.addItem(self.tr("Follow system"), "system")
+        theme.addItem(self.tr("Light"), "light")
+        theme.addItem(self.tr("Dark"), "dark")
         theme.setCurrentIndex(max(theme.findData(preferences.theme), 0))
         self._theme = theme
+        # Issue #263: language names stay in their own language ("Français"),
+        # only "System" is translated; applied at the next launch.
+        language = QComboBox()
+        for value, label in LANGUAGE_CHOICES:
+            language.addItem(self.tr("System") if value == "system" else label, value)
+        language.setCurrentIndex(max(language.findData(preferences.language), 0))
+        language.setToolTip(self.tr("Interface language. Takes effect the next time DJ MIDI Studio starts."))
+        self._language = language
 
         log_level = QComboBox()
         log_level.addItems(["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"])
@@ -146,7 +169,7 @@ class PreferencesDialog(QDialog):
         log_path.setText(preferences.log_path)
         log_path.setPlaceholderText(str(default_log_path()))
         self._log_path = log_path
-        browse_button = QPushButton("Browse...")
+        browse_button = QPushButton(self.tr("Browse..."))
         browse_button.clicked.connect(self._browse_log_path)
         log_path_row = QHBoxLayout()
         log_path_row.addWidget(log_path, 1)
@@ -154,13 +177,15 @@ class PreferencesDialog(QDialog):
 
         setup_file = QLineEdit()
         setup_file.setText(preferences.controller_setup_default_file)
-        setup_file.setPlaceholderText("None — start with an empty draft")
+        setup_file.setPlaceholderText(self.tr("None — start with an empty draft"))
         setup_file.setToolTip(
-            "Session JSON, Serato XML or Traktor TSI loaded into Controller Setup the first time "
-            "that tab is shown, when its draft is still empty."
+            self.tr(
+                "Session JSON, Serato XML or Traktor TSI loaded into Controller Setup the first time "
+                "that tab is shown, when its draft is still empty."
+            )
         )
         self._setup_file = setup_file
-        setup_browse = QPushButton("Browse...")
+        setup_browse = QPushButton(self.tr("Browse..."))
         setup_browse.clicked.connect(self._browse_setup_file)
         setup_file_row = QHBoxLayout()
         setup_file_row.addWidget(setup_file, 1)
@@ -168,11 +193,12 @@ class PreferencesDialog(QDialog):
 
         general_tab = QWidget()
         policy_layout = QFormLayout(general_tab)
-        policy_layout.addRow("Theme:", theme)
-        policy_layout.addRow("Detection:", detection)
-        policy_layout.addRow("Log level:", log_level)
-        policy_layout.addRow("Log file path:", log_path_row)
-        policy_layout.addRow("Controller Setup default file:", setup_file_row)
+        policy_layout.addRow(self.tr("Theme:"), theme)
+        policy_layout.addRow(self.tr("Language:"), language)
+        policy_layout.addRow(self.tr("Detection:"), detection)
+        policy_layout.addRow(self.tr("Log level:"), log_level)
+        policy_layout.addRow(self.tr("Log file path:"), log_path_row)
+        policy_layout.addRow(self.tr("Controller Setup default file:"), setup_file_row)
         policy_layout.addRow(routing)
         policy_layout.addRow(trust)
         policy_layout.addRow(auto_start_live_monitor)
@@ -181,7 +207,7 @@ class PreferencesDialog(QDialog):
         policy_layout.addRow(auto_sync_on_plug_in)
         policy_layout.addRow(sync_on_scene_switch)
         policy_layout.addRow(check_for_updates)
-        policy_layout.addRow("Your files folder:", workspace_row)
+        policy_layout.addRow(self.tr("Your files folder:"), workspace_row)
 
         controller_ids = {
             definition.plugin_id or definition.name
@@ -192,9 +218,11 @@ class PreferencesDialog(QDialog):
         plugins_page = QWidget()
         plugins_layout = QVBoxLayout(plugins_page)
         hint = QLabel(
-            "Disabled controllers are hidden from the mapping tabs, the Dashboard, "
-            "and the Controller Images selector. Use View → Show all controllers "
-            "to see every registered controller without changing these choices."
+            self.tr(
+                "Disabled controllers are hidden from the mapping tabs, the Dashboard, "
+                "and the Controller Images selector. Use View → Show all controllers "
+                "to see every registered controller without changing these choices."
+            )
         )
         hint.setWordWrap(True)
         plugins_layout.addWidget(hint)
@@ -205,9 +233,9 @@ class PreferencesDialog(QDialog):
             plugins_layout.addWidget(checkbox)
         plugins_layout.addStretch(1)
 
-        select_all = QPushButton("Enable all controllers")
+        select_all = QPushButton(self.tr("Enable all controllers"))
         select_all.clicked.connect(lambda: self._set_all_controllers(True))
-        select_none = QPushButton("Disable all controllers")
+        select_none = QPushButton(self.tr("Disable all controllers"))
         select_none.clicked.connect(lambda: self._set_all_controllers(False))
         controller_buttons = QHBoxLayout()
         controller_buttons.addWidget(select_all)
@@ -230,9 +258,14 @@ class PreferencesDialog(QDialog):
         # need constant rebalancing.
         tabs = QTabWidget()
         self.tabs = tabs
-        tabs.addTab(general_tab, "General")
-        tabs.addTab(plugins_scroll, "Plugins")
-        tabs.addTab(self._build_sync_tab(preferences), "Controller sync")
+        # Each tab keeps its English title as data: MainWindow opens one by
+        # that key, which must not depend on the interface language.
+        for page, key, title in (
+            (general_tab, "General", self.tr("General")),
+            (plugins_scroll, "Plugins", self.tr("Plugins")),
+            (self._build_sync_tab(preferences), "Controller sync", self.tr("Controller sync")),
+        ):
+            tabs.tabBar().setTabData(tabs.addTab(page, title), key)
 
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel
@@ -250,17 +283,21 @@ class PreferencesDialog(QDialog):
         page = QWidget()
         layout = QVBoxLayout(page)
         hint = QLabel(
-            "Initialization sets sent by the Sync button (menu bar and Live Monitor), one per "
-            "controller and scene. ⟳ Sync sends each controller its set for the scene chosen "
-            "beside it in the menu bar, or its Default set when it has none for that scene. "
-            "Record one with ● Rec (into the active scene), or in Controller Setup: name the "
-            "controller, start learning, press the controls, then \"Save as controller sync set\"."
+            self.tr(
+                "Initialization sets sent by the Sync button (menu bar and Live Monitor), one per "
+                "controller and scene. ⟳ Sync sends each controller its set for the scene chosen "
+                "beside it in the menu bar, or its Default set when it has none for that scene. "
+                "Record one with ● Rec (into the active scene), or in Controller Setup: name the "
+                "controller, start learning, press the controls, then \"Save as controller sync set\"."
+            )
         )
         hint.setWordWrap(True)
         layout.addWidget(hint)
         self._sync_sets: list[ControllerSyncSet] = list(preferences.controller_sync_sets)
         self._sync_table = QTableWidget(0, 4)
-        self._sync_table.setHorizontalHeaderLabels(["Controller", "Scene", "Output port", "Messages"])
+        self._sync_table.setHorizontalHeaderLabels(
+            [self.tr("Controller"), self.tr("Scene"), self.tr("Output port"), self.tr("Messages")]
+        )
         self._sync_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self._sync_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         header = self._sync_table.horizontalHeader()
@@ -278,7 +315,7 @@ class PreferencesDialog(QDialog):
             self._sync_table.setItem(row, 0, QTableWidgetItem(sync_set.controller))
             self._sync_table.setItem(row, 1, QTableWidgetItem(sync_set.scene))
             port_combo = QComboBox()
-            port_combo.addItem(self._AUTO_PORT_LABEL, "")
+            port_combo.addItem(self.tr("Auto (match controller name)"), "")
             for port in dict.fromkeys([*available, sync_set.output_port]):
                 if port:
                     port_combo.addItem(port if port in available else f"{port} (not connected)", port)
@@ -287,10 +324,10 @@ class PreferencesDialog(QDialog):
             self._sync_table.setItem(row, _MESSAGES_COLUMN, QTableWidgetItem(str(len(sync_set.messages))))
         self._sync_table.cellDoubleClicked.connect(lambda row, _column: self._edit_sync_set(row))
         layout.addWidget(self._sync_table, 1)
-        edit_button = QPushButton("Edit messages…")
-        edit_button.setToolTip("List, edit, delete or reorder the selected set's messages")
+        edit_button = QPushButton(self.tr("Edit messages…"))
+        edit_button.setToolTip(self.tr("List, edit, delete or reorder the selected set's messages"))
         edit_button.clicked.connect(self._edit_selected_sync_set)
-        remove_button = QPushButton("Remove selected set")
+        remove_button = QPushButton(self.tr("Remove selected set"))
         remove_button.clicked.connect(self._remove_selected_sync_set)
         buttons = QHBoxLayout()
         buttons.addWidget(edit_button)
@@ -371,6 +408,7 @@ class PreferencesDialog(QDialog):
 
     def _save(self) -> None:
         self._preferences.theme = self._theme.currentData()
+        self._preferences.language = self._language.currentData()
         self._preferences.detection_policy = self._detection.currentData()
         self._preferences.routing_enabled = self._routing.isChecked()
         self._preferences.trust_external_plugins = self._trust.isChecked()
