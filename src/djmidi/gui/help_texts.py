@@ -278,7 +278,26 @@ LIBRARY_TRACK: HelpEntry = (
         "into their empty tags, after listing them, as one undo step. "
         "<b>Confirm suggested category</b> turns an amber suggestion into a permanent "
         "alias; <b>Confirm all suggestions</b> does it for every track shown, after listing them. <b>Clean noise frames…</b> lists leftover junk tags and removes them only "
-        "after you confirm."
+        "after you confirm. <b>Rename files…</b> renames the selected files from their "
+        "tags (e.g. <i>{artist} - {title}</i>) after a preview, as one undo step."
+    ),
+    "music-library.md",
+)
+
+LIBRARY_RENAME: HelpEntry = (
+    "Rename files",
+    (
+        "Type a template such as <i>{artist} - {title}</i>; fields are {artist}, {title}, "
+        "{album}, {genre}, {bpm}, {key}, {camelot} and {filename} (the current name). The "
+        "preview shows each selected file's new name before anything changes."
+        "<ul><li><b>Skipped</b>: a field of the template is not tagged.</li>"
+        "<li><b>Conflict</b>: the new name is already taken (on disk, in the library, or by "
+        "another selected track) -- that file is left as it is.</li>"
+        "<li><b>Refused</b>: the file is outside your music folders or inside a DJ software "
+        "folder (<i>_Serato_</i>, <i>PIONEER</i>, …).</li></ul>"
+        "Files stay in their folder; characters a file name can't hold become <i>_</i>. "
+        "<b>Undo</b> renames them back. Serato, Traktor and Rekordbox will show renamed "
+        "files as missing until relinked: keep the old → new CSV offered after renaming."
     ),
     "music-library.md",
 )

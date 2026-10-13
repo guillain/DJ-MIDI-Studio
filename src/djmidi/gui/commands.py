@@ -247,3 +247,42 @@ class WriteTracksMetadataCommand(QUndoCommand):
     def undo(self) -> None:
         restored = self._write_all("Restoring tags…", [(path, self._changes[path][0]) for path in self.written])
         self._on_applied(restored)
+
+
+class RenameFilesCommand(QUndoCommand):
+    """Undoable rename of audio files from a tag template (Music Library
+    tab, issue #260). `apply(pairs)` renames ``(old, new)`` pairs and returns
+    a `library.rename.RenameResult`; undo calls it again with every pair it
+    actually renamed swapped back. A pair that fails (on redo or undo) is
+    recorded in `failures` instead of aborting the rest; if nothing at all
+    was renamed the command marks itself obsolete so `QUndoStack.push`
+    drops it."""
+
+    def __init__(
+        self,
+        pairs: list[tuple[str, str]],
+        apply: Callable[[list[tuple[str, str]]], object],
+        on_applied: Callable[[list[tuple[str, str]]], None],
+    ) -> None:
+        super().__init__(f"Rename {len(pairs)} file(s)")
+        self._pairs = list(pairs)
+        self._apply = apply
+        self._on_applied = on_applied
+        self.renamed: list[tuple[str, str]] = []
+        self.failures: list[tuple[str, str]] = []
+
+    def redo(self) -> None:
+        result = self._apply(self._pairs)
+        self.renamed = list(result.renamed)
+        self.failures = list(result.failed)
+        if not self.renamed:
+            self.setObsolete(True)
+            return
+        # A later redo (after an undo) replays only what this one renamed.
+        self._pairs = list(self.renamed)
+        self._on_applied(self.renamed)
+
+    def undo(self) -> None:
+        result = self._apply([(new, old) for old, new in reversed(self.renamed)])
+        self.failures = list(result.failed)
+        self._on_applied(list(result.renamed))

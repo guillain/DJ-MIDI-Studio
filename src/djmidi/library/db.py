@@ -306,6 +306,25 @@ class LibraryDB:
                 applied += 1
         return applied
 
+    def rename_track_paths(self, pairs: Iterable[tuple[str, str]]) -> int:
+        """Follow files renamed on disk (issue #260): each ``(old, new)``
+        track row and every playlist entry naming `old` take `new`. Size,
+        mtime and cached tags stay (a rename changes neither). A pair whose
+        old path isn't indexed, or whose new path already is, is skipped.
+        All pairs commit together. Returns how many rows moved."""
+        moved = 0
+        with self._conn:
+            for old, new in pairs:
+                old, new = str(old), str(new)
+                taken = self._conn.execute("SELECT 1 FROM tracks WHERE path = ?", (new,)).fetchone()
+                if taken is not None:
+                    continue
+                cur = self._conn.execute("UPDATE tracks SET path = ? WHERE path = ?", (new, old))
+                if cur.rowcount:
+                    self._conn.execute("UPDATE playlist_tracks SET path = ? WHERE path = ?", (new, old))
+                    moved += cur.rowcount
+        return moved
+
     # --- metadata cache -------------------------------------------------
 
     def set_cached_metadata(self, track_id: int, mtime: float, metadata: TrackMetadata) -> None:
