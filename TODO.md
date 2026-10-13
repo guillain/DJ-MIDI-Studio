@@ -132,6 +132,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Command palette** (`v0.48.87-command-palette`, issue #222) — Cmd+K (`Ctrl+K`) opens one
+  keyboard-only search over every enabled menu action, every tab, the loaded mapping's functions
+  (reusing `function_search`) and the Music Library's tracks; Enter runs/opens, Esc closes. Qt-free
+  ranking in `command_palette.py` (exact > prefix > substring > subsequence, kind order breaks ties),
+  thin `gui/command_palette.py` dialog; tracks only once the library tab opened its index.
 - [x] **MIDI Learn in the mapping editor** (`v0.48.86-midi-learn`, issue #220) — Qt-free
   `midi_learn.py` (`trigger_from_event`: only a Note On with velocity > 0 or a CC, input
   direction; `find_trigger_conflicts`/`describe_conflicts`; `find_parent_control`) behind a

@@ -141,6 +141,20 @@ FUNCTION_SEARCH: HelpEntry = (
     "mapping-editor.md",
 )
 
+COMMAND_PALETTE: HelpEntry = (
+    "Command palette",
+    (
+        "<b>Cmd+K</b> (Ctrl+K on Windows/Linux) opens one search over every menu action, every tab, "
+        "the loaded mapping's functions and the Music Library's tracks. Type a few letters "
+        "(<tt>cheat</tt>, <tt>opmap</tt> for <i>Open Mapping</i>, <tt>loop roll deck 2</tt>, an artist), "
+        "move with <b>↑/↓</b>, run with <b>Enter</b>, close with <b>Esc</b>.<br><br>"
+        "Actions and tabs come first on a tie; functions use the Find function search (so "
+        "<tt>deck 2</tt> and <tt>output</tt> work); tracks show from two letters on, once the "
+        "Music Library tab has been opened this session. Disabled menu entries are left out."
+    ),
+    "command-palette.md",
+)
+
 CONTROLLER_IMAGES: HelpEntry = (
     "Controller Images",
     (

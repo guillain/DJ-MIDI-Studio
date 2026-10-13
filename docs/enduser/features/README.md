@@ -29,6 +29,7 @@
 | 🎧 | [Traktor mappings](traktor-mappings.md) | The same for Traktor `.tsi` controller mappings |
 | 🔍 | [Compare mappings](mapping-diff.md) | What changed between two mappings, highlighted on the layouts |
 | 🏷️ | [Readable function names](function-names.md) | `Loop roll` instead of `auto_loop_roll_specific_length`, original tag on hover |
+| ⌨️ | [Command palette](command-palette.md) | Cmd+K: search every action, tab, mapping function and library track |
 | 🖼️ | [Controller Images](controller-images.md) | Official diagrams and manuals, offline, with real control positions |
 | 🖨️ | [Cheat Sheet (PDF)](cheat-sheet.md) | Print each controller's photo with the function of every mapped pad and button |
 | 🔀 | [MIDI Routing, Clock and Metronome](midi-routing-and-clock.md) | Route MIDI, generate Clock from Ableton Link, loop MIDI |
@@ -49,6 +50,7 @@
 | [traktor-mappings.md](traktor-mappings.md) | Traktor `.tsi` support and its limits |
 | [mapping-diff.md](mapping-diff.md) | Comparing with another file or the previous version, change kinds, duplicates |
 | [function-names.md](function-names.md) | Short names for Serato function tags, where they show, finding the original tag |
+| [command-palette.md](command-palette.md) | Cmd+K search over actions, tabs, functions and tracks, ranking, keys |
 | [controller-images.md](controller-images.md) | Reference pictures, real layout overlay, MIDI info |
 | [cheat-sheet.md](cheat-sheet.md) | Printable PDF of the mapping on each controller's photo |
 | [midi-routing-and-clock.md](midi-routing-and-clock.md) | Routes, transforms, MIDI Clock from Link, Metronome |

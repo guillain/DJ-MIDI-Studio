@@ -69,6 +69,15 @@ from djmidi import (
     user_paths,
 )
 from djmidi.catalog.profile import load_user_profiles
+from djmidi.command_palette import (
+    KIND_ACTION,
+    KIND_FUNCTION,
+    KIND_TAB,
+    KIND_TRACK,
+    PaletteEntry,
+    PaletteIndex,
+    track_entry,
+)
 from djmidi.controller_sync import (
     ControllerSyncSet,
     PlugInSyncTracker,
@@ -85,6 +94,7 @@ from djmidi.gui import jog as jog_mod
 from djmidi.gui import layout as layout_mod
 from djmidi.gui.cheat_sheet_dialog import CheatSheetExportDialog
 from djmidi.gui.cheat_sheet_pdf import write_cheat_sheet_pdf
+from djmidi.gui.command_palette import CommandPaletteDialog, menu_entries
 from djmidi.gui.controller_emulator import ControllerEmulatorView
 from djmidi.gui.controller_image_view import ControllerImageView
 from djmidi.gui.controller_setup import ControllerSetupView
@@ -841,6 +851,15 @@ class MainWindow(QMainWindow):
         edit_menu.addAction(validate_action)
 
         view_menu = self.menuBar().addMenu("&View")
+        # Issue #222: one keyboard search over everything below. Ctrl maps to
+        # Cmd on macOS; application-wide so it also works from a floating dock.
+        self._command_palette_action = QAction("Command Palette...", self)
+        self._command_palette_action.setShortcut(QKeySequence("Ctrl+K"))
+        self._command_palette_action.setShortcutContext(Qt.ShortcutContext.ApplicationShortcut)
+        self._command_palette_action.setToolTip("Search every action, tab, mapping function and library track")
+        self._command_palette_action.triggered.connect(lambda _checked=False: self.open_command_palette())
+        view_menu.addAction(self._command_palette_action)
+        view_menu.addSeparator()
         helpful_notes_action = QAction("Helpful Notes...", self)
         helpful_notes_action.triggered.connect(self._show_helpful_notes)
         view_menu.addAction(helpful_notes_action)
@@ -2926,6 +2945,75 @@ class MainWindow(QMainWindow):
     def _on_reveal_mapping(self) -> None:
         if self.current_path is not None:
             reveal_in_file_manager(self.current_path)
+
+    # --- command palette (issue #222) -----------------------------------------
+
+    def _palette_index(self) -> PaletteIndex:
+        entries = menu_entries(self.menuBar(), skip={self._command_palette_action})
+        for index in range(self.left_tabs.count()):
+            entries.append(
+                PaletteEntry(KIND_TAB, self.left_tabs.tabText(index), detail="Go to tab", payload=index)
+            )
+        functions = self.function_search_view._index if self.config is not None else []
+        return PaletteIndex(entries, functions, self._palette_track_entries())
+
+    def _palette_track_entries(self) -> list[PaletteEntry]:
+        """The Music Library's rows as palette entries -- only once the tab
+        has opened its index this session (the palette never opens the DB
+        itself), rebuilt only when the rows were reloaded."""
+        library = self.music_library_view
+        if library._db is None:
+            return []
+        rows = library.table_model._rows
+        cached = getattr(self, "_palette_track_cache", None)
+        if cached is not None and cached[0] is rows:
+            return cached[1]
+        entries = []
+        for row in rows:
+            metadata = row.metadata
+            facts = [f"{row.bpm:g} BPM" if row.bpm else "", row.camelot_key or ""]
+            detail = " · ".join([fact for fact in facts if fact] + [row.path])
+            entries.append(
+                track_entry(
+                    row.path,
+                    metadata.title if metadata else None,
+                    metadata.artist if metadata else None,
+                    metadata.album if metadata else None,
+                    detail=detail,
+                    payload=row.path,
+                )
+            )
+        self._palette_track_cache = (rows, entries)
+        return entries
+
+    def open_command_palette(self, query: str = "") -> CommandPaletteDialog:
+        """Show the palette (window-modal, non-blocking: `open()`, not
+        `exec()`, so tests can drive it) and run what the user picks."""
+        dialog = CommandPaletteDialog(self._palette_index(), self)
+        dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        dialog.entryChosen.connect(self._run_palette_entry)
+        if query:
+            dialog.set_query(query)
+        self._command_palette = dialog
+        dialog.open()
+        dialog.search_field.setFocus()
+        return dialog
+
+    def _run_palette_entry(self, entry: PaletteEntry) -> None:
+        if entry.kind == KIND_ACTION:
+            entry.payload.trigger()
+        elif entry.kind == KIND_TAB:
+            self.left_tabs.setCurrentIndex(entry.payload)
+        elif entry.kind == KIND_FUNCTION:
+            self._on_function_result_selected(entry.payload)
+        elif entry.kind == KIND_TRACK:
+            self.left_tabs.setCurrentIndex(self._tab_indexes["library"])
+            library = self.music_library_view
+            # A filter may hide the track: clear them rather than miss it.
+            if not library.select_path(entry.payload):
+                library.reset_filters()
+                library.select_path(entry.payload)
+            library.table.setFocus()
 
     def _run_in_tab(self, tab_key: str, handler) -> None:
         """Show the tab an action belongs to, then run it, so a File menu
