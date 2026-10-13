@@ -132,6 +132,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Near-duplicate track suggestions** (`v0.48.96-near-duplicates`, issue #257) — the
+  duplicates finder gains a third, suggestion-only tier: `duplicates.find_version_variants`
+  groups tracks by artist + title once trailing version markers (`(Radio Edit)`,
+  `(Extended Mix)`, `[Remastered 2011]`, `- Club Mix`, remixes…) are stripped, keeping a group
+  only when it holds two different versions. Listed in their own section of the Duplicate
+  tracks window with each file's title, never tickable, and ignored by `discard.plan_discard`.
 - [x] **MIDI Learn in the mapping editor** (`v0.48.86-midi-learn`, issue #220) — Qt-free
   `midi_learn.py` (`trigger_from_event`: only a Note On with velocity > 0 or a CC, input
   direction; `find_trigger_conflicts`/`describe_conflicts`; `find_parent_control`) behind a
