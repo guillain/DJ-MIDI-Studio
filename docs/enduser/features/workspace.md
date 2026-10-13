@@ -121,7 +121,8 @@ instead of squeezing its buttons when the window is small.
 `View → Performance Mode` hides the trees of `By Channel`, `By Deck` and
 `By Controller` and zooms their controller layouts, for a clean view on
 stage. Turn it off to get your previous layout back exactly. It isn't kept
-after a restart.
+after a restart. For a full-screen view with just your controller and the
+live MIDI, use [Stage Mode](stage-mode.md) instead.
 
 `View → Show all controllers` temporarily shows every registered controller,
 including the ones you disabled in Preferences.
@@ -173,11 +174,15 @@ at launch`).
 result: a new version (with a button to open its page), up to date, or
 GitHub couldn't be reached.
 
+`Help → First-Run Setup…` reopens the wizard shown on the very first launch
+— see [First-run setup](first-run-wizard.md).
+
 `Help → Report a Problem…` prepares a bug report you can read and edit
 before it opens as a GitHub issue — see [Report a Problem](report-a-problem.md).
 
 ## Related
 
+- [First-run setup](first-run-wizard.md)
 - [Report a Problem](report-a-problem.md)
 - [User guide](../user-guide.md)
 - [Controller Sync](controller-sync.md)

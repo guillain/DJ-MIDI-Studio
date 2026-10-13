@@ -14,6 +14,7 @@
 - [Browse, sort and filter](#browse-sort-and-filter)
 - [Listen to a track](#listen-to-a-track)
 - [Edit tags](#edit-tags)
+- [Cover art](#cover-art)
 - [Write tags to many tracks at once](#write-tags-to-many-tracks-at-once)
 - [Estimate missing BPM and keys](#estimate-missing-bpm-and-keys)
 - [Find duplicate tracks](#find-duplicate-tracks)
@@ -129,6 +130,20 @@ haven't written yet. `Clean noise frames…` lists leftover junk tags (old
 ID3v1 comment copies, old player preferences, ReplayGain values…) and
 removes them only after you confirm.
 
+## Cover art
+
+The **Track** panel shows the selected track's embedded cover (the front
+cover, or any other embedded picture when there is no front cover).
+
+- `Set cover…` embeds a JPEG or PNG image (up to 16 MB) as the track's front
+  cover, replacing the previous front cover.
+- `Remove cover` removes the front cover.
+
+Both are undoable with `Undo` / `Redo`. Only the front-cover picture changes:
+other embedded pictures (back cover, artist photo…), every tag and the
+Serato/Traktor data stay exactly as they were. Works with MP3, AIFF, FLAC,
+OGG and M4A files.
+
 ## Write tags to many tracks at once
 
 To give a whole album the same genre, or fix an artist name everywhere:
@@ -184,16 +199,22 @@ audio-analysis component isn't installed (from a source checkout:
 
 Click `Find duplicates…` (next to `Scan & read tags`, after a scan). The
 search runs in the background with a progress bar, then a **Duplicate
-tracks** window lists two kinds of groups:
+tracks** window lists two kinds of duplicate groups, plus a third section of
+suggestions:
 
 | Group | Meaning |
 | --- | --- |
 | Exact copies | Byte-identical files. Only files of exactly the same size are read and compared, so this stays quick on a large collection |
 | Same artist + title | Tags that match once case, accents, punctuation, `feat.` credits and an `(Original Mix)` suffix are ignored. Other versions — `(Extended Mix)`, `(Radio Edit)`, remixes, `(Live)` — stay separate. These are candidates, not proof: compare them before acting |
+| Other versions of the same song | Suggestions, not duplicates: the same artist and the same title once a trailing version marker is ignored — `(Radio Edit)`, `(Extended Mix)`, `(Original Mix)`, `[Remastered 2011]`, `- Club Mix`, `(X Remix)`, `(VIP)`… Shown only when at least two *different* versions exist; each file shows its own title. `(Part 2)` and other non-version text are never stripped |
 
 Each file shows its path, format and size; expand a group to see each
 file's bitrate. Select a file and click `Reveal in Finder` (or double-click
 it) to see it in your file manager.
+
+Other versions are listed for you to review only: they have no tick box,
+so they can never be moved to the Trash from this window, and another
+version never counts as the "kept copy" of a discarded duplicate.
 
 To clean up, tick the copies you don't want and click `Move ticked to
 Trash…`:
@@ -410,6 +431,7 @@ ever read.
   (imports and comparisons alike). Exports
   always create a new file at the location you choose.
 - Undo writes the old values back through the same careful path.
+- `Set cover…` / `Remove cover` change only the front-cover picture.
 - `Find duplicates…` only reads files. Copies you tick go to the Trash after
   a confirmation, never deleted outright, and one copy of each group always
   stays.
