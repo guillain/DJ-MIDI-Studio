@@ -845,7 +845,8 @@ class MusicLibraryView(QWidget):
         self.relink_button.clicked.connect(self.start_relink_search)
         self.duplicates_button = QPushButton("Find duplicates…")
         self.duplicates_button.setToolTip(
-            "List identical files and tracks sharing artist + title. Read-only: nothing is deleted."
+            "List identical files, tracks sharing artist + title, and other versions of the same song "
+            "(suggestions). Read-only: nothing is deleted."
         )
         self.duplicates_button.clicked.connect(self.find_duplicates)
         self.health_button = QPushButton("Health report…")
@@ -1364,7 +1365,10 @@ class MusicLibraryView(QWidget):
 
     def _duplicates_job(self) -> Generator[None]:
         # Metadata tier: tag cache only, instant even on a large library.
-        groups = duplicates.find_metadata_duplicates(duplicates.metadata_entries(self.db))
+        entries = duplicates.metadata_entries(self.db)
+        groups = duplicates.find_metadata_duplicates(entries)
+        # Same song, other version (issue #257): suggestions, listed apart.
+        versions = duplicates.find_version_variants(entries)
         sizes = duplicates.size_entries(self.db)
         total = duplicates.exact_candidate_count(sizes)
         self.progress_bar.setRange(0, max(total, 1))
@@ -1381,9 +1385,10 @@ class MusicLibraryView(QWidget):
             self.status_label.setText(f"Comparing files of equal size… {done}/{total}")
             yield
         self.status_label.setText(
-            f"Duplicates: {len(exact)} group(s) of identical files, {len(groups)} group(s) sharing artist + title."
+            f"Duplicates: {len(exact)} group(s) of identical files, {len(groups)} group(s) sharing artist + title, "
+            f"{len(versions)} song(s) with other versions."
         )
-        self._show_duplicates(exact + groups)
+        self._show_duplicates(exact + groups + versions)
 
     def _show_duplicates(self, groups: list[duplicates.DuplicateGroup]) -> None:
         if self.duplicates_dialog is not None:

@@ -772,6 +772,52 @@ def test_find_duplicates_opens_read_only_dialog(library, monkeypatch):
     assert view.duplicates_dialog is not dialog
 
 
+def test_find_duplicates_lists_other_versions_as_suggestions(library, monkeypatch):
+    """Issue #257: radio edit / extended versions of one song are listed in
+    their own section, with their titles, and can never be ticked."""
+    from PySide6.QtCore import Qt
+
+    from djmidi.gui import duplicates_dialog
+
+    view, music, _ = library
+    radio = _mp3(music / "misc" / "alpha radio.mp3", title="Alpha (Radio Edit)", artist="Zed")
+    extended = _mp3(music / "misc" / "alpha ext.mp3", title="Alpha [Extended Mix]", artist="ZED")
+    view.start_scan()
+    view.run_pending_job()
+
+    view.find_duplicates()
+    view.run_pending_job()
+    dialog = view.duplicates_dialog
+    versions = [g for g in dialog.groups if g.tier == "versions"]
+    assert len(versions) == 1
+    assert set(versions[0].paths) == {str(music / "Tek" / "Tribe" / "a.mp3"), str(radio), str(extended)}
+    assert "1 song(s) with other versions" in view.status_label.text()
+    assert "1 song(s) with several versions" in dialog.summary_label.text()
+
+    version_items = [item for item in dialog.file_items() if "—" in item.text(0)]
+    assert {item.text(0).split(" — ")[0] for item in version_items} == {
+        "Alpha",
+        "Alpha (Radio Edit)",
+        "Alpha [Extended Mix]",
+    }
+    assert not any(item.flags() & Qt.ItemFlag.ItemIsUserCheckable for item in version_items)
+    dialog.set_checked(str(radio), True)
+    assert dialog.checked_paths() == []
+    assert not dialog.trash_button.isEnabled()
+
+    revealed: list[str] = []
+    monkeypatch.setattr(duplicates_dialog, "reveal_in_file_manager", revealed.append)
+    dialog._reveal(version_items[0])
+    assert revealed == [version_items[0].data(0, duplicates_dialog.PATH_ROLE)]
+
+    # A version moved away elsewhere leaves a two-version group; a second one
+    # removes the suggestion.
+    dialog.remove_paths([str(radio)])
+    assert [len(g.paths) for g in dialog.groups if g.tier == "versions"] == [2]
+    dialog.remove_paths([str(extended)])
+    assert not [g for g in dialog.groups if g.tier == "versions"]
+
+
 def test_discard_duplicates_moves_ticked_copies_to_trash(library, monkeypatch):
     """Issue #208: ticked copies go to the (here fake, tmp_path) Trash after
     a confirmation, a group keeping no copy is refused, moved rows turn
