@@ -58,7 +58,15 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from djmidi import backup, catalog, file_locations, software, sync_store, user_paths
+from djmidi import (
+    backup,
+    catalog,
+    file_locations,
+    midi_macros,
+    software,
+    sync_store,
+    user_paths,
+)
 from djmidi.catalog.profile import load_user_profiles
 from djmidi.controller_sync import (
     ControllerSyncSet,
@@ -89,6 +97,8 @@ from djmidi.gui.helpful_notes_dialog import HelpfulNotesDialog
 from djmidi.gui.introduction_view import IntroductionView
 from djmidi.gui.layout_view import ControllerLayoutView
 from djmidi.gui.live_monitor import LiveMonitorView
+from djmidi.gui.macro_editor import MacroManagerDialog
+from djmidi.gui.macro_player import MacroPlayer
 from djmidi.gui.mapping_diff_dialog import MappingDiffDialog
 from djmidi.gui.mapping_group import MappingGroup
 from djmidi.gui.metronome_view import MetronomeView
@@ -298,6 +308,10 @@ class MainWindow(QMainWindow):
         self.preferences.controller_sync_sets = sync_store.adopt_sync_sets(
             user_paths.sync_dir(), list(self.preferences.controller_sync_sets)
         )
+        # MIDI macros (issue #228): one file per macro in the Macros folder.
+        self.macros: list[midi_macros.MidiMacro] = midi_macros.load_macros(user_paths.macros_dir())
+        self._macro_player = MacroPlayer(parent=self)
+        self._macro_player.finished.connect(self._on_macro_finished)
         # "Show all controllers" (View menu) bypasses the per-controller
         # Preferences enablement so the mapping tabs list every registered
         # controller again; the real state is restored from QSettings in
@@ -851,6 +865,12 @@ class MainWindow(QMainWindow):
         )
         self._performance_mode_action.toggled.connect(self._on_performance_mode_toggled)
         view_menu.addAction(self._performance_mode_action)
+
+        # MIDI macros (issue #228): one entry per macro, each with its own
+        # shortcut, rebuilt by _rebuild_macro_menu whenever the list changes.
+        self._macro_menu = self.menuBar().addMenu("&Macros")
+        self._macro_actions: list[QAction] = []
+        self._rebuild_macro_menu()
 
         # Preferences moved out of the menu bar (issue #137) into an
         # always-visible corner icon instead of a menu someone has to open
@@ -2719,6 +2739,78 @@ class MainWindow(QMainWindow):
             self._on_preferences(tab="Controller sync")
         elif action.startswith("recent:"):
             self._load_mapping_from_path(Path(action.removeprefix("recent:")))
+
+    # --- MIDI macros (issue #228) ---------------------------------------------
+
+    def _rebuild_macro_menu(self) -> None:
+        menu = self._macro_menu
+        menu.clear()
+        self._macro_actions = []
+        for macro in self.macros:
+            action = QAction(macro.name, self)
+            if macro.shortcut:
+                action.setShortcut(QKeySequence(macro.shortcut))
+                # Floating tool docks are separate windows: keep the shortcut
+                # working while one of them has the focus.
+                action.setShortcutContext(Qt.ShortcutContext.ApplicationShortcut)
+            steps = len(macro.steps)
+            action.setToolTip(f"{steps} message(s) to {macro.output_port or 'no port'}")
+            action.triggered.connect(lambda _checked=False, name=macro.name: self._play_macro(name))
+            menu.addAction(action)
+            self._macro_actions.append(action)
+        if not self.macros:
+            empty = menu.addAction("No macro yet")
+            empty.setEnabled(False)
+        menu.addSeparator()
+        manage = menu.addAction("Manage Macros…")
+        manage.triggered.connect(lambda: self._on_manage_macros())
+        reveal = menu.addAction("Show Macros Folder")
+        reveal.triggered.connect(self._on_reveal_macros)
+
+    def _reserved_shortcuts(self) -> list[str]:
+        """The shortcuts of every menu action that isn't a macro."""
+        macro_actions = set(self._macro_actions)
+        shortcuts: list[str] = []
+        stack = [action for action in self.menuBar().actions()]
+        while stack:
+            action = stack.pop()
+            if action.menu() is not None:
+                stack.extend(action.menu().actions())
+            elif action not in macro_actions and not action.shortcut().isEmpty():
+                shortcuts.append(action.shortcut().toString(QKeySequence.SequenceFormat.PortableText))
+        return shortcuts
+
+    def _on_manage_macros(self, dialog_factory=None) -> bool:
+        """Opens the macro editor; on OK saves the macros and rebuilds the menu."""
+        factory = dialog_factory or MacroManagerDialog
+        dialog = factory(
+            self.macros,
+            list_output_ports(),
+            list(self.preferences.controller_sync_sets),
+            self._reserved_shortcuts(),
+            parent=self,
+        )
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return False
+        self.macros = list(dialog.edited_macros())
+        midi_macros.save_macros(user_paths.macros_dir(), self.macros)
+        self._rebuild_macro_menu()
+        self.statusBar().showMessage(f"{len(self.macros)} macro(s) saved", 5000)
+        return True
+
+    def _play_macro(self, name: str) -> midi_macros.MacroResult | None:
+        macro = next((macro for macro in self.macros if macro.name == name), None)
+        if macro is None:
+            return None
+        return self._macro_player.play(macro, list_output_ports())
+
+    def _on_macro_finished(self, result: midi_macros.MacroResult) -> None:
+        self.statusBar().showMessage(result.summary(), 8000)
+
+    def _on_reveal_macros(self) -> None:
+        folder = user_paths.macros_dir()
+        folder.mkdir(parents=True, exist_ok=True)
+        reveal_in_file_manager(folder)
 
     def _on_reveal_installed_profiles(self) -> None:
         folder = user_paths.controllers_dir()

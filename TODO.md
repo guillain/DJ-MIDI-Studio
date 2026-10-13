@@ -132,6 +132,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **MIDI macros** (`v0.48.81-midi-macros`, issue #228) — Qt-free `midi_macros.py`: named sequences of
+  `SyncMessage`s with an optional per-step delay, one JSON file each in the workspace's new `Macros` folder,
+  port resolved like Sync. A `Macros` menu plays them (optional per-macro keyboard shortcut, app-wide);
+  `MacroPlayer` schedules delays on `QTimer`s so nothing blocks; `MacroManagerDialog` creates/edits them
+  (refuses shortcuts the app's menus already use, can append a recorded sync set, `Test` button).
 - [x] **Played-tracks history** (`v0.48.80-played-history`, issue #227) — Qt-free
   `library/history.py` reads Serato `History/Sessions/*.session` (crate chunk framing, numbered `adat`
   fields) and Traktor `History/*.nml` (`EXTENDEDDATA` start date/time, deck, `PLAYEDPUBLIC`) read-only,

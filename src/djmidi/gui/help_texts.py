@@ -45,6 +45,23 @@ DASHBOARD_FILES: HelpEntry = (
     "workspace.md",
 )
 
+MIDI_MACROS: HelpEntry = (
+    "MIDI Macros",
+    (
+        "A macro is a named list of MIDI messages played in one go from the <b>Macros</b> menu "
+        "or its keyboard shortcut, from any tab.<ul>"
+        "<li><b>Output port</b>: where the messages go -- a port, or a controller name matched "
+        "against the connected ports like <b>⟳ Sync</b> does.</li>"
+        "<li><b>Steps</b>: type, channel (1–16), data 1/2 (0–127) and an optional delay "
+        "(ms) waited before the step is sent; <b>Add sync set…</b> appends a recorded sync "
+        "set's messages.</li>"
+        "<li><b>Shortcut</b>: optional; one the app's menus already use is refused.</li></ul>"
+        "<b>Test</b> plays the macro as edited. Each macro is a file in "
+        "<tt>Documents/DJ MIDI Studio/Macros</tt>."
+    ),
+    "midi-macros.md",
+)
+
 DASHBOARD_CONTROLLERS: HelpEntry = (
     "Known controllers",
     (
