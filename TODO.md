@@ -132,6 +132,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **CI startup screenshot** (`v0.48.84-build-smoke-screenshot`, issue #231) — the app's new
+  `--startup-screenshot PATH` flag grabs the main window 2 s after startup;
+  `scripts/smoke_test_executable.py --screenshot` waits for that PNG and fails on an early exit or a
+  missing picture, and `Build Executables` uploads it (plus logs and console output) per OS as
+  `djmidi-studio-<os>-startup-screenshot`, even when the job fails. The release workflow is unchanged.
 - [x] **Playlist comparison** (`v0.48.82-playlist-compare`, issue #229) — Qt-free
   `library/playlist_compare.py`: an app playlist vs a Serato crate or one playlist of a Traktor `.nml`,
   matched by NFC-normalized path occurrence by occurrence; reports tracks only on each side and the
