@@ -62,6 +62,24 @@ MIDI_MACROS: HelpEntry = (
     "midi-macros.md",
 )
 
+MIDI_LATENCY: HelpEntry = (
+    "MIDI Latency Test",
+    (
+        "Sends a Note On to the <b>output</b> and times the matching Note On coming back on "
+        "the <b>input</b>, then shows min / median / max and jitter over all pings.<br><br>"
+        "<b>Only meaningful with something that echoes</b>: the IAC Driver bus or a virtual "
+        "MIDI cable chosen as both output and input, a MIDI thru, or a controller known to echo "
+        "its LED messages. A controller that doesn't echo makes every ping time out -- that "
+        "says nothing about its real latency.<ul>"
+        "<li><b>Interval</b>: time between two ping starts; <b>Timeout</b>: how long a ping "
+        "waits before it counts as lost.</li>"
+        "<li>Each ping uses its own velocity so a late echo is never counted for the next "
+        "one; untick the velocity box for a device that echoes a different value.</li>"
+        "<li>A Note Off follows every ping, so an echoing LED isn't left lit.</li></ul>"
+    ),
+    "midi-latency.md",
+)
+
 DASHBOARD_CONTROLLERS: HelpEntry = (
     "Known controllers",
     (
