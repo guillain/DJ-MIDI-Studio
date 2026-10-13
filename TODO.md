@@ -132,6 +132,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **macOS signing and notarization plumbing** (`v0.48.101-macos-signing`, issue #262) —
+  `scripts/macos_signing.sh` (import certificate into a throwaway keychain, inside-out hardened-runtime
+  signing with `packaging/macos/entitlements.plist`, `notarytool` + staple + `spctl`, cleanup), called
+  from `build.sh` and `draft-release.yml`; every step skips cleanly without secrets, partial secrets
+  fail. Secrets listed in `docs/developer/cicd/macos-signing.md`; dry-run tests in
+  `tests/test_macos_signing.py`. Real Developer ID signing/notarization still needs the Apple account.
 - [x] **MIDI Learn in the mapping editor** (`v0.48.86-midi-learn`, issue #220) — Qt-free
   `midi_learn.py` (`trigger_from_event`: only a Note On with velocity > 0 or a CC, input
   direction; `find_trigger_conflicts`/`describe_conflicts`; `find_parent_control`) behind a
