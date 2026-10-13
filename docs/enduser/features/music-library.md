@@ -18,6 +18,7 @@
 - [Estimate missing BPM and keys](#estimate-missing-bpm-and-keys)
 - [Find duplicate tracks](#find-duplicate-tracks)
 - [Check library health](#check-library-health)
+- [Change history](#change-history)
 - [Genre categories](#genre-categories)
 - [Playlists](#playlists)
 - [Prepare a set](#prepare-a-set)
@@ -239,6 +240,30 @@ matches the path and the detail. Click a column header to sort.
 The report never changes a file. Run it again after fixing things to see
 the updated list.
 
+## Change history
+
+Undo only lasts until you quit. So that nothing this app does to your files
+is ever lost track of, every write is also logged in the library index and
+kept across restarts: tag edits, `Write tags to selection…`, applied
+analysis suggestions, their undos, and duplicates moved to the Trash.
+
+Click `Change history…` to list them, newest first (when, what kind, a
+summary, how many files, and whether it was reverted). Select an entry to
+see every file with its before → after values.
+
+`Revert…` undoes the selected entry, after a confirmation:
+
+- **Tags**: the old values are written back through the same careful path
+  as any tag edit — but only to files still holding what this app wrote. A
+  tag you changed since (in Serato, say) is left alone, and the window lists
+  it with the reason.
+- **Moved to Trash**: each copy is moved back to where it was, unless
+  another file has taken its place, and shows as present again in the
+  library. Playlists that were pointed at the kept copy stay that way.
+
+A revert is logged too, so a tag revert can itself be reverted. The last
+1000 changes are kept.
+
 ## Genre categories
 
 Tracks are sorted into two-level categories, `Family / Name` (for example
@@ -390,6 +415,8 @@ ever read.
   a confirmation, never deleted outright, and one copy of each group always
   stays.
 - `Health report…` only reads files.
+- Every write to your files is logged in `Change history…`, which can
+  revert it after a restart.
 
 ## Related
 
