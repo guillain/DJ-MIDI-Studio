@@ -51,6 +51,10 @@ Both save into the active [scene](#scenes-several-sets-per-controller)
 scene; saving again for the same controller in the same scene asks before
 replacing the existing set.
 
+Pad colours chosen in the [Controller Emulator](controller-emulator.md#pad-colours)
+are added to the same set instead of replacing it (only for controllers whose
+documentation lists the pad colours).
+
 ## Sync your controllers
 
 Click **`⟳ Sync`** at the top right of the menu bar (beside the ⚙

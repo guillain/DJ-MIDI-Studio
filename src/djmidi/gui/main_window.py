@@ -63,6 +63,7 @@ from djmidi import (
     catalog,
     file_locations,
     midi_macros,
+    pad_colours,
     software,
     sync_store,
     user_paths,
@@ -1183,7 +1184,12 @@ class MainWindow(QMainWindow):
         replaying _create_emulator_instance() calls in _restore_user_layout,
         not by objectName matching a prior session's random id."""
         instance_id = f"emulator_{uuid4().hex[:8]}"
-        view = ControllerEmulatorView(config_provider=lambda: self.config, initial_controller=controller)
+        view = ControllerEmulatorView(
+            config_provider=lambda: self.config,
+            initial_controller=controller,
+            sync_set_provider=lambda name: self.preferences.sync_set_for(name, self.preferences.active_sync_scene),
+        )
+        view.padColoursSaveRequested.connect(self._on_pad_colours_save_requested)
         dock = QDockWidget("Controller Emulator", self)
         dock.setObjectName(f"{instance_id}Dock")
         dock.setAllowedAreas(Qt.DockWidgetArea.AllDockWidgetAreas)
@@ -1567,6 +1573,35 @@ class MainWindow(QMainWindow):
             f"Sync set saved for {sync_set.label} ({len(sync_set.messages)} message(s))", 10_000
         )
 
+    def _on_pad_colours_save_requested(self, controller: str, colours: dict) -> ControllerSyncSet | None:
+        """A Controller Emulator's painted pad colours (issue #232): merged
+        into the controller's sync set for the active scene -- each pad's
+        previous colour message is replaced, everything else in the set is
+        kept, so no confirmation is needed."""
+        palette = pad_colours.palette_for(controller)
+        if palette is None or not colours:
+            return None
+        scene = self.preferences.active_sync_scene
+        sync_set = pad_colours.merge_into_sync_set(
+            palette, self.preferences.sync_set_for(controller, scene), colours, scene
+        )
+        self.preferences.set_sync_set(sync_set)
+        self._save_preferences()
+        self._reload_emulator_pad_colours()
+        self.statusBar().showMessage(
+            f"{len(colours)} pad colour(s) saved in the sync set for {sync_set.label} "
+            f"({len(sync_set.messages)} message(s))",
+            10_000,
+        )
+        return sync_set
+
+    def _reload_emulator_pad_colours(self) -> None:
+        """Every open Controller Emulator re-reads its saved pad colours."""
+        for dock in self._emulator_docks.values():
+            view = dock.widget()
+            if isinstance(view, ControllerEmulatorView):
+                view.reload_pad_colours()
+
     _NEW_SCENE_DATA = "\x00new-scene"
 
     def _refresh_sync_scene_combo(self) -> None:
@@ -1606,6 +1641,8 @@ class MainWindow(QMainWindow):
         changed = scene != self.preferences.active_sync_scene
         self.preferences.active_sync_scene = scene
         self._save_preferences()
+        if changed:
+            self._reload_emulator_pad_colours()
         message = f"Sync scene: {scene}"
         results: list[SyncResult] = []
         if changed and self.preferences.sync_on_scene_switch:

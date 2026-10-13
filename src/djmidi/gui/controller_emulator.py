@@ -95,7 +95,16 @@ previously-selected sibling, and reports `[SELECTED: <tag> deck N slot M
 flip slice 1 handles; it still makes no claim about what the tag *means*.
 
 All of the phase-5 state (toggle, pad mode, SHIFT, selected slot) is
-cleared on controller switch; none of it is persisted across restarts."""
+cleared on controller switch; none of it is persisted across restarts.
+
+Pad colours (issue #232, gui/pad_colour_panel.py + djmidi/pad_colours.py):
+for a controller whose bundled MIDI document defines a velocity -> colour
+table (only the Hercules DJControl Inpulse 500 today), a "Pad colours" row
+lets the user paint pads (a pad click while *Paint* is on colours it
+instead of resolving it, and live-sends the LED Note On when Live send is
+on) and save them into that controller's sync set. Unlike the phase-5
+state, these colours are persisted -- in the sync set, read back when the
+controller is shown again."""
 
 from __future__ import annotations
 
@@ -118,7 +127,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from djmidi import catalog
+from djmidi import catalog, pad_colours
+from djmidi.controller_sync import ControllerSyncSet
 from djmidi.gui import help_texts, layout_view
 from djmidi.gui import layout as layout_mod
 from djmidi.gui import pad_mode as pad_mode_mod
@@ -135,6 +145,7 @@ from djmidi.gui.output_state import (
     radio_group_key,
     resolve_toggle_alias,
 )
+from djmidi.gui.pad_colour_panel import PadColourPanel
 from djmidi.model import MidiConfig
 
 _KEY_ROLE = layout_view._KEY_ROLE
@@ -277,6 +288,9 @@ class EmulatorLayoutView(QWidget):
         # Same amber look, OR'd in for rendering, but a separate set so an
         # input-direction release can't clear an LED the software still drives.
         self._led_keys: set[CellKey] = set()
+        # Pad colours painted in the owning view (issue #232): CellKey ->
+        # swatch colour, drawn as the cell's resting fill.
+        self._cell_colours: dict[CellKey, str] = {}
         # Set by _rebuild(); resizeEvent/_fit_view() use it instead of
         # recomputing real_position_markers() on every resize.
         self._real_position_mode = False
@@ -316,6 +330,14 @@ class EmulatorLayoutView(QWidget):
         self._active_keys.clear()
         self._live_active_keys.clear()
         self._led_keys.clear()
+        self._cell_colours.clear()
+        self._rebuild()
+
+    def set_cell_colours(self, colours: dict[CellKey, str]) -> None:
+        """Resting fill colour per cell (painted pad colours, issue #232)."""
+        if colours == self._cell_colours:
+            return
+        self._cell_colours = dict(colours)
         self._rebuild()
 
     def _current_value(self, key: CellKey) -> int:
@@ -481,7 +503,7 @@ class EmulatorLayoutView(QWidget):
                 bg_item.setBrush(QBrush(active))
                 bg_item.setPen(layout_view._ACTIVE_BORDER_PEN)
             else:
-                resting = QColor(marker.color)
+                resting = QColor(self._cell_colours.get(key, marker.color))
                 # A thinner wash when a photo sits behind it (keeps the real
                 # control legible), the fuller fill on the blank canvas.
                 resting.setAlpha(30 if photo_shown else 90)
@@ -517,7 +539,8 @@ class EmulatorLayoutView(QWidget):
             y = cell.row * row_step
             rect = QGraphicsRectItem(QRectF(0, 0, m.cell_w, m.half_h))
             rect.setPos(x, y)
-            rect.setBrush(layout_view._UNUSED_BRUSH)
+            painted = self._cell_colours.get(cell.key)
+            rect.setBrush(QBrush(QColor(painted)) if painted else layout_view._UNUSED_BRUSH)
             rect.setPen(
                 layout_view._ACTIVE_BORDER_PEN
                 if (
@@ -560,16 +583,24 @@ class ControllerEmulatorView(QWidget):
     to. Dry-run resolution always happens; a click additionally sends a real
     MIDI message to a chosen output port when the embedded LiveSendControl
     (gui/live_send.py) is switched on (default off) -- see that module's
-    docstring for why every layout surface uses the same widget/default."""
+    docstring for why every layout surface uses the same widget/default.
+
+    ``sync_set_provider`` returns a controller's sync set for the active
+    scene, so its saved pad colours show up again (issue #232);
+    ``padColoursSaveRequested`` asks the owner to store painted colours."""
+
+    padColoursSaveRequested = Signal(str, object)  # controller, dict[PadSlot, PadColour]
 
     def __init__(
         self,
         config_provider: Callable[[], MidiConfig | None],
         initial_controller: str | None = None,
         parent: QWidget | None = None,
+        sync_set_provider: Callable[[str], ControllerSyncSet | None] | None = None,
     ) -> None:
         super().__init__(parent)
         self._config_provider = config_provider
+        self._sync_set_provider = sync_set_provider
         # Phase 5 slice 1 (gui/output_state.py): on/off state per key,
         # tracked only for keys that resolve to a behaviour="toggle" click
         # mapping in the loaded config. Cleared on controller switch (the
@@ -634,6 +665,11 @@ class ControllerEmulatorView(QWidget):
 
         self._live_send = LiveSendControl()
 
+        self._pad_colours = PadColourPanel()
+        self._pad_colours.coloursChanged.connect(self._show_pad_colours)
+        self._pad_colours.saveRequested.connect(self.padColoursSaveRequested)
+        self._load_pad_colours(initial)
+
         # This dock had no scroll protection at all -- the same gap issue
         # #19's audit already found and fixed in the three fixed tool docks
         # (v0.47.82) and the Controller Images toolbar row (v0.47.91), just
@@ -662,6 +698,7 @@ class ControllerEmulatorView(QWidget):
         content_layout.addLayout(combo_row)
         content_layout.addWidget(self._layers)
         content_layout.addWidget(self._live_send)
+        content_layout.addWidget(self._pad_colours)
         content_layout.addWidget(self._emulator, 1)
         content_layout.addWidget(self._status_label)
 
@@ -758,6 +795,7 @@ class ControllerEmulatorView(QWidget):
             return
         self._emulator.set_controller(name)
         self._sync_layers()
+        self._load_pad_colours(name)
         self._toggle_active.clear()
         self._pad_mode.clear()
         self._pad_mode_button_key.clear()
@@ -766,6 +804,61 @@ class ControllerEmulatorView(QWidget):
         self._selected_slot.clear()
         self._selected_cell.clear()
         self._status_label.setText("Click a control to see what it resolves to.")
+
+    def _load_pad_colours(self, controller: str) -> None:
+        """Shows the Pad colours row for ``controller`` (if it has a
+        documented palette), starting from the colours its sync set holds."""
+        palette = pad_colours.palette_for(controller)
+        sync_set = self._sync_set_provider(controller) if palette and self._sync_set_provider else None
+        saved = pad_colours.colours_from_messages(palette, sync_set.messages) if sync_set else {}
+        self._pad_colours.set_controller(controller, saved)
+
+    def reload_pad_colours(self) -> None:
+        """Re-reads the shown controller's saved colours (after a save or a
+        scene switch)."""
+        self._load_pad_colours(self._combo.currentText())
+
+    def _show_pad_colours(self) -> None:
+        """Tints the pad cells with the colours of the picked deck/mode/layer."""
+        controller = self._emulator._controller
+        shown = self._pad_colours.shown_colours() if self._pad_colours.palette else {}
+        colours: dict[CellKey, str] = {}
+        if shown:
+            for cell in layout_mod.build_layout(controller):
+                number = pad_colours.pad_number(cell.label) if cell.key[1] == "PAD" else None
+                if number in shown:
+                    colours[cell.key] = shown[number].swatch
+        self._emulator.set_cell_colours(colours)
+
+    def _paint_pad(self, key: CellKey) -> str | None:
+        """While *Paint* is on, a pad click colours that pad instead of
+        resolving it; returns the status text, or ``None`` when the click
+        isn't a paint (Paint off, or not a pad)."""
+        number = pad_colours.pad_number(key[2]) if key[1] == "PAD" else None
+        if not self._pad_colours.is_painting() or number is None:
+            return None
+        painted = self._pad_colours.paint(number)
+        if painted is None:
+            return f"{key[2]}: no such pad on this controller."
+        slot, colour = painted
+        message = self._pad_colours.palette.message_for(slot, colour)
+        text = (
+            f"Deck {slot.deck} Pad {slot.pad} (mode {slot.mode}{' +SHIFT' if slot.shift else ''}) → "
+            f"{colour.name} (ch{message.channel} NOTE {message.data1} velocity {message.data2})"
+        )
+        port = self._live_send.selected_port() if self._live_send.is_active() else None
+        if port:
+            from djmidi.midi_io import send_midi_message
+
+            try:
+                send_midi_message(
+                    output_port_name=port, event_type=message.event_type,
+                    channel_1_based=message.channel, data1=message.data1, data2=message.data2,
+                )
+                text += "  [LIVE SENT]"
+            except Exception as exc:  # noqa: BLE001 - a failing port is reported, not raised
+                text += f"  [send failed: {exc}]"
+        return text
 
     def _toggle_shift(self, key: CellKey) -> str:
         """A SHIFT cell was clicked: flip the instance-wide SHIFT-held
@@ -804,6 +897,10 @@ class ControllerEmulatorView(QWidget):
         return f"  [pad mode set: {key[2].removesuffix(' (R)')}]"
 
     def _on_control_pressed(self, key: CellKey) -> None:
+        painted = self._paint_pad(key)
+        if painted is not None:
+            self._status_label.setText(painted)
+            return
         text = self._resolve(key)
         text += self._apply_output_state(key)
         text += self._select_pad_mode(key)

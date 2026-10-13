@@ -132,6 +132,14 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Pad LED colours** (`v0.48.85-pad-colours`, issue #232) — research first: of the 14 bundled
+  controller PDFs (300 DPI renders), only the Hercules DJControl Inpulse 500 sheet prints a
+  velocity → colour table (p. 5/14, 19 colours); every Pioneer/AlphaTheta list only says "color
+  number (1-127)". Qt-free `pad_colours.py` registers that one palette, with pad LED notes from the
+  same sheet (ch 7/8, `16·(mode-1) + (pad-1)` +8 SHIFT — not the community catalog's ch 1/2 notes
+  40-47, which contradict it: catalog fix left as a follow-up). Controller Emulator gains a Pad colours
+  row (deck / mode / SHIFT / colour, *Paint*, *Save to sync set*) that merges Note Ons into the
+  active scene's sync set; colours read back from it.
 - [x] **CI startup screenshot** (`v0.48.84-build-smoke-screenshot`, issue #231) — the app's new
   `--startup-screenshot PATH` flag grabs the main window 2 s after startup;
   `scripts/smoke_test_executable.py --screenshot` waits for that PNG and fails on an early exit or a

@@ -892,3 +892,79 @@ def _resolve_side_aware_for_test(view, key):
     return layout_mod.resolve_side_aware_variant(
         key[0], key, view._current_pad_mode_token(key), view._shift_held
     )
+
+
+# --- Pad colours (issue #232) ------------------------------------------------
+
+_INPULSE = "Hercules DJControl Inpulse 500"
+
+
+def test_pad_colour_row_only_shows_for_a_documented_palette():
+    view = ControllerEmulatorView(config_provider=lambda: None, initial_controller="DDJ-XP2")
+    assert view._pad_colours.isHidden()
+    view._combo.setCurrentText(_INPULSE)
+    assert not view._pad_colours.isHidden()
+    assert view._pad_colours.palette is not None
+
+
+def test_painting_a_pad_tints_it_and_skips_resolution(monkeypatch):
+    from djmidi import pad_colours
+
+    sent = []
+    monkeypatch.setattr("djmidi.midi_io.send_midi_message", lambda **kwargs: sent.append(kwargs))
+    view = ControllerEmulatorView(config_provider=lambda: None, initial_controller=_INPULSE)
+    panel = view._pad_colours
+    panel._colour_combo.setCurrentText("Blue")
+    panel._deck_combo.setCurrentIndex(1)  # Deck 2
+    panel._paint_button.setChecked(True)
+
+    view._on_control_pressed((_INPULSE, "PAD", "Pad 3"))
+
+    blue = panel.palette.colour_named("Blue")
+    assert panel.colours() == {pad_colours.PadSlot(2, 3): blue}
+    assert view._emulator._cell_colours == {(_INPULSE, "PAD", "Pad 3"): blue.swatch}
+    assert "ch8 NOTE 2 velocity 3" in view._status_label.text()
+    assert sent == []  # Live send is off
+
+    # Another pad mode shows that layer's own (empty) colours.
+    panel._mode_combo.setCurrentIndex(1)
+    assert view._emulator._cell_colours == {}
+
+    # Paint off: a pad click resolves as before.
+    panel._paint_button.setChecked(False)
+    view._on_control_pressed((_INPULSE, "PAD", "Pad 3"))
+    assert "→" in view._status_label.text()
+
+
+def test_painting_live_sends_the_led_note_when_live_send_is_on(monkeypatch):
+    sent = []
+    monkeypatch.setattr("djmidi.midi_io.send_midi_message", lambda **kwargs: sent.append(kwargs))
+    view = ControllerEmulatorView(config_provider=lambda: None, initial_controller=_INPULSE)
+    monkeypatch.setattr(view._live_send, "is_active", lambda: True)
+    monkeypatch.setattr(view._live_send, "selected_port", lambda: "DJControl Inpulse 500")
+    view._pad_colours._colour_combo.setCurrentText("Green")
+    view._pad_colours._paint_button.setChecked(True)
+
+    view._on_control_pressed((_INPULSE, "PAD", "Pad 1"))
+
+    assert sent == [{
+        "output_port_name": "DJControl Inpulse 500", "event_type": "Note On",
+        "channel_1_based": 7, "data1": 0, "data2": 0x1C,
+    }]
+    assert "[LIVE SENT]" in view._status_label.text()
+
+
+def test_saved_pad_colours_are_read_back_from_the_sync_set():
+    from djmidi.controller_sync import ControllerSyncSet, SyncMessage
+
+    stored = ControllerSyncSet(_INPULSE, "", (SyncMessage("Note On", 7, 1, 0x60),))
+    view = ControllerEmulatorView(
+        config_provider=lambda: None, initial_controller=_INPULSE,
+        sync_set_provider=lambda name: stored if name == _INPULSE else None,
+    )
+    assert view._emulator._cell_colours == {(_INPULSE, "PAD", "Pad 2"): "#ff0000"}
+
+    emitted = []
+    view.padColoursSaveRequested.connect(lambda controller, colours: emitted.append((controller, colours)))
+    view._pad_colours._save_button.click()
+    assert emitted and emitted[0][0] == _INPULSE and len(emitted[0][1]) == 1
