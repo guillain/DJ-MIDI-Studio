@@ -96,6 +96,7 @@ from djmidi.gui.function_search_view import FunctionSearchView
 from djmidi.gui.geometry import resolve_geometry_label
 from djmidi.gui.helpful_notes_dialog import HelpfulNotesDialog
 from djmidi.gui.introduction_view import IntroductionView
+from djmidi.gui.layer_map_dialog import LayerMapDialog
 from djmidi.gui.layout_view import ControllerLayoutView
 from djmidi.gui.live_monitor import LiveMonitorView
 from djmidi.gui.macro_editor import MacroManagerDialog
@@ -523,6 +524,7 @@ class MainWindow(QMainWindow):
         self._build_menu()
         self.introduction_view.fileActionRequested.connect(self._on_dashboard_file_action)
         self._refresh_file_actions()
+        self._layer_map_dialog: LayerMapDialog | None = None
         self.helpful_notes_dialog = HelpfulNotesDialog(self)
         self.helpful_notes_dialog.closedPersistently.connect(self._persist_helpful_notes_closed)
         self.helpful_notes_dialog.closedForSession.connect(self._allow_helpful_notes_next_start)
@@ -855,6 +857,14 @@ class MainWindow(QMainWindow):
         )
         self._new_emulator_action.triggered.connect(lambda: self._create_emulator_instance())
         view_menu.addAction(self._new_emulator_action)
+        self._layer_map_action = QAction("Layer Map…", self)
+        self._layer_map_action.setToolTip(
+            "What each control of a controller does in every layer (normal, SHIFT, "
+            "pad modes), with the free combinations highlighted"
+        )
+        self._layer_map_action.setEnabled(False)
+        self._layer_map_action.triggered.connect(lambda _checked=False: self._on_show_layer_map())
+        view_menu.addAction(self._layer_map_action)
         view_menu.addSeparator()
         self._show_all_controllers_action = QAction("Show all controllers", self, checkable=True)
         self._show_all_controllers_action.setChecked(self._show_all_controllers)
@@ -2923,6 +2933,28 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(f"Cheat sheet exported: {path} ({pages} page(s))")
         return path
 
+    def _on_show_layer_map(self) -> LayerMapDialog | None:
+        """View -> Layer Map (issue #253): a non-modal, read-only overview
+        of every layer of one controller. The controllers recognizing the
+        mapping come first (most triggers first), then every other one, so a
+        DJ can also look for room on a controller the mapping doesn't use
+        yet. Returns the dialog (tests)."""
+        if self.config is None:
+            QMessageBox.information(self, "Layer Map", "Open a mapping first.")
+            return None
+        candidates = cheat_sheet.candidate_controllers(self.config)
+        known = {name for name, _count in candidates}
+        controllers = candidates + [(name, 0) for name in catalog.CONTROLLER_NAMES if name not in known]
+        preselected = self._cheat_sheet_preselection([name for name, _count in candidates]) if candidates else set()
+        first = next((name for name, _count in candidates if name in preselected), None)
+        if self._layer_map_dialog is not None:
+            self._layer_map_dialog.close()
+            self._layer_map_dialog.deleteLater()
+        dialog = LayerMapDialog(lambda: self.config, controllers, first, self)
+        self._layer_map_dialog = dialog
+        dialog.show()
+        return dialog
+
     def _on_reveal_mapping(self) -> None:
         if self.current_path is not None:
             reveal_in_file_manager(self.current_path)
@@ -2968,6 +3000,7 @@ class MainWindow(QMainWindow):
         self._compare_backup_action.setEnabled(self.config is not None and backup is not None and backup.is_file())
         self._reveal_action.setEnabled(has_file)
         self._cheat_sheet_action.setEnabled(self.config is not None)
+        self._layer_map_action.setEnabled(self.config is not None)
         self.introduction_view.set_files_summary(
             mapping=self.current_path,
             backup=backup if backup is not None and backup.is_file() else None,

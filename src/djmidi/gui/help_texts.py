@@ -62,6 +62,21 @@ MIDI_MACROS: HelpEntry = (
     "midi-macros.md",
 )
 
+LAYER_MAP: HelpEntry = (
+    "Layer Map",
+    (
+        "One row per physical control, one column per <b>layer</b>: <i>Normal</i>, "
+        "<i>SHIFT</i>, and each pad mode (with and without SHIFT) the controller's profile "
+        "knows. Each cell shows what the loaded mapping does there, for every deck that "
+        "shares the control (<i>D1, D3</i>).<ul>"
+        "<li><b>free</b> (green): no deck uses this combination, so a new function fits.</li>"
+        "<li>amber: mapped on some decks only; hover to see the MIDI channels still free.</li>"
+        "<li><b>—</b>: this control has no such layer.</li></ul>"
+        "Read-only. <b>Refresh</b> re-reads the mapping after edits."
+    ),
+    "layer-map.md",
+)
+
 DASHBOARD_CONTROLLERS: HelpEntry = (
     "Known controllers",
     (
