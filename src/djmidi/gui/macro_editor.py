@@ -4,13 +4,20 @@ Thin by design: validation lives in ``midi_macros.steps_from_rows`` /
 ``validate_macros`` and reordering reuses ``controller_sync.move_message``'s
 logic on steps. Nothing is written here -- OK hands the edited list back to
 the main window, which saves it to the Macros folder and rebuilds the menu.
+
+The Trigger row's Learn button (issue #252) binds the macro to a controller
+press. The dialog never opens a MIDI port itself: the main window passes
+``ensure_listening`` (starts the Live Monitor, like the mapping editor's
+Learn) and routes every live event to :meth:`feed_learn_event` while the
+dialog is open.
 """
 
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Sequence
+from typing import TYPE_CHECKING
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QKeySequence
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -36,7 +43,17 @@ from djmidi.controller_sync import ControllerSyncSet, move_message
 from djmidi.gui.help_button import help_button
 from djmidi.gui.help_texts import MIDI_MACROS
 from djmidi.gui.macro_player import MacroPlayer
-from djmidi.midi_macros import MacroStep, MidiMacro, steps_from_rows, validate_macros
+from djmidi.midi_learn import LEARN_TIMEOUT_MS
+from djmidi.midi_macros import (
+    MacroStep,
+    MacroTrigger,
+    MidiMacro,
+    steps_from_rows,
+    validate_macros,
+)
+
+if TYPE_CHECKING:
+    from djmidi.midi_io import MidiEvent
 
 _EVENT_TYPES = ("Note On", "Note Off", "Control Change")
 _COLUMNS = ("Type", "Channel", "Data 1", "Data 2", "Delay (ms)")
@@ -51,6 +68,7 @@ class MacroManagerDialog(QDialog):
         reserved_shortcuts: Iterable[str] = (),
         sender: Callable[..., None] | None = None,
         parent=None,
+        ensure_listening: Callable[[], bool] | None = None,
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle("MIDI Macros")
@@ -61,6 +79,14 @@ class MacroManagerDialog(QDialog):
         # The app's own menu shortcuts (Ctrl+O, Ctrl+S...): a macro may not take them.
         self._reserved = {text.casefold(): text for text in reserved_shortcuts if text}
         self._current = -1
+        # The edited macro's controller trigger, and the Learn state.
+        self._trigger: MacroTrigger | None = None
+        self._ensure_listening = ensure_listening
+        self._learning = False
+        self._learn_timer = QTimer(self)
+        self._learn_timer.setSingleShot(True)
+        self._learn_timer.setInterval(LEARN_TIMEOUT_MS)
+        self._learn_timer.timeout.connect(lambda: self.cancel_learn("No control pressed — Learn timed out."))
         self._player = MacroPlayer(sender, self)
         self._player.finished.connect(lambda result: self.status.setText(result.summary()))
 
@@ -94,10 +120,27 @@ class MacroManagerDialog(QDialog):
         shortcut_row = QHBoxLayout()
         shortcut_row.addWidget(self.shortcut_edit, 1)
         shortcut_row.addWidget(clear_shortcut)
+        self.trigger_label = QLabel("None")
+        self.learn_button = QPushButton("Learn")
+        self.learn_button.setToolTip(
+            "Listen for the next button pressed on your controller and play this macro whenever it is pressed. "
+            f"Click again (or wait {LEARN_TIMEOUT_MS // 1000} s) to cancel."
+        )
+        if ensure_listening is None:
+            self.learn_button.setEnabled(False)
+            self.learn_button.setToolTip("MIDI Learn needs the main window's Live Monitor")
+        self.learn_button.clicked.connect(self._on_learn_clicked)
+        self.clear_trigger_button = QPushButton("Clear")
+        self.clear_trigger_button.clicked.connect(lambda: self._set_trigger(None))
+        trigger_row = QHBoxLayout()
+        trigger_row.addWidget(self.trigger_label, 1)
+        trigger_row.addWidget(self.learn_button)
+        trigger_row.addWidget(self.clear_trigger_button)
         form = QFormLayout()
         form.addRow("Name", self.name_edit)
         form.addRow("Output port", self.port_combo)
         form.addRow("Shortcut", shortcut_row)
+        form.addRow("Trigger", trigger_row)
 
         self.table = QTableWidget(0, len(_COLUMNS))
         self.table.setHorizontalHeaderLabels(list(_COLUMNS))
@@ -178,6 +221,8 @@ class MacroManagerDialog(QDialog):
         self.name_edit.setText(macro.name)
         self.port_combo.setCurrentText(macro.output_port)
         self.shortcut_edit.setKeySequence(QKeySequence(macro.shortcut))
+        self.cancel_learn(None)
+        self._set_trigger(macro.trigger)
         self._fill(macro.steps)
 
     def _fill(self, steps: Sequence[MacroStep]) -> None:
@@ -222,7 +267,7 @@ class MacroManagerDialog(QDialog):
         if shortcut and shortcut.casefold() in self._reserved:
             self.status.setText(f"{shortcut} is already used by the app's menus")
             return None
-        return MidiMacro(name, self.port_combo.currentText().strip(), steps, shortcut)
+        return MidiMacro(name, self.port_combo.currentText().strip(), steps, shortcut, self._trigger)
 
     def _commit(self) -> bool:
         """Stores the editor into the list; False (and stays put) if invalid."""
@@ -333,7 +378,62 @@ class MacroManagerDialog(QDialog):
         if macro is not None:
             self._player.play(macro, self._ports)
 
+    # --- MIDI Learn (issue #252) ---------------------------------------------
+
+    @property
+    def is_learning(self) -> bool:
+        return self._learning
+
+    def _set_trigger(self, trigger: MacroTrigger | None) -> None:
+        self._trigger = trigger
+        self.trigger_label.setText(trigger.label() if trigger is not None else "None")
+        self.clear_trigger_button.setEnabled(trigger is not None)
+
+    def _on_learn_clicked(self) -> None:
+        if self._learning:
+            self.cancel_learn("Learn cancelled.")
+        else:
+            self.start_learn()
+
+    def start_learn(self) -> bool:
+        if self._learning or self._ensure_listening is None or not 0 <= self._current < len(self._macros):
+            return False
+        if not self._ensure_listening():
+            self.status.setText("No MIDI input is open: connect a controller, or pick one in Live Monitor.")
+            return False
+        self._learning = True
+        self.learn_button.setText("Cancel")
+        self.status.setText(f"Press a button on your controller… ({LEARN_TIMEOUT_MS // 1000} s)")
+        self._learn_timer.start()
+        return True
+
+    def cancel_learn(self, message: str | None = "Learn cancelled.") -> None:
+        if not self._learning:
+            return
+        self._learning = False
+        self._learn_timer.stop()
+        self.learn_button.setText("Learn")
+        if message is not None:
+            self.status.setText(message)
+
+    def feed_learn_event(self, event: MidiEvent) -> bool:
+        """Called for every live MIDI event while the dialog is open; returns
+        True when an active Learn consumed it (only a press is)."""
+        if not self._learning:
+            return False
+        trigger = MacroTrigger.from_event(event)
+        if trigger is None:
+            return False
+        self.cancel_learn(None)
+        self._set_trigger(trigger)
+        self.status.setText(f"Learned {trigger.label()}.")
+        return True
+
     # --- result ---------------------------------------------------------------
+
+    def done(self, result: int) -> None:
+        self.cancel_learn(None)
+        super().done(result)
 
     def accept(self) -> None:
         if not self._commit():
