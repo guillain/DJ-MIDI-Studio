@@ -132,6 +132,15 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **"Ready for live" mapping checker** (`v0.48.93-live-ready-check`, issue #254) — Qt-free
+  `live_ready.py` (`check_live_ready` → `ReadyReport` of `ReadyFinding`s with severity, message
+  and plain-language hint): per-deck missing `ESSENTIAL_FUNCTIONS` (Play/Cue/Sync/Load,
+  recognised from tag words since no real Serato export maps them — warning), trigger
+  conflicts reused from `validator.find_deck_conflicts` plus disagreeing copies (error), and
+  input bindings without an output mapping when the function is known to have LED feedback
+  (info). `gui/live_ready_dialog.py` report window (severity filters, Show control, Copy
+  report) from a new button strip above the validation table and `Edit → Ready for Live…`.
+  Read-only, never auto-fixes. Docs: `docs/enduser/features/live-ready-check.md`.
 - [x] **Hercules DJControl Inpulse 500 profile fix** (`v0.48.89-inpulse-500-profile-fix`, issue #247) — the
   catalog is re-transcribed from the bundled official MIDI Commands sheet (300 DPI renders): deck buttons on
   ch 2/3 (+SHIFT 5/6), the 8-mode pad banks on ch 7/8 (+8 with SHIFT), PAD MODE 1-8 and long-press notes,
