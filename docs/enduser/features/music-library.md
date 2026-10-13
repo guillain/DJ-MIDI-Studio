@@ -14,10 +14,12 @@
 - [Browse, sort and filter](#browse-sort-and-filter)
 - [Listen to a track](#listen-to-a-track)
 - [Edit tags](#edit-tags)
+- [Cover art](#cover-art)
 - [Write tags to many tracks at once](#write-tags-to-many-tracks-at-once)
 - [Estimate missing BPM and keys](#estimate-missing-bpm-and-keys)
 - [Find duplicate tracks](#find-duplicate-tracks)
 - [Check library health](#check-library-health)
+- [Library statistics](#library-statistics)
 - [Genre categories](#genre-categories)
 - [Playlists](#playlists)
 - [Smart playlists](#smart-playlists)
@@ -129,6 +131,20 @@ haven't written yet. `Clean noise frames…` lists leftover junk tags (old
 ID3v1 comment copies, old player preferences, ReplayGain values…) and
 removes them only after you confirm.
 
+## Cover art
+
+The **Track** panel shows the selected track's embedded cover (the front
+cover, or any other embedded picture when there is no front cover).
+
+- `Set cover…` embeds a JPEG or PNG image (up to 16 MB) as the track's front
+  cover, replacing the previous front cover.
+- `Remove cover` removes the front cover.
+
+Both are undoable with `Undo` / `Redo`. Only the front-cover picture changes:
+other embedded pictures (back cover, artist photo…), every tag and the
+Serato/Traktor data stay exactly as they were. Works with MP3, AIFF, FLAC,
+OGG and M4A files.
+
 ## Write tags to many tracks at once
 
 To give a whole album the same genre, or fix an artist name everywhere:
@@ -184,16 +200,22 @@ audio-analysis component isn't installed (from a source checkout:
 
 Click `Find duplicates…` (next to `Scan & read tags`, after a scan). The
 search runs in the background with a progress bar, then a **Duplicate
-tracks** window lists two kinds of groups:
+tracks** window lists two kinds of duplicate groups, plus a third section of
+suggestions:
 
 | Group | Meaning |
 | --- | --- |
 | Exact copies | Byte-identical files. Only files of exactly the same size are read and compared, so this stays quick on a large collection |
 | Same artist + title | Tags that match once case, accents, punctuation, `feat.` credits and an `(Original Mix)` suffix are ignored. Other versions — `(Extended Mix)`, `(Radio Edit)`, remixes, `(Live)` — stay separate. These are candidates, not proof: compare them before acting |
+| Other versions of the same song | Suggestions, not duplicates: the same artist and the same title once a trailing version marker is ignored — `(Radio Edit)`, `(Extended Mix)`, `(Original Mix)`, `[Remastered 2011]`, `- Club Mix`, `(X Remix)`, `(VIP)`… Shown only when at least two *different* versions exist; each file shows its own title. `(Part 2)` and other non-version text are never stripped |
 
 Each file shows its path, format and size; expand a group to see each
 file's bitrate. Select a file and click `Reveal in Finder` (or double-click
 it) to see it in your file manager.
+
+Other versions are listed for you to review only: they have no tick box,
+so they can never be moved to the Trash from this window, and another
+version never counts as the "kept copy" of a discarded duplicate.
 
 To clean up, tick the copies you don't want and click `Move ticked to
 Trash…`:
@@ -239,6 +261,29 @@ matches the path and the detail. Click a column header to sort.
 
 The report never changes a file. Run it again after fixing things to see
 the updated list.
+
+## Library statistics
+
+Click `Statistics…` (next to `Health report…`, after a scan) to see your
+collection as bar charts, one tab each:
+
+| Tab | What it counts |
+| --- | --- |
+| Categories | Tracks per confirmed genre category; `Uncategorized` for the rest (an amber suggestion doesn't count until you confirm it) |
+| Genres | Tracks per genre tag. Spellings that only differ by case or spaces (`Psy Trance`, `psy  trance`) count together |
+| BPM | A histogram in 5 BPM steps, with the number of tracks without a BPM |
+| Keys | The 24 Camelot keys in wheel order (1A, 1B … 12B), with the number of tracks without a key |
+| Added per month | Files per month of their modification date — the closest thing to a "date added" the files carry. A tag edit makes a file count as recent |
+| Most played | The 25 most-played tracks and how many were never played, once you've loaded your DJ history in the [History panel](#play-history) |
+
+The statistics follow the table's filters: filter on a category, a BPM
+range or a search first to chart just that part of the library (the line at
+the top of the window says how many tracks are counted). Missing files are left out.
+Hover a bar for its exact count; double-click a track in `Most played` to
+select it in the table.
+
+The window is a snapshot — reopen it after a scan, a filter change or
+loading history. It never changes a file.
 
 ## Genre categories
 
@@ -425,10 +470,12 @@ ever read; the per-track play counts are kept in the library index for
   (imports and comparisons alike). Exports
   always create a new file at the location you choose.
 - Undo writes the old values back through the same careful path.
+- `Set cover…` / `Remove cover` change only the front-cover picture.
 - `Find duplicates…` only reads files. Copies you tick go to the Trash after
   a confirmation, never deleted outright, and one copy of each group always
   stays.
 - `Health report…` only reads files.
+- `Statistics…` only reads this app's index and the history you loaded.
 
 ## Related
 

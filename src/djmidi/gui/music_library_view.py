@@ -9,11 +9,15 @@ playlist engine, Serato/Traktor/Rekordbox formats) to one tab:
   `DuplicatesDialog` whose ticked copies `discard_duplicates` moves to the
   Trash, issue #208), and a "Health report…" job (issue #225, opens a
   read-only `HealthReportDialog`: unreadable, empty-tag, cover-less,
-  low-bitrate and zero-length files, filterable, exportable to CSV);
+  low-bitrate and zero-length files, filterable, exportable to CSV), and a
+  "Statistics…" window (issue #258, `LibraryStatsDialog`: categories,
+  genres, BPM, Camelot keys, files added per month, most/never played);
 - the consolidated metadata table (sortable/filterable, category column);
 - a Track panel whose tag edits go through a `QUndoStack`
   (`commands.WriteTrackMetadataCommand`, or `WriteTracksMetadataCommand` when
   "Write tags to selection…" copies chosen fields to every selected track),
+  with an embedded cover-art preview set/removed through
+  `WriteTrackCoverCommand` (issue #256),
   a Categories panel over the
   taxonomy registry, a Playlists panel (import/generate/export), a History
   panel (issue #227: Serato/Traktor play history, read-only, plus the
@@ -44,7 +48,7 @@ from PySide6.QtCore import (
     Qt,
     QTimer,
 )
-from PySide6.QtGui import QBrush, QColor, QCursor, QFont, QUndoStack
+from PySide6.QtGui import QBrush, QColor, QCursor, QFont, QPixmap, QUndoStack
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QApplication,
@@ -84,10 +88,15 @@ from PySide6.QtWidgets import (
 from djmidi import taxonomy, user_paths
 from djmidi.gui import help_texts
 from djmidi.gui.audio_preview import AudioPreviewBar
-from djmidi.gui.commands import WriteTrackMetadataCommand, WriteTracksMetadataCommand
+from djmidi.gui.commands import (
+    WriteTrackCoverCommand,
+    WriteTrackMetadataCommand,
+    WriteTracksMetadataCommand,
+)
 from djmidi.gui.duplicates_dialog import DuplicatesDialog
 from djmidi.gui.health_report_dialog import HealthReportDialog
 from djmidi.gui.help_button import help_button, help_row
+from djmidi.gui.library_stats_dialog import LibraryStatsDialog
 from djmidi.gui.set_preparation import (
     SET_TRACKS_MIME,
     SetPreparationPanel,
@@ -101,9 +110,11 @@ from djmidi.library import (
     relink,
     set_prep,
     smart_playlist,
+    stats,
     workspace,
 )
 from djmidi.library.analysis import analysis_available, to_camelot
+from djmidi.library.cover_art import load_cover_file, read_cover_art
 from djmidi.library.db import LibraryDB, TrackRecord, default_library_db_path
 from djmidi.library.metadata import TrackMetadata, clean_noise_frames
 from djmidi.library.playlist import is_camelot_compatible
@@ -156,6 +167,8 @@ COLUMNS: tuple[tuple[str, str], ...] = (
 )
 _COLUMN_INDEX = {key: index for index, (_header, key) in enumerate(COLUMNS)}
 _EDIT_FIELDS = ("title", "artist", "album", "genre", "bpm", "key", "comment", "rating", "energy")
+# Side of the Track panel's cover-art preview, in pixels (issue #256).
+_COVER_SIZE = 140
 
 # Below this the tab scrolls rather than squeezing its panels (issue #19).
 # "Auto: mix path…" choices -> playlist.build_playlist_path directions.
@@ -893,6 +906,7 @@ class MusicLibraryView(QWidget):
         self.duplicates_dialog: DuplicatesDialog | None = None
         self._history_sessions: list[history.HistorySession] = []
         self.health_dialog: HealthReportDialog | None = None
+        self.stats_dialog: LibraryStatsDialog | None = None
 
         # The whole tab scrolls below its real minimum instead of crushing
         # buttons into slivers (issue #19's standing rule for every tab).
@@ -972,7 +986,8 @@ class MusicLibraryView(QWidget):
         self.relink_button.clicked.connect(self.start_relink_search)
         self.duplicates_button = QPushButton("Find duplicates…")
         self.duplicates_button.setToolTip(
-            "List identical files and tracks sharing artist + title. Read-only: nothing is deleted."
+            "List identical files, tracks sharing artist + title, and other versions of the same song "
+            "(suggestions). Read-only: nothing is deleted."
         )
         self.duplicates_button.clicked.connect(self.find_duplicates)
         self.health_button = QPushButton("Health report…")
@@ -981,6 +996,12 @@ class MusicLibraryView(QWidget):
             "and zero-length files. Read-only."
         )
         self.health_button.clicked.connect(self.start_health_report)
+        self.stats_button = QPushButton("Statistics…")
+        self.stats_button.setToolTip(
+            "Charts of the tracks shown: categories, genres, BPM, keys, files added per month and, "
+            "with DJ history loaded, most/never played. Read-only."
+        )
+        self.stats_button.clicked.connect(self.show_statistics)
         # Issue #224: needs the optional 'analysis' extra; greyed out with
         # the reason as tooltip when librosa isn't installed.
         self.analyse_button = QPushButton(_ANALYSE_LABEL)
@@ -1004,6 +1025,7 @@ class MusicLibraryView(QWidget):
                 self.duplicates_button,
                 self.relink_button,
                 self.health_button,
+                self.stats_button,
                 self.analyse_button,
             )
         ):
@@ -1131,6 +1153,7 @@ class MusicLibraryView(QWidget):
         self.track_path_label.setWordWrap(True)
         self.track_path_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         box.addWidget(self.track_path_label)
+        box.addLayout(self._build_cover_row())
         form = QFormLayout()
         self.field_edits: dict[str, QLineEdit] = {}
         for name in _EDIT_FIELDS:
@@ -1208,6 +1231,31 @@ class MusicLibraryView(QWidget):
         box.addWidget(self.clean_button)
         box.addStretch(1)
         return panel
+
+    def _build_cover_row(self) -> QHBoxLayout:
+        row = QHBoxLayout()
+        self.cover_label = QLabel()
+        self.cover_label.setFixedSize(_COVER_SIZE, _COVER_SIZE)
+        self.cover_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.cover_label.setFrameShape(QFrame.Shape.StyledPanel)
+        self.cover_label.setWordWrap(True)
+        row.addWidget(self.cover_label)
+        buttons = QVBoxLayout()
+        self.set_cover_button = QPushButton("Set cover…")
+        self.set_cover_button.setToolTip(
+            "Embeds a JPEG or PNG image as the track's front cover (undoable). Only the "
+            "cover picture changes: other tags and Serato/Traktor data are preserved."
+        )
+        self.set_cover_button.clicked.connect(self._on_set_cover_clicked)
+        self.remove_cover_button = QPushButton("Remove cover")
+        self.remove_cover_button.setToolTip("Removes the embedded front cover (undoable).")
+        self.remove_cover_button.clicked.connect(self.remove_cover)
+        buttons.addWidget(self.set_cover_button)
+        buttons.addWidget(self.remove_cover_button)
+        buttons.addStretch(1)
+        row.addLayout(buttons)
+        row.addStretch(1)
+        return row
 
     def _build_categories_panel(self) -> QWidget:
         panel = QWidget()
@@ -1504,7 +1552,10 @@ class MusicLibraryView(QWidget):
 
     def _duplicates_job(self) -> Generator[None]:
         # Metadata tier: tag cache only, instant even on a large library.
-        groups = duplicates.find_metadata_duplicates(duplicates.metadata_entries(self.db))
+        entries = duplicates.metadata_entries(self.db)
+        groups = duplicates.find_metadata_duplicates(entries)
+        # Same song, other version (issue #257): suggestions, listed apart.
+        versions = duplicates.find_version_variants(entries)
         sizes = duplicates.size_entries(self.db)
         total = duplicates.exact_candidate_count(sizes)
         self.progress_bar.setRange(0, max(total, 1))
@@ -1521,9 +1572,10 @@ class MusicLibraryView(QWidget):
             self.status_label.setText(f"Comparing files of equal size… {done}/{total}")
             yield
         self.status_label.setText(
-            f"Duplicates: {len(exact)} group(s) of identical files, {len(groups)} group(s) sharing artist + title."
+            f"Duplicates: {len(exact)} group(s) of identical files, {len(groups)} group(s) sharing artist + title, "
+            f"{len(versions)} song(s) with other versions."
         )
-        self._show_duplicates(exact + groups)
+        self._show_duplicates(exact + groups + versions)
 
     def _show_duplicates(self, groups: list[duplicates.DuplicateGroup]) -> None:
         if self.duplicates_dialog is not None:
@@ -1630,6 +1682,28 @@ class MusicLibraryView(QWidget):
         self.health_dialog = HealthReportDialog(report, self)
         self.health_dialog.showTrackRequested.connect(self.show_track)
         self.health_dialog.show()
+
+    # --- statistics (issue #258) -------------------------------------------
+
+    def compute_statistics(self) -> stats.LibraryStats:
+        """Statistics of the rows the table shows (filters apply), with play
+        counts when DJ history is loaded."""
+        mtimes = {track.path: track.mtime for track in self.db.list_tracks()}
+        plays = history.summarize_plays(self._history_sessions) if self._history_sessions else None
+        return stats.compute_library_stats(self.visible_rows(), mtimes, plays)
+
+    def show_statistics(self) -> None:
+        if self.table_model.rowCount() == 0:
+            self.status_label.setText("Scan a music folder first.")
+            return
+        shown, total = self.proxy.rowCount(), self.table_model.rowCount()
+        scope = "all indexed tracks" if shown == total else f"the {shown} of {total} tracks the filters show"
+        if self.stats_dialog is not None:
+            self.stats_dialog.close()
+            self.stats_dialog.deleteLater()
+        self.stats_dialog = LibraryStatsDialog(self.compute_statistics(), scope, self)
+        self.stats_dialog.showTrackRequested.connect(self.show_track)
+        self.stats_dialog.show()
 
     def show_track(self, path: str) -> bool:
         """Select `path` in the table, clearing the filters if they hide it."""
@@ -1973,6 +2047,7 @@ class MusicLibraryView(QWidget):
         editable = row is not None and not row.missing
         for widget in (*self.field_edits.values(), self.apply_button, self.revert_button, self.clean_button):
             widget.setEnabled(editable)
+        self._show_cover(row)
         if row is None:
             self.track_path_label.setText("Select a track in the table.")
             self.camelot_label.setText("")
@@ -1985,6 +2060,70 @@ class MusicLibraryView(QWidget):
         self.category_value_label.setText(self._category_text(row))
         self.analysis_value_label.setText(_analysis_text(row))
         self.accept_suggestion_button.setEnabled(_can_confirm_suggestion(row))
+
+    # --- cover art (issue #256) --------------------------------------------
+
+    def _show_cover(self, row: workspace.LibraryRow | None) -> None:
+        cover = None
+        if row is not None and not row.missing:
+            try:
+                cover = read_cover_art(row.path)
+            except Exception:
+                _LOGGER.warning("Could not read the cover of %s", row.path, exc_info=True)
+        pixmap = QPixmap()
+        if cover is not None and pixmap.loadFromData(cover.data):
+            self.cover_label.setPixmap(
+                pixmap.scaled(
+                    _COVER_SIZE,
+                    _COVER_SIZE,
+                    Qt.AspectRatioMode.KeepAspectRatio,
+                    Qt.TransformationMode.SmoothTransformation,
+                )
+            )
+        else:
+            self.cover_label.setPixmap(QPixmap())
+            self.cover_label.setText("" if row is None else ("Unreadable cover" if cover else "No cover"))
+        self._has_cover = cover is not None
+        editable = row is not None and not row.missing
+        self.set_cover_button.setEnabled(editable)
+        self.remove_cover_button.setEnabled(editable and self._has_cover)
+
+    def _on_set_cover_clicked(self) -> None:
+        path, _ = QFileDialog.getOpenFileName(self, "Choose cover image", "", "Images (*.jpg *.jpeg *.png)")
+        if path:
+            self.set_cover_from_file(path)
+
+    def set_cover_from_file(self, image_path: str) -> bool:
+        row = self._current_row()
+        if row is None or row.missing:
+            return False
+        try:
+            cover = load_cover_file(image_path)
+        except (OSError, ValueError) as exc:
+            QMessageBox.warning(self, "Unsupported image", str(exc))
+            return False
+        return self._push_cover(row.path, cover)
+
+    def remove_cover(self) -> bool:
+        row = self._current_row()
+        if row is None or row.missing:
+            return False
+        return self._push_cover(row.path, None)
+
+    def _push_cover(self, path: str, cover: object | None) -> bool:
+        try:
+            self.undo_stack.push(WriteTrackCoverCommand(path, cover, self._on_cover_written))
+        except Exception as exc:
+            _LOGGER.exception("Cover write failed for %s", path)
+            QMessageBox.warning(self, "Could not write the cover", f"{path}\n\n{exc}")
+            return False
+        return True
+
+    def _on_cover_written(self, path: str) -> None:
+        # Only the picture changed: refresh the preview, not the whole table.
+        if path == self._current_path:
+            self._show_cover(self._current_row())
+        self.status_label.setText(f"Cover updated: {Path(path).name}")
 
     def _writable_selection(self) -> list[workspace.LibraryRow]:
         return [row for row in self.selected_rows() if not row.missing]

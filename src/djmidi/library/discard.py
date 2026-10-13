@@ -7,7 +7,9 @@ ticked in the Duplicate tracks window:
   unticked file of the first group listing it, exact-copy groups before
   same-artist+title ones) and lists every group that would keep **no** file
   -- the GUI refuses the whole operation then, so a track can never vanish
-  from the library by ticking all of its copies.
+  from the library by ticking all of its copies. Version groups
+  (`TIER_VERSIONS`, issue #257) are ignored: another version of a song is
+  a suggestion, never a "copy" to keep in a discarded file's place.
 - `move_to_trash` hands each copy to an injected `trash` callable -- the GUI
   passes `QFile.moveToTrash`, so files go to the system Trash and can be
   put back; nothing here ever deletes a file itself -- and flags each moved
@@ -27,7 +29,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from .db import LibraryDB
-from .duplicates import TIER_EXACT, DuplicateGroup
+from .duplicates import TIER_EXACT, TIER_VERSIONS, DuplicateGroup
 
 
 @dataclass(frozen=True)
@@ -52,7 +54,9 @@ class TrashResult:
 
 def plan_discard(groups: Iterable[DuplicateGroup], discard_paths: Iterable[str]) -> DiscardPlan:
     """Pair each path of `discard_paths` with a kept copy; see module docstring."""
-    ordered = sorted(groups, key=lambda group: group.tier != TIER_EXACT)
+    ordered = sorted(
+        (group for group in groups if group.tier != TIER_VERSIONS), key=lambda group: group.tier != TIER_EXACT
+    )
     ticked = list(dict.fromkeys(str(path) for path in discard_paths))
     ticked_set = set(ticked)
     refused = tuple(group for group in ordered if ticked_set.intersection(group.paths) and ticked_set >= set(group.paths))

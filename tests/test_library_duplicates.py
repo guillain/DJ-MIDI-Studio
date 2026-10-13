@@ -8,13 +8,18 @@ from djmidi.library.duplicates import (
     PREFIX_BYTES,
     TIER_EXACT,
     TIER_METADATA,
+    TIER_VERSIONS,
     exact_candidate_count,
     find_exact_duplicates,
     find_metadata_duplicates,
+    find_version_variants,
     iter_exact_duplicates,
     metadata_key,
     normalize_artist,
     normalize_title,
+    song_key,
+    song_title,
+    strip_version_markers,
 )
 from djmidi.library.metadata import TrackMetadata
 
@@ -85,6 +90,75 @@ def test_find_metadata_duplicates_groups_normalized_matches():
     ]
     assert groups[1].key == "zed — alpha"
     assert groups[1].label == "Zed — Alpha (Original Mix)"
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        ("Song (Radio Edit)", "Song"),
+        ("Song [Extended Mix]", "Song"),
+        ("Song (Original Mix)", "Song"),
+        ("Song (Radio Edit) [Remastered 2011]", "Song"),
+        ("Song - 2011 Remaster", "Song"),
+        ("Song \u2013 Club Mix", "Song"),
+        ("Song - Re-Edit", "Song"),
+        ("Song (Someone Remix)", "Song"),
+        ("Song (VIP)", "Song"),
+        # Only the last spaced-dash suffix is peeled.
+        ("Part One - Part Two - Radio Edit", "Part One - Part Two"),
+        # Not version markers: kept.
+        ("Song (Part 2)", "Song (Part 2)"),
+        ("Song - Chapter One", "Song - Chapter One"),
+        ("Song (Live) Forever", "Song (Live) Forever"),
+        ("Jay-Z Mix", "Jay-Z Mix"),
+        # A title that is only a marker stays as is.
+        ("(Extended Mix)", "(Extended Mix)"),
+        ("  Song  ", "Song"),
+    ],
+)
+def test_strip_version_markers(raw, expected):
+    assert strip_version_markers(raw) == expected
+
+
+def test_song_title_and_key():
+    assert song_title("Song (feat. Guest) [Extended Mix]") == "song"
+    assert song_title("Song (Part 2)") == "song part 2"
+    assert song_title(None) == ""
+    assert song_key("Zed feat. Yan", "Alpha (Radio Edit)") == ("zed", "alpha")
+    assert song_key(None, "Alpha (Radio Edit)") is None
+    assert song_key("Zed", "") is None
+
+
+def test_find_version_variants_needs_two_different_versions():
+    entries = [
+        ("/m/a.mp3", "Zed", "Alpha (Radio Edit)"),
+        ("/m/b.flac", "ZED", "Alpha (Extended Mix)"),
+        ("/m/c.mp3", "Zed", "Alpha"),
+        ("/m/c2.mp3", "Zed", "Alpha (Original Mix)"),
+        ("/m/d.mp3", "Other", "Alpha (Radio Edit)"),
+        # Same version twice: a metadata duplicate, not a versions group.
+        ("/m/e.mp3", "Xu", "Bravo (Radio Edit)"),
+        ("/m/f.mp3", "xu", "Bravo (radio edit)"),
+        # Different songs that merely share a word.
+        ("/m/g.mp3", "Xu", "Charlie (Part 2)"),
+        ("/m/h.mp3", "Xu", "Charlie"),
+        ("/m/i.mp3", None, "Alpha (Dub)"),
+    ]
+    groups = find_version_variants(entries)
+    assert len(groups) == 1
+    group = groups[0]
+    assert group.tier == TIER_VERSIONS
+    assert group.key == "zed — alpha"
+    assert group.label == "Zed — Alpha"
+    assert group.paths == ("/m/c.mp3", "/m/b.flac", "/m/c2.mp3", "/m/a.mp3")
+    assert group.variants == (
+        "Alpha",
+        "Alpha (Extended Mix)",
+        "Alpha (Original Mix)",
+        "Alpha (Radio Edit)",
+    )
+    # Exact + metadata tiers are unaffected by the new tier.
+    assert all(g.tier == TIER_METADATA for g in find_metadata_duplicates(entries))
 
 
 def _write(path, data: bytes):
