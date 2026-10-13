@@ -55,7 +55,9 @@ MIDI_MACROS: HelpEntry = (
         "<li><b>Steps</b>: type, channel (1–16), data 1/2 (0–127) and an optional delay "
         "(ms) waited before the step is sent; <b>Add sync set…</b> appends a recorded sync "
         "set's messages.</li>"
-        "<li><b>Shortcut</b>: optional; one the app's menus already use is refused.</li></ul>"
+        "<li><b>Shortcut</b>: optional; one the app's menus already use is refused.</li>"
+        "<li><b>Trigger</b>: <b>Learn</b>, then press a button on your controller: that "
+        "press plays the macro from then on (the Live Monitor must be listening).</li></ul>"
         "<b>Test</b> plays the macro as edited. Each macro is a file in "
         "<tt>Documents/DJ MIDI Studio/Macros</tt>."
     ),

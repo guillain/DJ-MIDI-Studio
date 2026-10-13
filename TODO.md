@@ -132,6 +132,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **MIDI Learn for macros** (`v0.48.91-macro-midi-learn`, issue #252) — `MidiMacro.trigger`
+  (`MacroTrigger`: Note On/CC, channel, data1, input port; persisted in the macro's JSON only when
+  set), learned by a `Learn` button in Manage Macros (live events routed to the open dialog via
+  `MainWindow._macro_dialog`, reusing `midi_learn.trigger_from_event` and the Live Monitor
+  auto-start of #220). A live press fires `macros_for_event` through the existing `MacroPlayer`;
+  validation refuses shared triggers and self-retriggering macros on a loopback port.
 - [x] **MIDI Learn in the mapping editor** (`v0.48.86-midi-learn`, issue #220) — Qt-free
   `midi_learn.py` (`trigger_from_event`: only a Note On with velocity > 0 or a CC, input
   direction; `find_trigger_conflicts`/`describe_conflicts`; `find_parent_control`) behind a
