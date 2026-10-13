@@ -165,7 +165,10 @@ LIVE_MONITOR: HelpEntry = (
         "It starts on its own when a mapping is loaded (⚙ Preferences). To choose ports "
         "yourself: <b>Refresh ports</b>, tick inputs, <b>Start monitoring</b>.<br><br>"
         "To see the LED messages Serato sends back, tick <b>Create virtual monitor</b> and "
-        "add <i>DJMidiStudio Monitor</i> as an extra MIDI output in Serato."
+        "add <i>DJMidiStudio Monitor</i> as an extra MIDI output in Serato.<br><br>"
+        "A press that fires two or more different functions on the same deck is shown in "
+        "amber as <b>CONFLICT</b> and counted; Serato's identical repeated triggers are not "
+        "conflicts."
     ),
     "live-monitor.md",
 )

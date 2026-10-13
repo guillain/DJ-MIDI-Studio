@@ -132,6 +132,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Live conflict detection** (`v0.48.76-live-conflicts`, issue #223) — Qt-free
+  `validator.find_deck_conflicts`: a trigger whose `click` mappings bind two or more distinct
+  `(tag, slot_id)` functions on the same deck (identical 10x duplicates collapse to one, so the
+  real fixture reports none; output mappings ignored). Live Monitor flags such an input's row in
+  amber with a `CONFLICT deck N: …` prefix and counts hits/triggers under its status; Clear log
+  and loading a mapping reset the counter.
 - [x] **Set preparation** (`v0.48.74-set-preparation`, issue #221) — Qt-free `library/set_prep.py`:
   a hand-ordered set draft (paths) resolved against the library rows into `SetTrack`s (BPM, Camelot,
   energy parsed from the `Energy` tag, 1–10), one `Transition` per adjacent pair using
