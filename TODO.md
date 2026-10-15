@@ -132,6 +132,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **French UI follow-up** (`v0.48.106-french-ui-followup`, issue #281) — `tr()` on the
+  menu entries added in parallel with #263 (Help → First-Run Setup, Edit → Ready for Live,
+  View → MIDI Latency Test / Layer Map / Stage Mode, the Macros menu's fixed entries), the four
+  windows they open, and the #256–#261 Music Library buttons and windows (cover art, statistics,
+  smart playlists, rename files, change history); 196 new French strings. Layer Map's section
+  filter now goes by index. Still English: the rest of the Music Library tab and the tool docks.
 - [x] **Faster startup** (`v0.48.103-faster-startup`, issue #264) — Qt-free
   `startup_timing.py` (`StartupTimer`; `djmidi.main()` starts it before the GUI import,
   `gui.app.run()` marks each phase and logs `Startup: time to first window … ms` with a
