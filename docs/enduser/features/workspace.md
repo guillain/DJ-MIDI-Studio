@@ -117,6 +117,15 @@ Each tool window's title bar has:
 On first launch the window is sized to your screen. Every tab scrolls
 instead of squeezing its buttons when the window is small.
 
+The other windows follow the same rule on a small screen (a 13" laptop,
+900x600 and up): Layer Map, Ready for live, MIDI Latency Test, Library
+statistics, the Smart playlist editor, Rename files, Change history, the
+Command palette and the first-run setup open no larger than your screen,
+and when you drag one smaller it stops while its table or list still shows
+a few rows and every label, menu and button stays whole. Stage Mode fills
+the screen; out of full screen it stops at a size where the controller
+stays usable.
+
 ## Performance Mode
 
 `View → Performance Mode` hides the trees of `By Channel`, `By Deck` and

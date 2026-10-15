@@ -132,6 +132,17 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Small-window audit** (`v0.48.107-small-window-audit`, issue #282) — every window of the
+  v0.48.90–v0.48.103 batch grabbed offscreen at its default and minimum size (Stage Mode and the Music
+  Library at 1280x820 / 1000x650 / 900x600). Found: default sizes up to 1100x640 opened past a 1000x650
+  screen; Layer Map / Ready for live / Statistics / Rename / Change history tables collapsed to a sliver
+  at minimum size; MIDI Latency Test and the Smart playlist editor squeezed their spin boxes and combos
+  (Qt's window minimum ignores word-wrapped labels), Rename files clipped its warning; Layer Map's section
+  combo truncated to "All sect"; the Statistics tab bar scrolled behind arrows; Stage Mode out of full
+  screen crushed the controller to a sliver. Fixed with `gui/window_size.py` (`fit_to_screen`,
+  `usable_minimum`, `keep_wrapped_text_visible`); `tests/test_small_windows.py` is the regression check.
+  First-run wizard and the cover-art row were already fine; the Command palette's results list got a floor. Not done: a check on the real
+  `cocoa` platform (offscreen only).
 - [x] **Faster startup** (`v0.48.103-faster-startup`, issue #264) — Qt-free
   `startup_timing.py` (`StartupTimer`; `djmidi.main()` starts it before the GUI import,
   `gui.app.run()` marks each phase and logs `Startup: time to first window … ms` with a
