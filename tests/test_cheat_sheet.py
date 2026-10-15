@@ -135,3 +135,24 @@ def test_one_page_per_mapped_pad_bank_and_a_table_for_unshown_controls():
     assert [s.title for s in sheets] == ["DDJ-XP2 — pads PAD MODE 1", "DDJ-XP2 — pads PAD MODE 2"]
     assert [e.functions for e in sheets[0].entries] == [("cue_set (D1)",)]
     assert [e.functions for e in sheets[1].entries] == [("loop_roll (D1)",)]
+
+
+def test_a_key_shift_pad_bank_is_not_printed_as_shift():
+    # Issue #280: DDJ-1000's "KEY SHIFT" pad mode carries "SHIFT" in its own
+    # name; only its "(+SHIFT)" variants are SHIFT ones.
+    variants = cs.marker_variants("DDJ-1000", "Pad 1", "(KEY SHIFT, PAGE 1)")
+    plain = next(v for v in variants if v.name == "Deck 1 Pad 1 (KEY SHIFT, PAGE 1)")
+    shifted = next(v for v in variants if v.name == "Deck 1 Pad 1 (KEY SHIFT, PAGE 1) (+SHIFT)")
+    assert not cs.is_shift(plain)
+    assert cs.is_shift(shifted)
+    index = {
+        (plain.channels[0], "Note On", plain.data1): [("D1", "pitch up")],
+        (shifted.channels[0], "Note On", shifted.data1): [("D1", "pitch down")],
+    }
+    assert cs._marker_functions(variants, index) == ["pitch up (D1)", "SHIFT: pitch down (D1)"]
+
+
+def test_layer_map_shares_the_cheat_sheet_shift_rule():
+    from djmidi.gui import layer_map
+
+    assert layer_map.is_shift is cs.is_shift
