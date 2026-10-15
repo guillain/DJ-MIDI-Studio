@@ -132,6 +132,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Change history: cover art and renames** (`v0.48.104-change-history-hooks`, issue #279) —
+  `Set cover…` / `Remove cover` and `Rename files…` (and every undo/redo of them) are now logged in the
+  persistent Change history. A cover entry keeps the previous picture so `Revert…` can put it back, but
+  only while the file still holds the cover this app wrote (else "its cover changed since"); a rename
+  entry reverts through the existing `rename` reverter (moves back, relinks index and playlists).
 - [x] **Faster startup** (`v0.48.103-faster-startup`, issue #264) — Qt-free
   `startup_timing.py` (`StartupTimer`; `djmidi.main()` starts it before the GUI import,
   `gui.app.run()` marks each phase and logs `Startup: time to first window … ms` with a

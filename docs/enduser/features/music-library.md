@@ -300,7 +300,8 @@ the updated list.
 Undo only lasts until you quit. So that nothing this app does to your files
 is ever lost track of, every write is also logged in the library index and
 kept across restarts: tag edits, `Write tags to selection…`, applied
-analysis suggestions, their undos, and duplicates moved to the Trash.
+analysis suggestions, covers set or removed, `Rename files…`, their undos,
+and duplicates moved to the Trash.
 
 Click `Change history…` to list them, newest first (when, what kind, a
 summary, how many files, and whether it was reverted). Select an entry to
@@ -312,11 +313,18 @@ see every file with its before → after values.
   as any tag edit — but only to files still holding what this app wrote. A
   tag you changed since (in Serato, say) is left alone, and the window lists
   it with the reason.
+- **Cover art**: the previous front cover is put back (or the added one
+  removed) — but only while the file still holds the cover this app wrote.
+  A cover you replaced since is left alone and listed.
+- **Rename**: each file moves back to its old name, unless another file has
+  taken it; the library and this app's playlists follow. Serato, Traktor
+  and Rekordbox still need relinking, as after the rename itself.
 - **Moved to Trash**: each copy is moved back to where it was, unless
   another file has taken its place, and shows as present again in the
   library. Playlists that were pointed at the kept copy stay that way.
 
-A revert is logged too, so a tag revert can itself be reverted. The last
+A revert is logged too, so a tag, cover or rename revert can itself be
+reverted. The last
 1000 changes are kept.
 
 ## Library statistics
