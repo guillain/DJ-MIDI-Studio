@@ -36,6 +36,7 @@ from djmidi.gui.cheat_sheet import (
     FunctionIndex,
     build_function_index,
     format_functions,
+    is_shift,
 )
 from djmidi.model import MidiConfig
 
@@ -71,16 +72,6 @@ def _qualifier(variant: catalog.ControlInfo) -> str:
     text = _SHIFT_RE.sub("", suffix).strip().strip("()").strip(" ,")
     # DDJ-XP2's "Rotary Selector (+SHIFT press)" is just the SHIFT layer.
     return "" if text == "press" else text
-
-
-def is_shift(variant: catalog.ControlInfo) -> bool:
-    """Whether a variant is a SHIFT one -- ignoring the bank's own name,
-    since DDJ-1000/FLX10/800 have a "KEY SHIFT" pad mode whose plain
-    variants are not SHIFT ones."""
-    name = variant.name
-    if bank := _bank(variant):
-        name = name.replace(f"({bank})", "")
-    return "shift" in name.casefold()
 
 
 def layer_of(variant: catalog.ControlInfo) -> str:

@@ -132,6 +132,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Cheat sheet KEY SHIFT fix** (`v0.48.105-cheat-sheet-key-shift`, issue #280) — the
+  cheat sheet treated every pad of the DDJ-1000/DDJ-FLX10/DDJ-800 `KEY SHIFT` pad mode as a
+  SHIFT variant (the bank's own name contains "SHIFT"), printing its plain functions on
+  `SHIFT:` lines. The Layer Map's bank-aware rule moved to `cheat_sheet.is_shift` and is now
+  shared by both (`layer_map.is_shift` is the same function); `_is_plain` strips the bank too.
+  Regression test on DDJ-1000's real `KEY SHIFT, PAGE 1` variants.
 - [x] **Change history: cover art and renames** (`v0.48.104-change-history-hooks`, issue #279) —
   `Set cover…` / `Remove cover` and `Rename files…` (and every undo/redo of them) are now logged in the
   persistent Change history. A cover entry keeps the previous picture so `Revert…` can put it back, but
