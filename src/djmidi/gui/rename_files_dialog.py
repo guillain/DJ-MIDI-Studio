@@ -38,13 +38,6 @@ from djmidi.gui.window_size import (
 from djmidi.library import rename
 from djmidi.library.rename import RenamePlan, TemplateError
 
-_STATUS_TEXT = {
-    rename.STATUS_RENAME: "Rename",
-    rename.STATUS_UNCHANGED: "Unchanged",
-    rename.STATUS_MISSING_TAGS: "Skipped",
-    rename.STATUS_CONFLICT: "Conflict",
-    rename.STATUS_REFUSED: "Refused",
-}
 _STATUS_COLOUR = {
     rename.STATUS_CONFLICT: QColor("#c0392b"),
     rename.STATUS_REFUSED: QColor("#c0392b"),
@@ -60,20 +53,27 @@ class RenameFilesDialog(QDialog):
         parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
-        self.setWindowTitle("Rename files")
+        self.setWindowTitle(self.tr("Rename files"))
         fit_to_screen(self, 900, 480)
         self._planner = planner
         self.plan: RenamePlan | None = None
+        self._status_text = {
+            rename.STATUS_RENAME: self.tr("Rename"),
+            rename.STATUS_UNCHANGED: self.tr("Unchanged"),
+            rename.STATUS_MISSING_TAGS: self.tr("Skipped"),
+            rename.STATUS_CONFLICT: self.tr("Conflict"),
+            rename.STATUS_REFUSED: self.tr("Refused"),
+        }
         box = QVBoxLayout(self)
 
         row = QHBoxLayout()
-        row.addWidget(QLabel("Template"))
+        row.addWidget(QLabel(self.tr("Template")))
         self.template_edit = QLineEdit(template)
-        self.template_edit.setToolTip("Fields: " + ", ".join(f"{{{name}}}" for name in rename.TEMPLATE_FIELDS))
+        self.template_edit.setToolTip(self.tr("Fields: ") + ", ".join(f"{{{name}}}" for name in rename.TEMPLATE_FIELDS))
         row.addWidget(self.template_edit, 1)
         row.addWidget(help_button(self, *help_texts.LIBRARY_RENAME))
         box.addLayout(row)
-        fields = QLabel("Fields: " + "  ".join(f"{{{name}}}" for name in rename.TEMPLATE_FIELDS))
+        fields = QLabel(self.tr("Fields: ") + "  ".join(f"{{{name}}}" for name in rename.TEMPLATE_FIELDS))
         fields.setWordWrap(True)
         box.addWidget(fields)
 
@@ -83,7 +83,7 @@ class RenameFilesDialog(QDialog):
         box.addWidget(warning)
 
         self.tree = QTreeWidget()
-        self.tree.setHeaderLabels(["Current name", "New name", "Status"])
+        self.tree.setHeaderLabels([self.tr("Current name"), self.tr("New name"), self.tr("Status")])
         self.tree.setRootIsDecorated(False)
         self.tree.header().setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
         self.tree.setColumnWidth(0, 330)
@@ -94,7 +94,7 @@ class RenameFilesDialog(QDialog):
         self.summary_label.setWordWrap(True)
         box.addWidget(self.summary_label)
 
-        self.csv_checkbox = QCheckBox("Save an old → new path CSV for relinking after renaming")
+        self.csv_checkbox = QCheckBox(self.tr("Save an old → new path CSV for relinking after renaming"))
         self.csv_checkbox.setChecked(True)
         box.addWidget(self.csv_checkbox)
         self.buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
@@ -125,12 +125,12 @@ class RenameFilesDialog(QDialog):
         except TemplateError as exc:
             self.plan = None
             self.summary_label.setText(str(exc))
-            ok.setText("Rename")
+            ok.setText(self.tr("Rename"))
             ok.setEnabled(False)
             return
         for item in self.plan.items:
             new_name = Path(item.new_path).name if item.new_path else ""
-            status = _STATUS_TEXT.get(item.status, item.status)
+            status = self._status_text.get(item.status, item.status)
             row = QTreeWidgetItem([Path(item.old_path).name, new_name, f"{status}: {item.reason}" if item.reason else status])
             row.setToolTip(0, item.old_path)
             row.setToolTip(1, item.new_path or "")
@@ -140,12 +140,15 @@ class RenameFilesDialog(QDialog):
             self.tree.addTopLevelItem(row)
         count = len(self.plan.renames)
         others = [
-            f"{self.plan.count(status)} {_STATUS_TEXT[status].lower()}"
+            f"{self.plan.count(status)} {self._status_text[status].lower()}"
             for status in (rename.STATUS_UNCHANGED, rename.STATUS_MISSING_TAGS, rename.STATUS_CONFLICT, rename.STATUS_REFUSED)
             if self.plan.count(status)
         ]
-        self.summary_label.setText(f"{count} file(s) will be renamed" + (f" ({', '.join(others)})." if others else "."))
-        ok.setText(f"Rename {count} file(s)")
+        self.summary_label.setText(
+            self.tr("{count} file(s) will be renamed").format(count=count)
+            + (f" ({', '.join(others)})." if others else ".")
+        )
+        ok.setText(self.tr("Rename {count} file(s)").format(count=count))
         ok.setEnabled(count > 0)
 
 

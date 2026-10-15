@@ -1385,6 +1385,16 @@ def test_rename_files_flow_with_undo_and_csv(library, monkeypatch):
     view.undo_stack.redo()
     assert new_a.is_file()
 
+    # Issue #279: each pass is in the change history, and reverting the
+    # latest one from there moves the files back and relinks playlists.
+    changes = view.db.list_changes()
+    assert [c.summary for c in changes] == ["Rename 2 file(s)", "Undo: Rename 2 file(s)", "Rename 2 file(s)"]
+    assert all(c.kind == "rename" for c in changes)
+    monkeypatch.setattr(QMessageBox, "information", lambda *a, **k: None)
+    view.show_change_history().revert(changes[0].id)
+    assert (tribe / "a.mp3").is_file() and not new_a.exists()
+    assert view.db.playlist_paths(playlist) == [str(tribe / "a.mp3")]
+
 
 def test_rename_files_reports_failures_and_skips_empty_batches(library, monkeypatch):
     view, music, _tmp = library
@@ -1395,6 +1405,7 @@ def test_rename_files_reports_failures_and_skips_empty_batches(library, monkeypa
     assert view.rename_files([(str(gone), str(music / "misc" / "x.mp3"))]) == []
     assert "file not found" in warnings[0]
     assert view.undo_stack.count() == 0
+    assert view.db.list_changes() == []
 
 
 def test_rename_dialog_preview_and_template_errors(library):
@@ -1453,6 +1464,35 @@ def test_cover_art_set_remove_and_undo(library, monkeypatch):
     bad.write_bytes(b"GIF89a" + b"\x00" * 10)
     assert not view.set_cover_from_file(str(bad))
     assert warnings
+
+
+def test_cover_writes_are_logged_and_revertible_from_the_history(library, monkeypatch):
+    """Issue #279: set, remove and every undo/redo pass land in the change
+    history; reverting restores the previous cover from the log."""
+    from djmidi.library.cover_art import read_cover_art
+
+    view, music, tmp_path = library
+    path = str(music / "Tek" / "Tribe" / "a.mp3")
+    view.select_path(path)
+    image = _png_file(tmp_path / "cover.png")
+    assert view.set_cover_from_file(str(image))
+    assert view.remove_cover()
+    view.undo_stack.undo()
+    assert [c.summary for c in view.db.list_changes()] == [
+        "Undo: Remove cover of a.mp3",
+        "Remove cover of a.mp3",
+        "Set cover of a.mp3",
+    ]
+    assert all(c.kind == "cover" for c in view.db.list_changes())
+
+    monkeypatch.setattr(QMessageBox, "information", lambda *a, **k: None)
+    dialog = view.show_change_history()
+    assert dialog.items.topLevelItem(0).text(1).startswith("front cover: (none) → image/png, ")
+    first = view.db.list_changes()[-1]
+    result = dialog.revert(first.id)
+    assert result.reverted == [path] and read_cover_art(path) is None
+    assert view.cover_label.text() == "No cover"
+    assert read_metadata(path).title == "Alpha"
 
 
 def test_cover_buttons_disabled_without_a_track():

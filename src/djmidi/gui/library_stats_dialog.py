@@ -218,17 +218,17 @@ class LibraryStatsDialog(QDialog):
         self, stats: LibraryStats, scope: str = "", parent: QWidget | None = None
     ) -> None:
         super().__init__(parent)
-        self.setWindowTitle("Library statistics")
+        self.setWindowTitle(self.tr("Library statistics"))
         fit_to_screen(self, 820, 560)
         self.stats = stats
         box = QVBoxLayout(self)
 
         header = QHBoxLayout()
-        summary = f"{stats.total} track(s)"
+        summary = self.tr("{count} track(s)").format(count=stats.total)
         if scope:
             summary += f" — {scope}"
         if stats.missing:
-            summary += f". {stats.missing} missing file(s) not counted"
+            summary += ". " + self.tr("{count} missing file(s) not counted").format(count=stats.missing)
         self.summary_label = QLabel(summary + ".")
         self.summary_label.setWordWrap(True)
         header.addWidget(self.summary_label, 1)
@@ -245,59 +245,71 @@ class LibraryStatsDialog(QDialog):
         )
         self._add_tab(
             "categories",
-            "Categories",
-            BarChart(stats.by_category, empty_text="No tracks."),
-            f"{uncategorized} track(s) without a confirmed category ({_percent(uncategorized, stats.total)}).",
+            self.tr("Categories"),
+            BarChart(stats.by_category, empty_text=self.tr("No tracks.")),
+            self.tr("{count} track(s) without a confirmed category ({percent}).").format(
+                count=uncategorized, percent=_percent(uncategorized, stats.total)
+            ),
         )
         self._add_tab(
             "genres",
-            "Genres",
-            BarChart(stats.by_genre, empty_text="No tracks."),
-            f"{len(stats.by_genre)} distinct genre tag(s); spelling variants differing only by case or "
-            "spaces are grouped.",
+            self.tr("Genres"),
+            BarChart(stats.by_genre, empty_text=self.tr("No tracks.")),
+            self.tr(
+                "{count} distinct genre tag(s); spelling variants differing only by case or spaces are grouped."
+            ).format(count=len(stats.by_genre)),
         )
         self._add_tab(
             "bpm",
-            "BPM",
+            self.tr("BPM"),
             BarChart(
-                stats.bpm_histogram, vertical=True, empty_text="No track has a BPM tag."
+                stats.bpm_histogram, vertical=True, empty_text=self.tr("No track has a BPM tag.")
             ),
-            f"{stats.no_bpm} track(s) without a BPM ({_percent(stats.no_bpm, stats.total)}).",
+            self.tr("{count} track(s) without a BPM ({percent}).").format(
+                count=stats.no_bpm, percent=_percent(stats.no_bpm, stats.total)
+            ),
         )
         self._add_tab(
             "keys",
-            "Keys",
-            BarChart(stats.by_camelot, vertical=True),
-            f"Camelot wheel order. {stats.no_key} track(s) without a recognised key "
-            f"({_percent(stats.no_key, stats.total)}).",
+            self.tr("Keys"),
+            BarChart(stats.by_camelot, vertical=True, empty_text=self.tr("Nothing to show.")),
+            self.tr("Camelot wheel order. {count} track(s) without a recognised key ({percent}).").format(
+                count=stats.no_key, percent=_percent(stats.no_key, stats.total)
+            ),
         )
         self._add_tab(
             "added",
-            "Added per month",
+            self.tr("Added per month"),
             BarChart(
                 stats.added_per_month,
                 vertical=True,
-                empty_text="No file dates in the index.",
+                empty_text=self.tr("No file dates in the index."),
             ),
-            "By file modification date (the index has no “date added”; a tag edit can move a file to a "
-            "later month).",
+            self.tr(
+                "By file modification date (the index has no “date added”; a tag edit can move a file to a "
+                "later month)."
+            ),
         )
         if stats.most_played is None:
             played_chart = BarChart(
-                empty_text="Load DJ history in the History panel to see play counts."
+                empty_text=self.tr("Load DJ history in the History panel to see play counts.")
             )
-            played_note = "No play history loaded."
+            played_note = self.tr("No play history loaded.")
         else:
             played_chart = BarChart(
                 [Bucket(track.label, track.play_count) for track in stats.most_played],
-                empty_text="No track of this list appears in the loaded history.",
+                empty_text=self.tr("No track of this list appears in the loaded history."),
             )
-            played_note = (
-                f"{stats.played} track(s) played at least once, {stats.never_played} never played "
-                f"({_percent(stats.never_played or 0, stats.total)}). Double-click a track to show it."
+            played_note = self.tr(
+                "{played} track(s) played at least once, {never} never played ({percent}). "
+                "Double-click a track to show it."
+            ).format(
+                played=stats.played,
+                never=stats.never_played,
+                percent=_percent(stats.never_played or 0, stats.total),
             )
             played_chart.bucketActivated.connect(self._on_played_activated)
-        self._add_tab("plays", "Most played", played_chart, played_note)
+        self._add_tab("plays", self.tr("Most played"), played_chart, played_note)
         # Wide enough for every tab title: a scrolling tab bar hides tabs
         # behind arrows too narrow for their own minimum (issue #282).
         usable_minimum(self.tabs, max(420, self.tabs.tabBar().sizeHint().width() + 8), 260)

@@ -190,7 +190,7 @@ def test_rename_revert_moves_back_and_relinks(db, tmp_path):
 
 
 def test_unknown_kinds_and_registered_reverters(db):
-    change_id = change_log.record_change(db, change_log.KIND_COVER, "Set cover", [ChangeItem("/a", {}, {})])
+    change_id = change_log.record_change(db, "custom", "Custom write", [ChangeItem("/a", {}, {})])
     assert not change_log.is_revertible(db.get_change(change_id))
     with pytest.raises(ValueError, match="can't be reverted"):
         change_log.revert_change(db, change_id)
@@ -198,14 +198,96 @@ def test_unknown_kinds_and_registered_reverters(db):
         change_log.revert_change(db, 999)
     calls = []
 
-    def revert_cover(_db, item, _ctx):
+    def revert_custom(_db, item, _ctx):
         calls.append(item.path)
         return ChangeItem(item.path, item.after, item.before)
 
-    change_log.register_reverter(change_log.KIND_COVER, revert_cover)
+    change_log.register_reverter("custom", revert_custom)
     try:
         with pytest.raises(ValueError, match="already registered"):
-            change_log.register_reverter(change_log.KIND_COVER, revert_cover)
+            change_log.register_reverter("custom", revert_custom)
+        with pytest.raises(ValueError, match="already registered"):
+            change_log.register_reverter(change_log.KIND_COVER, revert_custom)
         assert change_log.revert_change(db, change_id).reverted == ["/a"] and calls == ["/a"]
     finally:
-        change_log._REVERTERS.pop(change_log.KIND_COVER)
+        change_log._REVERTERS.pop("custom")
+
+
+# --- cover art (issue #279) ----------------------------------------------
+
+PNG = b"\x89PNG\r\n\x1a\n" + b"\x01" * 40
+JPEG = b"\xff\xd8\xff\xe0" + b"\x02" * 40
+
+
+def test_cover_state_keeps_data_only_when_asked():
+    from djmidi.library.cover_art import CoverArt
+
+    cover = CoverArt(PNG, "image/png", "front")
+    full = change_log.cover_state(cover)
+    light = change_log.cover_state(cover, keep_data=False)
+    assert full["sha256"] == light["sha256"] and full["size"] == len(PNG) and "data" not in light
+    assert change_log.cover_from_state(full) == cover
+    assert change_log.cover_state(None) == {"sha256": None}
+    assert change_log.cover_from_state({"sha256": None}) is None
+    with pytest.raises(change_log.RevertSkipped, match="wasn't kept"):
+        change_log.cover_from_state(light)
+
+
+def test_cover_change_is_logged_and_reverted_on_a_real_file(db, tmp_path):
+    from djmidi.library.cover_art import CoverArt, read_front_cover, write_cover_art
+
+    track = _mp3(tmp_path / "a.mp3", title="Alpha")
+    old, new = CoverArt(JPEG, "image/jpeg"), CoverArt(PNG, "image/png")
+    write_cover_art(track, old)
+    write_cover_art(track, new)
+    clock = _clock()
+    change_id = change_log.record_cover_change(db, str(track), old, new, now=clock)
+    [item] = db.get_change(change_id).items
+    assert db.get_change(change_id).summary == "Set cover of a.mp3"
+    assert "data" in item.before and "data" not in item.after
+
+    result = change_log.revert_change(db, change_id, now=clock)
+    assert result.reverted == [str(track)] and read_front_cover(track).data == JPEG
+    assert read_metadata(str(track)).title == "Alpha"
+    # The revert is logged with the cover it replaced, so it can be reverted too.
+    revert_entry = db.get_change(result.log_id)
+    assert revert_entry.kind == change_log.KIND_COVER
+    assert change_log.revert_change(db, result.log_id, now=clock).reverted == [str(track)]
+    assert read_front_cover(track).data == PNG
+
+
+def test_cover_revert_removes_an_added_cover_and_skips_one_changed_since(db, tmp_path):
+    from djmidi.library.cover_art import CoverArt, read_front_cover, write_cover_art
+
+    added = _mp3(tmp_path / "added.mp3")
+    write_cover_art(added, CoverArt(PNG, "image/png"))
+    edited = _mp3(tmp_path / "edited.mp3")
+    write_cover_art(edited, CoverArt(PNG, "image/png"))
+    first = change_log.record_cover_change(db, str(added), None, CoverArt(PNG, "image/png"))
+    second = change_log.record_cover_change(db, str(edited), None, CoverArt(PNG, "image/png"))
+    write_cover_art(edited, CoverArt(JPEG, "image/jpeg"))  # e.g. replaced in Serato
+
+    assert change_log.revert_change(db, first).reverted == [str(added)]
+    assert read_front_cover(added) is None
+    result = change_log.revert_change(db, second)
+    assert result.failed == [(str(edited), "its cover changed since")]
+    assert read_front_cover(edited).data == JPEG
+    assert db.get_change(second).reverted_at is None
+
+
+def test_cover_revert_already_done_and_injected_io(db):
+    from djmidi.library.cover_art import CoverArt
+
+    writes = []
+    current = {"cover": CoverArt(PNG, "image/png")}
+    context = change_log.RevertContext(
+        cover_reader=lambda path: current["cover"],
+        cover_writer=lambda path, cover: writes.append((path, cover)),
+    )
+    change_id = change_log.record_cover_change(db, __file__, None, CoverArt(PNG, "image/png"), summary="S")
+    assert change_log.revert_change(db, change_id, context).reverted == [__file__]
+    assert writes == [(__file__, None)]
+    current["cover"] = None
+    again = change_log.record_cover_change(db, __file__, None, CoverArt(PNG, "image/png"))
+    result = change_log.revert_change(db, again, context)
+    assert result.already == [__file__] and len(writes) == 1

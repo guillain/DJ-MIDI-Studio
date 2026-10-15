@@ -38,14 +38,23 @@ This first version translates what you use most:
   `Bibliothèque musicale`;
 - the **● Rec** / **⟳ Sync** buttons beside the menu bar;
 - the whole Preferences window;
+- the first-run setup wizard (`Aide → Configuration initiale…`), the
+  `Prêt pour le live` report, the `Test de latence MIDI` and the
+  `Carte des couches` windows;
+- in the Music Library: the cover-art, statistics, smart-playlist,
+  file-renaming and change-history buttons, and the windows they open;
 - Qt's own standard buttons and dialogs (`OK`, `Annuler`, `Enregistrer`,
   file pickers).
 
 ## What stays in English
 
-The content of each tab, the tool windows (Live Monitor, MIDI Routing,
-MIDI Clock, Metronome, Controller Emulator), messages and the `?` help
-texts are still in English, as is this documentation. They will be
+The rest of each tab's content (including the Music Library's older
+buttons and its status line), the tool windows (Live Monitor, MIDI Routing,
+MIDI Clock, Metronome, Controller Emulator), most messages and the `?` help
+texts are still in English, as is this documentation. Inside the translated
+windows, text computed from your data stays in English too: the findings
+of the `Prêt pour le live` report, the latency statistics line and the
+change-history entry descriptions. They will be
 translated over the next releases. Controller and function names that
 come from your DJ software or your controller's MIDI documentation are
 never translated.

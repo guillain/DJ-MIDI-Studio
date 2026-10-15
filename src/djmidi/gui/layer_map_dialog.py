@@ -45,6 +45,7 @@ from djmidi.gui.window_size import (
 )
 from djmidi.model import MidiConfig
 
+# English source texts (what tests see); the dialog shows them through tr().
 ALL_SECTIONS = "All sections"
 NOT_APPLICABLE = "—"
 FREE_TEXT = "free"
@@ -63,29 +64,30 @@ class LayerMapDialog(QDialog):
         parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
-        self.setWindowTitle("Layer Map")
+        self.setWindowTitle(self.tr("Layer Map"))
         fit_to_screen(self, 1100, 640)
         self._config_provider = config_provider
         self.layer_map: LayerMap | None = None
         box = QVBoxLayout(self)
 
         controls = QHBoxLayout()
-        controls.addWidget(QLabel("Controller:"))
+        controls.addWidget(QLabel(self.tr("Controller:")))
         self.controller_combo = QComboBox()
         for name, count in controllers:
-            self.controller_combo.addItem(f"{name} — {count} mapped trigger(s)" if count else name, name)
+            label = self.tr("{name} — {count} mapped trigger(s)").format(name=name, count=count) if count else name
+            self.controller_combo.addItem(label, name)
         if preselected is not None and (index := self.controller_combo.findData(preselected)) >= 0:
             self.controller_combo.setCurrentIndex(index)
         self.controller_combo.currentIndexChanged.connect(lambda _index: self.rebuild())
         controls.addWidget(self.controller_combo, 1)
-        controls.addWidget(QLabel("Section:"))
+        controls.addWidget(QLabel(self.tr("Section:")))
         self.section_combo = QComboBox()
         # Never cut a section name to a few letters when the window is small.
         self.section_combo.setMinimumContentsLength(len(ALL_SECTIONS))
         self.section_combo.currentIndexChanged.connect(lambda _index: self._fill_table())
         controls.addWidget(self.section_combo)
-        self.free_only_checkbox = QCheckBox("Only controls with a free layer")
-        self.free_only_checkbox.setToolTip("Hide the controls whose every layer is already mapped.")
+        self.free_only_checkbox = QCheckBox(self.tr("Only controls with a free layer"))
+        self.free_only_checkbox.setToolTip(self.tr("Hide the controls whose every layer is already mapped."))
         self.free_only_checkbox.toggled.connect(lambda _checked: self._fill_table())
         controls.addWidget(self.free_only_checkbox)
         controls.addWidget(help_button(self, *help_texts.LAYER_MAP))
@@ -104,8 +106,8 @@ class LayerMapDialog(QDialog):
         box.addWidget(self.table, 1)
 
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
-        self.refresh_button = QPushButton("Refresh")
-        self.refresh_button.setToolTip("Re-read the loaded mapping, including edits made since this window opened.")
+        self.refresh_button = QPushButton(self.tr("Refresh"))
+        self.refresh_button.setToolTip(self.tr("Re-read the loaded mapping, including edits made since this window opened."))
         self.refresh_button.clicked.connect(self.rebuild)
         buttons.addButton(self.refresh_button, QDialogButtonBox.ButtonRole.ActionRole)
         buttons.rejected.connect(self.reject)
@@ -124,13 +126,15 @@ class LayerMapDialog(QDialog):
             self.layer_map = None
         else:
             self.layer_map = build_layer_map(self._config_provider(), controller)
-        previous = self.section_combo.currentText()
+        # Item 0 is "All sections" (translated); the filter goes by index,
+        # never by that text.
+        previous = self.section_combo.currentText() if self.section_combo.currentIndex() > 0 else None
         self.section_combo.blockSignals(True)
         self.section_combo.clear()
-        self.section_combo.addItem(ALL_SECTIONS)
+        self.section_combo.addItem(self.tr("All sections"))
         if self.layer_map is not None:
             self.section_combo.addItems(self.layer_map.sections())
-        index = self.section_combo.findText(previous)
+        index = self.section_combo.findText(previous) if previous is not None else 0
         self.section_combo.setCurrentIndex(max(index, 0))
         self.section_combo.blockSignals(False)
         self._fill_table()
@@ -141,13 +145,13 @@ class LayerMapDialog(QDialog):
         if layer_map is None:
             self.table.setRowCount(0)
             self.table.setColumnCount(0)
-            self.summary_label.setText("No controller to show.")
+            self.summary_label.setText(self.tr("No controller to show."))
             return
-        section = self.section_combo.currentText()
+        section = self.section_combo.currentText() if self.section_combo.currentIndex() > 0 else None
         rows = [
             row
             for row in layer_map.rows
-            if (section in ("", ALL_SECTIONS) or row.section == section)
+            if (section is None or row.section == section)
             and (
                 not self.free_only_checkbox.isChecked()
                 or any(cell.status in (STATUS_FREE, STATUS_PARTIAL) for cell in row.cells.values())
@@ -164,12 +168,17 @@ class LayerMapDialog(QDialog):
                 if cell is None:
                     item = QTableWidgetItem(NOT_APPLICABLE)
                     item.setForeground(QBrush(QColor(128, 128, 128)))
-                    item.setToolTip(f"{row.control} has no {layer} layer on this controller.")
+                    item.setToolTip(
+                        self.tr("{control} has no {layer} layer on this controller.").format(
+                            control=row.control, layer=layer
+                        )
+                    )
                 elif cell.status == STATUS_FREE:
-                    item = QTableWidgetItem(FREE_TEXT)
+                    item = QTableWidgetItem(self.tr("free"))
                     item.setBackground(FREE_BRUSH)
                     item.setToolTip(
-                        "Free: nothing in this mapping uses it.\n"
+                        self.tr("Free: nothing in this mapping uses it.")
+                        + "\n"
                         + "\n".join(describe_trigger(t) for t in cell.free_triggers)
                     )
                 else:
@@ -177,7 +186,7 @@ class LayerMapDialog(QDialog):
                     tooltip = "\n".join(cell.functions)
                     if cell.status == STATUS_PARTIAL:
                         item.setBackground(PARTIAL_BRUSH)
-                        tooltip += "\n\nStill free on:\n" + "\n".join(
+                        tooltip += "\n\n" + self.tr("Still free on:") + "\n" + "\n".join(
                             describe_trigger(t) for t in cell.free_triggers
                         )
                     item.setToolTip(tooltip)
@@ -185,10 +194,16 @@ class LayerMapDialog(QDialog):
                 self.table.setItem(row_index, column, item)
         self.table.resizeRowsToContents()
         self.summary_label.setText(
-            f"{layer_map.controller}: {layer_map.count('mapped')} mapped, "
-            f"{layer_map.count(STATUS_PARTIAL)} partly free (amber), "
-            f"{layer_map.count(STATUS_FREE)} free (green) combination(s) across "
-            f"{len(layer_map.layers)} layer(s). Hover a free cell for the raw MIDI triggers left."
+            self.tr(
+                "{controller}: {mapped} mapped, {partial} partly free (amber), {free} free (green) "
+                "combination(s) across {layers} layer(s). Hover a free cell for the raw MIDI triggers left."
+            ).format(
+                controller=layer_map.controller,
+                mapped=layer_map.count("mapped"),
+                partial=layer_map.count(STATUS_PARTIAL),
+                free=layer_map.count(STATUS_FREE),
+                layers=len(layer_map.layers),
+            )
         )
 
 

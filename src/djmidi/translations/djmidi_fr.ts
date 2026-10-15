@@ -2,6 +2,317 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="fr_FR">
 <context>
+    <name>ChangeHistoryDialog</name>
+    <message>
+        <source>Change history</source>
+        <translation>Historique des modifications</translation>
+    </message>
+    <message>
+        <source>Every tag, cover art and rename write and Trash move this app made to your files, newest first. Revert puts a file back only while it still holds what this app wrote.</source>
+        <translation>Chaque écriture de tags, de pochette et chaque renommage ou mise à la corbeille faits par cette application sur vos fichiers, les plus récentes d&apos;abord. Annuler ne remet un fichier en l&apos;état que s&apos;il contient encore ce que cette application a écrit.</translation>
+    </message>
+    <message>
+        <source>When</source>
+        <translation>Date</translation>
+    </message>
+    <message>
+        <source>Change</source>
+        <translation>Modification</translation>
+    </message>
+    <message>
+        <source>Summary</source>
+        <translation>Résumé</translation>
+    </message>
+    <message>
+        <source>Files</source>
+        <translation>Fichiers</translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation>État</translation>
+    </message>
+    <message>
+        <source>File</source>
+        <translation>Fichier</translation>
+    </message>
+    <message>
+        <source>Revert…</source>
+        <translation>Annuler la modification…</translation>
+    </message>
+    <message>
+        <source>Undo the selected change on the files it touched.</source>
+        <translation>Annule la modification sélectionnée sur les fichiers concernés.</translation>
+    </message>
+    <message>
+        <source>Refresh</source>
+        <translation>Actualiser</translation>
+    </message>
+    <message>
+        <source>Revert change</source>
+        <translation>Annuler la modification</translation>
+    </message>
+    <message>
+        <source>Revert #{id} ({summary}) on {count} file(s)?
+
+Files changed again since are left alone. The revert is itself logged here.</source>
+        <translation>Annuler la modification n°{id} ({summary}) sur {count} fichier(s) ?
+
+Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-même consignée ici.</translation>
+    </message>
+    <message>
+        <source>Reverted {count} file(s).</source>
+        <translation>{count} fichier(s) remis en l&apos;état.</translation>
+    </message>
+    <message>
+        <source>{count} already held their previous state.</source>
+        <translation>{count} étaient déjà dans leur état précédent.</translation>
+    </message>
+    <message>
+        <source>{count} left alone:</source>
+        <translation>{count} laissé(s) tel(s) quel(s) :</translation>
+    </message>
+    <message>
+        <source>… and {count} more</source>
+        <translation>… et {count} de plus</translation>
+    </message>
+</context>
+<context>
+    <name>FirstRunWizard</name>
+    <message>
+        <source>Welcome to DJ MIDI Studio</source>
+        <translation>Bienvenue dans DJ MIDI Studio</translation>
+    </message>
+    <message>
+        <source>Skip</source>
+        <translation>Passer</translation>
+    </message>
+    <message>
+        <source>Welcome</source>
+        <translation>Bienvenue</translation>
+    </message>
+    <message>
+        <source>This short setup finds your controllers, offers to open your Serato MIDI mapping and to record a controller sync set.&lt;br&gt;&lt;br&gt;Every step is optional: click &lt;b&gt;Skip&lt;/b&gt; to close it. You can run it again from &lt;b&gt;Help → First-Run Setup…&lt;/b&gt;.</source>
+        <translation>Cette courte configuration détecte vos contrôleurs, propose d&apos;ouvrir votre mapping MIDI Serato et d&apos;enregistrer un jeu de synchronisation.&lt;br&gt;&lt;br&gt;Chaque étape est facultative : cliquez sur &lt;b&gt;Passer&lt;/b&gt; pour la fermer. Vous pouvez la relancer depuis &lt;b&gt;Aide → Configuration initiale…&lt;/b&gt;.</translation>
+    </message>
+</context>
+<context>
+    <name>LayerMapDialog</name>
+    <message>
+        <source>Layer Map</source>
+        <translation>Carte des couches</translation>
+    </message>
+    <message>
+        <source>Controller:</source>
+        <translation>Contrôleur :</translation>
+    </message>
+    <message>
+        <source>{name} — {count} mapped trigger(s)</source>
+        <translation>{name} — {count} déclencheur(s) mappé(s)</translation>
+    </message>
+    <message>
+        <source>Section:</source>
+        <translation>Section :</translation>
+    </message>
+    <message>
+        <source>Only controls with a free layer</source>
+        <translation>Seulement les commandes avec une couche libre</translation>
+    </message>
+    <message>
+        <source>Hide the controls whose every layer is already mapped.</source>
+        <translation>Masque les commandes dont toutes les couches sont déjà mappées.</translation>
+    </message>
+    <message>
+        <source>Refresh</source>
+        <translation>Actualiser</translation>
+    </message>
+    <message>
+        <source>Re-read the loaded mapping, including edits made since this window opened.</source>
+        <translation>Relit le mapping chargé, y compris les modifications faites depuis l&apos;ouverture de cette fenêtre.</translation>
+    </message>
+    <message>
+        <source>All sections</source>
+        <translation>Toutes les sections</translation>
+    </message>
+    <message>
+        <source>No controller to show.</source>
+        <translation>Aucun contrôleur à afficher.</translation>
+    </message>
+    <message>
+        <source>{control} has no {layer} layer on this controller.</source>
+        <translation>{control} n&apos;a pas de couche {layer} sur ce contrôleur.</translation>
+    </message>
+    <message>
+        <source>free</source>
+        <translation>libre</translation>
+    </message>
+    <message>
+        <source>Free: nothing in this mapping uses it.</source>
+        <translation>Libre : rien dans ce mapping ne l&apos;utilise.</translation>
+    </message>
+    <message>
+        <source>Still free on:</source>
+        <translation>Encore libre sur :</translation>
+    </message>
+    <message>
+        <source>{controller}: {mapped} mapped, {partial} partly free (amber), {free} free (green) combination(s) across {layers} layer(s). Hover a free cell for the raw MIDI triggers left.</source>
+        <translation>{controller} : {mapped} mappée(s), {partial} en partie libre(s) (ambre), {free} combinaison(s) libre(s) (vert) sur {layers} couche(s). Survolez une case libre pour voir les déclencheurs MIDI bruts restants.</translation>
+    </message>
+</context>
+<context>
+    <name>LibraryStatsDialog</name>
+    <message>
+        <source>Library statistics</source>
+        <translation>Statistiques de la bibliothèque</translation>
+    </message>
+    <message>
+        <source>{count} track(s)</source>
+        <translation>{count} morceau(x)</translation>
+    </message>
+    <message>
+        <source>{count} missing file(s) not counted</source>
+        <translation>{count} fichier(s) manquant(s) non compté(s)</translation>
+    </message>
+    <message>
+        <source>Categories</source>
+        <translation>Catégories</translation>
+    </message>
+    <message>
+        <source>No tracks.</source>
+        <translation>Aucun morceau.</translation>
+    </message>
+    <message>
+        <source>{count} track(s) without a confirmed category ({percent}).</source>
+        <translation>{count} morceau(x) sans catégorie confirmée ({percent}).</translation>
+    </message>
+    <message>
+        <source>Genres</source>
+        <translation>Genres</translation>
+    </message>
+    <message>
+        <source>{count} distinct genre tag(s); spelling variants differing only by case or spaces are grouped.</source>
+        <translation>{count} tag(s) de genre distinct(s) ; les variantes qui ne diffèrent que par la casse ou les espaces sont regroupées.</translation>
+    </message>
+    <message>
+        <source>BPM</source>
+        <translation>BPM</translation>
+    </message>
+    <message>
+        <source>No track has a BPM tag.</source>
+        <translation>Aucun morceau n&apos;a de tag BPM.</translation>
+    </message>
+    <message>
+        <source>{count} track(s) without a BPM ({percent}).</source>
+        <translation>{count} morceau(x) sans BPM ({percent}).</translation>
+    </message>
+    <message>
+        <source>Keys</source>
+        <translation>Tonalités</translation>
+    </message>
+    <message>
+        <source>Nothing to show.</source>
+        <translation>Rien à afficher.</translation>
+    </message>
+    <message>
+        <source>Camelot wheel order. {count} track(s) without a recognised key ({percent}).</source>
+        <translation>Ordre de la roue Camelot. {count} morceau(x) sans tonalité reconnue ({percent}).</translation>
+    </message>
+    <message>
+        <source>Added per month</source>
+        <translation>Ajouts par mois</translation>
+    </message>
+    <message>
+        <source>No file dates in the index.</source>
+        <translation>Aucune date de fichier dans l&apos;index.</translation>
+    </message>
+    <message>
+        <source>By file modification date (the index has no “date added”; a tag edit can move a file to a later month).</source>
+        <translation>Selon la date de modification du fichier (l&apos;index n&apos;a pas de « date d&apos;ajout » ; modifier un tag peut déplacer un fichier vers un mois plus récent).</translation>
+    </message>
+    <message>
+        <source>Load DJ history in the History panel to see play counts.</source>
+        <translation>Chargez l&apos;historique DJ dans le panneau Historique pour voir le nombre de lectures.</translation>
+    </message>
+    <message>
+        <source>No play history loaded.</source>
+        <translation>Aucun historique de lecture chargé.</translation>
+    </message>
+    <message>
+        <source>No track of this list appears in the loaded history.</source>
+        <translation>Aucun morceau de cette liste n&apos;apparaît dans l&apos;historique chargé.</translation>
+    </message>
+    <message>
+        <source>{played} track(s) played at least once, {never} never played ({percent}). Double-click a track to show it.</source>
+        <translation>{played} morceau(x) joué(s) au moins une fois, {never} jamais joué(s) ({percent}). Double-cliquez sur un morceau pour l&apos;afficher.</translation>
+    </message>
+    <message>
+        <source>Most played</source>
+        <translation>Les plus joués</translation>
+    </message>
+</context>
+<context>
+    <name>LiveReadyDialog</name>
+    <message>
+        <source>Ready for live</source>
+        <translation>Prêt pour le live</translation>
+    </message>
+    <message>
+        <source>none</source>
+        <translation>aucune</translation>
+    </message>
+    <message>
+        <source>Decks checked: {decks}. Read-only: nothing is changed.</source>
+        <translation>Platines vérifiées : {decks}. Lecture seule : rien n&apos;est modifié.</translation>
+    </message>
+    <message>
+        <source>Errors</source>
+        <translation>Erreurs</translation>
+    </message>
+    <message>
+        <source>Warnings</source>
+        <translation>Avertissements</translation>
+    </message>
+    <message>
+        <source>Info</source>
+        <translation>Infos</translation>
+    </message>
+    <message>
+        <source>Severity</source>
+        <translation>Gravité</translation>
+    </message>
+    <message>
+        <source>Finding</source>
+        <translation>Constat</translation>
+    </message>
+    <message>
+        <source>What to do</source>
+        <translation>Que faire</translation>
+    </message>
+    <message>
+        <source>Show control</source>
+        <translation>Afficher la commande</translation>
+    </message>
+    <message>
+        <source>Select this control in the By Channel view (double-click does the same).</source>
+        <translation>Sélectionne cette commande dans la vue Par canal (un double-clic fait de même).</translation>
+    </message>
+    <message>
+        <source>Copy report</source>
+        <translation>Copier le rapport</translation>
+    </message>
+    <message>
+        <source>Copy the whole report as text.</source>
+        <translation>Copie tout le rapport sous forme de texte.</translation>
+    </message>
+    <message>
+        <source>{shown} of {total} finding(s) shown</source>
+        <translation>{shown} constat(s) affiché(s) sur {total}</translation>
+    </message>
+    <message>
+        <source>Report copied to the clipboard</source>
+        <translation>Rapport copié dans le presse-papiers</translation>
+    </message>
+</context>
+<context>
     <name>MainWindow</name>
     <message>
         <source>Dashboard</source>
@@ -180,6 +491,14 @@
         <translation>&amp;Valider</translation>
     </message>
     <message>
+        <source>Ready for &amp;Live…</source>
+        <translation>Prêt pour le &amp;live…</translation>
+    </message>
+    <message>
+        <source>Check the mapping before a gig (read-only).</source>
+        <translation>Vérifie le mapping avant une soirée (lecture seule).</translation>
+    </message>
+    <message>
         <source>&amp;View</source>
         <translation>Afficha&amp;ge</translation>
     </message>
@@ -200,12 +519,36 @@
         <translation>Nouvel émulateur de contrôleur…</translation>
     </message>
     <message>
+        <source>MIDI Latency Test…</source>
+        <translation>Test de latence MIDI…</translation>
+    </message>
+    <message>
+        <source>Measure MIDI round-trip latency through a port or device that echoes what it receives</source>
+        <translation>Mesure la latence MIDI aller-retour via un port ou un appareil qui renvoie ce qu&apos;il reçoit</translation>
+    </message>
+    <message>
+        <source>Layer Map…</source>
+        <translation>Carte des couches…</translation>
+    </message>
+    <message>
+        <source>What each control of a controller does in every layer (normal, SHIFT, pad modes), with the free combinations highlighted</source>
+        <translation>Ce que fait chaque commande d&apos;un contrôleur dans chaque couche (normale, SHIFT, modes de pads), avec les combinaisons libres mises en évidence</translation>
+    </message>
+    <message>
         <source>Show all controllers</source>
         <translation>Afficher tous les contrôleurs</translation>
     </message>
     <message>
         <source>Performance Mode</source>
         <translation>Mode performance</translation>
+    </message>
+    <message>
+        <source>Stage Mode</source>
+        <translation>Mode scène</translation>
+    </message>
+    <message>
+        <source>Full-screen, high-contrast Controller Emulator and compact Live Monitor for on-stage use -- Esc to exit (session-only, not remembered across restarts)</source>
+        <translation>Émulateur de contrôleur plein écran à fort contraste et Live Monitor compact pour la scène -- Échap pour quitter (pour cette session uniquement, non mémorisé au redémarrage)</translation>
     </message>
     <message>
         <source>&amp;Macros</source>
@@ -240,6 +583,14 @@
         <translation>Références officielles et externes</translation>
     </message>
     <message>
+        <source>First-Run &amp;Setup...</source>
+        <translation>Configuration &amp;initiale...</translation>
+    </message>
+    <message>
+        <source>Detect your controllers, open your Serato mapping and record a controller sync set.</source>
+        <translation>Détecte vos contrôleurs, ouvre votre mapping Serato et enregistre un jeu de synchronisation.</translation>
+    </message>
+    <message>
         <source>Check for &amp;Updates...</source>
         <translation>Rechercher des &amp;mises à jour...</translation>
     </message>
@@ -254,6 +605,240 @@
     <message>
         <source>■ Stop</source>
         <translation>■ Arrêt</translation>
+    </message>
+    <message>
+        <source>No macro yet</source>
+        <translation>Aucune macro pour l&apos;instant</translation>
+    </message>
+    <message>
+        <source>Manage Macros…</source>
+        <translation>Gérer les macros…</translation>
+    </message>
+    <message>
+        <source>Show Macros Folder</source>
+        <translation>Afficher le dossier des macros</translation>
+    </message>
+    <message>
+        <source>Layer Map</source>
+        <translation>Carte des couches</translation>
+    </message>
+    <message>
+        <source>Open a mapping first.</source>
+        <translation>Ouvrez d&apos;abord un mapping.</translation>
+    </message>
+    <message>
+        <source>Ready for live: open a mapping first.</source>
+        <translation>Prêt pour le live : ouvrez d&apos;abord un mapping.</translation>
+    </message>
+    <message>
+        <source>Ready for live: {errors} error(s), {warnings} warning(s), {infos} info</source>
+        <translation>Prêt pour le live : {errors} erreur(s), {warnings} avertissement(s), {infos} info(s)</translation>
+    </message>
+</context>
+<context>
+    <name>MidiLatencyDialog</name>
+    <message>
+        <source>MIDI Latency Test</source>
+        <translation>Test de latence MIDI</translation>
+    </message>
+    <message>
+        <source>Needs an echo.</source>
+        <translation>Nécessite un écho.</translation>
+    </message>
+    <message>
+        <source>Refresh the MIDI port lists</source>
+        <translation>Actualise les listes de ports MIDI</translation>
+    </message>
+    <message>
+        <source>Reply must carry the ping&apos;s velocity</source>
+        <translation>La réponse doit porter la vélocité du ping</translation>
+    </message>
+    <message>
+        <source>Each ping uses its own velocity so a late echo is never counted for the next ping. Untick for a device that echoes a different velocity.</source>
+        <translation>Chaque ping utilise sa propre vélocité pour qu&apos;un écho en retard ne soit jamais compté pour le ping suivant. Décochez pour un appareil qui renvoie une autre vélocité.</translation>
+    </message>
+    <message>
+        <source>Send to (output)</source>
+        <translation>Envoyer vers (sortie)</translation>
+    </message>
+    <message>
+        <source>Listen on (input)</source>
+        <translation>Écouter sur (entrée)</translation>
+    </message>
+    <message>
+        <source>Pings</source>
+        <translation>Pings</translation>
+    </message>
+    <message>
+        <source>Channel</source>
+        <translation>Canal</translation>
+    </message>
+    <message>
+        <source>Note</source>
+        <translation>Note</translation>
+    </message>
+    <message>
+        <source>Interval</source>
+        <translation>Intervalle</translation>
+    </message>
+    <message>
+        <source>Timeout</source>
+        <translation>Délai d&apos;attente</translation>
+    </message>
+    <message>
+        <source>Not run yet.</source>
+        <translation>Pas encore lancé.</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>Démarrer</translation>
+    </message>
+    <message>
+        <source>Stop</source>
+        <translation>Arrêter</translation>
+    </message>
+    <message>
+        <source>Stopping…</source>
+        <translation>Arrêt…</translation>
+    </message>
+    <message>
+        <source>Pinging {output} → {input}…</source>
+        <translation>Ping {output} → {input}…</translation>
+    </message>
+    <message>
+        <source>timed out</source>
+        <translation>délai dépassé</translation>
+    </message>
+    <message>
+        <source>Ping {number}: {rtt}</source>
+        <translation>Ping {number} : {rtt}</translation>
+    </message>
+    <message>
+        <source>Stopped before any ping finished.</source>
+        <translation>Arrêté avant la fin du premier ping.</translation>
+    </message>
+    <message>
+        <source>Could not run the test: {error}</source>
+        <translation>Impossible de lancer le test : {error}</translation>
+    </message>
+</context>
+<context>
+    <name>MusicLibraryView</name>
+    <message>
+        <source>List identical files, tracks sharing artist + title, and other versions of the same song (suggestions). Read-only: nothing is deleted.</source>
+        <translation>Liste les fichiers identiques, les morceaux de même artiste + titre et les autres versions d&apos;un même titre (suggestions). Lecture seule : rien n&apos;est supprimé.</translation>
+    </message>
+    <message>
+        <source>Change history…</source>
+        <translation>Historique des modifications…</translation>
+    </message>
+    <message>
+        <source>Every tag, cover and rename write and Trash move this app made, kept across restarts. Inspect and revert them.</source>
+        <translation>Chaque écriture de tags, de pochette, chaque renommage et mise à la corbeille faits par cette application, conservés entre les lancements. Consultez-les et annulez-les.</translation>
+    </message>
+    <message>
+        <source>Statistics…</source>
+        <translation>Statistiques…</translation>
+    </message>
+    <message>
+        <source>Charts of the tracks shown: categories, genres, BPM, keys, files added per month and, with DJ history loaded, most/never played. Read-only.</source>
+        <translation>Graphiques des morceaux affichés : catégories, genres, BPM, tonalités, fichiers ajoutés par mois et, avec l&apos;historique DJ chargé, les plus joués / jamais joués. Lecture seule.</translation>
+    </message>
+    <message>
+        <source>Rename files…</source>
+        <translation>Renommer les fichiers…</translation>
+    </message>
+    <message>
+        <source>Renames the selected files from their tags (e.g. {artist} - {title}) inside their folder, after a preview, as one undoable step. DJ software will need relinking.</source>
+        <translation>Renomme les fichiers sélectionnés d&apos;après leurs tags (par ex. {artist} - {title}) dans leur dossier, après un aperçu, en une seule étape annulable. Les logiciels DJ devront les relocaliser.</translation>
+    </message>
+    <message>
+        <source>Set cover…</source>
+        <translation>Définir la pochette…</translation>
+    </message>
+    <message>
+        <source>Embeds a JPEG or PNG image as the track&apos;s front cover (undoable). Only the cover picture changes: other tags and Serato/Traktor data are preserved.</source>
+        <translation>Intègre une image JPEG ou PNG comme pochette du morceau (annulable). Seule l&apos;image change : les autres tags et les données Serato/Traktor sont conservés.</translation>
+    </message>
+    <message>
+        <source>Remove cover</source>
+        <translation>Retirer la pochette</translation>
+    </message>
+    <message>
+        <source>Removes the embedded front cover (undoable).</source>
+        <translation>Retire la pochette intégrée (annulable).</translation>
+    </message>
+    <message>
+        <source>New smart playlist…</source>
+        <translation>Nouvelle playlist intelligente…</translation>
+    </message>
+    <message>
+        <source>A saved set of rules (category, BPM range, key, not played for…) re-evaluated against the whole library after every scan and on demand.</source>
+        <translation>Un ensemble de règles enregistré (catégorie, plage de BPM, tonalité, non joué depuis…) réévalué sur toute la bibliothèque après chaque analyse et à la demande.</translation>
+    </message>
+    <message>
+        <source>Edit smart rules…</source>
+        <translation>Modifier les règles…</translation>
+    </message>
+    <message>
+        <source>Changes the rules of the selected smart playlist and re-evaluates it.</source>
+        <translation>Modifie les règles de la playlist intelligente sélectionnée et la réévalue.</translation>
+    </message>
+    <message>
+        <source>Refresh smart playlists</source>
+        <translation>Actualiser les playlists intelligentes</translation>
+    </message>
+    <message>
+        <source>Re-evaluates every smart playlist against the current library and play history.</source>
+        <translation>Réévalue chaque playlist intelligente avec la bibliothèque et l&apos;historique de lecture actuels.</translation>
+    </message>
+    <message>
+        <source>all indexed tracks</source>
+        <translation>tous les morceaux indexés</translation>
+    </message>
+    <message>
+        <source>the {shown} of {total} tracks the filters show</source>
+        <translation>les {shown} morceaux sur {total} affichés par les filtres</translation>
+    </message>
+    <message>
+        <source>Unreadable cover</source>
+        <translation>Pochette illisible</translation>
+    </message>
+    <message>
+        <source>No cover</source>
+        <translation>Pas de pochette</translation>
+    </message>
+    <message>
+        <source>Choose cover image</source>
+        <translation>Choisir l&apos;image de pochette</translation>
+    </message>
+    <message>
+        <source>Images (*.jpg *.jpeg *.png)</source>
+        <translation>Images (*.jpg *.jpeg *.png)</translation>
+    </message>
+    <message>
+        <source>Unsupported image</source>
+        <translation>Image non prise en charge</translation>
+    </message>
+    <message>
+        <source>Could not write the cover</source>
+        <translation>Impossible d&apos;écrire la pochette</translation>
+    </message>
+    <message>
+        <source>Some files were not renamed</source>
+        <translation>Certains fichiers n&apos;ont pas été renommés</translation>
+    </message>
+    <message>
+        <source>Save old → new paths</source>
+        <translation>Enregistrer les chemins ancien → nouveau</translation>
+    </message>
+    <message>
+        <source>CSV files (*.csv)</source>
+        <translation>Fichiers CSV (*.csv)</translation>
+    </message>
+    <message>
+        <source>Smart playlist</source>
+        <translation>Playlist intelligente</translation>
     </message>
 </context>
 <context>
@@ -469,6 +1054,245 @@
     <message>
         <source>Remove selected set</source>
         <translation>Supprimer le jeu sélectionné</translation>
+    </message>
+</context>
+<context>
+    <name>RenameFilesDialog</name>
+    <message>
+        <source>Rename files</source>
+        <translation>Renommer les fichiers</translation>
+    </message>
+    <message>
+        <source>Rename</source>
+        <translation>Renommer</translation>
+    </message>
+    <message>
+        <source>Unchanged</source>
+        <translation>Inchangé</translation>
+    </message>
+    <message>
+        <source>Skipped</source>
+        <translation>Ignoré</translation>
+    </message>
+    <message>
+        <source>Conflict</source>
+        <translation>Conflit</translation>
+    </message>
+    <message>
+        <source>Refused</source>
+        <translation>Refusé</translation>
+    </message>
+    <message>
+        <source>Template</source>
+        <translation>Modèle</translation>
+    </message>
+    <message>
+        <source>Fields: </source>
+        <translation>Champs : </translation>
+    </message>
+    <message>
+        <source>Current name</source>
+        <translation>Nom actuel</translation>
+    </message>
+    <message>
+        <source>New name</source>
+        <translation>Nouveau nom</translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation>État</translation>
+    </message>
+    <message>
+        <source>Save an old → new path CSV for relinking after renaming</source>
+        <translation>Enregistrer un CSV des chemins ancien → nouveau pour relocaliser après le renommage</translation>
+    </message>
+    <message>
+        <source>{count} file(s) will be renamed</source>
+        <translation>{count} fichier(s) seront renommés</translation>
+    </message>
+    <message>
+        <source>Rename {count} file(s)</source>
+        <translation>Renommer {count} fichier(s)</translation>
+    </message>
+</context>
+<context>
+    <name>SmartPlaylistDialog</name>
+    <message>
+        <source>Smart playlist</source>
+        <translation>Playlist intelligente</translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation>Nom :</translation>
+    </message>
+    <message>
+        <source>Any category</source>
+        <translation>Toute catégorie</translation>
+    </message>
+    <message>
+        <source>{family} (whole family)</source>
+        <translation>{family} (toute la famille)</translation>
+    </message>
+    <message>
+        <source>Category:</source>
+        <translation>Catégorie :</translation>
+    </message>
+    <message>
+        <source>Genre tag contains…</source>
+        <translation>Le tag de genre contient…</translation>
+    </message>
+    <message>
+        <source>Genre:</source>
+        <translation>Genre :</translation>
+    </message>
+    <message>
+        <source>Title, artist, album or path contains…</source>
+        <translation>Le titre, l&apos;artiste, l&apos;album ou le chemin contient…</translation>
+    </message>
+    <message>
+        <source>Text:</source>
+        <translation>Texte :</translation>
+    </message>
+    <message>
+        <source>Any</source>
+        <translation>Tous</translation>
+    </message>
+    <message>
+        <source>to</source>
+        <translation>à</translation>
+    </message>
+    <message>
+        <source>BPM:</source>
+        <translation>BPM :</translation>
+    </message>
+    <message>
+        <source>Any key</source>
+        <translation>Toute tonalité</translation>
+    </message>
+    <message>
+        <source>or compatible</source>
+        <translation>ou compatible</translation>
+    </message>
+    <message>
+        <source>Also every key that mixes harmonically with it (±1, relative).</source>
+        <translation>Aussi chaque tonalité qui se mixe harmoniquement avec elle (±1, relative).</translation>
+    </message>
+    <message>
+        <source>Camelot key:</source>
+        <translation>Tonalité Camelot :</translation>
+    </message>
+    <message>
+        <source>Off</source>
+        <translation>Désactivé</translation>
+    </message>
+    <message>
+        <source> days</source>
+        <translation> jours</translation>
+    </message>
+    <message>
+        <source>Never played, or last played longer ago than this, per the DJ history last loaded in the History panel.</source>
+        <translation>Jamais joué, ou joué pour la dernière fois il y a plus longtemps que cela, d&apos;après le dernier historique DJ chargé dans le panneau Historique.</translation>
+    </message>
+    <message>
+        <source>Not played for:</source>
+        <translation>Non joué depuis :</translation>
+    </message>
+    <message>
+        <source>Order:</source>
+        <translation>Ordre :</translation>
+    </message>
+    <message>
+        <source>No limit</source>
+        <translation>Sans limite</translation>
+    </message>
+    <message>
+        <source> tracks</source>
+        <translation> morceaux</translation>
+    </message>
+    <message>
+        <source>Maximum length:</source>
+        <translation>Longueur maximale :</translation>
+    </message>
+    <message>
+        <source>No DJ history loaded yet: “Not played for” treats every track as never played until you load it in the History panel.</source>
+        <translation>Aucun historique DJ chargé : « Non joué depuis » considère chaque morceau comme jamais joué tant que vous ne l&apos;avez pas chargé dans le panneau Historique.</translation>
+    </message>
+</context>
+<context>
+    <name>_ControllersPage</name>
+    <message>
+        <source>Your controllers</source>
+        <translation>Vos contrôleurs</translation>
+    </message>
+    <message>
+        <source>Connected MIDI controllers recognized by their port name.</source>
+        <translation>Contrôleurs MIDI branchés, reconnus par le nom de leur port.</translation>
+    </message>
+    <message>
+        <source>Rescan</source>
+        <translation>Relancer la détection</translation>
+    </message>
+    <message>
+        <source>Look again after plugging a controller in.</source>
+        <translation>Cherche à nouveau après le branchement d&apos;un contrôleur.</translation>
+    </message>
+    <message>
+        <source>Select the profile to show on the Dashboard. Every detected profile stays available in the other tabs.</source>
+        <translation>Choisissez le profil à afficher sur le tableau de bord. Chaque profil détecté reste disponible dans les autres onglets.</translation>
+    </message>
+    <message>
+        <source>No MIDI controller is connected. Plug one in and click &lt;b&gt;Rescan&lt;/b&gt;, or continue.</source>
+        <translation>Aucun contrôleur MIDI n&apos;est branché. Branchez-en un et cliquez sur &lt;b&gt;Relancer la détection&lt;/b&gt;, ou continuez.</translation>
+    </message>
+    <message>
+        <source>No connected port matches a controller profile.</source>
+        <translation>Aucun port branché ne correspond à un profil de contrôleur.</translation>
+    </message>
+    <message>
+        <source>Not recognized: {ports}. &lt;b&gt;Controller Setup&lt;/b&gt; can build a profile for it by learning its buttons.</source>
+        <translation>Non reconnu : {ports}. &lt;b&gt;Configuration du contrôleur&lt;/b&gt; peut lui créer un profil en apprenant ses boutons.</translation>
+    </message>
+</context>
+<context>
+    <name>_MappingPage</name>
+    <message>
+        <source>Your Serato mapping</source>
+        <translation>Votre mapping Serato</translation>
+    </message>
+    <message>
+        <source>Open a MIDI mapping from Serato&apos;s MIDI folder to see and edit it.</source>
+        <translation>Ouvrez un mapping MIDI du dossier MIDI de Serato pour le voir et le modifier.</translation>
+    </message>
+    <message>
+        <source>Don&apos;t open a mapping now</source>
+        <translation>Ne pas ouvrir de mapping maintenant</translation>
+    </message>
+    <message>
+        <source>Found in &lt;i&gt;{folder}&lt;/i&gt;. Opening only reads the file; nothing is saved unless you save.</source>
+        <translation>Trouvé dans &lt;i&gt;{folder}&lt;/i&gt;. L&apos;ouverture ne fait que lire le fichier ; rien n&apos;est enregistré sans que vous enregistriez.</translation>
+    </message>
+    <message>
+        <source>No mapping found in &lt;i&gt;{folder}&lt;/i&gt;. Use &lt;b&gt;File → Open&lt;/b&gt; later to open one from anywhere.</source>
+        <translation>Aucun mapping trouvé dans &lt;i&gt;{folder}&lt;/i&gt;. Utilisez plus tard &lt;b&gt;Fichier → Ouvrir&lt;/b&gt; pour en ouvrir un depuis n&apos;importe où.</translation>
+    </message>
+</context>
+<context>
+    <name>_SyncPage</name>
+    <message>
+        <source>Controller sync set</source>
+        <translation>Jeu de synchronisation</translation>
+    </message>
+    <message>
+        <source>Messages sent to your controllers at launch, e.g. to set pad modes or LEDs.</source>
+        <translation>Messages envoyés à vos contrôleurs au lancement, par ex. pour régler les modes de pads ou les LED.</translation>
+    </message>
+    <message>
+        <source>Start recording a sync set when this wizard closes</source>
+        <translation>Commencer l&apos;enregistrement d&apos;un jeu de synchronisation à la fermeture de l&apos;assistant</translation>
+    </message>
+    <message>
+        <source>When recording starts, press the controls to send at initialization, then click &lt;b&gt;■ Stop&lt;/b&gt; next to &lt;b&gt;⟳ Sync&lt;/b&gt; in the top-right corner. You can do this any time later with &lt;b&gt;● Rec&lt;/b&gt;.</source>
+        <translation>Quand l&apos;enregistrement démarre, appuyez sur les commandes à envoyer à l&apos;initialisation, puis cliquez sur &lt;b&gt;■ Arrêt&lt;/b&gt; à côté de &lt;b&gt;⟳ Synchro&lt;/b&gt; en haut à droite. Vous pouvez le faire plus tard à tout moment avec &lt;b&gt;● Enr&lt;/b&gt;.</translation>
     </message>
 </context>
 </TS>

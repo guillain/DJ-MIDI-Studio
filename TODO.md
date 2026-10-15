@@ -143,6 +143,23 @@ Implemented contract, runtime, test, and documentation work:
   `usable_minimum`, `keep_wrapped_text_visible`); `tests/test_small_windows.py` is the regression check.
   First-run wizard and the cover-art row were already fine; the Command palette's results list got a floor. Not done: a check on the real
   `cocoa` platform (offscreen only).
+- [x] **French UI follow-up** (`v0.48.106-french-ui-followup`, issue #281) — `tr()` on the
+  menu entries added in parallel with #263 (Help → First-Run Setup, Edit → Ready for Live,
+  View → MIDI Latency Test / Layer Map / Stage Mode, the Macros menu's fixed entries), the four
+  windows they open, and the #256–#261 Music Library buttons and windows (cover art, statistics,
+  smart playlists, rename files, change history); 196 new French strings. Layer Map's section
+  filter now goes by index. Still English: the rest of the Music Library tab and the tool docks.
+- [x] **Cheat sheet KEY SHIFT fix** (`v0.48.105-cheat-sheet-key-shift`, issue #280) — the
+  cheat sheet treated every pad of the DDJ-1000/DDJ-FLX10/DDJ-800 `KEY SHIFT` pad mode as a
+  SHIFT variant (the bank's own name contains "SHIFT"), printing its plain functions on
+  `SHIFT:` lines. The Layer Map's bank-aware rule moved to `cheat_sheet.is_shift` and is now
+  shared by both (`layer_map.is_shift` is the same function); `_is_plain` strips the bank too.
+  Regression test on DDJ-1000's real `KEY SHIFT, PAGE 1` variants.
+- [x] **Change history: cover art and renames** (`v0.48.104-change-history-hooks`, issue #279) —
+  `Set cover…` / `Remove cover` and `Rename files…` (and every undo/redo of them) are now logged in the
+  persistent Change history. A cover entry keeps the previous picture so `Revert…` can put it back, but
+  only while the file still holds the cover this app wrote (else "its cover changed since"); a rename
+  entry reverts through the existing `rename` reverter (moves back, relinks index and playlists).
 - [x] **Faster startup** (`v0.48.103-faster-startup`, issue #264) — Qt-free
   `startup_timing.py` (`StartupTimer`; `djmidi.main()` starts it before the GUI import,
   `gui.app.run()` marks each phase and logs `Startup: time to first window … ms` with a

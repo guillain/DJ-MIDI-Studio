@@ -295,3 +295,54 @@ def test_tag_write_commands_log_every_pass_in_the_change_history():
         ("Edit genre of 2 tracks", {"x": ({"genre": "A"}, {"genre": "B"})}),
         ("Undo: Edit genre of 2 tracks", {"x": ({"genre": "B"}, {"genre": "A"})}),
     ]
+
+
+def test_cover_and_rename_commands_log_every_pass_in_the_change_history():
+    """Issue #279: cover writes and template renames reach their recorder on
+    redo and undo, with what each pass actually did."""
+    from types import SimpleNamespace
+
+    from PySide6.QtGui import QUndoStack
+
+    from djmidi.gui.commands import RenameFilesCommand, WriteTrackCoverCommand
+
+    logged = []
+    stack = QUndoStack()
+    covers = {"/m/a.mp3": "old"}
+    stack.push(
+        WriteTrackCoverCommand(
+            "/m/a.mp3",
+            "new",
+            lambda p: None,
+            writer=lambda path, cover: covers.__setitem__(path, cover),
+            reader=lambda path: covers[path],
+            recorder=lambda *args: logged.append(args),
+        )
+    )
+    stack.undo()
+    assert logged == [
+        ("Set cover of a.mp3", "/m/a.mp3", "old", "new"),
+        ("Undo: Set cover of a.mp3", "/m/a.mp3", "new", "old"),
+    ]
+
+    logged.clear()
+
+    def apply(pairs):
+        ok = [(old, new) for old, new in pairs if old != "/m/bad.mp3"]
+        return SimpleNamespace(renamed=ok, failed=[(old, "nope") for old, _ in pairs if old == "/m/bad.mp3"])
+
+    def record(*args):
+        logged.append(args)
+
+    pairs = [("/m/a.mp3", "/m/A.mp3"), ("/m/bad.mp3", "/m/B.mp3")]
+    stack.push(RenameFilesCommand(pairs, apply, lambda p: None, recorder=record))
+    stack.undo()
+    stack.redo()
+    assert logged == [
+        ("Rename 2 file(s)", [("/m/a.mp3", "/m/A.mp3")]),
+        ("Undo: Rename 2 file(s)", [("/m/A.mp3", "/m/a.mp3")]),
+        ("Rename 2 file(s)", [("/m/a.mp3", "/m/A.mp3")]),
+    ]
+    logged.clear()
+    stack.push(RenameFilesCommand([("/m/bad.mp3", "/m/x.mp3")], apply, lambda p: None, recorder=record))
+    assert logged == []
