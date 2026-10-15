@@ -36,6 +36,7 @@
 | 🧩 | [Layer Map](layer-map.md) | Every control in every layer (normal, SHIFT, pad modes), free combinations highlighted |
 | 🔀 | [MIDI Routing, Clock and Metronome](midi-routing-and-clock.md) | Route MIDI, generate Clock from Ableton Link, loop MIDI |
 | ⏯️ | [MIDI Macros](midi-macros.md) | Named MIDI message sequences, played from a menu or a keyboard shortcut |
+| ⏱️ | [MIDI Latency Test](midi-latency.md) | Round-trip latency and jitter through a port or device that echoes |
 | 🧭 | [First-run setup](first-run-wizard.md) | A skippable first-launch wizard: your controllers, your Serato mapping, a sync set |
 | 🪟 | [Workspace and preferences](workspace.md) | Tool windows, Performance Mode, Preferences |
 | 🎤 | [Stage Mode](stage-mode.md) | Full-screen, high-contrast emulator and live MIDI for playing on stage |
@@ -61,6 +62,7 @@
 | [layer-map.md](layer-map.md) | Controls × layers table, free and partly free combinations, filters |
 | [midi-routing-and-clock.md](midi-routing-and-clock.md) | Routes, transforms, MIDI Clock from Link, Metronome |
 | [midi-macros.md](midi-macros.md) | Creating, playing and storing MIDI macros, delays, shortcuts |
+| [midi-latency.md](midi-latency.md) | Measuring round-trip latency, what needs an echo, reading the results |
 | [first-run-wizard.md](first-run-wizard.md) | When the first-run wizard appears, its steps, what it never does |
 | [workspace.md](workspace.md) | Tabs and docks, window controls, Performance Mode, Preferences |
 | [stage-mode.md](stage-mode.md) | Full-screen emulator and compact monitor, Esc to exit |

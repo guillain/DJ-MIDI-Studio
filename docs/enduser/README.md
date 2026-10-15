@@ -79,6 +79,7 @@ Open several, one per controller.
 | 🧩 | [Layer Map](features/layer-map.md) | Every control × every layer (normal, SHIFT, pad modes), free spots highlighted |
 | 🔀 | [MIDI Routing, Clock and Metronome](features/midi-routing-and-clock.md) | Route MIDI, MIDI Clock from Ableton Link, MIDI loops |
 | ⏯️ | [MIDI Macros](features/midi-macros.md) | Named MIDI message sequences with optional delays, from a menu or a shortcut |
+| ⏱️ | [MIDI Latency Test](features/midi-latency.md) | Round-trip latency and jitter through a port or device that echoes |
 | 🧭 | [First-run setup](features/first-run-wizard.md) | Detect your controllers, open your Serato mapping, record a sync set |
 | 🪟 | [Workspace and preferences](features/workspace.md) | Dockable tools, Performance Mode, Preferences |
 | 🎤 | [Stage Mode](features/stage-mode.md) | Full-screen, high-contrast emulator and live MIDI, Esc to exit |

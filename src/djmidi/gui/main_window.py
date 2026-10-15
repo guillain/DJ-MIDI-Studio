@@ -119,6 +119,7 @@ from djmidi.gui.mapping_diff_dialog import MappingDiffDialog
 from djmidi.gui.mapping_group import MappingGroup
 from djmidi.gui.metronome_view import MetronomeView
 from djmidi.gui.midi_clock_view import MidiClockView
+from djmidi.gui.midi_latency_dialog import MidiLatencyDialog
 from djmidi.gui.midi_routing_view import MidiRoutingView
 from djmidi.gui.music_library_view import MusicLibraryView
 from djmidi.gui.preferences_dialog import PreferencesDialog
@@ -923,6 +924,12 @@ class MainWindow(QMainWindow):
         )
         self._new_emulator_action.triggered.connect(lambda: self._create_emulator_instance())
         view_menu.addAction(self._new_emulator_action)
+        self._latency_action = QAction("MIDI Latency Test…", self)
+        self._latency_action.setToolTip(
+            "Measure MIDI round-trip latency through a port or device that echoes what it receives"
+        )
+        self._latency_action.triggered.connect(self._on_midi_latency_test)
+        view_menu.addAction(self._latency_action)
         self._layer_map_action = QAction("Layer Map…", self)
         self._layer_map_action.setToolTip(
             "What each control of a controller does in every layer (normal, SHIFT, "
@@ -1554,6 +1561,16 @@ class MainWindow(QMainWindow):
             software_plugins=softwares,
             log_path=log_path if log_path.exists() else None,
         )
+
+    def _on_midi_latency_test(self) -> None:
+        # Non-modal and kept alive: a test can run while the user keeps working,
+        # and reopening shows the same dialog with its last result.
+        dialog = getattr(self, "_latency_dialog", None)
+        if dialog is None:
+            dialog = self._latency_dialog = MidiLatencyDialog(self)
+        dialog.show()
+        dialog.raise_()
+        dialog.activateWindow()
 
     def _on_report_problem(self) -> None:
         dialog = ReportProblemDialog(self._problem_report_context(), self)

@@ -132,6 +132,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **MIDI round-trip latency monitor** (`v0.48.94-midi-latency`, issue #255) — Qt-free
+  `midi_latency.py` (`LatencyProbe` state machine with injected send/receive/clock, `run_probe`,
+  `compute_stats`: min/median/max/mean + jitter, `open_port_pair` for real mido ports) behind
+  `View → MIDI Latency Test…`. Per-ping velocity matching so late echoes aren't miscounted; Note Off
+  after each ping; the worker thread keeps Qt timer granularity out of the timing. The dialog and
+  the feature page both state the result only means something with an echoing port/device.
 - [x] **"Ready for live" mapping checker** (`v0.48.93-live-ready-check`, issue #254) — Qt-free
   `live_ready.py` (`check_live_ready` → `ReadyReport` of `ReadyFinding`s with severity, message
   and plain-language hint): per-deck missing `ESSENTIAL_FUNCTIONS` (Play/Cue/Sync/Load,

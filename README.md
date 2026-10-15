@@ -80,6 +80,7 @@ what the mapping does, switch pad modes, latch SHIFT, and turn on
 | 🧩 | [Layer Map](docs/enduser/features/layer-map.md) | What each control does in every layer — normal, SHIFT, each pad mode — with the free combinations highlighted |
 | 🔀 | [MIDI Routing, Clock and Metronome](docs/enduser/features/midi-routing-and-clock.md) | Route MIDI, generate 24 PPQN MIDI Clock from Ableton Link, loop MIDI |
 | ⏯️ | [MIDI Macros](docs/enduser/features/midi-macros.md) | Named MIDI message sequences with optional delays, from a menu or a keyboard shortcut |
+| ⏱️ | [MIDI Latency Test](docs/enduser/features/midi-latency.md) | Round-trip min / median / max and jitter through a port or device that echoes |
 | 🧭 | [First-run setup](docs/enduser/features/first-run-wizard.md) | Detect your controllers, open your Serato mapping, record a sync set — on first launch or from Help |
 | 🪟 | [Workspace and preferences](docs/enduser/features/workspace.md) | Dockable tools, Performance Mode, light/dark theme |
 | 🎤 | [Stage Mode](docs/enduser/features/stage-mode.md) | Full-screen, high-contrast Controller Emulator and live MIDI for playing on stage — Esc to exit |
