@@ -17,12 +17,18 @@ Built-in kinds:
   moves it back from where the Trash put it, if nothing has taken its place,
   and un-flags it in the index. Playlists repointed at the kept copy stay
   repointed.
-- ``rename`` (`record_renames`): a file moved/renamed. Reverting moves it
-  back and relinks the index (and this app's playlists) to the old path.
+- ``rename`` (`record_renames`): a file moved/renamed (template renaming,
+  #260). Reverting moves it back and relinks the index (and this app's
+  playlists) to the old path.
+- ``cover`` (`record_cover_change`, #279): a front cover set or removed
+  (#256). ``before`` keeps the previous picture itself (Base64), ``after``
+  only a fingerprint of what was written. Reverting restores the previous
+  picture only while the file still holds the cover this app wrote; its
+  reverter is plugged in with `register_reverter`, like any later writer's.
 
-Other writers (cover art, #256) log through `record_change` with their own
-kind and plug a reverter in with `register_reverter`; an entry whose kind
-has no reverter is shown but can't be reverted.
+Other writers log through `record_change` with their own kind and plug a
+reverter in with `register_reverter`; an entry whose kind has no reverter is
+shown but can't be reverted.
 
 Every revert is itself logged (``"Revert #N: ..."``), so the history stays
 a faithful account of what happened to the files. Qt-free.
@@ -30,6 +36,8 @@ a faithful account of what happened to the files. Qt-free.
 
 from __future__ import annotations
 
+import base64
+import hashlib
 import logging
 import shutil
 import time
@@ -64,6 +72,8 @@ class RevertContext:
     writer: Callable[..., None] | None = None
     reader: Callable[[str], object] | None = None
     mover: Callable[[str, str], object] = shutil.move
+    cover_writer: Callable[[str, object | None], None] | None = None
+    cover_reader: Callable[[str], object | None] | None = None
 
     def write(self, path: str, **values: object) -> None:
         writer = self.writer
@@ -75,6 +85,18 @@ class RevertContext:
         reader = self.reader
         if reader is None:
             from .metadata import read_metadata as reader
+        return reader(path)
+
+    def write_cover(self, path: str, cover: object | None) -> None:
+        writer = self.cover_writer
+        if writer is None:
+            from .cover_art import write_cover_art as writer
+        writer(path, cover)
+
+    def read_cover(self, path: str) -> object | None:
+        reader = self.cover_reader
+        if reader is None:
+            from .cover_art import read_front_cover as reader
         return reader(path)
 
 
@@ -158,6 +180,50 @@ def record_renames(db: LibraryDB, renames: Iterable[tuple[str, str]], summary: s
     return record_change(db, KIND_RENAME, summary or f"Rename {len(items)} file(s)", items, **kwargs)
 
 
+def cover_state(cover: object | None, keep_data: bool = True) -> dict[str, object]:
+    """JSON-safe record of a front cover (a `cover_art.CoverArt` or None).
+
+    ``sha256`` fingerprints the picture bytes (None for "no cover"); with
+    `keep_data` the bytes themselves are kept, Base64, so a revert can write
+    them back. Only the side a revert may restore needs them."""
+    data = getattr(cover, "data", None) if cover is not None else None
+    if not data:
+        return {"sha256": None}
+    state: dict[str, object] = {
+        "sha256": hashlib.sha256(data).hexdigest(),
+        "mime": str(getattr(cover, "mime", "") or ""),
+        "description": str(getattr(cover, "description", "") or ""),
+        "size": len(data),
+    }
+    if keep_data:
+        state["data"] = base64.b64encode(data).decode("ascii")
+    return state
+
+
+def cover_from_state(state: Mapping[str, object]) -> object | None:
+    """The `CoverArt` a `cover_state` (with its data) describes, or None for
+    "no cover". Raises RevertSkipped when the picture wasn't kept."""
+    if not state.get("sha256"):
+        return None
+    encoded = state.get("data")
+    if not isinstance(encoded, str):
+        raise RevertSkipped("the previous cover wasn't kept")
+    from .cover_art import CoverArt
+
+    return CoverArt(base64.b64decode(encoded), str(state.get("mime") or ""), str(state.get("description") or ""))
+
+
+def record_cover_change(
+    db: LibraryDB, path: str, old: object | None, new: object | None, summary: str | None = None, **kwargs
+) -> int | None:
+    """Log one front cover write: `old` is the cover the file held before
+    (kept, so it can be restored), `new` the one written (None = removed)."""
+    if summary is None:
+        summary = f"{'Set' if new is not None else 'Remove'} cover of {Path(path).name}"
+    item = ChangeItem(str(path), cover_state(old), cover_state(new, keep_data=False))
+    return record_change(db, KIND_COVER, summary, [item], **kwargs)
+
+
 def _plain(values: Mapping[str, object]) -> dict[str, object]:
     """JSON-safe copy (tag values are str/float/None; anything else as str)."""
     return {
@@ -237,6 +303,22 @@ def _revert_rename(db: LibraryDB, item: ChangeItem, ctx: RevertContext) -> Chang
     return ChangeItem(old, {"path": new}, {"path": old})
 
 
+def _revert_cover(db: LibraryDB, item: ChangeItem, ctx: RevertContext) -> ChangeItem | None:
+    if not Path(item.path).is_file():
+        raise RevertSkipped("file not found")
+    current = ctx.read_cover(item.path)
+    current_sha = cover_state(current, keep_data=False)["sha256"]
+    if current_sha == item.before.get("sha256"):
+        return None
+    if current_sha != item.after.get("sha256"):
+        raise RevertSkipped("its cover changed since")
+    restored = cover_from_state(item.before)
+    ctx.write_cover(item.path, restored)
+    # What's being replaced is the cover this app wrote: keep it, so the
+    # revert can itself be reverted.
+    return ChangeItem(item.path, cover_state(current), cover_state(restored, keep_data=False))
+
+
 _REVERTERS: dict[str, Reverter] = {
     KIND_TAGS: _revert_tags,
     KIND_TRASH: _revert_trash,
@@ -253,6 +335,9 @@ def register_reverter(kind: str, reverter: Reverter, *, replace: bool = False) -
     if kind in _REVERTERS and not replace:
         raise ValueError(f"a reverter is already registered for {kind!r}")
     _REVERTERS[kind] = reverter
+
+
+register_reverter(KIND_COVER, _revert_cover)
 
 
 def is_revertible(change: ChangeRecord) -> bool:
@@ -312,8 +397,11 @@ __all__ = [
     "RevertResult",
     "RevertSkipped",
     "Reverter",
+    "cover_from_state",
+    "cover_state",
     "is_revertible",
     "record_change",
+    "record_cover_change",
     "record_renames",
     "record_tag_changes",
     "record_trash",
