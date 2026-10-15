@@ -132,6 +132,10 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **French UI translation** (`v0.48.102-french-ui`, issue #263) — Qt `.ts`/`.qm` pipeline
+  (`scripts/update_translations.sh`), a `Language` preference (System / English / Français, default English,
+  applied at launch) and French for the menus, main tabs, menu-bar buttons and the Preferences dialog (plus Qt's
+  own standard buttons). Tab content, tool windows, messages and help texts stay English for now.
 - [x] **macOS signing and notarization plumbing** (`v0.48.101-macos-signing`, issue #262) —
   `scripts/macos_signing.sh` (import certificate into a throwaway keychain, inside-out hardened-runtime
   signing with `packaging/macos/entitlements.plist`, `notarytool` + staple + `spctl`, cleanup), called

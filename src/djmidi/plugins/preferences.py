@@ -22,6 +22,7 @@ from djmidi.controller_sync import (
     normalize_scene,
     sets_for_scene,
 )
+from djmidi.i18n import LANGUAGE_PREFERENCES, LanguagePreference
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -39,6 +40,8 @@ class PluginPreferences:
     log_level: str = "INFO"
     log_path: str = ""
     theme: ThemeMode = "system"
+    # Interface language (issue #263): English unless chosen, applied at launch.
+    language: LanguagePreference = "en"
     auto_start_live_monitor: bool = True
     # Reopen the last mapping and Controller Setup draft at launch (issue #175).
     reopen_last_files: bool = True
@@ -108,6 +111,7 @@ class PluginPreferences:
                 "log_level": self.log_level,
                 "log_path": self.log_path,
                 "theme": self.theme,
+                "language": self.language,
                 "auto_start_live_monitor": self.auto_start_live_monitor,
                 "reopen_last_files": self.reopen_last_files,
                 "auto_sync_on_startup": self.auto_sync_on_startup,
@@ -148,6 +152,12 @@ class PluginPreferences:
         theme = raw.get("theme", "system")
         if theme not in _THEME_MODES:
             raise ValueError("theme must be 'system', 'light', or 'dark'")
+        language = raw.get("language", "en")
+        if language not in LANGUAGE_PREFERENCES:
+            # Lenient, unlike theme: a language a newer version added must not
+            # make this one discard every other preference.
+            _LOGGER.warning("Unknown interface language %r; using English", language)
+            language = "en"
         raw_sync_sets = raw.get("controller_sync_sets", [])
         if not isinstance(raw_sync_sets, list):
             raise TypeError("controller_sync_sets must be a list")
@@ -163,6 +173,7 @@ class PluginPreferences:
             log_level=log_level.upper(),
             log_path=str(raw.get("log_path", "")),
             theme=theme,
+            language=language,
             auto_start_live_monitor=bool(raw.get("auto_start_live_monitor", True)),
             reopen_last_files=bool(raw.get("reopen_last_files", True)),
             auto_sync_on_startup=bool(raw.get("auto_sync_on_startup", True)),

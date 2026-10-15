@@ -83,6 +83,7 @@ Open several, one per controller.
 | 🧭 | [First-run setup](features/first-run-wizard.md) | Detect your controllers, open your Serato mapping, record a sync set |
 | 🪟 | [Workspace and preferences](features/workspace.md) | Dockable tools, Performance Mode, Preferences |
 | 🎤 | [Stage Mode](features/stage-mode.md) | Full-screen, high-contrast emulator and live MIDI, Esc to exit |
+| 🌐 | [Interface language](features/interface-language.md) | French menus, tabs and Preferences, or follow the system language |
 | 🐞 | [Report a Problem](features/report-a-problem.md) | An editable bug report, opened as a pre-filled GitHub issue |
 
 Supported out of the box: Serato DJ Pro and Traktor mappings; DDJ-XP2,

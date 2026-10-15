@@ -11,6 +11,7 @@ from PySide6.QtWidgets import QApplication, QWidget
 
 from djmidi.gui.main_window import MainWindow
 from djmidi.gui.theme import apply_theme
+from djmidi.gui.translation import install_translators
 from djmidi.logging_config import configure_logging
 from djmidi.plugins.preferences import PluginPreferences, default_preferences_path
 
@@ -84,6 +85,8 @@ def run(argv: list[str] | None = None) -> int:
     app.setOrganizationName("DJ MIDI Studio")
     app.setApplicationName("DJ MIDI Studio")
     apply_theme(app, preferences.theme)
+    # Before any widget exists: tr() is resolved when a widget sets its text.
+    install_translators(app, preferences.language)
     window = MainWindow()
     if arguments.startup_screenshot:
         window.first_run_wizard_enabled = False

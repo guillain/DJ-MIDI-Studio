@@ -114,6 +114,7 @@ if [[ "$BUILD_EXECUTABLE" -eq 1 ]]; then
     --copy-metadata djmidi \
     --add-data "$NATIVE_ROOT_DIR/controllers${DATA_SEP}controllers" \
     --add-data "$NATIVE_ROOT_DIR/docs${DATA_SEP}docs" \
+    --add-data "$NATIVE_ROOT_DIR/src/djmidi/translations${DATA_SEP}djmidi/translations" \
     --osx-bundle-identifier "com.guillain.djmidi" \
     "$NATIVE_ROOT_DIR/src/djmidi/gui/app.py"
 
