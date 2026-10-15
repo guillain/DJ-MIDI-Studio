@@ -19,6 +19,7 @@
 - [Estimate missing BPM and keys](#estimate-missing-bpm-and-keys)
 - [Find duplicate tracks](#find-duplicate-tracks)
 - [Check library health](#check-library-health)
+- [Library statistics](#library-statistics)
 - [Genre categories](#genre-categories)
 - [Playlists](#playlists)
 - [Prepare a set](#prepare-a-set)
@@ -260,6 +261,29 @@ matches the path and the detail. Click a column header to sort.
 The report never changes a file. Run it again after fixing things to see
 the updated list.
 
+## Library statistics
+
+Click `Statistics…` (next to `Health report…`, after a scan) to see your
+collection as bar charts, one tab each:
+
+| Tab | What it counts |
+| --- | --- |
+| Categories | Tracks per confirmed genre category; `Uncategorized` for the rest (an amber suggestion doesn't count until you confirm it) |
+| Genres | Tracks per genre tag. Spellings that only differ by case or spaces (`Psy Trance`, `psy  trance`) count together |
+| BPM | A histogram in 5 BPM steps, with the number of tracks without a BPM |
+| Keys | The 24 Camelot keys in wheel order (1A, 1B … 12B), with the number of tracks without a key |
+| Added per month | Files per month of their modification date — the closest thing to a "date added" the files carry. A tag edit makes a file count as recent |
+| Most played | The 25 most-played tracks and how many were never played, once you've loaded your DJ history in the [History panel](#play-history) |
+
+The statistics follow the table's filters: filter on a category, a BPM
+range or a search first to chart just that part of the library (the line at
+the top of the window says how many tracks are counted). Missing files are left out.
+Hover a bar for its exact count; double-click a track in `Most played` to
+select it in the table.
+
+The window is a snapshot — reopen it after a scan, a filter change or
+loading history. It never changes a file.
+
 ## Genre categories
 
 Tracks are sorted into two-level categories, `Family / Name` (for example
@@ -412,6 +436,7 @@ ever read.
   a confirmation, never deleted outright, and one copy of each group always
   stays.
 - `Health report…` only reads files.
+- `Statistics…` only reads this app's index and the history you loaded.
 
 ## Related
 

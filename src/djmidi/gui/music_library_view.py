@@ -9,7 +9,9 @@ playlist engine, Serato/Traktor/Rekordbox formats) to one tab:
   `DuplicatesDialog` whose ticked copies `discard_duplicates` moves to the
   Trash, issue #208), and a "Health report…" job (issue #225, opens a
   read-only `HealthReportDialog`: unreadable, empty-tag, cover-less,
-  low-bitrate and zero-length files, filterable, exportable to CSV);
+  low-bitrate and zero-length files, filterable, exportable to CSV), and a
+  "Statistics…" window (issue #258, `LibraryStatsDialog`: categories,
+  genres, BPM, Camelot keys, files added per month, most/never played);
 - the consolidated metadata table (sortable/filterable, category column);
 - a Track panel whose tag edits go through a `QUndoStack`
   (`commands.WriteTrackMetadataCommand`, or `WriteTracksMetadataCommand` when
@@ -94,6 +96,7 @@ from djmidi.gui.commands import (
 from djmidi.gui.duplicates_dialog import DuplicatesDialog
 from djmidi.gui.health_report_dialog import HealthReportDialog
 from djmidi.gui.help_button import help_button, help_row
+from djmidi.gui.library_stats_dialog import LibraryStatsDialog
 from djmidi.gui.set_preparation import (
     SET_TRACKS_MIME,
     SetPreparationPanel,
@@ -106,6 +109,7 @@ from djmidi.library import (
     history,
     relink,
     set_prep,
+    stats,
     workspace,
 )
 from djmidi.library.analysis import analysis_available, to_camelot
@@ -775,6 +779,7 @@ class MusicLibraryView(QWidget):
         self.duplicates_dialog: DuplicatesDialog | None = None
         self._history_sessions: list[history.HistorySession] = []
         self.health_dialog: HealthReportDialog | None = None
+        self.stats_dialog: LibraryStatsDialog | None = None
 
         # The whole tab scrolls below its real minimum instead of crushing
         # buttons into slivers (issue #19's standing rule for every tab).
@@ -864,6 +869,12 @@ class MusicLibraryView(QWidget):
             "and zero-length files. Read-only."
         )
         self.health_button.clicked.connect(self.start_health_report)
+        self.stats_button = QPushButton("Statistics…")
+        self.stats_button.setToolTip(
+            "Charts of the tracks shown: categories, genres, BPM, keys, files added per month and, "
+            "with DJ history loaded, most/never played. Read-only."
+        )
+        self.stats_button.clicked.connect(self.show_statistics)
         # Issue #224: needs the optional 'analysis' extra; greyed out with
         # the reason as tooltip when librosa isn't installed.
         self.analyse_button = QPushButton(_ANALYSE_LABEL)
@@ -887,6 +898,7 @@ class MusicLibraryView(QWidget):
                 self.duplicates_button,
                 self.relink_button,
                 self.health_button,
+                self.stats_button,
                 self.analyse_button,
             )
         ):
@@ -1530,6 +1542,28 @@ class MusicLibraryView(QWidget):
         self.health_dialog = HealthReportDialog(report, self)
         self.health_dialog.showTrackRequested.connect(self.show_track)
         self.health_dialog.show()
+
+    # --- statistics (issue #258) -------------------------------------------
+
+    def compute_statistics(self) -> stats.LibraryStats:
+        """Statistics of the rows the table shows (filters apply), with play
+        counts when DJ history is loaded."""
+        mtimes = {track.path: track.mtime for track in self.db.list_tracks()}
+        plays = history.summarize_plays(self._history_sessions) if self._history_sessions else None
+        return stats.compute_library_stats(self.visible_rows(), mtimes, plays)
+
+    def show_statistics(self) -> None:
+        if self.table_model.rowCount() == 0:
+            self.status_label.setText("Scan a music folder first.")
+            return
+        shown, total = self.proxy.rowCount(), self.table_model.rowCount()
+        scope = "all indexed tracks" if shown == total else f"the {shown} of {total} tracks the filters show"
+        if self.stats_dialog is not None:
+            self.stats_dialog.close()
+            self.stats_dialog.deleteLater()
+        self.stats_dialog = LibraryStatsDialog(self.compute_statistics(), scope, self)
+        self.stats_dialog.showTrackRequested.connect(self.show_track)
+        self.stats_dialog.show()
 
     def show_track(self, path: str) -> bool:
         """Select `path` in the table, clearing the filters if they hide it."""

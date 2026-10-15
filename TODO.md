@@ -132,6 +132,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Library statistics** (`v0.48.97-library-stats`, issue #258) — Qt-free
+  `library/stats.py` (`compute_library_stats`: confirmed categories, genre tags grouped
+  case/space-insensitively, 5-BPM histogram, Camelot wheel distribution, files added per
+  month by file mtime, most/never played from loaded play history #227) behind a
+  `Statistics…` button in the Music Library tab opening `LibraryStatsDialog` — `QPainter`
+  bar charts, one tab per statistic, scoped by the table's filters, read-only snapshot.
 - [x] **Near-duplicate track suggestions** (`v0.48.96-near-duplicates`, issue #257) — the
   duplicates finder gains a third, suggestion-only tier: `duplicates.find_version_variants`
   groups tracks by artist + title once trailing version markers (`(Radio Edit)`,
