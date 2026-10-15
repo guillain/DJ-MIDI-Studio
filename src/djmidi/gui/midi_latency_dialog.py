@@ -33,6 +33,7 @@ from PySide6.QtWidgets import (
 
 from djmidi.gui.help_button import help_button
 from djmidi.gui.help_texts import MIDI_LATENCY
+from djmidi.gui.window_size import fit_to_screen, keep_wrapped_text_visible
 from djmidi.midi_io import list_input_ports, list_output_ports
 from djmidi.midi_latency import (
     ECHO_WARNING,
@@ -64,6 +65,9 @@ def default_input_for(output: str, inputs: list[str]) -> str | None:
     return output if output in inputs else None
 
 
+_MIN_WIDTH = 460
+
+
 class MidiLatencyDialog(QDialog):
     def __init__(
         self,
@@ -76,7 +80,10 @@ class MidiLatencyDialog(QDialog):
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle(self.tr("MIDI Latency Test"))
-        self.resize(560, 560)
+        fit_to_screen(self, 560, 560)
+        # Wide enough that the echo warning wraps on a few lines, keeping the
+        # minimum height within a 900x600 screen (issue #282).
+        self.setMinimumWidth(_MIN_WIDTH)
         self._port_pair_factory = port_pair_factory
         self._start_thread = start_thread
         self._list_outputs = list_outputs
@@ -149,6 +156,7 @@ class MidiLatencyDialog(QDialog):
         layout.addWidget(self.summary_label)
         layout.addWidget(self.log_view, 1)
         layout.addLayout(bottom)
+        keep_wrapped_text_visible(self)
 
         self._timer = QTimer(self)
         self._timer.setInterval(50)

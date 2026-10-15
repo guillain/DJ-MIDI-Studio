@@ -35,6 +35,7 @@ from djmidi.command_palette import (
 )
 from djmidi.gui import help_texts
 from djmidi.gui.help_button import help_button
+from djmidi.gui.window_size import fit_to_screen, usable_minimum
 
 ENTRY_ROLE = Qt.ItemDataRole.UserRole + 7
 _PATH_SEPARATOR = " › "
@@ -90,7 +91,7 @@ class CommandPaletteDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Command Palette")
         self.setModal(True)
-        self.resize(620, 420)
+        fit_to_screen(self, 620, 420)
         self._index = index
         self._chosen: PaletteEntry | None = None
 
@@ -111,6 +112,7 @@ class CommandPaletteDialog(QDialog):
         self.results.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.results.itemActivated.connect(self._on_item_activated)
         self.results.itemClicked.connect(self._on_item_activated)
+        usable_minimum(self.results, 360, 140)
         layout.addWidget(self.results, 1)
 
         self.hint = QLabel("↑↓ to move · Enter to run · Esc to close")

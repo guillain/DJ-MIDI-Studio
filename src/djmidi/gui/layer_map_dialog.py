@@ -38,6 +38,11 @@ from djmidi.gui.layer_map import (
     build_layer_map,
     describe_trigger,
 )
+from djmidi.gui.window_size import (
+    fit_to_screen,
+    keep_wrapped_text_visible,
+    usable_minimum,
+)
 from djmidi.model import MidiConfig
 
 # English source texts (what tests see); the dialog shows them through tr().
@@ -60,7 +65,7 @@ class LayerMapDialog(QDialog):
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle(self.tr("Layer Map"))
-        self.resize(1100, 640)
+        fit_to_screen(self, 1100, 640)
         self._config_provider = config_provider
         self.layer_map: LayerMap | None = None
         box = QVBoxLayout(self)
@@ -77,6 +82,8 @@ class LayerMapDialog(QDialog):
         controls.addWidget(self.controller_combo, 1)
         controls.addWidget(QLabel(self.tr("Section:")))
         self.section_combo = QComboBox()
+        # Never cut a section name to a few letters when the window is small.
+        self.section_combo.setMinimumContentsLength(len(ALL_SECTIONS))
         self.section_combo.currentIndexChanged.connect(lambda _index: self._fill_table())
         controls.addWidget(self.section_combo)
         self.free_only_checkbox = QCheckBox(self.tr("Only controls with a free layer"))
@@ -95,6 +102,7 @@ class LayerMapDialog(QDialog):
         self.table.setWordWrap(True)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
         self.table.horizontalHeader().setDefaultSectionSize(170)
+        usable_minimum(self.table, 480, 200)
         box.addWidget(self.table, 1)
 
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
@@ -104,6 +112,7 @@ class LayerMapDialog(QDialog):
         buttons.addButton(self.refresh_button, QDialogButtonBox.ButtonRole.ActionRole)
         buttons.rejected.connect(self.reject)
         box.addWidget(buttons)
+        keep_wrapped_text_visible(self)
         self.rebuild()
 
     def current_controller(self) -> str | None:

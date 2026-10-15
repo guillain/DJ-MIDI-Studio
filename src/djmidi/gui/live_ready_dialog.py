@@ -28,6 +28,11 @@ from PySide6.QtWidgets import (
 
 from djmidi.gui import help_texts
 from djmidi.gui.help_button import help_button
+from djmidi.gui.window_size import (
+    fit_to_screen,
+    keep_wrapped_text_visible,
+    usable_minimum,
+)
 from djmidi.live_ready import ReadyFinding, ReadyReport, report_text
 from djmidi.model import Control
 
@@ -42,7 +47,7 @@ class LiveReadyDialog(QDialog):
     def __init__(self, report: ReadyReport, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setWindowTitle(self.tr("Ready for live"))
-        self.resize(900, 520)
+        fit_to_screen(self, 900, 520)
         self.report = report
         box = QVBoxLayout(self)
 
@@ -83,6 +88,7 @@ class LiveReadyDialog(QDialog):
         header_view.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         header_view.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
         self.table.doubleClicked.connect(lambda _index: self._show_control())
+        usable_minimum(self.table, 480, 180)
         box.addWidget(self.table, 1)
 
         self.count_label = QLabel()
@@ -99,6 +105,7 @@ class LiveReadyDialog(QDialog):
         buttons.addButton(self.copy_button, QDialogButtonBox.ButtonRole.ActionRole)
         buttons.rejected.connect(self.reject)
         box.addWidget(buttons)
+        keep_wrapped_text_visible(self)
 
         self.table.itemSelectionChanged.connect(self._update_buttons)
         self._visible: list[ReadyFinding] = []

@@ -30,6 +30,11 @@ from PySide6.QtWidgets import (
 
 from djmidi.gui import help_texts
 from djmidi.gui.help_button import help_button
+from djmidi.gui.window_size import (
+    fit_to_screen,
+    keep_wrapped_text_visible,
+    usable_minimum,
+)
 from djmidi.library import rename
 from djmidi.library.rename import RenamePlan, TemplateError
 
@@ -49,7 +54,7 @@ class RenameFilesDialog(QDialog):
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle(self.tr("Rename files"))
-        self.resize(900, 480)
+        fit_to_screen(self, 900, 480)
         self._planner = planner
         self.plan: RenamePlan | None = None
         self._status_text = {
@@ -83,6 +88,7 @@ class RenameFilesDialog(QDialog):
         self.tree.header().setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
         self.tree.setColumnWidth(0, 330)
         self.tree.setColumnWidth(1, 330)
+        usable_minimum(self.tree, 480, 140)
         box.addWidget(self.tree, 1)
         self.summary_label = QLabel()
         self.summary_label.setWordWrap(True)
@@ -95,6 +101,7 @@ class RenameFilesDialog(QDialog):
         self.buttons.accepted.connect(self.accept)
         self.buttons.rejected.connect(self.reject)
         box.addWidget(self.buttons)
+        keep_wrapped_text_visible(self)
         self.template_edit.textChanged.connect(self.refresh)
         self.refresh()
 

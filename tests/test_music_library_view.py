@@ -404,7 +404,7 @@ def test_main_window_has_music_library_tab():
     window.close()
 
 
-@pytest.mark.parametrize("size", [(1100, 700), (700, 500), (320, 240)])
+@pytest.mark.parametrize("size", [(1280, 820), (1100, 700), (1000, 650), (900, 600), (700, 500), (320, 240)])
 def test_no_button_is_squeezed_below_its_minimum(size):
     """Issue #19's rule for every tab: at small window sizes the Music
     Library scrolls rather than crushing its buttons into slivers."""
