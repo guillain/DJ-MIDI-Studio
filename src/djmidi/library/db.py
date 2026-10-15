@@ -4,7 +4,7 @@ import json
 import os
 import sqlite3
 from collections.abc import Iterable
-from dataclasses import dataclass, fields
+from dataclasses import dataclass, field, fields
 from pathlib import Path
 from typing import Self
 
@@ -103,6 +103,28 @@ CREATE TABLE IF NOT EXISTS library_settings (
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
 );
+
+-- Persistent log of risky writes to real files (issue #261): bulk tag
+-- writes, copies moved to the Trash, and later cover art / renames. One
+-- `change_log` row per operation, one `change_items` row per file with its
+-- before/after state as JSON, so the Change history window can inspect and
+-- revert an entry after a restart (the QUndoStack only lives a session).
+CREATE TABLE IF NOT EXISTS change_log (
+    id INTEGER PRIMARY KEY,
+    created_at REAL NOT NULL,
+    kind TEXT NOT NULL,
+    summary TEXT NOT NULL,
+    reverted_at REAL
+);
+
+CREATE TABLE IF NOT EXISTS change_items (
+    change_id INTEGER NOT NULL REFERENCES change_log(id) ON DELETE CASCADE,
+    position INTEGER NOT NULL,
+    path TEXT NOT NULL,
+    before TEXT NOT NULL DEFAULT '{}',
+    after TEXT NOT NULL DEFAULT '{}',
+    PRIMARY KEY (change_id, position)
+);
 """
 
 _METADATA_COLUMNS = tuple(f.name for f in fields(TrackMetadata))
@@ -144,6 +166,24 @@ class StoredCategory:
     @property
     def canonical(self) -> str:
         return f"{self.family}%%{self.name}"
+
+
+@dataclass
+class ChangeItem:
+    path: str
+    before: dict[str, object]
+    after: dict[str, object]
+
+
+@dataclass
+class ChangeRecord:
+    id: int
+    created_at: float
+    kind: str
+    summary: str
+    reverted_at: float | None = None
+    items: list[ChangeItem] = field(default_factory=list)
+    item_count: int = 0
 
 
 @dataclass
@@ -557,3 +597,101 @@ class LibraryDB:
             "INSERT OR REPLACE INTO library_settings (key, value) VALUES (?, ?)", (key, json.dumps(value))
         )
         self._conn.commit()
+
+    # --- change log (issue #261) -----------------------------------------
+
+    def add_change(self, kind: str, summary: str, items: Iterable[ChangeItem], created_at: float) -> int:
+        """Record one operation and its per-file before/after states."""
+        with self._conn:
+            cur = self._conn.execute(
+                "INSERT INTO change_log (created_at, kind, summary) VALUES (?, ?, ?)", (created_at, kind, summary)
+            )
+            change_id = cur.lastrowid
+            self._conn.executemany(
+                "INSERT INTO change_items (change_id, position, path, before, after) VALUES (?, ?, ?, ?, ?)",
+                [
+                    (change_id, position, item.path, json.dumps(item.before), json.dumps(item.after))
+                    for position, item in enumerate(items)
+                ],
+            )
+        return change_id
+
+    def list_changes(self, limit: int | None = None) -> list[ChangeRecord]:
+        """Logged operations, newest first, without their items (see
+        `get_change`); `item_count` says how many files each touched."""
+        query = """
+            SELECT c.id, c.created_at, c.kind, c.summary, c.reverted_at,
+                   (SELECT COUNT(*) FROM change_items i WHERE i.change_id = c.id)
+            FROM change_log c ORDER BY c.created_at DESC, c.id DESC
+        """
+        params: tuple[object, ...] = ()
+        if limit is not None:
+            query += " LIMIT ?"
+            params = (limit,)
+        return [
+            ChangeRecord(id=r[0], created_at=r[1], kind=r[2], summary=r[3], reverted_at=r[4], item_count=r[5])
+            for r in self._conn.execute(query, params)
+        ]
+
+    def get_change(self, change_id: int) -> ChangeRecord | None:
+        row = self._conn.execute(
+            "SELECT id, created_at, kind, summary, reverted_at FROM change_log WHERE id = ?", (change_id,)
+        ).fetchone()
+        if row is None:
+            return None
+        items = [
+            ChangeItem(path=r[0], before=_json_dict(r[1]), after=_json_dict(r[2]))
+            for r in self._conn.execute(
+                "SELECT path, before, after FROM change_items WHERE change_id = ? ORDER BY position", (change_id,)
+            )
+        ]
+        return ChangeRecord(
+            id=row[0], created_at=row[1], kind=row[2], summary=row[3], reverted_at=row[4], items=items,
+            item_count=len(items),
+        )
+
+    def mark_change_reverted(self, change_id: int, reverted_at: float) -> None:
+        self._conn.execute("UPDATE change_log SET reverted_at = ? WHERE id = ?", (reverted_at, change_id))
+        self._conn.commit()
+
+    def prune_changes(self, keep: int) -> int:
+        """Drop all but the `keep` newest operations. Returns how many went."""
+        with self._conn:
+            cur = self._conn.execute(
+                """
+                DELETE FROM change_log WHERE id NOT IN (
+                    SELECT id FROM change_log ORDER BY created_at DESC, id DESC LIMIT ?
+                )
+                """,
+                (keep,),
+            )
+        return cur.rowcount
+
+    def mark_path_present(self, path: str | Path, size: int, mtime: float) -> bool:
+        """Un-flag a track whose file is back (a Trash move reverted). When
+        its row is gone (folded into the kept copy by a playlist repoint), it
+        is re-added under the indexed root containing it. Returns False when
+        no root contains `path`."""
+        path_str = str(path)
+        root_id = None
+        existing = self.get_track_by_path(path_str)
+        if existing is not None:
+            root_id = existing.root_id
+        else:
+            for root in self.list_roots():
+                if Path(path_str).is_relative_to(root.path):
+                    root_id = root.id
+                    break
+        if root_id is None:
+            return False
+        self.upsert_track(root_id, path_str, size, mtime)
+        self._conn.commit()
+        return True
+
+
+def _json_dict(text: str) -> dict[str, object]:
+    try:
+        value = json.loads(text)
+    except ValueError:
+        return {}
+    return value if isinstance(value, dict) else {}

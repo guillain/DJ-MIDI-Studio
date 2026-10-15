@@ -90,6 +90,7 @@ from PySide6.QtWidgets import (
 from djmidi import taxonomy, user_paths
 from djmidi.gui import help_texts
 from djmidi.gui.audio_preview import AudioPreviewBar
+from djmidi.gui.change_history_dialog import ChangeHistoryDialog
 from djmidi.gui.commands import (
     RenameFilesCommand,
     WriteTrackCoverCommand,
@@ -107,6 +108,7 @@ from djmidi.gui.set_preparation import (
     encode_paths,
 )
 from djmidi.library import (
+    change_log,
     discard,
     duplicates,
     health,
@@ -136,9 +138,15 @@ _RENAME_TEMPLATE_SETTING = "rename_template"
 _LIST_LIMIT = 15
 
 
-def trash_file(path: str) -> bool:
-    """Move `path` to the system Trash (issue #208); never deletes it."""
-    return QFile.moveToTrash(path)
+def trash_file(path: str) -> bool | str:
+    """Move `path` to the system Trash (issue #208); never deletes it.
+
+    Returns the file's new path inside the Trash (so the change history can
+    put it back, issue #261), or False when it couldn't be moved."""
+    file = QFile(path)
+    if not file.moveToTrash():
+        return False
+    return file.fileName() or True
 
 
 def _bullet_list(lines) -> str:
@@ -912,6 +920,7 @@ class MusicLibraryView(QWidget):
         self._job_timer.timeout.connect(self._run_job_slice)
         self._current_path: str | None = None
         self.duplicates_dialog: DuplicatesDialog | None = None
+        self.history_dialog: ChangeHistoryDialog | None = None
         self._history_sessions: list[history.HistorySession] = []
         self.health_dialog: HealthReportDialog | None = None
         self.stats_dialog: LibraryStatsDialog | None = None
@@ -1004,6 +1013,11 @@ class MusicLibraryView(QWidget):
             "and zero-length files. Read-only."
         )
         self.health_button.clicked.connect(self.start_health_report)
+        self.history_button = QPushButton("Change history…")
+        self.history_button.setToolTip(
+            "Every tag write and Trash move this app made, kept across restarts. Inspect and revert them."
+        )
+        self.history_button.clicked.connect(self.show_change_history)
         self.stats_button = QPushButton("Statistics…")
         self.stats_button.setToolTip(
             "Charts of the tracks shown: categories, genres, BPM, keys, files added per month and, "
@@ -1035,6 +1049,7 @@ class MusicLibraryView(QWidget):
                 self.health_button,
                 self.stats_button,
                 self.analyse_button,
+                self.history_button,
             )
         ):
             buttons.addWidget(button, index // 2, index % 2)
@@ -1407,6 +1422,11 @@ class MusicLibraryView(QWidget):
     def close_db(self) -> None:
         self.audio_preview.stop()
         self._stop_job()
+        if self.history_dialog is not None:
+            # It holds the connection about to close.
+            self.history_dialog.close()
+            self.history_dialog.deleteLater()
+            self.history_dialog = None
         if self._db is not None:
             self._db.close()
             self._db = None
@@ -1630,6 +1650,7 @@ class MusicLibraryView(QWidget):
         if answer != QMessageBox.StandardButton.Yes:
             return
         result = discard.move_to_trash(self.db, plan, trash_file)
+        change_log.record_trash(self.db, result.moved, result.trash_paths)
         message = f"Moved {len(result.moved)} duplicate(s) to the Trash."
         referenced = discard.playlists_referencing(self.db, result.moved)
         if referenced:
@@ -1658,6 +1679,30 @@ class MusicLibraryView(QWidget):
         self.status_label.setText(message)
         self._reload_rows()
         self._reload_playlists()
+
+    # --- change history (issue #261) ---------------------------------------
+
+    def _record_tag_change(self, summary: str, changes: dict[str, tuple[dict[str, object], dict[str, object]]]) -> None:
+        change_log.record_tag_changes(self.db, changes, summary)
+
+    def show_change_history(self) -> ChangeHistoryDialog:
+        """Open (or raise) the persistent change history window."""
+        if self.history_dialog is None:
+            self.history_dialog = ChangeHistoryDialog(self.db, self)
+            self.history_dialog.reverted.connect(self._on_changes_reverted)
+        else:
+            self.history_dialog.refresh()
+        self.history_dialog.show()
+        self.history_dialog.raise_()
+        return self.history_dialog
+
+    def _on_changes_reverted(self, paths: list[str]) -> None:
+        for path in paths:
+            if Path(path).is_file():
+                workspace.refresh_track_metadata(self.db, path)
+        self._reload_rows()
+        self._reload_playlists()
+        self.status_label.setText(f"Change reverted on {len(paths)} file(s).")
 
     # --- health report (issue #225) ----------------------------------------
 
@@ -2185,7 +2230,7 @@ class MusicLibraryView(QWidget):
         metadata = row.metadata or TrackMetadata()
         old_values = {name: getattr(metadata, name) for name in changes}
         try:
-            self.undo_stack.push(WriteTrackMetadataCommand(row.path, old_values, changes, self._on_track_written))
+            self.undo_stack.push(WriteTrackMetadataCommand(row.path, old_values, changes, self._on_track_written, recorder=self._record_tag_change))
         except Exception as exc:
             _LOGGER.exception("Tag write failed for %s", row.path)
             QMessageBox.warning(self, "Could not write tags", f"{row.path}\n\n{exc}")
@@ -2225,7 +2270,10 @@ class MusicLibraryView(QWidget):
 
     def _push_bulk_write(self, changes: dict[str, tuple[dict[str, object], dict[str, object]]]) -> int:
         command = WriteTracksMetadataCommand(
-            changes, self._on_tracks_written, progress_factory=self._tag_write_progress
+            changes,
+            self._on_tracks_written,
+            progress_factory=self._tag_write_progress,
+            recorder=self._record_tag_change,
         )
         self.undo_stack.push(command)
         if command.cancelled:

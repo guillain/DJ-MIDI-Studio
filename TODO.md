@@ -132,6 +132,15 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Change history for risky library writes** (`v0.48.100-change-history`, issue #261) —
+  Qt-free `library/change_log.py` over two new `LibraryDB` tables (`change_log`,
+  `change_items`, before/after JSON per file): every tag write (single, bulk, analysis,
+  and their undos, via a `recorder` hook on `WriteTrack(s)MetadataCommand`) and every
+  duplicate moved to the Trash (`trash_file` now returns the path inside the Trash) is
+  logged; the Music Library tab's `Change history…` window inspects and reverts entries
+  after a restart. Reverts only touch files still in the state this app left them in
+  and are logged themselves. `record_change` / `record_renames` / `register_reverter`
+  are the hooks for cover art (#256) and renaming (#260), built in parallel.
 - [x] **Template-based file renaming** (`v0.48.99-rename-files`, issue #260) — Qt-free
   `library/rename.py` (`plan_renames`/`plan_from_db` preview with conflict, missing-tag and
   refused statuses; `apply_renames` re-checks then renames inside each file's own folder and

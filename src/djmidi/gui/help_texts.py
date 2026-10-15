@@ -452,6 +452,24 @@ LIBRARY_HEALTH: HelpEntry = (
     "music-library.md",
 )
 
+LIBRARY_CHANGE_HISTORY: HelpEntry = (
+    "Change history",
+    (
+        "Every write this app makes to your files is logged in the library index, so it "
+        "survives a restart (Undo only lasts the session): tag edits, <b>Write tags to "
+        "selection…</b>, applied analysis suggestions, their undos, and duplicates moved to "
+        "the Trash. <b>Change history…</b> lists them newest first; select one to see each "
+        "file's before → after."
+        "<ul><li><b>Revert…</b> on a tag change writes the old values back, but only to files "
+        "still holding what this app wrote: a tag changed since (in Serato, say) is left "
+        "alone and listed.</li>"
+        "<li>On a Trash move it puts each copy back where it was, unless another file took its "
+        "place. Playlists pointed at the kept copy stay that way.</li></ul>"
+        "A revert is itself logged, so it can be reverted too. The last 1000 changes are kept."
+    ),
+    "music-library.md",
+)
+
 LIBRARY_STATS: HelpEntry = (
     "Library statistics",
     (

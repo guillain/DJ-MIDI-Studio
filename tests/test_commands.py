@@ -259,3 +259,39 @@ def test_write_tracks_metadata_command_reports_progress_and_can_be_cancelled():
     stack.undo()
     assert passes[1][:2] == ("Restoring tags…", 2)
     assert all(f["genre"] == "Old" for f in files.values())
+
+
+def test_tag_write_commands_log_every_pass_in_the_change_history():
+    """Issue #261: redo and undo both reach the recorder, with the files
+    actually written and their (old, new) values."""
+    from PySide6.QtGui import QUndoStack
+
+    from djmidi.gui.commands import (
+        WriteTrackMetadataCommand,
+        WriteTracksMetadataCommand,
+    )
+
+    logged = []
+
+    def recorder(summary, changes):
+        logged.append((summary, changes))
+
+    def writer(path, **fields):
+        if path == "bad":
+            raise OSError("read-only")
+
+    stack = QUndoStack()
+    stack.push(WriteTrackMetadataCommand("/m/a.mp3", {"bpm": 120.0}, {"bpm": 128.0}, lambda p: None, writer, recorder))
+    stack.undo()
+    assert logged == [
+        ("Edit bpm of a.mp3", {"/m/a.mp3": ({"bpm": 120.0}, {"bpm": 128.0})}),
+        ("Undo: Edit bpm of a.mp3", {"/m/a.mp3": ({"bpm": 128.0}, {"bpm": 120.0})}),
+    ]
+    logged.clear()
+    changes = {"x": ({"genre": "A"}, {"genre": "B"}), "bad": ({"genre": "A"}, {"genre": "B"})}
+    stack.push(WriteTracksMetadataCommand(changes, lambda p: None, writer=writer, recorder=recorder))
+    stack.undo()
+    assert logged == [
+        ("Edit genre of 2 tracks", {"x": ({"genre": "A"}, {"genre": "B"})}),
+        ("Undo: Edit genre of 2 tracks", {"x": ({"genre": "B"}, {"genre": "A"})}),
+    ]
