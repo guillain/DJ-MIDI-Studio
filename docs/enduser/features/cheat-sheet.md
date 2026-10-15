@@ -67,6 +67,11 @@ A control whose SHIFT layer is mapped too shows both, the SHIFT function on
 a `SHIFT:` line. Both decks that share a physical control (decks 1 and 3 on
 the left pads, 2 and 4 on the right) appear on the same label.
 
+A pad mode whose own name contains "SHIFT" — the **KEY SHIFT** mode of the
+DDJ-1000, DDJ-FLX10 and DDJ-800 — is not the SHIFT layer: its pads print
+as plain functions, and only what you mapped to SHIFT + pad gets a
+`SHIFT:` line, exactly as in the [Layer Map](layer-map.md).
+
 ## Controllers without a photo layout
 
 A controller whose control positions haven't been measured yet, and any

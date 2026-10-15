@@ -132,6 +132,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Cheat sheet KEY SHIFT fix** (`v0.48.105-cheat-sheet-key-shift`, issue #280) — the
+  cheat sheet treated every pad of the DDJ-1000/DDJ-FLX10/DDJ-800 `KEY SHIFT` pad mode as a
+  SHIFT variant (the bank's own name contains "SHIFT"), printing its plain functions on
+  `SHIFT:` lines. The Layer Map's bank-aware rule moved to `cheat_sheet.is_shift` and is now
+  shared by both (`layer_map.is_shift` is the same function); `_is_plain` strips the bank too.
+  Regression test on DDJ-1000's real `KEY SHIFT, PAGE 1` variants.
 - [x] **Faster startup** (`v0.48.103-faster-startup`, issue #264) — Qt-free
   `startup_timing.py` (`StartupTimer`; `djmidi.main()` starts it before the GUI import,
   `gui.app.run()` marks each phase and logs `Startup: time to first window … ms` with a
