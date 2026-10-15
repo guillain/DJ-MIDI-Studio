@@ -8,8 +8,8 @@
         <translation>Historique des modifications</translation>
     </message>
     <message>
-        <source>Every tag write and Trash move this app made to your files, newest first. Revert puts a file back only while it still holds what this app wrote.</source>
-        <translation>Chaque écriture de tags et chaque mise à la corbeille faite par cette application sur vos fichiers, les plus récentes d&apos;abord. Annuler ne remet un fichier en l&apos;état que s&apos;il contient encore ce que cette application a écrit.</translation>
+        <source>Every tag, cover art and rename write and Trash move this app made to your files, newest first. Revert puts a file back only while it still holds what this app wrote.</source>
+        <translation>Chaque écriture de tags, de pochette et chaque renommage ou mise à la corbeille faits par cette application sur vos fichiers, les plus récentes d&apos;abord. Annuler ne remet un fichier en l&apos;état que s&apos;il contient encore ce que cette application a écrit.</translation>
     </message>
     <message>
         <source>When</source>
@@ -733,8 +733,8 @@ Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-m
         <translation>Historique des modifications…</translation>
     </message>
     <message>
-        <source>Every tag write and Trash move this app made, kept across restarts. Inspect and revert them.</source>
-        <translation>Chaque écriture de tags et mise à la corbeille faite par cette application, conservée entre les lancements. Consultez-les et annulez-les.</translation>
+        <source>Every tag, cover and rename write and Trash move this app made, kept across restarts. Inspect and revert them.</source>
+        <translation>Chaque écriture de tags, de pochette, chaque renommage et mise à la corbeille faits par cette application, conservés entre les lancements. Consultez-les et annulez-les.</translation>
     </message>
     <message>
         <source>Statistics…</source>

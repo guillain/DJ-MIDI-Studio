@@ -155,12 +155,24 @@ def format_functions(lines: list[tuple[str, str]], prefix: str = "") -> list[str
     ]
 
 
-def _is_shift(entry: catalog.ControlInfo) -> bool:
-    return "shift" in entry.name.casefold()
+def _name_without_bank(entry: catalog.ControlInfo) -> str:
+    """A variant's name minus its pad bank ("(KEY SHIFT, PAGE 1)"), so the
+    bank's own wording never reads as a SHIFT / long-press qualifier."""
+    if entry.section != "PAD":
+        return entry.name
+    match = _BANK_RE.search(entry.name)
+    return entry.name.replace(match.group(1), "") if match else entry.name
+
+
+def is_shift(entry: catalog.ControlInfo) -> bool:
+    """Whether a variant is a SHIFT one -- ignoring the bank's own name,
+    since DDJ-1000/FLX10/800 have a "KEY SHIFT" pad mode whose plain
+    variants are not SHIFT ones (issue #280). Shared with gui/layer_map.py."""
+    return "shift" in _name_without_bank(entry).casefold()
 
 
 def _is_plain(entry: catalog.ControlInfo) -> bool:
-    lowered = entry.name.casefold()
+    lowered = _name_without_bank(entry).casefold()
     return not any(marker in lowered for marker in _AMBIGUOUS)
 
 
@@ -232,9 +244,9 @@ def _marker_functions(
     variants: list[catalog.ControlInfo], index: FunctionIndex
 ) -> list[str]:
     plain = [v for v in variants if _is_plain(v)] or [
-        v for v in variants if not _is_shift(v)
+        v for v in variants if not is_shift(v)
     ]
-    shifted = [v for v in variants if _is_shift(v)]
+    shifted = [v for v in variants if is_shift(v)]
     plain_lines: list[tuple[str, str]] = []
     for variant in plain:
         plain_lines.extend(
@@ -385,6 +397,7 @@ __all__ = [
     "format_functions",
     "function_text",
     "glossary_sheet",
+    "is_shift",
     "marker_variants",
     "pad_banks",
 ]

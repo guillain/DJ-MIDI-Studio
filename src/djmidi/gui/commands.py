@@ -149,6 +149,10 @@ class RemoveGroupAliasCommand(QUndoCommand):
 # Logs a tag write in the persistent change history (issue #261):
 # (summary, {path: (old values, new values)}) for the files written.
 ChangeRecorder = Callable[[str, dict[str, tuple[dict[str, object], dict[str, object]]]], None]
+# Same for a cover write (issue #279): (summary, path, old cover, new cover).
+CoverRecorder = Callable[[str, str, object | None, object | None], None]
+# Same for renames (issue #279): (summary, [(old path, new path)]).
+RenameRecorder = Callable[[str, list[tuple[str, str]]], None]
 
 
 class WriteTrackMetadataCommand(QUndoCommand):
@@ -195,7 +199,11 @@ class WriteTrackCoverCommand(QUndoCommand):
     Track panel, issue #256). The previous front cover is read once, when
     the command is built, and undo writes it back (or removes the new one
     when there was none) through the same surgical `write_cover_art`, so
-    other pictures, tags and Serato/Traktor frames stay untouched."""
+    other pictures, tags and Serato/Traktor frames stay untouched.
+
+    An optional `recorder(summary, path, old cover, new cover)` logs every
+    pass (the write, an undo, a redo) in the persistent change history
+    (issue #279)."""
 
     def __init__(
         self,
@@ -204,6 +212,7 @@ class WriteTrackCoverCommand(QUndoCommand):
         on_applied: Callable[[str], None],
         writer: Callable[[str, object | None], None] | None = None,
         reader: Callable[[str], object | None] | None = None,
+        recorder: CoverRecorder | None = None,
     ) -> None:
         verb = "Set" if new_cover is not None else "Remove"
         super().__init__(f"{verb} cover of {path.rsplit('/', 1)[-1]}")
@@ -217,13 +226,18 @@ class WriteTrackCoverCommand(QUndoCommand):
         self._new = new_cover
         self._writer = writer
         self._on_applied = on_applied
+        self._recorder = recorder
 
     def redo(self) -> None:
         self._writer(self._path, self._new)
+        if self._recorder is not None:
+            self._recorder(self.text(), self._path, self._old, self._new)
         self._on_applied(self._path)
 
     def undo(self) -> None:
         self._writer(self._path, self._old)
+        if self._recorder is not None:
+            self._recorder(f"Undo: {self.text()}", self._path, self._new, self._old)
         self._on_applied(self._path)
 
 
@@ -312,18 +326,21 @@ class RenameFilesCommand(QUndoCommand):
     actually renamed swapped back. A pair that fails (on redo or undo) is
     recorded in `failures` instead of aborting the rest; if nothing at all
     was renamed the command marks itself obsolete so `QUndoStack.push`
-    drops it."""
+    drops it. An optional `recorder(summary, pairs)` logs the pairs each
+    pass actually renamed in the persistent change history (issue #279)."""
 
     def __init__(
         self,
         pairs: list[tuple[str, str]],
         apply: Callable[[list[tuple[str, str]]], object],
         on_applied: Callable[[list[tuple[str, str]]], None],
+        recorder: RenameRecorder | None = None,
     ) -> None:
         super().__init__(f"Rename {len(pairs)} file(s)")
         self._pairs = list(pairs)
         self._apply = apply
         self._on_applied = on_applied
+        self._recorder = recorder
         self.renamed: list[tuple[str, str]] = []
         self.failures: list[tuple[str, str]] = []
 
@@ -336,9 +353,14 @@ class RenameFilesCommand(QUndoCommand):
             return
         # A later redo (after an undo) replays only what this one renamed.
         self._pairs = list(self.renamed)
+        if self._recorder is not None:
+            self._recorder(self.text(), list(self.renamed))
         self._on_applied(self.renamed)
 
     def undo(self) -> None:
         result = self._apply([(new, old) for old, new in reversed(self.renamed)])
         self.failures = list(result.failed)
-        self._on_applied(list(result.renamed))
+        restored = list(result.renamed)
+        if self._recorder is not None and restored:
+            self._recorder(f"Undo: {self.text()}", restored)
+        self._on_applied(restored)
