@@ -107,6 +107,7 @@ from djmidi.gui.set_preparation import (
     SetPreparationPanel,
     encode_paths,
 )
+from djmidi.gui.window_size import keep_wrapped_text_visible
 from djmidi.library import (
     change_log,
     discard,
@@ -476,6 +477,7 @@ class SmartPlaylistDialog(QDialog):
         self.name_edit.textChanged.connect(lambda text: self._ok_button.setEnabled(bool(text.strip())))
         self._ok_button.setEnabled(bool(name.strip()))
         box.addWidget(buttons)
+        keep_wrapped_text_visible(self)
 
     @staticmethod
     def _bpm_spin(value: float | None) -> QDoubleSpinBox:

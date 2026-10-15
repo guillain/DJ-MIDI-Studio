@@ -32,6 +32,11 @@ from PySide6.QtWidgets import (
 
 from djmidi.gui import help_texts
 from djmidi.gui.help_button import help_button
+from djmidi.gui.window_size import (
+    fit_to_screen,
+    keep_wrapped_text_visible,
+    usable_minimum,
+)
 from djmidi.library import change_log
 from djmidi.library.db import ChangeItem, ChangeRecord, LibraryDB
 
@@ -87,7 +92,7 @@ class ChangeHistoryDialog(QDialog):
     def __init__(self, db: LibraryDB, parent: QWidget | None = None, context: change_log.RevertContext | None = None):
         super().__init__(parent)
         self.setWindowTitle("Change history")
-        self.resize(900, 560)
+        fit_to_screen(self, 900, 560)
         self._db = db
         self._context = context
         self._changes: list[ChangeRecord] = []
@@ -108,7 +113,10 @@ class ChangeHistoryDialog(QDialog):
         self.items = QTreeWidget()
         self.items.setRootIsDecorated(False)
         self.items.setHeaderLabels(["File", "Change"])
+        usable_minimum(self.entries, 420, 120)
+        usable_minimum(self.items, 420, 90)
         splitter = QSplitter(Qt.Orientation.Vertical)
+        splitter.setChildrenCollapsible(False)
         splitter.addWidget(self.entries)
         splitter.addWidget(self.items)
 
@@ -126,6 +134,7 @@ class ChangeHistoryDialog(QDialog):
         layout.addLayout(top)
         layout.addWidget(splitter, 1)
         layout.addWidget(buttons)
+        keep_wrapped_text_visible(self)
         self.refresh()
 
     def refresh(self) -> None:

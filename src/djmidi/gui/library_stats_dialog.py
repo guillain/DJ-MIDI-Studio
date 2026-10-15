@@ -29,6 +29,11 @@ from PySide6.QtWidgets import (
 
 from djmidi.gui import help_texts
 from djmidi.gui.help_button import help_button
+from djmidi.gui.window_size import (
+    fit_to_screen,
+    keep_wrapped_text_visible,
+    usable_minimum,
+)
 from djmidi.library.stats import UNCATEGORIZED_LABEL, Bucket, LibraryStats
 
 _ROW_HEIGHT = 20
@@ -214,7 +219,7 @@ class LibraryStatsDialog(QDialog):
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle("Library statistics")
-        self.resize(820, 560)
+        fit_to_screen(self, 820, 560)
         self.stats = stats
         box = QVBoxLayout(self)
 
@@ -293,11 +298,15 @@ class LibraryStatsDialog(QDialog):
             )
             played_chart.bucketActivated.connect(self._on_played_activated)
         self._add_tab("plays", "Most played", played_chart, played_note)
+        # Wide enough for every tab title: a scrolling tab bar hides tabs
+        # behind arrows too narrow for their own minimum (issue #282).
+        usable_minimum(self.tabs, max(420, self.tabs.tabBar().sizeHint().width() + 8), 260)
         box.addWidget(self.tabs, 1)
 
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
         buttons.rejected.connect(self.reject)
         box.addWidget(buttons)
+        keep_wrapped_text_visible(self)
 
     def _add_tab(self, key: str, title: str, chart: BarChart, note: str) -> None:
         page = QWidget()

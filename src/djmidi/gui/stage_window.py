@@ -75,6 +75,9 @@ QWidget#stageWindow QListWidget#stageLog {
 # The compact monitor column never gets narrower than this, so a long
 # control name wraps onto two lines rather than being cut to a few letters.
 _MONITOR_MIN_WIDTH = 320
+# Same for the controller: out of full screen, a window dragged small stops
+# while the schematic and its selectors stay usable (issue #282).
+_EMULATOR_MIN_SIZE = (420, 320)
 
 
 class StageWindow(QWidget):
@@ -135,6 +138,7 @@ class StageWindow(QWidget):
         monitor_layout.addWidget(self._latest_label)
         monitor_layout.addWidget(self._log_list, 1)
 
+        self.emulator_view.setMinimumSize(*_EMULATOR_MIN_SIZE)
         body = QHBoxLayout()
         body.addWidget(self.emulator_view, 2)
         body.addWidget(monitor, 1)
