@@ -59,6 +59,15 @@ def _value(value: object) -> str:
     return str(value)
 
 
+def _cover(state: dict[str, object]) -> str:
+    """``image/jpeg, 120 KB`` for a logged cover, ``(none)`` when absent."""
+    if not state.get("sha256"):
+        return "(none)"
+    size = state.get("size")
+    kilobytes = f", {max(1, round(size / 1024))} KB" if isinstance(size, int) else ""
+    return f"{state.get('mime') or 'image'}{kilobytes}"
+
+
 def describe_item(kind: str, item: ChangeItem) -> str:
     """One line saying what changed for this file."""
     if kind == change_log.KIND_TRASH:
@@ -68,6 +77,8 @@ def describe_item(kind: str, item: ChangeItem) -> str:
         return f"put back from {item.before.get('trash_path', 'the Trash')}"
     if kind == change_log.KIND_RENAME:
         return f"{item.before.get('path', '?')} → {item.after.get('path', '?')}"
+    if kind == change_log.KIND_COVER:
+        return f"front cover: {_cover(item.before)} → {_cover(item.after)}"
     names = sorted(set(item.before) | set(item.after))
     return "; ".join(f"{name}: {_value(item.before.get(name))} → {_value(item.after.get(name))}" for name in names)
 
@@ -93,7 +104,7 @@ class ChangeHistoryDialog(QDialog):
         self._changes: list[ChangeRecord] = []
 
         intro = QLabel(
-            "Every tag write and Trash move this app made to your files, newest first. "
+            "Every tag, cover art and rename write and Trash move this app made to your files, newest first. "
             "Revert puts a file back only while it still holds what this app wrote."
         )
         intro.setWordWrap(True)

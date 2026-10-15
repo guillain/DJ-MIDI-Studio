@@ -1015,7 +1015,8 @@ class MusicLibraryView(QWidget):
         self.health_button.clicked.connect(self.start_health_report)
         self.history_button = QPushButton("Change history…")
         self.history_button.setToolTip(
-            "Every tag write and Trash move this app made, kept across restarts. Inspect and revert them."
+            "Every tag, cover and rename write and Trash move this app made, kept across restarts. "
+            "Inspect and revert them."
         )
         self.history_button.clicked.connect(self.show_change_history)
         self.stats_button = QPushButton("Statistics…")
@@ -1685,6 +1686,12 @@ class MusicLibraryView(QWidget):
     def _record_tag_change(self, summary: str, changes: dict[str, tuple[dict[str, object], dict[str, object]]]) -> None:
         change_log.record_tag_changes(self.db, changes, summary)
 
+    def _record_cover_change(self, summary: str, path: str, old: object | None, new: object | None) -> None:
+        change_log.record_cover_change(self.db, path, old, new, summary)
+
+    def _record_renames(self, summary: str, pairs: list[tuple[str, str]]) -> None:
+        change_log.record_renames(self.db, pairs, summary)
+
     def show_change_history(self) -> ChangeHistoryDialog:
         """Open (or raise) the persistent change history window."""
         if self.history_dialog is None:
@@ -1702,6 +1709,9 @@ class MusicLibraryView(QWidget):
                 workspace.refresh_track_metadata(self.db, path)
         self._reload_rows()
         self._reload_playlists()
+        if self._current_path in paths:
+            # A reverted cover leaves the row's tags as they were.
+            self._show_cover(self._current_row())
         self.status_label.setText(f"Change reverted on {len(paths)} file(s).")
 
     # --- health report (issue #225) ----------------------------------------
@@ -2172,7 +2182,7 @@ class MusicLibraryView(QWidget):
 
     def _push_cover(self, path: str, cover: object | None) -> bool:
         try:
-            self.undo_stack.push(WriteTrackCoverCommand(path, cover, self._on_cover_written))
+            self.undo_stack.push(WriteTrackCoverCommand(path, cover, self._on_cover_written, recorder=self._record_cover_change))
         except Exception as exc:
             _LOGGER.exception("Cover write failed for %s", path)
             QMessageBox.warning(self, "Could not write the cover", f"{path}\n\n{exc}")
@@ -2341,7 +2351,12 @@ class MusicLibraryView(QWidget):
         the dialog previewed them) and return the pairs actually renamed."""
         if not pairs:
             return []
-        command = RenameFilesCommand(pairs, lambda batch: rename.apply_renames(self.db, batch), self._on_files_renamed)
+        command = RenameFilesCommand(
+            pairs,
+            lambda batch: rename.apply_renames(self.db, batch),
+            self._on_files_renamed,
+            recorder=self._record_renames,
+        )
         self.undo_stack.push(command)
         if command.failures:
             _LOGGER.warning("Rename failed for %d file(s): %s", len(command.failures), command.failures)
