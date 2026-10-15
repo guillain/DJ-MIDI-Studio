@@ -33,7 +33,6 @@ from djmidi.model import Control
 
 COLUMNS = ("Severity", "Finding", "What to do")
 SEVERITIES = ("error", "warning", "info")
-_SEVERITY_LABELS = {"error": "Errors", "warning": "Warnings", "info": "Info"}
 
 
 class LiveReadyDialog(QDialog):
@@ -42,15 +41,16 @@ class LiveReadyDialog(QDialog):
 
     def __init__(self, report: ReadyReport, parent: QWidget | None = None) -> None:
         super().__init__(parent)
-        self.setWindowTitle("Ready for live")
+        self.setWindowTitle(self.tr("Ready for live"))
         self.resize(900, 520)
         self.report = report
         box = QVBoxLayout(self)
 
         header = QHBoxLayout()
-        decks = ", ".join(report.decks) if report.decks else "none"
+        decks = ", ".join(report.decks) if report.decks else self.tr("none")
         self.verdict_label = QLabel(
-            f"<b>{report.verdict}</b><br>Decks checked: {decks}. Read-only: nothing is changed."
+            f"<b>{report.verdict}</b><br>"
+            + self.tr("Decks checked: {decks}. Read-only: nothing is changed.").format(decks=decks)
         )
         self.verdict_label.setWordWrap(True)
         header.addWidget(self.verdict_label, 1)
@@ -60,8 +60,9 @@ class LiveReadyDialog(QDialog):
         counts = report.counts()
         severity_row = QHBoxLayout()
         self.severity_checkboxes: dict[str, QCheckBox] = {}
+        severity_labels = {"error": self.tr("Errors"), "warning": self.tr("Warnings"), "info": self.tr("Info")}
         for severity in SEVERITIES:
-            checkbox = QCheckBox(f"{_SEVERITY_LABELS[severity]} ({counts[severity]})")
+            checkbox = QCheckBox(f"{severity_labels[severity]} ({counts[severity]})")
             checkbox.setChecked(True)
             checkbox.setEnabled(counts[severity] > 0)
             checkbox.toggled.connect(self._fill_table)
@@ -71,7 +72,7 @@ class LiveReadyDialog(QDialog):
         box.addLayout(severity_row)
 
         self.table = QTableWidget(0, len(COLUMNS))
-        self.table.setHorizontalHeaderLabels(list(COLUMNS))
+        self.table.setHorizontalHeaderLabels([self.tr("Severity"), self.tr("Finding"), self.tr("What to do")])
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
@@ -88,12 +89,12 @@ class LiveReadyDialog(QDialog):
         box.addWidget(self.count_label)
 
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
-        self.show_button = QPushButton("Show control")
-        self.show_button.setToolTip("Select this control in the By Channel view (double-click does the same).")
+        self.show_button = QPushButton(self.tr("Show control"))
+        self.show_button.setToolTip(self.tr("Select this control in the By Channel view (double-click does the same)."))
         self.show_button.clicked.connect(self._show_control)
         buttons.addButton(self.show_button, QDialogButtonBox.ButtonRole.ActionRole)
-        self.copy_button = QPushButton("Copy report")
-        self.copy_button.setToolTip("Copy the whole report as text.")
+        self.copy_button = QPushButton(self.tr("Copy report"))
+        self.copy_button.setToolTip(self.tr("Copy the whole report as text."))
         self.copy_button.clicked.connect(self._copy_report)
         buttons.addButton(self.copy_button, QDialogButtonBox.ButtonRole.ActionRole)
         buttons.rejected.connect(self.reject)
@@ -119,7 +120,11 @@ class LiveReadyDialog(QDialog):
                 item.setToolTip(finding.location or text)
                 self.table.setItem(row, column, item)
         self.table.resizeRowsToContents()
-        self.count_label.setText(f"{len(self._visible)} of {len(self.report.findings)} finding(s) shown")
+        self.count_label.setText(
+            self.tr("{shown} of {total} finding(s) shown").format(
+                shown=len(self._visible), total=len(self.report.findings)
+            )
+        )
         self._update_buttons()
 
     def current_finding(self) -> ReadyFinding | None:
@@ -138,7 +143,7 @@ class LiveReadyDialog(QDialog):
 
     def _copy_report(self) -> None:
         QGuiApplication.clipboard().setText(report_text(self.report))
-        self.count_label.setText("Report copied to the clipboard")
+        self.count_label.setText(self.tr("Report copied to the clipboard"))
 
 
 __all__ = ["COLUMNS", "LiveReadyDialog"]

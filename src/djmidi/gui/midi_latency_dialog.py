@@ -75,7 +75,7 @@ class MidiLatencyDialog(QDialog):
         list_inputs: Callable[[], list[str]] = list_input_ports,
     ) -> None:
         super().__init__(parent)
-        self.setWindowTitle("MIDI Latency Test")
+        self.setWindowTitle(self.tr("MIDI Latency Test"))
         self.resize(560, 560)
         self._port_pair_factory = port_pair_factory
         self._start_thread = start_thread
@@ -87,7 +87,7 @@ class MidiLatencyDialog(QDialog):
         self.results: list[PingResult] = []
         self.last_stats: LatencyStats | None = None
 
-        warning = QLabel(f"<b>Needs an echo.</b> {ECHO_WARNING}")
+        warning = QLabel("<b>{}</b> {}".format(self.tr("Needs an echo."), ECHO_WARNING))
         warning.setWordWrap(True)
         warning.setObjectName("latencyEchoWarning")
 
@@ -97,7 +97,7 @@ class MidiLatencyDialog(QDialog):
         refresh = QPushButton("⟳")
         refresh.setProperty("compact", True)
         refresh.setFixedSize(26, 26)
-        refresh.setToolTip("Refresh the MIDI port lists")
+        refresh.setToolTip(self.tr("Refresh the MIDI port lists"))
         refresh.clicked.connect(self.refresh_ports)
         output_row = QHBoxLayout()
         output_row.addWidget(self.output_combo, 1)
@@ -109,29 +109,31 @@ class MidiLatencyDialog(QDialog):
         self.note_spin = self._spin(0, 127, defaults.note)
         self.interval_spin = self._spin(0, 10_000, int(defaults.interval_ms), " ms")
         self.timeout_spin = self._spin(1, 10_000, int(defaults.timeout_ms), " ms")
-        self.match_velocity_check = QCheckBox("Reply must carry the ping's velocity")
+        self.match_velocity_check = QCheckBox(self.tr("Reply must carry the ping's velocity"))
         self.match_velocity_check.setChecked(defaults.match_velocity)
         self.match_velocity_check.setToolTip(
-            "Each ping uses its own velocity so a late echo is never counted for the next "
-            "ping. Untick for a device that echoes a different velocity."
+            self.tr(
+                "Each ping uses its own velocity so a late echo is never counted for the next "
+                "ping. Untick for a device that echoes a different velocity."
+            )
         )
 
         form = QFormLayout()
-        form.addRow("Send to (output)", output_row)
-        form.addRow("Listen on (input)", self.input_combo)
-        form.addRow("Pings", self.count_spin)
-        form.addRow("Channel", self.channel_spin)
-        form.addRow("Note", self.note_spin)
-        form.addRow("Interval", self.interval_spin)
-        form.addRow("Timeout", self.timeout_spin)
+        form.addRow(self.tr("Send to (output)"), output_row)
+        form.addRow(self.tr("Listen on (input)"), self.input_combo)
+        form.addRow(self.tr("Pings"), self.count_spin)
+        form.addRow(self.tr("Channel"), self.channel_spin)
+        form.addRow(self.tr("Note"), self.note_spin)
+        form.addRow(self.tr("Interval"), self.interval_spin)
+        form.addRow(self.tr("Timeout"), self.timeout_spin)
         form.addRow("", self.match_velocity_check)
 
-        self.summary_label = QLabel("Not run yet.")
+        self.summary_label = QLabel(self.tr("Not run yet."))
         self.summary_label.setWordWrap(True)
         self.log_view = QPlainTextEdit()
         self.log_view.setReadOnly(True)
 
-        self.start_button = QPushButton("Start")
+        self.start_button = QPushButton(self.tr("Start"))
         self.start_button.clicked.connect(self._on_start_stop)
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
         buttons.rejected.connect(self.reject)
@@ -202,7 +204,7 @@ class MidiLatencyDialog(QDialog):
     def _update_enabled(self) -> None:
         has_ports = bool(self.output_combo.currentText()) and bool(self.input_combo.currentText())
         self.start_button.setEnabled(self._running or has_ports)
-        self.start_button.setText("Stop" if self._running else "Start")
+        self.start_button.setText(self.tr("Stop") if self._running else self.tr("Start"))
         for widget in (
             self.output_combo,
             self.input_combo,
@@ -218,7 +220,7 @@ class MidiLatencyDialog(QDialog):
     def _on_start_stop(self) -> None:
         if self._running:
             self._stop.set()
-            self.summary_label.setText("Stopping…")
+            self.summary_label.setText(self.tr("Stopping…"))
             return
         self.start()
 
@@ -235,7 +237,7 @@ class MidiLatencyDialog(QDialog):
         events = self._queue = queue.Queue()
         factory = self._port_pair_factory
         self._running = True
-        self.summary_label.setText(f"Pinging {output} → {input_name}…")
+        self.summary_label.setText(self.tr("Pinging {output} → {input}…").format(output=output, input=input_name))
         self._update_enabled()
 
         def work() -> None:
@@ -264,14 +266,14 @@ class MidiLatencyDialog(QDialog):
             if kind == "result":
                 assert isinstance(payload, PingResult)
                 self.results.append(payload)
-                rtt = "timed out" if payload.rtt_ms is None else f"{payload.rtt_ms:.2f} ms"
-                self.log_view.appendPlainText(f"Ping {payload.index + 1}: {rtt}")
+                rtt = self.tr("timed out") if payload.rtt_ms is None else f"{payload.rtt_ms:.2f} ms"
+                self.log_view.appendPlainText(self.tr("Ping {number}: {rtt}").format(number=payload.index + 1, rtt=rtt))
             elif kind == "done":
                 assert isinstance(payload, LatencyStats)
                 self.last_stats = payload
-                self._finish(format_stats(payload) if payload.sent else "Stopped before any ping finished.")
+                self._finish(format_stats(payload) if payload.sent else self.tr("Stopped before any ping finished."))
             elif kind == "error":
-                self._finish(f"Could not run the test: {payload}")
+                self._finish(self.tr("Could not run the test: {error}").format(error=payload))
 
     def _finish(self, text: str) -> None:
         self._timer.stop()

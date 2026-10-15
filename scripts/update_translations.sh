@@ -23,6 +23,14 @@ cd "$ROOT_DIR"
 SOURCES=(
   src/djmidi/gui/main_window.py
   src/djmidi/gui/preferences_dialog.py
+  src/djmidi/gui/first_run_wizard.py
+  src/djmidi/gui/live_ready_dialog.py
+  src/djmidi/gui/midi_latency_dialog.py
+  src/djmidi/gui/layer_map_dialog.py
+  src/djmidi/gui/music_library_view.py
+  src/djmidi/gui/library_stats_dialog.py
+  src/djmidi/gui/rename_files_dialog.py
+  src/djmidi/gui/change_history_dialog.py
 )
 LANGUAGES=(fr)
 

@@ -201,3 +201,73 @@ def test_preferences_dialog_saves_language_and_keeps_tab_keys():
         assert preferences.language == "fr"
     finally:
         dialog.deleteLater()
+
+
+# --- Follow-up windows (issue #281) --------------------------------------------
+
+
+def test_compiled_catalogue_translates_the_follow_up_menu_entries():
+    translator = QTranslator()
+    assert translator.load(str(i18n.translation_file("fr")))
+    assert translator.translate("MainWindow", "Ready for &Live…") == "Prêt pour le &live…"
+    assert translator.translate("MainWindow", "MIDI Latency Test…") == "Test de latence MIDI…"
+    assert translator.translate("MainWindow", "Layer Map…") == "Carte des couches…"
+    assert translator.translate("MainWindow", "First-Run &Setup...") == "Configuration &initiale..."
+    assert translator.translate("MusicLibraryView", "Statistics…") == "Statistiques…"
+
+
+def test_every_formatted_translation_keeps_its_placeholders():
+    """A `{name}` placeholder renamed or dropped in French would raise (or
+    print a wrong value) when the code calls .format() on the translation."""
+    import re
+
+    root = ET.parse(i18n.translations_dir() / "djmidi_fr.ts").getroot()
+    for message in root.iter("message"):
+        source = message.find("source").text
+        translation = message.find("translation").text or ""
+        placeholders = sorted(re.findall(r"\{\w*\}", source))
+        assert sorted(re.findall(r"\{\w*\}", translation)) == placeholders, source
+
+
+@pytest.fixture
+def french():
+    """Installs the French catalogue for one test (the suite is English otherwise)."""
+    app = QCoreApplication.instance()
+    translator = QTranslator()
+    assert translator.load(str(i18n.translation_file("fr")))
+    app.installTranslator(translator)
+    try:
+        yield
+    finally:
+        app.removeTranslator(translator)
+
+
+def test_follow_up_windows_show_french_under_the_french_catalogue(french, tmp_path):
+    from djmidi.gui.first_run_wizard import FirstRunWizard
+    from djmidi.gui.layer_map_dialog import LayerMapDialog
+    from djmidi.gui.live_ready_dialog import LiveReadyDialog
+    from djmidi.gui.midi_latency_dialog import MidiLatencyDialog
+    from djmidi.live_ready import ReadyReport
+    from djmidi.model import MidiConfig
+
+    wizard = FirstRunWizard(list, home=tmp_path)
+    latency = MidiLatencyDialog(list_outputs=list, list_inputs=list)
+    layer_map = LayerMapDialog(lambda: MidiConfig(), [("DDJ-XP2", 0)], "DDJ-XP2")
+    live_ready = LiveReadyDialog(ReadyReport(findings=[], decks=()))
+    try:
+        assert wizard.windowTitle() == "Bienvenue dans DJ MIDI Studio"
+        # Wizard pages are their own classes: their own tr() context.
+        assert wizard.controllers_page.title() == "Vos contrôleurs"
+        assert wizard.mapping_page.title() == "Votre mapping Serato"
+        assert latency.windowTitle() == "Test de latence MIDI"
+        assert latency.start_button.text() == "Démarrer"
+        assert live_ready.windowTitle() == "Prêt pour le live"
+        assert layer_map.windowTitle() == "Carte des couches"
+        # The section filter goes by index, so a translated "All sections" still shows every row.
+        assert layer_map.section_combo.itemText(0) == "Toutes les sections"
+        assert layer_map.table.rowCount() == len(layer_map.layer_map.rows)
+        assert "combinaison(s) libre(s)" in layer_map.summary_label.text()
+    finally:
+        for window in (wizard, latency, layer_map, live_ready):
+            window.close()
+            window.deleteLater()

@@ -132,6 +132,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **French UI follow-up** (`v0.48.106-french-ui-followup`, issue #281) — `tr()` on the
+  menu entries added in parallel with #263 (Help → First-Run Setup, Edit → Ready for Live,
+  View → MIDI Latency Test / Layer Map / Stage Mode, the Macros menu's fixed entries), the four
+  windows they open, and the #256–#261 Music Library buttons and windows (cover art, statistics,
+  smart playlists, rename files, change history); 196 new French strings. Layer Map's section
+  filter now goes by index. Still English: the rest of the Music Library tab and the tool docks.
 - [x] **Cheat sheet KEY SHIFT fix** (`v0.48.105-cheat-sheet-key-shift`, issue #280) — the
   cheat sheet treated every pad of the DDJ-1000/DDJ-FLX10/DDJ-800 `KEY SHIFT` pad mode as a
   SHIFT variant (the bank's own name contains "SHIFT"), printing its plain functions on
