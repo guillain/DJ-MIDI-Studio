@@ -132,6 +132,13 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **First-run setup wizard** (`v0.48.90-first-run-wizard`, issue #251) — Qt-free
+  `first_run.py` (first-launch gate, controller detection by port name merged per controller,
+  read-only listing of `~/Music/_Serato_/MIDI/Xml`) behind a skippable `QWizard`: pick the
+  detected profile for the Dashboard, open the newest Serato mapping, start a `● Rec` sync-set
+  recording. Shown once, only in the real app with no preferences file (QSettings flag
+  `ui/first_run_wizard_done`), never under `--startup-screenshot`; `Help → First-Run Setup…`
+  reopens it.
 - [x] **Hercules DJControl Inpulse 500 profile fix** (`v0.48.89-inpulse-500-profile-fix`, issue #247) — the
   catalog is re-transcribed from the bundled official MIDI Commands sheet (300 DPI renders): deck buttons on
   ch 2/3 (+SHIFT 5/6), the 8-mode pad banks on ch 7/8 (+8 with SHIFT), PAD MODE 1-8 and long-press notes,

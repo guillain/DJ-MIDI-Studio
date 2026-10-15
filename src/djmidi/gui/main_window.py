@@ -62,6 +62,7 @@ from djmidi import (
     backup,
     catalog,
     file_locations,
+    first_run,
     midi_macros,
     pad_colours,
     software,
@@ -88,6 +89,7 @@ from djmidi.controller_sync import (
     summarize_results,
     sync_sets_from_recording,
 )
+from djmidi.first_run import FirstRunChoices
 from djmidi.function_search import FunctionResult
 from djmidi.gui import cheat_sheet
 from djmidi.gui import jog as jog_mod
@@ -102,6 +104,7 @@ from djmidi.gui.controller_tree import CELL_KEY_ROLE, build_controller_columns
 from djmidi.gui.deck_tree import build_deck_columns
 from djmidi.gui.edit_panel import EditPanel
 from djmidi.gui.file_reveal import reveal_in_file_manager
+from djmidi.gui.first_run_wizard import FirstRunWizard
 from djmidi.gui.function_search_view import FunctionSearchView
 from djmidi.gui.geometry import resolve_geometry_label
 from djmidi.gui.helpful_notes_dialog import HelpfulNotesDialog
@@ -286,6 +289,11 @@ class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         self.preferences_path = default_preferences_path()
+        # Read before anything saves preferences: no file = a first launch,
+        # which offers the first-run wizard (issue #251).
+        self._preferences_existed = self.preferences_path.exists()
+        # The build smoke test turns it off: its screenshot must not wait on a modal wizard.
+        self.first_run_wizard_enabled = True
         self.preferences = PluginPreferences.load(self.preferences_path)
         application = QApplication.instance()
         if application is not None:
@@ -558,7 +566,7 @@ class MainWindow(QMainWindow):
             # Real app only, like Sync at launch: tests never touch the network.
             QTimer.singleShot(_STARTUP_UPDATE_CHECK_DELAY_MS, self._check_for_updates_at_startup)
         QTimer.singleShot(0, self._initialize_pair_splitters)
-        QTimer.singleShot(0, self._show_helpful_notes_if_enabled)
+        QTimer.singleShot(0, self._show_startup_dialog)
         self.introduction_view.set_loaded_config_info(None)
 
     @staticmethod
@@ -999,6 +1007,12 @@ class MainWindow(QMainWindow):
             online_menu.addAction(action)
 
         help_menu.addSeparator()
+        self._first_run_action = QAction("First-Run &Setup...", self)
+        self._first_run_action.setToolTip(
+            "Detect your controllers, open your Serato mapping and record a controller sync set."
+        )
+        self._first_run_action.triggered.connect(lambda: self._on_first_run_wizard())
+        help_menu.addAction(self._first_run_action)
         self._check_updates_action = QAction("Check for &Updates...", self)
         self._check_updates_action.setToolTip("Ask GitHub whether a newer DJ MIDI Studio release exists.")
         self._check_updates_action.triggered.connect(self._on_check_for_updates)
@@ -1015,6 +1029,48 @@ class MainWindow(QMainWindow):
         self.helpful_notes_dialog.show()
         self.helpful_notes_dialog.raise_()
         self.helpful_notes_dialog.activateWindow()
+
+    def _show_startup_dialog(self) -> None:
+        """The first-run wizard on a genuine first launch, else Helpful Notes."""
+        if self._should_show_first_run_wizard():
+            self._on_first_run_wizard()
+        else:
+            self._show_helpful_notes_if_enabled()
+
+    def _should_show_first_run_wizard(self) -> bool:
+        """Real app only (tests and doc captures have no settings), and only
+        without a preferences file and before the wizard was finished/skipped."""
+        settings = self._layout_settings()
+        if settings is None or not self.first_run_wizard_enabled:
+            return False
+        done = settings.value(first_run.WIZARD_DONE_SETTINGS_KEY, False, type=bool)
+        return first_run.should_show_wizard(self._preferences_existed, bool(done))
+
+    def _on_first_run_wizard(self, wizard: FirstRunWizard | None = None) -> FirstRunChoices | None:
+        """Runs the wizard (Help → First-Run Setup, or a first launch) and
+        applies its choices; finished or skipped, it won't open by itself again."""
+        if wizard is None:
+            wizard = FirstRunWizard(list_input_ports, parent=self)
+        accepted = wizard.exec() == QDialog.DialogCode.Accepted
+        settings = self._layout_settings()
+        if settings is not None:
+            settings.setValue(first_run.WIZARD_DONE_SETTINGS_KEY, True)
+            settings.sync()
+        if not accepted:
+            return None
+        choices = wizard.choices()
+        self._apply_first_run_choices(choices)
+        return choices
+
+    def _apply_first_run_choices(self, choices: FirstRunChoices) -> None:
+        if choices.controller:
+            self.introduction_view.set_controller(choices.controller)
+        if choices.mapping is not None:
+            # Opening only reads the file; the Serato folder is never written
+            # unless the user saves the mapping themselves.
+            self._load_mapping_from_path(choices.mapping, software_id="serato")
+        if choices.record_sync_set and not self._record_button.isChecked():
+            self._record_button.setChecked(True)
 
     def _show_helpful_notes_if_enabled(self) -> None:
         settings = self._layout_settings()
