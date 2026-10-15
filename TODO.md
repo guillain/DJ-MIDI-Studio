@@ -132,6 +132,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **MIDI Learn for macros** (`v0.48.91-macro-midi-learn`, issue #252) — `MidiMacro.trigger`
+  (`MacroTrigger`: Note On/CC, channel, data1, input port; persisted in the macro's JSON only when
+  set), learned by a `Learn` button in Manage Macros (live events routed to the open dialog via
+  `MainWindow._macro_dialog`, reusing `midi_learn.trigger_from_event` and the Live Monitor
+  auto-start of #220). A live press fires `macros_for_event` through the existing `MacroPlayer`;
+  validation refuses shared triggers and self-retriggering macros on a loopback port.
 - [x] **First-run setup wizard** (`v0.48.90-first-run-wizard`, issue #251) — Qt-free
   `first_run.py` (first-launch gate, controller detection by port name merged per controller,
   read-only listing of `~/Music/_Serato_/MIDI/Xml`) behind a skippable `QWizard`: pick the

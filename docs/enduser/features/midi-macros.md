@@ -1,8 +1,8 @@
 # ⏯️ MIDI Macros
 
 > Name a list of MIDI messages once, then send it in one go from the
-> `Macros` menu or a keyboard shortcut — with an optional pause before
-> each message.
+> `Macros` menu, a keyboard shortcut or a button on your controller — with
+> an optional pause before each message.
 
 📍 [Docs](../../README.md) › [End user](../README.md) › [Features](README.md) › MIDI Macros
 
@@ -11,6 +11,7 @@
 - [Why macros](#why-macros)
 - [Create a macro](#create-a-macro)
 - [Play a macro](#play-a-macro)
+- [Play a macro from a controller button](#play-a-macro-from-a-controller-button)
 - [Where the messages go](#where-the-messages-go)
 - [Macro files](#macro-files)
 - [Related](#related)
@@ -58,6 +59,37 @@ nothing was sent (no port chosen, port not connected).
 Delays never freeze the app: the screen keeps reacting while a macro waits,
 and you can start another macro meanwhile. A send that fails stops that
 macro, since the next steps may depend on it.
+
+## Play a macro from a controller button
+
+A macro can also be fired by a button (or knob, fader…) on your
+controller, with **MIDI Learn**:
+
+1. In **`Macros` → `Manage Macros…`**, select the macro.
+2. Next to **Trigger**, click **`Learn`**, then press the button on your
+   controller within 10 seconds. The trigger shows what was learned, for
+   example `Note 40, ch 1 on PIONEER DDJ-XP2`. Click `Learn` again (it reads
+   `Cancel` while waiting) to stop listening.
+3. Click `OK`. The trigger is saved in the macro's file.
+
+From then on, pressing that button plays the macro, whichever tab is open.
+Only the press counts — releasing the button doesn't play it a second
+time — and a knob or fader (a Control Change) plays it on every move, so
+a button is usually the better choice. `Clear` removes the trigger.
+
+- The app listens through the [Live Monitor](live-monitor.md): `Learn`
+  starts it on every MIDI input if it isn't running yet, and at launch it
+  starts on its own when a macro has a trigger (unless *Auto-start Live Monitor when a
+  mapping is loaded* is off in Preferences; then start it yourself).
+- A trigger remembers the input it was learned on, so the same note on
+  two controllers stays two different triggers.
+- Macros don't play from the controller while `Manage Macros…` is open,
+  so learning a button never fires its old macro.
+- `OK` is refused when two macros use the same trigger, or when a macro
+  would send its own trigger back to the port it listens on (a virtual
+  loopback port such as IAC would replay it forever).
+- The button keeps doing whatever your DJ software maps it to: the macro
+  plays *in addition*, so pick a button your mapping leaves free.
 
 ## Where the messages go
 

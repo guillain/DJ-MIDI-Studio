@@ -332,6 +332,9 @@ class MainWindow(QMainWindow):
         self.macros: list[midi_macros.MidiMacro] = midi_macros.load_macros(user_paths.macros_dir())
         self._macro_player = MacroPlayer(parent=self)
         self._macro_player.finished.connect(self._on_macro_finished)
+        # The open Manage Macros dialog, fed live events for its Learn button
+        # (issue #252); macros don't fire from the controller while it's open.
+        self._macro_dialog: MacroManagerDialog | None = None
         # "Show all controllers" (View menu) bypasses the per-controller
         # Preferences enablement so the mapping tabs list every registered
         # controller again; the real state is restored from QSettings in
@@ -555,6 +558,8 @@ class MainWindow(QMainWindow):
         if self._layout_settings() is not None:
             # Real app only, like reopening files: tests never touch MIDI here.
             QTimer.singleShot(_STARTUP_SYNC_DELAY_MS, self._start_controller_sync)
+            # Controller-triggered macros (issue #252) need the inputs open.
+            QTimer.singleShot(0, self._ensure_macro_triggers_listening)
         self._update_checker = UpdateChecker(self)
         self._update_checker.finished.connect(self._on_update_check_finished)
         self._update_label = QLabel()
@@ -2353,8 +2358,13 @@ class MainWindow(QMainWindow):
 
     def _on_live_midi_event(self, event: MidiEvent) -> None:
         # An active MIDI Learn consumes the press it learns; the layouts still
-        # react to it below like any other live hit.
-        self.edit_panel.feed_learn_event(event)
+        # react to it below like any other live hit. Otherwise a press bound
+        # to a macro (issue #252) plays it -- never while the macro editor is
+        # open, whose own Learn may be waiting for exactly that press.
+        if self._macro_dialog is not None:
+            self._macro_dialog.feed_learn_event(event)
+        elif not self.edit_panel.feed_learn_event(event):
+            self._play_triggered_macros(event)
         try:
             value = int(event.data2)
         except (TypeError, ValueError):
@@ -2981,12 +2991,19 @@ class MainWindow(QMainWindow):
             list(self.preferences.controller_sync_sets),
             self._reserved_shortcuts(),
             parent=self,
+            ensure_listening=self._ensure_learn_listening,
         )
-        if dialog.exec() != QDialog.DialogCode.Accepted:
+        self._macro_dialog = dialog
+        try:
+            accepted = dialog.exec() == QDialog.DialogCode.Accepted
+        finally:
+            self._macro_dialog = None
+        if not accepted:
             return False
         self.macros = list(dialog.edited_macros())
         midi_macros.save_macros(user_paths.macros_dir(), self.macros)
         self._rebuild_macro_menu()
+        self._ensure_macro_triggers_listening()
         self.statusBar().showMessage(f"{len(self.macros)} macro(s) saved", 5000)
         return True
 
@@ -2995,6 +3012,21 @@ class MainWindow(QMainWindow):
         if macro is None:
             return None
         return self._macro_player.play(macro, list_output_ports())
+
+    def _play_triggered_macros(self, event: MidiEvent) -> list[str]:
+        """Plays every macro bound to this controller press; returns their names."""
+        fired = midi_macros.macros_for_event(self.macros, event)
+        if fired:
+            ports = list_output_ports()
+            for macro in fired:
+                self._macro_player.play(macro, ports)
+        return [macro.name for macro in fired]
+
+    def _ensure_macro_triggers_listening(self) -> None:
+        """A controller-triggered macro only fires while its input is open:
+        start the Live Monitor when one exists, if the user lets it auto-start."""
+        if self.preferences.auto_start_live_monitor and any(macro.trigger for macro in self.macros):
+            self.live_monitor_view.ensure_monitoring_started()
 
     def _on_macro_finished(self, result: midi_macros.MacroResult) -> None:
         self.statusBar().showMessage(result.summary(), 8000)
