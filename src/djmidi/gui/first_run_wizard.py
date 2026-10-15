@@ -45,16 +45,23 @@ def _wrapped(text: str) -> QLabel:
 class _ControllersPage(QWizardPage):
     def __init__(self, port_provider: Callable[[], list[str]]) -> None:
         super().__init__()
-        self.setTitle("Your controllers")
-        self.setSubTitle("Connected MIDI controllers recognized by their port name.")
+        self.setTitle(self.tr("Your controllers"))
+        self.setSubTitle(self.tr("Connected MIDI controllers recognized by their port name."))
         self._port_provider = port_provider
         self.controller_list = QListWidget()
         self.status_label = _wrapped("")
-        self.rescan_button = QPushButton("Rescan")
-        self.rescan_button.setToolTip("Look again after plugging a controller in.")
+        self.rescan_button = QPushButton(self.tr("Rescan"))
+        self.rescan_button.setToolTip(self.tr("Look again after plugging a controller in."))
         self.rescan_button.clicked.connect(self.rescan)
         layout = QVBoxLayout(self)
-        layout.addWidget(_wrapped("Select the profile to show on the Dashboard. Every detected profile stays available in the other tabs."))
+        layout.addWidget(
+            _wrapped(
+                self.tr(
+                    "Select the profile to show on the Dashboard. Every detected profile stays available in the "
+                    "other tabs."
+                )
+            )
+        )
         layout.addWidget(self.controller_list)
         layout.addWidget(self.status_label)
         row = QHBoxLayout()
@@ -80,13 +87,15 @@ class _ControllersPage(QWizardPage):
             self.controller_list.setCurrentRow(0)
         notes = []
         if not ports:
-            notes.append("No MIDI controller is connected. Plug one in and click <b>Rescan</b>, or continue.")
+            notes.append(self.tr("No MIDI controller is connected. Plug one in and click <b>Rescan</b>, or continue."))
         elif not self.detection.controllers:
-            notes.append("No connected port matches a controller profile.")
+            notes.append(self.tr("No connected port matches a controller profile."))
         if self.detection.unmatched_ports:
             notes.append(
-                "Not recognized: " + ", ".join(self.detection.unmatched_ports)
-                + ". <b>Controller Setup</b> can build a profile for it by learning its buttons."
+                self.tr(
+                    "Not recognized: {ports}. <b>Controller Setup</b> can build a profile for it by learning "
+                    "its buttons."
+                ).format(ports=", ".join(self.detection.unmatched_ports))
             )
         self.status_label.setText("<br>".join(notes))
 
@@ -98,11 +107,11 @@ class _ControllersPage(QWizardPage):
 class _MappingPage(QWizardPage):
     def __init__(self, home: Path | None) -> None:
         super().__init__()
-        self.setTitle("Your Serato mapping")
+        self.setTitle(self.tr("Your Serato mapping"))
         folder = software_mapping_dirs("serato", home)[0]
-        self.setSubTitle("Open a MIDI mapping from Serato's MIDI folder to see and edit it.")
+        self.setSubTitle(self.tr("Open a MIDI mapping from Serato's MIDI folder to see and edit it."))
         self.mapping_list = QListWidget()
-        none_item = QListWidgetItem("Don't open a mapping now")
+        none_item = QListWidgetItem(self.tr("Don't open a mapping now"))
         none_item.setData(_PATH_ROLE, None)
         self.mapping_list.addItem(none_item)
         self.candidates = find_serato_mappings(home)
@@ -114,9 +123,13 @@ class _MappingPage(QWizardPage):
         # The newest mapping is the likely one; "Don't open" stays one click away.
         self.mapping_list.setCurrentRow(1 if self.candidates else 0)
         if self.candidates:
-            note = f"Found in <i>{folder}</i>. Opening only reads the file; nothing is saved unless you save."
+            note = self.tr("Found in <i>{folder}</i>. Opening only reads the file; nothing is saved unless you save.").format(
+                folder=folder
+            )
         else:
-            note = f"No mapping found in <i>{folder}</i>. Use <b>File → Open</b> later to open one from anywhere."
+            note = self.tr(
+                "No mapping found in <i>{folder}</i>. Use <b>File → Open</b> later to open one from anywhere."
+            ).format(folder=folder)
         layout = QVBoxLayout(self)
         layout.addWidget(self.mapping_list)
         layout.addWidget(_wrapped(note))
@@ -130,15 +143,17 @@ class _MappingPage(QWizardPage):
 class _SyncPage(QWizardPage):
     def __init__(self) -> None:
         super().__init__()
-        self.setTitle("Controller sync set")
-        self.setSubTitle("Messages sent to your controllers at launch, e.g. to set pad modes or LEDs.")
-        self.record_checkbox = QCheckBox("Start recording a sync set when this wizard closes")
+        self.setTitle(self.tr("Controller sync set"))
+        self.setSubTitle(self.tr("Messages sent to your controllers at launch, e.g. to set pad modes or LEDs."))
+        self.record_checkbox = QCheckBox(self.tr("Start recording a sync set when this wizard closes"))
         layout = QVBoxLayout(self)
         layout.addWidget(
             _wrapped(
-                "When recording starts, press the controls to send at initialization, then click "
-                "<b>■ Stop</b> next to <b>⟳ Sync</b> in the top-right corner. You can do this any time "
-                "later with <b>● Rec</b>."
+                self.tr(
+                    "When recording starts, press the controls to send at initialization, then click "
+                    "<b>■ Stop</b> next to <b>⟳ Sync</b> in the top-right corner. You can do this any time "
+                    "later with <b>● Rec</b>."
+                )
             )
         )
         layout.addWidget(self.record_checkbox)
@@ -155,18 +170,20 @@ class FirstRunWizard(QWizard):
         parent=None,
     ) -> None:
         super().__init__(parent)
-        self.setWindowTitle("Welcome to DJ MIDI Studio")
+        self.setWindowTitle(self.tr("Welcome to DJ MIDI Studio"))
         self.setWizardStyle(QWizard.WizardStyle.ClassicStyle)
-        self.setButtonText(QWizard.WizardButton.CancelButton, "Skip")
+        self.setButtonText(QWizard.WizardButton.CancelButton, self.tr("Skip"))
         self.setMinimumSize(560, 420)
         welcome = QWizardPage()
-        welcome.setTitle("Welcome")
+        welcome.setTitle(self.tr("Welcome"))
         welcome_layout = QVBoxLayout(welcome)
         welcome_layout.addWidget(
             _wrapped(
-                "This short setup finds your controllers, offers to open your Serato MIDI mapping and "
-                "to record a controller sync set.<br><br>Every step is optional: click <b>Skip</b> to "
-                "close it. You can run it again from <b>Help → First-Run Setup…</b>."
+                self.tr(
+                    "This short setup finds your controllers, offers to open your Serato MIDI mapping and "
+                    "to record a controller sync set.<br><br>Every step is optional: click <b>Skip</b> to "
+                    "close it. You can run it again from <b>Help → First-Run Setup…</b>."
+                )
             )
         )
         welcome_layout.addStretch(1)

@@ -382,10 +382,6 @@ class MixPathDialog(QDialog):
         ).normalized()
 
 
-ANY_CATEGORY = "Any category"
-ANY_KEY = "Any key"
-
-
 class SmartPlaylistDialog(QDialog):
     """Name and rules of a smart playlist (issue #259). Every rule left at
     its "any"/0 value is off; the rest are AND-ed."""
@@ -398,73 +394,77 @@ class SmartPlaylistDialog(QDialog):
         parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
-        self.setWindowTitle("Smart playlist")
+        self.setWindowTitle(self.tr("Smart playlist"))
         self.setMinimumWidth(420)
         box = QVBoxLayout(self)
         form = QFormLayout()
         self.name_edit = QLineEdit(name)
-        form.addRow("Name:", self.name_edit)
+        form.addRow(self.tr("Name:"), self.name_edit)
         self.category_combo = QComboBox()
-        self.category_combo.addItem(ANY_CATEGORY, None)
+        self.category_combo.addItem(self.tr("Any category"), None)
         for family in taxonomy.families():
-            self.category_combo.addItem(f"{family} (whole family)", family)
+            self.category_combo.addItem(self.tr("{family} (whole family)").format(family=family), family)
         for category in taxonomy.all_categories():
             self.category_combo.addItem(category_label(category.canonical), category.canonical)
         if rules.category is not None and self.category_combo.findData(rules.category) < 0:
             self.category_combo.addItem(category_label(rules.category), rules.category)
         self.category_combo.setCurrentIndex(max(self.category_combo.findData(rules.category), 0))
-        form.addRow("Category:", self.category_combo)
+        form.addRow(self.tr("Category:"), self.category_combo)
         self.genre_edit = QLineEdit(rules.genre or "")
-        self.genre_edit.setPlaceholderText("Genre tag contains…")
-        form.addRow("Genre:", self.genre_edit)
+        self.genre_edit.setPlaceholderText(self.tr("Genre tag contains…"))
+        form.addRow(self.tr("Genre:"), self.genre_edit)
         self.text_edit = QLineEdit(rules.text or "")
-        self.text_edit.setPlaceholderText("Title, artist, album or path contains…")
-        form.addRow("Text:", self.text_edit)
+        self.text_edit.setPlaceholderText(self.tr("Title, artist, album or path contains…"))
+        form.addRow(self.tr("Text:"), self.text_edit)
         bpm_row = QHBoxLayout()
-        self.bpm_min_spin = self._bpm_spin(rules.bpm_min)
-        self.bpm_max_spin = self._bpm_spin(rules.bpm_max)
+        self.bpm_min_spin = self._bpm_spin(rules.bpm_min, self.tr("Any"))
+        self.bpm_max_spin = self._bpm_spin(rules.bpm_max, self.tr("Any"))
         bpm_row.addWidget(self.bpm_min_spin)
-        bpm_row.addWidget(QLabel("to"))
+        bpm_row.addWidget(QLabel(self.tr("to")))
         bpm_row.addWidget(self.bpm_max_spin)
-        form.addRow("BPM:", bpm_row)
+        form.addRow(self.tr("BPM:"), bpm_row)
         key_row = QHBoxLayout()
         self.key_combo = QComboBox()
-        self.key_combo.addItem(ANY_KEY, None)
+        self.key_combo.addItem(self.tr("Any key"), None)
         for code in CAMELOT_CODES:
             self.key_combo.addItem(code, code)
         self.key_combo.setCurrentIndex(max(self.key_combo.findData(rules.camelot_key), 0))
-        self.key_compatible_check = QCheckBox("or compatible")
-        self.key_compatible_check.setToolTip("Also every key that mixes harmonically with it (±1, relative).")
+        self.key_compatible_check = QCheckBox(self.tr("or compatible"))
+        self.key_compatible_check.setToolTip(self.tr("Also every key that mixes harmonically with it (±1, relative)."))
         self.key_compatible_check.setChecked(rules.key_compatible)
         key_row.addWidget(self.key_combo, 1)
         key_row.addWidget(self.key_compatible_check)
-        form.addRow("Camelot key:", key_row)
+        form.addRow(self.tr("Camelot key:"), key_row)
         self.not_played_spin = QSpinBox()
         self.not_played_spin.setRange(0, 3650)
-        self.not_played_spin.setSpecialValueText("Off")
-        self.not_played_spin.setSuffix(" days")
+        self.not_played_spin.setSpecialValueText(self.tr("Off"))
+        self.not_played_spin.setSuffix(self.tr(" days"))
         self.not_played_spin.setValue(rules.not_played_days or 0)
         self.not_played_spin.setToolTip(
-            "Never played, or last played longer ago than this, per the DJ history last loaded in the "
-            "History panel."
+            self.tr(
+                "Never played, or last played longer ago than this, per the DJ history last loaded in the "
+                "History panel."
+            )
         )
-        form.addRow("Not played for:", self.not_played_spin)
+        form.addRow(self.tr("Not played for:"), self.not_played_spin)
         self.sort_combo = QComboBox()
         for sort, label in smart_playlist.SORT_LABELS.items():
             self.sort_combo.addItem(label, sort)
         self.sort_combo.setCurrentIndex(max(self.sort_combo.findData(rules.sort), 0))
-        form.addRow("Order:", self.sort_combo)
+        form.addRow(self.tr("Order:"), self.sort_combo)
         self.limit_spin = QSpinBox()
         self.limit_spin.setRange(0, 100000)
-        self.limit_spin.setSpecialValueText("No limit")
-        self.limit_spin.setSuffix(" tracks")
+        self.limit_spin.setSpecialValueText(self.tr("No limit"))
+        self.limit_spin.setSuffix(self.tr(" tracks"))
         self.limit_spin.setValue(rules.limit or 0)
-        form.addRow("Maximum length:", self.limit_spin)
+        form.addRow(self.tr("Maximum length:"), self.limit_spin)
         box.addLayout(form)
         if not has_history:
             self.history_note = QLabel(
-                "No DJ history loaded yet: “Not played for” treats every track as never played until "
-                "you load it in the History panel."
+                self.tr(
+                    "No DJ history loaded yet: “Not played for” treats every track as never played until "
+                    "you load it in the History panel."
+                )
             )
             self.history_note.setWordWrap(True)
             self.history_note.setEnabled(False)
@@ -478,11 +478,11 @@ class SmartPlaylistDialog(QDialog):
         box.addWidget(buttons)
 
     @staticmethod
-    def _bpm_spin(value: float | None) -> QDoubleSpinBox:
+    def _bpm_spin(value: float | None, any_text: str) -> QDoubleSpinBox:
         spin = QDoubleSpinBox()
         spin.setRange(0, _BPM_FILTER_MAX)
         spin.setDecimals(1)
-        spin.setSpecialValueText("Any")
+        spin.setSpecialValueText(any_text)
         spin.setValue(value or 0)
         return spin
 
@@ -1003,8 +1003,10 @@ class MusicLibraryView(QWidget):
         self.relink_button.clicked.connect(self.start_relink_search)
         self.duplicates_button = QPushButton("Find duplicates…")
         self.duplicates_button.setToolTip(
-            "List identical files, tracks sharing artist + title, and other versions of the same song "
-            "(suggestions). Read-only: nothing is deleted."
+            self.tr(
+                "List identical files, tracks sharing artist + title, and other versions of the same song "
+                "(suggestions). Read-only: nothing is deleted."
+            )
         )
         self.duplicates_button.clicked.connect(self.find_duplicates)
         self.health_button = QPushButton("Health report…")
@@ -1013,15 +1015,17 @@ class MusicLibraryView(QWidget):
             "and zero-length files. Read-only."
         )
         self.health_button.clicked.connect(self.start_health_report)
-        self.history_button = QPushButton("Change history…")
+        self.history_button = QPushButton(self.tr("Change history…"))
         self.history_button.setToolTip(
-            "Every tag write and Trash move this app made, kept across restarts. Inspect and revert them."
+            self.tr("Every tag write and Trash move this app made, kept across restarts. Inspect and revert them.")
         )
         self.history_button.clicked.connect(self.show_change_history)
-        self.stats_button = QPushButton("Statistics…")
+        self.stats_button = QPushButton(self.tr("Statistics…"))
         self.stats_button.setToolTip(
-            "Charts of the tracks shown: categories, genres, BPM, keys, files added per month and, "
-            "with DJ history loaded, most/never played. Read-only."
+            self.tr(
+                "Charts of the tracks shown: categories, genres, BPM, keys, files added per month and, "
+                "with DJ history loaded, most/never played. Read-only."
+            )
         )
         self.stats_button.clicked.connect(self.show_statistics)
         # Issue #224: needs the optional 'analysis' extra; greyed out with
@@ -1243,10 +1247,12 @@ class MusicLibraryView(QWidget):
         )
         self.apply_analysis_button.clicked.connect(self._on_apply_analysis_clicked)
         box.addWidget(self.apply_analysis_button)
-        self.rename_files_button = QPushButton("Rename files…")
+        self.rename_files_button = QPushButton(self.tr("Rename files…"))
         self.rename_files_button.setToolTip(
-            "Renames the selected files from their tags (e.g. {artist} - {title}) inside their "
-            "folder, after a preview, as one undoable step. DJ software will need relinking."
+            self.tr(
+                "Renames the selected files from their tags (e.g. {artist} - {title}) inside their "
+                "folder, after a preview, as one undoable step. DJ software will need relinking."
+            )
         )
         self.rename_files_button.clicked.connect(self._on_rename_files_clicked)
         box.addWidget(self.rename_files_button)
@@ -1271,14 +1277,16 @@ class MusicLibraryView(QWidget):
         self.cover_label.setWordWrap(True)
         row.addWidget(self.cover_label)
         buttons = QVBoxLayout()
-        self.set_cover_button = QPushButton("Set cover…")
+        self.set_cover_button = QPushButton(self.tr("Set cover…"))
         self.set_cover_button.setToolTip(
-            "Embeds a JPEG or PNG image as the track's front cover (undoable). Only the "
-            "cover picture changes: other tags and Serato/Traktor data are preserved."
+            self.tr(
+                "Embeds a JPEG or PNG image as the track's front cover (undoable). Only the "
+                "cover picture changes: other tags and Serato/Traktor data are preserved."
+            )
         )
         self.set_cover_button.clicked.connect(self._on_set_cover_clicked)
-        self.remove_cover_button = QPushButton("Remove cover")
-        self.remove_cover_button.setToolTip("Removes the embedded front cover (undoable).")
+        self.remove_cover_button = QPushButton(self.tr("Remove cover"))
+        self.remove_cover_button.setToolTip(self.tr("Removes the embedded front cover (undoable)."))
         self.remove_cover_button.clicked.connect(self.remove_cover)
         buttons.addWidget(self.set_cover_button)
         buttons.addWidget(self.remove_cover_button)
@@ -1341,13 +1349,13 @@ class MusicLibraryView(QWidget):
              ("Every visible track ordered as a mixable path (each step compatible in BPM and key, "
               "BPM rising, falling or flat), from the current track. Tracks that don't fit go to "
               "a separate leftovers playlist.")),
-            ("new_smart_button", "New smart playlist…", self._on_new_smart_clicked,
-             ("A saved set of rules (category, BPM range, key, not played for…) re-evaluated against "
-              "the whole library after every scan and on demand.")),
-            ("edit_smart_button", "Edit smart rules…", self._on_edit_smart_clicked,
-             "Changes the rules of the selected smart playlist and re-evaluates it."),
-            ("refresh_smart_button", "Refresh smart playlists", self._on_refresh_smart_clicked,
-             "Re-evaluates every smart playlist against the current library and play history."),
+            ("new_smart_button", self.tr("New smart playlist…"), self._on_new_smart_clicked,
+             self.tr("A saved set of rules (category, BPM range, key, not played for…) re-evaluated against "
+                     "the whole library after every scan and on demand.")),
+            ("edit_smart_button", self.tr("Edit smart rules…"), self._on_edit_smart_clicked,
+             self.tr("Changes the rules of the selected smart playlist and re-evaluates it.")),
+            ("refresh_smart_button", self.tr("Refresh smart playlists"), self._on_refresh_smart_clicked,
+             self.tr("Re-evaluates every smart playlist against the current library and play history.")),
             ("import_serato_button", "Import Serato crate…", self._on_import_serato_clicked, ""),
             ("import_traktor_button", "Import Traktor NML…", self._on_import_traktor_clicked, ""),
             ("import_rekordbox_button", "Import Rekordbox export…", self._on_import_rekordbox_clicked, ""),
@@ -1757,7 +1765,11 @@ class MusicLibraryView(QWidget):
             self.status_label.setText("Scan a music folder first.")
             return
         shown, total = self.proxy.rowCount(), self.table_model.rowCount()
-        scope = "all indexed tracks" if shown == total else f"the {shown} of {total} tracks the filters show"
+        scope = (
+            self.tr("all indexed tracks")
+            if shown == total
+            else self.tr("the {shown} of {total} tracks the filters show").format(shown=shown, total=total)
+        )
         if self.stats_dialog is not None:
             self.stats_dialog.close()
             self.stats_dialog.deleteLater()
@@ -2142,14 +2154,16 @@ class MusicLibraryView(QWidget):
             )
         else:
             self.cover_label.setPixmap(QPixmap())
-            self.cover_label.setText("" if row is None else ("Unreadable cover" if cover else "No cover"))
+            self.cover_label.setText("" if row is None else (self.tr("Unreadable cover") if cover else self.tr("No cover")))
         self._has_cover = cover is not None
         editable = row is not None and not row.missing
         self.set_cover_button.setEnabled(editable)
         self.remove_cover_button.setEnabled(editable and self._has_cover)
 
     def _on_set_cover_clicked(self) -> None:
-        path, _ = QFileDialog.getOpenFileName(self, "Choose cover image", "", "Images (*.jpg *.jpeg *.png)")
+        path, _ = QFileDialog.getOpenFileName(
+            self, self.tr("Choose cover image"), "", self.tr("Images (*.jpg *.jpeg *.png)")
+        )
         if path:
             self.set_cover_from_file(path)
 
@@ -2160,7 +2174,7 @@ class MusicLibraryView(QWidget):
         try:
             cover = load_cover_file(image_path)
         except (OSError, ValueError) as exc:
-            QMessageBox.warning(self, "Unsupported image", str(exc))
+            QMessageBox.warning(self, self.tr("Unsupported image"), str(exc))
             return False
         return self._push_cover(row.path, cover)
 
@@ -2175,7 +2189,7 @@ class MusicLibraryView(QWidget):
             self.undo_stack.push(WriteTrackCoverCommand(path, cover, self._on_cover_written))
         except Exception as exc:
             _LOGGER.exception("Cover write failed for %s", path)
-            QMessageBox.warning(self, "Could not write the cover", f"{path}\n\n{exc}")
+            QMessageBox.warning(self, self.tr("Could not write the cover"), f"{path}\n\n{exc}")
             return False
         return True
 
@@ -2347,7 +2361,7 @@ class MusicLibraryView(QWidget):
             _LOGGER.warning("Rename failed for %d file(s): %s", len(command.failures), command.failures)
             QMessageBox.warning(
                 self,
-                "Some files were not renamed",
+                self.tr("Some files were not renamed"),
                 f"{len(command.renamed)} file(s) renamed, {len(command.failures)} left as they were:\n\n"
                 + _bullet_list(f"{Path(path).name}: {reason}" for path, reason in command.failures),
             )
@@ -2367,13 +2381,15 @@ class MusicLibraryView(QWidget):
 
     def _save_rename_csv(self, pairs: list[tuple[str, str]]) -> None:
         default = str(user_paths.subfolder(user_paths.EXPORTS) / "renamed-files.csv")
-        path, _ = QFileDialog.getSaveFileName(self, "Save old → new paths", default, "CSV files (*.csv)")
+        path, _ = QFileDialog.getSaveFileName(
+            self, self.tr("Save old → new paths"), default, self.tr("CSV files (*.csv)")
+        )
         if not path:
             return
         try:
             count = rename.export_mapping_csv(path, pairs)
         except OSError as exc:
-            QMessageBox.warning(self, "Save old → new paths", f"Could not write {path}:\n{exc}")
+            QMessageBox.warning(self, self.tr("Save old → new paths"), f"Could not write {path}:\n{exc}")
             return
         self.status_label.setText(f"Renamed {count} file(s); old → new paths saved to {path}")
 
@@ -2925,7 +2941,7 @@ class MusicLibraryView(QWidget):
         return dialog.name(), dialog.rules()
 
     def _on_new_smart_clicked(self) -> None:
-        answer = self._ask_smart_rules("Smart playlist", smart_playlist.SmartRules())
+        answer = self._ask_smart_rules(self.tr("Smart playlist"), smart_playlist.SmartRules())
         if answer is not None:
             self.create_smart_playlist(*answer)
 

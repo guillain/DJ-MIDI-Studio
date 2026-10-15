@@ -86,15 +86,17 @@ class ChangeHistoryDialog(QDialog):
 
     def __init__(self, db: LibraryDB, parent: QWidget | None = None, context: change_log.RevertContext | None = None):
         super().__init__(parent)
-        self.setWindowTitle("Change history")
+        self.setWindowTitle(self.tr("Change history"))
         self.resize(900, 560)
         self._db = db
         self._context = context
         self._changes: list[ChangeRecord] = []
 
         intro = QLabel(
-            "Every tag write and Trash move this app made to your files, newest first. "
-            "Revert puts a file back only while it still holds what this app wrote."
+            self.tr(
+                "Every tag write and Trash move this app made to your files, newest first. "
+                "Revert puts a file back only while it still holds what this app wrote."
+            )
         )
         intro.setWordWrap(True)
         top = QHBoxLayout()
@@ -103,19 +105,21 @@ class ChangeHistoryDialog(QDialog):
 
         self.entries = QTreeWidget()
         self.entries.setRootIsDecorated(False)
-        self.entries.setHeaderLabels(["#", "When", "Change", "Summary", "Files", "Status"])
+        self.entries.setHeaderLabels(
+            ["#", self.tr("When"), self.tr("Change"), self.tr("Summary"), self.tr("Files"), self.tr("Status")]
+        )
         self.entries.currentItemChanged.connect(self._on_entry_changed)
         self.items = QTreeWidget()
         self.items.setRootIsDecorated(False)
-        self.items.setHeaderLabels(["File", "Change"])
+        self.items.setHeaderLabels([self.tr("File"), self.tr("Change")])
         splitter = QSplitter(Qt.Orientation.Vertical)
         splitter.addWidget(self.entries)
         splitter.addWidget(self.items)
 
-        self.revert_button = QPushButton("Revert…")
-        self.revert_button.setToolTip("Undo the selected change on the files it touched.")
+        self.revert_button = QPushButton(self.tr("Revert…"))
+        self.revert_button.setToolTip(self.tr("Undo the selected change on the files it touched."))
         self.revert_button.clicked.connect(self._on_revert_clicked)
-        self.refresh_button = QPushButton("Refresh")
+        self.refresh_button = QPushButton(self.tr("Refresh"))
         self.refresh_button.clicked.connect(self.refresh)
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
         buttons.rejected.connect(self.reject)
@@ -183,9 +187,11 @@ class ChangeHistoryDialog(QDialog):
             return
         answer = QMessageBox.question(
             self,
-            "Revert change",
-            f"Revert #{change.id} ({change.summary}) on {change.item_count} file(s)?\n\n"
-            "Files changed again since are left alone. The revert is itself logged here.",
+            self.tr("Revert change"),
+            self.tr(
+                "Revert #{id} ({summary}) on {count} file(s)?\n\n"
+                "Files changed again since are left alone. The revert is itself logged here."
+            ).format(id=change.id, summary=change.summary, count=change.item_count),
         )
         if answer == QMessageBox.StandardButton.Yes:
             self.revert(change.id)
@@ -196,17 +202,17 @@ class ChangeHistoryDialog(QDialog):
         self.refresh()
         if result.reverted:
             self.reverted.emit(list(result.reverted))
-        lines = [f"Reverted {len(result.reverted)} file(s)."]
+        lines = [self.tr("Reverted {count} file(s).").format(count=len(result.reverted))]
         if result.already:
-            lines.append(f"{len(result.already)} already held their previous state.")
+            lines.append(self.tr("{count} already held their previous state.").format(count=len(result.already)))
         if result.failed:
-            lines.append(f"{len(result.failed)} left alone:")
+            lines.append(self.tr("{count} left alone:").format(count=len(result.failed)))
             lines += [f"• {Path(path).name}: {reason}" for path, reason in result.failed[:20]]
             if len(result.failed) > 20:
-                lines.append(f"… and {len(result.failed) - 20} more")
-            QMessageBox.warning(self, "Revert change", "\n".join(lines))
+                lines.append(self.tr("… and {count} more").format(count=len(result.failed) - 20))
+            QMessageBox.warning(self, self.tr("Revert change"), "\n".join(lines))
         else:
-            QMessageBox.information(self, "Revert change", "\n".join(lines))
+            QMessageBox.information(self, self.tr("Revert change"), "\n".join(lines))
         return result
 
 

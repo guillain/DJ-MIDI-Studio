@@ -897,8 +897,8 @@ class MainWindow(QMainWindow):
         validate_action.triggered.connect(self._on_validate)
         edit_menu.addAction(validate_action)
 
-        live_ready_action = QAction("Ready for &Live…", self)
-        live_ready_action.setStatusTip("Check the mapping before a gig (read-only).")
+        live_ready_action = QAction(self.tr("Ready for &Live…"), self)
+        live_ready_action.setStatusTip(self.tr("Check the mapping before a gig (read-only)."))
         live_ready_action.triggered.connect(self._on_live_ready_check)
         edit_menu.addAction(live_ready_action)
 
@@ -926,16 +926,18 @@ class MainWindow(QMainWindow):
         )
         self._new_emulator_action.triggered.connect(lambda: self._create_emulator_instance())
         view_menu.addAction(self._new_emulator_action)
-        self._latency_action = QAction("MIDI Latency Test…", self)
+        self._latency_action = QAction(self.tr("MIDI Latency Test…"), self)
         self._latency_action.setToolTip(
-            "Measure MIDI round-trip latency through a port or device that echoes what it receives"
+            self.tr("Measure MIDI round-trip latency through a port or device that echoes what it receives")
         )
         self._latency_action.triggered.connect(self._on_midi_latency_test)
         view_menu.addAction(self._latency_action)
-        self._layer_map_action = QAction("Layer Map…", self)
+        self._layer_map_action = QAction(self.tr("Layer Map…"), self)
         self._layer_map_action.setToolTip(
-            "What each control of a controller does in every layer (normal, SHIFT, "
-            "pad modes), with the free combinations highlighted"
+            self.tr(
+                "What each control of a controller does in every layer (normal, SHIFT, "
+                "pad modes), with the free combinations highlighted"
+            )
         )
         self._layer_map_action.setEnabled(False)
         self._layer_map_action.triggered.connect(lambda _checked=False: self._on_show_layer_map())
@@ -957,11 +959,13 @@ class MainWindow(QMainWindow):
         )
         self._performance_mode_action.toggled.connect(self._on_performance_mode_toggled)
         view_menu.addAction(self._performance_mode_action)
-        self._stage_mode_action = QAction("Stage Mode", self, checkable=True)
+        self._stage_mode_action = QAction(self.tr("Stage Mode"), self, checkable=True)
         self._stage_mode_action.setShortcut(QKeySequence("Ctrl+Shift+F"))
         self._stage_mode_action.setToolTip(
-            "Full-screen, high-contrast Controller Emulator and compact Live Monitor "
-            "for on-stage use -- Esc to exit (session-only, not remembered across restarts)"
+            self.tr(
+                "Full-screen, high-contrast Controller Emulator and compact Live Monitor "
+                "for on-stage use -- Esc to exit (session-only, not remembered across restarts)"
+            )
         )
         self._stage_mode_action.toggled.connect(self._on_stage_mode_toggled)
         view_menu.addAction(self._stage_mode_action)
@@ -1060,9 +1064,9 @@ class MainWindow(QMainWindow):
             online_menu.addAction(action)
 
         help_menu.addSeparator()
-        self._first_run_action = QAction("First-Run &Setup...", self)
+        self._first_run_action = QAction(self.tr("First-Run &Setup..."), self)
         self._first_run_action.setToolTip(
-            "Detect your controllers, open your Serato mapping and record a controller sync set."
+            self.tr("Detect your controllers, open your Serato mapping and record a controller sync set.")
         )
         self._first_run_action.triggered.connect(lambda: self._on_first_run_wizard())
         help_menu.addAction(self._first_run_action)
@@ -3020,12 +3024,12 @@ class MainWindow(QMainWindow):
             menu.addAction(action)
             self._macro_actions.append(action)
         if not self.macros:
-            empty = menu.addAction("No macro yet")
+            empty = menu.addAction(self.tr("No macro yet"))
             empty.setEnabled(False)
         menu.addSeparator()
-        manage = menu.addAction("Manage Macros…")
+        manage = menu.addAction(self.tr("Manage Macros…"))
         manage.triggered.connect(lambda: self._on_manage_macros())
-        reveal = menu.addAction("Show Macros Folder")
+        reveal = menu.addAction(self.tr("Show Macros Folder"))
         reveal.triggered.connect(self._on_reveal_macros)
 
     def _reserved_shortcuts(self) -> list[str]:
@@ -3159,7 +3163,7 @@ class MainWindow(QMainWindow):
         DJ can also look for room on a controller the mapping doesn't use
         yet. Returns the dialog (tests)."""
         if self.config is None:
-            QMessageBox.information(self, "Layer Map", "Open a mapping first.")
+            QMessageBox.information(self, self.tr("Layer Map"), self.tr("Open a mapping first."))
             return None
         candidates = cheat_sheet.candidate_controllers(self.config)
         known = {name for name, _count in candidates}
@@ -3299,7 +3303,7 @@ class MainWindow(QMainWindow):
     def _on_live_ready_check(self) -> LiveReadyDialog | None:
         """Issue #254: the pre-gig report, in a non-modal window. Read-only."""
         if self.config is None:
-            self.statusBar().showMessage("Ready for live: open a mapping first.")
+            self.statusBar().showMessage(self.tr("Ready for live: open a mapping first."))
             return None
         report = check_live_ready(self.config)
         if self._live_ready_dialog is not None:
@@ -3311,7 +3315,9 @@ class MainWindow(QMainWindow):
         dialog.show()
         counts = report.counts()
         self.statusBar().showMessage(
-            f"Ready for live: {counts['error']} error(s), {counts['warning']} warning(s), {counts['info']} info"
+            self.tr("Ready for live: {errors} error(s), {warnings} warning(s), {infos} info").format(
+                errors=counts["error"], warnings=counts["warning"], infos=counts["info"]
+            )
         )
         return dialog
 
