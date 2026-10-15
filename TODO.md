@@ -132,6 +132,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Layered mapping overview** (`v0.48.92-layer-map`, issue #253) — `View → Layer Map…`:
+  Qt-free `gui/layer_map.py` (`build_layer_map`: one row per physical control, one column per
+  layer — Normal, SHIFT, other qualifiers, each pad bank ± SHIFT — all derived from
+  `layout.reverse_lookup()` names, never invented; cells `mapped`/`partial`/`free` from
+  `cheat_sheet.build_function_index`, LED-only sections excluded) behind a thin read-only
+  `LayerMapDialog` (controller/section filters, *Only controls with a free layer*, *Refresh*).
 - [x] **MIDI Learn for macros** (`v0.48.91-macro-midi-learn`, issue #252) — `MidiMacro.trigger`
   (`MacroTrigger`: Note On/CC, channel, data1, input port; persisted in the macro's JSON only when
   set), learned by a `Learn` button in Manage Macros (live events routed to the open dialog via

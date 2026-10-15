@@ -76,6 +76,7 @@ what the mapping does, switch pad modes, latch SHIFT, and turn on
 | ⌨️ | [Command palette](docs/enduser/features/command-palette.md) | Cmd+K, a few letters, Enter: every menu action, tab, mapping function and library track, keyboard-only |
 | 🖼️ | [Controller Images](docs/enduser/features/controller-images.md) | Official diagrams and manuals, offline, with real control positions |
 | 🖨️ | [Cheat Sheet (PDF)](docs/enduser/features/cheat-sheet.md) | Print the mapping on each controller's photo, one page per pad bank |
+| 🧩 | [Layer Map](docs/enduser/features/layer-map.md) | What each control does in every layer — normal, SHIFT, each pad mode — with the free combinations highlighted |
 | 🔀 | [MIDI Routing, Clock and Metronome](docs/enduser/features/midi-routing-and-clock.md) | Route MIDI, generate 24 PPQN MIDI Clock from Ableton Link, loop MIDI |
 | ⏯️ | [MIDI Macros](docs/enduser/features/midi-macros.md) | Named MIDI message sequences with optional delays, from a menu or a keyboard shortcut |
 | 🧭 | [First-run setup](docs/enduser/features/first-run-wizard.md) | Detect your controllers, open your Serato mapping, record a sync set — on first launch or from Help |

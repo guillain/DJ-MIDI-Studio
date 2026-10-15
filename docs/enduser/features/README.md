@@ -32,6 +32,7 @@
 | ⌨️ | [Command palette](command-palette.md) | Cmd+K: search every action, tab, mapping function and library track |
 | 🖼️ | [Controller Images](controller-images.md) | Official diagrams and manuals, offline, with real control positions |
 | 🖨️ | [Cheat Sheet (PDF)](cheat-sheet.md) | Print each controller's photo with the function of every mapped pad and button |
+| 🧩 | [Layer Map](layer-map.md) | Every control in every layer (normal, SHIFT, pad modes), free combinations highlighted |
 | 🔀 | [MIDI Routing, Clock and Metronome](midi-routing-and-clock.md) | Route MIDI, generate Clock from Ableton Link, loop MIDI |
 | ⏯️ | [MIDI Macros](midi-macros.md) | Named MIDI message sequences, played from a menu or a keyboard shortcut |
 | 🧭 | [First-run setup](first-run-wizard.md) | A skippable first-launch wizard: your controllers, your Serato mapping, a sync set |
@@ -55,6 +56,7 @@
 | [command-palette.md](command-palette.md) | Cmd+K search over actions, tabs, functions and tracks, ranking, keys |
 | [controller-images.md](controller-images.md) | Reference pictures, real layout overlay, MIDI info |
 | [cheat-sheet.md](cheat-sheet.md) | Printable PDF of the mapping on each controller's photo |
+| [layer-map.md](layer-map.md) | Controls × layers table, free and partly free combinations, filters |
 | [midi-routing-and-clock.md](midi-routing-and-clock.md) | Routes, transforms, MIDI Clock from Link, Metronome |
 | [midi-macros.md](midi-macros.md) | Creating, playing and storing MIDI macros, delays, shortcuts |
 | [first-run-wizard.md](first-run-wizard.md) | When the first-run wizard appears, its steps, what it never does |
