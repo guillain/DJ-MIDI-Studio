@@ -356,6 +356,8 @@ LIBRARY_TRACK: HelpEntry = (
         "Edit the selected track's tags and click <b>Write tags</b>: only the changed "
         "fields are written, and Serato/Traktor data inside the file is preserved. "
         "<b>Undo</b> writes the old values back.<br><br>"
+        "<b>Set cover…</b> embeds a JPEG/PNG as the front cover and <b>Remove cover</b> "
+        "removes it (both undoable); other pictures and tags are untouched.<br><br>"
         "<b>Write tags to selection…</b> writes chosen tags to every selected track as "
         "one undo step, with a progress window you can cancel. "
         "<b>Apply analysis suggestions…</b> writes the selected tracks' estimated BPM/key "

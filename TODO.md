@@ -132,6 +132,13 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Cover art in the Music Library** (`v0.48.95-cover-art`, issue #256) — Qt-free
+  `library/cover_art.py` (`read_cover_art` for display with a fallback to any embedded picture,
+  `read_front_cover` for the managed slot, `write_cover_art` replacing/removing only the front
+  cover: ID3 `APIC` type 3, FLAC picture type 3, Vorbis `metadata_block_picture` type 3, first MP4
+  `covr`; JPEG/PNG by magic bytes, 16 MB cap). Track panel preview + `Set cover…`/`Remove cover`
+  through the undoable `WriteTrackCoverCommand`; Serato/Traktor frames and other pictures tested
+  byte-identical.
 - [x] **MIDI round-trip latency monitor** (`v0.48.94-midi-latency`, issue #255) — Qt-free
   `midi_latency.py` (`LatencyProbe` state machine with injected send/receive/clock, `run_probe`,
   `compute_stats`: min/median/max/mean + jitter, `open_port_pair` for real mido ports) behind

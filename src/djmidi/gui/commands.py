@@ -179,6 +179,43 @@ class WriteTrackMetadataCommand(QUndoCommand):
         self._on_applied(self._path)
 
 
+class WriteTrackCoverCommand(QUndoCommand):
+    """Undoable set/removal of one audio file's front cover (Music Library
+    Track panel, issue #256). The previous front cover is read once, when
+    the command is built, and undo writes it back (or removes the new one
+    when there was none) through the same surgical `write_cover_art`, so
+    other pictures, tags and Serato/Traktor frames stay untouched."""
+
+    def __init__(
+        self,
+        path: str,
+        new_cover: object | None,
+        on_applied: Callable[[str], None],
+        writer: Callable[[str, object | None], None] | None = None,
+        reader: Callable[[str], object | None] | None = None,
+    ) -> None:
+        verb = "Set" if new_cover is not None else "Remove"
+        super().__init__(f"{verb} cover of {path.rsplit('/', 1)[-1]}")
+        if writer is None or reader is None:
+            from djmidi.library.cover_art import read_front_cover, write_cover_art
+
+            writer = writer or write_cover_art
+            reader = reader or read_front_cover
+        self._path = path
+        self._old = reader(path)
+        self._new = new_cover
+        self._writer = writer
+        self._on_applied = on_applied
+
+    def redo(self) -> None:
+        self._writer(self._path, self._new)
+        self._on_applied(self._path)
+
+    def undo(self) -> None:
+        self._writer(self._path, self._old)
+        self._on_applied(self._path)
+
+
 # A progress callback: (files done, total) -> False to stop after the
 # current file. Made fresh by a factory for every redo/undo pass, so each
 # pass (the first write, an undo hours later, a redo) gets its own dialog.

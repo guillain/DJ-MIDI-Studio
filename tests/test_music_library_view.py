@@ -1236,3 +1236,56 @@ def test_set_draft_survives_reopen_and_saves_as_playlist(tmp_path, monkeypatch):
     panel.export_crate(str(crate))
     assert [Path(p).name for p in parse_crate(crate)] == ["b.mp3", "a.mp3"]
     reopened.close_db()
+
+
+def _png_file(path: Path) -> Path:
+    from PySide6.QtGui import QImage
+
+    image = QImage(4, 4, QImage.Format.Format_RGB32)
+    image.fill(0xFF3366)
+    assert image.save(str(path), "PNG")
+    return path
+
+
+def test_cover_art_set_remove_and_undo(library, monkeypatch):
+    from djmidi.library.cover_art import read_cover_art
+
+    view, music, tmp_path = library
+    path = str(music / "Tek" / "Tribe" / "a.mp3")
+    view.select_path(path)
+    assert view.cover_label.text() == "No cover"
+    assert view.set_cover_button.isEnabled()
+    assert not view.remove_cover_button.isEnabled()
+
+    image = _png_file(tmp_path / "cover.png")
+    assert view.set_cover_from_file(str(image))
+    assert read_cover_art(path).data == image.read_bytes()
+    assert not view.cover_label.pixmap().isNull()
+    assert view.remove_cover_button.isEnabled()
+    assert read_metadata(path).title == "Alpha"
+
+    assert view.remove_cover()
+    assert read_cover_art(path) is None
+    view.undo_stack.undo()
+    assert read_cover_art(path).data == image.read_bytes()
+    view.undo_stack.undo()
+    assert read_cover_art(path) is None
+    assert view.cover_label.text() == "No cover"
+    view.undo_stack.redo()
+    assert read_cover_art(path).data == image.read_bytes()
+
+    warnings = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda *args: warnings.append(args))
+    bad = tmp_path / "cover.gif"
+    bad.write_bytes(b"GIF89a" + b"\x00" * 10)
+    assert not view.set_cover_from_file(str(bad))
+    assert warnings
+
+
+def test_cover_buttons_disabled_without_a_track():
+    view = MusicLibraryView(db_path=":memory:")
+    view.show()
+    assert not view.set_cover_button.isEnabled()
+    assert not view.remove_cover_button.isEnabled()
+    assert not view.remove_cover()
+    view.close_db()
