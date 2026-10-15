@@ -20,6 +20,7 @@ os.environ.setdefault("DJMIDI_WORKSPACE", tempfile.mkdtemp(prefix="djmidi-worksp
 
 import mido
 import pytest
+from PySide6.QtCore import QCoreApplication, QEvent
 from PySide6.QtWidgets import QApplication
 
 from djmidi import catalog, software, taxonomy
@@ -38,6 +39,21 @@ def _qapp():
     to exist before construction; tests run headless via QT_QPA_PLATFORM."""
     app = QApplication.instance() or QApplication([])
     yield app
+
+
+@pytest.fixture(autouse=True)
+def _delete_leftover_windows():
+    """Destroy every top-level widget a test leaves behind. A closed window
+    is only hidden, not deleted: with hundreds of tests building a
+    MainWindow, the survivors pile up until every later stylesheet change
+    (a theme switch restyles every live widget) takes minutes, enough to
+    time out the CI quality gate. deleteLater() without close() so no
+    closeEvent prompt (unsaved changes) can block."""
+    yield
+    for widget in QApplication.topLevelWidgets():
+        widget.hide()
+        widget.deleteLater()
+    QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
 
 
 @pytest.fixture(autouse=True)
