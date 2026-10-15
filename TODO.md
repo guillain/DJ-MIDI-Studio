@@ -132,6 +132,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **macOS signing and notarization plumbing** (`v0.48.101-macos-signing`, issue #262) —
+  `scripts/macos_signing.sh` (import certificate into a throwaway keychain, inside-out hardened-runtime
+  signing with `packaging/macos/entitlements.plist`, `notarytool` + staple + `spctl`, cleanup), called
+  from `build.sh` and `draft-release.yml`; every step skips cleanly without secrets, partial secrets
+  fail. Secrets listed in `docs/developer/cicd/macos-signing.md`; dry-run tests in
+  `tests/test_macos_signing.py`. Real Developer ID signing/notarization still needs the Apple account.
 - [x] **Change history for risky library writes** (`v0.48.100-change-history`, issue #261) —
   Qt-free `library/change_log.py` over two new `LibraryDB` tables (`change_log`,
   `change_items`, before/after JSON per file): every tag write (single, bulk, analysis,

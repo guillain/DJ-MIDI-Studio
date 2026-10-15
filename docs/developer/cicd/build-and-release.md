@@ -26,11 +26,11 @@ On macOS, an unsigned PyInstaller app is expected to trigger Gatekeeper
 warnings. A distributable app must be signed with a Developer ID Application
 certificate and notarized by Apple.
 
-The first public CI release uses `--allow-unsigned` because the repository does
-not yet have an Apple signing secret configured. Its macOS archive is therefore
-for testing and will trigger the expected Gatekeeper warning. Configure a
-Developer ID certificate and update the CI secret before treating macOS
-artifacts as production-distributable.
+The release workflow signs and notarizes the macOS app when the Apple secrets
+listed in [macOS signing and notarization](macos-signing.md) are configured,
+and otherwise packages it with `--allow-unsigned` (the macOS archive then
+triggers the expected Gatekeeper warning). No secret is required for CI to
+pass.
 
 ## Bootstrap
 
@@ -69,7 +69,9 @@ bash scripts/build.sh --skip-python-package \
   --sign-identity "Developer ID Application: Your Name (TEAMID)"
 ```
 
-The identity can also be supplied with `MACOS_SIGNING_IDENTITY`. Inspect
+The identity can also be supplied with `MACOS_SIGNING_IDENTITY`; notarization
+runs too when its credentials are in the environment (`--skip-notarize` turns
+it off). Details in [macOS signing and notarization](macos-signing.md). Inspect
 available identities with:
 
 ```bash
@@ -172,8 +174,8 @@ uses the `gh` CLI with `--clobber`, so a rerun safely refreshes an interrupted
 release without relying on the deprecated Node 20 release action.
 Each release also includes a `DJ-MIDI-Studio-v<version>-SHA256SUMS.txt` file
 covering the executable archives, Python packages, and documentation images.
-The CI runners must have `uv`; macOS additionally needs a Developer ID
-certificate configured so the release job does not reject the app as unsigned.
+The CI runners must have `uv`; macOS signing is optional and enabled by
+repository secrets (see [macOS signing and notarization](macos-signing.md)).
 
 ## GitHub Actions Workflow
 
