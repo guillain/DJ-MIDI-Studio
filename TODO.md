@@ -132,6 +132,14 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Smart playlists** (`v0.48.98-smart-playlists`, issue #259) — Qt-free
+  `library/smart_playlist.py` (`SmartRules`: category/family, genre, text, BPM range, Camelot
+  key exact or compatible, not played for N days, order, limit; `evaluate`; JSON round trip)
+  stored as a `"smart"` playlist row plus a `smart_playlists` rules table in `LibraryDB`, the
+  evaluation written into `playlist_tracks` so export/compare need no change. Re-evaluated after
+  every scan, every history load and on `Refresh smart playlists`; `New smart playlist…` /
+  `Edit smart rules…` open `SmartPlaylistDialog`. Loaded history's play counts now persist in a
+  `play_stats` table for the not-played rule.
 - [x] **Library statistics** (`v0.48.97-library-stats`, issue #258) — Qt-free
   `library/stats.py` (`compute_library_stats`: confirmed categories, genre tags grouped
   case/space-insensitively, 5-BPM histogram, Camelot wheel distribution, files added per

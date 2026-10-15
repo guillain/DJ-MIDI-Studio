@@ -22,6 +22,7 @@
 - [Library statistics](#library-statistics)
 - [Genre categories](#genre-categories)
 - [Playlists](#playlists)
+- [Smart playlists](#smart-playlists)
 - [Prepare a set](#prepare-a-set)
 - [Import and export with DJ software](#import-and-export-with-dj-software)
 - [Compare with a Serato crate or Traktor playlist](#compare-with-a-serato-crate-or-traktor-playlist)
@@ -333,6 +334,43 @@ paths, and check the leftovers playlist for what didn't fit.
 
 ![Music Library: Playlists panel](../../images/layout/music-library-playlists.png)
 
+## Smart playlists
+
+A smart playlist is a saved set of rules rather than a fixed list — for
+example *category Tek, BPM 170–180, key compatible with 8A, not played for
+90 days*. Its tracks are worked out again from your **whole library** (the
+table's filters don't apply) every time a scan finishes, every time you load
+your DJ history, and whenever you click `Refresh smart playlists`.
+
+| Button | Result |
+| --- | --- |
+| `New smart playlist…` | Opens the rules dialog, then creates the playlist with the tracks that match now |
+| `Edit smart rules…` | Changes the name or rules of the selected smart playlist and refreshes it |
+| `Refresh smart playlists` | Re-evaluates every smart playlist against the current library and play history |
+
+Every rule left at *Any*/*Off* is ignored; the others must all match:
+
+| Rule | Matches |
+| --- | --- |
+| Category | A whole family (`Tek (whole family)`) or one category (`Tek / PsyTrance`). Only confirmed categories count, never an amber suggestion |
+| Genre | Genre tag contains this text (any case) |
+| Text | Title, artist, album or file path contains this text |
+| BPM | Within the range, both ends included; a track with no BPM never matches |
+| Camelot key | That key — or, with `or compatible`, any key that mixes with it (±1 on the wheel, or its relative major/minor) |
+| Not played for | Never played, or last played longer ago than this many days |
+| Order | Category → BPM range → key (like `Auto: sort visible`), slowest BPM first, or file path |
+| Maximum length | Keep only the first tracks in that order |
+
+`Not played for` uses the play history last loaded in the
+[History panel](#play-history); the counts are remembered with the library
+index, so they still apply after a restart. Until you load a history, every
+track counts as never played (the dialog reminds you). A play recorded
+without a time can't be proven old, so that track doesn't match.
+
+Missing files never match. In the playlist list, a smart playlist shows
+`· smart`, and its tooltip spells out its rules. It exports and compares like
+any other playlist — the exported file holds the tracks of the last refresh.
+
 ## Prepare a set
 
 The **Set** panel is a draft you order by hand, for when you want to choose
@@ -421,7 +459,8 @@ that was only ever loaded still counts as never played.
 
 The summary line gives the totals: sessions, plays, distinct tracks, and
 how many of your indexed tracks were never played. History files are only
-ever read.
+ever read; the per-track play counts are kept in the library index for
+[smart playlists](#smart-playlists)' `Not played for` rule.
 
 ## Safety: what is never touched
 
