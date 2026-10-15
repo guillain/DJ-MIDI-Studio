@@ -132,6 +132,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Near-duplicate track suggestions** (`v0.48.96-near-duplicates`, issue #257) — the
+  duplicates finder gains a third, suggestion-only tier: `duplicates.find_version_variants`
+  groups tracks by artist + title once trailing version markers (`(Radio Edit)`,
+  `(Extended Mix)`, `[Remastered 2011]`, `- Club Mix`, remixes…) are stripped, keeping a group
+  only when it holds two different versions. Listed in their own section of the Duplicate
+  tracks window with each file's title, never tickable, and ignored by `discard.plan_discard`.
 - [x] **Cover art in the Music Library** (`v0.48.95-cover-art`, issue #256) — Qt-free
   `library/cover_art.py` (`read_cover_art` for display with a fallback to any embedded picture,
   `read_front_cover` for the managed slot, `write_cover_art` replacing/removing only the front
