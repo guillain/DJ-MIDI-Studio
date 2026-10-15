@@ -710,7 +710,8 @@ class ControllerLayoutView(QWidget):
         # tab is browsed constantly while just auditing a mapping, so a
         # click must never send real MIDI unless the user has deliberately
         # switched this on.
-        self._live_send = LiveSendControl()
+        # Starts on a hidden tab: scan ports when first shown (issue #264).
+        self._live_send = LiveSendControl(defer_port_scan=True)
         controls_layout.addWidget(self._live_send)
 
         # The display layers (gui/layer_toggles.py): the real Controller

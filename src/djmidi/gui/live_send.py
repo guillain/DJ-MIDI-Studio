@@ -37,6 +37,7 @@ exactly the intuitive-but-wrong choice a first-time user reaches for."""
 from __future__ import annotations
 
 from PySide6.QtCore import Signal
+from PySide6.QtGui import QShowEvent
 from PySide6.QtWidgets import (
     QComboBox,
     QHBoxLayout,
@@ -67,8 +68,14 @@ class LiveSendControl(QWidget):
 
     activeChanged = Signal(bool)
 
-    def __init__(self, parent: QWidget | None = None) -> None:
+    def __init__(self, parent: QWidget | None = None, *, defer_port_scan: bool = False) -> None:
         super().__init__(parent)
+        # Listing MIDI ports costs ~25 ms per call (a fresh rtmidi client
+        # each time); views that start on a hidden tab pass
+        # defer_port_scan=True so startup doesn't pay it once per view
+        # (issue #264). The scan then runs when the control is first shown
+        # or first asked for its port, whichever comes first.
+        self._ports_scanned = False
         self._port_combo = QComboBox()
         self._port_combo.setMinimumWidth(150)
         self._port_combo.setToolTip(
@@ -129,9 +136,19 @@ class LiveSendControl(QWidget):
         layout.addLayout(row)
         layout.addWidget(self._port_warning)
 
-        self.refresh_ports()
+        if not defer_port_scan:
+            self.refresh_ports()
+
+    def showEvent(self, event: QShowEvent) -> None:
+        self._ensure_ports_scanned()
+        super().showEvent(event)
+
+    def _ensure_ports_scanned(self) -> None:
+        if not self._ports_scanned:
+            self.refresh_ports()
 
     def refresh_ports(self) -> None:
+        self._ports_scanned = True
         current = self._port_combo.currentText()
         self._port_combo.blockSignals(True)
         self._port_combo.clear()
@@ -198,6 +215,7 @@ class LiveSendControl(QWidget):
         return self._toggle_button.isChecked()
 
     def selected_port(self) -> str | None:
+        self._ensure_ports_scanned()
         text = self._port_combo.currentText()
         return text or None
 

@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QApplication, QPushButton, QSizePolicy
+from PySide6.QtWidgets import QApplication, QLabel, QPushButton, QSizePolicy
 
 from djmidi.gui import theme
 from djmidi.gui.introduction_view import IntroductionView
@@ -175,3 +175,17 @@ def test_theme_change_restyles_a_visible_badge():
         assert "#0a7fa0" in view._software_badge_label.styleSheet()
     finally:
         theme.apply_theme(QApplication.instance(), "dark")
+
+
+def test_controller_card_photos_load_only_when_their_card_is_shown():
+    """Issue #264: only the visible card's photo is loaded at startup."""
+    view = IntroductionView()
+    tabs = view._controller_tabs
+    assert tabs.count() > 1
+    first, second = tabs.widget(0), tabs.widget(1)
+    assert not any(first.isAncestorOf(label) for label in view._pending_card_images)
+    assert any(second.isAncestorOf(label) for label in view._pending_card_images)
+    tabs.setCurrentIndex(1)
+    assert not any(second.isAncestorOf(label) for label in view._pending_card_images)
+    image = next(label for label in second.findChildren(QLabel) if label.minimumWidth() == 320)
+    assert not image.pixmap().isNull() or image.text() == "Image unavailable"

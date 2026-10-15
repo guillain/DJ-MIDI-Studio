@@ -9,6 +9,7 @@ from pathlib import Path
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QApplication, QWidget
 
+from djmidi import startup_timing
 from djmidi.gui.main_window import MainWindow
 from djmidi.gui.theme import apply_theme
 from djmidi.gui.translation import install_translators
@@ -69,7 +70,17 @@ def save_window_screenshot(window: QWidget, path: str | os.PathLike[str]) -> boo
     return True
 
 
+def log_startup_timing(timer: startup_timing.StartupTimer) -> None:
+    """Log how long startup took, once the window is on screen (issue #264)."""
+    elapsed = timer.mark(startup_timing.FIRST_WINDOW_MILESTONE)
+    logging.getLogger("djmidi.gui.app").info(
+        "Startup: time to first window %.0f ms -- %s", elapsed * 1000, timer.summary()
+    )
+
+
 def run(argv: list[str] | None = None) -> int:
+    timer = startup_timing.take()
+    timer.mark("imports")
     parser = build_argument_parser()
     arguments, _unknown = parser.parse_known_args(sys.argv[1:] if argv is None else argv)
     
@@ -81,16 +92,22 @@ def run(argv: list[str] | None = None) -> int:
     log_path = configure_logging(arguments.log_level, preferred_log_path)
     logger = logging.getLogger("djmidi.gui.app")
     logger.info("Starting DJ MIDI Studio")
+    timer.mark("preferences and logging")
     app = QApplication(sys.argv if argv is None else [sys.argv[0], *argv])
     app.setOrganizationName("DJ MIDI Studio")
     app.setApplicationName("DJ MIDI Studio")
     apply_theme(app, preferences.theme)
+    timer.mark("Qt application")
     # Before any widget exists: tr() is resolved when a widget sets its text.
     install_translators(app, preferences.language)
     window = MainWindow()
+    timer.mark("main window built")
     if arguments.startup_screenshot:
         window.first_run_wizard_enabled = False
     window.show()
+    timer.mark("window shown")
+    # The first event-loop turn is when the shown window actually paints.
+    QTimer.singleShot(0, lambda: log_startup_timing(timer))
     if arguments.startup_screenshot:
         QTimer.singleShot(
             max(0, arguments.startup_screenshot_delay_ms),
