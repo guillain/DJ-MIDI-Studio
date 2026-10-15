@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+from PySide6.QtCore import QCoreApplication, QEvent
 from PySide6.QtWidgets import QDialog
 
 from djmidi.first_run import FirstRunChoices
@@ -56,8 +58,25 @@ def test_wizard_choices_follow_user_selection(tmp_path):
     assert wizard.choices() == FirstRunChoices(record_sync_set=True)
 
 
+_WINDOWS: list[MainWindow] = []
+
+
+@pytest.fixture(autouse=True)
+def _close_windows():
+    # Every MainWindow left alive makes later tests (a theme change restyles
+    # every widget) dramatically slower -- close and delete them.
+    yield
+    while _WINDOWS:
+        window = _WINDOWS.pop()
+        window._layout_settings = lambda: None  # never persist a test's fake settings
+        window.close()
+        window.deleteLater()
+    QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+
+
 def _window(tmp_path):
     window = MainWindow()
+    _WINDOWS.append(window)
     window.preferences = PluginPreferences()
     window.preferences_path = tmp_path / "preferences.json"
     return window
