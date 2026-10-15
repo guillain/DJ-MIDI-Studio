@@ -1284,6 +1284,73 @@ def test_set_draft_survives_reopen_and_saves_as_playlist(tmp_path, monkeypatch):
     reopened.close_db()
 
 
+# --- Rename files… (issue #260): every file renamed lives under tmp_path ---
+
+
+def test_rename_files_flow_with_undo_and_csv(library, monkeypatch):
+    view, music, tmp_path = library
+    tribe = music / "Tek" / "Tribe"
+    playlist = view.db.create_playlist("Friday", [str(tribe / "a.mp3")])
+    view.select_paths([str(tribe / "a.mp3"), str(tribe / "b.mp3")])
+    assert view.rename_files_button.isEnabled()
+
+    shown = []
+
+    def accept(dialog):
+        shown.append(dialog)
+        dialog.template_edit.setText("{artist} - {title} ({camelot})")
+        return QDialog.DialogCode.Accepted
+
+    csv_path = tmp_path / "renamed.csv"
+    monkeypatch.setattr(mlv.RenameFilesDialog, "exec", accept)
+    monkeypatch.setattr(mlv.QFileDialog, "getSaveFileName", lambda *a, **k: (str(csv_path), ""))
+    view._on_rename_files_clicked()
+
+    [dialog] = shown
+    assert dialog.tree.topLevelItemCount() == 2
+    new_a, new_b = tribe / "Zed - Alpha (8A).mp3", tribe / "Yan - Bravo (9A).mp3"
+    assert new_a.is_file() and new_b.is_file()
+    assert not (tribe / "a.mp3").exists()
+    paths = {row.path for row in view.table_model.rows()}
+    assert {str(new_a), str(new_b)} <= paths and str(tribe / "a.mp3") not in paths
+    assert {row.path for row in view.selected_rows()} == {str(new_a), str(new_b)}
+    assert view.db.playlist_paths(playlist) == [str(new_a)]
+    assert f"{tribe / 'a.mp3'},{new_a}" in csv_path.read_text(encoding="utf-8-sig").splitlines()
+    assert view.db.get_setting("rename_template") == "{artist} - {title} ({camelot})"
+
+    view.undo_stack.undo()
+    assert (tribe / "a.mp3").is_file() and (tribe / "b.mp3").is_file()
+    assert not new_a.exists()
+    assert view.db.playlist_paths(playlist) == [str(tribe / "a.mp3")]
+    view.undo_stack.redo()
+    assert new_a.is_file()
+
+
+def test_rename_files_reports_failures_and_skips_empty_batches(library, monkeypatch):
+    view, music, _tmp = library
+    warnings = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda *a, **k: warnings.append(a[2]))
+    assert view.rename_files([]) == []
+    gone = music / "misc" / "gone.mp3"
+    assert view.rename_files([(str(gone), str(music / "misc" / "x.mp3"))]) == []
+    assert "file not found" in warnings[0]
+    assert view.undo_stack.count() == 0
+
+
+def test_rename_dialog_preview_and_template_errors(library):
+    view, music, _tmp = library
+    paths = [str(music / "Tek" / "Tribe" / "a.mp3"), str(music / "misc" / "c.mp3")]
+    dialog = mlv.RenameFilesDialog(lambda text: mlv.rename.plan_from_db(view.db, paths, text), "{artist} - {album}")
+    ok = dialog.buttons.button(mlv.QDialogButtonBox.StandardButton.Ok)
+    assert ok.isEnabled() is False
+    assert dialog.tree.topLevelItem(0).text(2) == "Skipped: no album tag"
+    dialog.template_edit.setText("{artist} - {title}")
+    assert ok.isEnabled() and ok.text() == "Rename 2 file(s)"
+    assert dialog.tree.topLevelItem(1).text(1) == "Xu - Charlie.mp3"
+    dialog.template_edit.setText("{artist}/{title}")
+    assert ok.isEnabled() is False
+    assert "/" in dialog.summary_label.text()
+    assert dialog.renames() == []
 def _png_file(path: Path) -> Path:
     from PySide6.QtGui import QImage
 

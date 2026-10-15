@@ -132,6 +132,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Template-based file renaming** (`v0.48.99-rename-files`, issue #260) — Qt-free
+  `library/rename.py` (`plan_renames`/`plan_from_db` preview with conflict, missing-tag and
+  refused statuses; `apply_renames` re-checks then renames inside each file's own folder and
+  updates the index via `LibraryDB.rename_track_paths`; `export_mapping_csv` old → new CSV)
+  behind the Music Library's `Rename files…` dialog and an undoable `RenameFilesCommand`.
+  Never renames outside library roots or inside `_Serato_`/`PIONEER`/`_Traktor`/… folders.
 - [x] **Smart playlists** (`v0.48.98-smart-playlists`, issue #259) — Qt-free
   `library/smart_playlist.py` (`SmartRules`: category/family, genre, text, BPM range, Camelot
   key exact or compatible, not played for N days, order, limit; `evaluate`; JSON round trip)

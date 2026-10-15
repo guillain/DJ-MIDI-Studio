@@ -15,7 +15,9 @@ playlist engine, Serato/Traktor/Rekordbox formats) to one tab:
 - the consolidated metadata table (sortable/filterable, category column);
 - a Track panel whose tag edits go through a `QUndoStack`
   (`commands.WriteTrackMetadataCommand`, or `WriteTracksMetadataCommand` when
-  "Write tags to selection…" copies chosen fields to every selected track),
+  "Write tags to selection…" copies chosen fields to every selected track,
+  or `RenameFilesCommand` when "Rename files…" renames them from a tag
+  template, issue #260),
   with an embedded cover-art preview set/removed through
   `WriteTrackCoverCommand` (issue #256),
   a Categories panel over the
@@ -89,6 +91,7 @@ from djmidi import taxonomy, user_paths
 from djmidi.gui import help_texts
 from djmidi.gui.audio_preview import AudioPreviewBar
 from djmidi.gui.commands import (
+    RenameFilesCommand,
     WriteTrackCoverCommand,
     WriteTrackMetadataCommand,
     WriteTracksMetadataCommand,
@@ -97,6 +100,7 @@ from djmidi.gui.duplicates_dialog import DuplicatesDialog
 from djmidi.gui.health_report_dialog import HealthReportDialog
 from djmidi.gui.help_button import help_button, help_row
 from djmidi.gui.library_stats_dialog import LibraryStatsDialog
+from djmidi.gui.rename_files_dialog import RenameFilesDialog
 from djmidi.gui.set_preparation import (
     SET_TRACKS_MIME,
     SetPreparationPanel,
@@ -108,6 +112,7 @@ from djmidi.library import (
     health,
     history,
     relink,
+    rename,
     set_prep,
     smart_playlist,
     stats,
@@ -123,6 +128,9 @@ from djmidi.library.relink import RelinkCandidate, RelinkProposal
 from djmidi.library.scanner import iter_scan_root
 
 _LOGGER = logging.getLogger(__name__)
+
+# The last "Rename files…" template, remembered in the library index.
+_RENAME_TEMPLATE_SETTING = "rename_template"
 
 # How many entries a confirmation lists before "… and N more".
 _LIST_LIMIT = 15
@@ -1220,6 +1228,13 @@ class MusicLibraryView(QWidget):
         )
         self.apply_analysis_button.clicked.connect(self._on_apply_analysis_clicked)
         box.addWidget(self.apply_analysis_button)
+        self.rename_files_button = QPushButton("Rename files…")
+        self.rename_files_button.setToolTip(
+            "Renames the selected files from their tags (e.g. {artist} - {title}) inside their "
+            "folder, after a preview, as one undoable step. DJ software will need relinking."
+        )
+        self.rename_files_button.clicked.connect(self._on_rename_files_clicked)
+        box.addWidget(self.rename_files_button)
         self.table.selectionModel().selectionChanged.connect(self._update_selection_actions)
 
         self.clean_button = QPushButton("Clean noise frames…")
@@ -2131,6 +2146,7 @@ class MusicLibraryView(QWidget):
     def _update_selection_actions(self, *_args: object) -> None:
         writable = self._writable_selection()
         self.write_selection_button.setEnabled(bool(writable))
+        self.rename_files_button.setEnabled(bool(writable))
         self.apply_analysis_button.setEnabled(any(row.has_analysis_suggestion for row in writable))
 
     @staticmethod
@@ -2252,6 +2268,66 @@ class MusicLibraryView(QWidget):
         if not changes:
             return 0
         return self._push_bulk_write(changes)
+
+    # --- file renaming (issue #260) ---------------------------------------
+
+    def _on_rename_files_clicked(self) -> None:
+        paths = [row.path for row in self._writable_selection()]
+        if not paths:
+            return
+        template = self.db.get_setting(_RENAME_TEMPLATE_SETTING, rename.DEFAULT_TEMPLATE)
+        dialog = RenameFilesDialog(
+            lambda text: rename.plan_from_db(self.db, paths, text),
+            template if isinstance(template, str) else rename.DEFAULT_TEMPLATE,
+            self,
+        )
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+        self.db.set_setting(_RENAME_TEMPLATE_SETTING, dialog.template)
+        renamed = self.rename_files(dialog.renames())
+        if renamed and dialog.save_csv:
+            self._save_rename_csv(renamed)
+
+    def rename_files(self, pairs: list[tuple[str, str]]) -> list[tuple[str, str]]:
+        """Rename ``(old, new)`` files as one undo step (no confirmation --
+        the dialog previewed them) and return the pairs actually renamed."""
+        if not pairs:
+            return []
+        command = RenameFilesCommand(pairs, lambda batch: rename.apply_renames(self.db, batch), self._on_files_renamed)
+        self.undo_stack.push(command)
+        if command.failures:
+            _LOGGER.warning("Rename failed for %d file(s): %s", len(command.failures), command.failures)
+            QMessageBox.warning(
+                self,
+                "Some files were not renamed",
+                f"{len(command.renamed)} file(s) renamed, {len(command.failures)} left as they were:\n\n"
+                + _bullet_list(f"{Path(path).name}: {reason}" for path, reason in command.failures),
+            )
+        return command.renamed
+
+    def _on_files_renamed(self, pairs: list[tuple[str, str]]) -> None:
+        moved = dict(pairs)
+        selected = [moved.get(row.path, row.path) for row in self.selected_rows()]
+        if self._current_path is not None:
+            self._current_path = moved.get(self._current_path, self._current_path)
+        self._reload_rows()
+        self._reload_playlists()
+        self.select_paths(selected)
+        self.status_label.setText(
+            f"Renamed {len(pairs)} file(s). Serato, Traktor and Rekordbox need relinking to find them."
+        )
+
+    def _save_rename_csv(self, pairs: list[tuple[str, str]]) -> None:
+        default = str(user_paths.subfolder(user_paths.EXPORTS) / "renamed-files.csv")
+        path, _ = QFileDialog.getSaveFileName(self, "Save old → new paths", default, "CSV files (*.csv)")
+        if not path:
+            return
+        try:
+            count = rename.export_mapping_csv(path, pairs)
+        except OSError as exc:
+            QMessageBox.warning(self, "Save old → new paths", f"Could not write {path}:\n{exc}")
+            return
+        self.status_label.setText(f"Renamed {count} file(s); old → new paths saved to {path}")
 
     def _tag_write_progress(self, label: str, total: int, cancellable: bool = True) -> Callable[[int, int], bool]:
         """A progress window for one pass of a bulk tag write (write, undo or
