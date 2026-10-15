@@ -28,6 +28,7 @@
 | 🗺️ | [Mapping editor](mapping-editor.md) | Open, explore, edit, validate and save Serato mappings |
 | 🎧 | [Traktor mappings](traktor-mappings.md) | The same for Traktor `.tsi` controller mappings |
 | 🔍 | [Compare mappings](mapping-diff.md) | What changed between two mappings, highlighted on the layouts |
+| ✅ | [Ready for live](live-ready-check.md) | A pre-gig check of the mapping, explained and never auto-fixed |
 | 🏷️ | [Readable function names](function-names.md) | `Loop roll` instead of `auto_loop_roll_specific_length`, original tag on hover |
 | ⌨️ | [Command palette](command-palette.md) | Cmd+K: search every action, tab, mapping function and library track |
 | 🖼️ | [Controller Images](controller-images.md) | Official diagrams and manuals, offline, with real control positions |
@@ -52,6 +53,7 @@
 | [mapping-editor.md](mapping-editor.md) | Dashboard, the three views, editing, validation, saving |
 | [traktor-mappings.md](traktor-mappings.md) | Traktor `.tsi` support and its limits |
 | [mapping-diff.md](mapping-diff.md) | Comparing with another file or the previous version, change kinds, duplicates |
+| [live-ready-check.md](live-ready-check.md) | Missing essentials per deck, conflicts, LED feedback, reading the report |
 | [function-names.md](function-names.md) | Short names for Serato function tags, where they show, finding the original tag |
 | [command-palette.md](command-palette.md) | Cmd+K search over actions, tabs, functions and tracks, ranking, keys |
 | [controller-images.md](controller-images.md) | Reference pictures, real layout overlay, MIDI info |

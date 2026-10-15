@@ -132,6 +132,15 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **"Ready for live" mapping checker** (`v0.48.93-live-ready-check`, issue #254) — Qt-free
+  `live_ready.py` (`check_live_ready` → `ReadyReport` of `ReadyFinding`s with severity, message
+  and plain-language hint): per-deck missing `ESSENTIAL_FUNCTIONS` (Play/Cue/Sync/Load,
+  recognised from tag words since no real Serato export maps them — warning), trigger
+  conflicts reused from `validator.find_deck_conflicts` plus disagreeing copies (error), and
+  input bindings without an output mapping when the function is known to have LED feedback
+  (info). `gui/live_ready_dialog.py` report window (severity filters, Show control, Copy
+  report) from a new button strip above the validation table and `Edit → Ready for Live…`.
+  Read-only, never auto-fixes. Docs: `docs/enduser/features/live-ready-check.md`.
 - [x] **Layered mapping overview** (`v0.48.92-layer-map`, issue #253) — `View → Layer Map…`:
   Qt-free `gui/layer_map.py` (`build_layer_map`: one row per physical control, one column per
   layer — Normal, SHIFT, other qualifiers, each pad bank ± SHIFT — all derived from

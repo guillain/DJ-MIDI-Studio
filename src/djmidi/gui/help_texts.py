@@ -135,11 +135,30 @@ EDIT_PANEL: HelpEntry = (
         "controller (10 s, click again to cancel); it warns before reusing a control "
         "another function already uses.<br><br>"
         "<b>Edit → Validate</b> lists errors, warnings and info in the table below "
-        "(duplicate copies are info only: they are expected). <b>File → Save Mapping</b> shows the "
+        "(duplicate copies are info only: they are expected); <b>Edit → Ready for Live…</b> checks "
+        "for missing Play/Cue/Sync/Load, conflicts and unlit buttons before a gig. "
+        "<b>File → Save Mapping</b> shows the "
         "exact changes before writing, keeps a backup, and <b>File → Restore Previous Version…</b> "
         "restores it."
     ),
     "mapping-editor.md",
+)
+
+LIVE_READY: HelpEntry = (
+    "Ready for live",
+    (
+        "A read-only check of the loaded mapping before a gig. It lists:"
+        "<ul><li><b>Errors</b>: a control that fires several functions on the same deck, or "
+        "copies of one control that disagree.</li>"
+        "<li><b>Warnings</b>: a deck with no <b>Play</b>, <b>Cue</b>, <b>Sync</b> or <b>Load</b> "
+        "mapping. A Serato file only lists what you remapped, so ignore these if Serato's "
+        "built-in support for your controller already covers them.</li>"
+        "<li><b>Info</b>: a mapped button whose function can light up, but which has no LED "
+        "feedback mapping.</li></ul>"
+        "Each row says what to do; nothing is fixed for you. <b>Show control</b> (or double-click) "
+        "selects the control in <b>By Channel</b>; <b>Copy report</b> copies the list as text."
+    ),
+    "live-ready-check.md",
 )
 
 FUNCTION_SEARCH: HelpEntry = (
