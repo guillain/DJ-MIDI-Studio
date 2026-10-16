@@ -608,6 +608,34 @@ def resolve_side_aware_variant(
 
 
 _AMBIGUOUS_TRIGGER_MARKERS = ("shift", "long press", "press twice", "direct button")
+# "Deck 1 Pad 3 (PAD MODE 5)" / "Deck 3 Performance Pad 4 (EXTENSION1 mode) +SHIFT"
+# -> "(PAD MODE 5)" / "(EXTENSION1 mode)": the bank a pad variant belongs to,
+# the same substring gui/pad_mode.py feeds pick_default_variant() as a token.
+PAD_BANK_RE = re.compile(r"Pad \d+ (\([^()]*\))")
+
+
+def name_without_bank(entry: catalog.ControlInfo) -> str:
+    """A variant's name minus its pad bank ("(KEY SHIFT, PAGE 1)"), so the
+    bank's own wording never reads as a SHIFT / long-press qualifier."""
+    if entry.section != "PAD":
+        return entry.name
+    match = PAD_BANK_RE.search(entry.name)
+    return entry.name.replace(match.group(1), "") if match else entry.name
+
+
+def is_shift_variant(entry: catalog.ControlInfo) -> bool:
+    """Whether a variant is a SHIFT one -- ignoring the bank's own name,
+    since DDJ-1000/FLX10/800 have a "KEY SHIFT" pad mode whose plain
+    variants are not SHIFT ones (issues #280, #288). The one rule shared by
+    pick_default_variant(), gui/cheat_sheet.py and gui/layer_map.py."""
+    return "shift" in name_without_bank(entry).casefold()
+
+
+def is_plain_variant(entry: catalog.ControlInfo) -> bool:
+    """Whether a variant carries no SHIFT / long-press / press-twice /
+    direct-button qualifier, its pad bank's own name aside."""
+    lowered = name_without_bank(entry).casefold()
+    return not any(marker in lowered for marker in _AMBIGUOUS_TRIGGER_MARKERS)
 
 
 def pick_default_variant(
@@ -632,7 +660,9 @@ def pick_default_variant(
     just falls back to the plain default.
 
     ``prefer_shift`` inverts the base rule: return the first variant whose
-    name carries a SHIFT qualifier (still respecting ``prefer_token``) --
+    name carries a SHIFT qualifier (still respecting ``prefer_token``; a pad
+    bank's own name, e.g. DDJ-1000's "(KEY SHIFT, PAGE 1)", never counts --
+    see is_shift_variant(), issue #288) --
     the emulator passes it while its SHIFT-held state is on (phase 5).
     Ignored when no variant is a SHIFT one (a cell with no SHIFT variant
     resolves the same held or not).
@@ -647,11 +677,10 @@ def pick_default_variant(
         if scoped:
             variants = scoped
     if prefer_shift:
-        shifted = [v for v in variants if "shift" in v.name.casefold()]
+        shifted = [v for v in variants if is_shift_variant(v)]
         if shifted:
             return shifted[0]
     for variant in variants:
-        lowered = variant.name.casefold()
-        if not any(marker in lowered for marker in _AMBIGUOUS_TRIGGER_MARKERS):
+        if is_plain_variant(variant):
             return variant
     return variants[0]
