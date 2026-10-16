@@ -61,6 +61,8 @@ lost, and over the replies:
 `No reply … does not seem to echo` means nothing came back at all: check
 the ports, or see [It needs an echo](#it-needs-an-echo).
 
+![MIDI Latency Test: 20 pings through an IAC loopback (simulated for this picture)](../../images/layout/midi-latency.png)
+
 ## What the test sends
 
 Each ping is a `Note On` on the chosen channel and note, followed by a

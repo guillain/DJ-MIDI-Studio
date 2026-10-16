@@ -14,15 +14,18 @@ from pathlib import Path
 from unittest.mock import patch
 
 from PySide6.QtCore import (
+    QLocale,
     QObject,
     QPoint,
+    Qt,
     QtMsgType,
+    QTranslator,
     QUrl,
     Signal,
     qInstallMessageHandler,
 )
-from PySide6.QtGui import QPainter
-from PySide6.QtWidgets import QApplication, QTabWidget
+from PySide6.QtGui import QColor, QFont, QImage, QLinearGradient, QPainter
+from PySide6.QtWidgets import QAbstractItemView, QApplication, QTabWidget
 
 # Never open (or create) the real music library index of whoever runs this:
 # the Music Library captures below scan a throwaway synthetic library.
@@ -40,11 +43,19 @@ from djmidi.exporter import write_file
 from djmidi.gui import cheat_sheet
 from djmidi.gui.cheat_sheet_dialog import CheatSheetExportDialog
 from djmidi.gui.cheat_sheet_pdf import render_sheet_image
+from djmidi.gui.first_run_wizard import FirstRunWizard
 from djmidi.gui.main_window import MainWindow
-from djmidi.gui.music_library_view import BulkTagDialog, RelinkDialog
+from djmidi.gui.midi_latency_dialog import MidiLatencyDialog
+from djmidi.gui.music_library_view import (
+    BulkTagDialog,
+    RelinkDialog,
+    SmartPlaylistDialog,
+)
 from djmidi.gui.preferences_dialog import PreferencesDialog
+from djmidi.gui.rename_files_dialog import RenameFilesDialog
 from djmidi.gui.stage_window import StageWindow
-from djmidi.library import relink, workspace
+from djmidi.gui.translation import install_translators
+from djmidi.library import relink, rename, smart_playlist, workspace
 from djmidi.midi_io import MidiEvent
 from djmidi.parser import parse_file
 from djmidi.plugins.preferences import PluginPreferences
@@ -270,11 +281,17 @@ def main() -> int:
         _capture_function_search(app, window)
         _capture_mapping_diff(app, window)
         _capture_cheat_sheet(app, window)
+        _capture_layer_map(app, window)
+        _capture_live_ready(app, window)
+        _capture_command_palette(app, window)
+        _capture_first_run_wizard(app, window)
+        _capture_midi_latency(app, window)
         window.statusBar().clearMessage()
         _capture_music_library(app, window)
         _capture_traktor_mapping(app, window)
         _capture_preferences_sync(app)
         _capture_stage_mode(app, window)
+        _capture_interface_language(app)
         # Last: it records sync sets and switches the active scene, which
         # the menu bar of every later window capture would show.
         _capture_sync_scene_combo(app, window)
@@ -531,6 +548,8 @@ def _capture_music_library(app: QApplication, window: MainWindow) -> None:
         dialog.close()
         view.field_edits["genre"].setText((seed.metadata.genre if seed.metadata else None) or "")
 
+        _capture_library_tools(app, window, seed.path)
+
         # Audio preview bar (issue #192), playing 2:12 into a 6:00 track.
         preview = view.audio_preview
         preview._player_factory = _DemoPlayer
@@ -581,6 +600,261 @@ def _capture_music_library(app: QApplication, window: MainWindow) -> None:
         _save(dialog, "music-library-relink.png")
         dialog.close()
         view.close_db()
+
+
+def _capture_layer_map(app: QApplication, window: MainWindow) -> None:
+    """View → Layer Map (issue #253) on the fixture's DDJ-XP2."""
+    dialog = window._on_show_layer_map()
+    if dialog is None:
+        raise RuntimeError("the Layer Map did not open")
+    index = dialog.controller_combo.findData("DDJ-XP2")
+    if index >= 0:
+        dialog.controller_combo.setCurrentIndex(index)
+    dialog.resize(1300, 720)
+    app.processEvents()
+    # The fixture maps the pads in PAD MODE 5 only: center that column so
+    # mapped cells show beside free ones.
+    mapped = dialog.table.item(0, 10)
+    if mapped is not None:
+        dialog.table.scrollToItem(mapped, QAbstractItemView.ScrollHint.PositionAtCenter)
+    app.processEvents()
+    _save(dialog, "layer-map.png")
+    dialog.close()
+
+
+def _capture_live_ready(app: QApplication, window: MainWindow) -> None:
+    """Edit → Ready for Live (issue #254): the report on the fixture."""
+    dialog = window._on_live_ready_check()
+    if dialog is None:
+        raise RuntimeError("the Ready for live report did not open")
+    dialog.resize(1100, 560)
+    app.processEvents()
+    _save(dialog, "live-ready.png")
+    dialog.close()
+
+
+def _capture_command_palette(app: QApplication, window: MainWindow) -> None:
+    """Cmd+K (issue #222): a query matching menu actions, with their menu
+    path and shortcut."""
+    window.left_tabs.setCurrentIndex(window._tab_indexes["channel"])
+    dialog = window.open_command_palette("save")
+    dialog.resize(700, 340)
+    app.processEvents()
+    _save(dialog, "command-palette.png")
+    dialog.close()
+    app.processEvents()
+
+
+def _capture_first_run_wizard(app: QApplication, window: MainWindow) -> None:
+    """Help → First-Run Setup (issue #251): two demo controller ports plus an
+    unrecognized IAC bus, and a throwaway home holding copies of the fixture
+    as Serato mappings -- never the real ~/Music/_Serato_."""
+    # A short fixed path where /tmp exists, so the page's folder line reads
+    # cleanly (as in _demo_music_dir); removed before and after.
+    home = Path("/tmp/djmidi-docs-home") if Path("/tmp").is_dir() else Path(tempfile.mkdtemp())
+    shutil.rmtree(home, ignore_errors=True)
+    try:
+        serato = home / "Music" / "_Serato_" / "MIDI" / "Xml"
+        serato.mkdir(parents=True)
+        for age, name in enumerate(("xdj_xz-ddj_xp2-4decks.xml", "ddj-xp2-tek-night.xml", "xdj-xz-backup.xml")):
+            target = serato / name
+            shutil.copyfile(FIXTURE, target)
+            stamp = 1_760_000_000 - age * 86_400
+            os.utime(target, (stamp, stamp))
+        ports = ["PIONEER DDJ-XP2", "XDJ-XZ", "IAC Driver Bus 1"]
+        wizard = FirstRunWizard(lambda: ports, home=home, parent=window)
+        wizard.resize(640, 480)
+        wizard.show()
+        for filename in ("first-run-controllers.png", "first-run-mapping.png"):
+            wizard.next()
+            app.processEvents()
+            _save(wizard, filename)
+        wizard.close()
+        wizard.deleteLater()
+        app.processEvents()
+    finally:
+        shutil.rmtree(home, ignore_errors=True)
+
+
+@contextlib.contextmanager
+def _demo_loopback(_output: str, _input: str) -> Iterator[tuple]:
+    """An in-process stand-in for an IAC Driver loopback: every Note On comes
+    back after a short, slightly varying delay. Demo timing only -- it opens
+    no port and is not a measurement of any real device."""
+    import time
+
+    pending: list[tuple[float, MidiEvent]] = []
+    sent = [0]
+
+    def send(channel: int, note: int, velocity: int, on: bool) -> None:
+        if not on:
+            return
+        delay = (0.7 + 0.15 * (sent[0] % 5) + (0.4 if sent[0] % 7 == 3 else 0.0)) / 1000.0
+        sent[0] += 1
+        event = MidiEvent("in", str(channel), "Note On", str(note), str(velocity), 0.0, "IAC Driver Bus 1")
+        pending.append((time.perf_counter() + delay, event))
+
+    def receive() -> list[MidiEvent]:
+        now = time.perf_counter()
+        ready = [event for due, event in pending if due <= now]
+        pending[:] = [(due, event) for due, event in pending if due > now]
+        return ready
+
+    yield send, receive
+
+
+def _capture_midi_latency(app: QApplication, window: MainWindow) -> None:
+    """View → MIDI Latency Test (issue #255): a finished 20-ping run through
+    a simulated IAC loopback (see _demo_loopback), run synchronously."""
+    bus = ["IAC Driver Bus 1"]
+    dialog = MidiLatencyDialog(
+        window,
+        port_pair_factory=_demo_loopback,
+        start_thread=lambda target: target(),
+        list_outputs=lambda: bus,
+        list_inputs=lambda: bus,
+    )
+    dialog.resize(640, 680)
+    dialog.show()
+    dialog.start()
+    dialog.drain_results()
+    app.processEvents()
+    _save(dialog, "midi-latency.png")
+    dialog.close()
+    dialog.deleteLater()
+
+
+def _capture_interface_language(app: QApplication) -> None:
+    """Interface language (issue #263): the Dashboard and the Preferences
+    General tab built with the French catalogue installed, then removed so
+    the remaining captures stay in English."""
+    before = set(app.findChildren(QTranslator))
+    if install_translators(app, "fr") != "fr":
+        raise RuntimeError("the French translation is not available")
+    added = [translator for translator in app.findChildren(QTranslator) if translator not in before]
+    try:
+        french = MainWindow()
+        french.resize(1600, 1000)
+        french.config = parse_file(FIXTURE)
+        french.current_path = FIXTURE
+        french._load_tree()
+        french.left_tabs.setCurrentIndex(french._tab_indexes["intro"])
+        french.show()
+        app.processEvents()
+        _save(french, "interface-language-fr.png")
+        french.close()
+        french.deleteLater()
+        preferences = PluginPreferences()
+        preferences.language = "fr"
+        dialog = PreferencesDialog(preferences)
+        dialog.resize(640, 520)
+        dialog.show()
+        app.processEvents()
+        # Only the tabs down to the Language row: further down, the log file
+        # and workspace rows print paths of whoever runs this script.
+        language = dialog._language
+        bottom = language.mapTo(dialog, QPoint(0, language.height())).y() + 4
+        pixmap = dialog.grab()
+        ratio = pixmap.devicePixelRatio()
+        cropped = pixmap.copy(0, 0, round(dialog.width() * ratio), round(bottom * ratio))
+        if not cropped.save(str(OUTPUT / "interface-language-preferences.png")):
+            raise RuntimeError("could not save interface-language-preferences.png")
+        dialog.close()
+        dialog.deleteLater()
+        app.processEvents()
+    finally:
+        for translator in added:
+            app.removeTranslator(translator)
+
+
+def _demo_cover(path: Path) -> None:
+    """A plain generated picture for the cover-art capture (no real artwork)."""
+    image = QImage(600, 600, QImage.Format.Format_RGB32)
+    painter = QPainter(image)
+    gradient = QLinearGradient(0, 0, 600, 600)
+    gradient.setColorAt(0.0, QColor("#1b2a6b"))
+    gradient.setColorAt(1.0, QColor("#d9468f"))
+    painter.fillRect(image.rect(), gradient)
+    painter.setPen(QColor("white"))
+    font = QFont()
+    font.setPixelSize(64)
+    font.setBold(True)
+    painter.setFont(font)
+    painter.drawText(image.rect(), Qt.AlignmentFlag.AlignCenter, "KALIMBA\nSTOMP")
+    painter.end()
+    if not image.save(str(path)):
+        raise RuntimeError("could not write the demo cover")
+
+
+def _capture_library_tools(app: QApplication, window: MainWindow, seed_path: str) -> None:
+    """Music Library tools added in issues #256-#261 and #279: cover art, statistics,
+    smart playlist rules, file renaming and the change history -- all on
+    the synthetic demo library."""
+    view = window.music_library_view
+    view.side_tabs.setCurrentIndex(0)
+
+    # A tag write, logged in the change history below.
+    dust = next(row for row in view.table_model.rows() if row.title == "Dust Road")
+    view.table.clearSelection()
+    view.select_path(dust.path)
+    view.field_edits["genre"].setText("Tribe")
+    view.apply_track_edits()
+
+    # Cover art (issue #256): a generated picture set on the seed track.
+    view.table.clearSelection()
+    view.select_path(seed_path)
+    with tempfile.TemporaryDirectory() as temp:
+        cover = Path(temp) / "demo-cover.png"
+        _demo_cover(cover)
+        if not view.set_cover_from_file(str(cover)):
+            raise RuntimeError("the demo cover was not written")
+    app.processEvents()
+    _save(window, "music-library-cover.png")
+
+    # Statistics (issue #258).
+    view.show_statistics()
+    if view.stats_dialog is None:
+        raise RuntimeError("the statistics window did not open")
+    view.stats_dialog.resize(900, 600)
+    app.processEvents()
+    _save(view.stats_dialog, "music-library-statistics.png")
+    view.stats_dialog.close()
+
+    # Smart playlist rules (issue #259).
+    rules = smart_playlist.SmartRules(
+        category="Tek", bpm_min=170, bpm_max=180, camelot_key="8A", key_compatible=True, limit=40
+    )
+    dialog = SmartPlaylistDialog("Tek peak time", rules, view.db.has_play_stats(), view)
+    # English number format whatever the capturing machine's locale, to
+    # match the English interface ("170.0", not "170,0").
+    dialog.setLocale(QLocale(QLocale.Language.English, QLocale.Country.UnitedStates))
+    dialog.show()
+    app.processEvents()
+    _save(dialog, "music-library-smart-playlist.png")
+    dialog.close()
+    view.create_smart_playlist(dialog.name(), dialog.rules())
+
+    # Rename files (issue #260): the preview for the Tek folder; only the
+    # tracks later captures don't use are actually renamed.
+    tek = [row.path for row in view.table_model.rows() if "/Tek/" in row.path]
+    dialog = RenameFilesDialog(
+        lambda text: rename.plan_from_db(view.db, tek, text), "{camelot} - {bpm} - {artist} - {title}", view
+    )
+    dialog.resize(1000, 460)
+    dialog.show()
+    app.processEvents()
+    _save(dialog, "music-library-rename.png")
+    pairs = [(old, new) for old, new in dialog.renames() if old != seed_path]
+    dialog.close()
+    view.rename_files(pairs)
+
+    # Change history (issues #261/#279): the tag write, cover and renames above.
+    history = view.show_change_history()
+    history.resize(1100, 560)
+    app.processEvents()
+    _save(history, "music-library-change-history.png")
+    history.close()
+    view.side_tabs.setCurrentIndex(0)
 
 
 def _capture_preferences_sync(app: QApplication) -> None:
