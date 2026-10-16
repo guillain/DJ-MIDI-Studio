@@ -58,7 +58,9 @@ The emulator remembers state the way the hardware does:
   `HOT CUE` / `BEAT LOOP` / `SLIP LOOP` / `BEAT JUMP`) and the next pad
   clicks use that mode's bank.
 - **SHIFT**: click SHIFT to latch it (it stays lit); pads and buttons then
-  resolve to their shifted function. Click again to release.
+  resolve to their shifted function. Click again to release. A pad mode
+  whose own name contains "SHIFT" (the KEY SHIFT mode of the DDJ-1000,
+  DDJ-FLX10 and DDJ-800) is a normal mode, not the SHIFT layer.
 - **One-of-many selections** (for example the auto-loop length slots on a
   deck): selecting one lights it and turns the previous one off.
 
