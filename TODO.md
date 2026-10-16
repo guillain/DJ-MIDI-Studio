@@ -132,6 +132,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Emulator KEY SHIFT fix** (`v0.48.108-emulator-key-shift`, issue #288) — `layout.pick_default_variant`
+  used a plain "shift" text match, so on DDJ-1000 / DDJ-FLX10 / DDJ-800 the Controller Emulator with SHIFT
+  latched picked a plain KEY SHIFT pad-mode variant as the SHIFT one. The bank-aware rule from #280 moved
+  from `cheat_sheet` to `gui/layout.py` (`is_shift_variant` / `is_plain_variant`), shared by the emulator,
+  live send, the cheat sheet and Layer Map; regression tests on the real catalog entries.
 - [x] **Small-window audit** (`v0.48.107-small-window-audit`, issue #282) — every window of the
   v0.48.90–v0.48.103 batch grabbed offscreen at its default and minimum size (Stage Mode and the Music
   Library at 1280x820 / 1000x650 / 900x600). Found: default sizes up to 1100x640 opened past a 1000x650
