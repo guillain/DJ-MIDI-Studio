@@ -107,7 +107,7 @@ from djmidi.gui.set_preparation import (
     SetPreparationPanel,
     encode_paths,
 )
-from djmidi.gui.window_size import keep_wrapped_text_visible
+from djmidi.gui.window_size import keep_tab_titles_whole, keep_wrapped_text_visible
 from djmidi.library import (
     change_log,
     discard,
@@ -959,7 +959,8 @@ class MusicLibraryView(QWidget):
         self.side_tabs.addTab(_scrolled(self.set_panel), "Set")
         # Five tabs overflow the side panel's width: grow it instead of
         # showing squeezed scroll arrows (the tab itself scrolls, issue #19).
-        self.side_tabs.setUsesScrollButtons(False)
+        # macOS also elided the titles to "Tr…" / "Hi…" (issue #290).
+        keep_tab_titles_whole(self.side_tabs, scroll=False)
         body.addWidget(self.side_tabs)
         body.setStretchFactor(0, 3)
         body.setStretchFactor(1, 2)

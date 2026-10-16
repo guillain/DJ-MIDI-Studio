@@ -320,11 +320,11 @@ Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-m
     </message>
     <message>
         <source>Controller Setup</source>
-        <translation>Configuration du contrôleur</translation>
+        <translation>Config. contrôleur</translation>
     </message>
     <message>
         <source>Controller Images</source>
-        <translation>Images du contrôleur</translation>
+        <translation>Images contrôleur</translation>
     </message>
     <message>
         <source>By Channel</source>
@@ -340,7 +340,7 @@ Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-m
     </message>
     <message>
         <source>Music Library</source>
-        <translation>Bibliothèque musicale</translation>
+        <translation>Bibliothèque</translation>
     </message>
     <message>
         <source>&amp;File</source>
@@ -1288,7 +1288,7 @@ Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-m
     </message>
     <message>
         <source>Start recording a sync set when this wizard closes</source>
-        <translation>Commencer l&apos;enregistrement d&apos;un jeu de synchronisation à la fermeture de l&apos;assistant</translation>
+        <translation>Enregistrer un jeu de synchronisation en fermant l&apos;assistant</translation>
     </message>
     <message>
         <source>When recording starts, press the controls to send at initialization, then click &lt;b&gt;■ Stop&lt;/b&gt; next to &lt;b&gt;⟳ Sync&lt;/b&gt; in the top-right corner. You can do this any time later with &lt;b&gt;● Rec&lt;/b&gt;.</source>
