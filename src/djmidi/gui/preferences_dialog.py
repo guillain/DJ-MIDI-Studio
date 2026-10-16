@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import dataclasses
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QCheckBox,
@@ -121,10 +121,16 @@ class PreferencesDialog(QDialog):
         )
         self._check_for_updates = check_for_updates
         workspace_row = QWidget()
-        workspace_layout = QHBoxLayout(workspace_row)
-        workspace_layout.setContentsMargins(0, 0, 0, 0)
-        workspace_label = QLabel(str(user_paths.workspace_dir()))
-        workspace_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        workspace_rows = QVBoxLayout(workspace_row)
+        workspace_rows.setContentsMargins(0, 0, 0, 0)
+        workspace_layout = QHBoxLayout()
+        # A read-only field on its own line, buttons below: as a label beside
+        # the buttons, a long path set the dialog's minimum width (1118 px in
+        # English, 1243 in French, past a 1000 px screen; issue #290).
+        workspace_label = QLineEdit(str(user_paths.workspace_dir()))
+        workspace_label.setReadOnly(True)
+        workspace_label.setObjectName("workspacePath")
+        workspace_label.setCursorPosition(0)
         workspace_label.setToolTip(
             self.tr(
                 "Your controller profiles, sync sets, Controller Setup drafts, saved logs and exports. "
@@ -133,7 +139,8 @@ class PreferencesDialog(QDialog):
         )
         open_workspace = QPushButton(self.tr("Open folder"))
         open_workspace.clicked.connect(lambda: reveal_in_file_manager(user_paths.ensure_workspace()))
-        workspace_layout.addWidget(workspace_label, 1)
+        workspace_rows.addWidget(workspace_label)
+        workspace_rows.addLayout(workspace_layout)
         workspace_layout.addWidget(open_workspace)
         backup_workspace = QPushButton(self.tr("Back up..."))
         backup_workspace.setToolTip(self.tr("Save your files and preferences in one zip (File → Back Up Workspace)."))
@@ -143,6 +150,7 @@ class PreferencesDialog(QDialog):
         restore_workspace.clicked.connect(self.restoreRequested.emit)
         workspace_layout.addWidget(backup_workspace)
         workspace_layout.addWidget(restore_workspace)
+        workspace_layout.addStretch(1)
         self._backup_button = backup_workspace
         self._restore_button = restore_workspace
         theme = QComboBox()

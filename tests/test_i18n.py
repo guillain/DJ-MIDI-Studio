@@ -144,7 +144,7 @@ def test_compiled_catalogue_translates_menus():
     translator = QTranslator()
     assert translator.load(str(i18n.translation_file("fr")))
     assert translator.translate("MainWindow", "&File") == "&Fichier"
-    assert translator.translate("MainWindow", "Music Library") == "Bibliothèque musicale"
+    assert translator.translate("MainWindow", "Music Library") == "Bibliothèque"
     assert translator.translate("PreferencesDialog", "Language:") == "Langue :"
 
 

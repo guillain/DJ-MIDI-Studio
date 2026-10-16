@@ -137,6 +137,7 @@ from djmidi.gui.tree_model import (
     relabel_item,
 )
 from djmidi.gui.update_notice import UpdateChecker
+from djmidi.gui.window_size import keep_tab_titles_whole
 from djmidi.integration_detection import (
     detect_controller_ports,
     detect_software_mapping,
@@ -486,6 +487,9 @@ class MainWindow(QMainWindow):
             "controller": self.left_tabs.addTab(controller_pair, self.tr("By Controller")),
             "library": self.left_tabs.addTab(self.music_library_view, self.tr("Music Library")),
         }
+        # Whole titles and scroll arrows on a narrow window, rather than three
+        # indistinguishable "Pa…" tabs in French on macOS (issue #290).
+        keep_tab_titles_whole(self.left_tabs)
         self.edit_panel = EditPanel(
             self.undo_stack,
             self._on_command_applied,

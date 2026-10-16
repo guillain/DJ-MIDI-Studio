@@ -128,11 +128,13 @@ class MidiLatencyDialog(QDialog):
         form = QFormLayout()
         form.addRow(self.tr("Send to (output)"), output_row)
         form.addRow(self.tr("Listen on (input)"), self.input_combo)
-        form.addRow(self.tr("Pings"), self.count_spin)
-        form.addRow(self.tr("Channel"), self.channel_spin)
-        form.addRow(self.tr("Note"), self.note_spin)
-        form.addRow(self.tr("Interval"), self.interval_spin)
-        form.addRow(self.tr("Timeout"), self.timeout_spin)
+        # Paired on rows: one spin box per row needed 617 px of height on
+        # macOS, more than a 900x600 screen (issue #290).
+        form.addRow(
+            self.tr("Pings"),
+            self._pair(self.count_spin, (self.tr("Channel"), self.channel_spin), (self.tr("Note"), self.note_spin)),
+        )
+        form.addRow(self.tr("Interval"), self._pair(self.interval_spin, (self.tr("Timeout"), self.timeout_spin)))
         form.addRow("", self.match_velocity_check)
 
         self.summary_label = QLabel(self.tr("Not run yet."))
@@ -171,6 +173,22 @@ class MidiLatencyDialog(QDialog):
         if suffix:
             spin.setSuffix(suffix)
         return spin
+
+    @staticmethod
+    def _pair(first: QWidget, *labelled: tuple[str, QWidget]) -> QWidget:
+        """``first`` followed by more labelled fields on the same form row."""
+        row = QWidget()
+        layout = QHBoxLayout(row)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(first)
+        for text, field in labelled:
+            label = QLabel(text)
+            label.setBuddy(field)
+            layout.addSpacing(8)
+            layout.addWidget(label)
+            layout.addWidget(field)
+        layout.addStretch(1)
+        return row
 
     @property
     def running(self) -> bool:

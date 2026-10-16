@@ -20,15 +20,20 @@ the v0.48.90–v0.48.103 batch:
   re-derives the minimum height at the minimum width whenever the layout
   changes.
 
+* On macOS a tab bar too narrow for its titles cuts every title to a
+  few letters ("Pa…", "Pa…", "DD…"), so the tabs can't be told apart —
+  the French labels made it common (issue #290). `keep_tab_titles_whole`
+  keeps the titles whole and scrolls the tab bar instead.
+
 `fit_size` is the Qt-free arithmetic, kept separate so it is testable on
 plain numbers.
 """
 
 from __future__ import annotations
 
-from PySide6.QtCore import QEvent, QObject
+from PySide6.QtCore import QEvent, QObject, Qt
 from PySide6.QtGui import QGuiApplication
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import QTabWidget, QWidget
 
 # Share of the available screen a window may take by default, the same
 # margins `MainWindow._default_window_size` keeps for its title bar/edges.
@@ -125,10 +130,19 @@ def keep_wrapped_text_visible(window: QWidget) -> None:
     keeper.apply()
 
 
+def keep_tab_titles_whole(tabs: QTabWidget, *, scroll: bool = True) -> None:
+    """Never elide ``tabs``' titles; with ``scroll`` the tab bar shows
+    scroll arrows when the titles don't fit, else the tab widget asks for
+    their full width (inside a scroll area, which then scrolls)."""
+    tabs.setElideMode(Qt.TextElideMode.ElideNone)
+    tabs.setUsesScrollButtons(scroll)
+
+
 __all__ = [
     "available_size",
     "fit_size",
     "fit_to_screen",
+    "keep_tab_titles_whole",
     "keep_wrapped_text_visible",
     "usable_minimum",
     "wrapped_minimum",
