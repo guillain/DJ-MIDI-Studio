@@ -140,7 +140,8 @@ including the ones you disabled in Preferences.
 ## Preferences
 
 The **⚙** button at the top right of the menu bar opens Preferences (the
-**⟳ Sync** button beside it runs [Controller Sync](controller-sync.md)).
+**⟳ Sync** button beside it runs [Controller Sync](controller-sync.md), and
+**● Rec** records what it sends).
 
 | Tab | Settings |
 | --- | --- |

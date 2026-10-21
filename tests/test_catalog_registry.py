@@ -239,6 +239,16 @@ def test_disabled_controller_is_removed_from_active_lookup_and_detection():
         catalog.set_enabled_plugin_ids(None)
 
 
+def test_detect_controller_include_disabled_still_ranks_switched_off_plugins():
+    catalog.set_enabled_plugin_ids({"pioneer.ddj-xp2"})
+    try:
+        assert catalog.detect_controller("Numark Mixtrack Pro FX") == []
+        matches = catalog.detect_controller("Numark Mixtrack Pro FX", include_disabled=True)
+        assert [(m.controller.name, m.score) for m in matches] == [("Numark Mixtrack Pro FX", 100)]
+    finally:
+        catalog.set_enabled_plugin_ids(None)
+
+
 def test_builtin_controller_plugins_are_discovered_without_central_import_list():
     catalog.discover_plugins()
     assert set(catalog.CONTROLLER_NAMES) >= {"DDJ-XP2", "XDJ-XZ", "DDJ-1000"}

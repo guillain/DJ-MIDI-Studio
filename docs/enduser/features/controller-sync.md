@@ -35,7 +35,11 @@ The quickest way is the **`● Rec`** button at the top right of the menu bar:
    number of controllers.
 3. Click **`■ Stop`**. One set is saved per controller that sent something,
    named after the controller recognized from its port (or the port name
-   itself for an unknown device).
+   itself for an unknown device — a port that only carries a maker's name,
+   such as "Pioneer DJ …", isn't taken for one of that maker's controllers).
+   A second identical unit gets its own set, named after its port. Inputs
+   that couldn't be opened (in use by another program) are listed in the
+   status bar.
 
 To record a single controller under a name you choose instead:
 
@@ -49,7 +53,8 @@ To record a single controller under a name you choose instead:
 Both save into the active [scene](#scenes-several-sets-per-controller)
 (`Default` unless you picked another). There is one set per controller and
 scene; saving again for the same controller in the same scene asks before
-replacing the existing set.
+replacing the existing set. `● Rec` asks once for every set it would
+replace: **No** keeps them, and still saves the controllers that had none.
 
 Pad colours chosen in the [Controller Emulator](controller-emulator.md#pad-colours)
 are added to the same set instead of replacing it (only for controllers whose
@@ -120,7 +125,10 @@ recorded before scenes existed are your `Default` scene.
 2. Otherwise, an output port whose name contains the recorded port name or
    the controller name, ignoring case and punctuation (`DDJ-XP2` matches
    `PIONEER DDJ-XP2`).
-3. Otherwise the controller is skipped and reported. The other controllers
+3. Otherwise, for a controller the app knows, the one connected output port
+   recognized as that controller — Windows renumbers ports as devices come
+   and go (`CMD Micro 0` recorded, `CMD Micro 2` now).
+4. Otherwise the controller is skipped and reported. The other controllers
    are still synced.
 
 ## Manage sync sets

@@ -111,7 +111,7 @@ class LiveMonitorView(QWidget):
         self._sync_button = QPushButton("Sync controllers")
         self._sync_button.setToolTip(
             "Send each controller its recorded initialization set "
-            "(recorded in Controller Setup, listed in Preferences → Controller sync)."
+            "(recorded with ● Rec or in Controller Setup, listed in Preferences → Controller sync)."
         )
         self._sync_button.clicked.connect(self.syncRequested)
 

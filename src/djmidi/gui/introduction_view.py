@@ -333,7 +333,7 @@ class IntroductionView(QWidget):
         self._files_sync_label.setText(
             f"<b>Sync sets:</b> {', '.join(names)}"
             if names
-            else "<b>Sync sets:</b> none — record one in Controller Setup"
+            else "<b>Sync sets:</b> none — record one with ● Rec or in Controller Setup"
         )
         self._files_buttons["reveal"].setEnabled(mapping is not None)
         self._files_buttons["restore"].setEnabled(backup is not None)
