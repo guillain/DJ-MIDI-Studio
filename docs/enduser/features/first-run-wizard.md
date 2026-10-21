@@ -28,6 +28,8 @@ The wizard lists the connected MIDI controllers it recognizes from their
 port names, with the ports each one uses. Select the one to show on the
 Dashboard; every recognized controller stays available in the other tabs.
 
+![First-run setup: two recognized controllers and an unrecognized IAC bus](../../images/layout/first-run-controllers.png)
+
 Plugged a controller in after opening the wizard? Click **Rescan**. A port
 no controller profile recognizes is listed too: build a profile for it in
 [Controller Setup](controller-setup.md) by pressing its buttons.
@@ -39,6 +41,8 @@ and lists the mappings it finds there, newest first, with the newest one
 selected. Pick one to open it in the [mapping editor](mapping-editor.md), or
 pick **Don't open a mapping now**. With no mapping found, use `File → Open`
 later to open one from anywhere.
+
+![First-run setup: the Serato mappings found, newest selected](../../images/layout/first-run-mapping.png)
 
 ## Controller sync set
 

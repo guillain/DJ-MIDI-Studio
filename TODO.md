@@ -140,6 +140,18 @@ Implemented contract, runtime, test, and documentation work:
   cut to "Tr…" / "Hi…"; wizard sync checkbox clipped in French; Layer Map minimum 963 px wide in French; MIDI
   Latency Test minimum 617 px tall (both languages); Preferences minimum 1118 / 1243 px wide because of the
   workspace path. French regression tests added to `tests/test_small_windows.py`.
+- [x] **Doc screenshots for the v0.48.90–v0.48.107 features** (docs-only, no tag, issue #289) —
+  `scripts/capture_docs_screenshots.py` now also captures First-run setup (both list pages, demo port
+  names + copies of the fixture in a throwaway `/tmp` home), Layer Map, Ready for live, MIDI Latency Test
+  (a simulated in-process loopback, illustrative timings), the command palette, the Music Library's
+  cover art / statistics / smart-playlist rules / rename preview / change history (on the synthetic demo
+  library), and Interface language (French Dashboard + a Preferences crop that stops above the
+  path rows). Stage Mode already had its screenshot. Each PNG checked by eye before being linked.
+- [x] **Emulator KEY SHIFT fix** (`v0.48.108-emulator-key-shift`, issue #288) — `layout.pick_default_variant`
+  used a plain "shift" text match, so on DDJ-1000 / DDJ-FLX10 / DDJ-800 the Controller Emulator with SHIFT
+  latched picked a plain KEY SHIFT pad-mode variant as the SHIFT one. The bank-aware rule from #280 moved
+  from `cheat_sheet` to `gui/layout.py` (`is_shift_variant` / `is_plain_variant`), shared by the emulator,
+  live send, the cheat sheet and Layer Map; regression tests on the real catalog entries.
 - [x] **Small-window audit** (`v0.48.107-small-window-audit`, issue #282) — every window of the
   v0.48.90–v0.48.103 batch grabbed offscreen at its default and minimum size (Stage Mode and the Music
   Library at 1280x820 / 1000x650 / 900x600). Found: default sizes up to 1100x640 opened past a 1000x650

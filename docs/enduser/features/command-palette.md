@@ -20,6 +20,8 @@
 **View → Command Palette**. With nothing typed yet it lists every menu
 action and tab, in menu order, so you can also browse it.
 
+![Command palette: "save" finds the File menu's save actions, with their shortcut](../../images/layout/command-palette.png)
+
 ## What it finds
 
 | Kind | Examples | Enter does |

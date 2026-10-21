@@ -27,6 +27,8 @@ Click `Save`, then quit and restart DJ MIDI Studio: the language is applied
 when the app starts. Language names are always written in their own
 language, so you can find yours even when you can't read the current one.
 
+![Preferences, General tab, in French with Français selected](../../images/layout/interface-language-preferences.png)
+
 ## What is translated
 
 This first version translates what you use most:
@@ -46,6 +48,8 @@ This first version translates what you use most:
   file-renaming and change-history buttons, and the windows they open;
 - Qt's own standard buttons and dialogs (`OK`, `Annuler`, `Enregistrer`,
   file pickers).
+
+![The Dashboard in French: menus, tabs, Rec/Sync translated; the tab's content still in English](../../images/layout/interface-language-fr.png)
 
 ## What stays in English
 
