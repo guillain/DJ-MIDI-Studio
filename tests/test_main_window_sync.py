@@ -108,6 +108,26 @@ def test_record_button_saves_one_sync_set_per_recognized_controller(tmp_path, mo
     assert window._record_button.text() == "● Rec"
 
 
+def test_record_collapses_cc_traffic_and_says_how_much(tmp_path, monkeypatch):
+    from djmidi.midi_io import MidiEvent
+
+    window = _window(tmp_path)
+    fader = [MidiEvent("in", "1", "Control Change", "19", str(value), 0.0, "PIONEER DDJ-XP2") for value in range(50)]
+    window._record_monitor = _FakeMonitor([_event("PIONEER DDJ-XP2", 11), *fader, _event("PIONEER DDJ-XP2", 12)])
+    monkeypatch.setattr(main_window_module, "list_input_ports", lambda: ["PIONEER DDJ-XP2"])
+
+    window._record_button.click()
+    window._record_button.click()
+
+    xp2 = PluginPreferences.load(window.preferences_path).sync_set_for("DDJ-XP2")
+    assert [(m.event_type, m.data1, m.data2) for m in xp2.messages] == [
+        ("Note On", 11, 127),
+        ("Control Change", 19, 49),
+        ("Note On", 12, 127),
+    ]
+    assert "49 CC message(s) collapsed" in window.statusBar().currentMessage()
+
+
 def test_record_asks_before_replacing_and_keeps_old_set_on_no(tmp_path, monkeypatch):
     window = _window(tmp_path)
     old = ControllerSyncSet("DDJ-XP2", "", (SyncMessage("Note On", 1, 1, 127),))

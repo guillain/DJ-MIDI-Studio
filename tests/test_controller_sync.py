@@ -360,3 +360,55 @@ def test_sync_sets_from_recording_keeps_one_set_per_port_when_ports_name_the_sam
         ("DDJ-XP2 1", "DDJ-XP2 1", [12]),
         ("DDJ-XP2 (2)", "DDJ-XP2", [13]),
     ]
+
+
+def test_collapse_control_changes_keeps_last_value_at_last_position():
+    from djmidi.controller_sync import collapse_control_changes
+
+    messages = (
+        SyncMessage("Control Change", 1, 7, 10),
+        SyncMessage("Note On", 1, 11, 127),
+        SyncMessage("Control Change", 1, 7, 20),
+        SyncMessage("Control Change", 2, 7, 5),  # another channel: its own CC
+        SyncMessage("Note On", 1, 12, 127),
+        SyncMessage("Control Change", 1, 7, 30),
+        SyncMessage("Note Off", 1, 11, 0),
+    )
+    kept, dropped = collapse_control_changes(messages)
+    assert kept == (
+        SyncMessage("Note On", 1, 11, 127),
+        SyncMessage("Control Change", 2, 7, 5),
+        SyncMessage("Note On", 1, 12, 127),
+        SyncMessage("Control Change", 1, 7, 30),
+        SyncMessage("Note Off", 1, 11, 0),
+    )
+    assert dropped == 2
+
+
+def test_collapse_control_changes_keeps_repeated_notes():
+    from djmidi.controller_sync import collapse_control_changes
+
+    messages = (SyncMessage("Note On", 1, 11, 127),) * 3
+    assert collapse_control_changes(messages) == (messages, 0)
+
+
+def test_sync_sets_from_recording_collapses_a_moved_fader():
+    from djmidi.controller_sync import recorded_sync_sets, sync_sets_from_recording
+
+    events = [_event("Note On", data1="11")]
+    events += [_event("Control Change", data1="19", data2=str(value)) for value in range(128)]
+    events.append(_event("Note On", data1="12"))
+    sets = sync_sets_from_recording(events, lambda port: "DDJ-XP2")
+    assert [(m.event_type, m.data1, m.data2) for m in sets[0].messages] == [
+        ("Note On", 11, 127),
+        ("Control Change", 19, 127),
+        ("Note On", 12, 127),
+    ]
+    _sets, collapsed = recorded_sync_sets(events, lambda port: "DDJ-XP2")
+    assert collapsed == {"PIONEER DDJ-XP2": 127}
+
+
+def test_sync_set_from_events_does_not_collapse_control_changes():
+    # Controller Setup shows every recorded row for review before saving.
+    events = [_event("Control Change", data1="19", data2=str(value)) for value in range(3)]
+    assert len(sync_set_from_events("DDJ-XP2", events).messages) == 3

@@ -214,6 +214,57 @@ def sync_set_from_events(controller: str, events: Iterable[object], output_port:
     return ControllerSyncSet(controller.strip(), output_port or first_port, tuple(messages))
 
 
+def collapse_control_changes(messages: Iterable[SyncMessage]) -> tuple[tuple[SyncMessage, ...], int]:
+    """Keeps only the last value of each ``(channel, CC number)``, at the
+    position of that CC's last occurrence; notes are kept as recorded.
+
+    A fader, knob or jog moved while recording sends hundreds of Control
+    Change messages, and a sync set is replayed at every launch: only the
+    final position matters. Keeping it where the CC last occurred keeps the
+    final state's order relative to the notes. Returns the collapsed
+    messages and how many CC messages were dropped."""
+    items = list(messages)
+    last_index: dict[tuple[int, int], int] = {}
+    for index, message in enumerate(items):
+        if message.event_type == "Control Change":
+            last_index[(message.channel, message.data1)] = index
+    kept = tuple(
+        message
+        for index, message in enumerate(items)
+        if message.event_type != "Control Change" or last_index[(message.channel, message.data1)] == index
+    )
+    return kept, len(items) - len(kept)
+
+
+def recorded_sync_sets(
+    events: Iterable[object], controller_for_port: Callable[[str], str] | None = None
+) -> tuple[list[ControllerSyncSet], dict[str, int]]:
+    """:func:`sync_sets_from_recording`, plus how many Control Change
+    messages :func:`collapse_control_changes` dropped, keyed by each set's
+    ``output_port`` (the recorded port)."""
+    by_port: dict[str, list[object]] = {}
+    for event in events:
+        if getattr(event, "direction", "in") != "in":
+            continue
+        by_port.setdefault(str(getattr(event, "port", "") or ""), []).append(event)
+    sync_sets: list[ControllerSyncSet] = []
+    collapsed: dict[str, int] = {}
+    taken: set[str] = set()
+    for port, port_events in by_port.items():
+        if not port.strip():
+            continue
+        controller = ((controller_for_port(port) if controller_for_port else "") or port).strip()
+        if controller in taken:
+            controller = _unique_name(port.strip(), taken)
+        sync_set = sync_set_from_events(controller, port_events, output_port=port)
+        if sync_set.messages:
+            messages, dropped = collapse_control_changes(sync_set.messages)
+            taken.add(sync_set.controller)
+            sync_sets.append(sync_set.with_messages(messages))
+            collapsed[port] = dropped
+    return sync_sets, collapsed
+
+
 def sync_sets_from_recording(
     events: Iterable[object], controller_for_port: Callable[[str], str] | None = None
 ) -> list[ControllerSyncSet]:
@@ -228,25 +279,13 @@ def sync_sets_from_recording(
     Sets are stored one per controller name, so a port whose controller is
     already named by an earlier port (two identical units, say) gets its own
     port's name instead -- otherwise saving would keep only the last port's
-    recording."""
-    by_port: dict[str, list[object]] = {}
-    for event in events:
-        if getattr(event, "direction", "in") != "in":
-            continue
-        by_port.setdefault(str(getattr(event, "port", "") or ""), []).append(event)
-    sync_sets: list[ControllerSyncSet] = []
-    taken: set[str] = set()
-    for port, port_events in by_port.items():
-        if not port.strip():
-            continue
-        controller = ((controller_for_port(port) if controller_for_port else "") or port).strip()
-        if controller in taken:
-            controller = _unique_name(port.strip(), taken)
-        sync_set = sync_set_from_events(controller, port_events, output_port=port)
-        if sync_set.messages:
-            taken.add(sync_set.controller)
-            sync_sets.append(sync_set)
-    return sync_sets
+    recording.
+
+    Control Change traffic is collapsed (:func:`collapse_control_changes`):
+    a fader moved while recording keeps only its final value. Controller
+    Setup's :func:`sync_set_from_events` doesn't collapse -- there the user
+    sees and edits every recorded row before saving."""
+    return recorded_sync_sets(events, controller_for_port)[0]
 
 
 def _unique_name(name: str, taken: set[str]) -> str:
@@ -397,9 +436,11 @@ __all__ = [
     "PlugInSyncTracker",
     "SyncMessage",
     "SyncResult",
+    "collapse_control_changes",
     "messages_from_rows",
     "move_message",
     "normalize_scene",
+    "recorded_sync_sets",
     "resolve_output_port",
     "run_sync",
     "scene_names",
