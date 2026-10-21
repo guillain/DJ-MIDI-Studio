@@ -118,6 +118,81 @@ def test_run_sync_failing_port_does_not_stop_other_controllers():
     assert results[1].ok and results[1].sent == 1
 
 
+class _FakeOutput:
+    """Stands in for a ``mido`` output port, counting opens and closes."""
+
+    def __init__(self, name, log, fail_on=None):
+        self.name = name
+        self.log = log
+        self.fail_on = fail_on
+
+    def __enter__(self):
+        if self.name == self.fail_on:
+            raise OSError("port vanished")
+        self.log.append(("open", self.name))
+        return self
+
+    def __exit__(self, *exc):
+        self.log.append(("close", self.name))
+        return False
+
+    def send(self, message):
+        self.log.append(("send", self.name, message.type))
+
+
+def test_run_sync_opens_each_port_once_per_set(monkeypatch):
+    """Issue #297: a set's messages share one open port, not one open each."""
+    log = []
+    monkeypatch.setattr("djmidi.midi_io.mido.open_output", lambda name: _FakeOutput(name, log))
+    messages = tuple(SyncMessage("Note On", 1, n, 127) for n in range(5))
+    sets = [ControllerSyncSet("DDJ-XP2", "A", messages), ControllerSyncSet("XDJ-XZ", "B", messages[:2])]
+    results = run_sync(sets, ["A", "B"])
+    assert [r.sent for r in results] == [5, 2] and all(r.ok for r in results)
+    assert [entry for entry in log if entry[0] != "send"] == [
+        ("open", "A"),
+        ("close", "A"),
+        ("open", "B"),
+        ("close", "B"),
+    ]
+    assert log.count(("send", "A", "note_on")) == 5
+    assert log.count(("send", "B", "note_on")) == 2
+
+
+def test_run_sync_port_that_fails_to_open_does_not_stop_other_sets(monkeypatch):
+    log = []
+    monkeypatch.setattr("djmidi.midi_io.mido.open_output", lambda name: _FakeOutput(name, log, fail_on="A"))
+    sets = [
+        ControllerSyncSet("DDJ-XP2", "A", (SyncMessage("Note On", 1, 11, 127),)),
+        ControllerSyncSet("XDJ-XZ", "B", (SyncMessage("Note On", 1, 0, 127),)),
+    ]
+    results = run_sync(sets, ["A", "B"])
+    assert not results[0].ok and results[0].sent == 0 and "port vanished" in results[0].error
+    assert results[1].ok and results[1].sent == 1
+    assert log == [("open", "B"), ("send", "B", "note_on"), ("close", "B")]
+
+
+def test_run_sync_injected_port_opener_is_entered_once_per_set():
+    opened = []
+    sent = []
+
+    class _Opener:
+        def __init__(self, port):
+            opened.append(port)
+            self.port = port
+
+        def __enter__(self):
+            return lambda **kw: sent.append((self.port, kw["data1"]))
+
+        def __exit__(self, *exc):
+            return False
+
+    messages = (SyncMessage("Note On", 1, 1, 127), SyncMessage("Note On", 1, 2, 127))
+    results = run_sync([ControllerSyncSet("DDJ-XP2", "A", messages)], ["A"], port_opener=_Opener)
+    assert opened == ["A"]
+    assert sent == [("A", 1), ("A", 2)]
+    assert results[0].ok and results[0].sent == 2
+
+
 def test_summarize_with_no_sets():
     assert summarize_results([]) == "No controller sync set recorded"
 

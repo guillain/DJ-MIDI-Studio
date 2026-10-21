@@ -40,7 +40,13 @@ The quickest way is the **`● Rec`** button at the top right of the menu bar:
    "Pioneer DJ …" — is ignored and listed in the status bar, so it is never
    replayed at launch. A second identical unit gets its own set, named after
    its port. Inputs that couldn't be opened (in use by another program) are
-   listed in the status bar too.
+   listed in the status bar too. Controllers the Live Monitor is already
+   listening to are recorded through it, without opening them a second time
+   (Windows lets only one program at a time open a MIDI input).
+
+While `● Rec` records, controller-bound [macros](midi-macros.md) don't play
+and a pending MIDI Learn doesn't take the press: every press goes to the
+recording only. Both work again after `■ Stop`.
 
 A fader, knob or jog moved while recording sends hundreds of messages; only
 its final position is kept, at the point where you last moved it, so the
@@ -78,7 +84,8 @@ Preferences button), or **`Sync controllers`** in the
 [Live Monitor](live-monitor.md).
 
 Each set is sent in recorded order, immediately (the pauses from the
-recording are dropped). The status bar shows how many controllers were
+recording are dropped), through one connection to its output port that
+stays open for the whole set. The status bar shows how many controllers were
 synced and which ones were not connected.
 
 ## Sync at launch
