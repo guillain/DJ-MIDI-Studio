@@ -1697,8 +1697,19 @@ class MainWindow(QMainWindow):
         scene = self.preferences.active_sync_scene
         recorded = sync_sets_from_recording(self._record_events, self._controller_name_for_port)
         self._record_events = []
+        # Only recognized controllers: a loopback bus (IAC Driver) or another
+        # program's virtual port would otherwise be replayed at every launch.
+        # An unknown device records through Controller Setup instead.
+        ignored = [sync_set.output_port for sync_set in recorded if not self._controller_name_for_port(sync_set.output_port)]
+        recorded = [sync_set for sync_set in recorded if sync_set.output_port not in ignored]
+        if ignored:
+            _LOGGER.info("Record: ignored unrecognized port(s) %s", ignored)
         if not recorded:
-            self.statusBar().showMessage("Recording stopped: no MIDI note/CC received, nothing saved", 10_000)
+            self.statusBar().showMessage(
+                "Recording stopped: no MIDI note/CC received from a recognized controller, nothing saved"
+                + (f" (ignored: {', '.join(ignored)}; use Controller Setup for these)" if ignored else ""),
+                10_000,
+            )
             return []
         sync_sets = [sync_set.in_scene(scene) for sync_set in recorded]
         stored = {
@@ -1727,7 +1738,8 @@ class MainWindow(QMainWindow):
         self._save_preferences()
         self.statusBar().showMessage(
             "Sync set(s) saved: "
-            + ", ".join(f"{sync_set.label} ({len(sync_set.messages)} msg)" for sync_set in sync_sets),
+            + ", ".join(f"{sync_set.label} ({len(sync_set.messages)} msg)" for sync_set in sync_sets)
+            + (f" (ignored unrecognized: {', '.join(ignored)})" if ignored else ""),
             10_000,
         )
         return sync_sets
@@ -2673,6 +2685,27 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(f"'{name}' applied for this session.")
 
     def closeEvent(self, event) -> None:
+        if self._record_button.isChecked():
+            reply = QMessageBox.question(
+                self,
+                "Recording in progress",
+                "A controller sync recording is in progress. Save it before quitting?",
+                QMessageBox.StandardButton.Save
+                | QMessageBox.StandardButton.Discard
+                | QMessageBox.StandardButton.Cancel,
+                QMessageBox.StandardButton.Save,
+            )
+            if reply == QMessageBox.StandardButton.Cancel:
+                event.ignore()
+                return
+            if reply == QMessageBox.StandardButton.Discard:
+                # Stopped below without saving anything.
+                self._record_events = []
+                self._record_button.blockSignals(True)
+                self._record_button.setChecked(False)
+                self._record_button.blockSignals(False)
+            else:
+                self._record_button.setChecked(False)  # stops and saves
         if self._stage_window is not None:
             self._stage_window.close()
         self._record_timer.stop()

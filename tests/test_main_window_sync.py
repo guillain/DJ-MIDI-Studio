@@ -85,7 +85,7 @@ def _event(port, data1, event_type="Note On"):
     return MidiEvent("in", "1", event_type, str(data1), "127", 0.0, port)
 
 
-def test_record_button_saves_one_sync_set_per_controller(tmp_path, monkeypatch):
+def test_record_button_saves_one_sync_set_per_recognized_controller(tmp_path, monkeypatch):
     window = _window(tmp_path)
     monitor = _FakeMonitor([_event("PIONEER DDJ-XP2", 11), _event("Some Unknown Box", 3), _event("PIONEER DDJ-XP2", 12)])
     window._record_monitor = monitor
@@ -100,7 +100,10 @@ def test_record_button_saves_one_sync_set_per_controller(tmp_path, monkeypatch):
     xp2 = stored.sync_set_for("DDJ-XP2")
     assert xp2.output_port == "PIONEER DDJ-XP2"
     assert [message.data1 for message in xp2.messages] == [11, 12]
-    assert stored.sync_set_for("Some Unknown Box").messages[0].data1 == 3
+    # An unrecognized port (a loopback bus, another program) is never saved:
+    # it would be replayed at every launch.
+    assert stored.sync_set_for("Some Unknown Box") is None
+    assert "Some Unknown Box" in window.statusBar().currentMessage()
     assert monitor.opened == []
     assert window._record_button.text() == "● Rec"
 
@@ -402,7 +405,7 @@ def test_record_declining_a_replacement_still_saves_the_other_controllers(tmp_pa
     assert [message.data1 for message in stored.sync_set_for("XDJ-XZ").messages] == [7]
 
 
-def test_record_names_a_set_after_its_port_on_a_manufacturer_only_match(tmp_path, monkeypatch):
+def test_record_ignores_a_port_with_only_a_manufacturer_match(tmp_path, monkeypatch):
     # "Pioneer DJ" is every Pioneer profile's manufacturer: it says who made the
     # device, not that it is the DDJ-XP2, whose set must stay untouched.
     window = _window(tmp_path)
@@ -418,7 +421,7 @@ def test_record_names_a_set_after_its_port_on_a_manufacturer_only_match(tmp_path
 
     assert asked == []
     assert window.preferences.sync_set_for("DDJ-XP2") == xp2
-    assert [m.data1 for m in window.preferences.sync_set_for("Pioneer DJ Mystery Unit").messages] == [5]
+    assert window.preferences.sync_set_for("Pioneer DJ Mystery Unit") is None
 
 
 def test_controller_name_for_port_needs_an_exact_match_and_ignores_plugin_enablement():
@@ -454,10 +457,12 @@ def test_sync_finds_a_controller_whose_port_name_changed(tmp_path, monkeypatch):
     # as devices come and go: a CMD Micro recorded on "CMD Micro 0" now listens
     # on "CMD Micro 2", and "Behringer CMD Micro" isn't in the port name.
     window = _window(tmp_path)
-    window._record_monitor = _FakeMonitor([_event("CMD Micro 0", 5), _event("Some Box 0", 3)])
-    monkeypatch.setattr(main_window_module, "list_input_ports", lambda: ["CMD Micro 0", "Some Box 0"])
+    window._record_monitor = _FakeMonitor([_event("CMD Micro 0", 5)])
+    monkeypatch.setattr(main_window_module, "list_input_ports", lambda: ["CMD Micro 0"])
     window._record_button.click()
     window._record_button.click()
+    # An unknown device's set comes from Controller Setup, never from ● Rec.
+    window.preferences.set_sync_set(ControllerSyncSet("Some Box 0", "Some Box 0", (SyncMessage("Note On", 1, 3, 127),)))
     assert window.preferences.sync_set_for("Behringer CMD Micro").output_port == "CMD Micro 0"  # as recorded
 
     outputs = ["Microsoft GS Wavetable Synth 0", "DDJ-XP2 1", "CMD Micro 2", "Some Box 3"]
@@ -541,3 +546,56 @@ def test_rec_label_change_does_not_squeeze_the_menu_corner(tmp_path, monkeypatch
         assert widget.width() >= widget.minimumSizeHint().width(), widget
     window._record_button.click()
     window.close()
+
+
+def test_record_ignores_a_loopback_bus(tmp_path, monkeypatch):
+    window = _window(tmp_path)
+    window._record_monitor = _FakeMonitor([_event("IAC Driver Bus 1", 7)])
+    monkeypatch.setattr(main_window_module, "list_input_ports", lambda: ["IAC Driver Bus 1"])
+
+    window._record_button.click()
+    window._record_button.click()
+
+    assert window.preferences.controller_sync_sets == []
+    assert "IAC Driver Bus 1" in window.statusBar().currentMessage()
+
+
+def _recording_window(tmp_path, monkeypatch, reply):
+    window = _window(tmp_path)
+    window._record_monitor = _FakeMonitor([_event("PIONEER DDJ-XP2", 11)])
+    monkeypatch.setattr(main_window_module, "list_input_ports", lambda: ["PIONEER DDJ-XP2"])
+    asked = []
+    monkeypatch.setattr(QMessageBox, "question", lambda *args: asked.append(args[1]) or reply)
+    window._record_button.click()
+    assert window._record_button.isChecked()
+    return window, asked
+
+
+def test_quitting_while_recording_asks_and_saves(tmp_path, monkeypatch):
+    window, asked = _recording_window(tmp_path, monkeypatch, QMessageBox.StandardButton.Save)
+
+    assert window.close()
+
+    assert asked == ["Recording in progress"]
+    assert [m.data1 for m in window.preferences.sync_set_for("DDJ-XP2").messages] == [11]
+
+
+def test_quitting_while_recording_can_discard(tmp_path, monkeypatch):
+    window, asked = _recording_window(tmp_path, monkeypatch, QMessageBox.StandardButton.Discard)
+
+    assert window.close()
+
+    assert asked == ["Recording in progress"]
+    assert window.preferences.controller_sync_sets == []
+    assert window._record_monitor.opened == []
+
+
+def test_quitting_while_recording_can_be_cancelled(tmp_path, monkeypatch):
+    window, asked = _recording_window(tmp_path, monkeypatch, QMessageBox.StandardButton.Cancel)
+
+    assert not window.close()
+
+    assert asked == ["Recording in progress"]
+    assert window._record_button.isChecked()
+    window._record_button.click()  # still recording: Stop saves it
+    assert [m.data1 for m in window.preferences.sync_set_for("DDJ-XP2").messages] == [11]
