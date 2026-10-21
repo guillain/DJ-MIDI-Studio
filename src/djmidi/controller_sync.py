@@ -223,21 +223,38 @@ def sync_sets_from_recording(
     behind a port (catalog detection in the GUI); the port name itself is
     used when it returns nothing. The recorded port becomes each set's
     ``output_port``, a controller's input and output ports normally sharing
-    its device name. Ports that produced no note/CC message yield no set."""
+    its device name. Ports that produced no note/CC message yield no set.
+
+    Sets are stored one per controller name, so a port whose controller is
+    already named by an earlier port (two identical units, say) gets its own
+    port's name instead -- otherwise saving would keep only the last port's
+    recording."""
     by_port: dict[str, list[object]] = {}
     for event in events:
         if getattr(event, "direction", "in") != "in":
             continue
         by_port.setdefault(str(getattr(event, "port", "") or ""), []).append(event)
     sync_sets: list[ControllerSyncSet] = []
+    taken: set[str] = set()
     for port, port_events in by_port.items():
-        if not port:
+        if not port.strip():
             continue
-        controller = (controller_for_port(port) if controller_for_port else "") or port
+        controller = ((controller_for_port(port) if controller_for_port else "") or port).strip()
+        if controller in taken:
+            controller = _unique_name(port.strip(), taken)
         sync_set = sync_set_from_events(controller, port_events, output_port=port)
         if sync_set.messages:
+            taken.add(sync_set.controller)
             sync_sets.append(sync_set)
     return sync_sets
+
+
+def _unique_name(name: str, taken: set[str]) -> str:
+    """``name``, or ``"name (2)"``, ``"name (3)"``... if it's already taken."""
+    unique, number = name, 2
+    while unique in taken:
+        unique, number = f"{name} ({number})", number + 1
+    return unique
 
 
 def _squash(text: str) -> str:

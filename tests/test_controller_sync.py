@@ -340,3 +340,23 @@ def test_old_preferences_json_loads_into_the_default_scene():
     assert preferences.active_sync_scene == DEFAULT_SCENE
     # One per (controller, scene): the last one wins.
     assert [(s.key, s.output_port) for s in preferences.controller_sync_sets] == [(("DDJ-XP2", "Default"), "Later")]
+
+
+def test_sync_sets_from_recording_keeps_one_set_per_port_when_ports_name_the_same_controller():
+    from djmidi.controller_sync import sync_sets_from_recording
+    from djmidi.midi_io import MidiEvent
+
+    events = [
+        MidiEvent("in", "1", "Pitch", "0", "0", 0.0, "Silent"),  # no note/CC: takes no name
+        MidiEvent("in", "1", "Note On", "11", "127", 0.0, "DDJ-XP2 0"),
+        MidiEvent("in", "1", "Note On", "12", "127", 0.0, "DDJ-XP2 1"),
+        MidiEvent("in", "1", "Note On", "13", "127", 0.0, "DDJ-XP2"),
+    ]
+    # Sets are stored one per controller name: a second unit keeps its own
+    # recording under its port's name instead of overwriting the first.
+    sets = sync_sets_from_recording(events, lambda port: "DDJ-XP2")
+    assert [(s.controller, s.output_port, [m.data1 for m in s.messages]) for s in sets] == [
+        ("DDJ-XP2", "DDJ-XP2 0", [11]),
+        ("DDJ-XP2 1", "DDJ-XP2 1", [12]),
+        ("DDJ-XP2 (2)", "DDJ-XP2", [13]),
+    ]

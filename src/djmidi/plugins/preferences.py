@@ -200,7 +200,8 @@ class PluginPreferences:
         target.write_text(self.to_json(), encoding="utf-8")
         _LOGGER.info(
             "Saved preferences to %s (detection_policy=%s, routing_enabled=%s, trust_external_plugins=%s, "
-            "log_level=%s, log_path=%s, theme=%s, auto_start_live_monitor=%s, controller_sync_sets=%d)",
+            "log_level=%s, log_path=%s, theme=%s, auto_start_live_monitor=%s, auto_sync_on_startup=%s, "
+            "auto_sync_on_plug_in=%s, controller_sync_sets=%d)",
             target,
             self.detection_policy,
             self.routing_enabled,
@@ -209,6 +210,8 @@ class PluginPreferences:
             self.log_path or "(default)",
             self.theme,
             self.auto_start_live_monitor,
+            self.auto_sync_on_startup,
+            self.auto_sync_on_plug_in,
             len(self.controller_sync_sets),
         )
 

@@ -131,11 +131,15 @@ def active_controller_names() -> list[str]:
     return [definition.name for definition in active_controller_definitions()]
 
 
-def detect_controller(port_name: str) -> list[ControllerMatch]:
-    """Ranks controller plugins using a MIDI port name, without auto-enabling one."""
+def detect_controller(port_name: str, *, include_disabled: bool = False) -> list[ControllerMatch]:
+    """Ranks controller plugins using a MIDI port name, without auto-enabling
+    one. Only enabled plugins are ranked unless ``include_disabled``: a name
+    that is stored (a recorded sync set's controller) must not change when a
+    plugin is switched off in Preferences."""
     haystack = port_name.casefold()
     matches: list[ControllerMatch] = []
-    for definition in active_controller_definitions():
+    definitions = all_controller_definitions() if include_disabled else active_controller_definitions()
+    for definition in definitions:
         exact = [definition.name, *definition.port_names]
         candidates = [*exact, definition.manufacturer or "", definition.plugin_id or ""]
         matched = next((candidate for candidate in candidates if candidate and candidate.casefold() in haystack), None)

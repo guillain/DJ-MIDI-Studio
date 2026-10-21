@@ -84,6 +84,7 @@ from djmidi.controller_sync import (
     PlugInSyncTracker,
     SyncResult,
     normalize_scene,
+    resolve_output_port,
     run_sync,
     scene_names,
     summarize_results,
@@ -1483,7 +1484,8 @@ class MainWindow(QMainWindow):
                 "Controller Setup, start learning, press the controls, then click \"Save as controller sync set\".",
             )
             return []
-        results = run_sync(sync_sets, list_output_ports())
+        ports = list_output_ports()
+        results = run_sync(self._aim_sync_sets(sync_sets, ports), ports)
         self.statusBar().showMessage(summarize_results(results), 10_000)
         return results
 
@@ -1497,7 +1499,7 @@ class MainWindow(QMainWindow):
         sync_sets = self.preferences.active_sync_sets()
         if not sync_sets:
             return []
-        results = run_sync(sync_sets, ports)
+        results = run_sync(self._aim_sync_sets(sync_sets, ports), ports)
         self.statusBar().showMessage(summarize_results(results), 10_000)
         return results
 
@@ -1525,7 +1527,7 @@ class MainWindow(QMainWindow):
     def _poll_plugged_controllers(self) -> list[SyncResult]:
         """Sends a sync set once to each controller whose port just appeared."""
         ports = list_output_ports()
-        due = self._plug_in_tracker.due(self.preferences.active_sync_sets(), ports)
+        due = self._plug_in_tracker.due(self._aim_sync_sets(self.preferences.active_sync_sets(), ports), ports)
         if not due:
             return []
         results = run_sync(due, ports)
@@ -1650,26 +1652,37 @@ class MainWindow(QMainWindow):
 
     def _start_recording(self) -> None:
         self._record_events = []
-        opened = []
-        for name in list_input_ports():
+        opened, failed = [], []
+        # Two identical units can share a port name on macOS; it opens once.
+        for name in dict.fromkeys(list_input_ports()):
             try:
                 self._record_monitor.open_input(name)
             except Exception as exc:  # noqa: BLE001 - one busy port must not block the others
                 _LOGGER.warning("Record: cannot open MIDI input %r: %s", name, exc)
+                failed.append(name)
                 continue
             opened.append(name)
         if not opened:
-            QMessageBox.warning(self, "Cannot record", "No MIDI input could be opened: is a controller connected?")
+            QMessageBox.warning(
+                self,
+                "Cannot record",
+                f"None of the MIDI inputs could be opened ({', '.join(failed)}): another program, or the "
+                "Live Monitor, may be using them."
+                if failed
+                else "No MIDI input could be opened: is a controller connected?",
+            )
             self._record_button.blockSignals(True)
             self._record_button.setChecked(False)
             self._record_button.blockSignals(False)
             return
         self._record_button.setText(self.tr("■ Stop"))
+        self._relayout_menu_corner()
         self._record_timer.start()
         _LOGGER.info("Record: listening on %s", opened)
         self.statusBar().showMessage(
             f"Recording on {len(opened)} MIDI input(s): press the controls to send at initialization, "
             "then click ■ Stop"
+            + (f" (couldn't open: {', '.join(failed)})" if failed else "")
         )
 
     def _poll_recording(self) -> None:
@@ -1680,44 +1693,96 @@ class MainWindow(QMainWindow):
         self._poll_recording()
         self._record_monitor.close_all()
         self._record_button.setText(self.tr("● Rec"))
+        self._relayout_menu_corner()
         scene = self.preferences.active_sync_scene
-        sync_sets = [
-            sync_set.in_scene(scene)
-            for sync_set in sync_sets_from_recording(self._record_events, self._controller_name_for_port)
-        ]
+        recorded = sync_sets_from_recording(self._record_events, self._controller_name_for_port)
         self._record_events = []
-        if not sync_sets:
-            self.statusBar().showMessage("Recording stopped: no MIDI note/CC received, nothing saved", 10_000)
+        # Only recognized controllers: a loopback bus (IAC Driver) or another
+        # program's virtual port would otherwise be replayed at every launch.
+        # An unknown device records through Controller Setup instead.
+        ignored = [sync_set.output_port for sync_set in recorded if not self._controller_name_for_port(sync_set.output_port)]
+        recorded = [sync_set for sync_set in recorded if sync_set.output_port not in ignored]
+        if ignored:
+            _LOGGER.info("Record: ignored unrecognized port(s) %s", ignored)
+        if not recorded:
+            self.statusBar().showMessage(
+                "Recording stopped: no MIDI note/CC received from a recognized controller, nothing saved"
+                + (f" (ignored: {', '.join(ignored)}; use Controller Setup for these)" if ignored else ""),
+                10_000,
+            )
             return []
-        replaced = [
-            f"{sync_set.label} ({len(existing.messages)} message(s))"
+        sync_sets = [sync_set.in_scene(scene) for sync_set in recorded]
+        stored = {
+            sync_set.controller: existing
             for sync_set in sync_sets
             if (existing := self.preferences.sync_set_for(sync_set.controller, scene)) is not None
-        ]
-        if replaced:
+        }
+        if stored:
             reply = QMessageBox.question(
                 self,
                 "Replace sync sets",
-                "Replace the sync set(s) already stored for:\n" + "\n".join(replaced),
+                "Replace the sync set(s) already stored for:\n"
+                + "\n".join(f"{existing.label} ({len(existing.messages)} message(s))" for existing in stored.values())
+                + "\n\nNo keeps them; what you recorded on other controllers is saved either way.",
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             )
             if reply != QMessageBox.StandardButton.Yes:
-                self.statusBar().showMessage("Recording discarded", 10_000)
-                return []
+                # Declining keeps those sets; it's no reason to drop the
+                # recording of a controller that had none.
+                sync_sets = [sync_set for sync_set in sync_sets if sync_set.controller not in stored]
+                if not sync_sets:
+                    self.statusBar().showMessage("Recording discarded: the stored sync set(s) were kept", 10_000)
+                    return []
         for sync_set in sync_sets:
             self.preferences.set_sync_set(sync_set)
         self._save_preferences()
         self.statusBar().showMessage(
             "Sync set(s) saved: "
-            + ", ".join(f"{sync_set.label} ({len(sync_set.messages)} msg)" for sync_set in sync_sets),
+            + ", ".join(f"{sync_set.label} ({len(sync_set.messages)} msg)" for sync_set in sync_sets)
+            + (f" (ignored unrecognized: {', '.join(ignored)})" if ignored else ""),
             10_000,
         )
         return sync_sets
 
     @staticmethod
     def _controller_name_for_port(port: str) -> str:
-        matches = catalog.detect_controller(port)
-        return matches[0].controller.name if matches else ""
+        """The catalog controller behind a MIDI port, or "" (a recorded set
+        is then named after the port). Only a match on the controller's own
+        name or port names counts: a manufacturer-only match (score 75) says
+        who made the device, not which one it is -- "Pioneer DJ DDJ-400"
+        would otherwise be filed as the DDJ-XP2's set, replacing it and, while
+        that port is gone, sending its messages to a connected DDJ-XP2."""
+        matches = catalog.detect_controller(port, include_disabled=True)
+        # Disabled plugins count too: the name is stored, and must not change
+        # (a second set for the same device) when one is switched off.
+        exact = [match for match in matches if match.score >= 100]
+        return exact[0].controller.name if exact else ""
+
+    def _aim_sync_sets(self, sync_sets: list[ControllerSyncSet], ports: list[str]) -> list[ControllerSyncSet]:
+        """The sets to send, each one its names can't place among ``ports``
+        aimed at the single connected output detected as its catalog
+        controller. A set records its input port, but Windows numbers the
+        input and output lists separately and renumbers them as devices come
+        and go ("CMD Micro 0" recorded, "CMD Micro 2" now), some devices name
+        the two differently, and a catalog name may not appear in the port
+        name at all ("Behringer CMD Micro"). Stored sets stay as recorded."""
+        aimed = []
+        for sync_set in sync_sets:
+            if resolve_output_port(sync_set, ports) is None:
+                same = [port for port in ports if self._controller_name_for_port(port) == sync_set.controller]
+                if len(same) == 1:
+                    sync_set = ControllerSyncSet(sync_set.controller, same[0], sync_set.messages, sync_set.scene)
+            aimed.append(sync_set)
+        return aimed
+
+    def _relayout_menu_corner(self) -> None:
+        """QMenuBar sizes its corner widget when it is set, shown or the bar
+        resized -- not when the corner's contents grow ("● Rec" → "■ Stop", a
+        longer scene name) -- so set it again; otherwise a neighbour stays
+        squeezed below its minimum until the window is next resized."""
+        corner = getattr(self, "_menu_corner", None)
+        if corner is not None:
+            self.menuBar().setCornerWidget(corner, Qt.Corner.TopRightCorner)
 
     def _on_sync_set_save_requested(self, sync_set: ControllerSyncSet) -> None:
         # Controller Setup records into the active scene, like ● Rec.
@@ -1783,6 +1848,7 @@ class MainWindow(QMainWindow):
         combo.addItem("New scene…", self._NEW_SCENE_DATA)
         combo.setCurrentIndex(max(combo.findData(active), 0))
         combo.blockSignals(False)
+        self._relayout_menu_corner()
 
     def _on_sync_scene_activated(self, index: int) -> None:
         data = self._sync_scene_combo.itemData(index)
@@ -1814,7 +1880,8 @@ class MainWindow(QMainWindow):
         if changed and self.preferences.sync_on_scene_switch:
             sync_sets = self.preferences.active_sync_sets()
             if sync_sets:
-                results = run_sync(sync_sets, list_output_ports())
+                ports = list_output_ports()
+                results = run_sync(self._aim_sync_sets(sync_sets, ports), ports)
                 message += f" -- {summarize_results(results)}"
         self.statusBar().showMessage(message, 10_000 if results else 5_000)
         return results
@@ -2618,6 +2685,27 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(f"'{name}' applied for this session.")
 
     def closeEvent(self, event) -> None:
+        if self._record_button.isChecked():
+            reply = QMessageBox.question(
+                self,
+                "Recording in progress",
+                "A controller sync recording is in progress. Save it before quitting?",
+                QMessageBox.StandardButton.Save
+                | QMessageBox.StandardButton.Discard
+                | QMessageBox.StandardButton.Cancel,
+                QMessageBox.StandardButton.Save,
+            )
+            if reply == QMessageBox.StandardButton.Cancel:
+                event.ignore()
+                return
+            if reply == QMessageBox.StandardButton.Discard:
+                # Stopped below without saving anything.
+                self._record_events = []
+                self._record_button.blockSignals(True)
+                self._record_button.setChecked(False)
+                self._record_button.blockSignals(False)
+            else:
+                self._record_button.setChecked(False)  # stops and saves
         if self._stage_window is not None:
             self._stage_window.close()
         self._record_timer.stop()
@@ -2990,11 +3078,14 @@ class MainWindow(QMainWindow):
         self._load_mapping_from_path(path, software_id=software_id)
 
     def _save_preferences(self) -> None:
-        """preferences.json, plus the Sync folder mirroring the sync sets."""
+        """preferences.json, plus the Sync folder mirroring the sync sets --
+        and what shows them: the scene combo and the Dashboard's "Your files"
+        card (both built with the menu)."""
         self.preferences.save(self.preferences_path)
         sync_store.save_sync_sets(user_paths.sync_dir(), self.preferences.controller_sync_sets)
         if hasattr(self, "_sync_scene_combo"):
             self._refresh_sync_scene_combo()
+            self._refresh_file_actions()
 
     def _on_dashboard_file_action(self, action: str) -> None:
         """The Dashboard's "Your files" card buttons."""

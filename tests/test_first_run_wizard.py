@@ -69,6 +69,10 @@ def _close_windows():
     while _WINDOWS:
         window = _WINDOWS.pop()
         window._layout_settings = lambda: None  # never persist a test's fake settings
+        # A faked ● Rec leaves the button checked: closing would ask whether
+        # to save the recording.
+        window._record_button.blockSignals(True)
+        window._record_button.setChecked(False)
         window.close()
         window.deleteLater()
     QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
