@@ -132,6 +132,9 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **● Rec suspends macros and MIDI Learn** (`v0.48.112-rec-suspends-macros`, issue #296) — a press recorded for
+  a sync set also played the macro bound to it, and a pending MIDI Learn could take it. While `● Rec` records,
+  `MainWindow._on_live_midi_event` now skips both; the start status message says so.
 - [x] **Controller sync recording review** (`v0.48.110-controller-sync-record-review`, review of PR #181) —
   `● Rec` named an unknown same-maker device after a known controller (its set replaced the real one and Sync
   then sent to the real controller), collapsed two ports of one controller into one set, dropped every
