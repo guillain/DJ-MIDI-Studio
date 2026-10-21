@@ -42,6 +42,12 @@ The quickest way is the **`● Rec`** button at the top right of the menu bar:
    its port. Inputs that couldn't be opened (in use by another program) are
    listed in the status bar too.
 
+A fader, knob or jog moved while recording sends hundreds of messages; only
+its final position is kept, at the point where you last moved it, so the
+order of buttons and final positions is preserved. The status bar says how
+many such messages were collapsed. Controller Setup keeps every recorded
+row, since you review them there before saving.
+
 Quitting the app while `● Rec` is on asks whether to save the recording,
 discard it, or keep the app open.
 

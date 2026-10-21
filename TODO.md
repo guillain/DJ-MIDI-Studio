@@ -132,6 +132,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **● Rec collapses CC traffic** (`v0.48.114-rec-collapse-cc`, issue #298) — a fader, knob or jog moved
+  during `● Rec` no longer adds hundreds of Control Change messages to a set replayed at every launch:
+  `controller_sync.collapse_control_changes` keeps the last value per (channel, CC) at its last position, notes
+  untouched, and the status bar says how many were collapsed. Controller Setup's `sync_set_from_events` still
+  keeps every row (the user reviews them there).
 - [x] **Controller sync recording review** (`v0.48.110-controller-sync-record-review`, review of PR #181) —
   `● Rec` named an unknown same-maker device after a known controller (its set replaced the real one and Sync
   then sent to the real controller), collapsed two ports of one controller into one set, dropped every
