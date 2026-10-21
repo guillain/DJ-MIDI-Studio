@@ -1,9 +1,26 @@
+from contextlib import contextmanager
+from functools import partial
+
 from PySide6.QtWidgets import QMessageBox
 
 from djmidi.controller_sync import ControllerSyncSet, SyncMessage
 from djmidi.gui import main_window as main_window_module
 from djmidi.gui.main_window import MainWindow
 from djmidi.plugins import PluginPreferences
+
+
+def _patch_sync_sender(monkeypatch, sender, opened=None):
+    """Routes Sync's one-open-per-set port (``midi_io.open_midi_output``) to
+    ``sender``, called per message with ``output_port_name`` like
+    ``send_midi_message``; ``opened`` records each port open."""
+
+    @contextmanager
+    def fake_open(port):
+        if opened is not None:
+            opened.append(port)
+        yield partial(sender, output_port_name=port)
+
+    monkeypatch.setattr("djmidi.midi_io.open_midi_output", fake_open)
 
 
 def _window(tmp_path):
@@ -26,13 +43,15 @@ def test_sync_sends_stored_sets_to_connected_ports(tmp_path, monkeypatch):
     window.preferences.set_sync_set(ControllerSyncSet("DDJ-XP2", "", (SyncMessage("Note On", 1, 11, 127),)))
     window.preferences.set_sync_set(ControllerSyncSet("XDJ-XZ", "", ()))
     sent = []
+    opened = []
     monkeypatch.setattr(main_window_module, "list_output_ports", lambda: ["PIONEER DDJ-XP2"])
-    monkeypatch.setattr("djmidi.midi_io.send_midi_message", lambda **kwargs: sent.append(kwargs))
+    _patch_sync_sender(monkeypatch, lambda **kwargs: sent.append(kwargs), opened)
 
     results = window._on_sync_controllers()
 
     assert [(r.controller, r.ok) for r in results] == [("DDJ-XP2", True), ("XDJ-XZ", False)]
     assert sent[0]["output_port_name"] == "PIONEER DDJ-XP2"
+    assert opened == ["PIONEER DDJ-XP2"]  # one open per connected set (issue #297)
     assert window.statusBar().currentMessage().startswith("Synced 1/2 controller(s)")
 
 
@@ -145,7 +164,7 @@ def test_startup_sync_is_silent_without_sets_and_sends_stored_ones(tmp_path, mon
     window.preferences.set_sync_set(ControllerSyncSet("DDJ-XP2", "", (SyncMessage("Note On", 1, 11, 127),)))
     sent = []
     monkeypatch.setattr(main_window_module, "list_output_ports", lambda: ["PIONEER DDJ-XP2"])
-    monkeypatch.setattr("djmidi.midi_io.send_midi_message", lambda **kwargs: sent.append(kwargs))
+    _patch_sync_sender(monkeypatch, lambda **kwargs: sent.append(kwargs))
     assert [result.ok for result in window._sync_at_startup()] == [True]
     assert len(sent) == 1
 
@@ -156,7 +175,7 @@ def test_plug_in_poll_syncs_a_controller_once_when_it_appears(tmp_path, monkeypa
     ports = []
     sent = []
     monkeypatch.setattr(main_window_module, "list_output_ports", lambda: list(ports))
-    monkeypatch.setattr("djmidi.midi_io.send_midi_message", lambda **kwargs: sent.append(kwargs))
+    _patch_sync_sender(monkeypatch, lambda **kwargs: sent.append(kwargs))
 
     window._update_plug_in_watch()  # seeds with nothing connected
     assert window._plug_in_timer.isActive()
@@ -181,7 +200,7 @@ def test_startup_sync_seeds_plug_in_tracker_so_nothing_is_sent_twice(tmp_path, m
     window.preferences.set_sync_set(ControllerSyncSet("DDJ-XP2", "", (SyncMessage("Note On", 1, 11, 127),)))
     sent = []
     monkeypatch.setattr(main_window_module, "list_output_ports", lambda: ["PIONEER DDJ-XP2"])
-    monkeypatch.setattr("djmidi.midi_io.send_midi_message", lambda **kwargs: sent.append(kwargs))
+    _patch_sync_sender(monkeypatch, lambda **kwargs: sent.append(kwargs))
 
     window._start_controller_sync()
     assert window._poll_plugged_controllers() == []
@@ -256,7 +275,7 @@ def test_sync_sends_the_active_scene_and_falls_back_to_default(tmp_path, monkeyp
     window.preferences.active_sync_scene = "Tek"
     sent = []
     monkeypatch.setattr(main_window_module, "list_output_ports", lambda: ["PIONEER DDJ-XP2", "XDJ-XZ"])
-    monkeypatch.setattr("djmidi.midi_io.send_midi_message", lambda **kwargs: sent.append(kwargs["data1"]))
+    _patch_sync_sender(monkeypatch, lambda **kwargs: sent.append(kwargs["data1"]))
 
     window._on_sync_controllers()
     window._sync_at_startup()
@@ -327,7 +346,7 @@ def _scene_switch_window(tmp_path, monkeypatch, *, enabled):
     window._refresh_sync_scene_combo()
     sent = []
     monkeypatch.setattr(main_window_module, "list_output_ports", lambda: ["PIONEER DDJ-XP2"])
-    monkeypatch.setattr("djmidi.midi_io.send_midi_message", lambda **kwargs: sent.append(kwargs["data1"]))
+    _patch_sync_sender(monkeypatch, lambda **kwargs: sent.append(kwargs["data1"]))
     monkeypatch.setattr(QMessageBox, "information", lambda *args: (_ for _ in ()).throw(AssertionError))
     return window, sent
 
@@ -468,7 +487,7 @@ def test_sync_finds_a_controller_whose_port_name_changed(tmp_path, monkeypatch):
     outputs = ["Microsoft GS Wavetable Synth 0", "DDJ-XP2 1", "CMD Micro 2", "Some Box 3"]
     monkeypatch.setattr(main_window_module, "list_output_ports", lambda: outputs)
     sent = []
-    monkeypatch.setattr("djmidi.midi_io.send_midi_message", lambda **kwargs: sent.append(kwargs["output_port_name"]))
+    _patch_sync_sender(monkeypatch, lambda **kwargs: sent.append(kwargs["output_port_name"]))
 
     results = {result.controller: result.port for result in window._on_sync_controllers()}
 
@@ -486,7 +505,7 @@ def test_plug_in_sync_finds_a_controller_whose_port_name_changed(tmp_path, monke
     ports = ["Microsoft GS Wavetable Synth 0"]
     sent = []
     monkeypatch.setattr(main_window_module, "list_output_ports", lambda: list(ports))
-    monkeypatch.setattr("djmidi.midi_io.send_midi_message", lambda **kwargs: sent.append(kwargs["output_port_name"]))
+    _patch_sync_sender(monkeypatch, lambda **kwargs: sent.append(kwargs["output_port_name"]))
 
     window._update_plug_in_watch()  # seeds with the synth only
     ports.append("CMD Micro 2")

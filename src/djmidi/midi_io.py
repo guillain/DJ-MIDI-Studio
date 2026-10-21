@@ -18,6 +18,8 @@ from __future__ import annotations
 import logging
 import os
 import time
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Literal
 
@@ -127,15 +129,14 @@ def _bounded_channel(channel_1_based: int) -> int:
     return channel_1_based - 1
 
 
-def send_midi_message(
+def build_midi_message(
     *,
-    output_port_name: str,
     event_type: str,
     channel_1_based: int,
     data1: int,
     data2: int,
-) -> None:
-    """Sends a single NOTE/CC style MIDI message to a hardware/virtual output.
+) -> mido.Message:
+    """Validates a NOTE/CC style message and builds the ``mido.Message``.
 
     Parameters follow the same 1-based channel convention used elsewhere in this
     project's model/UI. `event_type` accepts common aliases (e.g. "Note On",
@@ -163,22 +164,54 @@ def send_midi_message(
     else:
         kwargs["control"] = d1
         kwargs["value"] = d2
+    return mido.Message(msg_type, **kwargs)
 
-    message = mido.Message(msg_type, **kwargs)
-    _LOGGER.info(
-        "Sending MIDI %s to %r: channel=%d data1=%d data2=%d",
-        msg_type,
-        output_port_name,
-        channel_1_based,
-        d1,
-        d2,
+
+def send_midi_message(
+    *,
+    output_port_name: str,
+    event_type: str,
+    channel_1_based: int,
+    data1: int,
+    data2: int,
+) -> None:
+    """Sends a single NOTE/CC style MIDI message to a hardware/virtual output.
+
+    Opens and closes the port for this one message; to send several messages
+    to the same port, use :func:`open_midi_output` instead (issue #297).
+    """
+    message = build_midi_message(
+        event_type=event_type, channel_1_based=channel_1_based, data1=data1, data2=data2
     )
+    _LOGGER.info("Sending MIDI %s to %r", message, output_port_name)
     try:
         with mido.open_output(output_port_name) as output_port:
             output_port.send(message)
     except Exception:
         _LOGGER.exception("Failed to send MIDI message to %r", output_port_name)
         raise
+
+
+@contextmanager
+def open_midi_output(output_port_name: str) -> Iterator[Callable[..., None]]:
+    """Opens ``output_port_name`` once and yields a sender for it.
+
+    The sender takes the keyword arguments of :func:`send_midi_message`
+    except ``output_port_name``; the port is closed when the block exits, so
+    a burst of messages (a controller Sync set) reuses one open port rather
+    than reopening it per message -- slow, and some drivers drop messages on
+    reopen (issue #297). Opening or sending errors propagate to the caller.
+    """
+    with mido.open_output(output_port_name) as output_port:
+
+        def send(*, event_type: str, channel_1_based: int, data1: int, data2: int) -> None:
+            message = build_midi_message(
+                event_type=event_type, channel_1_based=channel_1_based, data1=data1, data2=data2
+            )
+            _LOGGER.debug("Sending MIDI %s to %r", message, output_port_name)
+            output_port.send(message)
+
+        yield send
 
 
 class MidiMonitor:
@@ -259,9 +292,11 @@ class MidiMonitor:
 __all__ = [
     "MidiEvent",
     "MidiMonitor",
+    "build_midi_message",
     "list_input_ports",
     "list_output_ports",
     "list_port_info",
     "mido_message_to_event",
+    "open_midi_output",
     "send_midi_message",
 ]

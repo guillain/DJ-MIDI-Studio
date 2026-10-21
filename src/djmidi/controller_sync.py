@@ -23,7 +23,9 @@ from __future__ import annotations
 import logging
 import re
 from collections.abc import Callable, Iterable, Sequence
+from contextlib import AbstractContextManager, nullcontext
 from dataclasses import dataclass, field
+from functools import partial
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -299,13 +301,26 @@ def run_sync(
     sync_sets: Iterable[ControllerSyncSet],
     available_ports: Sequence[str],
     sender: Callable[..., None] | None = None,
+    port_opener: Callable[[str], AbstractContextManager[Callable[..., None]]] | None = None,
 ) -> list[SyncResult]:
     """Sends every set to its controller's port; one :class:`SyncResult` per
-    set. A disconnected controller or a failing port never stops the others."""
-    if sender is None:
-        from djmidi.midi_io import send_midi_message
+    set. A disconnected controller or a failing port never stops the others.
 
-        sender = send_midi_message
+    Each set's port is opened once, all its messages are sent, then it is
+    closed (issue #297) -- by default through :func:`midi_io.open_midi_output`.
+    Tests inject either ``port_opener`` (a port name -> context manager
+    yielding a per-message sender) or, more simply, ``sender`` (called per
+    message with ``output_port_name`` and the message fields)."""
+    if port_opener is None:
+        if sender is not None:
+            per_message = sender
+
+            def port_opener(port: str) -> AbstractContextManager[Callable[..., None]]:
+                return nullcontext(partial(per_message, output_port_name=port))
+        else:
+            from djmidi.midi_io import open_midi_output
+
+            port_opener = open_midi_output
     results: list[SyncResult] = []
     for sync_set in sync_sets:
         port = resolve_output_port(sync_set, available_ports)
@@ -315,15 +330,15 @@ def run_sync(
             continue
         sent = 0
         try:
-            for message in sync_set.messages:
-                sender(
-                    output_port_name=port,
-                    event_type=message.event_type,
-                    channel_1_based=message.channel,
-                    data1=message.data1,
-                    data2=message.data2,
-                )
-                sent += 1
+            with port_opener(port) as send:
+                for message in sync_set.messages:
+                    send(
+                        event_type=message.event_type,
+                        channel_1_based=message.channel,
+                        data1=message.data1,
+                        data2=message.data2,
+                    )
+                    sent += 1
         except Exception as exc:  # noqa: BLE001 - one failing port must not abort the other controllers
             _LOGGER.warning("Sync: sending to %r for %s failed after %d message(s): %s", port, sync_set.controller, sent, exc)
             results.append(SyncResult(sync_set.controller, port, sent, str(exc)))
