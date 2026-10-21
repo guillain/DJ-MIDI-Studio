@@ -204,6 +204,11 @@ class MidiMonitor:
             _LOGGER.exception("Failed to open MIDI input port %r", name)
             raise
 
+    @property
+    def input_names(self) -> list[str]:
+        """Names of the input ports currently open, in opening order."""
+        return list(self._input_ports)
+
     def close_input(self, name: str) -> None:
         port = self._input_ports.pop(name, None)
         if port is not None:

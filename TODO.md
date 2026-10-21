@@ -135,6 +135,12 @@ Implemented contract, runtime, test, and documentation work:
 - [x] **● Rec suspends macros and MIDI Learn** (`v0.48.112-rec-suspends-macros`, issue #296) — a press recorded for
   a sync set also played the macro bound to it, and a pending MIDI Learn could take it. While `● Rec` records,
   `MainWindow._on_live_midi_event` now skips both; the start status message says so.
+- [x] **● Rec through the Live Monitor stream** (`v0.48.111-record-via-live-monitor`, issue #295) — on Windows a
+  MIDI input has one client only, so ● Rec failed on every input the Live Monitor had auto-opened. It now takes
+  those ports' events from the Live Monitor's stream (like MIDI Learn) and opens only the other ports itself; no
+  port is recorded twice. Tested with fake monitors only, not on real Windows.
+- [x] **Workspace page Preferences table** (docs-only, no tag, issue #299) — `features/workspace.md` listed the
+  General tab twice; merged into one row matching the real dialog (adds language, plug-in and scene-switch sync).
 - [x] **Controller sync recording review** (`v0.48.110-controller-sync-record-review`, review of PR #181) —
   `● Rec` named an unknown same-maker device after a known controller (its set replaced the real one and Sync
   then sent to the real controller), collapsed two ports of one controller into one set, dropped every
