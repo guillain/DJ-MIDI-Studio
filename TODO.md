@@ -132,6 +132,16 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Controller sync recording review** (`v0.48.110-controller-sync-record-review`, review of PR #181) —
+  `● Rec` named an unknown same-maker device after a known controller (its set replaced the real one and Sync
+  then sent to the real controller), collapsed two ports of one controller into one set, dropped every
+  recording on a declined replacement, and missed Windows output ports. Now: exact catalog matches only, one
+  set per port, No keeps the stored sets but saves new controllers' sets (maintainer-confirmed), output found by
+  controller at send time. Maintainer decisions: only recognized controllers are recorded (IAC/unknown ports
+  ignored, named in the status bar), and quitting mid-recording asks Save / Discard / Cancel. Also: menu-corner
+  relayout on ● Rec → ■ Stop, Dashboard files card refresh, failed inputs named, docs. Left open: Windows
+  exclusive inputs (record through the Live Monitor stream), per-message port open/close at launch Sync,
+  recording size cap, macros / pending MIDI Learn firing during ● Rec.
 - [x] **Visual check on macOS (cocoa), English and French** (`v0.48.109-cocoa-visual-check`, issue #290) —
   the main window (every tab at 1280x820 / 1000x650 / 900x600, every menu), Preferences, Stage Mode and every
   #282 window (default and minimum) grabbed on the real `cocoa` platform in both languages. Found and fixed:

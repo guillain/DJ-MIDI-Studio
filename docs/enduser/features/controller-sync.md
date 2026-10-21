@@ -33,15 +33,20 @@ The quickest way is the **`● Rec`** button at the top right of the menu bar:
 1. Click **`● Rec`**: the app listens to every connected MIDI controller.
 2. Press the controls you want sent at initialization, in order, on any
    number of controllers.
-3. Click **`■ Stop`**. One set is saved per controller that sent something,
-   named after the controller recognized from its port (or the port name
-   itself for an unknown device — a port that only carries a maker's name,
-   such as "Pioneer DJ …", isn't taken for one of that maker's controllers).
-   A second identical unit gets its own set, named after its port. Inputs
-   that couldn't be opened (in use by another program) are listed in the
-   status bar.
+3. Click **`■ Stop`**. One set is saved per recognized controller that sent
+   something, named after that controller. A port the app doesn't recognize
+   — an unknown device, a loopback bus such as "IAC Driver Bus 1", another
+   program's virtual port, or a port that only carries a maker's name such as
+   "Pioneer DJ …" — is ignored and listed in the status bar, so it is never
+   replayed at launch. A second identical unit gets its own set, named after
+   its port. Inputs that couldn't be opened (in use by another program) are
+   listed in the status bar too.
 
-To record a single controller under a name you choose instead:
+Quitting the app while `● Rec` is on asks whether to save the recording,
+discard it, or keep the app open.
+
+To record an unknown controller, or a single controller under a name you
+choose:
 
 1. Open [Controller Setup](controller-setup.md) and type the controller's
    name.
