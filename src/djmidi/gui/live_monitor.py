@@ -358,6 +358,13 @@ class LiveMonitorView(QWidget):
     def is_running(self) -> bool:
         return self._running
 
+    def listening_input_ports(self) -> list[str]:
+        """Input ports this monitor holds open right now (none when stopped).
+        Another listener (the menu bar's ● Rec) reads these through
+        ``eventReceived`` instead of opening them a second time, which
+        Windows refuses: a MIDI input there has one client only."""
+        return self._monitor.input_names if self._running else []
+
     def ensure_monitoring_started(self) -> None:
         """Best-effort auto-start used when a mapping is loaded, so the By
         Channel/Deck/Controller layouts reflect live controller presses
