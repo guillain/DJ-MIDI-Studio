@@ -85,6 +85,10 @@ class _FakeMonitor:
         self.events = list(events)
         self.opened = []
 
+    @property
+    def input_names(self):
+        return list(self.opened)
+
     def open_input(self, name):
         if name == "Busy port":
             raise OSError("busy")
@@ -618,3 +622,104 @@ def test_quitting_while_recording_can_be_cancelled(tmp_path, monkeypatch):
     assert window._record_button.isChecked()
     window._record_button.click()  # still recording: Stop saves it
     assert [m.data1 for m in window.preferences.sync_set_for("DDJ-XP2").messages] == [11]
+
+
+def test_recording_suspends_controller_bound_macros(tmp_path, monkeypatch):
+    # Issue #296: a press recorded for a sync set must not also play the
+    # macro bound to it.
+    from djmidi.midi_macros import MacroStep, MacroTrigger, MidiMacro
+
+    window = _window(tmp_path)
+    port = "PIONEER DDJ-XP2"
+    window.macros = [
+        MidiMacro("Bound", port, (MacroStep(SyncMessage("Note On", 1, 11, 127)),), trigger=MacroTrigger("Note On", 1, 40, "DDJ-XP2"))
+    ]
+    sent = []
+    monkeypatch.setattr(main_window_module, "list_output_ports", lambda: [port])
+    monkeypatch.setattr("djmidi.midi_io.send_midi_message", lambda **kwargs: sent.append(kwargs))
+    window._record_monitor = _FakeMonitor([])
+    monkeypatch.setattr(main_window_module, "list_input_ports", lambda: [port])
+    press = _event("DDJ-XP2", 40)
+
+    window._record_button.click()
+    message = window.statusBar().currentMessage()
+    window._on_live_midi_event(press)
+    assert sent == []
+    assert "macros and MIDI Learn are paused" in message
+    window._record_button.click()
+
+    window._on_live_midi_event(press)  # after ■ Stop the macro fires again
+    assert len(sent) == 1
+
+
+def test_recording_does_not_let_a_pending_midi_learn_consume_a_press(tmp_path, monkeypatch):
+    from djmidi.model import Control, MappingElement, MidiConfig, UserIO
+
+    window = _window(tmp_path)
+    control = Control("1", "Note On", "10", [UserIO("click", [MappingElement(tag="play", deck_id="1", slot_id="0")])])
+    window.config = MidiConfig(controls=[control])
+    panel = window.edit_panel
+    panel._config_provider = lambda: window.config
+    panel._ensure_listening = lambda: True
+    panel.set_node(control)
+    assert panel.start_learn()
+    window._record_monitor = _FakeMonitor([])
+    monkeypatch.setattr(main_window_module, "list_input_ports", lambda: ["PIONEER DDJ-XP2"])
+
+    window._record_button.click()
+    window._on_live_midi_event(_event("PIONEER DDJ-XP2", 40))
+    assert panel.is_learning
+    assert control.control == "10"
+    window._record_button.click()
+
+    window._on_live_midi_event(_event("PIONEER DDJ-XP2", 40))
+    assert not panel.is_learning
+    assert control.control == "40"
+def test_record_reads_live_monitor_ports_from_its_stream_instead_of_reopening_them(tmp_path, monkeypatch):
+    # Issue #295: on Windows a MIDI input has one client only, so ● Rec must
+    # not reopen the inputs the Live Monitor already holds.
+    window = _window(tmp_path)
+    monitor = _FakeMonitor([_event("XDJ-XZ", 7)])
+    window._record_monitor = monitor
+    live = _FakeMonitor([])
+    live.open_input("PIONEER DDJ-XP2")
+    window.live_monitor_view._monitor = live
+    window.live_monitor_view._running = True
+    monkeypatch.setattr(main_window_module, "list_input_ports", lambda: ["PIONEER DDJ-XP2", "XDJ-XZ"])
+
+    window._record_button.click()
+    assert monitor.opened == ["XDJ-XZ"]
+    assert "2 MIDI input(s)" in window.statusBar().currentMessage()
+    window.live_monitor_view.eventReceived.emit(_event("PIONEER DDJ-XP2", 11))
+    # An event from a port ● Rec opened itself is never taken twice, nor
+    # output-direction feedback.
+    window._on_live_midi_event(_event("XDJ-XZ", 99))
+    from djmidi.midi_io import MidiEvent
+
+    window._on_live_midi_event(MidiEvent("out", "1", "Note On", "12", "127", 0.0, "PIONEER DDJ-XP2"))
+    window._record_button.click()
+
+    stored = PluginPreferences.load(window.preferences_path)
+    assert [m.data1 for m in stored.sync_set_for("DDJ-XP2").messages] == [11]
+    assert [m.data1 for m in stored.sync_set_for("XDJ-XZ").messages] == [7]
+    # Recording stopped: later Live Monitor events are not recorded.
+    window.live_monitor_view.eventReceived.emit(_event("PIONEER DDJ-XP2", 13))
+    assert window._record_events == []
+
+
+def test_record_with_only_live_monitor_ports_needs_no_own_input(tmp_path, monkeypatch):
+    window = _window(tmp_path)
+    window._record_monitor = _FakeMonitor([])
+    live = _FakeMonitor([])
+    live.open_input("PIONEER DDJ-XP2")
+    window.live_monitor_view._monitor = live
+    window.live_monitor_view._running = True
+    monkeypatch.setattr(main_window_module, "list_input_ports", lambda: ["PIONEER DDJ-XP2"])
+    warned = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda *args: warned.append(args[2]))
+
+    window._record_button.click()
+
+    assert warned == []
+    assert window._record_button.isChecked()
+    assert window._record_monitor.opened == []
