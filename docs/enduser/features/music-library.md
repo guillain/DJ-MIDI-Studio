@@ -142,6 +142,8 @@ cover, or any other embedded picture when there is no front cover).
   cover, replacing the previous front cover.
 - `Remove cover` removes the front cover.
 
+![Track panel with an embedded front cover, and the Set cover / Remove cover buttons](../../images/layout/music-library-cover.png)
+
 Both are undoable with `Undo` / `Redo`. Only the front-cover picture changes:
 other embedded pictures (back cover, artist photo…), every tag and the
 Serato/Traktor data stay exactly as they were. Works with MP3, AIFF, FLAC,
@@ -191,6 +193,8 @@ To give badly named files (`Track 01.mp3`, `a8f3c2.mp3`) a readable name:
    - `Refused`: the file is missing, outside your music folders, or inside a
      DJ software folder (`_Serato_`, `PIONEER`, `_Traktor`, …).
 4. Click `Rename N file(s)`.
+
+![Rename files: the preview for a template using the Camelot key, BPM, artist and title](../../images/layout/music-library-rename.png)
 
 Files are renamed inside their own folder and keep their extension.
 Characters a file name can't hold (`/ \ : * ? " < > |`) become `_`. The
@@ -307,6 +311,8 @@ Click `Change history…` to list them, newest first (when, what kind, a
 summary, how many files, and whether it was reverted). Select an entry to
 see every file with its before → after values.
 
+![Change history: a tag edit, a cover set and a rename, with the renamed files listed](../../images/layout/music-library-change-history.png)
+
 `Revert…` undoes the selected entry, after a confirmation:
 
 - **Tags**: the old values are written back through the same careful path
@@ -340,6 +346,8 @@ collection as bar charts, one tab each:
 | Keys | The 24 Camelot keys in wheel order (1A, 1B … 12B), with the number of tracks without a key |
 | Added per month | Files per month of their modification date — the closest thing to a "date added" the files carry. A tag edit makes a file count as recent |
 | Most played | The 25 most-played tracks and how many were never played, once you've loaded your DJ history in the [History panel](#play-history) |
+
+![Library statistics: tracks per category](../../images/layout/music-library-statistics.png)
 
 The statistics follow the table's filters: filter on a category, a BPM
 range or a search first to chart just that part of the library (the line at
@@ -425,6 +433,8 @@ Every rule left at *Any*/*Off* is ignored; the others must all match:
 | Not played for | Never played, or last played longer ago than this many days |
 | Order | Category → BPM range → key (like `Auto: sort visible`), slowest BPM first, or file path |
 | Maximum length | Keep only the first tracks in that order |
+
+![Smart playlist rules: Tek family, 170–180 BPM, 8A or compatible, at most 40 tracks](../../images/layout/music-library-smart-playlist.png)
 
 `Not played for` uses the play history last loaded in the
 [History panel](#play-history); the counts are remembered with the library

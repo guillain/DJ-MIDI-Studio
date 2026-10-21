@@ -45,6 +45,8 @@ mapping or on your controller changes.
 The line above the table counts the mapped, partly free and free
 combinations.
 
+![Layer Map of a DDJ-XP2: pads mapped in PAD MODE 5, free everywhere else](../../images/layout/layer-map.png)
+
 ## Where the layers come from
 
 Only from the controller's profile: a layer exists because the profile

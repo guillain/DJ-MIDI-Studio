@@ -132,6 +132,13 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Doc screenshots for the v0.48.90–v0.48.107 features** (docs-only, no tag, issue #289) —
+  `scripts/capture_docs_screenshots.py` now also captures First-run setup (both list pages, demo port
+  names + copies of the fixture in a throwaway `/tmp` home), Layer Map, Ready for live, MIDI Latency Test
+  (a simulated in-process loopback, illustrative timings), the command palette, the Music Library's
+  cover art / statistics / smart-playlist rules / rename preview / change history (on the synthetic demo
+  library), and Interface language (French Dashboard + a Preferences crop that stops above the
+  path rows). Stage Mode already had its screenshot. Each PNG checked by eye before being linked.
 - [x] **Emulator KEY SHIFT fix** (`v0.48.108-emulator-key-shift`, issue #288) — `layout.pick_default_variant`
   used a plain "shift" text match, so on DDJ-1000 / DDJ-FLX10 / DDJ-800 the Controller Emulator with SHIFT
   latched picked a plain KEY SHIFT pad-mode variant as the SHIFT one. The bank-aware rule from #280 moved
