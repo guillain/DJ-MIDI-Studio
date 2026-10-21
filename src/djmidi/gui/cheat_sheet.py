@@ -29,7 +29,6 @@ for."""
 
 from __future__ import annotations
 
-import re
 from collections import Counter
 from dataclasses import dataclass, field, replace
 
@@ -45,11 +44,9 @@ _EVENT_TYPE_FOR_KIND: dict[catalog.NoteOrCC, str] = {
     "CC": "Control Change",
 }
 _RIGHT = layout_mod._RIGHT_GRID_SUFFIX
-_AMBIGUOUS = layout_mod._AMBIGUOUS_TRIGGER_MARKERS
-# "Deck 1 Pad 3 (PAD MODE 5)" / "Deck 3 Performance Pad 4 (EXTENSION1 mode) +SHIFT"
-# -> "(PAD MODE 5)" / "(EXTENSION1 mode)": the bank a pad variant belongs to,
-# the same substring gui/pad_mode.py feeds pick_default_variant() as a token.
-_BANK_RE = re.compile(r"Pad \d+ (\([^()]*\))")
+# The pad-bank regex and the SHIFT / plain rules live in gui/layout.py so
+# pick_default_variant() applies the same ones (issue #288).
+_BANK_RE = layout_mod.PAD_BANK_RE
 
 Trigger = tuple[
     str, str, str
@@ -155,25 +152,9 @@ def format_functions(lines: list[tuple[str, str]], prefix: str = "") -> list[str
     ]
 
 
-def _name_without_bank(entry: catalog.ControlInfo) -> str:
-    """A variant's name minus its pad bank ("(KEY SHIFT, PAGE 1)"), so the
-    bank's own wording never reads as a SHIFT / long-press qualifier."""
-    if entry.section != "PAD":
-        return entry.name
-    match = _BANK_RE.search(entry.name)
-    return entry.name.replace(match.group(1), "") if match else entry.name
-
-
-def is_shift(entry: catalog.ControlInfo) -> bool:
-    """Whether a variant is a SHIFT one -- ignoring the bank's own name,
-    since DDJ-1000/FLX10/800 have a "KEY SHIFT" pad mode whose plain
-    variants are not SHIFT ones (issue #280). Shared with gui/layer_map.py."""
-    return "shift" in _name_without_bank(entry).casefold()
-
-
-def _is_plain(entry: catalog.ControlInfo) -> bool:
-    lowered = _name_without_bank(entry).casefold()
-    return not any(marker in lowered for marker in _AMBIGUOUS)
+_name_without_bank = layout_mod.name_without_bank
+is_shift = layout_mod.is_shift_variant  # shared with gui/layer_map.py
+_is_plain = layout_mod.is_plain_variant
 
 
 def pad_banks(controller: str) -> list[str]:

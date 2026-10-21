@@ -1,3 +1,5 @@
+import pytest
+
 from djmidi.gui import layout
 from djmidi.gui.layout import clear_reverse_lookup_cache, reverse_lookup
 
@@ -447,3 +449,36 @@ def test_right_side_usage_deck_ids_translates_catalog_decks_to_zero_indexed():
 
 def test_right_side_usage_deck_ids_none_for_a_controller_with_no_split():
     assert layout.right_side_usage_deck_ids("DDJ-FLX4") is None
+
+
+# Issue #288: DDJ-1000/FLX10/800 have a "KEY SHIFT" pad mode whose plain
+# variants must not read as SHIFT ones in pick_default_variant().
+_KEY_SHIFT_BANKS = (
+    ("DDJ-1000", "(KEY SHIFT, PAGE 1)", "(HOT CUE, PAGE 1)"),
+    ("DDJ-FLX10", "(KEY SHIFT, PAGE 1)", "(HOT CUE, PAGE 1)"),
+    ("DDJ-800", "(KEY SHIFT PAGE 1)", "(HOT CUE PAGE 1)"),
+)
+
+
+@pytest.mark.parametrize(("controller", "key_shift", "hot_cue"), _KEY_SHIFT_BANKS)
+def test_prefer_shift_ignores_the_key_shift_pad_bank_name(controller, key_shift, hot_cue):
+    clear_reverse_lookup_cache()
+    variants = reverse_lookup(controller)[(controller, "PAD", "Pad 1")]
+    shifted = layout.pick_default_variant(variants, prefer_shift=True)
+    assert shifted.name == f"Deck 1 Pad 1 {hot_cue} (+SHIFT)"
+    in_bank = layout.pick_default_variant(variants, prefer_token=key_shift, prefer_shift=True)
+    assert in_bank.name == f"Deck 1 Pad 1 {key_shift} (+SHIFT)"
+    plain = layout.pick_default_variant(variants, prefer_token=key_shift)
+    assert plain.name == f"Deck 1 Pad 1 {key_shift}"
+
+
+@pytest.mark.parametrize(("controller", "key_shift", "hot_cue"), _KEY_SHIFT_BANKS)
+def test_is_shift_variant_on_real_key_shift_entries(controller, key_shift, hot_cue):
+    variants = {v.name: v for v in reverse_lookup(controller)[(controller, "PAD", "Pad 1")]}
+    plain = variants[f"Deck 1 Pad 1 {key_shift}"]
+    shifted = variants[f"Deck 1 Pad 1 {key_shift} (+SHIFT)"]
+    assert not layout.is_shift_variant(plain)
+    assert layout.is_plain_variant(plain)
+    assert layout.is_shift_variant(shifted)
+    assert not layout.is_plain_variant(shifted)
+    assert layout.is_shift_variant(variants[f"Deck 1 Pad 1 {hot_cue} (+SHIFT)"])
