@@ -35,9 +35,10 @@ This first version translates what you use most:
 
 - the menu bar: `Fichier`, `Édition`, `Affichage`, `Macros`, `Aide` and
   every fixed entry in them;
-- the main tabs: `Tableau de bord`, `Configuration du contrôleur`,
-  `Images du contrôleur`, `Par canal`, `Par platine`, `Par contrôleur`,
-  `Bibliothèque musicale`;
+- the main tabs: `Tableau de bord`, `Config. contrôleur`,
+  `Images contrôleur`, `Par canal`, `Par platine`, `Par contrôleur`,
+  `Bibliothèque` (kept short so they fit a small window; when they still
+  don't, the tab bar shows scroll arrows instead of cutting the names);
 - the **● Rec** / **⟳ Sync** buttons beside the menu bar;
 - the whole Preferences window;
 - the first-run setup wizard (`Aide → Configuration initiale…`), the

@@ -82,16 +82,19 @@ class LayerMapDialog(QDialog):
         controls.addWidget(self.controller_combo, 1)
         controls.addWidget(QLabel(self.tr("Section:")))
         self.section_combo = QComboBox()
-        # Never cut a section name to a few letters when the window is small.
-        self.section_combo.setMinimumContentsLength(len(ALL_SECTIONS))
+        # Never cut a section name to a few letters when the window is small,
+        # nor "All sections" in a language where it is longer (issue #290).
+        self.section_combo.setMinimumContentsLength(max(len(ALL_SECTIONS), len(self.tr("All sections"))))
         self.section_combo.currentIndexChanged.connect(lambda _index: self._fill_table())
         controls.addWidget(self.section_combo)
+        controls.addWidget(help_button(self, *help_texts.LAYER_MAP))
+        box.addLayout(controls)
+        # On its own row: beside the combos, its French label pushed the
+        # minimum width past a 900 px screen (issue #290).
         self.free_only_checkbox = QCheckBox(self.tr("Only controls with a free layer"))
         self.free_only_checkbox.setToolTip(self.tr("Hide the controls whose every layer is already mapped."))
         self.free_only_checkbox.toggled.connect(lambda _checked: self._fill_table())
-        controls.addWidget(self.free_only_checkbox)
-        controls.addWidget(help_button(self, *help_texts.LAYER_MAP))
-        box.addLayout(controls)
+        box.addWidget(self.free_only_checkbox)
 
         self.summary_label = QLabel()
         self.summary_label.setWordWrap(True)

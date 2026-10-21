@@ -132,6 +132,14 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Visual check on macOS (cocoa), English and French** (`v0.48.109-cocoa-visual-check`, issue #290) —
+  the main window (every tab at 1280x820 / 1000x650 / 900x600, every menu), Preferences, Stage Mode and every
+  #282 window (default and minimum) grabbed on the real `cocoa` platform in both languages. Found and fixed:
+  main tabs elided to "Pa…" / "Par ca…" in French and the Dashboard's controller tabs to "DD…" (now whole titles
+  with scroll arrows, `window_size.keep_tab_titles_whole`, plus shorter French titles); Music Library side tabs
+  cut to "Tr…" / "Hi…"; wizard sync checkbox clipped in French; Layer Map minimum 963 px wide in French; MIDI
+  Latency Test minimum 617 px tall (both languages); Preferences minimum 1118 / 1243 px wide because of the
+  workspace path. French regression tests added to `tests/test_small_windows.py`.
 - [x] **Doc screenshots for the v0.48.90–v0.48.107 features** (docs-only, no tag, issue #289) —
   `scripts/capture_docs_screenshots.py` now also captures First-run setup (both list pages, demo port
   names + copies of the fixture in a throwaway `/tmp` home), Layer Map, Ready for live, MIDI Latency Test
