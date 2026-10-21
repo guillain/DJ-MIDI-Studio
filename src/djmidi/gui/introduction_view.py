@@ -29,6 +29,7 @@ from djmidi.gui.layout import CellKey
 from djmidi.gui.theme import colors as theme_colors
 from djmidi.gui.theme import current_mode as theme_current_mode
 from djmidi.gui.theme import signals as theme_signals
+from djmidi.gui.window_size import keep_tab_titles_whole
 
 # Fixed per-software accent, one pair per theme mode (light/dark) so each
 # stays legible against both backgrounds -- same convention as theme.py's
@@ -102,6 +103,8 @@ class IntroductionView(QWidget):
         self._controller_tabs = QTabWidget()
         self._controller_tabs.setDocumentMode(True)
         self._controller_tabs.setTabPosition(QTabWidget.TabPosition.North)
+        # Fourteen controller names never fit: scroll, don't cut them to "DD…" (#290).
+        keep_tab_titles_whole(self._controller_tabs)
         self._controller_tabs.currentChanged.connect(self._load_card_image)
 
         cards_box = QGroupBox("Controller overview")

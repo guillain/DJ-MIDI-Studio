@@ -253,3 +253,80 @@ def test_stage_window_is_usable_at_small_sizes(size):
         assert minimum.width() <= SMALL_SCREEN[0] and minimum.height() <= SMALL_SCREEN[1]
     finally:
         window.close()
+
+
+# --- issue #290: the same windows in French, plus the tab bars ------------
+
+
+@pytest.fixture
+def french():
+    """The French catalogue installed, as `gui.app.run` does at launch."""
+    from PySide6.QtCore import QTranslator
+
+    from djmidi import i18n
+
+    app = QApplication.instance()
+    translator = QTranslator()
+    assert translator.load(str(i18n.translation_file("fr")))
+    app.installTranslator(translator)
+    try:
+        yield
+    finally:
+        app.removeTranslator(translator)
+
+
+@pytest.mark.parametrize("name", list(WINDOWS))
+def test_window_is_usable_in_french(name, french):
+    # Longer French labels clipped the wizard's checkbox and pushed Layer
+    # Map's minimum past a 900 px screen; only checked on macOS before.
+    test_window_is_usable_at_default_and_minimum_size(name)
+
+
+@pytest.mark.parametrize("language", ["en", "fr"])
+def test_preferences_minimum_ignores_the_workspace_path_length(language, monkeypatch, request):
+    from djmidi import user_paths
+    from djmidi.gui.preferences_dialog import PreferencesDialog
+    from djmidi.plugins.preferences import PluginPreferences
+
+    if language == "fr":
+        request.getfixturevalue("french")
+    # A real path can be long (a network home, a nested Documents folder):
+    # it once set the dialog's minimum to 1118 px (1243 in French).
+    long_path = Path("/Users/someone-with-a-long-name/Library/Mobile Documents/" + "nested-folder/" * 8)
+    monkeypatch.setattr(user_paths, "workspace_dir", lambda: long_path)
+    apply_theme(QApplication.instance())
+    dialog = PreferencesDialog(PluginPreferences())
+    dialog.show()
+    try:
+        dialog.resize(1, 1)
+        QApplication.processEvents()
+        minimum = dialog.minimumSizeHint().expandedTo(dialog.minimumSize())
+        assert minimum.width() <= SMALL_SCREEN[0], minimum
+        assert _layout_problems(dialog) == []
+    finally:
+        dialog.close()
+
+
+def test_tab_titles_are_never_elided(french):
+    """macOS cut the main tabs to "Pa…" / "Pa…" in French and the dashboard's
+    controller tabs to "DD…": every crowded tab bar keeps whole titles."""
+    from PySide6.QtCore import Qt
+
+    from djmidi.gui.main_window import MainWindow
+
+    window = MainWindow()
+    try:
+        tab_widgets = [
+            window.left_tabs,
+            window.introduction_view._controller_tabs,
+            window.music_library_view.side_tabs,
+        ]
+        for tabs in tab_widgets:
+            assert tabs.elideMode() == Qt.TextElideMode.ElideNone
+        assert window.left_tabs.usesScrollButtons()
+        assert window.introduction_view._controller_tabs.usesScrollButtons()
+        # The side tabs grow instead (their panel is in a scroll area).
+        assert not window.music_library_view.side_tabs.usesScrollButtons()
+        assert window.left_tabs.tabText(window._tab_indexes["library"]) == "Bibliothèque"
+    finally:
+        window.close()

@@ -62,6 +62,8 @@ playing** (warnings only) or **Not ready** (at least one error). Below it:
   so you can fix it in the editor;
 - **Copy report** copies the whole list as text, to keep or share.
 
+![Ready for live: a 4-deck mapping with only warnings](../../images/layout/live-ready.png)
+
 ## What it never does
 
 The check is read-only. It never edits, deduplicates or saves your mapping

@@ -52,11 +52,28 @@ MIDI triggers instead of the tab's blank starting state above:
   and one matched from a seed track
 - [Write tags to selection](music-library-bulk-tags.png) — the bulk tag
   dialog, with Genre ticked for a whole folder
+- [Cover art](music-library-cover.png) — a generated demo cover embedded
+  in the selected track
+- [Statistics](music-library-statistics.png) — tracks per category
+- [Smart playlist rules](music-library-smart-playlist.png)
+- [Rename files](music-library-rename.png) — the preview for a template
+- [Change history](music-library-change-history.png) — a tag edit, a cover
+  and a rename
 
 ### Dialogs
 
 - [Preferences → Controller sync](preferences-controller-sync.png) — two
   recorded controller sync sets
+- [First-run setup: controllers](first-run-controllers.png) and
+  [mapping](first-run-mapping.png) — demo port names and copies of the
+  fixture in a throwaway home folder
+- [Layer Map](layer-map.png) — the fixture's DDJ-XP2, centred on PAD MODE 5
+- [Ready for live](live-ready.png) — the report on the fixture
+- [MIDI Latency Test](midi-latency.png) — a finished run through a
+  simulated, in-process IAC loopback (illustrative timings, no real port)
+- [Command palette](command-palette.png) — the query `save`
+- [Interface language: Preferences](interface-language-preferences.png) and
+  [Dashboard](interface-language-fr.png) in French
 
 ### Traktor mapping
 
