@@ -72,7 +72,8 @@ Preferences button), or **`Sync controllers`** in the
 [Live Monitor](live-monitor.md).
 
 Each set is sent in recorded order, immediately (the pauses from the
-recording are dropped). The status bar shows how many controllers were
+recording are dropped), through one connection to its output port that
+stays open for the whole set. The status bar shows how many controllers were
 synced and which ones were not connected.
 
 ## Sync at launch

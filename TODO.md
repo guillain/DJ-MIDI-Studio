@@ -132,6 +132,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Sync opens each output port once per set** (`v0.48.113-sync-open-port-once`, issue #297) —
+  `run_sync` sent every message through `send_midi_message`, which opened and closed the port each time (slow
+  for a 100+ message set, and some drivers drop messages on reopen). `midi_io.open_midi_output` now opens the
+  port once and yields a sender; launch, plug-in, scene-switch and manual Sync all go through it. A port that
+  fails to open still only fails its own set. The sync set editor's `Send selected` sends one message, so it
+  keeps `send_midi_message`; macros (with per-step delays) are unchanged.
 - [x] **Controller sync recording review** (`v0.48.110-controller-sync-record-review`, review of PR #181) —
   `● Rec` named an unknown same-maker device after a known controller (its set replaced the real one and Sync
   then sent to the real controller), collapsed two ports of one controller into one set, dropped every
@@ -140,8 +146,8 @@ Implemented contract, runtime, test, and documentation work:
   controller at send time. Maintainer decisions: only recognized controllers are recorded (IAC/unknown ports
   ignored, named in the status bar), and quitting mid-recording asks Save / Discard / Cancel. Also: menu-corner
   relayout on ● Rec → ■ Stop, Dashboard files card refresh, failed inputs named, docs. Left open: Windows
-  exclusive inputs (record through the Live Monitor stream), per-message port open/close at launch Sync,
-  recording size cap, macros / pending MIDI Learn firing during ● Rec.
+  exclusive inputs (record through the Live Monitor stream), per-message port open/close at launch Sync
+  (done, issue #297), recording size cap, macros / pending MIDI Learn firing during ● Rec.
 - [x] **Visual check on macOS (cocoa), English and French** (`v0.48.109-cocoa-visual-check`, issue #290) —
   the main window (every tab at 1280x820 / 1000x650 / 900x600, every menu), Preferences, Stage Mode and every
   #282 window (default and minimum) grabbed on the real `cocoa` platform in both languages. Found and fixed:
