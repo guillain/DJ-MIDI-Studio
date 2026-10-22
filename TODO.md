@@ -132,6 +132,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **● Rec freezes the Live Monitor** (`v0.48.117-rec-live-monitor-changes`, issue #307) — stopping the Live
+  Monitor mid-recording silently dropped the ports ● Rec read from its stream, and starting it (by hand or the
+  mapping-load auto-start) tried to open ports ● Rec held, refused on Windows. `LiveMonitorView.set_locked`
+  greys out Start/Stop and the inputs with a tooltip until `■ Stop`; an auto-start requested meanwhile runs
+  right after it. Chosen over handing ports back and forth: no window where a port is closed by one listener
+  and not yet opened by the other.
 - [x] **● Rec collapses CC traffic** (`v0.48.114-rec-collapse-cc`, issue #298) — a fader, knob or jog moved
   during `● Rec` no longer adds hundreds of Control Change messages to a set replayed at every launch:
   `controller_sync.collapse_control_changes` keeps the last value per (channel, CC) at its last position, notes

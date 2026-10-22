@@ -44,6 +44,11 @@ To choose ports yourself, open `View → Live Monitor`, then:
 
 Your manual port choice is never overridden by the auto-start.
 
+While [`● Rec`](controller-sync.md) records, `Start monitoring`/`Stop monitoring`
+and the input list are greyed out until `■ Stop`: the recording reads the inputs
+the monitor already holds, so they must not change underneath it. A mapping
+loaded meanwhile starts the monitor right after `■ Stop`.
+
 ## Read the event log
 
 | Column | Meaning |
