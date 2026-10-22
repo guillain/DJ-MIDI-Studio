@@ -60,10 +60,18 @@ PROTECTED_FOLDERS = frozenset(
 """Folder names (case-insensitive) holding a DJ software's own library: a
 file anywhere below one is never renamed."""
 
-RELINK_WARNING = (
+def QT_TRANSLATE_NOOP(context: str, text: str) -> str:
+    """Marks `text` for the interface translations (issue #306) without
+    importing Qt here: pyside6-lupdate finds it by this name, and the dialog
+    translates it with QCoreApplication.translate(context, text)."""
+    return text
+
+
+RELINK_WARNING = QT_TRANSLATE_NOOP(
+    "RenameFilesDialog",
     "Serato, Traktor and Rekordbox remember each track by its full path: renamed files will show "
     "as missing there until you relink them (their libraries are not modified by this app). "
-    "Keep the old → new CSV to find each file again."
+    "Keep the old → new CSV to find each file again.",
 )
 
 CSV_HEADER = ("old_path", "new_path")

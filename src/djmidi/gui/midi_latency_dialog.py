@@ -94,7 +94,7 @@ class MidiLatencyDialog(QDialog):
         self.results: list[PingResult] = []
         self.last_stats: LatencyStats | None = None
 
-        warning = QLabel("<b>{}</b> {}".format(self.tr("Needs an echo."), ECHO_WARNING))
+        warning = QLabel("<b>{}</b> {}".format(self.tr("Needs an echo."), self.tr(ECHO_WARNING)))
         warning.setWordWrap(True)
         warning.setObjectName("latencyEchoWarning")
 

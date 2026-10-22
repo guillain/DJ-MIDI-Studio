@@ -271,3 +271,92 @@ def test_follow_up_windows_show_french_under_the_french_catalogue(french, tmp_pa
         for window in (wizard, latency, layer_map, live_ready):
             window.close()
             window.deleteLater()
+
+
+# --- Leftovers (issue #306) ----------------------------------------------------
+
+
+def test_compiled_catalogue_translates_the_issue_306_leftovers():
+    from djmidi.library.rename import RELINK_WARNING
+    from djmidi.midi_latency import ECHO_WARNING
+
+    translator = QTranslator()
+    assert translator.load(str(i18n.translation_file("fr")))
+    for context, source in [
+        ("MainWindow", "Sync controllers: send each connected controller its recorded initialization set"),
+        ("MainWindow", "A controller sync recording is in progress. Save it before quitting?"),
+        ("MainWindow", "Recording discarded: the stored sync set(s) were kept"),
+        ("MidiLatencyDialog", ECHO_WARNING),
+        ("RenameFilesDialog", RELINK_WARNING),
+        ("SetPreparationPanel", "Add selection"),
+        ("AudioPreviewBar", "Auto-advance"),
+    ]:
+        translated = translator.translate(context, source)
+        assert translated and translated != source, (context, source)
+    assert translator.translate("MainWindow", "Recording in progress") == "Enregistrement en cours"
+    assert translator.translate("MusicLibraryView", "History") == "Historique"
+
+
+def test_qt_free_warnings_stay_english_and_are_scanned():
+    """The two warnings live in Qt-free modules: their own QT_TRANSLATE_NOOP
+    returns the text unchanged, and update_translations.sh scans them."""
+    from djmidi.library import rename
+    from djmidi.midi_latency import ECHO_WARNING
+
+    assert ECHO_WARNING.startswith("Only meaningful with a port")
+    assert rename.RELINK_WARNING.startswith("Serato, Traktor and Rekordbox")
+    sources = {path.name for path in _script_sources()}
+    assert {"midi_latency.py", "rename.py", "set_preparation.py", "audio_preview.py"} <= sources
+
+
+def test_main_window_sync_and_rec_show_french(french):
+    from djmidi.gui.main_window import MainWindow
+
+    window = MainWindow()
+    try:
+        assert window._record_button.toolTip().startswith("Enregistrer la configuration des contrôleurs")
+        assert window._sync_button.toolTip().startswith("Synchroniser les contrôleurs")
+        assert window._sync_scene_combo.toolTip().startswith("Scène de synchro")
+        combo = window._sync_scene_combo
+        assert combo.itemText(combo.count() - 1) == "Nouvelle scène…"
+    finally:
+        window.close()
+        window.deleteLater()
+
+
+def test_library_tab_and_dialogs_show_french(french):
+    from PySide6.QtCore import Qt
+    from PySide6.QtWidgets import QLabel
+
+    from djmidi.gui import music_library_view as mlv
+    from djmidi.gui.midi_latency_dialog import MidiLatencyDialog
+    from djmidi.gui.rename_files_dialog import RenameFilesDialog
+    from djmidi.library import workspace
+    from djmidi.library.rename import RenamePlan
+
+    view = mlv.MusicLibraryView(db_path=":memory:")
+    latency = MidiLatencyDialog(list_outputs=list, list_inputs=list)
+    rename_dialog = RenameFilesDialog(lambda template: RenamePlan(template, ()), "{artist} - {title}")
+    mix = mlv.MixPathDialog(workspace.MixPathOptions(direction="down"), 3)
+    try:
+        tabs = [view.side_tabs.tabText(index) for index in range(view.side_tabs.count())]
+        assert tabs == ["Morceau", "Catégories", "Playlists", "Historique", "Set"]
+        assert view.scan_button.text() == "Scanner et lire les tags"
+        assert view.audio_preview.auto_advance_check.text() == "Enchaîner"
+        assert view.set_panel.add_button.text() == "Ajouter la sélection"
+        assert view.table_model.headerData(0, Qt.Orientation.Horizontal) == "Titre"
+        # The filters still go by data, not by the translated label.
+        view.ensure_open()
+        assert view.category_filter.itemText(0) == "Toutes les catégories"
+        assert view.category_filter.itemData(1) == mlv.UNCATEGORIZED
+        warning = latency.findChild(QLabel, "latencyEchoWarning")
+        assert "renvoie" in warning.text()
+        assert any("relocalisiez" in label.text() for label in rename_dialog.findChildren(QLabel))
+        # The mix-path direction is read from the item data, not its French text.
+        assert mix.direction_combo.currentText() == "BPM décroissant"
+        assert mix.options().direction == "down"
+    finally:
+        view.close_db()
+        for window in (view, latency, rename_dialog, mix):
+            window.close()
+            window.deleteLater()

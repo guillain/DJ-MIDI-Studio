@@ -132,6 +132,13 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **French UI leftovers** (`v0.48.116-french-ui-leftovers`, issue #306) — the ● Rec / Sync / sync-scene
+  tooltips, ● Rec status-bar messages, replace prompts and quit prompt, the MIDI Latency Test echo warning, the
+  Rename files relink warning and the whole Music Library tab (side tabs, panels, table headers, filters, status
+  line, its dialogs, the Set panel and the preview bar) now go through `tr()` and are translated. Filter and
+  mix-path combos read their item data, never the translated label. Still English: the duplicates and
+  health-report windows, and text built by Qt-free modules (Sync result summary, Set summary, smart-playlist
+  rule summaries).
 - [x] **Plug-in Sync ignores a Windows port renumbering** (`v0.48.115-plug-in-sync-renumbering`, issue #305) —
   `PlugInSyncTracker` compared raw output-port names, so a controller Windows renumbered when another device came
   or went (`DDJ-XP2 1` → `DDJ-XP2 0`) looked plugged in and was synced again. It now counts ports by

@@ -34,7 +34,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-from PySide6.QtCore import QObject, Qt, QUrl, Signal
+from PySide6.QtCore import QT_TRANSLATE_NOOP, QObject, Qt, QUrl, Signal
 from PySide6.QtWidgets import (
     QCheckBox,
     QHBoxLayout,
@@ -72,7 +72,9 @@ DEFAULT_VOLUME = 80
 VOLUME_SETTINGS_KEY = "library/preview_volume"
 AUTO_ADVANCE_SETTINGS_KEY = "library/preview_auto_advance"
 
-UNAVAILABLE_TOOLTIP = "Audio preview unavailable: PySide6's QtMultimedia module could not be loaded."
+UNAVAILABLE_TOOLTIP = QT_TRANSLATE_NOOP(
+    "AudioPreviewBar", "Audio preview unavailable: PySide6's QtMultimedia module could not be loaded."
+)
 
 
 def multimedia_available() -> bool:
@@ -172,9 +174,9 @@ class AudioPreviewBar(QWidget):
 
         row = QHBoxLayout(self)
         row.setContentsMargins(0, 0, 0, 0)
-        self.play_button = QPushButton("▶ Play")
+        self.play_button = QPushButton(self.tr("▶ Play"))
         self.play_button.clicked.connect(self.toggle_play)
-        self.stop_button = QPushButton("■ Stop")
+        self.stop_button = QPushButton(self.tr("■ Stop"))
         self.stop_button.clicked.connect(self.stop)
         self.seek_slider = QSlider(Qt.Orientation.Horizontal)
         self.seek_slider.setRange(0, 0)
@@ -182,15 +184,18 @@ class AudioPreviewBar(QWidget):
         self.seek_slider.sliderReleased.connect(self._on_slider_released)
         self.seek_slider.sliderMoved.connect(self._on_slider_moved)
         self.time_label = QLabel()
-        self.offset_check = QCheckBox(f"Start at {round(START_OFFSET_FRACTION * 100)}%")
-        self.offset_check.setToolTip("Skip the intro: playback starts 30% into the track.")
-        self.volume_label = QLabel("Vol")
+        percent = round(START_OFFSET_FRACTION * 100)
+        self.offset_check = QCheckBox(self.tr("Start at {percent}%").format(percent=percent))
+        self.offset_check.setToolTip(
+            self.tr("Skip the intro: playback starts {percent}% into the track.").format(percent=percent)
+        )
+        self.volume_label = QLabel(self.tr("Vol"))
         self.volume_slider = QSlider(Qt.Orientation.Horizontal)
         self.volume_slider.setRange(0, 100)
         self.volume_slider.setValue(DEFAULT_VOLUME)
         self.volume_slider.setFixedWidth(80)
         self.volume_slider.valueChanged.connect(self._on_volume_changed)
-        self.auto_advance_check = QCheckBox("Auto-advance")
+        self.auto_advance_check = QCheckBox(self.tr("Auto-advance"))
         self.auto_advance_check.setChecked(False)
         self.auto_advance_check.toggled.connect(self._on_auto_advance_toggled)
         row.addWidget(self.play_button)
@@ -203,12 +208,12 @@ class AudioPreviewBar(QWidget):
         row.addWidget(self.auto_advance_check)
         row.addWidget(help_button(self, *help_texts.LIBRARY_PREVIEW))
         self._tooltips = {
-            self.play_button: "Play or pause the selected track (Space in the table).",
-            self.stop_button: "Stop and rewind.",
-            self.seek_slider: "Drag to move through the track (Left/Right in the table: 10 s).",
+            self.play_button: self.tr("Play or pause the selected track (Space in the table)."),
+            self.stop_button: self.tr("Stop and rewind."),
+            self.seek_slider: self.tr("Drag to move through the track (Left/Right in the table: 10 s)."),
             self.offset_check: self.offset_check.toolTip(),
-            self.volume_slider: "Preview volume, remembered for next time.",
-            self.auto_advance_check: "When a track ends, play the next one in the table.",
+            self.volume_slider: self.tr("Preview volume, remembered for next time."),
+            self.auto_advance_check: self.tr("When a track ends, play the next one in the table."),
         }
         self._update_controls()
 
@@ -392,7 +397,7 @@ class AudioPreviewBar(QWidget):
         self.seek(self.seek_slider.value())
 
     def _on_error(self, _error: object = None, message: str = "") -> None:
-        self._error = message or "This file could not be played."
+        self._error = message or self.tr("This file could not be played.")
         _LOGGER.warning("Audio preview of %s failed: %s", self._path, self._error)
         self._update_controls()
 
@@ -415,14 +420,14 @@ class AudioPreviewBar(QWidget):
         self.offset_check.setEnabled(available)
         self.volume_slider.setEnabled(available)
         self.auto_advance_check.setEnabled(available)
-        self.play_button.setText("❚❚ Pause" if self.is_playing() else "▶ Play")
+        self.play_button.setText(self.tr("❚❚ Pause") if self.is_playing() else self.tr("▶ Play"))
         for widget, tooltip in self._tooltips.items():
-            widget.setToolTip(tooltip if available else UNAVAILABLE_TOOLTIP)
+            widget.setToolTip(tooltip if available else self.tr(UNAVAILABLE_TOOLTIP))
         if not available:
-            self.time_label.setText("Preview unavailable")
-            self.time_label.setToolTip(UNAVAILABLE_TOOLTIP)
+            self.time_label.setText(self.tr("Preview unavailable"))
+            self.time_label.setToolTip(self.tr(UNAVAILABLE_TOOLTIP))
         elif self._error is not None:
-            self.time_label.setText("Cannot play")
+            self.time_label.setText(self.tr("Cannot play"))
             self.time_label.setToolTip(self._error)
         else:
             self._update_time_label(self.seek_slider.value())
