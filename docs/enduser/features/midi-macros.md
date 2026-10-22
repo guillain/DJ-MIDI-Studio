@@ -104,7 +104,9 @@ port.
 The port is opened once when the macro starts and stays open until its last
 message, delays included, then closed — faster than reopening it for every
 message, and some drivers drop messages on reopen. If sending fails, the port
-is closed right away.
+is closed right away. Quitting the app, or closing `Manage Macros…` while
+`Test` still waits on a delay, stops that macro and closes its port at once;
+the remaining messages are not sent.
 
 ## Macro files
 

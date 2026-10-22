@@ -132,6 +132,9 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Stop waiting macros on close** (`v0.48.120-stop-macros-on-close`, issue #314) — closing the main
+  window now calls `MacroPlayer.stop_all()`, and closing the macro editor stops its Test player, so a macro
+  waiting between steps releases its output port right away instead of at process exit. Follow-up of #308.
 - [x] **French UI: remaining English** (`v0.48.119-french-ui-remaining`, issue #313) — the Music Library's
   duplicates and health-report windows, the Live Monitor lock tooltip shown while `● Rec` records, and text built by
   Qt-free modules (Sync result summary, Set panel summary and transition notes, smart-playlist rule summaries and
