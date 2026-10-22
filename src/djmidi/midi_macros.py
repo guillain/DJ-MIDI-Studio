@@ -23,6 +23,10 @@ Playing is split in two so the GUI never blocks its event loop on a delay:
 :func:`macro_schedule` turns the per-step delays into absolute offsets the
 GUI feeds to timers, and :func:`run_macro` plays the same schedule
 synchronously with an injectable ``sleep`` (tests, scripts).
+
+Either way a run opens its output port once, sends every step through it
+and closes it when the run ends or fails (issue #308, as Sync does since
+#297): :func:`macro_port_opener` picks how the port is opened.
 """
 
 from __future__ import annotations
@@ -31,7 +35,9 @@ import json
 import logging
 import time
 from collections.abc import Callable, Iterable, Sequence
+from contextlib import AbstractContextManager, nullcontext
 from dataclasses import dataclass, field
+from functools import partial
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -291,18 +297,35 @@ def resolve_macro_port(macro: MidiMacro, available_ports: Sequence[str]) -> str 
     return resolve_output_port(ControllerSyncSet(target, target), available_ports)
 
 
-def send_message(message: SyncMessage, port: str, sender: Callable[..., None] | None = None) -> None:
-    if sender is None:
-        from djmidi.midi_io import send_midi_message
+# Port name -> context manager yielding a per-message sender for that port
+# (the keyword arguments of ``midi_io.send_midi_message`` minus the port).
+PortOpener = Callable[[str], AbstractContextManager[Callable[..., None]]]
 
-        sender = send_midi_message
-    sender(
-        output_port_name=port,
-        event_type=message.event_type,
-        channel_1_based=message.channel,
-        data1=message.data1,
-        data2=message.data2,
-    )
+
+def macro_port_opener(sender: Callable[..., None] | None = None, port_opener: PortOpener | None = None) -> PortOpener:
+    """How a macro run opens its port: ``port_opener`` when given, else a
+    per-message ``sender`` (called with ``output_port_name``, nothing to
+    open or close -- tests), else :func:`midi_io.open_midi_output`, which
+    keeps the real port open for the whole run (issue #308)."""
+    if port_opener is not None:
+        return port_opener
+    if sender is not None:
+        per_message = sender
+        return lambda port: nullcontext(partial(per_message, output_port_name=port))
+    from djmidi.midi_io import open_midi_output
+
+    return open_midi_output
+
+
+def send_step(send: Callable[..., None], message: SyncMessage) -> None:
+    """Sends ``message`` through a sender yielded by a :data:`PortOpener`."""
+    send(event_type=message.event_type, channel_1_based=message.channel, data1=message.data1, data2=message.data2)
+
+
+def send_message(message: SyncMessage, port: str, sender: Callable[..., None] | None = None) -> None:
+    """Sends one message on its own, opening and closing ``port`` around it."""
+    with macro_port_opener(sender)(port) as send:
+        send_step(send, message)
 
 
 @dataclass(frozen=True)
@@ -343,24 +366,28 @@ def run_macro(
     available_ports: Sequence[str],
     sender: Callable[..., None] | None = None,
     sleep: Callable[[float], None] = time.sleep,
+    port_opener: PortOpener | None = None,
 ) -> MacroResult:
-    """Plays ``macro`` synchronously, sleeping each step's delay. A failing
-    send stops the macro (later steps may depend on it) and is reported."""
+    """Plays ``macro`` synchronously, sleeping each step's delay. The port
+    is opened once for the whole run and closed when it ends (issue #308).
+    A failing open or send stops the macro (later steps may depend on it)
+    and is reported."""
     failed = unplayable_result(macro, available_ports)
     if failed is not None:
         return failed
     port = resolve_macro_port(macro, available_ports)
     assert port is not None  # checked by unplayable_result
     sent = 0
-    for step in macro.steps:
-        if step.delay_ms:
-            sleep(step.delay_ms / 1000)
-        try:
-            send_message(step.message, port, sender)
-        except Exception as exc:  # noqa: BLE001 - report the failure instead of crashing the caller
-            _LOGGER.warning("Macro %r: sending to %r failed after %d message(s): %s", macro.name, port, sent, exc)
-            return MacroResult(macro.name, port, sent, len(macro.steps), str(exc))
-        sent += 1
+    try:
+        with macro_port_opener(sender, port_opener)(port) as send:
+            for step in macro.steps:
+                if step.delay_ms:
+                    sleep(step.delay_ms / 1000)
+                send_step(send, step.message)
+                sent += 1
+    except Exception as exc:  # noqa: BLE001 - report the failure instead of crashing the caller
+        _LOGGER.warning("Macro %r: sending to %r failed after %d message(s): %s", macro.name, port, sent, exc)
+        return MacroResult(macro.name, port, sent, len(macro.steps), str(exc))
     return MacroResult(macro.name, port, sent, len(macro.steps))
 
 
@@ -433,9 +460,11 @@ __all__ = [
     "MacroStep",
     "MacroTrigger",
     "MidiMacro",
+    "PortOpener",
     "load_macros",
     "macro_file_name",
     "macro_from_sync_set",
+    "macro_port_opener",
     "macro_schedule",
     "macros_for_event",
     "resolve_macro_port",
@@ -443,6 +472,7 @@ __all__ = [
     "run_macro",
     "save_macros",
     "send_message",
+    "send_step",
     "steps_from_rows",
     "unplayable_result",
     "validate_macros",

@@ -1,4 +1,5 @@
 import json
+from contextlib import contextmanager
 
 import pytest
 
@@ -110,6 +111,72 @@ def test_run_macro_stops_at_a_failing_send():
     result = run_macro(_macro(), ["PIONEER DDJ-XP2"], sender=sender, sleep=lambda _s: None)
     assert (result.ok, result.sent, result.error) == (False, 1, "port vanished")
     assert "stopped after 1/3" in result.summary()
+
+
+class _FakeOutput:
+    """Counts how often a port is opened and closed (issue #308)."""
+
+    def __init__(self, fail_on=None, fail_open=False):
+        self.opened, self.closed, self.sent = [], 0, []
+        self._fail_on, self._fail_open = fail_on, fail_open
+
+    @contextmanager
+    def __call__(self, port):
+        if self._fail_open:
+            raise OSError("cannot open")
+        self.opened.append(port)
+        try:
+
+            def send(**kw):
+                if len(self.sent) + 1 == self._fail_on:
+                    raise OSError("port vanished")
+                self.sent.append(kw)
+
+            yield send
+        finally:
+            self.closed += 1
+
+
+def test_run_macro_opens_its_port_once_for_the_whole_run():
+    output = _FakeOutput()
+    result = run_macro(_macro(), ["PIONEER DDJ-XP2"], sleep=lambda _s: None, port_opener=output)
+    assert result.ok and result.sent == 3
+    assert output.opened == ["PIONEER DDJ-XP2"] and output.closed == 1
+    assert [kw["data1"] for kw in output.sent] == [11, 11, 7]
+    assert "output_port_name" not in output.sent[0]
+
+
+def test_run_macro_sleeps_with_the_port_open():
+    output, open_while_sleeping = _FakeOutput(), []
+    run_macro(
+        _macro(),
+        ["PIONEER DDJ-XP2"],
+        sleep=lambda _s: open_while_sleeping.append(len(output.opened) - output.closed),
+        port_opener=output,
+    )
+    assert open_while_sleeping == [1, 1]
+
+
+def test_run_macro_closes_its_port_when_a_send_fails():
+    output = _FakeOutput(fail_on=2)
+    result = run_macro(_macro(), ["PIONEER DDJ-XP2"], sleep=lambda _s: None, port_opener=output)
+    assert (result.ok, result.sent, result.error) == (False, 1, "port vanished")
+    assert output.closed == 1
+
+
+def test_run_macro_reports_a_port_that_will_not_open():
+    result = run_macro(_macro(), ["PIONEER DDJ-XP2"], port_opener=_FakeOutput(fail_open=True))
+    assert (result.ok, result.sent, result.error) == (False, 0, "cannot open")
+
+
+def test_run_macro_uses_open_midi_output_by_default(monkeypatch):
+    from djmidi import midi_io
+
+    output = _FakeOutput()
+    monkeypatch.setattr(midi_io, "open_midi_output", output)
+    monkeypatch.setattr(midi_io, "send_midi_message", lambda **kw: pytest.fail("must not reopen per step"))
+    result = run_macro(_macro(), ["PIONEER DDJ-XP2"], sleep=lambda _s: None)
+    assert result.ok and output.opened == ["PIONEER DDJ-XP2"] and len(output.sent) == 3
 
 
 def test_macro_from_sync_set_copies_messages_without_delays():
