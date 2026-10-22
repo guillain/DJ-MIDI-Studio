@@ -40,7 +40,9 @@ The quickest way is the **`● Rec`** button at the top right of the menu bar:
    "Pioneer DJ …" — is ignored and listed in the status bar, so it is never
    replayed at launch. A second identical unit gets its own set, named after
    its port. Inputs that couldn't be opened (in use by another program) are
-   listed in the status bar too.
+   listed in the status bar too. Controllers the Live Monitor is already
+   listening to are recorded through it, without opening them a second time
+   (Windows lets only one program at a time open a MIDI input).
 
 Quitting the app while `● Rec` is on asks whether to save the recording,
 discard it, or keep the app open.

@@ -1024,6 +1024,9 @@ class MainWindow(QMainWindow):
         self._record_button.toggled.connect(self._on_record_toggled)
         self._record_monitor = MidiMonitor()
         self._record_events: list[MidiEvent] = []
+        # Inputs the Live Monitor already holds while recording: their events
+        # come from its stream (_on_live_midi_event), never a second open.
+        self._record_shared_ports: frozenset[str] = frozenset()
         # Sync-on-plug-in (issue #183): started by _start_controller_sync in
         # the real app only; _poll_plugged_controllers stays callable by tests.
         self._plug_in_tracker = PlugInSyncTracker()
@@ -1652,9 +1655,16 @@ class MainWindow(QMainWindow):
 
     def _start_recording(self) -> None:
         self._record_events = []
-        opened, failed = [], []
+        # Windows lets one client only open a MIDI input: record the ports the
+        # Live Monitor already listens on from its stream (like MIDI Learn)
+        # and open only the others.
+        shared = list(self.live_monitor_view.listening_input_ports())
+        self._record_shared_ports = frozenset(shared)
+        opened, failed = list(shared), []
         # Two identical units can share a port name on macOS; it opens once.
         for name in dict.fromkeys(list_input_ports()):
+            if name in self._record_shared_ports:
+                continue
             try:
                 self._record_monitor.open_input(name)
             except Exception as exc:  # noqa: BLE001 - one busy port must not block the others
@@ -1671,6 +1681,7 @@ class MainWindow(QMainWindow):
                 if failed
                 else "No MIDI input could be opened: is a controller connected?",
             )
+            self._record_shared_ports = frozenset()
             self._record_button.blockSignals(True)
             self._record_button.setChecked(False)
             self._record_button.blockSignals(False)
@@ -1692,6 +1703,7 @@ class MainWindow(QMainWindow):
         self._record_timer.stop()
         self._poll_recording()
         self._record_monitor.close_all()
+        self._record_shared_ports = frozenset()
         self._record_button.setText(self.tr("● Rec"))
         self._relayout_menu_corner()
         scene = self.preferences.active_sync_scene
@@ -2491,6 +2503,8 @@ class MainWindow(QMainWindow):
         return self.live_monitor_view.is_running
 
     def _on_live_midi_event(self, event: MidiEvent) -> None:
+        if event.direction == "in" and event.port in self._record_shared_ports:
+            self._record_events.append(event)
         # An active MIDI Learn consumes the press it learns; the layouts still
         # react to it below like any other live hit. Otherwise a press bound
         # to a macro (issue #252) plays it -- never while the macro editor is
