@@ -1,4 +1,4 @@
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from functools import partial
 
 from PySide6.QtWidgets import QMessageBox
@@ -656,7 +656,8 @@ def test_recording_suspends_controller_bound_macros(tmp_path, monkeypatch):
     ]
     sent = []
     monkeypatch.setattr(main_window_module, "list_output_ports", lambda: [port])
-    monkeypatch.setattr("djmidi.midi_io.send_midi_message", lambda **kwargs: sent.append(kwargs))
+    # Macros send through one open port per run (issue #308).
+    monkeypatch.setattr("djmidi.midi_io.open_midi_output", lambda _port: nullcontext(lambda **kw: sent.append(kw)))
     window._record_monitor = _FakeMonitor([])
     monkeypatch.setattr(main_window_module, "list_input_ports", lambda: [port])
     press = _event("DDJ-XP2", 40)

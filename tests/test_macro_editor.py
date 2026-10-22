@@ -1,4 +1,8 @@
-from PySide6.QtCore import QEventLoop, QTimer
+from contextlib import contextmanager
+
+import pytest
+import shiboken6
+from PySide6.QtCore import QEventLoop, QObject, QTimer
 from PySide6.QtGui import QKeySequence
 from PySide6.QtWidgets import QDialog
 
@@ -60,6 +64,91 @@ def test_player_reports_unconnected_port():
     player.finished.connect(finished.append)
     result = player.play(_macro(), ["IAC Bus"])
     assert not result.ok and finished == [result]
+
+
+class _FakeOutput:
+    """Counts how often a port is opened and closed (issue #308)."""
+
+    def __init__(self, fail_on=None):
+        self.opened, self.closed, self.sent = [], 0, []
+        self._fail_on = fail_on
+
+    @contextmanager
+    def __call__(self, port):
+        self.opened.append(port)
+        try:
+
+            def send(**kw):
+                if len(self.sent) + 1 == self._fail_on:
+                    raise OSError("port vanished")
+                self.sent.append(kw["event_type"])
+
+            yield send
+        finally:
+            self.closed += 1
+
+
+def _wait_until(condition):
+    for _ in range(50):
+        if condition():
+            return
+        _wait(20)
+
+
+def test_player_keeps_one_port_open_across_delays():
+    output, finished = _FakeOutput(), []
+    player = MacroPlayer(port_opener=output)
+    player.finished.connect(finished.append)
+    assert player.play(_macro(delay=30), [PORT]) is None
+    assert output.opened == [PORT] and output.closed == 0  # held across the delay
+    _wait_until(lambda: finished)
+    assert output.sent == ["Note On", "Note Off"]
+    assert output.opened == [PORT] and output.closed == 1
+    assert finished[0].ok
+
+
+def test_player_closes_the_port_when_a_delayed_send_fails():
+    output, finished = _FakeOutput(fail_on=2), []
+    player = MacroPlayer(port_opener=output)
+    player.finished.connect(finished.append)
+    player.play(_macro(delay=30), [PORT])
+    _wait_until(lambda: finished)
+    assert (finished[0].sent, finished[0].error) == (1, "port vanished")
+    assert output.closed == 1 and player.running == 0
+
+
+def test_player_reports_a_port_that_will_not_open():
+    def opener(port):
+        raise OSError("cannot open")
+
+    finished = []
+    player = MacroPlayer(port_opener=opener)
+    player.finished.connect(finished.append)
+    result = player.play(_macro(delay=30), [PORT])
+    assert (result.ok, result.error) == (False, "cannot open") and finished == [result]
+    assert player.running == 0
+
+
+def test_player_stop_all_closes_waiting_ports_and_cancels_their_timers():
+    output, finished = _FakeOutput(), []
+    player = MacroPlayer(port_opener=output)
+    player.finished.connect(finished.append)
+    player.play(_macro(delay=30), [PORT])
+    player.stop_all()
+    assert output.closed == 1 and player.running == 0
+    assert finished[0].error == "cancelled" and finished[0].sent == 1
+    _wait(80)  # the pending timer must not send on a closed port
+    assert output.sent == ["Note On"] and len(finished) == 1
+
+
+def test_destroying_the_player_closes_a_waiting_port():
+    output = _FakeOutput()
+    parent = QObject()
+    player = MacroPlayer(parent=parent, port_opener=output)
+    player.play(_macro(delay=5000), [PORT])
+    assert output.closed == 0
+    shiboken6.delete(parent)
+    assert output.closed == 1
 
 
 # --- editor dialog --------------------------------------------------------------
@@ -155,11 +244,13 @@ def test_macros_load_from_folder_into_menu_with_shortcuts(tmp_path, monkeypatch)
         reserved = window._reserved_shortcuts()
         assert "Ctrl+O" in reserved and "Ctrl+Shift+1" not in reserved
 
-        sent = []
         monkeypatch.setattr(main_window_module, "list_output_ports", lambda: [PORT])
-        monkeypatch.setattr("djmidi.midi_io.send_midi_message", lambda **kw: sent.append(kw))
+        output = _FakeOutput()
+        monkeypatch.setattr("djmidi.midi_io.open_midi_output", output)
+        monkeypatch.setattr("djmidi.midi_io.send_midi_message", lambda **kw: pytest.fail("must not reopen per step"))
         window._macro_actions[0].trigger()
-        assert len(sent) == 2
+        sent = output.sent
+        assert len(sent) == 2 and output.opened == [PORT] and output.closed == 1
         assert window.statusBar().currentMessage().startswith('Macro "Loop": sent 2')
     finally:
         window.close()
@@ -235,9 +326,10 @@ def test_controller_press_plays_its_macro_unless_the_editor_is_open(tmp_path, mo
     bound = MidiMacro("Bound", PORT, (MacroStep(PRESS),), trigger=MacroTrigger("Note On", 1, 40, "DDJ-XP2"))
     midi_macros.save_macros(user_paths.macros_dir(), [bound])
     window = _window(tmp_path)
-    sent = []
+    output = _FakeOutput()
+    sent = output.sent
     monkeypatch.setattr(main_window_module, "list_output_ports", lambda: [PORT])
-    monkeypatch.setattr("djmidi.midi_io.send_midi_message", lambda **kw: sent.append(kw))
+    monkeypatch.setattr("djmidi.midi_io.open_midi_output", output)
     try:
         window._on_live_midi_event(_press(data2="0"))
         assert sent == []

@@ -101,6 +101,11 @@ ignoring case and punctuation. So a macro set to `DDJ-XP2` still finds
 `PIONEER DDJ-XP2` on another computer, or after the system renamed the
 port.
 
+The port is opened once when the macro starts and stays open until its last
+message, delays included, then closed — faster than reopening it for every
+message, and some drivers drop messages on reopen. If sending fails, the port
+is closed right away.
+
 ## Macro files
 
 Each macro is a file in `Documents/DJ MIDI Studio/Macros` (`Macros` →

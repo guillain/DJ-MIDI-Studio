@@ -132,6 +132,10 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Macros open their port once per run** (`v0.48.118-macros-open-port-once`, issue #308) — a macro no
+  longer opens and closes its output port for every step: `run_macro` and the GUI `MacroPlayer` open it once
+  through `midi_io.open_midi_output` and keep it open across the step delays, closing it when the run ends,
+  fails, is stopped (`stop_all`) or the player is destroyed. Follow-up of Sync's #297.
 - [x] **● Rec freezes the Live Monitor** (`v0.48.117-rec-live-monitor-changes`, issue #307) — stopping the Live
   Monitor mid-recording silently dropped the ports ● Rec read from its stream, and starting it (by hand or the
   mapping-load auto-start) tried to open ports ● Rec held, refused on Windows. `LiveMonitorView.set_locked`
