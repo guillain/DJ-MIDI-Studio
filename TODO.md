@@ -132,6 +132,9 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Stop waiting macros on close** (`v0.48.120-stop-macros-on-close`, issue #314) — closing the main
+  window now calls `MacroPlayer.stop_all()`, and closing the macro editor stops its Test player, so a macro
+  waiting between steps releases its output port right away instead of at process exit. Follow-up of #308.
 - [x] **Macros open their port once per run** (`v0.48.118-macros-open-port-once`, issue #308) — a macro no
   longer opens and closes its output port for every step: `run_macro` and the GUI `MacroPlayer` open it once
   through `midi_io.open_midi_output` and keep it open across the step delays, closing it when the run ends,
