@@ -1692,7 +1692,7 @@ class MainWindow(QMainWindow):
         _LOGGER.info("Record: listening on %s", opened)
         self.statusBar().showMessage(
             f"Recording on {len(opened)} MIDI input(s): press the controls to send at initialization, "
-            "then click ■ Stop"
+            "then click ■ Stop (macros and MIDI Learn are paused meanwhile)"
             + (f" (couldn't open: {', '.join(failed)})" if failed else "")
         )
 
@@ -2508,8 +2508,12 @@ class MainWindow(QMainWindow):
         # An active MIDI Learn consumes the press it learns; the layouts still
         # react to it below like any other live hit. Otherwise a press bound
         # to a macro (issue #252) plays it -- never while the macro editor is
-        # open, whose own Learn may be waiting for exactly that press.
-        if self._macro_dialog is not None:
+        # open, whose own Learn may be waiting for exactly that press. While
+        # ● Rec records (issue #296) neither happens: the presses are meant
+        # for the sync set, not for a macro or a pending Learn.
+        if self._record_button.isChecked():
+            pass
+        elif self._macro_dialog is not None:
             self._macro_dialog.feed_learn_event(event)
         elif not self.edit_panel.feed_learn_event(event):
             self._play_triggered_macros(event)

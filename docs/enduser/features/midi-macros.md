@@ -85,6 +85,8 @@ a button is usually the better choice. `Clear` removes the trigger.
   two controllers stays two different triggers.
 - Macros don't play from the controller while `Manage Macros…` is open,
   so learning a button never fires its old macro.
+- Macros don't play from the controller while **`● Rec`** records a
+  [sync set](controller-sync.md) either: those presses belong to the recording.
 - `OK` is refused when two macros use the same trigger, or when a macro
   would send its own trigger back to the port it listens on (a virtual
   loopback port such as IAC would replay it forever).

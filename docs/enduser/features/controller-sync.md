@@ -44,6 +44,10 @@ The quickest way is the **`● Rec`** button at the top right of the menu bar:
    listening to are recorded through it, without opening them a second time
    (Windows lets only one program at a time open a MIDI input).
 
+While `● Rec` records, controller-bound [macros](midi-macros.md) don't play
+and a pending MIDI Learn doesn't take the press: every press goes to the
+recording only. Both work again after `■ Stop`.
+
 Quitting the app while `● Rec` is on asks whether to save the recording,
 discard it, or keep the app open.
 

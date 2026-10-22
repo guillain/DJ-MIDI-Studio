@@ -605,6 +605,57 @@ def test_quitting_while_recording_can_be_cancelled(tmp_path, monkeypatch):
     assert [m.data1 for m in window.preferences.sync_set_for("DDJ-XP2").messages] == [11]
 
 
+def test_recording_suspends_controller_bound_macros(tmp_path, monkeypatch):
+    # Issue #296: a press recorded for a sync set must not also play the
+    # macro bound to it.
+    from djmidi.midi_macros import MacroStep, MacroTrigger, MidiMacro
+
+    window = _window(tmp_path)
+    port = "PIONEER DDJ-XP2"
+    window.macros = [
+        MidiMacro("Bound", port, (MacroStep(SyncMessage("Note On", 1, 11, 127)),), trigger=MacroTrigger("Note On", 1, 40, "DDJ-XP2"))
+    ]
+    sent = []
+    monkeypatch.setattr(main_window_module, "list_output_ports", lambda: [port])
+    monkeypatch.setattr("djmidi.midi_io.send_midi_message", lambda **kwargs: sent.append(kwargs))
+    window._record_monitor = _FakeMonitor([])
+    monkeypatch.setattr(main_window_module, "list_input_ports", lambda: [port])
+    press = _event("DDJ-XP2", 40)
+
+    window._record_button.click()
+    message = window.statusBar().currentMessage()
+    window._on_live_midi_event(press)
+    assert sent == []
+    assert "macros and MIDI Learn are paused" in message
+    window._record_button.click()
+
+    window._on_live_midi_event(press)  # after ■ Stop the macro fires again
+    assert len(sent) == 1
+
+
+def test_recording_does_not_let_a_pending_midi_learn_consume_a_press(tmp_path, monkeypatch):
+    from djmidi.model import Control, MappingElement, MidiConfig, UserIO
+
+    window = _window(tmp_path)
+    control = Control("1", "Note On", "10", [UserIO("click", [MappingElement(tag="play", deck_id="1", slot_id="0")])])
+    window.config = MidiConfig(controls=[control])
+    panel = window.edit_panel
+    panel._config_provider = lambda: window.config
+    panel._ensure_listening = lambda: True
+    panel.set_node(control)
+    assert panel.start_learn()
+    window._record_monitor = _FakeMonitor([])
+    monkeypatch.setattr(main_window_module, "list_input_ports", lambda: ["PIONEER DDJ-XP2"])
+
+    window._record_button.click()
+    window._on_live_midi_event(_event("PIONEER DDJ-XP2", 40))
+    assert panel.is_learning
+    assert control.control == "10"
+    window._record_button.click()
+
+    window._on_live_midi_event(_event("PIONEER DDJ-XP2", 40))
+    assert not panel.is_learning
+    assert control.control == "40"
 def test_record_reads_live_monitor_ports_from_its_stream_instead_of_reopening_them(tmp_path, monkeypatch):
     # Issue #295: on Windows a MIDI input has one client only, so ● Rec must
     # not reopen the inputs the Live Monitor already holds.
