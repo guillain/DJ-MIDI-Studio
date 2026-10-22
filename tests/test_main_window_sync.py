@@ -743,3 +743,62 @@ def test_record_with_only_live_monitor_ports_needs_no_own_input(tmp_path, monkey
     assert warned == []
     assert window._record_button.isChecked()
     assert window._record_monitor.opened == []
+
+
+def test_recording_freezes_a_running_live_monitor_until_stop(tmp_path, monkeypatch):
+    # Issue #307: stopping the Live Monitor mid-recording would silently drop
+    # the ports ● Rec reads from its stream.
+    window = _window(tmp_path)
+    window._record_monitor = _FakeMonitor([])
+    live = _FakeMonitor([])
+    live.open_input("PIONEER DDJ-XP2")
+    view = window.live_monitor_view
+    view._monitor = live
+    view._running = True
+    monkeypatch.setattr(main_window_module, "list_input_ports", lambda: ["PIONEER DDJ-XP2"])
+
+    window._record_button.click()
+    assert not view._start_button.isEnabled()
+    assert not view._ports_box.isEnabled()
+    assert "■ Stop" in view._start_button.toolTip()
+    view._toggle_running()  # e.g. a queued click: still ignored
+    assert view.is_running and live.opened == ["PIONEER DDJ-XP2"]
+    view.eventReceived.emit(_event("PIONEER DDJ-XP2", 11))
+
+    window._record_button.click()
+    assert view._start_button.isEnabled() and view._ports_box.isEnabled()
+    assert view._start_button.toolTip() == ""
+    stored = PluginPreferences.load(window.preferences_path)
+    assert [m.data1 for m in stored.sync_set_for("DDJ-XP2").messages] == [11]
+
+
+def test_live_monitor_auto_start_waits_for_the_recording_to_stop(tmp_path, monkeypatch):
+    # Issue #307: a mapping load auto-starts the Live Monitor; mid-recording
+    # it would try to open the inputs ● Rec holds (refused on Windows).
+    window = _window(tmp_path)
+    window._record_monitor = _FakeMonitor([])
+    live = _FakeMonitor([])
+    view = window.live_monitor_view
+    view._monitor = live
+    ports = ["PIONEER DDJ-XP2"]
+    monkeypatch.setattr(main_window_module, "list_input_ports", lambda: ports)
+    monkeypatch.setattr("djmidi.gui.live_monitor.list_input_ports", lambda: ports)
+
+    window._record_button.click()
+    assert window._record_monitor.opened == ["PIONEER DDJ-XP2"]
+    view.ensure_monitoring_started()
+    assert not view.is_running and live.opened == []
+
+    window._record_button.click()
+    assert window._record_monitor.opened == []
+    assert view.is_running and live.opened == ["PIONEER DDJ-XP2"]
+
+
+def test_live_monitor_without_pending_auto_start_stays_stopped_after_recording(tmp_path, monkeypatch):
+    window = _window(tmp_path)
+    window._record_monitor = _FakeMonitor([])
+    monkeypatch.setattr(main_window_module, "list_input_ports", lambda: ["PIONEER DDJ-XP2"])
+
+    window._record_button.click()
+    window._record_button.click()
+    assert not window.live_monitor_view.is_running

@@ -132,6 +132,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **● Rec freezes the Live Monitor** (`v0.48.117-rec-live-monitor-changes`, issue #307) — stopping the Live
+  Monitor mid-recording silently dropped the ports ● Rec read from its stream, and starting it (by hand or the
+  mapping-load auto-start) tried to open ports ● Rec held, refused on Windows. `LiveMonitorView.set_locked`
+  greys out Start/Stop and the inputs with a tooltip until `■ Stop`; an auto-start requested meanwhile runs
+  right after it. Chosen over handing ports back and forth: no window where a port is closed by one listener
+  and not yet opened by the other.
 - [x] **French UI leftovers** (`v0.48.116-french-ui-leftovers`, issue #306) — the ● Rec / Sync / sync-scene
   tooltips, ● Rec status-bar messages, replace prompts and quit prompt, the MIDI Latency Test echo warning, the
   Rename files relink warning and the whole Music Library tab (side tabs, panels, table headers, filters, status

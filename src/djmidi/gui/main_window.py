@@ -1698,6 +1698,12 @@ class MainWindow(QMainWindow):
             return
         self._record_button.setText(self.tr("■ Stop"))
         self._relayout_menu_corner()
+        # Issue #307: the recording depends on which ports the Live Monitor
+        # holds right now, so freeze them until ■ Stop (an auto-start on a
+        # mapping load waits for it too).
+        self.live_monitor_view.set_locked(
+            "● Rec is recording: the Live Monitor keeps its current inputs until you click ■ Stop"
+        )
         self._record_timer.start()
         _LOGGER.info("Record: listening on %s", opened)
         self.statusBar().showMessage(
@@ -1716,6 +1722,7 @@ class MainWindow(QMainWindow):
         self._poll_recording()
         self._record_monitor.close_all()
         self._record_shared_ports = frozenset()
+        self.live_monitor_view.set_locked(None)
         self._record_button.setText(self.tr("● Rec"))
         self._relayout_menu_corner()
         scene = self.preferences.active_sync_scene
