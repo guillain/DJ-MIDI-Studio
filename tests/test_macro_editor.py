@@ -225,6 +225,21 @@ def test_dialog_reorders_appends_sync_set_and_tests():
     ]
 
 
+@pytest.mark.parametrize("close", ["accept", "reject", "close"])
+def test_closing_the_dialog_stops_its_test_player(close):
+    """Issue #314: a Test run waiting on a delay releases its port when the
+    editor closes, however it closes."""
+    output, finished = _FakeOutput(), []
+    dialog = MacroManagerDialog([_macro(delay=5000)], [PORT], port_opener=output)
+    dialog._player.finished.connect(finished.append)
+    dialog.show()  # QDialog.closeEvent only rejects a visible dialog
+    dialog._test_macro()
+    assert output.opened == [PORT] and output.closed == 0 and dialog._player.running == 1
+    getattr(dialog, close)()
+    assert output.closed == 1 and dialog._player.running == 0
+    assert finished[0].error == "cancelled"
+
+
 # --- main window ------------------------------------------------------------------
 
 
@@ -355,3 +370,17 @@ def test_controller_press_plays_its_macro_unless_the_editor_is_open(tmp_path, mo
         assert window._macro_dialog is None
     finally:
         window.close()
+
+
+def test_closing_the_main_window_stops_waiting_macros(tmp_path, monkeypatch):
+    """Issue #314: a macro waiting between steps releases its port when the
+    main window closes, not only when the process exits."""
+    output = _FakeOutput()
+    monkeypatch.setattr(main_window_module, "list_output_ports", lambda: [PORT])
+    window = _window(tmp_path)
+    window._macro_player._port_opener = output
+    window.macros = [_macro(delay=5000)]
+    assert window._play_macro("Loop") is None
+    assert output.closed == 0 and window._macro_player.running == 1
+    window.close()
+    assert output.closed == 1 and window._macro_player.running == 0

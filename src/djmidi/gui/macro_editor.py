@@ -48,6 +48,7 @@ from djmidi.midi_macros import (
     MacroStep,
     MacroTrigger,
     MidiMacro,
+    PortOpener,
     steps_from_rows,
     validate_macros,
 )
@@ -69,6 +70,7 @@ class MacroManagerDialog(QDialog):
         sender: Callable[..., None] | None = None,
         parent=None,
         ensure_listening: Callable[[], bool] | None = None,
+        port_opener: PortOpener | None = None,
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle("MIDI Macros")
@@ -87,7 +89,7 @@ class MacroManagerDialog(QDialog):
         self._learn_timer.setSingleShot(True)
         self._learn_timer.setInterval(LEARN_TIMEOUT_MS)
         self._learn_timer.timeout.connect(lambda: self.cancel_learn("No control pressed — Learn timed out."))
-        self._player = MacroPlayer(sender, self)
+        self._player = MacroPlayer(sender, self, port_opener)
         self._player.finished.connect(lambda result: self.status.setText(result.summary()))
 
         # Left: the macro list.
@@ -433,6 +435,8 @@ class MacroManagerDialog(QDialog):
 
     def done(self, result: int) -> None:
         self.cancel_learn(None)
+        # A Test run waiting on a delay holds its port open (issue #314).
+        self._player.stop_all()
         super().done(result)
 
     def accept(self) -> None:

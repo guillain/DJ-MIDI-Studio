@@ -2769,6 +2769,7 @@ class MainWindow(QMainWindow):
         self._record_timer.stop()
         self._plug_in_timer.stop()
         self._record_monitor.close_all()
+        self._macro_player.stop_all()  # a waiting macro holds its port open (#314)
         settings = self._layout_settings()
         if settings is not None:
             settings.setValue("window/geometry", self.saveGeometry())
