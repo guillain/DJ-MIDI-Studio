@@ -132,6 +132,10 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Macros open their port once per run** (`v0.48.118-macros-open-port-once`, issue #308) — a macro no
+  longer opens and closes its output port for every step: `run_macro` and the GUI `MacroPlayer` open it once
+  through `midi_io.open_midi_output` and keep it open across the step delays, closing it when the run ends,
+  fails, is stopped (`stop_all`) or the player is destroyed. Follow-up of Sync's #297.
 - [x] **● Rec collapses CC traffic** (`v0.48.114-rec-collapse-cc`, issue #298) — a fader, knob or jog moved
   during `● Rec` no longer adds hundreds of Control Change messages to a set replayed at every launch:
   `controller_sync.collapse_control_changes` keeps the last value per (channel, CC) at its last position, notes
