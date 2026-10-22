@@ -173,6 +173,116 @@ Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-m
     </message>
 </context>
 <context>
+    <name>ControllerSync</name>
+    <message>
+        <source>not connected</source>
+        <translation>non connecté</translation>
+    </message>
+    <message>
+        <source>No controller sync set recorded</source>
+        <translation>Aucun jeu de synchronisation enregistré</translation>
+    </message>
+    <message>
+        <source>{controller} ({count} msg)</source>
+        <translation>{controller} ({count} msg)</translation>
+    </message>
+    <message>
+        <source>{controller} ({error})</source>
+        <translation>{controller} ({error})</translation>
+    </message>
+    <message>
+        <source>Synced {ok}/{total} controller(s): {parts}</source>
+        <translation>{ok}/{total} contrôleur(s) synchronisé(s) : {parts}</translation>
+    </message>
+</context>
+<context>
+    <name>DuplicatesDialog</name>
+    <message>
+        <source>Track / file</source>
+        <translation>Morceau / fichier</translation>
+    </message>
+    <message>
+        <source>Format</source>
+        <translation>Format</translation>
+    </message>
+    <message>
+        <source>Size</source>
+        <translation>Taille</translation>
+    </message>
+    <message>
+        <source>Bitrate</source>
+        <translation>Débit</translation>
+    </message>
+    <message>
+        <source>Exact copies (identical files)</source>
+        <translation>Copies exactes (fichiers identiques)</translation>
+    </message>
+    <message>
+        <source>Same artist + title</source>
+        <translation>Même artiste + titre</translation>
+    </message>
+    <message>
+        <source>Other versions of the same song (suggestions, not duplicates)</source>
+        <translation>Autres versions du même morceau (suggestions, pas des doublons)</translation>
+    </message>
+    <message>
+        <source>B</source>
+        <translation>o</translation>
+    </message>
+    <message>
+        <source>KB</source>
+        <translation>Ko</translation>
+    </message>
+    <message>
+        <source>MB</source>
+        <translation>Mo</translation>
+    </message>
+    <message>
+        <source>GB</source>
+        <translation>Go</translation>
+    </message>
+    <message>
+        <source>Duplicate tracks</source>
+        <translation>Morceaux en double</translation>
+    </message>
+    <message>
+        <source>{exact} group(s) of identical files, {metadata} group(s) sharing artist + title, {versions} song(s) with several versions. Tick the copies you don&apos;t want and move them to the Trash (at least one copy per group stays). Other versions are suggestions to review only.</source>
+        <translation>{exact} groupe(s) de fichiers identiques, {metadata} groupe(s) partageant artiste + titre, {versions} morceau(x) en plusieurs versions. Cochez les copies dont vous ne voulez pas et mettez-les à la corbeille (au moins une copie par groupe reste). Les autres versions sont seulement des suggestions à examiner.</translation>
+    </message>
+    <message>
+        <source>Reveal in Finder</source>
+        <translation>Afficher dans le Finder</translation>
+    </message>
+    <message>
+        <source>Show the selected file in your file manager.</source>
+        <translation>Affiche le fichier sélectionné dans votre gestionnaire de fichiers.</translation>
+    </message>
+    <message>
+        <source>Move ticked to Trash…</source>
+        <translation>Mettre les cochés à la corbeille…</translation>
+    </message>
+    <message>
+        <source>Move the ticked copies to the Trash, after a confirmation. At least one copy of each group must stay.</source>
+        <translation>Met les copies cochées à la corbeille, après confirmation. Au moins une copie de chaque groupe doit rester.</translation>
+    </message>
+    <message>
+        <source>{title} — {count} group(s)</source>
+        <translation>{title} — {count} groupe(s)</translation>
+    </message>
+    <message>
+        <source>{count} identical files</source>
+        <translation>{count} fichiers identiques</translation>
+    </message>
+    <message>
+        <source>{name} ({count} versions)</source>
+        <translation>{name} ({count} versions)</translation>
+    </message>
+    <message>
+        <source>{name} ({count} files)</source>
+        <translation>{name} ({count} fichiers)</translation>
+    </message>
+</context>
+<context>
     <name>FirstRunWizard</name>
     <message>
         <source>Welcome to DJ MIDI Studio</source>
@@ -189,6 +299,115 @@ Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-m
     <message>
         <source>This short setup finds your controllers, offers to open your Serato MIDI mapping and to record a controller sync set.&lt;br&gt;&lt;br&gt;Every step is optional: click &lt;b&gt;Skip&lt;/b&gt; to close it. You can run it again from &lt;b&gt;Help → First-Run Setup…&lt;/b&gt;.</source>
         <translation>Cette courte configuration détecte vos contrôleurs, propose d&apos;ouvrir votre mapping MIDI Serato et d&apos;enregistrer un jeu de synchronisation.&lt;br&gt;&lt;br&gt;Chaque étape est facultative : cliquez sur &lt;b&gt;Passer&lt;/b&gt; pour la fermer. Vous pouvez la relancer depuis &lt;b&gt;Aide → Configuration initiale…&lt;/b&gt;.</translation>
+    </message>
+</context>
+<context>
+    <name>HealthReportDialog</name>
+    <message>
+        <source>Issue</source>
+        <translation>Problème</translation>
+    </message>
+    <message>
+        <source>Detail</source>
+        <translation>Détail</translation>
+    </message>
+    <message>
+        <source>File</source>
+        <translation>Fichier</translation>
+    </message>
+    <message>
+        <source>Library health report</source>
+        <translation>Bilan de santé de la bibliothèque</translation>
+    </message>
+    <message>
+        <source>{checked} file(s) checked, {affected} with at least one issue ({issues} issue(s)). Read-only: nothing is changed.</source>
+        <translation>{checked} fichier(s) vérifié(s), {affected} avec au moins un problème ({issues} problème(s)). Lecture seule : rien n&apos;est modifié.</translation>
+    </message>
+    <message>
+        <source>Filter by path or detail…</source>
+        <translation>Filtrer par chemin ou détail…</translation>
+    </message>
+    <message>
+        <source>Reveal in Finder</source>
+        <translation>Afficher dans le Finder</translation>
+    </message>
+    <message>
+        <source>Show the selected file in your file manager.</source>
+        <translation>Affiche le fichier sélectionné dans votre gestionnaire de fichiers.</translation>
+    </message>
+    <message>
+        <source>Show in library</source>
+        <translation>Afficher dans la bibliothèque</translation>
+    </message>
+    <message>
+        <source>Select this track in the Music Library table (double-click does the same).</source>
+        <translation>Sélectionne ce morceau dans le tableau de la bibliothèque (un double-clic fait de même).</translation>
+    </message>
+    <message>
+        <source>Export CSV…</source>
+        <translation>Exporter en CSV…</translation>
+    </message>
+    <message>
+        <source>Save the rows shown (current filters) as a CSV file.</source>
+        <translation>Enregistre les lignes affichées (filtres actuels) dans un fichier CSV.</translation>
+    </message>
+    <message>
+        <source>{shown} of {total} issue(s) shown</source>
+        <translation>{shown} problème(s) affiché(s) sur {total}</translation>
+    </message>
+    <message>
+        <source>Export health report</source>
+        <translation>Exporter le bilan de santé</translation>
+    </message>
+    <message>
+        <source>CSV files (*.csv)</source>
+        <translation>Fichiers CSV (*.csv)</translation>
+    </message>
+    <message>
+        <source>Could not write {path}:
+{error}</source>
+        <translation>Impossible d&apos;écrire {path} :
+{error}</translation>
+    </message>
+    <message>
+        <source>Exported {count} row(s) to {path}</source>
+        <translation>{count} ligne(s) exportée(s) vers {path}</translation>
+    </message>
+    <message>
+        <source>Unreadable / corrupt</source>
+        <translation>Illisible / corrompu</translation>
+    </message>
+    <message>
+        <source>Zero length</source>
+        <translation>Longueur nulle</translation>
+    </message>
+    <message>
+        <source>Empty title</source>
+        <translation>Titre vide</translation>
+    </message>
+    <message>
+        <source>Empty artist</source>
+        <translation>Artiste vide</translation>
+    </message>
+    <message>
+        <source>Missing artwork</source>
+        <translation>Pochette manquante</translation>
+    </message>
+    <message>
+        <source>Low bitrate</source>
+        <translation>Débit faible</translation>
+    </message>
+    <message>
+        <source>0 bytes</source>
+        <translation>0 octet</translation>
+    </message>
+    <message>
+        <source>0 s duration</source>
+        <translation>durée de 0 s</translation>
+    </message>
+    <message>
+        <source>Not a recognized audio file</source>
+        <translation>Fichier audio non reconnu</translation>
     </message>
 </context>
 <context>
@@ -760,6 +979,10 @@ Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-m
     <message>
         <source>■ Stop</source>
         <translation>■ Arrêt</translation>
+    </message>
+    <message>
+        <source>● Rec is recording: the Live Monitor keeps its current inputs until you click ■ Stop</source>
+        <translation>● Enr enregistre : le Live Monitor garde ses entrées actuelles jusqu&apos;à ce que vous cliquiez sur ■ Arrêt</translation>
     </message>
     <message>
         <source>Recording on {count} MIDI input(s): press the controls to send at initialization, then click ■ Stop (macros and MIDI Learn are paused meanwhile)</source>
@@ -2692,6 +2915,34 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <source>Traktor playlists (*.nml)</source>
         <translation>Playlists Traktor (*.nml)</translation>
     </message>
+    <message>
+        <source>BPM jump {change} (tolerance ±{tolerance} %)</source>
+        <translation>Saut de BPM {change} (tolérance ±{tolerance} %)</translation>
+    </message>
+    <message>
+        <source>BPM unknown</source>
+        <translation>BPM inconnu</translation>
+    </message>
+    <message>
+        <source>Key clash {before} → {after}</source>
+        <translation>Tonalités incompatibles {before} → {after}</translation>
+    </message>
+    <message>
+        <source>Key unknown</source>
+        <translation>Tonalité inconnue</translation>
+    </message>
+    <message>
+        <source>{count} track(s)</source>
+        <translation>{count} morceau(x)</translation>
+    </message>
+    <message>
+        <source>{count} incompatible transition(s)</source>
+        <translation>{count} transition(s) incompatible(s)</translation>
+    </message>
+    <message>
+        <source>{count} unchecked (missing BPM/key)</source>
+        <translation>{count} non vérifiée(s) (BPM/tonalité manquant)</translation>
+    </message>
 </context>
 <context>
     <name>SmartPlaylistDialog</name>
@@ -2794,6 +3045,62 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>No DJ history loaded yet: “Not played for” treats every track as never played until you load it in the History panel.</source>
         <translation>Aucun historique DJ chargé : « Non joué depuis » considère chaque morceau comme jamais joué tant que vous ne l&apos;avez pas chargé dans le panneau Historique.</translation>
+    </message>
+    <message>
+        <source>Category, BPM range, then key</source>
+        <translation>Catégorie, plage de BPM, puis tonalité</translation>
+    </message>
+    <message>
+        <source>BPM (slowest first)</source>
+        <translation>BPM (le plus lent d&apos;abord)</translation>
+    </message>
+    <message>
+        <source>File path</source>
+        <translation>Chemin du fichier</translation>
+    </message>
+    <message>
+        <source>category {category}</source>
+        <translation>catégorie {category}</translation>
+    </message>
+    <message>
+        <source>genre contains “{genre}”</source>
+        <translation>genre contient « {genre} »</translation>
+    </message>
+    <message>
+        <source>text contains “{text}”</source>
+        <translation>texte contient « {text} »</translation>
+    </message>
+    <message>
+        <source>BPM {low}–{high}</source>
+        <translation>BPM {low}–{high}</translation>
+    </message>
+    <message>
+        <source>BPM ≥ {low}</source>
+        <translation>BPM ≥ {low}</translation>
+    </message>
+    <message>
+        <source>BPM ≤ {high}</source>
+        <translation>BPM ≤ {high}</translation>
+    </message>
+    <message>
+        <source>key compatible with {key}</source>
+        <translation>tonalité compatible avec {key}</translation>
+    </message>
+    <message>
+        <source>key {key}</source>
+        <translation>tonalité {key}</translation>
+    </message>
+    <message>
+        <source>not played for {days} days</source>
+        <translation>non joué depuis {days} jours</translation>
+    </message>
+    <message>
+        <source>every track</source>
+        <translation>tous les morceaux</translation>
+    </message>
+    <message>
+        <source>first {limit}</source>
+        <translation>les {limit} premiers</translation>
     </message>
 </context>
 <context>

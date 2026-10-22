@@ -36,6 +36,8 @@ from typing import TextIO
 import mutagen
 from mutagen.id3 import ID3
 
+from djmidi.i18n import QT_TRANSLATE_NOOP, Translate, untranslated
+
 from .db import LibraryDB
 from .metadata import metadata_from_audio
 
@@ -50,15 +52,21 @@ ISSUE_EMPTY_ARTIST = "empty_artist"
 ISSUE_NO_ARTWORK = "no_artwork"
 ISSUE_LOW_BITRATE = "low_bitrate"
 
-# Display order and labels, most serious first.
+# Display order and labels, most serious first. English (the CSV keeps
+# them so), marked for the interface catalogue (issue #313): the report
+# window shows `QCoreApplication.translate("HealthReportDialog", label)`.
 ISSUE_LABELS: dict[str, str] = {
-    ISSUE_UNREADABLE: "Unreadable / corrupt",
-    ISSUE_ZERO_LENGTH: "Zero length",
-    ISSUE_EMPTY_TITLE: "Empty title",
-    ISSUE_EMPTY_ARTIST: "Empty artist",
-    ISSUE_NO_ARTWORK: "Missing artwork",
-    ISSUE_LOW_BITRATE: "Low bitrate",
+    ISSUE_UNREADABLE: QT_TRANSLATE_NOOP("HealthReportDialog", "Unreadable / corrupt"),
+    ISSUE_ZERO_LENGTH: QT_TRANSLATE_NOOP("HealthReportDialog", "Zero length"),
+    ISSUE_EMPTY_TITLE: QT_TRANSLATE_NOOP("HealthReportDialog", "Empty title"),
+    ISSUE_EMPTY_ARTIST: QT_TRANSLATE_NOOP("HealthReportDialog", "Empty artist"),
+    ISSUE_NO_ARTWORK: QT_TRANSLATE_NOOP("HealthReportDialog", "Missing artwork"),
+    ISSUE_LOW_BITRATE: QT_TRANSLATE_NOOP("HealthReportDialog", "Low bitrate"),
 }
+# Fixed details; anything else (an OS error, a bitrate) has no catalogue entry.
+DETAIL_ZERO_BYTES = QT_TRANSLATE_NOOP("HealthReportDialog", "0 bytes")
+DETAIL_ZERO_DURATION = QT_TRANSLATE_NOOP("HealthReportDialog", "0 s duration")
+DETAIL_NOT_AUDIO = QT_TRANSLATE_NOOP("HealthReportDialog", "Not a recognized audio file")
 ISSUE_KINDS: tuple[str, ...] = tuple(ISSUE_LABELS)
 
 CSV_HEADER = ("path", "issue", "detail")
@@ -120,18 +128,18 @@ def check_file(path: str, size: int | None = None, low_bitrate: int = LOW_BITRAT
         except OSError as exc:
             return [HealthIssue(path, ISSUE_UNREADABLE, str(exc))]
     if size == 0:
-        return [HealthIssue(path, ISSUE_ZERO_LENGTH, "0 bytes")]
+        return [HealthIssue(path, ISSUE_ZERO_LENGTH, DETAIL_ZERO_BYTES)]
     try:
         audio = mutagen.File(path)
     except (mutagen.MutagenError, OSError, ValueError, EOFError) as exc:
         return [HealthIssue(path, ISSUE_UNREADABLE, str(exc) or type(exc).__name__)]
     if audio is None:
-        return [HealthIssue(path, ISSUE_UNREADABLE, "Not a recognized audio file")]
+        return [HealthIssue(path, ISSUE_UNREADABLE, DETAIL_NOT_AUDIO)]
     issues: list[HealthIssue] = []
     info = getattr(audio, "info", None)
     length = getattr(info, "length", None)
     if length is not None and length <= 0:
-        issues.append(HealthIssue(path, ISSUE_ZERO_LENGTH, "0 s duration"))
+        issues.append(HealthIssue(path, ISSUE_ZERO_LENGTH, DETAIL_ZERO_DURATION))
     metadata = metadata_from_audio(audio)
     if _blank(metadata.title):
         issues.append(HealthIssue(path, ISSUE_EMPTY_TITLE))
@@ -188,17 +196,21 @@ def sort_issues(issues: Iterable[HealthIssue]) -> list[HealthIssue]:
 
 
 def filter_issues(
-    issues: Iterable[HealthIssue], kinds: Iterable[str] | None = None, text: str = ""
+    issues: Iterable[HealthIssue],
+    kinds: Iterable[str] | None = None,
+    text: str = "",
+    translate: Translate = untranslated,
 ) -> list[HealthIssue]:
     """Issues of the given kinds (all when None) whose path, label or detail
-    contains `text` (case-insensitive)."""
+    contains `text` (case-insensitive) -- label and detail as `translate`
+    shows them, so the filter matches what the report window displays."""
     wanted = None if kinds is None else set(kinds)
     needle = text.strip().casefold()
     return [
         issue
         for issue in issues
         if (wanted is None or issue.kind in wanted)
-        and (not needle or needle in f"{issue.path}\n{issue.label}\n{issue.detail}".casefold())
+        and (not needle or needle in f"{issue.path}\n{translate(issue.label)}\n{translate(issue.detail)}".casefold())
     ]
 
 

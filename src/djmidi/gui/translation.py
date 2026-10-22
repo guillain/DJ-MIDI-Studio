@@ -8,6 +8,7 @@ launch.  Tests never call it, so the suite always runs in English.
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 
 from PySide6.QtCore import QCoreApplication, QLibraryInfo, QLocale, QTranslator
 
@@ -39,4 +40,10 @@ def install_translators(app: QCoreApplication, preference: str) -> str:
     return language
 
 
-__all__ = ["install_translators"]
+def translator(context: str) -> Callable[[str], str]:
+    """A `djmidi.i18n.Translate` for the strings a Qt-free module marked with
+    ``QT_TRANSLATE_NOOP(context, ...)`` (issue #313)."""
+    return lambda text: QCoreApplication.translate(context, text)
+
+
+__all__ = ["install_translators", "translator"]

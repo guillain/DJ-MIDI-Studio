@@ -49,8 +49,12 @@ This first version translates what you use most:
   `Carte des couches` windows;
 - the whole Music Library tab: the music folders, the table and its
   filters, the `Morceau`, `Catégories`, `Playlists`, `Historique` and `Set`
-  panels, the preview bar, the status line and the windows its buttons
-  open (except `Trouver les doublons…` and `Bilan de santé…`);
+  panels (with the Set panel's summary and transition notes), the preview
+  bar, the status line and every window its buttons open, including
+  `Trouver les doublons…` and `Bilan de santé…`, and the smart-playlist
+  rule summaries and sort orders;
+- the Sync result summary shown in the status bar, and the Live Monitor's
+  lock tooltip while **● Enr** records;
 - Qt's own standard buttons and dialogs (`OK`, `Annuler`, `Enregistrer`,
   file pickers).
 
@@ -59,14 +63,12 @@ This first version translates what you use most:
 ## What stays in English
 
 The rest of each tab's content, the tool windows (Live Monitor, MIDI
-Routing, MIDI Clock, Metronome, Controller Emulator), the Music Library's
-duplicates and health-report windows, most other messages and the `?` help
+Routing, MIDI Clock, Metronome, Controller Emulator), most other messages and the `?` help
 texts are still in English, as is this documentation. Inside the translated
 windows, text computed from your data stays in English too: the findings
 of the `Prêt pour le live` report, the latency statistics line, the
-change-history entry descriptions, the Sync result summary in the status
-bar, the Set panel's summary line and transition notes, and the
-smart-playlist rule summaries and sort names. They will be
+change-history entry descriptions. A health-report CSV keeps its issue
+names in English. They will be
 translated over the next releases. Controller and function names that
 come from your DJ software or your controller's MIDI documentation are
 never translated.

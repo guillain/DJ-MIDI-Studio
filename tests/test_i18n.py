@@ -360,3 +360,127 @@ def test_library_tab_and_dialogs_show_french(french):
         for window in (view, latency, rename_dialog, mix):
             window.close()
             window.deleteLater()
+
+
+# --- Remaining English (issue #313) --------------------------------------------
+
+
+def test_qt_free_summaries_stay_english_by_default_and_are_scanned():
+    """Without a `translate` argument the Qt-free modules keep their English
+    text (scripts, CSV export, the English suite); their QT_TRANSLATE_NOOP
+    marks are scanned by update_translations.sh."""
+    from djmidi.controller_sync import SyncResult, summarize_results
+    from djmidi.library import set_prep
+    from djmidi.library.health import ISSUE_LABELS, ISSUE_LOW_BITRATE
+    from djmidi.library.smart_playlist import SORT_LABELS, SORT_MIX, SmartRules
+
+    assert summarize_results([SyncResult("XDJ-XZ", None, error="not connected")]) == (
+        "Synced 0/1 controller(s): XDJ-XZ (not connected)"
+    )
+    assert SmartRules(bpm_min=170).describe() == "BPM ≥ 170"
+    assert SORT_LABELS[SORT_MIX] == "Category, BPM range, then key"
+    assert ISSUE_LABELS[ISSUE_LOW_BITRATE] == "Low bitrate"
+    assert set_prep.SetSummary(3, 1, 1).text == (
+        "3 track(s) · 1 incompatible transition(s) · 1 unchecked (missing BPM/key)"
+    )
+    sources = {path.name for path in _script_sources()}
+    assert {
+        "controller_sync.py",
+        "set_prep.py",
+        "smart_playlist.py",
+        "health.py",
+        "duplicates_dialog.py",
+        "health_report_dialog.py",
+    } <= sources
+
+
+def test_compiled_catalogue_translates_the_live_monitor_lock_tooltip():
+    translator = QTranslator()
+    assert translator.load(str(i18n.translation_file("fr")))
+    assert translator.translate(
+        "MainWindow", "● Rec is recording: the Live Monitor keeps its current inputs until you click ■ Stop"
+    ).startswith("● Enr enregistre")
+
+
+def test_qt_free_summaries_show_french_through_a_translator(french):
+    from djmidi.controller_sync import SyncResult, summarize_results
+    from djmidi.gui.translation import translator
+    from djmidi.library import set_prep
+    from djmidi.library.smart_playlist import SmartRules
+
+    sync = translator("ControllerSync")
+    results = [SyncResult("DDJ-XP2", "DDJ-XP2", 12), SyncResult("XDJ-XZ", None, error="not connected")]
+    assert summarize_results(results, sync) == (
+        "1/2 contrôleur(s) synchronisé(s) : DDJ-XP2 (12 msg), XDJ-XZ (non connecté)"
+    )
+    assert summarize_results([], sync) == "Aucun jeu de synchronisation enregistré"
+    # An exception's own message has no catalogue entry: shown as raised.
+    assert "port busy" in summarize_results([SyncResult("DDJ-XP2", "DDJ-XP2", 0, "port busy")], sync)
+
+    panel = translator("SetPreparationPanel")
+    track = set_prep.SetTrack
+    clash = set_prep.analyze_transition(0, track("a", bpm=140, camelot_key="8A"), track("b", bpm=160), translate=panel)
+    assert clash.issues == ("Saut de BPM +14.3 % (tolérance ±6 %)", "Tonalité inconnue")
+    assert set_prep.SetSummary(3, 1, 1).describe(panel) == (
+        "3 morceau(x) · 1 transition(s) incompatible(s) · 1 non vérifiée(s) (BPM/tonalité manquant)"
+    )
+
+    rules = SmartRules(
+        category="Tek%%PsyTrance", bpm_min=170, bpm_max=180, camelot_key="8A", not_played_days=90, limit=50
+    )
+    assert rules.describe(translator("SmartPlaylistDialog")) == (
+        "catégorie Tek / PsyTrance · BPM 170–180 · tonalité compatible avec 8A · non joué depuis 90 jours"
+        " · les 50 premiers"
+    )
+    assert SmartRules().describe(translator("SmartPlaylistDialog")) == "tous les morceaux"
+
+
+def test_duplicates_health_and_smart_playlist_windows_show_french(french):
+    from PySide6.QtCore import Qt
+
+    from djmidi.gui.duplicates_dialog import DuplicatesDialog, format_size
+    from djmidi.gui.health_report_dialog import HealthReportDialog
+    from djmidi.gui.music_library_view import SmartPlaylistDialog
+    from djmidi.library.duplicates import TIER_EXACT, DuplicateGroup
+    from djmidi.library.health import (
+        DETAIL_ZERO_BYTES,
+        ISSUE_EMPTY_TITLE,
+        ISSUE_ZERO_LENGTH,
+        HealthIssue,
+        HealthReport,
+    )
+    from djmidi.library.smart_playlist import SORT_BPM, SmartRules
+
+    duplicates = DuplicatesDialog([DuplicateGroup(TIER_EXACT, "abc", ("/x/a.mp3", "/x/b.mp3"), 10)])
+    report = HealthReport(
+        2, (HealthIssue("/x/a.mp3", ISSUE_ZERO_LENGTH, DETAIL_ZERO_BYTES), HealthIssue("/x/b.mp3", ISSUE_EMPTY_TITLE))
+    )
+    health = HealthReportDialog(report)
+    smart = SmartPlaylistDialog("Tek", SmartRules(sort=SORT_BPM), has_history=False)
+    try:
+        assert duplicates.windowTitle() == "Morceaux en double"
+        assert duplicates.tree.headerItem().text(0) == "Morceau / fichier"
+        assert duplicates.tree.topLevelItem(0).text(0) == "Copies exactes (fichiers identiques) — 1 groupe(s)"
+        assert duplicates.trash_button.text() == "Mettre les cochés à la corbeille…"
+        # The tier title spans every column instead of being cut at the first.
+        assert duplicates.tree.topLevelItem(0).isFirstColumnSpanned()
+        assert format_size(2048) == "2.0 Ko"
+
+        assert health.windowTitle() == "Bilan de santé de la bibliothèque"
+        assert health.model.headerData(0, Qt.Orientation.Horizontal) == "Problème"
+        shown = {health.model.index(row, 2).data(): row for row in range(health.model.rowCount())}
+        assert health.model.index(shown["/x/a.mp3"], 0).data() == "Longueur nulle"
+        assert health.model.index(shown["/x/a.mp3"], 1).data() == "0 octet"
+        assert health.kind_checkboxes[ISSUE_EMPTY_TITLE].text() == "Titre vide (1)"
+        # The free-text filter matches what the window shows, in French.
+        health.filter_edit.setText("titre vide")
+        assert [issue.path for issue in health.visible_issues()] == ["/x/b.mp3"]
+        assert health.count_label.text() == "1 problème(s) affiché(s) sur 2"
+
+        # The sort combo is read by item data, not by its translated label.
+        assert smart.sort_combo.currentText() == "BPM (le plus lent d'abord)"
+        assert smart.rules().sort == SORT_BPM
+    finally:
+        for window in (duplicates, health, smart):
+            window.close()
+            window.deleteLater()

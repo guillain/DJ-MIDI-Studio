@@ -23,7 +23,7 @@ from __future__ import annotations
 from dataclasses import replace
 from pathlib import Path
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import QT_TRANSLATE_NOOP, QCoreApplication, Qt, Signal
 from PySide6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
@@ -51,23 +51,37 @@ from djmidi.library.duplicates import (
 PATH_ROLE = Qt.ItemDataRole.UserRole + 1
 _BITRATE_PENDING = "…"
 
-COLUMNS = ("Track / file", "Format", "Size", "Bitrate")
+COLUMNS = (
+    QT_TRANSLATE_NOOP("DuplicatesDialog", "Track / file"),
+    QT_TRANSLATE_NOOP("DuplicatesDialog", "Format"),
+    QT_TRANSLATE_NOOP("DuplicatesDialog", "Size"),
+    QT_TRANSLATE_NOOP("DuplicatesDialog", "Bitrate"),
+)
 _TIER_TITLES = {
-    TIER_EXACT: "Exact copies (identical files)",
-    TIER_METADATA: "Same artist + title",
-    TIER_VERSIONS: "Other versions of the same song (suggestions, not duplicates)",
+    TIER_EXACT: QT_TRANSLATE_NOOP("DuplicatesDialog", "Exact copies (identical files)"),
+    TIER_METADATA: QT_TRANSLATE_NOOP("DuplicatesDialog", "Same artist + title"),
+    TIER_VERSIONS: QT_TRANSLATE_NOOP("DuplicatesDialog", "Other versions of the same song (suggestions, not duplicates)"),
 }
+
+
+_SIZE_UNITS = (
+    QT_TRANSLATE_NOOP("DuplicatesDialog", "B"),
+    QT_TRANSLATE_NOOP("DuplicatesDialog", "KB"),
+    QT_TRANSLATE_NOOP("DuplicatesDialog", "MB"),
+    QT_TRANSLATE_NOOP("DuplicatesDialog", "GB"),
+)
 
 
 def format_size(size: int | None) -> str:
     if size is None:
         return ""
+    units = [QCoreApplication.translate("DuplicatesDialog", unit) for unit in _SIZE_UNITS]
     value = float(size)
-    for unit in ("B", "KB", "MB"):
+    for index, unit in enumerate(units[:-1]):
         if value < 1024:
-            return f"{value:.0f} {unit}" if unit == "B" else f"{value:.1f} {unit}"
+            return f"{value:.0f} {unit}" if index == 0 else f"{value:.1f} {unit}"
         value /= 1024
-    return f"{value:.1f} GB"
+    return f"{value:.1f} {units[-1]}"
 
 
 def _file_size(path: str) -> int | None:
@@ -83,7 +97,7 @@ class DuplicatesDialog(QDialog):
 
     def __init__(self, groups: list[DuplicateGroup], parent: QWidget | None = None) -> None:
         super().__init__(parent)
-        self.setWindowTitle("Duplicate tracks")
+        self.setWindowTitle(self.tr("Duplicate tracks"))
         self.resize(820, 520)
         self.groups = list(groups)
         self._syncing = False
@@ -94,10 +108,12 @@ class DuplicatesDialog(QDialog):
         metadata = sum(1 for group in self.groups if group.tier == TIER_METADATA)
         versions = sum(1 for group in self.groups if group.tier == TIER_VERSIONS)
         self.summary_label = QLabel(
-            f"{exact} group(s) of identical files, {metadata} group(s) sharing artist + title, "
-            f"{versions} song(s) with several versions. "
-            "Tick the copies you don't want and move them to the Trash (at least one copy per group stays). "
-            "Other versions are suggestions to review only."
+            self.tr(
+                "{exact} group(s) of identical files, {metadata} group(s) sharing artist + title, "
+                "{versions} song(s) with several versions. "
+                "Tick the copies you don't want and move them to the Trash (at least one copy per group stays). "
+                "Other versions are suggestions to review only."
+            ).format(exact=exact, metadata=metadata, versions=versions)
         )
         self.summary_label.setWordWrap(True)
         header.addWidget(self.summary_label, 1)
@@ -105,7 +121,7 @@ class DuplicatesDialog(QDialog):
         box.addLayout(header)
 
         self.tree = QTreeWidget()
-        self.tree.setHeaderLabels(list(COLUMNS))
+        self.tree.setHeaderLabels([QCoreApplication.translate("DuplicatesDialog", column) for column in COLUMNS])
         self.tree.header().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         for column in range(1, len(COLUMNS)):
             self.tree.header().setSectionResizeMode(column, QHeaderView.ResizeMode.ResizeToContents)
@@ -117,13 +133,15 @@ class DuplicatesDialog(QDialog):
         self._populate()
 
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
-        self.reveal_button = QPushButton("Reveal in Finder")
-        self.reveal_button.setToolTip("Show the selected file in your file manager.")
+        self.reveal_button = QPushButton(self.tr("Reveal in Finder"))
+        self.reveal_button.setToolTip(self.tr("Show the selected file in your file manager."))
         self.reveal_button.clicked.connect(lambda: self._reveal(self.tree.currentItem()))
         buttons.addButton(self.reveal_button, QDialogButtonBox.ButtonRole.ActionRole)
-        self.trash_button = QPushButton("Move ticked to Trash…")
+        self.trash_button = QPushButton(self.tr("Move ticked to Trash…"))
         self.trash_button.setToolTip(
-            "Move the ticked copies to the Trash, after a confirmation. At least one copy of each group must stay."
+            self.tr(
+                "Move the ticked copies to the Trash, after a confirmation. At least one copy of each group must stay."
+            )
         )
         self.trash_button.clicked.connect(self._on_trash_clicked)
         buttons.addButton(self.trash_button, QDialogButtonBox.ButtonRole.ActionRole)
@@ -141,16 +159,26 @@ class DuplicatesDialog(QDialog):
     def _fill_tree(self) -> None:
         for tier in (TIER_EXACT, TIER_METADATA, TIER_VERSIONS):
             tier_groups = [group for group in self.groups if group.tier == tier]
-            tier_item = QTreeWidgetItem([f"{_TIER_TITLES[tier]} — {len(tier_groups)} group(s)"])
-            tier_item.setFirstColumnSpanned(True)
+            tier_item = QTreeWidgetItem(
+                [
+                    self.tr("{title} — {count} group(s)").format(
+                        title=QCoreApplication.translate("DuplicatesDialog", _TIER_TITLES[tier]), count=len(tier_groups)
+                    )
+                ]
+            )
             self.tree.addTopLevelItem(tier_item)
+            # Spanning only takes once the item is in the tree: before, the
+            # tier title was cut at the first column's width.
+            tier_item.setFirstColumnSpanned(True)
             for group in tier_groups:
                 if tier == TIER_EXACT:
-                    label = f"{len(group.paths)} identical files"
+                    label = self.tr("{count} identical files").format(count=len(group.paths))
                 elif tier == TIER_VERSIONS:
-                    label = f"{group.label or group.key} ({len(group.paths)} versions)"
+                    label = self.tr("{name} ({count} versions)").format(
+                        name=group.label or group.key, count=len(group.paths)
+                    )
                 else:
-                    label = f"{group.label or group.key} ({len(group.paths)} files)"
+                    label = self.tr("{name} ({count} files)").format(name=group.label or group.key, count=len(group.paths))
                 group_item = QTreeWidgetItem([label, "", format_size(group.size), ""])
                 tier_item.addChild(group_item)
                 for index, path in enumerate(group.paths):

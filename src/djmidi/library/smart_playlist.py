@@ -34,6 +34,8 @@ from collections.abc import Iterable, Mapping
 from dataclasses import asdict, dataclass, fields, replace
 from datetime import UTC, datetime, timedelta
 
+from djmidi.i18n import QT_TRANSLATE_NOOP, Translate, untranslated
+
 from .analysis import to_camelot
 from .db import LibraryDB
 from .history import TrackPlays
@@ -45,11 +47,27 @@ SOURCE_SMART = "smart"
 SORT_MIX = "mix"
 SORT_BPM = "bpm"
 SORT_PATH = "path"
+# English labels, marked for the interface catalogue (issue #313): the
+# dialog shows `QCoreApplication.translate("SmartPlaylistDialog", label)`.
 SORT_LABELS = {
-    SORT_MIX: "Category, BPM range, then key",
-    SORT_BPM: "BPM (slowest first)",
-    SORT_PATH: "File path",
+    SORT_MIX: QT_TRANSLATE_NOOP("SmartPlaylistDialog", "Category, BPM range, then key"),
+    SORT_BPM: QT_TRANSLATE_NOOP("SmartPlaylistDialog", "BPM (slowest first)"),
+    SORT_PATH: QT_TRANSLATE_NOOP("SmartPlaylistDialog", "File path"),
 }
+
+# Rule summary parts (issue #313): English templates `describe` passes
+# through the caller's `translate` before filling in.
+_RULE_CATEGORY = QT_TRANSLATE_NOOP("SmartPlaylistDialog", "category {category}")
+_RULE_GENRE = QT_TRANSLATE_NOOP("SmartPlaylistDialog", "genre contains “{genre}”")
+_RULE_TEXT = QT_TRANSLATE_NOOP("SmartPlaylistDialog", "text contains “{text}”")
+_RULE_BPM_RANGE = QT_TRANSLATE_NOOP("SmartPlaylistDialog", "BPM {low}–{high}")
+_RULE_BPM_MIN = QT_TRANSLATE_NOOP("SmartPlaylistDialog", "BPM ≥ {low}")
+_RULE_BPM_MAX = QT_TRANSLATE_NOOP("SmartPlaylistDialog", "BPM ≤ {high}")
+_RULE_KEY_COMPATIBLE = QT_TRANSLATE_NOOP("SmartPlaylistDialog", "key compatible with {key}")
+_RULE_KEY = QT_TRANSLATE_NOOP("SmartPlaylistDialog", "key {key}")
+_RULE_NOT_PLAYED = QT_TRANSLATE_NOOP("SmartPlaylistDialog", "not played for {days} days")
+_RULE_EVERY_TRACK = QT_TRANSLATE_NOOP("SmartPlaylistDialog", "every track")
+_RULE_LIMIT = QT_TRANSLATE_NOOP("SmartPlaylistDialog", "first {limit}")
 
 _FORMAT_VERSION = 1
 
@@ -132,31 +150,33 @@ class SmartRules:
         except (TypeError, ValueError) as exc:
             raise ValueError(f"Invalid smart playlist rules: {exc}") from exc
 
-    def describe(self) -> str:
+    def describe(self, translate: Translate = untranslated) -> str:
         """One line for the playlist list's tooltip, e.g. ``category Tek ·
-        BPM 170–180 · key compatible with 8A · not played for 90 days``."""
+        BPM 170–180 · key compatible with 8A · not played for 90 days``, in
+        the language `translate` gives (English by default)."""
         parts: list[str] = []
         if self.category:
-            parts.append(f"category {self.category.replace('%%', ' / ')}")
+            parts.append(translate(_RULE_CATEGORY).format(category=self.category.replace("%%", " / ")))
         if self.genre:
-            parts.append(f"genre contains “{self.genre}”")
+            parts.append(translate(_RULE_GENRE).format(genre=self.genre))
         if self.text:
-            parts.append(f"text contains “{self.text}”")
-        if self.bpm_min is not None and self.bpm_max is not None:
-            parts.append(f"BPM {self.bpm_min:g}–{self.bpm_max:g}")
-        elif self.bpm_min is not None:
-            parts.append(f"BPM ≥ {self.bpm_min:g}")
-        elif self.bpm_max is not None:
-            parts.append(f"BPM ≤ {self.bpm_max:g}")
+            parts.append(translate(_RULE_TEXT).format(text=self.text))
+        low = None if self.bpm_min is None else f"{self.bpm_min:g}"
+        high = None if self.bpm_max is None else f"{self.bpm_max:g}"
+        if low is not None and high is not None:
+            parts.append(translate(_RULE_BPM_RANGE).format(low=low, high=high))
+        elif low is not None:
+            parts.append(translate(_RULE_BPM_MIN).format(low=low))
+        elif high is not None:
+            parts.append(translate(_RULE_BPM_MAX).format(high=high))
         if self.camelot_key:
-            parts.append(
-                f"key compatible with {self.camelot_key}" if self.key_compatible else f"key {self.camelot_key}"
-            )
+            template = _RULE_KEY_COMPATIBLE if self.key_compatible else _RULE_KEY
+            parts.append(translate(template).format(key=self.camelot_key))
         if self.not_played_days:
-            parts.append(f"not played for {self.not_played_days} days")
-        text = " · ".join(parts) or "every track"
+            parts.append(translate(_RULE_NOT_PLAYED).format(days=self.not_played_days))
+        text = " · ".join(parts) or translate(_RULE_EVERY_TRACK)
         if self.limit:
-            text += f" · first {self.limit}"
+            text += " · " + translate(_RULE_LIMIT).format(limit=self.limit)
         return text
 
 

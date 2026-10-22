@@ -10,8 +10,28 @@ supported language has a compiled ``djmidi_<code>.qm`` beside its editable
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
 from typing import Literal
+
+Translate = Callable[[str], str]
+"""Turns an English text marked with ``QT_TRANSLATE_NOOP`` into the interface
+language (issue #313).  Qt-free modules that build a sentence from a template
+take one as an optional argument; the GUI passes
+``gui.translation.translator(context)``, tests and scripts keep the default."""
+
+
+def untranslated(text: str) -> str:
+    """The default `Translate`: English, as written in the code."""
+    return text
+
+
+def QT_TRANSLATE_NOOP(context: str, text: str) -> str:
+    """Marks `text` for the interface catalogue under `context` without
+    importing Qt: pyside6-lupdate finds the call by its name (the module must be
+    listed in ``scripts/update_translations.sh``) and the GUI translates the
+    text with ``QCoreApplication.translate(context, text)``."""
+    return text
 
 LanguagePreference = Literal["system", "en", "fr"]
 
@@ -67,10 +87,13 @@ def translation_file(language: str) -> Path | None:
 __all__ = [
     "LANGUAGE_CHOICES",
     "LANGUAGE_PREFERENCES",
+    "QT_TRANSLATE_NOOP",
     "SOURCE_LANGUAGE",
     "SUPPORTED_LANGUAGES",
     "LanguagePreference",
+    "Translate",
     "resolve_language",
     "translation_file",
     "translations_dir",
+    "untranslated",
 ]
