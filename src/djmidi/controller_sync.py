@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import logging
 import re
+from collections import Counter
 from collections.abc import Callable, Iterable, Sequence
 from contextlib import AbstractContextManager, nullcontext
 from dataclasses import dataclass, field
@@ -387,6 +388,15 @@ def run_sync(
     return results
 
 
+_PORT_INDEX_SUFFIX = re.compile(r"\s+\d+$")
+
+
+def port_identity(port: str) -> str:
+    """A port name without the trailing index Windows adds (``"DDJ-XP2 1"``
+    -> ``"DDJ-XP2"``), which changes whenever another device comes or goes."""
+    return _PORT_INDEX_SUFFIX.sub("", port.strip())
+
+
 class PlugInSyncTracker:
     """Decides which sync sets to send when a controller is plugged in.
 
@@ -397,6 +407,12 @@ class PlugInSyncTracker:
     controllers also means a set recorded (or edited) while its controller
     is already connected isn't sent back to it on the next poll.
 
+    Ports are compared by :func:`port_identity`, counted (issue #305): on
+    Windows a controller that never left can come back under another index
+    (``"DDJ-XP2 1"`` -> ``"DDJ-XP2 0"``) when another device is plugged or
+    unplugged, which isn't a plug-in; a second port with the same identity
+    (a second identical unit) still is.
+
     The first :meth:`due` call only records the ports (a controller already
     connected when watching starts wasn't "plugged in"); :meth:`seed` does
     the same explicitly, e.g. with the port list the launch-time Sync just
@@ -404,14 +420,14 @@ class PlugInSyncTracker:
     """
 
     def __init__(self) -> None:
-        self._known: frozenset[str] | None = None
+        self._known: Counter[str] | None = None
 
     @property
     def seeded(self) -> bool:
         return self._known is not None
 
     def seed(self, available_ports: Iterable[str]) -> None:
-        self._known = frozenset(available_ports)
+        self._known = Counter(port_identity(port) for port in available_ports)
 
     def reset(self) -> None:
         """Forgets the ports, so the next :meth:`due` call only re-seeds."""
@@ -423,13 +439,14 @@ class PlugInSyncTracker:
         self.seed(available_ports)
         if previous is None:
             return []
-        appeared = [port for port in available_ports if port not in previous]
+        appeared = {identity for identity, count in self._known.items() if count > previous[identity]}
         if not appeared:
             return []
         return [
             sync_set
             for sync_set in sync_sets
-            if (port := resolve_output_port(sync_set, available_ports)) is not None and port in appeared
+            if (port := resolve_output_port(sync_set, available_ports)) is not None
+            and port_identity(port) in appeared
         ]
 
 
@@ -455,6 +472,7 @@ __all__ = [
     "messages_from_rows",
     "move_message",
     "normalize_scene",
+    "port_identity",
     "recorded_sync_sets",
     "resolve_output_port",
     "run_sync",
