@@ -48,6 +48,12 @@ While `● Rec` records, controller-bound [macros](midi-macros.md) don't play
 and a pending MIDI Learn doesn't take the press: every press goes to the
 recording only. Both work again after `■ Stop`.
 
+A fader, knob or jog moved while recording sends hundreds of messages; only
+its final position is kept, at the point where you last moved it, so the
+order of buttons and final positions is preserved. The status bar says how
+many such messages were collapsed. Controller Setup keeps every recorded
+row, since you review them there before saving.
+
 Quitting the app while `● Rec` is on asks whether to save the recording,
 discard it, or keep the app open.
 

@@ -84,11 +84,11 @@ from djmidi.controller_sync import (
     PlugInSyncTracker,
     SyncResult,
     normalize_scene,
+    recorded_sync_sets,
     resolve_output_port,
     run_sync,
     scene_names,
     summarize_results,
-    sync_sets_from_recording,
 )
 from djmidi.first_run import FirstRunChoices
 from djmidi.function_search import FunctionResult
@@ -1707,7 +1707,7 @@ class MainWindow(QMainWindow):
         self._record_button.setText(self.tr("● Rec"))
         self._relayout_menu_corner()
         scene = self.preferences.active_sync_scene
-        recorded = sync_sets_from_recording(self._record_events, self._controller_name_for_port)
+        recorded, collapsed_by_port = recorded_sync_sets(self._record_events, self._controller_name_for_port)
         self._record_events = []
         # Only recognized controllers: a loopback bus (IAC Driver) or another
         # program's virtual port would otherwise be replayed at every launch.
@@ -1748,9 +1748,11 @@ class MainWindow(QMainWindow):
         for sync_set in sync_sets:
             self.preferences.set_sync_set(sync_set)
         self._save_preferences()
+        collapsed = sum(collapsed_by_port.get(sync_set.output_port, 0) for sync_set in sync_sets)
         self.statusBar().showMessage(
             "Sync set(s) saved: "
             + ", ".join(f"{sync_set.label} ({len(sync_set.messages)} msg)" for sync_set in sync_sets)
+            + (f"; {collapsed} CC message(s) collapsed to their last value" if collapsed else "")
             + (f" (ignored unrecognized: {', '.join(ignored)})" if ignored else ""),
             10_000,
         )

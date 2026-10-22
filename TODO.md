@@ -132,6 +132,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **● Rec collapses CC traffic** (`v0.48.114-rec-collapse-cc`, issue #298) — a fader, knob or jog moved
+  during `● Rec` no longer adds hundreds of Control Change messages to a set replayed at every launch:
+  `controller_sync.collapse_control_changes` keeps the last value per (channel, CC) at its last position, notes
+  untouched, and the status bar says how many were collapsed. Controller Setup's `sync_set_from_events` still
+  keeps every row (the user reviews them there).
 - [x] **Sync opens each output port once per set** (`v0.48.113-sync-open-port-once`, issue #297) —
   `run_sync` sent every message through `send_midi_message`, which opened and closed the port each time (slow
   for a 100+ message set, and some drivers drop messages on reopen). `midi_io.open_midi_output` now opens the
