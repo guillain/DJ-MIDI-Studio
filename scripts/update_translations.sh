@@ -14,7 +14,8 @@
 #    loads at launch. Commit both files; tests/test_i18n.py fails when a .qm is
 #    older than its .ts or a wrapped string is left untranslated.
 #
-# A file that gains tr() calls must be added to SOURCES.
+# A file that gains tr() calls must be added to SOURCES -- so must a Qt-free
+# module whose constants are marked with its own QT_TRANSLATE_NOOP (issue #306).
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -31,6 +32,10 @@ SOURCES=(
   src/djmidi/gui/library_stats_dialog.py
   src/djmidi/gui/rename_files_dialog.py
   src/djmidi/gui/change_history_dialog.py
+  src/djmidi/gui/set_preparation.py
+  src/djmidi/gui/audio_preview.py
+  src/djmidi/midi_latency.py
+  src/djmidi/library/rename.py
 )
 LANGUAGES=(fr)
 
