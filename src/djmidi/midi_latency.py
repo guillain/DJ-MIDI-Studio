@@ -52,10 +52,18 @@ ClockFn = Callable[[], float]
 
 MAX_PINGS = 1000
 
-ECHO_WARNING = (
+def QT_TRANSLATE_NOOP(context: str, text: str) -> str:
+    """Marks `text` for the interface translations (issue #306) without
+    importing Qt here: pyside6-lupdate finds it by this name, and the dialog
+    translates it with QCoreApplication.translate(context, text)."""
+    return text
+
+
+ECHO_WARNING = QT_TRANSLATE_NOOP(
+    "MidiLatencyDialog",
     "Only meaningful with a port or device that echoes what it receives "
     "(IAC Driver / virtual loopback, MIDI thru, or a controller known to echo "
-    "its LED messages). A controller that does not echo makes every ping time out."
+    "its LED messages). A controller that does not echo makes every ping time out.",
 )
 
 

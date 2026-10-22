@@ -46,7 +46,11 @@ The quickest way is the **`● Rec`** button at the top right of the menu bar:
 
 While `● Rec` records, controller-bound [macros](midi-macros.md) don't play
 and a pending MIDI Learn doesn't take the press: every press goes to the
-recording only. Both work again after `■ Stop`.
+recording only. Both work again after `■ Stop`. The
+[Live Monitor](live-monitor.md) keeps the inputs it had when recording
+started: its **Start/Stop monitoring** button and input list are greyed out
+until `■ Stop`, and if loading a mapping would start it meanwhile, it starts
+right after `■ Stop` instead.
 
 A fader, knob or jog moved while recording sends hundreds of messages; only
 its final position is kept, at the point where you last moved it, so the
@@ -104,6 +108,9 @@ once and the status bar says so (`Plugged in -- Synced …`).
 
 - A controller that stays connected is never sent its set again.
 - Unplug it and plug it back in: its set is sent again.
+- On Windows, plugging or unplugging another device can renumber the ports
+  (`DDJ-XP2 1` becomes `DDJ-XP2 0`); a controller that only changed number
+  is not sent its set again.
 - Controllers already connected when the app starts are handled by
   [Sync at launch](#sync-at-launch), never twice.
 

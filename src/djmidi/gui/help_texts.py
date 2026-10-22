@@ -275,7 +275,8 @@ LIVE_MONITOR: HelpEntry = (
         "add <i>DJMidiStudio Monitor</i> as an extra MIDI output in Serato.<br><br>"
         "A press that fires two or more different functions on the same deck is shown in "
         "amber as <b>CONFLICT</b> and counted; Serato's identical repeated triggers are not "
-        "conflicts."
+        "conflicts.<br><br>"
+        "While <b>● Rec</b> records, Start/Stop and the inputs are locked until <b>■ Stop</b>."
     ),
     "live-monitor.md",
 )

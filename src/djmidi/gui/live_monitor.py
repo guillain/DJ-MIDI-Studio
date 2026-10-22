@@ -75,6 +75,10 @@ class LiveMonitorView(QWidget):
         self._conflict_triggers: set[TriggerKey] = set()
         self._events: list[MidiEvent] = []
         self._running = False
+        # Set while the menu bar's ● Rec records (issue #307): Start/Stop and
+        # the port choice are frozen, and an auto-start is deferred to unlock.
+        self._lock_reason: str | None = None
+        self._auto_start_pending = False
 
         if on_event is not None:
             self.eventReceived.connect(on_event)
@@ -85,7 +89,7 @@ class LiveMonitorView(QWidget):
         refresh_button.clicked.connect(self._refresh_ports)
         select_all_button = QPushButton("Select all sources")
         select_all_button.clicked.connect(self._select_all_sources)
-        ports_box = QGroupBox("Input sources (check to monitor)")
+        self._ports_box = ports_box = QGroupBox("Input sources (check to monitor)")
         ports_layout = QVBoxLayout(ports_box)
         ports_layout.addWidget(self._port_list)
         ports_layout.addWidget(refresh_button)
@@ -203,6 +207,8 @@ class LiveMonitorView(QWidget):
         return self._port_list.item(row).checkState() == Qt.CheckState.Checked
 
     def _toggle_running(self) -> None:
+        if self._lock_reason is not None:
+            return
         if self._running:
             self._stop()
         else:
@@ -379,6 +385,9 @@ class LiveMonitorView(QWidget):
         skipped and logged, instead of aborting monitoring on every port."""
         if self._running:
             return
+        if self._lock_reason is not None:
+            self._auto_start_pending = True
+            return
         self._refresh_ports()
         self._select_all_sources()
         opened: list[str] = []
@@ -398,6 +407,27 @@ class LiveMonitorView(QWidget):
         self._status_label.setText(f"Running ({len(opened)} input(s), auto-started)")
         _LOGGER.info("Live Monitor auto-started on mapping load: inputs=%s", opened)
         self._timer.start()
+
+    @property
+    def is_locked(self) -> bool:
+        return self._lock_reason is not None
+
+    def set_locked(self, reason: str | None) -> None:
+        """Freezes Start/Stop and the input choice while another listener
+        depends on the ports this monitor holds (issue #307: ● Rec reads the
+        Live Monitor's ports from its stream and opens the others itself, so
+        stopping it would silently drop those ports from the recording and
+        starting it would try to open ports ● Rec holds -- refused on Windows).
+        ``reason`` becomes the controls' tooltip; ``None`` unlocks, running
+        any auto-start (mapping load) requested meanwhile."""
+        self._lock_reason = reason
+        locked = reason is not None
+        for widget in (self._start_button, self._ports_box, self._virtual_checkbox):
+            widget.setEnabled(not locked)
+            widget.setToolTip(reason or "")
+        if not locked and self._auto_start_pending:
+            self._auto_start_pending = False
+            self.ensure_monitoring_started()
 
     def shutdown(self) -> None:
         """Releases MIDI ports; call when the app is closing."""

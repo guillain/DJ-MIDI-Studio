@@ -77,7 +77,7 @@ class RenameFilesDialog(QDialog):
         fields.setWordWrap(True)
         box.addWidget(fields)
 
-        warning = QLabel("⚠ " + rename.RELINK_WARNING)
+        warning = QLabel("⚠ " + self.tr(rename.RELINK_WARNING))
         warning.setWordWrap(True)
         warning.setStyleSheet("color: #b7791f;")
         box.addWidget(warning)

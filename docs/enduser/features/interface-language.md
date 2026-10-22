@@ -39,13 +39,18 @@ This first version translates what you use most:
   `Images contrôleur`, `Par canal`, `Par platine`, `Par contrôleur`,
   `Bibliothèque` (kept short so they fit a small window; when they still
   don't, the tab bar shows scroll arrows instead of cutting the names);
-- the **● Rec** / **⟳ Sync** buttons beside the menu bar;
+- the **● Rec** / **⟳ Sync** buttons and the sync-scene list beside the
+  menu bar, with their tooltips, the messages they show in the status bar
+  and their questions (replacing a stored sync set, quitting while
+  recording);
 - the whole Preferences window;
 - the first-run setup wizard (`Aide → Configuration initiale…`), the
   `Prêt pour le live` report, the `Test de latence MIDI` and the
   `Carte des couches` windows;
-- in the Music Library: the cover-art, statistics, smart-playlist,
-  file-renaming and change-history buttons, and the windows they open;
+- the whole Music Library tab: the music folders, the table and its
+  filters, the `Morceau`, `Catégories`, `Playlists`, `Historique` and `Set`
+  panels, the preview bar, the status line and the windows its buttons
+  open (except `Trouver les doublons…` and `Bilan de santé…`);
 - Qt's own standard buttons and dialogs (`OK`, `Annuler`, `Enregistrer`,
   file pickers).
 
@@ -53,13 +58,15 @@ This first version translates what you use most:
 
 ## What stays in English
 
-The rest of each tab's content (including the Music Library's older
-buttons and its status line), the tool windows (Live Monitor, MIDI Routing,
-MIDI Clock, Metronome, Controller Emulator), most messages and the `?` help
+The rest of each tab's content, the tool windows (Live Monitor, MIDI
+Routing, MIDI Clock, Metronome, Controller Emulator), the Music Library's
+duplicates and health-report windows, most other messages and the `?` help
 texts are still in English, as is this documentation. Inside the translated
 windows, text computed from your data stays in English too: the findings
-of the `Prêt pour le live` report, the latency statistics line and the
-change-history entry descriptions. They will be
+of the `Prêt pour le live` report, the latency statistics line, the
+change-history entry descriptions, the Sync result summary in the status
+bar, the Set panel's summary line and transition notes, and the
+smart-playlist rule summaries and sort names. They will be
 translated over the next releases. Controller and function names that
 come from your DJ software or your controller's MIDI documentation are
 never translated.

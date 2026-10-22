@@ -487,3 +487,30 @@ def test_sync_set_from_events_does_not_collapse_control_changes():
     # Controller Setup shows every recorded row for review before saving.
     events = [_event("Control Change", data1="19", data2=str(value)) for value in range(3)]
     assert len(sync_set_from_events("DDJ-XP2", events).messages) == 3
+
+
+def test_plug_in_tracker_ignores_a_windows_port_renumbering():
+    # Issue #305: Windows numbers ports ("DDJ-XP2 1") and renumbers them when
+    # another device comes or goes; the controller never left.
+    tracker = PlugInSyncTracker()
+    tracker.seed(["Some Synth 0", "PIONEER DDJ-XP2 1"])
+    assert tracker.due([_XP2], ["PIONEER DDJ-XP2 0"]) == []
+    assert tracker.due([_XP2], ["Some Synth 0", "PIONEER DDJ-XP2 1"]) == []
+    # A real unplug / replug under a new number is still a plug-in.
+    assert tracker.due([_XP2], ["Some Synth 0"]) == []
+    assert tracker.due([_XP2], ["Some Synth 0", "PIONEER DDJ-XP2 2"]) == [_XP2]
+
+
+def test_plug_in_tracker_second_identical_controller_is_a_plug_in():
+    tracker = PlugInSyncTracker()
+    tracker.seed(["IAC Driver Bus 1"])
+    iac = ControllerSyncSet("IAC", "IAC Driver Bus 2", ())
+    assert tracker.due([iac], ["IAC Driver Bus 1", "IAC Driver Bus 2"]) == [iac]
+
+
+def test_port_identity_strips_only_the_trailing_index():
+    from djmidi.controller_sync import port_identity
+
+    assert port_identity("PIONEER DDJ-XP2 1") == "PIONEER DDJ-XP2"
+    assert port_identity("DDJ-XP2") == "DDJ-XP2"
+    assert port_identity("CMD LC-1") == "CMD LC-1"
