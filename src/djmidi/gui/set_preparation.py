@@ -19,7 +19,7 @@ from __future__ import annotations
 from collections.abc import Callable, Sequence
 from pathlib import Path
 
-from PySide6.QtCore import QPointF, QRectF, Qt, Signal
+from PySide6.QtCore import QCoreApplication, QPointF, QRectF, Qt, Signal
 from PySide6.QtGui import QBrush, QColor, QPainter, QPainterPath, QPalette, QPen
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -98,8 +98,8 @@ class SetCurveWidget(QWidget):
 
     def _tooltip(self) -> str:
         if not self.tracks:
-            return "Add tracks to see the set's BPM and energy curve."
-        lines = ["Blue: BPM · Orange: energy (1-10) · Red: incompatible transition"]
+            return self.tr("Add tracks to see the set's BPM and energy curve.")
+        lines = [self.tr("Blue: BPM · Orange: energy (1-10) · Red: incompatible transition")]
         for transition in self.transitions:
             if transition.status == set_prep.STATUS_INCOMPATIBLE:
                 lines.append(f"{transition.index + 1} → {transition.index + 2}: " + "; ".join(transition.issues))
@@ -127,7 +127,7 @@ class SetCurveWidget(QWidget):
         painter.drawRect(plot)
         bpm_range = self.bpm_range()
         if not self.tracks or plot.width() <= 0 or plot.height() <= 0:
-            painter.drawText(plot, Qt.AlignmentFlag.AlignCenter, "Empty set")
+            painter.drawText(plot, Qt.AlignmentFlag.AlignCenter, self.tr("Empty set"))
             return
         if bpm_range is not None:
             low, high = bpm_range
@@ -264,13 +264,13 @@ class SetPreparationPanel(QWidget):
         self.curve = SetCurveWidget()
         box.addWidget(self.curve)
         self.list = SetListWidget()
-        self.list.setToolTip("Drag tracks here from the table; drag inside the list to reorder.")
+        self.list.setToolTip(self.tr("Drag tracks here from the table; drag inside the list to reorder."))
         self.list.pathsDropped.connect(self.insert_paths)
         self.list.orderChanged.connect(self._sync_from_list)
         box.addWidget(self.list, 1)
 
         tolerance_row = QHBoxLayout()
-        tolerance_row.addWidget(QLabel("BPM tolerance ±"))
+        tolerance_row.addWidget(QLabel(self.tr("BPM tolerance ±")))
         self.tolerance_spin = QDoubleSpinBox()
         self.tolerance_spin.setRange(*set_prep.BPM_TOLERANCE_RANGE)
         self.tolerance_spin.setSingleStep(0.5)
@@ -283,20 +283,20 @@ class SetPreparationPanel(QWidget):
 
         grid = QGridLayout()
         specs: list[tuple[str, str, Callable[[], None], str]] = [
-            ("add_button", "Add selection", self.add_selection,
-             "Appends the tracks selected in the table (each track once)."),
-            ("remove_button", "Remove", self.remove_selected, ""),
-            ("clear_button", "Clear", self.clear, ""),
-            ("up_button", "Move up", lambda: self.move_selected(-1), ""),
-            ("down_button", "Move down", lambda: self.move_selected(1), ""),
-            ("load_button", "Load playlist", self.load_selected_playlist,
-             "Replaces the draft with the playlist selected in the Playlists tab."),
-            ("save_button", "Save as playlist…", self._on_save_clicked,
-             "Saves the draft, in this order, as an app playlist."),
-            ("export_serato_button", "Export as Serato crate…", self._on_export_serato_clicked,
-             "Writes a new .crate file where you choose."),
-            ("export_traktor_button", "Export as Traktor playlist…", self._on_export_traktor_clicked,
-             "Writes a new single-playlist .nml where you choose."),
+            ("add_button", self.tr("Add selection"), self.add_selection,
+             self.tr("Appends the tracks selected in the table (each track once).")),
+            ("remove_button", self.tr("Remove"), self.remove_selected, ""),
+            ("clear_button", self.tr("Clear"), self.clear, ""),
+            ("up_button", self.tr("Move up"), lambda: self.move_selected(-1), ""),
+            ("down_button", self.tr("Move down"), lambda: self.move_selected(1), ""),
+            ("load_button", self.tr("Load playlist"), self.load_selected_playlist,
+             self.tr("Replaces the draft with the playlist selected in the Playlists tab.")),
+            ("save_button", self.tr("Save as playlist…"), self._on_save_clicked,
+             self.tr("Saves the draft, in this order, as an app playlist.")),
+            ("export_serato_button", self.tr("Export as Serato crate…"), self._on_export_serato_clicked,
+             self.tr("Writes a new .crate file where you choose.")),
+            ("export_traktor_button", self.tr("Export as Traktor playlist…"), self._on_export_traktor_clicked,
+             self.tr("Writes a new single-playlist .nml where you choose.")),
         ]
         for index, (attr, label, handler, tip) in enumerate(specs):
             button = QPushButton(label)
@@ -343,11 +343,14 @@ class SetPreparationPanel(QWidget):
     def add_selection(self) -> None:
         rows = self._selected_rows()
         if not rows:
-            self._status("Select tracks in the table first.")
+            self._status(self.tr("Select tracks in the table first."))
             return
         added = self.insert_paths([row.path for row in rows])
         skipped = len(rows) - added
-        self._status(f"Added {added} track(s) to the set." + (f" {skipped} already in it." if skipped else ""))
+        self._status(
+            self.tr("Added {count} track(s) to the set.").format(count=added)
+            + (self.tr(" {count} already in it.").format(count=skipped) if skipped else "")
+        )
 
     def remove_selected(self) -> None:
         self._paths = set_prep.remove_rows(self._paths, self.selected_list_rows())
@@ -366,11 +369,11 @@ class SetPreparationPanel(QWidget):
     def load_selected_playlist(self) -> None:
         selected = self._selected_playlist()
         if selected is None:
-            self._status("Select a playlist in the Playlists tab first.")
+            self._status(self.tr("Select a playlist in the Playlists tab first."))
             return
         playlist_id, name = selected
         self.set_paths(self._db().playlist_paths(playlist_id))
-        self._status(f"Loaded “{name}” into the set.")
+        self._status(self.tr("Loaded “{name}” into the set.").format(name=name))
 
     def _sync_from_list(self) -> None:
         """After an internal drag: the list's order becomes the draft's."""
@@ -402,9 +405,18 @@ class SetPreparationPanel(QWidget):
     def _item(index: int, track: set_prep.SetTrack, incoming: set_prep.Transition | None) -> QListWidgetItem:
         item = QListWidgetItem(item_text(index + 1, track, incoming))
         item.setData(PATH_ROLE, track.path)
-        tips = [track.path if track.indexed else f"Not in the indexed folders: {track.path}"]
+        tips = [
+            track.path
+            if track.indexed
+            else QCoreApplication.translate("SetPreparationPanel", "Not in the indexed folders: {path}").format(
+                path=track.path
+            )
+        ]
         if incoming is not None:
-            tips.append(f"From track {index}: " + ("; ".join(incoming.issues) or "compatible"))
+            tips.append(
+                QCoreApplication.translate("SetPreparationPanel", "From track {index}: ").format(index=index)
+                + ("; ".join(incoming.issues) or QCoreApplication.translate("SetPreparationPanel", "compatible"))
+            )
             if incoming.status == set_prep.STATUS_INCOMPATIBLE:
                 item.setForeground(QBrush(_INCOMPATIBLE_COLOR))
         if not track.indexed:
@@ -415,7 +427,7 @@ class SetPreparationPanel(QWidget):
     # --- save & export --------------------------------------------------
 
     def _ask_name(self) -> str | None:
-        name, ok = QInputDialog.getText(self, "Save set", "Playlist name:", text="Set")
+        name, ok = QInputDialog.getText(self, self.tr("Save set"), self.tr("Playlist name:"), text=self.tr("Set"))
         return name.strip() if ok and name.strip() else None
 
     def _on_save_clicked(self) -> None:
@@ -427,11 +439,11 @@ class SetPreparationPanel(QWidget):
 
     def export_crate(self, crate_path: str) -> None:
         workspace.export_serato_crate(crate_path, self._paths)
-        self._status(f"Exported {Path(crate_path).name}.")
+        self._status(self.tr("Exported {name}.").format(name=Path(crate_path).name))
 
     def export_nml(self, nml_path: str, name: str) -> None:
         workspace.export_traktor_playlist(nml_path, name, self._paths, db=self._db())
-        self._status(f"Exported {Path(nml_path).name}.")
+        self._status(self.tr("Exported {name}.").format(name=Path(nml_path).name))
 
     def _export(self, title: str, suffix: str, file_filter: str, write: Callable[[str], None]) -> None:
         if not self._paths:
@@ -444,15 +456,17 @@ class SetPreparationPanel(QWidget):
         try:
             write(path)
         except OSError as exc:
-            QMessageBox.warning(self, "Export failed", f"{path}\n\n{exc}")
+            QMessageBox.warning(self, self.tr("Export failed"), f"{path}\n\n{exc}")
 
     def _on_export_serato_clicked(self) -> None:
-        self._export("Export set as Serato crate", ".crate", "Serato crates (*.crate)", self.export_crate)
+        self._export(
+            self.tr("Export set as Serato crate"), ".crate", self.tr("Serato crates (*.crate)"), self.export_crate
+        )
 
     def _on_export_traktor_clicked(self) -> None:
         self._export(
-            "Export set as Traktor playlist",
+            self.tr("Export set as Traktor playlist"),
             ".nml",
-            "Traktor playlists (*.nml)",
+            self.tr("Traktor playlists (*.nml)"),
             lambda path: self.export_nml(path, Path(path).stem),
         )

@@ -138,6 +138,18 @@ Implemented contract, runtime, test, and documentation work:
   greys out Start/Stop and the inputs with a tooltip until `■ Stop`; an auto-start requested meanwhile runs
   right after it. Chosen over handing ports back and forth: no window where a port is closed by one listener
   and not yet opened by the other.
+- [x] **French UI leftovers** (`v0.48.116-french-ui-leftovers`, issue #306) — the ● Rec / Sync / sync-scene
+  tooltips, ● Rec status-bar messages, replace prompts and quit prompt, the MIDI Latency Test echo warning, the
+  Rename files relink warning and the whole Music Library tab (side tabs, panels, table headers, filters, status
+  line, its dialogs, the Set panel and the preview bar) now go through `tr()` and are translated. Filter and
+  mix-path combos read their item data, never the translated label. Still English: the duplicates and
+  health-report windows, and text built by Qt-free modules (Sync result summary, Set summary, smart-playlist
+  rule summaries).
+- [x] **Plug-in Sync ignores a Windows port renumbering** (`v0.48.115-plug-in-sync-renumbering`, issue #305) —
+  `PlugInSyncTracker` compared raw output-port names, so a controller Windows renumbered when another device came
+  or went (`DDJ-XP2 1` → `DDJ-XP2 0`) looked plugged in and was synced again. It now counts ports by
+  `controller_sync.port_identity` (trailing index stripped); a real replug or a second identical unit still syncs.
+  Verified with fake port lists only, not on a real Windows machine.
 - [x] **● Rec collapses CC traffic** (`v0.48.114-rec-collapse-cc`, issue #298) — a fader, knob or jog moved
   during `● Rec` no longer adds hundreds of Control Change messages to a set replayed at every launch:
   `controller_sync.collapse_control_changes` keeps the last value per (channel, CC) at its last position, notes

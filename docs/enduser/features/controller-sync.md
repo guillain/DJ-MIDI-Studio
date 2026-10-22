@@ -108,6 +108,9 @@ once and the status bar says so (`Plugged in -- Synced …`).
 
 - A controller that stays connected is never sent its set again.
 - Unplug it and plug it back in: its set is sent again.
+- On Windows, plugging or unplugging another device can renumber the ports
+  (`DDJ-XP2 1` becomes `DDJ-XP2 0`); a controller that only changed number
+  is not sent its set again.
 - Controllers already connected when the app starts are handled by
   [Sync at launch](#sync-at-launch), never twice.
 

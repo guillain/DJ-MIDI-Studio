@@ -997,7 +997,7 @@ class MainWindow(QMainWindow):
         self._sync_button = QPushButton(self.tr("⟳ Sync"))
         self._sync_button.setFixedHeight(28)
         self._sync_button.setToolTip(
-            "Sync controllers: send each connected controller its recorded initialization set"
+            self.tr("Sync controllers: send each connected controller its recorded initialization set")
         )
         self._sync_button.clicked.connect(self._on_sync_controllers)
         # Active sync scene (issue #188): which named set ⟳ Sync, launch and
@@ -1007,8 +1007,10 @@ class MainWindow(QMainWindow):
         self._sync_scene_combo.setMaximumWidth(140)
         self._sync_scene_combo.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToContents)
         self._sync_scene_combo.setToolTip(
-            "Sync scene: ⟳ Sync, launch and plug-in sync send each controller its set for this scene "
-            "(or its Default set when it has none); ● Rec records into it"
+            self.tr(
+                "Sync scene: ⟳ Sync, launch and plug-in sync send each controller its set for this scene "
+                "(or its Default set when it has none); ● Rec records into it"
+            )
         )
         self._refresh_sync_scene_combo()
         self._sync_scene_combo.activated.connect(self._on_sync_scene_activated)
@@ -1018,8 +1020,10 @@ class MainWindow(QMainWindow):
         self._record_button.setCheckable(True)
         self._record_button.setFixedHeight(28)
         self._record_button.setToolTip(
-            "Record controller setup: press the controls to send at initialization, then click "
-            "again to save them as each controller's sync set (played by ⟳ Sync and at launch)"
+            self.tr(
+                "Record controller setup: press the controls to send at initialization, then click "
+                "again to save them as each controller's sync set (played by ⟳ Sync and at launch)"
+            )
         )
         self._record_button.toggled.connect(self._on_record_toggled)
         self._record_monitor = MidiMonitor()
@@ -1474,17 +1478,21 @@ class MainWindow(QMainWindow):
         sync_sets = self.preferences.active_sync_sets()
         if not sync_sets:
             recorded = (
-                f"No initialization set is recorded for the scene \"{self.preferences.active_sync_scene}\" "
-                "and no controller has a Default set."
+                self.tr(
+                    "No initialization set is recorded for the scene \"{scene}\" and no controller has a Default set."
+                ).format(scene=self.preferences.active_sync_scene)
                 if self.preferences.controller_sync_sets
-                else "No initialization set is recorded yet."
+                else self.tr("No initialization set is recorded yet.")
             )
             QMessageBox.information(
                 self,
-                "No controller sync set",
-                recorded + "\n\n"
-                "Click ● Rec, press the controls to send at initialization, then click ■ Stop -- or, in "
-                "Controller Setup, start learning, press the controls, then click \"Save as controller sync set\".",
+                self.tr("No controller sync set"),
+                recorded
+                + "\n\n"
+                + self.tr(
+                    "Click ● Rec, press the controls to send at initialization, then click ■ Stop -- or, in "
+                    "Controller Setup, start learning, press the controls, then click \"Save as controller sync set\"."
+                ),
             )
             return []
         ports = list_output_ports()
@@ -1534,7 +1542,7 @@ class MainWindow(QMainWindow):
         if not due:
             return []
         results = run_sync(due, ports)
-        self.statusBar().showMessage("Plugged in -- " + summarize_results(results), 10_000)
+        self.statusBar().showMessage(self.tr("Plugged in -- ") + summarize_results(results), 10_000)
         return results
 
     def _check_for_updates_at_startup(self) -> bool:
@@ -1675,11 +1683,13 @@ class MainWindow(QMainWindow):
         if not opened:
             QMessageBox.warning(
                 self,
-                "Cannot record",
-                f"None of the MIDI inputs could be opened ({', '.join(failed)}): another program, or the "
-                "Live Monitor, may be using them."
+                self.tr("Cannot record"),
+                self.tr(
+                    "None of the MIDI inputs could be opened ({ports}): another program, or the "
+                    "Live Monitor, may be using them."
+                ).format(ports=", ".join(failed))
                 if failed
-                else "No MIDI input could be opened: is a controller connected?",
+                else self.tr("No MIDI input could be opened: is a controller connected?"),
             )
             self._record_shared_ports = frozenset()
             self._record_button.blockSignals(True)
@@ -1697,9 +1707,11 @@ class MainWindow(QMainWindow):
         self._record_timer.start()
         _LOGGER.info("Record: listening on %s", opened)
         self.statusBar().showMessage(
-            f"Recording on {len(opened)} MIDI input(s): press the controls to send at initialization, "
-            "then click ■ Stop (macros and MIDI Learn are paused meanwhile)"
-            + (f" (couldn't open: {', '.join(failed)})" if failed else "")
+            self.tr(
+                "Recording on {count} MIDI input(s): press the controls to send at initialization, "
+                "then click ■ Stop (macros and MIDI Learn are paused meanwhile)"
+            ).format(count=len(opened))
+            + (self.tr(" (couldn't open: {ports})").format(ports=", ".join(failed)) if failed else "")
         )
 
     def _poll_recording(self) -> None:
@@ -1725,8 +1737,12 @@ class MainWindow(QMainWindow):
             _LOGGER.info("Record: ignored unrecognized port(s) %s", ignored)
         if not recorded:
             self.statusBar().showMessage(
-                "Recording stopped: no MIDI note/CC received from a recognized controller, nothing saved"
-                + (f" (ignored: {', '.join(ignored)}; use Controller Setup for these)" if ignored else ""),
+                self.tr("Recording stopped: no MIDI note/CC received from a recognized controller, nothing saved")
+                + (
+                    self.tr(" (ignored: {ports}; use Controller Setup for these)").format(ports=", ".join(ignored))
+                    if ignored
+                    else ""
+                ),
                 10_000,
             )
             return []
@@ -1739,10 +1755,15 @@ class MainWindow(QMainWindow):
         if stored:
             reply = QMessageBox.question(
                 self,
-                "Replace sync sets",
-                "Replace the sync set(s) already stored for:\n"
-                + "\n".join(f"{existing.label} ({len(existing.messages)} message(s))" for existing in stored.values())
-                + "\n\nNo keeps them; what you recorded on other controllers is saved either way.",
+                self.tr("Replace sync sets"),
+                self.tr("Replace the sync set(s) already stored for:")
+                + "\n"
+                + "\n".join(
+                    self.tr("{name} ({count} message(s))").format(name=existing.label, count=len(existing.messages))
+                    for existing in stored.values()
+                )
+                + "\n\n"
+                + self.tr("No keeps them; what you recorded on other controllers is saved either way."),
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             )
             if reply != QMessageBox.StandardButton.Yes:
@@ -1750,17 +1771,22 @@ class MainWindow(QMainWindow):
                 # recording of a controller that had none.
                 sync_sets = [sync_set for sync_set in sync_sets if sync_set.controller not in stored]
                 if not sync_sets:
-                    self.statusBar().showMessage("Recording discarded: the stored sync set(s) were kept", 10_000)
+                    self.statusBar().showMessage(
+                        self.tr("Recording discarded: the stored sync set(s) were kept"), 10_000
+                    )
                     return []
         for sync_set in sync_sets:
             self.preferences.set_sync_set(sync_set)
         self._save_preferences()
         collapsed = sum(collapsed_by_port.get(sync_set.output_port, 0) for sync_set in sync_sets)
         self.statusBar().showMessage(
-            "Sync set(s) saved: "
-            + ", ".join(f"{sync_set.label} ({len(sync_set.messages)} msg)" for sync_set in sync_sets)
-            + (f"; {collapsed} CC message(s) collapsed to their last value" if collapsed else "")
-            + (f" (ignored unrecognized: {', '.join(ignored)})" if ignored else ""),
+            self.tr("Sync set(s) saved: ")
+            + ", ".join(
+                self.tr("{name} ({count} msg)").format(name=sync_set.label, count=len(sync_set.messages))
+                for sync_set in sync_sets
+            )
+            + (self.tr("; {count} CC message(s) collapsed to their last value").format(count=collapsed) if collapsed else "")
+            + (self.tr(" (ignored unrecognized: {ports})").format(ports=", ".join(ignored)) if ignored else ""),
             10_000,
         )
         return sync_sets
@@ -1812,9 +1838,10 @@ class MainWindow(QMainWindow):
         if existing is not None:
             reply = QMessageBox.question(
                 self,
-                "Replace sync set",
-                f"Replace the {len(existing.messages)}-message sync set already stored for "
-                f"{sync_set.label} with this {len(sync_set.messages)}-message recording?",
+                self.tr("Replace sync set"),
+                self.tr(
+                    "Replace the {old}-message sync set already stored for {name} with this {new}-message recording?"
+                ).format(old=len(existing.messages), name=sync_set.label, new=len(sync_set.messages)),
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             )
             if reply != QMessageBox.StandardButton.Yes:
@@ -1822,7 +1849,10 @@ class MainWindow(QMainWindow):
         self.preferences.set_sync_set(sync_set)
         self._save_preferences()
         self.statusBar().showMessage(
-            f"Sync set saved for {sync_set.label} ({len(sync_set.messages)} message(s))", 10_000
+            self.tr("Sync set saved for {name} ({count} message(s))").format(
+                name=sync_set.label, count=len(sync_set.messages)
+            ),
+            10_000,
         )
 
     def _on_pad_colours_save_requested(self, controller: str, colours: dict) -> ControllerSyncSet | None:
@@ -1841,8 +1871,9 @@ class MainWindow(QMainWindow):
         self._save_preferences()
         self._reload_emulator_pad_colours()
         self.statusBar().showMessage(
-            f"{len(colours)} pad colour(s) saved in the sync set for {sync_set.label} "
-            f"({len(sync_set.messages)} message(s))",
+            self.tr("{pads} pad colour(s) saved in the sync set for {name} ({count} message(s))").format(
+                pads=len(colours), name=sync_set.label, count=len(sync_set.messages)
+            ),
             10_000,
         )
         return sync_set
@@ -1866,7 +1897,7 @@ class MainWindow(QMainWindow):
         for name in scene_names(self.preferences.controller_sync_sets, active):
             combo.addItem(name, name)
         combo.insertSeparator(combo.count())
-        combo.addItem("New scene…", self._NEW_SCENE_DATA)
+        combo.addItem(self.tr("New scene…"), self._NEW_SCENE_DATA)
         combo.setCurrentIndex(max(combo.findData(active), 0))
         combo.blockSignals(False)
         self._relayout_menu_corner()
@@ -1875,7 +1906,7 @@ class MainWindow(QMainWindow):
         data = self._sync_scene_combo.itemData(index)
         if data == self._NEW_SCENE_DATA:
             name, accepted = QInputDialog.getText(
-                self, "New sync scene", "Scene name (e.g. Tek, DnB, Warm-up):"
+                self, self.tr("New sync scene"), self.tr("Scene name (e.g. Tek, DnB, Warm-up):")
             )
             if not accepted or not name.strip():
                 self._refresh_sync_scene_combo()  # back to the active scene
@@ -1896,7 +1927,7 @@ class MainWindow(QMainWindow):
         self._save_preferences()
         if changed:
             self._reload_emulator_pad_colours()
-        message = f"Sync scene: {scene}"
+        message = self.tr("Sync scene: {scene}").format(scene=scene)
         results: list[SyncResult] = []
         if changed and self.preferences.sync_on_scene_switch:
             sync_sets = self.preferences.active_sync_sets()
@@ -2715,8 +2746,8 @@ class MainWindow(QMainWindow):
         if self._record_button.isChecked():
             reply = QMessageBox.question(
                 self,
-                "Recording in progress",
-                "A controller sync recording is in progress. Save it before quitting?",
+                self.tr("Recording in progress"),
+                self.tr("A controller sync recording is in progress. Save it before quitting?"),
                 QMessageBox.StandardButton.Save
                 | QMessageBox.StandardButton.Discard
                 | QMessageBox.StandardButton.Cancel,
