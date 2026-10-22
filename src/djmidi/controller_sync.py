@@ -28,7 +28,16 @@ from contextlib import AbstractContextManager, nullcontext
 from dataclasses import dataclass, field
 from functools import partial
 
+from djmidi.i18n import QT_TRANSLATE_NOOP, Translate, untranslated
+
 _LOGGER = logging.getLogger(__name__)
+
+# Status-bar texts (issue #313): English templates, translated by the caller.
+NOT_CONNECTED = QT_TRANSLATE_NOOP("ControllerSync", "not connected")
+_NO_SET = QT_TRANSLATE_NOOP("ControllerSync", "No controller sync set recorded")
+_SENT = QT_TRANSLATE_NOOP("ControllerSync", "{controller} ({count} msg)")
+_FAILED = QT_TRANSLATE_NOOP("ControllerSync", "{controller} ({error})")
+_SYNCED = QT_TRANSLATE_NOOP("ControllerSync", "Synced {ok}/{total} controller(s): {parts}")
 
 _EVENT_TYPES = {
     "note on": "Note On",
@@ -366,7 +375,7 @@ def run_sync(
         port = resolve_output_port(sync_set, available_ports)
         if port is None:
             _LOGGER.info("Sync: %s not connected, skipped", sync_set.controller)
-            results.append(SyncResult(sync_set.controller, None, error="not connected"))
+            results.append(SyncResult(sync_set.controller, None, error=NOT_CONNECTED))
             continue
         sent = 0
         try:
@@ -450,16 +459,22 @@ class PlugInSyncTracker:
         ]
 
 
-def summarize_results(results: Sequence[SyncResult]) -> str:
-    """One status-bar line, e.g. ``"Synced 1/2 controller(s): DDJ-XP2 (12 msg), XDJ-XZ (not connected)"``."""
+def summarize_results(results: Sequence[SyncResult], translate: Translate = untranslated) -> str:
+    """One status-bar line, e.g. ``"Synced 1/2 controller(s): DDJ-XP2 (12 msg), XDJ-XZ (not connected)"``.
+
+    ``translate`` turns each English template (and the "not connected"
+    error) into the interface language before it is filled in (issue #313);
+    an exception's own message has no catalogue entry and passes unchanged."""
     if not results:
-        return "No controller sync set recorded"
+        return translate(_NO_SET)
     ok = sum(1 for result in results if result.ok)
     parts = [
-        f"{result.controller} ({result.sent} msg)" if result.ok else f"{result.controller} ({result.error})"
+        translate(_SENT).format(controller=result.controller, count=result.sent)
+        if result.ok
+        else translate(_FAILED).format(controller=result.controller, error=translate(result.error))
         for result in results
     ]
-    return f"Synced {ok}/{len(results)} controller(s): " + ", ".join(parts)
+    return translate(_SYNCED).format(ok=ok, total=len(results), parts=", ".join(parts))
 
 
 __all__ = [

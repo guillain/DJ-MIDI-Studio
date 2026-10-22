@@ -13,7 +13,9 @@ The table is a small `QAbstractTableModel` rather than a `QTableWidget`:
 from __future__ import annotations
 
 from PySide6.QtCore import (
+    QT_TRANSLATE_NOOP,
     QAbstractTableModel,
+    QCoreApplication,
     QModelIndex,
     QPersistentModelIndex,
     Qt,
@@ -40,6 +42,7 @@ from djmidi import user_paths
 from djmidi.gui import help_texts
 from djmidi.gui.file_reveal import reveal_in_file_manager
 from djmidi.gui.help_button import help_button
+from djmidi.gui.translation import translator
 from djmidi.library.health import (
     ISSUE_KINDS,
     ISSUE_LABELS,
@@ -49,7 +52,13 @@ from djmidi.library.health import (
     filter_issues,
 )
 
-COLUMNS = ("Issue", "Detail", "File")
+COLUMNS = (
+    QT_TRANSLATE_NOOP("HealthReportDialog", "Issue"),
+    QT_TRANSLATE_NOOP("HealthReportDialog", "Detail"),
+    QT_TRANSLATE_NOOP("HealthReportDialog", "File"),
+)
+# Labels and fixed details come from Qt-free library.health (issue #313).
+_translate = translator("HealthReportDialog")
 
 
 class HealthIssueModel(QAbstractTableModel):
@@ -76,7 +85,7 @@ class HealthIssueModel(QAbstractTableModel):
 
     def headerData(self, section: int, orientation: Qt.Orientation, role: int = Qt.ItemDataRole.DisplayRole):
         if role == Qt.ItemDataRole.DisplayRole and orientation == Qt.Orientation.Horizontal:
-            return COLUMNS[section]
+            return QCoreApplication.translate("HealthReportDialog", COLUMNS[section])
         return None
 
     def data(self, index: QModelIndex | QPersistentModelIndex, role: int = Qt.ItemDataRole.DisplayRole):
@@ -84,14 +93,14 @@ class HealthIssueModel(QAbstractTableModel):
         if issue is None:
             return None
         if role in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.ToolTipRole):
-            return (issue.label, issue.detail, issue.path)[index.column()]
+            return (_translate(issue.label), _translate(issue.detail), issue.path)[index.column()]
         return None
 
     def sort(self, column: int, order: Qt.SortOrder = Qt.SortOrder.AscendingOrder) -> None:
         kind_order = {kind: index for index, kind in enumerate(ISSUE_KINDS)}
         keys = (
             lambda issue: (kind_order.get(issue.kind, len(kind_order)), issue.path),
-            lambda issue: (issue.detail.casefold(), issue.path),
+            lambda issue: (_translate(issue.detail).casefold(), issue.path),
             lambda issue: (issue.path.casefold(), kind_order.get(issue.kind, 0)),
         )
         self.layoutAboutToBeChanged.emit()
@@ -105,15 +114,17 @@ class HealthReportDialog(QDialog):
 
     def __init__(self, report: HealthReport, parent: QWidget | None = None) -> None:
         super().__init__(parent)
-        self.setWindowTitle("Library health report")
+        self.setWindowTitle(self.tr("Library health report"))
         self.resize(900, 560)
         self.report = report
         box = QVBoxLayout(self)
 
         header = QHBoxLayout()
         self.summary_label = QLabel(
-            f"{report.checked} file(s) checked, {report.affected_files} with at least one issue "
-            f"({len(report.issues)} issue(s)). Read-only: nothing is changed."
+            self.tr(
+                "{checked} file(s) checked, {affected} with at least one issue ({issues} issue(s)). "
+                "Read-only: nothing is changed."
+            ).format(checked=report.checked, affected=report.affected_files, issues=len(report.issues))
         )
         self.summary_label.setWordWrap(True)
         header.addWidget(self.summary_label, 1)
@@ -124,7 +135,7 @@ class HealthReportDialog(QDialog):
         kinds_row = QHBoxLayout()
         self.kind_checkboxes: dict[str, QCheckBox] = {}
         for kind in ISSUE_KINDS:
-            checkbox = QCheckBox(f"{ISSUE_LABELS[kind]} ({counts[kind]})")
+            checkbox = QCheckBox(f"{_translate(ISSUE_LABELS[kind])} ({counts[kind]})")
             checkbox.setChecked(True)
             checkbox.setEnabled(counts[kind] > 0)
             checkbox.toggled.connect(self._apply_filters)
@@ -134,7 +145,7 @@ class HealthReportDialog(QDialog):
         box.addLayout(kinds_row)
 
         self.filter_edit = QLineEdit()
-        self.filter_edit.setPlaceholderText("Filter by path or detail…")
+        self.filter_edit.setPlaceholderText(self.tr("Filter by path or detail…"))
         self.filter_edit.setClearButtonEnabled(True)
         self.filter_edit.textChanged.connect(self._apply_filters)
         box.addWidget(self.filter_edit)
@@ -157,16 +168,18 @@ class HealthReportDialog(QDialog):
         box.addWidget(self.count_label)
 
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
-        self.reveal_button = QPushButton("Reveal in Finder")
-        self.reveal_button.setToolTip("Show the selected file in your file manager.")
+        self.reveal_button = QPushButton(self.tr("Reveal in Finder"))
+        self.reveal_button.setToolTip(self.tr("Show the selected file in your file manager."))
         self.reveal_button.clicked.connect(self._reveal)
         buttons.addButton(self.reveal_button, QDialogButtonBox.ButtonRole.ActionRole)
-        self.show_button = QPushButton("Show in library")
-        self.show_button.setToolTip("Select this track in the Music Library table (double-click does the same).")
+        self.show_button = QPushButton(self.tr("Show in library"))
+        self.show_button.setToolTip(
+            self.tr("Select this track in the Music Library table (double-click does the same).")
+        )
         self.show_button.clicked.connect(self._show_in_library)
         buttons.addButton(self.show_button, QDialogButtonBox.ButtonRole.ActionRole)
-        self.export_button = QPushButton("Export CSV…")
-        self.export_button.setToolTip("Save the rows shown (current filters) as a CSV file.")
+        self.export_button = QPushButton(self.tr("Export CSV…"))
+        self.export_button.setToolTip(self.tr("Save the rows shown (current filters) as a CSV file."))
         self.export_button.clicked.connect(self._on_export_clicked)
         buttons.addButton(self.export_button, QDialogButtonBox.ButtonRole.ActionRole)
         buttons.rejected.connect(self.reject)
@@ -182,12 +195,14 @@ class HealthReportDialog(QDialog):
         return self.model.issues()
 
     def _apply_filters(self, *_args: object) -> None:
-        issues = filter_issues(self.report.issues, self.checked_kinds(), self.filter_edit.text())
+        issues = filter_issues(self.report.issues, self.checked_kinds(), self.filter_edit.text(), _translate)
         self.model.set_issues(issues)
         header = self.table.horizontalHeader()
         if header.sortIndicatorSection() >= 0 and self.table.isSortingEnabled():
             self.model.sort(header.sortIndicatorSection(), header.sortIndicatorOrder())
-        self.count_label.setText(f"{len(issues)} of {len(self.report.issues)} issue(s) shown")
+        self.count_label.setText(
+            self.tr("{shown} of {total} issue(s) shown").format(shown=len(issues), total=len(self.report.issues))
+        )
         self._update_buttons()
 
     def current_issue(self) -> HealthIssue | None:
@@ -216,15 +231,19 @@ class HealthReportDialog(QDialog):
 
     def _on_export_clicked(self) -> None:
         default = str(user_paths.subfolder(user_paths.EXPORTS) / "library-health.csv")
-        path, _ = QFileDialog.getSaveFileName(self, "Export health report", default, "CSV files (*.csv)")
+        path, _ = QFileDialog.getSaveFileName(
+            self, self.tr("Export health report"), default, self.tr("CSV files (*.csv)")
+        )
         if not path:
             return
         try:
             count = self.export_to(path)
         except OSError as exc:
-            QMessageBox.warning(self, "Export health report", f"Could not write {path}:\n{exc}")
+            QMessageBox.warning(
+                self, self.tr("Export health report"), self.tr("Could not write {path}:\n{error}").format(path=path, error=exc)
+            )
             return
-        self.count_label.setText(f"Exported {count} row(s) to {path}")
+        self.count_label.setText(self.tr("Exported {count} row(s) to {path}").format(count=count, path=path))
 
 
 __all__ = ["COLUMNS", "HealthIssueModel", "HealthReportDialog"]

@@ -109,6 +109,7 @@ from djmidi.gui.set_preparation import (
     SetPreparationPanel,
     encode_paths,
 )
+from djmidi.gui.translation import translator
 from djmidi.gui.window_size import keep_tab_titles_whole, keep_wrapped_text_visible
 from djmidi.library import (
     change_log,
@@ -420,6 +421,9 @@ class SmartPlaylistDialog(QDialog):
         self.setMinimumWidth(420)
         box = QVBoxLayout(self)
         form = QFormLayout()
+        # macOS keeps line edits at their small size hint, which cut the
+        # (French) placeholders: let them take the dialog's width.
+        form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow)
         self.name_edit = QLineEdit(name)
         form.addRow(self.tr("Name:"), self.name_edit)
         self.category_combo = QComboBox()
@@ -471,7 +475,7 @@ class SmartPlaylistDialog(QDialog):
         form.addRow(self.tr("Not played for:"), self.not_played_spin)
         self.sort_combo = QComboBox()
         for sort, label in smart_playlist.SORT_LABELS.items():
-            self.sort_combo.addItem(label, sort)
+            self.sort_combo.addItem(QCoreApplication.translate("SmartPlaylistDialog", label), sort)
         self.sort_combo.setCurrentIndex(max(self.sort_combo.findData(rules.sort), 0))
         form.addRow(self.tr("Order:"), self.sort_combo)
         self.limit_spin = QSpinBox()
@@ -2767,7 +2771,9 @@ class MusicLibraryView(QWidget):
             item.setData(Qt.ItemDataRole.UserRole, record.id)
             if record.id in smart_rules:
                 try:
-                    summary = smart_playlist.SmartRules.from_json(smart_rules[record.id]).describe()
+                    summary = smart_playlist.SmartRules.from_json(smart_rules[record.id]).describe(
+                        translator("SmartPlaylistDialog")
+                    )
                 except ValueError:
                     summary = self.tr("unreadable rules")
                 item.setToolTip(self.tr("Smart playlist: {summary}").format(summary=summary))

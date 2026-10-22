@@ -131,6 +131,7 @@ from djmidi.gui.splitter_utils import replace_splitter, scrollable_columns
 from djmidi.gui.stage_window import StageWindow
 from djmidi.gui.theme import apply_theme, mapping_tree_stylesheet
 from djmidi.gui.theme import signals as theme_signals
+from djmidi.gui.translation import translator
 from djmidi.gui.tree_model import (
     NODE_ROLE,
     MappingFilterProxy,
@@ -186,6 +187,8 @@ _LAST_DIR_SETTINGS_KEY = "files/last_mapping_dir"
 _LAST_MAPPING_SETTINGS_KEY = "files/last_mapping"
 _LAST_SOFTWARE_SETTINGS_KEY = "files/last_mapping_software"
 _LAST_DRAFT_SETTINGS_KEY = "files/last_draft"
+# Sync status-bar summaries come from Qt-free controller_sync (issue #313).
+_sync_translate = translator("ControllerSync")
 # Lets controllers' MIDI ports settle before the launch-time Sync.
 _STARTUP_SYNC_DELAY_MS = 1500
 # Startup update check (issue #193): after the window is up, at most once a day.
@@ -1497,7 +1500,7 @@ class MainWindow(QMainWindow):
             return []
         ports = list_output_ports()
         results = run_sync(self._aim_sync_sets(sync_sets, ports), ports)
-        self.statusBar().showMessage(summarize_results(results), 10_000)
+        self.statusBar().showMessage(summarize_results(results, _sync_translate), 10_000)
         return results
 
     def _sync_at_startup(self, ports: list[str] | None = None) -> list[SyncResult]:
@@ -1511,7 +1514,7 @@ class MainWindow(QMainWindow):
         if not sync_sets:
             return []
         results = run_sync(self._aim_sync_sets(sync_sets, ports), ports)
-        self.statusBar().showMessage(summarize_results(results), 10_000)
+        self.statusBar().showMessage(summarize_results(results, _sync_translate), 10_000)
         return results
 
     def _start_controller_sync(self) -> None:
@@ -1542,7 +1545,7 @@ class MainWindow(QMainWindow):
         if not due:
             return []
         results = run_sync(due, ports)
-        self.statusBar().showMessage(self.tr("Plugged in -- ") + summarize_results(results), 10_000)
+        self.statusBar().showMessage(self.tr("Plugged in -- ") + summarize_results(results, _sync_translate), 10_000)
         return results
 
     def _check_for_updates_at_startup(self) -> bool:
@@ -1702,7 +1705,7 @@ class MainWindow(QMainWindow):
         # holds right now, so freeze them until ■ Stop (an auto-start on a
         # mapping load waits for it too).
         self.live_monitor_view.set_locked(
-            "● Rec is recording: the Live Monitor keeps its current inputs until you click ■ Stop"
+            self.tr("● Rec is recording: the Live Monitor keeps its current inputs until you click ■ Stop")
         )
         self._record_timer.start()
         _LOGGER.info("Record: listening on %s", opened)
@@ -1934,7 +1937,7 @@ class MainWindow(QMainWindow):
             if sync_sets:
                 ports = list_output_ports()
                 results = run_sync(self._aim_sync_sets(sync_sets, ports), ports)
-                message += f" -- {summarize_results(results)}"
+                message += f" -- {summarize_results(results, _sync_translate)}"
         self.statusBar().showMessage(message, 10_000 if results else 5_000)
         return results
 
