@@ -135,6 +135,13 @@ Implemented contract, runtime, test, and documentation work:
 - [x] **Stop waiting macros on close** (`v0.48.120-stop-macros-on-close`, issue #314) — closing the main
   window now calls `MacroPlayer.stop_all()`, and closing the macro editor stops its Test player, so a macro
   waiting between steps releases its output port right away instead of at process exit. Follow-up of #308.
+- [x] **French UI: remaining English** (`v0.48.119-french-ui-remaining`, issue #313) — the Music Library's
+  duplicates and health-report windows, the Live Monitor lock tooltip shown while `● Rec` records, and text built by
+  Qt-free modules (Sync result summary, Set panel summary and transition notes, smart-playlist rule summaries and
+  sort names, health issue labels) are now translated. Qt-free modules mark English templates with
+  `i18n.QT_TRANSLATE_NOOP` and take an optional `translate` callable (identity by default), so they stay Qt-free
+  and testable. Checked in French on macOS (cocoa): no clipped text; the duplicates tier titles now span the tree
+  and the smart-playlist fields grow so placeholders aren't cut.
 - [x] **Macros open their port once per run** (`v0.48.118-macros-open-port-once`, issue #308) — a macro no
   longer opens and closes its output port for every step: `run_macro` and the GUI `MacroPlayer` open it once
   through `midi_io.open_midi_output` and keep it open across the step delays, closing it when the run ends,

@@ -23,6 +23,8 @@ from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from djmidi.i18n import QT_TRANSLATE_NOOP, Translate, untranslated
+
 from .db import LibraryDB
 from .playlist import is_bpm_compatible, is_camelot_compatible
 from .workspace import LibraryRow
@@ -41,6 +43,16 @@ _FIRST_INTEGER = re.compile(r"\d+")
 STATUS_OK = "ok"
 STATUS_INCOMPATIBLE = "incompatible"
 STATUS_UNKNOWN = "unknown"
+
+# Transition notes and the summary line (issue #313): English templates the
+# caller's `translate` turns into the interface language before filling in.
+_BPM_JUMP = QT_TRANSLATE_NOOP("SetPreparationPanel", "BPM jump {change} (tolerance ±{tolerance} %)")
+_BPM_UNKNOWN = QT_TRANSLATE_NOOP("SetPreparationPanel", "BPM unknown")
+_KEY_CLASH = QT_TRANSLATE_NOOP("SetPreparationPanel", "Key clash {before} → {after}")
+_KEY_UNKNOWN = QT_TRANSLATE_NOOP("SetPreparationPanel", "Key unknown")
+_SUMMARY_TRACKS = QT_TRANSLATE_NOOP("SetPreparationPanel", "{count} track(s)")
+_SUMMARY_INCOMPATIBLE = QT_TRANSLATE_NOOP("SetPreparationPanel", "{count} incompatible transition(s)")
+_SUMMARY_UNKNOWN = QT_TRANSLATE_NOOP("SetPreparationPanel", "{count} unchecked (missing BPM/key)")
 
 
 def parse_energy(text: str | None) -> int | None:
@@ -124,33 +136,42 @@ def _format_pct(value: float) -> str:
 
 
 def analyze_transition(
-    index: int, before: SetTrack, after: SetTrack, bpm_tolerance_pct: float = DEFAULT_BPM_TOLERANCE_PCT
+    index: int,
+    before: SetTrack,
+    after: SetTrack,
+    bpm_tolerance_pct: float = DEFAULT_BPM_TOLERANCE_PCT,
+    translate: Translate = untranslated,
 ) -> Transition:
+    """`translate` renders the `issues` notes in the interface language."""
     issues: list[str] = []
     bpm_change = bpm_ok = None
     if before.bpm and after.bpm and before.bpm > 0 and after.bpm > 0:
         bpm_change = (after.bpm - before.bpm) / before.bpm * 100.0
         bpm_ok = is_bpm_compatible(before.bpm, after.bpm, bpm_tolerance_pct)
         if not bpm_ok:
-            issues.append(f"BPM jump {_format_pct(bpm_change)} (tolerance ±{bpm_tolerance_pct:g} %)")
+            issues.append(
+                translate(_BPM_JUMP).format(change=_format_pct(bpm_change), tolerance=f"{bpm_tolerance_pct:g}")
+            )
     else:
-        issues.append("BPM unknown")
+        issues.append(translate(_BPM_UNKNOWN))
     key_ok = None
     if before.camelot_key and after.camelot_key:
         key_ok = is_camelot_compatible(before.camelot_key, after.camelot_key)
         if not key_ok:
-            issues.append(f"Key clash {before.camelot_key} → {after.camelot_key}")
+            issues.append(translate(_KEY_CLASH).format(before=before.camelot_key, after=after.camelot_key))
     else:
-        issues.append("Key unknown")
+        issues.append(translate(_KEY_UNKNOWN))
     return Transition(index, bpm_change, bpm_ok, key_ok, tuple(issues))
 
 
 def analyze_set(
-    tracks: Sequence[SetTrack], bpm_tolerance_pct: float = DEFAULT_BPM_TOLERANCE_PCT
+    tracks: Sequence[SetTrack],
+    bpm_tolerance_pct: float = DEFAULT_BPM_TOLERANCE_PCT,
+    translate: Translate = untranslated,
 ) -> list[Transition]:
     """One `Transition` per adjacent pair, in play order."""
     return [
-        analyze_transition(index, tracks[index], tracks[index + 1], bpm_tolerance_pct)
+        analyze_transition(index, tracks[index], tracks[index + 1], bpm_tolerance_pct, translate)
         for index in range(len(tracks) - 1)
     ]
 
@@ -163,11 +184,15 @@ class SetSummary:
 
     @property
     def text(self) -> str:
-        parts = [f"{self.tracks} track(s)"]
+        return self.describe()
+
+    def describe(self, translate: Translate = untranslated) -> str:
+        """The panel's summary line, in the language `translate` gives."""
+        parts = [translate(_SUMMARY_TRACKS).format(count=self.tracks)]
         if self.tracks > 1:
-            parts.append(f"{self.incompatible} incompatible transition(s)")
+            parts.append(translate(_SUMMARY_INCOMPATIBLE).format(count=self.incompatible))
             if self.unknown:
-                parts.append(f"{self.unknown} unchecked (missing BPM/key)")
+                parts.append(translate(_SUMMARY_UNKNOWN).format(count=self.unknown))
         return " · ".join(parts)
 
 

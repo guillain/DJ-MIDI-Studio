@@ -41,6 +41,7 @@ from PySide6.QtWidgets import (
 from djmidi import user_paths
 from djmidi.gui import help_texts
 from djmidi.gui.help_button import help_row
+from djmidi.gui.translation import translator
 from djmidi.library import set_prep, workspace
 from djmidi.library.db import LibraryDB
 
@@ -53,6 +54,8 @@ _BPM_COLOR = QColor("#2f8fd8")
 _ENERGY_COLOR = QColor("#e08a1e")
 _INCOMPATIBLE_COLOR = QColor("#d64545")
 _UNKNOWN_COLOR = QColor("#8a8a8a")
+# Transition notes and the summary are built by Qt-free set_prep (issue #313).
+_translate = translator("SetPreparationPanel")
 
 
 def encode_paths(paths: Sequence[str]) -> bytes:
@@ -386,7 +389,7 @@ class SetPreparationPanel(QWidget):
     def _refresh(self, save: bool = True) -> None:
         tolerance = self.tolerance_spin.value()
         self.tracks = set_prep.resolve_set_tracks(self._paths, self._rows)
-        self.transitions = set_prep.analyze_set(self.tracks, tolerance)
+        self.transitions = set_prep.analyze_set(self.tracks, tolerance, _translate)
         self.list.blockSignals(True)
         self.list.clear()
         for index, track in enumerate(self.tracks):
@@ -394,7 +397,7 @@ class SetPreparationPanel(QWidget):
             self.list.addItem(self._item(index, track, incoming))
         self.list.blockSignals(False)
         self.curve.set_data(self.tracks, self.transitions)
-        self.summary_label.setText(set_prep.summarize(self.tracks, self.transitions).text)
+        self.summary_label.setText(set_prep.summarize(self.tracks, self.transitions).describe(_translate))
         has_tracks = bool(self._paths)
         for button in (self.save_button, self.export_serato_button, self.export_traktor_button, self.clear_button):
             button.setEnabled(has_tracks)
