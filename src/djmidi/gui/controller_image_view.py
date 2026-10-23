@@ -201,9 +201,9 @@ class ControllerImageView(QWidget):
         self._combo.addItems(catalog.CONTROLLER_NAMES)
         self._combo.currentTextChanged.connect(self._load)
 
-        reset_button = QPushButton("Reset zoom")
+        reset_button = QPushButton(self.tr("Reset zoom"))
         reset_button.clicked.connect(lambda: self._load(self._combo.currentText()))
-        self._documentation_button = QPushButton("Open documentation")
+        self._documentation_button = QPushButton(self.tr("Open documentation"))
         self._documentation_button.clicked.connect(self._open_documentation)
         # The display layers (gui/layer_toggles.py): Controller photo, MIDI
         # picture, Layout markers. The Layout starts off here: this tab is
@@ -320,7 +320,7 @@ class ControllerImageView(QWidget):
         documentation = documentation_for_controller(name)
         self._documentation_button.setEnabled(documentation is not None)
         self._documentation_button.setToolTip(
-            str(documentation) if documentation is not None else "No local controller document bundled"
+            str(documentation) if documentation is not None else self.tr("No local controller document bundled")
         )
         self._scene.clear()
         self._pixmap_item = None
@@ -355,7 +355,7 @@ class ControllerImageView(QWidget):
         self._layers.set_available(photo=photo is not None, midi=midi is not None, layout=has_geometry)
         if not has_geometry:
             self._geometry_checkbox.setToolTip(
-                "No control geometry modeled yet for this controller (see gui/geometry.py)"
+                self.tr("No control geometry modeled yet for this controller.")
             )
         self._apply_layers(fit=True)
 
@@ -374,9 +374,11 @@ class ControllerImageView(QWidget):
         shown = self._midi_item if state.midi else self._pixmap_item
         if shown is None:
             name = self._combo.currentText()
-            self._placeholder = QGraphicsTextItem(f"Image not found: {image_for_controller(name) or name}")
+            self._placeholder = QGraphicsTextItem(
+                self.tr("Image not found: {image}").format(image=image_for_controller(name) or name)
+            )
         elif not (state.photo or state.midi or state.layout):
-            self._placeholder = QGraphicsTextItem("All layers are off: tick Controller, MIDI or Layout.")
+            self._placeholder = QGraphicsTextItem(self.tr("All layers are off: tick Controller, MIDI or Layout."))
         if self._placeholder is not None:
             # Kept inside the graphics scene: embedding a QWidget here (via
             # addWidget) can leave a deleted QLabel proxy behind when the
@@ -592,7 +594,9 @@ class ControllerImageView(QWidget):
         controller = self._combo.currentText()
         merged_key = layout_mod.cell_key_for_geometry_label(controller, label)
         if merged_key is None:
-            self._live_send_status.setText(f"{label}: no raw MIDI trigger known for this control.")
+            self._live_send_status.setText(
+                self.tr("{control}: no raw MIDI trigger known for this control.").format(control=label)
+            )
             return
         key = (
             (merged_key[0], merged_key[1], label)
@@ -604,7 +608,11 @@ class ControllerImageView(QWidget):
             self._live_send_status.setText("")
             return
         channel = sent.channels[0] if sent.channels else "?"
-        self._live_send_status.setText(f"LIVE SENT — {label}: ch{channel} {sent.note_or_cc} {sent.data1}")
+        self._live_send_status.setText(
+            self.tr("LIVE SENT — {control}: ch{channel} {kind} {data1}").format(
+                control=label, channel=channel, kind=sent.note_or_cc, data1=sent.data1
+            )
+        )
 
     def _open_documentation(self) -> None:
         documentation = documentation_for_controller(self._combo.currentText())

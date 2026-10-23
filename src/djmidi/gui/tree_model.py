@@ -2,7 +2,13 @@ from __future__ import annotations
 
 import re
 
-from PySide6.QtCore import QModelIndex, QPersistentModelIndex, QSortFilterProxyModel, Qt
+from PySide6.QtCore import (
+    QCoreApplication,
+    QModelIndex,
+    QPersistentModelIndex,
+    QSortFilterProxyModel,
+    Qt,
+)
 from PySide6.QtGui import QStandardItem, QStandardItemModel
 
 from djmidi.function_names import function_name, label_with_raw
@@ -22,11 +28,15 @@ def userio_label(userio: UserIO) -> str:
 def mapping_label(mapping: MappingElement) -> str:
     """Readable function name (issue #209) + deck/slot; the raw tag is in
     the row's tooltip (mapping_tooltip)."""
-    return f"{function_name(mapping.tag)}  (deck {mapping.deck_id}, slot {mapping.slot_id})"
+    return f"{function_name(mapping.tag)}  " + QCoreApplication.translate("MappingTree", "(deck {deck}, slot {slot})").format(
+        deck=mapping.deck_id, slot=mapping.slot_id
+    )
 
 
 def mapping_tooltip(mapping: MappingElement) -> str:
-    return f"{label_with_raw(mapping.tag)} — deck {mapping.deck_id}, slot {mapping.slot_id}"
+    return f"{label_with_raw(mapping.tag)} — " + QCoreApplication.translate("MappingTree", "deck {deck}, slot {slot}").format(
+        deck=mapping.deck_id, slot=mapping.slot_id
+    )
 
 
 class MappingFilterProxy(QSortFilterProxyModel):
@@ -115,11 +125,11 @@ def build_channel_columns(config: MidiConfig) -> list[tuple[str, QStandardItemMo
     for channel in sorted(by_channel, key=_numeric_sort_key):
         by_note = by_channel[channel]
         model = QStandardItemModel()
-        model.setHorizontalHeaderLabels([f"Channel {channel}"])
+        model.setHorizontalHeaderLabels([QCoreApplication.translate("MappingTree", "Channel {channel}").format(channel=channel)])
         root = model.invisibleRootItem()
         node_to_item: dict[int, QStandardItem] = {}
         for note in sorted(by_note, key=_numeric_sort_key):
-            note_item = _group_item(f"Note/Control {note}")
+            note_item = _group_item(QCoreApplication.translate("MappingTree", "Note/Control {note}").format(note=note))
             for control in by_note[note]:
                 control_item = _control_item(control)
                 _index_control_subtree(control, control_item, node_to_item)
@@ -138,7 +148,7 @@ def build_tree_model(config: MidiConfig) -> tuple[QStandardItemModel, dict[int, 
     trigger is the natural way to browse this file (a real config repeats the
     same handful of channels hundreds of times)."""
     model = QStandardItemModel()
-    model.setHorizontalHeaderLabels(["Channel / Note / Mapping"])
+    model.setHorizontalHeaderLabels([QCoreApplication.translate("MappingTree", "Channel / Note / Mapping")])
     root = model.invisibleRootItem()
     node_to_item: dict[int, QStandardItem] = {}
 
@@ -148,9 +158,9 @@ def build_tree_model(config: MidiConfig) -> tuple[QStandardItemModel, dict[int, 
 
     for channel in sorted(by_channel, key=_numeric_sort_key):
         by_note = by_channel[channel]
-        channel_item = _group_item(f"Channel {channel}")
+        channel_item = _group_item(QCoreApplication.translate("MappingTree", "Channel {channel}").format(channel=channel))
         for note in sorted(by_note, key=_numeric_sort_key):
-            note_item = _group_item(f"Note/Control {note}")
+            note_item = _group_item(QCoreApplication.translate("MappingTree", "Note/Control {note}").format(note=note))
             for control in by_note[note]:
                 control_item = _control_item(control)
                 _index_control_subtree(control, control_item, node_to_item)

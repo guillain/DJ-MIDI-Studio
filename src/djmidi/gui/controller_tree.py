@@ -13,6 +13,7 @@ match elsewhere. See MainWindow._on_layout_cell_activated."""
 
 from __future__ import annotations
 
+from PySide6.QtCore import QCoreApplication
 from PySide6.QtGui import QStandardItem, QStandardItemModel
 
 from djmidi import catalog
@@ -25,7 +26,7 @@ CELL_KEY_ROLE = 1  # distinct from tree_model.NODE_ROLE, which holds domain obje
 
 def _leaf_text(cell: layout_mod.LayoutCell, per_deck: dict[str, set[str]]) -> str:
     if not per_deck:
-        return f"{cell.label} (not used)"
+        return QCoreApplication.translate("MappingTree", "{control} (not used)").format(control=cell.label)
     decks = ", ".join(f"D{d}" for d in sorted(per_deck, key=_deck_sort_key))
     names = sorted({function_name(tag) for tag in _tags(per_deck)})
     return f"{cell.label} — {', '.join(names)} ({decks})"

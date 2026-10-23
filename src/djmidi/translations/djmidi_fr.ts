@@ -173,6 +173,741 @@ Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-m
     </message>
 </context>
 <context>
+    <name>ControllerImageView</name>
+    <message>
+        <source>Reset zoom</source>
+        <translation>Réinitialiser le zoom</translation>
+    </message>
+    <message>
+        <source>Open documentation</source>
+        <translation>Ouvrir la documentation</translation>
+    </message>
+    <message>
+        <source>No local controller document bundled</source>
+        <translation>Aucun document local fourni pour ce contrôleur</translation>
+    </message>
+    <message>
+        <source>No control geometry modeled yet for this controller.</source>
+        <translation>Aucune position de commande n&apos;est encore modélisée pour ce contrôleur.</translation>
+    </message>
+    <message>
+        <source>Image not found: {image}</source>
+        <translation>Image introuvable : {image}</translation>
+    </message>
+    <message>
+        <source>All layers are off: tick Controller, MIDI or Layout.</source>
+        <translation>Tous les calques sont masqués : cochez Contrôleur, MIDI ou Disposition.</translation>
+    </message>
+    <message>
+        <source>{control}: no raw MIDI trigger known for this control.</source>
+        <translation>{control} : aucun déclencheur MIDI brut connu pour cette commande.</translation>
+    </message>
+    <message>
+        <source>LIVE SENT — {control}: ch{channel} {kind} {data1}</source>
+        <translation>ENVOYÉ EN LIVE — {control} : can.{channel} {kind} {data1}</translation>
+    </message>
+</context>
+<context>
+    <name>ControllerLayoutView</name>
+    <message>
+        <source>All decks</source>
+        <translation>Toutes les platines</translation>
+    </message>
+    <message>
+        <source>Deck {deck}</source>
+        <translation>Platine {deck}</translation>
+    </message>
+    <message>
+        <source>[LIVE SENT: ch{channel} {kind} {data1}]</source>
+        <translation>[ENVOYÉ EN LIVE : can.{channel} {kind} {data1}]</translation>
+    </message>
+    <message>
+        <source>not used</source>
+        <translation>non utilisé</translation>
+    </message>
+    <message>
+        <source>no function mapped</source>
+        <translation>aucune fonction mappée</translation>
+    </message>
+    <message>
+        <source>{name}
+{decks}
+Mapped to: {functions}</source>
+        <translation>{name}
+{decks}
+Mappé sur : {functions}</translation>
+    </message>
+    <message>
+        <source>No controller catalog is available. Check the bundled controller data.</source>
+        <translation>Aucun catalogue de contrôleurs n&apos;est disponible. Vérifiez les données de contrôleurs fournies.</translation>
+    </message>
+    <message>
+        <source>No other controller shares this trigger in this config.</source>
+        <translation>Aucun autre contrôleur ne partage ce déclencheur dans cette configuration.</translation>
+    </message>
+    <message>
+        <source>(other controller: n/a)</source>
+        <translation>(autre contrôleur : aucun)</translation>
+    </message>
+</context>
+<context>
+    <name>ControllerSetupView</name>
+    <message>
+        <source>All devices</source>
+        <translation>Tous les appareils</translation>
+    </message>
+    <message>
+        <source>Controller name, e.g. Behringer CMD LC-1</source>
+        <translation>Nom du contrôleur, p. ex. Behringer CMD LC-1</translation>
+    </message>
+    <message>
+        <source>Controller name:</source>
+        <translation>Nom du contrôleur :</translation>
+    </message>
+    <message>
+        <source>New session</source>
+        <translation>Nouvelle session</translation>
+    </message>
+    <message>
+        <source>Load session…</source>
+        <translation>Charger une session…</translation>
+    </message>
+    <message>
+        <source>Save session…</source>
+        <translation>Enregistrer la session…</translation>
+    </message>
+    <message>
+        <source>Start from controller…</source>
+        <translation>Partir d&apos;un contrôleur…</translation>
+    </message>
+    <message>
+        <source>Clear captured rows</source>
+        <translation>Effacer les lignes capturées</translation>
+    </message>
+    <message>
+        <source>Refresh ports</source>
+        <translation>Actualiser les ports</translation>
+    </message>
+    <message>
+        <source>Start learning</source>
+        <translation>Démarrer l&apos;apprentissage</translation>
+    </message>
+    <message>
+        <source>Stopped</source>
+        <translation>Arrêté</translation>
+    </message>
+    <message>
+        <source>MIDI input</source>
+        <translation>Entrée MIDI</translation>
+    </message>
+    <message>
+        <source>Learn triggers from a mapping (Serato XML or Traktor TSI)…</source>
+        <translation>Apprendre les déclencheurs d&apos;un mapping (XML Serato ou TSI Traktor)…</translation>
+    </message>
+    <message>
+        <source>Attach reference image…</source>
+        <translation>Joindre une image de référence…</translation>
+    </message>
+    <message>
+        <source>No reference image</source>
+        <translation>Aucune image de référence</translation>
+    </message>
+    <message>
+        <source>Refresh output ports</source>
+        <translation>Actualiser les ports de sortie</translation>
+    </message>
+    <message>
+        <source>Send once</source>
+        <translation>Envoyer une fois</translation>
+    </message>
+    <message>
+        <source>Send double-click (NOTE)</source>
+        <translation>Envoyer un double-clic (NOTE)</translation>
+    </message>
+    <message>
+        <source>Play selected session row(s)</source>
+        <translation>Jouer les lignes sélectionnées</translation>
+    </message>
+    <message>
+        <source>Play all session rows</source>
+        <translation>Jouer toutes les lignes</translation>
+    </message>
+    <message>
+        <source>Replay recorded session</source>
+        <translation>Rejouer la session enregistrée</translation>
+    </message>
+    <message>
+        <source>Save as controller sync set</source>
+        <translation>Enregistrer comme jeu de synchronisation</translation>
+    </message>
+    <message>
+        <source>Store the recorded session as this controller&apos;s initialization set: the menu bar&apos;s Sync button (and Live Monitor&apos;s) then sends it to the controller.</source>
+        <translation>Enregistre la session comme jeu d&apos;initialisation de ce contrôleur : le bouton Sync de la barre de menus (et celui du Live Monitor) le lui envoie ensuite.</translation>
+    </message>
+    <message>
+        <source>No MIDI output sent yet.</source>
+        <translation>Aucun message MIDI envoyé pour l&apos;instant.</translation>
+    </message>
+    <message>
+        <source>MIDI Output</source>
+        <translation>Sortie MIDI</translation>
+    </message>
+    <message>
+        <source>Available output ports</source>
+        <translation>Ports de sortie disponibles</translation>
+    </message>
+    <message>
+        <source>Message and playback controls</source>
+        <translation>Message et lecture</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation>Type</translation>
+    </message>
+    <message>
+        <source>Channel</source>
+        <translation>Canal</translation>
+    </message>
+    <message>
+        <source>Data1</source>
+        <translation>Data1</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>Valeur</translation>
+    </message>
+    <message>
+        <source>Delay (ms)</source>
+        <translation>Délai (ms)</translation>
+    </message>
+    <message>
+        <source>Send message</source>
+        <translation>Envoyer un message</translation>
+    </message>
+    <message>
+        <source>Playback</source>
+        <translation>Lecture</translation>
+    </message>
+    <message>
+        <source>Rows whose section contains MODE (e.g. PAD MODE) appear here as one-click send buttons.</source>
+        <translation>Les lignes dont la section contient MODE (p. ex. PAD MODE) apparaissent ici comme boutons d&apos;envoi en un clic.</translation>
+    </message>
+    <message>
+        <source>Mode buttons</source>
+        <translation>Boutons de mode</translation>
+    </message>
+    <message>
+        <source>Check for conflicts</source>
+        <translation>Rechercher les conflits</translation>
+    </message>
+    <message>
+        <source>Install this profile: saved in your Controllers folder and loaded at every launch</source>
+        <translation>Installer ce profil : enregistré dans votre dossier Controllers et chargé à chaque lancement</translation>
+    </message>
+    <message>
+        <source>For developers: generate a Python catalog module…</source>
+        <translation>Pour les développeurs : générer un module de catalogue Python…</translation>
+    </message>
+    <message>
+        <source>Submit to community catalog…</source>
+        <translation>Proposer au catalogue communautaire…</translation>
+    </message>
+    <message>
+        <source>Draft</source>
+        <translation>Brouillon</translation>
+    </message>
+    <message>
+        <source>Build a controller profile — import or learn its MIDI triggers, name each row, then Apply / Export. This does not open a Serato mapping for editing (that is File → Open).</source>
+        <translation>Créez un profil de contrôleur : importez ou apprenez ses déclencheurs MIDI, nommez chaque ligne, puis Appliquer / Exporter. Cela n&apos;ouvre pas de mapping Serato à modifier (c&apos;est Fichier → Ouvrir).</translation>
+    </message>
+    <message>
+        <source>Session</source>
+        <translation>Session</translation>
+    </message>
+    <message>
+        <source>Learn</source>
+        <translation>Apprendre</translation>
+    </message>
+    <message>
+        <source>Apply / Export</source>
+        <translation>Appliquer / Exporter</translation>
+    </message>
+    <message>
+        <source>Section</source>
+        <translation>Section</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation>Nom</translation>
+    </message>
+    <message>
+        <source>Channel(s)</source>
+        <translation>Canal(aux)</translation>
+    </message>
+    <message>
+        <source>Source</source>
+        <translation>Source</translation>
+    </message>
+    <message>
+        <source>Device</source>
+        <translation>Appareil</translation>
+    </message>
+    <message>
+        <source>Delete selected row(s)</source>
+        <translation>Supprimer les lignes sélectionnées</translation>
+    </message>
+    <message>
+        <source>Add row</source>
+        <translation>Ajouter une ligne</translation>
+    </message>
+    <message>
+        <source>Set section for selected rows…</source>
+        <translation>Section des lignes sélectionnées…</translation>
+    </message>
+    <message>
+        <source>Assign one Section name to every selected row</source>
+        <translation>Donne le même nom de section à toutes les lignes sélectionnées</translation>
+    </message>
+    <message>
+        <source>Set name for selected rows…</source>
+        <translation>Nom des lignes sélectionnées…</translation>
+    </message>
+    <message>
+        <source>Assign a Name to every selected row, optionally auto-numbered (PAD 1, PAD 2, …)</source>
+        <translation>Donne un nom à toutes les lignes sélectionnées, éventuellement numéroté (PAD 1, PAD 2, …)</translation>
+    </message>
+    <message>
+        <source>Send {name}: Note {note} on channel {channel}</source>
+        <translation>Envoyer {name} : Note {note} sur le canal {channel}</translation>
+    </message>
+    <message>
+        <source>Bulk edit created conflicts</source>
+        <translation>La modification groupée a créé des conflits</translation>
+    </message>
+    <message>
+        <source>The bulk edit left colliding triggers:</source>
+        <translation>La modification groupée a laissé des déclencheurs en conflit :</translation>
+    </message>
+    <message>
+        <source>No rows selected</source>
+        <translation>Aucune ligne sélectionnée</translation>
+    </message>
+    <message>
+        <source>Select one or more rows first.</source>
+        <translation>Sélectionnez d&apos;abord une ou plusieurs lignes.</translation>
+    </message>
+    <message>
+        <source>Set section</source>
+        <translation>Définir la section</translation>
+    </message>
+    <message>
+        <source>Section name for {count} selected row(s):</source>
+        <translation>Nom de section pour {count} ligne(s) sélectionnée(s) :</translation>
+    </message>
+    <message>
+        <source>Set name</source>
+        <translation>Définir le nom</translation>
+    </message>
+    <message>
+        <source>Name for {count} selected row(s):</source>
+        <translation>Nom pour {count} ligne(s) sélectionnée(s) :</translation>
+    </message>
+    <message>
+        <source>Auto-number?</source>
+        <translation>Numéroter ?</translation>
+    </message>
+    <message>
+        <source>Number the name across the selected rows (&apos;{base} 1&apos;, &apos;{base} 2&apos;, …)?</source>
+        <translation>Numéroter le nom sur les lignes sélectionnées (« {base} 1 », « {base} 2 », …) ?</translation>
+    </message>
+    <message>
+        <source>Confirm</source>
+        <translation>Confirmer</translation>
+    </message>
+    <message>
+        <source>This will discard the current unsaved draft. Continue?</source>
+        <translation>Le brouillon en cours non enregistré sera perdu. Continuer ?</translation>
+    </message>
+    <message>
+        <source>This will discard the current unsaved rows (keeping the controller name). Continue?</source>
+        <translation>Les lignes non enregistrées seront perdues (le nom du contrôleur est conservé). Continuer ?</translation>
+    </message>
+    <message>
+        <source>No controller</source>
+        <translation>Aucun contrôleur</translation>
+    </message>
+    <message>
+        <source>No controller is registered.</source>
+        <translation>Aucun contrôleur n&apos;est enregistré.</translation>
+    </message>
+    <message>
+        <source>Start from controller</source>
+        <translation>Partir d&apos;un contrôleur</translation>
+    </message>
+    <message>
+        <source>Copy every control of:</source>
+        <translation>Copier toutes les commandes de :</translation>
+    </message>
+    <message>
+        <source>No output port selected</source>
+        <translation>Aucun port de sortie sélectionné</translation>
+    </message>
+    <message>
+        <source>Failed to send MIDI</source>
+        <translation>Échec de l&apos;envoi MIDI</translation>
+    </message>
+    <message>
+        <source>MIDI message sent to {count} output.</source>
+        <translation>Message MIDI envoyé vers {count} sortie.</translation>
+    </message>
+    <message>
+        <source>MIDI message sent to {count} outputs.</source>
+        <translation>Message MIDI envoyé vers {count} sorties.</translation>
+    </message>
+    <message>
+        <source>Double-click MIDI sequence sent.</source>
+        <translation>Séquence MIDI de double-clic envoyée.</translation>
+    </message>
+    <message>
+        <source>Sent {name} (Note {note}, channel {channel}).</source>
+        <translation>{name} envoyé (Note {note}, canal {channel}).</translation>
+    </message>
+    <message>
+        <source>Failed to play rows</source>
+        <translation>Échec de la lecture des lignes</translation>
+    </message>
+    <message>
+        <source>Played selected rows: {sent} MIDI message(s), {skipped} row(s) skipped.</source>
+        <translation>Lignes sélectionnées jouées : {sent} message(s) MIDI, {skipped} ligne(s) ignorée(s).</translation>
+    </message>
+    <message>
+        <source>Played all rows: {sent} MIDI message(s), {skipped} row(s) skipped.</source>
+        <translation>Toutes les lignes jouées : {sent} message(s) MIDI, {skipped} ligne(s) ignorée(s).</translation>
+    </message>
+    <message>
+        <source>No recording</source>
+        <translation>Aucun enregistrement</translation>
+    </message>
+    <message>
+        <source>No MIDI event has been recorded in this session.</source>
+        <translation>Aucun événement MIDI n&apos;a été enregistré dans cette session.</translation>
+    </message>
+    <message>
+        <source>Failed to replay session</source>
+        <translation>Échec de la relecture de la session</translation>
+    </message>
+    <message>
+        <source>Recorded session replayed: {count} event(s).</source>
+        <translation>Session enregistrée rejouée : {count} événement(s).</translation>
+    </message>
+    <message>
+        <source>Replaying recorded session ({count} event(s))…</source>
+        <translation>Relecture de la session enregistrée ({count} événement(s))…</translation>
+    </message>
+    <message>
+        <source>Enter a controller name first: the sync set is stored per controller.</source>
+        <translation>Saisissez d&apos;abord un nom de contrôleur : le jeu de synchronisation est enregistré par contrôleur.</translation>
+    </message>
+    <message>
+        <source>No MIDI note/CC event has been recorded in this session.</source>
+        <translation>Aucun événement MIDI note/CC n&apos;a été enregistré dans cette session.</translation>
+    </message>
+    <message>
+        <source>Cannot save sync set</source>
+        <translation>Impossible d&apos;enregistrer le jeu de synchronisation</translation>
+    </message>
+    <message>
+        <source>Cannot start MIDI learning</source>
+        <translation>Impossible de démarrer l&apos;apprentissage MIDI</translation>
+    </message>
+    <message>
+        <source>Stop learning</source>
+        <translation>Arrêter l&apos;apprentissage</translation>
+    </message>
+    <message>
+        <source>Listening ({count} input(s))</source>
+        <translation>À l&apos;écoute ({count} entrée(s))</translation>
+    </message>
+    <message>
+        <source>Choose a Traktor device</source>
+        <translation>Choisir un appareil Traktor</translation>
+    </message>
+    <message>
+        <source>This TSI holds several devices (usually one per controller).
+Import the triggers of:</source>
+        <translation>Ce TSI contient plusieurs appareils (en général un par contrôleur).
+Importer les déclencheurs de :</translation>
+    </message>
+    <message>
+        <source>Learn triggers from a mapping</source>
+        <translation>Apprendre les déclencheurs d&apos;un mapping</translation>
+    </message>
+    <message>
+        <source>MIDI mappings (*.xml *.tsi);;Serato XML (*.xml);;Traktor TSI (*.tsi)</source>
+        <translation>Mappings MIDI (*.xml *.tsi);;XML Serato (*.xml);;TSI Traktor (*.tsi)</translation>
+    </message>
+    <message>
+        <source>Failed to import file</source>
+        <translation>Échec de l&apos;import du fichier</translation>
+    </message>
+    <message>
+        <source>Import complete</source>
+        <translation>Import terminé</translation>
+    </message>
+    <message>
+        <source>Added {count} new trigger row(s) to the profile (duplicates skipped).
+
+Open this same file as an editable mapping too (By Channel / By Deck / By Controller)?</source>
+        <translation>{count} nouvelle(s) ligne(s) de déclencheur ajoutée(s) au profil (doublons ignorés).
+
+Ouvrir aussi ce fichier comme mapping modifiable (Par canal / Par platine / Par contrôleur) ?</translation>
+    </message>
+    <message>
+        <source>Reference image: {name}</source>
+        <translation>Image de référence : {name}</translation>
+    </message>
+    <message>
+        <source>Attach controller reference image</source>
+        <translation>Joindre une image de référence du contrôleur</translation>
+    </message>
+    <message>
+        <source>Images (*.png *.jpg *.jpeg *.webp)</source>
+        <translation>Images (*.png *.jpg *.jpeg *.webp)</translation>
+    </message>
+    <message>
+        <source>Remove the attached reference image?</source>
+        <translation>Retirer l&apos;image de référence jointe ?</translation>
+    </message>
+    <message>
+        <source>Reference image attached</source>
+        <translation>Image de référence jointe</translation>
+    </message>
+    <message>
+        <source>The image is referenced by its path on this machine and saved in the session JSON. Install copies it next to the installed profile, so it keeps showing in Controller Images even if you move the original. &quot;Generate catalog module…&quot; writes reference_image=&apos;custom/&lt;filename&gt;&apos;; place a copy at controllers/custom/&lt;filename&gt; if you want it bundled (respecting its licence — user-supplied images are your responsibility).</source>
+        <translation>L&apos;image est référencée par son chemin sur cet ordinateur et enregistrée dans le JSON de la session. Installer la copie à côté du profil installé, pour qu&apos;elle reste visible dans Images contrôleur même si vous déplacez l&apos;original. « Générer un module de catalogue… » écrit reference_image=&apos;custom/&lt;filename&gt;&apos; ; placez une copie dans controllers/custom/&lt;filename&gt; pour l&apos;inclure (en respectant sa licence — les images que vous fournissez sont sous votre responsabilité).</translation>
+    </message>
+    <message>
+        <source>Save controller setup session</source>
+        <translation>Enregistrer la session de configuration du contrôleur</translation>
+    </message>
+    <message>
+        <source>JSON files (*.json)</source>
+        <translation>Fichiers JSON (*.json)</translation>
+    </message>
+    <message>
+        <source>Failed to save session</source>
+        <translation>Échec de l&apos;enregistrement de la session</translation>
+    </message>
+    <message>
+        <source>Load controller setup session</source>
+        <translation>Charger une session de configuration du contrôleur</translation>
+    </message>
+    <message>
+        <source>Failed to load session</source>
+        <translation>Échec du chargement de la session</translation>
+    </message>
+    <message>
+        <source>Controller name must contain at least one letter or digit.</source>
+        <translation>Le nom du contrôleur doit contenir au moins une lettre ou un chiffre.</translation>
+    </message>
+    <message>
+        <source>No rows captured yet.</source>
+        <translation>Aucune ligne capturée pour l&apos;instant.</translation>
+    </message>
+    <message>
+        <source>Rows missing a Name: {rows}</source>
+        <translation>Lignes sans nom : {rows}</translation>
+    </message>
+    <message>
+        <source>Rows missing a Section: {rows}</source>
+        <translation>Lignes sans section : {rows}</translation>
+    </message>
+    <message>
+        <source>Rows with invalid Type (must be NOTE or CC): {rows}</source>
+        <translation>Lignes au type invalide (NOTE ou CC attendu) : {rows}</translation>
+    </message>
+    <message>
+        <source>Rows missing a Channel: {rows}</source>
+        <translation>Lignes sans canal : {rows}</translation>
+    </message>
+    <message>
+        <source>Rows with invalid Data1 (must be an integer 0-127): {rows}</source>
+        <translation>Lignes au Data1 invalide (entier de 0 à 127 attendu) : {rows}</translation>
+    </message>
+    <message>
+        <source>Cannot submit yet</source>
+        <translation>Impossible de proposer pour l&apos;instant</translation>
+    </message>
+    <message>
+        <source>Couldn&apos;t open the browser</source>
+        <translation>Impossible d&apos;ouvrir le navigateur</translation>
+    </message>
+    <message>
+        <source>The submission page couldn&apos;t be opened automatically. The profile JSON is on your clipboard — open a new issue on the project repository and paste it there.</source>
+        <translation>La page de proposition n&apos;a pas pu s&apos;ouvrir automatiquement. Le JSON du profil est dans votre presse-papiers — ouvrez un nouveau ticket sur le dépôt du projet et collez-le.</translation>
+    </message>
+    <message>
+        <source>The profile JSON is already filled in on that page.</source>
+        <translation>Le JSON du profil est déjà rempli sur cette page.</translation>
+    </message>
+    <message>
+        <source>The profile JSON was copied to your clipboard — paste it into the code block.</source>
+        <translation>Le JSON du profil a été copié dans votre presse-papiers — collez-le dans le bloc de code.</translation>
+    </message>
+    <message>
+        <source>Submission opened</source>
+        <translation>Proposition ouverte</translation>
+    </message>
+    <message>
+        <source>A pre-filled GitHub issue opened in your browser.</source>
+        <translation>Un ticket GitHub prérempli s&apos;est ouvert dans votre navigateur.</translation>
+    </message>
+    <message>
+        <source>Review it before submitting. Reference images are not included in a submission.</source>
+        <translation>Relisez-le avant de l&apos;envoyer. Les images de référence ne sont pas incluses dans une proposition.</translation>
+    </message>
+    <message>
+        <source>Conflicts found</source>
+        <translation>Conflits trouvés</translation>
+    </message>
+    <message>
+        <source>No conflicts</source>
+        <translation>Aucun conflit</translation>
+    </message>
+    <message>
+        <source>No missing fields or conflicting triggers found — draft looks stable.</source>
+        <translation>Aucun champ manquant ni déclencheur en conflit — le brouillon semble stable.</translation>
+    </message>
+    <message>
+        <source>Cannot install yet</source>
+        <translation>Impossible d&apos;installer pour l&apos;instant</translation>
+    </message>
+    <message>
+        <source>Cannot install</source>
+        <translation>Installation impossible</translation>
+    </message>
+    <message>
+        <source>&apos;{name}&apos; is already a built-in controller. Installing would replace its full definition with this draft&apos;s rows in every view. Pick a different controller name for this profile.</source>
+        <translation>« {name} » est déjà un contrôleur intégré. L&apos;installer remplacerait sa définition complète par les lignes de ce brouillon dans toutes les vues. Choisissez un autre nom de contrôleur pour ce profil.</translation>
+    </message>
+    <message>
+        <source>&apos;{name}&apos; is already one of your installed controller profiles. Replace it with this draft?</source>
+        <translation>« {name} » est déjà l&apos;un de vos profils de contrôleur installés. Le remplacer par ce brouillon ?</translation>
+    </message>
+    <message>
+        <source>Failed to install</source>
+        <translation>Échec de l&apos;installation</translation>
+    </message>
+    <message>
+        <source>Installed</source>
+        <translation>Installé</translation>
+    </message>
+    <message>
+        <source>&apos;{name}&apos; is installed: it is active now in every view and is loaded again at every launch.
+
+Saved in {path}</source>
+        <translation>« {name} » est installé : il est actif dès maintenant dans toutes les vues et rechargé à chaque lancement.
+
+Enregistré dans {path}</translation>
+    </message>
+    <message>
+        <source>Cannot export yet</source>
+        <translation>Impossible d&apos;exporter pour l&apos;instant</translation>
+    </message>
+    <message>
+        <source>&apos;{name}&apos; is already a registered controller name. Export anyway?</source>
+        <translation>« {name} » est déjà un nom de contrôleur enregistré. Exporter quand même ?</translation>
+    </message>
+    <message>
+        <source>Generate catalog module</source>
+        <translation>Générer un module de catalogue</translation>
+    </message>
+    <message>
+        <source>Python files (*.py)</source>
+        <translation>Fichiers Python (*.py)</translation>
+    </message>
+    <message>
+        <source>{path} already exists. Overwrite?</source>
+        <translation>{path} existe déjà. L&apos;écraser ?</translation>
+    </message>
+    <message>
+        <source>Failed to write file</source>
+        <translation>Échec de l&apos;écriture du fichier</translation>
+    </message>
+    <message>
+        <source>Wrote {path}.
+
+One manual step remains: add &apos;{slug}&apos; to the import block in catalog/__init__.py (kept alphabetical, matching the existing style) so it&apos;s picked up.</source>
+        <translation>{path} écrit.
+
+Il reste une étape manuelle : ajoutez &apos;{slug}&apos; au bloc d&apos;imports de catalog/__init__.py (par ordre alphabétique, comme l&apos;existant) pour qu&apos;il soit chargé.</translation>
+    </message>
+    <message>
+        <source>The module references reference_image=&apos;custom/{image}&apos;. Copy your image to controllers/custom/{image} for it to show in the Controller Images tab on a future launch (user-supplied images are your responsibility re: licensing).</source>
+        <translation>Le module référence reference_image=&apos;custom/{image}&apos;. Copiez votre image dans controllers/custom/{image} pour qu&apos;elle s&apos;affiche dans l&apos;onglet Images contrôleur aux prochains lancements (la licence des images que vous fournissez est sous votre responsabilité).</translation>
+    </message>
+    <message>
+        <source>Catalog module generated</source>
+        <translation>Module de catalogue généré</translation>
+    </message>
+    <message>
+        <source>Trigger (channel={channel}, type={kind}, data1={data1}) is claimed by {count} different rows ({labels}) — only one can be correct.</source>
+        <extracomment>One trigger claimed by rows with different names; translated by Controller Setup (issue #318).</extracomment>
+        <translation>Le déclencheur (canal={channel}, type={kind}, data1={data1}) est revendiqué par {count} lignes différentes ({labels}) — une seule peut être juste.</translation>
+    </message>
+</context>
+<context>
+    <name>ControllerSubmissionDialog</name>
+    <message>
+        <source>Submit controller to community catalog</source>
+        <translation>Proposer le contrôleur au catalogue communautaire</translation>
+    </message>
+    <message>
+        <source>Name or GitHub handle (optional)</source>
+        <translation>Nom ou identifiant GitHub (facultatif)</translation>
+    </message>
+    <message>
+        <source>e.g. Behringer CMD LC-1 (optional)</source>
+        <translation>p. ex. Behringer CMD LC-1 (facultatif)</translation>
+    </message>
+    <message>
+        <source>Firmware / revision tested (optional)</source>
+        <translation>Firmware / révision testée (facultatif)</translation>
+    </message>
+    <message>
+        <source>Anything a reviewer should know (optional)</source>
+        <translation>Ce qu&apos;un relecteur devrait savoir (facultatif)</translation>
+    </message>
+    <message>
+        <source>A pre-filled GitHub issue opens in your browser and the full profile JSON is copied to your clipboard. Trigger data and control names may be redistributed in the built-in catalog; reference images are not submitted.</source>
+        <translation>Un ticket GitHub prérempli s&apos;ouvre dans votre navigateur et le JSON complet du profil est copié dans votre presse-papiers. Les déclencheurs et les noms de commandes pourront être redistribués dans le catalogue intégré ; les images de référence ne sont pas envoyées.</translation>
+    </message>
+    <message>
+        <source>Contributor</source>
+        <translation>Contributeur</translation>
+    </message>
+    <message>
+        <source>Target hardware</source>
+        <translation>Matériel visé</translation>
+    </message>
+    <message>
+        <source>Firmware</source>
+        <translation>Firmware</translation>
+    </message>
+    <message>
+        <source>Capture source</source>
+        <translation>Source de la capture</translation>
+    </message>
+    <message>
+        <source>Notes</source>
+        <translation>Notes</translation>
+    </message>
+    <message>
+        <source>Open submission</source>
+        <translation>Ouvrir la proposition</translation>
+    </message>
+</context>
+<context>
     <name>ControllerSync</name>
     <message>
         <source>not connected</source>
@@ -283,6 +1018,182 @@ Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-m
     </message>
 </context>
 <context>
+    <name>EditPanel</name>
+    <message>
+        <source>No control pressed — Learn timed out.</source>
+        <translation>Aucune commande pressée — l&apos;apprentissage a expiré.</translation>
+    </message>
+    <message>
+        <source>Select a node in the tree to edit it.</source>
+        <translation>Sélectionnez un élément de l&apos;arbre pour le modifier.</translation>
+    </message>
+    <message>
+        <source>(not found in any controller reference table)</source>
+        <translation>(absent de toutes les tables de référence des contrôleurs)</translation>
+    </message>
+    <message>
+        <source>Physical control</source>
+        <translation>Commande physique</translation>
+    </message>
+    <message>
+        <source>Control (MIDI trigger)</source>
+        <translation>Control (déclencheur MIDI)</translation>
+    </message>
+    <message>
+        <source>Channel</source>
+        <translation>Canal</translation>
+    </message>
+    <message>
+        <source>Event type</source>
+        <translation>Type d&apos;événement</translation>
+    </message>
+    <message>
+        <source>Control</source>
+        <translation>Control</translation>
+    </message>
+    <message>
+        <source>User I/O</source>
+        <translation>User I/O</translation>
+    </message>
+    <message>
+        <source>Event (click/output)</source>
+        <translation>Événement (click/output)</translation>
+    </message>
+    <message>
+        <source>{count} mapping(s)</source>
+        <translation>{count} mapping(s)</translation>
+    </message>
+    <message>
+        <source>&lt;{tag}&gt; target</source>
+        <translation>Cible de &lt;{tag}&gt;</translation>
+    </message>
+    <message>
+        <source>Deck set</source>
+        <translation>Deck set</translation>
+    </message>
+    <message>
+        <source>Deck id</source>
+        <translation>Deck id</translation>
+    </message>
+    <message>
+        <source>Slot id</source>
+        <translation>Slot id</translation>
+    </message>
+    <message>
+        <source>Trigger: {trigger}</source>
+        <translation>Déclencheur : {trigger}</translation>
+    </message>
+    <message>
+        <source>Translations</source>
+        <translation>Translations</translation>
+    </message>
+    <message>
+        <source>Aliases (on/off values) for selected translation</source>
+        <translation>Alias (valeurs on/off) de la translation sélectionnée</translation>
+    </message>
+    <message>
+        <source>Add alias</source>
+        <translation>Ajouter un alias</translation>
+    </message>
+    <message>
+        <source>Remove alias</source>
+        <translation>Retirer l&apos;alias</translation>
+    </message>
+    <message>
+        <source>&lt;{tag}&gt; [{event}] — {count} linked control(s)</source>
+        <translation>&lt;{tag}&gt; [{event}] — {count} control(s) lié(s)</translation>
+    </message>
+    <message>
+        <source>Trigger</source>
+        <translation>Déclencheur</translation>
+    </message>
+    <message>
+        <source>Target (applies to all linked controls)</source>
+        <translation>Cible (s&apos;applique à tous les controls liés)</translation>
+    </message>
+    <message>
+        <source>Translations (applies to all linked controls)</source>
+        <translation>Translations (s&apos;appliquent à tous les controls liés)</translation>
+    </message>
+    <message>
+        <source>Aliases for selected translation (applies to all linked controls)</source>
+        <translation>Alias de la translation sélectionnée (s&apos;appliquent à tous les controls liés)</translation>
+    </message>
+    <message>
+        <source>Learn</source>
+        <translation>Apprendre</translation>
+    </message>
+    <message>
+        <source>Listen for the next control pressed on your controller and move this trigger to it. Click again (or wait {seconds} s) to cancel.</source>
+        <translation>Écoute la prochaine commande pressée sur votre contrôleur et y déplace ce déclencheur. Cliquez à nouveau (ou attendez {seconds} s) pour annuler.</translation>
+    </message>
+    <message>
+        <source>Learn cancelled.</source>
+        <translation>Apprentissage annulé.</translation>
+    </message>
+    <message>
+        <source>No MIDI input is open: connect a controller, or pick one in Live Monitor.</source>
+        <translation>Aucune entrée MIDI n&apos;est ouverte : branchez un contrôleur ou choisissez-en une dans le Live Monitor.</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Annuler</translation>
+    </message>
+    <message>
+        <source>Press a control on your controller… ({seconds} s)</source>
+        <translation>Pressez une commande sur votre contrôleur… ({seconds} s)</translation>
+    </message>
+    <message>
+        <source>Already on {trigger}.</source>
+        <translation>Déjà sur {trigger}.</translation>
+    </message>
+    <message>
+        <source>Not reassigned: {trigger} is already used.</source>
+        <translation>Non réaffecté : {trigger} est déjà utilisé.</translation>
+    </message>
+    <message>
+        <source>Learned {trigger} (also used by {count} other control(s)).</source>
+        <translation>{trigger} appris (aussi utilisé par {count} autre(s) control(s)).</translation>
+    </message>
+    <message>
+        <source>Learned {trigger}.</source>
+        <translation>{trigger} appris.</translation>
+    </message>
+    <message>
+        <source>Trigger already used</source>
+        <translation>Déclencheur déjà utilisé</translation>
+    </message>
+    <message>
+        <source>{trigger} is already bound to:
+
+{listing}
+
+Reassign anyway? Both will fire on the same control.</source>
+        <translation>{trigger} est déjà associé à :
+
+{listing}
+
+Réaffecter quand même ? Les deux se déclencheront sur la même commande.</translation>
+    </message>
+    <message>
+        <source>MIDI Learn → {trigger}</source>
+        <translation>Apprentissage MIDI → {trigger}</translation>
+    </message>
+    <message>
+        <source>MIDI Learn → {trigger} ({count} linked)</source>
+        <translation>Apprentissage MIDI → {trigger} ({count} lié(s))</translation>
+    </message>
+    <message>
+        <source>deck {deck}</source>
+        <extracomment>Words around the function tags in a conflict listing (issue #318).</extracomment>
+        <translation>platine {deck}</translation>
+    </message>
+    <message>
+        <source>… and {count} more</source>
+        <translation>… et {count} de plus</translation>
+    </message>
+</context>
+<context>
     <name>FirstRunWizard</name>
     <message>
         <source>Welcome to DJ MIDI Studio</source>
@@ -299,6 +1210,46 @@ Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-m
     <message>
         <source>This short setup finds your controllers, offers to open your Serato MIDI mapping and to record a controller sync set.&lt;br&gt;&lt;br&gt;Every step is optional: click &lt;b&gt;Skip&lt;/b&gt; to close it. You can run it again from &lt;b&gt;Help → First-Run Setup…&lt;/b&gt;.</source>
         <translation>Cette courte configuration détecte vos contrôleurs, propose d&apos;ouvrir votre mapping MIDI Serato et d&apos;enregistrer un jeu de synchronisation.&lt;br&gt;&lt;br&gt;Chaque étape est facultative : cliquez sur &lt;b&gt;Passer&lt;/b&gt; pour la fermer. Vous pouvez la relancer depuis &lt;b&gt;Aide → Configuration initiale…&lt;/b&gt;.</translation>
+    </message>
+</context>
+<context>
+    <name>FunctionSearchView</name>
+    <message>
+        <source>unknown physical control</source>
+        <translation>commande physique inconnue</translation>
+    </message>
+    <message>
+        <source>Find function: loop roll, deck 2…</source>
+        <translation>Chercher une fonction : loop roll, deck 2…</translation>
+    </message>
+    <message>
+        <source>Which control triggers this function? Matches function names, deck and slot.</source>
+        <translation>Quelle commande déclenche cette fonction ? Cherche dans les noms de fonctions, la platine (deck) et le slot.</translation>
+    </message>
+    <message>
+        <source>Open a mapping to search its functions.</source>
+        <translation>Ouvrez un mapping pour chercher ses fonctions.</translation>
+    </message>
+    <message>
+        <source>{count} functions in this mapping.</source>
+        <translation>{count} fonctions dans ce mapping.</translation>
+    </message>
+    <message>
+        <source>No function matches “{query}”.</source>
+        <translation>Aucune fonction ne correspond à « {query} ».</translation>
+    </message>
+    <message>
+        <source>{count} match(es): select one to show its controls.</source>
+        <translation>{count} résultat(s) : sélectionnez-en un pour voir ses commandes.</translation>
+    </message>
+    <message>
+        <source>Deck {deck}</source>
+        <extracomment>A result&apos;s location parts, translated by the GUI (issue #318).</extracomment>
+        <translation>Platine {deck}</translation>
+    </message>
+    <message>
+        <source>Slot {slot}</source>
+        <translation>Slot {slot}</translation>
     </message>
 </context>
 <context>
@@ -411,6 +1362,173 @@ Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-m
     </message>
 </context>
 <context>
+    <name>IntroductionView</name>
+    <message>
+        <source>Loaded file: none</source>
+        <translation>Fichier chargé : aucun</translation>
+    </message>
+    <message>
+        <source>Known controllers</source>
+        <translation>Contrôleurs connus</translation>
+    </message>
+    <message>
+        <source>Active controller for drill-down:</source>
+        <translation>Contrôleur actif pour le détail :</translation>
+    </message>
+    <message>
+        <source>Controller overview</source>
+        <translation>Aperçu des contrôleurs</translation>
+    </message>
+    <message>
+        <source>MIDI tools</source>
+        <translation>Outils MIDI</translation>
+    </message>
+    <message>
+        <source>Open Live Monitor</source>
+        <translation>Ouvrir le Live Monitor</translation>
+    </message>
+    <message>
+        <source>Open MIDI Routing</source>
+        <translation>Ouvrir le routage MIDI</translation>
+    </message>
+    <message>
+        <source>Open MIDI Clock</source>
+        <translation>Ouvrir l&apos;horloge MIDI</translation>
+    </message>
+    <message>
+        <source>Open Metronome</source>
+        <translation>Ouvrir le métronome</translation>
+    </message>
+    <message>
+        <source>Tip: a controller you install from Controller Setup appears immediately in every view, and again at every launch.</source>
+        <translation>Astuce : un contrôleur installé depuis Config. contrôleur apparaît tout de suite dans toutes les vues, et à chaque lancement.</translation>
+    </message>
+    <message>
+        <source>{count} registered controller(s)</source>
+        <translation>{count} contrôleur(s) enregistré(s)</translation>
+    </message>
+    <message>
+        <source>(no registered controllers)</source>
+        <translation>(aucun contrôleur enregistré)</translation>
+    </message>
+    <message>
+        <source>MIDI: not checked</source>
+        <translation>MIDI : non vérifié</translation>
+    </message>
+    <message>
+        <source>MIDI: available</source>
+        <translation>MIDI : disponible</translation>
+    </message>
+    <message>
+        <source>MIDI: not detected</source>
+        <translation>MIDI : non détecté</translation>
+    </message>
+    <message>
+        <source>Visualize, edit, and validate your {software} MIDI mappings. Start here, then use the shortcuts below to drill down into the detailed views.</source>
+        <translation>Visualisez, modifiez et validez vos mappings MIDI {software}. Commencez ici, puis utilisez les raccourcis ci-dessous pour ouvrir les vues détaillées.</translation>
+    </message>
+    <message>
+        <source>Visualize, edit, and validate your Serato DJ or Traktor MIDI mappings. Start here, then use the shortcuts below to drill down into the detailed views.</source>
+        <translation>Visualisez, modifiez et validez vos mappings MIDI Serato DJ ou Traktor. Commencez ici, puis utilisez les raccourcis ci-dessous pour ouvrir les vues détaillées.</translation>
+    </message>
+    <message>
+        <source>Your files</source>
+        <translation>Vos fichiers</translation>
+    </message>
+    <message>
+        <source>Open mapping…</source>
+        <translation>Ouvrir un mapping…</translation>
+    </message>
+    <message>
+        <source>Show in Finder</source>
+        <translation>Afficher dans le Finder</translation>
+    </message>
+    <message>
+        <source>Show in folder</source>
+        <translation>Afficher dans le dossier</translation>
+    </message>
+    <message>
+        <source>Restore previous…</source>
+        <translation>Restaurer la précédente…</translation>
+    </message>
+    <message>
+        <source>Sync sets…</source>
+        <translation>Jeux de synchro…</translation>
+    </message>
+    <message>
+        <source>Restore the version saved before the last save</source>
+        <translation>Restaurer la version conservée avant le dernier enregistrement</translation>
+    </message>
+    <message>
+        <source>Manage the controller sync sets (Preferences)</source>
+        <translation>Gérer les jeux de synchronisation des contrôleurs (Préférences)</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Mapping:&lt;/b&gt; none open — &lt;i&gt;File → Open Mapping…&lt;/i&gt;</source>
+        <translation>&lt;b&gt;Mapping :&lt;/b&gt; aucun ouvert — &lt;i&gt;Fichier → Ouvrir un mapping…&lt;/i&gt;</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Mapping:&lt;/b&gt; {name}</source>
+        <translation>&lt;b&gt;Mapping :&lt;/b&gt; {name}</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Folder:&lt;/b&gt; {folder}</source>
+        <translation>&lt;b&gt;Dossier :&lt;/b&gt; {folder}</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Previous version:&lt;/b&gt; none yet (made on every save)</source>
+        <translation>&lt;b&gt;Version précédente :&lt;/b&gt; aucune pour l&apos;instant (créée à chaque enregistrement)</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Previous version:&lt;/b&gt; kept from {when}</source>
+        <translation>&lt;b&gt;Version précédente :&lt;/b&gt; conservée du {when}</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Recent:&lt;/b&gt; {links}</source>
+        <translation>&lt;b&gt;Récents :&lt;/b&gt; {links}</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Recent:&lt;/b&gt; none yet</source>
+        <translation>&lt;b&gt;Récents :&lt;/b&gt; aucun pour l&apos;instant</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Sync sets:&lt;/b&gt; {names}</source>
+        <translation>&lt;b&gt;Jeux de synchro :&lt;/b&gt; {names}</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Sync sets:&lt;/b&gt; none — record one with ● Rec or in Controller Setup</source>
+        <translation>&lt;b&gt;Jeux de synchro :&lt;/b&gt; aucun — enregistrez-en un avec ● Enr ou dans Config. contrôleur</translation>
+    </message>
+    <message>
+        <source>Loaded file: {name} ({count} control(s))</source>
+        <translation>Fichier chargé : {name} ({count} control(s))</translation>
+    </message>
+    <message>
+        <source>Catalog: {entries} static entry(ies), {pads} pad(s)</source>
+        <translation>Catalogue : {entries} entrée(s) fixe(s), {pads} pad(s)</translation>
+    </message>
+    <message>
+        <source>Channel</source>
+        <translation>Canal</translation>
+    </message>
+    <message>
+        <source>Controller</source>
+        <translation>Contrôleur</translation>
+    </message>
+    <message>
+        <source>Images</source>
+        <translation>Images</translation>
+    </message>
+    <message>
+        <source>In loaded file: {cells} cell(s), {decks} deck(s), {functions} function(s)</source>
+        <translation>Dans le fichier chargé : {cells} case(s), {decks} platine(s), {functions} fonction(s)</translation>
+    </message>
+    <message>
+        <source>Image unavailable</source>
+        <translation>Image indisponible</translation>
+    </message>
+</context>
+<context>
     <name>LayerMapDialog</name>
     <message>
         <source>Layer Map</source>
@@ -471,6 +1589,49 @@ Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-m
     <message>
         <source>{controller}: {mapped} mapped, {partial} partly free (amber), {free} free (green) combination(s) across {layers} layer(s). Hover a free cell for the raw MIDI triggers left.</source>
         <translation>{controller} : {mapped} mappée(s), {partial} en partie libre(s) (ambre), {free} combinaison(s) libre(s) (vert) sur {layers} couche(s). Survolez une case libre pour voir les déclencheurs MIDI bruts restants.</translation>
+    </message>
+</context>
+<context>
+    <name>LayerToggles</name>
+    <message>
+        <source>Controller</source>
+        <translation>Contrôleur</translation>
+    </message>
+    <message>
+        <source>The real photo of the controller.</source>
+        <translation>La vraie photo du contrôleur.</translation>
+    </message>
+    <message>
+        <source>MIDI</source>
+        <translation>MIDI</translation>
+    </message>
+    <message>
+        <source>The controller photo with its MIDI information printed on it.</source>
+        <translation>La photo du contrôleur avec ses informations MIDI imprimées dessus.</translation>
+    </message>
+    <message>
+        <source>Layout</source>
+        <translation>Disposition</translation>
+    </message>
+    <message>
+        <source>The app&apos;s MIDI layout: a marker on every modeled control.</source>
+        <translation>La disposition MIDI de l&apos;application : un repère sur chaque commande modélisée.</translation>
+    </message>
+    <message>
+        <source>No measured layout to show a photo behind for this controller. Controller Images shows its picture.</source>
+        <translation>Aucune disposition mesurée derrière laquelle afficher une photo pour ce contrôleur. Images contrôleur montre son image.</translation>
+    </message>
+    <message>
+        <source>No MIDI picture is bundled for this controller.</source>
+        <translation>Aucune image MIDI n&apos;est fournie pour ce contrôleur.</translation>
+    </message>
+    <message>
+        <source>No layout has been measured for this controller yet.</source>
+        <translation>Aucune disposition n&apos;a encore été mesurée pour ce contrôleur.</translation>
+    </message>
+    <message>
+        <source>The layout only lines up with the Controller photo: untick MIDI to show it.</source>
+        <translation>La disposition ne s&apos;aligne que sur la photo Contrôleur : décochez MIDI pour l&apos;afficher.</translation>
     </message>
 </context>
 <context>
@@ -643,7 +1804,38 @@ Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-m
     </message>
 </context>
 <context>
+    <name>LiveSendControl</name>
+    <message>
+        <source>MIDI output port for Live send -- pick a virtual port (e.g. an IAC Driver bus) that you&apos;ve also added as a control surface input in Serato&apos;s own MIDI preferences. Sending to your controller&apos;s own port won&apos;t reach Serato: that port writes TO the hardware (e.g. its LEDs), not to Serato&apos;s mapping engine.</source>
+        <translation>Port de sortie MIDI de l&apos;envoi live — choisissez un port virtuel (p. ex. un bus IAC Driver) que vous avez aussi ajouté comme entrée de surface de contrôle dans les préférences MIDI de Serato. Envoyer sur le port de votre contrôleur n&apos;atteint pas Serato : ce port écrit VERS le matériel (p. ex. ses LED), pas vers le moteur de mapping de Serato.</translation>
+    </message>
+    <message>
+        <source>Refresh output ports</source>
+        <translation>Actualiser les ports de sortie</translation>
+    </message>
+    <message>
+        <source>When ON, clicking a control here sends a real MIDI message to the selected output port -- not just dry-run resolution.</source>
+        <translation>Activé, un clic sur une commande ici envoie un vrai message MIDI au port de sortie choisi — pas seulement une résolution à blanc.</translation>
+    </message>
+    <message>
+        <source>⚠ &quot;{port}&quot; looks like {controller}&apos;s own port -- it won&apos;t reach Serato. Pick a virtual port (e.g. IAC Driver) added as a control surface input in Serato&apos;s MIDI preferences instead.</source>
+        <translation>⚠ « {port} » semble être le port de {controller} lui-même — il n&apos;atteindra pas Serato. Choisissez plutôt un port virtuel (p. ex. IAC Driver) ajouté comme entrée de surface de contrôle dans les préférences MIDI de Serato.</translation>
+    </message>
+    <message>
+        <source>LIVE SEND: ON</source>
+        <translation>ENVOI LIVE : ACTIF</translation>
+    </message>
+    <message>
+        <source>Live send: off</source>
+        <translation>Envoi live : inactif</translation>
+    </message>
+</context>
+<context>
     <name>MainWindow</name>
+    <message>
+        <source>Filter by channel, control, event type, function, deck, slot...</source>
+        <translation>Filtrer par canal, commande, type d&apos;événement, fonction, deck, slot...</translation>
+    </message>
     <message>
         <source>Dashboard</source>
         <translation>Tableau de bord</translation>
@@ -671,6 +1863,34 @@ Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-m
     <message>
         <source>Music Library</source>
         <translation>Bibliothèque</translation>
+    </message>
+    <message>
+        <source>Severity</source>
+        <translation>Gravité</translation>
+    </message>
+    <message>
+        <source>Message</source>
+        <translation>Message</translation>
+    </message>
+    <message>
+        <source>Location</source>
+        <translation>Emplacement</translation>
+    </message>
+    <message>
+        <source>Validate</source>
+        <translation>Valider</translation>
+    </message>
+    <message>
+        <source>Check the mapping&apos;s structure and conflicts (Edit → Validate).</source>
+        <translation>Vérifie la structure du mapping et ses conflits (Édition → Valider).</translation>
+    </message>
+    <message>
+        <source>Ready for live…</source>
+        <translation>Prêt pour le live…</translation>
+    </message>
+    <message>
+        <source>Before a gig: missing Play/Cue/Sync/Load per deck, conflicts, buttons without LED feedback.</source>
+        <translation>Avant une soirée : Play/Cue/Sync/Load manquants par platine, conflits, boutons sans retour LED.</translation>
     </message>
     <message>
         <source>&amp;File</source>
@@ -1103,6 +2323,49 @@ Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-m
     <message>
         <source>Ready for live: {errors} error(s), {warnings} warning(s), {infos} info</source>
         <translation>Prêt pour le live : {errors} erreur(s), {warnings} avertissement(s), {infos} info(s)</translation>
+    </message>
+</context>
+<context>
+    <name>MappingTree</name>
+    <message>
+        <source>(deck {deck}, slot {slot})</source>
+        <translation>(platine {deck}, slot {slot})</translation>
+    </message>
+    <message>
+        <source>deck {deck}, slot {slot}</source>
+        <translation>platine {deck}, slot {slot}</translation>
+    </message>
+    <message>
+        <source>Channel {channel}</source>
+        <translation>Canal {channel}</translation>
+    </message>
+    <message>
+        <source>Note/Control {note}</source>
+        <translation>Note/Control {note}</translation>
+    </message>
+    <message>
+        <source>Channel / Note / Mapping</source>
+        <translation>Canal / Note / Mapping</translation>
+    </message>
+    <message>
+        <source>unknown physical control</source>
+        <translation>commande physique inconnue</translation>
+    </message>
+    <message>
+        <source>Deck / Slot / Function -&gt; physical control</source>
+        <translation>Platine / Slot / Fonction -&gt; commande physique</translation>
+    </message>
+    <message>
+        <source>Deck {deck}</source>
+        <translation>Platine {deck}</translation>
+    </message>
+    <message>
+        <source>Slot {slot}</source>
+        <translation>Slot {slot}</translation>
+    </message>
+    <message>
+        <source>{control} (not used)</source>
+        <translation>{control} (non utilisé)</translation>
     </message>
 </context>
 <context>

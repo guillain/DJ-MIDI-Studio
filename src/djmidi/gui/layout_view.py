@@ -41,7 +41,6 @@ _KEY_ROLE = 0
 # gesture, phase 3) tell a continuous control apart from a discrete one
 # without re-deriving visual_kind_for()/_DISPLAY_CONTROLS itself.
 _KIND_ROLE = 1
-_ALL_DECKS = "All decks"
 
 
 @dataclass(frozen=True)
@@ -701,8 +700,10 @@ class ControllerLayoutView(QWidget):
                 }
                 """
             )
-            deck_combo.addItem(_ALL_DECKS)
-            deck_combo.currentTextChanged.connect(lambda _: self._rebuild())
+            # The deck id is the item data, so the filter never depends on
+            # the translated "All decks" / "Deck N" labels.
+            deck_combo.addItem(self.tr("All decks"), None)
+            deck_combo.currentIndexChanged.connect(lambda _: self._rebuild())
             controls_layout.addWidget(deck_combo)
             self._deck_combo = deck_combo
 
@@ -854,12 +855,13 @@ class ControllerLayoutView(QWidget):
         self._linked_cells = linked_cells or {}
         if self._deck_combo is not None:
             all_decks = sorted({d for per_deck in usage.values() for d in per_deck}, key=_deck_sort_key)
-            current = self._deck_combo.currentText()
+            current = self._deck_combo.currentData()
             self._deck_combo.blockSignals(True)
             self._deck_combo.clear()
-            self._deck_combo.addItem(_ALL_DECKS)
-            self._deck_combo.addItems([f"Deck {d}" for d in all_decks])
-            restored = self._deck_combo.findText(current)
+            self._deck_combo.addItem(self.tr("All decks"), None)
+            for deck in all_decks:
+                self._deck_combo.addItem(self.tr("Deck {deck}").format(deck=deck), deck)
+            restored = self._deck_combo.findData(current) if current is not None else 0
             self._deck_combo.setCurrentIndex(max(restored, 0))
             self._deck_combo.blockSignals(False)
         self._rebuild()
@@ -969,7 +971,10 @@ class ControllerLayoutView(QWidget):
         if sent is not None and not self._detail_label.isHidden():
             channel = sent.channels[0] if sent.channels else "?"
             current = self._detail_label.text()
-            self._detail_label.setText(f"{current}\n[LIVE SENT: ch{channel} {sent.note_or_cc} {sent.data1}]")
+            sent_text = self.tr("[LIVE SENT: ch{channel} {kind} {data1}]").format(
+                channel=channel, kind=sent.note_or_cc, data1=sent.data1
+            )
+            self._detail_label.setText(f"{current}\n{sent_text}")
 
     def _detail_text_for(self, key: CellKey) -> str:
         """The per-cell text real-position mode can't fit inline (name, this
@@ -979,8 +984,7 @@ class ControllerLayoutView(QWidget):
         the compact glyph mode."""
         deck_filter = self._selected_deck_filter()
         decks, tags = self._cell_decks_and_tags(key, deck_filter)
-        deck_text = ", ".join(f"Deck {d}" for d in sorted(decks)) if decks else "not used"
-        tag_text = ", ".join(sorted(tags)) if tags else "no function mapped"
+        deck_text, tag_text = self._usage_texts(decks, tags)
         lines = [f"{key[1]} {key[2]} — {deck_text} — {tag_text}"]
         linked_keys = sorted(self._linked_cells.get(key, set()))
         if linked_keys:
@@ -992,10 +996,20 @@ class ControllerLayoutView(QWidget):
                 d, t = self._cell_decks_and_tags(linked_key, deck_filter)
                 other_decks |= d
                 other_tags |= t
-            other_deck_text = ", ".join(f"Deck {d}" for d in sorted(other_decks)) if other_decks else "not used"
-            other_tag_text = ", ".join(sorted(other_tags)) if other_tags else "no function mapped"
+            other_deck_text, other_tag_text = self._usage_texts(other_decks, other_tags)
             lines.append(f"{other_controller}: {other_labels} — {other_deck_text} — {other_tag_text}")
         return "\n".join(lines)
+
+    def _usage_texts(self, decks: set[str], tags: set[str]) -> tuple[str, str]:
+        """The deck(s) and Serato function(s) of a cell, as shown in its
+        tooltip and detail line -- the function tags stay as Serato names them."""
+        deck_text = (
+            ", ".join(self.tr("Deck {deck}").format(deck=d) for d in sorted(decks))
+            if decks
+            else self.tr("not used")
+        )
+        tag_text = ", ".join(sorted(tags)) if tags else self.tr("no function mapped")
+        return deck_text, tag_text
 
     def _selection_pen(self, key: CellKey) -> QPen:
         if key in self._selected_keys:
@@ -1007,10 +1021,7 @@ class ControllerLayoutView(QWidget):
     def _selected_deck_filter(self) -> str | None:
         if self._deck_combo is None:
             return None
-        text = self._deck_combo.currentText()
-        if text == _ALL_DECKS or not text:
-            return None
-        return text.removeprefix("Deck ")
+        return self._deck_combo.currentData()
 
     def _cell_decks_and_tags(self, cell_key: CellKey, deck_filter: str | None) -> tuple[set[str], set[str]]:
         """`cell_key` may be a side-aware *presentation* key (a real-position
@@ -1071,9 +1082,12 @@ class ControllerLayoutView(QWidget):
                 pen = _ACTIVE_BORDER_PEN
         rect.setPen(pen)
         rect.setData(_KEY_ROLE, clickable_key)
-        deck_text = ", ".join(f"Deck {d}" for d in sorted(decks)) if decks else "not used"
-        tag_text = ", ".join(sorted(tags)) if tags else "no function mapped"
-        rect.setToolTip(f"{key[0]} — {key[1]} {key[2]}\n{deck_text}\nMapped to: {tag_text}")
+        deck_text, tag_text = self._usage_texts(decks, tags)
+        rect.setToolTip(
+            self.tr("{name}\n{decks}\nMapped to: {functions}").format(
+                name=f"{key[0]} — {key[1]} {key[2]}", decks=deck_text, functions=tag_text
+            )
+        )
         self._scene.addItem(rect)
         self._draw_control_shape(x, y, visual_kind, clickable_key)
 
@@ -1155,7 +1169,7 @@ class ControllerLayoutView(QWidget):
         if not self._controller:
             self._detail_label.hide()
             message = QGraphicsSimpleTextItem(
-                "No controller catalog is available. Check the bundled controller data."
+                self.tr("No controller catalog is available. Check the bundled controller data.")
             )
             message.setBrush(QColor("#c5d0df"))
             message.setPos(16, 16)
@@ -1236,9 +1250,9 @@ class ControllerLayoutView(QWidget):
                 empty.setPos(x, y + m.half_h)
                 empty.setBrush(_EMPTY_HALF_BRUSH)
                 empty.setPen(_BORDER_PEN)
-                empty.setToolTip("No other controller shares this trigger in this config.")
+                empty.setToolTip(self.tr("No other controller shares this trigger in this config."))
                 self._scene.addItem(empty)
-                placeholder = QGraphicsSimpleTextItem("(other controller: n/a)")
+                placeholder = QGraphicsSimpleTextItem(self.tr("(other controller: n/a)"))
                 placeholder.setFont(small_font)
                 placeholder.setPos(x + 4, y + m.half_h + 15)
                 placeholder.setBrush(QColor("#78869b"))
@@ -1339,9 +1353,12 @@ class ControllerLayoutView(QWidget):
                     pen = _ACTIVE_BORDER_PEN
             bg_item.setPen(pen)
             bg_item.setData(_KEY_ROLE, key)
-            deck_text = ", ".join(f"Deck {d}" for d in sorted(decks)) if decks else "not used"
-            tag_text = ", ".join(sorted(tags)) if tags else "no function mapped"
-            bg_item.setToolTip(f"{self._controller} — {marker.label}\n{deck_text}\nMapped to: {tag_text}")
+            deck_text, tag_text = self._usage_texts(decks, tags)
+            bg_item.setToolTip(
+                self.tr("{name}\n{decks}\nMapped to: {functions}").format(
+                    name=f"{self._controller} — {marker.label}", decks=deck_text, functions=tag_text
+                )
+            )
             self._scene.addItem(bg_item)
 
             # The glyph itself -- reused verbatim from the classic card mode

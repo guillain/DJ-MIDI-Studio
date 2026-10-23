@@ -8,9 +8,17 @@ from __future__ import annotations
 from dataclasses import replace
 
 from djmidi.catalog._registry import ControlInfo, ControllerDefinition, NoteOrCC
+from djmidi.i18n import QT_TRANSLATE_NOOP, Translate, untranslated
+
+#: One trigger claimed by rows with different names; translated by Controller Setup (issue #318).
+TRIGGER_CONFLICT = QT_TRANSLATE_NOOP(
+    "ControllerSetupView",
+    "Trigger (channel={channel}, type={kind}, data1={data1}) is claimed by "
+    "{count} different rows ({labels}) — only one can be correct.",
+)
 
 
-def find_trigger_conflicts(entries: list[ControlInfo]) -> list[str]:
+def find_trigger_conflicts(entries: list[ControlInfo], translate: Translate = untranslated) -> list[str]:
     """A draft is unstable if the same raw (channel, note_or_cc, data1) trigger
     is claimed by two rows with a different (section, name) — i.e. the same
     physical press would resolve to two different answers from catalog.lookup()
@@ -32,8 +40,9 @@ def find_trigger_conflicts(entries: list[ControlInfo]) -> list[str]:
             continue
         labels = ", ".join(f"{section!r}/{name!r}" for section, name in distinct_labels)
         conflicts.append(
-            f"Trigger (channel={channel}, type={kind}, data1={data1}) is claimed by "
-            f"{len(distinct_labels)} different rows ({labels}) — only one can be correct."
+            translate(TRIGGER_CONFLICT).format(
+                channel=channel, kind=kind, data1=data1, count=len(distinct_labels), labels=labels
+            )
         )
     return conflicts
 

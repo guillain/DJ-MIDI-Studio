@@ -47,12 +47,12 @@ class LayerToggles(QWidget):
         parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
-        self.controller_box = QCheckBox("Controller")
-        self.controller_box.setToolTip("The real photo of the controller.")
-        self.midi_box = QCheckBox("MIDI")
-        self.midi_box.setToolTip("The controller photo with its MIDI information printed on it.")
-        self.layout_box = QCheckBox("Layout")
-        self.layout_box.setToolTip("The app's MIDI layout: a marker on every modeled control.")
+        self.controller_box = QCheckBox(self.tr("Controller"))
+        self.controller_box.setToolTip(self.tr("The real photo of the controller."))
+        self.midi_box = QCheckBox(self.tr("MIDI"))
+        self.midi_box.setToolTip(self.tr("The controller photo with its MIDI information printed on it."))
+        self.layout_box = QCheckBox(self.tr("Layout"))
+        self.layout_box.setToolTip(self.tr("The app's MIDI layout: a marker on every modeled control."))
         self.controller_box.setChecked(controller)
         self.midi_box.setChecked(midi and not controller)
         self.layout_box.setChecked(layout)
@@ -94,25 +94,27 @@ class LayerToggles(QWidget):
         available = self._available
         self.controller_box.setEnabled(available.photo)
         self.controller_box.setToolTip(
-            "The real photo of the controller."
+            self.tr("The real photo of the controller.")
             if available.photo
-            else "No measured layout to show a photo behind for this controller."
-            " Controller Images shows its picture."
+            else self.tr(
+                "No measured layout to show a photo behind for this controller."
+                " Controller Images shows its picture."
+            )
         )
         self.midi_box.setEnabled(available.midi)
         self.midi_box.setToolTip(
-            "The controller photo with its MIDI information printed on it."
+            self.tr("The controller photo with its MIDI information printed on it.")
             if available.midi
-            else "No MIDI picture is bundled for this controller."
+            else self.tr("No MIDI picture is bundled for this controller.")
         )
         midi_on = self.state().midi
         self.layout_box.setEnabled(available.layout and not midi_on)
         if not available.layout:
-            self.layout_box.setToolTip("No layout has been measured for this controller yet.")
+            self.layout_box.setToolTip(self.tr("No layout has been measured for this controller yet."))
         elif midi_on:
-            self.layout_box.setToolTip("The layout only lines up with the Controller photo: untick MIDI to show it.")
+            self.layout_box.setToolTip(self.tr("The layout only lines up with the Controller photo: untick MIDI to show it."))
         else:
-            self.layout_box.setToolTip("The app's MIDI layout: a marker on every modeled control.")
+            self.layout_box.setToolTip(self.tr("The app's MIDI layout: a marker on every modeled control."))
 
     def state(self) -> LayerState:
         """The layers to draw: ticked, available, and following the rules above."""

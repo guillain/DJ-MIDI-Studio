@@ -484,3 +484,115 @@ def test_duplicates_health_and_smart_playlist_windows_show_french(french):
         for window in (duplicates, health, smart):
             window.close()
             window.deleteLater()
+
+
+# --- Mapping tabs, Controller Images, Controller Setup, Dashboard (issue #318) --
+
+_SAMPLE_MAPPING = _ROOT / "data" / "xdj_xz-ddj_xp2-4decks.xml"
+
+
+def _conflicting_rows():
+    from djmidi.catalog._registry import ControlInfo
+
+    return [
+        ControlInfo("Pad", "PAD", "PAD 1", "NOTE", ("1",), "0"),
+        ControlInfo("Pad", "PAD", "PAD 2", "NOTE", ("1",), "0"),
+    ]
+
+
+def test_qt_free_mapping_helpers_stay_english_and_are_scanned():
+    from djmidi.catalog.codegen import find_trigger_conflicts
+    from djmidi.function_search import index_functions
+    from djmidi.parser import parse_file
+
+    assert find_trigger_conflicts(_conflicting_rows())[0].startswith(
+        "Trigger (channel=1, type=NOTE, data1=0) is claimed by 2"
+    )
+    results = index_functions(parse_file(_SAMPLE_MAPPING))
+    assert any(result.location().startswith("Deck ") for result in results)
+    sources = {path.name for path in _script_sources()}
+    assert {
+        "layout_view.py",
+        "layer_toggles.py",
+        "live_send.py",
+        "tree_model.py",
+        "deck_tree.py",
+        "controller_tree.py",
+        "edit_panel.py",
+        "midi_learn.py",
+        "function_search_view.py",
+        "function_search.py",
+        "controller_image_view.py",
+        "controller_setup.py",
+        "controller_submission_dialog.py",
+        "codegen.py",
+        "introduction_view.py",
+    } <= sources
+
+
+def test_mapping_tabs_and_controller_views_show_french(french):
+    from PySide6.QtGui import QUndoStack
+
+    from djmidi.catalog.codegen import find_trigger_conflicts
+    from djmidi.function_search import index_functions
+    from djmidi.gui.controller_image_view import ControllerImageView
+    from djmidi.gui.controller_setup import ControllerSetupView
+    from djmidi.gui.controller_submission_dialog import ControllerSubmissionDialog
+    from djmidi.gui.deck_tree import build_deck_columns
+    from djmidi.gui.edit_panel import EditPanel
+    from djmidi.gui.function_search_view import FunctionSearchView, result_lines
+    from djmidi.gui.introduction_view import IntroductionView
+    from djmidi.gui.layout_view import ControllerLayoutView
+    from djmidi.gui.translation import translator
+    from djmidi.gui.tree_model import build_channel_columns
+    from djmidi.parser import parse_file
+
+    config = parse_file(_SAMPLE_MAPPING)
+    layout = ControllerLayoutView(show_deck_filter=True)
+    images = ControllerImageView()
+    setup = ControllerSetupView()
+    submission = ControllerSubmissionDialog()
+    panel = EditPanel(QUndoStack(), lambda _node: None)
+    search = FunctionSearchView()
+    dashboard = IntroductionView()
+    try:
+        # By Channel / By Deck trees and the layout views.
+        _channel, channel_model, _items = build_channel_columns(config)[0]
+        assert channel_model.horizontalHeaderItem(0).text().startswith("Canal ")
+        _deck, deck_model = build_deck_columns(config)[0]
+        assert deck_model.horizontalHeaderItem(0).text() == "Platine 0"
+        layout.set_usage({("DDJ-XP2", "PAD", "Pad 1"): {"0": {"codfather_st"}, "2": {"play"}}})
+        combo = layout._deck_combo
+        assert [combo.itemText(i) for i in range(combo.count())] == ["Toutes les platines", "Platine 0", "Platine 2"]
+        # The deck filter goes by item data, not by the translated label.
+        combo.setCurrentIndex(2)
+        assert layout._selected_deck_filter() == "2"
+        assert layout._layers.layout_box.text() == "Disposition"
+        assert layout._live_send._toggle_button.text() == "Envoi live : inactif"
+
+        # Edit / validation column.
+        assert panel._prompt_label.text() == "Sélectionnez un élément de l'arbre pour le modifier."
+        search.set_config(config)
+        assert search.summary.text().endswith("fonctions dans ce mapping.")
+        assert any("Platine " in result_lines(result)[0] for result in index_functions(config))
+
+        # Controller Images.
+        assert images._documentation_button.text() == "Ouvrir la documentation"
+
+        # Controller Setup: table, status, submission dialog and the Qt-free conflict text.
+        headers = [setup._table.horizontalHeaderItem(i).text() for i in range(setup._table.columnCount())]
+        assert headers[:2] == ["Section", "Nom"]
+        assert setup._learn_status.text() == "Arrêté"
+        assert find_trigger_conflicts(_conflicting_rows(), translator("ControllerSetupView"))[0].startswith(
+            "Le déclencheur (canal=1, type=NOTE, data1=0) est revendiqué par 2"
+        )
+        assert submission.windowTitle() == "Proposer le contrôleur au catalogue communautaire"
+
+        # Dashboard cards.
+        assert dashboard._loaded_file_label.text() == "Fichier chargé : aucun"
+        assert dashboard._files_buttons["open"].text() == "Ouvrir un mapping…"
+        assert dashboard._known_count_label.text().endswith("contrôleur(s) enregistré(s)")
+    finally:
+        for widget in (layout, images, setup, submission, panel, search, dashboard):
+            widget.close()
+            widget.deleteLater()
