@@ -138,6 +138,10 @@ Implemented contract, runtime, test, and documentation work:
   cards are translated. The deck filter and the TSI device picker no longer read translated labels; three Qt-free
   helpers take the #313 `translate` argument. The cocoa check also widened Controller Setup's send fields and the
   edit panel's fields (they scroll instead of shrinking) and let the submission dialog's fields grow.
+- [x] **French tool windows** (`v0.48.121-french-tool-windows`, issue #317) — Live Monitor, MIDI Routing
+  (and its route-transform dialog), MIDI Clock, Metronome and Controller Emulator (incl. its Pad colours row)
+  are translated, as are the tool docks' title bars (titles, Dock/Undock, Close) and their ☰ Window menu.
+  Checked in French on the real cocoa platform; the widest rows got shorter French labels.
 - [x] **Stop waiting macros on close** (`v0.48.120-stop-macros-on-close`, issue #314) — closing the main
   window now calls `MacroPlayer.stop_all()`, and closing the macro editor stops its Test player, so a macro
   waiting between steps releases its output port right away instead of at process exit. Follow-up of #308.

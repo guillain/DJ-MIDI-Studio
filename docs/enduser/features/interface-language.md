@@ -68,8 +68,7 @@ This first version translates what you use most:
 
 ## What stays in English
 
-The tool windows (Live Monitor, MIDI
-Routing, MIDI Clock, Metronome, Controller Emulator), most other messages and the `?` help
+Most other messages and the `?` help
 texts are still in English, as is this documentation. In the mapping tabs,
 the names Serato gives its own fields stay as written (`Deck set`,
 `Slot id`, `action_on`, `behaviour`, `Control`, `User I/O`), the function
@@ -79,7 +78,8 @@ integer`) and its row sources (`learned`, `xml-import`) stay in English. Inside 
 windows, text computed from your data stays in English too: the findings
 of the `Prêt pour le live` report, the latency statistics line, the
 change-history entry descriptions. A health-report CSV keeps its issue
-names in English. They will be
+names in English, and a saved Live Monitor log keeps English column
+names. They will be
 translated over the next releases. Controller and function names that
 come from your DJ software or your controller's MIDI documentation are
 never translated.

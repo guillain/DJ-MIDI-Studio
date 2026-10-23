@@ -173,6 +173,89 @@ Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-m
     </message>
 </context>
 <context>
+    <name>ControllerEmulatorView</name>
+    <message>
+        <source>Deck {deck} slot {slot}: {tag}</source>
+        <translation>Platine {deck} slot {slot} : {tag}</translation>
+    </message>
+    <message>
+        <source>Click a control to see what it resolves to.</source>
+        <translation>Cliquez sur une commande pour voir à quoi elle correspond.</translation>
+    </message>
+    <message>
+        <source>{pad}: no such pad on this controller.</source>
+        <translation>{pad} : ce pad n&apos;existe pas sur ce contrôleur.</translation>
+    </message>
+    <message>
+        <source>Deck {deck} Pad {pad} (mode {mode} +SHIFT) → {colour} (ch{channel} NOTE {note} velocity {velocity})</source>
+        <translation>Platine {deck} Pad {pad} (mode {mode} +SHIFT) → {colour} (canal {channel} NOTE {note} vélocité {velocity})</translation>
+    </message>
+    <message>
+        <source>Deck {deck} Pad {pad} (mode {mode}) → {colour} (ch{channel} NOTE {note} velocity {velocity})</source>
+        <translation>Platine {deck} Pad {pad} (mode {mode}) → {colour} (canal {channel} NOTE {note} vélocité {velocity})</translation>
+    </message>
+    <message>
+        <source>  [LIVE SENT]</source>
+        <translation>  [ENVOYÉ EN DIRECT]</translation>
+    </message>
+    <message>
+        <source>  [send failed: {error}]</source>
+        <translation>  [échec de l&apos;envoi : {error}]</translation>
+    </message>
+    <message>
+        <source>  [SHIFT held]</source>
+        <translation>  [SHIFT maintenu]</translation>
+    </message>
+    <message>
+        <source>  [SHIFT released]</source>
+        <translation>  [SHIFT relâché]</translation>
+    </message>
+    <message>
+        <source>  [pad mode set: {mode}]</source>
+        <translation>  [mode de pad choisi : {mode}]</translation>
+    </message>
+    <message>
+        <source>  [LIVE SENT: ch{channel} {kind} {data1}]</source>
+        <translation>  [ENVOYÉ EN DIRECT : canal {channel} {kind} {data1}]</translation>
+    </message>
+    <message>
+        <source>  [TOGGLED ON: output alias &apos;{name}&apos; = {value}]</source>
+        <translation>  [ACTIVÉ : alias de sortie « {name} » = {value}]</translation>
+    </message>
+    <message>
+        <source>  [TOGGLED OFF: output alias &apos;{name}&apos; = {value}]</source>
+        <translation>  [DÉSACTIVÉ : alias de sortie « {name} » = {value}]</translation>
+    </message>
+    <message>
+        <source>  [TOGGLED ON]</source>
+        <translation>  [ACTIVÉ]</translation>
+    </message>
+    <message>
+        <source>  [TOGGLED OFF]</source>
+        <translation>  [DÉSACTIVÉ]</translation>
+    </message>
+    <message>
+        <source>  [SELECTED: {tag} deck {deck} slot {slot} — siblings now &apos;off&apos;]</source>
+        <translation>  [SÉLECTIONNÉ : {tag} platine {deck} slot {slot} — les autres passent à « off »]</translation>
+    </message>
+    <message>
+        <source>  [output aliases: {aliases}]</source>
+        <translation>  [alias de sortie : {aliases}]</translation>
+    </message>
+    <message>
+        <source>{section} {name}: no raw MIDI trigger known for this control.</source>
+        <translation>{section} {name} : aucun déclencheur MIDI brut connu pour cette commande.</translation>
+    </message>
+    <message>
+        <source>{section} {name} → {trigger} (no mapping loaded)</source>
+        <translation>{section} {name} → {trigger} (aucun mapping chargé)</translation>
+    </message>
+    <message>
+        <source>{section} {name} → {trigger}: not mapped in the loaded config</source>
+        <translation>{section} {name} → {trigger} : non assigné dans le mapping chargé</translation>
+    </message>
+</context>
+<context>
     <name>ControllerImageView</name>
     <message>
         <source>Reset zoom</source>
@@ -1741,6 +1824,153 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     </message>
 </context>
 <context>
+    <name>LiveMonitorView</name>
+    <message>
+        <source>Creates a virtual MIDI destination named &apos;{name}&apos;. CoreMIDI won&apos;t let this app silently see what Serato sends to a real hardware output, so to monitor that direction you must manually add this virtual port as an *additional* MIDI output in Serato&apos;s own MIDI setup (alongside your real controller).</source>
+        <translation>Crée une destination MIDI virtuelle nommée « {name} ». CoreMIDI ne laisse pas cette application voir discrètement ce que Serato envoie à une sortie matérielle réelle : pour surveiller ce sens, ajoutez vous-même ce port virtuel comme sortie MIDI *supplémentaire* dans la configuration MIDI de Serato (à côté de votre vrai contrôleur).</translation>
+    </message>
+    <message>
+        <source>Refresh ports</source>
+        <translation>Actualiser les ports</translation>
+    </message>
+    <message>
+        <source>Select all sources</source>
+        <translation>Cocher toutes les sources</translation>
+    </message>
+    <message>
+        <source>Input sources (check to monitor)</source>
+        <translation>Sources d&apos;entrée (cochez pour surveiller)</translation>
+    </message>
+    <message>
+        <source>Create virtual monitor destination (for Serato output)</source>
+        <translation>Créer une destination virtuelle (sortie de Serato)</translation>
+    </message>
+    <message>
+        <source>Start monitoring</source>
+        <translation>Démarrer la surveillance</translation>
+    </message>
+    <message>
+        <source>Stopped</source>
+        <translation>Arrêté</translation>
+    </message>
+    <message>
+        <source>Live inputs that fire two or more different functions on the same deck in the loaded mapping. Serato&apos;s identical repeated triggers are not conflicts.</source>
+        <translation>Entrées en direct qui déclenchent deux fonctions différentes ou plus sur la même platine dans le mapping chargé. Les déclencheurs identiques répétés par Serato ne sont pas des conflits.</translation>
+    </message>
+    <message>
+        <source>Clear log</source>
+        <translation>Vider le journal</translation>
+    </message>
+    <message>
+        <source>Save log…</source>
+        <translation>Enregistrer le journal…</translation>
+    </message>
+    <message>
+        <source>Sync controllers</source>
+        <translation>Synchroniser les contrôleurs</translation>
+    </message>
+    <message>
+        <source>Send each controller its recorded initialization set (recorded with ● Rec or in Controller Setup, listed in Preferences → Controller sync).</source>
+        <translation>Envoie à chaque contrôleur son jeu d&apos;initialisation enregistré (enregistré avec ● Enr ou dans Configuration du contrôleur, listé dans Préférences → Synchro des contrôleurs).</translation>
+    </message>
+    <message>
+        <source>Monitor</source>
+        <translation>Surveillance</translation>
+    </message>
+    <message>
+        <source>Time</source>
+        <translation>Heure</translation>
+    </message>
+    <message>
+        <source>Dir</source>
+        <translation>Sens</translation>
+    </message>
+    <message>
+        <source>Source device</source>
+        <translation>Appareil source</translation>
+    </message>
+    <message>
+        <source>Channel</source>
+        <translation>Canal</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation>Type</translation>
+    </message>
+    <message>
+        <source>Data1</source>
+        <translation>Data1</translation>
+    </message>
+    <message>
+        <source>Data2</source>
+        <translation>Data2</translation>
+    </message>
+    <message>
+        <source>Physical / Serato</source>
+        <translation>Physique / Serato</translation>
+    </message>
+    <message>
+        <source>deck {deck} slot {slot}: {tag} [{event}]</source>
+        <translation>platine {deck} slot {slot} : {tag} [{event}]</translation>
+    </message>
+    <message>
+        <source>Cannot start monitoring</source>
+        <translation>Impossible de démarrer la surveillance</translation>
+    </message>
+    <message>
+        <source>Stop monitoring</source>
+        <translation>Arrêter la surveillance</translation>
+    </message>
+    <message>
+        <source>Running ({count} input(s), virtual monitor)</source>
+        <translation>En cours ({count} entrée(s), destination virtuelle)</translation>
+    </message>
+    <message>
+        <source>Running ({count} input(s))</source>
+        <translation>En cours ({count} entrée(s))</translation>
+    </message>
+    <message>
+        <source>CONFLICT </source>
+        <translation>CONFLIT </translation>
+    </message>
+    <message>
+        <source>(unknown)</source>
+        <translation>(inconnu)</translation>
+    </message>
+    <message>
+        <source>Conflicts: none in the loaded mapping</source>
+        <translation>Conflits : aucun dans le mapping chargé</translation>
+    </message>
+    <message>
+        <source>Conflicts: {hits} live hit(s) on {triggers} trigger(s) ({conflicts} conflicting trigger(s) in the mapping)</source>
+        <translation>Conflits : {hits} appui(s) en direct sur {triggers} déclencheur(s) ({conflicts} déclencheur(s) en conflit dans le mapping)</translation>
+    </message>
+    <message>
+        <source>No MIDI events to save.</source>
+        <translation>Aucun événement MIDI à enregistrer.</translation>
+    </message>
+    <message>
+        <source>Save Live Monitor log</source>
+        <translation>Enregistrer le journal du Live Monitor</translation>
+    </message>
+    <message>
+        <source>CSV files (*.csv)</source>
+        <translation>Fichiers CSV (*.csv)</translation>
+    </message>
+    <message>
+        <source>Failed to save log: {error}</source>
+        <translation>Échec de l&apos;enregistrement du journal : {error}</translation>
+    </message>
+    <message>
+        <source>Saved {count} MIDI event(s).</source>
+        <translation>{count} événement(s) MIDI enregistré(s).</translation>
+    </message>
+    <message>
+        <source>Running ({count} input(s), auto-started)</source>
+        <translation>En cours ({count} entrée(s), démarrage automatique)</translation>
+    </message>
+</context>
+<context>
     <name>LiveReadyDialog</name>
     <message>
         <source>Ready for live</source>
@@ -2324,6 +2554,82 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
         <source>Ready for live: {errors} error(s), {warnings} warning(s), {infos} info</source>
         <translation>Prêt pour le live : {errors} erreur(s), {warnings} avertissement(s), {infos} info(s)</translation>
     </message>
+    <message>
+        <source>Live Monitor</source>
+        <translation>Live Monitor</translation>
+    </message>
+    <message>
+        <source>MIDI Routing</source>
+        <translation>Routage MIDI</translation>
+    </message>
+    <message>
+        <source>MIDI Clock</source>
+        <translation>Horloge MIDI</translation>
+    </message>
+    <message>
+        <source>Metronome</source>
+        <translation>Métronome</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Fermer</translation>
+    </message>
+    <message>
+        <source>Window</source>
+        <translation>Fenêtre</translation>
+    </message>
+    <message>
+        <source>Reduce to title bar</source>
+        <translation>Réduire à la barre de titre</translation>
+    </message>
+    <message>
+        <source>Maximize</source>
+        <translation>Agrandir</translation>
+    </message>
+    <message>
+        <source>Snap left</source>
+        <translation>Ancrer à gauche</translation>
+    </message>
+    <message>
+        <source>Snap right</source>
+        <translation>Ancrer à droite</translation>
+    </message>
+    <message>
+        <source>Snap to top</source>
+        <translation>Ancrer en haut</translation>
+    </message>
+    <message>
+        <source>Snap to bottom</source>
+        <translation>Ancrer en bas</translation>
+    </message>
+    <message>
+        <source>Expand</source>
+        <translation>Déplier</translation>
+    </message>
+    <message>
+        <source>Restore</source>
+        <translation>Restaurer</translation>
+    </message>
+    <message>
+        <source>Dock</source>
+        <translation>Rattacher</translation>
+    </message>
+    <message>
+        <source>Attach back into the main window</source>
+        <translation>Rattacher à la fenêtre principale</translation>
+    </message>
+    <message>
+        <source>Undock</source>
+        <translation>Détacher</translation>
+    </message>
+    <message>
+        <source>Detach into its own window</source>
+        <translation>Détacher dans sa propre fenêtre</translation>
+    </message>
+    <message>
+        <source>Controller Emulator</source>
+        <translation>Émulateur de contrôleur</translation>
+    </message>
 </context>
 <context>
     <name>MappingTree</name>
@@ -2366,6 +2672,137 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     <message>
         <source>{control} (not used)</source>
         <translation>{control} (non utilisé)</translation>
+    </message>
+</context>
+<context>
+    <name>MetronomeView</name>
+    <message>
+        <source>Refresh session summary</source>
+        <translation>Actualiser le résumé</translation>
+    </message>
+    <message>
+        <source>Session source</source>
+        <translation>Source de la session</translation>
+    </message>
+    <message>
+        <source>Refresh output ports</source>
+        <translation>Actualiser les ports de sortie</translation>
+    </message>
+    <message>
+        <source>Output</source>
+        <translation>Sortie</translation>
+    </message>
+    <message>
+        <source>Ready.</source>
+        <translation>Prêt.</translation>
+    </message>
+    <message>
+        <source>Play selected setup row(s) once</source>
+        <translation>Jouer la sélection une fois</translation>
+    </message>
+    <message>
+        <source>Play all setup rows once</source>
+        <translation>Jouer tout une fois</translation>
+    </message>
+    <message>
+        <source>Start loop (selected setup rows)</source>
+        <translation>Boucler la sélection</translation>
+    </message>
+    <message>
+        <source>Start loop (all setup rows)</source>
+        <translation>Boucler tout</translation>
+    </message>
+    <message>
+        <source>Stop loop</source>
+        <translation>Arrêter la boucle</translation>
+    </message>
+    <message>
+        <source>Transport</source>
+        <translation>Transport</translation>
+    </message>
+    <message>
+        <source>Value / velocity (0-127)</source>
+        <translation>Valeur / vélocité (0-127)</translation>
+    </message>
+    <message>
+        <source>Loop frequency (Hz)</source>
+        <translation>Fréquence de la boucle (Hz)</translation>
+    </message>
+    <message>
+        <source>(unnamed setup session)</source>
+        <translation>(session de configuration sans nom)</translation>
+    </message>
+    <message>
+        <source>Current setup session: {name}
+All rows: {all}
+Selected rows in Controller Setup: {selected}</source>
+        <translation>Session de configuration actuelle : {name}
+Toutes les lignes : {all}
+Lignes sélectionnées dans Configuration du contrôleur : {selected}</translation>
+    </message>
+    <message>
+        <source>No output port selected</source>
+        <translation>Aucun port de sortie sélectionné</translation>
+    </message>
+    <message>
+        <source>Value / velocity must be a whole number from 0 to 127.</source>
+        <translation>La valeur / vélocité doit être un nombre entier de 0 à 127.</translation>
+    </message>
+    <message>
+        <source>Failed to play rows</source>
+        <translation>Échec de la lecture des lignes</translation>
+    </message>
+    <message>
+        <source>Played selected rows once: {sent} MIDI message(s), {skipped} skipped.</source>
+        <translation>Lignes sélectionnées jouées une fois : {sent} message(s) MIDI, {skipped} ignorée(s).</translation>
+    </message>
+    <message>
+        <source>Played all rows once: {sent} MIDI message(s), {skipped} skipped.</source>
+        <translation>Toutes les lignes jouées une fois : {sent} message(s) MIDI, {skipped} ignorée(s).</translation>
+    </message>
+    <message>
+        <source>No rows to loop</source>
+        <translation>Aucune ligne à boucler</translation>
+    </message>
+    <message>
+        <source>The current Controller Setup session has no rows for that scope.</source>
+        <translation>La session actuelle de Configuration du contrôleur n&apos;a aucune ligne pour ce choix.</translation>
+    </message>
+    <message>
+        <source>Invalid frequency</source>
+        <translation>Fréquence invalide</translation>
+    </message>
+    <message>
+        <source>Loop frequency must be a number.</source>
+        <translation>La fréquence de la boucle doit être un nombre.</translation>
+    </message>
+    <message>
+        <source>Loop frequency must be greater than 0.</source>
+        <translation>La fréquence de la boucle doit être supérieure à 0.</translation>
+    </message>
+    <message>
+        <source>Loop started for selected rows at {hz} Hz.</source>
+        <translation>Boucle lancée sur les lignes sélectionnées à {hz} Hz.</translation>
+    </message>
+    <message>
+        <source>Loop started for all rows at {hz} Hz.</source>
+        <translation>Boucle lancée sur toutes les lignes à {hz} Hz.</translation>
+    </message>
+    <message>
+        <source>Loop stopped.</source>
+        <translation>Boucle arrêtée.</translation>
+    </message>
+    <message>
+        <source>Loop stopped</source>
+        <translation>Boucle arrêtée</translation>
+    </message>
+    <message>
+        <source>Loop tick (selected): {sent} MIDI message(s), {skipped} skipped.</source>
+        <translation>Tour de boucle (sélection) : {sent} message(s) MIDI, {skipped} ignorée(s).</translation>
+    </message>
+    <message>
+        <source>Loop tick (all): {sent} MIDI message(s), {skipped} skipped.</source>
+        <translation>Tour de boucle (tout) : {sent} message(s) MIDI, {skipped} ignorée(s).</translation>
     </message>
 </context>
 <context>
@@ -2457,6 +2894,220 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     <message>
         <source>Only meaningful with a port or device that echoes what it receives (IAC Driver / virtual loopback, MIDI thru, or a controller known to echo its LED messages). A controller that does not echo makes every ping time out.</source>
         <translation>N&apos;a de sens qu&apos;avec un port ou un appareil qui renvoie ce qu&apos;il reçoit (IAC Driver / boucle virtuelle, MIDI thru, ou un contrôleur connu pour renvoyer ses messages de LED). Avec un contrôleur qui ne renvoie rien, chaque ping expire.</translation>
+    </message>
+</context>
+<context>
+    <name>MidiRouteTransformDialog</name>
+    <message>
+        <source>Edit route transform</source>
+        <translation>Modifier la transformation de la route</translation>
+    </message>
+    <message>
+        <source>(unchanged)</source>
+        <translation>(inchangé)</translation>
+    </message>
+    <message>
+        <source>Invert value (127 - value)</source>
+        <translation>Inverser la valeur (127 - valeur)</translation>
+    </message>
+    <message>
+        <source>Channel override:</source>
+        <translation>Forcer le canal :</translation>
+    </message>
+    <message>
+        <source>Note/CC offset:</source>
+        <translation>Décalage note/CC :</translation>
+    </message>
+    <message>
+        <source>Invalid transform</source>
+        <translation>Transformation invalide</translation>
+    </message>
+    <message>
+        <source>Note/CC offset must be a whole number from -127 to 127.</source>
+        <translation>Le décalage note/CC doit être un nombre entier de -127 à 127.</translation>
+    </message>
+</context>
+<context>
+    <name>MidiRoutingView</name>
+    <message>
+        <source>Refresh MIDI ports</source>
+        <translation>Actualiser les ports</translation>
+    </message>
+    <message>
+        <source>Add route</source>
+        <translation>Ajouter une route</translation>
+    </message>
+    <message>
+        <source>Remove selected</source>
+        <translation>Retirer</translation>
+    </message>
+    <message>
+        <source>Edit transform…</source>
+        <translation>Transformation…</translation>
+    </message>
+    <message>
+        <source>Start routing</source>
+        <translation>Démarrer le routage</translation>
+    </message>
+    <message>
+        <source>Source (MIDI in)</source>
+        <translation>Source (entrée MIDI)</translation>
+    </message>
+    <message>
+        <source>Destination (MIDI out)</source>
+        <translation>Destination (sortie MIDI)</translation>
+    </message>
+    <message>
+        <source>Source</source>
+        <translation>Source</translation>
+    </message>
+    <message>
+        <source>Destination</source>
+        <translation>Destination</translation>
+    </message>
+    <message>
+        <source>Transform</source>
+        <translation>Transformation</translation>
+    </message>
+    <message>
+        <source>State</source>
+        <translation>État</translation>
+    </message>
+    <message>
+        <source>One-way MIDI routes</source>
+        <translation>Routes MIDI à sens unique</translation>
+    </message>
+    <message>
+        <source>Enable Clock mirror policy</source>
+        <translation>Activer le relais de l&apos;horloge</translation>
+    </message>
+    <message>
+        <source>Create virtual input for Serato Clock</source>
+        <translation>Créer une entrée virtuelle pour l&apos;horloge de Serato</translation>
+    </message>
+    <message>
+        <source>Clock mirror disabled</source>
+        <translation>Relais de l&apos;horloge désactivé</translation>
+    </message>
+    <message>
+        <source>Add Clock route</source>
+        <translation>Ajouter une route d&apos;horloge</translation>
+    </message>
+    <message>
+        <source>Clock source</source>
+        <translation>Source d&apos;horloge</translation>
+    </message>
+    <message>
+        <source>MIDI Clock</source>
+        <translation>Horloge MIDI</translation>
+    </message>
+    <message>
+        <source>Build a Clock route, then start routing to send transport and 24 PPQN ticks.</source>
+        <translation>Créez une route d&apos;horloge, puis démarrez le routage pour envoyer le transport et les tops à 24 PPQN.</translation>
+    </message>
+    <message>
+        <source>Routes are configured here but remain inactive until MIDI routing is enabled in Preferences. Clock synchronization is intentionally opt-in and must be validated per software/version. Serato DJ Pro does not emit standard MIDI Clock directly. Enable Ableton Link in Serato and choose &apos;{link}&apos; to follow Link and generate MIDI Clock here.</source>
+        <translation>Les routes se configurent ici mais restent inactives tant que le routage MIDI n&apos;est pas activé dans les Préférences. La synchronisation d&apos;horloge est volontairement à activer soi-même et doit être validée pour chaque logiciel et version. Serato DJ Pro n&apos;émet pas directement d&apos;horloge MIDI standard. Activez Ableton Link dans Serato et choisissez « {link} » pour suivre Link et générer ici l&apos;horloge MIDI.</translation>
+    </message>
+    <message>
+        <source>Enable MIDI routing in Preferences first</source>
+        <translation>Activez d&apos;abord le routage MIDI dans les Préférences</translation>
+    </message>
+    <message>
+        <source>Cannot start MIDI routing</source>
+        <translation>Impossible de démarrer le routage MIDI</translation>
+    </message>
+    <message>
+        <source>Stop routing</source>
+        <translation>Arrêter le routage</translation>
+    </message>
+    <message>
+        <source>MIDI routing stopped</source>
+        <translation>Routage MIDI arrêté</translation>
+    </message>
+    <message>
+        <source>Cannot add route</source>
+        <translation>Impossible d&apos;ajouter la route</translation>
+    </message>
+    <message>
+        <source>Ch {channel}</source>
+        <translation>Canal {channel}</translation>
+    </message>
+    <message>
+        <source>invert</source>
+        <translation>inversé</translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <translation>Activée</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <translation>Désactivée</translation>
+    </message>
+    <message>
+        <source>Virtual input ready; Serato alone will not emit MIDI Clock — use a Link/Clock bridge</source>
+        <translation>Entrée virtuelle prête ; Serato seul n&apos;émettra pas d&apos;horloge MIDI — utilisez un pont Link/horloge</translation>
+    </message>
+    <message>
+        <source>Select different Clock source and destination ports</source>
+        <translation>Choisissez des ports source et destination d&apos;horloge différents</translation>
+    </message>
+    <message>
+        <source>This Clock route is already configured</source>
+        <translation>Cette route d&apos;horloge est déjà configurée</translation>
+    </message>
+    <message>
+        <source>Clock policy enabled; add a source and destination</source>
+        <translation>Horloge activée ; ajoutez une source et une destination</translation>
+    </message>
+    <message>
+        <source>Clock configured but routing is disabled in Preferences</source>
+        <translation>Horloge configurée, mais le routage est désactivé dans les Préférences</translation>
+    </message>
+    <message>
+        <source>Clock configured; press Start routing</source>
+        <translation>Horloge configurée ; cliquez sur Démarrer le routage</translation>
+    </message>
+    <message>
+        <source>CLOCK ACTIVE — receiving ticks from {sources}</source>
+        <translation>HORLOGE ACTIVE — tops reçus de {sources}</translation>
+    </message>
+    <message>
+        <source>ACTIVE: {sources}</source>
+        <translation>ACTIVE : {sources}</translation>
+    </message>
+    <message>
+        <source>{source}: transport received, no Clock ticks</source>
+        <translation>{source} : transport reçu, aucun top d&apos;horloge</translation>
+    </message>
+    <message>
+        <source>{source}: source port open, no ticks received</source>
+        <translation>{source} : port source ouvert, aucun top reçu</translation>
+    </message>
+    <message>
+        <source>{source}: source port not open</source>
+        <translation>{source} : port source non ouvert</translation>
+    </message>
+    <message>
+        <source>Serato diagnostic: start routing, then select this virtual port as Serato&apos;s MIDI Clock output destination and enable Clock/Sync -- this has to be re-selected after every app restart, since the virtual port is a new CoreMIDI endpoint each time.</source>
+        <translation>Diagnostic Serato : démarrez le routage, puis choisissez ce port virtuel comme destination de sortie de l&apos;horloge MIDI de Serato et activez Clock/Sync -- à refaire après chaque redémarrage de l&apos;application, car le port virtuel est un nouveau point CoreMIDI à chaque fois.</translation>
+    </message>
+    <message>
+        <source>{source}: no Link beats received</source>
+        <translation>{source} : aucun temps Link reçu</translation>
+    </message>
+    <message>
+        <source>Ableton Link is connected, but no playing transport was detected yet. This app bridges Serato&apos;s own Start/Stop onto Link once the Serato Clock source above is itself receiving ticks -- press Play in Serato.</source>
+        <translation>Ableton Link est connecté, mais aucun transport en lecture n&apos;a encore été détecté. Cette application relaie le Start/Stop de Serato vers Link dès que la source d&apos;horloge Serato ci-dessus reçoit elle-même des tops -- lancez la lecture dans Serato.</translation>
+    </message>
+    <message>
+        <source>Ableton Link is connected but no playing Link transport was detected. Serato&apos;s own Link integration only publishes tempo, never transport: either add a Serato Clock source above (this app bridges its Start/Stop onto Link automatically), or use another Link peer that supports Start Stop Sync (e.g. Ableton Live) and start playback there.</source>
+        <translation>Ableton Link est connecté, mais aucun transport Link en lecture n&apos;a été détecté. L&apos;intégration Link de Serato ne publie que le tempo, jamais le transport : ajoutez une source d&apos;horloge Serato ci-dessus (cette application relaie alors son Start/Stop vers Link automatiquement), ou utilisez un autre pair Link qui gère Start Stop Sync (par ex. Ableton Live) et lancez la lecture depuis celui-ci.</translation>
+    </message>
+    <message>
+        <source>CLOCK INACTIVE — {details}</source>
+        <translation>HORLOGE INACTIVE — {details}</translation>
     </message>
 </context>
 <context>
@@ -3683,6 +4334,37 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>Not in the indexed folders: {path}</source>
         <translation>Hors des dossiers indexés : {path}</translation>
+    </message>
+</context>
+<context>
+    <name>PadColourPanel</name>
+    <message>
+        <source>Paint</source>
+        <translation>Peindre</translation>
+    </message>
+    <message>
+        <source>While on, clicking a pad gives it the chosen colour</source>
+        <translation>Activé, un clic sur un pad lui donne la couleur choisie</translation>
+    </message>
+    <message>
+        <source>Save to sync set</source>
+        <translation>Enregistrer en synchro</translation>
+    </message>
+    <message>
+        <source>Store these pad colours in this controller&apos;s sync set (active scene)</source>
+        <translation>Enregistre ces couleurs de pad dans le jeu de synchronisation de ce contrôleur (scène active)</translation>
+    </message>
+    <message>
+        <source>Pad colours:</source>
+        <translation>Couleurs des pads :</translation>
+    </message>
+    <message>
+        <source>Deck {deck}</source>
+        <translation>Platine {deck}</translation>
+    </message>
+    <message>
+        <source>Mode {mode}</source>
+        <translation>Mode {mode}</translation>
     </message>
 </context>
 <context>
