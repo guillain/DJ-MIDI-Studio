@@ -42,6 +42,12 @@ SOURCES=(
   src/djmidi/library/set_prep.py
   src/djmidi/library/smart_playlist.py
   src/djmidi/library/health.py
+  src/djmidi/gui/live_monitor.py
+  src/djmidi/gui/midi_routing_view.py
+  src/djmidi/gui/midi_route_transform_dialog.py
+  src/djmidi/gui/metronome_view.py
+  src/djmidi/gui/controller_emulator.py
+  src/djmidi/gui/pad_colour_panel.py
 )
 LANGUAGES=(fr)
 
