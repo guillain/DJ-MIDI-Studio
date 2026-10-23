@@ -50,6 +50,11 @@ connected right now and the one shown in
 - The footer names the mapping file and the export date.
 - A last **Function names** page lists every short name used with the
   Serato tag it stands for.
+- The page titles, column headings, legend, page numbers and footer are in
+  the [interface language](interface-language.md): a sheet exported from the
+  French interface is in French (`Antisèche`, `Commande`, `Fonction`).
+  Function, control and section names stay as Serato and the controller's
+  profile write them.
 
 Functions come from the mapping's input (press) bindings, resolved the
 same way as the [Controller Emulator](controller-emulator.md)'s dry run;

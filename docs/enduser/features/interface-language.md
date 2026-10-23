@@ -97,9 +97,9 @@ Text computed from your data follows the interface language — the
 `Prêt pour le live` findings, the latency statistics line, the
 change-history entries — but CSV exports stay in English (a health-report
 CSV keeps its issue names in English, and a saved Live Monitor log keeps
-English column names). The printed cheat sheet (headings and its export
-window) and the mapping comparison report are still in English. The rest
-will be translated over the next releases. Controller and function names that
+English column names). The printed cheat sheet (its export window and
+the PDF's titles, headings and footer) and the mapping comparison report
+follow the interface language too. Controller and function names that
 come from your DJ software or your controller's MIDI documentation are
 never translated.
 
