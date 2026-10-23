@@ -309,6 +309,95 @@ Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-m
     </message>
 </context>
 <context>
+    <name>CheatSheet</name>
+    <message>
+        <source>Function names</source>
+        <translation>Noms des fonctions</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation>Nom</translation>
+    </message>
+    <message>
+        <source>Serato tag: {tag}</source>
+        <translation>Tag Serato : {tag}</translation>
+    </message>
+    <message>
+        <source>{controller} — mapped controls</source>
+        <translation>{controller} — commandes mappées</translation>
+    </message>
+    <message>
+        <source>{controller} — pads {bank}</source>
+        <translation>{controller} — pads {bank}</translation>
+    </message>
+    <message>
+        <source>{controller} — other mapped controls</source>
+        <translation>{controller} — autres commandes mappées</translation>
+    </message>
+</context>
+<context>
+    <name>CheatSheetExportDialog</name>
+    <message>
+        <source>Export Cheat Sheet (PDF)</source>
+        <translation>Exporter l&apos;antisèche (PDF)</translation>
+    </message>
+    <message>
+        <source>Choose the controllers to print. Each one gets a page with its photo and the function on every mapped control (one page per pad bank in use); a controller without a measured layout gets a table instead. The PDF is written in the interface language.</source>
+        <translation>Choisissez les contrôleurs à imprimer. Chacun a une page avec sa photo et la fonction de chaque commande mappée (une page par banque de pads utilisée) ; un contrôleur dont la disposition n&apos;a pas été mesurée a un tableau à la place. Le PDF est rédigé dans la langue de l&apos;interface.</translation>
+    </message>
+    <message>
+        <source>photo</source>
+        <translation>photo</translation>
+    </message>
+    <message>
+        <source>table</source>
+        <translation>tableau</translation>
+    </message>
+    <message>
+        <source>{name} — {count} mapped trigger(s), {kind}</source>
+        <translation>{name} — {count} déclencheur(s) mappé(s), {kind}</translation>
+    </message>
+    <message>
+        <source>Export…</source>
+        <translation>Exporter…</translation>
+    </message>
+</context>
+<context>
+    <name>CheatSheetPdf</name>
+    <message>
+        <source>Page {number}</source>
+        <translation>Page {number}</translation>
+    </message>
+    <message>
+        <source>{title} (continued)</source>
+        <translation>{title} (suite)</translation>
+    </message>
+    <message>
+        <source>Section</source>
+        <translation>Section</translation>
+    </message>
+    <message>
+        <source>Control</source>
+        <translation>Commande</translation>
+    </message>
+    <message>
+        <source>Function</source>
+        <translation>Fonction</translation>
+    </message>
+    <message>
+        <source>No control of this controller is mapped in this file.</source>
+        <translation>Aucune commande de ce contrôleur n&apos;est mappée dans ce fichier.</translation>
+    </message>
+    <message>
+        <source>{title} — legend</source>
+        <translation>{title} — légende</translation>
+    </message>
+    <message>
+        <source>DJ MIDI Studio cheat sheet</source>
+        <translation>Antisèche DJ MIDI Studio</translation>
+    </message>
+</context>
+<context>
     <name>ControllerEmulatorView</name>
     <message>
         <source>Deck {deck} slot {slot}: {tag}</source>
@@ -1899,7 +1988,7 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     </message>
     <message>
         <source>Lists what changed between two mappings by what each trigger &lt;i&gt;does&lt;/i&gt;, not by XML text:&lt;ul&gt;&lt;li&gt;&lt;b&gt;Re-assigned&lt;/b&gt;: a trigger now drives a different function.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Added&lt;/b&gt; / &lt;b&gt;Removed&lt;/b&gt;: functions bound only on one side.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Changed values&lt;/b&gt;: same function, different translation or alias values (e.g. &lt;i&gt;alias on: 127 → 100&lt;/i&gt;).&lt;/li&gt;&lt;li&gt;&lt;b&gt;Duplicate count&lt;/b&gt;: Serato repeats every trigger (often 10×); a file that gained or lost copies shows here once, not as many adds or removes.&lt;/li&gt;&lt;/ul&gt;Functions show their short name (&lt;i&gt;Loop roll&lt;/i&gt;); hover a change for the original Serato tags.&lt;br&gt;&lt;br&gt;Click a row to highlight that control on the layouts and select it in &lt;b&gt;By Channel&lt;/b&gt;. Opened from &lt;b&gt;File → Compare Mapping With…&lt;/b&gt; or &lt;b&gt;File → Compare With Previous Version&lt;/b&gt; (the &lt;tt&gt;.bak&lt;/tt&gt; kept by the last save).</source>
-        <translation>Liste ce qui a changé entre deux mappings d&apos;après ce que &lt;i&gt;fait&lt;/i&gt; chaque déclencheur, pas d&apos;après le texte XML :&lt;ul&gt;&lt;li&gt;&lt;b&gt;Re-assigned&lt;/b&gt; : un déclencheur pilote maintenant une autre fonction.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Added&lt;/b&gt; / &lt;b&gt;Removed&lt;/b&gt; : des fonctions liées d&apos;un seul côté.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Changed values&lt;/b&gt; : même fonction, valeurs de translation ou d&apos;alias différentes (par ex. &lt;i&gt;alias on: 127 → 100&lt;/i&gt;).&lt;/li&gt;&lt;li&gt;&lt;b&gt;Duplicate count&lt;/b&gt; : Serato répète chaque déclencheur (souvent 10×) ; un fichier qui a gagné ou perdu des copies apparaît ici une seule fois, pas comme autant d&apos;ajouts ou de suppressions.&lt;/li&gt;&lt;/ul&gt;Les fonctions affichent leur nom court (&lt;i&gt;Loop roll&lt;/i&gt;) ; survolez un changement pour voir les tags Serato d&apos;origine.&lt;br&gt;&lt;br&gt;Cliquez sur une ligne pour mettre cette commande en évidence sur les dispositions et la sélectionner dans &lt;b&gt;Par canal&lt;/b&gt;. S&apos;ouvre depuis &lt;b&gt;Fichier → Comparer le mapping avec…&lt;/b&gt; ou &lt;b&gt;Fichier → Comparer avec la version précédente&lt;/b&gt; (le &lt;tt&gt;.bak&lt;/tt&gt; gardé par le dernier enregistrement).</translation>
+        <translation>Liste ce qui a changé entre deux mappings d&apos;après ce que &lt;i&gt;fait&lt;/i&gt; chaque déclencheur, pas d&apos;après le texte XML :&lt;ul&gt;&lt;li&gt;&lt;b&gt;Réaffectations&lt;/b&gt; : un déclencheur pilote maintenant une autre fonction.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Ajouts&lt;/b&gt; / &lt;b&gt;Suppressions&lt;/b&gt; : des fonctions liées d&apos;un seul côté.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Valeurs modifiées&lt;/b&gt; : même fonction, valeurs de translation ou d&apos;alias différentes (par ex. &lt;i&gt;alias on : 127 → 100&lt;/i&gt;).&lt;/li&gt;&lt;li&gt;&lt;b&gt;Nombre de copies&lt;/b&gt; : Serato répète chaque déclencheur (souvent 10×) ; un fichier qui a gagné ou perdu des copies apparaît ici une seule fois, pas comme autant d&apos;ajouts ou de suppressions.&lt;/li&gt;&lt;/ul&gt;Les fonctions affichent leur nom court (&lt;i&gt;Loop roll&lt;/i&gt;) ; survolez un changement pour voir les tags Serato d&apos;origine.&lt;br&gt;&lt;br&gt;Cliquez sur une ligne pour mettre cette commande en évidence sur les dispositions et la sélectionner dans &lt;b&gt;Par canal&lt;/b&gt;. S&apos;ouvre depuis &lt;b&gt;Fichier → Comparer le mapping avec…&lt;/b&gt; ou &lt;b&gt;Fichier → Comparer avec la version précédente&lt;/b&gt; (le &lt;tt&gt;.bak&lt;/tt&gt; gardé par le dernier enregistrement).</translation>
     </message>
     <message>
         <source>What is Controller Setup?</source>
@@ -3752,6 +3841,172 @@ Quitter maintenant ?</translation>
     <message>
         <source>Before a gig: missing Play/Cue/Sync/Load per deck, conflicts, buttons without LED feedback.</source>
         <translation>Avant une soirée : Play/Cue/Sync/Load manquants par platine, conflits, boutons sans retour LED.</translation>
+    </message>
+</context>
+<context>
+    <name>MappingDiff</name>
+    <message>
+        <source>Re-assigned</source>
+        <extracomment>Group headings, translated by the GUI (&quot;MappingDiff&quot; context).</extracomment>
+        <translation>Réaffectations</translation>
+    </message>
+    <message>
+        <source>Added</source>
+        <translation>Ajouts</translation>
+    </message>
+    <message>
+        <source>Removed</source>
+        <translation>Suppressions</translation>
+    </message>
+    <message>
+        <source>Changed values</source>
+        <translation>Valeurs modifiées</translation>
+    </message>
+    <message>
+        <source>Duplicate count</source>
+        <translation>Nombre de copies</translation>
+    </message>
+    <message>
+        <source>{count} re-assigned</source>
+        <extracomment>One count of the report&apos;s one-line summary (&quot;3 re-assigned&quot;).</extracomment>
+        <translation>{count} réaffecté(s)</translation>
+    </message>
+    <message>
+        <source>{count} added</source>
+        <translation>{count} ajouté(s)</translation>
+    </message>
+    <message>
+        <source>{count} removed</source>
+        <translation>{count} supprimé(s)</translation>
+    </message>
+    <message>
+        <source>{count} changed values</source>
+        <translation>{count} aux valeurs modifiées</translation>
+    </message>
+    <message>
+        <source>{count} duplicate count</source>
+        <translation>{count} au nombre de copies changé</translation>
+    </message>
+    <message>
+        <source>set {set}</source>
+        <translation>set {set}</translation>
+    </message>
+    <message>
+        <source>deck {deck}</source>
+        <translation>platine {deck}</translation>
+    </message>
+    <message>
+        <source>slot {slot}</source>
+        <translation>slot {slot}</translation>
+    </message>
+    <message>
+        <source>{function}: {details}</source>
+        <translation>{function} : {details}</translation>
+    </message>
+    <message>
+        <source>translation {number} </source>
+        <translation>translation {number} </translation>
+    </message>
+    <message>
+        <source>translation added</source>
+        <translation>translation ajoutée</translation>
+    </message>
+    <message>
+        <source>translation {number} added</source>
+        <translation>translation {number} ajoutée</translation>
+    </message>
+    <message>
+        <source>translation removed</source>
+        <translation>translation supprimée</translation>
+    </message>
+    <message>
+        <source>translation {number} removed</source>
+        <translation>translation {number} supprimée</translation>
+    </message>
+    <message>
+        <source>{position}{field}: {before} -&gt; {after}</source>
+        <translation>{position}{field} : {before} -&gt; {after}</translation>
+    </message>
+    <message>
+        <source>{position}alias {name}: {before} -&gt; {after}</source>
+        <translation>{position}alias {name} : {before} -&gt; {after}</translation>
+    </message>
+    <message>
+        <source>{position}alias order or attributes changed</source>
+        <translation>{position}ordre ou attributs des alias modifiés</translation>
+    </message>
+    <message>
+        <source>{position}translation attributes changed</source>
+        <translation>{position}attributs de la translation modifiés</translation>
+    </message>
+    <message>
+        <source>values changed</source>
+        <translation>valeurs modifiées</translation>
+    </message>
+    <message>
+        <source>{old} distinct value set(s) -&gt; {new}</source>
+        <translation>{old} jeu(x) de valeurs distinct(s) -&gt; {new}</translation>
+    </message>
+    <message>
+        <source>on {count} of {total} copies</source>
+        <translation>sur {count} copie(s) sur {total}</translation>
+    </message>
+    <message>
+        <source>{count} of {total} copies reverted</source>
+        <translation>{count} copie(s) sur {total} revenue(s) en arrière</translation>
+    </message>
+    <message>
+        <source>copies: x{old} -&gt; x{new}</source>
+        <translation>copies : x{old} -&gt; x{new}</translation>
+    </message>
+    <message>
+        <source>copy mix changed</source>
+        <translation>répartition des copies modifiée</translation>
+    </message>
+</context>
+<context>
+    <name>MappingDiffDialog</name>
+    <message>
+        <source>Ch {channel} {kind} {control} ({event})</source>
+        <translation>Canal {channel} {kind} {control} ({event})</translation>
+    </message>
+    <message>
+        <source>Compare Mappings</source>
+        <translation>Comparer des mappings</translation>
+    </message>
+    <message>
+        <source>No difference: both mappings bind the same functions with the same values.</source>
+        <translation>Aucune différence : les deux mappings lient les mêmes fonctions avec les mêmes valeurs.</translation>
+    </message>
+    <message>
+        <source>From &lt;b&gt;{old}&lt;/b&gt; to &lt;b&gt;{new}&lt;/b&gt;: {summary}</source>
+        <translation>De &lt;b&gt;{old}&lt;/b&gt; à &lt;b&gt;{new}&lt;/b&gt; : {summary}</translation>
+    </message>
+    <message>
+        <source>Physical control</source>
+        <translation>Commande physique</translation>
+    </message>
+    <message>
+        <source>Trigger</source>
+        <translation>Déclencheur</translation>
+    </message>
+    <message>
+        <source>Change</source>
+        <translation>Changement</translation>
+    </message>
+    <message>
+        <source>(not in any controller profile)</source>
+        <translation>(dans aucun profil de contrôleur)</translation>
+    </message>
+    <message>
+        <source>{summary}
+Raw: {raw}</source>
+        <translation>{summary}
+Brut : {raw}</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Fermer</translation>
     </message>
 </context>
 <context>

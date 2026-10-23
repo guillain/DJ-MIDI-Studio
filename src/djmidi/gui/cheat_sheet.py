@@ -25,7 +25,12 @@ choose.
 Functions print under their readable name (djmidi.function_names, issue
 #209: "Loop roll · slot 3"); since paper has no tooltip, a final "Function
 names" table sheet lists each readable name used with the raw tag it stands
-for."""
+for.
+
+Page titles and the glossary's words are marked with
+QT_TRANSLATE_NOOP("CheatSheet", ...) and go through build_sheets()'s
+optional `labels` translator (English by default): the printed sheet is for
+the DJ, so it follows the interface language (issue #333)."""
 
 from __future__ import annotations
 
@@ -37,7 +42,7 @@ from djmidi.function_names import FUNCTION_NAMES, function_label
 from djmidi.gui import geometry as geometry_mod
 from djmidi.gui import layout as layout_mod
 from djmidi.gui.mapping_group import build_mapping_groups
-from djmidi.i18n import Translate, untranslated
+from djmidi.i18n import QT_TRANSLATE_NOOP, Translate, untranslated
 from djmidi.model import MidiConfig
 
 _EVENT_TYPE_FOR_KIND: dict[catalog.NoteOrCC, str] = {
@@ -77,7 +82,12 @@ class Sheet:
     unmapped: tuple[geometry_mod.ControlGeometry, ...] = field(default_factory=tuple)
 
 
-GLOSSARY_TITLE = "Function names"
+GLOSSARY_TITLE = QT_TRANSLATE_NOOP("CheatSheet", "Function names")
+_GLOSSARY_SECTION = QT_TRANSLATE_NOOP("CheatSheet", "Name")
+_GLOSSARY_TAG = QT_TRANSLATE_NOOP("CheatSheet", "Serato tag: {tag}")
+_TITLE_TABLE = QT_TRANSLATE_NOOP("CheatSheet", "{controller} — mapped controls")
+_TITLE_BANK = QT_TRANSLATE_NOOP("CheatSheet", "{controller} — pads {bank}")
+_TITLE_REST = QT_TRANSLATE_NOOP("CheatSheet", "{controller} — other mapped controls")
 
 
 def function_text(tag: str, slot_id: str, translate: Translate = untranslated) -> str:
@@ -275,22 +285,29 @@ def _table_entries(
     return entries
 
 
-def glossary_sheet(config: MidiConfig) -> Sheet | None:
+def glossary_sheet(config: MidiConfig, labels: Translate = untranslated) -> Sheet | None:
     """A table of every readable function name the mapping's input
     elements use, next to its raw tag -- the printed stand-in for the
-    tooltips the app shows. None when every function prints raw anyway."""
+    tooltips the app shows. None when every function prints raw anyway.
+    `labels` translates the "CheatSheet" words."""
     tags = sorted(
         {group.tag for group in build_mapping_groups(config) if group.event == "click" and group.tag in FUNCTION_NAMES},
         key=lambda tag: FUNCTION_NAMES[tag],
     )
     if not tags:
         return None
-    entries = tuple(SheetEntry("Name", FUNCTION_NAMES[tag], (f"Serato tag: {tag}",)) for tag in tags)
-    return Sheet("", GLOSSARY_TITLE, "table", entries)
+    section = labels(_GLOSSARY_SECTION)
+    entries = tuple(
+        SheetEntry(section, FUNCTION_NAMES[tag], (labels(_GLOSSARY_TAG).format(tag=tag),)) for tag in tags
+    )
+    return Sheet("", labels(GLOSSARY_TITLE), "table", entries)
 
 
 def build_sheets(
-    config: MidiConfig, controllers: list[str], translate: Translate = untranslated
+    config: MidiConfig,
+    controllers: list[str],
+    translate: Translate = untranslated,
+    labels: Translate = untranslated,
 ) -> list[Sheet]:
     """The cheat sheet's logical pages for `controllers`, in that order.
 
@@ -301,7 +318,8 @@ def build_sheets(
     Without geometry: a single table sheet (even an empty one, so every
     chosen controller gets a page). Last, the glossary_sheet() when any
     function prints under a readable name. `translate` is passed to
-    function_text()."""
+    function_text(); `labels` (the "CheatSheet" context) translates the page
+    titles and the glossary."""
     index = build_function_index(config, translate)
     sheets: list[Sheet] = []
     for controller in controllers:
@@ -310,7 +328,7 @@ def build_sheets(
             sheets.append(
                 Sheet(
                     controller,
-                    f"{controller} — mapped controls",
+                    labels(_TITLE_TABLE).format(controller=controller),
                     "table",
                     tuple(_table_entries(controller, index, set())),
                 )
@@ -349,11 +367,11 @@ def build_sheets(
                     )
                 else:
                     unmapped.append(geom)
-            bank_text = f" — pads {bank.strip('()')}" if bank else ""
+            title = labels(_TITLE_BANK).format(controller=controller, bank=bank.strip("()")) if bank else controller
             sheets.append(
                 Sheet(
                     controller,
-                    f"{controller}{bank_text}",
+                    title,
                     "photo",
                     tuple(entries),
                     tuple(unmapped),
@@ -364,12 +382,12 @@ def build_sheets(
             sheets.append(
                 Sheet(
                     controller,
-                    f"{controller} — other mapped controls",
+                    labels(_TITLE_REST).format(controller=controller),
                     "table",
                     tuple(rest),
                 )
             )
-    if controllers and (glossary := glossary_sheet(config)) is not None:
+    if controllers and (glossary := glossary_sheet(config, labels)) is not None:
         sheets.append(glossary)
     return sheets
 

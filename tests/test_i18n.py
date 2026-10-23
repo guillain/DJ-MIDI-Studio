@@ -1079,3 +1079,124 @@ def test_dashboard_files_card_names_a_mapping_opened_from_a_path():
     finally:
         window.close()
         window.deleteLater()
+
+
+def _diff_fixture():
+    """The sample mapping against a copy with one trigger re-assigned and one
+    alias value changed."""
+    import copy
+
+    from djmidi.parser import parse_file
+
+    old = parse_file(_SAMPLE_MAPPING)
+    new = copy.deepcopy(old)
+    for control in new.controls:
+        for userio in control.userios:
+            for element in userio.mappings:
+                if (control.channel, control.control, userio.event) == ("14", "65", "click"):
+                    element.tag = "play"
+                if (control.channel, control.control, userio.event) == ("14", "72", "output"):
+                    for translation in element.translations:
+                        for alias in translation.aliases:
+                            if alias.name == "on":
+                                alias.value = "100"
+    return old, new
+
+
+def test_cheat_sheet_and_mapping_diff_stay_english_and_are_scanned():
+    from djmidi.gui import cheat_sheet
+    from djmidi.mapping_diff import diff_configs
+    from djmidi.parser import parse_file
+
+    titles = [sheet.title for sheet in cheat_sheet.build_sheets(parse_file(_SAMPLE_MAPPING), ["DDJ-800"])]
+    assert titles == ["DDJ-800 — mapped controls", "Function names"]
+    diff = diff_configs(*_diff_fixture())
+    assert diff.by_kind("reassigned")[0].summary().endswith("-> play (deck 3, slot 1)")
+    assert diff.by_kind("changed")[0].summary().endswith(": alias on: 127 -> 100")
+    sources = {path.name for path in _script_sources()}
+    assert {
+        "cheat_sheet.py",
+        "cheat_sheet_dialog.py",
+        "cheat_sheet_pdf.py",
+        "mapping_diff.py",
+        "mapping_diff_dialog.py",
+    } <= sources
+
+
+def test_cheat_sheet_shows_french(french):
+    """The exported cheat sheet follows the interface language: page titles,
+    glossary, table headings, page numbers and footer (issue #333)."""
+    from PySide6.QtCore import QRectF
+    from PySide6.QtGui import QImage, QPainter
+
+    from djmidi.gui import cheat_sheet
+    from djmidi.gui.cheat_sheet_dialog import CheatSheetExportDialog
+    from djmidi.gui.cheat_sheet_pdf import default_footer, paint_sheets
+    from djmidi.gui.translation import translator
+    from djmidi.parser import parse_file
+
+    sheets = cheat_sheet.build_sheets(
+        parse_file(_SAMPLE_MAPPING), ["DDJ-800"], translator("FunctionNames"), translator("CheatSheet")
+    )
+    assert [sheet.title for sheet in sheets] == ["DDJ-800 — commandes mappées", "Noms des fonctions"]
+    glossary = sheets[-1].entries[0]
+    assert glossary.section == "Nom" and glossary.functions[0].startswith("Tag Serato : ")
+
+    class RecordingPainter(QPainter):
+        def __init__(self, device):
+            super().__init__(device)
+            self.texts: list[str] = []
+
+        def drawText(self, *args):
+            self.texts.append(args[-1])
+            return super().drawText(*args)
+
+    image = QImage(800, 560, QImage.Format.Format_ARGB32)
+    painter = RecordingPainter(image)
+    try:
+        empty = cheat_sheet.Sheet("DDJ-800", sheets[0].title, "table", ())
+        paint_sheets(painter, QRectF(10, 10, 780, 540), 60, [empty], default_footer("set.xml"), lambda: None)
+    finally:
+        painter.end()
+    assert {"Section", "Commande", "Fonction", "Page 1"} <= set(painter.texts)
+    assert "Aucune commande de ce contrôleur n'est mappée dans ce fichier." in painter.texts
+    assert any(text.startswith("Antisèche DJ MIDI Studio — set.xml — ") for text in painter.texts)
+
+    dialog = CheatSheetExportDialog([("DDJ-XP2", 64), ("DDJ-800", 64)], {"DDJ-XP2"})
+    try:
+        assert dialog.windowTitle() == "Exporter l'antisèche (PDF)"
+        assert dialog._list.item(1).text() == "DDJ-800 — 64 déclencheur(s) mappé(s), tableau"
+        assert dialog._list.item(0).text().endswith(", photo")
+        assert dialog._buttons.button(dialog._buttons.StandardButton.Ok).text() == "Exporter…"
+    finally:
+        dialog.deleteLater()
+
+
+def test_mapping_diff_report_shows_french(french):
+    from PySide6.QtWidgets import QLabel
+
+    from djmidi.gui.mapping_diff_dialog import MappingDiffDialog, trigger_text
+    from djmidi.gui.translation import translator
+    from djmidi.mapping_diff import diff_configs
+
+    report = translator("MappingDiff")
+    diff = diff_configs(*_diff_fixture(), report)
+    reassigned = diff.by_kind("reassigned")[0]
+    assert reassigned.new_functions == ("play (platine 3, slot 1)",)
+    changed = diff.by_kind("changed")[0]
+    assert changed.details == ("alias on : 127 -> 100",)
+    assert changed.summary(report).endswith(" : alias on : 127 -> 100")
+    assert trigger_text(reassigned) == "Canal 14 Note On 65 (click)"
+    dialog = MappingDiffDialog(diff, "a.xml", "b.xml")
+    try:
+        assert dialog.windowTitle() == "Comparer des mappings"
+        groups = [dialog.tree.topLevelItem(i).text(0) for i in range(dialog.tree.topLevelItemCount())]
+        assert groups == ["Réaffectations (1)", "Valeurs modifiées (1)"]
+        header = dialog.tree.headerItem()
+        assert [header.text(i) for i in range(3)] == ["Commande physique", "Déclencheur", "Changement"]
+        labels = " ".join(label.text() for label in dialog.findChildren(QLabel))
+        assert "1 réaffecté(s), 1 aux valeurs modifiées" in labels
+        assert "De <b>a.xml</b> à <b>b.xml</b> : " in labels
+        assert "Brut : codfather_st (platine 3, slot 1) -> play (platine 3, slot 1)" in dialog.entry_items()[0].toolTip(2)
+    finally:
+        dialog.deleteLater()

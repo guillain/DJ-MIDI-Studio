@@ -3011,7 +3011,7 @@ class MainWindow(QMainWindow):
             _LOGGER.exception("Failed to read %s for comparison", path)
             QMessageBox.critical(self, self.tr("Failed to compare"), str(exc))
             return None
-        diff = diff_configs(other, self.config)
+        diff = diff_configs(other, self.config, translator("MappingDiff"))
         current = self.current_path.name if self.current_path is not None else self.tr("the open mapping")
         if self.undo_stack.count() and not self.undo_stack.isClean():
             current += self.tr(" (with unsaved edits)")
@@ -3370,7 +3370,9 @@ class MainWindow(QMainWindow):
             if not path_str:
                 return None
             path = Path(path_str)
-        sheets = cheat_sheet.build_sheets(self.config, controllers, translator("FunctionNames"))
+        sheets = cheat_sheet.build_sheets(
+            self.config, controllers, translator("FunctionNames"), translator("CheatSheet")
+        )
         source = self.current_path.name if self.current_path is not None else None
         try:
             pages = write_cheat_sheet_pdf(path, sheets, source)

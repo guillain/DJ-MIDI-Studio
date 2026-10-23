@@ -12,7 +12,12 @@ section / control / function table, paginated.
 
 paint_sheets() only needs a painter, a page rect and a new-page callback, so
 render_sheet_image() can draw the very same page into a QImage for tests
-and screenshots."""
+and screenshots.
+
+Every word drawn on the page (column headings, "Page N", the footer...) goes
+through QCoreApplication.translate("CheatSheetPdf", ...) when the page is
+drawn, so a PDF exported from a French interface is in French (issue #333);
+the sheets' own titles come translated from gui/cheat_sheet.py."""
 
 from __future__ import annotations
 
@@ -21,7 +26,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
-from PySide6.QtCore import QMarginsF, QPointF, QRectF, Qt
+from PySide6.QtCore import QCoreApplication, QMarginsF, QPointF, QRectF, Qt
 from PySide6.QtGui import (
     QColor,
     QFont,
@@ -96,7 +101,9 @@ def _start_page(ctx: _Context, title: str, new_page: Callable[[], None]) -> floa
     )
     painter.drawText(footer_rect, Qt.AlignmentFlag.AlignLeft, ctx.footer)
     painter.drawText(
-        footer_rect, Qt.AlignmentFlag.AlignRight, f"Page {ctx.page_number}"
+        footer_rect,
+        Qt.AlignmentFlag.AlignRight,
+        QCoreApplication.translate("CheatSheetPdf", "Page {number}").format(number=ctx.page_number),
     )
     return ctx.page.top() + title_h * 1.4
 
@@ -266,7 +273,8 @@ def _draw_table(
     remaining = list(rows)
     first = True
     while first or remaining:
-        top = _start_page(ctx, title if first else f"{title} (continued)", new_page)
+        page_title = title if first else QCoreApplication.translate("CheatSheetPdf", "{title} (continued)").format(title=title)
+        top = _start_page(ctx, page_title, new_page)
         first = False
         bottom = _content_bottom(ctx)
         width = ctx.page.width()
@@ -281,7 +289,14 @@ def _draw_table(
         metrics = QFontMetricsF(painter.font(), painter.device())
         painter.setPen(_TEXT)
         for x, w, heading in zip(
-            col_x, col_w, ("Section", "Control", "Function"), strict=True
+            col_x,
+            col_w,
+            (
+                QCoreApplication.translate("CheatSheetPdf", "Section"),
+                QCoreApplication.translate("CheatSheetPdf", "Control"),
+                QCoreApplication.translate("CheatSheetPdf", "Function"),
+            ),
+            strict=True,
         ):
             painter.drawText(
                 QRectF(x + pad, top, w - 2 * pad, metrics.height()),
@@ -300,7 +315,7 @@ def _draw_table(
             painter.drawText(
                 QRectF(ctx.page.left(), y, width, metrics.height() * 2),
                 Qt.AlignmentFlag.AlignLeft,
-                "No control of this controller is mapped in this file.",
+                QCoreApplication.translate("CheatSheetPdf", "No control of this controller is mapped in this file."),
             )
             return
         painter.setFont(_font(_TABLE_PT))
@@ -358,15 +373,20 @@ def paint_sheets(
                     (e.section, f"{n}. {e.control}", "\n".join(e.functions))
                     for n, e in leftover
                 ]
-                _draw_table(ctx, f"{sheet.title} — legend", rows, dpi, new_page)
+                legend = QCoreApplication.translate("CheatSheetPdf", "{title} — legend").format(title=sheet.title)
+                _draw_table(ctx, legend, rows, dpi, new_page)
         else:
             _draw_table(ctx, sheet.title, _entry_rows(sheet.entries), dpi, new_page)
     return ctx.page_number
 
 
+def _document_title() -> str:
+    return QCoreApplication.translate("CheatSheetPdf", "DJ MIDI Studio cheat sheet")
+
+
 def default_footer(source_name: str | None) -> str:
     source = f" — {source_name}" if source_name else ""
-    return f"DJ MIDI Studio cheat sheet{source} — {datetime.now().astimezone().date().isoformat()}"
+    return f"{_document_title()}{source} — {datetime.now().astimezone().date().isoformat()}"
 
 
 def write_cheat_sheet_pdf(
@@ -375,7 +395,7 @@ def write_cheat_sheet_pdf(
     """Write `sheets` to a PDF at `path`; returns the number of pages."""
     writer = QPdfWriter(str(path))
     writer.setResolution(_DPI)
-    writer.setTitle("DJ MIDI Studio cheat sheet")
+    writer.setTitle(_document_title())
     writer.setCreator("DJ MIDI Studio")
     writer.setPageLayout(
         QPageLayout(

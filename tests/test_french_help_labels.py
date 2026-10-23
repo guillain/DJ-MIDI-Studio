@@ -20,13 +20,7 @@ _NOT_UI_LABELS = {
     "Sync",
     "Load",
     "SHIFT",
-    # Windows and dialogs not translated yet: the mapping comparison report
-    # (mapping_diff.py) and the Stage mode Exit button.
-    "Re-assigned",
-    "Added",
-    "Removed",
-    "Changed values",
-    "Duplicate count",
+    # Not translated yet: the Stage mode Exit button.
     "Exit",
     # Keyboard keys and title-bar glyphs.
     "Cmd+K",

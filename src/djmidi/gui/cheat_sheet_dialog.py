@@ -31,19 +31,24 @@ class CheatSheetExportDialog(QDialog):
         parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
-        self.setWindowTitle("Export Cheat Sheet (PDF)")
+        self.setWindowTitle(self.tr("Export Cheat Sheet (PDF)"))
         layout = QVBoxLayout(self)
         intro = QLabel(
-            "Choose the controllers to print. Each one gets a page with its photo "
-            "and the function on every mapped control (one page per pad bank in use); "
-            "a controller without a measured layout gets a table instead."
+            self.tr(
+                "Choose the controllers to print. Each one gets a page with its photo "
+                "and the function on every mapped control (one page per pad bank in use); "
+                "a controller without a measured layout gets a table instead. "
+                "The PDF is written in the interface language."
+            )
         )
         intro.setWordWrap(True)
         layout.addWidget(intro)
         self._list = QListWidget()
         for name, count in candidates:
-            kind = "photo" if CONTROL_GEOMETRY.get(name) else "table"
-            item = QListWidgetItem(f"{name} — {count} mapped trigger(s), {kind}")
+            kind = self.tr("photo") if CONTROL_GEOMETRY.get(name) else self.tr("table")
+            item = QListWidgetItem(
+                self.tr("{name} — {count} mapped trigger(s), {kind}").format(name=name, count=count, kind=kind)
+            )
             item.setData(Qt.ItemDataRole.UserRole, name)
             item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
             item.setCheckState(
@@ -56,7 +61,7 @@ class CheatSheetExportDialog(QDialog):
         self._buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
         )
-        self._buttons.button(QDialogButtonBox.StandardButton.Ok).setText("Export…")
+        self._buttons.button(QDialogButtonBox.StandardButton.Ok).setText(self.tr("Export…"))
         self._buttons.accepted.connect(self.accept)
         self._buttons.rejected.connect(self.reject)
         layout.addWidget(self._buttons)
