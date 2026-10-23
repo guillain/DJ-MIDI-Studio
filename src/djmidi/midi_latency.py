@@ -42,6 +42,7 @@ from collections.abc import Callable, Iterable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
 
+from djmidi.i18n import QT_TRANSLATE_NOOP, Translate, untranslated
 from djmidi.midi_io import MidiEvent, mido_message_to_event
 
 _LOGGER = logging.getLogger(__name__)
@@ -52,19 +53,22 @@ ClockFn = Callable[[], float]
 
 MAX_PINGS = 1000
 
-def QT_TRANSLATE_NOOP(context: str, text: str) -> str:
-    """Marks `text` for the interface translations (issue #306) without
-    importing Qt here: pyside6-lupdate finds it by this name, and the dialog
-    translates it with QCoreApplication.translate(context, text)."""
-    return text
-
-
 ECHO_WARNING = QT_TRANSLATE_NOOP(
     "MidiLatencyDialog",
     "Only meaningful with a port or device that echoes what it receives "
     "(IAC Driver / virtual loopback, MIDI thru, or a controller known to echo "
     "its LED messages). A controller that does not echo makes every ping time out.",
 )
+# The statistics line (issue #319): English templates, translated by the caller.
+_NO_REPLY = QT_TRANSLATE_NOOP(
+    "MidiLatencyDialog", "No reply to {sent} ping(s) -- the port or device does not seem to echo."
+)
+_STATS = QT_TRANSLATE_NOOP(
+    "MidiLatencyDialog",
+    "{received}/{sent} replies ({lost}% lost): min {min}, median {median}, max {max}, jitter {jitter}",
+)
+_MILLISECONDS = QT_TRANSLATE_NOOP("MidiLatencyDialog", "{value} ms")
+_NOT_AVAILABLE = QT_TRANSLATE_NOOP("MidiLatencyDialog", "n/a")
 
 
 @dataclass(frozen=True)
@@ -155,20 +159,25 @@ def compute_stats(results: Iterable[PingResult]) -> LatencyStats:
     )
 
 
-def format_stats(stats: LatencyStats) -> str:
-    """A one-line human summary, e.g. for the status bar or a log."""
+def format_stats(stats: LatencyStats, translate: Translate = untranslated) -> str:
+    """A one-line human summary, e.g. for the status bar or a log.
+
+    ``translate`` turns each English template into the interface language
+    before it is filled in (issue #319); the default keeps English."""
     if stats.received == 0:
-        return (
-            f"No reply to {stats.sent} ping(s) -- the port or device does not seem to echo."
-        )
+        return translate(_NO_REPLY).format(sent=stats.sent)
 
     def ms(value: float | None) -> str:
-        return "n/a" if value is None else f"{value:.2f} ms"
+        return translate(_NOT_AVAILABLE) if value is None else translate(_MILLISECONDS).format(value=f"{value:.2f}")
 
-    return (
-        f"{stats.received}/{stats.sent} replies ({stats.loss_percent:.0f}% lost): "
-        f"min {ms(stats.min_ms)}, median {ms(stats.median_ms)}, max {ms(stats.max_ms)}, "
-        f"jitter {ms(stats.jitter_ms)}"
+    return translate(_STATS).format(
+        received=stats.received,
+        sent=stats.sent,
+        lost=f"{stats.loss_percent:.0f}",
+        min=ms(stats.min_ms),
+        median=ms(stats.median_ms),
+        max=ms(stats.max_ms),
+        jitter=ms(stats.jitter_ms),
     )
 
 

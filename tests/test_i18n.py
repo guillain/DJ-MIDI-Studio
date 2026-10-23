@@ -486,6 +486,141 @@ def test_duplicates_health_and_smart_playlist_windows_show_french(french):
             window.deleteLater()
 
 
+# --- Computed reports and main-window messages (issue #319) -------------------
+
+
+def _live_ready_config():
+    from djmidi.parser import parse_string
+
+    both = (
+        "<control channel='1' event_type='Note On' control='9'><userio event='click'>"
+        "<codfather_st deck_set='Default' deck_id='1' slot_id='0'><translation action_on='press'/></codfather_st>"
+        "<codfather_fx deck_set='Default' deck_id='1' slot_id='0'><translation action_on='press'/></codfather_fx>"
+        "</userio></control>"
+    )
+    return parse_string(f"<midi app='1.0'>{both}</midi>")
+
+
+def test_computed_reports_stay_english_by_default_and_are_scanned():
+    from djmidi.library.change_log import RevertSkipped
+    from djmidi.live_ready import check_live_ready, report_text
+    from djmidi.midi_latency import LatencyStats, format_stats
+    from djmidi.midi_macros import MacroResult
+
+    report = check_live_ready(_live_ready_config())
+    assert report.verdict == "Not ready: 1 problem(s) to fix before playing."
+    assert report.findings[0].message.startswith("One control (channel 1, Note On 9) fires several functions")
+    assert report_text(report).splitlines()[2].startswith("[error] One control")
+    assert format_stats(LatencyStats(4, 2, 1.0, 1.5, 2.0, 1.5, 0.5)) == (
+        "2/4 replies (50% lost): min 1.00 ms, median 1.50 ms, max 2.00 ms, jitter 0.50 ms"
+    )
+    assert format_stats(LatencyStats(3, 0)).startswith("No reply to 3 ping(s)")
+    unplugged = MacroResult("Intro", None, total=2, error="XDJ-XZ is not connected", missing_port="XDJ-XZ")
+    assert unplugged.summary() == 'Macro "Intro" not played: XDJ-XZ is not connected'
+    assert str(RevertSkipped("not found at {path}", path="/x/a.mp3")) == "not found at /x/a.mp3"
+    sources = {path.name for path in _script_sources()}
+    assert {"live_ready.py", "midi_latency.py", "midi_macros.py", "change_log.py"} <= sources
+
+
+def test_computed_reports_show_french_through_a_translator(french):
+    from djmidi.gui.translation import translator
+    from djmidi.library.change_log import RevertSkipped
+    from djmidi.live_ready import check_live_ready, report_text
+    from djmidi.midi_latency import LatencyStats, format_stats
+    from djmidi.midi_macros import MacroResult
+    from djmidi.parser import parse_string
+
+    live = translator("LiveReady")
+    report = check_live_ready(_live_ready_config(), translate=live)
+    assert report.describe_verdict(live) == "Pas prêt : 1 problème(s) à corriger avant de jouer."
+    conflict = report.findings[0]
+    assert conflict.message.startswith(
+        "Un contrôle (canal 1, Note On 9) déclenche plusieurs fonctions sur la platine 1 : Codfather FX"
+    )
+    assert conflict.hint.startswith("Sur scène, l'appuyer les déclenche toutes")
+    assert report_text(report, live).splitlines()[2].startswith("[erreur] Un contrôle")
+    empty = check_live_ready(parse_string("<midi app='1.0'/>"), translate=live)
+    assert empty.findings[0].message.startswith("Aucun mapping d'entrée ne cible une platine")
+
+    latency = translator("MidiLatencyDialog")
+    assert format_stats(LatencyStats(4, 2, 1.0, 1.5, 2.0, 1.5, None), latency) == (
+        "2/4 réponses (50 % perdues) : min 1.00 ms, médiane 1.50 ms, max 2.00 ms, gigue n/d"
+    )
+
+    macros = translator("MidiMacros")
+    unplugged = MacroResult("Intro", None, total=2, error="XDJ-XZ is not connected", missing_port="XDJ-XZ")
+    assert unplugged.summary(macros) == "Macro « Intro » non jouée : XDJ-XZ n'est pas connecté"
+    assert MacroResult("Intro", "IAC", 1, 3, "cancelled").summary(macros) == (
+        "Macro « Intro » arrêtée après 1/3 message(s) : annulée"
+    )
+
+    skipped = RevertSkipped("{fields} changed since", fields="genre, title")
+    assert skipped.describe(translator("ChangeHistoryDialog")) == "genre, title modifié(s) depuis"
+
+
+def test_change_history_entries_show_french(french):
+    from djmidi.gui.change_history_dialog import (
+        ChangeHistoryDialog,
+        describe_item,
+        describe_summary,
+    )
+    from djmidi.gui.translation import translator
+    from djmidi.library import change_log
+    from djmidi.library.db import ChangeItem, LibraryDB
+
+    assert describe_summary("Edit genre, bpm of 3 tracks") == "Modifier Genre, BPM de 3 morceau(x)"
+    assert describe_summary("Revert #4: Undo: Set cover of a.mp3") == (
+        "Annulation de n°4 : Annulation : Définir la pochette de a.mp3"
+    )
+    assert describe_summary("Move 2 duplicate(s) to the Trash") == "Mettre 2 doublon(s) à la corbeille"
+    # Another writer's own text is shown as stored.
+    assert describe_summary("Something else") == "Something else"
+    tags = ChangeItem("/x/a.mp3", {"title": None}, {"title": "Intro"})
+    assert describe_item(change_log.KIND_TAGS, tags) == "Titre : (vide) → Intro"
+    trash = ChangeItem("/x/a.mp3", {"kept": "/x/b.mp3"}, {"trash_path": None})
+    assert describe_item(change_log.KIND_TRASH, trash) == "mis dans la corbeille (conservé : /x/b.mp3)"
+
+    db = LibraryDB(":memory:")
+    change_id = change_log.record_tag_changes(db, {"/x/a.mp3": ({"genre": "Dub"}, {"genre": "Tek"})})
+    dialog = ChangeHistoryDialog(db)
+    try:
+        row = dialog.entries.topLevelItem(0)
+        assert row.text(2) == "Tags"
+        assert row.text(3) == "Modifier Genre de 1 morceau(x)"
+        # The file is gone: the revert's reason is given in French.
+        result = change_log.revert_change(db, change_id, translate=translator("ChangeHistoryDialog"))
+        assert result.failed == [("/x/a.mp3", "fichier introuvable")]
+    finally:
+        dialog.close()
+        dialog.deleteLater()
+        db.close()
+
+
+def test_main_window_messages_show_french(french, monkeypatch):
+    from PySide6.QtWidgets import QMessageBox
+
+    from djmidi.gui.main_window import MainWindow
+
+    shown = []
+    monkeypatch.setattr(QMessageBox, "information", lambda _parent, title, text, *_args: shown.append((title, text)))
+    window = MainWindow()
+    try:
+        window._on_export_cheat_sheet()
+        assert shown == [("Antisèche", "Ouvrez d'abord un mapping.")]
+        window._on_performance_mode_toggled(True)
+        assert window.statusBar().currentMessage() == "Mode performance activé — arbre masqué, schéma agrandi"
+        window._on_performance_mode_toggled(False)
+        assert window._tool_docks["routing"].windowTitle() == "Routage MIDI"
+        dock = window._tool_docks["clock"]
+        window._toggle_dock_reduced(dock)
+        assert dock._dj_reduce_action.text() == "Déplier"
+        window._toggle_dock_reduced(dock)
+        assert dock._dj_reduce_action.text() == "Réduire à la barre de titre"
+    finally:
+        window.close()
+        window.deleteLater()
+
+
 # --- Mapping tabs, Controller Images, Controller Setup, Dashboard (issue #318) --
 
 _SAMPLE_MAPPING = _ROOT / "data" / "xdj_xz-ddj_xp2-4decks.xml"

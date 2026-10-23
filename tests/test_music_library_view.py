@@ -480,7 +480,7 @@ def test_change_history_logs_tag_writes_and_reverts_after_reopen(library, monkey
     dialog = view.show_change_history()
     assert dialog.entries.topLevelItemCount() == 1
     assert dialog.items.topLevelItemCount() == 2
-    assert "genre: Techno → Tribe" in dialog.items.topLevelItem(0).text(1)
+    assert "Genre: Techno → Tribe" in dialog.items.topLevelItem(0).text(1)
     assert dialog.revert_button.isEnabled()
     dialog.revert_button.click()
     assert read_metadata(a).genre == "Techno"

@@ -74,12 +74,13 @@ the names Serato gives its own fields stay as written (`Deck set`,
 `Slot id`, `action_on`, `behaviour`, `Control`, `User I/O`), the function
 search understands English words (`deck 2`, `slot 3`, `click`, `output`),
 and Controller Setup's port and number errors (`Channel must be an
-integer`) and its row sources (`learned`, `xml-import`) stay in English. Inside the translated
-windows, text computed from your data stays in English too: the findings
-of the `Prêt pour le live` report, the latency statistics line, the
-change-history entry descriptions. A health-report CSV keeps its issue
-names in English, and a saved Live Monitor log keeps English column
-names. They will be
+integer`) and its row sources (`learned`, `xml-import`) stay in English.
+Text computed from your data follows the interface language — the
+`Prêt pour le live` findings, the latency statistics line, the
+change-history entries — but CSV exports stay in English (a health-report
+CSV keeps its issue names in English, and a saved Live Monitor log keeps
+English column names), and a validation message or a detection reason
+still shows in English. They will be
 translated over the next releases. Controller and function names that
 come from your DJ software or your controller's MIDI documentation are
 never translated.

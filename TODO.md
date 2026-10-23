@@ -132,6 +132,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **French UI: computed reports and messages** (`v0.48.123-french-computed-text`, issue #319) — the
+  Ready-for-live findings, the latency statistics line, change-history entries (kind, status, per-file
+  changes, revert reasons, and the stored summaries this app writes) and macro results follow the interface
+  language through an optional `translate` argument on the Qt-free builders; `main_window.py`'s remaining
+  message boxes, status-bar messages, file dialogs, menu tooltips and dock title bars are wrapped in `tr()`.
+  CSV exports stay English. Checked in French on cocoa.
 - [x] **French UI: mapping tabs, Controller Images, Controller Setup, Dashboard** (`v0.48.122-french-mapping-tabs`,
   issue #318) — the By Channel / By Deck / By Controller tabs (trees, deck filter, display layers, Live send),
   the edit / validation column, Controller Images, Controller Setup (and its submission dialog) and the Dashboard

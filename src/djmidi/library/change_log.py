@@ -45,6 +45,8 @@ from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from djmidi.i18n import QT_TRANSLATE_NOOP, Translate, untranslated
+
 from .db import ChangeItem, ChangeRecord, LibraryDB
 
 _LOGGER = logging.getLogger(__name__)
@@ -61,8 +63,35 @@ MAX_ENTRIES = 1000
 TagChanges = Mapping[str, tuple[Mapping[str, object], Mapping[str, object]]]
 
 
+# Why a revert left a file alone (issue #319): English templates, shown in
+# the interface language through `RevertSkipped.describe(translate)`.
+_SKIP_NOT_FOUND = QT_TRANSLATE_NOOP("ChangeHistoryDialog", "file not found")
+_SKIP_UNREADABLE_TAGS = QT_TRANSLATE_NOOP("ChangeHistoryDialog", "its tags can't be read")
+_SKIP_CHANGED_SINCE = QT_TRANSLATE_NOOP("ChangeHistoryDialog", "{fields} changed since")
+_SKIP_TRASH_UNKNOWN = QT_TRANSLATE_NOOP(
+    "ChangeHistoryDialog", "where the Trash put it is unknown -- put it back from the Trash yourself"
+)
+_SKIP_ORIGINAL_TAKEN = QT_TRANSLATE_NOOP("ChangeHistoryDialog", "a file already exists at its original location")
+_SKIP_NOT_IN_TRASH = QT_TRANSLATE_NOOP("ChangeHistoryDialog", "no longer in the Trash")
+_SKIP_NOT_FOUND_AT = QT_TRANSLATE_NOOP("ChangeHistoryDialog", "not found at {path}")
+_SKIP_OLD_NAME_TAKEN = QT_TRANSLATE_NOOP("ChangeHistoryDialog", "a file already exists at its old name")
+_SKIP_COVER_CHANGED = QT_TRANSLATE_NOOP("ChangeHistoryDialog", "its cover changed since")
+_SKIP_COVER_NOT_KEPT = QT_TRANSLATE_NOOP("ChangeHistoryDialog", "the previous cover wasn't kept")
+
+
 class RevertSkipped(Exception):
-    """A file a revert must leave alone (changed since, gone, ...)."""
+    """A file a revert must leave alone (changed since, gone, ...).
+
+    Built from an English `template` and its `fields`: ``str(exc)`` is the
+    English reason, `describe` the reason in the interface language."""
+
+    def __init__(self, template: str, **fields: object) -> None:
+        super().__init__(template.format(**fields))
+        self.template = template
+        self.fields = fields
+
+    def describe(self, translate: Translate = untranslated) -> str:
+        return translate(self.template).format(**self.fields)
 
 
 @dataclass
@@ -207,7 +236,7 @@ def cover_from_state(state: Mapping[str, object]) -> object | None:
         return None
     encoded = state.get("data")
     if not isinstance(encoded, str):
-        raise RevertSkipped("the previous cover wasn't kept")
+        raise RevertSkipped(_SKIP_COVER_NOT_KEPT)
     from .cover_art import CoverArt
 
     return CoverArt(base64.b64decode(encoded), str(state.get("mime") or ""), str(state.get("description") or ""))
@@ -249,10 +278,10 @@ def _same_value(a: object, b: object) -> bool:
 
 def _revert_tags(db: LibraryDB, item: ChangeItem, ctx: RevertContext) -> ChangeItem | None:
     if not Path(item.path).is_file():
-        raise RevertSkipped("file not found")
+        raise RevertSkipped(_SKIP_NOT_FOUND)
     current = ctx.read(item.path)
     if current is None:
-        raise RevertSkipped("its tags can't be read")
+        raise RevertSkipped(_SKIP_UNREADABLE_TAGS)
     now = {name: getattr(current, name, None) for name in item.before}
     if all(_same_value(now[name], item.before[name]) for name in item.before):
         return None
@@ -261,7 +290,7 @@ def _revert_tags(db: LibraryDB, item: ChangeItem, ctx: RevertContext) -> ChangeI
         if not _same_value(now[name], item.after.get(name)) and not _same_value(now[name], item.before[name])
     ]
     if changed_since:
-        raise RevertSkipped(f"{', '.join(sorted(changed_since))} changed since")
+        raise RevertSkipped(_SKIP_CHANGED_SINCE, fields=", ".join(sorted(changed_since)))
     restore = {name: item.before[name] for name in item.before if not _same_value(now[name], item.before[name])}
     ctx.write(item.path, **restore)
     return ChangeItem(item.path, {name: now[name] for name in restore}, restore)
@@ -271,13 +300,13 @@ def _revert_trash(db: LibraryDB, item: ChangeItem, ctx: RevertContext) -> Change
     original = str(item.before.get("path") or item.path)
     trash_path = item.after.get("trash_path")
     if not trash_path:
-        raise RevertSkipped("where the Trash put it is unknown -- put it back from the Trash yourself")
+        raise RevertSkipped(_SKIP_TRASH_UNKNOWN)
     if Path(original).exists():
         if not Path(str(trash_path)).exists():
             return None
-        raise RevertSkipped("a file already exists at its original location")
+        raise RevertSkipped(_SKIP_ORIGINAL_TAKEN)
     if not Path(str(trash_path)).exists():
-        raise RevertSkipped("no longer in the Trash")
+        raise RevertSkipped(_SKIP_NOT_IN_TRASH)
     Path(original).parent.mkdir(parents=True, exist_ok=True)
     ctx.mover(str(trash_path), original)
     stat = Path(original).stat()
@@ -290,9 +319,9 @@ def _revert_rename(db: LibraryDB, item: ChangeItem, ctx: RevertContext) -> Chang
     if Path(old).exists() and not Path(new).exists():
         return None
     if not Path(new).exists():
-        raise RevertSkipped(f"not found at {new}")
+        raise RevertSkipped(_SKIP_NOT_FOUND_AT, path=new)
     if Path(old).exists():
-        raise RevertSkipped("a file already exists at its old name")
+        raise RevertSkipped(_SKIP_OLD_NAME_TAKEN)
     Path(old).parent.mkdir(parents=True, exist_ok=True)
     ctx.mover(new, old)
     track = db.get_track_by_path(new)
@@ -305,13 +334,13 @@ def _revert_rename(db: LibraryDB, item: ChangeItem, ctx: RevertContext) -> Chang
 
 def _revert_cover(db: LibraryDB, item: ChangeItem, ctx: RevertContext) -> ChangeItem | None:
     if not Path(item.path).is_file():
-        raise RevertSkipped("file not found")
+        raise RevertSkipped(_SKIP_NOT_FOUND)
     current = ctx.read_cover(item.path)
     current_sha = cover_state(current, keep_data=False)["sha256"]
     if current_sha == item.before.get("sha256"):
         return None
     if current_sha != item.after.get("sha256"):
-        raise RevertSkipped("its cover changed since")
+        raise RevertSkipped(_SKIP_COVER_CHANGED)
     restored = cover_from_state(item.before)
     ctx.write_cover(item.path, restored)
     # What's being replaced is the cover this app wrote: keep it, so the
@@ -349,13 +378,15 @@ def revert_change(
     change_id: int,
     context: RevertContext | None = None,
     now: Callable[[], float] = time.time,
+    translate: Translate = untranslated,
 ) -> RevertResult:
     """Revert every file of entry `change_id` that can safely be reverted.
 
     The entry is marked reverted once no file failed (a file already back
     in its old state counts as done), so a partly failed revert can be
     retried after fixing the cause. Raises ValueError for an unknown,
-    already reverted or non-revertible entry."""
+    already reverted or non-revertible entry. ``translate`` gives the
+    reasons in `RevertResult.failed` in the interface language (issue #319)."""
     change = db.get_change(change_id)
     if change is None:
         raise ValueError(f"no change #{change_id} in the history")
@@ -370,7 +401,10 @@ def revert_change(
     for item in change.items:
         try:
             inverse = reverter(db, item, context)
-        except (RevertSkipped, OSError, ValueError) as exc:
+        except RevertSkipped as exc:
+            result.failed.append((item.path, exc.describe(translate)))
+            continue
+        except (OSError, ValueError) as exc:
             result.failed.append((item.path, str(exc)))
             continue
         if inverse is None:

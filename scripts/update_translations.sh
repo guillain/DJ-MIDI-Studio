@@ -42,6 +42,9 @@ SOURCES=(
   src/djmidi/library/set_prep.py
   src/djmidi/library/smart_playlist.py
   src/djmidi/library/health.py
+  src/djmidi/live_ready.py
+  src/djmidi/midi_macros.py
+  src/djmidi/library/change_log.py
   src/djmidi/gui/layout_view.py
   src/djmidi/gui/layer_toggles.py
   src/djmidi/gui/live_send.py
