@@ -62,13 +62,13 @@ This first version translates what you use most:
 
 ## What stays in English
 
-The rest of each tab's content, the tool windows (Live Monitor, MIDI
-Routing, MIDI Clock, Metronome, Controller Emulator), most other messages and the `?` help
+The rest of each tab's content, most other messages and the `?` help
 texts are still in English, as is this documentation. Inside the translated
 windows, text computed from your data stays in English too: the findings
 of the `Prêt pour le live` report, the latency statistics line, the
 change-history entry descriptions. A health-report CSV keeps its issue
-names in English. They will be
+names in English, and a saved Live Monitor log keeps English column
+names. They will be
 translated over the next releases. Controller and function names that
 come from your DJ software or your controller's MIDI documentation are
 never translated.

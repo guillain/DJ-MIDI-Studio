@@ -484,3 +484,101 @@ def test_duplicates_health_and_smart_playlist_windows_show_french(french):
         for window in (duplicates, health, smart):
             window.close()
             window.deleteLater()
+
+
+# --- Tool windows (issue #317) -------------------------------------------------
+
+
+def test_tool_window_sources_are_scanned():
+    sources = {path.name for path in _script_sources()}
+    assert {
+        "live_monitor.py",
+        "midi_routing_view.py",
+        "midi_route_transform_dialog.py",
+        "metronome_view.py",
+        "controller_emulator.py",
+        "pad_colour_panel.py",
+    } <= sources
+
+
+def test_tool_windows_show_french(french):
+    from PySide6.QtWidgets import QGroupBox, QPushButton
+
+    from djmidi.gui.controller_emulator import ControllerEmulatorView
+    from djmidi.gui.live_monitor import LiveMonitorView
+    from djmidi.gui.metronome_view import MetronomeView
+    from djmidi.gui.midi_route_transform_dialog import MidiRouteTransformDialog
+    from djmidi.gui.midi_routing_view import MidiRoutingView
+
+    monitor = LiveMonitorView()
+    routing = MidiRoutingView()
+    metronome = MetronomeView()
+    transform = MidiRouteTransformDialog(None)
+    emulator = ControllerEmulatorView(config_provider=lambda: None)
+    try:
+        assert monitor._start_button.text() == "Démarrer la surveillance"
+        assert monitor._log.horizontalHeaderItem(0).text() == "Heure"
+        assert monitor._conflict_label.text() == "Conflits : aucun dans le mapping chargé"
+        assert monitor._sync_button.text() == "Synchroniser les contrôleurs"
+
+        assert routing._routing_button.text() == "Démarrer le routage"
+        assert routing._routes_table.horizontalHeaderItem(3).text() == "État"
+        assert routing.take_clock_panel().title() == "Horloge MIDI"
+        assert routing._clock_status.text() == "Relais de l'horloge désactivé"
+        routing.set_routing_enabled(False)
+        assert routing._routing_button.toolTip() == "Activez d'abord le routage MIDI dans les Préférences"
+
+        assert "Source de la session" in [box.title() for box in metronome.findChildren(QGroupBox)]
+        assert "Arrêter la boucle" in [button.text() for button in metronome.findChildren(QPushButton)]
+        assert metronome._status.text() == "Prêt."
+        assert metronome._session_summary.text().startswith("Session de configuration actuelle")
+
+        assert transform.windowTitle() == "Modifier la transformation de la route"
+        assert transform._channel.itemText(0) == "(inchangé)"
+        # The channel is read from item data, not from the translated label.
+        assert transform._channel.currentData() is None
+
+        assert emulator._status_label.text() == "Cliquez sur une commande pour voir à quoi elle correspond."
+        assert emulator._pad_colours._paint_button.text() == "Peindre"
+    finally:
+        routing.shutdown()
+        monitor.shutdown()
+        metronome.shutdown()
+        for window in (monitor, routing, metronome, transform, emulator):
+            window.close()
+            window.deleteLater()
+
+
+def test_tool_dock_title_bars_and_window_menu_show_french(french):
+    from PySide6.QtWidgets import QLabel, QPushButton
+
+    from djmidi.gui.main_window import MainWindow
+
+    window = MainWindow()
+    try:
+        titles = {key: dock.windowTitle() for key, dock in window._tool_docks.items()}
+        assert titles == {
+            "monitor": "Live Monitor",
+            "routing": "Routage MIDI",
+            "clock": "Horloge MIDI",
+            "metronome": "Métronome",
+        }
+        bar = window._tool_docks["routing"].titleBarWidget()
+        assert bar.findChild(QLabel).text() == "Routage MIDI"
+        buttons = {button.text(): button for button in bar.findChildren(QPushButton)}
+        assert "Détacher" in buttons
+        menu = buttons["☰"].menu()
+        assert [action.text() for action in menu.actions() if action.text()] == [
+            "Réduire à la barre de titre",
+            "Agrandir",
+            "Ancrer à gauche",
+            "Ancrer à droite",
+            "Ancrer en haut",
+            "Ancrer en bas",
+        ]
+        emulator = window._create_emulator_instance()
+        assert emulator.windowTitle() == "Émulateur de contrôleur"
+        assert emulator.titleBarWidget().findChild(QLabel).text() == "Émulateur de contrôleur"
+    finally:
+        window.close()
+        window.deleteLater()

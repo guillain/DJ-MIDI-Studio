@@ -1163,10 +1163,10 @@ class MainWindow(QMainWindow):
 
     def _create_tool_docks(self) -> dict[str, QDockWidget]:
         definitions = {
-            "monitor": ("Live Monitor", self.live_monitor_view),
-            "routing": ("MIDI Routing", self.midi_routing_view),
-            "clock": ("MIDI Clock", self.midi_clock_view),
-            "metronome": ("Metronome", self.metronome_view),
+            "monitor": (self.tr("Live Monitor"), self.live_monitor_view),
+            "routing": (self.tr("MIDI Routing"), self.midi_routing_view),
+            "clock": (self.tr("MIDI Clock"), self.midi_clock_view),
+            "metronome": (self.tr("Metronome"), self.metronome_view),
         }
         docks: dict[str, QDockWidget] = {}
         for key, (title, widget) in definitions.items():
@@ -1216,7 +1216,7 @@ class MainWindow(QMainWindow):
         close_button = QPushButton()
         close_button.setFixedSize(28, 28)
         close_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_TitleBarCloseButton))
-        close_button.setToolTip("Close")
+        close_button.setToolTip(self.tr("Close"))
         close_button.clicked.connect(dock.close)
         bar_layout.addWidget(close_button)
         return bar
@@ -1247,19 +1247,19 @@ class MainWindow(QMainWindow):
         button = QPushButton("☰")
         button.setFixedSize(22, 22)
         button.setProperty("compact", True)
-        button.setToolTip("Window")
+        button.setToolTip(self.tr("Window"))
 
         menu = QMenu(button)
-        reduce_action = QAction("Reduce to title bar", button)
-        maximize_action = QAction("Maximize", button)
+        reduce_action = QAction(self.tr("Reduce to title bar"), button)
+        maximize_action = QAction(self.tr("Maximize"), button)
         menu.addAction(reduce_action)
         menu.addAction(maximize_action)
         menu.addSeparator()
         snap_specs = [
-            ("Snap left", Qt.DockWidgetArea.LeftDockWidgetArea),
-            ("Snap right", Qt.DockWidgetArea.RightDockWidgetArea),
-            ("Snap to top", Qt.DockWidgetArea.TopDockWidgetArea),
-            ("Snap to bottom", Qt.DockWidgetArea.BottomDockWidgetArea),
+            (self.tr("Snap left"), Qt.DockWidgetArea.LeftDockWidgetArea),
+            (self.tr("Snap right"), Qt.DockWidgetArea.RightDockWidgetArea),
+            (self.tr("Snap to top"), Qt.DockWidgetArea.TopDockWidgetArea),
+            (self.tr("Snap to bottom"), Qt.DockWidgetArea.BottomDockWidgetArea),
         ]
         for label, area in snap_specs:
             snap_action = QAction(label, button)
@@ -1290,12 +1290,12 @@ class MainWindow(QMainWindow):
             title_bar = dock.titleBarWidget()
             dock.setMaximumHeight(title_bar.sizeHint().height() if title_bar is not None else 32)
             dock._dj_reduced = True
-            dock._dj_reduce_action.setText("Expand")
+            dock._dj_reduce_action.setText(self.tr("Expand"))
         else:
             widget.show()
             dock.setMaximumHeight(16777215)
             dock._dj_reduced = False
-            dock._dj_reduce_action.setText("Reduce to title bar")
+            dock._dj_reduce_action.setText(self.tr("Reduce to title bar"))
 
     def _toggle_dock_maximized(self, dock: QDockWidget) -> None:
         if not dock._dj_maximized:
@@ -1304,13 +1304,13 @@ class MainWindow(QMainWindow):
             dock._dj_premax_geometry = dock.geometry()
             dock.showMaximized()
             dock._dj_maximized = True
-            dock._dj_maximize_action.setText("Restore")
+            dock._dj_maximize_action.setText(self.tr("Restore"))
         else:
             dock.showNormal()
             if dock._dj_premax_geometry is not None:
                 dock.setGeometry(dock._dj_premax_geometry)
             dock._dj_maximized = False
-            dock._dj_maximize_action.setText("Maximize")
+            dock._dj_maximize_action.setText(self.tr("Maximize"))
 
     def _snap_dock_to_area(self, dock: QDockWidget, area: Qt.DockWidgetArea) -> None:
         if dock._dj_reduced:
@@ -1326,11 +1326,11 @@ class MainWindow(QMainWindow):
     @staticmethod
     def _update_dock_button(button: QPushButton, floating: bool) -> None:
         if floating:
-            button.setText("Dock")
-            button.setToolTip("Attach back into the main window")
+            button.setText(QCoreApplication.translate("MainWindow", "Dock"))
+            button.setToolTip(QCoreApplication.translate("MainWindow", "Attach back into the main window"))
         else:
-            button.setText("Undock")
-            button.setToolTip("Detach into its own window")
+            button.setText(QCoreApplication.translate("MainWindow", "Undock"))
+            button.setToolTip(QCoreApplication.translate("MainWindow", "Detach into its own window"))
 
     def _show_tool_dock(self, key: str) -> None:
         dock = self._tool_docks.get(key)
@@ -1356,7 +1356,8 @@ class MainWindow(QMainWindow):
             sync_set_provider=lambda name: self.preferences.sync_set_for(name, self.preferences.active_sync_scene),
         )
         view.padColoursSaveRequested.connect(self._on_pad_colours_save_requested)
-        dock = QDockWidget("Controller Emulator", self)
+        title = self.tr("Controller Emulator")
+        dock = QDockWidget(title, self)
         dock.setObjectName(f"{instance_id}Dock")
         dock.setAllowedAreas(Qt.DockWidgetArea.AllDockWidgetAreas)
         dock.setFeatures(
@@ -1365,7 +1366,7 @@ class MainWindow(QMainWindow):
             | QDockWidget.DockWidgetFeature.DockWidgetFloatable
         )
         dock.setWidget(view)
-        dock.setTitleBarWidget(self._build_emulator_dock_title_bar(instance_id, "Controller Emulator", dock))
+        dock.setTitleBarWidget(self._build_emulator_dock_title_bar(instance_id, title, dock))
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, dock)
         self._emulator_docks[instance_id] = dock
         dock.show()
@@ -1401,7 +1402,7 @@ class MainWindow(QMainWindow):
         close_button = QPushButton()
         close_button.setFixedSize(28, 28)
         close_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_TitleBarCloseButton))
-        close_button.setToolTip("Close")
+        close_button.setToolTip(self.tr("Close"))
         close_button.clicked.connect(lambda: self._close_emulator_instance(instance_id))
         bar_layout.addWidget(close_button)
         return bar
