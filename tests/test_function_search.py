@@ -130,3 +130,22 @@ def test_physical_names_come_from_the_catalog(config):
     (result,) = search_functions(config, "loop roll deck 2 slot 3")
     names = physical_names(result.triggers[0])
     assert any(name.startswith("DDJ-XP2: ") for name in names)
+
+
+def test_french_keywords_work_alongside_the_english_ones(config):
+    """Issue #326: `platine N` / `emplacement N` pin like `deck N` / `slot N`,
+    and the French event words filter like `click` / `output`."""
+    english = search_functions(config, "loop roll deck 1 slot 5")
+    french = search_functions(config, "loop roll platine 1 emplacement 5")
+    assert [(r.tag, r.deck_id, r.slot_id) for r in french] == [(r.tag, r.deck_id, r.slot_id) for r in english]
+    assert len(french) == 1
+    assert {r.deck_id for r in search_functions(config, "platine 2 loop roll")} == {"2"}
+    assert {r.slot_id for r in search_functions(config, "loop roll emplacement 3")} == {"3"}
+    # Both languages mix in one query.
+    assert len(search_functions(config, "loop roll platine 1 slot 5")) == 1
+    outputs = search_functions(config, "codfather fx sortie")
+    assert outputs and {r.event for r in outputs} == {"output"}
+    assert [r.event for r in search_functions(config, "codfather fx voyant")] == [r.event for r in outputs]
+    clicks = search_functions(config, "loop roll clic")
+    assert clicks and {r.event for r in clicks} == {"click"}
+    assert len(search_functions(config, "loop roll appui")) == len(clicks)

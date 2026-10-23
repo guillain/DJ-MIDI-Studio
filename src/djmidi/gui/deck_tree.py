@@ -15,6 +15,7 @@ from PySide6.QtGui import QStandardItem, QStandardItemModel
 from djmidi import catalog
 from djmidi.function_names import function_name, label_with_raw
 from djmidi.gui.mapping_group import MappingGroup, build_mapping_groups
+from djmidi.gui.translation import translator
 from djmidi.gui.tree_model import NODE_ROLE
 from djmidi.model import MidiConfig
 
@@ -33,7 +34,7 @@ def _group_label(group: MappingGroup) -> str:
 def _leaf(group: MappingGroup) -> QStandardItem:
     """A function row: readable name in the text, raw tag in the tooltip."""
     leaf = QStandardItem(_group_label(group))
-    leaf.setToolTip(f"{label_with_raw(group.tag, group.slot_id)} [{group.event}]")
+    leaf.setToolTip(f"{label_with_raw(group.tag, group.slot_id, translator("FunctionNames"))} [{group.event}]")
     leaf.setEditable(False)
     leaf.setData(group, NODE_ROLE)
     return leaf

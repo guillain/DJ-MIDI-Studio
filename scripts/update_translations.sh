@@ -68,6 +68,11 @@ SOURCES=(
   src/djmidi/gui/metronome_view.py
   src/djmidi/gui/controller_emulator.py
   src/djmidi/gui/pad_colour_panel.py
+  src/djmidi/validator.py
+  src/djmidi/integration_detection.py
+  src/djmidi/function_names.py
+  src/djmidi/session_player.py
+  src/djmidi/gui/macro_editor.py
 )
 LANGUAGES=(fr)
 
