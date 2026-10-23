@@ -68,7 +68,7 @@ This first version translates what you use most:
 - Qt's own standard buttons and dialogs (`OK`, `Annuler`, `Enregistrer`,
   file pickers).
 
-![The Dashboard in French: menus, tabs, Rec/Sync translated; the tab's content still in English](../../images/layout/interface-language-fr.png)
+![The Dashboard in French: menus, tabs, Enr/Synchro, the file and controller cards, the MIDI tools and the controller overview all in French](../../images/layout/interface-language-fr.png)
 
 ## What stays in English
 
