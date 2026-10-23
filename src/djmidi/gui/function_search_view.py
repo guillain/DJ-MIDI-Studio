@@ -10,7 +10,7 @@ truncate to nothing (checked on an offscreen MainWindow grab at 1100x700)."""
 
 from __future__ import annotations
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import QCoreApplication, Qt, Signal
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QHBoxLayout,
@@ -30,6 +30,7 @@ from djmidi.function_search import (
 )
 from djmidi.gui import help_texts
 from djmidi.gui.help_button import help_button
+from djmidi.gui.translation import translator
 from djmidi.model import MidiConfig
 
 RESULT_ROLE = Qt.ItemDataRole.UserRole + 1
@@ -39,16 +40,18 @@ def result_lines(result: FunctionResult) -> tuple[str, str, str]:
     """(first line, second line, full tooltip) for one result row. The
     second line names only the first physical control (a merged config can
     resolve one trigger on several controllers); the tooltip lists them all."""
+    translate = translator("FunctionSearchView")
+    location = result.location(translate)
     event = "" if result.event == "click" else f" [{result.event}]"
-    first = f"{result.label}{event} · {result.location()}"
+    first = f"{result.label}{event} · {location}"
     triggers = ", ".join(trigger.describe() for trigger in result.triggers)
     # Catalog order, not alphabetical: it lists controllers as registered.
     physical = list(dict.fromkeys(name for trigger in result.triggers for name in physical_names(trigger)))
-    shown = physical[0] if physical else "unknown physical control"
+    shown = physical[0] if physical else QCoreApplication.translate("FunctionSearchView", "unknown physical control")
     if len(physical) > 1:
         shown += f" (+{len(physical) - 1})"
     second = f"{triggers} → {shown}"
-    tooltip = "\n".join([f"{result.tag} ({result.event}) · {result.location()}", triggers, *physical])
+    tooltip = "\n".join([f"{result.tag} ({result.event}) · {location}", triggers, *physical])
     return first, second, tooltip
 
 
@@ -65,10 +68,10 @@ class FunctionSearchView(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         row = QHBoxLayout()
         self.search_field = QLineEdit()
-        self.search_field.setPlaceholderText("Find function: loop roll, deck 2…")
+        self.search_field.setPlaceholderText(self.tr("Find function: loop roll, deck 2…"))
         self.search_field.setClearButtonEnabled(True)
         self.search_field.setToolTip(
-            "Which control triggers this function? Matches function names, deck and slot."
+            self.tr("Which control triggers this function? Matches function names, deck and slot.")
         )
         self.search_field.textChanged.connect(self._refresh)
         row.addWidget(self.search_field, 1)
@@ -109,7 +112,7 @@ class FunctionSearchView(QWidget):
         self.results.clear()
         query = self.search_field.text()
         if not self._index:
-            self.summary.setText("Open a mapping to search its functions.")
+            self.summary.setText(self.tr("Open a mapping to search its functions."))
             self.results.setVisible(False)
             return
         matches = search_functions(self._index, query)
@@ -117,11 +120,13 @@ class FunctionSearchView(QWidget):
         # line tall above the edit panel the rest of the time.
         self.results.setVisible(bool(matches))
         if not query.strip():
-            self.summary.setText(f"{len(self._index)} functions in this mapping.")
+            self.summary.setText(self.tr("{count} functions in this mapping.").format(count=len(self._index)))
         elif not matches:
-            self.summary.setText(f"No function matches “{query.strip()}”.")
+            self.summary.setText(self.tr("No function matches “{query}”.").format(query=query.strip()))
         else:
-            self.summary.setText(f"{len(matches)} match(es): select one to show its controls.")
+            self.summary.setText(
+                self.tr("{count} match(es): select one to show its controls.").format(count=len(matches))
+            )
         for result in matches:
             first, second, tooltip = result_lines(result)
             item = QListWidgetItem(f"{first}\n{second}")

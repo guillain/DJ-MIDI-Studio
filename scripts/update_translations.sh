@@ -42,6 +42,21 @@ SOURCES=(
   src/djmidi/library/set_prep.py
   src/djmidi/library/smart_playlist.py
   src/djmidi/library/health.py
+  src/djmidi/gui/layout_view.py
+  src/djmidi/gui/layer_toggles.py
+  src/djmidi/gui/live_send.py
+  src/djmidi/gui/tree_model.py
+  src/djmidi/gui/deck_tree.py
+  src/djmidi/gui/controller_tree.py
+  src/djmidi/gui/edit_panel.py
+  src/djmidi/midi_learn.py
+  src/djmidi/gui/function_search_view.py
+  src/djmidi/function_search.py
+  src/djmidi/gui/controller_image_view.py
+  src/djmidi/gui/controller_setup.py
+  src/djmidi/gui/controller_submission_dialog.py
+  src/djmidi/catalog/codegen.py
+  src/djmidi/gui/introduction_view.py
   src/djmidi/gui/live_monitor.py
   src/djmidi/gui/midi_routing_view.py
   src/djmidi/gui/midi_route_transform_dialog.py
