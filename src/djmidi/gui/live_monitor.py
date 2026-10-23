@@ -14,7 +14,7 @@ import time
 from collections.abc import Callable
 from pathlib import Path
 
-from PySide6.QtCore import Qt, QTimer, Signal
+from PySide6.QtCore import QT_TRANSLATE_NOOP, Qt, QTimer, Signal
 from PySide6.QtGui import QBrush, QColor
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -48,12 +48,12 @@ _POLL_INTERVAL_MS = 30
 # Amber, readable on both light and dark themes behind default text.
 _CONFLICT_BRUSH = QBrush(QColor(255, 176, 32, 90))
 
-_VIRTUAL_MONITOR_HELP = (
-    "Creates a virtual MIDI destination named "
-    f"'{MidiMonitor.VIRTUAL_MONITOR_NAME}'. CoreMIDI won't let this app silently see what "
+_VIRTUAL_MONITOR_HELP = QT_TRANSLATE_NOOP(
+    "LiveMonitorView",
+    "Creates a virtual MIDI destination named '{name}'. CoreMIDI won't let this app silently see what "
     "Serato sends to a real hardware output, so to monitor that direction you must "
     "manually add this virtual port as an *additional* MIDI output in Serato's own "
-    "MIDI setup (alongside your real controller)."
+    "MIDI setup (alongside your real controller).",
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -62,7 +62,7 @@ _LOGGER = logging.getLogger(__name__)
 class LiveMonitorView(QWidget):
     eventReceived = Signal(object)  # MidiEvent
     portNamesChanged = Signal(list)
-    # "Sync controllers" clicked; MainWindow owns the stored sync sets.
+    # self.tr("Sync controllers") clicked; MainWindow owns the stored sync sets.
     syncRequested = Signal()
 
     def __init__(self, on_event: Callable[[MidiEvent], None] | None = None, parent: QWidget | None = None) -> None:
@@ -85,41 +85,45 @@ class LiveMonitorView(QWidget):
 
         self._port_list = QListWidget()
         self._port_list.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
-        refresh_button = QPushButton("Refresh ports")
+        refresh_button = QPushButton(self.tr("Refresh ports"))
         refresh_button.clicked.connect(self._refresh_ports)
-        select_all_button = QPushButton("Select all sources")
+        select_all_button = QPushButton(self.tr("Select all sources"))
         select_all_button.clicked.connect(self._select_all_sources)
-        self._ports_box = ports_box = QGroupBox("Input sources (check to monitor)")
+        self._ports_box = ports_box = QGroupBox(self.tr("Input sources (check to monitor)"))
         ports_layout = QVBoxLayout(ports_box)
         ports_layout.addWidget(self._port_list)
         ports_layout.addWidget(refresh_button)
         ports_layout.addWidget(select_all_button)
 
-        self._virtual_checkbox = QCheckBox("Create virtual monitor destination (for Serato output)")
-        virtual_help = QLabel(_VIRTUAL_MONITOR_HELP)
+        self._virtual_checkbox = QCheckBox(self.tr("Create virtual monitor destination (for Serato output)"))
+        virtual_help = QLabel(self.tr(_VIRTUAL_MONITOR_HELP).format(name=MidiMonitor.VIRTUAL_MONITOR_NAME))
         virtual_help.setWordWrap(True)
-        self._start_button = QPushButton("Start monitoring")
+        self._start_button = QPushButton(self.tr("Start monitoring"))
         self._start_button.clicked.connect(self._toggle_running)
-        self._status_label = QLabel("Stopped")
+        self._status_label = QLabel(self.tr("Stopped"))
         self._conflict_label = QLabel()
         self._conflict_label.setWordWrap(True)
         self._conflict_label.setToolTip(
-            "Live inputs that fire two or more different functions on the same deck "
-            "in the loaded mapping. Serato's identical repeated triggers are not conflicts."
+            self.tr(
+                "Live inputs that fire two or more different functions on the same deck "
+                "in the loaded mapping. Serato's identical repeated triggers are not conflicts."
+            )
         )
         self._update_conflict_label()
-        clear_button = QPushButton("Clear log")
+        clear_button = QPushButton(self.tr("Clear log"))
         clear_button.clicked.connect(self._clear_log)
-        save_button = QPushButton("Save log…")
+        save_button = QPushButton(self.tr("Save log…"))
         save_button.clicked.connect(self._save_log)
-        self._sync_button = QPushButton("Sync controllers")
+        self._sync_button = QPushButton(self.tr("Sync controllers"))
         self._sync_button.setToolTip(
-            "Send each controller its recorded initialization set "
-            "(recorded with ● Rec or in Controller Setup, listed in Preferences → Controller sync)."
+            self.tr(
+                "Send each controller its recorded initialization set "
+                "(recorded with ● Rec or in Controller Setup, listed in Preferences → Controller sync)."
+            )
         )
         self._sync_button.clicked.connect(self.syncRequested)
 
-        controls_box = QGroupBox("Monitor")
+        controls_box = QGroupBox(self.tr("Monitor"))
         controls_layout = QVBoxLayout(controls_box)
         controls_layout.addLayout(help_row(self, *help_texts.LIVE_MONITOR))
         controls_layout.addWidget(self._virtual_checkbox)
@@ -137,12 +141,23 @@ class LiveMonitorView(QWidget):
         top_row.addWidget(controls_box, 1)
 
         self._log = QTableWidget(0, 8)
-        self._log.setHorizontalHeaderLabels(["Time", "Dir", "Source device", "Channel", "Type", "Data1", "Data2", "Physical / Serato"])
+        self._log.setHorizontalHeaderLabels(
+            [
+                self.tr("Time"),
+                self.tr("Dir"),
+                self.tr("Source device"),
+                self.tr("Channel"),
+                self.tr("Type"),
+                self.tr("Data1"),
+                self.tr("Data2"),
+                self.tr("Physical / Serato"),
+            ]
+        )
         self._log.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self._log.setColumnWidth(2, 180)
         self._log.horizontalHeader().setStretchLastSection(True)
 
-        # top_row ("Input sources" + "Monitor") had no scroll protection --
+        # top_row ("Input sources" + self.tr("Monitor")) had no scroll protection --
         # found while widening the issue #19 clipping audit: at a narrow
         # enough docked width, this dock's real minimum width exceeds the
         # window, and QMainWindow lets this dock's geometry extend past the
@@ -185,7 +200,9 @@ class LiveMonitorView(QWidget):
             for group in build_mapping_groups(config):
                 key = (group.channel, group.event_type, group.control_no)
                 self._function_lookup.setdefault(key, []).append(
-                    f"deck {group.deck_id} slot {group.slot_id}: {group.tag} [{group.event}]"
+                    self.tr("deck {deck} slot {slot}: {tag} [{event}]").format(
+                        deck=group.deck_id, slot=group.slot_id, tag=group.tag, event=group.event
+                    )
                 )
 
     def _refresh_ports(self) -> None:
@@ -223,13 +240,18 @@ class LiveMonitorView(QWidget):
                 self._monitor.open_virtual_monitor()
         except Exception as exc:  # noqa: BLE001 - surface device-open failures without a partial monitor
             self._monitor.close_all()
-            self._status_label.setText("Stopped")
-            self._start_button.setText("Start monitoring")
-            QMessageBox.warning(self, "Cannot start monitoring", str(exc))
+            self._status_label.setText(self.tr("Stopped"))
+            self._start_button.setText(self.tr("Start monitoring"))
+            QMessageBox.warning(self, self.tr("Cannot start monitoring"), str(exc))
             return
         self._running = True
-        self._start_button.setText("Stop monitoring")
-        self._status_label.setText(f"Running ({len(selected)} input(s){', virtual monitor' if self._virtual_checkbox.isChecked() else ''})")
+        self._start_button.setText(self.tr("Stop monitoring"))
+        status = (
+            self.tr("Running ({count} input(s), virtual monitor)")
+            if self._virtual_checkbox.isChecked()
+            else self.tr("Running ({count} input(s))")
+        )
+        self._status_label.setText(status.format(count=len(selected)))
         _LOGGER.info(
             "Live Monitor started: inputs=%s, virtual_monitor=%s", selected, self._virtual_checkbox.isChecked()
         )
@@ -239,8 +261,8 @@ class LiveMonitorView(QWidget):
         self._timer.stop()
         self._monitor.close_all()
         self._running = False
-        self._start_button.setText("Start monitoring")
-        self._status_label.setText("Stopped")
+        self._start_button.setText(self.tr("Start monitoring"))
+        self._status_label.setText(self.tr("Stopped"))
         _LOGGER.info("Live Monitor stopped")
 
     def _poll(self) -> None:
@@ -267,16 +289,16 @@ class LiveMonitorView(QWidget):
         conflicts = self._conflicts.get(trigger, []) if event.direction == "in" else []
         conflict_text = ""
         if conflicts:
-            conflict_text = "CONFLICT " + "; ".join(c.describe() for c in conflicts)
+            conflict_text = self.tr("CONFLICT ") + "; ".join(c.describe() for c in conflicts)
             self._count_conflict(event, trigger)
-        detail = " | ".join(part for part in (conflict_text, physical, "; ".join(functions)) if part) or "(unknown)"
+        detail = " | ".join(part for part in (conflict_text, physical, "; ".join(functions)) if part) or self.tr("(unknown)")
 
         row = self._log.rowCount()
         self._log.insertRow(row)
         values = [
             time.strftime("%H:%M:%S", time.localtime()),
             event.direction.upper(),
-            event.port or "(unknown)",
+            event.port or self.tr("(unknown)"),
             event.channel,
             event.event_type,
             event.data1,
@@ -310,11 +332,13 @@ class LiveMonitorView(QWidget):
 
     def _update_conflict_label(self) -> None:
         if not self._conflicts:
-            self._conflict_label.setText("Conflicts: none in the loaded mapping")
+            self._conflict_label.setText(self.tr("Conflicts: none in the loaded mapping"))
             return
         self._conflict_label.setText(
-            f"Conflicts: {self._conflict_hits} live hit(s) on {len(self._conflict_triggers)} "
-            f"trigger(s) ({len(self._conflicts)} conflicting trigger(s) in the mapping)"
+            self.tr(
+                "Conflicts: {hits} live hit(s) on {triggers} trigger(s) "
+                "({conflicts} conflicting trigger(s) in the mapping)"
+            ).format(hits=self._conflict_hits, triggers=len(self._conflict_triggers), conflicts=len(self._conflicts))
         )
 
     def conflict_counts(self) -> tuple[int, int]:
@@ -329,13 +353,13 @@ class LiveMonitorView(QWidget):
 
     def _save_log(self) -> None:
         if not self._events:
-            self._status_label.setText("No MIDI events to save.")
+            self._status_label.setText(self.tr("No MIDI events to save."))
             return
         path_str, _ = QFileDialog.getSaveFileName(
             self,
-            "Save Live Monitor log",
+            self.tr("Save Live Monitor log"),
             str(user_paths.subfolder(user_paths.LOGS) / "midi-monitor-log.csv"),
-            "CSV files (*.csv)",
+            self.tr("CSV files (*.csv)"),
         )
         if not path_str:
             return
@@ -355,10 +379,10 @@ class LiveMonitorView(QWidget):
                     ])
         except OSError as exc:
             _LOGGER.exception("Failed to save Live Monitor CSV log")
-            self._status_label.setText(f"Failed to save log: {exc}")
+            self._status_label.setText(self.tr("Failed to save log: {error}").format(error=exc))
             return
         _LOGGER.info("Saved %d MIDI event(s) to CSV", len(self._events))
-        self._status_label.setText(f"Saved {len(self._events)} MIDI event(s).")
+        self._status_label.setText(self.tr("Saved {count} MIDI event(s).").format(count=len(self._events)))
 
     @property
     def is_running(self) -> bool:
@@ -374,12 +398,12 @@ class LiveMonitorView(QWidget):
     def ensure_monitoring_started(self) -> None:
         """Best-effort auto-start used when a mapping is loaded, so the By
         Channel/Deck/Controller layouts reflect live controller presses
-        without a manual "Start monitoring" click (View menu -> "Auto-start
+        without a manual self.tr("Start monitoring") click (View menu -> "Auto-start
         Live Monitor on load", see MainWindow._load_tree).
 
         Never overrides an already-running session (a user who already
         picked specific ports here keeps that selection), and never pops a
-        dialog for a busy/unavailable port the way the "Start monitoring"
+        dialog for a busy/unavailable port the way the self.tr("Start monitoring")
         button does -- this runs silently in the background, so one port
         that fails to open (e.g. already claimed by another app) is just
         skipped and logged, instead of aborting monitoring on every port."""
@@ -403,8 +427,8 @@ class LiveMonitorView(QWidget):
         if not opened:
             return
         self._running = True
-        self._start_button.setText("Stop monitoring")
-        self._status_label.setText(f"Running ({len(opened)} input(s), auto-started)")
+        self._start_button.setText(self.tr("Stop monitoring"))
+        self._status_label.setText(self.tr("Running ({count} input(s), auto-started)").format(count=len(opened)))
         _LOGGER.info("Live Monitor auto-started on mapping load: inputs=%s", opened)
         self._timer.start()
 

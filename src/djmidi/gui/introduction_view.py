@@ -5,7 +5,7 @@ import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import QCoreApplication, Qt, Signal
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
     QComboBox,
@@ -69,7 +69,7 @@ class IntroductionView(QWidget):
         self._description_label = QLabel()
         self._description_label.setWordWrap(True)
 
-        self._loaded_file_label = QLabel("Loaded file: none")
+        self._loaded_file_label = QLabel(self.tr("Loaded file: none"))
         self._loaded_file_label.setWordWrap(True)
         self._loaded_file_label.setFrameShape(QFrame.Shape.StyledPanel)
         # Bold, per-software-colored name (issue #121) -- a small always-
@@ -89,10 +89,10 @@ class IntroductionView(QWidget):
         self._controller_combo = QComboBox()
         self._controller_combo.addItems(catalog.CONTROLLER_NAMES)
 
-        catalog_box = QGroupBox("Known controllers")
+        catalog_box = QGroupBox(self.tr("Known controllers"))
         catalog_layout = QVBoxLayout(catalog_box)
         catalog_layout.addLayout(help_row(self, *help_texts.DASHBOARD_CONTROLLERS))
-        catalog_layout.addWidget(QLabel("Active controller for drill-down:"))
+        catalog_layout.addWidget(QLabel(self.tr("Active controller for drill-down:")))
         catalog_layout.addWidget(self._controller_combo)
         self._known_count_label = QLabel()
         self._known_list_label = QLabel()
@@ -107,21 +107,21 @@ class IntroductionView(QWidget):
         keep_tab_titles_whole(self._controller_tabs)
         self._controller_tabs.currentChanged.connect(self._load_card_image)
 
-        cards_box = QGroupBox("Controller overview")
+        cards_box = QGroupBox(self.tr("Controller overview"))
         cards_box_layout = QVBoxLayout(cards_box)
         cards_box_layout.addLayout(help_row(self, *help_texts.DASHBOARD_OVERVIEW))
         cards_box_layout.addWidget(self._controller_tabs)
 
-        tools_box = QGroupBox("MIDI tools")
+        tools_box = QGroupBox(self.tr("MIDI tools"))
         tools_layout = QVBoxLayout(tools_box)
         tools_layout.addLayout(help_row(self, *help_texts.DASHBOARD_TOOLS))
-        monitor_button = QPushButton("Open Live Monitor")
+        monitor_button = QPushButton(self.tr("Open Live Monitor"))
         monitor_button.clicked.connect(lambda: self.toolRequested.emit("monitor"))
-        routing_button = QPushButton("Open MIDI Routing")
+        routing_button = QPushButton(self.tr("Open MIDI Routing"))
         routing_button.clicked.connect(lambda: self.toolRequested.emit("routing"))
-        clock_button = QPushButton("Open MIDI Clock")
+        clock_button = QPushButton(self.tr("Open MIDI Clock"))
         clock_button.clicked.connect(lambda: self.toolRequested.emit("clock"))
-        metronome_button = QPushButton("Open Metronome")
+        metronome_button = QPushButton(self.tr("Open Metronome"))
         metronome_button.clicked.connect(lambda: self.toolRequested.emit("metronome"))
         tools_layout.addWidget(monitor_button)
         tools_layout.addWidget(routing_button)
@@ -129,8 +129,10 @@ class IntroductionView(QWidget):
         tools_layout.addWidget(metronome_button)
 
         info = QLabel(
-            "Tip: a controller you install from Controller Setup appears immediately in every view, "
-            "and again at every launch."
+            self.tr(
+                "Tip: a controller you install from Controller Setup appears immediately in every view, "
+                "and again at every launch."
+            )
         )
         info.setWordWrap(True)
         info.setFrameShape(QFrame.Shape.StyledPanel)
@@ -193,8 +195,8 @@ class IntroductionView(QWidget):
         self._controller_combo.blockSignals(False)
 
         names = list(catalog.CONTROLLER_NAMES)
-        self._known_count_label.setText(f"{len(names)} registered controller(s)")
-        self._known_list_label.setText(", ".join(names) if names else "(no registered controllers)")
+        self._known_count_label.setText(self.tr("{count} registered controller(s)").format(count=len(names)))
+        self._known_list_label.setText(", ".join(names) if names else self.tr("(no registered controllers)"))
         self._rebuild_controller_cards(names)
 
     def refresh_midi_availability(self, port_names: list[str]) -> None:
@@ -207,13 +209,13 @@ class IntroductionView(QWidget):
         }
         for controller, label in self._availability_labels.items():
             if not port_names:
-                label.setText("MIDI: not checked")
+                label.setText(self.tr("MIDI: not checked"))
                 label.setStyleSheet(f"color: {theme_colors()['disabled_text']}; font-weight: 600;")
             elif controller in detected:
-                label.setText("MIDI: available")
+                label.setText(self.tr("MIDI: available"))
                 label.setStyleSheet("color: #16803c; font-weight: 600;")
             else:
-                label.setText("MIDI: not detected")
+                label.setText(self.tr("MIDI: not detected"))
                 label.setStyleSheet(f"color: {theme_colors()['disabled_text']}; font-weight: 600;")
 
     def set_controller(self, controller: str) -> bool:
@@ -229,22 +231,26 @@ class IntroductionView(QWidget):
         wording was actively wrong once a Traktor mapping was open."""
         if software_name:
             self._description_label.setText(
-                f"Visualize, edit, and validate your {software_name} MIDI mappings. "
-                "Start here, then use the shortcuts below to drill down into "
-                "the detailed views."
+                self.tr(
+                    "Visualize, edit, and validate your {software} MIDI mappings. "
+                    "Start here, then use the shortcuts below to drill down into "
+                    "the detailed views."
+                ).format(software=software_name)
             )
         else:
             self._description_label.setText(
-                "Visualize, edit, and validate your Serato DJ or Traktor MIDI "
-                "mappings. Start here, then use the shortcuts below to drill "
-                "down into the detailed views."
+                self.tr(
+                    "Visualize, edit, and validate your Serato DJ or Traktor MIDI "
+                    "mappings. Start here, then use the shortcuts below to drill "
+                    "down into the detailed views."
+                )
             )
 
     def _build_files_box(self) -> QGroupBox:
         """"Your files" (issue #175): every file the user works with, in one
         place -- the open mapping and its previous version, recent mappings,
         and the controller sync sets -- with an action for each."""
-        box = QGroupBox("Your files")
+        box = QGroupBox(self.tr("Your files"))
         layout = QVBoxLayout(box)
         layout.addLayout(help_row(self, *help_texts.DASHBOARD_FILES))
         self._files_mapping_label = QLabel()
@@ -282,10 +288,10 @@ class IntroductionView(QWidget):
         buttons.setSpacing(6)
         self._files_buttons: dict[str, QPushButton] = {}
         for action, label in (
-            ("open", "Open mapping…"),
-            ("reveal", "Show in Finder" if sys.platform == "darwin" else "Show in folder"),
-            ("restore", "Restore previous…"),
-            ("sync", "Sync sets…"),
+            ("open", self.tr("Open mapping…")),
+            ("reveal", self.tr("Show in Finder") if sys.platform == "darwin" else self.tr("Show in folder")),
+            ("restore", self.tr("Restore previous…")),
+            ("sync", self.tr("Sync sets…")),
         ):
             button = QPushButton(label)
             button.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
@@ -295,8 +301,8 @@ class IntroductionView(QWidget):
                 buttons.addStretch(1)
             buttons.addWidget(button)
             self._files_buttons[action] = button
-        self._files_buttons["restore"].setToolTip("Restore the version saved before the last save")
-        self._files_buttons["sync"].setToolTip("Manage the controller sync sets (Preferences)")
+        self._files_buttons["restore"].setToolTip(self.tr("Restore the version saved before the last save"))
+        self._files_buttons["sync"].setToolTip(self.tr("Manage the controller sync sets (Preferences)"))
         row = QHBoxLayout()
         row.setSpacing(12)
         row.addLayout(info, 1)
@@ -313,30 +319,36 @@ class IntroductionView(QWidget):
         recents: list[str] | None = None,
     ) -> None:
         if mapping is None:
-            self._files_mapping_label.setText("<b>Mapping:</b> none open — <i>File → Open Mapping…</i>")
+            self._files_mapping_label.setText(self.tr("<b>Mapping:</b> none open — <i>File → Open Mapping…</i>"))
         else:
             path = Path(mapping)
-            self._files_mapping_label.setText(f"<b>Mapping:</b> {path.name}")
+            self._files_mapping_label.setText(self.tr("<b>Mapping:</b> {name}").format(name=html.escape(path.name)))
             self._files_mapping_label.setToolTip(str(path))
         self._files_folder_label.setText(
-            f"<b>Folder:</b> {Path(mapping).parent}" if mapping is not None else ""
+            self.tr("<b>Folder:</b> {folder}").format(folder=html.escape(str(Path(mapping).parent)))
+            if mapping is not None
+            else ""
         )
         self._files_folder_label.setVisible(mapping is not None)
         if backup is None:
-            self._files_backup_label.setText("<b>Previous version:</b> none yet (made on every save)")
+            self._files_backup_label.setText(self.tr("<b>Previous version:</b> none yet (made on every save)"))
         else:
             when = datetime.fromtimestamp(Path(backup).stat().st_mtime, tz=UTC).astimezone()
-            self._files_backup_label.setText(f"<b>Previous version:</b> kept from {when:%Y-%m-%d %H:%M}")
+            self._files_backup_label.setText(
+                self.tr("<b>Previous version:</b> kept from {when}").format(when=f"{when:%Y-%m-%d %H:%M}")
+            )
         others = [entry for entry in (recents or []) if mapping is None or entry != str(mapping)][:3]
         links = ", ".join(
             f'<a href="{html.escape(entry, quote=True)}">{html.escape(Path(entry).name)}</a>' for entry in others
         )
-        self._files_recent_label.setText(f"<b>Recent:</b> {links}" if others else "<b>Recent:</b> none yet")
+        self._files_recent_label.setText(
+            self.tr("<b>Recent:</b> {links}").format(links=links) if others else self.tr("<b>Recent:</b> none yet")
+        )
         names = sync_sets or []
         self._files_sync_label.setText(
-            f"<b>Sync sets:</b> {', '.join(names)}"
+            self.tr("<b>Sync sets:</b> {names}").format(names=html.escape(", ".join(names)))
             if names
-            else "<b>Sync sets:</b> none — record one with ● Rec or in Controller Setup"
+            else self.tr("<b>Sync sets:</b> none — record one with ● Rec or in Controller Setup")
         )
         self._files_buttons["reveal"].setEnabled(mapping is not None)
         self._files_buttons["restore"].setEnabled(backup is not None)
@@ -349,13 +361,15 @@ class IntroductionView(QWidget):
         software_name: str | None = None,
     ) -> None:
         if path is None:
-            self._loaded_file_label.setText("Loaded file: none")
+            self._loaded_file_label.setText(self.tr("Loaded file: none"))
             self._loaded_software_id = None
             self._software_badge_label.hide()
             self._update_description(None)
             return
         name = Path(path).name
-        self._loaded_file_label.setText(f"Loaded file: {name} ({control_count} control(s))")
+        self._loaded_file_label.setText(
+            self.tr("Loaded file: {name} ({count} control(s))").format(name=name, count=control_count)
+        )
         self._update_description(software_name)
         self._loaded_software_id = software_id
         if software_name:
@@ -427,17 +441,19 @@ class IntroductionView(QWidget):
         details.setSpacing(8)
         definition = catalog.get_definition(controller)
         catalog_info = QLabel(
-            f"Catalog: {len(definition.static_entries)} static entry(ies), {definition.pad_count} pad(s)"
+            self.tr("Catalog: {entries} static entry(ies), {pads} pad(s)").format(
+                entries=len(definition.static_entries), pads=definition.pad_count
+            )
         )
         catalog_info.setWordWrap(True)
         details.addWidget(catalog_info, 1)
 
-        availability = QLabel("MIDI: not checked")
+        availability = QLabel(self.tr("MIDI: not checked"))
         availability.setStyleSheet(f"color: {theme_colors()['disabled_text']}; font-weight: 600;")
         self._availability_labels[controller] = availability
         details.addWidget(availability, 1)
 
-        stats = QLabel("In loaded file: 0 cell(s), 0 deck(s), 0 function(s)")
+        stats = QLabel()
         stats.setWordWrap(True)
         self._card_stats[controller] = stats
         details.addWidget(stats, 1)
@@ -448,7 +464,11 @@ class IntroductionView(QWidget):
             label.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
             label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         buttons = QVBoxLayout()
-        for target, label in (("channel", "Channel"), ("controller", "Controller"), ("images", "Images")):
+        for target, label in (
+            ("channel", self.tr("Channel")),
+            ("controller", self.tr("Controller")),
+            ("images", self.tr("Images")),
+        ):
             btn = QPushButton(label)
             btn.clicked.connect(lambda _checked=False, t=target, c=controller: self._drilldown_controller(t, c))
             buttons.addWidget(btn)
@@ -470,7 +490,9 @@ class IntroductionView(QWidget):
         for controller, label in self._card_stats.items():
             used_cells, deck_count, function_count = self._usage_summary.get(controller, (0, 0, 0))
             label.setText(
-                f"In loaded file: {used_cells} cell(s), {deck_count} deck(s), {function_count} function(s)"
+                self.tr("In loaded file: {cells} cell(s), {decks} deck(s), {functions} function(s)").format(
+                    cells=used_cells, decks=deck_count, functions=function_count
+                )
             )
 
     def _drilldown_controller(self, target: str, controller: str) -> None:
@@ -487,7 +509,7 @@ __all__ = ["IntroductionView"]
 def _set_card_image(image: QLabel, path: Path | None) -> None:
     pixmap = QPixmap(str(path)) if path is not None and path.exists() else QPixmap()
     if pixmap.isNull():
-        image.setText("Image unavailable")
+        image.setText(QCoreApplication.translate("IntroductionView", "Image unavailable"))
         image.setFrameShape(QFrame.Shape.Box)
     else:
         image.setPixmap(pixmap.scaled(520, 300, Qt.AspectRatioMode.KeepAspectRatio,

@@ -33,7 +33,12 @@ from dataclasses import dataclass, field
 
 from djmidi import catalog
 from djmidi.function_names import function_name
+from djmidi.i18n import QT_TRANSLATE_NOOP, Translate, untranslated
 from djmidi.model import Control, MappingElement, MidiConfig
+
+#: A result's location parts, translated by the GUI (issue #318).
+DECK_LABEL = QT_TRANSLATE_NOOP("FunctionSearchView", "Deck {deck}")
+SLOT_LABEL = QT_TRANSLATE_NOOP("FunctionSearchView", "Slot {slot}")
 
 _TOKEN_RE = re.compile(r"[a-z0-9]+")
 _EVENT_WORDS = {"click": "click", "press": "click", "output": "output", "led": "output"}
@@ -81,12 +86,13 @@ class FunctionResult:
         `function_names` has none."""
         return function_name(self.tag)
 
-    def location(self) -> str:
+    def location(self, translate: Translate = untranslated) -> str:
+        """"Deck 0 · Slot 3"; the GUI passes a `translate` for its own language."""
         parts = []
         if self.deck_id:
-            parts.append(f"Deck {self.deck_id}")
+            parts.append(translate(DECK_LABEL).format(deck=self.deck_id))
         if self.slot_id:
-            parts.append(f"Slot {self.slot_id}")
+            parts.append(translate(SLOT_LABEL).format(slot=self.slot_id))
         return " · ".join(parts) or "—"
 
 

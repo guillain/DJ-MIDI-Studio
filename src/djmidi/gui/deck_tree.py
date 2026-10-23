@@ -9,6 +9,7 @@ collapsed into a single editable row instead of showing every duplicate."""
 
 from __future__ import annotations
 
+from PySide6.QtCore import QCoreApplication
 from PySide6.QtGui import QStandardItem, QStandardItemModel
 
 from djmidi import catalog
@@ -24,7 +25,7 @@ def _sort_numeric_then_text(value: str) -> tuple[bool, int, str]:
 
 def _group_label(group: MappingGroup) -> str:
     hits = catalog.lookup(group.channel, group.event_type, group.control_no)
-    physical = "; ".join(f"{h.controller}: {h.name}" for h in hits) or "unknown physical control"
+    physical = "; ".join(f"{h.controller}: {h.name}" for h in hits) or QCoreApplication.translate("MappingTree", "unknown physical control")
     count = f" (x{len(group.members)})" if len(group.members) > 1 else ""
     return f"{function_name(group.tag)} [{group.event}] — ch{group.channel} {group.event_type} #{group.control_no} -> {physical}{count}"
 
@@ -47,17 +48,17 @@ def _group_by_deck_then_slot(config: MidiConfig) -> dict[str, dict[str, list[Map
 
 def build_deck_tree(config: MidiConfig) -> QStandardItemModel:
     model = QStandardItemModel()
-    model.setHorizontalHeaderLabels(["Deck / Slot / Function -> physical control"])
+    model.setHorizontalHeaderLabels([QCoreApplication.translate("MappingTree", "Deck / Slot / Function -> physical control")])
     root = model.invisibleRootItem()
 
     decks = _group_by_deck_then_slot(config)
 
     for deck_id in sorted(decks, key=_sort_numeric_then_text):
-        deck_item = QStandardItem(f"Deck {deck_id}")
+        deck_item = QStandardItem(QCoreApplication.translate("MappingTree", "Deck {deck}").format(deck=deck_id))
         deck_item.setEditable(False)
         slots = decks[deck_id]
         for slot_id in sorted(slots, key=_sort_numeric_then_text):
-            slot_item = QStandardItem(f"Slot {slot_id}")
+            slot_item = QStandardItem(QCoreApplication.translate("MappingTree", "Slot {slot}").format(slot=slot_id))
             slot_item.setEditable(False)
             for group in slots[slot_id]:
                 slot_item.appendRow(_leaf(group))
@@ -76,11 +77,11 @@ def build_deck_columns(config: MidiConfig) -> list[tuple[str, QStandardItemModel
     columns: list[tuple[str, QStandardItemModel]] = []
     for deck_id in sorted(decks, key=_sort_numeric_then_text):
         model = QStandardItemModel()
-        model.setHorizontalHeaderLabels([f"Deck {deck_id}"])
+        model.setHorizontalHeaderLabels([QCoreApplication.translate("MappingTree", "Deck {deck}").format(deck=deck_id)])
         root = model.invisibleRootItem()
         slots = decks[deck_id]
         for slot_id in sorted(slots, key=_sort_numeric_then_text):
-            slot_item = QStandardItem(f"Slot {slot_id}")
+            slot_item = QStandardItem(QCoreApplication.translate("MappingTree", "Slot {slot}").format(slot=slot_id))
             slot_item.setEditable(False)
             for group in slots[slot_id]:
                 slot_item.appendRow(_leaf(group))

@@ -82,6 +82,8 @@ from djmidi.gui.port_list_utils import refresh_checked_port_list
 from djmidi.gui.scroll_utils import AutoSizeScrollArea
 from djmidi.gui.theme import colors as theme_colors
 from djmidi.gui.theme import signals as theme_signals
+from djmidi.gui.translation import translator
+from djmidi.i18n import QT_TRANSLATE_NOOP
 from djmidi.midi_io import (
     MidiEvent,
     MidiMonitor,
@@ -128,7 +130,7 @@ _IMPORT_HELP = (
     "offered to open the same file as an editable mapping too."
 )
 
-_ALL_TSI_DEVICES = "All devices"
+_ALL_TSI_DEVICES = QT_TRANSLATE_NOOP("ControllerSetupView", "All devices")
 
 
 def read_mapping_file(path: str | Path) -> MidiConfig:
@@ -247,10 +249,10 @@ class ControllerSetupView(QWidget):
         self._column_labels: list[QLabel] = []
 
         self._name_edit = QLineEdit()
-        self._name_edit.setPlaceholderText("Controller name, e.g. Behringer CMD LC-1")
+        self._name_edit.setPlaceholderText(self.tr("Controller name, e.g. Behringer CMD LC-1"))
         self._name_edit.setMinimumHeight(30)
         self._name_edit.textChanged.connect(self._on_name_changed)
-        name_label = QLabel("Controller name:")
+        name_label = QLabel(self.tr("Controller name:"))
         name_label.setStyleSheet("QLabel { font-weight: bold; }")
         name_row = QHBoxLayout()
         name_row.setSpacing(10)
@@ -258,19 +260,19 @@ class ControllerSetupView(QWidget):
         name_row.addWidget(self._name_edit, 1)
 
         new_button = QPushButton(self._get_icon("new"), "")
-        new_button.setToolTip("New session")
+        new_button.setToolTip(self.tr("New session"))
         new_button.clicked.connect(self._on_new_session_clicked)
         load_button = QPushButton(self._get_icon("open"), "")
-        load_button.setToolTip("Load session…")
+        load_button.setToolTip(self.tr("Load session…"))
         load_button.clicked.connect(self._on_load_session_clicked)
         save_button = QPushButton(self._get_icon("save"), "")
-        save_button.setToolTip("Save session…")
+        save_button.setToolTip(self.tr("Save session…"))
         save_button.clicked.connect(self._on_save_session_clicked)
         start_from_button = QPushButton(self._get_icon("template"), "")
-        start_from_button.setToolTip("Start from controller…")
+        start_from_button.setToolTip(self.tr("Start from controller…"))
         start_from_button.clicked.connect(self._on_start_from_controller_clicked)
         clear_button = QPushButton(self._get_icon("clear"), "")
-        clear_button.setToolTip("Clear captured rows")
+        clear_button.setToolTip(self.tr("Clear captured rows"))
         clear_button.clicked.connect(self._on_clear_rows_clicked)
 
         self._port_list = QListWidget()
@@ -278,37 +280,37 @@ class ControllerSetupView(QWidget):
         # QListWidget.sizeHint() ignores setMinimumHeight (it returns a fixed
         # ~192px regardless); a floor keeps it from collapsing, and it grows
         # to fill "MIDI input"'s panel height via the stretch factor below
-        # (matching "MIDI Output"'s panel, see the io_row comment).
+        # (matching self.tr("MIDI Output")'s panel, see the io_row comment).
         self._port_list.setMinimumHeight(70)
         refresh_button = QPushButton(self._get_icon("refresh"), "")
-        refresh_button.setToolTip("Refresh ports")
+        refresh_button.setToolTip(self.tr("Refresh ports"))
         refresh_button.clicked.connect(self._refresh_ports)
         self._learn_button = QPushButton(self._get_icon("start"), "")
-        self._learn_button.setToolTip("Start learning")
+        self._learn_button.setToolTip(self.tr("Start learning"))
         self._learn_button.clicked.connect(self._toggle_learning)
-        self._learn_status = QLabel("Stopped")
+        self._learn_status = QLabel(self.tr("Stopped"))
         capture_help_button = self._help_button("MIDI input (learn from controller)", _CAPTURE_HELP)
         capture_box, capture_layout = self._titled_panel(
-            "MIDI input", [refresh_button, self._learn_button, capture_help_button]
+            self.tr("MIDI input"), [refresh_button, self._learn_button, capture_help_button]
         )
         capture_layout.addWidget(self._port_list, 1)
         capture_layout.addSpacing(6)
         capture_layout.addWidget(self._learn_status)
 
         import_button = QPushButton(self._get_icon("import"), "")
-        import_button.setToolTip("Learn triggers from a mapping (Serato XML or Traktor TSI)…")
+        import_button.setToolTip(self.tr("Learn triggers from a mapping (Serato XML or Traktor TSI)…"))
         import_button.clicked.connect(self._on_import_xml_clicked)
         self._attach_image_button = QPushButton(self._get_icon("image"), "")
-        self._attach_image_button.setToolTip("Attach reference image…")
+        self._attach_image_button.setToolTip(self.tr("Attach reference image…"))
         self._attach_image_button.clicked.connect(self._on_attach_image_clicked)
         import_help_button = self._help_button("Learn triggers from a mapping", _IMPORT_HELP)
-        self._image_label = QLabel("No reference image")
+        self._image_label = QLabel(self.tr("No reference image"))
         self._image_label.setWordWrap(True)
         self._hint_labels.append(self._image_label)
 
         self._output_port_list = QListWidget()
         self._output_port_list.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
-        refresh_output_button = QPushButton(self._get_icon("refresh"), "Refresh output ports")
+        refresh_output_button = QPushButton(self._get_icon("refresh"), self.tr("Refresh output ports"))
         refresh_output_button.clicked.connect(self._refresh_output_ports)
 
         self._send_type_edit = QLineEdit("note_on")
@@ -324,26 +326,31 @@ class ControllerSetupView(QWidget):
             self._send_delay_ms_edit,
         ):
             field.setMinimumHeight(28)
-        send_once_button = QPushButton(self._get_icon("start"), "Send once")
+            # Wide enough for "note_on" on a narrow window, where the io row
+            # scrolls instead of squeezing these fields to "on" (issue #318).
+            field.setMinimumWidth(80)
+        send_once_button = QPushButton(self._get_icon("start"), self.tr("Send once"))
         send_once_button.clicked.connect(self._on_send_output_once_clicked)
-        send_double_button = QPushButton(self._get_icon("start"), "Send double-click (NOTE)")
+        send_double_button = QPushButton(self._get_icon("start"), self.tr("Send double-click (NOTE)"))
         send_double_button.clicked.connect(self._on_send_output_double_clicked)
-        send_selected_button = QPushButton(self._get_icon("start"), "Play selected session row(s)")
+        send_selected_button = QPushButton(self._get_icon("start"), self.tr("Play selected session row(s)"))
         send_selected_button.clicked.connect(self._on_send_selected_rows_clicked)
-        send_all_button = QPushButton(self._get_icon("start"), "Play all session rows")
+        send_all_button = QPushButton(self._get_icon("start"), self.tr("Play all session rows"))
         send_all_button.clicked.connect(self._on_send_all_rows_clicked)
-        replay_button = QPushButton(self._get_icon("refresh"), "Replay recorded session")
+        replay_button = QPushButton(self._get_icon("refresh"), self.tr("Replay recorded session"))
         replay_button.clicked.connect(self._on_replay_recorded_session_clicked)
-        sync_set_button = QPushButton(self._get_icon("save"), "Save as controller sync set")
+        sync_set_button = QPushButton(self._get_icon("save"), self.tr("Save as controller sync set"))
         sync_set_button.setToolTip(
-            "Store the recorded session as this controller's initialization set: "
-            "the menu bar's Sync button (and Live Monitor's) then sends it to the controller."
+            self.tr(
+                "Store the recorded session as this controller's initialization set: "
+                "the menu bar's Sync button (and Live Monitor's) then sends it to the controller."
+            )
         )
         sync_set_button.clicked.connect(self._on_save_sync_set_clicked)
 
-        self._send_status = QLabel("No MIDI output sent yet.")
+        self._send_status = QLabel(self.tr("No MIDI output sent yet."))
 
-        output_box = QGroupBox("MIDI Output")
+        output_box = QGroupBox(self.tr("MIDI Output"))
         output_box.setStyleSheet("QGroupBox { font-weight: bold; padding-top: 12px; }")
         output_layout = QHBoxLayout(output_box)
         output_layout.setContentsMargins(10, 12, 10, 10)
@@ -351,7 +358,7 @@ class ControllerSetupView(QWidget):
 
         output_ports = QVBoxLayout()
         output_ports.setSpacing(6)
-        output_ports_label = QLabel("Available output ports")
+        output_ports_label = QLabel(self.tr("Available output ports"))
         output_ports_label.setStyleSheet("QLabel { font-weight: bold; }")
         output_ports.addWidget(output_ports_label)
         self._output_port_list.setMinimumWidth(220)
@@ -363,7 +370,7 @@ class ControllerSetupView(QWidget):
 
         output_controls = QVBoxLayout()
         output_controls.setSpacing(8)
-        output_controls_label = QLabel("Message and playback controls")
+        output_controls_label = QLabel(self.tr("Message and playback controls"))
         output_controls_label.setStyleSheet("QLabel { font-weight: bold; }")
         output_controls.addWidget(output_controls_label)
 
@@ -372,14 +379,14 @@ class ControllerSetupView(QWidget):
         send_form.setLabelAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
         send_form.setHorizontalSpacing(10)
         send_form.setVerticalSpacing(10)
-        send_form.addRow("Type", self._send_type_edit)
-        send_form.addRow("Channel", self._send_channel_edit)
-        send_form.addRow("Data1", self._send_data1_edit)
-        send_form.addRow("Value", self._send_data2_edit)
-        send_form.addRow("Delay (ms)", self._send_delay_ms_edit)
+        send_form.addRow(self.tr("Type"), self._send_type_edit)
+        send_form.addRow(self.tr("Channel"), self._send_channel_edit)
+        send_form.addRow(self.tr("Data1"), self._send_data1_edit)
+        send_form.addRow(self.tr("Value"), self._send_data2_edit)
+        send_form.addRow(self.tr("Delay (ms)"), self._send_delay_ms_edit)
         message_column = QVBoxLayout()
         message_column.setSpacing(6)
-        message_column.addWidget(self._column_label("Send message"))
+        message_column.addWidget(self._column_label(self.tr("Send message")))
         message_column.addLayout(send_form)
         message_column.addStretch(1)
 
@@ -398,7 +405,7 @@ class ControllerSetupView(QWidget):
         action_grid.addStretch(1)
         actions_column = QVBoxLayout()
         actions_column.setSpacing(6)
-        actions_column.addWidget(self._column_label("Playback"))
+        actions_column.addWidget(self._column_label(self.tr("Playback")))
         actions_column.addLayout(action_grid)
 
         # One-click send buttons for the draft's own mode-switch rows (any
@@ -409,13 +416,13 @@ class ControllerSetupView(QWidget):
         self._mode_grid.setHorizontalSpacing(6)
         self._mode_grid.setVerticalSpacing(6)
         self._mode_hint = QLabel(
-            "Rows whose section contains MODE (e.g. PAD MODE) appear here as one-click send buttons."
+            self.tr("Rows whose section contains MODE (e.g. PAD MODE) appear here as one-click send buttons.")
         )
         self._mode_hint.setWordWrap(True)
         self._hint_labels.append(self._mode_hint)
         pads_column = QVBoxLayout()
         pads_column.setSpacing(6)
-        pads_column.addWidget(self._column_label("Mode buttons"))
+        pads_column.addWidget(self._column_label(self.tr("Mode buttons")))
         pads_column.addWidget(self._mode_hint)
         pads_column.addLayout(self._mode_grid)
         pads_column.addStretch(1)
@@ -433,29 +440,31 @@ class ControllerSetupView(QWidget):
         output_layout.addLayout(output_controls, 2)
 
         check_button = QPushButton(self._get_icon("refresh"), "")
-        check_button.setToolTip("Check for conflicts")
+        check_button.setToolTip(self.tr("Check for conflicts"))
         check_button.clicked.connect(self._on_check_conflicts_clicked)
         self._apply_button = QPushButton(self._get_icon("apply"), "")
         self._apply_button.setToolTip(
-            "Install this profile: saved in your Controllers folder and loaded at every launch"
+            self.tr("Install this profile: saved in your Controllers folder and loaded at every launch")
         )
         self._apply_button.clicked.connect(self._on_apply_clicked)
         export_button = QPushButton(self._get_icon("export"), "")
-        export_button.setToolTip("For developers: generate a Python catalog module…")
+        export_button.setToolTip(self.tr("For developers: generate a Python catalog module…"))
         export_button.clicked.connect(self._on_export_clicked)
         submit_button = QPushButton(self._get_icon("submit"), "")
-        submit_button.setToolTip("Submit to community catalog…")
+        submit_button.setToolTip(self.tr("Submit to community catalog…"))
         submit_button.clicked.connect(self._on_submit_clicked)
         apply_help_button = self._help_button("Apply / Export", _APPLY_HELP)
 
         # Session, Import and Apply/Export are merged into one "Draft" panel: a
         # single horizontal toolbar of icon actions with a caption per group.
         tab_help_button = self._help_button("What is Controller Setup?", _TAB_HELP)
-        draft_box, draft_layout = self._titled_panel("Draft", [tab_help_button])
+        draft_box, draft_layout = self._titled_panel(self.tr("Draft"), [tab_help_button])
         draft_hint = QLabel(
-            "Build a controller profile — import or learn its MIDI triggers, name each "
-            "row, then Apply / Export. This does not open a Serato mapping for editing "
-            "(that is File → Open)."
+            self.tr(
+                "Build a controller profile — import or learn its MIDI triggers, name each "
+                "row, then Apply / Export. This does not open a Serato mapping for editing "
+                "(that is File → Open)."
+            )
         )
         draft_hint.setWordWrap(True)
         self._hint_labels.append(draft_hint)
@@ -463,10 +472,10 @@ class ControllerSetupView(QWidget):
         draft_layout.addLayout(
             self._toolbar_row(
                 [
-                    ("Session", [new_button, start_from_button, load_button, save_button, clear_button]),
-                    ("Learn", [import_button, self._attach_image_button, import_help_button]),
+                    (self.tr("Session"), [new_button, start_from_button, load_button, save_button, clear_button]),
+                    (self.tr("Learn"), [import_button, self._attach_image_button, import_help_button]),
                     (
-                        "Apply / Export",
+                        self.tr("Apply / Export"),
                         [check_button, self._apply_button, export_button, submit_button, apply_help_button],
                     ),
                 ]
@@ -478,13 +487,13 @@ class ControllerSetupView(QWidget):
         # Output"; both stretch to the row's shared height (the port list
         # inside each grows to fill via its own stretch factor above), so
         # the two panels read as one matched-height toolbar instead of the
-        # (taller) "MIDI Output" panel dwarfing a short "MIDI input" one.
+        # (taller) self.tr("MIDI Output") panel dwarfing a short "MIDI input" one.
         io_row = QHBoxLayout()
         io_row.setSpacing(12)
         io_row.addWidget(capture_box, 1)
         io_row.addWidget(output_box, 3)
 
-        # The "MIDI Output" panel's three side-by-side columns (Send message /
+        # The self.tr("MIDI Output") panel's three side-by-side columns (Send message /
         # Playback / Pad modes) plus "MIDI input" need more width than the
         # app's default/minimum window size guarantees (issue #19: verified by
         # screenshotting this tab at 1100x700, where the columns compressed
@@ -495,7 +504,17 @@ class ControllerSetupView(QWidget):
         io_container.setLayout(io_row)
 
         self._table = QTableWidget(0, 7)
-        self._table.setHorizontalHeaderLabels(["Section", "Name", "Type", "Channel(s)", "Data1", "Source", "Device"])
+        self._table.setHorizontalHeaderLabels(
+            [
+                self.tr("Section"),
+                self.tr("Name"),
+                self.tr("Type"),
+                self.tr("Channel(s)"),
+                self.tr("Data1"),
+                self.tr("Source"),
+                self.tr("Device"),
+            ]
+        )
         self._table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self._table.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         self._table.setMinimumHeight(160)
@@ -504,19 +523,19 @@ class ControllerSetupView(QWidget):
         self._table.setAlternatingRowColors(True)
         self._table.cellChanged.connect(self._on_cell_changed)
 
-        delete_button = QPushButton(self._get_icon("delete"), "Delete selected row(s)")
+        delete_button = QPushButton(self._get_icon("delete"), self.tr("Delete selected row(s)"))
         delete_button.setMinimumHeight(28)
         delete_button.clicked.connect(self._on_delete_selected_clicked)
-        add_button = QPushButton(self._get_icon("add"), "Add row")
+        add_button = QPushButton(self._get_icon("add"), self.tr("Add row"))
         add_button.setMinimumHeight(28)
         add_button.clicked.connect(self._on_add_row_clicked)
-        bulk_section_button = QPushButton(self._get_icon("apply"), "Set section for selected rows…")
+        bulk_section_button = QPushButton(self._get_icon("apply"), self.tr("Set section for selected rows…"))
         bulk_section_button.setMinimumHeight(28)
-        bulk_section_button.setToolTip("Assign one Section name to every selected row")
+        bulk_section_button.setToolTip(self.tr("Assign one Section name to every selected row"))
         bulk_section_button.clicked.connect(self._on_bulk_set_section_clicked)
-        bulk_name_button = QPushButton(self._get_icon("apply"), "Set name for selected rows…")
+        bulk_name_button = QPushButton(self._get_icon("apply"), self.tr("Set name for selected rows…"))
         bulk_name_button.setMinimumHeight(28)
-        bulk_name_button.setToolTip("Assign a Name to every selected row, optionally auto-numbered (PAD 1, PAD 2, …)")
+        bulk_name_button.setToolTip(self.tr("Assign a Name to every selected row, optionally auto-numbered (PAD 1, PAD 2, …)"))
         bulk_name_button.clicked.connect(self._on_bulk_set_name_clicked)
         row_buttons = QHBoxLayout()
         row_buttons.setSpacing(8)
@@ -527,7 +546,7 @@ class ControllerSetupView(QWidget):
         row_buttons.addStretch(1)
 
         # row_buttons itself had no scroll protection -- at a narrow enough
-        # width its four buttons' labels ("Set section for selected rows…"
+        # width its four buttons' labels (self.tr("Set section for selected rows…")
         # is the longest) squeezed below legible, overlapping each other
         # entirely at 320x240 (issue #19, found by the same proactive audit
         # that caught Controller Images' toolbar and By Channel/Deck/
@@ -547,7 +566,7 @@ class ControllerSetupView(QWidget):
         self._row_buttons_scroll.setWidget(self._row_buttons_container)
 
         # The name row, "Draft" panel (hint text + Session/Import/Apply
-        # toolbar), and "MIDI input"/"MIDI Output" (io_scroll) previously sat
+        # toolbar), and "MIDI input"/self.tr("MIDI Output") (io_scroll) previously sat
         # directly in the top-level layout with no scroll protection of their
         # own -- only io_scroll's *inner* row got one, from the original
         # issue #19 fix. Found by widening that audit to more window sizes:
@@ -783,7 +802,11 @@ class ControllerSetupView(QWidget):
         for index, row in enumerate(rows):
             button = QPushButton(row.name)
             button.setMinimumHeight(28)
-            button.setToolTip(f"Send {row.name}: Note {row.data1} on channel {row.channels[0]}")
+            button.setToolTip(
+                self.tr("Send {name}: Note {note} on channel {channel}").format(
+                    name=row.name, note=row.data1, channel=row.channels[0]
+                )
+            )
             button.clicked.connect(lambda _checked=False, r=row: self._on_send_mode_row(r))
             self._mode_grid.addWidget(button, index // 2, index % 2)
 
@@ -867,7 +890,7 @@ class ControllerSetupView(QWidget):
         )
         for row_index in indices:
             selection_model.select(self._table.model().index(row_index, 0), flags)
-        conflicts = find_trigger_conflicts(self._rows)
+        conflicts = find_trigger_conflicts(self._rows, translator("ControllerSetupView"))
         if conflicts:
             _LOGGER.warning(
                 "Bulk edit on %r produced %d trigger conflict(s): %s",
@@ -877,17 +900,17 @@ class ControllerSetupView(QWidget):
             )
             QMessageBox.warning(
                 self,
-                "Bulk edit created conflicts",
-                "The bulk edit left colliding triggers:\n\n" + "\n".join(conflicts),
+                self.tr("Bulk edit created conflicts"),
+                self.tr("The bulk edit left colliding triggers:") + "\n\n" + "\n".join(conflicts),
             )
 
     def _on_bulk_set_section_clicked(self) -> None:
         indices = self._selected_table_rows()
         if not indices:
-            QMessageBox.information(self, "No rows selected", "Select one or more rows first.")
+            QMessageBox.information(self, self.tr("No rows selected"), self.tr("Select one or more rows first."))
             return
         text, ok = QInputDialog.getText(
-            self, "Set section", f"Section name for {len(indices)} selected row(s):"
+            self, self.tr("Set section"), self.tr("Section name for {count} selected row(s):").format(count=len(indices))
         )
         section = text.strip()
         if not ok or not section:
@@ -897,10 +920,10 @@ class ControllerSetupView(QWidget):
     def _on_bulk_set_name_clicked(self) -> None:
         indices = self._selected_table_rows()
         if not indices:
-            QMessageBox.information(self, "No rows selected", "Select one or more rows first.")
+            QMessageBox.information(self, self.tr("No rows selected"), self.tr("Select one or more rows first."))
             return
         text, ok = QInputDialog.getText(
-            self, "Set name", f"Name for {len(indices)} selected row(s):"
+            self, self.tr("Set name"), self.tr("Name for {count} selected row(s):").format(count=len(indices))
         )
         base = text.strip()
         if not ok or not base:
@@ -909,8 +932,8 @@ class ControllerSetupView(QWidget):
         if len(indices) > 1:
             reply = QMessageBox.question(
                 self,
-                "Auto-number?",
-                f"Number the name across the selected rows ('{base} 1', '{base} 2', …)?",
+                self.tr("Auto-number?"),
+                self.tr("Number the name across the selected rows ('{base} 1', '{base} 2', …)?").format(base=base),
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No | QMessageBox.StandardButton.Cancel,
             )
             if reply == QMessageBox.StandardButton.Cancel:
@@ -926,7 +949,7 @@ class ControllerSetupView(QWidget):
     # -- session lifecycle --------------------------------------------------
 
     def _confirm(self, text: str) -> bool:
-        reply = QMessageBox.question(self, "Confirm", text, QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        reply = QMessageBox.question(self, self.tr("Confirm"), text, QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         return reply == QMessageBox.StandardButton.Yes
 
     def _reset(self, *, clear_name: bool) -> None:
@@ -948,12 +971,12 @@ class ControllerSetupView(QWidget):
         self._dirty = False
 
     def _on_new_session_clicked(self) -> None:
-        if self._dirty and not self._confirm("This will discard the current unsaved draft. Continue?"):
+        if self._dirty and not self._confirm(self.tr("This will discard the current unsaved draft. Continue?")):
             return
         self._reset(clear_name=True)
 
     def _on_clear_rows_clicked(self) -> None:
-        if self._dirty and not self._confirm("This will discard the current unsaved rows (keeping the controller name). Continue?"):
+        if self._dirty and not self._confirm(self.tr("This will discard the current unsaved rows (keeping the controller name). Continue?")):
             return
         self._reset(clear_name=False)
 
@@ -978,14 +1001,14 @@ class ControllerSetupView(QWidget):
     def _on_start_from_controller_clicked(self) -> None:
         names = list(catalog.CONTROLLER_NAMES)
         if not names:
-            QMessageBox.information(self, "No controller", "No controller is registered.")
+            QMessageBox.information(self, self.tr("No controller"), self.tr("No controller is registered."))
             return
         controller, ok = QInputDialog.getItem(
-            self, "Start from controller", "Copy every control of:", names, 0, False
+            self, self.tr("Start from controller"), self.tr("Copy every control of:"), names, 0, False
         )
         if not ok or not controller:
             return
-        if self._dirty and not self._confirm("This will discard the current unsaved draft. Continue?"):
+        if self._dirty and not self._confirm(self.tr("This will discard the current unsaved draft. Continue?")):
             return
         self.start_from_controller(controller)
 
@@ -1041,7 +1064,7 @@ class ControllerSetupView(QWidget):
             # list, since sending MIDI (unlike listening) is only useful once
             # at least one output is chosen. Re-applied on every refresh with
             # nothing checked, including a deliberately emptied selection --
-            # "Refresh output ports" restores a sane default rather than
+            # self.tr("Refresh output ports") restores a sane default rather than
             # leaving every send/replay action unusable.
             self._output_port_list.item(0).setCheckState(Qt.CheckState.Checked)
 
@@ -1052,7 +1075,7 @@ class ControllerSetupView(QWidget):
             if self._output_port_list.item(i).checkState() == Qt.CheckState.Checked
         ]
         if not ports:
-            raise ValueError("No output port selected")
+            raise ValueError(self.tr("No output port selected"))
         return ports
 
     def _send_note_click(self, *, note: int, double_click: bool) -> None:
@@ -1094,19 +1117,23 @@ class ControllerSetupView(QWidget):
                     data2=_parse_int(self._send_data2_edit.text(), "Data2", 0, 127),
                 )
         except Exception as exc:  # noqa: BLE001 - show user-facing error
-            QMessageBox.critical(self, "Failed to send MIDI", str(exc))
+            QMessageBox.critical(self, self.tr("Failed to send MIDI"), str(exc))
             return
-        suffix = "s" if len(ports) != 1 else ""
-        self._send_status.setText(f"MIDI message sent to {len(ports)} output{suffix}.")
+        template = (
+            self.tr("MIDI message sent to {count} output.")
+            if len(ports) == 1
+            else self.tr("MIDI message sent to {count} outputs.")
+        )
+        self._send_status.setText(template.format(count=len(ports)))
 
     def _on_send_output_double_clicked(self) -> None:
         try:
             note = _parse_int(self._send_data1_edit.text(), "Data1", 0, 127)
             self._send_note_click(note=note, double_click=True)
         except Exception as exc:  # noqa: BLE001 - show user-facing error
-            QMessageBox.critical(self, "Failed to send MIDI", str(exc))
+            QMessageBox.critical(self, self.tr("Failed to send MIDI"), str(exc))
             return
-        self._send_status.setText("Double-click MIDI sequence sent.")
+        self._send_status.setText(self.tr("Double-click MIDI sequence sent."))
 
     def _on_send_mode_row(self, row: ControlInfo) -> None:
         """Send one mode-switch row (a Note press + release) on its own
@@ -1118,9 +1145,11 @@ class ControllerSetupView(QWidget):
             self._send_data1_edit.setText(str(note))
             self._send_note_click(note=note, double_click=False)
         except Exception as exc:  # noqa: BLE001 - show user-facing error
-            QMessageBox.critical(self, "Failed to send MIDI", str(exc))
+            QMessageBox.critical(self, self.tr("Failed to send MIDI"), str(exc))
             return
-        self._send_status.setText(f"Sent {row.name} (Note {note}, channel {channel}).")
+        self._send_status.setText(
+            self.tr("Sent {name} (Note {note}, channel {channel}).").format(name=row.name, note=note, channel=channel)
+        )
 
     def _selected_row_indices(self) -> list[int]:
         selected = sorted({index.row() for index in self._table.selectedIndexes()})
@@ -1156,29 +1185,37 @@ class ControllerSetupView(QWidget):
         try:
             sent, skipped = self._play_session_rows_once(self._selected_row_indices())
         except Exception as exc:  # noqa: BLE001 - show user-facing error
-            QMessageBox.critical(self, "Failed to play rows", str(exc))
+            QMessageBox.critical(self, self.tr("Failed to play rows"), str(exc))
             return
-        self._send_status.setText(f"Played selected rows: {sent} MIDI message(s), {skipped} row(s) skipped.")
+        self._send_status.setText(
+            self.tr("Played selected rows: {sent} MIDI message(s), {skipped} row(s) skipped.").format(
+                sent=sent, skipped=skipped
+            )
+        )
 
     def _on_send_all_rows_clicked(self) -> None:
         try:
             sent, skipped = self._play_session_rows_once(list(range(len(self._rows))))
         except Exception as exc:  # noqa: BLE001 - show user-facing error
-            QMessageBox.critical(self, "Failed to play rows", str(exc))
+            QMessageBox.critical(self, self.tr("Failed to play rows"), str(exc))
             return
-        self._send_status.setText(f"Played all rows: {sent} MIDI message(s), {skipped} row(s) skipped.")
+        self._send_status.setText(
+            self.tr("Played all rows: {sent} MIDI message(s), {skipped} row(s) skipped.").format(
+                sent=sent, skipped=skipped
+            )
+        )
 
     def _stop_replay(self) -> None:
         self._replay_generation += 1
 
     def _on_replay_recorded_session_clicked(self) -> None:
         if not self._recorded_events:
-            QMessageBox.warning(self, "No recording", "No MIDI event has been recorded in this session.")
+            QMessageBox.warning(self, self.tr("No recording"), self.tr("No MIDI event has been recorded in this session."))
             return
         try:
             ports = self._selected_output_ports()
         except Exception as exc:  # noqa: BLE001 - show user-facing error
-            QMessageBox.critical(self, "Failed to replay session", str(exc))
+            QMessageBox.critical(self, self.tr("Failed to replay session"), str(exc))
             return
 
         events = list(self._recorded_events)
@@ -1189,7 +1226,9 @@ class ControllerSetupView(QWidget):
             if generation != self._replay_generation:
                 return
             if index >= len(events):
-                self._send_status.setText(f"Recorded session replayed: {len(events)} event(s).")
+                self._send_status.setText(
+                    self.tr("Recorded session replayed: {count} event(s).").format(count=len(events))
+                )
                 return
             event = events[index]
             delay_ms = max(0, int((event.timestamp - previous_timestamp) * 1000))
@@ -1203,24 +1242,26 @@ class ControllerSetupView(QWidget):
 
             QTimer.singleShot(delay_ms, send_and_continue)
 
-        self._send_status.setText(f"Replaying recorded session ({len(events)} event(s))…")
+        self._send_status.setText(
+            self.tr("Replaying recorded session ({count} event(s))…").format(count=len(events))
+        )
         schedule(0, events[0].timestamp)
 
     def build_sync_set(self) -> ControllerSyncSet:
         """The recorded session as a controller sync set (raises ValueError)."""
         name = self._controller_name.strip()
         if not name:
-            raise ValueError("Enter a controller name first: the sync set is stored per controller.")
+            raise ValueError(self.tr("Enter a controller name first: the sync set is stored per controller."))
         sync_set = sync_set_from_events(name, self._recorded_events)
         if not sync_set.messages:
-            raise ValueError("No MIDI note/CC event has been recorded in this session.")
+            raise ValueError(self.tr("No MIDI note/CC event has been recorded in this session."))
         return sync_set
 
     def _on_save_sync_set_clicked(self) -> None:
         try:
             sync_set = self.build_sync_set()
         except ValueError as exc:
-            QMessageBox.warning(self, "Cannot save sync set", str(exc))
+            QMessageBox.warning(self, self.tr("Cannot save sync set"), str(exc))
             return
         self.syncSetSaveRequested.emit(sync_set)
 
@@ -1240,15 +1281,15 @@ class ControllerSetupView(QWidget):
                 self._monitor.open_input(name)
         except Exception as exc:  # noqa: BLE001 - surface device-open failures without partial learning
             self._monitor.close_all()
-            self._learn_status.setText("Stopped")
+            self._learn_status.setText(self.tr("Stopped"))
             self._learn_button.setIcon(self._get_icon("start"))
-            self._learn_button.setToolTip("Start learning")
-            QMessageBox.warning(self, "Cannot start MIDI learning", str(exc))
+            self._learn_button.setToolTip(self.tr("Start learning"))
+            QMessageBox.warning(self, self.tr("Cannot start MIDI learning"), str(exc))
             return
         self._learning = True
         self._learn_button.setIcon(self._get_icon("stop"))
-        self._learn_button.setToolTip("Stop learning")
-        self._learn_status.setText(f"Listening ({len(selected)} input(s))")
+        self._learn_button.setToolTip(self.tr("Stop learning"))
+        self._learn_status.setText(self.tr("Listening ({count} input(s))").format(count=len(selected)))
         _LOGGER.info("Controller Setup learning started: inputs=%s", selected)
         self._timer.start()
 
@@ -1257,8 +1298,8 @@ class ControllerSetupView(QWidget):
         self._monitor.close_all()
         self._learning = False
         self._learn_button.setIcon(self._get_icon("start"))
-        self._learn_button.setToolTip("Start learning")
-        self._learn_status.setText("Stopped")
+        self._learn_button.setToolTip(self.tr("Start learning"))
+        self._learn_status.setText(self.tr("Stopped"))
         _LOGGER.info("Controller Setup learning stopped (%d row(s) captured)", len(self._rows))
 
     def _poll(self) -> None:
@@ -1297,27 +1338,25 @@ class ControllerSetupView(QWidget):
         labels = tsi_device_labels(config)
         if len(labels) <= 1:
             return True, None
-        choices = [*labels.values(), _ALL_TSI_DEVICES]
+        choices = [*labels.values(), self.tr(_ALL_TSI_DEVICES)]
         choice, ok = QInputDialog.getItem(
             self,
-            "Choose a Traktor device",
-            "This TSI holds several devices (usually one per controller).\nImport the triggers of:",
+            self.tr("Choose a Traktor device"),
+            self.tr("This TSI holds several devices (usually one per controller).\nImport the triggers of:"),
             choices,
             0,
             False,
         )
         if not ok:
             return False, None
-        if choice == _ALL_TSI_DEVICES:
-            return True, None
-        return True, next(index for index, label in labels.items() if label == choice)
+        return True, next((index for index, label in labels.items() if label == choice), None)
 
     def _on_import_xml_clicked(self) -> None:
         path_str, _ = QFileDialog.getOpenFileName(
             self,
-            "Learn triggers from a mapping",
+            self.tr("Learn triggers from a mapping"),
             "",
-            "MIDI mappings (*.xml *.tsi);;Serato XML (*.xml);;Traktor TSI (*.tsi)",
+            self.tr("MIDI mappings (*.xml *.tsi);;Serato XML (*.xml);;Traktor TSI (*.tsi)"),
         )
         if not path_str:
             return
@@ -1325,7 +1364,7 @@ class ControllerSetupView(QWidget):
             config = read_mapping_file(path_str)
         except Exception as exc:
             _LOGGER.exception("Failed to import mapping %s into Controller Setup", path_str)
-            QMessageBox.critical(self, "Failed to import file", str(exc))
+            QMessageBox.critical(self, self.tr("Failed to import file"), str(exc))
             return
         ok, tsi_device = self._choose_tsi_device(config)
         if not ok:
@@ -1334,10 +1373,12 @@ class ControllerSetupView(QWidget):
         _LOGGER.info("Imported %d new trigger(s) from %s into Controller Setup", added, path_str)
         reply = QMessageBox.question(
             self,
-            "Import complete",
-            f"Added {added} new trigger row(s) to the profile (duplicates skipped).\n\n"
-            "Open this same file as an editable mapping too "
-            "(By Channel / By Deck / By Controller)?",
+            self.tr("Import complete"),
+            self.tr(
+                "Added {count} new trigger row(s) to the profile (duplicates skipped).\n\n"
+                "Open this same file as an editable mapping too "
+                "(By Channel / By Deck / By Controller)?"
+            ).format(count=added),
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
         )
@@ -1348,9 +1389,11 @@ class ControllerSetupView(QWidget):
 
     def _update_image_label(self) -> None:
         if self._reference_image:
-            self._image_label.setText(f"Reference image: {Path(self._reference_image).name}")
+            self._image_label.setText(
+                self.tr("Reference image: {name}").format(name=Path(self._reference_image).name)
+            )
         else:
-            self._image_label.setText("No reference image")
+            self._image_label.setText(self.tr("No reference image"))
 
     def set_reference_image(self, path: str) -> None:
         self._reference_image = path.strip()
@@ -1359,23 +1402,26 @@ class ControllerSetupView(QWidget):
 
     def _on_attach_image_clicked(self) -> None:
         path_str, _ = QFileDialog.getOpenFileName(
-            self, "Attach controller reference image", "", "Images (*.png *.jpg *.jpeg *.webp)"
+            self, self.tr("Attach controller reference image"), "", self.tr("Images (*.png *.jpg *.jpeg *.webp)")
         )
         if not path_str:
             # Cancelling with an image already attached is the way to remove it.
-            if self._reference_image and self._confirm("Remove the attached reference image?"):
+            if self._reference_image and self._confirm(self.tr("Remove the attached reference image?")):
                 self.set_reference_image("")
             return
         self.set_reference_image(path_str)
         _LOGGER.info("Attached reference image %s to Controller Setup draft %r", path_str, self._controller_name)
         QMessageBox.information(
             self,
-            "Reference image attached",
-            "The image is referenced by its path on this machine and saved in the session JSON. "
-            "Install copies it next to the installed profile, so it keeps showing in Controller "
-            "Images even if you move the original. \"Generate catalog module…\" writes reference_image='custom/<filename>'; "
-            "place a copy at controllers/custom/<filename> if you want it bundled (respecting its "
-            "licence — user-supplied images are your responsibility).",
+            self.tr("Reference image attached"),
+            self.tr(
+                "The image is referenced by its path on this machine and saved in the session JSON. "
+                "Install copies it next to the installed profile, so it keeps showing in Controller "
+                "Images even if you move the original. \"Generate catalog module…\" writes "
+                "reference_image='custom/<filename>'; place a copy at controllers/custom/<filename> "
+                "if you want it bundled (respecting its licence — user-supplied images are your "
+                "responsibility)."
+            ),
         )
 
     # -- session save / load --------------------------------------------------
@@ -1449,23 +1495,23 @@ class ControllerSetupView(QWidget):
 
     def _on_save_session_clicked(self) -> None:
         default_name = str(user_paths.subfolder(user_paths.DRAFTS) / f"{self._slug() or 'controller'}.json")
-        path_str, _ = QFileDialog.getSaveFileName(self, "Save controller setup session", default_name, "JSON files (*.json)")
+        path_str, _ = QFileDialog.getSaveFileName(self, self.tr("Save controller setup session"), default_name, self.tr("JSON files (*.json)"))
         if not path_str:
             return
         try:
             self._save_session(path_str)
         except OSError as exc:
             _LOGGER.exception("Failed to save Controller Setup session to %s", path_str)
-            QMessageBox.critical(self, "Failed to save session", str(exc))
+            QMessageBox.critical(self, self.tr("Failed to save session"), str(exc))
             return
         _LOGGER.info("Saved Controller Setup session to %s (%d row(s))", path_str, len(self._rows))
         self.draftFileChanged.emit(path_str)
 
     def _on_load_session_clicked(self) -> None:
-        if self._dirty and not self._confirm("This will discard the current unsaved draft. Continue?"):
+        if self._dirty and not self._confirm(self.tr("This will discard the current unsaved draft. Continue?")):
             return
         path_str, _ = QFileDialog.getOpenFileName(
-            self, "Load controller setup session", str(user_paths.subfolder(user_paths.DRAFTS)), "JSON files (*.json)"
+            self, self.tr("Load controller setup session"), str(user_paths.subfolder(user_paths.DRAFTS)), self.tr("JSON files (*.json)")
         )
         if not path_str:
             return
@@ -1473,7 +1519,7 @@ class ControllerSetupView(QWidget):
             self._load_session(path_str)
         except (OSError, json.JSONDecodeError, KeyError, TypeError, ValueError) as exc:
             _LOGGER.exception("Failed to load Controller Setup session from %s", path_str)
-            QMessageBox.critical(self, "Failed to load session", str(exc))
+            QMessageBox.critical(self, self.tr("Failed to load session"), str(exc))
             return
         _LOGGER.info("Loaded Controller Setup session from %s (%d row(s))", path_str, len(self._rows))
         self.draftFileChanged.emit(path_str)
@@ -1483,25 +1529,25 @@ class ControllerSetupView(QWidget):
     def _validate(self) -> list[str]:
         errors: list[str] = []
         if not self._slug():
-            errors.append("Controller name must contain at least one letter or digit.")
+            errors.append(self.tr("Controller name must contain at least one letter or digit."))
         if not self._rows:
-            errors.append("No rows captured yet.")
+            errors.append(self.tr("No rows captured yet."))
 
         def _bad_rows(predicate) -> list[int]:
             return [i + 1 for i, entry in enumerate(self._rows) if predicate(entry)]
 
         missing_name = _bad_rows(lambda e: not e.name.strip())
         if missing_name:
-            errors.append(f"Rows missing a Name: {missing_name}")
+            errors.append(self.tr("Rows missing a Name: {rows}").format(rows=missing_name))
         missing_section = _bad_rows(lambda e: not e.section.strip())
         if missing_section:
-            errors.append(f"Rows missing a Section: {missing_section}")
+            errors.append(self.tr("Rows missing a Section: {rows}").format(rows=missing_section))
         bad_kind = _bad_rows(lambda e: e.note_or_cc not in ("NOTE", "CC"))
         if bad_kind:
-            errors.append(f"Rows with invalid Type (must be NOTE or CC): {bad_kind}")
+            errors.append(self.tr("Rows with invalid Type (must be NOTE or CC): {rows}").format(rows=bad_kind))
         bad_channels = _bad_rows(lambda e: not e.channels or any(not c.strip() for c in e.channels))
         if bad_channels:
-            errors.append(f"Rows missing a Channel: {bad_channels}")
+            errors.append(self.tr("Rows missing a Channel: {rows}").format(rows=bad_channels))
 
         bad_data1 = []
         for i, entry in enumerate(self._rows):
@@ -1513,9 +1559,9 @@ class ControllerSetupView(QWidget):
                 if not 0 <= value <= 127:
                     bad_data1.append(i + 1)
         if bad_data1:
-            errors.append(f"Rows with invalid Data1 (must be an integer 0-127): {bad_data1}")
+            errors.append(self.tr("Rows with invalid Data1 (must be an integer 0-127): {rows}").format(rows=bad_data1))
 
-        errors.extend(find_trigger_conflicts(self._rows))
+        errors.extend(find_trigger_conflicts(self._rows, translator("ControllerSetupView")))
         return errors
 
     def _build_definition_with_image(self):
@@ -1539,7 +1585,7 @@ class ControllerSetupView(QWidget):
     def _on_submit_clicked(self) -> None:
         errors = self._validate()
         if errors:
-            QMessageBox.warning(self, "Cannot submit yet", "\n".join(errors))
+            QMessageBox.warning(self, self.tr("Cannot submit yet"), "\n".join(errors))
             return
         dialog = ControllerSubmissionDialog(summarise_source(self._sources), self)
         if dialog.exec() != QDialog.DialogCode.Accepted:
@@ -1560,32 +1606,36 @@ class ControllerSetupView(QWidget):
         if not opened:
             QMessageBox.warning(
                 self,
-                "Couldn't open the browser",
-                "The submission page couldn't be opened automatically. The profile JSON is on "
-                "your clipboard — open a new issue on the project repository and paste it there.",
+                self.tr("Couldn't open the browser"),
+                self.tr(
+                    "The submission page couldn't be opened automatically. The profile JSON is on "
+                    "your clipboard — open a new issue on the project repository and paste it there."
+                ),
             )
             return
         tail = (
-            "The profile JSON is already filled in on that page."
+            self.tr("The profile JSON is already filled in on that page.")
             if inlined
-            else "The profile JSON was copied to your clipboard — paste it into the code block."
+            else self.tr("The profile JSON was copied to your clipboard — paste it into the code block.")
         )
         QMessageBox.information(
             self,
-            "Submission opened",
-            "A pre-filled GitHub issue opened in your browser. "
+            self.tr("Submission opened"),
+            self.tr("A pre-filled GitHub issue opened in your browser.")
+            + " "
             + tail
-            + "\n\nReview it before submitting. Reference images are not included in a submission.",
+            + "\n\n"
+            + self.tr("Review it before submitting. Reference images are not included in a submission."),
         )
 
     def _on_check_conflicts_clicked(self) -> None:
         errors = self._validate()
         if errors:
             _LOGGER.warning("Controller Setup conflict check for %r found %d issue(s): %s", self._controller_name, len(errors), errors)
-            QMessageBox.warning(self, "Conflicts found", "\n".join(errors))
+            QMessageBox.warning(self, self.tr("Conflicts found"), "\n".join(errors))
         else:
             _LOGGER.info("Controller Setup conflict check for %r: no issues", self._controller_name)
-            QMessageBox.information(self, "No conflicts", "No missing fields or conflicting triggers found — draft looks stable.")
+            QMessageBox.information(self, self.tr("No conflicts"), self.tr("No missing fields or conflicting triggers found — draft looks stable."))
 
     def _apply(self) -> Path:
         """Install the draft (issue #175): save it as a JSON profile in the
@@ -1614,7 +1664,7 @@ class ControllerSetupView(QWidget):
     def _on_apply_clicked(self) -> None:
         errors = self._validate()
         if errors:
-            QMessageBox.warning(self, "Cannot install yet", "\n".join(errors))
+            QMessageBox.warning(self, self.tr("Cannot install yet"), "\n".join(errors))
             return
         if (
             self._controller_name in catalog.CONTROLLER_NAMES
@@ -1633,18 +1683,21 @@ class ControllerSetupView(QWidget):
             )
             QMessageBox.critical(
                 self,
-                "Cannot install",
-                f"'{self._controller_name}' is already a built-in controller. Installing would replace "
-                "its full definition with this draft's rows in every view. Pick a different controller "
-                "name for this profile.",
+                self.tr("Cannot install"),
+                self.tr(
+                    "'{name}' is already a built-in controller. Installing would replace "
+                    "its full definition with this draft's rows in every view. Pick a different controller "
+                    "name for this profile."
+                ).format(name=self._controller_name),
             )
             return
         if (
             _is_user_profile(self._controller_name)
             and self._controller_name not in self._applied_names
             and not self._confirm(
-                f"'{self._controller_name}' is already one of your installed controller profiles. "
-                "Replace it with this draft?"
+                self.tr(
+                    "'{name}' is already one of your installed controller profiles. Replace it with this draft?"
+                ).format(name=self._controller_name)
             )
         ):
             return
@@ -1652,51 +1705,55 @@ class ControllerSetupView(QWidget):
             path = self._apply()
         except Exception as exc:
             _LOGGER.exception("Failed to install Controller Setup draft %r", self._controller_name)
-            QMessageBox.critical(self, "Failed to install", f"{type(exc).__name__}: {exc}")
+            QMessageBox.critical(self, self.tr("Failed to install"), f"{type(exc).__name__}: {exc}")
             return
         _LOGGER.info("Installed controller profile %r at %s", self._controller_name, path)
         QMessageBox.information(
             self,
-            "Installed",
-            f"'{self._controller_name}' is installed: it is active now in every view and is loaded "
-            f"again at every launch.\n\nSaved in {path}",
+            self.tr("Installed"),
+            self.tr(
+                "'{name}' is installed: it is active now in every view and is loaded "
+                "again at every launch.\n\nSaved in {path}"
+            ).format(name=self._controller_name, path=path),
         )
 
     def _on_export_clicked(self) -> None:
         errors = self._validate()
         if errors:
-            QMessageBox.warning(self, "Cannot export yet", "\n".join(errors))
+            QMessageBox.warning(self, self.tr("Cannot export yet"), "\n".join(errors))
             return
         if self._controller_name in catalog.CONTROLLER_NAMES and not self._confirm(
-            f"'{self._controller_name}' is already a registered controller name. Export anyway?"
+            self.tr("'{name}' is already a registered controller name. Export anyway?").format(
+                name=self._controller_name
+            )
         ):
             return
         default_path = str(Path("src") / "djmidi" / "catalog" / f"{self._slug()}.py")
-        path_str, _ = QFileDialog.getSaveFileName(self, "Generate catalog module", default_path, "Python files (*.py)")
+        path_str, _ = QFileDialog.getSaveFileName(self, self.tr("Generate catalog module"), default_path, self.tr("Python files (*.py)"))
         if not path_str:
             return
-        if Path(path_str).exists() and not self._confirm(f"{path_str} already exists. Overwrite?"):
+        if Path(path_str).exists() and not self._confirm(self.tr("{path} already exists. Overwrite?").format(path=path_str)):
             return
         try:
             self._export_module(path_str)
         except OSError as exc:
             _LOGGER.exception("Failed to write generated catalog module to %s", path_str)
-            QMessageBox.critical(self, "Failed to write file", str(exc))
+            QMessageBox.critical(self, self.tr("Failed to write file"), str(exc))
             return
         _LOGGER.info("Generated catalog module for %r at %s", self._controller_name, path_str)
         slug = Path(path_str).stem
-        message = (
-            f"Wrote {path_str}.\n\nOne manual step remains: add '{slug}' to the import block in "
+        message = self.tr(
+            "Wrote {path}.\n\nOne manual step remains: add '{slug}' to the import block in "
             "catalog/__init__.py (kept alphabetical, matching the existing style) so it's picked up."
-        )
+        ).format(path=path_str, slug=slug)
         if self._reference_image:
             image_name = Path(self._reference_image).name
-            message += (
-                f"\n\nThe module references reference_image='custom/{image_name}'. Copy your image to "
-                f"controllers/custom/{image_name} for it to show in the Controller Images tab on a "
+            message += "\n\n" + self.tr(
+                "The module references reference_image='custom/{image}'. Copy your image to "
+                "controllers/custom/{image} for it to show in the Controller Images tab on a "
                 "future launch (user-supplied images are your responsibility re: licensing)."
-            )
-        QMessageBox.information(self, "Catalog module generated", message)
+            ).format(image=image_name)
+        QMessageBox.information(self, self.tr("Catalog module generated"), message)
 
     # -- lifecycle -------------------------------------------------------------
 

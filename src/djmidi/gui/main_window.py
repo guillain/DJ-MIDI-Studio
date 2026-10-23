@@ -375,7 +375,7 @@ class MainWindow(QMainWindow):
         self.undo_stack = QUndoStack(self)
 
         self.search_box = QLineEdit()
-        self.search_box.setPlaceholderText("Filter by channel, control, event type, function, deck, slot...")
+        self.search_box.setPlaceholderText(self.tr("Filter by channel, control, event type, function, deck, slot..."))
         self.search_box.textChanged.connect(self._on_search_text_changed)
 
         # Each representation is a row of columns (one per channel / one per
@@ -504,18 +504,18 @@ class MainWindow(QMainWindow):
         )
 
         self.issues_table = QTableWidget(0, 3)
-        self.issues_table.setHorizontalHeaderLabels(["Severity", "Message", "Location"])
+        self.issues_table.setHorizontalHeaderLabels([self.tr("Severity"), self.tr("Message"), self.tr("Location")])
         self.issues_table.horizontalHeader().setStretchLastSection(True)
         self.issues_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
 
         # The validation area: the issue table under a strip with the two
         # checks (issue #254 added "Ready for live", a pre-gig report).
-        self.validate_button = QPushButton("Validate")
-        self.validate_button.setToolTip("Check the mapping's structure and conflicts (Edit → Validate).")
+        self.validate_button = QPushButton(self.tr("Validate"))
+        self.validate_button.setToolTip(self.tr("Check the mapping's structure and conflicts (Edit → Validate)."))
         self.validate_button.clicked.connect(self._on_validate)
-        self.live_ready_button = QPushButton("Ready for live…")
+        self.live_ready_button = QPushButton(self.tr("Ready for live…"))
         self.live_ready_button.setToolTip(
-            "Before a gig: missing Play/Cue/Sync/Load per deck, conflicts, buttons without LED feedback."
+            self.tr("Before a gig: missing Play/Cue/Sync/Load per deck, conflicts, buttons without LED feedback.")
         )
         self.live_ready_button.clicked.connect(self._on_live_ready_check)
         validation_bar = QHBoxLayout()

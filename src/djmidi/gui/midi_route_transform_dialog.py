@@ -12,7 +12,6 @@ from PySide6.QtWidgets import (
 )
 
 from djmidi.midi_router import MidiValueTransform
-from djmidi.session_player import _parse_int
 
 
 class MidiRouteTransformDialog(QDialog):
@@ -22,23 +21,23 @@ class MidiRouteTransformDialog(QDialog):
 
     def __init__(self, transform: MidiValueTransform | None, parent=None) -> None:
         super().__init__(parent)
-        self.setWindowTitle("Edit route transform")
+        self.setWindowTitle(self.tr("Edit route transform"))
         transform = transform or MidiValueTransform()
 
         self._channel = QComboBox()
-        self._channel.addItem("(unchanged)", None)
+        self._channel.addItem(self.tr("(unchanged)"), None)
         for channel in range(1, 17):
             self._channel.addItem(str(channel), channel)
         self._channel.setCurrentIndex(max(self._channel.findData(transform.channel_override), 0))
 
         self._data1_offset = QLineEdit(str(transform.data1_offset))
 
-        self._invert_data2 = QCheckBox("Invert value (127 - value)")
+        self._invert_data2 = QCheckBox(self.tr("Invert value (127 - value)"))
         self._invert_data2.setChecked(transform.invert_data2)
 
         form = QFormLayout()
-        form.addRow("Channel override:", self._channel)
-        form.addRow("Note/CC offset:", self._data1_offset)
+        form.addRow(self.tr("Channel override:"), self._channel)
+        form.addRow(self.tr("Note/CC offset:"), self._data1_offset)
         form.addRow(self._invert_data2)
 
         buttons = QDialogButtonBox(
@@ -55,9 +54,15 @@ class MidiRouteTransformDialog(QDialog):
 
     def _on_accept(self) -> None:
         try:
-            data1_offset = _parse_int(self._data1_offset.text(), "Note/CC offset", -127, 127)
-        except ValueError as exc:
-            QMessageBox.warning(self, "Invalid transform", str(exc))
+            data1_offset = int(self._data1_offset.text().strip())
+        except ValueError:
+            data1_offset = None
+        if data1_offset is None or not -127 <= data1_offset <= 127:
+            QMessageBox.warning(
+                self,
+                self.tr("Invalid transform"),
+                self.tr("Note/CC offset must be a whole number from -127 to 127."),
+            )
             return
         transform = MidiValueTransform(
             channel_override=self._channel.currentData(),
