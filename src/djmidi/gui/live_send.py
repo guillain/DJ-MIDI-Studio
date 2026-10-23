@@ -79,16 +79,18 @@ class LiveSendControl(QWidget):
         self._port_combo = QComboBox()
         self._port_combo.setMinimumWidth(150)
         self._port_combo.setToolTip(
-            "MIDI output port for Live send -- pick a virtual port (e.g. an "
-            "IAC Driver bus) that you've also added as a control surface "
-            "input in Serato's own MIDI preferences. Sending to your "
-            "controller's own port won't reach Serato: that port writes TO "
-            "the hardware (e.g. its LEDs), not to Serato's mapping engine."
+            self.tr(
+                "MIDI output port for Live send -- pick a virtual port (e.g. an "
+                "IAC Driver bus) that you've also added as a control surface "
+                "input in Serato's own MIDI preferences. Sending to your "
+                "controller's own port won't reach Serato: that port writes TO "
+                "the hardware (e.g. its LEDs), not to Serato's mapping engine."
+            )
         )
         self._port_combo.currentTextChanged.connect(self._update_port_warning)
 
         self._refresh_button = QPushButton("⟳")
-        self._refresh_button.setToolTip("Refresh output ports")
+        self._refresh_button.setToolTip(self.tr("Refresh output ports"))
         self._refresh_button.setFixedWidth(26)
         self._refresh_button.setProperty("compact", True)
         self._refresh_button.clicked.connect(self.refresh_ports)
@@ -96,8 +98,10 @@ class LiveSendControl(QWidget):
         self._toggle_button = QPushButton()
         self._toggle_button.setCheckable(True)
         self._toggle_button.setToolTip(
-            "When ON, clicking a control here sends a real MIDI message to the "
-            "selected output port -- not just dry-run resolution."
+            self.tr(
+                "When ON, clicking a control here sends a real MIDI message to the "
+                "selected output port -- not just dry-run resolution."
+            )
         )
         self._toggle_button.toggled.connect(self._on_toggled)
         self._apply_toggle_style(False)
@@ -166,9 +170,11 @@ class LiveSendControl(QWidget):
             return
         controller_name = matches[0].controller.name
         self._port_warning.setText(
-            f"⚠ \"{port_name}\" looks like {controller_name}'s own port -- it won't reach "
-            "Serato. Pick a virtual port (e.g. IAC Driver) added as a control "
-            "surface input in Serato's MIDI preferences instead."
+            self.tr(
+                "⚠ \"{port}\" looks like {controller}'s own port -- it won't reach "
+                "Serato. Pick a virtual port (e.g. IAC Driver) added as a control "
+                "surface input in Serato's MIDI preferences instead."
+            ).format(port=port_name, controller=controller_name)
         )
         self._port_warning.show()
 
@@ -182,7 +188,7 @@ class LiveSendControl(QWidget):
             # one state that must stay vividly, unmistakably red regardless
             # of Light/Dark, the same way theme.py's own "accent" pink is
             # the same hex in both palettes.
-            self._toggle_button.setText("LIVE SEND: ON")
+            self._toggle_button.setText(self.tr("LIVE SEND: ON"))
             self._toggle_button.setStyleSheet(
                 "QPushButton {"
                 " background: #c0304a; color: #ffffff; font-weight: bold;"
@@ -190,7 +196,7 @@ class LiveSendControl(QWidget):
                 " }"
             )
         else:
-            self._toggle_button.setText("Live send: off")
+            self._toggle_button.setText(self.tr("Live send: off"))
             c = theme_colors()
             self._toggle_button.setStyleSheet(
                 "QPushButton {"

@@ -21,7 +21,12 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from djmidi.i18n import QT_TRANSLATE_NOOP, Translate, untranslated
 from djmidi.model import Control, MappingElement, MidiConfig
+
+#: Words around the function tags in a conflict listing (issue #318).
+CONFLICT_DECK = QT_TRANSLATE_NOOP("EditPanel", "deck {deck}")
+CONFLICT_MORE = QT_TRANSLATE_NOOP("EditPanel", "… and {count} more")
 
 if TYPE_CHECKING:
     from djmidi.midi_io import MidiEvent
@@ -90,20 +95,21 @@ def find_trigger_conflicts(
     ]
 
 
-def describe_conflicts(conflicts: Iterable[Control]) -> list[str]:
+def describe_conflicts(conflicts: Iterable[Control], translate: Translate = untranslated) -> list[str]:
     """Readable lines naming the functions bound to the conflicting controls,
-    deduplicated (Serato repeats each one ~10 times) and capped."""
+    deduplicated (Serato repeats each one ~10 times) and capped. The GUI
+    passes a `translate` for the words around the Serato function tags."""
     lines: list[str] = []
     for control in conflicts:
         for userio in control.userios:
             for mapping in userio.mappings:
-                deck = f" deck {mapping.deck_id}" if mapping.deck_id else ""
+                deck = " " + translate(CONFLICT_DECK).format(deck=mapping.deck_id) if mapping.deck_id else ""
                 line = f"{mapping.tag}{deck} [{userio.event}]"
                 if line not in lines:
                     lines.append(line)
     if len(lines) > _MAX_CONFLICT_LINES:
         hidden = len(lines) - _MAX_CONFLICT_LINES
-        lines = [*lines[:_MAX_CONFLICT_LINES], f"… and {hidden} more"]
+        lines = [*lines[:_MAX_CONFLICT_LINES], translate(CONFLICT_MORE).format(count=hidden)]
     return lines
 
 

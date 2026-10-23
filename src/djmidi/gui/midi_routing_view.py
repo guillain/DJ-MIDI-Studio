@@ -126,23 +126,23 @@ class MidiRoutingView(QWidget):
 
         self._source_combo = QComboBox()
         self._destination_combo = QComboBox()
-        self._routing_refresh_button = QPushButton("Refresh MIDI ports")
+        self._routing_refresh_button = QPushButton(self.tr("Refresh MIDI ports"))
         self._routing_refresh_button.clicked.connect(self.refresh_ports)
-        add_button = QPushButton("Add route")
+        add_button = QPushButton(self.tr("Add route"))
         add_button.clicked.connect(self._add_route)
-        remove_button = QPushButton("Remove selected")
+        remove_button = QPushButton(self.tr("Remove selected"))
         remove_button.clicked.connect(self._remove_selected)
-        self._edit_transform_button = QPushButton("Edit transform…")
+        self._edit_transform_button = QPushButton(self.tr("Edit transform…"))
         self._edit_transform_button.setEnabled(False)
         self._edit_transform_button.clicked.connect(self._edit_selected_transform)
-        self._routing_button = QPushButton("Start routing")
+        self._routing_button = QPushButton(self.tr("Start routing"))
         self._routing_button.clicked.connect(self._toggle_routing)
         self._routing_button.setEnabled(False)
 
         route_controls = QGridLayout()
-        route_controls.addWidget(QLabel("Source (MIDI in)"), 0, 0)
+        route_controls.addWidget(QLabel(self.tr("Source (MIDI in)")), 0, 0)
         route_controls.addWidget(self._source_combo, 0, 1)
-        route_controls.addWidget(QLabel("Destination (MIDI out)"), 0, 2)
+        route_controls.addWidget(QLabel(self.tr("Destination (MIDI out)")), 0, 2)
         route_controls.addWidget(self._destination_combo, 0, 3)
         route_controls.addWidget(add_button, 1, 0)
         route_controls.addWidget(remove_button, 1, 1)
@@ -153,13 +153,15 @@ class MidiRoutingView(QWidget):
         route_controls.setColumnStretch(3, 1)
 
         self._routes_table = QTableWidget(0, 4)
-        self._routes_table.setHorizontalHeaderLabels(["Source", "Destination", "Transform", "State"])
+        self._routes_table.setHorizontalHeaderLabels(
+            [self.tr("Source"), self.tr("Destination"), self.tr("Transform"), self.tr("State")]
+        )
         self._routes_table.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
         self._routes_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self._routes_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self._routes_table.itemSelectionChanged.connect(self._on_route_selection_changed)
 
-        routes_box = QGroupBox("One-way MIDI routes")
+        routes_box = QGroupBox(self.tr("One-way MIDI routes"))
         routes_box.setObjectName("routingCard")
         routes_layout = QVBoxLayout(routes_box)
         routes_layout.addLayout(help_row(self, *help_texts.MIDI_ROUTING))
@@ -168,11 +170,11 @@ class MidiRoutingView(QWidget):
 
         self._clock_source = QComboBox()
         self._clock_destination = QComboBox()
-        self._clock_enabled = QCheckBox("Enable Clock mirror policy")
+        self._clock_enabled = QCheckBox(self.tr("Enable Clock mirror policy"))
         self._clock_enabled.toggled.connect(self._update_clock_policy)
-        self._serato_virtual_checkbox = QCheckBox("Create virtual input for Serato Clock")
+        self._serato_virtual_checkbox = QCheckBox(self.tr("Create virtual input for Serato Clock"))
         self._serato_virtual_checkbox.toggled.connect(self._toggle_serato_virtual_input)
-        self._clock_status = QLabel("Clock mirror disabled")
+        self._clock_status = QLabel(self.tr("Clock mirror disabled"))
         self._clock_status.setStyleSheet(f"color: {theme_colors()['disabled_text']};")
         # _refresh_clock_status() recolors this label live while the 10ms
         # routing-poll timer runs, but that timer only runs once routing has
@@ -182,19 +184,19 @@ class MidiRoutingView(QWidget):
         # clock action (a checkbox toggle, a route add/remove), not
         # immediately on a theme switch. Reconnected below, once the method
         # (and everything it reads) actually exists.
-        add_clock_button = QPushButton("Add Clock route")
+        add_clock_button = QPushButton(self.tr("Add Clock route"))
         add_clock_button.clicked.connect(self._add_clock_route)
-        remove_clock_button = QPushButton("Remove selected")
+        remove_clock_button = QPushButton(self.tr("Remove selected"))
         remove_clock_button.clicked.connect(self._remove_clock_route)
-        self._clock_refresh_button = QPushButton("Refresh MIDI ports")
+        self._clock_refresh_button = QPushButton(self.tr("Refresh MIDI ports"))
         self._clock_refresh_button.clicked.connect(self.refresh_ports)
-        self._clock_routing_button = QPushButton("Start routing")
+        self._clock_routing_button = QPushButton(self.tr("Start routing"))
         self._clock_routing_button.clicked.connect(self._toggle_routing)
         self._clock_routing_button.setEnabled(False)
         clock_controls = QGridLayout()
-        clock_controls.addWidget(QLabel("Clock source"), 0, 0)
+        clock_controls.addWidget(QLabel(self.tr("Clock source")), 0, 0)
         clock_controls.addWidget(self._clock_source, 0, 1)
-        clock_controls.addWidget(QLabel("Destination (MIDI out)"), 1, 0)
+        clock_controls.addWidget(QLabel(self.tr("Destination (MIDI out)")), 1, 0)
         clock_controls.addWidget(self._clock_destination, 1, 1)
         clock_controls.addWidget(self._clock_enabled, 2, 0, 1, 2)
         clock_controls.addWidget(self._serato_virtual_checkbox, 3, 0, 1, 2)
@@ -203,7 +205,7 @@ class MidiRoutingView(QWidget):
         clock_controls.addWidget(self._clock_refresh_button, 5, 0)
         clock_controls.addWidget(self._clock_routing_button, 5, 1)
         clock_controls.setColumnStretch(1, 1)
-        self._clock_panel = QGroupBox("MIDI Clock")
+        self._clock_panel = QGroupBox(self.tr("MIDI Clock"))
         self._clock_panel.setObjectName("clockCard")
         self._clock_panel.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
@@ -211,13 +213,13 @@ class MidiRoutingView(QWidget):
         clock_layout = QVBoxLayout(self._clock_panel)
         clock_layout.addLayout(help_row(self._clock_panel, *help_texts.MIDI_CLOCK))
         self._clock_intro = QLabel(
-            "Build a Clock route, then start routing to send transport and 24 PPQN ticks."
+            self.tr("Build a Clock route, then start routing to send transport and 24 PPQN ticks.")
         )
         self._clock_intro.setWordWrap(True)
         clock_layout.addWidget(self._clock_intro)
         clock_layout.addLayout(clock_controls)
         self._clock_table = QTableWidget(0, 3)
-        self._clock_table.setHorizontalHeaderLabels(["Source", "Destination", "State"])
+        self._clock_table.setHorizontalHeaderLabels([self.tr("Source"), self.tr("Destination"), self.tr("State")])
         self._clock_table.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
         self._clock_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self._clock_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
@@ -225,16 +227,18 @@ class MidiRoutingView(QWidget):
         clock_layout.addWidget(self._clock_status)
 
         help_label = QLabel(
-            "Routes are configured here but remain inactive until MIDI routing is enabled in Preferences. "
-            "Clock synchronization is intentionally opt-in and must be validated per software/version. "
-            "Serato DJ Pro does not emit standard MIDI Clock directly. Enable Ableton Link in Serato "
-            "and choose 'Ableton Link (DJ MIDI Studio)' to follow Link and generate MIDI Clock here."
+            self.tr(
+                "Routes are configured here but remain inactive until MIDI routing is enabled in Preferences. "
+                "Clock synchronization is intentionally opt-in and must be validated per software/version. "
+                "Serato DJ Pro does not emit standard MIDI Clock directly. Enable Ableton Link in Serato "
+                "and choose '{link}' to follow Link and generate MIDI Clock here."
+            ).format(link=ABLETON_LINK_CLOCK_SOURCE_NAME)
         )
         help_label.setWordWrap(True)
 
         # The route-controls row puts 5 buttons side by side; when this
         # view is *docked* (rather than floated) at a narrow width the last
-        # one ("Start routing") clipped off the right edge (issue #19). Wrap
+        # one (self.tr("Start routing")) clipped off the right edge (issue #19). Wrap
         # the content in a scroll area so it shows a scrollbar instead --
         # same fix as the Dashboard / Controller Setup. _clock_panel is
         # reparented out via take_clock_panel() and is not in this layout,
@@ -301,7 +305,7 @@ class MidiRoutingView(QWidget):
         self._routing_button.setEnabled(enabled)
         self._clock_routing_button.setEnabled(enabled)
         if not enabled:
-            self._routing_button.setToolTip("Enable MIDI routing in Preferences first")
+            self._routing_button.setToolTip(self.tr("Enable MIDI routing in Preferences first"))
         else:
             self._routing_button.setToolTip("")
         self._refresh_clock_status()
@@ -316,18 +320,18 @@ class MidiRoutingView(QWidget):
             self._routing_session.start()
         except Exception as exc:
             _LOGGER.exception("Cannot start MIDI routing")
-            QMessageBox.warning(self, "Cannot start MIDI routing", str(exc))
+            QMessageBox.warning(self, self.tr("Cannot start MIDI routing"), str(exc))
             return
-        self._routing_button.setText("Stop routing")
-        self._clock_routing_button.setText("Stop routing")
+        self._routing_button.setText(self.tr("Stop routing"))
+        self._clock_routing_button.setText(self.tr("Stop routing"))
         self._routing_timer.start()
         self._refresh_clock_status()
 
     def _stop_routing(self) -> None:
         self._routing_timer.stop()
         self._routing_session.stop()
-        self._routing_button.setText("Start routing")
-        self._clock_routing_button.setText("Start routing")
+        self._routing_button.setText(self.tr("Start routing"))
+        self._clock_routing_button.setText(self.tr("Start routing"))
         self._refresh_clock_status()
 
     def _poll_routing(self) -> None:
@@ -337,7 +341,7 @@ class MidiRoutingView(QWidget):
         except Exception as exc:
             _LOGGER.exception("MIDI routing stopped after a poll failure")
             self._stop_routing()
-            QMessageBox.warning(self, "MIDI routing stopped", str(exc))
+            QMessageBox.warning(self, self.tr("MIDI routing stopped"), str(exc))
 
     def closeEvent(self, event) -> None:
         self.shutdown()
@@ -475,7 +479,7 @@ class MidiRoutingView(QWidget):
         try:
             self._router.add_route(MidiRoute(source, destination))
         except ValueError as exc:
-            QMessageBox.warning(self, "Cannot add route", str(exc))
+            QMessageBox.warning(self, self.tr("Cannot add route"), str(exc))
             return
         self._refresh_routes_table()
         self.routesChanged.emit()
@@ -505,17 +509,16 @@ class MidiRoutingView(QWidget):
         self._routes_table.setCurrentCell(row, 0)
         self.routesChanged.emit()
 
-    @staticmethod
-    def _transform_summary(transform: MidiValueTransform | None) -> str:
+    def _transform_summary(self, transform: MidiValueTransform | None) -> str:
         if transform is None:
             return "—"
         parts = []
         if transform.channel_override is not None:
-            parts.append(f"Ch {transform.channel_override}")
+            parts.append(self.tr("Ch {channel}").format(channel=transform.channel_override))
         if transform.data1_offset:
             parts.append(f"{transform.data1_offset:+d}")
         if transform.invert_data2:
-            parts.append("invert")
+            parts.append(self.tr("invert"))
         return ", ".join(parts) or "—"
 
     def _refresh_routes_table(self) -> None:
@@ -527,7 +530,7 @@ class MidiRoutingView(QWidget):
                 route.source_port_id,
                 route.destination_port_id,
                 self._transform_summary(route.transform),
-                "Enabled" if route.enabled else "Disabled",
+                self.tr("Enabled") if route.enabled else self.tr("Disabled"),
             ]
             for column, value in enumerate(values):
                 self._routes_table.setItem(row, column, QTableWidgetItem(value))
@@ -544,7 +547,7 @@ class MidiRoutingView(QWidget):
             self._link_followers.clear()
             self._refresh_clock_table()
             self._routing_session.set_clock_mirrors(())
-            self._clock_status.setText("Clock mirror disabled")
+            self._clock_status.setText(self.tr("Clock mirror disabled"))
             self._refresh_clock_status()
             return
         if self._clocks:
@@ -560,7 +563,7 @@ class MidiRoutingView(QWidget):
                 self._clock_source.addItem(SERATO_CLOCK_INPUT_NAME)
             self._clock_source.setCurrentText(SERATO_CLOCK_INPUT_NAME)
             self._clock_status.setText(
-                "Virtual input ready; Serato alone will not emit MIDI Clock — use a Link/Clock bridge"
+                self.tr("Virtual input ready; Serato alone will not emit MIDI Clock — use a Link/Clock bridge")
             )
         else:
             for index in range(self._clock_source.count() - 1, -1, -1):
@@ -582,13 +585,13 @@ class MidiRoutingView(QWidget):
             self._clock_enabled.blockSignals(True)
             self._clock_enabled.setChecked(False)
             self._clock_enabled.blockSignals(False)
-            self._clock_status.setText("Select different Clock source and destination ports")
+            self._clock_status.setText(self.tr("Select different Clock source and destination ports"))
             return
         if any(
             clock.source_port_id == source and destination in clock.destination_port_ids
             for clock in (*self._clocks, *self._link_followers)
         ):
-            self._clock_status.setText("This Clock route is already configured")
+            self._clock_status.setText(self.tr("This Clock route is already configured"))
             return
         if self._routing_session.running:
             self._stop_routing()
@@ -628,13 +631,13 @@ class MidiRoutingView(QWidget):
             for destination in clock.destination_port_ids:
                 row = self._clock_table.rowCount()
                 self._clock_table.insertRow(row)
-                for column, value in enumerate((clock.source_port_id, destination, "Enabled")):
+                for column, value in enumerate((clock.source_port_id, destination, self.tr("Enabled"))):
                     self._clock_table.setItem(row, column, QTableWidgetItem(value))
         for follower in self._link_followers:
             for destination in follower.destination_port_ids:
                 row = self._clock_table.rowCount()
                 self._clock_table.insertRow(row)
-                for column, value in enumerate((follower.source_port_id, destination, "Enabled")):
+                for column, value in enumerate((follower.source_port_id, destination, self.tr("Enabled"))):
                     self._clock_table.setItem(row, column, QTableWidgetItem(value))
 
     def _update_clock_session(self) -> None:
@@ -670,17 +673,17 @@ class MidiRoutingView(QWidget):
         self._clock_status.setToolTip("")
         category = "disabled"
         if not self._clock_enabled.isChecked():
-            text, color = "Clock mirror disabled", theme_colors()["disabled_text"]
+            text, color = self.tr("Clock mirror disabled"), theme_colors()["disabled_text"]
         else:
             configured = (*self._clocks, *self._link_followers)
             if not configured:
-                text, color = "Clock policy enabled; add a source and destination", "#b26a00"
+                text, color = self.tr("Clock policy enabled; add a source and destination"), "#b26a00"
                 category = "unconfigured"
             elif not self._routing_enabled:
-                text, color = "Clock configured but routing is disabled in Preferences", "#b26a00"
+                text, color = self.tr("Clock configured but routing is disabled in Preferences"), "#b26a00"
                 category = "routing_disabled"
             elif not self._routing_session.running:
-                text, color = "Clock configured; press Start routing", "#b26a00"
+                text, color = self.tr("Clock configured; press Start routing"), "#b26a00"
                 category = "waiting_start"
             else:
                 now = time.monotonic()
@@ -690,7 +693,8 @@ class MidiRoutingView(QWidget):
                 inactive_links = [follower for follower in self._link_followers if follower not in active_link]
                 if not inactive_clocks and not inactive_links:
                     sources = ", ".join(sorted({clock.source_port_id for clock in configured}))
-                    text, color = f"CLOCK ACTIVE — receiving ticks from {sources}", "#16803c"
+                    text = self.tr("CLOCK ACTIVE — receiving ticks from {sources}").format(sources=sources)
+                    color = "#16803c"
                     category = "active"
                 else:
                     # Each configured route (a plain Clock mirror, e.g. Serato's virtual
@@ -703,38 +707,48 @@ class MidiRoutingView(QWidget):
                     tooltip_parts = []
                     if active or active_link:
                         active_sources = ", ".join(sorted({clock.source_port_id for clock in (*active, *active_link)}))
-                        clauses.append(f"ACTIVE: {active_sources}")
+                        clauses.append(self.tr("ACTIVE: {sources}").format(sources=active_sources))
                     for clock in inactive_clocks:
                         if clock.message_active(now):
-                            clauses.append(f"{clock.source_port_id}: transport received, no Clock ticks")
+                            clauses.append(
+                                self.tr("{source}: transport received, no Clock ticks").format(source=clock.source_port_id)
+                            )
                         elif clock.source_port_id in self._routing_session.input_port_ids:
-                            clauses.append(f"{clock.source_port_id}: source port open, no ticks received")
+                            clauses.append(
+                                self.tr("{source}: source port open, no ticks received").format(source=clock.source_port_id)
+                            )
                         else:
-                            clauses.append(f"{clock.source_port_id}: source port not open")
+                            clauses.append(self.tr("{source}: source port not open").format(source=clock.source_port_id))
                         if clock.source_port_id == SERATO_CLOCK_INPUT_NAME:
                             tooltip_parts.append(
-                                "Serato diagnostic: start routing, then select this virtual port as "
-                                "Serato's MIDI Clock output destination and enable Clock/Sync -- this "
-                                "has to be re-selected after every app restart, since the virtual port "
-                                "is a new CoreMIDI endpoint each time."
+                                self.tr(
+                                    "Serato diagnostic: start routing, then select this virtual port as "
+                                    "Serato's MIDI Clock output destination and enable Clock/Sync -- this "
+                                    "has to be re-selected after every app restart, since the virtual port "
+                                    "is a new CoreMIDI endpoint each time."
+                                )
                             )
                     for follower in inactive_links:
-                        clauses.append(f"{follower.source_port_id}: no Link beats received")
+                        clauses.append(self.tr("{source}: no Link beats received").format(source=follower.source_port_id))
                         if any(clock.source_port_id == SERATO_CLOCK_INPUT_NAME for clock in self._clocks):
                             tooltip_parts.append(
-                                "Ableton Link is connected, but no playing transport was detected yet. "
-                                "This app bridges Serato's own Start/Stop onto Link once the Serato "
-                                "Clock source above is itself receiving ticks -- press Play in Serato."
+                                self.tr(
+                                    "Ableton Link is connected, but no playing transport was detected yet. "
+                                    "This app bridges Serato's own Start/Stop onto Link once the Serato "
+                                    "Clock source above is itself receiving ticks -- press Play in Serato."
+                                )
                             )
                         else:
                             tooltip_parts.append(
-                                "Ableton Link is connected but no playing Link transport was detected. "
-                                "Serato's own Link integration only publishes tempo, never transport: "
-                                "either add a Serato Clock source above (this app bridges its Start/Stop "
-                                "onto Link automatically), or use another Link peer that supports Start "
-                                "Stop Sync (e.g. Ableton Live) and start playback there."
+                                self.tr(
+                                    "Ableton Link is connected but no playing Link transport was detected. "
+                                    "Serato's own Link integration only publishes tempo, never transport: "
+                                    "either add a Serato Clock source above (this app bridges its Start/Stop "
+                                    "onto Link automatically), or use another Link peer that supports Start "
+                                    "Stop Sync (e.g. Ableton Live) and start playback there."
+                                )
                             )
-                    text = "CLOCK INACTIVE — " + "; ".join(clauses)
+                    text = self.tr("CLOCK INACTIVE — {details}").format(details="; ".join(clauses))
                     color = "#b00020"
                     category = "inactive_mixed" if (active or active_link) else "inactive"
                     self._clock_status.setToolTip(" ".join(tooltip_parts))

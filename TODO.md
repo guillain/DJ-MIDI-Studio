@@ -136,6 +136,22 @@ Implemented contract, runtime, test, and documentation work:
   (title, rich-text body, tooltip, `Open full guide`) is translated through the `HelpTexts` catalogue context at
   show time; Controller Setup's four panel texts moved into `help_texts.py` to share it. The linked guides stay
   English; still-English buttons keep their English names in the French texts (to align once #317/#318 land).
+- [x] **French UI: computed reports and messages** (`v0.48.123-french-computed-text`, issue #319) — the
+  Ready-for-live findings, the latency statistics line, change-history entries (kind, status, per-file
+  changes, revert reasons, and the stored summaries this app writes) and macro results follow the interface
+  language through an optional `translate` argument on the Qt-free builders; `main_window.py`'s remaining
+  message boxes, status-bar messages, file dialogs, menu tooltips and dock title bars are wrapped in `tr()`.
+  CSV exports stay English. Checked in French on cocoa.
+- [x] **French UI: mapping tabs, Controller Images, Controller Setup, Dashboard** (`v0.48.122-french-mapping-tabs`,
+  issue #318) — the By Channel / By Deck / By Controller tabs (trees, deck filter, display layers, Live send),
+  the edit / validation column, Controller Images, Controller Setup (and its submission dialog) and the Dashboard
+  cards are translated. The deck filter and the TSI device picker no longer read translated labels; three Qt-free
+  helpers take the #313 `translate` argument. The cocoa check also widened Controller Setup's send fields and the
+  edit panel's fields (they scroll instead of shrinking) and let the submission dialog's fields grow.
+- [x] **French tool windows** (`v0.48.121-french-tool-windows`, issue #317) — Live Monitor, MIDI Routing
+  (and its route-transform dialog), MIDI Clock, Metronome and Controller Emulator (incl. its Pad colours row)
+  are translated, as are the tool docks' title bars (titles, Dock/Undock, Close) and their ☰ Window menu.
+  Checked in French on the real cocoa platform; the widest rows got shorter French labels.
 - [x] **Stop waiting macros on close** (`v0.48.120-stop-macros-on-close`, issue #314) — closing the main
   window now calls `MacroPlayer.stop_all()`, and closing the macro editor stops its Test player, so a macro
   waiting between steps releases its output port right away instead of at process exit. Follow-up of #308.

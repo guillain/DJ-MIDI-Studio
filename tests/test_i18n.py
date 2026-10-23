@@ -484,3 +484,346 @@ def test_duplicates_health_and_smart_playlist_windows_show_french(french):
         for window in (duplicates, health, smart):
             window.close()
             window.deleteLater()
+
+
+# --- Computed reports and main-window messages (issue #319) -------------------
+
+
+def _live_ready_config():
+    from djmidi.parser import parse_string
+
+    both = (
+        "<control channel='1' event_type='Note On' control='9'><userio event='click'>"
+        "<codfather_st deck_set='Default' deck_id='1' slot_id='0'><translation action_on='press'/></codfather_st>"
+        "<codfather_fx deck_set='Default' deck_id='1' slot_id='0'><translation action_on='press'/></codfather_fx>"
+        "</userio></control>"
+    )
+    return parse_string(f"<midi app='1.0'>{both}</midi>")
+
+
+def test_computed_reports_stay_english_by_default_and_are_scanned():
+    from djmidi.library.change_log import RevertSkipped
+    from djmidi.live_ready import check_live_ready, report_text
+    from djmidi.midi_latency import LatencyStats, format_stats
+    from djmidi.midi_macros import MacroResult
+
+    report = check_live_ready(_live_ready_config())
+    assert report.verdict == "Not ready: 1 problem(s) to fix before playing."
+    assert report.findings[0].message.startswith("One control (channel 1, Note On 9) fires several functions")
+    assert report_text(report).splitlines()[2].startswith("[error] One control")
+    assert format_stats(LatencyStats(4, 2, 1.0, 1.5, 2.0, 1.5, 0.5)) == (
+        "2/4 replies (50% lost): min 1.00 ms, median 1.50 ms, max 2.00 ms, jitter 0.50 ms"
+    )
+    assert format_stats(LatencyStats(3, 0)).startswith("No reply to 3 ping(s)")
+    unplugged = MacroResult("Intro", None, total=2, error="XDJ-XZ is not connected", missing_port="XDJ-XZ")
+    assert unplugged.summary() == 'Macro "Intro" not played: XDJ-XZ is not connected'
+    assert str(RevertSkipped("not found at {path}", path="/x/a.mp3")) == "not found at /x/a.mp3"
+    sources = {path.name for path in _script_sources()}
+    assert {"live_ready.py", "midi_latency.py", "midi_macros.py", "change_log.py"} <= sources
+
+
+def test_computed_reports_show_french_through_a_translator(french):
+    from djmidi.gui.translation import translator
+    from djmidi.library.change_log import RevertSkipped
+    from djmidi.live_ready import check_live_ready, report_text
+    from djmidi.midi_latency import LatencyStats, format_stats
+    from djmidi.midi_macros import MacroResult
+    from djmidi.parser import parse_string
+
+    live = translator("LiveReady")
+    report = check_live_ready(_live_ready_config(), translate=live)
+    assert report.describe_verdict(live) == "Pas prêt : 1 problème(s) à corriger avant de jouer."
+    conflict = report.findings[0]
+    assert conflict.message.startswith(
+        "Un contrôle (canal 1, Note On 9) déclenche plusieurs fonctions sur la platine 1 : Codfather FX"
+    )
+    assert conflict.hint.startswith("Sur scène, l'appuyer les déclenche toutes")
+    assert report_text(report, live).splitlines()[2].startswith("[erreur] Un contrôle")
+    empty = check_live_ready(parse_string("<midi app='1.0'/>"), translate=live)
+    assert empty.findings[0].message.startswith("Aucun mapping d'entrée ne cible une platine")
+
+    latency = translator("MidiLatencyDialog")
+    assert format_stats(LatencyStats(4, 2, 1.0, 1.5, 2.0, 1.5, None), latency) == (
+        "2/4 réponses (50 % perdues) : min 1.00 ms, médiane 1.50 ms, max 2.00 ms, gigue n/d"
+    )
+
+    macros = translator("MidiMacros")
+    unplugged = MacroResult("Intro", None, total=2, error="XDJ-XZ is not connected", missing_port="XDJ-XZ")
+    assert unplugged.summary(macros) == "Macro « Intro » non jouée : XDJ-XZ n'est pas connecté"
+    assert MacroResult("Intro", "IAC", 1, 3, "cancelled").summary(macros) == (
+        "Macro « Intro » arrêtée après 1/3 message(s) : annulée"
+    )
+
+    skipped = RevertSkipped("{fields} changed since", fields="genre, title")
+    assert skipped.describe(translator("ChangeHistoryDialog")) == "genre, title modifié(s) depuis"
+
+
+def test_change_history_entries_show_french(french):
+    from djmidi.gui.change_history_dialog import (
+        ChangeHistoryDialog,
+        describe_item,
+        describe_summary,
+    )
+    from djmidi.gui.translation import translator
+    from djmidi.library import change_log
+    from djmidi.library.db import ChangeItem, LibraryDB
+
+    assert describe_summary("Edit genre, bpm of 3 tracks") == "Modifier Genre, BPM de 3 morceau(x)"
+    assert describe_summary("Revert #4: Undo: Set cover of a.mp3") == (
+        "Annulation de n°4 : Annulation : Définir la pochette de a.mp3"
+    )
+    assert describe_summary("Move 2 duplicate(s) to the Trash") == "Mettre 2 doublon(s) à la corbeille"
+    # Another writer's own text is shown as stored.
+    assert describe_summary("Something else") == "Something else"
+    tags = ChangeItem("/x/a.mp3", {"title": None}, {"title": "Intro"})
+    assert describe_item(change_log.KIND_TAGS, tags) == "Titre : (vide) → Intro"
+    trash = ChangeItem("/x/a.mp3", {"kept": "/x/b.mp3"}, {"trash_path": None})
+    assert describe_item(change_log.KIND_TRASH, trash) == "mis dans la corbeille (conservé : /x/b.mp3)"
+
+    db = LibraryDB(":memory:")
+    change_id = change_log.record_tag_changes(db, {"/x/a.mp3": ({"genre": "Dub"}, {"genre": "Tek"})})
+    dialog = ChangeHistoryDialog(db)
+    try:
+        row = dialog.entries.topLevelItem(0)
+        assert row.text(2) == "Tags"
+        assert row.text(3) == "Modifier Genre de 1 morceau(x)"
+        # The file is gone: the revert's reason is given in French.
+        result = change_log.revert_change(db, change_id, translate=translator("ChangeHistoryDialog"))
+        assert result.failed == [("/x/a.mp3", "fichier introuvable")]
+    finally:
+        dialog.close()
+        dialog.deleteLater()
+        db.close()
+
+
+def test_main_window_messages_show_french(french, monkeypatch):
+    from PySide6.QtWidgets import QMessageBox
+
+    from djmidi.gui.main_window import MainWindow
+
+    shown = []
+    monkeypatch.setattr(QMessageBox, "information", lambda _parent, title, text, *_args: shown.append((title, text)))
+    window = MainWindow()
+    try:
+        window._on_export_cheat_sheet()
+        assert shown == [("Antisèche", "Ouvrez d'abord un mapping.")]
+        window._on_performance_mode_toggled(True)
+        assert window.statusBar().currentMessage() == "Mode performance activé — arbre masqué, schéma agrandi"
+        window._on_performance_mode_toggled(False)
+        assert window._tool_docks["routing"].windowTitle() == "Routage MIDI"
+        dock = window._tool_docks["clock"]
+        window._toggle_dock_reduced(dock)
+        assert dock._dj_reduce_action.text() == "Déplier"
+        window._toggle_dock_reduced(dock)
+        assert dock._dj_reduce_action.text() == "Réduire à la barre de titre"
+    finally:
+        window.close()
+        window.deleteLater()
+
+
+# --- Mapping tabs, Controller Images, Controller Setup, Dashboard (issue #318) --
+
+_SAMPLE_MAPPING = _ROOT / "data" / "xdj_xz-ddj_xp2-4decks.xml"
+
+
+def _conflicting_rows():
+    from djmidi.catalog._registry import ControlInfo
+
+    return [
+        ControlInfo("Pad", "PAD", "PAD 1", "NOTE", ("1",), "0"),
+        ControlInfo("Pad", "PAD", "PAD 2", "NOTE", ("1",), "0"),
+    ]
+
+
+def test_qt_free_mapping_helpers_stay_english_and_are_scanned():
+    from djmidi.catalog.codegen import find_trigger_conflicts
+    from djmidi.function_search import index_functions
+    from djmidi.parser import parse_file
+
+    assert find_trigger_conflicts(_conflicting_rows())[0].startswith(
+        "Trigger (channel=1, type=NOTE, data1=0) is claimed by 2"
+    )
+    results = index_functions(parse_file(_SAMPLE_MAPPING))
+    assert any(result.location().startswith("Deck ") for result in results)
+    sources = {path.name for path in _script_sources()}
+    assert {
+        "layout_view.py",
+        "layer_toggles.py",
+        "live_send.py",
+        "tree_model.py",
+        "deck_tree.py",
+        "controller_tree.py",
+        "edit_panel.py",
+        "midi_learn.py",
+        "function_search_view.py",
+        "function_search.py",
+        "controller_image_view.py",
+        "controller_setup.py",
+        "controller_submission_dialog.py",
+        "codegen.py",
+        "introduction_view.py",
+    } <= sources
+
+
+def test_mapping_tabs_and_controller_views_show_french(french):
+    from PySide6.QtGui import QUndoStack
+
+    from djmidi.catalog.codegen import find_trigger_conflicts
+    from djmidi.function_search import index_functions
+    from djmidi.gui.controller_image_view import ControllerImageView
+    from djmidi.gui.controller_setup import ControllerSetupView
+    from djmidi.gui.controller_submission_dialog import ControllerSubmissionDialog
+    from djmidi.gui.deck_tree import build_deck_columns
+    from djmidi.gui.edit_panel import EditPanel
+    from djmidi.gui.function_search_view import FunctionSearchView, result_lines
+    from djmidi.gui.introduction_view import IntroductionView
+    from djmidi.gui.layout_view import ControllerLayoutView
+    from djmidi.gui.translation import translator
+    from djmidi.gui.tree_model import build_channel_columns
+    from djmidi.parser import parse_file
+
+    config = parse_file(_SAMPLE_MAPPING)
+    layout = ControllerLayoutView(show_deck_filter=True)
+    images = ControllerImageView()
+    setup = ControllerSetupView()
+    submission = ControllerSubmissionDialog()
+    panel = EditPanel(QUndoStack(), lambda _node: None)
+    search = FunctionSearchView()
+    dashboard = IntroductionView()
+    try:
+        # By Channel / By Deck trees and the layout views.
+        _channel, channel_model, _items = build_channel_columns(config)[0]
+        assert channel_model.horizontalHeaderItem(0).text().startswith("Canal ")
+        _deck, deck_model = build_deck_columns(config)[0]
+        assert deck_model.horizontalHeaderItem(0).text() == "Platine 0"
+        layout.set_usage({("DDJ-XP2", "PAD", "Pad 1"): {"0": {"codfather_st"}, "2": {"play"}}})
+        combo = layout._deck_combo
+        assert [combo.itemText(i) for i in range(combo.count())] == ["Toutes les platines", "Platine 0", "Platine 2"]
+        # The deck filter goes by item data, not by the translated label.
+        combo.setCurrentIndex(2)
+        assert layout._selected_deck_filter() == "2"
+        assert layout._layers.layout_box.text() == "Disposition"
+        assert layout._live_send._toggle_button.text() == "Envoi live : inactif"
+
+        # Edit / validation column.
+        assert panel._prompt_label.text() == "Sélectionnez un élément de l'arbre pour le modifier."
+        search.set_config(config)
+        assert search.summary.text().endswith("fonctions dans ce mapping.")
+        assert any("Platine " in result_lines(result)[0] for result in index_functions(config))
+
+        # Controller Images.
+        assert images._documentation_button.text() == "Ouvrir la documentation"
+
+        # Controller Setup: table, status, submission dialog and the Qt-free conflict text.
+        headers = [setup._table.horizontalHeaderItem(i).text() for i in range(setup._table.columnCount())]
+        assert headers[:2] == ["Section", "Nom"]
+        assert setup._learn_status.text() == "Arrêté"
+        assert find_trigger_conflicts(_conflicting_rows(), translator("ControllerSetupView"))[0].startswith(
+            "Le déclencheur (canal=1, type=NOTE, data1=0) est revendiqué par 2"
+        )
+        assert submission.windowTitle() == "Proposer le contrôleur au catalogue communautaire"
+
+        # Dashboard cards.
+        assert dashboard._loaded_file_label.text() == "Fichier chargé : aucun"
+        assert dashboard._files_buttons["open"].text() == "Ouvrir un mapping…"
+        assert dashboard._known_count_label.text().endswith("contrôleur(s) enregistré(s)")
+    finally:
+        for widget in (layout, images, setup, submission, panel, search, dashboard):
+            widget.close()
+            widget.deleteLater()
+# --- Tool windows (issue #317) -------------------------------------------------
+
+
+def test_tool_window_sources_are_scanned():
+    sources = {path.name for path in _script_sources()}
+    assert {
+        "live_monitor.py",
+        "midi_routing_view.py",
+        "midi_route_transform_dialog.py",
+        "metronome_view.py",
+        "controller_emulator.py",
+        "pad_colour_panel.py",
+    } <= sources
+
+
+def test_tool_windows_show_french(french):
+    from PySide6.QtWidgets import QGroupBox, QPushButton
+
+    from djmidi.gui.controller_emulator import ControllerEmulatorView
+    from djmidi.gui.live_monitor import LiveMonitorView
+    from djmidi.gui.metronome_view import MetronomeView
+    from djmidi.gui.midi_route_transform_dialog import MidiRouteTransformDialog
+    from djmidi.gui.midi_routing_view import MidiRoutingView
+
+    monitor = LiveMonitorView()
+    routing = MidiRoutingView()
+    metronome = MetronomeView()
+    transform = MidiRouteTransformDialog(None)
+    emulator = ControllerEmulatorView(config_provider=lambda: None)
+    try:
+        assert monitor._start_button.text() == "Démarrer la surveillance"
+        assert monitor._log.horizontalHeaderItem(0).text() == "Heure"
+        assert monitor._conflict_label.text() == "Conflits : aucun dans le mapping chargé"
+        assert monitor._sync_button.text() == "Synchroniser les contrôleurs"
+
+        assert routing._routing_button.text() == "Démarrer le routage"
+        assert routing._routes_table.horizontalHeaderItem(3).text() == "État"
+        assert routing.take_clock_panel().title() == "Horloge MIDI"
+        assert routing._clock_status.text() == "Relais de l'horloge désactivé"
+        routing.set_routing_enabled(False)
+        assert routing._routing_button.toolTip() == "Activez d'abord le routage MIDI dans les Préférences"
+
+        assert "Source de la session" in [box.title() for box in metronome.findChildren(QGroupBox)]
+        assert "Arrêter la boucle" in [button.text() for button in metronome.findChildren(QPushButton)]
+        assert metronome._status.text() == "Prêt."
+        assert metronome._session_summary.text().startswith("Session de configuration actuelle")
+
+        assert transform.windowTitle() == "Modifier la transformation de la route"
+        assert transform._channel.itemText(0) == "(inchangé)"
+        # The channel is read from item data, not from the translated label.
+        assert transform._channel.currentData() is None
+
+        assert emulator._status_label.text() == "Cliquez sur une commande pour voir à quoi elle correspond."
+        assert emulator._pad_colours._paint_button.text() == "Peindre"
+    finally:
+        routing.shutdown()
+        monitor.shutdown()
+        metronome.shutdown()
+        for window in (monitor, routing, metronome, transform, emulator):
+            window.close()
+            window.deleteLater()
+
+
+def test_tool_dock_title_bars_and_window_menu_show_french(french):
+    from PySide6.QtWidgets import QLabel, QPushButton
+
+    from djmidi.gui.main_window import MainWindow
+
+    window = MainWindow()
+    try:
+        titles = {key: dock.windowTitle() for key, dock in window._tool_docks.items()}
+        assert titles == {
+            "monitor": "Live Monitor",
+            "routing": "Routage MIDI",
+            "clock": "Horloge MIDI",
+            "metronome": "Métronome",
+        }
+        bar = window._tool_docks["routing"].titleBarWidget()
+        assert bar.findChild(QLabel).text() == "Routage MIDI"
+        buttons = {button.text(): button for button in bar.findChildren(QPushButton)}
+        assert "Détacher" in buttons
+        menu = buttons["☰"].menu()
+        assert [action.text() for action in menu.actions() if action.text()] == [
+            "Réduire à la barre de titre",
+            "Agrandir",
+            "Ancrer à gauche",
+            "Ancrer à droite",
+            "Ancrer en haut",
+            "Ancrer en bas",
+        ]
+        emulator = window._create_emulator_instance()
+        assert emulator.windowTitle() == "Émulateur de contrôleur"
+        assert emulator.titleBarWidget().findChild(QLabel).text() == "Émulateur de contrôleur"
+    finally:
+        window.close()
+        window.deleteLater()

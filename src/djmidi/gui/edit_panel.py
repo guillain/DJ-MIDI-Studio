@@ -32,11 +32,23 @@ from djmidi.gui.commands import (
 )
 from djmidi.gui.help_button import help_row
 from djmidi.gui.mapping_group import MappingGroup
+from djmidi.gui.translation import translator
 from djmidi.midi_io import MidiEvent
 from djmidi.midi_learn import LearnedTrigger
 from djmidi.model import Alias, Control, MappingElement, MidiConfig, Translation, UserIO
 
 ConfirmConflict = Callable[[LearnedTrigger, list[str]], bool]
+
+# A field keeps room for its value ("Note On", "Default") next to a long
+# label ("Type d'événement" in French): on a narrow column the panel scrolls
+# sideways instead of squeezing the field to a sliver (issue #318).
+_FIELD_MIN_WIDTH = 110
+
+
+def _field(text: str) -> QLineEdit:
+    field = QLineEdit(text)
+    field.setMinimumWidth(_FIELD_MIN_WIDTH)
+    return field
 
 
 class EditPanel(QWidget):
@@ -72,11 +84,11 @@ class EditPanel(QWidget):
         self._learn_timer = QTimer(self)
         self._learn_timer.setSingleShot(True)
         self._learn_timer.setInterval(midi_learn.LEARN_TIMEOUT_MS)
-        self._learn_timer.timeout.connect(lambda: self.cancel_learn("No control pressed — Learn timed out."))
+        self._learn_timer.timeout.connect(lambda: self.cancel_learn(self.tr("No control pressed — Learn timed out.")))
         self._node: object | None = None
         self._layout = QVBoxLayout(self)
         self._layout.addLayout(help_row(self, *help_texts.EDIT_PANEL))
-        self._prompt_label = QLabel("Select a node in the tree to edit it.")
+        self._prompt_label = QLabel(self.tr("Select a node in the tree to edit it."))
         self._layout.addWidget(self._prompt_label)
         self._body: QWidget | None = None
 
@@ -128,8 +140,8 @@ class EditPanel(QWidget):
         if hits:
             text = "\n".join(f"{h.controller}: {h.name}" for h in hits)
         else:
-            text = "(not found in DDJ-XP2 / XDJ-XZ reference tables)"
-        box = QGroupBox("Physical control")
+            text = self.tr("(not found in any controller reference table)")
+        box = QGroupBox(self.tr("Physical control"))
         box_layout = QVBoxLayout(box)
         label = QLabel(text)
         label.setWordWrap(True)
@@ -158,12 +170,12 @@ class EditPanel(QWidget):
         layout = QVBoxLayout(container)
         layout.setContentsMargins(0, 0, 0, 0)
 
-        trigger_box = QGroupBox("Control (MIDI trigger)")
+        trigger_box = QGroupBox(self.tr("Control (MIDI trigger)"))
         form = QFormLayout(trigger_box)
 
-        channel = QLineEdit(control.channel or "")
-        event_type = QLineEdit(control.event_type or "")
-        control_no = QLineEdit(control.control or "")
+        channel = _field(control.channel or "")
+        event_type = _field(control.event_type or "")
+        control_no = _field(control.control or "")
 
         channel.editingFinished.connect(lambda: self._push(control, "channel", control.channel, channel.text(), control))
         event_type.editingFinished.connect(
@@ -173,9 +185,9 @@ class EditPanel(QWidget):
             lambda: self._push(control, "control", control.control, control_no.text(), control)
         )
 
-        form.addRow("Channel", channel)
-        form.addRow("Event type", event_type)
-        form.addRow("Control", control_no)
+        form.addRow(self.tr("Channel"), channel)
+        form.addRow(self.tr("Event type"), event_type)
+        form.addRow(self.tr("Control"), control_no)
         form.addRow(self._build_learn_row(lambda: [control], lambda trigger: self._learn_into_controls([control], trigger)))
         layout.addWidget(trigger_box)
 
@@ -183,25 +195,25 @@ class EditPanel(QWidget):
         return container
 
     def _build_userio_form(self, userio: UserIO) -> QWidget:
-        box = QGroupBox("User I/O")
+        box = QGroupBox(self.tr("User I/O"))
         form = QFormLayout(box)
-        event = QLineEdit(userio.event or "")
+        event = _field(userio.event or "")
 
         event.editingFinished.connect(lambda: self._push(userio, "event", userio.event, event.text(), userio))
 
-        form.addRow("Event (click/output)", event)
-        form.addRow(QLabel(f"{len(userio.mappings)} mapping(s)"))
+        form.addRow(self.tr("Event (click/output)"), event)
+        form.addRow(QLabel(self.tr("{count} mapping(s)").format(count=len(userio.mappings))))
         return box
 
     def _build_mapping_form(self, mapping: MappingElement) -> QWidget:
         container = QWidget()
         layout = QVBoxLayout(container)
 
-        deck_box = QGroupBox(f"<{mapping.tag}> target")
+        deck_box = QGroupBox(self.tr("<{tag}> target").format(tag=mapping.tag))
         form = QFormLayout(deck_box)
-        deck_set = QLineEdit(mapping.deck_set or "")
-        deck_id = QLineEdit(mapping.deck_id or "")
-        slot_id = QLineEdit(mapping.slot_id or "")
+        deck_set = _field(mapping.deck_set or "")
+        deck_id = _field(mapping.deck_id or "")
+        slot_id = _field(mapping.slot_id or "")
 
         deck_set.editingFinished.connect(
             lambda: self._push(mapping, "deck_set", mapping.deck_set, deck_set.text(), mapping)
@@ -209,9 +221,9 @@ class EditPanel(QWidget):
         deck_id.editingFinished.connect(lambda: self._push(mapping, "deck_id", mapping.deck_id, deck_id.text(), mapping))
         slot_id.editingFinished.connect(lambda: self._push(mapping, "slot_id", mapping.slot_id, slot_id.text(), mapping))
 
-        form.addRow("Deck set", deck_set)
-        form.addRow("Deck id", deck_id)
-        form.addRow("Slot id", slot_id)
+        form.addRow(self.tr("Deck set"), deck_set)
+        form.addRow(self.tr("Deck id"), deck_id)
+        form.addRow(self.tr("Slot id"), slot_id)
         layout.addWidget(deck_box)
 
         # The trigger belongs to the parent <control>, so learning here moves
@@ -219,7 +231,9 @@ class EditPanel(QWidget):
         parent_control = midi_learn.find_parent_control(self._config_provider(), mapping)
         if parent_control is not None:
             learn_box = QGroupBox(
-                f"Trigger: ch{parent_control.channel} {parent_control.event_type} #{parent_control.control}"
+                self.tr("Trigger: {trigger}").format(
+                    trigger=f"ch{parent_control.channel} {parent_control.event_type} #{parent_control.control}"
+                )
             )
             learn_layout = QVBoxLayout(learn_box)
             learn_layout.addWidget(
@@ -230,20 +244,20 @@ class EditPanel(QWidget):
             )
             layout.addWidget(learn_box)
 
-        translations_box = QGroupBox("Translations")
+        translations_box = QGroupBox(self.tr("Translations"))
         translations_layout = QVBoxLayout(translations_box)
         translations_table = QTableWidget(0, 2)
         translations_table.setHorizontalHeaderLabels(["action_on", "behaviour"])
         translations_layout.addWidget(translations_table)
 
-        aliases_box = QGroupBox("Aliases (on/off values) for selected translation")
+        aliases_box = QGroupBox(self.tr("Aliases (on/off values) for selected translation"))
         aliases_layout = QVBoxLayout(aliases_box)
         aliases_table = QTableWidget(0, 2)
         aliases_table.setHorizontalHeaderLabels(["name", "value"])
         aliases_layout.addWidget(aliases_table)
         alias_buttons = QHBoxLayout()
-        add_alias_btn = QPushButton("Add alias")
-        remove_alias_btn = QPushButton("Remove alias")
+        add_alias_btn = QPushButton(self.tr("Add alias"))
+        remove_alias_btn = QPushButton(self.tr("Remove alias"))
         alias_buttons.addWidget(add_alias_btn)
         alias_buttons.addWidget(remove_alias_btn)
         aliases_layout.addLayout(alias_buttons)
@@ -336,9 +350,13 @@ class EditPanel(QWidget):
         mappings = [m for _, _, m in group.members]
         translations_lists = [m.translations for m in mappings]
 
-        info_box = QGroupBox(f"<{group.tag}> [{group.event}] — {len(group.members)} linked control(s)")
+        info_box = QGroupBox(
+            self.tr("<{tag}> [{event}] — {count} linked control(s)").format(
+                tag=group.tag, event=group.event, count=len(group.members)
+            )
+        )
         info_form = QFormLayout(info_box)
-        info_form.addRow("Trigger", QLabel(f"ch{group.channel} {group.event_type} #{group.control_no}"))
+        info_form.addRow(self.tr("Trigger"), QLabel(f"ch{group.channel} {group.event_type} #{group.control_no}"))
         group_controls = midi_learn.unique_controls(control for control, _, _ in group.members)
         info_form.addRow(
             self._build_learn_row(lambda: group_controls, lambda trigger: self._learn_into_group(group, trigger))
@@ -347,11 +365,11 @@ class EditPanel(QWidget):
 
         layout.addWidget(self._build_physical_control_box(group.channel, group.event_type, group.control_no))
 
-        deck_box = QGroupBox("Target (applies to all linked controls)")
+        deck_box = QGroupBox(self.tr("Target (applies to all linked controls)"))
         form = QFormLayout(deck_box)
-        deck_set = QLineEdit(group.representative.deck_set or "")
-        deck_id = QLineEdit(group.representative.deck_id or "")
-        slot_id = QLineEdit(group.representative.slot_id or "")
+        deck_set = _field(group.representative.deck_set or "")
+        deck_id = _field(group.representative.deck_id or "")
+        slot_id = _field(group.representative.slot_id or "")
 
         def push_group(attr: str, new_value: str) -> None:
             old_values = [getattr(m, attr) for m in mappings]
@@ -363,25 +381,25 @@ class EditPanel(QWidget):
         deck_id.editingFinished.connect(lambda: push_group("deck_id", deck_id.text()))
         slot_id.editingFinished.connect(lambda: push_group("slot_id", slot_id.text()))
 
-        form.addRow("Deck set", deck_set)
-        form.addRow("Deck id", deck_id)
-        form.addRow("Slot id", slot_id)
+        form.addRow(self.tr("Deck set"), deck_set)
+        form.addRow(self.tr("Deck id"), deck_id)
+        form.addRow(self.tr("Slot id"), slot_id)
         layout.addWidget(deck_box)
 
-        translations_box = QGroupBox("Translations (applies to all linked controls)")
+        translations_box = QGroupBox(self.tr("Translations (applies to all linked controls)"))
         translations_layout = QVBoxLayout(translations_box)
         translations_table = QTableWidget(0, 2)
         translations_table.setHorizontalHeaderLabels(["action_on", "behaviour"])
         translations_layout.addWidget(translations_table)
 
-        aliases_box = QGroupBox("Aliases for selected translation (applies to all linked controls)")
+        aliases_box = QGroupBox(self.tr("Aliases for selected translation (applies to all linked controls)"))
         aliases_layout = QVBoxLayout(aliases_box)
         aliases_table = QTableWidget(0, 2)
         aliases_table.setHorizontalHeaderLabels(["name", "value"])
         aliases_layout.addWidget(aliases_table)
         alias_buttons = QHBoxLayout()
-        add_alias_btn = QPushButton("Add alias")
-        remove_alias_btn = QPushButton("Remove alias")
+        add_alias_btn = QPushButton(self.tr("Add alias"))
+        remove_alias_btn = QPushButton(self.tr("Remove alias"))
         alias_buttons.addWidget(add_alias_btn)
         alias_buttons.addWidget(remove_alias_btn)
         aliases_layout.addLayout(alias_buttons)
@@ -486,10 +504,12 @@ class EditPanel(QWidget):
         row = QWidget()
         row_layout = QHBoxLayout(row)
         row_layout.setContentsMargins(0, 0, 0, 0)
-        button = QPushButton("Learn")
+        button = QPushButton(self.tr("Learn"))
         button.setToolTip(
-            "Listen for the next control pressed on your controller and move this trigger to it. "
-            f"Click again (or wait {midi_learn.LEARN_TIMEOUT_MS // 1000} s) to cancel."
+            self.tr(
+                "Listen for the next control pressed on your controller and move this trigger to it. "
+                "Click again (or wait {seconds} s) to cancel."
+            ).format(seconds=midi_learn.LEARN_TIMEOUT_MS // 1000)
         )
         status = QLabel(self._learn_message)
         status.setWordWrap(True)
@@ -509,7 +529,7 @@ class EditPanel(QWidget):
 
     def _on_learn_clicked(self) -> None:
         if self._learning:
-            self.cancel_learn("Learn cancelled.")
+            self.cancel_learn(self.tr("Learn cancelled."))
         else:
             self.start_learn()
 
@@ -517,24 +537,31 @@ class EditPanel(QWidget):
         if self._learn_apply is None or self._learning:
             return False
         if not self._ensure_listening():
-            self._set_learn_message("No MIDI input is open: connect a controller, or pick one in Live Monitor.")
+            self._set_learn_message(
+                self.tr("No MIDI input is open: connect a controller, or pick one in Live Monitor.")
+            )
             return False
         self._learning = True
         if self._learn_button is not None:
-            self._learn_button.setText("Cancel")
-        self._set_learn_message(f"Press a control on your controller… ({midi_learn.LEARN_TIMEOUT_MS // 1000} s)")
+            self._learn_button.setText(self.tr("Cancel"))
+        self._set_learn_message(
+            self.tr("Press a control on your controller… ({seconds} s)").format(
+                seconds=midi_learn.LEARN_TIMEOUT_MS // 1000
+            )
+        )
         self._learn_timer.start()
         return True
 
-    def cancel_learn(self, message: str | None = "Learn cancelled.") -> None:
+    def cancel_learn(self, message: str | None = "") -> None:
+        """`message` None keeps the status line; the default shows "Learn cancelled."."""
         if not self._learning:
             return
         self._learning = False
         self._learn_timer.stop()
         if self._learn_button is not None:
-            self._learn_button.setText("Learn")
+            self._learn_button.setText(self.tr("Learn"))
         if message is not None:
-            self._set_learn_message(message)
+            self._set_learn_message(message or self.tr("Learn cancelled."))
 
     def feed_learn_event(self, event: MidiEvent) -> bool:
         """Called for every live MIDI event; returns True when the event was
@@ -548,14 +575,21 @@ class EditPanel(QWidget):
         apply = self._learn_apply
         self.cancel_learn(None)
         if all(midi_learn.trigger_of(control) == trigger for control in controls):
-            self._set_learn_message(f"Already on {trigger.label()}.")
+            self._set_learn_message(self.tr("Already on {trigger}.").format(trigger=trigger.label()))
             return True
         conflicts = midi_learn.find_trigger_conflicts(self._config_provider(), trigger, controls)
-        if conflicts and not self.confirm_conflict(trigger, midi_learn.describe_conflicts(conflicts)):
-            self._set_learn_message(f"Not reassigned: {trigger.label()} is already used.")
+        if conflicts and not self.confirm_conflict(trigger, midi_learn.describe_conflicts(conflicts, translator("EditPanel"))):
+            self._set_learn_message(
+                self.tr("Not reassigned: {trigger} is already used.").format(trigger=trigger.label())
+            )
             return True
-        warning = f" (also used by {len(conflicts)} other control(s))" if conflicts else ""
-        self._set_learn_message(f"Learned {trigger.label()}{warning}.")
+        if conflicts:
+            message = self.tr("Learned {trigger} (also used by {count} other control(s)).").format(
+                trigger=trigger.label(), count=len(conflicts)
+            )
+        else:
+            message = self.tr("Learned {trigger}.").format(trigger=trigger.label())
+        self._set_learn_message(message)
         apply(trigger)
         return True
 
@@ -563,9 +597,10 @@ class EditPanel(QWidget):
         listing = "\n".join(f"• {line}" for line in lines)
         answer = QMessageBox.warning(
             self,
-            "Trigger already used",
-            f"{trigger.label()} is already bound to:\n\n{listing}\n\n"
-            "Reassign anyway? Both will fire on the same control.",
+            self.tr("Trigger already used"),
+            self.tr("{trigger} is already bound to:\n\n{listing}\n\nReassign anyway? Both will fire on the same control.").format(
+                trigger=trigger.label(), listing=listing
+            ),
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
         )
@@ -573,7 +608,7 @@ class EditPanel(QWidget):
 
     def _learn_into_controls(self, controls: list[Control], trigger: LearnedTrigger) -> None:
         """One undo step: a macro of the existing SetAttrCommand per changed field."""
-        self._undo_stack.beginMacro(f"MIDI Learn → {trigger.label()}")
+        self._undo_stack.beginMacro(self.tr("MIDI Learn → {trigger}").format(trigger=trigger.label()))
         for control in controls:
             for attr in ("channel", "event_type", "control"):
                 self._push(control, attr, getattr(control, attr), getattr(trigger, attr), control)
@@ -584,7 +619,9 @@ class EditPanel(QWidget):
         plus the group's own trigger fields so the refreshed panel shows it."""
         controls = midi_learn.unique_controls(control for control, _, _ in group.members)
         fields = (("channel", "channel"), ("event_type", "event_type"), ("control", "control_no"))
-        self._undo_stack.beginMacro(f"MIDI Learn → {trigger.label()} ({len(controls)} linked)")
+        self._undo_stack.beginMacro(
+            self.tr("MIDI Learn → {trigger} ({count} linked)").format(trigger=trigger.label(), count=len(controls))
+        )
         for control_attr, group_attr in fields:
             new_value = getattr(trigger, control_attr)
             old_values = [getattr(control, control_attr) for control in controls]

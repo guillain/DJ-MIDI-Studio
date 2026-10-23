@@ -110,7 +110,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from PySide6.QtCore import QRectF, Qt, QTimer, Signal
+from PySide6.QtCore import QCoreApplication, QRectF, Qt, QTimer, Signal
 from PySide6.QtGui import QBrush, QColor, QFont
 from PySide6.QtWidgets import (
     QComboBox,
@@ -175,7 +175,11 @@ def _dry_run_lookup(config: MidiConfig) -> dict[tuple[str, str, str], list[str]]
         if group.event != "click":
             continue
         key = (group.channel, group.event_type, group.control_no)
-        lookup.setdefault(key, []).append(f"Deck {group.deck_id} slot {group.slot_id}: {group.tag}")
+        lookup.setdefault(key, []).append(
+            QCoreApplication.translate("ControllerEmulatorView", "Deck {deck} slot {slot}: {tag}").format(
+                deck=group.deck_id, slot=group.slot_id, tag=group.tag
+            )
+        )
     return lookup
 
 
@@ -660,7 +664,7 @@ class ControllerEmulatorView(QWidget):
         self._photo_checkbox = self._layers.controller_box
         self._sync_layers()
 
-        self._status_label = QLabel("Click a control to see what it resolves to.")
+        self._status_label = QLabel(self.tr("Click a control to see what it resolves to."))
         self._status_label.setWordWrap(True)
 
         self._live_send = LiveSendControl()
@@ -803,7 +807,7 @@ class ControllerEmulatorView(QWidget):
         self._shift_key = None
         self._selected_slot.clear()
         self._selected_cell.clear()
-        self._status_label.setText("Click a control to see what it resolves to.")
+        self._status_label.setText(self.tr("Click a control to see what it resolves to."))
 
     def _load_pad_colours(self, controller: str) -> None:
         """Shows the Pad colours row for ``controller`` (if it has a
@@ -839,12 +843,22 @@ class ControllerEmulatorView(QWidget):
             return None
         painted = self._pad_colours.paint(number)
         if painted is None:
-            return f"{key[2]}: no such pad on this controller."
+            return self.tr("{pad}: no such pad on this controller.").format(pad=key[2])
         slot, colour = painted
         message = self._pad_colours.palette.message_for(slot, colour)
-        text = (
-            f"Deck {slot.deck} Pad {slot.pad} (mode {slot.mode}{' +SHIFT' if slot.shift else ''}) → "
-            f"{colour.name} (ch{message.channel} NOTE {message.data1} velocity {message.data2})"
+        template = (
+            self.tr("Deck {deck} Pad {pad} (mode {mode} +SHIFT) → {colour} (ch{channel} NOTE {note} velocity {velocity})")
+            if slot.shift
+            else self.tr("Deck {deck} Pad {pad} (mode {mode}) → {colour} (ch{channel} NOTE {note} velocity {velocity})")
+        )
+        text = template.format(
+            deck=slot.deck,
+            pad=slot.pad,
+            mode=slot.mode,
+            colour=colour.name,
+            channel=message.channel,
+            note=message.data1,
+            velocity=message.data2,
         )
         port = self._live_send.selected_port() if self._live_send.is_active() else None
         if port:
@@ -855,9 +869,9 @@ class ControllerEmulatorView(QWidget):
                     output_port_name=port, event_type=message.event_type,
                     channel_1_based=message.channel, data1=message.data1, data2=message.data2,
                 )
-                text += "  [LIVE SENT]"
+                text += self.tr("  [LIVE SENT]")
             except Exception as exc:  # noqa: BLE001 - a failing port is reported, not raised
-                text += f"  [send failed: {exc}]"
+                text += self.tr("  [send failed: {error}]").format(error=exc)
         return text
 
     def _toggle_shift(self, key: CellKey) -> str:
@@ -869,7 +883,7 @@ class ControllerEmulatorView(QWidget):
         self._shift_held = not self._shift_held
         self._shift_key = key if self._shift_held else None
         self._emulator.set_active(key, self._shift_held)
-        return f"  [SHIFT {'held' if self._shift_held else 'released'}]"
+        return self.tr("  [SHIFT held]") if self._shift_held else self.tr("  [SHIFT released]")
 
     def _current_pad_mode_token(self, key: CellKey) -> str | None:
         """The pad-variant name substring pad resolution should prefer for
@@ -894,7 +908,7 @@ class ControllerEmulatorView(QWidget):
         self._pad_mode[side] = token
         self._pad_mode_button_key[side] = key
         self._emulator.set_active(key, True)
-        return f"  [pad mode set: {key[2].removesuffix(' (R)')}]"
+        return self.tr("  [pad mode set: {mode}]").format(mode=key[2].removesuffix(" (R)"))
 
     def _on_control_pressed(self, key: CellKey) -> None:
         painted = self._paint_pad(key)
@@ -907,7 +921,9 @@ class ControllerEmulatorView(QWidget):
         text += self._toggle_shift(key)
         sent = self._live_send.resolve_and_send(key[0], key)
         if sent is not None:
-            text += f"  [LIVE SENT: ch{sent.channels[0] if sent.channels else '?'} {sent.note_or_cc} {sent.data1}]"
+            text += self.tr("  [LIVE SENT: ch{channel} {kind} {data1}]").format(
+                channel=sent.channels[0] if sent.channels else "?", kind=sent.note_or_cc, data1=sent.data1
+            )
         self._status_label.setText(text)
 
     def _apply_output_state(self, key: CellKey) -> str:
@@ -952,10 +968,14 @@ class ControllerEmulatorView(QWidget):
             self._toggle_active[key] = new_state
             self._emulator.set_active(key, new_state)
             alias = resolve_toggle_alias(output_group, new_state)
-            state_word = "ON" if new_state else "OFF"
             if alias is not None:
-                return f"  [TOGGLED {state_word}: output alias '{alias.name}' = {alias.value}]"
-            return f"  [TOGGLED {state_word}]"
+                template = (
+                    self.tr("  [TOGGLED ON: output alias '{name}' = {value}]")
+                    if new_state
+                    else self.tr("  [TOGGLED OFF: output alias '{name}' = {value}]")
+                )
+                return template.format(name=alias.name, value=alias.value)
+            return self.tr("  [TOGGLED ON]") if new_state else self.tr("  [TOGGLED OFF]")
         if is_radio_group(output_group):
             group_key = radio_group_key(click_group)
             previous = self._selected_cell.get(group_key)
@@ -964,13 +984,12 @@ class ControllerEmulatorView(QWidget):
             self._selected_slot[group_key] = click_group.slot_id
             self._selected_cell[group_key] = key
             self._emulator.set_active(key, True)
-            return (
-                f"  [SELECTED: {click_group.tag} deck {click_group.deck_id} "
-                f"slot {click_group.slot_id} — siblings now 'off']"
+            return self.tr("  [SELECTED: {tag} deck {deck} slot {slot} — siblings now 'off']").format(
+                tag=click_group.tag, deck=click_group.deck_id, slot=click_group.slot_id
             )
         aliases_text = describe_output_aliases(output_group)
         if aliases_text:
-            return f"  [output aliases: {aliases_text}]"
+            return self.tr("  [output aliases: {aliases}]").format(aliases=aliases_text)
         return ""
 
     def _resolve(self, key: CellKey) -> str:
@@ -982,17 +1001,23 @@ class ControllerEmulatorView(QWidget):
             key[0], key, self._current_pad_mode_token(key), self._shift_held
         )
         if entry is None:
-            return f"{key[1]} {key[2]}: no raw MIDI trigger known for this control."
+            return self.tr("{section} {name}: no raw MIDI trigger known for this control.").format(
+                section=key[1], name=key[2]
+            )
         channel = entry.channels[0] if entry.channels else "?"
         trigger = f"ch{channel} {entry.note_or_cc} {entry.data1}"
         config = self._config_provider()
         if config is None:
-            return f"{key[1]} {key[2]} → {trigger} (no mapping loaded)"
+            return self.tr("{section} {name} → {trigger} (no mapping loaded)").format(
+                section=key[1], name=key[2], trigger=trigger
+            )
         functions = _dry_run_lookup(config).get(
             (channel, _EVENT_TYPE_FOR_KIND[entry.note_or_cc], entry.data1), []
         )
         if not functions:
-            return f"{key[1]} {key[2]} → {trigger}: not mapped in the loaded config"
+            return self.tr("{section} {name} → {trigger}: not mapped in the loaded config").format(
+                section=key[1], name=key[2], trigger=trigger
+            )
         return f"{key[1]} {key[2]} → " + "; ".join(functions)
 
 

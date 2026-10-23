@@ -33,6 +33,7 @@ from PySide6.QtWidgets import (
 
 from djmidi.gui.help_button import help_button
 from djmidi.gui.help_texts import MIDI_LATENCY
+from djmidi.gui.translation import translator
 from djmidi.gui.window_size import fit_to_screen, keep_wrapped_text_visible
 from djmidi.midi_io import list_input_ports, list_output_ports
 from djmidi.midi_latency import (
@@ -297,7 +298,11 @@ class MidiLatencyDialog(QDialog):
             elif kind == "done":
                 assert isinstance(payload, LatencyStats)
                 self.last_stats = payload
-                self._finish(format_stats(payload) if payload.sent else self.tr("Stopped before any ping finished."))
+                self._finish(
+                    format_stats(payload, translator("MidiLatencyDialog"))
+                    if payload.sent
+                    else self.tr("Stopped before any ping finished.")
+                )
             elif kind == "error":
                 self._finish(self.tr("Could not run the test: {error}").format(error=payload))
 

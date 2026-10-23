@@ -28,16 +28,21 @@ from PySide6.QtWidgets import (
 
 from djmidi.gui import help_texts
 from djmidi.gui.help_button import help_button
+from djmidi.gui.translation import translator
 from djmidi.gui.window_size import (
     fit_to_screen,
     keep_wrapped_text_visible,
     usable_minimum,
 )
-from djmidi.live_ready import ReadyFinding, ReadyReport, report_text
+from djmidi.live_ready import SEVERITY_LABELS, ReadyFinding, ReadyReport, report_text
 from djmidi.model import Control
 
 COLUMNS = ("Severity", "Finding", "What to do")
 SEVERITIES = ("error", "warning", "info")
+
+# The verdict and severity names come from Qt-free live_ready (issue #319);
+# the findings themselves are translated by check_live_ready's caller.
+live_ready_translate = translator("LiveReady")
 
 
 class LiveReadyDialog(QDialog):
@@ -54,7 +59,7 @@ class LiveReadyDialog(QDialog):
         header = QHBoxLayout()
         decks = ", ".join(report.decks) if report.decks else self.tr("none")
         self.verdict_label = QLabel(
-            f"<b>{report.verdict}</b><br>"
+            f"<b>{report.describe_verdict(live_ready_translate)}</b><br>"
             + self.tr("Decks checked: {decks}. Read-only: nothing is changed.").format(decks=decks)
         )
         self.verdict_label.setWordWrap(True)
@@ -121,7 +126,8 @@ class LiveReadyDialog(QDialog):
         for finding in self._visible:
             row = self.table.rowCount()
             self.table.insertRow(row)
-            cells = (finding.severity, finding.message, finding.hint)
+            severity = live_ready_translate(SEVERITY_LABELS.get(finding.severity, finding.severity))
+            cells = (severity, finding.message, finding.hint)
             for column, text in enumerate(cells):
                 item = QTableWidgetItem(text)
                 item.setToolTip(finding.location or text)
@@ -149,8 +155,8 @@ class LiveReadyDialog(QDialog):
             self.showControlRequested.emit(finding.control)
 
     def _copy_report(self) -> None:
-        QGuiApplication.clipboard().setText(report_text(self.report))
+        QGuiApplication.clipboard().setText(report_text(self.report, live_ready_translate))
         self.count_label.setText(self.tr("Report copied to the clipboard"))
 
 
-__all__ = ["COLUMNS", "LiveReadyDialog"]
+__all__ = ["COLUMNS", "LiveReadyDialog", "live_ready_translate"]

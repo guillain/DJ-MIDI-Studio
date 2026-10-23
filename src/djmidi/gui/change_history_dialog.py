@@ -12,10 +12,11 @@ session-only undo stack.
 
 from __future__ import annotations
 
+import re
 from datetime import datetime
 from pathlib import Path
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import QT_TRANSLATE_NOOP, QCoreApplication, Qt, Signal
 from PySide6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
@@ -32,6 +33,7 @@ from PySide6.QtWidgets import (
 
 from djmidi.gui import help_texts
 from djmidi.gui.help_button import help_button
+from djmidi.gui.translation import translator
 from djmidi.gui.window_size import (
     fit_to_screen,
     keep_wrapped_text_visible,
@@ -40,16 +42,62 @@ from djmidi.gui.window_size import (
 from djmidi.library import change_log
 from djmidi.library.db import ChangeItem, ChangeRecord, LibraryDB
 
+_CONTEXT = "ChangeHistoryDialog"
+
 KIND_LABELS = {
-    change_log.KIND_TAGS: "Tags",
-    change_log.KIND_TRASH: "Moved to Trash",
-    change_log.KIND_RESTORE: "Restored from Trash",
-    change_log.KIND_RENAME: "Rename",
-    change_log.KIND_COVER: "Cover art",
+    change_log.KIND_TAGS: QT_TRANSLATE_NOOP("ChangeHistoryDialog", "Tags"),
+    change_log.KIND_TRASH: QT_TRANSLATE_NOOP("ChangeHistoryDialog", "Moved to Trash"),
+    change_log.KIND_RESTORE: QT_TRANSLATE_NOOP("ChangeHistoryDialog", "Restored from Trash"),
+    change_log.KIND_RENAME: QT_TRANSLATE_NOOP("ChangeHistoryDialog", "Rename"),
+    change_log.KIND_COVER: QT_TRANSLATE_NOOP("ChangeHistoryDialog", "Cover art"),
 }
 
 # How many entries the window lists (the log itself keeps MAX_ENTRIES).
 _LIST_LIMIT = 500
+
+# Entry summaries are stored in English when the change is made (issue #319):
+# the ones this app writes are recognized and shown in the interface
+# language; anything else (another writer's own text) is shown as stored.
+_SUMMARY_PATTERNS: tuple[tuple[re.Pattern[str], str], ...] = (
+    (re.compile(r"Undo: (?P<summary>.+)"), QT_TRANSLATE_NOOP("ChangeHistoryDialog", "Undo: {summary}")),
+    (re.compile(r"Revert #(?P<id>\d+): (?P<summary>.+)"), QT_TRANSLATE_NOOP("ChangeHistoryDialog", "Revert #{id}: {summary}")),
+    (
+        re.compile(r"Edit (?P<fields>.+?) of (?P<count>\d+) track(?:s|\(s\))"),
+        QT_TRANSLATE_NOOP("ChangeHistoryDialog", "Edit {fields} of {count} track(s)"),
+    ),
+    (re.compile(r"Edit (?P<fields>.+?) of (?P<name>.+)"), QT_TRANSLATE_NOOP("ChangeHistoryDialog", "Edit {fields} of {name}")),
+    (re.compile(r"Set cover of (?P<name>.+)"), QT_TRANSLATE_NOOP("ChangeHistoryDialog", "Set cover of {name}")),
+    (re.compile(r"Remove cover of (?P<name>.+)"), QT_TRANSLATE_NOOP("ChangeHistoryDialog", "Remove cover of {name}")),
+    (re.compile(r"Rename (?P<count>\d+) file\(s\)"), QT_TRANSLATE_NOOP("ChangeHistoryDialog", "Rename {count} file(s)")),
+    (
+        re.compile(r"Move (?P<count>\d+) duplicate\(s\) to the Trash"),
+        QT_TRANSLATE_NOOP("ChangeHistoryDialog", "Move {count} duplicate(s) to the Trash"),
+    ),
+)
+
+
+def _tr(text: str) -> str:
+    return QCoreApplication.translate("ChangeHistoryDialog", text)
+
+
+def _field(name: str) -> str:
+    """A tag field as the Music Library's columns name it (``bpm`` -> ``BPM``)."""
+    return "BPM" if name == "bpm" else QCoreApplication.translate("MusicLibraryView", name.capitalize())
+
+
+def describe_summary(summary: str) -> str:
+    """An entry's stored English summary in the interface language."""
+    for pattern, template in _SUMMARY_PATTERNS:
+        match = pattern.fullmatch(summary)
+        if match is None:
+            continue
+        values = match.groupdict()
+        if "summary" in values:
+            values["summary"] = describe_summary(values["summary"])
+        if "fields" in values:
+            values["fields"] = ", ".join(_field(name) for name in values["fields"].split(", "))
+        return _tr(template).format(**values)
+    return summary
 
 
 def _when(timestamp: float) -> str:
@@ -58,7 +106,7 @@ def _when(timestamp: float) -> str:
 
 def _value(value: object) -> str:
     if value is None or value == "":
-        return "(empty)"
+        return QCoreApplication.translate("ChangeHistoryDialog", "(empty)")
     if isinstance(value, float):
         return f"{value:g}"
     return str(value)
@@ -67,31 +115,53 @@ def _value(value: object) -> str:
 def _cover(state: dict[str, object]) -> str:
     """``image/jpeg, 120 KB`` for a logged cover, ``(none)`` when absent."""
     if not state.get("sha256"):
-        return "(none)"
+        return QCoreApplication.translate("ChangeHistoryDialog", "(none)")
     size = state.get("size")
-    kilobytes = f", {max(1, round(size / 1024))} KB" if isinstance(size, int) else ""
-    return f"{state.get('mime') or 'image'}{kilobytes}"
+    kilobytes = ""
+    if isinstance(size, int):
+        kilobytes = QCoreApplication.translate("ChangeHistoryDialog", ", {size} KB").format(
+            size=max(1, round(size / 1024))
+        )
+    mime = state.get("mime") or QCoreApplication.translate("ChangeHistoryDialog", "image")
+    return f"{mime}{kilobytes}"
+
+
+def _trash() -> str:
+    return QCoreApplication.translate("ChangeHistoryDialog", "the Trash")
 
 
 def describe_item(kind: str, item: ChangeItem) -> str:
-    """One line saying what changed for this file."""
+    """One line saying what changed for this file, in the interface language."""
     if kind == change_log.KIND_TRASH:
-        where = item.after.get("trash_path") or "the Trash"
-        return f"moved to {where} (kept {item.before.get('kept', '?')})"
+        return QCoreApplication.translate("ChangeHistoryDialog", "moved to {where} (kept {kept})").format(
+            where=item.after.get("trash_path") or _trash(), kept=item.before.get("kept", "?")
+        )
     if kind == change_log.KIND_RESTORE:
-        return f"put back from {item.before.get('trash_path', 'the Trash')}"
+        return QCoreApplication.translate("ChangeHistoryDialog", "put back from {where}").format(
+            where=item.before.get("trash_path") or _trash()
+        )
     if kind == change_log.KIND_RENAME:
         return f"{item.before.get('path', '?')} → {item.after.get('path', '?')}"
     if kind == change_log.KIND_COVER:
-        return f"front cover: {_cover(item.before)} → {_cover(item.after)}"
+        return QCoreApplication.translate("ChangeHistoryDialog", "front cover: {before} → {after}").format(
+            before=_cover(item.before), after=_cover(item.after)
+        )
     names = sorted(set(item.before) | set(item.after))
-    return "; ".join(f"{name}: {_value(item.before.get(name))} → {_value(item.after.get(name))}" for name in names)
+    template = QCoreApplication.translate("ChangeHistoryDialog", "{field}: {before} → {after}")
+    return "; ".join(
+        template.format(field=_field(name), before=_value(item.before.get(name)), after=_value(item.after.get(name)))
+        for name in names
+    )
 
 
 def _status(change: ChangeRecord) -> str:
     if change.reverted_at is not None:
-        return f"Reverted {_when(change.reverted_at)}"
-    return "" if change_log.is_revertible(change) else "Not revertible"
+        return QCoreApplication.translate("ChangeHistoryDialog", "Reverted {when}").format(
+            when=_when(change.reverted_at)
+        )
+    if change_log.is_revertible(change):
+        return ""
+    return QCoreApplication.translate("ChangeHistoryDialog", "Not revertible")
 
 
 class ChangeHistoryDialog(QDialog):
@@ -161,8 +231,8 @@ class ChangeHistoryDialog(QDialog):
                 [
                     str(change.id),
                     _when(change.created_at),
-                    KIND_LABELS.get(change.kind, change.kind),
-                    change.summary,
+                    _tr(KIND_LABELS[change.kind]) if change.kind in KIND_LABELS else change.kind,
+                    describe_summary(change.summary),
                     str(change.item_count),
                     _status(change),
                 ]
@@ -211,14 +281,14 @@ class ChangeHistoryDialog(QDialog):
             self.tr(
                 "Revert #{id} ({summary}) on {count} file(s)?\n\n"
                 "Files changed again since are left alone. The revert is itself logged here."
-            ).format(id=change.id, summary=change.summary, count=change.item_count),
+            ).format(id=change.id, summary=describe_summary(change.summary), count=change.item_count),
         )
         if answer == QMessageBox.StandardButton.Yes:
             self.revert(change.id)
 
     def revert(self, change_id: int) -> change_log.RevertResult:
         """Revert entry `change_id` (no confirmation) and report the outcome."""
-        result = change_log.revert_change(self._db, change_id, self._context)
+        result = change_log.revert_change(self._db, change_id, self._context, translate=translator(_CONTEXT))
         self.refresh()
         if result.reverted:
             self.reverted.emit(list(result.reverted))
@@ -236,4 +306,4 @@ class ChangeHistoryDialog(QDialog):
         return result
 
 
-__all__ = ["KIND_LABELS", "ChangeHistoryDialog", "describe_item"]
+__all__ = ["KIND_LABELS", "ChangeHistoryDialog", "describe_item", "describe_summary"]

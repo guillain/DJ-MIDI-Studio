@@ -48,11 +48,11 @@ class PadColourPanel(QWidget):
         self._mode_combo = QComboBox()
         self._shift_box = QCheckBox("SHIFT")
         self._colour_combo = QComboBox()
-        self._paint_button = QPushButton("Paint")
+        self._paint_button = QPushButton(self.tr("Paint"))
         self._paint_button.setCheckable(True)
-        self._paint_button.setToolTip("While on, clicking a pad gives it the chosen colour")
-        self._save_button = QPushButton("Save to sync set")
-        self._save_button.setToolTip("Store these pad colours in this controller's sync set (active scene)")
+        self._paint_button.setToolTip(self.tr("While on, clicking a pad gives it the chosen colour"))
+        self._save_button = QPushButton(self.tr("Save to sync set"))
+        self._save_button.setToolTip(self.tr("Store these pad colours in this controller's sync set (active scene)"))
         self._deck_combo.currentIndexChanged.connect(self.coloursChanged)
         self._mode_combo.currentIndexChanged.connect(self.coloursChanged)
         self._shift_box.toggled.connect(self.coloursChanged)
@@ -60,7 +60,7 @@ class PadColourPanel(QWidget):
 
         layout = QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(QLabel("Pad colours:"))
+        layout.addWidget(QLabel(self.tr("Pad colours:")))
         for widget in (
             self._deck_combo, self._mode_combo, self._shift_box, self._colour_combo,
             self._paint_button, self._save_button,
@@ -84,8 +84,8 @@ class PadColourPanel(QWidget):
             combo.blockSignals(True)
             combo.clear()
         if self._palette is not None:
-            self._deck_combo.addItems([f"Deck {deck}" for deck in range(1, self._palette.decks + 1)])
-            self._mode_combo.addItems([f"Mode {mode}" for mode in range(1, self._palette.modes + 1)])
+            self._deck_combo.addItems([self.tr("Deck {deck}").format(deck=deck) for deck in range(1, self._palette.decks + 1)])
+            self._mode_combo.addItems([self.tr("Mode {mode}").format(mode=mode) for mode in range(1, self._palette.modes + 1)])
             for colour in self._palette.colours:
                 self._colour_combo.addItem(_swatch_icon(colour), colour.name)
             # A visible, lit default rather than "No light".
