@@ -129,6 +129,20 @@ def _bounded_channel(channel_1_based: int) -> int:
     return channel_1_based - 1
 
 
+_MESSAGE_TYPES = {
+    "note on": "note_on",
+    "note off": "note_off",
+    "control change": "control_change",
+    "cc": "control_change",
+}
+
+
+def midi_message_type(event_type: str) -> str | None:
+    """The mido message type for an event-type alias ("Note On", "note_on",
+    "cc"...), or None when it isn't a supported NOTE/CC type."""
+    return _MESSAGE_TYPES.get(event_type.strip().lower().replace("-", " ").replace("_", " "))
+
+
 def build_midi_message(
     *,
     event_type: str,
@@ -142,14 +156,7 @@ def build_midi_message(
     project's model/UI. `event_type` accepts common aliases (e.g. "Note On",
     "note_on", "Control Change", "cc").
     """
-    event_key = event_type.strip().lower().replace("-", " ").replace("_", " ")
-    msg_type_map = {
-        "note on": "note_on",
-        "note off": "note_off",
-        "control change": "control_change",
-        "cc": "control_change",
-    }
-    msg_type = msg_type_map.get(event_key)
+    msg_type = midi_message_type(event_type)
     if msg_type is None:
         raise ValueError(f"Unsupported event_type: {event_type!r}")
 
@@ -301,6 +308,7 @@ __all__ = [
     "list_input_ports",
     "list_output_ports",
     "list_port_info",
+    "midi_message_type",
     "mido_message_to_event",
     "open_midi_output",
     "send_midi_message",

@@ -592,6 +592,26 @@ Mappé sur : {functions}</translation>
         <translation>Data1</translation>
     </message>
     <message>
+        <source>learned</source>
+        <translation>appris</translation>
+    </message>
+    <message>
+        <source>XML import</source>
+        <translation>import XML</translation>
+    </message>
+    <message>
+        <source>TSI import</source>
+        <translation>import TSI</translation>
+    </message>
+    <message>
+        <source>manual</source>
+        <translation>manuel</translation>
+    </message>
+    <message>
+        <source>copy of {controller}</source>
+        <translation>copie de {controller}</translation>
+    </message>
+    <message>
         <source>Value</source>
         <translation>Valeur</translation>
     </message>
@@ -772,6 +792,14 @@ Mappé sur : {functions}</translation>
         <translation>Aucun port de sortie sélectionné</translation>
     </message>
     <message>
+        <source>Unsupported message type &apos;{type}&apos;: use Note On, Note Off or Control Change.</source>
+        <translation>Type de message non pris en charge « {type} » : utilisez Note On, Note Off ou Control Change.</translation>
+    </message>
+    <message>
+        <source>Could not send to the MIDI output &apos;{port}&apos;: {error}</source>
+        <translation>Impossible d&apos;envoyer vers la sortie MIDI « {port} » : {error}</translation>
+    </message>
+    <message>
         <source>Failed to send MIDI</source>
         <translation>Échec de l&apos;envoi MIDI</translation>
     </message>
@@ -904,6 +932,10 @@ Ouvrir aussi ce fichier comme mapping modifiable (Par canal / Par platine / Par 
     <message>
         <source>The image is referenced by its path on this machine and saved in the session JSON. Install copies it next to the installed profile, so it keeps showing in Controller Images even if you move the original. &quot;Generate catalog module…&quot; writes reference_image=&apos;custom/&lt;filename&gt;&apos;; place a copy at controllers/custom/&lt;filename&gt; if you want it bundled (respecting its licence — user-supplied images are your responsibility).</source>
         <translation>L&apos;image est référencée par son chemin sur cet ordinateur et enregistrée dans le JSON de la session. Installer la copie à côté du profil installé, pour qu&apos;elle reste visible dans Images contrôleur même si vous déplacez l&apos;original. « Générer un module de catalogue… » écrit reference_image=&apos;custom/&lt;filename&gt;&apos; ; placez une copie dans controllers/custom/&lt;filename&gt; pour l&apos;inclure (en respectant sa licence — les images que vous fournissez sont sous votre responsabilité).</translation>
+    </message>
+    <message>
+        <source>Unsupported session version: {version}</source>
+        <translation>Version de session non prise en charge : {version}</translation>
     </message>
     <message>
         <source>Save controller setup session</source>
@@ -1432,6 +1464,14 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     </message>
 </context>
 <context>
+    <name>FunctionNames</name>
+    <message>
+        <source>{name} · slot {slot}</source>
+        <extracomment>The slot suffix of a label, translated by the GUI (issue #326).</extracomment>
+        <translation>{name} · slot {slot}</translation>
+    </message>
+</context>
+<context>
     <name>FunctionSearchView</name>
     <message>
         <source>unknown physical control</source>
@@ -1439,7 +1479,7 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     </message>
     <message>
         <source>Find function: loop roll, deck 2…</source>
-        <translation>Chercher une fonction : loop roll, deck 2…</translation>
+        <translation>Chercher une fonction : loop roll, platine 2…</translation>
     </message>
     <message>
         <source>Which control triggers this function? Matches function names, deck and slot.</source>
@@ -1603,7 +1643,7 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     </message>
     <message>
         <source>Summarizes the loaded mapping and gives every registered controller a card: its picture, whether a connected MIDI port matches it (&lt;i&gt;MIDI: available&lt;/i&gt;), and shortcuts into the &lt;b&gt;By Channel&lt;/b&gt;, &lt;b&gt;By Controller&lt;/b&gt; and &lt;b&gt;Controller Images&lt;/b&gt; views.&lt;br&gt;&lt;br&gt;Open a Serato &lt;tt&gt;.xml&lt;/tt&gt; or Traktor &lt;tt&gt;.tsi&lt;/tt&gt; mapping with &lt;b&gt;File → Open Mapping…&lt;/b&gt;.</source>
-        <translation>Résume le mapping chargé et donne une carte à chaque contrôleur enregistré : son image, si un port MIDI branché lui correspond (&lt;i&gt;MIDI: available&lt;/i&gt;), et des raccourcis vers les vues &lt;b&gt;Par canal&lt;/b&gt;, &lt;b&gt;Par contrôleur&lt;/b&gt; et &lt;b&gt;Images contrôleur&lt;/b&gt;.&lt;br&gt;&lt;br&gt;Ouvrez un mapping Serato &lt;tt&gt;.xml&lt;/tt&gt; ou Traktor &lt;tt&gt;.tsi&lt;/tt&gt; avec &lt;b&gt;Fichier → Ouvrir un mapping…&lt;/b&gt;.</translation>
+        <translation>Résume le mapping chargé et donne une carte à chaque contrôleur enregistré : son image, si un port MIDI branché lui correspond (&lt;i&gt;MIDI : disponible&lt;/i&gt;), et des raccourcis vers les vues &lt;b&gt;Par canal&lt;/b&gt;, &lt;b&gt;Par contrôleur&lt;/b&gt; et &lt;b&gt;Images contrôleur&lt;/b&gt;.&lt;br&gt;&lt;br&gt;Ouvrez un mapping Serato &lt;tt&gt;.xml&lt;/tt&gt; ou Traktor &lt;tt&gt;.tsi&lt;/tt&gt; avec &lt;b&gt;Fichier → Ouvrir un mapping…&lt;/b&gt;.</translation>
     </message>
     <message>
         <source>Your files</source>
@@ -1611,7 +1651,7 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     </message>
     <message>
         <source>Everything you work with, in one place:&lt;ul&gt;&lt;li&gt;&lt;b&gt;Mapping&lt;/b&gt;: the Serato &lt;tt&gt;.xml&lt;/tt&gt; or Traktor &lt;tt&gt;.tsi&lt;/tt&gt; file open in the editor. It stays where your DJ software keeps it; &lt;b&gt;File → Save Mapping&lt;/b&gt; writes it back there.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Previous version&lt;/b&gt;: every save keeps the version it replaces next to the file (&lt;tt&gt;.bak&lt;/tt&gt;); &lt;b&gt;Restore previous…&lt;/b&gt; puts it back.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Recent&lt;/b&gt;: the last mappings you opened (also in &lt;b&gt;File → Open Recent Mapping&lt;/b&gt;).&lt;/li&gt;&lt;li&gt;&lt;b&gt;Sync sets&lt;/b&gt;: the initialization messages recorded with &lt;b&gt;● Rec&lt;/b&gt; or in Controller Setup, one per controller and scene (the combo beside &lt;b&gt;⟳ Sync&lt;/b&gt; picks the active scene; a controller without a set for it gets its Default set), sent by &lt;b&gt;⟳ Sync&lt;/b&gt;, at launch, when a controller is plugged in and, if enabled in Preferences, when you switch scene; edit their messages in &lt;b&gt;⚙ Preferences → Controller sync → Edit messages…&lt;/b&gt;.&lt;/li&gt;&lt;/ul&gt;Controller profiles you build live in &lt;b&gt;File → Controller Profile&lt;/b&gt;. &lt;b&gt;File → Back Up Workspace…&lt;/b&gt; saves your profiles, sync sets, drafts and preferences (and, if you want, the library index) in one zip; &lt;b&gt;Restore Workspace…&lt;/b&gt; brings them back, on another Mac too, after showing what it overwrites.</source>
-        <translation>Tout ce que vous utilisez, au même endroit :&lt;ul&gt;&lt;li&gt;&lt;b&gt;Mapping&lt;/b&gt; : le fichier Serato &lt;tt&gt;.xml&lt;/tt&gt; ou Traktor &lt;tt&gt;.tsi&lt;/tt&gt; ouvert dans l&apos;éditeur. Il reste là où votre logiciel DJ le range ; &lt;b&gt;Fichier → Enregistrer le mapping&lt;/b&gt; l&apos;y réécrit.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Previous version&lt;/b&gt; : chaque enregistrement garde la version qu&apos;il remplace à côté du fichier (&lt;tt&gt;.bak&lt;/tt&gt;) ; &lt;b&gt;Restore previous…&lt;/b&gt; la remet en place.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Recent&lt;/b&gt; : les derniers mappings ouverts (aussi dans &lt;b&gt;Fichier → Mappings récents&lt;/b&gt;).&lt;/li&gt;&lt;li&gt;&lt;b&gt;Sync sets&lt;/b&gt; : les messages d&apos;initialisation enregistrés avec &lt;b&gt;● Enr&lt;/b&gt; ou dans Config. contrôleur, un par contrôleur et par scène (la liste à côté de &lt;b&gt;⟳ Synchro&lt;/b&gt; choisit la scène active ; un contrôleur sans jeu pour cette scène reçoit son jeu Default), envoyés par &lt;b&gt;⟳ Synchro&lt;/b&gt;, au lancement, au branchement d&apos;un contrôleur et, si c&apos;est activé dans les Préférences, au changement de scène ; modifiez leurs messages dans &lt;b&gt;⚙ Préférences → Synchro des contrôleurs → Modifier les messages…&lt;/b&gt;.&lt;/li&gt;&lt;/ul&gt;Les profils de contrôleur que vous créez sont dans &lt;b&gt;Fichier → Profil de contrôleur&lt;/b&gt;. &lt;b&gt;Fichier → Sauvegarder l&apos;espace de travail…&lt;/b&gt; enregistre vos profils, jeux de synchronisation, brouillons et préférences (et, si vous le voulez, l&apos;index de la bibliothèque) dans un seul zip ; &lt;b&gt;Restaurer l&apos;espace de travail…&lt;/b&gt; les remet en place, y compris sur un autre Mac, après avoir montré ce qui sera écrasé.</translation>
+        <translation>Tout ce que vous utilisez, au même endroit :&lt;ul&gt;&lt;li&gt;&lt;b&gt;Mapping&lt;/b&gt; : le fichier Serato &lt;tt&gt;.xml&lt;/tt&gt; ou Traktor &lt;tt&gt;.tsi&lt;/tt&gt; ouvert dans l&apos;éditeur. Il reste là où votre logiciel DJ le range ; &lt;b&gt;Fichier → Enregistrer le mapping&lt;/b&gt; l&apos;y réécrit.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Version précédente&lt;/b&gt; : chaque enregistrement garde la version qu&apos;il remplace à côté du fichier (&lt;tt&gt;.bak&lt;/tt&gt;) ; &lt;b&gt;Restaurer la précédente…&lt;/b&gt; la remet en place.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Récents&lt;/b&gt; : les derniers mappings ouverts (aussi dans &lt;b&gt;Fichier → Mappings récents&lt;/b&gt;).&lt;/li&gt;&lt;li&gt;&lt;b&gt;Jeux de synchro&lt;/b&gt; : les messages d&apos;initialisation enregistrés avec &lt;b&gt;● Enr&lt;/b&gt; ou dans Config. contrôleur, un par contrôleur et par scène (la liste à côté de &lt;b&gt;⟳ Synchro&lt;/b&gt; choisit la scène active ; un contrôleur sans jeu pour cette scène reçoit son jeu Default), envoyés par &lt;b&gt;⟳ Synchro&lt;/b&gt;, au lancement, au branchement d&apos;un contrôleur et, si c&apos;est activé dans les Préférences, au changement de scène ; modifiez leurs messages dans &lt;b&gt;⚙ Préférences → Synchro des contrôleurs → Modifier les messages…&lt;/b&gt;.&lt;/li&gt;&lt;/ul&gt;Les profils de contrôleur que vous créez sont dans &lt;b&gt;Fichier → Profil de contrôleur&lt;/b&gt;. &lt;b&gt;Fichier → Sauvegarder l&apos;espace de travail…&lt;/b&gt; enregistre vos profils, jeux de synchronisation, brouillons et préférences (et, si vous le voulez, l&apos;index de la bibliothèque) dans un seul zip ; &lt;b&gt;Restaurer l&apos;espace de travail…&lt;/b&gt; les remet en place, y compris sur un autre Mac, après avoir montré ce qui sera écrasé.</translation>
     </message>
     <message>
         <source>MIDI Macros</source>
@@ -1643,7 +1683,7 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     </message>
     <message>
         <source>Every controller the app knows: the built-in profiles and the ones you installed from &lt;b&gt;Controller Setup&lt;/b&gt;. The &lt;b&gt;Active controller for drill-down&lt;/b&gt; is the one the &lt;b&gt;Channel&lt;/b&gt;, &lt;b&gt;Controller&lt;/b&gt; and &lt;b&gt;Images&lt;/b&gt; shortcuts open. Hide controllers you don&apos;t own in ⚙ Preferences → Plugins.</source>
-        <translation>Tous les contrôleurs que connaît l&apos;application : les profils intégrés et ceux que vous avez installés depuis &lt;b&gt;Config. contrôleur&lt;/b&gt;. L&apos;&lt;b&gt;Active controller for drill-down&lt;/b&gt; est celui qu&apos;ouvrent les raccourcis &lt;b&gt;Channel&lt;/b&gt;, &lt;b&gt;Controller&lt;/b&gt; et &lt;b&gt;Images&lt;/b&gt;. Masquez les contrôleurs que vous ne possédez pas dans ⚙ Préférences → Plugins.</translation>
+        <translation>Tous les contrôleurs que connaît l&apos;application : les profils intégrés et ceux que vous avez installés depuis &lt;b&gt;Config. contrôleur&lt;/b&gt;. Le &lt;b&gt;Contrôleur actif pour le détail&lt;/b&gt; est celui qu&apos;ouvrent les raccourcis &lt;b&gt;Canal&lt;/b&gt;, &lt;b&gt;Contrôleur&lt;/b&gt; et &lt;b&gt;Images&lt;/b&gt;. Masquez les contrôleurs que vous ne possédez pas dans ⚙ Préférences → Plugins.</translation>
     </message>
     <message>
         <source>MIDI tools</source>
@@ -1651,7 +1691,7 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     </message>
     <message>
         <source>Opens the tool windows: &lt;b&gt;Live Monitor&lt;/b&gt; (watch what your controllers send), &lt;b&gt;MIDI Routing&lt;/b&gt; and &lt;b&gt;MIDI Clock&lt;/b&gt; (route MIDI between devices, follow Ableton Link), the &lt;b&gt;Metronome&lt;/b&gt; and the &lt;b&gt;Controller Emulator&lt;/b&gt;. Each one is a window you can dock, float, maximize or snap to a side (&lt;b&gt;☰&lt;/b&gt; in its title bar).</source>
-        <translation>Ouvre les fenêtres d&apos;outils : &lt;b&gt;Live Monitor&lt;/b&gt; (voir ce qu&apos;envoient vos contrôleurs), &lt;b&gt;MIDI Routing&lt;/b&gt; et &lt;b&gt;MIDI Clock&lt;/b&gt; (router le MIDI entre appareils, suivre Ableton Link), le &lt;b&gt;Metronome&lt;/b&gt; et le &lt;b&gt;Controller Emulator&lt;/b&gt;. Chacune est une fenêtre que vous pouvez ancrer, rendre flottante, agrandir ou coller sur un côté (&lt;b&gt;☰&lt;/b&gt; dans sa barre de titre).</translation>
+        <translation>Ouvre les fenêtres d&apos;outils : &lt;b&gt;Live Monitor&lt;/b&gt; (voir ce qu&apos;envoient vos contrôleurs), &lt;b&gt;Routage MIDI&lt;/b&gt; et &lt;b&gt;Horloge MIDI&lt;/b&gt; (router le MIDI entre appareils, suivre Ableton Link), le &lt;b&gt;Métronome&lt;/b&gt; et l&apos;&lt;b&gt;Émulateur de contrôleur&lt;/b&gt;. Chacune est une fenêtre que vous pouvez ancrer, rendre flottante, agrandir ou coller sur un côté (&lt;b&gt;☰&lt;/b&gt; dans sa barre de titre).</translation>
     </message>
     <message>
         <source>Mapping views</source>
@@ -1659,7 +1699,7 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     </message>
     <message>
         <source>Three views of the same mapping:&lt;ul&gt;&lt;li&gt;&lt;b&gt;By Channel&lt;/b&gt;: MIDI channel → control → event → function. Inspect or fix one raw entry precisely.&lt;/li&gt;&lt;li&gt;&lt;b&gt;By Deck&lt;/b&gt;: Serato deck → slot → function. One edit updates every duplicate copy at once, so they can never drift apart.&lt;/li&gt;&lt;li&gt;&lt;b&gt;By Controller&lt;/b&gt;: controller → section → physical control. Find what a button does.&lt;/li&gt;&lt;/ul&gt;The drawing below each tree shows which controls are mapped, colored by deck. Tick the layers to show: &lt;b&gt;Controller&lt;/b&gt; (the real photo), &lt;b&gt;MIDI&lt;/b&gt; (the photo with its MIDI information, shown alone) and &lt;b&gt;Layout&lt;/b&gt; (the app&apos;s markers), on controllers with a measured layout. Selecting anything highlights it in every view; clicking a control jumps to its raw entry. With &lt;b&gt;Live send&lt;/b&gt; on, clicking a control also sends its MIDI message to the chosen output (&lt;b&gt;⟳&lt;/b&gt; refreshes the ports).</source>
-        <translation>Trois vues du même mapping :&lt;ul&gt;&lt;li&gt;&lt;b&gt;Par canal&lt;/b&gt; : canal MIDI → commande → événement → fonction. Pour examiner ou corriger précisément une entrée brute.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Par platine&lt;/b&gt; : platine Serato → slot → fonction. Une modification met à jour toutes les copies en double à la fois : elles ne peuvent jamais diverger.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Par contrôleur&lt;/b&gt; : contrôleur → section → commande physique. Pour trouver ce que fait un bouton.&lt;/li&gt;&lt;/ul&gt;Le dessin sous chaque arbre montre les commandes mappées, colorées par platine. Cochez les couches à afficher : &lt;b&gt;Controller&lt;/b&gt; (la vraie photo), &lt;b&gt;MIDI&lt;/b&gt; (la photo avec ses informations MIDI, affichée seule) et &lt;b&gt;Layout&lt;/b&gt; (les repères de l&apos;application), sur les contrôleurs dont la disposition a été mesurée. Sélectionner un élément le met en évidence dans toutes les vues ; cliquer sur une commande affiche son entrée brute. Avec &lt;b&gt;Live send&lt;/b&gt; activé, cliquer sur une commande envoie aussi son message MIDI vers la sortie choisie (&lt;b&gt;⟳&lt;/b&gt; actualise les ports).</translation>
+        <translation>Trois vues du même mapping :&lt;ul&gt;&lt;li&gt;&lt;b&gt;Par canal&lt;/b&gt; : canal MIDI → commande → événement → fonction. Pour examiner ou corriger précisément une entrée brute.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Par platine&lt;/b&gt; : platine Serato → slot → fonction. Une modification met à jour toutes les copies en double à la fois : elles ne peuvent jamais diverger.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Par contrôleur&lt;/b&gt; : contrôleur → section → commande physique. Pour trouver ce que fait un bouton.&lt;/li&gt;&lt;/ul&gt;Le dessin sous chaque arbre montre les commandes mappées, colorées par platine. Cochez les couches à afficher : &lt;b&gt;Contrôleur&lt;/b&gt; (la vraie photo), &lt;b&gt;MIDI&lt;/b&gt; (la photo avec ses informations MIDI, affichée seule) et &lt;b&gt;Disposition&lt;/b&gt; (les repères de l&apos;application), sur les contrôleurs dont la disposition a été mesurée. Sélectionner un élément le met en évidence dans toutes les vues ; cliquer sur une commande affiche son entrée brute. Avec &lt;b&gt;Envoi live&lt;/b&gt; activé, cliquer sur une commande envoie aussi son message MIDI vers la sortie choisie (&lt;b&gt;⟳&lt;/b&gt; actualise les ports).</translation>
     </message>
     <message>
         <source>Edit and validate</source>
@@ -1667,7 +1707,7 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     </message>
     <message>
         <source>Edits the item selected in a tree. Every change can be undone (&lt;b&gt;Edit → Undo&lt;/b&gt;).&lt;br&gt;&lt;br&gt;Serato repeats each trigger several times in a mapping and those copies must stay identical: edit in &lt;b&gt;By Deck&lt;/b&gt;, which updates every copy at once.&lt;br&gt;&lt;br&gt;&lt;b&gt;Learn&lt;/b&gt; moves the selected trigger to the next control you press on your controller (10 s, click again to cancel); it warns before reusing a control another function already uses.&lt;br&gt;&lt;br&gt;&lt;b&gt;Edit → Validate&lt;/b&gt; lists errors, warnings and info in the table below (duplicate copies are info only: they are expected); &lt;b&gt;Edit → Ready for Live…&lt;/b&gt; checks for missing Play/Cue/Sync/Load, conflicts and unlit buttons before a gig. &lt;b&gt;File → Save Mapping&lt;/b&gt; shows the exact changes before writing, keeps a backup, and &lt;b&gt;File → Restore Previous Version…&lt;/b&gt; restores it.</source>
-        <translation>Modifie l&apos;élément sélectionné dans un arbre. Chaque modification peut être annulée (&lt;b&gt;Édition → Annuler&lt;/b&gt;).&lt;br&gt;&lt;br&gt;Serato répète chaque déclencheur plusieurs fois dans un mapping et ces copies doivent rester identiques : modifiez dans &lt;b&gt;Par platine&lt;/b&gt;, qui met à jour toutes les copies à la fois.&lt;br&gt;&lt;br&gt;&lt;b&gt;Learn&lt;/b&gt; déplace le déclencheur sélectionné vers la prochaine commande que vous actionnez sur votre contrôleur (10 s, cliquez à nouveau pour annuler) ; il prévient avant de réutiliser une commande déjà prise par une autre fonction.&lt;br&gt;&lt;br&gt;&lt;b&gt;Édition → Valider&lt;/b&gt; liste les erreurs, avertissements et infos dans le tableau ci-dessous (les copies en double ne sont que des infos : elles sont attendues) ; &lt;b&gt;Édition → Prêt pour le live…&lt;/b&gt; vérifie avant une soirée les Play/Cue/Sync/Load manquants, les conflits et les boutons sans LED. &lt;b&gt;Fichier → Enregistrer le mapping&lt;/b&gt; montre les changements exacts avant d&apos;écrire, garde une sauvegarde, et &lt;b&gt;Fichier → Restaurer la version précédente…&lt;/b&gt; la remet en place.</translation>
+        <translation>Modifie l&apos;élément sélectionné dans un arbre. Chaque modification peut être annulée (&lt;b&gt;Édition → Annuler&lt;/b&gt;).&lt;br&gt;&lt;br&gt;Serato répète chaque déclencheur plusieurs fois dans un mapping et ces copies doivent rester identiques : modifiez dans &lt;b&gt;Par platine&lt;/b&gt;, qui met à jour toutes les copies à la fois.&lt;br&gt;&lt;br&gt;&lt;b&gt;Apprendre&lt;/b&gt; déplace le déclencheur sélectionné vers la prochaine commande que vous actionnez sur votre contrôleur (10 s, cliquez à nouveau pour annuler) ; il prévient avant de réutiliser une commande déjà prise par une autre fonction.&lt;br&gt;&lt;br&gt;&lt;b&gt;Édition → Valider&lt;/b&gt; liste les erreurs, avertissements et infos dans le tableau ci-dessous (les copies en double ne sont que des infos : elles sont attendues) ; &lt;b&gt;Édition → Prêt pour le live…&lt;/b&gt; vérifie avant une soirée les Play/Cue/Sync/Load manquants, les conflits et les boutons sans LED. &lt;b&gt;Fichier → Enregistrer le mapping&lt;/b&gt; montre les changements exacts avant d&apos;écrire, garde une sauvegarde, et &lt;b&gt;Fichier → Restaurer la version précédente…&lt;/b&gt; la remet en place.</translation>
     </message>
     <message>
         <source>Ready for live</source>
@@ -1699,7 +1739,7 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     </message>
     <message>
         <source>The reference picture of the selected controller: zoom with the mouse wheel, drag to pan, &lt;b&gt;Reset zoom&lt;/b&gt; to fit. &lt;b&gt;Open documentation&lt;/b&gt; opens its bundled manual or MIDI message list.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Controller&lt;/b&gt;: the real photo. &lt;b&gt;MIDI&lt;/b&gt;: the same controller with its MIDI information printed on it, when it ships one. One photo at a time.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Layout&lt;/b&gt;: a marker on every modeled control, at its true position (measured on the Controller photo, so greyed out over the MIDI one). With the Live Monitor running, a marker flashes when you hit that control.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Live send&lt;/b&gt; sends a clicked control&apos;s MIDI message to the chosen output.&lt;/li&gt;&lt;/ul&gt;</source>
-        <translation>L&apos;image de référence du contrôleur sélectionné : zoomez avec la molette, faites glisser pour vous déplacer, &lt;b&gt;Reset zoom&lt;/b&gt; pour l&apos;ajuster à la fenêtre. &lt;b&gt;Open documentation&lt;/b&gt; ouvre son manuel ou sa liste de messages MIDI fournis avec l&apos;application.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Controller&lt;/b&gt; : la vraie photo. &lt;b&gt;MIDI&lt;/b&gt; : le même contrôleur avec ses informations MIDI imprimées dessus, quand il en fournit une. Une seule photo à la fois.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Layout&lt;/b&gt; : un repère sur chaque commande modélisée, à sa position réelle (mesurée sur la photo Controller, donc grisé sur la photo MIDI). Quand le Live Monitor tourne, un repère clignote quand vous touchez cette commande.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Live send&lt;/b&gt; envoie le message MIDI d&apos;une commande cliquée vers la sortie choisie.&lt;/li&gt;&lt;/ul&gt;</translation>
+        <translation>L&apos;image de référence du contrôleur sélectionné : zoomez avec la molette, faites glisser pour vous déplacer, &lt;b&gt;Réinitialiser le zoom&lt;/b&gt; pour l&apos;ajuster à la fenêtre. &lt;b&gt;Ouvrir la documentation&lt;/b&gt; ouvre son manuel ou sa liste de messages MIDI fournis avec l&apos;application.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Contrôleur&lt;/b&gt; : la vraie photo. &lt;b&gt;MIDI&lt;/b&gt; : le même contrôleur avec ses informations MIDI imprimées dessus, quand il en fournit une. Une seule photo à la fois.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Disposition&lt;/b&gt; : un repère sur chaque commande modélisée, à sa position réelle (mesurée sur la photo Contrôleur, donc grisé sur la photo MIDI). Quand le Live Monitor tourne, un repère clignote quand vous touchez cette commande.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Envoi live&lt;/b&gt; envoie le message MIDI d&apos;une commande cliquée vers la sortie choisie.&lt;/li&gt;&lt;/ul&gt;</translation>
     </message>
     <message>
         <source>Controller Emulator</source>
@@ -1707,7 +1747,7 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     </message>
     <message>
         <source>Play one controller with the mouse. Click a pad or button: it flashes and the status line shows what the loaded mapping binds it to. Nothing is sent unless &lt;b&gt;Live send&lt;/b&gt; is on.&lt;ul&gt;&lt;li&gt;Mode buttons (pad modes) and &lt;b&gt;SHIFT&lt;/b&gt; are remembered like on the hardware.&lt;/li&gt;&lt;li&gt;Drag knobs, faders and jog wheels vertically to move them (visual only).&lt;/li&gt;&lt;li&gt;Layers: &lt;b&gt;Controller&lt;/b&gt; photo, &lt;b&gt;MIDI&lt;/b&gt; picture (alone) and &lt;b&gt;Layout&lt;/b&gt; (the clickable controls).&lt;/li&gt;&lt;li&gt;The emulator also follows the real controller when the Live Monitor is running.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Pad colours&lt;/b&gt; (only for controllers whose documentation lists them, e.g. Hercules DJControl Inpulse 500): pick a colour, switch &lt;b&gt;Paint&lt;/b&gt; on, click pads, then &lt;b&gt;Save to sync set&lt;/b&gt;.&lt;/li&gt;&lt;/ul&gt;Open more emulators with &lt;b&gt;View → New Controller Emulator…&lt;/b&gt;.</source>
-        <translation>Jouez d&apos;un contrôleur à la souris. Cliquez sur un pad ou un bouton : il clignote et la ligne d&apos;état montre à quoi le mapping chargé le relie. Rien n&apos;est envoyé tant que &lt;b&gt;Live send&lt;/b&gt; n&apos;est pas activé.&lt;ul&gt;&lt;li&gt;Les boutons de mode (modes de pad) et &lt;b&gt;SHIFT&lt;/b&gt; sont mémorisés comme sur le matériel.&lt;/li&gt;&lt;li&gt;Faites glisser verticalement potentiomètres, faders et jog wheels pour les bouger (visuel seulement).&lt;/li&gt;&lt;li&gt;Couches : photo &lt;b&gt;Controller&lt;/b&gt;, image &lt;b&gt;MIDI&lt;/b&gt; (seule) et &lt;b&gt;Layout&lt;/b&gt; (les commandes cliquables).&lt;/li&gt;&lt;li&gt;L&apos;émulateur suit aussi le vrai contrôleur quand le Live Monitor tourne.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Pad colours&lt;/b&gt; (seulement pour les contrôleurs dont la documentation les liste, par ex. Hercules DJControl Inpulse 500) : choisissez une couleur, activez &lt;b&gt;Paint&lt;/b&gt;, cliquez sur les pads, puis &lt;b&gt;Save to sync set&lt;/b&gt;.&lt;/li&gt;&lt;/ul&gt;Ouvrez d&apos;autres émulateurs avec &lt;b&gt;Affichage → Nouvel émulateur de contrôleur…&lt;/b&gt;.</translation>
+        <translation>Jouez d&apos;un contrôleur à la souris. Cliquez sur un pad ou un bouton : il clignote et la ligne d&apos;état montre à quoi le mapping chargé le relie. Rien n&apos;est envoyé tant que &lt;b&gt;Envoi live&lt;/b&gt; n&apos;est pas activé.&lt;ul&gt;&lt;li&gt;Les boutons de mode (modes de pad) et &lt;b&gt;SHIFT&lt;/b&gt; sont mémorisés comme sur le matériel.&lt;/li&gt;&lt;li&gt;Faites glisser verticalement potentiomètres, faders et jog wheels pour les bouger (visuel seulement).&lt;/li&gt;&lt;li&gt;Couches : photo &lt;b&gt;Contrôleur&lt;/b&gt;, image &lt;b&gt;MIDI&lt;/b&gt; (seule) et &lt;b&gt;Disposition&lt;/b&gt; (les commandes cliquables).&lt;/li&gt;&lt;li&gt;L&apos;émulateur suit aussi le vrai contrôleur quand le Live Monitor tourne.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Couleurs des pads&lt;/b&gt; (seulement pour les contrôleurs dont la documentation les liste, par ex. Hercules DJControl Inpulse 500) : choisissez une couleur, activez &lt;b&gt;Peindre&lt;/b&gt;, cliquez sur les pads, puis &lt;b&gt;Enregistrer en synchro&lt;/b&gt;.&lt;/li&gt;&lt;/ul&gt;Ouvrez d&apos;autres émulateurs avec &lt;b&gt;Affichage → Nouvel émulateur de contrôleur…&lt;/b&gt;.</translation>
     </message>
     <message>
         <source>Stage Mode</source>
@@ -1723,7 +1763,7 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     </message>
     <message>
         <source>Logs every MIDI event from the ticked inputs, with the physical control and the function the loaded mapping gives it, and makes every layout, the Controller Images overlay and the emulators react to the real hardware.&lt;br&gt;&lt;br&gt;It starts on its own when a mapping is loaded (⚙ Preferences). To choose ports yourself: &lt;b&gt;Refresh ports&lt;/b&gt;, tick inputs, &lt;b&gt;Start monitoring&lt;/b&gt;.&lt;br&gt;&lt;br&gt;To see the LED messages Serato sends back, tick &lt;b&gt;Create virtual monitor&lt;/b&gt; and add &lt;i&gt;DJMidiStudio Monitor&lt;/i&gt; as an extra MIDI output in Serato.&lt;br&gt;&lt;br&gt;A press that fires two or more different functions on the same deck is shown in amber as &lt;b&gt;CONFLICT&lt;/b&gt; and counted; Serato&apos;s identical repeated triggers are not conflicts.&lt;br&gt;&lt;br&gt;While &lt;b&gt;● Rec&lt;/b&gt; records, Start/Stop and the inputs are locked until &lt;b&gt;■ Stop&lt;/b&gt;.</source>
-        <translation>Journalise chaque événement MIDI des entrées cochées, avec la commande physique et la fonction que lui donne le mapping chargé, et fait réagir au vrai matériel chaque disposition, la surcouche d&apos;Images contrôleur et les émulateurs.&lt;br&gt;&lt;br&gt;Il démarre tout seul au chargement d&apos;un mapping (⚙ Préférences). Pour choisir les ports vous-même : &lt;b&gt;Refresh ports&lt;/b&gt;, cochez les entrées, &lt;b&gt;Start monitoring&lt;/b&gt;.&lt;br&gt;&lt;br&gt;Pour voir les messages de LED que Serato renvoie, cochez &lt;b&gt;Create virtual monitor&lt;/b&gt; et ajoutez &lt;i&gt;DJMidiStudio Monitor&lt;/i&gt; comme sortie MIDI supplémentaire dans Serato.&lt;br&gt;&lt;br&gt;Un appui qui déclenche au moins deux fonctions différentes sur la même platine est affiché en ambre comme &lt;b&gt;CONFLICT&lt;/b&gt; et compté ; les déclencheurs identiques que Serato répète ne sont pas des conflits.&lt;br&gt;&lt;br&gt;Pendant que &lt;b&gt;● Enr&lt;/b&gt; enregistre, Start/Stop et les entrées sont verrouillés jusqu&apos;à &lt;b&gt;■ Arrêt&lt;/b&gt;.</translation>
+        <translation>Journalise chaque événement MIDI des entrées cochées, avec la commande physique et la fonction que lui donne le mapping chargé, et fait réagir au vrai matériel chaque disposition, la surcouche d&apos;Images contrôleur et les émulateurs.&lt;br&gt;&lt;br&gt;Il démarre tout seul au chargement d&apos;un mapping (⚙ Préférences). Pour choisir les ports vous-même : &lt;b&gt;Actualiser les ports&lt;/b&gt;, cochez les entrées, &lt;b&gt;Démarrer la surveillance&lt;/b&gt;.&lt;br&gt;&lt;br&gt;Pour voir les messages de LED que Serato renvoie, cochez &lt;b&gt;Créer une destination virtuelle&lt;/b&gt; et ajoutez &lt;i&gt;DJMidiStudio Monitor&lt;/i&gt; comme sortie MIDI supplémentaire dans Serato.&lt;br&gt;&lt;br&gt;Un appui qui déclenche au moins deux fonctions différentes sur la même platine est affiché en ambre comme &lt;b&gt;CONFLIT&lt;/b&gt; et compté ; les déclencheurs identiques que Serato répète ne sont pas des conflits.&lt;br&gt;&lt;br&gt;Pendant que &lt;b&gt;● Enr&lt;/b&gt; enregistre, Démarrer/Arrêter et les entrées sont verrouillés jusqu&apos;à &lt;b&gt;■ Arrêt&lt;/b&gt;.</translation>
     </message>
     <message>
         <source>MIDI Routing</source>
@@ -1731,15 +1771,15 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     </message>
     <message>
         <source>One-way routes from a MIDI input to a MIDI output.&lt;ol&gt;&lt;li&gt;Enable &lt;i&gt;MIDI routing policies&lt;/i&gt; in ⚙ Preferences (off by default: it touches real hardware).&lt;/li&gt;&lt;li&gt;Pick a source and a destination, &lt;b&gt;Add route&lt;/b&gt;.&lt;/li&gt;&lt;li&gt;Optionally &lt;b&gt;Edit transform…&lt;/b&gt; to change the channel, offset the note/CC or invert the value.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Start routing&lt;/b&gt;. Only the ports your routes use are opened.&lt;/li&gt;&lt;/ol&gt;Routes that would loop back on themselves are refused.</source>
-        <translation>Des routes à sens unique d&apos;une entrée MIDI vers une sortie MIDI.&lt;ol&gt;&lt;li&gt;Cochez &lt;i&gt;Activer les règles de routage MIDI&lt;/i&gt; dans ⚙ Préférences (désactivé par défaut : cela agit sur du vrai matériel).&lt;/li&gt;&lt;li&gt;Choisissez une source et une destination, &lt;b&gt;Add route&lt;/b&gt;.&lt;/li&gt;&lt;li&gt;Si besoin, &lt;b&gt;Edit transform…&lt;/b&gt; pour changer le canal, décaler la note/le CC ou inverser la valeur.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Start routing&lt;/b&gt;. Seuls les ports utilisés par vos routes sont ouverts.&lt;/li&gt;&lt;/ol&gt;Les routes qui reboucleraient sur elles-mêmes sont refusées.</translation>
+        <translation>Des routes à sens unique d&apos;une entrée MIDI vers une sortie MIDI.&lt;ol&gt;&lt;li&gt;Cochez &lt;i&gt;Activer les règles de routage MIDI&lt;/i&gt; dans ⚙ Préférences (désactivé par défaut : cela agit sur du vrai matériel).&lt;/li&gt;&lt;li&gt;Choisissez une source et une destination, &lt;b&gt;Ajouter une route&lt;/b&gt;.&lt;/li&gt;&lt;li&gt;Si besoin, &lt;b&gt;Transformation…&lt;/b&gt; pour changer le canal, décaler la note/le CC ou inverser la valeur.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Démarrer le routage&lt;/b&gt;. Seuls les ports utilisés par vos routes sont ouverts.&lt;/li&gt;&lt;/ol&gt;Les routes qui reboucleraient sur elles-mêmes sont refusées.</translation>
     </message>
     <message>
         <source>MIDI Clock</source>
-        <translation>MIDI Clock</translation>
+        <translation>Horloge MIDI</translation>
     </message>
     <message>
         <source>Forwards or generates MIDI Clock (Start/Stop/Continue + 24 ticks per beat).&lt;br&gt;&lt;br&gt;Serato doesn&apos;t send MIDI Clock but shares its tempo over Ableton Link: tick &lt;b&gt;Enable Clock mirror policy&lt;/b&gt;, choose &lt;i&gt;Ableton Link (DJ MIDI Studio)&lt;/i&gt; as the source and your hardware&apos;s MIDI output as the destination, &lt;b&gt;Add Clock route&lt;/b&gt;, then &lt;b&gt;Start routing&lt;/b&gt;. The status line shows &lt;i&gt;CLOCK ACTIVE&lt;/i&gt; while ticks flow.</source>
-        <translation>Transmet ou génère une MIDI Clock (Start/Stop/Continue + 24 tops par temps).&lt;br&gt;&lt;br&gt;Serato n&apos;envoie pas de MIDI Clock mais partage son tempo via Ableton Link : cochez &lt;b&gt;Enable Clock mirror policy&lt;/b&gt;, choisissez &lt;i&gt;Ableton Link (DJ MIDI Studio)&lt;/i&gt; comme source et la sortie MIDI de votre matériel comme destination, &lt;b&gt;Add Clock route&lt;/b&gt;, puis &lt;b&gt;Start routing&lt;/b&gt;. La ligne d&apos;état affiche &lt;i&gt;CLOCK ACTIVE&lt;/i&gt; tant que les tops circulent.</translation>
+        <translation>Transmet ou génère une MIDI Clock (Start/Stop/Continue + 24 tops par temps).&lt;br&gt;&lt;br&gt;Serato n&apos;envoie pas de MIDI Clock mais partage son tempo via Ableton Link : cochez &lt;b&gt;Activer le relais de l&apos;horloge&lt;/b&gt;, choisissez &lt;i&gt;Ableton Link (DJ MIDI Studio)&lt;/i&gt; comme source et la sortie MIDI de votre matériel comme destination, &lt;b&gt;Ajouter une route d&apos;horloge&lt;/b&gt;, puis &lt;b&gt;Démarrer le routage&lt;/b&gt;. La ligne d&apos;état affiche &lt;i&gt;HORLOGE ACTIVE&lt;/i&gt; tant que les tops circulent.</translation>
     </message>
     <message>
         <source>Metronome</source>
@@ -1763,7 +1803,7 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     </message>
     <message>
         <source>Click a column header to sort. The search box looks in titles, artists, genres, BPM, keys and comments; the filters under it combine:&lt;ul&gt;&lt;li&gt;&lt;b&gt;Category&lt;/b&gt;, &lt;b&gt;Genre&lt;/b&gt;, &lt;b&gt;Key&lt;/b&gt;.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Camelot&lt;/b&gt;: tick &lt;i&gt;+ compatible&lt;/i&gt; to add the keys that mix harmonically with it.&lt;/li&gt;&lt;li&gt;&lt;b&gt;BPM min – max&lt;/b&gt;: both ends included.&lt;/li&gt;&lt;/ul&gt;An amber &lt;i&gt;? Family / Name&lt;/i&gt; category is only a suggestion. &lt;b&gt;Reset filters&lt;/b&gt; clears everything.</source>
-        <translation>Cliquez sur un en-tête de colonne pour trier. La recherche porte sur les titres, artistes, genres, BPM, tonalités et commentaires ; les filtres en dessous se combinent :&lt;ul&gt;&lt;li&gt;&lt;b&gt;Catégorie&lt;/b&gt;, &lt;b&gt;Genre&lt;/b&gt;, &lt;b&gt;Tonalité&lt;/b&gt;.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Camelot&lt;/b&gt; : cochez &lt;i&gt;+ compatibles&lt;/i&gt; pour ajouter les tonalités qui se mixent harmonieusement avec elle.&lt;/li&gt;&lt;li&gt;&lt;b&gt;BPM min – max&lt;/b&gt; : bornes incluses.&lt;/li&gt;&lt;/ul&gt;Une catégorie &lt;i&gt;? Famille / Nom&lt;/i&gt; en ambre n&apos;est qu&apos;une suggestion. &lt;b&gt;Réinitialiser les filtres&lt;/b&gt; efface tout.</translation>
+        <translation>Cliquez sur un en-tête de colonne pour trier. La recherche porte sur les titres, artistes, genres, BPM, tonalités et commentaires ; les filtres en dessous se combinent :&lt;ul&gt;&lt;li&gt;&lt;b&gt;Catégorie&lt;/b&gt;, &lt;b&gt;Genre&lt;/b&gt;, &lt;b&gt;Tonalité&lt;/b&gt;.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Camelot&lt;/b&gt; : cochez &lt;i&gt;+ compatibles&lt;/i&gt; pour ajouter les tonalités qui se mixent harmonieusement avec elle.&lt;/li&gt;&lt;li&gt;&lt;b&gt;BPM&lt;/b&gt; min – max : bornes incluses.&lt;/li&gt;&lt;/ul&gt;Une catégorie &lt;i&gt;? Famille / Nom&lt;/i&gt; en ambre n&apos;est qu&apos;une suggestion. &lt;b&gt;Réinitialiser les filtres&lt;/b&gt; efface tout.</translation>
     </message>
     <message>
         <source>Track tags</source>
@@ -1875,11 +1915,11 @@ Workflow: (1) get the triggers — learn them from the hardware under MIDI input
     </message>
     <message>
         <source>MIDI input (learn from controller)</source>
-        <translation>MIDI input (apprendre depuis le contrôleur)</translation>
+        <translation>Entrée MIDI (apprendre depuis le contrôleur)</translation>
     </message>
     <message>
         <source>MIDI input / learning: tick the input port(s), press Start learning, then press discrete buttons/pads one at a time — each new trigger becomes a row. Continuous controls (faders, TRIM/EQ knobs, jog wheels, touch strips) are captured too but aren&apos;t in scope for a profile — delete those rows before exporting.</source>
-        <translation>MIDI input / apprentissage : cochez le ou les ports d&apos;entrée, cliquez sur Start learning, puis appuyez sur les boutons/pads un par un — chaque nouveau déclencheur devient une ligne. Les commandes continues (faders, potentiomètres TRIM/EQ, jog wheels, touch strips) sont capturées aussi mais n&apos;ont pas leur place dans un profil — supprimez ces lignes avant d&apos;exporter.</translation>
+        <translation>Entrée MIDI / apprentissage : cochez le ou les ports d&apos;entrée, cliquez sur Démarrer l&apos;apprentissage, puis appuyez sur les boutons/pads un par un — chaque nouveau déclencheur devient une ligne. Les commandes continues (faders, potentiomètres TRIM/EQ, jog wheels, touch strips) sont capturées aussi mais n&apos;ont pas leur place dans un profil — supprimez ces lignes avant d&apos;exporter.</translation>
     </message>
     <message>
         <source>Learn triggers from a mapping</source>
@@ -1887,15 +1927,42 @@ Workflow: (1) get the triggers — learn them from the hardware under MIDI input
     </message>
     <message>
         <source>Learn triggers from a Serato XML or a Traktor TSI mapping: adds one row per unique (channel, type, control) the file uses. It seeds the profile so you don&apos;t have to press every button on the hardware — it does NOT open the mapping for editing (that&apos;s File → Open Mapping). Mapped functions aren&apos;t physical control names, so Section and Name still have to be filled in by hand. A TSI export can hold several devices (one per controller); you pick which one to import. After importing you&apos;re offered to open the same file as an editable mapping too.</source>
-        <translation>Apprend les déclencheurs d&apos;un mapping Serato XML ou Traktor TSI : ajoute une ligne par (canal, type, commande) distinct utilisé dans le fichier. Cela amorce le profil sans avoir à presser chaque bouton du matériel — le mapping n&apos;est PAS ouvert pour être modifié (pour cela : Fichier → Ouvrir un mapping…). Les fonctions mappées ne sont pas des noms de commandes physiques : Section et Name restent à remplir à la main. Un export TSI peut contenir plusieurs appareils (un par contrôleur) ; vous choisissez lequel importer. Après l&apos;import, l&apos;application propose aussi d&apos;ouvrir ce même fichier comme mapping modifiable.</translation>
+        <translation>Apprend les déclencheurs d&apos;un mapping Serato XML ou Traktor TSI : ajoute une ligne par (canal, type, commande) distinct utilisé dans le fichier. Cela amorce le profil sans avoir à presser chaque bouton du matériel — le mapping n&apos;est PAS ouvert pour être modifié (pour cela : Fichier → Ouvrir un mapping…). Les fonctions mappées ne sont pas des noms de commandes physiques : Section et Nom restent à remplir à la main. Un export TSI peut contenir plusieurs appareils (un par contrôleur) ; vous choisissez lequel importer. Après l&apos;import, l&apos;application propose aussi d&apos;ouvrir ce même fichier comme mapping modifiable.</translation>
     </message>
     <message>
         <source>Apply / Export</source>
-        <translation>Apply / Export</translation>
+        <translation>Appliquer / Exporter</translation>
     </message>
     <message>
         <source>Install saves this profile in your Controllers folder (Documents/DJ MIDI Studio/Controllers) with a copy of its picture, activates it in every view now, and loads it again at every launch. Installing again under the same name updates it. &quot;Submit to community catalog…&quot; opens a pre-filled GitHub issue with the profile JSON so it can be reviewed and shipped as a built-in (reference images are not included). For developers, the remaining button generates a Python catalog module instead.</source>
-        <translation>Install enregistre ce profil dans votre dossier Controllers (Documents/DJ MIDI Studio/Controllers) avec une copie de son image, l&apos;active tout de suite dans toutes les vues et le recharge à chaque lancement. Installer à nouveau sous le même nom le met à jour. « Submit to community catalog… » ouvre une issue GitHub pré-remplie avec le JSON du profil, pour qu&apos;il puisse être relu et livré comme profil intégré (les images de référence ne sont pas incluses). Pour les développeurs, le dernier bouton génère plutôt un module Python de catalogue.</translation>
+        <translation>Installer enregistre ce profil dans votre dossier Controllers (Documents/DJ MIDI Studio/Controllers) avec une copie de son image, l&apos;active tout de suite dans toutes les vues et le recharge à chaque lancement. Installer à nouveau sous le même nom le met à jour. « Proposer au catalogue communautaire… » ouvre une issue GitHub pré-remplie avec le JSON du profil, pour qu&apos;il puisse être relu et livré comme profil intégré (les images de référence ne sont pas incluses). Pour les développeurs, le dernier bouton génère plutôt un module Python de catalogue.</translation>
+    </message>
+</context>
+<context>
+    <name>IntegrationDetection</name>
+    <message>
+        <source>port name contains {name}</source>
+        <translation>le nom du port contient {name}</translation>
+    </message>
+    <message>
+        <source>manufacturer matches plugin metadata</source>
+        <translation>le fabricant correspond aux métadonnées du plugin</translation>
+    </message>
+    <message>
+        <source>MIDI Identity Reply matches plugin metadata</source>
+        <translation>la réponse d&apos;identité MIDI correspond aux métadonnées du plugin</translation>
+    </message>
+    <message>
+        <source>capabilities match: {capabilities}</source>
+        <translation>capacités reconnues : {capabilities}</translation>
+    </message>
+    <message>
+        <source>mapping file signature</source>
+        <translation>signature du fichier de mapping</translation>
+    </message>
+    <message>
+        <source>file extension {suffix}</source>
+        <translation>extension de fichier {suffix}</translation>
     </message>
 </context>
 <context>
@@ -2487,6 +2554,10 @@ Workflow: (1) get the triggers — learn them from the hardware under MIDI input
         <translation>Serato n&apos;en applique qu&apos;une, le contrôle risque donc de ne pas faire ce que vous attendez. Rendez toutes les copies identiques (modifiez-le depuis la vue Par platine, qui garde les copies ensemble).</translation>
     </message>
     <message>
+        <source>{name} · slot {slot}</source>
+        <translation>{name} · slot {slot}</translation>
+    </message>
+    <message>
         <source>{function} on deck {deck} ({trigger}) has no LED feedback mapping.</source>
         <translation>{function} sur la platine {deck} ({trigger}) n&apos;a pas de mapping de retour LED.</translation>
     </message>
@@ -2583,6 +2654,165 @@ Workflow: (1) get the triggers — learn them from the hardware under MIDI input
     <message>
         <source>Live send: off</source>
         <translation>Envoi live : inactif</translation>
+    </message>
+</context>
+<context>
+    <name>MacroManagerDialog</name>
+    <message>
+        <source>Type</source>
+        <translation>Type</translation>
+    </message>
+    <message>
+        <source>Channel</source>
+        <translation>Canal</translation>
+    </message>
+    <message>
+        <source>Data 1</source>
+        <translation>Data 1</translation>
+    </message>
+    <message>
+        <source>Data 2</source>
+        <translation>Data 2</translation>
+    </message>
+    <message>
+        <source>Delay (ms)</source>
+        <translation>Délai (ms)</translation>
+    </message>
+    <message>
+        <source>MIDI Macros</source>
+        <translation>Macros MIDI</translation>
+    </message>
+    <message>
+        <source>No control pressed — Learn timed out.</source>
+        <translation>Aucune commande pressée — l&apos;apprentissage a expiré.</translation>
+    </message>
+    <message>
+        <source>New</source>
+        <translation>Nouvelle</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation>Supprimer</translation>
+    </message>
+    <message>
+        <source>Output port, or a controller name: matched against the connected ports like ⟳ Sync does</source>
+        <translation>Port de sortie, ou nom de contrôleur : comparé aux ports branchés comme le fait ⟳ Synchro</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>Vider</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Aucun</translation>
+    </message>
+    <message>
+        <source>Learn</source>
+        <translation>Apprendre</translation>
+    </message>
+    <message>
+        <source>Listen for the next button pressed on your controller and play this macro whenever it is pressed. Click again (or wait {seconds} s) to cancel.</source>
+        <translation>Écoute le prochain bouton pressé sur votre contrôleur et joue cette macro à chaque appui. Cliquez à nouveau (ou attendez {seconds} s) pour annuler.</translation>
+    </message>
+    <message>
+        <source>MIDI Learn needs the main window&apos;s Live Monitor</source>
+        <translation>L&apos;apprentissage MIDI a besoin du Live Monitor de la fenêtre principale</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation>Nom</translation>
+    </message>
+    <message>
+        <source>Output port</source>
+        <translation>Port de sortie</translation>
+    </message>
+    <message>
+        <source>Shortcut</source>
+        <translation>Raccourci</translation>
+    </message>
+    <message>
+        <source>Trigger</source>
+        <translation>Déclencheur</translation>
+    </message>
+    <message>
+        <source>Add step</source>
+        <translation>Ajouter une étape</translation>
+    </message>
+    <message>
+        <source>Delete step</source>
+        <translation>Supprimer l&apos;étape</translation>
+    </message>
+    <message>
+        <source>Move up</source>
+        <translation>Monter</translation>
+    </message>
+    <message>
+        <source>Move down</source>
+        <translation>Descendre</translation>
+    </message>
+    <message>
+        <source>Add sync set…</source>
+        <translation>Ajouter un jeu de synchronisation…</translation>
+    </message>
+    <message>
+        <source>Append the messages of a recorded controller sync set</source>
+        <translation>Ajoute les messages d&apos;un jeu de synchronisation enregistré</translation>
+    </message>
+    <message>
+        <source>Test</source>
+        <translation>Tester</translation>
+    </message>
+    <message>
+        <source>Play this macro now, as edited</source>
+        <translation>Joue cette macro maintenant, telle qu&apos;elle est modifiée</translation>
+    </message>
+    <message>
+        <source>Steps play top to bottom; each waits its delay before sending (channel 1–16, data 0–127, delay 0–60000 ms).</source>
+        <translation>Les étapes sont jouées de haut en bas ; chacune attend son délai avant l&apos;envoi (canal 1–16, data 0–127, délai 0–60000 ms).</translation>
+    </message>
+    <message>
+        <source>A macro needs a name</source>
+        <translation>Une macro doit avoir un nom</translation>
+    </message>
+    <message>
+        <source>{shortcut} is already used by the app&apos;s menus</source>
+        <translation>{shortcut} est déjà utilisé par les menus de l&apos;application</translation>
+    </message>
+    <message>
+        <source>Macro {number}</source>
+        <translation>Macro {number}</translation>
+    </message>
+    <message>
+        <source>{label} ({count} msg)</source>
+        <translation>{label} ({count} msg)</translation>
+    </message>
+    <message>
+        <source>Add sync set</source>
+        <translation>Ajouter un jeu de synchronisation</translation>
+    </message>
+    <message>
+        <source>Append the messages of:</source>
+        <translation>Ajouter les messages de :</translation>
+    </message>
+    <message>
+        <source>Learn cancelled.</source>
+        <translation>Apprentissage annulé.</translation>
+    </message>
+    <message>
+        <source>No MIDI input is open: connect a controller, or pick one in Live Monitor.</source>
+        <translation>Aucune entrée MIDI n&apos;est ouverte : branchez un contrôleur ou choisissez-en une dans le Live Monitor.</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Annuler</translation>
+    </message>
+    <message>
+        <source>Press a button on your controller… ({seconds} s)</source>
+        <translation>Appuyez sur un bouton de votre contrôleur… ({seconds} s)</translation>
+    </message>
+    <message>
+        <source>Learned {trigger}.</source>
+        <translation>{trigger} appris.</translation>
     </message>
 </context>
 <context>
@@ -3799,6 +4029,74 @@ Lignes sélectionnées dans Configuration du contrôleur : {selected}</translati
 </context>
 <context>
     <name>MidiMacros</name>
+    <message>
+        <source>delay must be an integer number of milliseconds</source>
+        <translation>le délai doit être un nombre entier de millisecondes</translation>
+    </message>
+    <message>
+        <source>delay must be in [0, {max}] ms</source>
+        <translation>le délai doit être compris entre 0 et {max} ms</translation>
+    </message>
+    <message>
+        <source>{field} must be an integer</source>
+        <translation>{field} doit être un nombre entier</translation>
+    </message>
+    <message>
+        <source>{field} must be in [{low}, {high}]</source>
+        <translation>{field} doit être compris entre {low} et {high}</translation>
+    </message>
+    <message>
+        <source>channel</source>
+        <translation>le canal</translation>
+    </message>
+    <message>
+        <source>data1</source>
+        <translation>data1</translation>
+    </message>
+    <message>
+        <source>data2</source>
+        <translation>data2</translation>
+    </message>
+    <message>
+        <source>unsupported message type {type}</source>
+        <translation>type de message non pris en charge {type}</translation>
+    </message>
+    <message>
+        <source>Step {number}: {error}</source>
+        <translation>Étape {number} : {error}</translation>
+    </message>
+    <message>
+        <source>A macro has no name</source>
+        <translation>Une macro n&apos;a pas de nom</translation>
+    </message>
+    <message>
+        <source>Two macros are named &quot;{name}&quot;</source>
+        <translation>Deux macros s&apos;appellent « {name} »</translation>
+    </message>
+    <message>
+        <source>&quot;{name}&quot; and &quot;{other}&quot; use the same shortcut {shortcut}</source>
+        <translation>« {name} » et « {other} » utilisent le même raccourci {shortcut}</translation>
+    </message>
+    <message>
+        <source>&quot;{name}&quot; and &quot;{other}&quot; use the same controller trigger {trigger}</source>
+        <translation>« {name} » et « {other} » utilisent le même déclencheur de contrôleur {trigger}</translation>
+    </message>
+    <message>
+        <source>&quot;{name}&quot; sends its own trigger back to {port} and would loop</source>
+        <translation>« {name} » renvoie son propre déclencheur vers {port} et tournerait en boucle</translation>
+    </message>
+    <message>
+        <source>Note {data1}, ch {channel}</source>
+        <translation>Note {data1}, canal {channel}</translation>
+    </message>
+    <message>
+        <source>CC {data1}, ch {channel}</source>
+        <translation>CC {data1}, canal {channel}</translation>
+    </message>
+    <message>
+        <source>{trigger} on {port}</source>
+        <translation>{trigger} sur {port}</translation>
+    </message>
     <message>
         <source>Macro &quot;{name}&quot;: sent {count} message(s) to {port}</source>
         <translation>Macro « {name} » : {count} message(s) envoyé(s) vers {port}</translation>
@@ -5644,6 +5942,17 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     </message>
 </context>
 <context>
+    <name>SessionPlayer</name>
+    <message>
+        <source>{field} must be an integer</source>
+        <translation>{field} doit être un nombre entier</translation>
+    </message>
+    <message>
+        <source>{field} must be in [{low}, {high}]</source>
+        <translation>{field} doit être compris entre {low} et {high}</translation>
+    </message>
+</context>
+<context>
     <name>SetCurveWidget</name>
     <message>
         <source>Add tracks to see the set&apos;s BPM and energy curve.</source>
@@ -5978,6 +6287,61 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>first {limit}</source>
         <translation>les {limit} premiers</translation>
+    </message>
+</context>
+<context>
+    <name>Validator</name>
+    <message>
+        <source>error</source>
+        <translation>erreur</translation>
+    </message>
+    <message>
+        <source>warning</source>
+        <translation>avertissement</translation>
+    </message>
+    <message>
+        <source>info</source>
+        <translation>info</translation>
+    </message>
+    <message>
+        <source>Trigger (channel={channel}, event_type={event_type}, control={control}) is bound {count} times with {distinct} different mappings; only one will take effect.</source>
+        <translation>Le déclencheur (channel={channel}, event_type={event_type}, control={control}) est lié {count} fois avec {distinct} mappings différents ; un seul sera pris en compte.</translation>
+    </message>
+    <message>
+        <source>Trigger (channel={channel}, event_type={event_type}, control={control}) is defined {count} times with identical content. This repetition appears required by Serato — do not deduplicate.</source>
+        <translation>Le déclencheur (channel={channel}, event_type={event_type}, control={control}) est défini {count} fois à l&apos;identique. Serato semble avoir besoin de cette répétition — ne supprimez pas les doublons.</translation>
+    </message>
+    <message>
+        <source>Control is missing a required attribute (channel/event_type/control).</source>
+        <translation>Il manque un attribut obligatoire au contrôle (channel/event_type/control).</translation>
+    </message>
+    <message>
+        <source>Mapping &lt;{tag}&gt; is missing deck_id or slot_id.</source>
+        <translation>Il manque deck_id ou slot_id au mapping &lt;{tag}&gt;.</translation>
+    </message>
+    <message>
+        <source>&lt;translation&gt; under &lt;{tag}&gt; is missing action_on.</source>
+        <translation>Il manque action_on à &lt;translation&gt; sous &lt;{tag}&gt;.</translation>
+    </message>
+    <message>
+        <source>Unrecognized action_on value &apos;{value}&apos;.</source>
+        <translation>Valeur action_on inconnue « {value} ».</translation>
+    </message>
+    <message>
+        <source>Unrecognized behaviour value &apos;{value}&apos;.</source>
+        <translation>Valeur behaviour inconnue « {value} ».</translation>
+    </message>
+    <message>
+        <source>Target &lt;{tag}&gt; (deck_id={deck_id}, slot_id={slot_id}) is bound to &apos;click&apos; by {count} different controls with inconsistent behaviour/action_on: {values}.</source>
+        <translation>La cible &lt;{tag}&gt; (deck_id={deck_id}, slot_id={slot_id}) est liée à « click » par {count} contrôles différents aux behaviour/action_on incohérents : {values}.</translation>
+    </message>
+    <message>
+        <source>{tag} (slot {slot})</source>
+        <translation>{tag} (slot {slot})</translation>
+    </message>
+    <message>
+        <source>deck {deck}: {functions}</source>
+        <translation>platine {deck} : {functions}</translation>
     </message>
 </context>
 <context>

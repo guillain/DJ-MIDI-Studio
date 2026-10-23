@@ -122,6 +122,9 @@ _COPIES_HINT = QT_TRANSLATE_NOOP(
     "Serato honours only one of them, so the control may not do what you expect. "
     "Make every copy identical (edit it from the By Deck view, which keeps copies together).",
 )
+# function_names.SLOT_SUFFIX, marked again in this context so the findings'
+# function labels follow the same `translate` (issue #326).
+_FUNCTION_SLOT = QT_TRANSLATE_NOOP("LiveReady", "{name} · slot {slot}")
 _LED_MESSAGE = QT_TRANSLATE_NOOP("LiveReady", "{function} on deck {deck} ({trigger}) has no LED feedback mapping.")
 _LED_HINT = QT_TRANSLATE_NOOP(
     "LiveReady",
@@ -250,7 +253,7 @@ def _check_conflicts(
     deck_conflicts = find_deck_conflicts(config)
     for key, conflicts in deck_conflicts.items():
         for conflict in conflicts:
-            names = ", ".join(function_label(tag, slot) for tag, slot in conflict.functions)
+            names = ", ".join(function_label(tag, slot, translate) for tag, slot in conflict.functions)
             findings.append(
                 ReadyFinding(
                     severity="error",
@@ -321,7 +324,7 @@ def _check_led_feedback(
                     severity="info",
                     category="led",
                     message=translate(_LED_MESSAGE).format(
-                        function=function_label(tag, slot), deck=deck or "?", trigger=_trigger_text(key, translate)
+                        function=function_label(tag, slot, translate), deck=deck or "?", trigger=_trigger_text(key, translate)
                     ),
                     hint=translate(_LED_HINT),
                     location=_location(key),

@@ -28,7 +28,14 @@ from pathlib import Path
 from string import Template
 from typing import cast
 
-from PySide6.QtCore import QItemSelectionModel, Qt, QTimer, QUrl, Signal
+from PySide6.QtCore import (
+    QCoreApplication,
+    QItemSelectionModel,
+    Qt,
+    QTimer,
+    QUrl,
+    Signal,
+)
 from PySide6.QtGui import QDesktopServices, QIcon
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -90,6 +97,7 @@ from djmidi.midi_io import (
     MidiMonitor,
     list_input_ports,
     list_output_ports,
+    midi_message_type,
     send_midi_message,
 )
 from djmidi.model import MidiConfig
@@ -106,6 +114,33 @@ _LOGGER = logging.getLogger(__name__)
 _POLL_INTERVAL_MS = 30
 
 _ALL_TSI_DEVICES = QT_TRANSLATE_NOOP("ControllerSetupView", "All devices")
+# Field names in the number errors of the MIDI Output panel, as its labels
+# read (issue #326).
+_FIELD_CHANNEL = QT_TRANSLATE_NOOP("ControllerSetupView", "Channel")
+_FIELD_DATA1 = QT_TRANSLATE_NOOP("ControllerSetupView", "Data1")
+_FIELD_DATA2 = QT_TRANSLATE_NOOP("ControllerSetupView", "Value")
+_FIELD_DELAY = QT_TRANSLATE_NOOP("ControllerSetupView", "Delay (ms)")
+# The Source column: what the stored source value means (issue #326). The
+# session file keeps the English value; `catalog:<name>` shows the name.
+_SOURCE_LABELS = {
+    "learned": QT_TRANSLATE_NOOP("ControllerSetupView", "learned"),
+    "xml-import": QT_TRANSLATE_NOOP("ControllerSetupView", "XML import"),
+    "tsi-import": QT_TRANSLATE_NOOP("ControllerSetupView", "TSI import"),
+    "manual": QT_TRANSLATE_NOOP("ControllerSetupView", "manual"),
+}
+_SOURCE_CATALOG = QT_TRANSLATE_NOOP("ControllerSetupView", "copy of {controller}")
+_number_translate = translator("SessionPlayer")
+
+
+def source_label(source: str) -> str:
+    """The Source column's text for a stored source value, in the interface language."""
+    if source in _SOURCE_LABELS:
+        return QCoreApplication.translate("ControllerSetupView", _SOURCE_LABELS[source])
+    if source.startswith("catalog:"):
+        return QCoreApplication.translate("ControllerSetupView", _SOURCE_CATALOG).format(
+            controller=source.split(":", 1)[1]
+        )
+    return source
 
 
 def read_mapping_file(path: str | Path) -> MidiConfig:
@@ -785,7 +820,15 @@ class ControllerSetupView(QWidget):
         self._rebuilding = True
         row = self._table.rowCount()
         self._table.insertRow(row)
-        values = [entry.section, entry.name, entry.note_or_cc, ", ".join(entry.channels), entry.data1, source, device]
+        values = [
+            entry.section,
+            entry.name,
+            entry.note_or_cc,
+            ", ".join(entry.channels),
+            entry.data1,
+            source_label(source),
+            device,
+        ]
         for col, value in enumerate(values):
             item = QTableWidgetItem(value)
             if col in (5, 6):
@@ -1039,22 +1082,49 @@ class ControllerSetupView(QWidget):
             raise ValueError(self.tr("No output port selected"))
         return ports
 
+    def _int(self, text: str, field: str, low: int, high: int) -> int:
+        """A number typed in the MIDI Output panel; the error names the
+        field in the interface language (issue #326)."""
+        return _parse_int(text, self.tr(field), low, high, _number_translate)
+
+    def _send_midi(self, *, output_port_name: str, event_type: str, channel_1_based: int, data1: int, data2: int) -> None:
+        """`send_midi_message` with errors worded in the interface language
+        (issue #326); the driver's own detail is kept after the colon."""
+        if midi_message_type(event_type) is None:
+            raise ValueError(
+                self.tr("Unsupported message type '{type}': use Note On, Note Off or Control Change.").format(
+                    type=event_type
+                )
+            )
+        try:
+            send_midi_message(
+                output_port_name=output_port_name,
+                event_type=event_type,
+                channel_1_based=channel_1_based,
+                data1=data1,
+                data2=data2,
+            )
+        except Exception as exc:
+            raise RuntimeError(
+                self.tr("Could not send to the MIDI output '{port}': {error}").format(port=output_port_name, error=exc)
+            ) from exc
+
     def _send_note_click(self, *, note: int, double_click: bool) -> None:
         ports = self._selected_output_ports()
-        channel = _parse_int(self._send_channel_edit.text(), "Channel", 1, 16)
-        velocity = _parse_int(self._send_data2_edit.text(), "Data2", 0, 127)
-        delay_ms = _parse_int(self._send_delay_ms_edit.text(), "Double-click delay", 0, 5_000)
+        channel = self._int(self._send_channel_edit.text(), _FIELD_CHANNEL, 1, 16)
+        velocity = self._int(self._send_data2_edit.text(), _FIELD_DATA2, 0, 127)
+        delay_ms = self._int(self._send_delay_ms_edit.text(), _FIELD_DELAY, 0, 5_000)
 
         def do_click() -> None:
             for port in ports:
-                send_midi_message(
+                self._send_midi(
                     output_port_name=port,
                     event_type="note_on",
                     channel_1_based=channel,
                     data1=note,
                     data2=velocity,
                 )
-                send_midi_message(
+                self._send_midi(
                     output_port_name=port,
                     event_type="note_off",
                     channel_1_based=channel,
@@ -1070,12 +1140,12 @@ class ControllerSetupView(QWidget):
         try:
             ports = self._selected_output_ports()
             for port in ports:
-                send_midi_message(
+                self._send_midi(
                     output_port_name=port,
                     event_type=self._send_type_edit.text(),
-                    channel_1_based=_parse_int(self._send_channel_edit.text(), "Channel", 1, 16),
-                    data1=_parse_int(self._send_data1_edit.text(), "Data1", 0, 127),
-                    data2=_parse_int(self._send_data2_edit.text(), "Data2", 0, 127),
+                    channel_1_based=self._int(self._send_channel_edit.text(), _FIELD_CHANNEL, 1, 16),
+                    data1=self._int(self._send_data1_edit.text(), _FIELD_DATA1, 0, 127),
+                    data2=self._int(self._send_data2_edit.text(), _FIELD_DATA2, 0, 127),
                 )
         except Exception as exc:  # noqa: BLE001 - show user-facing error
             QMessageBox.critical(self, self.tr("Failed to send MIDI"), str(exc))
@@ -1089,7 +1159,7 @@ class ControllerSetupView(QWidget):
 
     def _on_send_output_double_clicked(self) -> None:
         try:
-            note = _parse_int(self._send_data1_edit.text(), "Data1", 0, 127)
+            note = self._int(self._send_data1_edit.text(), _FIELD_DATA1, 0, 127)
             self._send_note_click(note=note, double_click=True)
         except Exception as exc:  # noqa: BLE001 - show user-facing error
             QMessageBox.critical(self, self.tr("Failed to send MIDI"), str(exc))
@@ -1100,8 +1170,8 @@ class ControllerSetupView(QWidget):
         """Send one mode-switch row (a Note press + release) on its own
         channel to the checked output ports."""
         try:
-            note = _parse_int(row.data1, "Data1", 0, 127)
-            channel = _parse_int(row.channels[0], "Channel", 1, 16)
+            note = self._int(row.data1, _FIELD_DATA1, 0, 127)
+            channel = self._int(row.channels[0], _FIELD_CHANNEL, 1, 16)
             self._send_channel_edit.setText(str(channel))
             self._send_data1_edit.setText(str(note))
             self._send_note_click(note=note, double_click=False)
@@ -1131,13 +1201,13 @@ class ControllerSetupView(QWidget):
         return self._controller_name
 
     def _play_session_rows_once(self, row_indices: list[int]) -> tuple[int, int]:
-        value = _parse_int(self._send_data2_edit.text(), "Data2", 0, 127)
+        value = self._int(self._send_data2_edit.text(), _FIELD_DATA2, 0, 127)
         entries = [self._rows[i] for i in row_indices if 0 <= i < len(self._rows)]
         skipped = len(row_indices) - len(entries)
         total_sent = 0
         entries_skipped = 0
         for port in self._selected_output_ports():
-            stats = play_control_info_entries(port, entries, value, sender=send_midi_message)
+            stats = play_control_info_entries(port, entries, value, sender=self._send_midi)
             total_sent += stats.sent_messages
             entries_skipped = stats.skipped_entries  # which entries are invalid doesn't depend on the port
         return total_sent, entries_skipped + skipped
@@ -1198,7 +1268,7 @@ class ControllerSetupView(QWidget):
                 if generation != self._replay_generation:
                     return
                 for port in ports:
-                    replay_midi_events(port, [event], sender=send_midi_message)
+                    replay_midi_events(port, [event], sender=self._send_midi)
                 schedule(index + 1, event.timestamp)
 
             QTimer.singleShot(delay_ms, send_and_continue)
@@ -1425,7 +1495,7 @@ class ControllerSetupView(QWidget):
     def _load_session(self, path: str | Path) -> None:
         data = json.loads(Path(path).read_text())
         if data.get("version") != 1:
-            raise ValueError(f"Unsupported session version: {data.get('version')!r}")
+            raise ValueError(self.tr("Unsupported session version: {version}").format(version=repr(data.get("version"))))
         name = data["controller_name"]
         recorded_events = [MidiEvent(**raw) for raw in data.get("recorded_events", [])]
         rows = []

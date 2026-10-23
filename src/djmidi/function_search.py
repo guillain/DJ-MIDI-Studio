@@ -18,6 +18,10 @@ specific length"), and every query token must match something:
 - a bare number matches the deck or slot id (or a number inside the tag),
 - `click` / `output` (or `led`) match the userio event.
 
+French keywords work alongside the English ones whatever the interface
+language (issue #326): `platine N` = `deck N`, `emplacement N` = `slot N`,
+`clic` / `appui` = `click`, `sortie` / `voyant` = `output`.
+
 A result is shown under its readable name (`function_names`, "Loop roll"),
 and that name's words match too, next to the raw tag's: the raw tag stays in
 the row's tooltip.
@@ -41,7 +45,19 @@ DECK_LABEL = QT_TRANSLATE_NOOP("FunctionSearchView", "Deck {deck}")
 SLOT_LABEL = QT_TRANSLATE_NOOP("FunctionSearchView", "Slot {slot}")
 
 _TOKEN_RE = re.compile(r"[a-z0-9]+")
-_EVENT_WORDS = {"click": "click", "press": "click", "output": "output", "led": "output"}
+_EVENT_WORDS = {
+    "click": "click",
+    "press": "click",
+    "output": "output",
+    "led": "output",
+    # French (issue #326).
+    "clic": "click",
+    "appui": "click",
+    "sortie": "output",
+    "voyant": "output",
+}
+# Words that pin the next number to a deck or a slot, English and French.
+_PIN_WORDS = {"deck": "deck", "platine": "deck", "slot": "slot", "emplacement": "slot"}
 
 # Per-token scores. A function whose own words match the query beats one
 # that only matches through a number; click (what the user presses) beats
@@ -145,8 +161,8 @@ def _parse_query(query: str) -> tuple[list[str], str | None, str | None, str | N
     while index < len(tokens):
         token = tokens[index]
         following = tokens[index + 1] if index + 1 < len(tokens) else None
-        if token in ("deck", "slot") and following is not None and following.isdigit():
-            if token == "deck":
+        if token in _PIN_WORDS and following is not None and following.isdigit():
+            if _PIN_WORDS[token] == "deck":
                 deck = following
             else:
                 slot = following

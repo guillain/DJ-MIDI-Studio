@@ -39,6 +39,7 @@ from djmidi.gui.help_button import help_row
 from djmidi.gui.mapping_group import build_mapping_groups
 from djmidi.gui.port_list_utils import refresh_checked_port_list
 from djmidi.gui.scroll_utils import AutoSizeScrollArea
+from djmidi.gui.translation import translator
 from djmidi.midi_io import MidiEvent, MidiMonitor, list_input_ports
 from djmidi.model import MidiConfig
 from djmidi.validator import DeckConflict, TriggerKey, find_deck_conflicts
@@ -289,7 +290,7 @@ class LiveMonitorView(QWidget):
         conflicts = self._conflicts.get(trigger, []) if event.direction == "in" else []
         conflict_text = ""
         if conflicts:
-            conflict_text = self.tr("CONFLICT ") + "; ".join(c.describe() for c in conflicts)
+            conflict_text = self.tr("CONFLICT ") + "; ".join(c.describe(translator("Validator")) for c in conflicts)
             self._count_conflict(event, trigger)
         detail = " | ".join(part for part in (conflict_text, physical, "; ".join(functions)) if part) or self.tr("(unknown)")
 

@@ -5,6 +5,7 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 
 from djmidi.catalog._registry import ControlInfo
+from djmidi.i18n import QT_TRANSLATE_NOOP, Translate, untranslated
 from djmidi.midi_io import MidiEvent, send_midi_message
 
 _LOGGER = logging.getLogger(__name__)
@@ -16,13 +17,19 @@ class PlaybackStats:
     skipped_entries: int = 0
 
 
-def _parse_int(text: str, field_name: str, low: int, high: int) -> int:
+# Number errors (issue #326): English templates, translated by the caller
+# through `translate`; `field_name` is passed already translated.
+NOT_AN_INTEGER = QT_TRANSLATE_NOOP("SessionPlayer", "{field} must be an integer")
+OUT_OF_RANGE = QT_TRANSLATE_NOOP("SessionPlayer", "{field} must be in [{low}, {high}]")
+
+
+def _parse_int(text: str, field_name: str, low: int, high: int, translate: Translate = untranslated) -> int:
     try:
         value = int(text.strip())
     except ValueError as exc:
-        raise ValueError(f"{field_name} must be an integer") from exc
+        raise ValueError(translate(NOT_AN_INTEGER).format(field=field_name)) from exc
     if not low <= value <= high:
-        raise ValueError(f"{field_name} must be in [{low}, {high}]")
+        raise ValueError(translate(OUT_OF_RANGE).format(field=field_name, low=low, high=high))
     return value
 
 

@@ -153,7 +153,7 @@ from djmidi.plugins import PluginPreferences, default_preferences_path
 from djmidi.problem_report import ReportContext, collect_context
 from djmidi.safe_update import prepare_update
 from djmidi.update_check import ReleaseInfo, current_version, is_check_due, is_newer
-from djmidi.validator import ValidationIssue, validate
+from djmidi.validator import ValidationIssue, severity_label, validate
 
 _SEVERITY_COLORS = {
     "error": QColor(255, 200, 200),
@@ -195,6 +195,9 @@ _STARTUP_SYNC_DELAY_MS = 1500
 _live_ready_translate = translator("LiveReady")
 # Macro results come from Qt-free midi_macros (issue #319).
 _macro_translate = translator("MidiMacros")
+# Validation messages and detection reasons come from Qt-free modules (issue #326).
+_validator_translate = translator("Validator")
+_detection_translate = translator("IntegrationDetection")
 # Startup update check (issue #193): after the window is up, at most once a day.
 _STARTUP_UPDATE_CHECK_DELAY_MS = 3000
 _LAST_UPDATE_CHECK_SETTINGS_KEY = "updates/last_check"
@@ -719,7 +722,7 @@ class MainWindow(QMainWindow):
         if signature == self._last_controller_detection:
             return
         self._last_controller_detection = signature
-        detection = detect_controller_ports(port_names)
+        detection = detect_controller_ports(port_names, translate=_detection_translate)
         best = detection.best
         if best is None:
             return
@@ -2101,7 +2104,7 @@ class MainWindow(QMainWindow):
             return
         definitions = software.active_definitions()
         names = [definition.name for definition in definitions]
-        detection = detect_software_mapping(mapping_text, path.suffix)
+        detection = detect_software_mapping(mapping_text, path.suffix, _detection_translate)
         detected = detection.best
         detected_index = next(
             (
@@ -3553,12 +3556,12 @@ class MainWindow(QMainWindow):
     def _on_validate(self) -> None:
         if self.config is None:
             return
-        issues: list[ValidationIssue] = validate(self.config)
+        issues: list[ValidationIssue] = validate(self.config, _validator_translate)
         self.issues_table.setRowCount(0)
         for issue in issues:
             row = self.issues_table.rowCount()
             self.issues_table.insertRow(row)
-            severity_item = QTableWidgetItem(issue.severity)
+            severity_item = QTableWidgetItem(severity_label(issue.severity, _validator_translate))
             message_item = QTableWidgetItem(issue.message)
             location_item = QTableWidgetItem(issue.location)
             color = _SEVERITY_COLORS.get(issue.severity)

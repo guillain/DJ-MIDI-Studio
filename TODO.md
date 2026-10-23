@@ -138,6 +138,17 @@ Implemented contract, runtime, test, and documentation work:
   genre/key/Camelot combos fit their `Toutes les …` entry, and the edit panel's empty prompt wraps. Regenerated
   `interface-language-fr.png` (the Dashboard is now French throughout). Still English: the MIDI Macros dialog
   (#326), the Plugins tab's `Controller:`/`Software:` prefixes, and `Uncategorized` in Statistics.
+- [x] **French UI: validation, detection, Controller Setup errors, macros, French search keywords**
+  (`v0.48.126-french-messages-search`, issue #326) — `validator.validate`, the detection reasons
+  (`integration_detection`), `function_names.function_label`'s slot suffix, `session_player._parse_int` and
+  `midi_macros`' editor errors take an optional `translate` (English by default); Controller Setup's MIDI output
+  errors and `Source` column and the whole MIDI Macros dialog are translated. Function search (and the command
+  palette) accepts `platine N` / `emplacement N` / `clic`, `appui` / `sortie`, `voyant` alongside the English
+  keywords. Checked on `cocoa` with the French catalogue and `qtbase_fr`.
+- [x] **French help texts name the French labels** (`v0.48.125-french-help-labels`, issue #325) — the French
+  `?` help bodies quote the buttons and labels as the French UI shows them (Actualiser les ports, Envoi live,
+  Disposition, Démarrer le routage, ...); `tests/test_french_help_labels.py` fails when a bold label of a French
+  help text is not a French UI translation, except an explicit list (Serato names, keys, still-English windows).
 - [x] **French UI: contextual help texts** (`v0.48.124-french-help-texts`, issue #320) — every `?` help popup
   (title, rich-text body, tooltip, `Open full guide`) is translated through the `HelpTexts` catalogue context at
   show time; Controller Setup's four panel texts moved into `help_texts.py` to share it. The linked guides stay

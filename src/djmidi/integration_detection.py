@@ -6,9 +6,19 @@ from dataclasses import dataclass
 from typing import Literal
 
 from djmidi import catalog, software
+from djmidi.i18n import QT_TRANSLATE_NOOP, Translate, untranslated
 from djmidi.midi_api import MidiIdentityReply
 
 IntegrationKind = Literal["controller", "software"]
+
+# Detection reasons (issue #326): English templates, translated by the caller
+# through `translate`. Port, manufacturer and capability names stay as reported.
+_PORT_NAME = QT_TRANSLATE_NOOP("IntegrationDetection", "port name contains {name}")
+_MANUFACTURER = QT_TRANSLATE_NOOP("IntegrationDetection", "manufacturer matches plugin metadata")
+_IDENTITY = QT_TRANSLATE_NOOP("IntegrationDetection", "MIDI Identity Reply matches plugin metadata")
+_CAPABILITIES = QT_TRANSLATE_NOOP("IntegrationDetection", "capabilities match: {capabilities}")
+_SIGNATURE = QT_TRANSLATE_NOOP("IntegrationDetection", "mapping file signature")
+_EXTENSION = QT_TRANSLATE_NOOP("IntegrationDetection", "file extension {suffix}")
 
 
 @dataclass(frozen=True)
@@ -55,9 +65,12 @@ class ControllerEvidence:
 
 
 def detect_controller_ports(
-    port_names: list[str], evidence: list[ControllerEvidence] | None = None
+    port_names: list[str],
+    evidence: list[ControllerEvidence] | None = None,
+    translate: Translate = untranslated,
 ) -> DetectionResult:
-    """Rank controllers from names and optional identity/capability evidence."""
+    """Rank controllers from names and optional identity/capability evidence.
+    Reasons are in English unless the GUI passes a `translate` (issue #326)."""
     by_id: dict[str, DetectionCandidate] = {}
     observed = evidence or [ControllerEvidence(port_name=name) for name in port_names]
     for item in observed:
@@ -65,21 +78,21 @@ def detect_controller_ports(
         for match in catalog.detect_controller(port_name):
             definition = match.controller
             score = match.score
-            reasons = [f"port name contains {match.reason.split(' contains ', 1)[-1]}"]
+            reasons = [translate(_PORT_NAME).format(name=match.reason.split(" contains ", 1)[-1])]
             if (
                 item.manufacturer
                 and definition.manufacturer
                 and item.manufacturer.casefold() == definition.manufacturer.casefold()
             ):
                 score = min(100, score + 10)
-                reasons.append("manufacturer matches plugin metadata")
+                reasons.append(translate(_MANUFACTURER))
             if item.identity is not None and item.identity.identity_id in definition.midi_identity_ids:
                 score = 100
-                reasons.append("MIDI Identity Reply matches plugin metadata")
+                reasons.append(translate(_IDENTITY))
             capability_hits = set(item.capabilities) & set(definition.midi_capabilities)
             if capability_hits:
                 score = min(100, score + min(10, len(capability_hits) * 2))
-                reasons.append(f"capabilities match: {', '.join(sorted(capability_hits))}")
+                reasons.append(translate(_CAPABILITIES).format(capabilities=", ".join(sorted(capability_hits))))
             current = by_id.get(match.controller.plugin_id or match.controller.name)
             candidate = DetectionCandidate(
                 kind="controller",
@@ -96,13 +109,14 @@ def detect_controller_ports(
     )
 
 
-def detect_software_mapping(text: str, suffix: str = "") -> DetectionResult:
-    """Rank mapping plugins from XML signatures and file extension."""
+def detect_software_mapping(text: str, suffix: str = "", translate: Translate = untranslated) -> DetectionResult:
+    """Rank mapping plugins from XML signatures and file extension.
+    Reasons are in English unless the GUI passes a `translate` (issue #326)."""
     definitions = software.detect_from_text(text, suffix)
     candidates: list[DetectionCandidate] = []
     for definition in definitions:
         score = 100 if definition.plugin_id in {"serato", "traktor"} else 70
-        reason = "mapping file signature" if score == 100 else f"file extension {suffix!r}"
+        reason = translate(_SIGNATURE) if score == 100 else translate(_EXTENSION).format(suffix=repr(suffix))
         candidates.append(
             DetectionCandidate(
                 kind="software",

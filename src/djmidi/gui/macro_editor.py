@@ -43,6 +43,8 @@ from djmidi.controller_sync import ControllerSyncSet, move_message
 from djmidi.gui.help_button import help_button
 from djmidi.gui.help_texts import MIDI_MACROS
 from djmidi.gui.macro_player import MacroPlayer
+from djmidi.gui.translation import translator
+from djmidi.i18n import QT_TRANSLATE_NOOP
 from djmidi.midi_learn import LEARN_TIMEOUT_MS
 from djmidi.midi_macros import (
     MacroStep,
@@ -57,7 +59,16 @@ if TYPE_CHECKING:
     from djmidi.midi_io import MidiEvent
 
 _EVENT_TYPES = ("Note On", "Note Off", "Control Change")
-_COLUMNS = ("Type", "Channel", "Data 1", "Data 2", "Delay (ms)")
+_COLUMNS = (
+    QT_TRANSLATE_NOOP("MacroManagerDialog", "Type"),
+    QT_TRANSLATE_NOOP("MacroManagerDialog", "Channel"),
+    QT_TRANSLATE_NOOP("MacroManagerDialog", "Data 1"),
+    QT_TRANSLATE_NOOP("MacroManagerDialog", "Data 2"),
+    QT_TRANSLATE_NOOP("MacroManagerDialog", "Delay (ms)"),
+)
+# Step errors, duplicate checks and play results come from Qt-free
+# midi_macros (issues #319, #326).
+_macro_translate = translator("MidiMacros")
 
 
 class MacroManagerDialog(QDialog):
@@ -73,7 +84,7 @@ class MacroManagerDialog(QDialog):
         port_opener: PortOpener | None = None,
     ) -> None:
         super().__init__(parent)
-        self.setWindowTitle("MIDI Macros")
+        self.setWindowTitle(self.tr("MIDI Macros"))
         self._macros: list[MidiMacro] = list(macros)
         self._result: list[MidiMacro] = list(macros)
         self._ports = list(available_ports)
@@ -88,17 +99,17 @@ class MacroManagerDialog(QDialog):
         self._learn_timer = QTimer(self)
         self._learn_timer.setSingleShot(True)
         self._learn_timer.setInterval(LEARN_TIMEOUT_MS)
-        self._learn_timer.timeout.connect(lambda: self.cancel_learn("No control pressed — Learn timed out."))
+        self._learn_timer.timeout.connect(lambda: self.cancel_learn(self.tr("No control pressed — Learn timed out.")))
         self._player = MacroPlayer(sender, self, port_opener)
-        self._player.finished.connect(lambda result: self.status.setText(result.summary()))
+        self._player.finished.connect(lambda result: self.status.setText(result.summary(_macro_translate)))
 
         # Left: the macro list.
         self.macro_list = QListWidget()
         self.macro_list.setMinimumWidth(170)
         self.macro_list.currentRowChanged.connect(self._on_macro_selected)
-        self.new_button = QPushButton("New")
+        self.new_button = QPushButton(self.tr("New"))
         self.new_button.clicked.connect(self._new_macro)
-        self.delete_macro_button = QPushButton("Delete")
+        self.delete_macro_button = QPushButton(self.tr("Delete"))
         self.delete_macro_button.clicked.connect(self._delete_macro)
         list_buttons = QHBoxLayout()
         list_buttons.addWidget(self.new_button)
@@ -113,39 +124,41 @@ class MacroManagerDialog(QDialog):
         self.port_combo.setEditable(True)
         self.port_combo.addItems(self._ports)
         self.port_combo.setToolTip(
-            "Output port, or a controller name: matched against the connected ports like ⟳ Sync does"
+            self.tr("Output port, or a controller name: matched against the connected ports like ⟳ Sync does")
         )
         self.shortcut_edit = QKeySequenceEdit()
         self.shortcut_edit.setMaximumSequenceLength(1)
-        clear_shortcut = QPushButton("Clear")
+        clear_shortcut = QPushButton(self.tr("Clear"))
         clear_shortcut.clicked.connect(self.shortcut_edit.clear)
         shortcut_row = QHBoxLayout()
         shortcut_row.addWidget(self.shortcut_edit, 1)
         shortcut_row.addWidget(clear_shortcut)
-        self.trigger_label = QLabel("None")
-        self.learn_button = QPushButton("Learn")
+        self.trigger_label = QLabel(self.tr("None"))
+        self.learn_button = QPushButton(self.tr("Learn"))
         self.learn_button.setToolTip(
-            "Listen for the next button pressed on your controller and play this macro whenever it is pressed. "
-            f"Click again (or wait {LEARN_TIMEOUT_MS // 1000} s) to cancel."
+            self.tr(
+                "Listen for the next button pressed on your controller and play this macro whenever it is pressed. "
+                "Click again (or wait {seconds} s) to cancel."
+            ).format(seconds=LEARN_TIMEOUT_MS // 1000)
         )
         if ensure_listening is None:
             self.learn_button.setEnabled(False)
-            self.learn_button.setToolTip("MIDI Learn needs the main window's Live Monitor")
+            self.learn_button.setToolTip(self.tr("MIDI Learn needs the main window's Live Monitor"))
         self.learn_button.clicked.connect(self._on_learn_clicked)
-        self.clear_trigger_button = QPushButton("Clear")
+        self.clear_trigger_button = QPushButton(self.tr("Clear"))
         self.clear_trigger_button.clicked.connect(lambda: self._set_trigger(None))
         trigger_row = QHBoxLayout()
         trigger_row.addWidget(self.trigger_label, 1)
         trigger_row.addWidget(self.learn_button)
         trigger_row.addWidget(self.clear_trigger_button)
         form = QFormLayout()
-        form.addRow("Name", self.name_edit)
-        form.addRow("Output port", self.port_combo)
-        form.addRow("Shortcut", shortcut_row)
-        form.addRow("Trigger", trigger_row)
+        form.addRow(self.tr("Name"), self.name_edit)
+        form.addRow(self.tr("Output port"), self.port_combo)
+        form.addRow(self.tr("Shortcut"), shortcut_row)
+        form.addRow(self.tr("Trigger"), trigger_row)
 
         self.table = QTableWidget(0, len(_COLUMNS))
-        self.table.setHorizontalHeaderLabels(list(_COLUMNS))
+        self.table.setHorizontalHeaderLabels([self.tr(column) for column in _COLUMNS])
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         header = self.table.horizontalHeader()
@@ -154,20 +167,20 @@ class MacroManagerDialog(QDialog):
             header.setSectionResizeMode(column, QHeaderView.ResizeMode.ResizeToContents)
         self.table.setMinimumWidth(440)
 
-        self.add_step_button = QPushButton("Add step")
+        self.add_step_button = QPushButton(self.tr("Add step"))
         self.add_step_button.clicked.connect(self._add_step)
-        self.delete_step_button = QPushButton("Delete step")
+        self.delete_step_button = QPushButton(self.tr("Delete step"))
         self.delete_step_button.clicked.connect(self._delete_step)
-        self.up_button = QPushButton("Move up")
+        self.up_button = QPushButton(self.tr("Move up"))
         self.up_button.clicked.connect(lambda: self._move_step(-1))
-        self.down_button = QPushButton("Move down")
+        self.down_button = QPushButton(self.tr("Move down"))
         self.down_button.clicked.connect(lambda: self._move_step(1))
-        self.from_sync_button = QPushButton("Add sync set…")
-        self.from_sync_button.setToolTip("Append the messages of a recorded controller sync set")
+        self.from_sync_button = QPushButton(self.tr("Add sync set…"))
+        self.from_sync_button.setToolTip(self.tr("Append the messages of a recorded controller sync set"))
         self.from_sync_button.setEnabled(bool(self._sync_sets))
         self.from_sync_button.clicked.connect(self._add_from_sync_set)
-        self.test_button = QPushButton("Test")
-        self.test_button.setToolTip("Play this macro now, as edited")
+        self.test_button = QPushButton(self.tr("Test"))
+        self.test_button.setToolTip(self.tr("Play this macro now, as edited"))
         self.test_button.clicked.connect(self._test_macro)
         step_buttons = QHBoxLayout()
         for button in (self.add_step_button, self.delete_step_button, self.up_button, self.down_button):
@@ -181,8 +194,10 @@ class MacroManagerDialog(QDialog):
         right.setContentsMargins(0, 0, 0, 0)
         right.addLayout(form)
         hint = QLabel(
-            "Steps play top to bottom; each waits its delay before sending "
-            "(channel 1–16, data 0–127, delay 0–60000 ms)."
+            self.tr(
+                "Steps play top to bottom; each waits its delay before sending "
+                "(channel 1–16, data 0–127, delay 0–60000 ms)."
+            )
         )
         hint.setWordWrap(True)
         right.addWidget(hint)
@@ -258,16 +273,16 @@ class MacroManagerDialog(QDialog):
         """The macro as edited, or ``None`` (with the reason shown) when invalid."""
         name = self.name_edit.text().strip()
         if not name:
-            self.status.setText("A macro needs a name")
+            self.status.setText(self.tr("A macro needs a name"))
             return None
         try:
-            steps = steps_from_rows(self._rows())
+            steps = steps_from_rows(self._rows(), _macro_translate)
         except ValueError as exc:
             self.status.setText(str(exc))
             return None
         shortcut = self.shortcut_edit.keySequence().toString(QKeySequence.SequenceFormat.PortableText)
         if shortcut and shortcut.casefold() in self._reserved:
-            self.status.setText(f"{shortcut} is already used by the app's menus")
+            self.status.setText(self.tr("{shortcut} is already used by the app's menus").format(shortcut=shortcut))
             return None
         return MidiMacro(name, self.port_combo.currentText().strip(), steps, shortcut, self._trigger)
 
@@ -301,10 +316,11 @@ class MacroManagerDialog(QDialog):
             return
         taken = {macro.name.casefold() for macro in self._macros}
         number = len(self._macros) + 1
-        while f"macro {number}" in taken:
+        template = self.tr("Macro {number}")
+        while template.format(number=number).casefold() in taken:
             number += 1
         port = self._ports[0] if self._ports else ""
-        self._macros.append(MidiMacro(f"Macro {number}", port))
+        self._macros.append(MidiMacro(template.format(number=number), port))
         self.macro_list.addItem(self._macros[-1].name)
         self.macro_list.setCurrentRow(len(self._macros) - 1)
         self.name_edit.setFocus()
@@ -354,7 +370,7 @@ class MacroManagerDialog(QDialog):
     def _move_step(self, offset: int) -> None:
         row = self._selected_row()
         try:
-            steps = steps_from_rows(self._rows())
+            steps = steps_from_rows(self._rows(), _macro_translate)
         except ValueError as exc:
             self.status.setText(str(exc))
             return
@@ -364,8 +380,13 @@ class MacroManagerDialog(QDialog):
         self.table.selectRow(max(0, min(len(steps) - 1, row + offset)))
 
     def _add_from_sync_set(self) -> None:
-        labels = [f"{sync_set.label} ({len(sync_set.messages)} msg)" for sync_set in self._sync_sets]
-        label, ok = QInputDialog.getItem(self, "Add sync set", "Append the messages of:", labels, 0, False)
+        labels = [
+            self.tr("{label} ({count} msg)").format(label=sync_set.label, count=len(sync_set.messages))
+            for sync_set in self._sync_sets
+        ]
+        label, ok = QInputDialog.getItem(
+            self, self.tr("Add sync set"), self.tr("Append the messages of:"), labels, 0, False
+        )
         if ok and label in labels:
             self.append_sync_set(self._sync_sets[labels.index(label)])
 
@@ -388,12 +409,12 @@ class MacroManagerDialog(QDialog):
 
     def _set_trigger(self, trigger: MacroTrigger | None) -> None:
         self._trigger = trigger
-        self.trigger_label.setText(trigger.label() if trigger is not None else "None")
+        self.trigger_label.setText(trigger.label(_macro_translate) if trigger is not None else self.tr("None"))
         self.clear_trigger_button.setEnabled(trigger is not None)
 
     def _on_learn_clicked(self) -> None:
         if self._learning:
-            self.cancel_learn("Learn cancelled.")
+            self.cancel_learn(self.tr("Learn cancelled."))
         else:
             self.start_learn()
 
@@ -401,20 +422,26 @@ class MacroManagerDialog(QDialog):
         if self._learning or self._ensure_listening is None or not 0 <= self._current < len(self._macros):
             return False
         if not self._ensure_listening():
-            self.status.setText("No MIDI input is open: connect a controller, or pick one in Live Monitor.")
+            self.status.setText(self.tr("No MIDI input is open: connect a controller, or pick one in Live Monitor."))
             return False
         self._learning = True
-        self.learn_button.setText("Cancel")
-        self.status.setText(f"Press a button on your controller… ({LEARN_TIMEOUT_MS // 1000} s)")
+        self.learn_button.setText(self.tr("Cancel"))
+        self.status.setText(
+            self.tr("Press a button on your controller… ({seconds} s)").format(seconds=LEARN_TIMEOUT_MS // 1000)
+        )
         self._learn_timer.start()
         return True
 
-    def cancel_learn(self, message: str | None = "Learn cancelled.") -> None:
+    def cancel_learn(self, message: str | None = "") -> None:
+        """Stops a Learn; `message` replaces the status line, "" means the
+        default "Learn cancelled." and None leaves the line alone."""
         if not self._learning:
             return
         self._learning = False
         self._learn_timer.stop()
-        self.learn_button.setText("Learn")
+        self.learn_button.setText(self.tr("Learn"))
+        if message == "":
+            message = self.tr("Learn cancelled.")
         if message is not None:
             self.status.setText(message)
 
@@ -428,7 +455,7 @@ class MacroManagerDialog(QDialog):
             return False
         self.cancel_learn(None)
         self._set_trigger(trigger)
-        self.status.setText(f"Learned {trigger.label()}.")
+        self.status.setText(self.tr("Learned {trigger}.").format(trigger=trigger.label(_macro_translate)))
         return True
 
     # --- result ---------------------------------------------------------------
@@ -442,7 +469,7 @@ class MacroManagerDialog(QDialog):
     def accept(self) -> None:
         if not self._commit():
             return
-        problems = validate_macros(self._macros)
+        problems = validate_macros(self._macros, _macro_translate)
         if problems:
             self.status.setText(problems[0])
             return

@@ -27,6 +27,8 @@ Qt-free, like `function_search.py` and `mapping_diff.py`, which use it.
 
 from __future__ import annotations
 
+from djmidi.i18n import QT_TRANSLATE_NOOP, Translate, untranslated
+
 # Raw Serato tag -> short label. Only tags seen in real exports belong here.
 FUNCTION_NAMES: dict[str, str] = {
     # "auto loop" of a "specific length" -- the slot picks the length.
@@ -40,6 +42,9 @@ FUNCTION_NAMES: dict[str, str] = {
 
 _NO_SLOT = ("", "(none)")
 
+#: The slot suffix of a label, translated by the GUI (issue #326).
+SLOT_SUFFIX = QT_TRANSLATE_NOOP("FunctionNames", "{name} · slot {slot}")
+
 
 def is_known(tag: str) -> bool:
     """Whether `tag` has a readable name (otherwise it is shown raw)."""
@@ -51,24 +56,26 @@ def function_name(tag: str) -> str:
     return FUNCTION_NAMES.get(tag, tag)
 
 
-def function_label(tag: str, slot_id: str | None = None) -> str:
+def function_label(tag: str, slot_id: str | None = None, translate: Translate = untranslated) -> str:
     """The short label with its slot, when the element has one:
-    `("auto_loop_roll_specific_length", "3")` -> "Loop roll · slot 3"."""
+    `("auto_loop_roll_specific_length", "3")` -> "Loop roll · slot 3".
+    The GUI passes a `translate` for the slot suffix's language."""
     name = function_name(tag)
     if slot_id is None or slot_id in _NO_SLOT:
         return name
-    return f"{name} · slot {slot_id}"
+    return translate(SLOT_SUFFIX).format(name=name, slot=slot_id)
 
 
-def label_with_raw(tag: str, slot_id: str | None = None) -> str:
+def label_with_raw(tag: str, slot_id: str | None = None, translate: Translate = untranslated) -> str:
     """The short label followed by the raw tag in parentheses, for a
     tooltip or secondary text; just the raw label for an unknown tag."""
-    label = function_label(tag, slot_id)
+    label = function_label(tag, slot_id, translate)
     return f"{label} ({tag})" if is_known(tag) else label
 
 
 __all__ = [
     "FUNCTION_NAMES",
+    "SLOT_SUFFIX",
     "function_label",
     "function_name",
     "is_known",
