@@ -65,8 +65,19 @@ This first version translates what you use most:
   included (its `Ouvrir le guide complet` button still opens the English
   guide); a button that is still in English is named in English there, so
   you find it on screen;
+- the validation table (`Gravité`, messages such as `Il manque deck_id ou
+  slot_id au mapping <…>`), the reason given when a controller or a
+  mapping's software is detected, Controller Setup's number and MIDI output
+  errors and its `Source` column (`appris`, `import XML`, `manuel`), and the
+  whole `Macros MIDI` window (its errors and status line included);
 - Qt's own standard buttons and dialogs (`OK`, `Annuler`, `Enregistrer`,
   file pickers).
+
+The function search (Find function and the command palette) understands
+French keywords as well as English ones, whatever the language chosen:
+`platine 2` for `deck 2`, `emplacement 3` for `slot 3`, `sortie` or
+`voyant` for `output`, `clic` or `appui` for `click`; both can be mixed in
+one search (`loop roll platine 1 slot 5`).
 
 ![The Dashboard in French: menus, tabs, Rec/Sync translated; the tab's content still in English](../../images/layout/interface-language-fr.png)
 
@@ -75,17 +86,16 @@ This first version translates what you use most:
 Most other messages are still in English, as is this documentation
 (including the guides the `?` help popups open). In the mapping tabs,
 the names Serato gives its own fields stay as written (`Deck set`,
-`Slot id`, `action_on`, `behaviour`, `Control`, `User I/O`), the function
-search understands English words (`deck 2`, `slot 3`, `click`, `output`),
-and Controller Setup's port and number errors (`Channel must be an
-integer`) and its row sources (`learned`, `xml-import`) stay in English.
+`Slot id`, `action_on`, `behaviour`, `Control`, `User I/O`) — validation
+messages keep them too, as well as the MIDI event types (`Note On`,
+`Control Change`) — and an error reported by your computer's MIDI driver
+is shown as it gives it, after a French explanation.
 Text computed from your data follows the interface language — the
 `Prêt pour le live` findings, the latency statistics line, the
 change-history entries — but CSV exports stay in English (a health-report
 CSV keeps its issue names in English, and a saved Live Monitor log keeps
-English column names), and a validation message or a detection reason
-still shows in English. They will be
-translated over the next releases. Controller and function names that
+English column names). The rest will be translated over the next
+releases. Controller and function names that
 come from your DJ software or your controller's MIDI documentation are
 never translated.
 

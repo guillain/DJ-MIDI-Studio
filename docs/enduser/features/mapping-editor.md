@@ -81,6 +81,9 @@ control bound to it.
   stores them (the same numbers the By Deck tab shows); a bare number
   matches either one.
 - `output` (or `led`) keeps only LED feedback, `click` only button presses.
+- French keywords work too, whatever the interface language, and mix with
+  the English ones: `platine 2` = `deck 2`, `emplacement 3` = `slot 3`,
+  `sortie` / `voyant` = `output`, `clic` / `appui` = `click`.
 
 Each result shows the function, its deck and slot, then the MIDI trigger
 and the physical control it resolves to (hover for every controller that
