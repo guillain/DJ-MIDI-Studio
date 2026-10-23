@@ -39,6 +39,12 @@ This first version translates what you use most:
   `Images contrôleur`, `Par canal`, `Par platine`, `Par contrôleur`,
   `Bibliothèque` (kept short so they fit a small window; when they still
   don't, the tab bar shows scroll arrows instead of cutting the names);
+- the content of the `Tableau de bord` cards, `Config. contrôleur` (with
+  its submission window), `Images contrôleur` and the three mapping tabs
+  `Par canal`, `Par platine`, `Par contrôleur`: column headers, filters,
+  the display layers (`Contrôleur`, `MIDI`, `Disposition`), **Envoi live**,
+  and the editing column beside them (the edit panel and MIDI Learn, the
+  function search, `Valider` and `Prêt pour le live…`);
 - the **● Rec** / **⟳ Sync** buttons and the sync-scene list beside the
   menu bar, with their tooltips, the messages they show in the status bar
   and their questions (replacing a stored sync set, quitting while
@@ -62,9 +68,14 @@ This first version translates what you use most:
 
 ## What stays in English
 
-The rest of each tab's content, the tool windows (Live Monitor, MIDI
+The tool windows (Live Monitor, MIDI
 Routing, MIDI Clock, Metronome, Controller Emulator), most other messages and the `?` help
-texts are still in English, as is this documentation. Inside the translated
+texts are still in English, as is this documentation. In the mapping tabs,
+the names Serato gives its own fields stay as written (`Deck set`,
+`Slot id`, `action_on`, `behaviour`, `Control`, `User I/O`), the function
+search understands English words (`deck 2`, `slot 3`, `click`, `output`),
+and Controller Setup's port and number errors (`Channel must be an
+integer`) and its row sources (`learned`, `xml-import`) stay in English. Inside the translated
 windows, text computed from your data stays in English too: the findings
 of the `Prêt pour le live` report, the latency statistics line, the
 change-history entry descriptions. A health-report CSV keeps its issue

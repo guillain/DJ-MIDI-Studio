@@ -132,6 +132,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **French UI: mapping tabs, Controller Images, Controller Setup, Dashboard** (`v0.48.122-french-mapping-tabs`,
+  issue #318) — the By Channel / By Deck / By Controller tabs (trees, deck filter, display layers, Live send),
+  the edit / validation column, Controller Images, Controller Setup (and its submission dialog) and the Dashboard
+  cards are translated. The deck filter and the TSI device picker no longer read translated labels; three Qt-free
+  helpers take the #313 `translate` argument. The cocoa check also widened Controller Setup's send fields and the
+  edit panel's fields (they scroll instead of shrinking) and let the submission dialog's fields grow.
 - [x] **Stop waiting macros on close** (`v0.48.120-stop-macros-on-close`, issue #314) — closing the main
   window now calls `MacroPlayer.stop_all()`, and closing the macro editor stops its Test player, so a macro
   waiting between steps releases its output port right away instead of at process exit. Follow-up of #308.
