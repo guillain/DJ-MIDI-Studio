@@ -113,7 +113,7 @@ def test_help_popup_and_tooltip_show_french_with_the_french_catalogue(monkeypatc
         assert "Ouvrir le guide complet" in [b.text() for b in box.buttons()]
         # Controller Setup's own panels go through the same catalogue.
         help_module.show_help(parent, *help_texts.CONTROLLER_SETUP_CAPTURE)
-        assert shown[-1].text() == "<b>MIDI input (apprendre depuis le contrôleur)</b>"
+        assert shown[-1].text() == "<b>Entrée MIDI (apprendre depuis le contrôleur)</b>"
         # A text outside the catalogue shows as written.
         help_module.show_help(parent, "Untranslated", "Some text nobody translated, kept as written.")
         assert shown[-1].informativeText() == "Some text nobody translated, kept as written."
