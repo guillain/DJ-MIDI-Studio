@@ -132,6 +132,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **French UI: computed reports and messages** (`v0.48.123-french-computed-text`, issue #319) — the
+  Ready-for-live findings, the latency statistics line, change-history entries (kind, status, per-file
+  changes, revert reasons, and the stored summaries this app writes) and macro results follow the interface
+  language through an optional `translate` argument on the Qt-free builders; `main_window.py`'s remaining
+  message boxes, status-bar messages, file dialogs, menu tooltips and dock title bars are wrapped in `tr()`.
+  CSV exports stay English. Checked in French on cocoa.
 - [x] **Stop waiting macros on close** (`v0.48.120-stop-macros-on-close`, issue #314) — closing the main
   window now calls `MacroPlayer.stop_all()`, and closing the macro editor stops its Test player, so a macro
   waiting between steps releases its output port right away instead of at process exit. Follow-up of #308.
