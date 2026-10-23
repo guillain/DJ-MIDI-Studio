@@ -5,6 +5,11 @@ they explain. Clicking one shows a short explanation and, when the panel has
 a page in the bundled user documentation (docs/enduser/features/), an
 "Open full guide" button that opens that page locally -- the same files the
 Help menu opens, shipped with release builds.
+
+Titles and texts come from help_texts.py in English; they are translated
+through the ``HelpTexts`` context when the button is built and when the popup
+opens (issue #320). A text not in the catalogue (Controller Setup's own panel
+help, say) shows as written.
 """
 
 from __future__ import annotations
@@ -12,9 +17,11 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import Qt, QUrl
+from PySide6.QtCore import QCoreApplication, Qt, QUrl
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QHBoxLayout, QMessageBox, QPushButton, QWidget
+
+from djmidi.gui.help_texts import CONTEXT
 
 FEATURES_DIR = "docs/enduser/features"
 
@@ -32,13 +39,20 @@ def guide_path(doc: str) -> Path:
     return resource_root() / FEATURES_DIR / doc
 
 
+def translate_help(text: str) -> str:
+    """A help_texts.py title or text in the interface language."""
+    return QCoreApplication.translate(CONTEXT, text)
+
+
 def show_help(parent: QWidget, title: str, text: str, doc: str | None = None) -> None:
+    title = translate_help(title)
+    text = translate_help(text)
     box = QMessageBox(parent)
     box.setIcon(QMessageBox.Icon.Information)
     box.setWindowTitle(title)
     box.setText(f"<b>{title}</b>")
     box.setInformativeText(text)
-    guide = box.addButton("Open full guide", QMessageBox.ButtonRole.ActionRole) if doc else None
+    guide = box.addButton(QCoreApplication.translate("HelpButton", "Open full guide"), QMessageBox.ButtonRole.ActionRole) if doc else None
     box.addButton(QMessageBox.StandardButton.Close)
     box.exec()
     if guide is not None and box.clickedButton() is guide:
@@ -46,7 +60,9 @@ def show_help(parent: QWidget, title: str, text: str, doc: str | None = None) ->
         if path.exists():
             QDesktopServices.openUrl(QUrl.fromLocalFile(str(path)))
         else:
-            QMessageBox.warning(parent, "Documentation unavailable", str(path))
+            QMessageBox.warning(
+                parent, QCoreApplication.translate("HelpButton", "Documentation unavailable"), str(path)
+            )
 
 
 def help_button(parent: QWidget, title: str, text: str, doc: str | None = None) -> QPushButton:
@@ -55,8 +71,9 @@ def help_button(parent: QWidget, title: str, text: str, doc: str | None = None) 
     button.setProperty("compact", True)
     button.setProperty("help", True)
     button.setFixedSize(24, 24)
-    button.setToolTip(f"Help: {title}")
-    button.setAccessibleName(f"Help: {title}")
+    label = QCoreApplication.translate("HelpButton", "Help: {title}").format(title=translate_help(title))
+    button.setToolTip(label)
+    button.setAccessibleName(label)
     button.setCursor(Qt.CursorShape.WhatsThisCursor)
     button.clicked.connect(lambda: show_help(parent, title, text, doc))
     return button
@@ -72,4 +89,4 @@ def help_row(parent: QWidget, title: str, text: str, doc: str | None = None) -> 
     return row
 
 
-__all__ = ["FEATURES_DIR", "guide_path", "help_button", "help_row", "resource_root", "show_help"]
+__all__ = ["FEATURES_DIR", "guide_path", "help_button", "help_row", "resource_root", "show_help", "translate_help"]

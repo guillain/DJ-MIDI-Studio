@@ -100,6 +100,78 @@
 <context>
     <name>ChangeHistoryDialog</name>
     <message>
+        <source>Change history</source>
+        <translation>Historique des modifications</translation>
+    </message>
+    <message>
+        <source>Every tag, cover art and rename write and Trash move this app made to your files, newest first. Revert puts a file back only while it still holds what this app wrote.</source>
+        <translation>Chaque écriture de tags, de pochette et chaque renommage ou mise à la corbeille faits par cette application sur vos fichiers, les plus récentes d&apos;abord. Annuler ne remet un fichier en l&apos;état que s&apos;il contient encore ce que cette application a écrit.</translation>
+    </message>
+    <message>
+        <source>When</source>
+        <translation>Date</translation>
+    </message>
+    <message>
+        <source>Change</source>
+        <translation>Modification</translation>
+    </message>
+    <message>
+        <source>Summary</source>
+        <translation>Résumé</translation>
+    </message>
+    <message>
+        <source>Files</source>
+        <translation>Fichiers</translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation>État</translation>
+    </message>
+    <message>
+        <source>File</source>
+        <translation>Fichier</translation>
+    </message>
+    <message>
+        <source>Revert…</source>
+        <translation>Annuler la modification…</translation>
+    </message>
+    <message>
+        <source>Undo the selected change on the files it touched.</source>
+        <translation>Annule la modification sélectionnée sur les fichiers concernés.</translation>
+    </message>
+    <message>
+        <source>Refresh</source>
+        <translation>Actualiser</translation>
+    </message>
+    <message>
+        <source>Revert change</source>
+        <translation>Annuler la modification</translation>
+    </message>
+    <message>
+        <source>Revert #{id} ({summary}) on {count} file(s)?
+
+Files changed again since are left alone. The revert is itself logged here.</source>
+        <translation>Annuler la modification n°{id} ({summary}) sur {count} fichier(s) ?
+
+Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-même consignée ici.</translation>
+    </message>
+    <message>
+        <source>Reverted {count} file(s).</source>
+        <translation>{count} fichier(s) remis en l&apos;état.</translation>
+    </message>
+    <message>
+        <source>{count} already held their previous state.</source>
+        <translation>{count} étaient déjà dans leur état précédent.</translation>
+    </message>
+    <message>
+        <source>{count} left alone:</source>
+        <translation>{count} laissé(s) tel(s) quel(s) :</translation>
+    </message>
+    <message>
+        <source>… and {count} more</source>
+        <translation>… et {count} de plus</translation>
+    </message>
+    <message>
         <source>Tags</source>
         <translation>Tags</translation>
     </message>
@@ -194,78 +266,6 @@
     <message>
         <source>Not revertible</source>
         <translation>Non annulable</translation>
-    </message>
-    <message>
-        <source>Change history</source>
-        <translation>Historique des modifications</translation>
-    </message>
-    <message>
-        <source>Every tag, cover art and rename write and Trash move this app made to your files, newest first. Revert puts a file back only while it still holds what this app wrote.</source>
-        <translation>Chaque écriture de tags, de pochette et chaque renommage ou mise à la corbeille faits par cette application sur vos fichiers, les plus récentes d&apos;abord. Annuler ne remet un fichier en l&apos;état que s&apos;il contient encore ce que cette application a écrit.</translation>
-    </message>
-    <message>
-        <source>When</source>
-        <translation>Date</translation>
-    </message>
-    <message>
-        <source>Change</source>
-        <translation>Modification</translation>
-    </message>
-    <message>
-        <source>Summary</source>
-        <translation>Résumé</translation>
-    </message>
-    <message>
-        <source>Files</source>
-        <translation>Fichiers</translation>
-    </message>
-    <message>
-        <source>Status</source>
-        <translation>État</translation>
-    </message>
-    <message>
-        <source>File</source>
-        <translation>Fichier</translation>
-    </message>
-    <message>
-        <source>Revert…</source>
-        <translation>Annuler la modification…</translation>
-    </message>
-    <message>
-        <source>Undo the selected change on the files it touched.</source>
-        <translation>Annule la modification sélectionnée sur les fichiers concernés.</translation>
-    </message>
-    <message>
-        <source>Refresh</source>
-        <translation>Actualiser</translation>
-    </message>
-    <message>
-        <source>Revert change</source>
-        <translation>Annuler la modification</translation>
-    </message>
-    <message>
-        <source>Revert #{id} ({summary}) on {count} file(s)?
-
-Files changed again since are left alone. The revert is itself logged here.</source>
-        <translation>Annuler la modification n°{id} ({summary}) sur {count} fichier(s) ?
-
-Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-même consignée ici.</translation>
-    </message>
-    <message>
-        <source>Reverted {count} file(s).</source>
-        <translation>{count} fichier(s) remis en l&apos;état.</translation>
-    </message>
-    <message>
-        <source>{count} already held their previous state.</source>
-        <translation>{count} étaient déjà dans leur état précédent.</translation>
-    </message>
-    <message>
-        <source>{count} left alone:</source>
-        <translation>{count} laissé(s) tel(s) quel(s) :</translation>
-    </message>
-    <message>
-        <source>… and {count} more</source>
-        <translation>… et {count} de plus</translation>
     </message>
     <message>
         <source>file not found</source>
@@ -1581,6 +1581,324 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     </message>
 </context>
 <context>
+    <name>HelpButton</name>
+    <message>
+        <source>Open full guide</source>
+        <translation>Ouvrir le guide complet</translation>
+    </message>
+    <message>
+        <source>Documentation unavailable</source>
+        <translation>Documentation indisponible</translation>
+    </message>
+    <message>
+        <source>Help: {title}</source>
+        <translation>Aide : {title}</translation>
+    </message>
+</context>
+<context>
+    <name>HelpTexts</name>
+    <message>
+        <source>Dashboard</source>
+        <translation>Tableau de bord</translation>
+    </message>
+    <message>
+        <source>Summarizes the loaded mapping and gives every registered controller a card: its picture, whether a connected MIDI port matches it (&lt;i&gt;MIDI: available&lt;/i&gt;), and shortcuts into the &lt;b&gt;By Channel&lt;/b&gt;, &lt;b&gt;By Controller&lt;/b&gt; and &lt;b&gt;Controller Images&lt;/b&gt; views.&lt;br&gt;&lt;br&gt;Open a Serato &lt;tt&gt;.xml&lt;/tt&gt; or Traktor &lt;tt&gt;.tsi&lt;/tt&gt; mapping with &lt;b&gt;File → Open Mapping…&lt;/b&gt;.</source>
+        <translation>Résume le mapping chargé et donne une carte à chaque contrôleur enregistré : son image, si un port MIDI branché lui correspond (&lt;i&gt;MIDI: available&lt;/i&gt;), et des raccourcis vers les vues &lt;b&gt;Par canal&lt;/b&gt;, &lt;b&gt;Par contrôleur&lt;/b&gt; et &lt;b&gt;Images contrôleur&lt;/b&gt;.&lt;br&gt;&lt;br&gt;Ouvrez un mapping Serato &lt;tt&gt;.xml&lt;/tt&gt; ou Traktor &lt;tt&gt;.tsi&lt;/tt&gt; avec &lt;b&gt;Fichier → Ouvrir un mapping…&lt;/b&gt;.</translation>
+    </message>
+    <message>
+        <source>Your files</source>
+        <translation>Vos fichiers</translation>
+    </message>
+    <message>
+        <source>Everything you work with, in one place:&lt;ul&gt;&lt;li&gt;&lt;b&gt;Mapping&lt;/b&gt;: the Serato &lt;tt&gt;.xml&lt;/tt&gt; or Traktor &lt;tt&gt;.tsi&lt;/tt&gt; file open in the editor. It stays where your DJ software keeps it; &lt;b&gt;File → Save Mapping&lt;/b&gt; writes it back there.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Previous version&lt;/b&gt;: every save keeps the version it replaces next to the file (&lt;tt&gt;.bak&lt;/tt&gt;); &lt;b&gt;Restore previous…&lt;/b&gt; puts it back.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Recent&lt;/b&gt;: the last mappings you opened (also in &lt;b&gt;File → Open Recent Mapping&lt;/b&gt;).&lt;/li&gt;&lt;li&gt;&lt;b&gt;Sync sets&lt;/b&gt;: the initialization messages recorded with &lt;b&gt;● Rec&lt;/b&gt; or in Controller Setup, one per controller and scene (the combo beside &lt;b&gt;⟳ Sync&lt;/b&gt; picks the active scene; a controller without a set for it gets its Default set), sent by &lt;b&gt;⟳ Sync&lt;/b&gt;, at launch, when a controller is plugged in and, if enabled in Preferences, when you switch scene; edit their messages in &lt;b&gt;⚙ Preferences → Controller sync → Edit messages…&lt;/b&gt;.&lt;/li&gt;&lt;/ul&gt;Controller profiles you build live in &lt;b&gt;File → Controller Profile&lt;/b&gt;. &lt;b&gt;File → Back Up Workspace…&lt;/b&gt; saves your profiles, sync sets, drafts and preferences (and, if you want, the library index) in one zip; &lt;b&gt;Restore Workspace…&lt;/b&gt; brings them back, on another Mac too, after showing what it overwrites.</source>
+        <translation>Tout ce que vous utilisez, au même endroit :&lt;ul&gt;&lt;li&gt;&lt;b&gt;Mapping&lt;/b&gt; : le fichier Serato &lt;tt&gt;.xml&lt;/tt&gt; ou Traktor &lt;tt&gt;.tsi&lt;/tt&gt; ouvert dans l&apos;éditeur. Il reste là où votre logiciel DJ le range ; &lt;b&gt;Fichier → Enregistrer le mapping&lt;/b&gt; l&apos;y réécrit.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Previous version&lt;/b&gt; : chaque enregistrement garde la version qu&apos;il remplace à côté du fichier (&lt;tt&gt;.bak&lt;/tt&gt;) ; &lt;b&gt;Restore previous…&lt;/b&gt; la remet en place.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Recent&lt;/b&gt; : les derniers mappings ouverts (aussi dans &lt;b&gt;Fichier → Mappings récents&lt;/b&gt;).&lt;/li&gt;&lt;li&gt;&lt;b&gt;Sync sets&lt;/b&gt; : les messages d&apos;initialisation enregistrés avec &lt;b&gt;● Enr&lt;/b&gt; ou dans Config. contrôleur, un par contrôleur et par scène (la liste à côté de &lt;b&gt;⟳ Synchro&lt;/b&gt; choisit la scène active ; un contrôleur sans jeu pour cette scène reçoit son jeu Default), envoyés par &lt;b&gt;⟳ Synchro&lt;/b&gt;, au lancement, au branchement d&apos;un contrôleur et, si c&apos;est activé dans les Préférences, au changement de scène ; modifiez leurs messages dans &lt;b&gt;⚙ Préférences → Synchro des contrôleurs → Modifier les messages…&lt;/b&gt;.&lt;/li&gt;&lt;/ul&gt;Les profils de contrôleur que vous créez sont dans &lt;b&gt;Fichier → Profil de contrôleur&lt;/b&gt;. &lt;b&gt;Fichier → Sauvegarder l&apos;espace de travail…&lt;/b&gt; enregistre vos profils, jeux de synchronisation, brouillons et préférences (et, si vous le voulez, l&apos;index de la bibliothèque) dans un seul zip ; &lt;b&gt;Restaurer l&apos;espace de travail…&lt;/b&gt; les remet en place, y compris sur un autre Mac, après avoir montré ce qui sera écrasé.</translation>
+    </message>
+    <message>
+        <source>MIDI Macros</source>
+        <translation>Macros MIDI</translation>
+    </message>
+    <message>
+        <source>A macro is a named list of MIDI messages played in one go from the &lt;b&gt;Macros&lt;/b&gt; menu or its keyboard shortcut, from any tab.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Output port&lt;/b&gt;: where the messages go -- a port, or a controller name matched against the connected ports like &lt;b&gt;⟳ Sync&lt;/b&gt; does.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Steps&lt;/b&gt;: type, channel (1–16), data 1/2 (0–127) and an optional delay (ms) waited before the step is sent; &lt;b&gt;Add sync set…&lt;/b&gt; appends a recorded sync set&apos;s messages.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Shortcut&lt;/b&gt;: optional; one the app&apos;s menus already use is refused.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Trigger&lt;/b&gt;: &lt;b&gt;Learn&lt;/b&gt;, then press a button on your controller: that press plays the macro from then on (the Live Monitor must be listening).&lt;/li&gt;&lt;/ul&gt;&lt;b&gt;Test&lt;/b&gt; plays the macro as edited. Each macro is a file in &lt;tt&gt;Documents/DJ MIDI Studio/Macros&lt;/tt&gt;.</source>
+        <translation>Une macro est une liste nommée de messages MIDI, jouée d&apos;un coup depuis le menu &lt;b&gt;Macros&lt;/b&gt; ou son raccourci clavier, depuis n&apos;importe quel onglet.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Output port&lt;/b&gt; : où partent les messages -- un port, ou un nom de contrôleur comparé aux ports branchés comme le fait &lt;b&gt;⟳ Synchro&lt;/b&gt;.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Steps&lt;/b&gt; : type, canal (1–16), data 1/2 (0–127) et un délai facultatif (ms) attendu avant l&apos;envoi de l&apos;étape ; &lt;b&gt;Add sync set…&lt;/b&gt; ajoute les messages d&apos;un jeu de synchronisation enregistré.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Shortcut&lt;/b&gt; : facultatif ; un raccourci déjà pris par les menus de l&apos;application est refusé.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Trigger&lt;/b&gt; : &lt;b&gt;Learn&lt;/b&gt;, puis appuyez sur un bouton de votre contrôleur : cet appui joue désormais la macro (le Live Monitor doit être à l&apos;écoute).&lt;/li&gt;&lt;/ul&gt;&lt;b&gt;Test&lt;/b&gt; joue la macro telle qu&apos;elle est modifiée. Chaque macro est un fichier dans &lt;tt&gt;Documents/DJ MIDI Studio/Macros&lt;/tt&gt;.</translation>
+    </message>
+    <message>
+        <source>MIDI Latency Test</source>
+        <translation>Test de latence MIDI</translation>
+    </message>
+    <message>
+        <source>Sends a Note On to the &lt;b&gt;output&lt;/b&gt; and times the matching Note On coming back on the &lt;b&gt;input&lt;/b&gt;, then shows min / median / max and jitter over all pings.&lt;br&gt;&lt;br&gt;&lt;b&gt;Only meaningful with something that echoes&lt;/b&gt;: the IAC Driver bus or a virtual MIDI cable chosen as both output and input, a MIDI thru, or a controller known to echo its LED messages. A controller that doesn&apos;t echo makes every ping time out -- that says nothing about its real latency.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Interval&lt;/b&gt;: time between two ping starts; &lt;b&gt;Timeout&lt;/b&gt;: how long a ping waits before it counts as lost.&lt;/li&gt;&lt;li&gt;Each ping uses its own velocity so a late echo is never counted for the next one; untick the velocity box for a device that echoes a different value.&lt;/li&gt;&lt;li&gt;A Note Off follows every ping, so an echoing LED isn&apos;t left lit.&lt;/li&gt;&lt;/ul&gt;</source>
+        <translation>Envoie un Note On vers la &lt;b&gt;sortie&lt;/b&gt; et chronomètre le Note On correspondant qui revient sur l&apos;&lt;b&gt;entrée&lt;/b&gt;, puis affiche min / médiane / max et la gigue sur l&apos;ensemble des pings.&lt;br&gt;&lt;br&gt;&lt;b&gt;N&apos;a de sens qu&apos;avec un appareil qui renvoie l&apos;écho&lt;/b&gt; : le bus IAC Driver ou un câble MIDI virtuel choisi à la fois en sortie et en entrée, un MIDI thru, ou un contrôleur connu pour renvoyer ses messages de LED. Avec un contrôleur qui ne renvoie rien, chaque ping expire -- cela ne dit rien de sa vraie latence.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Intervalle&lt;/b&gt; : temps entre le départ de deux pings ; &lt;b&gt;Délai d&apos;attente&lt;/b&gt; : combien de temps un ping attend avant d&apos;être compté comme perdu.&lt;/li&gt;&lt;li&gt;Chaque ping a sa propre vélocité, pour qu&apos;un écho en retard ne soit jamais compté pour le suivant ; décochez la case de vélocité pour un appareil qui renvoie une autre valeur.&lt;/li&gt;&lt;li&gt;Un Note Off suit chaque ping, pour qu&apos;une LED qui renvoie l&apos;écho ne reste pas allumée.&lt;/li&gt;&lt;/ul&gt;</translation>
+    </message>
+    <message>
+        <source>Layer Map</source>
+        <translation>Carte des couches</translation>
+    </message>
+    <message>
+        <source>One row per physical control, one column per &lt;b&gt;layer&lt;/b&gt;: &lt;i&gt;Normal&lt;/i&gt;, &lt;i&gt;SHIFT&lt;/i&gt;, and each pad mode (with and without SHIFT) the controller&apos;s profile knows. Each cell shows what the loaded mapping does there, for every deck that shares the control (&lt;i&gt;D1, D3&lt;/i&gt;).&lt;ul&gt;&lt;li&gt;&lt;b&gt;free&lt;/b&gt; (green): no deck uses this combination, so a new function fits.&lt;/li&gt;&lt;li&gt;amber: mapped on some decks only; hover to see the MIDI channels still free.&lt;/li&gt;&lt;li&gt;&lt;b&gt;—&lt;/b&gt;: this control has no such layer.&lt;/li&gt;&lt;/ul&gt;Read-only. &lt;b&gt;Refresh&lt;/b&gt; re-reads the mapping after edits.</source>
+        <translation>Une ligne par commande physique, une colonne par &lt;b&gt;couche&lt;/b&gt; : &lt;i&gt;Normal&lt;/i&gt;, &lt;i&gt;SHIFT&lt;/i&gt;, et chaque mode de pad (avec et sans SHIFT) que connaît le profil du contrôleur. Chaque case montre ce que fait le mapping chargé à cet endroit, pour chaque platine qui partage la commande (&lt;i&gt;D1, D3&lt;/i&gt;).&lt;ul&gt;&lt;li&gt;&lt;b&gt;libre&lt;/b&gt; (vert) : aucune platine n&apos;utilise cette combinaison, une nouvelle fonction peut s&apos;y placer.&lt;/li&gt;&lt;li&gt;ambre : mappé sur certaines platines seulement ; survolez pour voir les canaux MIDI encore libres.&lt;/li&gt;&lt;li&gt;&lt;b&gt;—&lt;/b&gt; : cette commande n&apos;a pas cette couche.&lt;/li&gt;&lt;/ul&gt;Lecture seule. &lt;b&gt;Actualiser&lt;/b&gt; relit le mapping après des modifications.</translation>
+    </message>
+    <message>
+        <source>Known controllers</source>
+        <translation>Contrôleurs connus</translation>
+    </message>
+    <message>
+        <source>Every controller the app knows: the built-in profiles and the ones you installed from &lt;b&gt;Controller Setup&lt;/b&gt;. The &lt;b&gt;Active controller for drill-down&lt;/b&gt; is the one the &lt;b&gt;Channel&lt;/b&gt;, &lt;b&gt;Controller&lt;/b&gt; and &lt;b&gt;Images&lt;/b&gt; shortcuts open. Hide controllers you don&apos;t own in ⚙ Preferences → Plugins.</source>
+        <translation>Tous les contrôleurs que connaît l&apos;application : les profils intégrés et ceux que vous avez installés depuis &lt;b&gt;Config. contrôleur&lt;/b&gt;. L&apos;&lt;b&gt;Active controller for drill-down&lt;/b&gt; est celui qu&apos;ouvrent les raccourcis &lt;b&gt;Channel&lt;/b&gt;, &lt;b&gt;Controller&lt;/b&gt; et &lt;b&gt;Images&lt;/b&gt;. Masquez les contrôleurs que vous ne possédez pas dans ⚙ Préférences → Plugins.</translation>
+    </message>
+    <message>
+        <source>MIDI tools</source>
+        <translation>Outils MIDI</translation>
+    </message>
+    <message>
+        <source>Opens the tool windows: &lt;b&gt;Live Monitor&lt;/b&gt; (watch what your controllers send), &lt;b&gt;MIDI Routing&lt;/b&gt; and &lt;b&gt;MIDI Clock&lt;/b&gt; (route MIDI between devices, follow Ableton Link), the &lt;b&gt;Metronome&lt;/b&gt; and the &lt;b&gt;Controller Emulator&lt;/b&gt;. Each one is a window you can dock, float, maximize or snap to a side (&lt;b&gt;☰&lt;/b&gt; in its title bar).</source>
+        <translation>Ouvre les fenêtres d&apos;outils : &lt;b&gt;Live Monitor&lt;/b&gt; (voir ce qu&apos;envoient vos contrôleurs), &lt;b&gt;MIDI Routing&lt;/b&gt; et &lt;b&gt;MIDI Clock&lt;/b&gt; (router le MIDI entre appareils, suivre Ableton Link), le &lt;b&gt;Metronome&lt;/b&gt; et le &lt;b&gt;Controller Emulator&lt;/b&gt;. Chacune est une fenêtre que vous pouvez ancrer, rendre flottante, agrandir ou coller sur un côté (&lt;b&gt;☰&lt;/b&gt; dans sa barre de titre).</translation>
+    </message>
+    <message>
+        <source>Mapping views</source>
+        <translation>Vues du mapping</translation>
+    </message>
+    <message>
+        <source>Three views of the same mapping:&lt;ul&gt;&lt;li&gt;&lt;b&gt;By Channel&lt;/b&gt;: MIDI channel → control → event → function. Inspect or fix one raw entry precisely.&lt;/li&gt;&lt;li&gt;&lt;b&gt;By Deck&lt;/b&gt;: Serato deck → slot → function. One edit updates every duplicate copy at once, so they can never drift apart.&lt;/li&gt;&lt;li&gt;&lt;b&gt;By Controller&lt;/b&gt;: controller → section → physical control. Find what a button does.&lt;/li&gt;&lt;/ul&gt;The drawing below each tree shows which controls are mapped, colored by deck. Tick the layers to show: &lt;b&gt;Controller&lt;/b&gt; (the real photo), &lt;b&gt;MIDI&lt;/b&gt; (the photo with its MIDI information, shown alone) and &lt;b&gt;Layout&lt;/b&gt; (the app&apos;s markers), on controllers with a measured layout. Selecting anything highlights it in every view; clicking a control jumps to its raw entry. With &lt;b&gt;Live send&lt;/b&gt; on, clicking a control also sends its MIDI message to the chosen output (&lt;b&gt;⟳&lt;/b&gt; refreshes the ports).</source>
+        <translation>Trois vues du même mapping :&lt;ul&gt;&lt;li&gt;&lt;b&gt;Par canal&lt;/b&gt; : canal MIDI → commande → événement → fonction. Pour examiner ou corriger précisément une entrée brute.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Par platine&lt;/b&gt; : platine Serato → slot → fonction. Une modification met à jour toutes les copies en double à la fois : elles ne peuvent jamais diverger.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Par contrôleur&lt;/b&gt; : contrôleur → section → commande physique. Pour trouver ce que fait un bouton.&lt;/li&gt;&lt;/ul&gt;Le dessin sous chaque arbre montre les commandes mappées, colorées par platine. Cochez les couches à afficher : &lt;b&gt;Controller&lt;/b&gt; (la vraie photo), &lt;b&gt;MIDI&lt;/b&gt; (la photo avec ses informations MIDI, affichée seule) et &lt;b&gt;Layout&lt;/b&gt; (les repères de l&apos;application), sur les contrôleurs dont la disposition a été mesurée. Sélectionner un élément le met en évidence dans toutes les vues ; cliquer sur une commande affiche son entrée brute. Avec &lt;b&gt;Live send&lt;/b&gt; activé, cliquer sur une commande envoie aussi son message MIDI vers la sortie choisie (&lt;b&gt;⟳&lt;/b&gt; actualise les ports).</translation>
+    </message>
+    <message>
+        <source>Edit and validate</source>
+        <translation>Modifier et valider</translation>
+    </message>
+    <message>
+        <source>Edits the item selected in a tree. Every change can be undone (&lt;b&gt;Edit → Undo&lt;/b&gt;).&lt;br&gt;&lt;br&gt;Serato repeats each trigger several times in a mapping and those copies must stay identical: edit in &lt;b&gt;By Deck&lt;/b&gt;, which updates every copy at once.&lt;br&gt;&lt;br&gt;&lt;b&gt;Learn&lt;/b&gt; moves the selected trigger to the next control you press on your controller (10 s, click again to cancel); it warns before reusing a control another function already uses.&lt;br&gt;&lt;br&gt;&lt;b&gt;Edit → Validate&lt;/b&gt; lists errors, warnings and info in the table below (duplicate copies are info only: they are expected); &lt;b&gt;Edit → Ready for Live…&lt;/b&gt; checks for missing Play/Cue/Sync/Load, conflicts and unlit buttons before a gig. &lt;b&gt;File → Save Mapping&lt;/b&gt; shows the exact changes before writing, keeps a backup, and &lt;b&gt;File → Restore Previous Version…&lt;/b&gt; restores it.</source>
+        <translation>Modifie l&apos;élément sélectionné dans un arbre. Chaque modification peut être annulée (&lt;b&gt;Édition → Annuler&lt;/b&gt;).&lt;br&gt;&lt;br&gt;Serato répète chaque déclencheur plusieurs fois dans un mapping et ces copies doivent rester identiques : modifiez dans &lt;b&gt;Par platine&lt;/b&gt;, qui met à jour toutes les copies à la fois.&lt;br&gt;&lt;br&gt;&lt;b&gt;Learn&lt;/b&gt; déplace le déclencheur sélectionné vers la prochaine commande que vous actionnez sur votre contrôleur (10 s, cliquez à nouveau pour annuler) ; il prévient avant de réutiliser une commande déjà prise par une autre fonction.&lt;br&gt;&lt;br&gt;&lt;b&gt;Édition → Valider&lt;/b&gt; liste les erreurs, avertissements et infos dans le tableau ci-dessous (les copies en double ne sont que des infos : elles sont attendues) ; &lt;b&gt;Édition → Prêt pour le live…&lt;/b&gt; vérifie avant une soirée les Play/Cue/Sync/Load manquants, les conflits et les boutons sans LED. &lt;b&gt;Fichier → Enregistrer le mapping&lt;/b&gt; montre les changements exacts avant d&apos;écrire, garde une sauvegarde, et &lt;b&gt;Fichier → Restaurer la version précédente…&lt;/b&gt; la remet en place.</translation>
+    </message>
+    <message>
+        <source>Ready for live</source>
+        <translation>Prêt pour le live</translation>
+    </message>
+    <message>
+        <source>A read-only check of the loaded mapping before a gig. It lists:&lt;ul&gt;&lt;li&gt;&lt;b&gt;Errors&lt;/b&gt;: a control that fires several functions on the same deck, or copies of one control that disagree.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Warnings&lt;/b&gt;: a deck with no &lt;b&gt;Play&lt;/b&gt;, &lt;b&gt;Cue&lt;/b&gt;, &lt;b&gt;Sync&lt;/b&gt; or &lt;b&gt;Load&lt;/b&gt; mapping. A Serato file only lists what you remapped, so ignore these if Serato&apos;s built-in support for your controller already covers them.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Info&lt;/b&gt;: a mapped button whose function can light up, but which has no LED feedback mapping.&lt;/li&gt;&lt;/ul&gt;Each row says what to do; nothing is fixed for you. &lt;b&gt;Show control&lt;/b&gt; (or double-click) selects the control in &lt;b&gt;By Channel&lt;/b&gt;; &lt;b&gt;Copy report&lt;/b&gt; copies the list as text.</source>
+        <translation>Une vérification en lecture seule du mapping chargé avant une soirée. Elle liste :&lt;ul&gt;&lt;li&gt;&lt;b&gt;Erreurs&lt;/b&gt; : une commande qui déclenche plusieurs fonctions sur la même platine, ou des copies d&apos;une même commande qui ne concordent pas.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Avertissements&lt;/b&gt; : une platine sans mapping &lt;b&gt;Play&lt;/b&gt;, &lt;b&gt;Cue&lt;/b&gt;, &lt;b&gt;Sync&lt;/b&gt; ou &lt;b&gt;Load&lt;/b&gt;. Un fichier Serato ne liste que ce que vous avez remappé : ignorez-les si la prise en charge intégrée de votre contrôleur par Serato les couvre déjà.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Infos&lt;/b&gt; : un bouton mappé dont la fonction peut s&apos;allumer, mais sans mapping de retour LED.&lt;/li&gt;&lt;/ul&gt;Chaque ligne dit quoi faire ; rien n&apos;est corrigé à votre place. &lt;b&gt;Afficher la commande&lt;/b&gt; (ou double-clic) sélectionne la commande dans &lt;b&gt;Par canal&lt;/b&gt; ; &lt;b&gt;Copier le rapport&lt;/b&gt; copie la liste sous forme de texte.</translation>
+    </message>
+    <message>
+        <source>Find function</source>
+        <translation>Trouver une fonction</translation>
+    </message>
+    <message>
+        <source>The reverse of the trees: type what a control should &lt;i&gt;do&lt;/i&gt; and see which control does it. Words match the short function names and the original Serato tags (&lt;tt&gt;loop roll&lt;/tt&gt; finds &lt;tt&gt;auto_loop_roll_specific_length&lt;/tt&gt;, shown as &lt;i&gt;Loop roll&lt;/i&gt;; hover a result for its tag), case and underscores don&apos;t matter.&lt;br&gt;&lt;br&gt;&lt;tt&gt;deck 2&lt;/tt&gt; / &lt;tt&gt;slot 3&lt;/tt&gt; keep only that deck or slot (numbers as the file stores them, like the By Deck tab); a bare number matches either. Add &lt;tt&gt;output&lt;/tt&gt; for LED feedback only.&lt;br&gt;&lt;br&gt;Selecting a result outlines &lt;b&gt;all&lt;/b&gt; its controls in red on the layout and selects the first one in the current tab, like clicking it on the layout.</source>
+        <translation>L&apos;inverse des arbres : tapez ce qu&apos;une commande doit &lt;i&gt;faire&lt;/i&gt; et voyez quelle commande le fait. Les mots sont cherchés dans les noms courts des fonctions et dans les tags Serato d&apos;origine (&lt;tt&gt;loop roll&lt;/tt&gt; trouve &lt;tt&gt;auto_loop_roll_specific_length&lt;/tt&gt;, affiché &lt;i&gt;Loop roll&lt;/i&gt; ; survolez un résultat pour voir son tag), sans tenir compte de la casse ni des tirets bas.&lt;br&gt;&lt;br&gt;&lt;tt&gt;deck 2&lt;/tt&gt; / &lt;tt&gt;slot 3&lt;/tt&gt; ne gardent que cette platine ou ce slot (numéros tels que le fichier les stocke, comme dans l&apos;onglet Par platine) ; un nombre seul vaut pour les deux. Ajoutez &lt;tt&gt;output&lt;/tt&gt; pour n&apos;avoir que les retours LED.&lt;br&gt;&lt;br&gt;Sélectionner un résultat entoure en rouge &lt;b&gt;toutes&lt;/b&gt; ses commandes sur la disposition et sélectionne la première dans l&apos;onglet courant, comme un clic sur la disposition.</translation>
+    </message>
+    <message>
+        <source>Command palette</source>
+        <translation>Palette de commandes</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Cmd+K&lt;/b&gt; (Ctrl+K on Windows/Linux) opens one search over every menu action, every tab, the loaded mapping&apos;s functions and the Music Library&apos;s tracks. Type a few letters (&lt;tt&gt;cheat&lt;/tt&gt;, &lt;tt&gt;opmap&lt;/tt&gt; for &lt;i&gt;Open Mapping&lt;/i&gt;, &lt;tt&gt;loop roll deck 2&lt;/tt&gt;, an artist), move with &lt;b&gt;↑/↓&lt;/b&gt;, run with &lt;b&gt;Enter&lt;/b&gt;, close with &lt;b&gt;Esc&lt;/b&gt;.&lt;br&gt;&lt;br&gt;Actions and tabs come first on a tie; functions use the Find function search (so &lt;tt&gt;deck 2&lt;/tt&gt; and &lt;tt&gt;output&lt;/tt&gt; work); tracks show from two letters on, once the Music Library tab has been opened this session. Disabled menu entries are left out.</source>
+        <translation>&lt;b&gt;Cmd+K&lt;/b&gt; (Ctrl+K sous Windows/Linux) ouvre une recherche unique sur toutes les actions de menu, tous les onglets, les fonctions du mapping chargé et les morceaux de la Bibliothèque. Tapez quelques lettres (&lt;tt&gt;antisèche&lt;/tt&gt;, &lt;tt&gt;ouvmap&lt;/tt&gt; pour &lt;i&gt;Ouvrir un mapping&lt;/i&gt;, &lt;tt&gt;loop roll deck 2&lt;/tt&gt;, un artiste), déplacez-vous avec &lt;b&gt;↑/↓&lt;/b&gt;, lancez avec &lt;b&gt;Entrée&lt;/b&gt;, fermez avec &lt;b&gt;Échap&lt;/b&gt;.&lt;br&gt;&lt;br&gt;À égalité, les actions et les onglets passent en premier ; les fonctions utilisent la recherche de fonction (&lt;tt&gt;deck 2&lt;/tt&gt; et &lt;tt&gt;output&lt;/tt&gt; y marchent donc) ; les morceaux apparaissent dès deux lettres, une fois l&apos;onglet Bibliothèque ouvert pendant la session. Les entrées de menu désactivées sont exclues.</translation>
+    </message>
+    <message>
+        <source>Controller Images</source>
+        <translation>Images contrôleur</translation>
+    </message>
+    <message>
+        <source>The reference picture of the selected controller: zoom with the mouse wheel, drag to pan, &lt;b&gt;Reset zoom&lt;/b&gt; to fit. &lt;b&gt;Open documentation&lt;/b&gt; opens its bundled manual or MIDI message list.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Controller&lt;/b&gt;: the real photo. &lt;b&gt;MIDI&lt;/b&gt;: the same controller with its MIDI information printed on it, when it ships one. One photo at a time.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Layout&lt;/b&gt;: a marker on every modeled control, at its true position (measured on the Controller photo, so greyed out over the MIDI one). With the Live Monitor running, a marker flashes when you hit that control.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Live send&lt;/b&gt; sends a clicked control&apos;s MIDI message to the chosen output.&lt;/li&gt;&lt;/ul&gt;</source>
+        <translation>L&apos;image de référence du contrôleur sélectionné : zoomez avec la molette, faites glisser pour vous déplacer, &lt;b&gt;Reset zoom&lt;/b&gt; pour l&apos;ajuster à la fenêtre. &lt;b&gt;Open documentation&lt;/b&gt; ouvre son manuel ou sa liste de messages MIDI fournis avec l&apos;application.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Controller&lt;/b&gt; : la vraie photo. &lt;b&gt;MIDI&lt;/b&gt; : le même contrôleur avec ses informations MIDI imprimées dessus, quand il en fournit une. Une seule photo à la fois.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Layout&lt;/b&gt; : un repère sur chaque commande modélisée, à sa position réelle (mesurée sur la photo Controller, donc grisé sur la photo MIDI). Quand le Live Monitor tourne, un repère clignote quand vous touchez cette commande.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Live send&lt;/b&gt; envoie le message MIDI d&apos;une commande cliquée vers la sortie choisie.&lt;/li&gt;&lt;/ul&gt;</translation>
+    </message>
+    <message>
+        <source>Controller Emulator</source>
+        <translation>Émulateur de contrôleur</translation>
+    </message>
+    <message>
+        <source>Play one controller with the mouse. Click a pad or button: it flashes and the status line shows what the loaded mapping binds it to. Nothing is sent unless &lt;b&gt;Live send&lt;/b&gt; is on.&lt;ul&gt;&lt;li&gt;Mode buttons (pad modes) and &lt;b&gt;SHIFT&lt;/b&gt; are remembered like on the hardware.&lt;/li&gt;&lt;li&gt;Drag knobs, faders and jog wheels vertically to move them (visual only).&lt;/li&gt;&lt;li&gt;Layers: &lt;b&gt;Controller&lt;/b&gt; photo, &lt;b&gt;MIDI&lt;/b&gt; picture (alone) and &lt;b&gt;Layout&lt;/b&gt; (the clickable controls).&lt;/li&gt;&lt;li&gt;The emulator also follows the real controller when the Live Monitor is running.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Pad colours&lt;/b&gt; (only for controllers whose documentation lists them, e.g. Hercules DJControl Inpulse 500): pick a colour, switch &lt;b&gt;Paint&lt;/b&gt; on, click pads, then &lt;b&gt;Save to sync set&lt;/b&gt;.&lt;/li&gt;&lt;/ul&gt;Open more emulators with &lt;b&gt;View → New Controller Emulator…&lt;/b&gt;.</source>
+        <translation>Jouez d&apos;un contrôleur à la souris. Cliquez sur un pad ou un bouton : il clignote et la ligne d&apos;état montre à quoi le mapping chargé le relie. Rien n&apos;est envoyé tant que &lt;b&gt;Live send&lt;/b&gt; n&apos;est pas activé.&lt;ul&gt;&lt;li&gt;Les boutons de mode (modes de pad) et &lt;b&gt;SHIFT&lt;/b&gt; sont mémorisés comme sur le matériel.&lt;/li&gt;&lt;li&gt;Faites glisser verticalement potentiomètres, faders et jog wheels pour les bouger (visuel seulement).&lt;/li&gt;&lt;li&gt;Couches : photo &lt;b&gt;Controller&lt;/b&gt;, image &lt;b&gt;MIDI&lt;/b&gt; (seule) et &lt;b&gt;Layout&lt;/b&gt; (les commandes cliquables).&lt;/li&gt;&lt;li&gt;L&apos;émulateur suit aussi le vrai contrôleur quand le Live Monitor tourne.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Pad colours&lt;/b&gt; (seulement pour les contrôleurs dont la documentation les liste, par ex. Hercules DJControl Inpulse 500) : choisissez une couleur, activez &lt;b&gt;Paint&lt;/b&gt;, cliquez sur les pads, puis &lt;b&gt;Save to sync set&lt;/b&gt;.&lt;/li&gt;&lt;/ul&gt;Ouvrez d&apos;autres émulateurs avec &lt;b&gt;Affichage → Nouvel émulateur de contrôleur…&lt;/b&gt;.</translation>
+    </message>
+    <message>
+        <source>Stage Mode</source>
+        <translation>Mode scène</translation>
+    </message>
+    <message>
+        <source>A full-screen, high-contrast view for playing live: one Controller Emulator and a compact Live Monitor, nothing else.&lt;ul&gt;&lt;li&gt;The emulator follows the real controller like any other emulator; pick the controller in its list.&lt;/li&gt;&lt;li&gt;The monitor shows the latest event in large type and the last few below it. The full log stays in the Live Monitor window.&lt;/li&gt;&lt;li&gt;Live monitoring starts on its own when Stage Mode opens.&lt;/li&gt;&lt;/ul&gt;Press &lt;b&gt;Esc&lt;/b&gt; (or &lt;b&gt;Exit&lt;/b&gt;) to leave. Open it again with &lt;b&gt;View → Stage Mode&lt;/b&gt;; it is not remembered across restarts.</source>
+        <translation>Une vue plein écran à fort contraste pour jouer en live : un émulateur de contrôleur et un Live Monitor compact, rien d&apos;autre.&lt;ul&gt;&lt;li&gt;L&apos;émulateur suit le vrai contrôleur comme tout autre émulateur ; choisissez le contrôleur dans sa liste.&lt;/li&gt;&lt;li&gt;Le moniteur affiche le dernier événement en gros caractères et les quelques précédents en dessous. Le journal complet reste dans la fenêtre Live Monitor.&lt;/li&gt;&lt;li&gt;L&apos;écoute MIDI démarre toute seule à l&apos;ouverture du Mode scène.&lt;/li&gt;&lt;/ul&gt;Appuyez sur &lt;b&gt;Échap&lt;/b&gt; (ou &lt;b&gt;Exit&lt;/b&gt;) pour quitter. Rouvrez-le avec &lt;b&gt;Affichage → Mode scène&lt;/b&gt; ; il n&apos;est pas mémorisé d&apos;un lancement à l&apos;autre.</translation>
+    </message>
+    <message>
+        <source>Live Monitor</source>
+        <translation>Live Monitor</translation>
+    </message>
+    <message>
+        <source>Logs every MIDI event from the ticked inputs, with the physical control and the function the loaded mapping gives it, and makes every layout, the Controller Images overlay and the emulators react to the real hardware.&lt;br&gt;&lt;br&gt;It starts on its own when a mapping is loaded (⚙ Preferences). To choose ports yourself: &lt;b&gt;Refresh ports&lt;/b&gt;, tick inputs, &lt;b&gt;Start monitoring&lt;/b&gt;.&lt;br&gt;&lt;br&gt;To see the LED messages Serato sends back, tick &lt;b&gt;Create virtual monitor&lt;/b&gt; and add &lt;i&gt;DJMidiStudio Monitor&lt;/i&gt; as an extra MIDI output in Serato.&lt;br&gt;&lt;br&gt;A press that fires two or more different functions on the same deck is shown in amber as &lt;b&gt;CONFLICT&lt;/b&gt; and counted; Serato&apos;s identical repeated triggers are not conflicts.&lt;br&gt;&lt;br&gt;While &lt;b&gt;● Rec&lt;/b&gt; records, Start/Stop and the inputs are locked until &lt;b&gt;■ Stop&lt;/b&gt;.</source>
+        <translation>Journalise chaque événement MIDI des entrées cochées, avec la commande physique et la fonction que lui donne le mapping chargé, et fait réagir au vrai matériel chaque disposition, la surcouche d&apos;Images contrôleur et les émulateurs.&lt;br&gt;&lt;br&gt;Il démarre tout seul au chargement d&apos;un mapping (⚙ Préférences). Pour choisir les ports vous-même : &lt;b&gt;Refresh ports&lt;/b&gt;, cochez les entrées, &lt;b&gt;Start monitoring&lt;/b&gt;.&lt;br&gt;&lt;br&gt;Pour voir les messages de LED que Serato renvoie, cochez &lt;b&gt;Create virtual monitor&lt;/b&gt; et ajoutez &lt;i&gt;DJMidiStudio Monitor&lt;/i&gt; comme sortie MIDI supplémentaire dans Serato.&lt;br&gt;&lt;br&gt;Un appui qui déclenche au moins deux fonctions différentes sur la même platine est affiché en ambre comme &lt;b&gt;CONFLICT&lt;/b&gt; et compté ; les déclencheurs identiques que Serato répète ne sont pas des conflits.&lt;br&gt;&lt;br&gt;Pendant que &lt;b&gt;● Enr&lt;/b&gt; enregistre, Start/Stop et les entrées sont verrouillés jusqu&apos;à &lt;b&gt;■ Arrêt&lt;/b&gt;.</translation>
+    </message>
+    <message>
+        <source>MIDI Routing</source>
+        <translation>Routage MIDI</translation>
+    </message>
+    <message>
+        <source>One-way routes from a MIDI input to a MIDI output.&lt;ol&gt;&lt;li&gt;Enable &lt;i&gt;MIDI routing policies&lt;/i&gt; in ⚙ Preferences (off by default: it touches real hardware).&lt;/li&gt;&lt;li&gt;Pick a source and a destination, &lt;b&gt;Add route&lt;/b&gt;.&lt;/li&gt;&lt;li&gt;Optionally &lt;b&gt;Edit transform…&lt;/b&gt; to change the channel, offset the note/CC or invert the value.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Start routing&lt;/b&gt;. Only the ports your routes use are opened.&lt;/li&gt;&lt;/ol&gt;Routes that would loop back on themselves are refused.</source>
+        <translation>Des routes à sens unique d&apos;une entrée MIDI vers une sortie MIDI.&lt;ol&gt;&lt;li&gt;Cochez &lt;i&gt;Activer les règles de routage MIDI&lt;/i&gt; dans ⚙ Préférences (désactivé par défaut : cela agit sur du vrai matériel).&lt;/li&gt;&lt;li&gt;Choisissez une source et une destination, &lt;b&gt;Add route&lt;/b&gt;.&lt;/li&gt;&lt;li&gt;Si besoin, &lt;b&gt;Edit transform…&lt;/b&gt; pour changer le canal, décaler la note/le CC ou inverser la valeur.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Start routing&lt;/b&gt;. Seuls les ports utilisés par vos routes sont ouverts.&lt;/li&gt;&lt;/ol&gt;Les routes qui reboucleraient sur elles-mêmes sont refusées.</translation>
+    </message>
+    <message>
+        <source>MIDI Clock</source>
+        <translation>MIDI Clock</translation>
+    </message>
+    <message>
+        <source>Forwards or generates MIDI Clock (Start/Stop/Continue + 24 ticks per beat).&lt;br&gt;&lt;br&gt;Serato doesn&apos;t send MIDI Clock but shares its tempo over Ableton Link: tick &lt;b&gt;Enable Clock mirror policy&lt;/b&gt;, choose &lt;i&gt;Ableton Link (DJ MIDI Studio)&lt;/i&gt; as the source and your hardware&apos;s MIDI output as the destination, &lt;b&gt;Add Clock route&lt;/b&gt;, then &lt;b&gt;Start routing&lt;/b&gt;. The status line shows &lt;i&gt;CLOCK ACTIVE&lt;/i&gt; while ticks flow.</source>
+        <translation>Transmet ou génère une MIDI Clock (Start/Stop/Continue + 24 tops par temps).&lt;br&gt;&lt;br&gt;Serato n&apos;envoie pas de MIDI Clock mais partage son tempo via Ableton Link : cochez &lt;b&gt;Enable Clock mirror policy&lt;/b&gt;, choisissez &lt;i&gt;Ableton Link (DJ MIDI Studio)&lt;/i&gt; comme source et la sortie MIDI de votre matériel comme destination, &lt;b&gt;Add Clock route&lt;/b&gt;, puis &lt;b&gt;Start routing&lt;/b&gt;. La ligne d&apos;état affiche &lt;i&gt;CLOCK ACTIVE&lt;/i&gt; tant que les tops circulent.</translation>
+    </message>
+    <message>
+        <source>Metronome</source>
+        <translation>Métronome</translation>
+    </message>
+    <message>
+        <source>Plays the rows captured in &lt;b&gt;Controller Setup&lt;/b&gt; to an output port: the selected rows or all of them once, or on a loop at the chosen frequency and value. Handy to blink LEDs, test a mapping, or keep a device awake.</source>
+        <translation>Joue vers un port de sortie les lignes capturées dans &lt;b&gt;Config. contrôleur&lt;/b&gt; : les lignes sélectionnées ou toutes, une fois, ou en boucle à la fréquence et à la valeur choisies. Pratique pour faire clignoter des LED, tester un mapping ou garder un appareil éveillé.</translation>
+    </message>
+    <message>
+        <source>Music folders</source>
+        <translation>Dossiers musicaux</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Add folder…&lt;/b&gt;, then &lt;b&gt;Scan &amp;amp; read tags&lt;/b&gt;. Later scans only re-read files that changed; a file that disappears (an unplugged drive) is greyed out as missing instead of being forgotten. &lt;b&gt;Relink missing…&lt;/b&gt; finds where moved files went (same name and size) and relinks them, playlists included. &lt;b&gt;Health report…&lt;/b&gt; lists files that need attention (corrupt, untagged, no cover, low bitrate). &lt;b&gt;Analyse BPM/key&lt;/b&gt; estimates the tempo and key of tracks whose tags lack them (needs the optional analysis component); the estimates are amber suggestions until you apply them from the Track panel.&lt;br&gt;&lt;br&gt;The index stores paths, sizes, dates and a cache of the tags, never the audio. Serato, Traktor and Rekordbox library files are only ever read.</source>
+        <translation>&lt;b&gt;Ajouter un dossier…&lt;/b&gt;, puis &lt;b&gt;Scanner et lire les tags&lt;/b&gt;. Les scans suivants ne relisent que les fichiers modifiés ; un fichier qui disparaît (un disque débranché) est grisé comme manquant au lieu d&apos;être oublié. &lt;b&gt;Relocaliser les manquants…&lt;/b&gt; retrouve où sont partis les fichiers déplacés (même nom et même taille) et les relocalise, playlists comprises. &lt;b&gt;Bilan de santé…&lt;/b&gt; liste les fichiers qui demandent votre attention (corrompus, sans tags, sans pochette, débit faible). &lt;b&gt;Analyser BPM/tonalité&lt;/b&gt; estime le tempo et la tonalité des morceaux dont les tags ne les donnent pas (nécessite le composant d&apos;analyse optionnel) ; les estimations restent des suggestions en ambre jusqu&apos;à ce que vous les appliquiez depuis le panneau Morceau.&lt;br&gt;&lt;br&gt;L&apos;index stocke les chemins, tailles, dates et un cache des tags, jamais l&apos;audio. Les fichiers de bibliothèque Serato, Traktor et Rekordbox sont seulement lus, jamais modifiés.</translation>
+    </message>
+    <message>
+        <source>Browse and filter</source>
+        <translation>Parcourir et filtrer</translation>
+    </message>
+    <message>
+        <source>Click a column header to sort. The search box looks in titles, artists, genres, BPM, keys and comments; the filters under it combine:&lt;ul&gt;&lt;li&gt;&lt;b&gt;Category&lt;/b&gt;, &lt;b&gt;Genre&lt;/b&gt;, &lt;b&gt;Key&lt;/b&gt;.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Camelot&lt;/b&gt;: tick &lt;i&gt;+ compatible&lt;/i&gt; to add the keys that mix harmonically with it.&lt;/li&gt;&lt;li&gt;&lt;b&gt;BPM min – max&lt;/b&gt;: both ends included.&lt;/li&gt;&lt;/ul&gt;An amber &lt;i&gt;? Family / Name&lt;/i&gt; category is only a suggestion. &lt;b&gt;Reset filters&lt;/b&gt; clears everything.</source>
+        <translation>Cliquez sur un en-tête de colonne pour trier. La recherche porte sur les titres, artistes, genres, BPM, tonalités et commentaires ; les filtres en dessous se combinent :&lt;ul&gt;&lt;li&gt;&lt;b&gt;Catégorie&lt;/b&gt;, &lt;b&gt;Genre&lt;/b&gt;, &lt;b&gt;Tonalité&lt;/b&gt;.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Camelot&lt;/b&gt; : cochez &lt;i&gt;+ compatibles&lt;/i&gt; pour ajouter les tonalités qui se mixent harmonieusement avec elle.&lt;/li&gt;&lt;li&gt;&lt;b&gt;BPM min – max&lt;/b&gt; : bornes incluses.&lt;/li&gt;&lt;/ul&gt;Une catégorie &lt;i&gt;? Famille / Nom&lt;/i&gt; en ambre n&apos;est qu&apos;une suggestion. &lt;b&gt;Réinitialiser les filtres&lt;/b&gt; efface tout.</translation>
+    </message>
+    <message>
+        <source>Track tags</source>
+        <translation>Tags du morceau</translation>
+    </message>
+    <message>
+        <source>Edit the selected track&apos;s tags and click &lt;b&gt;Write tags&lt;/b&gt;: only the changed fields are written, and Serato/Traktor data inside the file is preserved. &lt;b&gt;Undo&lt;/b&gt; writes the old values back.&lt;br&gt;&lt;br&gt;&lt;b&gt;Set cover…&lt;/b&gt; embeds a JPEG/PNG as the front cover and &lt;b&gt;Remove cover&lt;/b&gt; removes it (both undoable); other pictures and tags are untouched.&lt;br&gt;&lt;br&gt;&lt;b&gt;Write tags to selection…&lt;/b&gt; writes chosen tags to every selected track as one undo step, with a progress window you can cancel. &lt;b&gt;Apply analysis suggestions…&lt;/b&gt; writes the selected tracks&apos; estimated BPM/key into their empty tags, after listing them, as one undo step. &lt;b&gt;Confirm suggested category&lt;/b&gt; turns an amber suggestion into a permanent alias; &lt;b&gt;Confirm all suggestions&lt;/b&gt; does it for every track shown, after listing them. &lt;b&gt;Clean noise frames…&lt;/b&gt; lists leftover junk tags and removes them only after you confirm. &lt;b&gt;Rename files…&lt;/b&gt; renames the selected files from their tags (e.g. &lt;i&gt;{artist} - {title}&lt;/i&gt;) after a preview, as one undo step.</source>
+        <translation>Modifiez les tags du morceau sélectionné et cliquez sur &lt;b&gt;Écrire les tags&lt;/b&gt; : seuls les champs modifiés sont écrits, et les données Serato/Traktor du fichier sont préservées. &lt;b&gt;Annuler&lt;/b&gt; réécrit les anciennes valeurs.&lt;br&gt;&lt;br&gt;&lt;b&gt;Définir la pochette…&lt;/b&gt; intègre un JPEG/PNG comme pochette avant et &lt;b&gt;Retirer la pochette&lt;/b&gt; la supprime (les deux sont annulables) ; les autres images et tags ne sont pas touchés.&lt;br&gt;&lt;br&gt;&lt;b&gt;Écrire les tags sur la sélection…&lt;/b&gt; écrit les tags choisis sur chaque morceau sélectionné en une seule étape d&apos;annulation, avec une fenêtre de progression que vous pouvez interrompre. &lt;b&gt;Appliquer les suggestions d&apos;analyse…&lt;/b&gt; écrit le BPM/la tonalité estimés des morceaux sélectionnés dans leurs tags vides, après les avoir listés, en une seule étape d&apos;annulation. &lt;b&gt;Confirmer la catégorie suggérée&lt;/b&gt; transforme une suggestion en ambre en alias permanent ; &lt;b&gt;Confirmer toutes les suggestions&lt;/b&gt; le fait pour chaque morceau affiché, après les avoir listés. &lt;b&gt;Nettoyer les frames parasites…&lt;/b&gt; liste les tags parasites restants et ne les supprime qu&apos;après votre confirmation. &lt;b&gt;Renommer les fichiers…&lt;/b&gt; renomme les fichiers sélectionnés d&apos;après leurs tags (par ex. &lt;i&gt;{artist} - {title}&lt;/i&gt;) après un aperçu, en une seule étape d&apos;annulation.</translation>
+    </message>
+    <message>
+        <source>Rename files</source>
+        <translation>Renommer les fichiers</translation>
+    </message>
+    <message>
+        <source>Type a template such as &lt;i&gt;{artist} - {title}&lt;/i&gt;; fields are {artist}, {title}, {album}, {genre}, {bpm}, {key}, {camelot} and {filename} (the current name). The preview shows each selected file&apos;s new name before anything changes.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Skipped&lt;/b&gt;: a field of the template is not tagged.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Conflict&lt;/b&gt;: the new name is already taken (on disk, in the library, or by another selected track) -- that file is left as it is.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Refused&lt;/b&gt;: the file is outside your music folders or inside a DJ software folder (&lt;i&gt;_Serato_&lt;/i&gt;, &lt;i&gt;PIONEER&lt;/i&gt;, …).&lt;/li&gt;&lt;/ul&gt;Files stay in their folder; characters a file name can&apos;t hold become &lt;i&gt;_&lt;/i&gt;. &lt;b&gt;Undo&lt;/b&gt; renames them back. Serato, Traktor and Rekordbox will show renamed files as missing until relinked: keep the old → new CSV offered after renaming.</source>
+        <translation>Tapez un modèle comme &lt;i&gt;{artist} - {title}&lt;/i&gt; ; les champs sont {artist}, {title}, {album}, {genre}, {bpm}, {key}, {camelot} et {filename} (le nom actuel). L&apos;aperçu montre le nouveau nom de chaque fichier sélectionné avant tout changement.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Ignoré&lt;/b&gt; : un champ du modèle n&apos;est pas renseigné dans les tags.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Conflit&lt;/b&gt; : le nouveau nom est déjà pris (sur le disque, dans la bibliothèque ou par un autre morceau sélectionné) -- ce fichier reste tel quel.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Refusé&lt;/b&gt; : le fichier est hors de vos dossiers musicaux ou dans un dossier de logiciel DJ (&lt;i&gt;_Serato_&lt;/i&gt;, &lt;i&gt;PIONEER&lt;/i&gt;, …).&lt;/li&gt;&lt;/ul&gt;Les fichiers restent dans leur dossier ; les caractères interdits dans un nom de fichier deviennent &lt;i&gt;_&lt;/i&gt;. &lt;b&gt;Annuler&lt;/b&gt; leur rend leur ancien nom. Serato, Traktor et Rekordbox afficheront les fichiers renommés comme manquants jusqu&apos;à leur relocalisation : gardez le CSV ancien → nouveau proposé après le renommage.</translation>
+    </message>
+    <message>
+        <source>Audio preview</source>
+        <translation>Pré-écoute audio</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Play&lt;/b&gt; the selected track to check its category or key by ear, without opening your DJ software. Drag the slider to move through it. While a track plays, selecting another one switches to it. Tick &lt;b&gt;Start at 30%&lt;/b&gt; to skip the intro. &lt;b&gt;Vol&lt;/b&gt; sets the volume (remembered). In the track list, &lt;b&gt;Space&lt;/b&gt; plays/pauses and &lt;b&gt;Left&lt;/b&gt;/&lt;b&gt;Right&lt;/b&gt; jump 10 s. Tick &lt;b&gt;Auto-advance&lt;/b&gt; to play the next track when one ends. Playback stops when you leave the tab.</source>
+        <translation>&lt;b&gt;Lecture&lt;/b&gt; lit le morceau sélectionné pour vérifier sa catégorie ou sa tonalité à l&apos;oreille, sans ouvrir votre logiciel DJ. Faites glisser le curseur pour vous y déplacer. Pendant la lecture, sélectionner un autre morceau passe à celui-ci. Cochez &lt;b&gt;Départ à 30 %&lt;/b&gt; pour sauter l&apos;intro. &lt;b&gt;Vol&lt;/b&gt; règle le volume (mémorisé). Dans la liste des morceaux, &lt;b&gt;Espace&lt;/b&gt; lance/met en pause et &lt;b&gt;Gauche&lt;/b&gt;/&lt;b&gt;Droite&lt;/b&gt; sautent de 10 s. Cochez &lt;b&gt;Enchaîner&lt;/b&gt; pour lire le morceau suivant à la fin de chaque morceau. La lecture s&apos;arrête quand vous quittez l&apos;onglet.</translation>
+    </message>
+    <message>
+        <source>Genre categories</source>
+        <translation>Catégories de genre</translation>
+    </message>
+    <message>
+        <source>Two-level categories (&lt;i&gt;Family / Name&lt;/i&gt;, e.g. &lt;i&gt;Tek / PsyTrance&lt;/i&gt;), assigned from folder names and Serato crate names first, then the genre tag. Create, rename, merge and delete categories here, and add aliases so several spellings (&lt;i&gt;DnB&lt;/i&gt;, &lt;i&gt;D&amp;amp;B&lt;/i&gt;, &lt;i&gt;Drum and Bass&lt;/i&gt;) mean the same category.</source>
+        <translation>Des catégories à deux niveaux (&lt;i&gt;Famille / Nom&lt;/i&gt;, par ex. &lt;i&gt;Tek / PsyTrance&lt;/i&gt;), attribuées d&apos;abord d&apos;après les noms de dossiers et de crates Serato, puis d&apos;après le tag de genre. Créez, renommez, fusionnez et supprimez des catégories ici, et ajoutez des alias pour que plusieurs graphies (&lt;i&gt;DnB&lt;/i&gt;, &lt;i&gt;D&amp;amp;B&lt;/i&gt;, &lt;i&gt;Drum and Bass&lt;/i&gt;) désignent la même catégorie.</translation>
+    </message>
+    <message>
+        <source>Duplicate tracks</source>
+        <translation>Morceaux en double</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Find duplicates…&lt;/b&gt; lists two kinds of groups from the scanned folders:&lt;ul&gt;&lt;li&gt;&lt;b&gt;Exact copies&lt;/b&gt;: byte-identical files. Only files of the same size are read and compared by content hash.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Same artist + title&lt;/b&gt;: tags that match once case, accents, punctuation, &lt;i&gt;feat.&lt;/i&gt; credits and &lt;i&gt;(Original Mix)&lt;/i&gt; are ignored. Other versions (&lt;i&gt;Extended Mix&lt;/i&gt;, &lt;i&gt;Radio Edit&lt;/i&gt;, remixes) stay distinct. A candidate, not proof: compare format, size and bitrate.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Other versions of the same song&lt;/b&gt; (suggestions): same artist and title once a trailing &lt;i&gt;(Radio Edit)&lt;/i&gt;, &lt;i&gt;(Extended Mix)&lt;/i&gt;, &lt;i&gt;[Remastered]&lt;/i&gt;, remix… is ignored. Listed for review only: never tickable, never sent to the Trash.&lt;/li&gt;&lt;/ul&gt;&lt;b&gt;Reveal in Finder&lt;/b&gt; (or double-click) shows a copy. Tick the copies you don&apos;t want and click &lt;b&gt;Move ticked to Trash…&lt;/b&gt;: after a confirmation they go to the Trash (never deleted outright) and show as missing. One copy of each group must stay. Playlists of this app listing a discarded copy can be pointed at the kept one.</source>
+        <translation>&lt;b&gt;Trouver les doublons…&lt;/b&gt; liste ces groupes dans les dossiers scannés :&lt;ul&gt;&lt;li&gt;&lt;b&gt;Copies exactes&lt;/b&gt; : des fichiers identiques octet pour octet. Seuls les fichiers de même taille sont lus et comparés par empreinte de contenu.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Même artiste + titre&lt;/b&gt; : des tags qui concordent une fois ignorés la casse, les accents, la ponctuation, les mentions &lt;i&gt;feat.&lt;/i&gt; et &lt;i&gt;(Original Mix)&lt;/i&gt;. Les autres versions (&lt;i&gt;Extended Mix&lt;/i&gt;, &lt;i&gt;Radio Edit&lt;/i&gt;, remixes) restent distinctes. Un candidat, pas une preuve : comparez format, taille et débit.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Autres versions du même morceau&lt;/b&gt; (suggestions) : même artiste et même titre une fois ignoré un &lt;i&gt;(Radio Edit)&lt;/i&gt;, &lt;i&gt;(Extended Mix)&lt;/i&gt;, &lt;i&gt;[Remastered]&lt;/i&gt;, remix… en fin de titre. Listées pour examen seulement : jamais cochables, jamais mises à la corbeille.&lt;/li&gt;&lt;/ul&gt;&lt;b&gt;Afficher dans le Finder&lt;/b&gt; (ou double-clic) montre une copie. Cochez les copies dont vous ne voulez pas et cliquez sur &lt;b&gt;Mettre les cochés à la corbeille…&lt;/b&gt; : après confirmation, elles vont à la corbeille (jamais supprimées directement) et apparaissent comme manquantes. Une copie de chaque groupe doit rester. Les playlists de l&apos;application qui listent une copie écartée peuvent être redirigées vers celle gardée.</translation>
+    </message>
+    <message>
+        <source>Library health report</source>
+        <translation>Bilan de santé de la bibliothèque</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Health report…&lt;/b&gt; opens every scanned file&apos;s header and tags once (read-only, no audio decoded) and lists:&lt;ul&gt;&lt;li&gt;&lt;b&gt;Unreadable / corrupt&lt;/b&gt;: the file can&apos;t be parsed or opened.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Zero length&lt;/b&gt;: an empty (0-byte) file or a 0&amp;nbsp;s duration.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Empty title&lt;/b&gt; / &lt;b&gt;Empty artist&lt;/b&gt;: the tag is missing or blank.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Missing artwork&lt;/b&gt;: no embedded cover picture.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Low bitrate&lt;/b&gt;: 128&amp;nbsp;kbps or less.&lt;/li&gt;&lt;/ul&gt;Untick an issue type or type in the filter box to narrow the list. &lt;b&gt;Show in library&lt;/b&gt; (or double-click) selects the track in the table to fix its tags; &lt;b&gt;Reveal in Finder&lt;/b&gt; shows the file. &lt;b&gt;Export CSV…&lt;/b&gt; saves the rows shown.</source>
+        <translation>&lt;b&gt;Bilan de santé…&lt;/b&gt; ouvre une fois l&apos;en-tête et les tags de chaque fichier scanné (lecture seule, aucun audio décodé) et liste :&lt;ul&gt;&lt;li&gt;&lt;b&gt;Illisible / corrompu&lt;/b&gt; : le fichier ne peut être ni analysé ni ouvert.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Longueur nulle&lt;/b&gt; : un fichier vide (0 octet) ou une durée de 0&amp;nbsp;s.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Titre vide&lt;/b&gt; / &lt;b&gt;Artiste vide&lt;/b&gt; : le tag manque ou est vide.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Pochette manquante&lt;/b&gt; : aucune image de pochette intégrée.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Débit faible&lt;/b&gt; : 128&amp;nbsp;kbit/s ou moins.&lt;/li&gt;&lt;/ul&gt;Décochez un type de problème ou tapez dans le champ de filtre pour réduire la liste. &lt;b&gt;Afficher dans la bibliothèque&lt;/b&gt; (ou double-clic) sélectionne le morceau dans le tableau pour corriger ses tags ; &lt;b&gt;Afficher dans le Finder&lt;/b&gt; montre le fichier. &lt;b&gt;Exporter en CSV…&lt;/b&gt; enregistre les lignes affichées.</translation>
+    </message>
+    <message>
+        <source>Change history</source>
+        <translation>Historique des modifications</translation>
+    </message>
+    <message>
+        <source>Every write this app makes to your files is logged in the library index, so it survives a restart (Undo only lasts the session): tag edits, &lt;b&gt;Write tags to selection…&lt;/b&gt;, applied analysis suggestions, covers set or removed, &lt;b&gt;Rename files…&lt;/b&gt;, their undos, and duplicates moved to the Trash. &lt;b&gt;Change history…&lt;/b&gt; lists them newest first; select one to see each file&apos;s before → after.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Revert…&lt;/b&gt; on a tag change writes the old values back, but only to files still holding what this app wrote: a tag changed since (in Serato, say) is left alone and listed.&lt;/li&gt;&lt;li&gt;On a cover change it puts the previous front cover back (or removes the added one), only while the file still holds the cover this app wrote.&lt;/li&gt;&lt;li&gt;On a rename it moves each file back to its old name, unless another file took it, and updates the library and this app&apos;s playlists.&lt;/li&gt;&lt;li&gt;On a Trash move it puts each copy back where it was, unless another file took its place. Playlists pointed at the kept copy stay that way.&lt;/li&gt;&lt;/ul&gt;A revert is itself logged, so it can be reverted too. The last 1000 changes are kept.</source>
+        <translation>Chaque écriture de l&apos;application dans vos fichiers est consignée dans l&apos;index de la bibliothèque, et survit donc à un redémarrage (Annuler ne dure que la session) : modifications de tags, &lt;b&gt;Écrire les tags sur la sélection…&lt;/b&gt;, suggestions d&apos;analyse appliquées, pochettes définies ou retirées, &lt;b&gt;Renommer les fichiers…&lt;/b&gt;, leurs annulations, et doublons mis à la corbeille. &lt;b&gt;Historique des modifications…&lt;/b&gt; les liste de la plus récente à la plus ancienne ; sélectionnez-en une pour voir l&apos;avant → après de chaque fichier.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Annuler la modification…&lt;/b&gt; sur un changement de tags réécrit les anciennes valeurs, mais seulement dans les fichiers qui contiennent encore ce que l&apos;application a écrit : un tag modifié depuis (dans Serato, par exemple) est laissé tel quel et listé.&lt;/li&gt;&lt;li&gt;Sur un changement de pochette, elle remet la pochette avant précédente (ou retire celle ajoutée), seulement tant que le fichier contient la pochette écrite par l&apos;application.&lt;/li&gt;&lt;li&gt;Sur un renommage, elle rend à chaque fichier son ancien nom, sauf si un autre fichier l&apos;a pris, et met à jour la bibliothèque et les playlists de l&apos;application.&lt;/li&gt;&lt;li&gt;Sur une mise à la corbeille, elle remet chaque copie à sa place, sauf si un autre fichier l&apos;a prise. Les playlists redirigées vers la copie gardée le restent.&lt;/li&gt;&lt;/ul&gt;Une annulation est elle-même consignée, et peut donc être annulée à son tour. Les 1000 dernières modifications sont conservées.</translation>
+    </message>
+    <message>
+        <source>Library statistics</source>
+        <translation>Statistiques de la bibliothèque</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Statistics…&lt;/b&gt; charts the tracks the table currently shows (its filters apply; missing files are left out):&lt;ul&gt;&lt;li&gt;&lt;b&gt;Categories&lt;/b&gt; and &lt;b&gt;Genres&lt;/b&gt;: tracks per confirmed category and per genre tag.&lt;/li&gt;&lt;li&gt;&lt;b&gt;BPM&lt;/b&gt;: a histogram in 5&amp;nbsp;BPM steps.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Keys&lt;/b&gt;: the 24 Camelot keys in wheel order.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Added per month&lt;/b&gt;: by file modification date.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Most played&lt;/b&gt;: play counts and never-played tracks, once DJ history is loaded in the History panel.&lt;/li&gt;&lt;/ul&gt;Hover a bar for its exact count. The window is a snapshot: reopen it after a scan or a filter change. Read-only.</source>
+        <translation>&lt;b&gt;Statistiques…&lt;/b&gt; trace les graphiques des morceaux que le tableau affiche (ses filtres s&apos;appliquent ; les fichiers manquants sont exclus) :&lt;ul&gt;&lt;li&gt;&lt;b&gt;Catégories&lt;/b&gt; et &lt;b&gt;Genres&lt;/b&gt; : morceaux par catégorie confirmée et par tag de genre.&lt;/li&gt;&lt;li&gt;&lt;b&gt;BPM&lt;/b&gt; : un histogramme par pas de 5&amp;nbsp;BPM.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Tonalités&lt;/b&gt; : les 24 tonalités Camelot dans l&apos;ordre de la roue.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Ajouts par mois&lt;/b&gt; : selon la date de modification des fichiers.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Les plus joués&lt;/b&gt; : nombre de lectures et morceaux jamais joués, une fois l&apos;historique DJ chargé dans le panneau Historique.&lt;/li&gt;&lt;/ul&gt;Survolez une barre pour voir son nombre exact. La fenêtre est un instantané : rouvrez-la après un scan ou un changement de filtre. Lecture seule.</translation>
+    </message>
+    <message>
+        <source>Playlists</source>
+        <translation>Playlists</translation>
+    </message>
+    <message>
+        <source>&lt;ul&gt;&lt;li&gt;&lt;b&gt;New from selection&lt;/b&gt;: the selected tracks.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Auto: sort visible&lt;/b&gt;: every visible track, grouped by category, then BPM range, then key.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Auto: match current&lt;/b&gt;: the selected track followed by visible tracks within ±6&amp;nbsp;% BPM and a compatible key.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Auto: mix path…&lt;/b&gt;: visible tracks chained so each one mixes into the next (BPM rising, falling or steady), from the selected track, with your BPM tolerance (±&amp;nbsp;%) and an optional maximum length (both remembered); tracks that don&apos;t fit go to a separate &lt;i&gt;(leftovers)&lt;/i&gt; playlist. Only the tracks the current filter shows are used.&lt;/li&gt;&lt;li&gt;&lt;b&gt;New smart playlist…&lt;/b&gt;: saved rules (category, BPM range, Camelot key or compatible keys, not played for N days…) evaluated against the whole library, and refreshed after every scan, history load, or &lt;b&gt;Refresh smart playlists&lt;/b&gt;. &lt;b&gt;Edit smart rules…&lt;/b&gt; changes the selected one.&lt;/li&gt;&lt;/ul&gt;Import Serato crates, Traktor playlists or a Rekordbox USB export (read only); export to a new Serato crate or Traktor playlist file where you choose. &lt;b&gt;Compare with crate…&lt;/b&gt; / &lt;b&gt;Compare with Traktor…&lt;/b&gt; list the tracks only on each side and the tracks in a different order, without changing either side.</source>
+        <translation>&lt;ul&gt;&lt;li&gt;&lt;b&gt;Nouvelle depuis la sélection&lt;/b&gt; : les morceaux sélectionnés.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Auto : trier l&apos;affichage&lt;/b&gt; : tous les morceaux affichés, groupés par catégorie, puis par plage de BPM, puis par tonalité.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Auto : compatibles&lt;/b&gt; : le morceau sélectionné suivi des morceaux affichés à ±6&amp;nbsp;% de BPM et de tonalité compatible.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Auto : parcours de mix…&lt;/b&gt; : les morceaux affichés enchaînés pour que chacun se mixe dans le suivant (BPM croissant, décroissant ou stable), à partir du morceau sélectionné, avec votre tolérance BPM (±&amp;nbsp;%) et une longueur maximale facultative (toutes deux mémorisées) ; les morceaux qui ne trouvent pas leur place vont dans une playlist &lt;i&gt;(restes)&lt;/i&gt; à part. Seuls les morceaux affichés par le filtre courant sont utilisés.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Nouvelle playlist intelligente…&lt;/b&gt; : des règles enregistrées (catégorie, plage de BPM, tonalité Camelot ou tonalités compatibles, pas joué depuis N jours…) évaluées sur toute la bibliothèque, et actualisées après chaque scan, chargement d&apos;historique ou &lt;b&gt;Actualiser les playlists intelligentes&lt;/b&gt;. &lt;b&gt;Modifier les règles…&lt;/b&gt; change celle sélectionnée.&lt;/li&gt;&lt;/ul&gt;Importez des crates Serato, des playlists Traktor ou un export USB Rekordbox (en lecture seule) ; exportez vers une nouvelle crate Serato ou un nouveau fichier de playlist Traktor, à l&apos;endroit choisi. &lt;b&gt;Comparer à une crate…&lt;/b&gt; / &lt;b&gt;Comparer à Traktor…&lt;/b&gt; listent les morceaux présents d&apos;un seul côté et ceux dans un ordre différent, sans rien changer d&apos;un côté ni de l&apos;autre.</translation>
+    </message>
+    <message>
+        <source>Play history</source>
+        <translation>Historique de lecture</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Load DJ history&lt;/b&gt; reads Serato&apos;s and Traktor&apos;s own history from &lt;i&gt;~/Music/_Serato_/History&lt;/i&gt; and &lt;i&gt;~/Music/_Traktor/History&lt;/i&gt;; &lt;b&gt;Load from folder…&lt;/b&gt; takes another one. Each session lists the tracks played, with the time and deck; double-click one to select it in the table. Grey rows were only loaded (or pre-listened in Traktor), or aren&apos;t in your indexed folders.&lt;br&gt;&lt;br&gt;&lt;b&gt;Select never played&lt;/b&gt; selects the visible tracks no session played, ready for a playlist. History files are only ever read, never changed.</source>
+        <translation>&lt;b&gt;Charger l&apos;historique DJ&lt;/b&gt; lit l&apos;historique de Serato et de Traktor dans &lt;i&gt;~/Music/_Serato_/History&lt;/i&gt; et &lt;i&gt;~/Music/_Traktor/History&lt;/i&gt; ; &lt;b&gt;Charger depuis un dossier…&lt;/b&gt; en prend un autre. Chaque session liste les morceaux joués, avec l&apos;heure et la platine ; double-cliquez sur un morceau pour le sélectionner dans le tableau. Les lignes grises n&apos;ont été que chargées (ou pré-écoutées dans Traktor), ou ne sont pas dans vos dossiers indexés.&lt;br&gt;&lt;br&gt;&lt;b&gt;Sélectionner les jamais joués&lt;/b&gt; sélectionne les morceaux affichés qu&apos;aucune session n&apos;a joués, prêts pour une playlist. Les fichiers d&apos;historique sont seulement lus, jamais modifiés.</translation>
+    </message>
+    <message>
+        <source>Set preparation</source>
+        <translation>Préparation de set</translation>
+    </message>
+    <message>
+        <source>Build a set by hand: drag tracks from the table into the list (or use &lt;b&gt;Add selection&lt;/b&gt;), then drag them inside the list to reorder. Each track plays once.&lt;br&gt;The curve shows BPM (blue, left scale) and energy (orange, 1-10, from the Energy tag). A transition is &lt;span style=&apos;color:#d64545&apos;&gt;red&lt;/span&gt; and marked ⚠ when the BPM jumps past your tolerance or the keys clash on the Camelot wheel; dashed grey means a BPM or key is missing so it can&apos;t be checked. Nothing is reordered for you.&lt;br&gt;The draft is remembered. &lt;b&gt;Save as playlist…&lt;/b&gt; stores it as an app playlist; the export buttons write a new Serato crate or Traktor playlist where you choose.</source>
+        <translation>Construisez un set à la main : faites glisser des morceaux du tableau dans la liste (ou utilisez &lt;b&gt;Ajouter la sélection&lt;/b&gt;), puis faites-les glisser dans la liste pour les réordonner. Chaque morceau n&apos;y figure qu&apos;une fois.&lt;br&gt;La courbe montre le BPM (bleu, échelle de gauche) et l&apos;énergie (orange, 1-10, d&apos;après le tag Energy). Une transition est en &lt;span style=&apos;color:#d64545&apos;&gt;rouge&lt;/span&gt; et marquée ⚠ quand le BPM saute au-delà de votre tolérance ou que les tonalités se heurtent sur la roue Camelot ; un gris pointillé signifie qu&apos;un BPM ou une tonalité manque, donc la vérification est impossible. Rien n&apos;est réordonné à votre place.&lt;br&gt;Le brouillon est mémorisé. &lt;b&gt;Enregistrer en playlist…&lt;/b&gt; l&apos;enregistre comme playlist de l&apos;application ; les boutons d&apos;export écrivent une nouvelle crate Serato ou playlist Traktor à l&apos;endroit choisi.</translation>
+    </message>
+    <message>
+        <source>Compare mappings</source>
+        <translation>Comparer des mappings</translation>
+    </message>
+    <message>
+        <source>Lists what changed between two mappings by what each trigger &lt;i&gt;does&lt;/i&gt;, not by XML text:&lt;ul&gt;&lt;li&gt;&lt;b&gt;Re-assigned&lt;/b&gt;: a trigger now drives a different function.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Added&lt;/b&gt; / &lt;b&gt;Removed&lt;/b&gt;: functions bound only on one side.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Changed values&lt;/b&gt;: same function, different translation or alias values (e.g. &lt;i&gt;alias on: 127 → 100&lt;/i&gt;).&lt;/li&gt;&lt;li&gt;&lt;b&gt;Duplicate count&lt;/b&gt;: Serato repeats every trigger (often 10×); a file that gained or lost copies shows here once, not as many adds or removes.&lt;/li&gt;&lt;/ul&gt;Functions show their short name (&lt;i&gt;Loop roll&lt;/i&gt;); hover a change for the original Serato tags.&lt;br&gt;&lt;br&gt;Click a row to highlight that control on the layouts and select it in &lt;b&gt;By Channel&lt;/b&gt;. Opened from &lt;b&gt;File → Compare Mapping With…&lt;/b&gt; or &lt;b&gt;File → Compare With Previous Version&lt;/b&gt; (the &lt;tt&gt;.bak&lt;/tt&gt; kept by the last save).</source>
+        <translation>Liste ce qui a changé entre deux mappings d&apos;après ce que &lt;i&gt;fait&lt;/i&gt; chaque déclencheur, pas d&apos;après le texte XML :&lt;ul&gt;&lt;li&gt;&lt;b&gt;Re-assigned&lt;/b&gt; : un déclencheur pilote maintenant une autre fonction.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Added&lt;/b&gt; / &lt;b&gt;Removed&lt;/b&gt; : des fonctions liées d&apos;un seul côté.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Changed values&lt;/b&gt; : même fonction, valeurs de translation ou d&apos;alias différentes (par ex. &lt;i&gt;alias on: 127 → 100&lt;/i&gt;).&lt;/li&gt;&lt;li&gt;&lt;b&gt;Duplicate count&lt;/b&gt; : Serato répète chaque déclencheur (souvent 10×) ; un fichier qui a gagné ou perdu des copies apparaît ici une seule fois, pas comme autant d&apos;ajouts ou de suppressions.&lt;/li&gt;&lt;/ul&gt;Les fonctions affichent leur nom court (&lt;i&gt;Loop roll&lt;/i&gt;) ; survolez un changement pour voir les tags Serato d&apos;origine.&lt;br&gt;&lt;br&gt;Cliquez sur une ligne pour mettre cette commande en évidence sur les dispositions et la sélectionner dans &lt;b&gt;Par canal&lt;/b&gt;. S&apos;ouvre depuis &lt;b&gt;Fichier → Comparer le mapping avec…&lt;/b&gt; ou &lt;b&gt;Fichier → Comparer avec la version précédente&lt;/b&gt; (le &lt;tt&gt;.bak&lt;/tt&gt; gardé par le dernier enregistrement).</translation>
+    </message>
+    <message>
+        <source>What is Controller Setup?</source>
+        <translation>Qu&apos;est-ce que Config. contrôleur ?</translation>
+    </message>
+    <message>
+        <source>Controller Setup builds a *controller profile* — the map from a device&apos;s MIDI triggers to readable physical control names — for a controller DJ MIDI Studio doesn&apos;t know yet. It does NOT open a Serato mapping for editing; that is File → Open.
+
+Workflow: (1) get the triggers — learn them from the hardware under MIDI input, Import them from an existing Serato XML or Traktor TSI mapping, or Start from a controller already in the catalog (a named copy to adapt); (2) type a Section and Name for each row; (3) Apply / Export to use the profile now or write it to disk.</source>
+        <translation>Config. contrôleur crée un *profil de contrôleur* — la correspondance entre les déclencheurs MIDI d&apos;un appareil et des noms lisibles de commandes physiques — pour un contrôleur que DJ MIDI Studio ne connaît pas encore. Cet onglet n&apos;ouvre PAS de mapping Serato pour le modifier : pour cela, utilisez Fichier → Ouvrir un mapping…
+
+Étapes : (1) obtenez les déclencheurs — apprenez-les depuis le matériel sous MIDI input, importez-les d&apos;un mapping Serato XML ou Traktor TSI existant, ou partez d&apos;un contrôleur déjà dans le catalogue (une copie renommée à adapter) ; (2) tapez une Section et un Name pour chaque ligne ; (3) Apply / Export pour utiliser le profil tout de suite ou l&apos;écrire sur le disque.</translation>
+    </message>
+    <message>
+        <source>MIDI input (learn from controller)</source>
+        <translation>MIDI input (apprendre depuis le contrôleur)</translation>
+    </message>
+    <message>
+        <source>MIDI input / learning: tick the input port(s), press Start learning, then press discrete buttons/pads one at a time — each new trigger becomes a row. Continuous controls (faders, TRIM/EQ knobs, jog wheels, touch strips) are captured too but aren&apos;t in scope for a profile — delete those rows before exporting.</source>
+        <translation>MIDI input / apprentissage : cochez le ou les ports d&apos;entrée, cliquez sur Start learning, puis appuyez sur les boutons/pads un par un — chaque nouveau déclencheur devient une ligne. Les commandes continues (faders, potentiomètres TRIM/EQ, jog wheels, touch strips) sont capturées aussi mais n&apos;ont pas leur place dans un profil — supprimez ces lignes avant d&apos;exporter.</translation>
+    </message>
+    <message>
+        <source>Learn triggers from a mapping</source>
+        <translation>Apprendre les déclencheurs d&apos;un mapping</translation>
+    </message>
+    <message>
+        <source>Learn triggers from a Serato XML or a Traktor TSI mapping: adds one row per unique (channel, type, control) the file uses. It seeds the profile so you don&apos;t have to press every button on the hardware — it does NOT open the mapping for editing (that&apos;s File → Open Mapping). Mapped functions aren&apos;t physical control names, so Section and Name still have to be filled in by hand. A TSI export can hold several devices (one per controller); you pick which one to import. After importing you&apos;re offered to open the same file as an editable mapping too.</source>
+        <translation>Apprend les déclencheurs d&apos;un mapping Serato XML ou Traktor TSI : ajoute une ligne par (canal, type, commande) distinct utilisé dans le fichier. Cela amorce le profil sans avoir à presser chaque bouton du matériel — le mapping n&apos;est PAS ouvert pour être modifié (pour cela : Fichier → Ouvrir un mapping…). Les fonctions mappées ne sont pas des noms de commandes physiques : Section et Name restent à remplir à la main. Un export TSI peut contenir plusieurs appareils (un par contrôleur) ; vous choisissez lequel importer. Après l&apos;import, l&apos;application propose aussi d&apos;ouvrir ce même fichier comme mapping modifiable.</translation>
+    </message>
+    <message>
+        <source>Apply / Export</source>
+        <translation>Apply / Export</translation>
+    </message>
+    <message>
+        <source>Install saves this profile in your Controllers folder (Documents/DJ MIDI Studio/Controllers) with a copy of its picture, activates it in every view now, and loads it again at every launch. Installing again under the same name updates it. &quot;Submit to community catalog…&quot; opens a pre-filled GitHub issue with the profile JSON so it can be reviewed and shipped as a built-in (reference images are not included). For developers, the remaining button generates a Python catalog module instead.</source>
+        <translation>Install enregistre ce profil dans votre dossier Controllers (Documents/DJ MIDI Studio/Controllers) avec une copie de son image, l&apos;active tout de suite dans toutes les vues et le recharge à chaque lancement. Installer à nouveau sous le même nom le met à jour. « Submit to community catalog… » ouvre une issue GitHub pré-remplie avec le JSON du profil, pour qu&apos;il puisse être relu et livré comme profil intégré (les images de référence ne sont pas incluses). Pour les développeurs, le dernier bouton génère plutôt un module Python de catalogue.</translation>
+    </message>
+</context>
+<context>
     <name>IntroductionView</name>
     <message>
         <source>Loaded file: none</source>
@@ -2298,24 +2616,6 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
         <translation>Bibliothèque</translation>
     </message>
     <message>
-        <source>MIDI controller detected</source>
-        <translation>Contrôleur MIDI détecté</translation>
-    </message>
-    <message>
-        <source>Enable &apos;{name}&apos;?
-{score}% confidence — {reason}</source>
-        <translation>Activer « {name} » ?
-Confiance {score} % — {reason}</translation>
-    </message>
-    <message>
-        <source>Detected controller suggestion: {name} ({score}% confidence).</source>
-        <translation>Contrôleur suggéré par la détection : {name} (confiance {score} %).</translation>
-    </message>
-    <message>
-        <source>Controller enabled: {name} ({score}% — {reason})</source>
-        <translation>Contrôleur activé : {name} ({score} % — {reason})</translation>
-    </message>
-    <message>
         <source>&amp;File</source>
         <translation>&amp;Fichier</translation>
     </message>
@@ -2432,10 +2732,6 @@ Confiance {score} % — {reason}</translation>
         <translation>Antisèche (PDF)...</translation>
     </message>
     <message>
-        <source>Print each controller&apos;s photo with the function the loaded mapping binds to every control</source>
-        <translation>Imprime la photo de chaque contrôleur avec la fonction que le mapping chargé associe à chaque contrôle</translation>
-    </message>
-    <message>
         <source>&amp;Back Up Workspace...</source>
         <translation>&amp;Sauvegarder l&apos;espace de travail...</translation>
     </message>
@@ -2496,10 +2792,6 @@ Confiance {score} % — {reason}</translation>
         <translation>Nouvel émulateur de contrôleur…</translation>
     </message>
     <message>
-        <source>Open another Controller Emulator window -- several may be open at once, each bound to its own controller</source>
-        <translation>Ouvre une autre fenêtre d&apos;émulateur de contrôleur -- plusieurs peuvent être ouvertes à la fois, chacune liée à son propre contrôleur</translation>
-    </message>
-    <message>
         <source>MIDI Latency Test…</source>
         <translation>Test de latence MIDI…</translation>
     </message>
@@ -2520,16 +2812,8 @@ Confiance {score} % — {reason}</translation>
         <translation>Afficher tous les contrôleurs</translation>
     </message>
     <message>
-        <source>Ignore the per-controller Preferences enablement and list every registered controller</source>
-        <translation>Ignore l&apos;activation par contrôleur des Préférences et liste tous les contrôleurs enregistrés</translation>
-    </message>
-    <message>
         <source>Performance Mode</source>
         <translation>Mode performance</translation>
-    </message>
-    <message>
-        <source>Hide the mapping tree and enlarge the schematic layout for on-stage use (session-only, not remembered across restarts)</source>
-        <translation>Masque l&apos;arbre du mapping et agrandit le schéma pour la scène (pour cette session uniquement, non mémorisé au redémarrage)</translation>
     </message>
     <message>
         <source>Stage Mode</source>
@@ -2604,94 +2888,6 @@ Confiance {score} % — {reason}</translation>
         <translation>&amp;Signaler un problème...</translation>
     </message>
     <message>
-        <source>Preview a bug report with your app version, system and recent log lines, then open it as a pre-filled GitHub issue.</source>
-        <translation>Prévisualise un rapport de bug avec la version de l&apos;application, le système et les dernières lignes du journal, puis l&apos;ouvre comme ticket GitHub prérempli.</translation>
-    </message>
-    <message>
-        <source>Live Monitor</source>
-        <translation>Live Monitor</translation>
-    </message>
-    <message>
-        <source>MIDI Routing</source>
-        <translation>Routage MIDI</translation>
-    </message>
-    <message>
-        <source>MIDI Clock</source>
-        <translation>Horloge MIDI</translation>
-    </message>
-    <message>
-        <source>Metronome</source>
-        <translation>Métronome</translation>
-    </message>
-    <message>
-        <source>Close</source>
-        <translation>Fermer</translation>
-    </message>
-    <message>
-        <source>Window</source>
-        <translation>Fenêtre</translation>
-    </message>
-    <message>
-        <source>Reduce to title bar</source>
-        <translation>Réduire à la barre de titre</translation>
-    </message>
-    <message>
-        <source>Maximize</source>
-        <translation>Agrandir</translation>
-    </message>
-    <message>
-        <source>Snap left</source>
-        <translation>Ancrer à gauche</translation>
-    </message>
-    <message>
-        <source>Snap right</source>
-        <translation>Ancrer à droite</translation>
-    </message>
-    <message>
-        <source>Snap to top</source>
-        <translation>Ancrer en haut</translation>
-    </message>
-    <message>
-        <source>Snap to bottom</source>
-        <translation>Ancrer en bas</translation>
-    </message>
-    <message>
-        <source>Expand</source>
-        <translation>Déplier</translation>
-    </message>
-    <message>
-        <source>Restore</source>
-        <translation>Restaurer</translation>
-    </message>
-    <message>
-        <source>Dock</source>
-        <translation>Attacher</translation>
-    </message>
-    <message>
-        <source>Attach back into the main window</source>
-        <translation>Rattacher à la fenêtre principale</translation>
-    </message>
-    <message>
-        <source>Undock</source>
-        <translation>Détacher</translation>
-    </message>
-    <message>
-        <source>Detach into its own window</source>
-        <translation>Détacher dans sa propre fenêtre</translation>
-    </message>
-    <message>
-        <source>Controller Emulator</source>
-        <translation>Émulateur de contrôleur</translation>
-    </message>
-    <message>
-        <source>Documentation unavailable</source>
-        <translation>Documentation indisponible</translation>
-    </message>
-    <message>
-        <source>Preferences saved</source>
-        <translation>Préférences enregistrées</translation>
-    </message>
-    <message>
         <source>No initialization set is recorded for the scene &quot;{scene}&quot; and no controller has a Default set.</source>
         <translation>Aucun jeu d&apos;initialisation n&apos;est enregistré pour la scène « {scene} » et aucun contrôleur n&apos;a de jeu Default.</translation>
     </message>
@@ -2710,58 +2906,6 @@ Confiance {score} % — {reason}</translation>
     <message>
         <source>Plugged in -- </source>
         <translation>Branché -- </translation>
-    </message>
-    <message>
-        <source>Already checking for updates...</source>
-        <translation>Recherche de mises à jour déjà en cours...</translation>
-    </message>
-    <message>
-        <source>Checking for updates...</source>
-        <translation>Recherche de mises à jour...</translation>
-    </message>
-    <message>
-        <source>Problem report copied to the clipboard and opened as a GitHub issue.</source>
-        <translation>Rapport de problème copié dans le presse-papiers et ouvert comme ticket GitHub.</translation>
-    </message>
-    <message>
-        <source>The report was too long for the link: it&apos;s on your clipboard — paste it into the issue.</source>
-        <translation>Le rapport était trop long pour le lien : il est dans le presse-papiers — collez-le dans le ticket.</translation>
-    </message>
-    <message>
-        <source>Update available: v{version}</source>
-        <translation>Mise à jour disponible : v{version}</translation>
-    </message>
-    <message>
-        <source>Open the {tag} release page in your browser</source>
-        <translation>Ouvrir la page de la version {tag} dans le navigateur</translation>
-    </message>
-    <message>
-        <source>DJ MIDI Studio v{version} is available (you have v{local}).</source>
-        <translation>DJ MIDI Studio v{version} est disponible (vous avez la v{local}).</translation>
-    </message>
-    <message>
-        <source>Check for Updates</source>
-        <translation>Rechercher des mises à jour</translation>
-    </message>
-    <message>
-        <source>Couldn&apos;t reach GitHub to check for a new version. Check your connection and try again.</source>
-        <translation>Impossible de joindre GitHub pour chercher une nouvelle version. Vérifiez votre connexion et réessayez.</translation>
-    </message>
-    <message>
-        <source>DJ MIDI Studio v{version} is available (you have v{local}).
-
-Open the release page to download it?</source>
-        <translation>DJ MIDI Studio v{version} est disponible (vous avez la v{local}).
-
-Ouvrir la page de la version pour la télécharger ?</translation>
-    </message>
-    <message>
-        <source>The latest release is {tag}, but this copy&apos;s own version is unknown.</source>
-        <translation>La dernière version est {tag}, mais la version de cette copie est inconnue.</translation>
-    </message>
-    <message>
-        <source>You&apos;re up to date (v{local}, latest release {tag}).</source>
-        <translation>Vous êtes à jour (v{local}, dernière version {tag}).</translation>
     </message>
     <message>
         <source>Cannot record</source>
@@ -2868,6 +3012,216 @@ Ouvrir la page de la version pour la télécharger ?</translation>
         <translation>Scène de synchro : {scene}</translation>
     </message>
     <message>
+        <source>Recording in progress</source>
+        <translation>Enregistrement en cours</translation>
+    </message>
+    <message>
+        <source>A controller sync recording is in progress. Save it before quitting?</source>
+        <translation>Un enregistrement de synchronisation des contrôleurs est en cours. L&apos;enregistrer avant de quitter ?</translation>
+    </message>
+    <message>
+        <source>No macro yet</source>
+        <translation>Aucune macro pour l&apos;instant</translation>
+    </message>
+    <message>
+        <source>Manage Macros…</source>
+        <translation>Gérer les macros…</translation>
+    </message>
+    <message>
+        <source>Show Macros Folder</source>
+        <translation>Afficher le dossier des macros</translation>
+    </message>
+    <message>
+        <source>Layer Map</source>
+        <translation>Carte des couches</translation>
+    </message>
+    <message>
+        <source>Open a mapping first.</source>
+        <translation>Ouvrez d&apos;abord un mapping.</translation>
+    </message>
+    <message>
+        <source>Ready for live: open a mapping first.</source>
+        <translation>Prêt pour le live : ouvrez d&apos;abord un mapping.</translation>
+    </message>
+    <message>
+        <source>Ready for live: {errors} error(s), {warnings} warning(s), {infos} info</source>
+        <translation>Prêt pour le live : {errors} erreur(s), {warnings} avertissement(s), {infos} info(s)</translation>
+    </message>
+    <message>
+        <source>MIDI controller detected</source>
+        <translation>Contrôleur MIDI détecté</translation>
+    </message>
+    <message>
+        <source>Enable &apos;{name}&apos;?
+{score}% confidence — {reason}</source>
+        <translation>Activer « {name} » ?
+Confiance {score} % — {reason}</translation>
+    </message>
+    <message>
+        <source>Detected controller suggestion: {name} ({score}% confidence).</source>
+        <translation>Contrôleur suggéré par la détection : {name} (confiance {score} %).</translation>
+    </message>
+    <message>
+        <source>Controller enabled: {name} ({score}% — {reason})</source>
+        <translation>Contrôleur activé : {name} ({score} % — {reason})</translation>
+    </message>
+    <message>
+        <source>Print each controller&apos;s photo with the function the loaded mapping binds to every control</source>
+        <translation>Imprime la photo de chaque contrôleur avec la fonction que le mapping chargé associe à chaque contrôle</translation>
+    </message>
+    <message>
+        <source>Open another Controller Emulator window -- several may be open at once, each bound to its own controller</source>
+        <translation>Ouvre une autre fenêtre d&apos;émulateur de contrôleur -- plusieurs peuvent être ouvertes à la fois, chacune liée à son propre contrôleur</translation>
+    </message>
+    <message>
+        <source>Ignore the per-controller Preferences enablement and list every registered controller</source>
+        <translation>Ignore l&apos;activation par contrôleur des Préférences et liste tous les contrôleurs enregistrés</translation>
+    </message>
+    <message>
+        <source>Hide the mapping tree and enlarge the schematic layout for on-stage use (session-only, not remembered across restarts)</source>
+        <translation>Masque l&apos;arbre du mapping et agrandit le schéma pour la scène (pour cette session uniquement, non mémorisé au redémarrage)</translation>
+    </message>
+    <message>
+        <source>Preview a bug report with your app version, system and recent log lines, then open it as a pre-filled GitHub issue.</source>
+        <translation>Prévisualise un rapport de bug avec la version de l&apos;application, le système et les dernières lignes du journal, puis l&apos;ouvre comme ticket GitHub prérempli.</translation>
+    </message>
+    <message>
+        <source>Live Monitor</source>
+        <translation>Live Monitor</translation>
+    </message>
+    <message>
+        <source>MIDI Routing</source>
+        <translation>Routage MIDI</translation>
+    </message>
+    <message>
+        <source>MIDI Clock</source>
+        <translation>Horloge MIDI</translation>
+    </message>
+    <message>
+        <source>Metronome</source>
+        <translation>Métronome</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Fermer</translation>
+    </message>
+    <message>
+        <source>Window</source>
+        <translation>Fenêtre</translation>
+    </message>
+    <message>
+        <source>Reduce to title bar</source>
+        <translation>Réduire à la barre de titre</translation>
+    </message>
+    <message>
+        <source>Maximize</source>
+        <translation>Agrandir</translation>
+    </message>
+    <message>
+        <source>Snap left</source>
+        <translation>Ancrer à gauche</translation>
+    </message>
+    <message>
+        <source>Snap right</source>
+        <translation>Ancrer à droite</translation>
+    </message>
+    <message>
+        <source>Snap to top</source>
+        <translation>Ancrer en haut</translation>
+    </message>
+    <message>
+        <source>Snap to bottom</source>
+        <translation>Ancrer en bas</translation>
+    </message>
+    <message>
+        <source>Expand</source>
+        <translation>Déplier</translation>
+    </message>
+    <message>
+        <source>Restore</source>
+        <translation>Restaurer</translation>
+    </message>
+    <message>
+        <source>Dock</source>
+        <translation>Attacher</translation>
+    </message>
+    <message>
+        <source>Attach back into the main window</source>
+        <translation>Rattacher à la fenêtre principale</translation>
+    </message>
+    <message>
+        <source>Undock</source>
+        <translation>Détacher</translation>
+    </message>
+    <message>
+        <source>Detach into its own window</source>
+        <translation>Détacher dans sa propre fenêtre</translation>
+    </message>
+    <message>
+        <source>Controller Emulator</source>
+        <translation>Émulateur de contrôleur</translation>
+    </message>
+    <message>
+        <source>Documentation unavailable</source>
+        <translation>Documentation indisponible</translation>
+    </message>
+    <message>
+        <source>Preferences saved</source>
+        <translation>Préférences enregistrées</translation>
+    </message>
+    <message>
+        <source>Already checking for updates...</source>
+        <translation>Recherche de mises à jour déjà en cours...</translation>
+    </message>
+    <message>
+        <source>Checking for updates...</source>
+        <translation>Recherche de mises à jour...</translation>
+    </message>
+    <message>
+        <source>Problem report copied to the clipboard and opened as a GitHub issue.</source>
+        <translation>Rapport de problème copié dans le presse-papiers et ouvert comme ticket GitHub.</translation>
+    </message>
+    <message>
+        <source>The report was too long for the link: it&apos;s on your clipboard — paste it into the issue.</source>
+        <translation>Le rapport était trop long pour le lien : il est dans le presse-papiers — collez-le dans le ticket.</translation>
+    </message>
+    <message>
+        <source>Update available: v{version}</source>
+        <translation>Mise à jour disponible : v{version}</translation>
+    </message>
+    <message>
+        <source>Open the {tag} release page in your browser</source>
+        <translation>Ouvrir la page de la version {tag} dans le navigateur</translation>
+    </message>
+    <message>
+        <source>DJ MIDI Studio v{version} is available (you have v{local}).</source>
+        <translation>DJ MIDI Studio v{version} est disponible (vous avez la v{local}).</translation>
+    </message>
+    <message>
+        <source>Check for Updates</source>
+        <translation>Rechercher des mises à jour</translation>
+    </message>
+    <message>
+        <source>Couldn&apos;t reach GitHub to check for a new version. Check your connection and try again.</source>
+        <translation>Impossible de joindre GitHub pour chercher une nouvelle version. Vérifiez votre connexion et réessayez.</translation>
+    </message>
+    <message>
+        <source>DJ MIDI Studio v{version} is available (you have v{local}).
+
+Open the release page to download it?</source>
+        <translation>DJ MIDI Studio v{version} est disponible (vous avez la v{local}).
+
+Ouvrir la page de la version pour la télécharger ?</translation>
+    </message>
+    <message>
+        <source>The latest release is {tag}, but this copy&apos;s own version is unknown.</source>
+        <translation>La dernière version est {tag}, mais la version de cette copie est inconnue.</translation>
+    </message>
+    <message>
+        <source>You&apos;re up to date (v{local}, latest release {tag}).</source>
+        <translation>Vous êtes à jour (v{local}, dernière version {tag}).</translation>
+    </message>
+    <message>
         <source>Performance mode on — tree hidden, layout enlarged</source>
         <translation>Mode performance activé — arbre masqué, schéma agrandi</translation>
     </message>
@@ -2930,14 +3284,6 @@ Ouvrir la page de la version pour la télécharger ?</translation>
     <message>
         <source>&apos;{name}&apos; applied for this session.</source>
         <translation>« {name} » appliqué pour cette session.</translation>
-    </message>
-    <message>
-        <source>Recording in progress</source>
-        <translation>Enregistrement en cours</translation>
-    </message>
-    <message>
-        <source>A controller sync recording is in progress. Save it before quitting?</source>
-        <translation>Un enregistrement de synchronisation des contrôleurs est en cours. L&apos;enregistrer avant de quitter ?</translation>
     </message>
     <message>
         <source>Export {software} mapping</source>
@@ -3104,18 +3450,6 @@ Quitter maintenant ?</translation>
         <translation>aucun port</translation>
     </message>
     <message>
-        <source>No macro yet</source>
-        <translation>Aucune macro pour l&apos;instant</translation>
-    </message>
-    <message>
-        <source>Manage Macros…</source>
-        <translation>Gérer les macros…</translation>
-    </message>
-    <message>
-        <source>Show Macros Folder</source>
-        <translation>Afficher le dossier des macros</translation>
-    </message>
-    <message>
         <source>{count} macro(s) saved</source>
         <translation>{count} macro(s) enregistrée(s)</translation>
     </message>
@@ -3146,24 +3480,8 @@ Quitter maintenant ?</translation>
         <translation>Antisèche exportée : {path} ({count} page(s))</translation>
     </message>
     <message>
-        <source>Layer Map</source>
-        <translation>Carte des couches</translation>
-    </message>
-    <message>
         <source>Validation: {errors} error(s), {warnings} warning(s), {infos} info</source>
         <translation>Validation : {errors} erreur(s), {warnings} avertissement(s), {infos} info</translation>
-    </message>
-    <message>
-        <source>Open a mapping first.</source>
-        <translation>Ouvrez d&apos;abord un mapping.</translation>
-    </message>
-    <message>
-        <source>Ready for live: open a mapping first.</source>
-        <translation>Prêt pour le live : ouvrez d&apos;abord un mapping.</translation>
-    </message>
-    <message>
-        <source>Ready for live: {errors} error(s), {warnings} warning(s), {infos} info</source>
-        <translation>Prêt pour le live : {errors} erreur(s), {warnings} avertissement(s), {infos} info(s)</translation>
     </message>
     <message>
         <source>Filter by channel, control, event type, function, deck, slot...</source>

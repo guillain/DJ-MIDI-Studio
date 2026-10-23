@@ -61,6 +61,10 @@ This first version translates what you use most:
   rule summaries and sort orders;
 - the Sync result summary shown in the status bar, and the Live Monitor's
   lock tooltip while **● Enr** records;
+- every `?` help popup, on every tab and tool window, Controller Setup's
+  included (its `Ouvrir le guide complet` button still opens the English
+  guide); a button that is still in English is named in English there, so
+  you find it on screen;
 - Qt's own standard buttons and dialogs (`OK`, `Annuler`, `Enregistrer`,
   file pickers).
 
@@ -68,8 +72,8 @@ This first version translates what you use most:
 
 ## What stays in English
 
-Most other messages and the `?` help
-texts are still in English, as is this documentation. In the mapping tabs,
+Most other messages are still in English, as is this documentation
+(including the guides the `?` help popups open). In the mapping tabs,
 the names Serato gives its own fields stay as written (`Deck set`,
 `Slot id`, `action_on`, `behaviour`, `Control`, `User I/O`), the function
 search understands English words (`deck 2`, `slot 3`, `click`, `output`),

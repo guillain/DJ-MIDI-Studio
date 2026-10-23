@@ -132,6 +132,10 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **French UI: contextual help texts** (`v0.48.124-french-help-texts`, issue #320) — every `?` help popup
+  (title, rich-text body, tooltip, `Open full guide`) is translated through the `HelpTexts` catalogue context at
+  show time; Controller Setup's four panel texts moved into `help_texts.py` to share it. The linked guides stay
+  English; still-English buttons keep their English names in the French texts (to align once #317/#318 land).
 - [x] **French UI: computed reports and messages** (`v0.48.123-french-computed-text`, issue #319) — the
   Ready-for-live findings, the latency statistics line, change-history entries (kind, status, per-file
   changes, revert reasons, and the stored summaries this app writes) and macro results follow the interface

@@ -76,6 +76,7 @@ from djmidi.catalog.community import (
 )
 from djmidi.catalog.profile import USER_PLUGIN_PREFIX, save_controller_profile
 from djmidi.controller_sync import ControllerSyncSet, sync_set_from_events
+from djmidi.gui import help_texts
 from djmidi.gui.controller_submission_dialog import ControllerSubmissionDialog
 from djmidi.gui.help_button import help_button
 from djmidi.gui.port_list_utils import refresh_checked_port_list
@@ -104,32 +105,6 @@ _LOGGER = logging.getLogger(__name__)
 
 _POLL_INTERVAL_MS = 30
 
-_TAB_HELP = (
-    "Controller Setup builds a *controller profile* — the map from a device's MIDI "
-    "triggers to readable physical control names — for a controller DJ MIDI Studio "
-    "doesn't know yet. It does NOT open a Serato mapping for editing; that is "
-    "File → Open.\n\n"
-    "Workflow: (1) get the triggers — learn them from the hardware under MIDI input, "
-    "Import them from an existing Serato XML or Traktor TSI mapping, or Start from a controller already in the "
-    "catalog (a named copy to adapt); (2) type a Section and Name for each "
-    "row; (3) Apply / Export to use the profile now or write it to disk."
-)
-_CAPTURE_HELP = (
-    "MIDI input / learning: tick the input port(s), press Start learning, then press "
-    "discrete buttons/pads one at a time — each new trigger becomes a row. Continuous "
-    "controls (faders, TRIM/EQ knobs, jog wheels, touch strips) are captured too but "
-    "aren't in scope for a profile — delete those rows before exporting."
-)
-_IMPORT_HELP = (
-    "Learn triggers from a Serato XML or a Traktor TSI mapping: adds one row per "
-    "unique (channel, type, control) the file uses. It seeds the profile so you don't "
-    "have to press every button on the hardware — it does NOT open the mapping for "
-    "editing (that's File → Open Mapping). Mapped functions aren't physical control names, so "
-    "Section and Name still have to be filled in by hand. A TSI export can hold several "
-    "devices (one per controller); you pick which one to import. After importing you're "
-    "offered to open the same file as an editable mapping too."
-)
-
 _ALL_TSI_DEVICES = QT_TRANSLATE_NOOP("ControllerSetupView", "All devices")
 
 
@@ -157,15 +132,6 @@ def tsi_device_labels(config: MidiConfig) -> dict[str, str]:
         port = f" — {device.in_port}" if device.in_port else ""
         labels[key] = f"#{device.index} {name}{port}"
     return labels
-_APPLY_HELP = (
-    "Install saves this profile in your Controllers folder (Documents/DJ MIDI Studio/Controllers) "
-    "with a copy of its picture, activates it in every view now, and loads it again at every "
-    "launch. Installing again under the same name updates it. \"Submit to community catalog…\" "
-    "opens a pre-filled GitHub issue with the profile JSON so it can be reviewed and shipped as "
-    "a built-in (reference images are not included). For developers, the remaining button "
-    "generates a Python catalog module instead."
-)
-
 # This view's few custom-styled elements (a QGroupBox-styled QFrame with no
 # native title row, its title, a muted "hint" subtitle, a small caption, and
 # the learn-status pill) used to set a literal hardcoded copy of the dark
@@ -289,7 +255,7 @@ class ControllerSetupView(QWidget):
         self._learn_button.setToolTip(self.tr("Start learning"))
         self._learn_button.clicked.connect(self._toggle_learning)
         self._learn_status = QLabel(self.tr("Stopped"))
-        capture_help_button = self._help_button("MIDI input (learn from controller)", _CAPTURE_HELP)
+        capture_help_button = help_button(self, *help_texts.CONTROLLER_SETUP_CAPTURE)
         capture_box, capture_layout = self._titled_panel(
             self.tr("MIDI input"), [refresh_button, self._learn_button, capture_help_button]
         )
@@ -303,7 +269,7 @@ class ControllerSetupView(QWidget):
         self._attach_image_button = QPushButton(self._get_icon("image"), "")
         self._attach_image_button.setToolTip(self.tr("Attach reference image…"))
         self._attach_image_button.clicked.connect(self._on_attach_image_clicked)
-        import_help_button = self._help_button("Learn triggers from a mapping", _IMPORT_HELP)
+        import_help_button = help_button(self, *help_texts.CONTROLLER_SETUP_IMPORT)
         self._image_label = QLabel(self.tr("No reference image"))
         self._image_label.setWordWrap(True)
         self._hint_labels.append(self._image_label)
@@ -453,11 +419,11 @@ class ControllerSetupView(QWidget):
         submit_button = QPushButton(self._get_icon("submit"), "")
         submit_button.setToolTip(self.tr("Submit to community catalog…"))
         submit_button.clicked.connect(self._on_submit_clicked)
-        apply_help_button = self._help_button("Apply / Export", _APPLY_HELP)
+        apply_help_button = help_button(self, *help_texts.CONTROLLER_SETUP_APPLY)
 
         # Session, Import and Apply/Export are merged into one "Draft" panel: a
         # single horizontal toolbar of icon actions with a caption per group.
-        tab_help_button = self._help_button("What is Controller Setup?", _TAB_HELP)
+        tab_help_button = help_button(self, *help_texts.CONTROLLER_SETUP_TAB)
         draft_box, draft_layout = self._titled_panel(self.tr("Draft"), [tab_help_button])
         draft_hint = QLabel(
             self.tr(
@@ -678,11 +644,6 @@ class ControllerSetupView(QWidget):
             "template": QStyle.StandardPixmap.SP_FileDialogDetailedView,
         }
         return style.standardIcon(icon_map.get(icon_type, QStyle.StandardPixmap.SP_FileIcon))
-
-    def _help_button(self, title: str, text: str) -> QPushButton:
-        # The app-wide "?" help button (help_button.py), with a link to this
-        # tab's page of the user guide.
-        return help_button(self, title, text, "controller-setup.md")
 
     def _titled_panel(self, title: str, header_buttons: list[QPushButton]) -> tuple[QFrame, QVBoxLayout]:
         """A QGroupBox-styled panel with icon-only action buttons in its title
