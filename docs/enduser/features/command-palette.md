@@ -35,7 +35,8 @@ action and tab, in menu order, so you can also browse it.
   rather than listed and ignored. A toggle shows its state:
   `Performance Mode (off)`.
 - Functions understand everything Find function does: `deck 2`, `slot 3`,
-  `output` for LED feedback, the short name or the original Serato tag.
+  `output` for LED feedback (or their French equivalents `platine 2`,
+  `emplacement 3`, `sortie`), the short name or the original Serato tag.
 - Tracks appear from two typed letters on, and only once the Music Library
   tab has been opened in this session (the palette never opens your library
   index by itself). If a library filter hides the track, the filters are

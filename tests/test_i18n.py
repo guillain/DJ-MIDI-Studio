@@ -827,3 +827,156 @@ def test_tool_dock_title_bars_and_window_menu_show_french(french):
     finally:
         window.close()
         window.deleteLater()
+
+
+# --- Validation, detection, Controller Setup errors, macro editor (issue #326) --
+
+
+def _invalid_mapping():
+    from djmidi.parser import parse_string
+
+    return parse_string(
+        "<midi app='1.0'><control channel='1' event_type='Note On' control='9'><userio event='click'>"
+        "<codfather_st deck_set='Default' deck_id='1'><translation action_on='hold' behaviour='odd'/></codfather_st>"
+        "</userio></control></midi>"
+    )
+
+
+def test_issue_326_helpers_stay_english_by_default_and_are_scanned():
+    from djmidi.function_names import function_label
+    from djmidi.integration_detection import detect_software_mapping
+    from djmidi.midi_macros import MacroTrigger, steps_from_rows
+    from djmidi.session_player import _parse_int
+    from djmidi.validator import severity_label, validate
+
+    messages = [issue.message for issue in validate(_invalid_mapping())]
+    assert "Mapping <codfather_st> is missing deck_id or slot_id." in messages
+    assert "Unrecognized action_on value 'hold'." in messages
+    assert severity_label("error") == "error"
+    assert detect_software_mapping("<midi app='1.0'/>", ".xml").best.reasons == ("mapping file signature",)
+    assert function_label("auto_loop_roll_specific_length", "3") == "Loop roll · slot 3"
+    with pytest.raises(ValueError, match=r"^Channel must be in \[1, 16\]$"):
+        _parse_int("17", "Channel", 1, 16)
+    with pytest.raises(ValueError, match=r"^Step 1: channel must be in \[1, 16\]$"):
+        steps_from_rows([("Note On", "17", "1", "127", "0")])
+    assert MacroTrigger("Note On", 1, 36, "IAC").label() == "Note 36, ch 1 on IAC"
+    sources = {path.name for path in _script_sources()}
+    assert {
+        "validator.py",
+        "integration_detection.py",
+        "function_names.py",
+        "session_player.py",
+        "macro_editor.py",
+    } <= sources
+
+
+def test_issue_326_helpers_show_french_through_a_translator(french):
+    from djmidi.function_names import function_label
+    from djmidi.gui.translation import translator
+    from djmidi.integration_detection import detect_software_mapping
+    from djmidi.midi_macros import (
+        MacroTrigger,
+        MidiMacro,
+        steps_from_rows,
+        validate_macros,
+    )
+    from djmidi.session_player import _parse_int
+    from djmidi.validator import DeckConflict, severity_label, validate
+
+    validator = translator("Validator")
+    messages = [issue.message for issue in validate(_invalid_mapping(), validator)]
+    assert "Il manque deck_id ou slot_id au mapping <codfather_st>." in messages
+    assert "Valeur action_on inconnue « hold »." in messages
+    assert severity_label("warning", validator) == "avertissement"
+    conflict = DeckConflict("1", (("codfather_fx", "0"), ("codfather_st", "0")))
+    assert conflict.describe(validator) == "platine 1 : codfather_fx (slot 0), codfather_st (slot 0)"
+    detected = detect_software_mapping("<midi app='1.0'/>", ".xml", translator("IntegrationDetection"))
+    assert detected.best.reasons == ("signature du fichier de mapping",)
+    assert function_label("auto_loop_roll_specific_length", "3", translator("FunctionNames")) == "Loop roll · slot 3"
+    with pytest.raises(ValueError, match=r"^Canal doit être compris entre 1 et 16$"):
+        _parse_int("17", translator("ControllerSetupView")("Channel"), 1, 16, translator("SessionPlayer"))
+    macros = translator("MidiMacros")
+    with pytest.raises(ValueError, match="^Étape 1 : le canal doit être compris entre 1 et 16$"):
+        steps_from_rows([("Note On", "17", "1", "127", "0")], macros)
+    trigger = MacroTrigger("Note On", 1, 36, "IAC")
+    assert trigger.label(macros) == "Note 36, canal 1 sur IAC"
+    twins = [MidiMacro("Intro"), MidiMacro("intro")]
+    assert validate_macros(twins, macros) == ["Deux macros s'appellent « intro »"]
+
+
+def test_validation_table_shows_french(french):
+    from djmidi.gui.main_window import MainWindow
+
+    window = MainWindow()
+    try:
+        window.config = _invalid_mapping()
+        window._on_validate()
+        table = window.issues_table
+        rows = {table.item(row, 1).text(): table.item(row, 0).text() for row in range(table.rowCount())}
+        assert rows["Il manque deck_id ou slot_id au mapping <codfather_st>."] == "erreur"
+        assert rows["Valeur behaviour inconnue « odd »."] == "info"
+    finally:
+        window.close()
+        window.deleteLater()
+
+
+def test_controller_setup_errors_and_sources_show_french(french, monkeypatch):
+    from PySide6.QtWidgets import QMessageBox
+
+    import djmidi.gui.controller_setup as controller_setup_mod
+
+    shown = []
+    monkeypatch.setattr(QMessageBox, "critical", lambda _parent, title, text, *_args: shown.append((title, text)))
+    monkeypatch.setattr(controller_setup_mod, "list_output_ports", lambda: ["Port A"])
+
+    def unplugged(**_kwargs):
+        raise OSError("unknown port 'Port A'")
+
+    monkeypatch.setattr(controller_setup_mod, "send_midi_message", unplugged)
+    view = controller_setup_mod.ControllerSetupView()
+    try:
+        view._maybe_add_row("1", "NOTE", "10", "learned")
+        view._maybe_add_row("1", "NOTE", "11", "xml-import")
+        assert [view._table.item(row, 5).text() for row in range(2)] == ["appris", "import XML"]
+        assert view._sources == ["learned", "xml-import"]
+        view._refresh_output_ports()
+        view._send_type_edit.setText("note_on")
+        view._send_channel_edit.setText("17")
+        view._on_send_output_once_clicked()
+        view._send_channel_edit.setText("1")
+        view._send_data1_edit.setText("x")
+        view._on_send_output_once_clicked()
+        view._send_data1_edit.setText("10")
+        view._send_type_edit.setText("pitch")
+        view._on_send_output_once_clicked()
+        view._send_type_edit.setText("note_on")
+        view._on_send_output_once_clicked()
+        assert [text for _title, text in shown] == [
+            "Canal doit être compris entre 1 et 16",
+            "Data1 doit être un nombre entier",
+            "Type de message non pris en charge « pitch » : utilisez Note On, Note Off ou Control Change.",
+            "Impossible d'envoyer vers la sortie MIDI « Port A » : unknown port 'Port A'",
+        ]
+    finally:
+        view.deleteLater()
+
+
+def test_macro_editor_shows_french(french):
+    from PySide6.QtWidgets import QPushButton
+
+    from djmidi.gui.macro_editor import MacroManagerDialog
+    from djmidi.midi_macros import MidiMacro
+
+    dialog = MacroManagerDialog([MidiMacro("Intro", "IAC")])
+    try:
+        assert dialog.windowTitle() == "Macros MIDI"
+        texts = {button.text() for button in dialog.findChildren(QPushButton)}
+        assert {"Nouvelle", "Ajouter une étape", "Tester", "Apprendre"} <= texts
+        headers = [dialog.table.horizontalHeaderItem(column).text() for column in range(dialog.table.columnCount())]
+        assert headers == ["Type", "Canal", "Data 1", "Data 2", "Délai (ms)"]
+        assert dialog.trigger_label.text() == "Aucun"
+        dialog.name_edit.setText("")
+        dialog.accept()
+        assert dialog.status.text() == "Une macro doit avoir un nom"
+    finally:
+        dialog.deleteLater()

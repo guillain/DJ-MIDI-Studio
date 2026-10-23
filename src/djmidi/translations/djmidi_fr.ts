@@ -592,6 +592,26 @@ Mappé sur : {functions}</translation>
         <translation>Data1</translation>
     </message>
     <message>
+        <source>learned</source>
+        <translation>appris</translation>
+    </message>
+    <message>
+        <source>XML import</source>
+        <translation>import XML</translation>
+    </message>
+    <message>
+        <source>TSI import</source>
+        <translation>import TSI</translation>
+    </message>
+    <message>
+        <source>manual</source>
+        <translation>manuel</translation>
+    </message>
+    <message>
+        <source>copy of {controller}</source>
+        <translation>copie de {controller}</translation>
+    </message>
+    <message>
         <source>Value</source>
         <translation>Valeur</translation>
     </message>
@@ -772,6 +792,14 @@ Mappé sur : {functions}</translation>
         <translation>Aucun port de sortie sélectionné</translation>
     </message>
     <message>
+        <source>Unsupported message type &apos;{type}&apos;: use Note On, Note Off or Control Change.</source>
+        <translation>Type de message non pris en charge « {type} » : utilisez Note On, Note Off ou Control Change.</translation>
+    </message>
+    <message>
+        <source>Could not send to the MIDI output &apos;{port}&apos;: {error}</source>
+        <translation>Impossible d&apos;envoyer vers la sortie MIDI « {port} » : {error}</translation>
+    </message>
+    <message>
         <source>Failed to send MIDI</source>
         <translation>Échec de l&apos;envoi MIDI</translation>
     </message>
@@ -904,6 +932,10 @@ Ouvrir aussi ce fichier comme mapping modifiable (Par canal / Par platine / Par 
     <message>
         <source>The image is referenced by its path on this machine and saved in the session JSON. Install copies it next to the installed profile, so it keeps showing in Controller Images even if you move the original. &quot;Generate catalog module…&quot; writes reference_image=&apos;custom/&lt;filename&gt;&apos;; place a copy at controllers/custom/&lt;filename&gt; if you want it bundled (respecting its licence — user-supplied images are your responsibility).</source>
         <translation>L&apos;image est référencée par son chemin sur cet ordinateur et enregistrée dans le JSON de la session. Installer la copie à côté du profil installé, pour qu&apos;elle reste visible dans Images contrôleur même si vous déplacez l&apos;original. « Générer un module de catalogue… » écrit reference_image=&apos;custom/&lt;filename&gt;&apos; ; placez une copie dans controllers/custom/&lt;filename&gt; pour l&apos;inclure (en respectant sa licence — les images que vous fournissez sont sous votre responsabilité).</translation>
+    </message>
+    <message>
+        <source>Unsupported session version: {version}</source>
+        <translation>Version de session non prise en charge : {version}</translation>
     </message>
     <message>
         <source>Save controller setup session</source>
@@ -1432,6 +1464,14 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     </message>
 </context>
 <context>
+    <name>FunctionNames</name>
+    <message>
+        <source>{name} · slot {slot}</source>
+        <extracomment>The slot suffix of a label, translated by the GUI (issue #326).</extracomment>
+        <translation>{name} · slot {slot}</translation>
+    </message>
+</context>
+<context>
     <name>FunctionSearchView</name>
     <message>
         <source>unknown physical control</source>
@@ -1439,7 +1479,7 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     </message>
     <message>
         <source>Find function: loop roll, deck 2…</source>
-        <translation>Chercher une fonction : loop roll, deck 2…</translation>
+        <translation>Chercher une fonction : loop roll, platine 2…</translation>
     </message>
     <message>
         <source>Which control triggers this function? Matches function names, deck and slot.</source>
@@ -1896,6 +1936,33 @@ Workflow: (1) get the triggers — learn them from the hardware under MIDI input
     <message>
         <source>Install saves this profile in your Controllers folder (Documents/DJ MIDI Studio/Controllers) with a copy of its picture, activates it in every view now, and loads it again at every launch. Installing again under the same name updates it. &quot;Submit to community catalog…&quot; opens a pre-filled GitHub issue with the profile JSON so it can be reviewed and shipped as a built-in (reference images are not included). For developers, the remaining button generates a Python catalog module instead.</source>
         <translation>Installer enregistre ce profil dans votre dossier Controllers (Documents/DJ MIDI Studio/Controllers) avec une copie de son image, l&apos;active tout de suite dans toutes les vues et le recharge à chaque lancement. Installer à nouveau sous le même nom le met à jour. « Proposer au catalogue communautaire… » ouvre une issue GitHub pré-remplie avec le JSON du profil, pour qu&apos;il puisse être relu et livré comme profil intégré (les images de référence ne sont pas incluses). Pour les développeurs, le dernier bouton génère plutôt un module Python de catalogue.</translation>
+    </message>
+</context>
+<context>
+    <name>IntegrationDetection</name>
+    <message>
+        <source>port name contains {name}</source>
+        <translation>le nom du port contient {name}</translation>
+    </message>
+    <message>
+        <source>manufacturer matches plugin metadata</source>
+        <translation>le fabricant correspond aux métadonnées du plugin</translation>
+    </message>
+    <message>
+        <source>MIDI Identity Reply matches plugin metadata</source>
+        <translation>la réponse d&apos;identité MIDI correspond aux métadonnées du plugin</translation>
+    </message>
+    <message>
+        <source>capabilities match: {capabilities}</source>
+        <translation>capacités reconnues : {capabilities}</translation>
+    </message>
+    <message>
+        <source>mapping file signature</source>
+        <translation>signature du fichier de mapping</translation>
+    </message>
+    <message>
+        <source>file extension {suffix}</source>
+        <translation>extension de fichier {suffix}</translation>
     </message>
 </context>
 <context>
@@ -2487,6 +2554,10 @@ Workflow: (1) get the triggers — learn them from the hardware under MIDI input
         <translation>Serato n&apos;en applique qu&apos;une, le contrôle risque donc de ne pas faire ce que vous attendez. Rendez toutes les copies identiques (modifiez-le depuis la vue Par platine, qui garde les copies ensemble).</translation>
     </message>
     <message>
+        <source>{name} · slot {slot}</source>
+        <translation>{name} · slot {slot}</translation>
+    </message>
+    <message>
         <source>{function} on deck {deck} ({trigger}) has no LED feedback mapping.</source>
         <translation>{function} sur la platine {deck} ({trigger}) n&apos;a pas de mapping de retour LED.</translation>
     </message>
@@ -2583,6 +2654,165 @@ Workflow: (1) get the triggers — learn them from the hardware under MIDI input
     <message>
         <source>Live send: off</source>
         <translation>Envoi live : inactif</translation>
+    </message>
+</context>
+<context>
+    <name>MacroManagerDialog</name>
+    <message>
+        <source>Type</source>
+        <translation>Type</translation>
+    </message>
+    <message>
+        <source>Channel</source>
+        <translation>Canal</translation>
+    </message>
+    <message>
+        <source>Data 1</source>
+        <translation>Data 1</translation>
+    </message>
+    <message>
+        <source>Data 2</source>
+        <translation>Data 2</translation>
+    </message>
+    <message>
+        <source>Delay (ms)</source>
+        <translation>Délai (ms)</translation>
+    </message>
+    <message>
+        <source>MIDI Macros</source>
+        <translation>Macros MIDI</translation>
+    </message>
+    <message>
+        <source>No control pressed — Learn timed out.</source>
+        <translation>Aucune commande pressée — l&apos;apprentissage a expiré.</translation>
+    </message>
+    <message>
+        <source>New</source>
+        <translation>Nouvelle</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation>Supprimer</translation>
+    </message>
+    <message>
+        <source>Output port, or a controller name: matched against the connected ports like ⟳ Sync does</source>
+        <translation>Port de sortie, ou nom de contrôleur : comparé aux ports branchés comme le fait ⟳ Synchro</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>Vider</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Aucun</translation>
+    </message>
+    <message>
+        <source>Learn</source>
+        <translation>Apprendre</translation>
+    </message>
+    <message>
+        <source>Listen for the next button pressed on your controller and play this macro whenever it is pressed. Click again (or wait {seconds} s) to cancel.</source>
+        <translation>Écoute le prochain bouton pressé sur votre contrôleur et joue cette macro à chaque appui. Cliquez à nouveau (ou attendez {seconds} s) pour annuler.</translation>
+    </message>
+    <message>
+        <source>MIDI Learn needs the main window&apos;s Live Monitor</source>
+        <translation>L&apos;apprentissage MIDI a besoin du Live Monitor de la fenêtre principale</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation>Nom</translation>
+    </message>
+    <message>
+        <source>Output port</source>
+        <translation>Port de sortie</translation>
+    </message>
+    <message>
+        <source>Shortcut</source>
+        <translation>Raccourci</translation>
+    </message>
+    <message>
+        <source>Trigger</source>
+        <translation>Déclencheur</translation>
+    </message>
+    <message>
+        <source>Add step</source>
+        <translation>Ajouter une étape</translation>
+    </message>
+    <message>
+        <source>Delete step</source>
+        <translation>Supprimer l&apos;étape</translation>
+    </message>
+    <message>
+        <source>Move up</source>
+        <translation>Monter</translation>
+    </message>
+    <message>
+        <source>Move down</source>
+        <translation>Descendre</translation>
+    </message>
+    <message>
+        <source>Add sync set…</source>
+        <translation>Ajouter un jeu de synchronisation…</translation>
+    </message>
+    <message>
+        <source>Append the messages of a recorded controller sync set</source>
+        <translation>Ajoute les messages d&apos;un jeu de synchronisation enregistré</translation>
+    </message>
+    <message>
+        <source>Test</source>
+        <translation>Tester</translation>
+    </message>
+    <message>
+        <source>Play this macro now, as edited</source>
+        <translation>Joue cette macro maintenant, telle qu&apos;elle est modifiée</translation>
+    </message>
+    <message>
+        <source>Steps play top to bottom; each waits its delay before sending (channel 1–16, data 0–127, delay 0–60000 ms).</source>
+        <translation>Les étapes sont jouées de haut en bas ; chacune attend son délai avant l&apos;envoi (canal 1–16, data 0–127, délai 0–60000 ms).</translation>
+    </message>
+    <message>
+        <source>A macro needs a name</source>
+        <translation>Une macro doit avoir un nom</translation>
+    </message>
+    <message>
+        <source>{shortcut} is already used by the app&apos;s menus</source>
+        <translation>{shortcut} est déjà utilisé par les menus de l&apos;application</translation>
+    </message>
+    <message>
+        <source>Macro {number}</source>
+        <translation>Macro {number}</translation>
+    </message>
+    <message>
+        <source>{label} ({count} msg)</source>
+        <translation>{label} ({count} msg)</translation>
+    </message>
+    <message>
+        <source>Add sync set</source>
+        <translation>Ajouter un jeu de synchronisation</translation>
+    </message>
+    <message>
+        <source>Append the messages of:</source>
+        <translation>Ajouter les messages de :</translation>
+    </message>
+    <message>
+        <source>Learn cancelled.</source>
+        <translation>Apprentissage annulé.</translation>
+    </message>
+    <message>
+        <source>No MIDI input is open: connect a controller, or pick one in Live Monitor.</source>
+        <translation>Aucune entrée MIDI n&apos;est ouverte : branchez un contrôleur ou choisissez-en une dans le Live Monitor.</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Annuler</translation>
+    </message>
+    <message>
+        <source>Press a button on your controller… ({seconds} s)</source>
+        <translation>Appuyez sur un bouton de votre contrôleur… ({seconds} s)</translation>
+    </message>
+    <message>
+        <source>Learned {trigger}.</source>
+        <translation>{trigger} appris.</translation>
     </message>
 </context>
 <context>
@@ -3799,6 +4029,74 @@ Lignes sélectionnées dans Configuration du contrôleur : {selected}</translati
 </context>
 <context>
     <name>MidiMacros</name>
+    <message>
+        <source>delay must be an integer number of milliseconds</source>
+        <translation>le délai doit être un nombre entier de millisecondes</translation>
+    </message>
+    <message>
+        <source>delay must be in [0, {max}] ms</source>
+        <translation>le délai doit être compris entre 0 et {max} ms</translation>
+    </message>
+    <message>
+        <source>{field} must be an integer</source>
+        <translation>{field} doit être un nombre entier</translation>
+    </message>
+    <message>
+        <source>{field} must be in [{low}, {high}]</source>
+        <translation>{field} doit être compris entre {low} et {high}</translation>
+    </message>
+    <message>
+        <source>channel</source>
+        <translation>le canal</translation>
+    </message>
+    <message>
+        <source>data1</source>
+        <translation>data1</translation>
+    </message>
+    <message>
+        <source>data2</source>
+        <translation>data2</translation>
+    </message>
+    <message>
+        <source>unsupported message type {type}</source>
+        <translation>type de message non pris en charge {type}</translation>
+    </message>
+    <message>
+        <source>Step {number}: {error}</source>
+        <translation>Étape {number} : {error}</translation>
+    </message>
+    <message>
+        <source>A macro has no name</source>
+        <translation>Une macro n&apos;a pas de nom</translation>
+    </message>
+    <message>
+        <source>Two macros are named &quot;{name}&quot;</source>
+        <translation>Deux macros s&apos;appellent « {name} »</translation>
+    </message>
+    <message>
+        <source>&quot;{name}&quot; and &quot;{other}&quot; use the same shortcut {shortcut}</source>
+        <translation>« {name} » et « {other} » utilisent le même raccourci {shortcut}</translation>
+    </message>
+    <message>
+        <source>&quot;{name}&quot; and &quot;{other}&quot; use the same controller trigger {trigger}</source>
+        <translation>« {name} » et « {other} » utilisent le même déclencheur de contrôleur {trigger}</translation>
+    </message>
+    <message>
+        <source>&quot;{name}&quot; sends its own trigger back to {port} and would loop</source>
+        <translation>« {name} » renvoie son propre déclencheur vers {port} et tournerait en boucle</translation>
+    </message>
+    <message>
+        <source>Note {data1}, ch {channel}</source>
+        <translation>Note {data1}, canal {channel}</translation>
+    </message>
+    <message>
+        <source>CC {data1}, ch {channel}</source>
+        <translation>CC {data1}, canal {channel}</translation>
+    </message>
+    <message>
+        <source>{trigger} on {port}</source>
+        <translation>{trigger} sur {port}</translation>
+    </message>
     <message>
         <source>Macro &quot;{name}&quot;: sent {count} message(s) to {port}</source>
         <translation>Macro « {name} » : {count} message(s) envoyé(s) vers {port}</translation>
@@ -5644,6 +5942,17 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     </message>
 </context>
 <context>
+    <name>SessionPlayer</name>
+    <message>
+        <source>{field} must be an integer</source>
+        <translation>{field} doit être un nombre entier</translation>
+    </message>
+    <message>
+        <source>{field} must be in [{low}, {high}]</source>
+        <translation>{field} doit être compris entre {low} et {high}</translation>
+    </message>
+</context>
+<context>
     <name>SetCurveWidget</name>
     <message>
         <source>Add tracks to see the set&apos;s BPM and energy curve.</source>
@@ -5978,6 +6287,61 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>first {limit}</source>
         <translation>les {limit} premiers</translation>
+    </message>
+</context>
+<context>
+    <name>Validator</name>
+    <message>
+        <source>error</source>
+        <translation>erreur</translation>
+    </message>
+    <message>
+        <source>warning</source>
+        <translation>avertissement</translation>
+    </message>
+    <message>
+        <source>info</source>
+        <translation>info</translation>
+    </message>
+    <message>
+        <source>Trigger (channel={channel}, event_type={event_type}, control={control}) is bound {count} times with {distinct} different mappings; only one will take effect.</source>
+        <translation>Le déclencheur (channel={channel}, event_type={event_type}, control={control}) est lié {count} fois avec {distinct} mappings différents ; un seul sera pris en compte.</translation>
+    </message>
+    <message>
+        <source>Trigger (channel={channel}, event_type={event_type}, control={control}) is defined {count} times with identical content. This repetition appears required by Serato — do not deduplicate.</source>
+        <translation>Le déclencheur (channel={channel}, event_type={event_type}, control={control}) est défini {count} fois à l&apos;identique. Serato semble avoir besoin de cette répétition — ne supprimez pas les doublons.</translation>
+    </message>
+    <message>
+        <source>Control is missing a required attribute (channel/event_type/control).</source>
+        <translation>Il manque un attribut obligatoire au contrôle (channel/event_type/control).</translation>
+    </message>
+    <message>
+        <source>Mapping &lt;{tag}&gt; is missing deck_id or slot_id.</source>
+        <translation>Il manque deck_id ou slot_id au mapping &lt;{tag}&gt;.</translation>
+    </message>
+    <message>
+        <source>&lt;translation&gt; under &lt;{tag}&gt; is missing action_on.</source>
+        <translation>Il manque action_on à &lt;translation&gt; sous &lt;{tag}&gt;.</translation>
+    </message>
+    <message>
+        <source>Unrecognized action_on value &apos;{value}&apos;.</source>
+        <translation>Valeur action_on inconnue « {value} ».</translation>
+    </message>
+    <message>
+        <source>Unrecognized behaviour value &apos;{value}&apos;.</source>
+        <translation>Valeur behaviour inconnue « {value} ».</translation>
+    </message>
+    <message>
+        <source>Target &lt;{tag}&gt; (deck_id={deck_id}, slot_id={slot_id}) is bound to &apos;click&apos; by {count} different controls with inconsistent behaviour/action_on: {values}.</source>
+        <translation>La cible &lt;{tag}&gt; (deck_id={deck_id}, slot_id={slot_id}) est liée à « click » par {count} contrôles différents aux behaviour/action_on incohérents : {values}.</translation>
+    </message>
+    <message>
+        <source>{tag} (slot {slot})</source>
+        <translation>{tag} (slot {slot})</translation>
+    </message>
+    <message>
+        <source>deck {deck}: {functions}</source>
+        <translation>platine {deck} : {functions}</translation>
     </message>
 </context>
 <context>

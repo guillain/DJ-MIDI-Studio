@@ -132,6 +132,13 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **French UI: validation, detection, Controller Setup errors, macros, French search keywords**
+  (`v0.48.126-french-messages-search`, issue #326) — `validator.validate`, the detection reasons
+  (`integration_detection`), `function_names.function_label`'s slot suffix, `session_player._parse_int` and
+  `midi_macros`' editor errors take an optional `translate` (English by default); Controller Setup's MIDI output
+  errors and `Source` column and the whole MIDI Macros dialog are translated. Function search (and the command
+  palette) accepts `platine N` / `emplacement N` / `clic`, `appui` / `sortie`, `voyant` alongside the English
+  keywords. Checked on `cocoa` with the French catalogue and `qtbase_fr`.
 - [x] **French help texts name the French labels** (`v0.48.125-french-help-labels`, issue #325) — the French
   `?` help bodies quote the buttons and labels as the French UI shows them (Actualiser les ports, Envoi live,
   Disposition, Démarrer le routage, ...); `tests/test_french_help_labels.py` fails when a bold label of a French

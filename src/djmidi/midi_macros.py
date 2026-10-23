@@ -56,14 +56,37 @@ FORMAT_VERSION = 1
 MAX_DELAY_MS = 60_000
 
 
-def _delay(value: object) -> int:
+# Editor errors (issue #326): English templates, translated by the caller
+# through `translate` before they are filled in.
+_DELAY_NOT_INTEGER = QT_TRANSLATE_NOOP("MidiMacros", "delay must be an integer number of milliseconds")
+_DELAY_OUT_OF_RANGE = QT_TRANSLATE_NOOP("MidiMacros", "delay must be in [0, {max}] ms")
+_NOT_INTEGER = QT_TRANSLATE_NOOP("MidiMacros", "{field} must be an integer")
+_OUT_OF_RANGE = QT_TRANSLATE_NOOP("MidiMacros", "{field} must be in [{low}, {high}]")
+_FIELD_CHANNEL = QT_TRANSLATE_NOOP("MidiMacros", "channel")
+_FIELD_DATA1 = QT_TRANSLATE_NOOP("MidiMacros", "data1")
+_FIELD_DATA2 = QT_TRANSLATE_NOOP("MidiMacros", "data2")
+_UNSUPPORTED_TYPE = QT_TRANSLATE_NOOP("MidiMacros", "unsupported message type {type}")
+_STEP_ERROR = QT_TRANSLATE_NOOP("MidiMacros", "Step {number}: {error}")
+_NO_NAME = QT_TRANSLATE_NOOP("MidiMacros", "A macro has no name")
+_SAME_NAME = QT_TRANSLATE_NOOP("MidiMacros", 'Two macros are named "{name}"')
+_SAME_SHORTCUT = QT_TRANSLATE_NOOP("MidiMacros", '"{name}" and "{other}" use the same shortcut {shortcut}')
+_SAME_TRIGGER = QT_TRANSLATE_NOOP(
+    "MidiMacros", '"{name}" and "{other}" use the same controller trigger {trigger}'
+)
+_LOOPS = QT_TRANSLATE_NOOP("MidiMacros", '"{name}" sends its own trigger back to {port} and would loop')
+_TRIGGER_NOTE = QT_TRANSLATE_NOOP("MidiMacros", "Note {data1}, ch {channel}")
+_TRIGGER_CC = QT_TRANSLATE_NOOP("MidiMacros", "CC {data1}, ch {channel}")
+_TRIGGER_ON_PORT = QT_TRANSLATE_NOOP("MidiMacros", "{trigger} on {port}")
+
+
+def _delay(value: object, translate: Translate = untranslated) -> int:
     text = str(value if value is not None else "").strip() or "0"
     try:
         number = int(text)
     except ValueError as exc:
-        raise ValueError("delay must be an integer number of milliseconds") from exc
+        raise ValueError(translate(_DELAY_NOT_INTEGER)) from exc
     if not 0 <= number <= MAX_DELAY_MS:
-        raise ValueError(f"delay must be in [0, {MAX_DELAY_MS}] ms")
+        raise ValueError(translate(_DELAY_OUT_OF_RANGE).format(max=MAX_DELAY_MS))
     return number
 
 
@@ -75,13 +98,13 @@ def _port_key(port: str) -> str:
     return "".join(char for char in port.casefold() if char.isalnum())
 
 
-def _bounded(value: object, label: str, low: int, high: int) -> int:
+def _bounded(value: object, label: str, low: int, high: int, translate: Translate = untranslated) -> int:
     try:
         number = int(str(value).strip())
     except (TypeError, ValueError) as exc:
-        raise ValueError(f"{label} must be an integer") from exc
+        raise ValueError(translate(_NOT_INTEGER).format(field=translate(label))) from exc
     if not low <= number <= high:
-        raise ValueError(f"{label} must be in [{low}, {high}]")
+        raise ValueError(translate(_OUT_OF_RANGE).format(field=translate(label), low=low, high=high))
     return number
 
 
@@ -128,10 +151,11 @@ class MacroTrigger:
             return False
         return not self.port or _port_key(self.port) == _port_key(pressed.port)
 
-    def label(self) -> str:
-        kind = "Note" if self.event_type == "Note On" else "CC"
-        where = f" on {self.port}" if self.port else ""
-        return f"{kind} {self.data1}, ch {self.channel}{where}"
+    def label(self, translate: Translate = untranslated) -> str:
+        """"Note 36, ch 1 on <port>"; the GUI passes a `translate` (issue #326)."""
+        template = _TRIGGER_NOTE if self.event_type == "Note On" else _TRIGGER_CC
+        text = translate(template).format(data1=self.data1, channel=self.channel)
+        return translate(_TRIGGER_ON_PORT).format(trigger=text, port=self.port) if self.port else text
 
     def to_dict(self) -> dict[str, object]:
         return {"event_type": self.event_type, "channel": self.channel, "data1": self.data1, "port": self.port}
@@ -207,16 +231,30 @@ class MidiMacro:
         )
 
 
-def steps_from_rows(rows: Iterable[Sequence[object]]) -> tuple[MacroStep, ...]:
+def _step(row: Sequence[object], translate: Translate) -> MacroStep:
+    event_type, channel, data1, data2, delay_ms = row
+    # Checked here first so the error is worded in the interface language;
+    # SyncMessage.create then normalizes the values.
+    try:
+        SyncMessage.create(event_type, 1, 0, 0)
+    except ValueError:
+        raise ValueError(translate(_UNSUPPORTED_TYPE).format(type=repr(str(event_type)))) from None
+    _bounded(channel, _FIELD_CHANNEL, 1, 16, translate)
+    _bounded(data1, _FIELD_DATA1, 0, 127, translate)
+    _bounded(data2, _FIELD_DATA2, 0, 127, translate)
+    return MacroStep(SyncMessage.create(event_type, channel, data1, data2), _delay(delay_ms, translate))
+
+
+def steps_from_rows(rows: Iterable[Sequence[object]], translate: Translate = untranslated) -> tuple[MacroStep, ...]:
     """Validates edited ``(event_type, channel, data1, data2, delay_ms)`` rows,
-    raising ``ValueError`` naming the first bad one (1-based)."""
+    raising ``ValueError`` naming the first bad one (1-based), worded in the
+    language `translate` gives (issue #326)."""
     steps: list[MacroStep] = []
     for number, row in enumerate(rows, start=1):
         try:
-            event_type, channel, data1, data2, delay_ms = row
-            steps.append(MacroStep(SyncMessage.create(event_type, channel, data1, data2), _delay(delay_ms)))
+            steps.append(_step(row, translate))
         except ValueError as exc:
-            raise ValueError(f"Step {number}: {exc}") from None
+            raise ValueError(translate(_STEP_ERROR).format(number=number, error=exc)) from None
     return tuple(steps)
 
 
@@ -242,7 +280,7 @@ def retriggers_itself(macro: MidiMacro) -> bool:
     return False
 
 
-def validate_macros(macros: Sequence[MidiMacro]) -> list[str]:
+def validate_macros(macros: Sequence[MidiMacro], translate: Translate = untranslated) -> list[str]:
     """Problems that must be fixed before saving: a blank or duplicate name
     (case-insensitive -- names become file names), a shortcut or controller
     trigger used twice, a macro that would retrigger itself."""
@@ -253,25 +291,27 @@ def validate_macros(macros: Sequence[MidiMacro]) -> list[str]:
     for macro in macros:
         name = macro.name.strip()
         if not name:
-            problems.append("A macro has no name")
+            problems.append(translate(_NO_NAME))
             continue
         if name.casefold() in names:
-            problems.append(f"Two macros are named \"{name}\"")
+            problems.append(translate(_SAME_NAME).format(name=name))
         names.add(name.casefold())
         if macro.shortcut:
             other = shortcuts.get(macro.shortcut.casefold())
             if other is not None:
-                problems.append(f"\"{name}\" and \"{other}\" use the same shortcut {macro.shortcut}")
+                problems.append(translate(_SAME_SHORTCUT).format(name=name, other=other, shortcut=macro.shortcut))
             else:
                 shortcuts[macro.shortcut.casefold()] = name
         if macro.trigger is not None:
             other = next((owner for trigger, owner in triggers if _triggers_overlap(trigger, macro.trigger)), None)
             if other is not None:
-                problems.append(f"\"{name}\" and \"{other}\" use the same controller trigger {macro.trigger.label()}")
+                problems.append(
+                    translate(_SAME_TRIGGER).format(name=name, other=other, trigger=macro.trigger.label(translate))
+                )
             else:
                 triggers.append((macro.trigger, name))
             if retriggers_itself(macro):
-                problems.append(f"\"{name}\" sends its own trigger back to {macro.output_port} and would loop")
+                problems.append(translate(_LOOPS).format(name=name, port=macro.output_port))
     return problems
 
 
