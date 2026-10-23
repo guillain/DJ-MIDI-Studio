@@ -100,6 +100,102 @@
 <context>
     <name>ChangeHistoryDialog</name>
     <message>
+        <source>Tags</source>
+        <translation>Tags</translation>
+    </message>
+    <message>
+        <source>Moved to Trash</source>
+        <translation>Mis à la corbeille</translation>
+    </message>
+    <message>
+        <source>Restored from Trash</source>
+        <translation>Remis depuis la corbeille</translation>
+    </message>
+    <message>
+        <source>Rename</source>
+        <translation>Renommer</translation>
+    </message>
+    <message>
+        <source>Cover art</source>
+        <translation>Pochette</translation>
+    </message>
+    <message>
+        <source>Undo: {summary}</source>
+        <translation>Annulation : {summary}</translation>
+    </message>
+    <message>
+        <source>Revert #{id}: {summary}</source>
+        <translation>Annulation de n°{id} : {summary}</translation>
+    </message>
+    <message>
+        <source>Edit {fields} of {count} track(s)</source>
+        <translation>Modifier {fields} de {count} morceau(x)</translation>
+    </message>
+    <message>
+        <source>Edit {fields} of {name}</source>
+        <translation>Modifier {fields} de {name}</translation>
+    </message>
+    <message>
+        <source>Set cover of {name}</source>
+        <translation>Définir la pochette de {name}</translation>
+    </message>
+    <message>
+        <source>Remove cover of {name}</source>
+        <translation>Retirer la pochette de {name}</translation>
+    </message>
+    <message>
+        <source>Rename {count} file(s)</source>
+        <translation>Renommer {count} fichier(s)</translation>
+    </message>
+    <message>
+        <source>Move {count} duplicate(s) to the Trash</source>
+        <translation>Mettre {count} doublon(s) à la corbeille</translation>
+    </message>
+    <message>
+        <source>(empty)</source>
+        <translation>(vide)</translation>
+    </message>
+    <message>
+        <source>(none)</source>
+        <translation>(aucune)</translation>
+    </message>
+    <message>
+        <source>, {size} KB</source>
+        <translation>, {size} Ko</translation>
+    </message>
+    <message>
+        <source>image</source>
+        <translation>image</translation>
+    </message>
+    <message>
+        <source>the Trash</source>
+        <translation>la corbeille</translation>
+    </message>
+    <message>
+        <source>moved to {where} (kept {kept})</source>
+        <translation>mis dans {where} (conservé : {kept})</translation>
+    </message>
+    <message>
+        <source>put back from {where}</source>
+        <translation>remis depuis {where}</translation>
+    </message>
+    <message>
+        <source>front cover: {before} → {after}</source>
+        <translation>pochette : {before} → {after}</translation>
+    </message>
+    <message>
+        <source>{field}: {before} → {after}</source>
+        <translation>{field} : {before} → {after}</translation>
+    </message>
+    <message>
+        <source>Reverted {when}</source>
+        <translation>Annulée le {when}</translation>
+    </message>
+    <message>
+        <source>Not revertible</source>
+        <translation>Non annulable</translation>
+    </message>
+    <message>
         <source>Change history</source>
         <translation>Historique des modifications</translation>
     </message>
@@ -170,6 +266,46 @@ Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-m
     <message>
         <source>… and {count} more</source>
         <translation>… et {count} de plus</translation>
+    </message>
+    <message>
+        <source>file not found</source>
+        <translation>fichier introuvable</translation>
+    </message>
+    <message>
+        <source>its tags can&apos;t be read</source>
+        <translation>ses tags sont illisibles</translation>
+    </message>
+    <message>
+        <source>{fields} changed since</source>
+        <translation>{fields} modifié(s) depuis</translation>
+    </message>
+    <message>
+        <source>where the Trash put it is unknown -- put it back from the Trash yourself</source>
+        <translation>son emplacement dans la corbeille est inconnu -- remettez-le vous-même depuis la corbeille</translation>
+    </message>
+    <message>
+        <source>a file already exists at its original location</source>
+        <translation>un fichier existe déjà à son emplacement d&apos;origine</translation>
+    </message>
+    <message>
+        <source>no longer in the Trash</source>
+        <translation>n&apos;est plus dans la corbeille</translation>
+    </message>
+    <message>
+        <source>not found at {path}</source>
+        <translation>introuvable à {path}</translation>
+    </message>
+    <message>
+        <source>a file already exists at its old name</source>
+        <translation>un fichier porte déjà son ancien nom</translation>
+    </message>
+    <message>
+        <source>its cover changed since</source>
+        <translation>sa pochette a changé depuis</translation>
+    </message>
+    <message>
+        <source>the previous cover wasn&apos;t kept</source>
+        <translation>la pochette précédente n&apos;a pas été conservée</translation>
     </message>
 </context>
 <context>
@@ -580,6 +716,77 @@ Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-m
     </message>
 </context>
 <context>
+    <name>LiveReady</name>
+    <message>
+        <source>error</source>
+        <translation>erreur</translation>
+    </message>
+    <message>
+        <source>warning</source>
+        <translation>avertissement</translation>
+    </message>
+    <message>
+        <source>info</source>
+        <translation>info</translation>
+    </message>
+    <message>
+        <source>Not ready: {count} problem(s) to fix before playing.</source>
+        <translation>Pas prêt : {count} problème(s) à corriger avant de jouer.</translation>
+    </message>
+    <message>
+        <source>Check before playing: {count} warning(s).</source>
+        <translation>À vérifier avant de jouer : {count} avertissement(s).</translation>
+    </message>
+    <message>
+        <source>Ready for live.</source>
+        <translation>Prêt pour le live.</translation>
+    </message>
+    <message>
+        <source>channel {channel}, {event_type} {control}</source>
+        <translation>canal {channel}, {event_type} {control}</translation>
+    </message>
+    <message>
+        <source>No input mapping targets a deck, so no deck has Play, Cue, Sync or Load here.</source>
+        <translation>Aucun mapping d&apos;entrée ne cible une platine : aucune platine n&apos;a donc Play, Cue, Sync ou Load ici.</translation>
+    </message>
+    <message>
+        <source>If Serato&apos;s built-in support for your controller drives the decks, this is fine; otherwise map at least Play, Cue, Sync and Load for each deck you play.</source>
+        <translation>Si la prise en charge intégrée de votre contrôleur par Serato pilote les platines, tout va bien ; sinon mappez au moins Play, Cue, Sync et Load pour chaque platine que vous utilisez.</translation>
+    </message>
+    <message>
+        <source>Deck {deck} has no {function} mapping.</source>
+        <translation>La platine {deck} n&apos;a pas de mapping {function}.</translation>
+    </message>
+    <message>
+        <source>This file only lists the controls you remapped: if Serato&apos;s built-in support for your controller handles {function}, you&apos;re fine. Otherwise map a button to {function} on deck {deck} before going on stage.</source>
+        <translation>Ce fichier ne liste que les contrôles que vous avez remappés : si la prise en charge intégrée de votre contrôleur par Serato gère {function}, tout va bien. Sinon, mappez un bouton sur {function} pour la platine {deck} avant de monter sur scène.</translation>
+    </message>
+    <message>
+        <source>One control ({trigger}) fires several functions on deck {deck}: {functions}.</source>
+        <translation>Un contrôle ({trigger}) déclenche plusieurs fonctions sur la platine {deck} : {functions}.</translation>
+    </message>
+    <message>
+        <source>Pressing it on stage triggers all of them at once. Keep one function per deck on this control, or move the others to a free button.</source>
+        <translation>Sur scène, l&apos;appuyer les déclenche toutes à la fois. Gardez une fonction par platine sur ce contrôle, ou déplacez les autres vers un bouton libre.</translation>
+    </message>
+    <message>
+        <source>The copies of one control ({trigger}) disagree: {count} different versions.</source>
+        <translation>Les copies d&apos;un contrôle ({trigger}) divergent : {count} versions différentes.</translation>
+    </message>
+    <message>
+        <source>Serato honours only one of them, so the control may not do what you expect. Make every copy identical (edit it from the By Deck view, which keeps copies together).</source>
+        <translation>Serato n&apos;en applique qu&apos;une, le contrôle risque donc de ne pas faire ce que vous attendez. Rendez toutes les copies identiques (modifiez-le depuis la vue Par platine, qui garde les copies ensemble).</translation>
+    </message>
+    <message>
+        <source>{function} on deck {deck} ({trigger}) has no LED feedback mapping.</source>
+        <translation>{function} sur la platine {deck} ({trigger}) n&apos;a pas de mapping de retour LED.</translation>
+    </message>
+    <message>
+        <source>The function works, but this button won&apos;t light to show its state. Add an output mapping for the same function on this control if you rely on the light.</source>
+        <translation>La fonction marche, mais ce bouton ne s&apos;allumera pas pour montrer son état. Ajoutez un mapping de sortie pour la même fonction sur ce contrôle si vous comptez sur la lumière.</translation>
+    </message>
+</context>
+<context>
     <name>LiveReadyDialog</name>
     <message>
         <source>Ready for live</source>
@@ -671,6 +878,24 @@ Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-m
     <message>
         <source>Music Library</source>
         <translation>Bibliothèque</translation>
+    </message>
+    <message>
+        <source>MIDI controller detected</source>
+        <translation>Contrôleur MIDI détecté</translation>
+    </message>
+    <message>
+        <source>Enable &apos;{name}&apos;?
+{score}% confidence — {reason}</source>
+        <translation>Activer « {name} » ?
+Confiance {score} % — {reason}</translation>
+    </message>
+    <message>
+        <source>Detected controller suggestion: {name} ({score}% confidence).</source>
+        <translation>Contrôleur suggéré par la détection : {name} (confiance {score} %).</translation>
+    </message>
+    <message>
+        <source>Controller enabled: {name} ({score}% — {reason})</source>
+        <translation>Contrôleur activé : {name} ({score} % — {reason})</translation>
     </message>
     <message>
         <source>&amp;File</source>
@@ -789,6 +1014,10 @@ Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-m
         <translation>Antisèche (PDF)...</translation>
     </message>
     <message>
+        <source>Print each controller&apos;s photo with the function the loaded mapping binds to every control</source>
+        <translation>Imprime la photo de chaque contrôleur avec la fonction que le mapping chargé associe à chaque contrôle</translation>
+    </message>
+    <message>
         <source>&amp;Back Up Workspace...</source>
         <translation>&amp;Sauvegarder l&apos;espace de travail...</translation>
     </message>
@@ -849,6 +1078,10 @@ Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-m
         <translation>Nouvel émulateur de contrôleur…</translation>
     </message>
     <message>
+        <source>Open another Controller Emulator window -- several may be open at once, each bound to its own controller</source>
+        <translation>Ouvre une autre fenêtre d&apos;émulateur de contrôleur -- plusieurs peuvent être ouvertes à la fois, chacune liée à son propre contrôleur</translation>
+    </message>
+    <message>
         <source>MIDI Latency Test…</source>
         <translation>Test de latence MIDI…</translation>
     </message>
@@ -869,8 +1102,16 @@ Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-m
         <translation>Afficher tous les contrôleurs</translation>
     </message>
     <message>
+        <source>Ignore the per-controller Preferences enablement and list every registered controller</source>
+        <translation>Ignore l&apos;activation par contrôleur des Préférences et liste tous les contrôleurs enregistrés</translation>
+    </message>
+    <message>
         <source>Performance Mode</source>
         <translation>Mode performance</translation>
+    </message>
+    <message>
+        <source>Hide the mapping tree and enlarge the schematic layout for on-stage use (session-only, not remembered across restarts)</source>
+        <translation>Masque l&apos;arbre du mapping et agrandit le schéma pour la scène (pour cette session uniquement, non mémorisé au redémarrage)</translation>
     </message>
     <message>
         <source>Stage Mode</source>
@@ -945,6 +1186,94 @@ Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-m
         <translation>&amp;Signaler un problème...</translation>
     </message>
     <message>
+        <source>Preview a bug report with your app version, system and recent log lines, then open it as a pre-filled GitHub issue.</source>
+        <translation>Prévisualise un rapport de bug avec la version de l&apos;application, le système et les dernières lignes du journal, puis l&apos;ouvre comme ticket GitHub prérempli.</translation>
+    </message>
+    <message>
+        <source>Live Monitor</source>
+        <translation>Live Monitor</translation>
+    </message>
+    <message>
+        <source>MIDI Routing</source>
+        <translation>Routage MIDI</translation>
+    </message>
+    <message>
+        <source>MIDI Clock</source>
+        <translation>Horloge MIDI</translation>
+    </message>
+    <message>
+        <source>Metronome</source>
+        <translation>Métronome</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Fermer</translation>
+    </message>
+    <message>
+        <source>Window</source>
+        <translation>Fenêtre</translation>
+    </message>
+    <message>
+        <source>Reduce to title bar</source>
+        <translation>Réduire à la barre de titre</translation>
+    </message>
+    <message>
+        <source>Maximize</source>
+        <translation>Agrandir</translation>
+    </message>
+    <message>
+        <source>Snap left</source>
+        <translation>Ancrer à gauche</translation>
+    </message>
+    <message>
+        <source>Snap right</source>
+        <translation>Ancrer à droite</translation>
+    </message>
+    <message>
+        <source>Snap to top</source>
+        <translation>Ancrer en haut</translation>
+    </message>
+    <message>
+        <source>Snap to bottom</source>
+        <translation>Ancrer en bas</translation>
+    </message>
+    <message>
+        <source>Expand</source>
+        <translation>Déplier</translation>
+    </message>
+    <message>
+        <source>Restore</source>
+        <translation>Restaurer</translation>
+    </message>
+    <message>
+        <source>Dock</source>
+        <translation>Attacher</translation>
+    </message>
+    <message>
+        <source>Attach back into the main window</source>
+        <translation>Rattacher à la fenêtre principale</translation>
+    </message>
+    <message>
+        <source>Undock</source>
+        <translation>Détacher</translation>
+    </message>
+    <message>
+        <source>Detach into its own window</source>
+        <translation>Détacher dans sa propre fenêtre</translation>
+    </message>
+    <message>
+        <source>Controller Emulator</source>
+        <translation>Émulateur de contrôleur</translation>
+    </message>
+    <message>
+        <source>Documentation unavailable</source>
+        <translation>Documentation indisponible</translation>
+    </message>
+    <message>
+        <source>Preferences saved</source>
+        <translation>Préférences enregistrées</translation>
+    </message>
+    <message>
         <source>No initialization set is recorded for the scene &quot;{scene}&quot; and no controller has a Default set.</source>
         <translation>Aucun jeu d&apos;initialisation n&apos;est enregistré pour la scène « {scene} » et aucun contrôleur n&apos;a de jeu Default.</translation>
     </message>
@@ -963,6 +1292,58 @@ Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-m
     <message>
         <source>Plugged in -- </source>
         <translation>Branché -- </translation>
+    </message>
+    <message>
+        <source>Already checking for updates...</source>
+        <translation>Recherche de mises à jour déjà en cours...</translation>
+    </message>
+    <message>
+        <source>Checking for updates...</source>
+        <translation>Recherche de mises à jour...</translation>
+    </message>
+    <message>
+        <source>Problem report copied to the clipboard and opened as a GitHub issue.</source>
+        <translation>Rapport de problème copié dans le presse-papiers et ouvert comme ticket GitHub.</translation>
+    </message>
+    <message>
+        <source>The report was too long for the link: it&apos;s on your clipboard — paste it into the issue.</source>
+        <translation>Le rapport était trop long pour le lien : il est dans le presse-papiers — collez-le dans le ticket.</translation>
+    </message>
+    <message>
+        <source>Update available: v{version}</source>
+        <translation>Mise à jour disponible : v{version}</translation>
+    </message>
+    <message>
+        <source>Open the {tag} release page in your browser</source>
+        <translation>Ouvrir la page de la version {tag} dans le navigateur</translation>
+    </message>
+    <message>
+        <source>DJ MIDI Studio v{version} is available (you have v{local}).</source>
+        <translation>DJ MIDI Studio v{version} est disponible (vous avez la v{local}).</translation>
+    </message>
+    <message>
+        <source>Check for Updates</source>
+        <translation>Rechercher des mises à jour</translation>
+    </message>
+    <message>
+        <source>Couldn&apos;t reach GitHub to check for a new version. Check your connection and try again.</source>
+        <translation>Impossible de joindre GitHub pour chercher une nouvelle version. Vérifiez votre connexion et réessayez.</translation>
+    </message>
+    <message>
+        <source>DJ MIDI Studio v{version} is available (you have v{local}).
+
+Open the release page to download it?</source>
+        <translation>DJ MIDI Studio v{version} est disponible (vous avez la v{local}).
+
+Ouvrir la page de la version pour la télécharger ?</translation>
+    </message>
+    <message>
+        <source>The latest release is {tag}, but this copy&apos;s own version is unknown.</source>
+        <translation>La dernière version est {tag}, mais la version de cette copie est inconnue.</translation>
+    </message>
+    <message>
+        <source>You&apos;re up to date (v{local}, latest release {tag}).</source>
+        <translation>Vous êtes à jour (v{local}, dernière version {tag}).</translation>
     </message>
     <message>
         <source>Cannot record</source>
@@ -1069,12 +1450,240 @@ Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-m
         <translation>Scène de synchro : {scene}</translation>
     </message>
     <message>
+        <source>Performance mode on — tree hidden, layout enlarged</source>
+        <translation>Mode performance activé — arbre masqué, schéma agrandi</translation>
+    </message>
+    <message>
+        <source>Performance mode off</source>
+        <translation>Mode performance désactivé</translation>
+    </message>
+    <message>
+        <source>Stage mode on — press Esc to exit</source>
+        <translation>Mode scène activé — Échap pour quitter</translation>
+    </message>
+    <message>
+        <source>Stage mode off</source>
+        <translation>Mode scène désactivé</translation>
+    </message>
+    <message>
+        <source>Showing all controllers</source>
+        <translation>Tous les contrôleurs sont affichés</translation>
+    </message>
+    <message>
+        <source>Showing enabled controllers only</source>
+        <translation>Seuls les contrôleurs activés sont affichés</translation>
+    </message>
+    <message>
+        <source>Open DJ mapping</source>
+        <translation>Ouvrir un mapping DJ</translation>
+    </message>
+    <message>
+        <source>Supported mapping files (*.xml *.nml *.tsi);;All files (*)</source>
+        <translation>Fichiers de mapping pris en charge (*.xml *.nml *.tsi);;Tous les fichiers (*)</translation>
+    </message>
+    <message>
+        <source>Failed to open file</source>
+        <translation>Échec de l&apos;ouverture du fichier</translation>
+    </message>
+    <message>
+        <source>Mapping software:</source>
+        <translation>Logiciel du mapping :</translation>
+    </message>
+    <message>
+        <source>Mapping software (detected: {name}, {score}% — {reason}):</source>
+        <translation>Logiciel du mapping (détecté : {name}, {score} % — {reason}) :</translation>
+    </message>
+    <message>
+        <source>Loaded {count} controls from {name}</source>
+        <translation>{count} contrôles chargés depuis {name}</translation>
+    </message>
+    <message>
+        <source>No control in this file uses &apos;{name}&apos;</source>
+        <translation>Aucun contrôle de ce fichier n&apos;utilise « {name} »</translation>
+    </message>
+    <message>
+        <source>&apos;{name}&apos;: {count} control(s) in this file, showing first</source>
+        <translation>« {name} » : {count} contrôle(s) dans ce fichier, le premier est affiché</translation>
+    </message>
+    <message>
+        <source>&apos;{name}&apos; ({location}): {count} control(s), {highlighted} highlighted on the layout</source>
+        <translation>« {name} » ({location}) : {count} contrôle(s), {highlighted} mis en évidence sur le schéma</translation>
+    </message>
+    <message>
+        <source>&apos;{name}&apos; applied for this session.</source>
+        <translation>« {name} » appliqué pour cette session.</translation>
+    </message>
+    <message>
         <source>Recording in progress</source>
         <translation>Enregistrement en cours</translation>
     </message>
     <message>
         <source>A controller sync recording is in progress. Save it before quitting?</source>
         <translation>Un enregistrement de synchronisation des contrôleurs est en cours. L&apos;enregistrer avant de quitter ?</translation>
+    </message>
+    <message>
+        <source>Export {software} mapping</source>
+        <translation>Exporter le mapping {software}</translation>
+    </message>
+    <message>
+        <source>{software} files ({patterns})</source>
+        <translation>Fichiers {software} ({patterns})</translation>
+    </message>
+    <message>
+        <source>Saved to {path}</source>
+        <translation>Enregistré dans {path}</translation>
+    </message>
+    <message>
+        <source>Failed to save mapping</source>
+        <translation>Échec de l&apos;enregistrement du mapping</translation>
+    </message>
+    <message>
+        <source>Restore previous version</source>
+        <translation>Restaurer la version précédente</translation>
+    </message>
+    <message>
+        <source>Replace {name} with the version saved before its last save ({when})?
+
+Unsaved edits in the app are lost.</source>
+        <translation>Remplacer {name} par la version enregistrée avant sa dernière sauvegarde ({when}) ?
+
+Les modifications non enregistrées dans l&apos;application seront perdues.</translation>
+    </message>
+    <message>
+        <source>Failed to restore the previous version</source>
+        <translation>Échec de la restauration de la version précédente</translation>
+    </message>
+    <message>
+        <source>Restored the previous version of {name}</source>
+        <translation>Version précédente de {name} restaurée</translation>
+    </message>
+    <message>
+        <source>Compare with mapping</source>
+        <translation>Comparer avec un mapping</translation>
+    </message>
+    <message>
+        <source>Supported mapping files (*.xml *.nml *.tsi *.bak);;All files (*)</source>
+        <translation>Fichiers de mapping pris en charge (*.xml *.nml *.tsi *.bak);;Tous les fichiers (*)</translation>
+    </message>
+    <message>
+        <source>previous version ({name})</source>
+        <translation>version précédente ({name})</translation>
+    </message>
+    <message>
+        <source>Failed to compare</source>
+        <translation>Échec de la comparaison</translation>
+    </message>
+    <message>
+        <source>the open mapping</source>
+        <translation>le mapping ouvert</translation>
+    </message>
+    <message>
+        <source> (with unsaved edits)</source>
+        <translation> (avec des modifications non enregistrées)</translation>
+    </message>
+    <message>
+        <source>Compared with {name}: {count} difference(s)</source>
+        <translation>Comparé avec {name} : {count} différence(s)</translation>
+    </message>
+    <message>
+        <source>Back up workspace</source>
+        <translation>Sauvegarder l&apos;espace de travail</translation>
+    </message>
+    <message>
+        <source>Also include the music library index ({size})?
+
+It lists your tracks, categories and playlists -- never the audio files -- but it can be large, and a fresh scan rebuilds it.</source>
+        <translation>Inclure aussi l&apos;index de la bibliothèque musicale ({size}) ?
+
+Il liste vos morceaux, catégories et playlists -- jamais les fichiers audio -- mais il peut être volumineux, et un nouveau scan le reconstruit.</translation>
+    </message>
+    <message>
+        <source>Back Up Workspace</source>
+        <translation>Sauvegarder l&apos;espace de travail</translation>
+    </message>
+    <message>
+        <source>Backup failed</source>
+        <translation>Échec de la sauvegarde</translation>
+    </message>
+    <message>
+        <source>Backed up {count} files to {path}</source>
+        <translation>{count} fichiers sauvegardés dans {path}</translation>
+    </message>
+    <message>
+        <source>DJ MIDI Studio backup (*.zip);;All files (*)</source>
+        <translation>Sauvegarde DJ MIDI Studio (*.zip);;Tous les fichiers (*)</translation>
+    </message>
+    <message>
+        <source>Backup made {date} with DJ MIDI Studio {version}.</source>
+        <translation>Sauvegarde faite le {date} avec DJ MIDI Studio {version}.</translation>
+    </message>
+    <message>
+        <source>Backup made at an unknown date with DJ MIDI Studio {version}.</source>
+        <translation>Sauvegarde faite à une date inconnue avec DJ MIDI Studio {version}.</translation>
+    </message>
+    <message>
+        <source>{added} file(s) will be added, {overwritten} existing file(s) overwritten.</source>
+        <translation>{added} fichier(s) seront ajoutés, {overwritten} fichier(s) existant(s) remplacé(s).</translation>
+    </message>
+    <message>
+        <source>... and {count} more</source>
+        <translation>... et {count} de plus</translation>
+    </message>
+    <message>
+        <source>Overwritten:</source>
+        <translation>Remplacés :</translation>
+    </message>
+    <message>
+        <source>Files that are not in the backup are kept.</source>
+        <translation>Les fichiers absents de la sauvegarde sont conservés.</translation>
+    </message>
+    <message>
+        <source>Restore workspace</source>
+        <translation>Restaurer l&apos;espace de travail</translation>
+    </message>
+    <message>
+        <source>Restore this backup over your current files?</source>
+        <translation>Restaurer cette sauvegarde par-dessus vos fichiers actuels ?</translation>
+    </message>
+    <message>
+        <source>Also restore the music library index (replaces the current one)</source>
+        <translation>Restaurer aussi l&apos;index de la bibliothèque musicale (remplace l&apos;actuel)</translation>
+    </message>
+    <message>
+        <source>Restore Workspace</source>
+        <translation>Restaurer l&apos;espace de travail</translation>
+    </message>
+    <message>
+        <source>Cannot restore this backup</source>
+        <translation>Impossible de restaurer cette sauvegarde</translation>
+    </message>
+    <message>
+        <source>Restore failed</source>
+        <translation>Échec de la restauration</translation>
+    </message>
+    <message>
+        <source>Restored {name}</source>
+        <translation>{name} restaurée</translation>
+    </message>
+    <message>
+        <source>Workspace restored</source>
+        <translation>Espace de travail restauré</translation>
+    </message>
+    <message>
+        <source>Your files are restored. Restart DJ MIDI Studio to load the restored preferences, controller profiles and library -- until then, saving preferences would overwrite the restored ones.
+
+Quit now?</source>
+        <translation>Vos fichiers sont restaurés. Redémarrez DJ MIDI Studio pour charger les préférences, profils de contrôleur et bibliothèque restaurés -- d&apos;ici là, enregistrer les préférences écraserait celles qui ont été restaurées.
+
+Quitter maintenant ?</translation>
+    </message>
+    <message>
+        <source>{count} message(s) to {port}</source>
+        <translation>{count} message(s) vers {port}</translation>
+    </message>
+    <message>
+        <source>no port</source>
+        <translation>aucun port</translation>
     </message>
     <message>
         <source>No macro yet</source>
@@ -1089,8 +1698,42 @@ Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-m
         <translation>Afficher le dossier des macros</translation>
     </message>
     <message>
+        <source>{count} macro(s) saved</source>
+        <translation>{count} macro(s) enregistrée(s)</translation>
+    </message>
+    <message>
+        <source>Cheat Sheet</source>
+        <translation>Antisèche</translation>
+    </message>
+    <message>
+        <source>No registered controller recognizes the triggers of this mapping.</source>
+        <translation>Aucun contrôleur enregistré ne reconnaît les déclencheurs de ce mapping.</translation>
+    </message>
+    <message>
+        <source>Export cheat sheet</source>
+        <translation>Exporter l&apos;antisèche</translation>
+    </message>
+    <message>
+        <source>PDF files (*.pdf)</source>
+        <translation>Fichiers PDF (*.pdf)</translation>
+    </message>
+    <message>
+        <source>Could not write {path}:
+{error}</source>
+        <translation>Impossible d&apos;écrire {path} :
+{error}</translation>
+    </message>
+    <message>
+        <source>Cheat sheet exported: {path} ({count} page(s))</source>
+        <translation>Antisèche exportée : {path} ({count} page(s))</translation>
+    </message>
+    <message>
         <source>Layer Map</source>
         <translation>Carte des couches</translation>
+    </message>
+    <message>
+        <source>Validation: {errors} error(s), {warnings} warning(s), {infos} info</source>
+        <translation>Validation : {errors} erreur(s), {warnings} avertissement(s), {infos} info</translation>
     </message>
     <message>
         <source>Open a mapping first.</source>
@@ -1194,6 +1837,53 @@ Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-m
     <message>
         <source>Only meaningful with a port or device that echoes what it receives (IAC Driver / virtual loopback, MIDI thru, or a controller known to echo its LED messages). A controller that does not echo makes every ping time out.</source>
         <translation>N&apos;a de sens qu&apos;avec un port ou un appareil qui renvoie ce qu&apos;il reçoit (IAC Driver / boucle virtuelle, MIDI thru, ou un contrôleur connu pour renvoyer ses messages de LED). Avec un contrôleur qui ne renvoie rien, chaque ping expire.</translation>
+    </message>
+    <message>
+        <source>No reply to {sent} ping(s) -- the port or device does not seem to echo.</source>
+        <translation>Aucune réponse à {sent} ping(s) -- le port ou l&apos;appareil ne semble pas renvoyer ce qu&apos;il reçoit.</translation>
+    </message>
+    <message>
+        <source>{received}/{sent} replies ({lost}% lost): min {min}, median {median}, max {max}, jitter {jitter}</source>
+        <translation>{received}/{sent} réponses ({lost} % perdues) : min {min}, médiane {median}, max {max}, gigue {jitter}</translation>
+    </message>
+    <message>
+        <source>{value} ms</source>
+        <translation>{value} ms</translation>
+    </message>
+    <message>
+        <source>n/a</source>
+        <translation>n/d</translation>
+    </message>
+</context>
+<context>
+    <name>MidiMacros</name>
+    <message>
+        <source>Macro &quot;{name}&quot;: sent {count} message(s) to {port}</source>
+        <translation>Macro « {name} » : {count} message(s) envoyé(s) vers {port}</translation>
+    </message>
+    <message>
+        <source>Macro &quot;{name}&quot; not played: {error}</source>
+        <translation>Macro « {name} » non jouée : {error}</translation>
+    </message>
+    <message>
+        <source>Macro &quot;{name}&quot; stopped after {sent}/{total} message(s): {error}</source>
+        <translation>Macro « {name} » arrêtée après {sent}/{total} message(s) : {error}</translation>
+    </message>
+    <message>
+        <source>no message to send</source>
+        <translation>aucun message à envoyer</translation>
+    </message>
+    <message>
+        <source>no output port chosen</source>
+        <translation>aucun port de sortie choisi</translation>
+    </message>
+    <message>
+        <source>{port} is not connected</source>
+        <translation>{port} n&apos;est pas connecté</translation>
+    </message>
+    <message>
+        <source>cancelled</source>
+        <translation>annulée</translation>
     </message>
 </context>
 <context>

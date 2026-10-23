@@ -42,6 +42,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from djmidi.controller_sync import ControllerSyncSet, SyncMessage, resolve_output_port
+from djmidi.i18n import QT_TRANSLATE_NOOP, Translate, untranslated
 from djmidi.midi_learn import trigger_from_event
 
 if TYPE_CHECKING:
@@ -328,6 +329,16 @@ def send_message(message: SyncMessage, port: str, sender: Callable[..., None] | 
         send_step(send, message)
 
 
+# Status-bar texts (issue #319): English templates, translated by the caller.
+_SENT = QT_TRANSLATE_NOOP("MidiMacros", 'Macro "{name}": sent {count} message(s) to {port}')
+_NOT_PLAYED = QT_TRANSLATE_NOOP("MidiMacros", 'Macro "{name}" not played: {error}')
+_STOPPED = QT_TRANSLATE_NOOP("MidiMacros", 'Macro "{name}" stopped after {sent}/{total} message(s): {error}')
+NO_MESSAGE = QT_TRANSLATE_NOOP("MidiMacros", "no message to send")
+NO_PORT = QT_TRANSLATE_NOOP("MidiMacros", "no output port chosen")
+NOT_CONNECTED = QT_TRANSLATE_NOOP("MidiMacros", "{port} is not connected")
+CANCELLED = QT_TRANSLATE_NOOP("MidiMacros", "cancelled")
+
+
 @dataclass(frozen=True)
 class MacroResult:
     name: str
@@ -335,29 +346,43 @@ class MacroResult:
     sent: int = 0
     total: int = 0
     error: str = ""
+    # The port a "{port} is not connected" error names, so `summary` can
+    # rebuild that error in the interface language.
+    missing_port: str = ""
 
     @property
     def ok(self) -> bool:
         return self.port is not None and not self.error
 
-    def summary(self) -> str:
-        """One status-bar line."""
+    def summary(self, translate: Translate = untranslated) -> str:
+        """One status-bar line. ``translate`` turns each English template
+        (and this module's own errors) into the interface language before it
+        is filled in (issue #319); an exception's message passes unchanged."""
         if self.ok:
-            return f"Macro \"{self.name}\": sent {self.sent} message(s) to {self.port}"
+            return translate(_SENT).format(name=self.name, count=self.sent, port=self.port)
+        error = (
+            translate(NOT_CONNECTED).format(port=self.missing_port) if self.missing_port else translate(self.error)
+        )
         if self.port is None:
-            return f"Macro \"{self.name}\" not played: {self.error}"
-        return f"Macro \"{self.name}\" stopped after {self.sent}/{self.total} message(s): {self.error}"
+            return translate(_NOT_PLAYED).format(name=self.name, error=error)
+        return translate(_STOPPED).format(name=self.name, sent=self.sent, total=self.total, error=error)
 
 
 def unplayable_result(macro: MidiMacro, available_ports: Sequence[str]) -> MacroResult | None:
     """The failed result to report instead of playing ``macro``, or ``None``
     when it can play (it has steps and its port is connected)."""
     if not macro.steps:
-        return MacroResult(macro.name, None, error="no message to send")
+        return MacroResult(macro.name, None, error=NO_MESSAGE)
     if not macro.output_port.strip():
-        return MacroResult(macro.name, None, total=len(macro.steps), error="no output port chosen")
+        return MacroResult(macro.name, None, total=len(macro.steps), error=NO_PORT)
     if resolve_macro_port(macro, available_ports) is None:
-        return MacroResult(macro.name, None, total=len(macro.steps), error=f"{macro.output_port} is not connected")
+        return MacroResult(
+            macro.name,
+            None,
+            total=len(macro.steps),
+            error=NOT_CONNECTED.format(port=macro.output_port),
+            missing_port=macro.output_port,
+        )
     return None
 
 

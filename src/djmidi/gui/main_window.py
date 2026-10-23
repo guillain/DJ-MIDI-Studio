@@ -191,6 +191,10 @@ _LAST_DRAFT_SETTINGS_KEY = "files/last_draft"
 _sync_translate = translator("ControllerSync")
 # Lets controllers' MIDI ports settle before the launch-time Sync.
 _STARTUP_SYNC_DELAY_MS = 1500
+# Ready-for-live findings come from Qt-free live_ready (issue #319).
+_live_ready_translate = translator("LiveReady")
+# Macro results come from Qt-free midi_macros (issue #319).
+_macro_translate = translator("MidiMacros")
 # Startup update check (issue #193): after the window is up, at most once a day.
 _STARTUP_UPDATE_CHECK_DELAY_MS = 3000
 _LAST_UPDATE_CHECK_SETTINGS_KEY = "updates/last_check"
@@ -227,16 +231,13 @@ _LOCAL_CONTROLLER_DOCUMENTS = [
 
 
 _LOGGER = logging.getLogger(__name__)
-_BACKUP_FILTER = "DJ MIDI Studio backup (*.zip);;All files (*)"
 
 
 def _human_size(size: int) -> str:
-    value = float(size)
-    for unit in ("bytes", "KB", "MB", "GB"):
-        if value < 1024 or unit == "GB":
-            return f"{value:.0f} {unit}" if unit == "bytes" else f"{value:.1f} {unit}"
-        value /= 1024
-    return f"{size} bytes"
+    # Localized units (Ko/Mo/Go in French), like the duplicates window's.
+    from djmidi.gui.duplicates_dialog import format_size
+
+    return format_size(size)
 
 # Performance Mode: how much to shrink the tree pane (never fully to 0 -- the
 # pair splitters are non-collapsible by design) and how much to enlarge the
@@ -725,15 +726,19 @@ class MainWindow(QMainWindow):
         if detection.needs_confirmation and self.preferences.detection_policy == "ask":
             answer = QMessageBox.question(
                 self,
-                "MIDI controller detected",
-                f"Enable '{best.name}'?\n{best.score}% confidence — {best.reasons[0]}",
+                self.tr("MIDI controller detected"),
+                self.tr("Enable '{name}'?\n{score}% confidence — {reason}").format(
+                    name=best.name, score=best.score, reason=best.reasons[0]
+                ),
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             )
             if answer != QMessageBox.StandardButton.Yes:
                 return
         elif detection.needs_confirmation:
             self.statusBar().showMessage(
-                f"Detected controller suggestion: {best.name} ({best.score}% confidence)."
+                self.tr("Detected controller suggestion: {name} ({score}% confidence).").format(
+                    name=best.name, score=best.score
+                )
             )
             return
         self._apply_detected_controller(best.name, best.score, best.reasons[0])
@@ -747,7 +752,9 @@ class MainWindow(QMainWindow):
             and self.introduction_view.set_controller(name)
         )
         if selected:
-            self.statusBar().showMessage(f"Controller enabled: {name} ({score}% — {reason})")
+            self.statusBar().showMessage(
+                self.tr("Controller enabled: {name} ({score}% — {reason})").format(name=name, score=score, reason=reason)
+            )
 
     def _initialize_pair_splitters(self) -> None:
         for splitter in self._pair_splitters:
@@ -872,7 +879,7 @@ class MainWindow(QMainWindow):
         export_menu.addSeparator()
         self._cheat_sheet_action = QAction(self.tr("Cheat Sheet (PDF)..."), self)
         self._cheat_sheet_action.setToolTip(
-            "Print each controller's photo with the function the loaded mapping binds to every control"
+            self.tr("Print each controller's photo with the function the loaded mapping binds to every control")
         )
         self._cheat_sheet_action.setEnabled(False)
         self._cheat_sheet_action.triggered.connect(lambda _checked=False: self._on_export_cheat_sheet())
@@ -929,8 +936,10 @@ class MainWindow(QMainWindow):
             view_menu.addAction(dock.toggleViewAction())
         self._new_emulator_action = QAction(self.tr("New Controller Emulator…"), self)
         self._new_emulator_action.setToolTip(
-            "Open another Controller Emulator window -- several may be open at "
-            "once, each bound to its own controller"
+            self.tr(
+                "Open another Controller Emulator window -- several may be open at "
+                "once, each bound to its own controller"
+            )
         )
         self._new_emulator_action.triggered.connect(lambda: self._create_emulator_instance())
         view_menu.addAction(self._new_emulator_action)
@@ -954,7 +963,7 @@ class MainWindow(QMainWindow):
         self._show_all_controllers_action = QAction(self.tr("Show all controllers"), self, checkable=True)
         self._show_all_controllers_action.setChecked(self._show_all_controllers)
         self._show_all_controllers_action.setToolTip(
-            "Ignore the per-controller Preferences enablement and list every registered controller"
+            self.tr("Ignore the per-controller Preferences enablement and list every registered controller")
         )
         self._show_all_controllers_action.toggled.connect(self._on_show_all_controllers_toggled)
         view_menu.addAction(self._show_all_controllers_action)
@@ -962,8 +971,10 @@ class MainWindow(QMainWindow):
         view_menu.addSeparator()
         self._performance_mode_action = QAction(self.tr("Performance Mode"), self, checkable=True)
         self._performance_mode_action.setToolTip(
-            "Hide the mapping tree and enlarge the schematic layout for on-stage use "
-            "(session-only, not remembered across restarts)"
+            self.tr(
+                "Hide the mapping tree and enlarge the schematic layout for on-stage use "
+                "(session-only, not remembered across restarts)"
+            )
         )
         self._performance_mode_action.toggled.connect(self._on_performance_mode_toggled)
         view_menu.addAction(self._performance_mode_action)
@@ -1091,8 +1102,10 @@ class MainWindow(QMainWindow):
         help_menu.addAction(self._check_updates_action)
         self._report_problem_action = QAction(self.tr("&Report a Problem..."), self)
         self._report_problem_action.setToolTip(
-            "Preview a bug report with your app version, system and recent log lines, "
-            "then open it as a pre-filled GitHub issue."
+            self.tr(
+                "Preview a bug report with your app version, system and recent log lines, "
+                "then open it as a pre-filled GitHub issue."
+            )
         )
         self._report_problem_action.triggered.connect(self._on_report_problem)
         help_menu.addAction(self._report_problem_action)
@@ -1163,10 +1176,10 @@ class MainWindow(QMainWindow):
 
     def _create_tool_docks(self) -> dict[str, QDockWidget]:
         definitions = {
-            "monitor": ("Live Monitor", self.live_monitor_view),
-            "routing": ("MIDI Routing", self.midi_routing_view),
-            "clock": ("MIDI Clock", self.midi_clock_view),
-            "metronome": ("Metronome", self.metronome_view),
+            "monitor": (self.tr("Live Monitor"), self.live_monitor_view),
+            "routing": (self.tr("MIDI Routing"), self.midi_routing_view),
+            "clock": (self.tr("MIDI Clock"), self.midi_clock_view),
+            "metronome": (self.tr("Metronome"), self.metronome_view),
         }
         docks: dict[str, QDockWidget] = {}
         for key, (title, widget) in definitions.items():
@@ -1216,7 +1229,7 @@ class MainWindow(QMainWindow):
         close_button = QPushButton()
         close_button.setFixedSize(28, 28)
         close_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_TitleBarCloseButton))
-        close_button.setToolTip("Close")
+        close_button.setToolTip(self.tr("Close"))
         close_button.clicked.connect(dock.close)
         bar_layout.addWidget(close_button)
         return bar
@@ -1247,19 +1260,19 @@ class MainWindow(QMainWindow):
         button = QPushButton("☰")
         button.setFixedSize(22, 22)
         button.setProperty("compact", True)
-        button.setToolTip("Window")
+        button.setToolTip(self.tr("Window"))
 
         menu = QMenu(button)
-        reduce_action = QAction("Reduce to title bar", button)
-        maximize_action = QAction("Maximize", button)
+        reduce_action = QAction(self.tr("Reduce to title bar"), button)
+        maximize_action = QAction(self.tr("Maximize"), button)
         menu.addAction(reduce_action)
         menu.addAction(maximize_action)
         menu.addSeparator()
         snap_specs = [
-            ("Snap left", Qt.DockWidgetArea.LeftDockWidgetArea),
-            ("Snap right", Qt.DockWidgetArea.RightDockWidgetArea),
-            ("Snap to top", Qt.DockWidgetArea.TopDockWidgetArea),
-            ("Snap to bottom", Qt.DockWidgetArea.BottomDockWidgetArea),
+            (self.tr("Snap left"), Qt.DockWidgetArea.LeftDockWidgetArea),
+            (self.tr("Snap right"), Qt.DockWidgetArea.RightDockWidgetArea),
+            (self.tr("Snap to top"), Qt.DockWidgetArea.TopDockWidgetArea),
+            (self.tr("Snap to bottom"), Qt.DockWidgetArea.BottomDockWidgetArea),
         ]
         for label, area in snap_specs:
             snap_action = QAction(label, button)
@@ -1290,12 +1303,12 @@ class MainWindow(QMainWindow):
             title_bar = dock.titleBarWidget()
             dock.setMaximumHeight(title_bar.sizeHint().height() if title_bar is not None else 32)
             dock._dj_reduced = True
-            dock._dj_reduce_action.setText("Expand")
+            dock._dj_reduce_action.setText(self.tr("Expand"))
         else:
             widget.show()
             dock.setMaximumHeight(16777215)
             dock._dj_reduced = False
-            dock._dj_reduce_action.setText("Reduce to title bar")
+            dock._dj_reduce_action.setText(self.tr("Reduce to title bar"))
 
     def _toggle_dock_maximized(self, dock: QDockWidget) -> None:
         if not dock._dj_maximized:
@@ -1304,13 +1317,13 @@ class MainWindow(QMainWindow):
             dock._dj_premax_geometry = dock.geometry()
             dock.showMaximized()
             dock._dj_maximized = True
-            dock._dj_maximize_action.setText("Restore")
+            dock._dj_maximize_action.setText(self.tr("Restore"))
         else:
             dock.showNormal()
             if dock._dj_premax_geometry is not None:
                 dock.setGeometry(dock._dj_premax_geometry)
             dock._dj_maximized = False
-            dock._dj_maximize_action.setText("Maximize")
+            dock._dj_maximize_action.setText(self.tr("Maximize"))
 
     def _snap_dock_to_area(self, dock: QDockWidget, area: Qt.DockWidgetArea) -> None:
         if dock._dj_reduced:
@@ -1323,14 +1336,13 @@ class MainWindow(QMainWindow):
         dock.show()
         dock.raise_()
 
-    @staticmethod
-    def _update_dock_button(button: QPushButton, floating: bool) -> None:
+    def _update_dock_button(self, button: QPushButton, floating: bool) -> None:
         if floating:
-            button.setText("Dock")
-            button.setToolTip("Attach back into the main window")
+            button.setText(self.tr("Dock"))
+            button.setToolTip(self.tr("Attach back into the main window"))
         else:
-            button.setText("Undock")
-            button.setToolTip("Detach into its own window")
+            button.setText(self.tr("Undock"))
+            button.setToolTip(self.tr("Detach into its own window"))
 
     def _show_tool_dock(self, key: str) -> None:
         dock = self._tool_docks.get(key)
@@ -1356,7 +1368,7 @@ class MainWindow(QMainWindow):
             sync_set_provider=lambda name: self.preferences.sync_set_for(name, self.preferences.active_sync_scene),
         )
         view.padColoursSaveRequested.connect(self._on_pad_colours_save_requested)
-        dock = QDockWidget("Controller Emulator", self)
+        dock = QDockWidget(self.tr("Controller Emulator"), self)
         dock.setObjectName(f"{instance_id}Dock")
         dock.setAllowedAreas(Qt.DockWidgetArea.AllDockWidgetAreas)
         dock.setFeatures(
@@ -1365,7 +1377,7 @@ class MainWindow(QMainWindow):
             | QDockWidget.DockWidgetFeature.DockWidgetFloatable
         )
         dock.setWidget(view)
-        dock.setTitleBarWidget(self._build_emulator_dock_title_bar(instance_id, "Controller Emulator", dock))
+        dock.setTitleBarWidget(self._build_emulator_dock_title_bar(instance_id, self.tr("Controller Emulator"), dock))
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, dock)
         self._emulator_docks[instance_id] = dock
         dock.show()
@@ -1401,7 +1413,7 @@ class MainWindow(QMainWindow):
         close_button = QPushButton()
         close_button.setFixedSize(28, 28)
         close_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_TitleBarCloseButton))
-        close_button.setToolTip("Close")
+        close_button.setToolTip(self.tr("Close"))
         close_button.clicked.connect(lambda: self._close_emulator_instance(instance_id))
         bar_layout.addWidget(close_button)
         return bar
@@ -1432,7 +1444,7 @@ class MainWindow(QMainWindow):
     def _open_local_help(self, relative_path: str) -> None:
         path = self._resource_root() / relative_path
         if not path.exists():
-            QMessageBox.warning(self, "Documentation unavailable", str(path))
+            QMessageBox.warning(self, self.tr("Documentation unavailable"), str(path))
             return
         QDesktopServices.openUrl(QUrl.fromLocalFile(str(path)))
 
@@ -1474,7 +1486,7 @@ class MainWindow(QMainWindow):
                 # policies" applying right away above -- no-op if already running.
                 self.live_monitor_view.ensure_monitoring_started()
             self._refresh_file_actions()
-            self.statusBar().showMessage("Preferences saved")
+            self.statusBar().showMessage(self.tr("Preferences saved"))
 
     def _on_sync_controllers(self) -> list[SyncResult]:
         """Sends each controller its sync set for the active scene."""
@@ -1563,9 +1575,9 @@ class MainWindow(QMainWindow):
 
     def _on_check_for_updates(self) -> None:
         if not self._update_checker.start(manual=True):
-            self.statusBar().showMessage("Already checking for updates...", 5_000)
+            self.statusBar().showMessage(self.tr("Already checking for updates..."), 5_000)
             return
-        self.statusBar().showMessage("Checking for updates...")
+        self.statusBar().showMessage(self.tr("Checking for updates..."))
 
     def _problem_report_context(self) -> ReportContext:
         """Facts for Help → Report a Problem: versions, the plugins enabled in
@@ -1605,11 +1617,11 @@ class MainWindow(QMainWindow):
             return
         if dialog.last_inlined:
             self.statusBar().showMessage(
-                "Problem report copied to the clipboard and opened as a GitHub issue.", 10_000
+                self.tr("Problem report copied to the clipboard and opened as a GitHub issue."), 10_000
             )
         else:
             self.statusBar().showMessage(
-                "The report was too long for the link: it's on your clipboard — paste it into the issue.",
+                self.tr("The report was too long for the link: it's on your clipboard — paste it into the issue."),
                 15_000,
             )
 
@@ -1626,36 +1638,54 @@ class MainWindow(QMainWindow):
             self.statusBar().clearMessage()
         if newer:
             version = ".".join(map(str, release.version))
-            self._update_label.setText(f'<a href="{release.url}">Update available: v{version}</a>')
-            self._update_label.setToolTip(f"Open the {release.tag} release page in your browser")
+            self._update_label.setText(
+                '<a href="{url}">{text}</a>'.format(
+                    url=release.url, text=self.tr("Update available: v{version}").format(version=version)
+                )
+            )
+            self._update_label.setToolTip(
+                self.tr("Open the {tag} release page in your browser").format(tag=release.tag)
+            )
             self._update_label.show()
-            self.statusBar().showMessage(f"DJ MIDI Studio v{version} is available (you have v{local}).", 15_000)
+            self.statusBar().showMessage(
+                self.tr("DJ MIDI Studio v{version} is available (you have v{local}).").format(
+                    version=version, local=local
+                ),
+                15_000,
+            )
         if not manual:
             return
+        title = self.tr("Check for Updates")
         if release is None:
             QMessageBox.information(
                 self,
-                "Check for Updates",
-                "Couldn't reach GitHub to check for a new version. Check your connection and try again.",
+                title,
+                self.tr("Couldn't reach GitHub to check for a new version. Check your connection and try again."),
             )
         elif newer:
             answer = QMessageBox.question(
                 self,
-                "Check for Updates",
-                f"DJ MIDI Studio v{'.'.join(map(str, release.version))} is available "
-                f"(you have v{local}).\n\nOpen the release page to download it?",
+                title,
+                self.tr(
+                    "DJ MIDI Studio v{version} is available (you have v{local}).\n\n"
+                    "Open the release page to download it?"
+                ).format(version=".".join(map(str, release.version)), local=local),
             )
             if answer == QMessageBox.StandardButton.Yes:
                 QDesktopServices.openUrl(QUrl(release.url))
         elif local is None:
             QMessageBox.information(
                 self,
-                "Check for Updates",
-                f"The latest release is {release.tag}, but this copy's own version is unknown.",
+                title,
+                self.tr("The latest release is {tag}, but this copy's own version is unknown.").format(
+                    tag=release.tag
+                ),
             )
         else:
             QMessageBox.information(
-                self, "Check for Updates", f"You're up to date (v{local}, latest release {release.tag})."
+                self,
+                title,
+                self.tr("You're up to date (v{local}, latest release {tag}).").format(local=local, tag=release.tag),
             )
 
     def _on_record_toggled(self, recording: bool) -> None:
@@ -1976,9 +2006,9 @@ class MainWindow(QMainWindow):
         for view in (self.layout_view, self.deck_layout_view, self.controller_layout_view):
             view.set_zoom(zoom)
         self.statusBar().showMessage(
-            "Performance mode on — tree hidden, layout enlarged"
+            self.tr("Performance mode on — tree hidden, layout enlarged")
             if checked
-            else "Performance mode off"
+            else self.tr("Performance mode off")
         )
 
     def _on_stage_mode_toggled(self, checked: bool) -> None:
@@ -1999,7 +2029,7 @@ class MainWindow(QMainWindow):
             self._stage_window = window
             window.showFullScreen()
             self.live_monitor_view.ensure_monitoring_started()
-            self.statusBar().showMessage("Stage mode on — press Esc to exit")
+            self.statusBar().showMessage(self.tr("Stage mode on — press Esc to exit"))
         elif self._stage_window is not None:
             # close() emits closed -> _on_stage_window_closed, which clears
             # the reference and unchecks the action (already unchecked here).
@@ -2012,7 +2042,7 @@ class MainWindow(QMainWindow):
             window.deleteLater()
         if self._stage_mode_action.isChecked():
             self._stage_mode_action.setChecked(False)
-        self.statusBar().showMessage("Stage mode off")
+        self.statusBar().showMessage(self.tr("Stage mode off"))
 
     def _emulator_views(self) -> list[ControllerEmulatorView]:
         """Every live Controller Emulator: each emulator dock's view plus
@@ -2038,15 +2068,15 @@ class MainWindow(QMainWindow):
         # Repopulate every controller combo/tree from the now-changed registry.
         self._on_controller_applied(self.introduction_view._controller_combo.currentText())
         self.statusBar().showMessage(
-            "Showing all controllers" if checked else "Showing enabled controllers only"
+            self.tr("Showing all controllers") if checked else self.tr("Showing enabled controllers only")
         )
 
     def _on_open(self) -> None:
         path_str, _ = QFileDialog.getOpenFileName(
             self,
-            "Open DJ mapping",
+            self.tr("Open DJ mapping"),
             str(self._mapping_start_dir()),
-            "Supported mapping files (*.xml *.nml *.tsi);;All files (*)",
+            self.tr("Supported mapping files (*.xml *.nml *.tsi);;All files (*)"),
         )
         if not path_str:
             return
@@ -2067,7 +2097,7 @@ class MainWindow(QMainWindow):
             mapping_text = path.read_text(encoding="utf-8")
         except OSError as exc:
             _LOGGER.exception("Failed to read %s", path)
-            QMessageBox.critical(self, "Failed to open file", str(exc))
+            QMessageBox.critical(self, self.tr("Failed to open file"), str(exc))
             return
         definitions = software.active_definitions()
         names = [definition.name for definition in definitions]
@@ -2085,9 +2115,11 @@ class MainWindow(QMainWindow):
             (index for index, definition in enumerate(definitions) if definition.plugin_id == self.software_id),
             0,
         )
-        prompt = "Mapping software:"
+        prompt = self.tr("Mapping software:")
         if detected is not None:
-            prompt = f"Mapping software (detected: {detected.name}, {detected.score}% — {detected.reasons[0]}):"
+            prompt = self.tr("Mapping software (detected: {name}, {score}% — {reason}):").format(
+                name=detected.name, score=detected.score, reason=detected.reasons[0]
+            )
         known = next((definition for definition in definitions if definition.plugin_id == software_id), None)
         if known is not None:
             selected = known
@@ -2096,7 +2128,7 @@ class MainWindow(QMainWindow):
         else:
             software_name, accepted = QInputDialog.getItem(
                 self,
-                "Open DJ mapping",
+                self.tr("Open DJ mapping"),
                 prompt,
                 names,
                 current,
@@ -2109,14 +2141,18 @@ class MainWindow(QMainWindow):
             self.config = selected.parser(mapping_text)
         except Exception as exc:
             _LOGGER.exception("Failed to parse %s as %s", path, selected.plugin_id)
-            QMessageBox.critical(self, "Failed to open file", str(exc))
+            QMessageBox.critical(self, self.tr("Failed to open file"), str(exc))
             return
         self.current_path = path
         self.software_id = selected.plugin_id
         self.undo_stack.clear()
         self._load_tree()
         self.issues_table.setRowCount(0)
-        self.statusBar().showMessage(f"Loaded {len(self.config.controls)} controls from {self.current_path.name}")
+        self.statusBar().showMessage(
+            self.tr("Loaded {count} controls from {name}").format(
+                count=len(self.config.controls), name=self.current_path.name
+            )
+        )
         self._remember_mapping(path)
         _LOGGER.info("Loaded %d control(s) from %s (software=%s)", len(self.config.controls), path, selected.plugin_id)
 
@@ -2450,7 +2486,7 @@ class MainWindow(QMainWindow):
         # own follow-up to the Controller Emulator's identical fix.
         matches = layout_mod.find_controls_for_cell(self.config, key)
         if not matches:
-            self.statusBar().showMessage(f"No control in this file uses '{key[2]}'")
+            self.statusBar().showMessage(self.tr("No control in this file uses '{name}'").format(name=key[2]))
             self._update_layout_selection(None, None, None)
             return
         if source_tab == "controller":
@@ -2461,7 +2497,9 @@ class MainWindow(QMainWindow):
         else:
             self._select_control_in_channel_columns(matches[0])
         self.left_tabs.setCurrentIndex(self._tab_indexes[source_tab])
-        self.statusBar().showMessage(f"'{key[2]}': {len(matches)} control(s) in this file, showing first")
+        self.statusBar().showMessage(
+            self.tr("'{name}': {count} control(s) in this file, showing first").format(name=key[2], count=len(matches))
+        )
         # setCurrentIndex above already re-highlights via _on_channel_selection_changed,
         # but do it directly too in case the selection didn't actually change
         # (clicking the same physical control's other half again).
@@ -2504,8 +2542,9 @@ class MainWindow(QMainWindow):
         self.deck_layout_view.set_selected_keys(keys)
         self.controller_layout_view.set_selected_keys(keys)
         self.statusBar().showMessage(
-            f"'{result.label}' ({result.location()}): {len(result.triggers)} control(s), "
-            f"{len(keys)} highlighted on the layout"
+            self.tr("'{name}' ({location}): {count} control(s), {highlighted} highlighted on the layout").format(
+                name=result.label, location=result.location(), count=len(result.triggers), highlighted=len(keys)
+            )
         )
 
     def _select_deck_group_for_mappings(self, mappings: list[MappingElement]) -> bool:
@@ -2743,7 +2782,7 @@ class MainWindow(QMainWindow):
             view.refresh_controllers()
         if self.config is not None:
             self._refresh_layout_usage()
-        self.statusBar().showMessage(f"'{name}' applied for this session.")
+        self.statusBar().showMessage(self.tr("'{name}' applied for this session.").format(name=name))
 
     def closeEvent(self, event) -> None:
         if self._record_button.isChecked():
@@ -2849,9 +2888,11 @@ class MainWindow(QMainWindow):
         definition = software.get_definition(self.software_id)
         path_str, _ = QFileDialog.getSaveFileName(
             self,
-            f"Export {definition.name} mapping",
+            self.tr("Export {software} mapping").format(software=definition.name),
             str(self.current_path or self._mapping_start_dir()),
-            f"{definition.name} files (*{' *'.join(definition.extensions)})",
+            self.tr("{software} files ({patterns})").format(
+                software=definition.name, patterns=" ".join(f"*{extension}" for extension in definition.extensions)
+            ),
         )
         if not path_str:
             return
@@ -2859,7 +2900,7 @@ class MainWindow(QMainWindow):
         if self._safe_save(target, definition):
             self.current_path = target
             self._remember_mapping(target)
-            self.statusBar().showMessage(f"Saved to {self.current_path}")
+            self.statusBar().showMessage(self.tr("Saved to {path}").format(path=self.current_path))
 
     def _safe_save(self, target: Path, definition) -> bool:
         _LOGGER.info("Preparing to save %s as %s", target, definition.plugin_id)
@@ -2872,7 +2913,7 @@ class MainWindow(QMainWindow):
             )
         except (OSError, TypeError, ValueError) as exc:
             _LOGGER.exception("Failed to prepare save for %s", target)
-            QMessageBox.critical(self, "Failed to save mapping", str(exc))
+            QMessageBox.critical(self, self.tr("Failed to save mapping"), str(exc))
             return False
         dialog = SafeUpdateDialog(str(target), plan.diff, self)
         if dialog.exec() != QDialog.DialogCode.Accepted:
@@ -2882,11 +2923,11 @@ class MainWindow(QMainWindow):
             plan.apply()
         except OSError as exc:
             _LOGGER.exception("Failed to apply save to %s", target)
-            QMessageBox.critical(self, "Failed to save mapping", str(exc))
+            QMessageBox.critical(self, self.tr("Failed to save mapping"), str(exc))
             return False
         self._last_save_plan = plan
         self._refresh_file_actions()
-        self.statusBar().showMessage(f"Saved to {target}")
+        self.statusBar().showMessage(self.tr("Saved to {path}").format(path=target))
         return True
 
     def _on_rollback_last_save(self) -> None:
@@ -2902,9 +2943,11 @@ class MainWindow(QMainWindow):
         when = datetime.fromtimestamp(backup.stat().st_mtime, tz=UTC).astimezone().strftime("%Y-%m-%d %H:%M")
         answer = QMessageBox.question(
             self,
-            "Restore previous version",
-            f"Replace {self.current_path.name} with the version saved before its last save ({when})?\n\n"
-            "Unsaved edits in the app are lost.",
+            self.tr("Restore previous version"),
+            self.tr(
+                "Replace {name} with the version saved before its last save ({when})?\n\n"
+                "Unsaved edits in the app are lost."
+            ).format(name=self.current_path.name, when=when),
         )
         if answer != QMessageBox.StandardButton.Yes:
             return
@@ -2912,22 +2955,22 @@ class MainWindow(QMainWindow):
             shutil.copy2(backup, self.current_path)
         except OSError as exc:
             _LOGGER.exception("Failed to restore %s from %s", self.current_path, backup)
-            QMessageBox.critical(self, "Failed to restore the previous version", str(exc))
+            QMessageBox.critical(self, self.tr("Failed to restore the previous version"), str(exc))
             return
         _LOGGER.info("Restored %s from %s", self.current_path, backup)
         self._last_save_plan = None
         restored = self.current_path
         self._load_mapping_from_path(restored)
-        self.statusBar().showMessage(f"Restored the previous version of {restored.name}")
+        self.statusBar().showMessage(self.tr("Restored the previous version of {name}").format(name=restored.name))
 
     def _on_compare_with_file(self) -> None:
         if self.config is None:
             return
         path_str, _ = QFileDialog.getOpenFileName(
             self,
-            "Compare with mapping",
+            self.tr("Compare with mapping"),
             str(self._mapping_start_dir()),
-            "Supported mapping files (*.xml *.nml *.tsi *.bak);;All files (*)",
+            self.tr("Supported mapping files (*.xml *.nml *.tsi *.bak);;All files (*)"),
         )
         if path_str:
             self._compare_with_path(Path(path_str))
@@ -2939,7 +2982,7 @@ class MainWindow(QMainWindow):
         if not backup.is_file():
             self._refresh_file_actions()
             return
-        self._compare_with_path(backup, name=f"previous version ({backup.name})")
+        self._compare_with_path(backup, name=self.tr("previous version ({name})").format(name=backup.name))
 
     def _parse_other_mapping(self, path: Path) -> MidiConfig:
         """Parse a file to compare against: as the software detection says
@@ -2963,19 +3006,21 @@ class MainWindow(QMainWindow):
             other = self._parse_other_mapping(path)
         except Exception as exc:
             _LOGGER.exception("Failed to read %s for comparison", path)
-            QMessageBox.critical(self, "Failed to compare", str(exc))
+            QMessageBox.critical(self, self.tr("Failed to compare"), str(exc))
             return None
         diff = diff_configs(other, self.config)
-        current = self.current_path.name if self.current_path is not None else "the open mapping"
+        current = self.current_path.name if self.current_path is not None else self.tr("the open mapping")
         if self.undo_stack.count() and not self.undo_stack.isClean():
-            current += " (with unsaved edits)"
+            current += self.tr(" (with unsaved edits)")
         if self._diff_dialog is not None:
             self._diff_dialog.close()
         dialog = MappingDiffDialog(diff, name or path.name, current, self)
         dialog.triggerSelected.connect(self._on_diff_trigger_selected)
         self._diff_dialog = dialog
         dialog.show()
-        self.statusBar().showMessage(f"Compared with {path.name}: {len(diff.entries)} difference(s)")
+        self.statusBar().showMessage(
+            self.tr("Compared with {name}: {count} difference(s)").format(name=path.name, count=len(diff.entries))
+        )
         return dialog
 
     def _on_diff_trigger_selected(self, channel: str, event_type: str, control_no: str) -> None:
@@ -3003,10 +3048,12 @@ class MainWindow(QMainWindow):
         if size is not None:
             answer = QMessageBox.question(
                 self,
-                "Back up workspace",
-                f"Also include the music library index ({_human_size(size)})?\n\n"
-                "It lists your tracks, categories and playlists -- never the audio files -- "
-                "but it can be large, and a fresh scan rebuilds it.",
+                self.tr("Back up workspace"),
+                self.tr(
+                    "Also include the music library index ({size})?\n\n"
+                    "It lists your tracks, categories and playlists -- never the audio files -- "
+                    "but it can be large, and a fresh scan rebuilds it."
+                ).format(size=_human_size(size)),
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No | QMessageBox.StandardButton.Cancel,
                 QMessageBox.StandardButton.No,
             )
@@ -3016,7 +3063,7 @@ class MainWindow(QMainWindow):
         exports = user_paths.subfolder(user_paths.EXPORTS)
         exports.mkdir(parents=True, exist_ok=True)
         path_str, _ = QFileDialog.getSaveFileName(
-            self, "Back Up Workspace", str(exports / backup.default_backup_name()), _BACKUP_FILTER
+            self, self.tr("Back Up Workspace"), str(exports / backup.default_backup_name()), self._backup_filter()
         )
         if not path_str:
             return None
@@ -3028,42 +3075,51 @@ class MainWindow(QMainWindow):
             manifest = backup.create_backup(target, include_library=include_library)
         except (OSError, sqlite3.Error) as exc:
             _LOGGER.exception("Workspace backup to %s failed", target)
-            QMessageBox.critical(self, "Backup failed", str(exc))
+            QMessageBox.critical(self, self.tr("Backup failed"), str(exc))
             return None
         finally:
             QApplication.restoreOverrideCursor()
         _LOGGER.info("Backed up %d files to %s", len(manifest.entries), target)
-        self.statusBar().showMessage(f"Backed up {len(manifest.entries)} files to {target}", 10_000)
+        self.statusBar().showMessage(
+            self.tr("Backed up {count} files to {path}").format(count=len(manifest.entries), path=target), 10_000
+        )
         return target
+
+    def _backup_filter(self) -> str:
+        return self.tr("DJ MIDI Studio backup (*.zip);;All files (*)")
 
     def _confirm_restore(self, plan: backup.RestorePlan) -> bool | None:
         """Ask before a restore writes anything. Returns whether to include
         the library index, or None when cancelled."""
         overwrites = plan.overwrites
+        made = (
+            self.tr("Backup made {date} with DJ MIDI Studio {version}.")
+            if plan.manifest.created_at
+            else self.tr("Backup made at an unknown date with DJ MIDI Studio {version}.")
+        )
         lines = [
-            (
-                f"Backup made {plan.manifest.created_at or 'at an unknown date'} "
-                f"with DJ MIDI Studio {plan.manifest.app_version}."
+            made.format(date=plan.manifest.created_at, version=plan.manifest.app_version),
+            self.tr("{added} file(s) will be added, {overwritten} existing file(s) overwritten.").format(
+                added=len(plan.creates), overwritten=len(overwrites)
             ),
-            f"{len(plan.creates)} file(s) will be added, {len(overwrites)} existing file(s) overwritten.",
         ]
         if overwrites:
             shown = [str(item.target) for item in overwrites[:8]]
             if len(overwrites) > len(shown):
-                shown.append(f"... and {len(overwrites) - len(shown)} more")
-            lines.append("Overwritten:\n" + "\n".join(shown))
-        lines.append("Files that are not in the backup are kept.")
+                shown.append(self.tr("... and {count} more").format(count=len(overwrites) - len(shown)))
+            lines.append(self.tr("Overwritten:") + "\n" + "\n".join(shown))
+        lines.append(self.tr("Files that are not in the backup are kept."))
         box = QMessageBox(self)
         box.setIcon(QMessageBox.Icon.Warning)
-        box.setWindowTitle("Restore workspace")
-        box.setText("Restore this backup over your current files?")
+        box.setWindowTitle(self.tr("Restore workspace"))
+        box.setText(self.tr("Restore this backup over your current files?"))
         box.setInformativeText("\n\n".join(lines))
         library_check = None
         if plan.manifest.has(backup.LIBRARY):
-            library_check = QCheckBox("Also restore the music library index (replaces the current one)")
+            library_check = QCheckBox(self.tr("Also restore the music library index (replaces the current one)"))
             library_check.setChecked(backup.library_db_size() is None)
             box.setCheckBox(library_check)
-        restore_button = box.addButton("Restore", QMessageBox.ButtonRole.AcceptRole)
+        restore_button = box.addButton(self.tr("Restore"), QMessageBox.ButtonRole.AcceptRole)
         box.addButton(QMessageBox.StandardButton.Cancel)
         box.exec()
         if box.clickedButton() is not restore_button:
@@ -3075,14 +3131,14 @@ class MainWindow(QMainWindow):
         profiles and library are picked up at the next launch."""
         exports = user_paths.subfolder(user_paths.EXPORTS)
         path_str, _ = QFileDialog.getOpenFileName(
-            self, "Restore Workspace", str(exports if exports.is_dir() else Path.home()), _BACKUP_FILTER
+            self, self.tr("Restore Workspace"), str(exports if exports.is_dir() else Path.home()), self._backup_filter()
         )
         if not path_str:
             return False
         try:
             plan = backup.restore_backup(path_str)
         except (backup.BackupError, OSError) as exc:
-            QMessageBox.critical(self, "Cannot restore this backup", str(exc))
+            QMessageBox.critical(self, self.tr("Cannot restore this backup"), str(exc))
             return False
         include_library = self._confirm_restore(plan)
         if include_library is None:
@@ -3094,18 +3150,20 @@ class MainWindow(QMainWindow):
             backup.restore_backup(path_str, dry_run=False, include_library=include_library)
         except (backup.BackupError, OSError, sqlite3.Error) as exc:
             _LOGGER.exception("Workspace restore from %s failed", path_str)
-            QMessageBox.critical(self, "Restore failed", str(exc))
+            QMessageBox.critical(self, self.tr("Restore failed"), str(exc))
             return False
         finally:
             QApplication.restoreOverrideCursor()
         _LOGGER.info("Restored workspace backup %s", path_str)
-        self.statusBar().showMessage(f"Restored {Path(path_str).name}", 10_000)
+        self.statusBar().showMessage(self.tr("Restored {name}").format(name=Path(path_str).name), 10_000)
         answer = QMessageBox.question(
             self,
-            "Workspace restored",
-            "Your files are restored. Restart DJ MIDI Studio to load the restored preferences, "
-            "controller profiles and library -- until then, saving preferences would overwrite "
-            "the restored ones.\n\nQuit now?",
+            self.tr("Workspace restored"),
+            self.tr(
+                "Your files are restored. Restart DJ MIDI Studio to load the restored preferences, "
+                "controller profiles and library -- until then, saving preferences would overwrite "
+                "the restored ones.\n\nQuit now?"
+            ),
         )
         if answer == QMessageBox.StandardButton.Yes:
             self.close()
@@ -3176,7 +3234,11 @@ class MainWindow(QMainWindow):
                 # working while one of them has the focus.
                 action.setShortcutContext(Qt.ShortcutContext.ApplicationShortcut)
             steps = len(macro.steps)
-            action.setToolTip(f"{steps} message(s) to {macro.output_port or 'no port'}")
+            action.setToolTip(
+                self.tr("{count} message(s) to {port}").format(
+                    count=steps, port=macro.output_port or self.tr("no port")
+                )
+            )
             action.triggered.connect(lambda _checked=False, name=macro.name: self._play_macro(name))
             menu.addAction(action)
             self._macro_actions.append(action)
@@ -3224,7 +3286,7 @@ class MainWindow(QMainWindow):
         midi_macros.save_macros(user_paths.macros_dir(), self.macros)
         self._rebuild_macro_menu()
         self._ensure_macro_triggers_listening()
-        self.statusBar().showMessage(f"{len(self.macros)} macro(s) saved", 5000)
+        self.statusBar().showMessage(self.tr("{count} macro(s) saved").format(count=len(self.macros)), 5000)
         return True
 
     def _play_macro(self, name: str) -> midi_macros.MacroResult | None:
@@ -3249,7 +3311,7 @@ class MainWindow(QMainWindow):
             self.live_monitor_view.ensure_monitoring_started()
 
     def _on_macro_finished(self, result: midi_macros.MacroResult) -> None:
-        self.statusBar().showMessage(result.summary(), 8000)
+        self.statusBar().showMessage(result.summary(_macro_translate), 8000)
 
     def _on_reveal_macros(self) -> None:
         folder = user_paths.macros_dir()
@@ -3278,13 +3340,15 @@ class MainWindow(QMainWindow):
         """File -> Export -> Cheat Sheet (PDF) (issue #182). `controllers`
         and `path` skip the dialogs (tests)."""
         if self.config is None:
-            QMessageBox.information(self, "Cheat Sheet", "Open a mapping first.")
+            QMessageBox.information(self, self.tr("Cheat Sheet"), self.tr("Open a mapping first."))
             return None
         if controllers is None:
             candidates = cheat_sheet.candidate_controllers(self.config)
             if not candidates:
                 QMessageBox.information(
-                    self, "Cheat Sheet", "No registered controller recognizes the triggers of this mapping."
+                    self,
+                    self.tr("Cheat Sheet"),
+                    self.tr("No registered controller recognizes the triggers of this mapping."),
                 )
                 return None
             names = [name for name, _count in candidates]
@@ -3296,9 +3360,9 @@ class MainWindow(QMainWindow):
             stem = self.current_path.stem if self.current_path is not None else "mapping"
             path_str, _ = QFileDialog.getSaveFileName(
                 self,
-                "Export cheat sheet",
+                self.tr("Export cheat sheet"),
                 str(user_paths.subfolder(user_paths.EXPORTS) / f"{stem}-cheat-sheet.pdf"),
-                "PDF files (*.pdf)",
+                self.tr("PDF files (*.pdf)"),
             )
             if not path_str:
                 return None
@@ -3308,9 +3372,13 @@ class MainWindow(QMainWindow):
         try:
             pages = write_cheat_sheet_pdf(path, sheets, source)
         except OSError as exc:
-            QMessageBox.warning(self, "Cheat Sheet", f"Could not write {path}:\n{exc}")
+            QMessageBox.warning(
+                self, self.tr("Cheat Sheet"), self.tr("Could not write {path}:\n{error}").format(path=path, error=exc)
+            )
             return None
-        self.statusBar().showMessage(f"Cheat sheet exported: {path} ({pages} page(s))")
+        self.statusBar().showMessage(
+            self.tr("Cheat sheet exported: {path} ({count} page(s))").format(path=path, count=pages)
+        )
         return path
 
     def _on_show_layer_map(self) -> LayerMapDialog | None:
@@ -3462,7 +3530,7 @@ class MainWindow(QMainWindow):
         if self.config is None:
             self.statusBar().showMessage(self.tr("Ready for live: open a mapping first."))
             return None
-        report = check_live_ready(self.config)
+        report = check_live_ready(self.config, translate=_live_ready_translate)
         if self._live_ready_dialog is not None:
             self._live_ready_dialog.close()
             self._live_ready_dialog.deleteLater()
@@ -3504,4 +3572,8 @@ class MainWindow(QMainWindow):
         errors = sum(1 for i in issues if i.severity == "error")
         warnings = sum(1 for i in issues if i.severity == "warning")
         infos = sum(1 for i in issues if i.severity == "info")
-        self.statusBar().showMessage(f"Validation: {errors} error(s), {warnings} warning(s), {infos} info")
+        self.statusBar().showMessage(
+            self.tr("Validation: {errors} error(s), {warnings} warning(s), {infos} info").format(
+                errors=errors, warnings=warnings, infos=infos
+            )
+        )

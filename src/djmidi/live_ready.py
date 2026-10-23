@@ -38,6 +38,7 @@ from collections import Counter
 from dataclasses import dataclass, field
 
 from djmidi.function_names import function_label
+from djmidi.i18n import QT_TRANSLATE_NOOP, Translate, untranslated
 from djmidi.model import Control, MidiConfig
 from djmidi.validator import (
     Severity,
@@ -79,6 +80,55 @@ KNOWN_OUTPUT_FUNCTIONS: frozenset[str] = frozenset({"auto_loop_specific_length",
 
 SEVERITY_ORDER: dict[str, int] = {"error": 0, "warning": 1, "info": 2}
 
+# Report texts (issue #319): English templates, translated by the caller
+# through `translate` before they are filled in.
+SEVERITY_LABELS: dict[str, str] = {
+    "error": QT_TRANSLATE_NOOP("LiveReady", "error"),
+    "warning": QT_TRANSLATE_NOOP("LiveReady", "warning"),
+    "info": QT_TRANSLATE_NOOP("LiveReady", "info"),
+}
+_VERDICT_NOT_READY = QT_TRANSLATE_NOOP("LiveReady", "Not ready: {count} problem(s) to fix before playing.")
+_VERDICT_CHECK = QT_TRANSLATE_NOOP("LiveReady", "Check before playing: {count} warning(s).")
+_VERDICT_READY = QT_TRANSLATE_NOOP("LiveReady", "Ready for live.")
+_TRIGGER = QT_TRANSLATE_NOOP("LiveReady", "channel {channel}, {event_type} {control}")
+_NO_DECK_MESSAGE = QT_TRANSLATE_NOOP(
+    "LiveReady", "No input mapping targets a deck, so no deck has Play, Cue, Sync or Load here."
+)
+_NO_DECK_HINT = QT_TRANSLATE_NOOP(
+    "LiveReady",
+    "If Serato's built-in support for your controller drives the decks, this is fine; "
+    "otherwise map at least Play, Cue, Sync and Load for each deck you play.",
+)
+_MISSING_MESSAGE = QT_TRANSLATE_NOOP("LiveReady", "Deck {deck} has no {function} mapping.")
+_MISSING_HINT = QT_TRANSLATE_NOOP(
+    "LiveReady",
+    "This file only lists the controls you remapped: if Serato's built-in support for "
+    "your controller handles {function}, you're fine. Otherwise map a button to "
+    "{function} on deck {deck} before going on stage.",
+)
+_CONFLICT_MESSAGE = QT_TRANSLATE_NOOP(
+    "LiveReady", "One control ({trigger}) fires several functions on deck {deck}: {functions}."
+)
+_CONFLICT_HINT = QT_TRANSLATE_NOOP(
+    "LiveReady",
+    "Pressing it on stage triggers all of them at once. Keep one function per deck "
+    "on this control, or move the others to a free button.",
+)
+_COPIES_MESSAGE = QT_TRANSLATE_NOOP(
+    "LiveReady", "The copies of one control ({trigger}) disagree: {count} different versions."
+)
+_COPIES_HINT = QT_TRANSLATE_NOOP(
+    "LiveReady",
+    "Serato honours only one of them, so the control may not do what you expect. "
+    "Make every copy identical (edit it from the By Deck view, which keeps copies together).",
+)
+_LED_MESSAGE = QT_TRANSLATE_NOOP("LiveReady", "{function} on deck {deck} ({trigger}) has no LED feedback mapping.")
+_LED_HINT = QT_TRANSLATE_NOOP(
+    "LiveReady",
+    "The function works, but this button won't light to show its state. Add an output "
+    "mapping for the same function on this control if you rely on the light.",
+)
+
 _WORD_RE = re.compile(r"[a-z0-9]+")
 _NO_DECK = ("", "(none)")
 
@@ -110,18 +160,22 @@ class ReadyReport:
 
     @property
     def verdict(self) -> str:
-        """One line for the top of the report."""
+        """One line for the top of the report, in English."""
+        return self.describe_verdict()
+
+    def describe_verdict(self, translate: Translate = untranslated) -> str:
+        """The verdict line in the language `translate` gives (issue #319)."""
         counts = self.counts()
         if counts["error"]:
-            return f"Not ready: {counts['error']} problem(s) to fix before playing."
+            return translate(_VERDICT_NOT_READY).format(count=counts["error"])
         if counts["warning"]:
-            return f"Check before playing: {counts['warning']} warning(s)."
-        return "Ready for live."
+            return translate(_VERDICT_CHECK).format(count=counts["warning"])
+        return translate(_VERDICT_READY)
 
 
-def _trigger_text(key: TriggerKey) -> str:
+def _trigger_text(key: TriggerKey, translate: Translate = untranslated) -> str:
     channel, event_type, control = key
-    return f"channel {channel}, {event_type} {control}"
+    return translate(_TRIGGER).format(channel=channel, event_type=event_type, control=control)
 
 
 def _location(key: TriggerKey) -> str:
@@ -147,16 +201,18 @@ def mapped_decks(config: MidiConfig) -> tuple[str, ...]:
 
 
 def _check_essentials(
-    config: MidiConfig, decks: tuple[str, ...], essentials: tuple[EssentialFunction, ...]
+    config: MidiConfig,
+    decks: tuple[str, ...],
+    essentials: tuple[EssentialFunction, ...],
+    translate: Translate = untranslated,
 ) -> list[ReadyFinding]:
     if not decks:
         return [
             ReadyFinding(
                 severity="warning",
                 category="essential",
-                message="No input mapping targets a deck, so no deck has Play, Cue, Sync or Load here.",
-                hint="If Serato's built-in support for your controller drives the decks, this is fine; "
-                "otherwise map at least Play, Cue, Sync and Load for each deck you play.",
+                message=translate(_NO_DECK_MESSAGE),
+                hint=translate(_NO_DECK_HINT),
             )
         ]
     covered: dict[str, set[str]] = {deck: set() for deck in decks}
@@ -179,17 +235,17 @@ def _check_essentials(
                 ReadyFinding(
                     severity="warning",
                     category="essential",
-                    message=f"Deck {deck} has no {essential.label} mapping.",
-                    hint=f"This file only lists the controls you remapped: if Serato's built-in support for "
-                    f"your controller handles {essential.label}, you're fine. Otherwise map a button to "
-                    f"{essential.label} on deck {deck} before going on stage.",
+                    message=translate(_MISSING_MESSAGE).format(deck=deck, function=essential.label),
+                    hint=translate(_MISSING_HINT).format(deck=deck, function=essential.label),
                     deck_id=deck,
                 )
             )
     return findings
 
 
-def _check_conflicts(groups: dict[TriggerKey, list[Control]], config: MidiConfig) -> list[ReadyFinding]:
+def _check_conflicts(
+    groups: dict[TriggerKey, list[Control]], config: MidiConfig, translate: Translate = untranslated
+) -> list[ReadyFinding]:
     findings = []
     deck_conflicts = find_deck_conflicts(config)
     for key, conflicts in deck_conflicts.items():
@@ -199,10 +255,10 @@ def _check_conflicts(groups: dict[TriggerKey, list[Control]], config: MidiConfig
                 ReadyFinding(
                     severity="error",
                     category="conflict",
-                    message=f"One control ({_trigger_text(key)}) fires several functions on deck "
-                    f"{conflict.deck_id}: {names}.",
-                    hint="Pressing it on stage triggers all of them at once. Keep one function per deck "
-                    "on this control, or move the others to a free button.",
+                    message=translate(_CONFLICT_MESSAGE).format(
+                        trigger=_trigger_text(key, translate), deck=conflict.deck_id, functions=names
+                    ),
+                    hint=translate(_CONFLICT_HINT),
                     location=_location(key),
                     deck_id=conflict.deck_id,
                     control=groups[key][0],
@@ -220,10 +276,10 @@ def _check_conflicts(groups: dict[TriggerKey, list[Control]], config: MidiConfig
                 ReadyFinding(
                     severity="error",
                     category="conflict",
-                    message=f"The copies of one control ({_trigger_text(key)}) disagree: "
-                    f"{len(distinct)} different versions.",
-                    hint="Serato honours only one of them, so the control may not do what you expect. "
-                    "Make every copy identical (edit it from the By Deck view, which keeps copies together).",
+                    message=translate(_COPIES_MESSAGE).format(
+                        trigger=_trigger_text(key, translate), count=len(distinct)
+                    ),
+                    hint=translate(_COPIES_HINT),
                     location=_location(key),
                     control=controls[0],
                 )
@@ -232,7 +288,10 @@ def _check_conflicts(groups: dict[TriggerKey, list[Control]], config: MidiConfig
 
 
 def _check_led_feedback(
-    groups: dict[TriggerKey, list[Control]], config: MidiConfig, known_output: frozenset[str]
+    groups: dict[TriggerKey, list[Control]],
+    config: MidiConfig,
+    known_output: frozenset[str],
+    translate: Translate = untranslated,
 ) -> list[ReadyFinding]:
     output_tags = set(known_output) | {
         mapping.tag
@@ -261,10 +320,10 @@ def _check_led_feedback(
                 ReadyFinding(
                     severity="info",
                     category="led",
-                    message=f"{function_label(tag, slot)} on deck {deck or '?'} ({_trigger_text(key)}) "
-                    "has no LED feedback mapping.",
-                    hint="The function works, but this button won't light to show its state. Add an output "
-                    "mapping for the same function on this control if you rely on the light.",
+                    message=translate(_LED_MESSAGE).format(
+                        function=function_label(tag, slot), deck=deck or "?", trigger=_trigger_text(key, translate)
+                    ),
+                    hint=translate(_LED_HINT),
                     location=_location(key),
                     deck_id=deck,
                     control=controls[0],
@@ -277,24 +336,30 @@ def check_live_ready(
     config: MidiConfig,
     essentials: tuple[EssentialFunction, ...] = ESSENTIAL_FUNCTIONS,
     known_output: frozenset[str] = KNOWN_OUTPUT_FUNCTIONS,
+    translate: Translate = untranslated,
 ) -> ReadyReport:
-    """Run every check; findings come sorted by severity (errors first). Read-only."""
+    """Run every check; findings come sorted by severity (errors first). Read-only.
+
+    ``translate`` turns each English finding template into the interface
+    language before it is filled in (issue #319); the default keeps English."""
     groups = _group_by_trigger(config)
     decks = mapped_decks(config)
     findings = (
-        _check_conflicts(groups, config)
-        + _check_essentials(config, decks, essentials)
-        + _check_led_feedback(groups, config, known_output)
+        _check_conflicts(groups, config, translate)
+        + _check_essentials(config, decks, essentials, translate)
+        + _check_led_feedback(groups, config, known_output, translate)
     )
     findings.sort(key=lambda finding: SEVERITY_ORDER.get(finding.severity, len(SEVERITY_ORDER)))
     return ReadyReport(findings=findings, decks=decks)
 
 
-def report_text(report: ReadyReport) -> str:
-    """Plain text of the whole report, for the clipboard."""
-    lines = [report.verdict, ""]
+def report_text(report: ReadyReport, translate: Translate = untranslated) -> str:
+    """Plain text of the whole report, for the clipboard (findings are
+    already in the language `check_live_ready` wrote them in)."""
+    lines = [report.describe_verdict(translate), ""]
     for finding in report.findings:
-        lines.append(f"[{finding.severity}] {finding.message}")
+        severity = translate(SEVERITY_LABELS.get(finding.severity, finding.severity))
+        lines.append(f"[{severity}] {finding.message}")
         lines.append(f"    {finding.hint}")
     return "\n".join(lines)
 
@@ -302,6 +367,7 @@ def report_text(report: ReadyReport) -> str:
 __all__ = [
     "ESSENTIAL_FUNCTIONS",
     "KNOWN_OUTPUT_FUNCTIONS",
+    "SEVERITY_LABELS",
     "SEVERITY_ORDER",
     "EssentialFunction",
     "ReadyFinding",
