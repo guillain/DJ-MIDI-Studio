@@ -132,6 +132,16 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **French UI: last leftovers** (`v0.48.128-french-last-leftovers`, issue #331) — the Dashboard's
+  `(640 commande(s))`, the Preferences Plugins prefixes and Controller sync hint, the statistics'
+  `Sans catégorie` / `(sans genre)` bars, the cheat sheet and Layer Map slot suffix (through the
+  `FunctionNames` translator), and the French help of MIDI Macros (its French labels) and Find function /
+  command palette (the French keywords); the macro labels left `test_french_help_labels.py`'s exception list.
+  The Live Monitor's virtual-destination label now wraps (its check box forced ~100 px of extra width in
+  French; checked on cocoa at 1000x650 with `qtbase_fr`). `Mapping : aucun ouvert` in
+  `interface-language-fr.png` was the capture script setting `current_path` without File → Open's refresh, not
+  an app bug: the capture now opens the file like File → Open (from a `/tmp` demo folder) and the PNG is
+  regenerated.
 - [x] **French UI: visual audit on macOS** (`v0.48.127-french-visual-audit`, issue #327) — every tab, tool dock
   and main dialog grabbed in French on the real cocoa platform at 1280x820, 1000x650 and 900x600. Fixed: the Music
   Library's content minimum now follows its layout (French squeezed `Réinitialiser les filtres` at 900x600), its
