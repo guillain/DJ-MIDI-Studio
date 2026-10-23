@@ -162,3 +162,24 @@ def test_build_group_form_does_not_crash():
     group = _group_with_member()
     panel.set_node(group)
     assert panel.current_node is group
+
+
+def test_empty_prompt_wraps_inside_a_narrow_edit_column():
+    """Issue #327: in French, "Sélectionnez un élément de l'arbre pour le
+    modifier." ran past the edit column at 900-1000 px windows; it wraps now."""
+    from PySide6.QtWidgets import QApplication, QScrollArea
+
+    panel, _ = _panel()
+    area = QScrollArea()
+    area.setWidgetResizable(True)
+    area.setWidget(panel)
+    area.resize(220, 300)
+    area.show()
+    try:
+        QApplication.processEvents()
+        prompt = panel._prompt_label
+        assert prompt.isVisible()
+        assert prompt.wordWrap()
+        assert panel.width() <= area.viewport().width()
+    finally:
+        area.close()

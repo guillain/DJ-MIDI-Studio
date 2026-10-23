@@ -89,6 +89,8 @@ class EditPanel(QWidget):
         self._layout = QVBoxLayout(self)
         self._layout.addLayout(help_row(self, *help_texts.EDIT_PANEL))
         self._prompt_label = QLabel(self.tr("Select a node in the tree to edit it."))
+        # Wraps rather than running past a narrow edit column (French, issue #327).
+        self._prompt_label.setWordWrap(True)
         self._layout.addWidget(self._prompt_label)
         self._body: QWidget | None = None
 
