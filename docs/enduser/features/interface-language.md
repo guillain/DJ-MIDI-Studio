@@ -70,6 +70,9 @@ This first version translates what you use most:
   mapping's software is detected, Controller Setup's number and MIDI output
   errors and its `Source` column (`appris`, `import XML`, `manuel`), and the
   whole `Macros MIDI` window (its errors and status line included);
+- the Preferences `Plugins` tab (`Contrôleur : …`, `Logiciel : …`) and
+  `Synchro des contrôleurs` tab text, and the library statistics'
+  `Sans catégorie` and `(sans genre)` bars;
 - Qt's own standard buttons and dialogs (`OK`, `Annuler`, `Enregistrer`,
   file pickers).
 
@@ -94,8 +97,9 @@ Text computed from your data follows the interface language — the
 `Prêt pour le live` findings, the latency statistics line, the
 change-history entries — but CSV exports stay in English (a health-report
 CSV keeps its issue names in English, and a saved Live Monitor log keeps
-English column names). The rest will be translated over the next
-releases. Controller and function names that
+English column names). The printed cheat sheet (headings and its export
+window) and the mapping comparison report are still in English. The rest
+will be translated over the next releases. Controller and function names that
 come from your DJ software or your controller's MIDI documentation are
 never translated.
 

@@ -3370,7 +3370,7 @@ class MainWindow(QMainWindow):
             if not path_str:
                 return None
             path = Path(path_str)
-        sheets = cheat_sheet.build_sheets(self.config, controllers)
+        sheets = cheat_sheet.build_sheets(self.config, controllers, translator("FunctionNames"))
         source = self.current_path.name if self.current_path is not None else None
         try:
             pages = write_cheat_sheet_pdf(path, sheets, source)

@@ -60,6 +60,25 @@ _VIRTUAL_MONITOR_HELP = QT_TRANSLATE_NOOP(
 _LOGGER = logging.getLogger(__name__)
 
 
+class _CheckBoxLabel(QLabel):
+    """A word-wrapped label that toggles its check box when clicked: a
+    QCheckBox's own text never wraps, and the French "Créer une destination
+    virtuelle (sortie de Serato)" forced the Live Monitor into a sideways
+    scroll at 1000x650 (issue #331)."""
+
+    def __init__(self, text: str, checkbox: QCheckBox) -> None:
+        super().__init__(text)
+        self._checkbox = checkbox
+        self.setWordWrap(True)
+        self.setBuddy(checkbox)
+        checkbox.setAccessibleName(text)
+
+    def mouseReleaseEvent(self, event) -> None:
+        if event.button() == Qt.MouseButton.LeftButton and self._checkbox.isEnabled():
+            self._checkbox.toggle()
+        super().mouseReleaseEvent(event)
+
+
 class LiveMonitorView(QWidget):
     eventReceived = Signal(object)  # MidiEvent
     portNamesChanged = Signal(list)
@@ -96,7 +115,13 @@ class LiveMonitorView(QWidget):
         ports_layout.addWidget(refresh_button)
         ports_layout.addWidget(select_all_button)
 
-        self._virtual_checkbox = QCheckBox(self.tr("Create virtual monitor destination (for Serato output)"))
+        self._virtual_checkbox = QCheckBox()
+        self._virtual_label = _CheckBoxLabel(
+            self.tr("Create virtual monitor destination (for Serato output)"), self._virtual_checkbox
+        )
+        virtual_row = QHBoxLayout()
+        virtual_row.addWidget(self._virtual_checkbox, 0, Qt.AlignmentFlag.AlignTop)
+        virtual_row.addWidget(self._virtual_label, 1)
         virtual_help = QLabel(self.tr(_VIRTUAL_MONITOR_HELP).format(name=MidiMonitor.VIRTUAL_MONITOR_NAME))
         virtual_help.setWordWrap(True)
         self._start_button = QPushButton(self.tr("Start monitoring"))
@@ -127,7 +152,7 @@ class LiveMonitorView(QWidget):
         controls_box = QGroupBox(self.tr("Monitor"))
         controls_layout = QVBoxLayout(controls_box)
         controls_layout.addLayout(help_row(self, *help_texts.LIVE_MONITOR))
-        controls_layout.addWidget(self._virtual_checkbox)
+        controls_layout.addLayout(virtual_row)
         controls_layout.addWidget(virtual_help)
         controls_layout.addWidget(self._start_button)
         controls_layout.addWidget(self._status_label)
@@ -447,7 +472,7 @@ class LiveMonitorView(QWidget):
         any auto-start (mapping load) requested meanwhile."""
         self._lock_reason = reason
         locked = reason is not None
-        for widget in (self._start_button, self._ports_box, self._virtual_checkbox):
+        for widget in (self._start_button, self._ports_box, self._virtual_checkbox, self._virtual_label):
             widget.setEnabled(not locked)
             widget.setToolTip(reason or "")
         if not locked and self._auto_start_pending:

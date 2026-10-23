@@ -735,13 +735,19 @@ def _capture_interface_language(app: QApplication) -> None:
     try:
         french = MainWindow()
         french.resize(1600, 1000)
-        french.config = parse_file(FIXTURE)
-        french.current_path = FIXTURE
-        french._load_tree()
-        french.left_tabs.setCurrentIndex(french._tab_indexes["intro"])
-        french.show()
-        app.processEvents()
-        _save(french, "interface-language-fr.png")
+        # Opened the way File -> Open does, so the "Your files" card shows the
+        # loaded mapping too (setting current_path + _load_tree() skipped it
+        # and printed "Mapping: none open", issue #331), from a copy under a
+        # short demo folder so the card's Folder line shows no personal path.
+        with _demo_music_dir() as demo:
+            demo.mkdir(parents=True)
+            mapping = demo / FIXTURE.name
+            shutil.copyfile(FIXTURE, mapping)
+            french._load_mapping_from_path(mapping, software_id="serato")
+            french.left_tabs.setCurrentIndex(french._tab_indexes["intro"])
+            french.show()
+            app.processEvents()
+            _save(french, "interface-language-fr.png")
         french.close()
         french.deleteLater()
         preferences = PluginPreferences()

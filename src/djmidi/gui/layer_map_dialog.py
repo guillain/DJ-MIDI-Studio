@@ -38,6 +38,7 @@ from djmidi.gui.layer_map import (
     build_layer_map,
     describe_trigger,
 )
+from djmidi.gui.translation import translator
 from djmidi.gui.window_size import (
     fit_to_screen,
     keep_wrapped_text_visible,
@@ -128,7 +129,7 @@ class LayerMapDialog(QDialog):
         if controller is None or controller not in catalog.CONTROLLER_NAMES:
             self.layer_map = None
         else:
-            self.layer_map = build_layer_map(self._config_provider(), controller)
+            self.layer_map = build_layer_map(self._config_provider(), controller, translator("FunctionNames"))
         # Item 0 is "All sections" (translated); the filter goes by index,
         # never by that text.
         previous = self.section_combo.currentText() if self.section_combo.currentIndex() > 0 else None

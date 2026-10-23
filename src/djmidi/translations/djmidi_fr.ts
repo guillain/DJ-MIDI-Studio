@@ -1352,7 +1352,7 @@ Il reste une étape manuelle : ajoutez &apos;{slug}&apos; au bloc d&apos;imports
     </message>
     <message>
         <source>&lt;{tag}&gt; [{event}] — {count} linked control(s)</source>
-        <translation>&lt;{tag}&gt; [{event}] — {count} control(s) lié(s)</translation>
+        <translation>&lt;{tag}&gt; [{event}] — {count} commande(s) liée(s)</translation>
     </message>
     <message>
         <source>Trigger</source>
@@ -1404,7 +1404,7 @@ Il reste une étape manuelle : ajoutez &apos;{slug}&apos; au bloc d&apos;imports
     </message>
     <message>
         <source>Learned {trigger} (also used by {count} other control(s)).</source>
-        <translation>{trigger} appris (aussi utilisé par {count} autre(s) control(s)).</translation>
+        <translation>{trigger} appris (aussi utilisé par {count} autre(s) commande(s)).</translation>
     </message>
     <message>
         <source>Learned {trigger}.</source>
@@ -1659,7 +1659,7 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     </message>
     <message>
         <source>A macro is a named list of MIDI messages played in one go from the &lt;b&gt;Macros&lt;/b&gt; menu or its keyboard shortcut, from any tab.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Output port&lt;/b&gt;: where the messages go -- a port, or a controller name matched against the connected ports like &lt;b&gt;⟳ Sync&lt;/b&gt; does.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Steps&lt;/b&gt;: type, channel (1–16), data 1/2 (0–127) and an optional delay (ms) waited before the step is sent; &lt;b&gt;Add sync set…&lt;/b&gt; appends a recorded sync set&apos;s messages.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Shortcut&lt;/b&gt;: optional; one the app&apos;s menus already use is refused.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Trigger&lt;/b&gt;: &lt;b&gt;Learn&lt;/b&gt;, then press a button on your controller: that press plays the macro from then on (the Live Monitor must be listening).&lt;/li&gt;&lt;/ul&gt;&lt;b&gt;Test&lt;/b&gt; plays the macro as edited. Each macro is a file in &lt;tt&gt;Documents/DJ MIDI Studio/Macros&lt;/tt&gt;.</source>
-        <translation>Une macro est une liste nommée de messages MIDI, jouée d&apos;un coup depuis le menu &lt;b&gt;Macros&lt;/b&gt; ou son raccourci clavier, depuis n&apos;importe quel onglet.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Output port&lt;/b&gt; : où partent les messages -- un port, ou un nom de contrôleur comparé aux ports branchés comme le fait &lt;b&gt;⟳ Synchro&lt;/b&gt;.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Steps&lt;/b&gt; : type, canal (1–16), data 1/2 (0–127) et un délai facultatif (ms) attendu avant l&apos;envoi de l&apos;étape ; &lt;b&gt;Add sync set…&lt;/b&gt; ajoute les messages d&apos;un jeu de synchronisation enregistré.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Shortcut&lt;/b&gt; : facultatif ; un raccourci déjà pris par les menus de l&apos;application est refusé.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Trigger&lt;/b&gt; : &lt;b&gt;Learn&lt;/b&gt;, puis appuyez sur un bouton de votre contrôleur : cet appui joue désormais la macro (le Live Monitor doit être à l&apos;écoute).&lt;/li&gt;&lt;/ul&gt;&lt;b&gt;Test&lt;/b&gt; joue la macro telle qu&apos;elle est modifiée. Chaque macro est un fichier dans &lt;tt&gt;Documents/DJ MIDI Studio/Macros&lt;/tt&gt;.</translation>
+        <translation>Une macro est une liste nommée de messages MIDI, jouée d&apos;un coup depuis le menu &lt;b&gt;Macros&lt;/b&gt; ou son raccourci clavier, depuis n&apos;importe quel onglet.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Port de sortie&lt;/b&gt; : où partent les messages -- un port, ou un nom de contrôleur comparé aux ports branchés comme le fait &lt;b&gt;⟳ Synchro&lt;/b&gt;.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Ajouter une étape&lt;/b&gt; : type, canal (1–16), data 1/2 (0–127) et un délai facultatif (ms) attendu avant l&apos;envoi de l&apos;étape ; &lt;b&gt;Ajouter un jeu de synchronisation…&lt;/b&gt; ajoute les messages d&apos;un jeu de synchronisation enregistré.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Raccourci&lt;/b&gt; : facultatif ; un raccourci déjà pris par les menus de l&apos;application est refusé.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Déclencheur&lt;/b&gt; : &lt;b&gt;Apprendre&lt;/b&gt;, puis appuyez sur un bouton de votre contrôleur : cet appui joue désormais la macro (le Live Monitor doit être à l&apos;écoute).&lt;/li&gt;&lt;/ul&gt;&lt;b&gt;Tester&lt;/b&gt; joue la macro telle qu&apos;elle est modifiée. Chaque macro est un fichier dans &lt;tt&gt;Documents/DJ MIDI Studio/Macros&lt;/tt&gt;.</translation>
     </message>
     <message>
         <source>MIDI Latency Test</source>
@@ -1723,7 +1723,7 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     </message>
     <message>
         <source>The reverse of the trees: type what a control should &lt;i&gt;do&lt;/i&gt; and see which control does it. Words match the short function names and the original Serato tags (&lt;tt&gt;loop roll&lt;/tt&gt; finds &lt;tt&gt;auto_loop_roll_specific_length&lt;/tt&gt;, shown as &lt;i&gt;Loop roll&lt;/i&gt;; hover a result for its tag), case and underscores don&apos;t matter.&lt;br&gt;&lt;br&gt;&lt;tt&gt;deck 2&lt;/tt&gt; / &lt;tt&gt;slot 3&lt;/tt&gt; keep only that deck or slot (numbers as the file stores them, like the By Deck tab); a bare number matches either. Add &lt;tt&gt;output&lt;/tt&gt; for LED feedback only.&lt;br&gt;&lt;br&gt;Selecting a result outlines &lt;b&gt;all&lt;/b&gt; its controls in red on the layout and selects the first one in the current tab, like clicking it on the layout.</source>
-        <translation>L&apos;inverse des arbres : tapez ce qu&apos;une commande doit &lt;i&gt;faire&lt;/i&gt; et voyez quelle commande le fait. Les mots sont cherchés dans les noms courts des fonctions et dans les tags Serato d&apos;origine (&lt;tt&gt;loop roll&lt;/tt&gt; trouve &lt;tt&gt;auto_loop_roll_specific_length&lt;/tt&gt;, affiché &lt;i&gt;Loop roll&lt;/i&gt; ; survolez un résultat pour voir son tag), sans tenir compte de la casse ni des tirets bas.&lt;br&gt;&lt;br&gt;&lt;tt&gt;deck 2&lt;/tt&gt; / &lt;tt&gt;slot 3&lt;/tt&gt; ne gardent que cette platine ou ce slot (numéros tels que le fichier les stocke, comme dans l&apos;onglet Par platine) ; un nombre seul vaut pour les deux. Ajoutez &lt;tt&gt;output&lt;/tt&gt; pour n&apos;avoir que les retours LED.&lt;br&gt;&lt;br&gt;Sélectionner un résultat entoure en rouge &lt;b&gt;toutes&lt;/b&gt; ses commandes sur la disposition et sélectionne la première dans l&apos;onglet courant, comme un clic sur la disposition.</translation>
+        <translation>L&apos;inverse des arbres : tapez ce qu&apos;une commande doit &lt;i&gt;faire&lt;/i&gt; et voyez quelle commande le fait. Les mots sont cherchés dans les noms courts des fonctions et dans les tags Serato d&apos;origine (&lt;tt&gt;loop roll&lt;/tt&gt; trouve &lt;tt&gt;auto_loop_roll_specific_length&lt;/tt&gt;, affiché &lt;i&gt;Loop roll&lt;/i&gt; ; survolez un résultat pour voir son tag), sans tenir compte de la casse ni des tirets bas.&lt;br&gt;&lt;br&gt;&lt;tt&gt;platine 2&lt;/tt&gt; / &lt;tt&gt;emplacement 3&lt;/tt&gt; (ou « deck 2 » / « slot 3 ») ne gardent que cette platine ou ce slot (numéros tels que le fichier les stocke, comme dans l&apos;onglet Par platine) ; un nombre seul vaut pour les deux. Ajoutez &lt;tt&gt;sortie&lt;/tt&gt; (ou « voyant », « output ») pour n&apos;avoir que les retours LED, « clic » (ou « appui », « click ») pour n&apos;avoir que les appuis.&lt;br&gt;&lt;br&gt;Sélectionner un résultat entoure en rouge &lt;b&gt;toutes&lt;/b&gt; ses commandes sur la disposition et sélectionne la première dans l&apos;onglet courant, comme un clic sur la disposition.</translation>
     </message>
     <message>
         <source>Command palette</source>
@@ -1731,7 +1731,7 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     </message>
     <message>
         <source>&lt;b&gt;Cmd+K&lt;/b&gt; (Ctrl+K on Windows/Linux) opens one search over every menu action, every tab, the loaded mapping&apos;s functions and the Music Library&apos;s tracks. Type a few letters (&lt;tt&gt;cheat&lt;/tt&gt;, &lt;tt&gt;opmap&lt;/tt&gt; for &lt;i&gt;Open Mapping&lt;/i&gt;, &lt;tt&gt;loop roll deck 2&lt;/tt&gt;, an artist), move with &lt;b&gt;↑/↓&lt;/b&gt;, run with &lt;b&gt;Enter&lt;/b&gt;, close with &lt;b&gt;Esc&lt;/b&gt;.&lt;br&gt;&lt;br&gt;Actions and tabs come first on a tie; functions use the Find function search (so &lt;tt&gt;deck 2&lt;/tt&gt; and &lt;tt&gt;output&lt;/tt&gt; work); tracks show from two letters on, once the Music Library tab has been opened this session. Disabled menu entries are left out.</source>
-        <translation>&lt;b&gt;Cmd+K&lt;/b&gt; (Ctrl+K sous Windows/Linux) ouvre une recherche unique sur toutes les actions de menu, tous les onglets, les fonctions du mapping chargé et les morceaux de la Bibliothèque. Tapez quelques lettres (&lt;tt&gt;antisèche&lt;/tt&gt;, &lt;tt&gt;ouvmap&lt;/tt&gt; pour &lt;i&gt;Ouvrir un mapping&lt;/i&gt;, &lt;tt&gt;loop roll deck 2&lt;/tt&gt;, un artiste), déplacez-vous avec &lt;b&gt;↑/↓&lt;/b&gt;, lancez avec &lt;b&gt;Entrée&lt;/b&gt;, fermez avec &lt;b&gt;Échap&lt;/b&gt;.&lt;br&gt;&lt;br&gt;À égalité, les actions et les onglets passent en premier ; les fonctions utilisent la recherche de fonction (&lt;tt&gt;deck 2&lt;/tt&gt; et &lt;tt&gt;output&lt;/tt&gt; y marchent donc) ; les morceaux apparaissent dès deux lettres, une fois l&apos;onglet Bibliothèque ouvert pendant la session. Les entrées de menu désactivées sont exclues.</translation>
+        <translation>&lt;b&gt;Cmd+K&lt;/b&gt; (Ctrl+K sous Windows/Linux) ouvre une recherche unique sur toutes les actions de menu, tous les onglets, les fonctions du mapping chargé et les morceaux de la Bibliothèque. Tapez quelques lettres (&lt;tt&gt;antisèche&lt;/tt&gt;, &lt;tt&gt;ouvmap&lt;/tt&gt; pour &lt;i&gt;Ouvrir un mapping&lt;/i&gt;, &lt;tt&gt;loop roll platine 2&lt;/tt&gt;, un artiste), déplacez-vous avec &lt;b&gt;↑/↓&lt;/b&gt;, lancez avec &lt;b&gt;Entrée&lt;/b&gt;, fermez avec &lt;b&gt;Échap&lt;/b&gt;.&lt;br&gt;&lt;br&gt;À égalité, les actions et les onglets passent en premier ; les fonctions utilisent la recherche de fonction (&lt;tt&gt;platine 2&lt;/tt&gt; et &lt;tt&gt;sortie&lt;/tt&gt; y marchent donc, comme « emplacement 3 », « clic » et leurs équivalents anglais) ; les morceaux apparaissent dès deux lettres, une fois l&apos;onglet Bibliothèque ouvert pendant la session. Les entrées de menu désactivées sont exclues.</translation>
     </message>
     <message>
         <source>Controller Images</source>
@@ -2105,7 +2105,7 @@ Workflow: (1) get the triggers — learn them from the hardware under MIDI input
     </message>
     <message>
         <source>Loaded file: {name} ({count} control(s))</source>
-        <translation>Fichier chargé : {name} ({count} control(s))</translation>
+        <translation>Fichier chargé : {name} ({count} commande(s))</translation>
     </message>
     <message>
         <source>Catalog: {entries} static entry(ies), {pads} pad(s)</source>
@@ -2257,6 +2257,10 @@ Workflow: (1) get the triggers — learn them from the hardware under MIDI input
         <translation>Catégories</translation>
     </message>
     <message>
+        <source>Uncategorized</source>
+        <translation>Sans catégorie</translation>
+    </message>
+    <message>
         <source>No tracks.</source>
         <translation>Aucun morceau.</translation>
     </message>
@@ -2267,6 +2271,10 @@ Workflow: (1) get the triggers — learn them from the hardware under MIDI input
     <message>
         <source>Genres</source>
         <translation>Genres</translation>
+    </message>
+    <message>
+        <source>(no genre)</source>
+        <translation>(sans genre)</translation>
     </message>
     <message>
         <source>{count} distinct genre tag(s); spelling variants differing only by case or spaces are grouped.</source>
@@ -5812,7 +5820,7 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     </message>
     <message>
         <source>Initialization sets sent by the Sync button (menu bar and Live Monitor), one per controller and scene. ⟳ Sync sends each controller its set for the scene chosen beside it in the menu bar, or its Default set when it has none for that scene. Record one with ● Rec (into the active scene), or in Controller Setup: name the controller, start learning, press the controls, then &quot;Save as controller sync set&quot;.</source>
-        <translation>Jeux d&apos;initialisation envoyés par le bouton Sync (barre de menus et Live Monitor), un par contrôleur et par scène. ⟳ Sync envoie à chaque contrôleur son jeu pour la scène choisie à côté dans la barre de menus, ou son jeu Default s&apos;il n&apos;en a pas pour cette scène. Enregistrez-en un avec ● Rec (dans la scène active), ou dans Configuration du contrôleur : nommez le contrôleur, lancez l&apos;apprentissage, appuyez sur les commandes, puis « Save as controller sync set ».</translation>
+        <translation>Jeux d&apos;initialisation envoyés par ⟳ Synchro (barre de menus) et Synchroniser les contrôleurs (Live Monitor), un par contrôleur et par scène. ⟳ Synchro envoie à chaque contrôleur son jeu pour la scène choisie à côté dans la barre de menus, ou son jeu Default s&apos;il n&apos;en a pas pour cette scène. Enregistrez-en un avec ● Enr (dans la scène active), ou dans Configuration du contrôleur : nommez le contrôleur, lancez l&apos;apprentissage, appuyez sur les commandes, puis « Enregistrer comme jeu de synchronisation ».</translation>
     </message>
     <message>
         <source>Controller</source>
@@ -5845,6 +5853,14 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>Remove selected set</source>
         <translation>Supprimer le jeu sélectionné</translation>
+    </message>
+    <message>
+        <source>Controller: {name}</source>
+        <translation>Contrôleur : {name}</translation>
+    </message>
+    <message>
+        <source>Software: {name}</source>
+        <translation>Logiciel : {name}</translation>
     </message>
 </context>
 <context>
