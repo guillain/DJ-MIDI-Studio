@@ -404,10 +404,59 @@ def test_main_window_has_music_library_tab():
     window.close()
 
 
+@pytest.mark.parametrize("language", ["en", "fr"])
 @pytest.mark.parametrize("size", [(1280, 820), (1100, 700), (1000, 650), (900, 600), (700, 500), (320, 240)])
-def test_no_button_is_squeezed_below_its_minimum(size):
+def test_no_button_is_squeezed_below_its_minimum(size, language):
     """Issue #19's rule for every tab: at small window sizes the Music
-    Library scrolls rather than crushing its buttons into slivers."""
+    Library scrolls rather than crushing its buttons into slivers. In French
+    the filter row once outgrew the fixed 920 px content minimum, squeezing
+    "Réinitialiser les filtres" at 900x600 (issue #327)."""
+    from PySide6.QtCore import QTranslator
+
+    from djmidi import i18n
+
+    if language == "fr":
+        translator = QTranslator()
+        assert translator.load(str(i18n.translation_file("fr")))
+        QApplication.instance().installTranslator(translator)
+    try:
+        _assert_no_button_squeezed(size)
+    finally:
+        if language == "fr":
+            QApplication.instance().removeTranslator(translator)
+
+
+@pytest.mark.parametrize("size", [(1280, 820), (1000, 650), (900, 600)])
+def test_filter_combos_show_their_whole_all_entry_in_french(size):
+    """Issue #327: "Toutes les tonalités" was cut to "Toutes les tonalit"
+    because the key combo was sized from 5 characters."""
+    from PySide6.QtCore import QTranslator
+
+    from djmidi import i18n
+    from djmidi.gui.theme import apply_theme
+
+    app = QApplication.instance()
+    translator = QTranslator()
+    assert translator.load(str(i18n.translation_file("fr")))
+    app.installTranslator(translator)
+    apply_theme(app)
+    view = MusicLibraryView(db_path=":memory:")
+    view.resize(*size)
+    view.show()
+    try:
+        QApplication.processEvents()
+        for combo in (view.genre_filter, view.key_filter, view.camelot_filter):
+            text = combo.itemText(0)
+            assert text.startswith("Tou"), text
+            # The arrow and frame take ~30 px on top of the text.
+            assert combo.width() >= combo.fontMetrics().horizontalAdvance(text) + 30, (size, text, combo.width())
+    finally:
+        view.close_db()
+        view.close()
+        app.removeTranslator(translator)
+
+
+def _assert_no_button_squeezed(size):
     from PySide6.QtWidgets import QAbstractButton
 
     from djmidi.gui.theme import apply_theme

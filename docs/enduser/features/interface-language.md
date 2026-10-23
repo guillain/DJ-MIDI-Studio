@@ -79,7 +79,7 @@ French keywords as well as English ones, whatever the language chosen:
 `voyant` for `output`, `clic` or `appui` for `click`; both can be mixed in
 one search (`loop roll platine 1 slot 5`).
 
-![The Dashboard in French: menus, tabs, Rec/Sync translated; the tab's content still in English](../../images/layout/interface-language-fr.png)
+![The Dashboard in French: menus, tabs, Enr/Synchro, the file and controller cards, the MIDI tools and the controller overview all in French](../../images/layout/interface-language-fr.png)
 
 ## What stays in English
 

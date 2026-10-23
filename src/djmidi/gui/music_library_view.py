@@ -48,6 +48,7 @@ from PySide6.QtCore import (
     QMimeData,
     QModelIndex,
     QPersistentModelIndex,
+    QSize,
     QSortFilterProxyModel,
     Qt,
     QTimer,
@@ -232,6 +233,16 @@ def _format_bpm(bpm: float | None) -> str:
     if bpm is None:
         return ""
     return f"{bpm:g}" if bpm == int(bpm) else f"{bpm:.2f}"
+
+
+class _TabContent(QWidget):
+    """The scrolled body of the tab: at least _CONTENT_MIN_WIDTH x
+    _CONTENT_MIN_HEIGHT, and never narrower than its own layout needs. A fixed
+    setMinimumSize() hid the layout's minimum from the scroll area, so the
+    longer French filter row squeezed "Reset filters" at 900x600 (issue #327)."""
+
+    def minimumSizeHint(self) -> QSize:
+        return super().minimumSizeHint().expandedTo(QSize(_CONTENT_MIN_WIDTH, _CONTENT_MIN_HEIGHT))
 
 
 def _scrolled(panel: QWidget) -> QScrollArea:
@@ -974,8 +985,7 @@ class MusicLibraryView(QWidget):
         self._scroll.setWidgetResizable(True)
         self._scroll.setFrameShape(QFrame.Shape.NoFrame)
         outer.addWidget(self._scroll)
-        content = QWidget()
-        content.setMinimumSize(_CONTENT_MIN_WIDTH, _CONTENT_MIN_HEIGHT)
+        content = _TabContent()
         self._scroll.setWidget(content)
 
         layout = QVBoxLayout(content)
@@ -1195,9 +1205,16 @@ class MusicLibraryView(QWidget):
             self.tr("Also show harmonically compatible keys: ±1 on the wheel and the relative major/minor")
         )
         # A long genre or key must not widen the table panel: size each combo
-        # from a few characters, the popup still shows full names.
-        for combo, length in ((self.genre_filter, 8), (self.key_filter, 5), (self.camelot_filter, 5)):
-            combo.setMinimumContentsLength(length)
+        # from a few characters, the popup still shows full names -- but
+        # always wide enough for its own "All …" entry, which French makes
+        # longer ("Toutes les tonalités" was cut off, issue #327).
+        combos = (
+            (self.genre_filter, 8, ALL_GENRES),
+            (self.key_filter, 5, ALL_KEYS),
+            (self.camelot_filter, 5, ALL_CAMELOT),
+        )
+        for combo, length, everything in combos:
+            combo.setMinimumContentsLength(max(length, len(self.tr(everything))))
             combo.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
         self.reset_filters_button = QPushButton(self.tr("Reset filters"))
         self.reset_filters_button.clicked.connect(self.reset_filters)

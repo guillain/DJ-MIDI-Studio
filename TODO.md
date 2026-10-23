@@ -132,6 +132,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **French UI: visual audit on macOS** (`v0.48.127-french-visual-audit`, issue #327) — every tab, tool dock
+  and main dialog grabbed in French on the real cocoa platform at 1280x820, 1000x650 and 900x600. Fixed: the Music
+  Library's content minimum now follows its layout (French squeezed `Réinitialiser les filtres` at 900x600), its
+  genre/key/Camelot combos fit their `Toutes les …` entry, and the edit panel's empty prompt wraps. Regenerated
+  `interface-language-fr.png` (the Dashboard is now French throughout). Still English: the MIDI Macros dialog
+  (#326), the Plugins tab's `Controller:`/`Software:` prefixes, and `Uncategorized` in Statistics.
 - [x] **French UI: validation, detection, Controller Setup errors, macros, French search keywords**
   (`v0.48.126-french-messages-search`, issue #326) — `validator.validate`, the detection reasons
   (`integration_detection`), `function_names.function_label`'s slot suffix, `session_player._parse_int` and
