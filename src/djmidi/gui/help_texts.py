@@ -1,28 +1,40 @@
 """The text behind every contextual "?" help button (see help_button.py),
 kept in one place so it can be proofread and kept in step with the user
 documentation it summarizes. Each entry is (title, rich text, feature page in
-docs/enduser/features or None)."""
+docs/enduser/features or None).
+
+Titles and texts are written in English and marked with ``QT_TRANSLATE_NOOP``
+under the ``HelpTexts`` context (issue #320): help_button.py translates them
+when it builds a button and when it shows the popup, so the interface
+catalogue covers them while the linked guides stay in English."""
 
 from __future__ import annotations
+
+from djmidi.i18n import QT_TRANSLATE_NOOP
+
+#: Translation context of every title and text below.
+CONTEXT = "HelpTexts"
 
 HelpEntry = tuple[str, str, str | None]
 
 DASHBOARD_OVERVIEW: HelpEntry = (
-    "Dashboard",
-    (
+    QT_TRANSLATE_NOOP("HelpTexts", "Dashboard"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
         "Summarizes the loaded mapping and gives every registered controller a card: "
         "its picture, whether a connected MIDI port matches it (<i>MIDI: available</i>), "
         "and shortcuts into the <b>By Channel</b>, <b>By Controller</b> and "
         "<b>Controller Images</b> views.<br><br>"
         "Open a Serato <tt>.xml</tt> or Traktor <tt>.tsi</tt> mapping with "
-        "<b>File → Open Mapping…</b>."
+        "<b>File → Open Mapping…</b>.",
     ),
     "mapping-editor.md",
 )
 
 DASHBOARD_FILES: HelpEntry = (
-    "Your files",
-    (
+    QT_TRANSLATE_NOOP("HelpTexts", "Your files"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
         "Everything you work with, in one place:<ul>"
         "<li><b>Mapping</b>: the Serato <tt>.xml</tt> or Traktor <tt>.tsi</tt> file open in the "
         "editor. It stays where your DJ software keeps it; <b>File → Save Mapping</b> writes it "
@@ -40,14 +52,15 @@ DASHBOARD_FILES: HelpEntry = (
         "Controller profiles you build live in <b>File → Controller Profile</b>. "
         "<b>File → Back Up Workspace…</b> saves your profiles, sync sets, drafts and preferences "
         "(and, if you want, the library index) in one zip; <b>Restore Workspace…</b> brings them "
-        "back, on another Mac too, after showing what it overwrites."
+        "back, on another Mac too, after showing what it overwrites.",
     ),
     "workspace.md",
 )
 
 MIDI_MACROS: HelpEntry = (
-    "MIDI Macros",
-    (
+    QT_TRANSLATE_NOOP("HelpTexts", "MIDI Macros"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
         "A macro is a named list of MIDI messages played in one go from the <b>Macros</b> menu "
         "or its keyboard shortcut, from any tab.<ul>"
         "<li><b>Output port</b>: where the messages go -- a port, or a controller name matched "
@@ -59,14 +72,15 @@ MIDI_MACROS: HelpEntry = (
         "<li><b>Trigger</b>: <b>Learn</b>, then press a button on your controller: that "
         "press plays the macro from then on (the Live Monitor must be listening).</li></ul>"
         "<b>Test</b> plays the macro as edited. Each macro is a file in "
-        "<tt>Documents/DJ MIDI Studio/Macros</tt>."
+        "<tt>Documents/DJ MIDI Studio/Macros</tt>.",
     ),
     "midi-macros.md",
 )
 
 MIDI_LATENCY: HelpEntry = (
-    "MIDI Latency Test",
-    (
+    QT_TRANSLATE_NOOP("HelpTexts", "MIDI Latency Test"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
         "Sends a Note On to the <b>output</b> and times the matching Note On coming back on "
         "the <b>input</b>, then shows min / median / max and jitter over all pings.<br><br>"
         "<b>Only meaningful with something that echoes</b>: the IAC Driver bus or a virtual "
@@ -77,14 +91,15 @@ MIDI_LATENCY: HelpEntry = (
         "waits before it counts as lost.</li>"
         "<li>Each ping uses its own velocity so a late echo is never counted for the next "
         "one; untick the velocity box for a device that echoes a different value.</li>"
-        "<li>A Note Off follows every ping, so an echoing LED isn't left lit.</li></ul>"
+        "<li>A Note Off follows every ping, so an echoing LED isn't left lit.</li></ul>",
     ),
     "midi-latency.md",
 )
 
 LAYER_MAP: HelpEntry = (
-    "Layer Map",
-    (
+    QT_TRANSLATE_NOOP("HelpTexts", "Layer Map"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
         "One row per physical control, one column per <b>layer</b>: <i>Normal</i>, "
         "<i>SHIFT</i>, and each pad mode (with and without SHIFT) the controller's profile "
         "knows. Each cell shows what the loaded mapping does there, for every deck that "
@@ -92,37 +107,40 @@ LAYER_MAP: HelpEntry = (
         "<li><b>free</b> (green): no deck uses this combination, so a new function fits.</li>"
         "<li>amber: mapped on some decks only; hover to see the MIDI channels still free.</li>"
         "<li><b>—</b>: this control has no such layer.</li></ul>"
-        "Read-only. <b>Refresh</b> re-reads the mapping after edits."
+        "Read-only. <b>Refresh</b> re-reads the mapping after edits.",
     ),
     "layer-map.md",
 )
 
 DASHBOARD_CONTROLLERS: HelpEntry = (
-    "Known controllers",
-    (
+    QT_TRANSLATE_NOOP("HelpTexts", "Known controllers"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
         "Every controller the app knows: the built-in profiles and the ones you installed from "
         "<b>Controller Setup</b>. The <b>Active controller for drill-down</b> is the one the "
         "<b>Channel</b>, <b>Controller</b> and <b>Images</b> shortcuts open. Hide controllers you "
-        "don't own in ⚙ Preferences → Plugins."
+        "don't own in ⚙ Preferences → Plugins.",
     ),
     "controller-images.md",
 )
 
 DASHBOARD_TOOLS: HelpEntry = (
-    "MIDI tools",
-    (
+    QT_TRANSLATE_NOOP("HelpTexts", "MIDI tools"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
         "Opens the tool windows: <b>Live Monitor</b> (watch what your controllers send), "
         "<b>MIDI Routing</b> and <b>MIDI Clock</b> (route MIDI between devices, follow "
         "Ableton Link), the <b>Metronome</b> and the <b>Controller Emulator</b>. "
         "Each one is a window you can dock, float, maximize or snap to a side "
-        "(<b>☰</b> in its title bar)."
+        "(<b>☰</b> in its title bar).",
     ),
     "workspace.md",
 )
 
 MAPPING_VIEWS: HelpEntry = (
-    "Mapping views",
-    (
+    QT_TRANSLATE_NOOP("HelpTexts", "Mapping views"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
         "Three views of the same mapping:"
         "<ul>"
         "<li><b>By Channel</b>: MIDI channel → control → event → function. "
@@ -137,14 +155,15 @@ MAPPING_VIEWS: HelpEntry = (
         "photo with its MIDI information, shown alone) and <b>Layout</b> (the app's "
         "markers), on controllers with a measured layout. Selecting anything highlights it in every view; clicking a control "
         "jumps to its raw entry. With <b>Live send</b> on, clicking a control also sends "
-        "its MIDI message to the chosen output (<b>⟳</b> refreshes the ports)."
+        "its MIDI message to the chosen output (<b>⟳</b> refreshes the ports).",
     ),
     "mapping-editor.md",
 )
 
 EDIT_PANEL: HelpEntry = (
-    "Edit and validate",
-    (
+    QT_TRANSLATE_NOOP("HelpTexts", "Edit and validate"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
         "Edits the item selected in a tree. Every change can be undone "
         "(<b>Edit → Undo</b>).<br><br>"
         "Serato repeats each trigger several times in a mapping and those copies must stay "
@@ -157,14 +176,15 @@ EDIT_PANEL: HelpEntry = (
         "for missing Play/Cue/Sync/Load, conflicts and unlit buttons before a gig. "
         "<b>File → Save Mapping</b> shows the "
         "exact changes before writing, keeps a backup, and <b>File → Restore Previous Version…</b> "
-        "restores it."
+        "restores it.",
     ),
     "mapping-editor.md",
 )
 
 LIVE_READY: HelpEntry = (
-    "Ready for live",
-    (
+    QT_TRANSLATE_NOOP("HelpTexts", "Ready for live"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
         "A read-only check of the loaded mapping before a gig. It lists:"
         "<ul><li><b>Errors</b>: a control that fires several functions on the same deck, or "
         "copies of one control that disagree.</li>"
@@ -174,14 +194,15 @@ LIVE_READY: HelpEntry = (
         "<li><b>Info</b>: a mapped button whose function can light up, but which has no LED "
         "feedback mapping.</li></ul>"
         "Each row says what to do; nothing is fixed for you. <b>Show control</b> (or double-click) "
-        "selects the control in <b>By Channel</b>; <b>Copy report</b> copies the list as text."
+        "selects the control in <b>By Channel</b>; <b>Copy report</b> copies the list as text.",
     ),
     "live-ready-check.md",
 )
 
 FUNCTION_SEARCH: HelpEntry = (
-    "Find function",
-    (
+    QT_TRANSLATE_NOOP("HelpTexts", "Find function"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
         "The reverse of the trees: type what a control should <i>do</i> and see which control "
         "does it. Words match the short function names and the original Serato tags "
         "(<tt>loop roll</tt> finds <tt>auto_loop_roll_specific_length</tt>, shown as "
@@ -190,28 +211,30 @@ FUNCTION_SEARCH: HelpEntry = (
         "stores them, like the By Deck tab); a bare number matches either. Add <tt>output</tt> "
         "for LED feedback only.<br><br>"
         "Selecting a result outlines <b>all</b> its controls in red on the layout and selects "
-        "the first one in the current tab, like clicking it on the layout."
+        "the first one in the current tab, like clicking it on the layout.",
     ),
     "mapping-editor.md",
 )
 
 COMMAND_PALETTE: HelpEntry = (
-    "Command palette",
-    (
+    QT_TRANSLATE_NOOP("HelpTexts", "Command palette"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
         "<b>Cmd+K</b> (Ctrl+K on Windows/Linux) opens one search over every menu action, every tab, "
         "the loaded mapping's functions and the Music Library's tracks. Type a few letters "
         "(<tt>cheat</tt>, <tt>opmap</tt> for <i>Open Mapping</i>, <tt>loop roll deck 2</tt>, an artist), "
         "move with <b>↑/↓</b>, run with <b>Enter</b>, close with <b>Esc</b>.<br><br>"
         "Actions and tabs come first on a tie; functions use the Find function search (so "
         "<tt>deck 2</tt> and <tt>output</tt> work); tracks show from two letters on, once the "
-        "Music Library tab has been opened this session. Disabled menu entries are left out."
+        "Music Library tab has been opened this session. Disabled menu entries are left out.",
     ),
     "command-palette.md",
 )
 
 CONTROLLER_IMAGES: HelpEntry = (
-    "Controller Images",
-    (
+    QT_TRANSLATE_NOOP("HelpTexts", "Controller Images"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
         "The reference picture of the selected controller: zoom with the mouse wheel, drag "
         "to pan, <b>Reset zoom</b> to fit. <b>Open documentation</b> opens its bundled "
         "manual or MIDI message list.<ul>"
@@ -221,14 +244,15 @@ CONTROLLER_IMAGES: HelpEntry = (
         "(measured on the Controller photo, so greyed out over the MIDI one). With the "
         "Live Monitor running, a marker flashes when you hit that control.</li>"
         "<li><b>Live send</b> sends a clicked control's MIDI message to the chosen output.</li>"
-        "</ul>"
+        "</ul>",
     ),
     "controller-images.md",
 )
 
 CONTROLLER_EMULATOR: HelpEntry = (
-    "Controller Emulator",
-    (
+    QT_TRANSLATE_NOOP("HelpTexts", "Controller Emulator"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
         "Play one controller with the mouse. Click a pad or button: it flashes and the "
         "status line shows what the loaded mapping binds it to. Nothing is sent unless "
         "<b>Live send</b> is on.<ul>"
@@ -242,14 +266,15 @@ CONTROLLER_EMULATOR: HelpEntry = (
         "<li><b>Pad colours</b> (only for controllers whose documentation lists them, "
         "e.g. Hercules DJControl Inpulse 500): pick a colour, switch <b>Paint</b> on, "
         "click pads, then <b>Save to sync set</b>.</li></ul>"
-        "Open more emulators with <b>View → New Controller Emulator…</b>."
+        "Open more emulators with <b>View → New Controller Emulator…</b>.",
     ),
     "controller-emulator.md",
 )
 
 STAGE_MODE: HelpEntry = (
-    "Stage Mode",
-    (
+    QT_TRANSLATE_NOOP("HelpTexts", "Stage Mode"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
         "A full-screen, high-contrast view for playing live: one Controller Emulator and "
         "a compact Live Monitor, nothing else.<ul>"
         "<li>The emulator follows the real controller like any other emulator; pick the "
@@ -258,14 +283,15 @@ STAGE_MODE: HelpEntry = (
         "The full log stays in the Live Monitor window.</li>"
         "<li>Live monitoring starts on its own when Stage Mode opens.</li></ul>"
         "Press <b>Esc</b> (or <b>Exit</b>) to leave. Open it again with "
-        "<b>View → Stage Mode</b>; it is not remembered across restarts."
+        "<b>View → Stage Mode</b>; it is not remembered across restarts.",
     ),
     "stage-mode.md",
 )
 
 LIVE_MONITOR: HelpEntry = (
-    "Live Monitor",
-    (
+    QT_TRANSLATE_NOOP("HelpTexts", "Live Monitor"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
         "Logs every MIDI event from the ticked inputs, with the physical control and the "
         "function the loaded mapping gives it, and makes every layout, the Controller "
         "Images overlay and the emulators react to the real hardware.<br><br>"
@@ -276,14 +302,15 @@ LIVE_MONITOR: HelpEntry = (
         "A press that fires two or more different functions on the same deck is shown in "
         "amber as <b>CONFLICT</b> and counted; Serato's identical repeated triggers are not "
         "conflicts.<br><br>"
-        "While <b>● Rec</b> records, Start/Stop and the inputs are locked until <b>■ Stop</b>."
+        "While <b>● Rec</b> records, Start/Stop and the inputs are locked until <b>■ Stop</b>.",
     ),
     "live-monitor.md",
 )
 
 MIDI_ROUTING: HelpEntry = (
-    "MIDI Routing",
-    (
+    QT_TRANSLATE_NOOP("HelpTexts", "MIDI Routing"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
         "One-way routes from a MIDI input to a MIDI output.<ol>"
         "<li>Enable <i>MIDI routing policies</i> in ⚙ Preferences (off by default: it "
         "touches real hardware).</li>"
@@ -291,37 +318,40 @@ MIDI_ROUTING: HelpEntry = (
         "<li>Optionally <b>Edit transform…</b> to change the channel, offset the note/CC "
         "or invert the value.</li>"
         "<li><b>Start routing</b>. Only the ports your routes use are opened.</li></ol>"
-        "Routes that would loop back on themselves are refused."
+        "Routes that would loop back on themselves are refused.",
     ),
     "midi-routing-and-clock.md",
 )
 
 MIDI_CLOCK: HelpEntry = (
-    "MIDI Clock",
-    (
+    QT_TRANSLATE_NOOP("HelpTexts", "MIDI Clock"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
         "Forwards or generates MIDI Clock (Start/Stop/Continue + 24 ticks per beat).<br><br>"
         "Serato doesn't send MIDI Clock but shares its tempo over Ableton Link: tick "
         "<b>Enable Clock mirror policy</b>, choose <i>Ableton Link (DJ MIDI Studio)</i> as "
         "the source and your hardware's MIDI output as the destination, <b>Add Clock "
         "route</b>, then <b>Start routing</b>. The status line shows "
-        "<i>CLOCK ACTIVE</i> while ticks flow."
+        "<i>CLOCK ACTIVE</i> while ticks flow.",
     ),
     "midi-routing-and-clock.md",
 )
 
 METRONOME: HelpEntry = (
-    "Metronome",
-    (
+    QT_TRANSLATE_NOOP("HelpTexts", "Metronome"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
         "Plays the rows captured in <b>Controller Setup</b> to an output port: the selected "
         "rows or all of them once, or on a loop at the chosen frequency and value. Handy "
-        "to blink LEDs, test a mapping, or keep a device awake."
+        "to blink LEDs, test a mapping, or keep a device awake.",
     ),
     "midi-routing-and-clock.md",
 )
 
 LIBRARY_FOLDERS: HelpEntry = (
-    "Music folders",
-    (
+    QT_TRANSLATE_NOOP("HelpTexts", "Music folders"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
         "<b>Add folder…</b>, then <b>Scan &amp; read tags</b>. Later scans only re-read "
         "files that changed; a file that disappears (an unplugged drive) is greyed out as "
         "missing instead of being forgotten. <b>Relink missing…</b> finds where moved files "
@@ -331,14 +361,15 @@ LIBRARY_FOLDERS: HelpEntry = (
         "them (needs the optional analysis component); the estimates are amber "
         "suggestions until you apply them from the Track panel.<br><br>"
         "The index stores paths, sizes, dates and a cache of the tags, never the audio. "
-        "Serato, Traktor and Rekordbox library files are only ever read."
+        "Serato, Traktor and Rekordbox library files are only ever read.",
     ),
     "music-library.md",
 )
 
 LIBRARY_TABLE: HelpEntry = (
-    "Browse and filter",
-    (
+    QT_TRANSLATE_NOOP("HelpTexts", "Browse and filter"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
         "Click a column header to sort. The search box looks in titles, artists, genres, "
         "BPM, keys and comments; the filters under it combine:"
         "<ul><li><b>Category</b>, <b>Genre</b>, <b>Key</b>.</li>"
@@ -346,14 +377,15 @@ LIBRARY_TABLE: HelpEntry = (
         "harmonically with it.</li>"
         "<li><b>BPM min – max</b>: both ends included.</li></ul>"
         "An amber <i>? Family / Name</i> category is only a suggestion. "
-        "<b>Reset filters</b> clears everything."
+        "<b>Reset filters</b> clears everything.",
     ),
     "music-library.md",
 )
 
 LIBRARY_TRACK: HelpEntry = (
-    "Track tags",
-    (
+    QT_TRANSLATE_NOOP("HelpTexts", "Track tags"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
         "Edit the selected track's tags and click <b>Write tags</b>: only the changed "
         "fields are written, and Serato/Traktor data inside the file is preserved. "
         "<b>Undo</b> writes the old values back.<br><br>"
@@ -366,14 +398,15 @@ LIBRARY_TRACK: HelpEntry = (
         "<b>Confirm suggested category</b> turns an amber suggestion into a permanent "
         "alias; <b>Confirm all suggestions</b> does it for every track shown, after listing them. <b>Clean noise frames…</b> lists leftover junk tags and removes them only "
         "after you confirm. <b>Rename files…</b> renames the selected files from their "
-        "tags (e.g. <i>{artist} - {title}</i>) after a preview, as one undo step."
+        "tags (e.g. <i>{artist} - {title}</i>) after a preview, as one undo step.",
     ),
     "music-library.md",
 )
 
 LIBRARY_RENAME: HelpEntry = (
-    "Rename files",
-    (
+    QT_TRANSLATE_NOOP("HelpTexts", "Rename files"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
         "Type a template such as <i>{artist} - {title}</i>; fields are {artist}, {title}, "
         "{album}, {genre}, {bpm}, {key}, {camelot} and {filename} (the current name). The "
         "preview shows each selected file's new name before anything changes."
@@ -384,40 +417,43 @@ LIBRARY_RENAME: HelpEntry = (
         "folder (<i>_Serato_</i>, <i>PIONEER</i>, …).</li></ul>"
         "Files stay in their folder; characters a file name can't hold become <i>_</i>. "
         "<b>Undo</b> renames them back. Serato, Traktor and Rekordbox will show renamed "
-        "files as missing until relinked: keep the old → new CSV offered after renaming."
+        "files as missing until relinked: keep the old → new CSV offered after renaming.",
     ),
     "music-library.md",
 )
 
 LIBRARY_PREVIEW: HelpEntry = (
-    "Audio preview",
-    (
+    QT_TRANSLATE_NOOP("HelpTexts", "Audio preview"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
         "<b>Play</b> the selected track to check its category or key by ear, without "
         "opening your DJ software. Drag the slider to move through it. While a track "
         "plays, selecting another one switches to it. Tick <b>Start at 30%</b> to skip "
         "the intro. <b>Vol</b> sets the volume (remembered). In the track list, "
         "<b>Space</b> plays/pauses and <b>Left</b>/<b>Right</b> jump 10 s. Tick "
         "<b>Auto-advance</b> to play the next track when one ends. Playback stops "
-        "when you leave the tab."
+        "when you leave the tab.",
     ),
     "music-library.md",
 )
 
 LIBRARY_CATEGORIES: HelpEntry = (
-    "Genre categories",
-    (
+    QT_TRANSLATE_NOOP("HelpTexts", "Genre categories"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
         "Two-level categories (<i>Family / Name</i>, e.g. <i>Tek / PsyTrance</i>), "
         "assigned from folder names and Serato crate names first, then the genre tag. "
         "Create, rename, merge and delete categories here, and add aliases so several "
         "spellings (<i>DnB</i>, <i>D&amp;B</i>, <i>Drum and Bass</i>) mean the same "
-        "category."
+        "category.",
     ),
     "music-library.md",
 )
 
 LIBRARY_DUPLICATES: HelpEntry = (
-    "Duplicate tracks",
-    (
+    QT_TRANSLATE_NOOP("HelpTexts", "Duplicate tracks"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
         "<b>Find duplicates…</b> lists two kinds of groups from the scanned folders:"
         "<ul><li><b>Exact copies</b>: byte-identical files. Only files of the same size are "
         "read and compared by content hash.</li>"
@@ -431,14 +467,15 @@ LIBRARY_DUPLICATES: HelpEntry = (
         "<b>Reveal in Finder</b> (or double-click) shows a copy. Tick the copies you don't want "
         "and click <b>Move ticked to Trash…</b>: after a confirmation they go to the Trash "
         "(never deleted outright) and show as missing. One copy of each group must stay. "
-        "Playlists of this app listing a discarded copy can be pointed at the kept one."
+        "Playlists of this app listing a discarded copy can be pointed at the kept one.",
     ),
     "music-library.md",
 )
 
 LIBRARY_HEALTH: HelpEntry = (
-    "Library health report",
-    (
+    QT_TRANSLATE_NOOP("HelpTexts", "Library health report"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
         "<b>Health report…</b> opens every scanned file's header and tags once (read-only, "
         "no audio decoded) and lists:"
         "<ul><li><b>Unreadable / corrupt</b>: the file can't be parsed or opened.</li>"
@@ -448,14 +485,15 @@ LIBRARY_HEALTH: HelpEntry = (
         "<li><b>Low bitrate</b>: 128&nbsp;kbps or less.</li></ul>"
         "Untick an issue type or type in the filter box to narrow the list. "
         "<b>Show in library</b> (or double-click) selects the track in the table to fix its tags; "
-        "<b>Reveal in Finder</b> shows the file. <b>Export CSV…</b> saves the rows shown."
+        "<b>Reveal in Finder</b> shows the file. <b>Export CSV…</b> saves the rows shown.",
     ),
     "music-library.md",
 )
 
 LIBRARY_CHANGE_HISTORY: HelpEntry = (
-    "Change history",
-    (
+    QT_TRANSLATE_NOOP("HelpTexts", "Change history"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
         "Every write this app makes to your files is logged in the library index, so it "
         "survives a restart (Undo only lasts the session): tag edits, <b>Write tags to "
         "selection…</b>, applied analysis suggestions, covers set or removed, <b>Rename "
@@ -470,14 +508,15 @@ LIBRARY_CHANGE_HISTORY: HelpEntry = (
         "it, and updates the library and this app's playlists.</li>"
         "<li>On a Trash move it puts each copy back where it was, unless another file took its "
         "place. Playlists pointed at the kept copy stay that way.</li></ul>"
-        "A revert is itself logged, so it can be reverted too. The last 1000 changes are kept."
+        "A revert is itself logged, so it can be reverted too. The last 1000 changes are kept.",
     ),
     "music-library.md",
 )
 
 LIBRARY_STATS: HelpEntry = (
-    "Library statistics",
-    (
+    QT_TRANSLATE_NOOP("HelpTexts", "Library statistics"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
         "<b>Statistics…</b> charts the tracks the table currently shows (its filters apply; "
         "missing files are left out):"
         "<ul><li><b>Categories</b> and <b>Genres</b>: tracks per confirmed category and per "
@@ -488,14 +527,15 @@ LIBRARY_STATS: HelpEntry = (
         "<li><b>Most played</b>: play counts and never-played tracks, once DJ history is loaded "
         "in the History panel.</li></ul>"
         "Hover a bar for its exact count. The window is a snapshot: reopen it after a scan or a "
-        "filter change. Read-only."
+        "filter change. Read-only.",
     ),
     "music-library.md",
 )
 
 LIBRARY_PLAYLISTS: HelpEntry = (
-    "Playlists",
-    (
+    QT_TRANSLATE_NOOP("HelpTexts", "Playlists"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
         "<ul><li><b>New from selection</b>: the selected tracks.</li>"
         "<li><b>Auto: sort visible</b>: every visible track, grouped by category, then BPM "
         "range, then key.</li>"
@@ -513,14 +553,15 @@ LIBRARY_PLAYLISTS: HelpEntry = (
         "Import Serato crates, Traktor playlists or a Rekordbox USB export (read only); "
         "export to a new Serato crate or Traktor playlist file where you choose. "
         "<b>Compare with crate…</b> / <b>Compare with Traktor…</b> list the tracks only on each "
-        "side and the tracks in a different order, without changing either side."
+        "side and the tracks in a different order, without changing either side.",
     ),
     "music-library.md",
 )
 
 LIBRARY_HISTORY: HelpEntry = (
-    "Play history",
-    (
+    QT_TRANSLATE_NOOP("HelpTexts", "Play history"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
         "<b>Load DJ history</b> reads Serato's and Traktor's own history from "
         "<i>~/Music/_Serato_/History</i> and <i>~/Music/_Traktor/History</i>; "
         "<b>Load from folder…</b> takes another one. Each session lists the tracks "
@@ -528,14 +569,15 @@ LIBRARY_HISTORY: HelpEntry = (
         "Grey rows were only loaded (or pre-listened in Traktor), or aren't in your "
         "indexed folders.<br><br>"
         "<b>Select never played</b> selects the visible tracks no session played, ready "
-        "for a playlist. History files are only ever read, never changed."
+        "for a playlist. History files are only ever read, never changed.",
     ),
     "music-library.md",
 )
 
 LIBRARY_SET: HelpEntry = (
-    "Set preparation",
-    (
+    QT_TRANSLATE_NOOP("HelpTexts", "Set preparation"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
         "Build a set by hand: drag tracks from the table into the list (or use <b>Add "
         "selection</b>), then drag them inside the list to reorder. Each track plays once.<br>"
         "The curve shows BPM (blue, left scale) and energy (orange, 1-10, from the Energy tag). "
@@ -543,14 +585,15 @@ LIBRARY_SET: HelpEntry = (
         "past your tolerance or the keys clash on the Camelot wheel; dashed grey means a BPM or "
         "key is missing so it can't be checked. Nothing is reordered for you.<br>"
         "The draft is remembered. <b>Save as playlist…</b> stores it as an app playlist; the "
-        "export buttons write a new Serato crate or Traktor playlist where you choose."
+        "export buttons write a new Serato crate or Traktor playlist where you choose.",
     ),
     "music-library.md",
 )
 
 MAPPING_DIFF: HelpEntry = (
-    "Compare mappings",
-    (
+    QT_TRANSLATE_NOOP("HelpTexts", "Compare mappings"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
         "Lists what changed between two mappings by what each trigger <i>does</i>, not "
         "by XML text:<ul>"
         "<li><b>Re-assigned</b>: a trigger now drives a different function.</li>"
@@ -563,7 +606,67 @@ MAPPING_DIFF: HelpEntry = (
         "Serato tags.<br><br>"
         "Click a row to highlight that control on the layouts and select it in "
         "<b>By Channel</b>. Opened from <b>File → Compare Mapping With…</b> or "
-        "<b>File → Compare With Previous Version</b> (the <tt>.bak</tt> kept by the last save)."
+        "<b>File → Compare With Previous Version</b> (the <tt>.bak</tt> kept by the last save).",
     ),
     "mapping-diff.md",
+)
+
+# Controller Setup's own panels (plain text, not rich text: kept as they were
+# written in controller_setup.py before issue #320 moved them here).
+
+CONTROLLER_SETUP_TAB: HelpEntry = (
+    QT_TRANSLATE_NOOP("HelpTexts", "What is Controller Setup?"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
+        "Controller Setup builds a *controller profile* — the map from a device's MIDI "
+        "triggers to readable physical control names — for a controller DJ MIDI Studio "
+        "doesn't know yet. It does NOT open a Serato mapping for editing; that is "
+        "File → Open.\n\n"
+        "Workflow: (1) get the triggers — learn them from the hardware under MIDI input, "
+        "Import them from an existing Serato XML or Traktor TSI mapping, or Start from a controller already in the "
+        "catalog (a named copy to adapt); (2) type a Section and Name for each "
+        "row; (3) Apply / Export to use the profile now or write it to disk.",
+    ),
+    "controller-setup.md",
+)
+
+CONTROLLER_SETUP_CAPTURE: HelpEntry = (
+    QT_TRANSLATE_NOOP("HelpTexts", "MIDI input (learn from controller)"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
+        "MIDI input / learning: tick the input port(s), press Start learning, then press "
+        "discrete buttons/pads one at a time — each new trigger becomes a row. Continuous "
+        "controls (faders, TRIM/EQ knobs, jog wheels, touch strips) are captured too but "
+        "aren't in scope for a profile — delete those rows before exporting.",
+    ),
+    "controller-setup.md",
+)
+
+CONTROLLER_SETUP_IMPORT: HelpEntry = (
+    QT_TRANSLATE_NOOP("HelpTexts", "Learn triggers from a mapping"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
+        "Learn triggers from a Serato XML or a Traktor TSI mapping: adds one row per "
+        "unique (channel, type, control) the file uses. It seeds the profile so you don't "
+        "have to press every button on the hardware — it does NOT open the mapping for "
+        "editing (that's File → Open Mapping). Mapped functions aren't physical control names, so "
+        "Section and Name still have to be filled in by hand. A TSI export can hold several "
+        "devices (one per controller); you pick which one to import. After importing you're "
+        "offered to open the same file as an editable mapping too.",
+    ),
+    "controller-setup.md",
+)
+
+CONTROLLER_SETUP_APPLY: HelpEntry = (
+    QT_TRANSLATE_NOOP("HelpTexts", "Apply / Export"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
+        "Install saves this profile in your Controllers folder (Documents/DJ MIDI Studio/Controllers) "
+        "with a copy of its picture, activates it in every view now, and loads it again at every "
+        "launch. Installing again under the same name updates it. \"Submit to community catalog…\" "
+        "opens a pre-filled GitHub issue with the profile JSON so it can be reviewed and shipped as "
+        "a built-in (reference images are not included). For developers, the remaining button "
+        "generates a Python catalog module instead.",
+    ),
+    "controller-setup.md",
 )
