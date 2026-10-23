@@ -980,3 +980,102 @@ def test_macro_editor_shows_french(french):
         assert dialog.status.text() == "Une macro doit avoir un nom"
     finally:
         dialog.deleteLater()
+
+
+# --- Last leftovers (issue #331) -------------------------------------------------
+
+
+def test_issue_331_leftovers_show_french(french):
+    from PySide6.QtWidgets import QCheckBox, QLabel
+
+    from djmidi.gui.introduction_view import IntroductionView
+    from djmidi.gui.library_stats_dialog import LibraryStatsDialog
+    from djmidi.gui.preferences_dialog import PreferencesDialog
+    from djmidi.library.stats import compute_library_stats
+    from djmidi.library.workspace import LibraryRow
+
+    intro = IntroductionView()
+    preferences = PreferencesDialog(PluginPreferences())
+    rows = [LibraryRow(1, "/music/a.mp3", False, None, None, None)]
+    stats = LibraryStatsDialog(compute_library_stats(rows))
+    try:
+        intro.set_loaded_config_info("map.xml", 640)
+        assert intro._loaded_file_label.text() == "Fichier chargé : map.xml (640 commande(s))"
+        plugins = [box.text() for box in preferences.findChildren(QCheckBox) if " : " in box.text()]
+        assert any(text.startswith("Contrôleur : ") for text in plugins)
+        assert any(text.startswith("Logiciel : ") for text in plugins)
+        assert not any(text.startswith(("Controller:", "Software:")) for text in plugins)
+        hints = " ".join(label.text() for label in preferences.findChildren(QLabel))
+        assert "Enregistrer comme jeu de synchronisation" in hints
+        assert "Save as controller sync set" not in hints
+        assert [b.label for b in stats.charts["categories"].buckets] == ["Sans catégorie"]
+        assert [b.label for b in stats.charts["genres"].buckets] == ["(sans genre)"]
+    finally:
+        for window in (intro, preferences, stats):
+            window.deleteLater()
+
+
+def test_cheat_sheet_and_layer_map_slot_suffix_follow_the_translator():
+    """The printed cheat sheet and the Layer Map print "· slot N" through the
+    FunctionNames translator the GUI passes (issue #331)."""
+    from djmidi.gui import cheat_sheet
+    from djmidi.gui.layer_map import build_layer_map
+    from djmidi.parser import parse_file
+
+    config = parse_file(_SAMPLE_MAPPING)
+
+    def translate(text: str) -> str:
+        return text.replace(" slot {", " emplacement {")
+
+    english = [line for lines in cheat_sheet.build_function_index(config).values() for _deck, line in lines]
+    assert any("· slot " in line for line in english)
+    index = cheat_sheet.build_function_index(config, translate)
+    lines = [line for lines in index.values() for _deck, line in lines]
+    assert any("· emplacement " in line for line in lines)
+    assert not any("· slot " in line for line in lines)
+    sheets = cheat_sheet.build_sheets(config, ["DDJ-XP2"], translate)
+    printed = " ".join(function for sheet in sheets for entry in sheet.entries for function in entry.functions)
+    assert "· emplacement " in printed and "· slot " not in printed
+    layer_map = build_layer_map(config, "DDJ-XP2", translate)
+    assert "· emplacement " in repr(layer_map) and "· slot " not in repr(layer_map)
+
+
+def test_live_monitor_virtual_destination_label_wraps(french):
+    """A QCheckBox's text never wraps: the French label made the Live
+    Monitor scroll sideways at 1000x650 (issue #331)."""
+    from PySide6.QtCore import QPoint, Qt
+    from PySide6.QtTest import QTest
+
+    from djmidi.gui.live_monitor import LiveMonitorView
+
+    view = LiveMonitorView()
+    try:
+        label = view._virtual_label
+        assert label.text() == "Créer une destination virtuelle (sortie de Serato)"
+        assert label.wordWrap()
+        assert view._virtual_checkbox.text() == ""
+        assert view._virtual_checkbox.minimumSizeHint().width() < label.fontMetrics().horizontalAdvance(label.text())
+        view.show()
+        QTest.mouseClick(label, Qt.MouseButton.LeftButton, pos=QPoint(5, 5))
+        assert view._virtual_checkbox.isChecked()
+        view.set_locked("● Rec")
+        QTest.mouseClick(label, Qt.MouseButton.LeftButton, pos=QPoint(5, 5))
+        assert view._virtual_checkbox.isChecked()
+    finally:
+        view.shutdown()
+        view.deleteLater()
+
+
+def test_dashboard_files_card_names_a_mapping_opened_from_a_path():
+    """Opening a mapping updates the Dashboard's "Your files" card (issue
+    #331 checked why a docs capture showed "none open": the capture script
+    bypassed this path, the app does not)."""
+    from djmidi.gui.main_window import MainWindow
+
+    window = MainWindow()
+    try:
+        window._load_mapping_from_path(_SAMPLE_MAPPING, software_id="serato")
+        assert _SAMPLE_MAPPING.name in window.introduction_view._files_mapping_label.text()
+    finally:
+        window.close()
+        window.deleteLater()

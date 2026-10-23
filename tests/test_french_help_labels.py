@@ -20,15 +20,8 @@ _NOT_UI_LABELS = {
     "Sync",
     "Load",
     "SHIFT",
-    # Windows and dialogs not translated yet: the macro editor, the mapping
-    # comparison report (mapping_diff.py) and the Stage mode Exit button.
-    "Output port",
-    "Steps",
-    "Add sync set",
-    "Shortcut",
-    "Trigger",
-    "Learn",
-    "Test",
+    # Windows and dialogs not translated yet: the mapping comparison report
+    # (mapping_diff.py) and the Stage mode Exit button.
     "Re-assigned",
     "Added",
     "Removed",

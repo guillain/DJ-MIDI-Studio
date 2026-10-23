@@ -376,14 +376,13 @@ class PreferencesDialog(QDialog):
             edited.append(dataclasses.replace(sync_set, output_port=port or ""))
         return edited
 
-    @staticmethod
-    def _plugin_entries() -> list[tuple[str, str]]:
+    def _plugin_entries(self) -> list[tuple[str, str]]:
         entries = [
-            (f"Controller: {definition.name}", definition.plugin_id or definition.name)
+            (self.tr("Controller: {name}").format(name=definition.name), definition.plugin_id or definition.name)
             for definition in catalog.all_controller_definitions()
         ]
         entries.extend(
-            (f"Software: {definition.name}", definition.plugin_id)
+            (self.tr("Software: {name}").format(name=definition.name), definition.plugin_id)
             for definition in software.all_definitions()
         )
         return entries

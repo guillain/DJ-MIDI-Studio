@@ -38,6 +38,7 @@ from djmidi.gui.cheat_sheet import (
     format_functions,
     is_shift,
 )
+from djmidi.i18n import Translate, untranslated
 from djmidi.model import MidiConfig
 
 NORMAL = "Normal"
@@ -186,10 +187,13 @@ def _row_rank(controller: str, keys: list[layout_mod.CellKey]) -> list[layout_mo
     return sorted(keys, key=rank)
 
 
-def build_layer_map(config: MidiConfig | None, controller: str) -> LayerMap:
+def build_layer_map(
+    config: MidiConfig | None, controller: str, translate: Translate = untranslated
+) -> LayerMap:
     """The layer overview of `controller` for `config` (None = an empty
-    mapping: every combination free)."""
-    index: FunctionIndex = build_function_index(config) if config is not None else {}
+    mapping: every combination free). `translate` (the "FunctionNames"
+    context) puts the functions' slot suffix in the interface language."""
+    index: FunctionIndex = build_function_index(config, translate) if config is not None else {}
     lookup = layout_mod.reverse_lookup(controller)
     keys = [key for key in lookup if key[1] not in _OUTPUT_ONLY_SECTIONS]
     qualifiers: list[str] = []

@@ -34,7 +34,12 @@ from djmidi.gui.window_size import (
     keep_wrapped_text_visible,
     usable_minimum,
 )
-from djmidi.library.stats import UNCATEGORIZED_LABEL, Bucket, LibraryStats
+from djmidi.library.stats import (
+    NO_GENRE_LABEL,
+    UNCATEGORIZED_LABEL,
+    Bucket,
+    LibraryStats,
+)
 
 _ROW_HEIGHT = 20
 _COLUMN_WIDTH = 30
@@ -206,6 +211,12 @@ class BarChart(QWidget):
         super().mouseDoubleClickEvent(event)
 
 
+def _relabel(buckets: tuple[Bucket, ...], labels: dict[str, str]) -> tuple[Bucket, ...]:
+    """The buckets with the stats module's English placeholder labels
+    ("Uncategorized", "(no genre)") swapped for their translations."""
+    return tuple(Bucket(labels.get(b.label, b.label), b.count) for b in buckets)
+
+
 def _percent(part: int, whole: int) -> str:
     return f"{round(100 * part / whole)} %" if whole else "0 %"
 
@@ -246,7 +257,10 @@ class LibraryStatsDialog(QDialog):
         self._add_tab(
             "categories",
             self.tr("Categories"),
-            BarChart(stats.by_category, empty_text=self.tr("No tracks.")),
+            BarChart(
+                _relabel(stats.by_category, {UNCATEGORIZED_LABEL: self.tr("Uncategorized")}),
+                empty_text=self.tr("No tracks."),
+            ),
             self.tr("{count} track(s) without a confirmed category ({percent}).").format(
                 count=uncategorized, percent=_percent(uncategorized, stats.total)
             ),
@@ -254,7 +268,10 @@ class LibraryStatsDialog(QDialog):
         self._add_tab(
             "genres",
             self.tr("Genres"),
-            BarChart(stats.by_genre, empty_text=self.tr("No tracks.")),
+            BarChart(
+                _relabel(stats.by_genre, {NO_GENRE_LABEL: self.tr("(no genre)")}),
+                empty_text=self.tr("No tracks."),
+            ),
             self.tr(
                 "{count} distinct genre tag(s); spelling variants differing only by case or spaces are grouped."
             ).format(count=len(stats.by_genre)),

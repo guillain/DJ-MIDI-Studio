@@ -37,6 +37,7 @@ from djmidi.function_names import FUNCTION_NAMES, function_label
 from djmidi.gui import geometry as geometry_mod
 from djmidi.gui import layout as layout_mod
 from djmidi.gui.mapping_group import build_mapping_groups
+from djmidi.i18n import Translate, untranslated
 from djmidi.model import MidiConfig
 
 _EVENT_TYPE_FOR_KIND: dict[catalog.NoteOrCC, str] = {
@@ -79,11 +80,13 @@ class Sheet:
 GLOSSARY_TITLE = "Function names"
 
 
-def function_text(tag: str, slot_id: str) -> str:
+def function_text(tag: str, slot_id: str, translate: Translate = untranslated) -> str:
     """A Serato/Traktor function as printed: its readable name with the
     slot when the mapping element has one ("Auto loop · slot 8"), or the raw
-    tag for a tag djmidi.function_names doesn't know."""
-    return function_label(tag, slot_id)
+    tag for a tag djmidi.function_names doesn't know. `translate` (the
+    "FunctionNames" context) puts the slot suffix in the interface language
+    (issue #331)."""
+    return function_label(tag, slot_id, translate)
 
 
 def deck_label(deck_id: str) -> str:
@@ -93,7 +96,7 @@ def deck_label(deck_id: str) -> str:
     return f"D{int(deck_id) + 1}" if deck_id.isdigit() else ""
 
 
-def build_function_index(config: MidiConfig) -> FunctionIndex:
+def build_function_index(config: MidiConfig, translate: Translate = untranslated) -> FunctionIndex:
     """(channel, event_type, data1) -> every (deck, function) its input
     ("click") mapping elements bind it to, de-duplicated -- the 10x
     duplicate elements of a real Serato file collapse to one line."""
@@ -101,7 +104,7 @@ def build_function_index(config: MidiConfig) -> FunctionIndex:
     for group in build_mapping_groups(config):
         if group.event != "click":
             continue
-        line = (deck_label(group.deck_id), function_text(group.tag, group.slot_id))
+        line = (deck_label(group.deck_id), function_text(group.tag, group.slot_id, translate))
         lines = index.setdefault(
             (group.channel, group.event_type, group.control_no), []
         )
@@ -286,7 +289,9 @@ def glossary_sheet(config: MidiConfig) -> Sheet | None:
     return Sheet("", GLOSSARY_TITLE, "table", entries)
 
 
-def build_sheets(config: MidiConfig, controllers: list[str]) -> list[Sheet]:
+def build_sheets(
+    config: MidiConfig, controllers: list[str], translate: Translate = untranslated
+) -> list[Sheet]:
     """The cheat sheet's logical pages for `controllers`, in that order.
 
     Per controller with geometry: one photo sheet for the first pad bank
@@ -295,8 +300,9 @@ def build_sheets(config: MidiConfig, controllers: list[str]) -> list[Sheet]:
     table sheet of whatever mapped entries no marker showed, if any.
     Without geometry: a single table sheet (even an empty one, so every
     chosen controller gets a page). Last, the glossary_sheet() when any
-    function prints under a readable name."""
-    index = build_function_index(config)
+    function prints under a readable name. `translate` is passed to
+    function_text()."""
+    index = build_function_index(config, translate)
     sheets: list[Sheet] = []
     for controller in controllers:
         geometry = geometry_mod.CONTROL_GEOMETRY.get(controller)
