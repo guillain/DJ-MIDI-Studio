@@ -33,6 +33,10 @@ each entry also keeps the raw-tag wording (`old_raw`/`new_raw`,
 the order doesn't depend on the label table.
 
 Qt-free; the GUI's comparison dialog only renders `MappingDiff.entries`.
+Every word the report prints is marked with `QT_TRANSLATE_NOOP("MappingDiff",
+...)`: `diff_configs`, `function_label` and `DiffEntry.summary` take an
+optional `translate` (English by default) so the GUI shows the report in the
+interface language (issue #333). Entries still sort on the English raw label.
 """
 
 from __future__ import annotations
@@ -41,16 +45,46 @@ from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 
 from djmidi.function_names import function_name
+from djmidi.i18n import QT_TRANSLATE_NOOP, Translate, untranslated
 from djmidi.model import MappingElement, MidiConfig, Translation
 
 KINDS = ("reassigned", "added", "removed", "changed", "duplicates")
+#: Group headings, translated by the GUI ("MappingDiff" context).
 KIND_LABELS = {
-    "reassigned": "Re-assigned",
-    "added": "Added",
-    "removed": "Removed",
-    "changed": "Changed values",
-    "duplicates": "Duplicate count",
+    "reassigned": QT_TRANSLATE_NOOP("MappingDiff", "Re-assigned"),
+    "added": QT_TRANSLATE_NOOP("MappingDiff", "Added"),
+    "removed": QT_TRANSLATE_NOOP("MappingDiff", "Removed"),
+    "changed": QT_TRANSLATE_NOOP("MappingDiff", "Changed values"),
+    "duplicates": QT_TRANSLATE_NOOP("MappingDiff", "Duplicate count"),
 }
+#: One count of the report's one-line summary ("3 re-assigned").
+KIND_COUNTS = {
+    "reassigned": QT_TRANSLATE_NOOP("MappingDiff", "{count} re-assigned"),
+    "added": QT_TRANSLATE_NOOP("MappingDiff", "{count} added"),
+    "removed": QT_TRANSLATE_NOOP("MappingDiff", "{count} removed"),
+    "changed": QT_TRANSLATE_NOOP("MappingDiff", "{count} changed values"),
+    "duplicates": QT_TRANSLATE_NOOP("MappingDiff", "{count} duplicate count"),
+}
+
+_SET = QT_TRANSLATE_NOOP("MappingDiff", "set {set}")
+_DECK = QT_TRANSLATE_NOOP("MappingDiff", "deck {deck}")
+_SLOT = QT_TRANSLATE_NOOP("MappingDiff", "slot {slot}")
+_WITH_DETAILS = QT_TRANSLATE_NOOP("MappingDiff", "{function}: {details}")
+_POSITION = QT_TRANSLATE_NOOP("MappingDiff", "translation {number} ")
+_TRANSLATION_ADDED = QT_TRANSLATE_NOOP("MappingDiff", "translation added")
+_TRANSLATION_N_ADDED = QT_TRANSLATE_NOOP("MappingDiff", "translation {number} added")
+_TRANSLATION_REMOVED = QT_TRANSLATE_NOOP("MappingDiff", "translation removed")
+_TRANSLATION_N_REMOVED = QT_TRANSLATE_NOOP("MappingDiff", "translation {number} removed")
+_FIELD_CHANGE = QT_TRANSLATE_NOOP("MappingDiff", "{position}{field}: {before} -> {after}")
+_ALIAS_CHANGE = QT_TRANSLATE_NOOP("MappingDiff", "{position}alias {name}: {before} -> {after}")
+_ALIAS_ORDER = QT_TRANSLATE_NOOP("MappingDiff", "{position}alias order or attributes changed")
+_TRANSLATION_ATTRS = QT_TRANSLATE_NOOP("MappingDiff", "{position}translation attributes changed")
+_VALUES_CHANGED = QT_TRANSLATE_NOOP("MappingDiff", "values changed")
+_VALUE_SETS = QT_TRANSLATE_NOOP("MappingDiff", "{old} distinct value set(s) -> {new}")
+_ON_COPIES = QT_TRANSLATE_NOOP("MappingDiff", "on {count} of {total} copies")
+_COPIES_REVERTED = QT_TRANSLATE_NOOP("MappingDiff", "{count} of {total} copies reverted")
+_COPIES = QT_TRANSLATE_NOOP("MappingDiff", "copies: x{old} -> x{new}")
+_COPY_MIX = QT_TRANSLATE_NOOP("MappingDiff", "copy mix changed")
 
 Trigger = tuple[str, str, str, str]
 FunctionKey = tuple[str, str | None, str | None, str | None]
@@ -81,15 +115,17 @@ class DiffEntry:
         and the layout views take."""
         return (self.channel, self.event_type, self.control)
 
-    def summary(self) -> str:
+    def summary(self, translate: Translate = untranslated) -> str:
         """One readable line: what the trigger did, and what it does now."""
-        return self._summarize(self.old_functions, self.new_functions)
+        return self._summarize(self.old_functions, self.new_functions, translate)
 
-    def raw_summary(self) -> str:
+    def raw_summary(self, translate: Translate = untranslated) -> str:
         """`summary()` with the raw function tags instead of readable names."""
-        return self._summarize(self.old_raw or self.old_functions, self.new_raw or self.new_functions)
+        return self._summarize(self.old_raw or self.old_functions, self.new_raw or self.new_functions, translate)
 
-    def _summarize(self, old_functions: tuple[str, ...], new_functions: tuple[str, ...]) -> str:
+    def _summarize(
+        self, old_functions: tuple[str, ...], new_functions: tuple[str, ...], translate: Translate
+    ) -> str:
         old = ", ".join(old_functions)
         new = ", ".join(new_functions)
         if self.kind == "reassigned":
@@ -99,7 +135,9 @@ class DiffEntry:
         if self.kind == "removed":
             return old
         label = new or old
-        return f"{label}: {'; '.join(self.details)}" if self.details else label
+        if not self.details:
+            return label
+        return translate(_WITH_DETAILS).format(function=label, details="; ".join(self.details))
 
 
 @dataclass
@@ -117,7 +155,7 @@ class MappingDiff:
         return {kind: len(self.by_kind(kind)) for kind in KINDS}
 
 
-def function_label(key: FunctionKey, raw: bool = False) -> str:
+def function_label(key: FunctionKey, raw: bool = False, translate: Translate = untranslated) -> str:
     """`Auto loop (deck 3, slot 8)`, or with `raw` the tag itself
     (`auto_loop_specific_length (deck 3, slot 8)`); a non-default deck set is
     named too, since Serato keeps one binding per set."""
@@ -125,16 +163,16 @@ def function_label(key: FunctionKey, raw: bool = False) -> str:
     name = tag if raw else function_name(tag)
     parts = []
     if deck_set and deck_set != "Default":
-        parts.append(f"set {deck_set}")
+        parts.append(translate(_SET).format(set=deck_set))
     if deck_id:
-        parts.append(f"deck {deck_id}")
+        parts.append(translate(_DECK).format(deck=deck_id))
     if slot_id:
-        parts.append(f"slot {slot_id}")
+        parts.append(translate(_SLOT).format(slot=slot_id))
     return f"{name} ({', '.join(parts)})" if parts else name
 
 
-def _raw_label(key: FunctionKey) -> str:
-    return function_label(key, raw=True)
+def _raw_label(key: FunctionKey, translate: Translate = untranslated) -> str:
+    return function_label(key, raw=True, translate=translate)
 
 
 def _attrs(attrs: dict[str, str]) -> tuple[tuple[str, str], ...]:
@@ -172,47 +210,61 @@ def _sort_key(entry: DiffEntry) -> tuple:
     return (KINDS.index(entry.kind), number(entry.channel), entry.event_type, number(entry.control), entry.event)
 
 
-def _describe_translation_change(position: str, old: tuple | None, new: tuple | None) -> list[str]:
-    if old is None:
-        return [f"{position or 'translation '}added"]
-    if new is None:
-        return [f"{position or 'translation '}removed"]
+def _describe_translation_change(
+    number: int | None, old: tuple | None, new: tuple | None, translate: Translate = untranslated
+) -> list[str]:
+    """`number` is the translation's 1-based position, None when the function
+    has only one."""
+    if old is None or new is None:
+        if number is None:
+            template = _TRANSLATION_ADDED if old is None else _TRANSLATION_REMOVED
+        else:
+            template = _TRANSLATION_N_ADDED if old is None else _TRANSLATION_N_REMOVED
+        return [translate(template).format(number=number)]
+    position = "" if number is None else translate(_POSITION).format(number=number)
     lines = []
     for name, before, after in (("action_on", old[0], new[0]), ("behaviour", old[1], new[1])):
         if before != after:
-            lines.append(f"{position}{name}: {before or '-'} -> {after or '-'}")
+            lines.append(
+                translate(_FIELD_CHANGE).format(position=position, field=name, before=before or "-", after=after or "-")
+            )
     old_aliases = {name: value for name, value, _extra in old[2]}
     new_aliases = {name: value for name, value, _extra in new[2]}
     for name in sorted(old_aliases.keys() | new_aliases.keys()):
         before, after = old_aliases.get(name), new_aliases.get(name)
         if before != after:
-            lines.append(f"{position}alias {name}: {before or '-'} -> {after or '-'}")
+            lines.append(
+                translate(_ALIAS_CHANGE).format(position=position, name=name, before=before or "-", after=after or "-")
+            )
     if old[2] != new[2] and old_aliases == new_aliases:
-        lines.append(f"{position}alias order or attributes changed")
+        lines.append(translate(_ALIAS_ORDER).format(position=position))
     if old[3] != new[3]:
-        lines.append(f"{position}translation attributes changed")
+        lines.append(translate(_TRANSLATION_ATTRS).format(position=position))
     return lines
 
 
-def describe_signature_change(old: Signature, new: Signature) -> list[str]:
+def describe_signature_change(old: Signature, new: Signature, translate: Translate = untranslated) -> list[str]:
     """Readable field-level differences between two signatures of one function."""
     lines = []
     old_attrs, new_attrs = dict(old[0]), dict(new[0])
     for name in sorted(old_attrs.keys() | new_attrs.keys()):
         if old_attrs.get(name) != new_attrs.get(name):
-            lines.append(f"{name}: {old_attrs.get(name) or '-'} -> {new_attrs.get(name) or '-'}")
+            lines.append(
+                translate(_FIELD_CHANGE).format(
+                    position="", field=name, before=old_attrs.get(name) or "-", after=new_attrs.get(name) or "-"
+                )
+            )
     old_translations, new_translations = old[1], new[1]
     many = max(len(old_translations), len(new_translations)) > 1
     for position in range(max(len(old_translations), len(new_translations))):
-        prefix = f"translation {position + 1} " if many else ""
         before = old_translations[position] if position < len(old_translations) else None
         after = new_translations[position] if position < len(new_translations) else None
         if before != after:
-            lines.extend(_describe_translation_change(prefix, before, after))
-    return lines or ["values changed"]
+            lines.extend(_describe_translation_change(position + 1 if many else None, before, after, translate))
+    return lines or [translate(_VALUES_CHANGED)]
 
 
-def _changed_details(old: Counter, new: Counter) -> list[str]:
+def _changed_details(old: Counter, new: Counter, translate: Translate = untranslated) -> list[str]:
     """Field-level details when one variant replaced another. A variant added
     next to the old one (only some of the duplicated copies edited) is
     compared with the old copies' most common variant, and says how many
@@ -223,21 +275,25 @@ def _changed_details(old: Counter, new: Counter) -> list[str]:
     after = new_only[0] if len(new_only) == 1 else (new.most_common(1)[0][0] if not new_only else None)
     old_total, new_total = sum(old.values()), sum(new.values())
     if before is None or after is None:
-        details = [f"{len(old)} distinct value set(s) -> {len(new)}"]
+        details = [translate(_VALUE_SETS).format(old=len(old), new=len(new))]
     else:
-        details = describe_signature_change(before, after)
+        details = describe_signature_change(before, after, translate)
         if not old_only:
-            details.append(f"on {sum(new[sig] for sig in new_only)} of {new_total} copies")
+            count = sum(new[sig] for sig in new_only)
+            details.append(translate(_ON_COPIES).format(count=count, total=new_total))
         elif not new_only:
-            details.append(f"{sum(old[sig] for sig in old_only)} of {old_total} copies reverted")
+            count = sum(old[sig] for sig in old_only)
+            details.append(translate(_COPIES_REVERTED).format(count=count, total=old_total))
     if old_total != new_total:
-        details.append(f"copies: x{old_total} -> x{new_total}")
+        details.append(translate(_COPIES).format(old=old_total, new=new_total))
     return details
 
 
-def diff_configs(old: MidiConfig, new: MidiConfig) -> MappingDiff:
+def diff_configs(old: MidiConfig, new: MidiConfig, translate: Translate = untranslated) -> MappingDiff:
     """What changed going from `old` to `new` (e.g. the `.bak` to the current
-    file), sorted by kind and then trigger."""
+    file), sorted by kind and then trigger. `translate` (the "MappingDiff"
+    context) puts the function labels and details in the interface language;
+    entries still sort on the English raw labels."""
     old_index, new_index = _index(old), _index(new)
     entries: list[DiffEntry] = []
     for trigger in old_index.keys() | new_index.keys():
@@ -251,10 +307,10 @@ def diff_configs(old: MidiConfig, new: MidiConfig) -> MappingDiff:
             "control": trigger[2],
             "event": trigger[3],
         }
-        old_labels = tuple(function_label(key) for key in lost)
-        new_labels = tuple(function_label(key) for key in gained)
-        old_raw = tuple(_raw_label(key) for key in lost)
-        new_raw = tuple(_raw_label(key) for key in gained)
+        old_labels = tuple(function_label(key, translate=translate) for key in lost)
+        new_labels = tuple(function_label(key, translate=translate) for key in gained)
+        old_raw = tuple(_raw_label(key, translate) for key in lost)
+        new_raw = tuple(_raw_label(key, translate) for key in gained)
         if lost and gained:
             entries.append(
                 DiffEntry(
@@ -272,10 +328,10 @@ def diff_configs(old: MidiConfig, new: MidiConfig) -> MappingDiff:
             entries.append(DiffEntry("removed", **common, old_functions=old_labels, old_raw=old_raw))
         for key in sorted((k for k in before if k in after), key=_raw_label):
             old_counter, new_counter = before[key], after[key]
-            label = (function_label(key),)
-            raw = (_raw_label(key),)
+            label = (function_label(key, translate=translate),)
+            raw = (_raw_label(key, translate),)
             if set(old_counter) != set(new_counter):
-                details = tuple(_changed_details(old_counter, new_counter))
+                details = tuple(_changed_details(old_counter, new_counter, translate))
                 entries.append(
                     DiffEntry(
                         "changed",
@@ -289,7 +345,10 @@ def diff_configs(old: MidiConfig, new: MidiConfig) -> MappingDiff:
                 )
             elif old_counter != new_counter:
                 old_total, new_total = sum(old_counter.values()), sum(new_counter.values())
-                detail = f"copies: x{old_total} -> x{new_total}" if old_total != new_total else "copy mix changed"
+                if old_total != new_total:
+                    detail = translate(_COPIES).format(old=old_total, new=new_total)
+                else:
+                    detail = translate(_COPY_MIX)
                 entries.append(
                     DiffEntry(
                         "duplicates",

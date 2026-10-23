@@ -47,6 +47,12 @@ output), and the change. Rows are grouped by kind:
 Functions show their [readable name](function-names.md); hover a change to
 see it with the original Serato tags.
 
+The window and its report follow the [interface language](interface-language.md):
+in French the groups are **Réaffectations**, **Ajouts**, **Suppressions**,
+**Valeurs modifiées** and **Nombre de copies**, and a change reads
+`play (platine 3, slot 1)` or `alias on : 127 -> 100`. Serato's own field
+names (`alias`, `behaviour`, `action_on`, `click`, `output`) stay as written.
+
 The order of controls in the file does not matter: two files with the same
 bindings in a different order compare equal.
 

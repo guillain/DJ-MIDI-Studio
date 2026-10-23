@@ -57,7 +57,6 @@ from djmidi.gui.stage_window import StageWindow
 from djmidi.gui.translation import install_translators
 from djmidi.library import relink, rename, smart_playlist, workspace
 from djmidi.midi_io import MidiEvent
-from djmidi.parser import parse_file
 from djmidi.plugins.preferences import PluginPreferences
 from djmidi.software.traktor import parse_string as parse_traktor
 
@@ -148,6 +147,7 @@ def main() -> int:
     qInstallMessageHandler(_filter_offscreen_platform_noise)
     app = QApplication.instance() or QApplication(sys.argv)
     with (
+        contextlib.ExitStack() as stack,
         patch("djmidi.gui.live_monitor.list_input_ports", return_value=[]),
         patch("djmidi.gui.live_monitor.MidiMonitor", _OfflineMidiMonitor),
         patch("djmidi.gui.controller_setup.list_input_ports", return_value=[]),
@@ -163,9 +163,18 @@ def main() -> int:
     ):
         window = MainWindow()
         window.resize(1600, 1000)
-        window.config = parse_file(FIXTURE)
-        window.current_path = FIXTURE
-        window._load_tree()
+        # Opened the way File -> Open does, so the Dashboard's "Your files"
+        # card shows the loaded mapping (setting current_path + _load_tree()
+        # skipped it and printed "Mapping: none open", issue #333), from a
+        # copy under a short demo folder kept for the whole run, so the
+        # card's Folder line shows no personal path.
+        mapping_dir = stack.enter_context(_demo_dir("djmidi-docs-mapping"))
+        mapping_dir.mkdir(parents=True)
+        mapping = mapping_dir / FIXTURE.name
+        shutil.copyfile(FIXTURE, mapping)
+        window._load_mapping_from_path(mapping, software_id="serato")
+        if window.config is None:
+            raise RuntimeError(f"could not open {mapping}")
         window.show()
         app.processEvents()
         captures = {
@@ -470,13 +479,17 @@ def _save(widget, filename: str) -> None:
         raise RuntimeError(f"could not save {filename}")
 
 
+def _demo_music_dir() -> contextlib.AbstractContextManager[Path]:
+    """A throwaway folder for the synthetic library (see _demo_dir)."""
+    return _demo_dir("djmidi-docs-demo")
+
+
 @contextlib.contextmanager
-def _demo_music_dir() -> Iterator[Path]:
-    """A throwaway folder for the synthetic library. A short fixed path
-    under /tmp where there is one, so the duplicates/relink captures show
-    readable paths instead of a random /var/folders/... temp name; removed
-    before and after either way."""
-    base = Path("/tmp/djmidi-docs-demo")
+def _demo_dir(name: str) -> Iterator[Path]:
+    """A throwaway folder: a short fixed path under /tmp where there is one,
+    so the captures show readable paths instead of a random /var/folders/...
+    temp name; removed before and after either way."""
+    base = Path("/tmp") / name
     if not Path("/tmp").is_dir():
         with tempfile.TemporaryDirectory() as temp:
             yield Path(temp) / "Music"

@@ -73,6 +73,11 @@ SOURCES=(
   src/djmidi/function_names.py
   src/djmidi/session_player.py
   src/djmidi/gui/macro_editor.py
+  src/djmidi/gui/cheat_sheet.py
+  src/djmidi/gui/cheat_sheet_dialog.py
+  src/djmidi/gui/cheat_sheet_pdf.py
+  src/djmidi/mapping_diff.py
+  src/djmidi/gui/mapping_diff_dialog.py
 )
 LANGUAGES=(fr)
 

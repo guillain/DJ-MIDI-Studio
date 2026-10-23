@@ -132,6 +132,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **French cheat sheet and mapping comparison** (`v0.48.129-french-cheat-sheet-diff`, issue #333) — the
+  cheat sheet export window and the PDF it writes (page titles, glossary, column headings, `Page N`, legend,
+  footer, PDF title) follow the interface language; the mapping comparison window and its report (group names,
+  counts, `platine`/`slot` labels, change details) too, via a `MappingDiff` translator passed to `diff_configs`.
+  Its group names left `test_french_help_labels.py`'s exception list. The English docs capture now opens the
+  mapping like File → Open, so the regenerated `dashboard.png` names it in "Your files".
 - [x] **French UI: last leftovers** (`v0.48.128-french-last-leftovers`, issue #331) — the Dashboard's
   `(640 commande(s))`, the Preferences Plugins prefixes and Controller sync hint, the statistics'
   `Sans catégorie` / `(sans genre)` bars, the cheat sheet and Layer Map slot suffix (through the
