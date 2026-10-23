@@ -55,6 +55,10 @@ This first version translates what you use most:
   rule summaries and sort orders;
 - the Sync result summary shown in the status bar, and the Live Monitor's
   lock tooltip while **● Enr** records;
+- every `?` help popup, on every tab and tool window, Controller Setup's
+  included (its `Ouvrir le guide complet` button still opens the English
+  guide); a button that is still in English is named in English there, so
+  you find it on screen;
 - Qt's own standard buttons and dialogs (`OK`, `Annuler`, `Enregistrer`,
   file pickers).
 
@@ -63,8 +67,9 @@ This first version translates what you use most:
 ## What stays in English
 
 The rest of each tab's content, the tool windows (Live Monitor, MIDI
-Routing, MIDI Clock, Metronome, Controller Emulator), most other messages and the `?` help
-texts are still in English, as is this documentation. Inside the translated
+Routing, MIDI Clock, Metronome, Controller Emulator) and most other messages
+are still in English, as is this documentation (including the guides the
+`?` help popups open). Inside the translated
 windows, text computed from your data stays in English too: the findings
 of the `Prêt pour le live` report, the latency statistics line, the
 change-history entry descriptions. A health-report CSV keeps its issue

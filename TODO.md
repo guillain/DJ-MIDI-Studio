@@ -132,6 +132,10 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **French UI: contextual help texts** (`v0.48.124-french-help-texts`, issue #320) — every `?` help popup
+  (title, rich-text body, tooltip, `Open full guide`) is translated through the `HelpTexts` catalogue context at
+  show time; Controller Setup's four panel texts moved into `help_texts.py` to share it. The linked guides stay
+  English; still-English buttons keep their English names in the French texts (to align once #317/#318 land).
 - [x] **Stop waiting macros on close** (`v0.48.120-stop-macros-on-close`, issue #314) — closing the main
   window now calls `MacroPlayer.stop_all()`, and closing the macro editor stops its Test player, so a macro
   waiting between steps releases its output port right away instead of at process exit. Follow-up of #308.
