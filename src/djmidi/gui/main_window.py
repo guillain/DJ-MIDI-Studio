@@ -10,6 +10,7 @@ from uuid import uuid4
 
 import PySide6
 from PySide6.QtCore import (
+    QT_TRANSLATE_NOOP,
     QCoreApplication,
     QEvent,
     QItemSelectionModel,
@@ -204,21 +205,22 @@ _LAST_UPDATE_CHECK_SETTINGS_KEY = "updates/last_check"
 # How often output ports are listed to spot a controller being plugged in.
 _PLUG_IN_POLL_MS = 2000
 
+# Menu titles, translated where the Help menu is built (issue #337).
 _LOCAL_HELP_DOCUMENTS = [
-    ("Documentation Home", "docs/README.md"),
-    ("Features Overview", "docs/enduser/README.md"),
-    ("User Guide", "docs/enduser/user-guide.md"),
-    ("Feature Pages", "docs/enduser/features/README.md"),
-    ("End-to-End Examples", "docs/enduser/examples.md"),
-    ("Supported Controllers", "docs/enduser/controller-profiles.md"),
-    ("MIDI Clock Compatibility", "docs/enduser/midi-clock-compatibility.md"),
-    ("Developer Documentation", "docs/developer/README.md"),
-    ("Architecture", "docs/developer/design/architecture.md"),
-    ("Build and Release", "docs/developer/cicd/build-and-release.md"),
+    (QT_TRANSLATE_NOOP("MainWindow", "Documentation Home"), "docs/README.md"),
+    (QT_TRANSLATE_NOOP("MainWindow", "Features Overview"), "docs/enduser/README.md"),
+    (QT_TRANSLATE_NOOP("MainWindow", "User Guide"), "docs/enduser/user-guide.md"),
+    (QT_TRANSLATE_NOOP("MainWindow", "Feature Pages"), "docs/enduser/features/README.md"),
+    (QT_TRANSLATE_NOOP("MainWindow", "End-to-End Examples"), "docs/enduser/examples.md"),
+    (QT_TRANSLATE_NOOP("MainWindow", "Supported Controllers"), "docs/enduser/controller-profiles.md"),
+    (QT_TRANSLATE_NOOP("MainWindow", "MIDI Clock Compatibility"), "docs/enduser/midi-clock-compatibility.md"),
+    (QT_TRANSLATE_NOOP("MainWindow", "Developer Documentation"), "docs/developer/README.md"),
+    (QT_TRANSLATE_NOOP("MainWindow", "Architecture"), "docs/developer/design/architecture.md"),
+    (QT_TRANSLATE_NOOP("MainWindow", "Build and Release"), "docs/developer/cicd/build-and-release.md"),
 ]
 
 _LOCAL_CONTROLLER_DOCUMENTS = [
-    ("Controller documentation index", "controllers/README.md"),
+    (QT_TRANSLATE_NOOP("MainWindow", "Controller documentation index"), "controllers/README.md"),
     ("DDJ-XP2 MIDI Message List", "controllers/hardware/pioneer/DDJ-XP2/ddj-xp2-midi-message-list-e1.pdf"),
     ("XDJ-XZ MIDI Message List", "controllers/hardware/pioneer/XDJ-XZ/xdj-xz-midi-message-list-e3.pdf"),
     ("DDJ-1000 MIDI Message List", "controllers/hardware/pioneer/DDJ-1000/ddj-1000-midi-message-list-e1.pdf"),
@@ -1071,7 +1073,7 @@ class MainWindow(QMainWindow):
         help_menu = self.menuBar().addMenu(self.tr("&Help"))
         documentation_menu = help_menu.addMenu(self.tr("Project Documentation"))
         for title, relative_path in _LOCAL_HELP_DOCUMENTS:
-            action = QAction(title, self)
+            action = QAction(self.tr(title), self)
             action.triggered.connect(
                 lambda checked=False, p=relative_path: self._open_local_help(p)
             )
@@ -1079,7 +1081,8 @@ class MainWindow(QMainWindow):
 
         controller_menu = help_menu.addMenu(self.tr("Controller References"))
         for title, relative_path in _LOCAL_CONTROLLER_DOCUMENTS:
-            action = QAction(title, self)
+            # Only the index is marked; document names are official titles.
+            action = QAction(self.tr(title), self)
             action.triggered.connect(
                 lambda checked=False, p=relative_path: self._open_local_help(p)
             )

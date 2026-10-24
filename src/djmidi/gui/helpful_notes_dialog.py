@@ -1,19 +1,21 @@
 """The startup help popup containing the main workflow reminders."""
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import QT_TRANSLATE_NOOP, Qt, Signal
 from PySide6.QtGui import QCloseEvent
 from PySide6.QtWidgets import QDialog, QLabel, QMessageBox, QPushButton, QVBoxLayout
 
 from djmidi.gui.theme import colors as theme_colors
 
-HELPFUL_NOTES_TEXT = (
+# English; shown translated (issue #337).
+HELPFUL_NOTES_TEXT = QT_TRANSLATE_NOOP(
+    "HelpfulNotesDialog",
     "- By Channel: most granular editing (raw Control/UserIO/Mapping).\n"
     "- By Deck: grouped editing of Serato duplicate trigger sets (x10) via MappingGroup.\n"
     "- By Controller: physical mapping view by controller section.\n"
     "- Live Monitor: real-time MIDI display with catalog + Serato function resolution.\n"
     "- MIDI Routing: route MIDI and loop Controller Setup session rows.\n"
     "- MIDI Clock: configure Clock sources, destinations, and Link following.\n"
-    "- Controller Setup: create a new catalog module from learned MIDI or imported XML."
+    "- Controller Setup: create a new catalog module from learned MIDI or imported XML.",
 )
 
 
@@ -25,11 +27,11 @@ class HelpfulNotesDialog(QDialog):
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
-        self.setWindowTitle("Helpful Notes")
+        self.setWindowTitle(self.tr("Helpful Notes"))
         self.setMinimumSize(520, 260)
         self.setModal(False)
 
-        self._title_label = QLabel("Quick workflow reminders")
+        self._title_label = QLabel(self.tr("Quick workflow reminders"))
         # A hardcoded copy of the dark palette's "title" color -- unlike the
         # other panels in this theme-consistency chantier this dialog is
         # transient (a fresh instance each time it's shown, not a
@@ -38,11 +40,11 @@ class HelpfulNotesDialog(QDialog):
         self._title_label.setStyleSheet(
             f"font-size: 16px; font-weight: 700; color: {theme_colors()['title']};"
         )
-        notes = QLabel(HELPFUL_NOTES_TEXT)
+        notes = QLabel(self.tr(HELPFUL_NOTES_TEXT))
         notes.setTextFormat(Qt.TextFormat.PlainText)
         notes.setWordWrap(True)
 
-        close_button = QPushButton("Close")
+        close_button = QPushButton(self.tr("Close"))
         close_button.clicked.connect(self.close)
 
         layout = QVBoxLayout(self)
@@ -53,8 +55,8 @@ class HelpfulNotesDialog(QDialog):
     def closeEvent(self, event: QCloseEvent) -> None:
         choice = QMessageBox.question(
             self,
-            "Close Helpful Notes",
-            "Should Helpful Notes remain closed on the next startup?",
+            self.tr("Close Helpful Notes"),
+            self.tr("Should Helpful Notes remain closed on the next startup?"),
             QMessageBox.StandardButton.Yes
             | QMessageBox.StandardButton.No
             | QMessageBox.StandardButton.Cancel,

@@ -32,6 +32,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass, field
 
 from djmidi.function_search import FunctionResult, search_functions
+from djmidi.i18n import QT_TRANSLATE_NOOP
 
 _TOKEN_RE = re.compile(r"[a-z0-9]+")
 
@@ -40,7 +41,13 @@ KIND_TAB = "tab"
 KIND_FUNCTION = "function"
 KIND_TRACK = "track"
 _KIND_ORDER = {KIND_ACTION: 0, KIND_TAB: 1, KIND_FUNCTION: 2, KIND_TRACK: 3}
-KIND_LABELS = {KIND_ACTION: "Action", KIND_TAB: "Tab", KIND_FUNCTION: "Function", KIND_TRACK: "Track"}
+# English; the palette window shows them translated (issue #337).
+KIND_LABELS = {
+    KIND_ACTION: QT_TRANSLATE_NOOP("CommandPaletteDialog", "Action"),
+    KIND_TAB: QT_TRANSLATE_NOOP("CommandPaletteDialog", "Tab"),
+    KIND_FUNCTION: QT_TRANSLATE_NOOP("CommandPaletteDialog", "Function"),
+    KIND_TRACK: QT_TRANSLATE_NOOP("CommandPaletteDialog", "Track"),
+}
 
 _EXACT_WORD = 3.0
 _PREFIX_WORD = 2.0
