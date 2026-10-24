@@ -40,33 +40,37 @@ class ReportProblemDialog(QDialog):
         open_url: Callable[[str], bool] | None = None,
     ) -> None:
         super().__init__(parent)
-        self.setWindowTitle("Report a Problem")
+        self.setWindowTitle(self.tr("Report a Problem"))
         self.resize(720, 600)
         self._open_url = open_url or (lambda url: QDesktopServices.openUrl(QUrl(url)))
         self.last_url: str | None = None
         self.last_inlined = True
 
+        # The window is translated; the report itself stays English, since it
+        # becomes a GitHub issue (issue #337).
         intro = QLabel(
-            "Check the text below before sending: it lists your app version, system, "
-            "enabled plugins and the last log lines — no mapping or music-library "
-            "content, and paths under your home folder are shortened to <code>~</code>. "
-            "Edit or remove anything you'd rather not share.<br><br>"
-            "<b>Copy &amp; Open GitHub</b> copies the text to the clipboard and opens a "
-            "pre-filled issue in your browser; nothing is sent until you submit it there "
-            "(a GitHub account is needed)."
+            self.tr(
+                "Check the text below before sending: it lists your app version, system, "
+                "enabled plugins and the last log lines — no mapping or music-library "
+                "content, and paths under your home folder are shortened to <code>~</code>. "
+                "Edit or remove anything you'd rather not share.<br><br>"
+                "<b>Copy &amp; Open GitHub</b> copies the text to the clipboard and opens a "
+                "pre-filled issue in your browser; nothing is sent until you submit it there "
+                "(a GitHub account is needed)."
+            )
         )
         intro.setWordWrap(True)
 
         self.title_edit = QLineEdit(DEFAULT_TITLE)
-        self.title_edit.setPlaceholderText("Short summary of the problem")
+        self.title_edit.setPlaceholderText(self.tr("Short summary of the problem"))
         self.body_edit = QPlainTextEdit(build_report_text(context))
         self.body_edit.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
 
         form = QFormLayout()
-        form.addRow("Title", self.title_edit)
+        form.addRow(self.tr("Title"), self.title_edit)
 
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Cancel)
-        self.submit_button = buttons.addButton("Copy && Open GitHub", QDialogButtonBox.ButtonRole.AcceptRole)
+        self.submit_button = buttons.addButton(self.tr("Copy && Open GitHub"), QDialogButtonBox.ButtonRole.AcceptRole)
         buttons.accepted.connect(self._on_submit)
         buttons.rejected.connect(self.reject)
 

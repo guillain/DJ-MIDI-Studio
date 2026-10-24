@@ -121,3 +121,40 @@ def test_functions_reuse_function_search():
 
 def test_tokenize_is_case_and_punctuation_insensitive():
     assert tokenize("Cheat Sheet (PDF)…") == ["cheat", "sheet", "pdf"]
+
+
+def _french_entries() -> list[PaletteEntry]:
+    return [
+        PaletteEntry(KIND_ACTION, "Préférences", detail="Fichier", keywords="Fichier", payload="prefs"),
+        PaletteEntry(KIND_ACTION, "Mode Scène", detail="Affichage", keywords="Affichage", payload="stage"),
+        PaletteEntry(KIND_ACTION, "Plein écran", detail="Affichage", keywords="Affichage", payload="full"),
+        PaletteEntry(KIND_TAB, "Bibliothèque", payload=6),
+        PaletteEntry(KIND_TAB, "Par canal", payload=3),
+    ]
+
+
+def test_tokenize_ignores_accents_and_keeps_accented_words_whole():
+    """Issue #343: `préf` used to split into `pr` + `f`."""
+    assert tokenize("Préférences…") == ["preferences"]
+    assert tokenize("Mode Scène") == ["mode", "scene"]
+    assert tokenize("ÉCRAN") == ["ecran"]
+    assert tokenize("Straße") == ["strasse"]
+
+
+def test_accented_and_unaccented_queries_find_french_titles():
+    index = PaletteIndex(_french_entries())
+    for query in ("préf", "pref", "PRÉF", "preferences"):
+        assert index.search(query)[0].payload == "prefs", query
+    for query in ("bibliotheque", "bibliothèque", "biblio"):
+        assert index.search(query)[0].payload == 6, query
+    for query in ("scène", "scene", "mode scene"):
+        assert index.search(query)[0].payload == "stage", query
+    assert index.search("ecran")[0].payload == "full"
+
+
+def test_accented_query_scores_like_its_unaccented_form():
+    entries = _french_entries()
+    for accented, plain in (("préf", "pref"), ("scène", "scene"), ("écran", "ecran")):
+        assert [(e.payload, e.score) for e in PaletteIndex(entries).search(accented)] == [
+            (e.payload, e.score) for e in PaletteIndex(entries).search(plain)
+        ]

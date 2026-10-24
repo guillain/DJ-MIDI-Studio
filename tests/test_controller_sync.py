@@ -492,7 +492,7 @@ def test_sync_set_from_events_does_not_collapse_control_changes():
 def test_plug_in_tracker_ignores_a_windows_port_renumbering():
     # Issue #305: Windows numbers ports ("DDJ-XP2 1") and renumbers them when
     # another device comes or goes; the controller never left.
-    tracker = PlugInSyncTracker()
+    tracker = PlugInSyncTracker(platform="win32")
     tracker.seed(["Some Synth 0", "PIONEER DDJ-XP2 1"])
     assert tracker.due([_XP2], ["PIONEER DDJ-XP2 0"]) == []
     assert tracker.due([_XP2], ["Some Synth 0", "PIONEER DDJ-XP2 1"]) == []
@@ -502,15 +502,58 @@ def test_plug_in_tracker_ignores_a_windows_port_renumbering():
 
 
 def test_plug_in_tracker_second_identical_controller_is_a_plug_in():
-    tracker = PlugInSyncTracker()
+    tracker = PlugInSyncTracker(platform="win32")
     tracker.seed(["IAC Driver Bus 1"])
     iac = ControllerSyncSet("IAC", "IAC Driver Bus 2", ())
     assert tracker.due([iac], ["IAC Driver Bus 1", "IAC Driver Bus 2"]) == [iac]
 
 
-def test_port_identity_strips_only_the_trailing_index():
+_INPULSE_500 = ControllerSyncSet("Hercules DJControl Inpulse 500", "DJControl Inpulse 500", ())
+_INPULSE_300 = ControllerSyncSet("Hercules DJControl Inpulse 300", "DJControl Inpulse 300", ())
+
+
+@pytest.mark.parametrize("platform", ["darwin", "linux"])
+def test_plug_in_tracker_keeps_model_numbers_apart_off_windows(platform):
+    # Issue #335: a model number is part of the name, not a Windows index.
+    tracker = PlugInSyncTracker(platform=platform)
+    tracker.seed(["DJControl Inpulse 500"])
+    both = ["DJControl Inpulse 500", "DJControl Inpulse 300"]
+    assert tracker.due([_INPULSE_500, _INPULSE_300], both) == [_INPULSE_300]
+    # The 500 swapped for a 300 within one poll: the 300 is still new.
+    tracker.seed(["DJControl Inpulse 500"])
+    assert tracker.due([_INPULSE_500, _INPULSE_300], ["DJControl Inpulse 300"]) == [_INPULSE_300]
+
+
+def test_plug_in_tracker_windows_strips_only_the_appended_index():
+    tracker = PlugInSyncTracker(platform="win32")
+    tracker.seed(["DJControl Inpulse 500 1"])
+    # Renumbered by Windows: not a plug-in.
+    assert tracker.due([_INPULSE_500], ["DJControl Inpulse 500 0"]) == []
+    # A second identical unit is.
+    assert tracker.due([_INPULSE_500], ["DJControl Inpulse 500 0", "DJControl Inpulse 500 2"]) == [_INPULSE_500]
+    # A different model next to it is its own device.
+    tracker.seed(["DJControl Inpulse 500 0"])
+    assert tracker.due(
+        [_INPULSE_500, _INPULSE_300], ["DJControl Inpulse 500 0", "DJControl Inpulse 300 1"]
+    ) == [_INPULSE_300]
+
+
+def test_port_identity_strips_only_the_trailing_windows_index():
     from djmidi.controller_sync import port_identity
 
-    assert port_identity("PIONEER DDJ-XP2 1") == "PIONEER DDJ-XP2"
-    assert port_identity("DDJ-XP2") == "DDJ-XP2"
-    assert port_identity("CMD LC-1") == "CMD LC-1"
+    assert port_identity("PIONEER DDJ-XP2 1", platform="win32") == "PIONEER DDJ-XP2"
+    assert port_identity("DJControl Inpulse 500 1", platform="win32") == "DJControl Inpulse 500"
+    assert port_identity("DDJ-XP2", platform="win32") == "DDJ-XP2"
+    assert port_identity("CMD LC-1", platform="win32") == "CMD LC-1"
+    for platform in ("darwin", "linux"):
+        assert port_identity("DJControl Inpulse 500", platform=platform) == "DJControl Inpulse 500"
+        assert port_identity("IAC Driver Bus 1", platform=platform) == "IAC Driver Bus 1"
+
+
+def test_port_identity_defaults_to_the_running_platform(monkeypatch):
+    from djmidi import controller_sync
+
+    monkeypatch.setattr(controller_sync.sys, "platform", "win32")
+    assert controller_sync.port_identity("DDJ-XP2 1") == "DDJ-XP2"
+    monkeypatch.setattr(controller_sync.sys, "platform", "darwin")
+    assert controller_sync.port_identity("DDJ-XP2 1") == "DDJ-XP2 1"

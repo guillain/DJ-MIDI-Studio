@@ -102,9 +102,15 @@ ignoring case and punctuation. So a macro set to `DDJ-XP2` still finds
 port.
 
 The port is opened once when the macro starts and stays open until its last
-message, delays included, then closed — faster than reopening it for every
-message, and some drivers drop messages on reopen. If sending fails, the port
-is closed right away. Quitting the app, or closing `Manage Macros…` while
+message, then closed — faster than reopening it for every message, and some
+drivers drop messages on reopen. Short delays (up to 500 ms, such as a button
+press and release) are waited with the port open; before a longer delay the
+port is closed and reopened when the delay is over, so ⟳ Sync, Live send and
+other macros can still reach that controller meanwhile (on Windows a MIDI
+output usually accepts only one program or window at a time). Macros playing
+on the same port at the same time — two different ones, or the same one
+pressed twice — share one open port. If sending fails, that macro lets go of
+the port right away. Quitting the app, or closing `Manage Macros…` while
 `Test` still waits on a delay, stops that macro and closes its port at once;
 the remaining messages are not sent.
 
