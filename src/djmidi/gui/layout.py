@@ -384,6 +384,9 @@ _RIGHT_GRID_DECKS: dict[str, frozenset[int]] = {
     "DDJ-FLX10": frozenset({2, 4}),
     "DDJ-REV1": frozenset({2, 4}),
     "Numark Mixtrack Pro FX": frozenset({2}),
+    # issue #338 -- keep in sync with geometry.py's copy.
+    "DDJ-FLX4": frozenset({2}),
+    "DDJ-800": frozenset({2, 4}),
     # issue #339 (keep in sync with geometry.py's copy).
     "DDJ-REV5": frozenset({2, 4}),
     "Hercules DJControl Inpulse 500": frozenset({2}),
@@ -414,6 +417,16 @@ _RIGHT_SIDE_CHANNELS: dict[str, dict[str, frozenset[str]]] = {
     },
     "XDJ-XZ": {
         "DECK": frozenset({"2", "4"}),
+    },
+    # issue #338: one entry per button spans both decks' channels; the
+    # mixer's CH CUE / HEADPHONES CUE pair splits the same way.
+    "DDJ-FLX4": {
+        "DECK": frozenset({"2"}),
+        "MIXER": frozenset({"2"}),
+    },
+    "DDJ-800": {
+        "DECK": frozenset({"2", "4"}),
+        "MIXER": frozenset({"2", "4"}),
     },
 }
 

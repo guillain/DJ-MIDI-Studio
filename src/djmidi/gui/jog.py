@@ -33,7 +33,15 @@ DDJ-REV1     platter 0x22(Vinyl on) / 0x23(Vinyl off) /     MIDI Message
              0x1F(+SHIFT); wheel-side 0x21 / 0x26(+SHIFT)   List E1, Fig D3
 DDJ-REV5     platter 0x22(Vinyl on) / 0x23(Vinyl off) /     MIDI Message
              0x1F(+SHIFT); wheel-side 0x21 / 0x26(+SHIFT)   List E1, Fig D3
+DDJ-FLX4     platter 0x22 / 0x23 / 0x29(+SHIFT);            MIDI Message
+             wheel-side 0x21                                List E1, Fig 1-4
+DDJ-800      platter 0x22 / 0x23 / 0x29(+SEARCH) /          MIDI Message
+             0x1F(+SHIFT); wheel-side 0x21 / 0x26(+SHIFT)   List E3, Fig D3
 ===========  ===========================================  ==================
+
+DDJ-FLX4 and DDJ-800 also draw both jogs (``"Jog wheel"`` / ``"Jog wheel
+(R)"``) and resolve side-aware by deck channel: deck 2 (and 4 on the
+DDJ-800) is the right jog.
 
 XDJ-XZ has two physical jogs -- decks 1/3 on the left, 2/4 on the right
 tray (the same split ``layout.py``'s ``_RIGHT_GRID_DECKS`` uses for the pad
@@ -96,7 +104,24 @@ _TWO_JOG_RULES: tuple[tuple[frozenset[str], CellKey, CellKey], ...] = (
         ("DDJ-REV5", "DISPLAY", "Jog wheel"),
         ("DDJ-REV5", "DISPLAY", "Jog wheel (R)"),
     ),
+    # issue #338, DDJ-800 (MIDI Message List E3, Fig. D3): platter
+    # 0x22 / 0x23 / 0x29(+SEARCH) / 0x1F(+SHIFT), wheel side 0x21 /
+    # 0x26(+SHIFT); decks 1/3 left, 2/4 right.
+    (
+        frozenset({"31", "33", "34", "35", "38", "41"}),
+        ("DDJ-800", "DISPLAY", "Jog wheel"),
+        ("DDJ-800", "DISPLAY", "Jog wheel (R)"),
+    ),
 )
+
+# issue #338, DDJ-FLX4 (MIDI Message List E1, Fig. 1-4): platter
+# 0x22(Vinyl on) / 0x23(Vinyl off) / 0x29(+SHIFT), wheel side 0x21
+# (+SHIFT too). Only two deck channels: 1 = left jog, 2 = right.
+_DDJ_FLX4_JOG_DATA1 = frozenset({"33", "34", "35", "41"})
+_DDJ_FLX4_JOG_KEYS: dict[str, CellKey] = {
+    "1": ("DDJ-FLX4", "DISPLAY", "Jog wheel"),
+    "2": ("DDJ-FLX4", "DISPLAY", "Jog wheel (R)"),
+}
 
 
 def decode_jog_delta(value: object) -> int:
@@ -128,6 +153,8 @@ def jog_cell_keys_for_event(
     for data1_set, key in _SINGLE_JOG_RULES:
         if data1 in data1_set:
             keys.append(key)
+    if data1 in _DDJ_FLX4_JOG_DATA1 and channel in _DDJ_FLX4_JOG_KEYS:
+        keys.append(_DDJ_FLX4_JOG_KEYS[channel])
     return keys
 
 

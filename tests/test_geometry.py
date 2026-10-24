@@ -786,6 +786,64 @@ def test_behringer_cmd_lc_1_geometry_covers_every_catalog_entry_in_13_rows_of_4(
     assert [len(row) for row in rows] == [4] * 13
 
 
+# ─── DDJ-FLX4 / DDJ-800 (issue #338) ────────────────────────────────────────
+
+# Catalog entries with no marker, each for a stated reason: the DDJ-800's
+# LINE/PHONO switch is on the rear panel; nothing else is left out.
+_FLX4_800_UNPLACED = {"DDJ-FLX4": set(), "DDJ-800": {"LINE/PHONO SW"}}
+# Entries that are one shared button rather than one per deck.
+_SINGLE_MARKER = {
+    "DDJ-FLX4": {"BROWSE", "LOAD DECK 1", "LOAD DECK 2", "MASTER CUE", "SMART CFX", "SMART FADER",
+                 "FX SELECT", "BEAT <", "BEAT >", "FX ON/OFF"},
+    "DDJ-800": {"BROWSE", "BACK", "VIEW", "MASTER CUE", "COLOR FX D-ECHO", "COLOR FX PITCH",
+                "COLOR FX NOISE", "COLOR FX FILTER", "BEAT <", "BEAT >", "BEAT FX ON/OFF"},
+}
+
+
+def _overlaps(a, b):
+    return a.x < b.x + b.w and b.x < a.x + a.w and a.y < b.y + b.h and b.y < a.y + a.h
+
+
+def test_ddj_flx4_and_ddj_800_geometry_covers_every_catalog_entry_on_both_decks():
+    for controller in ("DDJ-FLX4", "DDJ-800"):
+        geometry = CONTROL_GEOMETRY[controller]
+        names = {entry.name for entry in catalog.static_entries(controller)} - _FLX4_800_UNPLACED[controller]
+        for name in names:
+            assert name in geometry, (controller, name)
+            assert resolve_geometry_label(controller, name) == name
+            if name not in _SINGLE_MARKER[controller]:
+                # A per-deck button exists on each deck; the mixer's two CUE
+                # buttons are one entry split by channel the same way.
+                assert f"{name} (R)" in geometry, (controller, name)
+        for pad in range(1, 9):
+            assert f"Pad {pad}" in geometry and f"Pad {pad} (R)" in geometry
+        # Every label is a catalog name, a pad, or a display-only jog.
+        for label in geometry:
+            base = label.removesuffix(" (R)")
+            assert base in names or base.startswith("Pad ") or base == "Jog wheel", (controller, label)
+
+
+def test_ddj_flx4_and_ddj_800_markers_do_not_overlap_and_sit_on_their_side():
+    for controller in ("DDJ-FLX4", "DDJ-800"):
+        geometry = CONTROL_GEOMETRY[controller]
+        boxes = [(name, box) for name, box in geometry.items() if not name.startswith("Jog wheel")]
+        for i, (a_name, a) in enumerate(boxes):
+            for b_name, b in boxes[i + 1 :]:
+                assert not _overlaps(a, b), (controller, a_name, b_name)
+        for name, box in geometry.items():
+            if name.endswith(" (R)"):
+                left = geometry[name.removesuffix(" (R)")]
+                assert box.x > left.x + left.w, (controller, name)
+                assert abs(box.y - left.y) < 0.002, (controller, name)
+
+
+def test_resolve_geometry_label_picks_the_right_grid_for_ddj_flx4_and_ddj_800():
+    assert resolve_geometry_label("DDJ-FLX4", "Deck 1 Pad 3 (BEAT JUMP)") == "Pad 3"
+    assert resolve_geometry_label("DDJ-FLX4", "Deck 2 Pad 3 (BEAT JUMP) (+SHIFT)") == "Pad 3 (R)"
+    for deck, label in ((1, "Pad 6"), (3, "Pad 6"), (2, "Pad 6 (R)"), (4, "Pad 6 (R)")):
+        assert resolve_geometry_label("DDJ-800", f"Deck {deck} Pad 6 (SAMPLER PAGE 2)") == label
+
+
 # ---- DDJ-REV5 / Hercules DJControl Inpulse 500 (issue #339) ----------------
 
 

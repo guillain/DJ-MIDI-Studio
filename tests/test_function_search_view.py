@@ -124,7 +124,10 @@ def test_selecting_a_result_on_by_controller_stays_there_and_edits_that_control(
     try:
         window.left_tabs.setCurrentIndex(window._tab_indexes["controller"])
         panel = window.function_search_view
-        panel.set_query("codfather fx deck 1 slot 0")
+        # A left-deck function: the By Controller tree has no row for a
+        # right-side (" (R)") cell, and since #338 every controller the
+        # fixture's pads resolve on splits its pad grid by side.
+        panel.set_query("codfather fx deck 0 slot 0")
         panel.select_row(0)
         QApplication.processEvents()
         result = panel.result_at(0)

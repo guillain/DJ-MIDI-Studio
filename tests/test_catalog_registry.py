@@ -84,11 +84,24 @@ def test_ddj_flx10_resolves_transport_and_pad_controls():
 
 
 def test_ddj_flx4_resolves_two_deck_transport_and_pad_controls():
-    transport_hits = catalog.lookup("2", "Note On", "0")
+    # Values from the official MIDI Message List (issue #338): PLAY/PAUSE is
+    # note 11 on the deck channel, pads are on channels 8/9 (deck 1) and
+    # 10/11 (deck 2, +SHIFT on the odd one), note = 16 * mode + pad - 1.
+    transport_hits = catalog.lookup("2", "Note On", "11")
     assert any(hit.controller == "DDJ-FLX4" and hit.name == "PLAY/PAUSE" for hit in transport_hits)
+    assert not any(hit.controller == "DDJ-FLX4" for hit in catalog.lookup("2", "Note On", "0"))
 
-    pad_hits = catalog.lookup("7", "Note On", "23")
-    assert any(hit.controller == "DDJ-FLX4" and hit.name == "Deck 2 Pad 8 (PAD MODE 2)" for hit in pad_hits)
+    pad_hits = catalog.lookup("10", "Note On", "23")
+    assert any(hit.controller == "DDJ-FLX4" and hit.name == "Deck 2 Pad 8 (PAD FX 1)" for hit in pad_hits)
+    shifted = catalog.lookup("9", "Note On", "119")
+    assert any(hit.controller == "DDJ-FLX4" and hit.name == "Deck 1 Pad 8 (KEY SHIFT) (+SHIFT)" for hit in shifted)
+    assert not any(hit.controller == "DDJ-FLX4" for hit in catalog.lookup("6", "Note On", "0"))
+
+
+def test_ddj_flx4_carries_only_buttons_the_hardware_has():
+    names = {entry.name for entry in catalog.static_entries("DDJ-FLX4")}
+    assert {"PLAY/PAUSE", "CUE", "SHIFT", "IN", "OUT", "4 BEAT/EXIT", "BEAT SYNC"} <= names
+    assert not names & {"KEYLOCK", "SLIP", "REVERSE", "QUANTIZE", "MASTER TEMPO", "TEMPO RANGE"}
 
 
 def test_ddj_rev1_resolves_serato_transport_and_shifted_pad_controls():
@@ -104,7 +117,6 @@ def test_ddj_rev1_resolves_serato_transport_and_shifted_pad_controls():
     [
         ("DDJ-XP2", "8", 12),
         ("XDJ-XZ", "6", 0),
-        ("DDJ-FLX4", "6", 0),
         ("DDJ-REV1", "8", 0),
     ],
 )

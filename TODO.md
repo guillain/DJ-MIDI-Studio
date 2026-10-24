@@ -132,6 +132,16 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **DDJ-FLX4 and DDJ-800 real layout** (`v0.48.140-geometry-flx4-ddj800`, issue #338) — the last two
+  registered controllers without geometry: every catalog control has a `CONTROL_GEOMETRY` marker on its flat
+  `reference.png`, both decks (`" (R)"`) and both pad grids, located as saturated / near-black connected
+  components and crop-checked, identity from each MIDI Message List's callouts (300 DPI renders). Both join
+  `_RIGHT_GRID_DECKS` (geometry.py and layout.py) and get `_RIGHT_SIDE_CHANNELS` `DECK`/`MIXER` splits; their
+  documented jog CCs turn both jogs live side-aware. Catalog fixes found on the way: `catalog/ddj_flx4.py`
+  re-transcribed from the official list (the community profile had PLAY/PAUSE on note 0, pads on channels
+  6/7 and KEYLOCK/SLIP/REVERSE/QUANTIZE buttons the FLX4 doesn't have), and the DDJ-800's `VIEW` is note 122
+  (103 was its long press). Tests that needed a controller without geometry use the new
+  `geometry_free_controller` conftest fixture. Not done: a hardware check of either profile.
 - [x] **DDJ-REV5 catalog fix** (`v0.48.139-ddj-rev5-catalog`, issue #346) — BPM TRANSITION SELECT (D9) moved to
   MIDI channel 7 note 62, as the bundled MIDI Message List prints it (status `0x96`); the catalog had it on deck
   channels 1-4, where note 62 is DECK1/3 / DECK2/4's deck-on/off indicator (D26), so a live press resolved to

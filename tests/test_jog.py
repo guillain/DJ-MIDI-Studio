@@ -66,9 +66,26 @@ def test_ddj_flx10_platter_and_wheel_side_resolve_on_every_deck_channel():
     # -- DDJ-REV1 has no such variant.
     assert jog.jog_cell_keys_for_event("1", "Control Change", "41") == [
         ("XDJ-XZ", "DISPLAY", "Jog wheel"),
+        ("DDJ-800", "DISPLAY", "Jog wheel"),
         ("DDJ-1000", "DISPLAY", "Jog wheel"),
         ("DDJ-FLX10", "DISPLAY", "Jog wheel"),
+        ("DDJ-FLX4", "DISPLAY", "Jog wheel"),
     ]
+
+
+def test_ddj_flx4_and_ddj_800_jogs_resolve_side_aware_by_deck_channel():
+    # FLX4 (Fig. 1-4): 0x22/0x23/0x29 platter, 0x21 wheel side; deck 2 is
+    # the right jog. DDJ-800 (Fig. D3) adds 0x1F/0x26; decks 2/4 are right.
+    for data1 in ("33", "34", "35", "41"):
+        assert ("DDJ-FLX4", "DISPLAY", "Jog wheel") in jog.jog_cell_keys_for_event("1", "Control Change", data1)
+        assert ("DDJ-FLX4", "DISPLAY", "Jog wheel (R)") in jog.jog_cell_keys_for_event("2", "Control Change", data1)
+    for data1 in ("31", "38"):
+        assert not any(k[0] == "DDJ-FLX4" for k in jog.jog_cell_keys_for_event("1", "Control Change", data1))
+    # The FLX4 has only two deck channels.
+    assert not any(k[0] == "DDJ-FLX4" for k in jog.jog_cell_keys_for_event("3", "Control Change", "34"))
+    for data1 in ("31", "33", "34", "35", "38", "41"):
+        for ch, label in (("1", "Jog wheel"), ("3", "Jog wheel"), ("2", "Jog wheel (R)"), ("4", "Jog wheel (R)")):
+            assert ("DDJ-800", "DISPLAY", label) in jog.jog_cell_keys_for_event(ch, "Control Change", data1)
 
 
 def test_ddj_rev1_platter_and_wheel_side_resolve_on_every_deck_channel():
@@ -93,6 +110,8 @@ def test_shared_jog_cc_returns_every_controllers_marker():
         ("DDJ-1000", "DISPLAY", "Jog wheel"),
         ("DDJ-FLX10", "DISPLAY", "Jog wheel"),
         ("DDJ-REV1", "DISPLAY", "Jog wheel"),
+        ("DDJ-FLX4", "DISPLAY", "Jog wheel"),
+        ("DDJ-800", "DISPLAY", "Jog wheel"),
         ("DDJ-REV5", "DISPLAY", "Jog wheel"),
     }
 

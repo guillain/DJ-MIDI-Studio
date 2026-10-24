@@ -1007,6 +1007,173 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         "KILL MID (B/D)": ControlGeometry(0.5190, 0.3720, 0.0330, 0.0260, "rect", "#e0954a"),
         "KILL LOW (B/D)": ControlGeometry(0.5190, 0.4830, 0.0330, 0.0260, "rect", "#e0954a"),
     },
+    # ---- DDJ-FLX4 (issue #338) -------------------------------------------
+    "DDJ-FLX4": {
+        # Measured against controllers/hardware/pioneer/DDJ-FLX4/reference.png
+        # (2000x1139, flat top-down render) like the CMD Micro: the lit
+        # (orange) buttons and pad outlines as connected components of
+        # saturated pixels, the black buttons (4 BEAT/EXIT, CUE/LOOP CALL,
+        # SHIFT, CUE, PLAY/PAUSE, LOAD, BROWSE, FX SELECT, BEAT </>) as
+        # components of near-black pixels; each box crop-checked. The two
+        # CUE/LOOP CALL and two BEAT buttons touch through a printed line, so
+        # their shared component was split at the button pitch. Identity:
+        # the MIDI Message List PDF's Fig. callouts (1-1 PLAY/PAUSE ... 5-4
+        # SAMPLER MODE, 3-6 CH CUE, 4-2/4-3 LOAD deck 1/2). The PDF gives
+        # the pad grid one callout (5-5); pads 1-4 are the top row, 5-8 the
+        # bottom, as the DDJ-800 PDF's per-pad callouts number them. Right
+        # deck (deck 2) entries carry " (R)", pads included
+        # (_RIGHT_GRID_DECKS), measured on the right deck itself. Jog wheels
+        # and the two mixer CUE buttons are display/side markers; continuous
+        # controls (faders, knobs) stay out.
+        "IN": ControlGeometry(0.0400, 0.1001, 0.0305, 0.0544, "circle", "#e0954a"),
+        "OUT": ControlGeometry(0.0920, 0.1001, 0.0305, 0.0544, "circle", "#e0954a"),
+        "4 BEAT/EXIT": ControlGeometry(0.1485, 0.1089, 0.0210, 0.0369, "circle", "#e0954a"),
+        "CUE/LOOP CALL <": ControlGeometry(0.2025, 0.1133, 0.0185, 0.0325, "circle", "#7a8aa0"),
+        "CUE/LOOP CALL >": ControlGeometry(0.2455, 0.1133, 0.0185, 0.0325, "circle", "#7a8aa0"),
+        "BEAT SYNC": ControlGeometry(0.2895, 0.1045, 0.0260, 0.0457, "circle", "#4a90d9"),
+        "Jog wheel": ControlGeometry(0.0355, 0.1782, 0.2815, 0.4934, "circle", "#586b82"),
+        "SHIFT": ControlGeometry(0.0485, 0.6664, 0.0165, 0.0290, "rect", "#5f6b7a"),
+        "HOT CUE MODE": ControlGeometry(0.0950, 0.7234, 0.0350, 0.0219, "rect", "#7a8aa0"),
+        "PAD FX 1 MODE": ControlGeometry(0.1400, 0.7234, 0.0350, 0.0219, "rect", "#7a8aa0"),
+        "BEAT JUMP MODE": ControlGeometry(0.1850, 0.7234, 0.0350, 0.0219, "rect", "#7a8aa0"),
+        "SAMPLER MODE": ControlGeometry(0.2305, 0.7234, 0.0345, 0.0219, "rect", "#7a8aa0"),
+        "CUE": ControlGeometry(0.0325, 0.7340, 0.0465, 0.0817, "circle", "#e0954a"),
+        "PLAY/PAUSE": ControlGeometry(0.0325, 0.8341, 0.0465, 0.0817, "circle", "#3ea86b"),
+        "Pad 1": ControlGeometry(0.0950, 0.7849, 0.0350, 0.0615, "rect", "#e0708f"),
+        "Pad 2": ControlGeometry(0.1400, 0.7849, 0.0350, 0.0615, "rect", "#e0708f"),
+        "Pad 3": ControlGeometry(0.1850, 0.7849, 0.0355, 0.0615, "rect", "#e0708f"),
+        "Pad 4": ControlGeometry(0.2300, 0.7849, 0.0355, 0.0615, "rect", "#e0708f"),
+        "Pad 5": ControlGeometry(0.0950, 0.8639, 0.0350, 0.0615, "rect", "#e0708f"),
+        "Pad 6": ControlGeometry(0.1400, 0.8639, 0.0350, 0.0615, "rect", "#e0708f"),
+        "Pad 7": ControlGeometry(0.1850, 0.8639, 0.0355, 0.0615, "rect", "#e0708f"),
+        "Pad 8": ControlGeometry(0.2300, 0.8639, 0.0355, 0.0615, "rect", "#e0708f"),
+        "CH CUE": ControlGeometry(0.4445, 0.5944, 0.0295, 0.0237, "rect", "#e0954a"),
+        "CH CUE (R)": ControlGeometry(0.5260, 0.5944, 0.0295, 0.0237, "rect", "#e0954a"),
+        "LOAD DECK 1": ControlGeometry(0.4180, 0.0799, 0.0315, 0.0272, "rect", "#7a8aa0"),
+        "LOAD DECK 2": ControlGeometry(0.5500, 0.0799, 0.0315, 0.0272, "rect", "#7a8aa0"),
+        "BROWSE": ControlGeometry(0.4820, 0.0500, 0.0355, 0.0623, "circle", "#7a8aa0"),
+        "MASTER CUE": ControlGeometry(0.6010, 0.2432, 0.0295, 0.0237, "rect", "#e0954a"),
+        "SMART CFX": ControlGeometry(0.3735, 0.4987, 0.0215, 0.0369, "circle", "#e0954a"),
+        "SMART FADER": ControlGeometry(0.3735, 0.8007, 0.0215, 0.0369, "circle", "#e0954a"),
+        "FX SELECT": ControlGeometry(0.5995, 0.5031, 0.0320, 0.0272, "rect", "#7a8aa0"),
+        "BEAT <": ControlGeometry(0.5895, 0.5926, 0.0210, 0.0272, "rect", "#7a8aa0"),
+        "BEAT >": ControlGeometry(0.6205, 0.5926, 0.0210, 0.0272, "rect", "#7a8aa0"),
+        "FX ON/OFF": ControlGeometry(0.6030, 0.7963, 0.0255, 0.0457, "circle", "#e0954a"),
+        "IN (R)": ControlGeometry(0.6795, 0.1001, 0.0305, 0.0544, "circle", "#e0954a"),
+        "OUT (R)": ControlGeometry(0.7315, 0.1001, 0.0305, 0.0544, "circle", "#e0954a"),
+        "4 BEAT/EXIT (R)": ControlGeometry(0.7880, 0.1089, 0.0210, 0.0369, "circle", "#e0954a"),
+        "CUE/LOOP CALL < (R)": ControlGeometry(0.8425, 0.1133, 0.0185, 0.0325, "circle", "#7a8aa0"),
+        "CUE/LOOP CALL > (R)": ControlGeometry(0.8850, 0.1133, 0.0185, 0.0325, "circle", "#7a8aa0"),
+        "BEAT SYNC (R)": ControlGeometry(0.9290, 0.1045, 0.0260, 0.0457, "circle", "#4a90d9"),
+        "Jog wheel (R)": ControlGeometry(0.6755, 0.1782, 0.2815, 0.4934, "circle", "#586b82"),
+        "SHIFT (R)": ControlGeometry(0.6880, 0.6664, 0.0165, 0.0290, "rect", "#5f6b7a"),
+        "HOT CUE MODE (R)": ControlGeometry(0.7350, 0.7234, 0.0350, 0.0219, "rect", "#7a8aa0"),
+        "PAD FX 1 MODE (R)": ControlGeometry(0.7800, 0.7234, 0.0350, 0.0219, "rect", "#7a8aa0"),
+        "BEAT JUMP MODE (R)": ControlGeometry(0.8250, 0.7234, 0.0350, 0.0219, "rect", "#7a8aa0"),
+        "SAMPLER MODE (R)": ControlGeometry(0.8700, 0.7234, 0.0345, 0.0219, "rect", "#7a8aa0"),
+        "CUE (R)": ControlGeometry(0.6710, 0.7340, 0.0465, 0.0817, "circle", "#e0954a"),
+        "PLAY/PAUSE (R)": ControlGeometry(0.6715, 0.8341, 0.0465, 0.0817, "circle", "#3ea86b"),
+        "Pad 1 (R)": ControlGeometry(0.7345, 0.7849, 0.0350, 0.0615, "rect", "#e0708f"),
+        "Pad 2 (R)": ControlGeometry(0.7795, 0.7849, 0.0350, 0.0615, "rect", "#e0708f"),
+        "Pad 3 (R)": ControlGeometry(0.8245, 0.7849, 0.0355, 0.0615, "rect", "#e0708f"),
+        "Pad 4 (R)": ControlGeometry(0.8700, 0.7849, 0.0355, 0.0615, "rect", "#e0708f"),
+        "Pad 5 (R)": ControlGeometry(0.7345, 0.8639, 0.0350, 0.0615, "rect", "#e0708f"),
+        "Pad 6 (R)": ControlGeometry(0.7795, 0.8639, 0.0350, 0.0615, "rect", "#e0708f"),
+        "Pad 7 (R)": ControlGeometry(0.8245, 0.8639, 0.0355, 0.0615, "rect", "#e0708f"),
+        "Pad 8 (R)": ControlGeometry(0.8700, 0.8639, 0.0355, 0.0615, "rect", "#e0708f"),
+    },
+    # ---- end DDJ-FLX4 -----------------------------------------------------
+    # ---- DDJ-800 (issue #338) ----------------------------------------------
+    "DDJ-800": {
+        # Measured against controllers/hardware/pioneer/DDJ-800/reference.png
+        # (2000x1059) the same way: saturated components for the lit IN/OUT,
+        # RELOOP/EXIT, QUANTIZE, SLIP, SLIP REVERSE, KEY SYNC, pad-mode
+        # buttons, pads and mixer CUE buttons; near-black components and
+        # grid-overlay crops for the rest. Identity: the MIDI Message List
+        # PDF's callouts (D1-D21, P1-P12, B1/B3/B4, F2-F7/F11, M7-1/M7-2,
+        # M9). The left deck answers to decks 1/3 and the right one to 2/4
+        # (the LOAD rows' "deck1/3 selected on left deck"); right-deck
+        # entries carry " (R)". LOAD, PAGE </> and LINE/PHONO (a rear
+        # switch) have no catalog entry or no top-view position.
+        "LOOP IN": ControlGeometry(0.0370, 0.1039, 0.0200, 0.0378, "circle", "#e0954a"),
+        "LOOP OUT": ControlGeometry(0.0765, 0.1039, 0.0200, 0.0378, "circle", "#e0954a"),
+        "RELOOP/EXIT": ControlGeometry(0.1225, 0.1039, 0.0190, 0.0359, "circle", "#e0954a"),
+        "QUANTIZE": ControlGeometry(0.1670, 0.1133, 0.0285, 0.0189, "rect", "#d9534f"),
+        "CUE/LOOP CALL <": ControlGeometry(0.2085, 0.1086, 0.0150, 0.0283, "circle", "#7a8aa0"),
+        "CUE/LOOP CALL >": ControlGeometry(0.2410, 0.1086, 0.0150, 0.0283, "circle", "#7a8aa0"),
+        "DELETE": ControlGeometry(0.2735, 0.1076, 0.0165, 0.0293, "circle", "#7a8aa0"),
+        "MEMORY": ControlGeometry(0.3085, 0.1086, 0.0150, 0.0283, "circle", "#7a8aa0"),
+        "SLIP REVERSE": ControlGeometry(0.0355, 0.1889, 0.0380, 0.0189, "rect", "#d9534f"),
+        "SLIP": ControlGeometry(0.0355, 0.2531, 0.0285, 0.0189, "rect", "#d9534f"),
+        "Jog wheel": ControlGeometry(0.0545, 0.2030, 0.2535, 0.4797, "circle", "#586b82"),
+        "BEAT SYNC": ControlGeometry(0.3185, 0.3097, 0.0170, 0.0321, "circle", "#4a90d9"),
+        "KEY SYNC": ControlGeometry(0.3185, 0.3787, 0.0165, 0.0312, "circle", "#4a90d9"),
+        "TEMPO RANGE": ControlGeometry(0.3195, 0.4523, 0.0150, 0.0274, "circle", "#7a8aa0"),
+        "MASTER TEMPO": ControlGeometry(0.3195, 0.5024, 0.0150, 0.0274, "circle", "#d9534f"),
+        "SHIFT": ControlGeometry(0.0325, 0.5940, 0.0320, 0.0321, "rect", "#5f6b7a"),
+        "SEARCH <": ControlGeometry(0.0285, 0.6657, 0.0200, 0.0359, "circle", "#7a8aa0"),
+        "SEARCH >": ControlGeometry(0.0535, 0.6657, 0.0200, 0.0359, "circle", "#7a8aa0"),
+        "HOT CUE MODE": ControlGeometry(0.0925, 0.7195, 0.0255, 0.0189, "rect", "#7a8aa0"),
+        "PAD FX MODE": ControlGeometry(0.1275, 0.7195, 0.0255, 0.0189, "rect", "#7a8aa0"),
+        "BEAT JUMP MODE": ControlGeometry(0.1625, 0.7195, 0.0255, 0.0189, "rect", "#7a8aa0"),
+        "SAMPLER MODE": ControlGeometry(0.1975, 0.7195, 0.0255, 0.0189, "rect", "#7a8aa0"),
+        "CUE": ControlGeometry(0.0250, 0.7347, 0.0540, 0.1020, "circle", "#e0954a"),
+        "PLAY/PAUSE": ControlGeometry(0.0250, 0.8527, 0.0540, 0.1010, "circle", "#3ea86b"),
+        "Pad 1": ControlGeometry(0.0925, 0.7838, 0.0380, 0.0718, "rect", "#e0708f"),
+        "Pad 2": ControlGeometry(0.1390, 0.7838, 0.0375, 0.0718, "rect", "#e0708f"),
+        "Pad 3": ControlGeometry(0.1855, 0.7838, 0.0375, 0.0718, "rect", "#e0708f"),
+        "Pad 4": ControlGeometry(0.2320, 0.7838, 0.0375, 0.0718, "rect", "#e0708f"),
+        "Pad 5": ControlGeometry(0.0925, 0.8716, 0.0380, 0.0718, "rect", "#e0708f"),
+        "Pad 6": ControlGeometry(0.1390, 0.8716, 0.0375, 0.0718, "rect", "#e0708f"),
+        "Pad 7": ControlGeometry(0.1855, 0.8716, 0.0375, 0.0718, "rect", "#e0708f"),
+        "Pad 8": ControlGeometry(0.2320, 0.8716, 0.0375, 0.0718, "rect", "#e0708f"),
+        "BROWSE": ControlGeometry(0.4800, 0.0954, 0.0400, 0.0755, "circle", "#7a8aa0"),
+        "BACK": ControlGeometry(0.4785, 0.1974, 0.0170, 0.0217, "rect", "#7a8aa0"),
+        "VIEW": ControlGeometry(0.5040, 0.1974, 0.0170, 0.0217, "rect", "#7a8aa0"),
+        "MASTER CUE": ControlGeometry(0.6005, 0.2238, 0.0375, 0.0189, "rect", "#e0954a"),
+        "HEADPHONES CUE": ControlGeometry(0.4255, 0.6128, 0.0375, 0.0189, "rect", "#e0954a"),
+        "HEADPHONES CUE (R)": ControlGeometry(0.5370, 0.6128, 0.0375, 0.0189, "rect", "#e0954a"),
+        "COLOR FX D-ECHO": ControlGeometry(0.3585, 0.5212, 0.0180, 0.0283, "rect", "#7a8aa0"),
+        "COLOR FX PITCH": ControlGeometry(0.3850, 0.5212, 0.0185, 0.0283, "rect", "#7a8aa0"),
+        "COLOR FX NOISE": ControlGeometry(0.3585, 0.5694, 0.0180, 0.0283, "rect", "#7a8aa0"),
+        "COLOR FX FILTER": ControlGeometry(0.3850, 0.5694, 0.0185, 0.0283, "rect", "#7a8aa0"),
+        "BEAT <": ControlGeometry(0.5995, 0.4457, 0.0170, 0.0217, "rect", "#7a8aa0"),
+        "BEAT >": ControlGeometry(0.6220, 0.4457, 0.0170, 0.0217, "rect", "#7a8aa0"),
+        "BEAT FX ON/OFF": ControlGeometry(0.6010, 0.7696, 0.0360, 0.0680, "circle", "#4a90d9"),
+        "LOOP IN (R)": ControlGeometry(0.6750, 0.1039, 0.0200, 0.0378, "circle", "#e0954a"),
+        "LOOP OUT (R)": ControlGeometry(0.7145, 0.1039, 0.0200, 0.0378, "circle", "#e0954a"),
+        "RELOOP/EXIT (R)": ControlGeometry(0.7605, 0.1039, 0.0190, 0.0359, "circle", "#e0954a"),
+        "QUANTIZE (R)": ControlGeometry(0.8045, 0.1133, 0.0285, 0.0189, "rect", "#d9534f"),
+        "CUE/LOOP CALL < (R)": ControlGeometry(0.8465, 0.1086, 0.0150, 0.0283, "circle", "#7a8aa0"),
+        "CUE/LOOP CALL > (R)": ControlGeometry(0.8790, 0.1086, 0.0150, 0.0283, "circle", "#7a8aa0"),
+        "DELETE (R)": ControlGeometry(0.9115, 0.1076, 0.0165, 0.0293, "circle", "#7a8aa0"),
+        "MEMORY (R)": ControlGeometry(0.9465, 0.1086, 0.0150, 0.0283, "circle", "#7a8aa0"),
+        "SLIP REVERSE (R)": ControlGeometry(0.6735, 0.1889, 0.0380, 0.0189, "rect", "#d9534f"),
+        "SLIP (R)": ControlGeometry(0.6735, 0.2531, 0.0285, 0.0189, "rect", "#d9534f"),
+        "Jog wheel (R)": ControlGeometry(0.6925, 0.2030, 0.2535, 0.4797, "circle", "#586b82"),
+        "BEAT SYNC (R)": ControlGeometry(0.9560, 0.3097, 0.0170, 0.0321, "circle", "#4a90d9"),
+        "KEY SYNC (R)": ControlGeometry(0.9560, 0.3787, 0.0165, 0.0312, "circle", "#4a90d9"),
+        "TEMPO RANGE (R)": ControlGeometry(0.9570, 0.4523, 0.0150, 0.0274, "circle", "#7a8aa0"),
+        "MASTER TEMPO (R)": ControlGeometry(0.9570, 0.5024, 0.0150, 0.0274, "circle", "#d9534f"),
+        "SHIFT (R)": ControlGeometry(0.6705, 0.5940, 0.0320, 0.0321, "rect", "#5f6b7a"),
+        "SEARCH < (R)": ControlGeometry(0.6665, 0.6657, 0.0200, 0.0359, "circle", "#7a8aa0"),
+        "SEARCH > (R)": ControlGeometry(0.6915, 0.6657, 0.0200, 0.0359, "circle", "#7a8aa0"),
+        "HOT CUE MODE (R)": ControlGeometry(0.7300, 0.7195, 0.0255, 0.0189, "rect", "#7a8aa0"),
+        "PAD FX MODE (R)": ControlGeometry(0.7655, 0.7195, 0.0255, 0.0189, "rect", "#7a8aa0"),
+        "BEAT JUMP MODE (R)": ControlGeometry(0.8005, 0.7195, 0.0255, 0.0189, "rect", "#7a8aa0"),
+        "SAMPLER MODE (R)": ControlGeometry(0.8355, 0.7195, 0.0255, 0.0189, "rect", "#7a8aa0"),
+        "CUE (R)": ControlGeometry(0.6630, 0.7347, 0.0540, 0.1020, "circle", "#e0954a"),
+        "PLAY/PAUSE (R)": ControlGeometry(0.6630, 0.8527, 0.0540, 0.1010, "circle", "#3ea86b"),
+        "Pad 1 (R)": ControlGeometry(0.7305, 0.7838, 0.0380, 0.0718, "rect", "#e0708f"),
+        "Pad 2 (R)": ControlGeometry(0.7770, 0.7838, 0.0375, 0.0718, "rect", "#e0708f"),
+        "Pad 3 (R)": ControlGeometry(0.8235, 0.7838, 0.0375, 0.0718, "rect", "#e0708f"),
+        "Pad 4 (R)": ControlGeometry(0.8700, 0.7838, 0.0375, 0.0718, "rect", "#e0708f"),
+        "Pad 5 (R)": ControlGeometry(0.7305, 0.8716, 0.0380, 0.0718, "rect", "#e0708f"),
+        "Pad 6 (R)": ControlGeometry(0.7770, 0.8716, 0.0375, 0.0718, "rect", "#e0708f"),
+        "Pad 7 (R)": ControlGeometry(0.8235, 0.8716, 0.0375, 0.0718, "rect", "#e0708f"),
+        "Pad 8 (R)": ControlGeometry(0.8700, 0.8716, 0.0375, 0.0718, "rect", "#e0708f"),
+    },
+    # ---- end DDJ-800 -------------------------------------------------------
     # ---- DDJ-REV5 (issue #339) -------------------------------------------
     "DDJ-REV5": {
         # Measured against controllers/hardware/pioneer/DDJ-REV5/reference.png
@@ -1236,6 +1403,11 @@ _RIGHT_GRID_DECKS: dict[str, frozenset[int]] = {
     # channel-per-deck convention as DDJ-1000/DDJ-FLX10 -- deck 2/4 is the
     # right tray, and now that its pad grid has geometry, resolves for free.
     "DDJ-REV1": frozenset({2, 4}),
+    # issue #338: both pad_lookup()s name their deck ("Deck N Pad P (...)").
+    # DDJ-FLX4 has two decks (pads on channels 8/9 = deck 1, 10/11 = deck
+    # 2); the DDJ-800's right deck answers to decks 2 and 4.
+    "DDJ-FLX4": frozenset({2}),
+    "DDJ-800": frozenset({2, 4}),
     # issue #339: both name their pads "Deck N Pad P (...)". DDJ-REV5's
     # right grid is decks 2/4 (its pad channels 10/11 and 14/15, the right
     # jog's printed "2/4"); the Inpulse 500 has two decks, deck 2 on the

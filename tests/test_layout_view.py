@@ -334,9 +334,9 @@ def test_real_position_mode_renders_xdj_xz_right_tray_transport():
     assert _real_position_items(view, ("XDJ-XZ", "DECK", "HOT CUE"))
 
 
-def test_real_position_mode_falls_back_to_classic_grid_without_geometry():
+def test_real_position_mode_falls_back_to_classic_grid_without_geometry(geometry_free_controller):
     view = ControllerLayoutView()
-    view.set_controller("DDJ-FLX4")
+    view.set_controller(geometry_free_controller)
     assert not view._detail_label.isVisible()
     # Classic mode's scene rect hugs its items' bounds, not a fixed photo canvas.
     assert view._scene.sceneRect() != layout_view_mod.QRectF(0, 0, *layout_view_mod._DEFAULT_CANVAS)
@@ -374,9 +374,9 @@ def test_fit_real_position_view_skips_when_manual_zoom_active():
     assert view._view.transform() == transform_before
 
 
-def test_fit_card_view_never_enlarges_beyond_native_size():
+def test_fit_card_view_never_enlarges_beyond_native_size(geometry_free_controller):
     view = ControllerLayoutView()
-    view.set_controller("DDJ-FLX4")
+    view.set_controller(geometry_free_controller)
     view.resize(4000, 4000)
     view._view.viewport().resize(4000, 4000)
     shrunk = view._fit_card_view()
@@ -430,8 +430,8 @@ def test_live_send_click_still_navigates_cross_tab_regardless_of_toggle():
 # ─── Emulator, see gui/controller_emulator.py's EmulatorLayoutView) ───────────
 
 
-def test_real_position_markers_empty_without_geometry():
-    assert layout_view_mod.real_position_markers("DDJ-FLX4") == []
+def test_real_position_markers_empty_without_geometry(geometry_free_controller):
+    assert layout_view_mod.real_position_markers(geometry_free_controller) == []
 
 
 def test_real_position_markers_cover_both_ddj_xp2_pad_grids():
@@ -616,11 +616,11 @@ def test_reference_photo_backdrop_toggles_back_off():
     assert _photo_items(view) == []
 
 
-def test_reference_photo_backdrop_is_a_noop_without_geometry():
+def test_reference_photo_backdrop_is_a_noop_without_geometry(geometry_free_controller):
     """A controller with no gui/geometry.CONTROL_GEOMETRY renders the classic
     card grid, which has no photo backdrop even with the checkbox on."""
     view = ControllerLayoutView()
-    view.set_controller("DDJ-FLX4")
+    view.set_controller(geometry_free_controller)
     view.set_show_reference_photo(True)
     assert _photo_items(view) == []
 

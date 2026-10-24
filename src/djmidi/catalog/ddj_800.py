@@ -90,7 +90,8 @@ _STATIC: list[ControlInfo] = [
     # BROWSE group, channel 7 (the shared BROWSER/Global Section channel).
     ControlInfo("DDJ-800", "BROWSE", "BROWSE", "NOTE", ("7",), "65"),
     ControlInfo("DDJ-800", "BROWSE", "BACK", "NOTE", ("7",), "101"),
-    ControlInfo("DDJ-800", "BROWSE", "VIEW", "NOTE", ("7",), "103"),
+    # B4 VIEW: press = 122; 103 is its LONG press row.
+    ControlInfo("DDJ-800", "BROWSE", "VIEW", "NOTE", ("7",), "122"),
     # EFFECT group. COLOR FX buttons sit on the shared channel 7 in the
     # PDF (not the dedicated EFFECT channel 5); BEAT </>/ON-OFF do use
     # channel 5.

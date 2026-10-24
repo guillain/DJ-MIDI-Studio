@@ -2,6 +2,8 @@
 
 from pathlib import Path
 
+from djmidi import catalog
+from djmidi.catalog._registry import ControllerDefinition
 from djmidi.gui import cheat_sheet as cs
 from djmidi.model import Control, MappingElement, MidiConfig, UserIO
 from djmidi.parser import parse_file
@@ -77,12 +79,12 @@ def test_marker_variants_respect_the_physical_side():
     assert cs.marker_variants("XDJ-XZ", "Jog wheel") == []
 
 
-def test_build_sheets_on_the_real_fixture():
-    sheets = cs.build_sheets(_config(), ["DDJ-XP2", "XDJ-XZ", "DDJ-800"])
+def test_build_sheets_on_the_real_fixture(geometry_free_controller):
+    sheets = cs.build_sheets(_config(), ["DDJ-XP2", "XDJ-XZ", geometry_free_controller])
     assert [(s.controller, s.kind) for s in sheets] == [
         ("DDJ-XP2", "photo"),
         ("XDJ-XZ", "photo"),
-        ("DDJ-800", "table"),
+        (geometry_free_controller, "table"),
         ("", "table"),
     ]
     xp2, xz, ddj800, glossary = sheets
@@ -106,10 +108,35 @@ def test_build_sheets_on_the_real_fixture():
     assert ("Codfather ST", ("Serato tag: codfather_st",)) in [(e.control, e.functions) for e in glossary.entries]
 
 
-def test_a_controller_with_nothing_mapped_still_gets_a_page():
-    # DDJ-FLX4: no geometry and no trigger shared with the fixture (the
-    # Inpulse 500 shares channel 8 pad notes with DDJ-XP2 since #247).
-    sheets = cs.build_sheets(_config(), ["Korg nanoPAD2", "DDJ-FLX4"])
+def test_ddj_800_and_flx4_print_their_pads_on_the_photo(monkeypatch):
+    # Issue #338: both now have geometry, so the fixture's channel 8-15 pad
+    # triggers land on photo pages, one per pad bank, both grids drawn.
+    sheets = cs.build_sheets(_config(), ["DDJ-800", "DDJ-FLX4"])
+    assert [(s.controller, s.kind) for s in sheets[:-1]] == [
+        ("DDJ-800", "photo"),
+        ("DDJ-800", "photo"),
+        ("DDJ-FLX4", "photo"),
+    ]
+    for sheet in sheets[:-1]:
+        controls = {e.control for e in sheet.entries}
+        assert {"Pad 1", "Pad 8", "Pad 1 (R)", "Pad 8 (R)"} <= controls
+        assert all(e.geometry is not None for e in sheet.entries)
+
+
+def test_a_controller_with_nothing_mapped_still_gets_a_page(monkeypatch):
+    # A throwaway controller with no geometry and no trigger shared with the
+    # fixture: every registered one now has geometry, and DDJ-FLX4's real
+    # pad channels (8-11, issue #338) overlap the fixture's DDJ-XP2 pads.
+    name = "__NothingMappedTest__"
+    monkeypatch.setitem(
+        catalog._registry._REGISTRY,
+        name,
+        ControllerDefinition(
+            name=name,
+            static_entries=[catalog.ControlInfo(name, "DECK", "PLAY", "NOTE", ("16",), "127")],
+        ),
+    )
+    sheets = cs.build_sheets(_config(), ["Korg nanoPAD2", name])
     assert [s.kind for s in sheets] == ["photo", "table", "table"]
     assert all(not s.entries for s in sheets[:2])
     assert sheets[2].title == cs.GLOSSARY_TITLE
