@@ -157,6 +157,22 @@ def test_run_macro_sleeps_with_the_port_open():
     assert open_while_sleeping == [1, 1]
 
 
+def test_run_macro_releases_the_port_during_a_long_sleep():
+    """Issue #336: a wait over HOLD_PORT_MAX_DELAY_MS sleeps with the port
+    closed, so another client (Sync) can open it meanwhile."""
+    output, open_while_sleeping = _FakeOutput(), []
+    macro = MidiMacro("Long", "PIONEER DDJ-XP2", (MacroStep(PRESS), MacroStep(RELEASE, 2000), MacroStep(CC)))
+    result = run_macro(
+        macro,
+        ["PIONEER DDJ-XP2"],
+        sleep=lambda _s: open_while_sleeping.append(len(output.opened) - output.closed),
+        port_opener=output,
+    )
+    assert result.ok and result.sent == 3
+    assert open_while_sleeping == [0]
+    assert len(output.opened) == 2 and output.closed == 2  # reopened once, for the last two steps
+
+
 def test_run_macro_closes_its_port_when_a_send_fails():
     output = _FakeOutput(fail_on=2)
     result = run_macro(_macro(), ["PIONEER DDJ-XP2"], sleep=lambda _s: None, port_opener=output)
