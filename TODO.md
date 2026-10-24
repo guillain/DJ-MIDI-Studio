@@ -132,6 +132,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **French UI: missed windows and undo/redo labels** (`v0.48.132-french-missed-windows`, issue #337) — the
+  command palette, Helpful Notes, Report a Problem (window only; the report stays English for GitHub), Review
+  mapping changes, Stage Mode (and its ON/OFF), the sync set editor, Preferences' `(not connected)` suffix and
+  Help menu document titles are translated; Edit → Undo/Redo texts too, while the change log keeps its English
+  summary. `tests/test_untranslated_strings.py` now fails on a literal passed to a widget text API outside `tr()`.
 - [x] **French cheat sheet and mapping comparison** (`v0.48.129-french-cheat-sheet-diff`, issue #333) — the
   cheat sheet export window and the PDF it writes (page titles, glossary, column headings, `Page N`, legend,
   footer, PDF title) follow the interface language; the mapping comparison window and its report (group names,
