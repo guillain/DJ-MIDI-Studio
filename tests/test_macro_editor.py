@@ -144,11 +144,80 @@ def test_player_stop_all_closes_waiting_ports_and_cancels_their_timers():
 def test_destroying_the_player_closes_a_waiting_port():
     output = _FakeOutput()
     parent = QObject()
-    player = MacroPlayer(parent=parent, port_opener=output)
+    player = MacroPlayer(parent=parent, port_opener=output, hold_port_ms=10_000)
     player.play(_macro(delay=5000), [PORT])
     assert output.closed == 0
     shiboken6.delete(parent)
     assert output.closed == 1
+
+
+class _ExclusiveOutput:
+    """A port that takes one client at a time, like most Windows MIDI
+    drivers (issue #336): a second concurrent open raises."""
+
+    def __init__(self):
+        self.open_now, self.opens, self.sent = set(), 0, []
+
+    @contextmanager
+    def __call__(self, port):
+        if port in self.open_now:
+            raise OSError("port in use")
+        self.open_now.add(port)
+        self.opens += 1
+        try:
+            yield lambda **kw: self.sent.append((port, kw["event_type"]))
+        finally:
+            self.open_now.discard(port)
+
+
+def test_overlapping_runs_on_one_port_share_its_handle():
+    output, finished = _ExclusiveOutput(), []
+    player = MacroPlayer(port_opener=output)
+    player.finished.connect(finished.append)
+    assert player.play(_macro(delay=30), [PORT]) is None
+    assert player.play(_macro(delay=60), [PORT]) is None  # used to fail: "port in use"
+    assert output.opens == 1 and player.open_ports == [PORT]
+    _wait_until(lambda: len(finished) == 2)
+    assert [result.ok for result in finished] == [True, True]
+    assert [event for _port, event in output.sent] == ["Note On", "Note On", "Note Off", "Note Off"]
+    assert output.open_now == set() and player.open_ports == []
+
+
+def test_a_long_delay_releases_the_port_for_sync():
+    from djmidi.controller_sync import run_sync
+
+    output, finished = _ExclusiveOutput(), []
+    player = MacroPlayer(port_opener=output, hold_port_ms=20)
+    player.finished.connect(finished.append)
+    assert player.play(_macro(delay=60), [PORT]) is None
+    assert output.open_now == set()  # released for the wait
+    results = run_sync([ControllerSyncSet("DDJ-XP2", PORT, (PRESS,))], [PORT], port_opener=output)
+    assert results[0].ok
+    _wait_until(lambda: finished)
+    assert finished[0].ok and finished[0].sent == 2
+    assert output.opens == 3 and output.open_now == set()
+
+
+def test_undelayed_and_short_delayed_steps_open_the_port_once():
+    output = _ExclusiveOutput()
+    steps = (MacroStep(PRESS), MacroStep(RELEASE), MacroStep(PRESS, 10), MacroStep(RELEASE))
+    finished = []
+    player = MacroPlayer(port_opener=output)
+    player.finished.connect(finished.append)
+    player.play(MidiMacro("Burst", PORT, steps), [PORT])
+    _wait_until(lambda: finished)
+    assert finished[0].ok and output.opens == 1 and len(output.sent) == 4
+
+
+def test_a_port_reopen_failure_after_a_long_delay_is_reported():
+    output, finished = _ExclusiveOutput(), []
+    player = MacroPlayer(port_opener=output, hold_port_ms=20)
+    player.finished.connect(finished.append)
+    player.play(_macro(delay=60), [PORT])
+    with output(PORT):  # another client grabs the port for the whole wait
+        _wait_until(lambda: finished)
+    assert (finished[0].sent, finished[0].error) == (1, "port in use")
+    assert player.running == 0 and player.open_ports == []
 
 
 # --- editor dialog --------------------------------------------------------------
@@ -230,7 +299,7 @@ def test_closing_the_dialog_stops_its_test_player(close):
     """Issue #314: a Test run waiting on a delay releases its port when the
     editor closes, however it closes."""
     output, finished = _FakeOutput(), []
-    dialog = MacroManagerDialog([_macro(delay=5000)], [PORT], port_opener=output)
+    dialog = MacroManagerDialog([_macro(delay=400)], [PORT], port_opener=output)
     dialog._player.finished.connect(finished.append)
     dialog.show()  # QDialog.closeEvent only rejects a visible dialog
     dialog._test_macro()
@@ -379,7 +448,7 @@ def test_closing_the_main_window_stops_waiting_macros(tmp_path, monkeypatch):
     monkeypatch.setattr(main_window_module, "list_output_ports", lambda: [PORT])
     window = _window(tmp_path)
     window._macro_player._port_opener = output
-    window.macros = [_macro(delay=5000)]
+    window.macros = [_macro(delay=400)]
     assert window._play_macro("Loop") is None
     assert output.closed == 0 and window._macro_player.running == 1
     window.close()

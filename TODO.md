@@ -132,6 +132,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Macros share their output port** (`v0.48.131-macro-port-sharing`, issue #336) — overlapping macro runs
+  on one port share a single ref-counted handle, and a run closes the port before a delay longer than 500 ms
+  (`HOLD_PORT_MAX_DELAY_MS`), reopening it after, so Sync, Live send and other macros can reach a Windows
+  controller (one client per output) while a macro waits; undelayed bursts still open the port once.
+  `run_macro` releases the port during long sleeps too. Not verified on a real Windows driver.
 - [x] **Plug-in Sync port identity** (`v0.48.130-plug-in-port-identity`, issue #335) — the trailing port
   index is stripped only on Windows, where it is appended; on macOS/Linux the full port name identifies a
   device, so controllers whose names end in a model number (`DJControl Inpulse 500` / `300`) are no longer
