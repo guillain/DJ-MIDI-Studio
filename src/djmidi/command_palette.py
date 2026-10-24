@@ -7,7 +7,8 @@ Qt-free on purpose (testable without a QApplication): the GUI side
 the tab bar, the loaded mapping's `function_search` index and the Music
 Library's rows -- and runs whatever the chosen entry's `payload` stands for.
 
-Ranking, per query token (every token must match, case-insensitive):
+Ranking, per query token (every token must match, case- and
+accent-insensitive via `search_text.tokenize`, issue #343):
 
 - an exact word of the entry's title or keywords beats a word prefix,
   which beats a substring, which beats an in-order subsequence of the
@@ -27,14 +28,12 @@ for a one-letter query and cost a full scan per keystroke.
 from __future__ import annotations
 
 import os
-import re
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 
 from djmidi.function_search import FunctionResult, search_functions
 from djmidi.i18n import QT_TRANSLATE_NOOP
-
-_TOKEN_RE = re.compile(r"[a-z0-9]+")
+from djmidi.search_text import tokenize
 
 KIND_ACTION = "action"
 KIND_TAB = "tab"
@@ -83,10 +82,6 @@ class PaletteEntry:
         self._keyword_words = tokenize(self.keywords)
         self._title_joined = " ".join(self._title_words)
         self._keyword_joined = " ".join(self._keyword_words)
-
-
-def tokenize(text: str) -> list[str]:
-    return _TOKEN_RE.findall(text.lower())
 
 
 def clean_menu_text(text: str) -> str:

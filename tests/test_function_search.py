@@ -149,3 +149,22 @@ def test_french_keywords_work_alongside_the_english_ones(config):
     clicks = search_functions(config, "loop roll clic")
     assert clicks and {r.event for r in clicks} == {"click"}
     assert len(search_functions(config, "loop roll appui")) == len(clicks)
+
+
+def test_accented_query_matches_the_unaccented_tag(monkeypatch):
+    """Issue #343: accents never decide a match, in either the query or the
+    readable name."""
+    from djmidi import function_names
+
+    monkeypatch.setitem(function_names.FUNCTION_NAMES, "xfn_43", "Échantillon rapide")
+    config = MidiConfig(
+        controls=[Control("1", "Note On", "1", [UserIO("click", [MappingElement("xfn_43", deck_id="0")])])]
+    )
+    for query in ("échantillon", "echantillon", "ECHANT", "echantillon rapide"):
+        assert [r.tag for r in search_functions(config, query)] == ["xfn_43"], query
+    assert [r.tag for r in search_functions(config, "écran")] == []
+
+
+def test_accented_french_keywords_still_pin_and_filter(config):
+    assert {r.deck_id for r in search_functions(config, "PLATINE 2 loop roll")} == {"2"}
+    assert {r.slot_id for r in search_functions(config, "loop roll émplacement 3")} == {"3"}
