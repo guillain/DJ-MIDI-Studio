@@ -54,8 +54,7 @@ DDJ-FLX10, DDJ-FLX4, DDJ-REV1, DDJ-REV5, DDJ-800, Numark Mixtrack Pro FX,
 Hercules DJControl Inpulse 500, Behringer CMD LC-1, CMD Micro and CMD
 Studio 4a, and Korg nanoPAD2, with both decks where the controller has two.
 A controller profile you build yourself shows its photo here, and a grid in
-the other views. The Inpulse 500's jog markers
-don't turn with the platter yet: its jogs use a different encoding.
+the other views.
 
 With the [Live Monitor](live-monitor.md) running, a marker flashes when you
 hit that control on the hardware, a jog marker turns with the platter, and

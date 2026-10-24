@@ -89,7 +89,7 @@ For the controller each view is showing:
 | Hit a pad or button | The red selection border jumps to it and the glyph flashes white |
 | Hold a button down | A steady amber "held" highlight until you release it |
 | Turn a knob, move a fader | The knob rotates / the fader thumb moves, and stays where you left it |
-| Spin a jog wheel | The jog glyph turns (XDJ-XZ, DDJ-1000, DDJ-FLX10, DDJ-REV1) |
+| Spin a jog wheel | The jog glyph turns (XDJ-XZ, DDJ-1000, DDJ-FLX10, DDJ-FLX4, DDJ-REV1, DDJ-REV5, DDJ-800, Hercules DJControl Inpulse 500) |
 
 ## See what Serato sends back (LED feedback)
 
