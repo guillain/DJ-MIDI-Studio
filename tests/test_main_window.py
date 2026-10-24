@@ -1686,3 +1686,55 @@ def test_last_mapping_reopens_with_its_software_without_asking(tmp_path, monkeyp
         assert window.software_id == "serato" and window.config is not None
     finally:
         window.close()
+
+
+def test_live_inpulse_500_jog_turn_decodes_twos_complement_per_side():
+    # issue #347: MIDI COMMANDS sheet D1-16 / D2-16 -- CC 0x09 on B1 (deck
+    # 1) / B5 (deck 2 +Shift), 0x01..0x3F clockwise, 0x7F..0x40 backwards.
+    import pytest
+
+    from djmidi.gui import jog as jog_mod
+    from djmidi.midi_io import MidiEvent
+
+    controller = "Hercules DJControl Inpulse 500"
+    window = _loaded_window()
+    window.controller_image_view.set_controller(controller)
+    window.controller_image_view._geometry_checkbox.setChecked(True)
+    emu = window._create_emulator_instance(controller).widget()
+
+    window._on_live_midi_event(
+        MidiEvent(direction="in", channel="2", event_type="Control Change", data1="9", data2="2", timestamp=0.0)
+    )
+    window._on_live_midi_event(
+        MidiEvent(direction="in", channel="6", event_type="Control Change", data1="9", data2="127", timestamp=0.01)
+    )
+    QApplication.processEvents()
+    left = (controller, "DISPLAY", "Jog wheel")
+    right = (controller, "DISPLAY", "Jog wheel (R)")
+    # +2 ticks forward on the left, -1 tick (not +63) on the right.
+    assert window.controller_layout_view._jog_angles[left] == pytest.approx(2 * jog_mod.DEGREES_PER_TICK)
+    assert window.controller_layout_view._jog_angles[right] == pytest.approx(360 - jog_mod.DEGREES_PER_TICK)
+    assert emu._emulator._jog_angles.get(right)
+    assert window.controller_image_view._jog_angles.get("Jog wheel")
+    assert window.controller_image_view._jog_angles.get("Jog wheel (R)")
+    window.close()
+
+
+def test_live_inpulse_500_shift_encoder_push_flashes_its_marker(monkeypatch):
+    from djmidi.midi_io import MidiEvent
+
+    window = _loaded_window()
+    window.controller_image_view.set_controller("Hercules DJControl Inpulse 500")
+    window.controller_image_view._geometry_checkbox.setChecked(True)
+    flashed: list[str] = []
+    monkeypatch.setattr(window.controller_image_view, "flash_key", flashed.append)
+    # SHIFT + Autoloop push (deck 1: channel 5, note 44), SHIFT + Browse push
+    # (channel 4, note 0).
+    for channel, note in (("5", "44"), ("4", "0")):
+        window._on_live_midi_event(
+            MidiEvent(direction="in", channel=channel, event_type="Note On", data1=note, data2="127", timestamp=0.0)
+        )
+    QApplication.processEvents()
+    assert "AUTOLOOP (press)" in flashed
+    assert "BROWSE (press)" in flashed
+    window.close()

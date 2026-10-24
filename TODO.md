@@ -140,6 +140,12 @@ Implemented contract, runtime, test, and documentation work:
   old "multi-message" docstring reason was wrong), read from a 300 DPI render, with markers on both decks
   (`LOAD DECK 1/3` / `LOAD DECK 2/4`), crop-checked and screenshotted on cocoa. Controller profiles table: REV5 and
   Inpulse 500 now ✅.
+- [x] **Inpulse 500 live jogs** (`v0.48.141-inpulse-500-jogs`, issue #347) — the MIDI COMMANDS sheet's
+  D1-16/D2-16 rows (300 DPI render) give the jog turn as CC 0x09/0x0A on B1/B4 (deck 1, +Shift) and B2/B5
+  (deck 2) in two's complement (01..3F clockwise, 7F..40 counter-clockwise), unlike the 0x40-centred Pioneer
+  jogs: `gui/jog.py` gains `decode_twos_complement_delta`, an Inpulse channel table (2/5 left, 3/6 right) and
+  `decode_jog_delta_for_key`, which `MainWindow` now applies per jog key. SHIFT + Autoloop / Browse pushes
+  (`"(+SHIFT press)"`) now flash their `"(press)"` marker. Not verified on hardware.
 - [x] **DDJ-FLX4 and DDJ-800 real layout** (`v0.48.140-geometry-flx4-ddj800`, issue #338) — the last two
   registered controllers without geometry: every catalog control has a `CONTROL_GEOMETRY` marker on its flat
   `reference.png`, both decks (`" (R)"`) and both pad grids, located as saturated / near-black connected

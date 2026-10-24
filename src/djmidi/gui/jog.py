@@ -39,6 +39,16 @@ DDJ-800      platter 0x22 / 0x23 / 0x29(+SEARCH) /          MIDI Message
              0x1F(+SHIFT); wheel-side 0x21 / 0x26(+SHIFT)   List E3, Fig D3
 ===========  ===========================================  ==================
 
+**Hercules DJControl Inpulse 500** (issue #347) is the exception, read from
+its "MIDI COMMANDS" sheet (pages 2 and 11, D1-16 / D2-16 "Jog-wheel",
+300 DPI render): CC 0x09 (Vinyl off) / 0x0A (Vinyl on) on status 0xB1 / 0xB4
+(+Shift) for deck 1 and 0xB2 / 0xB5 for deck 2 -- the sheet's 0-based
+channel column says 1/4 and 2/5, so channels "2"/"5" are the left jog and
+"3"/"6" the right one. Its encoding is **two's complement**, not
+0x40-centred: "01 > 3F: CC Slow->Fast" (clockwise, +1..+63) and "7F > 40:
+CCW Slow->Fast" (-1..-64) -- ``decode_twos_complement_delta``. The jog
+*touch* (CC 0x08 on the same channels) is not a turn and isn't listed.
+
 DDJ-FLX4 and DDJ-800 also draw both jogs (``"Jog wheel"`` / ``"Jog wheel
 (R)"``) and resolve side-aware by deck channel: deck 2 (and 4 on the
 DDJ-800) is the right jog.
@@ -124,6 +134,41 @@ _DDJ_FLX4_JOG_KEYS: dict[str, CellKey] = {
 }
 
 
+# issue #347, Hercules DJControl Inpulse 500 (MIDI COMMANDS sheet, D1-16 /
+# D2-16): CC 0x09 / 0x0A, deck channel or its SHIFT channel, two's
+# complement. Its own channels, so its own rule: channel 2 is the *left* jog
+# here, unlike the 1-4 deck-channel controllers above.
+_INPULSE_500 = "Hercules DJControl Inpulse 500"
+_INPULSE_500_JOG_DATA1 = frozenset({"9", "10"})
+_INPULSE_500_JOG_KEYS: dict[str, CellKey] = {
+    "2": (_INPULSE_500, "DISPLAY", "Jog wheel"),
+    "5": (_INPULSE_500, "DISPLAY", "Jog wheel"),
+    "3": (_INPULSE_500, "DISPLAY", "Jog wheel (R)"),
+    "6": (_INPULSE_500, "DISPLAY", "Jog wheel (R)"),
+}
+
+
+def decode_twos_complement_delta(value: object) -> int:
+    """Signed tick delta for a 7-bit two's-complement relative jog value
+    (``0x01..0x3F`` = +1..+63 clockwise, ``0x7F..0x40`` = -1..-64), ``0``
+    for 0 or an unparseable / out-of-range value."""
+    try:
+        raw = int(value)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        return 0
+    if not 0 <= raw <= 0x7F:
+        return 0
+    return raw - 0x80 if raw >= 0x40 else raw
+
+
+def decode_jog_delta_for_key(key: CellKey, value: object) -> int:
+    """Signed tick delta of ``value`` in the encoding of the controller
+    owning ``key`` (two's complement for the Inpulse 500, else 0x40-centred)."""
+    if key[0] == _INPULSE_500:
+        return decode_twos_complement_delta(value)
+    return decode_jog_delta(value)
+
+
 def decode_jog_delta(value: object) -> int:
     """Signed tick delta for a 0x40-centred relative jog value: positive =
     forward/clockwise, negative = backward, ``0`` for the centre value or an
@@ -144,9 +189,13 @@ def jog_cell_keys_for_event(
     Change; anything else (including the jog *touch* Note) returns ``[]``.
     More than one key comes back when controllers share a jog CC/channel --
     each view spins only the one it's showing."""
-    if event_type != "Control Change" or channel not in _DECK_CHANNELS:
+    if event_type != "Control Change":
         return []
     keys: list[CellKey] = []
+    if data1 in _INPULSE_500_JOG_DATA1 and channel in _INPULSE_500_JOG_KEYS:
+        keys.append(_INPULSE_500_JOG_KEYS[channel])
+    if channel not in _DECK_CHANNELS:
+        return keys
     for data1_set, left_key, right_key in _TWO_JOG_RULES:
         if data1 in data1_set:
             keys.append(right_key if channel in _RIGHT_DECK_CHANNELS else left_key)
@@ -158,4 +207,10 @@ def jog_cell_keys_for_event(
     return keys
 
 
-__all__ = ["DEGREES_PER_TICK", "decode_jog_delta", "jog_cell_keys_for_event"]
+__all__ = [
+    "DEGREES_PER_TICK",
+    "decode_jog_delta",
+    "decode_jog_delta_for_key",
+    "decode_twos_complement_delta",
+    "jog_cell_keys_for_event",
+]

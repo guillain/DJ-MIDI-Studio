@@ -1441,6 +1441,9 @@ def _reverse_index(controller: str) -> dict[str, str]:
     return index
 
 
+_SHIFT_PRESS_SUFFIX = " (+SHIFT press)"
+
+
 def resolve_geometry_label(controller: str, hit_name: str) -> str | None:
     """Maps a live ``catalog.lookup()`` hit's raw ``ControlInfo.name`` (e.g.
     ``"PLAY/PAUSE"``, ``"Deck 1 Pad 3 (PAD MODE 2)"``, ``"PAD MODE 5"``) to
@@ -1465,7 +1468,14 @@ def resolve_geometry_label(controller: str, hit_name: str) -> str | None:
         if candidate in index:
             return index[candidate]
     base = _base_name(hit_name)
-    return index.get(base)
+    if base in index:
+        return index[base]
+    # An encoder push whose plain entry keeps "(press)" in its name (the
+    # Inpulse 500's "AUTOLOOP (press)" / "BROWSE (press)", issue #347): its
+    # "(+SHIFT press)" variant strips to the bare name, so retry with it.
+    if hit_name.endswith(_SHIFT_PRESS_SUFFIX):
+        return index.get(f"{hit_name.removesuffix(_SHIFT_PRESS_SUFFIX)} (press)")
+    return None
 
 
 __all__ = ["CONTROL_GEOMETRY", "ControlGeometry", "Shape", "resolve_geometry_label"]
