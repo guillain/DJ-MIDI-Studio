@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import pytest
 from PySide6.QtWidgets import QGraphicsPixmapItem
 
 from djmidi import catalog
@@ -834,6 +835,50 @@ def test_xdj_xz_hot_cue_beat_loop_buttons_steer_pad_resolution():
     assert view._pad_mode == {"": "(BEAT LOOP mode)"}
     beat_loop = view._resolve(("XDJ-XZ", "PAD", "Pad 1"))
     assert beat_loop != hot_cue
+
+
+@pytest.mark.parametrize(
+    ("controller", "button", "note"),
+    [
+        ("DDJ-FLX4", "PAD FX 1 MODE", "16"),  # (PAD FX 1) bank: 16 + pad 1
+        ("DDJ-FLX4", "SAMPLER MODE", "48"),
+        ("DDJ-800", "BEAT JUMP MODE", "32"),  # (BEAT JUMP PAGE 1)
+        ("DDJ-800", "SAMPLER MODE", "48"),
+        ("DDJ-REV5", "ROLL MODE", "16"),
+        ("DDJ-REV5", "SAMPLER MODE", "48"),
+    ],
+)
+def test_issue_350_mode_buttons_steer_pad_clicks(controller, button, note):
+    view = ControllerEmulatorView(config_provider=lambda: None)
+    view._combo.setCurrentText(controller)
+    assert "NOTE 0 " in view._resolve((controller, "PAD", "Pad 1")) + " "  # HOT CUE bank by default
+
+    view._on_control_pressed((controller, "DECK", button))
+    assert (controller, "DECK", button) in view._emulator._active_keys
+    assert f"NOTE {note} " in view._resolve((controller, "PAD", "Pad 1")) + " "
+    # The right grid follows its own mode buttons, not the left one's.
+    assert "NOTE 0 " in view._resolve((controller, "PAD", "Pad 1 (R)")) + " "
+    view._on_control_pressed((controller, "DECK", f"{button} (R)"))
+    assert f"NOTE {note} " in view._resolve((controller, "PAD", "Pad 1 (R)")) + " "
+
+
+@pytest.mark.parametrize(
+    ("controller", "shift_key", "button", "token", "note"),
+    [
+        ("DDJ-FLX4", ("DDJ-FLX4", "DECK", "SHIFT"), "HOT CUE MODE", "(KEYBOARD)", "64"),
+        ("DDJ-FLX4", ("DDJ-FLX4", "DECK", "SHIFT"), "BEAT JUMP MODE", "(BEAT LOOP)", "96"),
+        ("DDJ-REV5", ("DDJ-REV5", "MIXER", "SHIFT"), "SAMPLER MODE", "(SCRATCH BANK MODE)", "112"),
+    ],
+)
+def test_issue_350_shift_plus_mode_button_selects_the_shift_layer_bank(controller, shift_key, button, token, note):
+    view = ControllerEmulatorView(config_provider=lambda: None)
+    view._combo.setCurrentText(controller)
+    view._on_control_pressed(shift_key)
+    view._on_control_pressed((controller, "DECK", button))
+    assert view._pad_mode == {"": token}
+    view._on_control_pressed(shift_key)  # release SHIFT: plain pad channel
+    text = view._resolve((controller, "PAD", "Pad 1"))
+    assert f"NOTE {note} " in text + " " and "ch8 " in text
 
 
 # ─── Phase 5 slice 2 continued: SHIFT-held state ───────────────────────────

@@ -898,7 +898,7 @@ class ControllerEmulatorView(QWidget):
         grid side, move the lit highlight from the previous mode button to
         this one, and return a status suffix. ``""`` if ``key`` isn't a
         pad-mode button."""
-        token = pad_mode_mod.mode_token_for_button(key[0], key[2])
+        token = pad_mode_mod.mode_token_for_button(key[0], key[2], self._shift_held)
         if token is None:
             return ""
         side = pad_mode_mod.grid_side(key[2])

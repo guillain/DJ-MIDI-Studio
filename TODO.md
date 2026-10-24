@@ -132,6 +132,14 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Emulator pad-mode banks for DDJ-FLX4/DDJ-800/DDJ-REV5, DDJ-REV5 catalog gaps**
+  (`v0.48.142-pad-modes-rev5-gaps`, issue #350) — `gui/pad_mode.py` maps each of their mode buttons to the bank
+  token their pad names carry (DDJ-800: page 1); with SHIFT latched, FLX4/REV5 mode buttons pick the SHIFT-layer
+  mode (`_SHIFT_PAD_MODE_TOKENS`; DDJ-800's PDF doesn't name its SHIFT modes, so none). DDJ-REV5 gained D24 HOT CUE
+  (note 38), D25 SCRATCH BANK (39) and B3 LOAD DECK 1–4 (ch 7, 70–73 — one plain press per target deck, so the
+  old "multi-message" docstring reason was wrong), read from a 300 DPI render, with markers on both decks
+  (`LOAD DECK 1/3` / `LOAD DECK 2/4`), crop-checked and screenshotted on cocoa. Controller profiles table: REV5 and
+  Inpulse 500 now ✅.
 - [x] **Inpulse 500 live jogs** (`v0.48.141-inpulse-500-jogs`, issue #347) — the MIDI COMMANDS sheet's
   D1-16/D2-16 rows (300 DPI render) give the jog turn as CC 0x09/0x0A on B1/B4 (deck 1, +Shift) and B2/B5
   (deck 2) in two's complement (01..3F clockwise, 7F..40 counter-clockwise), unlike the 0x40-centred Pioneer

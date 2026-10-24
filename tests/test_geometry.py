@@ -869,7 +869,8 @@ def test_ddj_rev5_geometry_covers_every_catalog_entry_on_both_decks():
     geometry = CONTROL_GEOMETRY["DDJ-REV5"]
     names = {entry.name for entry in catalog.static_entries("DDJ-REV5")}
     single = {"FX1-1", "FX1-2", "FX1-3", "FX2-1", "FX2-2", "FX2-3", "BEAT <", "BEAT >", "SHIFT"}
-    per_deck = names - single - {"CROSSFADER REVERSE"}
+    load = {f"LOAD DECK {n}" for n in range(1, 5)}
+    per_deck = names - single - load - {"CROSSFADER REVERSE"}
     assert set(geometry) == (
         single
         | per_deck
@@ -877,9 +878,15 @@ def test_ddj_rev5_geometry_covers_every_catalog_entry_on_both_decks():
         | {"Jog wheel", "Jog wheel (R)"}
         | {f"Pad {n}" for n in range(1, 9)}
         | {f"Pad {n} (R)" for n in range(1, 9)}
+        | {"LOAD DECK 1/3", "LOAD DECK 2/4"}
     )
-    for name in names - {"CROSSFADER REVERSE"}:
+    for name in names - load - {"CROSSFADER REVERSE"}:
         assert resolve_geometry_label("DDJ-REV5", name) == name
+    # Issue #350: one LOAD button per side, covering that side's two decks.
+    for n, label in ((1, "LOAD DECK 1/3"), (2, "LOAD DECK 2/4"), (3, "LOAD DECK 1/3"), (4, "LOAD DECK 2/4")):
+        assert resolve_geometry_label("DDJ-REV5", f"LOAD DECK {n}") == label
+    for name in ("HOT CUE", "SCRATCH BANK"):
+        assert geometry[name].x < geometry["LOAD DECK 1/3"].x + 0.05 < geometry[f"{name} (R)"].x
 
 
 def test_hercules_inpulse_500_geometry_covers_every_catalog_entry_on_both_decks():

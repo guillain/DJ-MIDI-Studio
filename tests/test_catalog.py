@@ -148,12 +148,18 @@ def test_ddj_rev5_static_entries_match_the_official_midi_message_list():
         "KEY -": (deck, "42"),
         "KEY +": (deck, "43"),
         "STEMS": (deck, "37"),
+        "HOT CUE": (deck, "38"),
+        "SCRATCH BANK": (deck, "39"),
         "HOT CUE MODE": (deck, "64"),
         "ROLL MODE": (deck, "65"),
         "SAVED LOOP MODE": (deck, "66"),
         "SAMPLER MODE": (deck, "67"),
         "BROWSE": (("7",), "65"),
         "BACK": (("7",), "101"),
+        "LOAD DECK 1": (("7",), "70"),
+        "LOAD DECK 2": (("7",), "71"),
+        "LOAD DECK 3": (("7",), "72"),
+        "LOAD DECK 4": (("7",), "73"),
         "FX1-1": (("5",), "112"),
         "FX1-2": (("5",), "113"),
         "FX1-3": (("5",), "114"),
@@ -169,6 +175,19 @@ def test_ddj_rev5_static_entries_match_the_official_midi_message_list():
     actual = {e.name: (tuple(e.channels), e.data1) for e in ddj_rev5._STATIC}
     assert actual == expected
     assert all(e.note_or_cc == "NOTE" for e in ddj_rev5._STATIC)
+
+
+def test_ddj_rev5_hot_cue_scratch_bank_and_load():
+    """Issue #350: D24 HOT CUE / D25 SCRATCH BANK are plain deck-channel
+    presses (notes 38/39); B3 LOAD is one channel-7 note per target deck."""
+    for channel in ("1", "2", "3", "4"):
+        assert [h.name for h in catalog.lookup(channel, "Note On", "38") if h.controller == "DDJ-REV5"] == ["HOT CUE"]
+        assert [h.name for h in catalog.lookup(channel, "Note On", "39") if h.controller == "DDJ-REV5"] == [
+            "SCRATCH BANK"
+        ]
+    for deck, note in zip(range(1, 5), ("70", "71", "72", "73")):
+        hits = [h.name for h in catalog.lookup("7", "Note On", note) if h.controller == "DDJ-REV5"]
+        assert hits == [f"LOAD DECK {deck}"]
 
 
 def test_ddj_rev5_static_entries_have_no_duplicate_triggers():
