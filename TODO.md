@@ -132,6 +132,10 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Accent-insensitive search** (`v0.48.135-accent-insensitive-search`, issue #343) — the command
+  palette and the reverse function search share one Qt-free normaliser (`search_text`: NFKD, combining marks
+  dropped, casefold, Unicode letter/digit tokens) for index text and queries, so `pref`, `préf` and `PRÉF` all
+  find `Préférences` and `bibliotheque` finds `Bibliothèque`; scoring is unchanged.
 - [x] **French UI: missed windows and undo/redo labels** (`v0.48.132-french-missed-windows`, issue #337) — the
   command palette, Helpful Notes, Report a Problem (window only; the report stays English for GitHub), Review
   mapping changes, Stage Mode (and its ON/OFF), the sync set editor, Preferences' `(not connected)` suffix and

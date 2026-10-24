@@ -75,7 +75,7 @@ reverse: type what you want a control to *do* and the list shows every
 control bound to it.
 
 - Words match the [readable function names](function-names.md) and the
-  original Serato tags, ignoring case and underscores: `loop roll` finds
+  original Serato tags, ignoring case, accents and underscores: `loop roll` finds
   `auto_loop_roll_specific_length`, shown as `Loop roll`.
 - `deck 2` or `slot 3` keep only that deck or slot, numbered as the file
   stores them (the same numbers the By Deck tab shows); a bare number
