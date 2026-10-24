@@ -21,12 +21,20 @@ its own reason rather than fabricated:
   output, no press input), same category DDJ-XP2's MIDI-OUT section
   excludes.
 - The STEMS +VOCAL/+MELODY/+BASS/+DRUMS sub-triggers (D18's condition
-  rows) and the "VOCAL/PAD1".."DRUMS/PAD4" block (D20-D23): these land on
-  the pad channels at Data1 values (72-75, 88-91, 104-107, 120-123) that
-  don't fit the 8-mode x 16-note pad-grid formula below (verified: 72
-  falls mid-way through the PITCH PLAY MODE block, not a valid pad
-  position), and the PDF's own figure numbering keeps them ambiguous
-  without the physical device or diagram to resolve against.
+  rows, channel 7 notes 32-47, one note per deck) and the "VOCAL/PAD 1"..
+  "DRUMS/PAD 4" part buttons (D20-D23): the latter land on the pad
+  channels at Data1 values (72-75, 88-91, 104-107, 120-123) whose printed
+  "mode" conditions (HOT CUE/SAVED LOOP/SCRATCH BANK/SAMPLER) don't match
+  the pad-grid bank those notes fall in, plus deck channels 1-4 notes
+  44-47 in STEMS MODE -- left out rather than guessed.
+- Every "+SHIFT" row, as above -- and the PDF contradicts itself there
+  anyway: BPM TRANSITION SELECT +SHIFT and FX1-1 +SHIFT both print
+  channel 7 note 48. The pad grid's USER MODE rows (pad-mode button
+  pressed twice) use notes 8-15/24-31/40-47/56-63, the second half of the
+  first four banks, which this catalog's 8-pad lookup leaves unnamed.
+- The table prints SHIFT under Fig. "M12", a typo for E12 (the figure's
+  callout and the button's own label both say SHIFT); its values (channel
+  7 note 63) are unambiguous, so it is kept.
 - DECK1/3 and DECK2/4 (D26, deck-pair select) and LOAD (B3): both send a
   multi-message sequence (switch one deck off, another on) rather than one
   simple press trigger -- DDJ-1000/DDJ-FLX10 already exclude the
@@ -38,8 +46,11 @@ its own reason rather than fabricated:
   position (one going high, a sibling going low) -- not one clean trigger
   per catalog's single-trigger-per-name model.
 
-Field-verification against real hardware is still open, same status as
-every other PDF-transcribed profile in this catalog (issue #11).
+Re-checked row by row against a 300 DPI ``pdftoppm`` render of every page
+of that PDF (issue #346): the only mismatch was BPM TRANSITION SELECT's
+channel, fixed below. Field-verification against real hardware is still
+open, same status as every other PDF-transcribed profile in this catalog
+(issue #11).
 """
 
 from __future__ import annotations
@@ -63,7 +74,11 @@ _STATIC: list[ControlInfo] = [
     ControlInfo("DDJ-REV5", "DECK", "TEMPO RANGE", "NOTE", _DECK_CHANNELS, "8"),
     ControlInfo("DDJ-REV5", "DECK", "KEY LOCK", "NOTE", _DECK_CHANNELS, "9"),
     ControlInfo("DDJ-REV5", "DECK", "SYNC", "NOTE", _DECK_CHANNELS, "10"),
-    ControlInfo("DDJ-REV5", "DECK", "BPM TRANSITION SELECT", "NOTE", _DECK_CHANNELS, "62"),
+    # BPM TRANSITION SELECT (D9) is printed on channel 7 (status 0x96), not
+    # the deck channels: it is one global message, whichever deck's button
+    # is pressed. Deck channels 1-4 note 62 are DECK1/3 / DECK2/4's
+    # deck-on/off indicator (D26), not a press trigger (issue #346).
+    ControlInfo("DDJ-REV5", "DECK", "BPM TRANSITION SELECT", "NOTE", ("7",), "62"),
     ControlInfo("DDJ-REV5", "DECK", "BPM TRANSITION START", "NOTE", _DECK_CHANNELS, "49"),
     ControlInfo("DDJ-REV5", "DECK", "LOOP 1/2X", "NOTE", _DECK_CHANNELS, "1"),
     ControlInfo("DDJ-REV5", "DECK", "LOOP 2X", "NOTE", _DECK_CHANNELS, "3"),
@@ -100,10 +115,11 @@ _STATIC: list[ControlInfo] = [
     ControlInfo("DDJ-REV5", "MIXER", "SHIFT", "NOTE", ("7",), "63"),
 ]
 
-# The 8-pad grid has 8 named modes x 16 notes each, covering the full
-# 0-127 Data1 range with no gaps -- verified directly against the PDF's
-# PERFORMANCE PADS group (P5-P8 rows), not assumed from another
-# controller's layout. Order matches the PDF's own row order.
+# The 8-pad grid has 8 named modes x 16 notes each (pad P = mode*16 + P-1),
+# verified directly against the PDF's PERFORMANCE PADS group (P5 rows for
+# pads 1-8), not assumed from another controller's layout. Notes 8-15 of
+# each block are USER MODE or D20-D23 rows, left unnamed (see above).
+# Order matches the PDF's own row order.
 _PAD_MODE_NAMES = (
     "HOT CUE MODE",
     "ROLL MODE",
