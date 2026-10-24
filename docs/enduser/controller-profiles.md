@@ -124,7 +124,7 @@ is note 11 and `CUE` note 12. The pads send on channel 8 (deck 1) and 10
 `MASTER CUE`, `SMART CFX` and `SMART FADER` are named too. The FX CH SELECT
 switch and the rear MONO/STEREO switch are left out.
 
-Profiles before v0.48.138 used community values (`PLAY/PAUSE` on note 0,
+Profiles before v0.48.140 used community values (`PLAY/PAUSE` on note 0,
 pads on channels 6 and 7, and KEYLOCK/SLIP/REVERSE/QUANTIZE buttons the
 FLX4 doesn't have) that don't match the official list.
 

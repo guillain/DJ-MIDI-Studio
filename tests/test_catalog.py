@@ -91,8 +91,9 @@ def test_ddj_rev5_pad_grid_with_shift():
 def test_ddj_rev5_ambiguous_user_mode_notes_are_excluded():
     """The 8 pad-mode banks each occupy a 16-note block but only use the
     first 8 (pad positions); the remaining 8 notes per block are the PDF's
-    ambiguous "USER MODE" rows this controller's catalog deliberately
-    leaves untranscribed (see ddj_rev5.py's module docstring)."""
+    USER MODE (8/24/40/56) and D20-D23 stem-part (72/88/104/120) rows this
+    controller's catalog deliberately leaves untranscribed (see
+    ddj_rev5.py's module docstring)."""
     for note in ("8", "24", "40", "56", "72", "88", "104", "120"):
         hits = catalog.lookup("8", "Note On", note)
         assert not any(h.controller == "DDJ-REV5" for h in hits), note
@@ -113,6 +114,61 @@ def test_ddj_rev5_headphones_cue_spans_all_deck_channels():
     for channel in ("1", "2", "3", "4"):
         hits = catalog.lookup(channel, "Note On", "7")
         assert any(h.controller == "DDJ-REV5" and h.name == "HEADPHONES CUE" for h in hits), channel
+
+
+def test_ddj_rev5_bpm_transition_select_is_on_the_global_channel():
+    """Issue #346: the PDF prints BPM TRANSITION SELECT (D9) on channel 7
+    note 62 (status 0x96). Deck channels 1-4 note 62 are DECK1/3 / DECK2/4's
+    deck-on/off indicator (D26) and must not resolve to it."""
+    hits = catalog.lookup("7", "Note On", "62")
+    assert [h.name for h in hits if h.controller == "DDJ-REV5"] == ["BPM TRANSITION SELECT"]
+    for channel in ("1", "2", "3", "4"):
+        hits = catalog.lookup(channel, "Note On", "62")
+        assert not any(h.controller == "DDJ-REV5" for h in hits), channel
+
+
+def test_ddj_rev5_static_entries_match_the_official_midi_message_list():
+    """Every static entry, as printed in the bundled PDF's table (re-read
+    from a 300 DPI render, issue #346): name -> (channels, Data1)."""
+    from djmidi.catalog import ddj_rev5
+
+    deck = ("1", "2", "3", "4")
+    expected = {
+        "PLAY/PAUSE": (deck, "11"),
+        "CUE": (deck, "12"),
+        "TEMPO RANGE": (deck, "8"),
+        "KEY LOCK": (deck, "9"),
+        "SYNC": (deck, "10"),
+        "BPM TRANSITION SELECT": (("7",), "62"),
+        "BPM TRANSITION START": (deck, "49"),
+        "LOOP 1/2X": (deck, "1"),
+        "LOOP 2X": (deck, "3"),
+        "SLIP": (deck, "40"),
+        "CENSOR": (deck, "41"),
+        "KEY -": (deck, "42"),
+        "KEY +": (deck, "43"),
+        "STEMS": (deck, "37"),
+        "HOT CUE MODE": (deck, "64"),
+        "ROLL MODE": (deck, "65"),
+        "SAVED LOOP MODE": (deck, "66"),
+        "SAMPLER MODE": (deck, "67"),
+        "BROWSE": (("7",), "65"),
+        "BACK": (("7",), "101"),
+        "FX1-1": (("5",), "112"),
+        "FX1-2": (("5",), "113"),
+        "FX1-3": (("5",), "114"),
+        "FX2-1": (("6",), "112"),
+        "FX2-2": (("6",), "113"),
+        "FX2-3": (("6",), "114"),
+        "BEAT <": (("5", "6"), "6"),
+        "BEAT >": (("5", "6"), "7"),
+        "HEADPHONES CUE": (deck, "7"),
+        "CROSSFADER REVERSE": (("7",), "84"),
+        "SHIFT": (("7",), "63"),
+    }
+    actual = {e.name: (tuple(e.channels), e.data1) for e in ddj_rev5._STATIC}
+    assert actual == expected
+    assert all(e.note_or_cc == "NOTE" for e in ddj_rev5._STATIC)
 
 
 def test_ddj_rev5_static_entries_have_no_duplicate_triggers():
