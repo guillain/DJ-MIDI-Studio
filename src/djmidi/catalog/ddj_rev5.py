@@ -35,12 +35,14 @@ its own reason rather than fabricated:
 - The table prints SHIFT under Fig. "M12", a typo for E12 (the figure's
   callout and the button's own label both say SHIFT); its values (channel
   7 note 63) are unambiguous, so it is kept.
-- DECK1/3 and DECK2/4 (D26, deck-pair select) and LOAD (B3): both send a
+- DECK1/3 and DECK2/4 (D26, deck-pair select): each press sends a
   multi-message sequence (switch one deck off, another on) rather than one
   simple press trigger -- DDJ-1000/DDJ-FLX10 already exclude the
-  equivalent "DECK SELECT" function for the same reason, and neither
-  models LOAD at all (its per-deck Data1 values are also not unambiguously
-  orderable from the extracted PDF table).
+  equivalent "DECK SELECT" function for the same reason. LOAD (B3) is
+  *not* such a sequence: the table gives one plain channel-7 press per
+  target deck (Deck1-4: notes 70-73), so it is modelled as LOAD DECK 1-4
+  like DDJ-XP2's, each physical LOAD button covering its side's two decks
+  (issue #350).
 - MIC OFF/ON/TALKOVER (M15), AUX LINE/PORTABLE (M24), INPUT SELECT (M1):
   each a 2/3-position slide switch sending a *pair* of NOTE messages per
   position (one going high, a sibling going low) -- not one clean trigger
@@ -48,7 +50,9 @@ its own reason rather than fabricated:
 
 Re-checked row by row against a 300 DPI ``pdftoppm`` render of every page
 of that PDF (issue #346): the only mismatch was BPM TRANSITION SELECT's
-channel, fixed below. Field-verification against real hardware is still
+channel, fixed below. Issue #350 added the rows that check found missing
+-- D24 HOT CUE and D25 SCRATCH BANK (plain deck-channel presses, notes
+38/39) -- and LOAD, read from the same render. Field-verification against real hardware is still
 open, same status as every other PDF-transcribed profile in this catalog
 (issue #11).
 """
@@ -87,6 +91,10 @@ _STATIC: list[ControlInfo] = [
     ControlInfo("DDJ-REV5", "DECK", "KEY -", "NOTE", _DECK_CHANNELS, "42"),
     ControlInfo("DDJ-REV5", "DECK", "KEY +", "NOTE", _DECK_CHANNELS, "43"),
     ControlInfo("DDJ-REV5", "DECK", "STEMS", "NOTE", _DECK_CHANNELS, "37"),
+    # D24 HOT CUE / D25 SCRATCH BANK: the two buttons under KEY -/+ (their
+    # +SHIFT rows, notes 54/55, print SAVED LOOP / SAMPLER below them).
+    ControlInfo("DDJ-REV5", "DECK", "HOT CUE", "NOTE", _DECK_CHANNELS, "38"),
+    ControlInfo("DDJ-REV5", "DECK", "SCRATCH BANK", "NOTE", _DECK_CHANNELS, "39"),
     # Pad-mode select buttons (P1-P4 in the PDF): press only, switching
     # which of the pad grid's 8 banks below is active. +SHIFT gives PITCH
     # PLAY/PIANO PLAY/STEMS/SCRATCH BANK MODE respectively, excluded per
@@ -98,6 +106,12 @@ _STATIC: list[ControlInfo] = [
     # BROWSE group, channel 7 (the shared BROWSER/Global Section channel).
     ControlInfo("DDJ-REV5", "BROWSE", "BROWSE", "NOTE", ("7",), "65"),
     ControlInfo("DDJ-REV5", "BROWSE", "BACK", "NOTE", ("7",), "101"),
+    # B3 LOAD: one channel-7 note per target deck, whichever side's LOAD
+    # button sends it (the table's Deck1-Deck4 condition rows).
+    ControlInfo("DDJ-REV5", "BROWSE", "LOAD DECK 1", "NOTE", ("7",), "70"),
+    ControlInfo("DDJ-REV5", "BROWSE", "LOAD DECK 2", "NOTE", ("7",), "71"),
+    ControlInfo("DDJ-REV5", "BROWSE", "LOAD DECK 3", "NOTE", ("7",), "72"),
+    ControlInfo("DDJ-REV5", "BROWSE", "LOAD DECK 4", "NOTE", ("7",), "73"),
     # EFFECT group: FX1 on channel 5, FX2 on channel 6 (same Data1 values).
     ControlInfo("DDJ-REV5", "EFFECT", "FX1-1", "NOTE", ("5",), "112"),
     ControlInfo("DDJ-REV5", "EFFECT", "FX1-2", "NOTE", ("5",), "113"),

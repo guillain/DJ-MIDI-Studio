@@ -1196,9 +1196,13 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         # right deck sits ~1270 px right of the left one throughout). Pad
         # order is the printed one (1-4 top row, 5-8 bottom). Left = decks
         # 1/3 and right = decks 2/4, as printed on each jog's centre display.
+        # Issue #350 added D24 HOT CUE, D25 SCRATCH BANK and B3 LOAD (one
+        # button per side, "LOAD DECK 1/3" / "LOAD DECK 2/4" like DDJ-XP2's),
+        # read off 4x crops of the same render (they sit on the KEY -/+
+        # columns, so their x matches those entries exactly).
         # Not drawn: CROSSFADER REVERSE (M20) is on the front panel, and the
-        # catalog's other controls (AUTO LOOP, LOAD, DECK 1/3, ...) are out
-        # of its scope (see catalog/ddj_rev5.py). Colors follow the other
+        # catalog's other controls (AUTO LOOP, DECK 1/3, ...) are out of its
+        # scope (see catalog/ddj_rev5.py). Colors follow the other
         # Pioneer blocks: green PLAY, amber CUE/loop, blue SYNC/transition,
         # purple STEMS (as DDJ-FLX10's stem buttons), pink pads.
         "Jog wheel": ControlGeometry(0.0395, 0.3394, 0.2860, 0.5419, "circle", "#586b82"),
@@ -1218,6 +1222,9 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         "STEMS": ControlGeometry(0.0355, 0.2816, 0.0455, 0.0251, "rect", "#9b6fd9"),
         "BROWSE": ControlGeometry(0.2900, 0.0636, 0.0330, 0.0656, "circle", "#5f6b7a"),
         "BACK": ControlGeometry(0.2840, 0.1591, 0.0165, 0.0241, "rect", "#5f6b7a"),
+        "LOAD DECK 1/3": ControlGeometry(0.3050, 0.1514, 0.0250, 0.0386, "rect", "#5f6b7a"),
+        "HOT CUE": ControlGeometry(0.2845, 0.2825, 0.0200, 0.0231, "rect", "#4a90d9"),
+        "SCRATCH BANK": ControlGeometry(0.3095, 0.2825, 0.0200, 0.0231, "rect", "#4a90d9"),
         "HOT CUE MODE": ControlGeometry(0.3540, 0.4368, 0.0310, 0.0193, "rect", "#7a8aa0"),
         "ROLL MODE": ControlGeometry(0.3900, 0.4368, 0.0310, 0.0193, "rect", "#7a8aa0"),
         "SAVED LOOP MODE": ControlGeometry(0.4260, 0.4368, 0.0310, 0.0193, "rect", "#7a8aa0"),
@@ -1240,6 +1247,9 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         "STEMS (R)": ControlGeometry(0.6705, 0.2816, 0.0460, 0.0251, "rect", "#9b6fd9"),
         "BROWSE (R)": ControlGeometry(0.9250, 0.0636, 0.0335, 0.0656, "circle", "#5f6b7a"),
         "BACK (R)": ControlGeometry(0.9195, 0.1591, 0.0160, 0.0241, "rect", "#5f6b7a"),
+        "LOAD DECK 2/4": ControlGeometry(0.9400, 0.1514, 0.0250, 0.0386, "rect", "#5f6b7a"),
+        "HOT CUE (R)": ControlGeometry(0.9195, 0.2825, 0.0200, 0.0231, "rect", "#4a90d9"),
+        "SCRATCH BANK (R)": ControlGeometry(0.9445, 0.2825, 0.0200, 0.0231, "rect", "#4a90d9"),
         "HOT CUE MODE (R)": ControlGeometry(0.5070, 0.4368, 0.0310, 0.0193, "rect", "#7a8aa0"),
         "ROLL MODE (R)": ControlGeometry(0.5430, 0.4368, 0.0310, 0.0193, "rect", "#7a8aa0"),
         "SAVED LOOP MODE (R)": ControlGeometry(0.5790, 0.4368, 0.0310, 0.0193, "rect", "#7a8aa0"),
