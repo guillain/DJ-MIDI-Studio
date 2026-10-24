@@ -122,7 +122,12 @@ def test_resolve_image_path_handles_absolute_and_bundled():
     assert _resolve_image_path(abs_path) == Path(abs_path)
 
 
-def test_geometry_checkbox_disabled_for_controller_without_geometry():
+def test_geometry_checkbox_disabled_for_controller_without_geometry(monkeypatch):
+    from djmidi.gui.geometry import CONTROL_GEOMETRY
+
+    # Every bundled controller is (being) measured, so drop one's geometry
+    # rather than depend on which controllers still lack it.
+    monkeypatch.delitem(CONTROL_GEOMETRY, "Hercules DJControl Inpulse 500")
     view = ControllerImageView()
     assert view.set_controller("Hercules DJControl Inpulse 500") is True  # has a reference image but no modeled geometry
     assert view._geometry_checkbox.isEnabled() is False
@@ -153,7 +158,10 @@ def test_unchecking_geometry_layer_clears_markers():
     assert view._overlay_items == []
 
 
-def test_switching_away_from_modeled_controller_clears_markers():
+def test_switching_away_from_modeled_controller_clears_markers(monkeypatch):
+    from djmidi.gui.geometry import CONTROL_GEOMETRY
+
+    monkeypatch.delitem(CONTROL_GEOMETRY, "Hercules DJControl Inpulse 500")
     view = ControllerImageView()
     view.set_controller("XDJ-XZ")
     view._geometry_checkbox.setChecked(True)

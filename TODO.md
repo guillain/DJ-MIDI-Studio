@@ -132,6 +132,17 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **DDJ-REV5 and Inpulse 500 real layout** (`v0.48.137-geometry-rev5-inpulse500`, issue #339) — every
+  catalog control of both controllers has a `CONTROL_GEOMETRY` marker on its flat `reference.png`, both decks
+  (`" (R)"` copies) and both pad grids, each tied to its catalog name through the bundled PDF's callouts
+  (DDJ-REV5 MIDI Message List; Inpulse 500 MIDI COMMANDS sheet), 300 DPI renders. Both join
+  `_RIGHT_GRID_DECKS` in `geometry.py` and `layout.py` (a test now checks the two tables match).
+  DDJ-REV5's jog CCs are documented and 0x40-centred, so its jogs turn live side-aware (`gui/jog.py`
+  `_TWO_JOG_RULES`, shared with XDJ-XZ); the Controller Images overlay now spins a controller's own
+  `"Jog wheel (R)"` marker when it has one instead of always the left one. Left out: the Inpulse jogs
+  (two's-complement CCs, `decode_jog_delta` reads 0x40-centred only), DDJ-REV5's CROSSFADER REVERSE
+  (front panel). Found in passing: the REV5 PDF prints BPM TRANSITION SELECT on channel 7, the catalog
+  has it on channels 1-4 — not changed here.
 - [x] **Accent-insensitive search** (`v0.48.135-accent-insensitive-search`, issue #343) — the command
   palette and the reverse function search share one Qt-free normaliser (`search_text`: NFKD, combining marks
   dropped, casefold, Unicode letter/digit tokens) for index text and queries, so `pref`, `préf` and `PRÉF` all
@@ -1800,7 +1811,9 @@ documentation index.
   Done for every controller with a usable source image — six now have
   hand-measured geometry (see below); DDJ-FLX4/Hercules stay blocked on a
   flat diagram source, not unstarted, so checked off here rather than
-  left hanging.
+  left hanging. (Hercules Inpulse 500 and DDJ-REV5: done in
+  `v0.48.137-geometry-rev5-inpulse500`, issue #339, once their
+  `reference.png` became flat renders.)
   `v0.47.83-ddj-1000-right-deck-geometry` (issue #103): found, via the
   widened window-size audit's screenshots, that every controller except
   DDJ-XP2 (and XDJ-XZ's pad grid) only ever had its *left* deck modeled —

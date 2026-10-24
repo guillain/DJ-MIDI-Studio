@@ -93,4 +93,22 @@ def test_shared_jog_cc_returns_every_controllers_marker():
         ("DDJ-1000", "DISPLAY", "Jog wheel"),
         ("DDJ-FLX10", "DISPLAY", "Jog wheel"),
         ("DDJ-REV1", "DISPLAY", "Jog wheel"),
+        ("DDJ-REV5", "DISPLAY", "Jog wheel"),
     }
+
+
+def test_ddj_rev5_jogs_resolve_side_aware_by_deck_channel():
+    # Its MIDI Message List (D3): platter 0x22/0x23 (vinyl on/off), 0x1F
+    # (+SHIFT), wheel-side 0x21/0x26; decks 1/3 left, 2/4 right.
+    for data1 in ("34", "35", "31", "33", "38"):
+        for left in ("1", "3"):
+            keys = jog.jog_cell_keys_for_event(left, "Control Change", data1)
+            assert ("DDJ-REV5", "DISPLAY", "Jog wheel") in keys
+            assert ("DDJ-REV5", "DISPLAY", "Jog wheel (R)") not in keys
+        for right in ("2", "4"):
+            keys = jog.jog_cell_keys_for_event(right, "Control Change", data1)
+            assert ("DDJ-REV5", "DISPLAY", "Jog wheel (R)") in keys
+            assert ("DDJ-REV5", "DISPLAY", "Jog wheel") not in keys
+    assert not any(
+        key[0] == "DDJ-REV5" for key in jog.jog_cell_keys_for_event("1", "Control Change", "41")
+    )
