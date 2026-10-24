@@ -132,6 +132,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Macros share their output port** (`v0.48.131-macro-port-sharing`, issue #336) — overlapping macro runs
+  on one port share a single ref-counted handle, and a run closes the port before a delay longer than 500 ms
+  (`HOLD_PORT_MAX_DELAY_MS`), reopening it after, so Sync, Live send and other macros can reach a Windows
+  controller (one client per output) while a macro waits; undelayed bursts still open the port once.
+  `run_macro` releases the port during long sleeps too. Not verified on a real Windows driver.
 - [x] **French cheat sheet and mapping comparison** (`v0.48.129-french-cheat-sheet-diff`, issue #333) — the
   cheat sheet export window and the PDF it writes (page titles, glossary, column headings, `Page N`, legend,
   footer, PDF title) follow the interface language; the mapping comparison window and its report (group names,
