@@ -8,14 +8,16 @@ class SafeUpdateDialog(QDialog):
 
     def __init__(self, path: str, diff: str, parent=None) -> None:
         super().__init__(parent)
-        self.setWindowTitle("Review mapping changes")
+        self.setWindowTitle(self.tr("Review mapping changes"))
         self.resize(800, 500)
 
-        label = QLabel(f"Review changes for {path}. The existing file will be backed up before saving.")
+        label = QLabel(
+            self.tr("Review changes for {path}. The existing file will be backed up before saving.").format(path=path)
+        )
         label.setWordWrap(True)
         preview = QTextEdit()
         preview.setReadOnly(True)
-        preview.setPlainText(diff or "(No textual changes)")
+        preview.setPlainText(diff or self.tr("(No textual changes)"))
 
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel

@@ -132,6 +132,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **French UI: missed windows and undo/redo labels** (`v0.48.132-french-missed-windows`, issue #337) — the
+  command palette, Helpful Notes, Report a Problem (window only; the report stays English for GitHub), Review
+  mapping changes, Stage Mode (and its ON/OFF), the sync set editor, Preferences' `(not connected)` suffix and
+  Help menu document titles are translated; Edit → Undo/Redo texts too, while the change log keeps its English
+  summary. `tests/test_untranslated_strings.py` now fails on a literal passed to a widget text API outside `tr()`.
 - [x] **Macros share their output port** (`v0.48.131-macro-port-sharing`, issue #336) — overlapping macro runs
   on one port share a single ref-counted handle, and a run closes the port before a delay longer than 500 ms
   (`HOLD_PORT_MAX_DELAY_MS`), reopening it after, so Sync, Live send and other macros can reach a Windows

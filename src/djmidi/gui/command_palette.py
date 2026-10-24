@@ -10,7 +10,7 @@ action entries ("File › Export › Cheat Sheet (PDF)")."""
 
 from __future__ import annotations
 
-from PySide6.QtCore import QEvent, Qt, Signal
+from PySide6.QtCore import QCoreApplication, QEvent, Qt, Signal
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -57,7 +57,11 @@ def _menu_actions(menu: QMenu, path: list[str], skip: set[QAction]) -> list[Pale
             continue
         title = label
         if action.isCheckable():
-            title += " (on)" if action.isChecked() else " (off)"
+            # Two whole templates, not a spliced word (issue #337).
+            if action.isChecked():
+                title = QCoreApplication.translate("CommandPaletteDialog", "{title} (on)").format(title=label)
+            else:
+                title = QCoreApplication.translate("CommandPaletteDialog", "{title} (off)").format(title=label)
         shortcut = action.shortcut().toString(action.shortcut().SequenceFormat.NativeText)
         detail = _PATH_SEPARATOR.join(path)
         if shortcut:
@@ -89,7 +93,7 @@ class CommandPaletteDialog(QDialog):
 
     def __init__(self, index: PaletteIndex, parent: QWidget | None = None) -> None:
         super().__init__(parent)
-        self.setWindowTitle("Command Palette")
+        self.setWindowTitle(self.tr("Command Palette"))
         self.setModal(True)
         fit_to_screen(self, 620, 420)
         self._index = index
@@ -97,7 +101,7 @@ class CommandPaletteDialog(QDialog):
 
         layout = QVBoxLayout(self)
         self.search_field = QLineEdit()
-        self.search_field.setPlaceholderText("Type an action, a tab, a function or a track…")
+        self.search_field.setPlaceholderText(self.tr("Type an action, a tab, a function or a track…"))
         self.search_field.setClearButtonEnabled(True)
         self.search_field.textChanged.connect(self._refresh)
         self.search_field.installEventFilter(self)
@@ -115,7 +119,7 @@ class CommandPaletteDialog(QDialog):
         usable_minimum(self.results, 360, 140)
         layout.addWidget(self.results, 1)
 
-        self.hint = QLabel("↑↓ to move · Enter to run · Esc to close")
+        self.hint = QLabel(self.tr("↑↓ to move · Enter to run · Esc to close"))
         self.hint.setEnabled(False)
         layout.addWidget(self.hint)
         self._refresh()
@@ -151,7 +155,7 @@ class CommandPaletteDialog(QDialog):
     def _refresh(self) -> None:
         self.results.clear()
         for entry in self._index.search(self.search_field.text()):
-            kind = KIND_LABELS.get(entry.kind, entry.kind)
+            kind = self.tr(KIND_LABELS[entry.kind]) if entry.kind in KIND_LABELS else entry.kind
             text = f"{entry.title}\n{kind}" + (f" · {entry.detail}" if entry.detail else "")
             item = QListWidgetItem(text)
             item.setData(ENTRY_ROLE, entry)
@@ -159,9 +163,11 @@ class CommandPaletteDialog(QDialog):
             self.results.addItem(item)
         if self.results.count():
             self.results.setCurrentRow(0)
-            self.hint.setText("↑↓ to move · Enter to run · Esc to close")
+            self.hint.setText(self.tr("↑↓ to move · Enter to run · Esc to close"))
+        elif self.search_field.text().strip():
+            self.hint.setText(self.tr("Nothing matches."))
         else:
-            self.hint.setText("Nothing matches." if self.search_field.text().strip() else "Nothing to list yet.")
+            self.hint.setText(self.tr("Nothing to list yet."))
 
     def _move(self, delta: int) -> None:
         count = self.results.count()

@@ -32,8 +32,11 @@ from djmidi.controller_sync import (
     move_message,
     resolve_output_port,
 )
+from djmidi.gui.translation import translator
 
 _EVENT_TYPES = ("Note On", "Note Off", "Control Change")
+# Validation errors come from Qt-free controller_sync (issue #337).
+_sync_translate = translator("ControllerSync")
 
 
 class SyncSetEditorDialog(QDialog):
@@ -45,7 +48,7 @@ class SyncSetEditorDialog(QDialog):
         parent=None,
     ) -> None:
         super().__init__(parent)
-        self.setWindowTitle(f"Sync set — {sync_set.controller}")
+        self.setWindowTitle(self.tr("Sync set — {controller}").format(controller=sync_set.controller))
         self._sync_set = sync_set
         self._result = sync_set
         self._sender = sender
@@ -53,13 +56,15 @@ class SyncSetEditorDialog(QDialog):
         self._test_port = resolve_output_port(sync_set, available_ports)
 
         hint = QLabel(
-            "Messages are sent in this order. Double-click a value to edit it "
-            "(channel 1–16, data 0–127)."
+            self.tr(
+                "Messages are sent in this order. Double-click a value to edit it "
+                "(channel 1–16, data 0–127)."
+            )
         )
         hint.setWordWrap(True)
 
         self.table = QTableWidget(0, 4)
-        self.table.setHorizontalHeaderLabels(["Type", "Channel", "Data 1", "Data 2"])
+        self.table.setHorizontalHeaderLabels([self.tr("Type"), self.tr("Channel"), self.tr("Data 1"), self.tr("Data 2")])
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         header = self.table.horizontalHeader()
@@ -69,19 +74,19 @@ class SyncSetEditorDialog(QDialog):
         self.table.setMinimumWidth(420)
         self._fill(sync_set.messages)
 
-        self.delete_button = QPushButton("Delete")
+        self.delete_button = QPushButton(self.tr("Delete"))
         self.delete_button.clicked.connect(self._delete_selected)
-        self.up_button = QPushButton("Move up")
+        self.up_button = QPushButton(self.tr("Move up"))
         self.up_button.clicked.connect(lambda: self._move_selected(-1))
-        self.down_button = QPushButton("Move down")
+        self.down_button = QPushButton(self.tr("Move down"))
         self.down_button.clicked.connect(lambda: self._move_selected(1))
-        self.send_button = QPushButton("Send selected")
+        self.send_button = QPushButton(self.tr("Send selected"))
         self.send_button.clicked.connect(self._send_selected)
         if self._test_port is None:
             self.send_button.setEnabled(False)
-            self.send_button.setToolTip(f"{sync_set.controller} is not connected")
+            self.send_button.setToolTip(self.tr("{controller} is not connected").format(controller=sync_set.controller))
         else:
-            self.send_button.setToolTip(f"Send the selected message to {self._test_port}")
+            self.send_button.setToolTip(self.tr("Send the selected message to {port}").format(port=self._test_port))
         row_buttons = QHBoxLayout()
         for button in (self.delete_button, self.up_button, self.down_button):
             row_buttons.addWidget(button)
@@ -129,7 +134,7 @@ class SyncSetEditorDialog(QDialog):
 
     def _validated(self) -> tuple[SyncMessage, ...] | None:
         try:
-            return messages_from_rows(self._rows())
+            return messages_from_rows(self._rows(), _sync_translate)
         except ValueError as exc:
             self.status.setText(str(exc))
             return None
@@ -169,9 +174,9 @@ class SyncSetEditorDialog(QDialog):
                 data2=message.data2,
             )
         except Exception as exc:  # noqa: BLE001 - a test send must never crash the dialog
-            self.status.setText(f"Sending failed: {exc}")
+            self.status.setText(self.tr("Sending failed: {error}").format(error=exc))
             return
-        self.status.setText(f"Sent message {row + 1} to {self._test_port}")
+        self.status.setText(self.tr("Sent message {number} to {port}").format(number=row + 1, port=self._test_port))
 
     def accept(self) -> None:
         messages = self._validated()

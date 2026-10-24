@@ -78,6 +78,15 @@ SOURCES=(
   src/djmidi/gui/cheat_sheet_pdf.py
   src/djmidi/mapping_diff.py
   src/djmidi/gui/mapping_diff_dialog.py
+  src/djmidi/gui/command_palette.py
+  src/djmidi/command_palette.py
+  src/djmidi/gui/helpful_notes_dialog.py
+  src/djmidi/gui/report_problem_dialog.py
+  src/djmidi/gui/safe_update_dialog.py
+  src/djmidi/gui/stage_window.py
+  src/djmidi/stage.py
+  src/djmidi/gui/sync_set_editor.py
+  src/djmidi/gui/commands.py
 )
 LANGUAGES=(fr)
 
