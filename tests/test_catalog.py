@@ -174,6 +174,12 @@ def test_ddj_800_effect_and_browse_controls():
     assert any(h.controller == "DDJ-800" and h.name == "BROWSE" for h in browse_hits)
 
 
+def test_ddj_800_view_is_the_plain_press_not_the_long_press():
+    # The PDF's B4 rows: press = note 122, LONG press = 103, +SHIFT = 104.
+    assert any(h.controller == "DDJ-800" and h.name == "VIEW" for h in catalog.lookup("7", "Note On", "122"))
+    assert not any(h.controller == "DDJ-800" for h in catalog.lookup("7", "Note On", "103"))
+
+
 def test_ddj_800_headphones_cue_spans_all_deck_channels():
     for channel in ("1", "2", "3", "4"):
         hits = catalog.lookup(channel, "Note On", "84")
