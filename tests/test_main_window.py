@@ -1140,10 +1140,16 @@ def test_live_jog_turn_spins_the_controller_images_overlay_when_it_shows_that_co
     window.controller_image_view.set_controller("XDJ-XZ")
     window.controller_image_view._geometry_checkbox.setChecked(True)
 
-    # deck 2 -> right-tray jog; the overlay has only the one "Jog wheel"
-    # entry, so the mirror suffix is stripped and it still spins.
+    # deck 2 -> right-tray jog, which the overlay draws as its own
+    # "Jog wheel (R)" marker (issue #338); deck 1 -> the left one.
     window._on_live_midi_event(
         MidiEvent(direction="in", channel="2", event_type="Control Change", data1="34", data2="70", timestamp=0.0)
+    )
+    QApplication.processEvents()
+    assert window.controller_image_view._jog_angles.get("Jog wheel (R)")
+    assert "Jog wheel" not in window.controller_image_view._jog_angles
+    window._on_live_midi_event(
+        MidiEvent(direction="in", channel="1", event_type="Control Change", data1="34", data2="70", timestamp=0.0)
     )
     QApplication.processEvents()
     assert window.controller_image_view._jog_angles.get("Jog wheel")

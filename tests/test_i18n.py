@@ -1103,13 +1103,13 @@ def _diff_fixture():
     return old, new
 
 
-def test_cheat_sheet_and_mapping_diff_stay_english_and_are_scanned():
+def test_cheat_sheet_and_mapping_diff_stay_english_and_are_scanned(geometry_free_controller):
     from djmidi.gui import cheat_sheet
     from djmidi.mapping_diff import diff_configs
     from djmidi.parser import parse_file
 
-    titles = [sheet.title for sheet in cheat_sheet.build_sheets(parse_file(_SAMPLE_MAPPING), ["DDJ-800"])]
-    assert titles == ["DDJ-800 — mapped controls", "Function names"]
+    titles = [sheet.title for sheet in cheat_sheet.build_sheets(parse_file(_SAMPLE_MAPPING), [geometry_free_controller])]
+    assert titles == [f"{geometry_free_controller} — mapped controls", "Function names"]
     diff = diff_configs(*_diff_fixture())
     assert diff.by_kind("reassigned")[0].summary().endswith("-> play (deck 3, slot 1)")
     assert diff.by_kind("changed")[0].summary().endswith(": alias on: 127 -> 100")
@@ -1123,7 +1123,7 @@ def test_cheat_sheet_and_mapping_diff_stay_english_and_are_scanned():
     } <= sources
 
 
-def test_cheat_sheet_shows_french(french):
+def test_cheat_sheet_shows_french(french, geometry_free_controller):
     """The exported cheat sheet follows the interface language: page titles,
     glossary, table headings, page numbers and footer (issue #333)."""
     from PySide6.QtCore import QRectF
@@ -1136,9 +1136,9 @@ def test_cheat_sheet_shows_french(french):
     from djmidi.parser import parse_file
 
     sheets = cheat_sheet.build_sheets(
-        parse_file(_SAMPLE_MAPPING), ["DDJ-800"], translator("FunctionNames"), translator("CheatSheet")
+        parse_file(_SAMPLE_MAPPING), [geometry_free_controller], translator("FunctionNames"), translator("CheatSheet")
     )
-    assert [sheet.title for sheet in sheets] == ["DDJ-800 — commandes mappées", "Noms des fonctions"]
+    assert [sheet.title for sheet in sheets] == [f"{geometry_free_controller} — commandes mappées", "Noms des fonctions"]
     glossary = sheets[-1].entries[0]
     assert glossary.section == "Nom" and glossary.functions[0].startswith("Tag Serato : ")
 
@@ -1154,7 +1154,7 @@ def test_cheat_sheet_shows_french(french):
     image = QImage(800, 560, QImage.Format.Format_ARGB32)
     painter = RecordingPainter(image)
     try:
-        empty = cheat_sheet.Sheet("DDJ-800", sheets[0].title, "table", ())
+        empty = cheat_sheet.Sheet(geometry_free_controller, sheets[0].title, "table", ())
         paint_sheets(painter, QRectF(10, 10, 780, 540), 60, [empty], default_footer("set.xml"), lambda: None)
     finally:
         painter.end()
@@ -1162,10 +1162,10 @@ def test_cheat_sheet_shows_french(french):
     assert "Aucune commande de ce contrôleur n'est mappée dans ce fichier." in painter.texts
     assert any(text.startswith("Antisèche DJ MIDI Studio — set.xml — ") for text in painter.texts)
 
-    dialog = CheatSheetExportDialog([("DDJ-XP2", 64), ("DDJ-800", 64)], {"DDJ-XP2"})
+    dialog = CheatSheetExportDialog([("DDJ-XP2", 64), (geometry_free_controller, 64)], {"DDJ-XP2"})
     try:
         assert dialog.windowTitle() == "Exporter l'antisèche (PDF)"
-        assert dialog._list.item(1).text() == "DDJ-800 — 64 déclencheur(s) mappé(s), tableau"
+        assert dialog._list.item(1).text() == f"{geometry_free_controller} — 64 déclencheur(s) mappé(s), tableau"
         assert dialog._list.item(0).text().endswith(", photo")
         assert dialog._buttons.button(dialog._buttons.StandardButton.Ok).text() == "Exporter…"
     finally:

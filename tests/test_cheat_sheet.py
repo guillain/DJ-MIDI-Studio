@@ -79,12 +79,12 @@ def test_marker_variants_respect_the_physical_side():
     assert cs.marker_variants("XDJ-XZ", "Jog wheel") == []
 
 
-def test_build_sheets_on_the_real_fixture():
-    sheets = cs.build_sheets(_config(), ["DDJ-XP2", "XDJ-XZ", "DDJ-800"])
+def test_build_sheets_on_the_real_fixture(geometry_free_controller):
+    sheets = cs.build_sheets(_config(), ["DDJ-XP2", "XDJ-XZ", geometry_free_controller])
     assert [(s.controller, s.kind) for s in sheets] == [
         ("DDJ-XP2", "photo"),
         ("XDJ-XZ", "photo"),
-        ("DDJ-800", "table"),
+        (geometry_free_controller, "table"),
         ("", "table"),
     ]
     xp2, xz, ddj800, glossary = sheets
@@ -106,6 +106,21 @@ def test_build_sheets_on_the_real_fixture():
     # Paper has no tooltip: a last page maps each readable name to its tag.
     assert glossary.title == cs.GLOSSARY_TITLE
     assert ("Codfather ST", ("Serato tag: codfather_st",)) in [(e.control, e.functions) for e in glossary.entries]
+
+
+def test_ddj_800_and_flx4_print_their_pads_on_the_photo(monkeypatch):
+    # Issue #338: both now have geometry, so the fixture's channel 8-15 pad
+    # triggers land on photo pages, one per pad bank, both grids drawn.
+    sheets = cs.build_sheets(_config(), ["DDJ-800", "DDJ-FLX4"])
+    assert [(s.controller, s.kind) for s in sheets[:-1]] == [
+        ("DDJ-800", "photo"),
+        ("DDJ-800", "photo"),
+        ("DDJ-FLX4", "photo"),
+    ]
+    for sheet in sheets[:-1]:
+        controls = {e.control for e in sheet.entries}
+        assert {"Pad 1", "Pad 8", "Pad 1 (R)", "Pad 8 (R)"} <= controls
+        assert all(e.geometry is not None for e in sheet.entries)
 
 
 def test_a_controller_with_nothing_mapped_still_gets_a_page(monkeypatch):

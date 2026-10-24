@@ -93,3 +93,33 @@ def _restore_taxonomy_registry():
     yield
     taxonomy_registry._REGISTRY.clear()
     taxonomy_registry._REGISTRY.update(snapshot)
+
+
+GEOMETRY_FREE_CONTROLLER = "Geometry-free DDJ-800 copy"
+
+
+@pytest.fixture
+def geometry_free_controller(monkeypatch):
+    """A registered controller with no gui/geometry entry that resolves the
+    DDJ-800's triggers under its own name -- the stand-in for "a controller
+    without a real layout" now that every built-in one has geometry (#338)."""
+    import dataclasses
+
+    from djmidi.catalog._registry import _REGISTRY
+
+    source = catalog.get_definition("DDJ-800")
+    name = GEOMETRY_FREE_CONTROLLER
+
+    def rename(entry):
+        return None if entry is None else dataclasses.replace(entry, controller=name)
+
+    definition = dataclasses.replace(
+        source,
+        name=name,
+        plugin_id="test.geometry-free",
+        reference_image=None,
+        static_entries=[rename(entry) for entry in source.static_entries],
+        pad_lookup=lambda channel, kind, data1: rename(source.pad_lookup(channel, kind, data1)),
+    )
+    monkeypatch.setitem(_REGISTRY, name, definition)
+    return name

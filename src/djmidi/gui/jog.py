@@ -31,7 +31,15 @@ DDJ-FLX10    platter 0x22(Vinyl on) / 0x23(Vinyl off) /     MIDI Message
              wheel-side 0x21 / 0x26(+SHIFT)
 DDJ-REV1     platter 0x22(Vinyl on) / 0x23(Vinyl off) /     MIDI Message
              0x1F(+SHIFT); wheel-side 0x21 / 0x26(+SHIFT)   List E1, Fig D3
+DDJ-FLX4     platter 0x22 / 0x23 / 0x29(+SHIFT);            MIDI Message
+             wheel-side 0x21                                List E1, Fig 1-4
+DDJ-800      platter 0x22 / 0x23 / 0x29(+SEARCH) /          MIDI Message
+             0x1F(+SHIFT); wheel-side 0x21 / 0x26(+SHIFT)   List E3, Fig D3
 ===========  ===========================================  ==================
+
+DDJ-FLX4 and DDJ-800 also draw both jogs (``"Jog wheel"`` / ``"Jog wheel
+(R)"``) and resolve side-aware by deck channel: deck 2 (and 4 on the
+DDJ-800) is the right jog.
 
 XDJ-XZ has two physical jogs -- decks 1/3 on the left, 2/4 on the right
 tray (the same split ``layout.py``'s ``_RIGHT_GRID_DECKS`` uses for the pad
@@ -85,6 +93,21 @@ _XDJ_XZ_LEFT_KEY: CellKey = ("XDJ-XZ", "DISPLAY", "Jog wheel")
 # same way real_position_markers() keys the mirrored pad grid / DECK cluster.
 _XDJ_XZ_RIGHT_KEY: CellKey = ("XDJ-XZ", "DISPLAY", "Jog wheel (R)")
 
+# issue #338: two-jog controllers whose geometry draws both jogs, resolved
+# by deck channel like XDJ-XZ: (data1 set, right-deck channels, controller).
+# DDJ-FLX4 (MIDI Message List E1, Fig. 1-4): platter 0x22(Vinyl on) /
+# 0x23(Vinyl off) / 0x29(+SHIFT), wheel side 0x21 (+SHIFT too); decks 1/2.
+# DDJ-800 (E3, Fig. D3): platter 0x22 / 0x23 / 0x29(+SEARCH) / 0x1F(+SHIFT),
+# wheel side 0x21 / 0x26(+SHIFT); decks 1/3 left, 2/4 right.
+_SIDED_JOG_RULES: tuple[tuple[frozenset[str], frozenset[str], str], ...] = (
+    (frozenset({"33", "34", "35", "41"}), frozenset({"2"}), "DDJ-FLX4"),
+    (frozenset({"31", "33", "34", "35", "38", "41"}), frozenset({"2", "4"}), "DDJ-800"),
+)
+_SIDED_JOG_CHANNELS: dict[str, frozenset[str]] = {
+    "DDJ-FLX4": frozenset({"1", "2"}),
+    "DDJ-800": _DECK_CHANNELS,
+}
+
 
 def decode_jog_delta(value: object) -> int:
     """Signed tick delta for a 0x40-centred relative jog value: positive =
@@ -116,6 +139,10 @@ def jog_cell_keys_for_event(
     for data1_set, key in _SINGLE_JOG_RULES:
         if data1 in data1_set:
             keys.append(key)
+    for data1_set, right_channels, controller in _SIDED_JOG_RULES:
+        if data1 in data1_set and channel in _SIDED_JOG_CHANNELS[controller]:
+            label = "Jog wheel (R)" if channel in right_channels else "Jog wheel"
+            keys.append((controller, "DISPLAY", label))
     return keys
 
 

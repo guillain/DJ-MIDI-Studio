@@ -48,8 +48,8 @@ def test_rendered_page_draws_the_photo_and_labels():
     assert len(colors) > 10  # not a blank page
 
 
-def test_dialog_lists_candidates_and_preselects():
-    dialog = CheatSheetExportDialog([("DDJ-XP2", 64), ("DDJ-800", 64)], {"DDJ-XP2"})
+def test_dialog_lists_candidates_and_preselects(geometry_free_controller):
+    dialog = CheatSheetExportDialog([("DDJ-XP2", 64), (geometry_free_controller, 64)], {"DDJ-XP2"})
     assert dialog.selected_controllers() == ["DDJ-XP2"]
     ok = dialog._buttons.button(dialog._buttons.StandardButton.Ok)
     assert ok.isEnabled()

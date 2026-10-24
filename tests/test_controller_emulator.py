@@ -185,13 +185,13 @@ def test_emulator_uses_real_position_mode_for_a_geometry_controller():
         assert matches, f"no item found for {marker.key}"
 
 
-def test_emulator_falls_back_to_classic_grid_without_geometry():
-    view = EmulatorLayoutView("DDJ-FLX4")
+def test_emulator_falls_back_to_classic_grid_without_geometry(geometry_free_controller):
+    view = EmulatorLayoutView(geometry_free_controller)
     assert view._real_position_mode is False
     # The classic grid's scene rect hugs its items, not a fixed photo canvas.
     from djmidi.gui import layout_view as layout_view_mod
 
-    canvas_w, canvas_h = layout_view_mod._reference_canvas_size("DDJ-FLX4")
+    canvas_w, canvas_h = layout_view_mod._reference_canvas_size(geometry_free_controller)
     assert view._scene.sceneRect() != layout_view_mod.QRectF(0, 0, canvas_w, canvas_h)
 
 
@@ -206,8 +206,8 @@ def test_emulator_real_position_marker_click_still_resolves(monkeypatch):
     assert received == [key]
 
 
-def test_emulator_switching_to_a_geometry_controller_updates_real_position_mode():
-    view = EmulatorLayoutView("DDJ-FLX4")
+def test_emulator_switching_to_a_geometry_controller_updates_real_position_mode(geometry_free_controller):
+    view = EmulatorLayoutView(geometry_free_controller)
     assert view._real_position_mode is False
     view.set_controller("XDJ-XZ")
     assert view._real_position_mode is True
@@ -632,8 +632,8 @@ def test_emulator_photo_backdrop_can_be_turned_off():
     assert _emulator_photo_items(view) == []
 
 
-def test_emulator_photo_backdrop_noop_without_geometry():
-    view = EmulatorLayoutView("DDJ-FLX4")
+def test_emulator_photo_backdrop_noop_without_geometry(geometry_free_controller):
+    view = EmulatorLayoutView(geometry_free_controller)
     view.set_show_reference_photo(True)
     assert _emulator_photo_items(view) == []
 

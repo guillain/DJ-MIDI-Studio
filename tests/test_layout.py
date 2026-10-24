@@ -1,5 +1,6 @@
 import pytest
 
+from djmidi import catalog
 from djmidi.gui import layout
 from djmidi.gui.layout import clear_reverse_lookup_cache, reverse_lookup
 
@@ -350,11 +351,29 @@ from djmidi.parser import parse_file
 FIXTURE = Path(__file__).parent.parent / "data" / "xdj_xz-ddj_xp2-4decks.xml"
 
 
-def test_hit_matches_side_true_for_a_controller_with_no_side_split():
+def test_hit_matches_side_true_for_a_controller_with_no_side_split(geometry_free_controller):
     clear_reverse_lookup_cache()
-    hit = reverse_lookup("DDJ-FLX4")[("DDJ-FLX4", "DECK", "PLAY/PAUSE")][0]
-    assert layout.hit_matches_side("DDJ-FLX4", "DECK", hit, right_side=True) is True
-    assert layout.hit_matches_side("DDJ-FLX4", "DECK", hit, right_side=False) is True
+    name = geometry_free_controller
+    hit = reverse_lookup(name)[(name, "DECK", "PLAY/PAUSE")][0]
+    assert layout.hit_matches_side(name, "DECK", hit, right_side=True) is True
+    assert layout.hit_matches_side(name, "DECK", hit, right_side=False) is True
+
+
+def test_ddj_flx4_and_ddj_800_split_deck_and_pad_hits_by_side():
+    # Issue #338: deck 2 (and 4 on the DDJ-800) is the right deck.
+    clear_reverse_lookup_cache()
+    for controller, right in (("DDJ-FLX4", {"2"}), ("DDJ-800", {"2", "4"})):
+        assert layout.is_side_split_section(controller, "PAD")
+        assert layout.is_side_split_section(controller, "DECK")
+        play = layout.resolve_side_aware_variant(controller, (controller, "DECK", "PLAY/PAUSE (R)"))
+        assert play is not None and set(play.channels) <= right
+        play = layout.resolve_side_aware_variant(controller, (controller, "DECK", "PLAY/PAUSE"))
+        assert play is not None and not set(play.channels) & right
+        pad = layout.resolve_side_aware_variant(controller, (controller, "PAD", "Pad 3 (R)"))
+        assert pad is not None and pad.name.startswith("Deck 2 Pad 3")
+    flx4_pad = catalog.lookup("10", "Note On", "2")
+    hit = next(h for h in flx4_pad if h.controller == "DDJ-FLX4")
+    assert layout.presentation_key_for_hit(hit) == ("DDJ-FLX4", "PAD", "Pad 3 (R)")
 
 
 def test_hit_matches_side_for_a_pad_hit():
@@ -392,10 +411,11 @@ def test_presentation_key_for_hit_leaves_a_left_side_pad_unsuffixed():
     assert layout.presentation_key_for_hit(left_hit) == ("DDJ-XP2", "PAD", "Pad 3")
 
 
-def test_presentation_key_for_hit_leaves_a_no_split_control_unsuffixed():
+def test_presentation_key_for_hit_leaves_a_no_split_control_unsuffixed(geometry_free_controller):
     clear_reverse_lookup_cache()
-    hit = reverse_lookup("DDJ-FLX4")[("DDJ-FLX4", "DECK", "PLAY/PAUSE")][0]
-    assert layout.presentation_key_for_hit(hit) == ("DDJ-FLX4", "DECK", "PLAY/PAUSE")
+    name = geometry_free_controller
+    hit = reverse_lookup(name)[(name, "DECK", "PLAY/PAUSE")][0]
+    assert layout.presentation_key_for_hit(hit) == (name, "DECK", "PLAY/PAUSE")
 
 
 def test_find_controls_for_cell_separates_left_and_right_pad_controls():
@@ -437,9 +457,9 @@ def test_is_side_split_section_false_for_an_unlisted_section():
     assert layout.is_side_split_section("DDJ-XP2", "BROWSE") is False
 
 
-def test_is_side_split_section_false_for_a_controller_with_no_split_at_all():
-    assert layout.is_side_split_section("DDJ-FLX4", "PAD") is False
-    assert layout.is_side_split_section("DDJ-FLX4", "DECK") is False
+def test_is_side_split_section_false_for_a_controller_with_no_split_at_all(geometry_free_controller):
+    assert layout.is_side_split_section(geometry_free_controller, "PAD") is False
+    assert layout.is_side_split_section(geometry_free_controller, "DECK") is False
 
 
 def test_right_side_usage_deck_ids_translates_catalog_decks_to_zero_indexed():
@@ -447,8 +467,8 @@ def test_right_side_usage_deck_ids_translates_catalog_decks_to_zero_indexed():
     assert layout.right_side_usage_deck_ids("XDJ-XZ") == frozenset({"1", "3"})
 
 
-def test_right_side_usage_deck_ids_none_for_a_controller_with_no_split():
-    assert layout.right_side_usage_deck_ids("DDJ-FLX4") is None
+def test_right_side_usage_deck_ids_none_for_a_controller_with_no_split(geometry_free_controller):
+    assert layout.right_side_usage_deck_ids(geometry_free_controller) is None
 
 
 # Issue #288: DDJ-1000/FLX10/800 have a "KEY SHIFT" pad mode whose plain
