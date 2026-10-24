@@ -31,12 +31,14 @@ DDJ-FLX10    platter 0x22(Vinyl on) / 0x23(Vinyl off) /     MIDI Message
              wheel-side 0x21 / 0x26(+SHIFT)
 DDJ-REV1     platter 0x22(Vinyl on) / 0x23(Vinyl off) /     MIDI Message
              0x1F(+SHIFT); wheel-side 0x21 / 0x26(+SHIFT)   List E1, Fig D3
+DDJ-REV5     platter 0x22(Vinyl on) / 0x23(Vinyl off) /     MIDI Message
+             0x1F(+SHIFT); wheel-side 0x21 / 0x26(+SHIFT)   List E1, Fig D3
 ===========  ===========================================  ==================
 
 XDJ-XZ has two physical jogs -- decks 1/3 on the left, 2/4 on the right
 tray (the same split ``layout.py``'s ``_RIGHT_GRID_DECKS`` uses for the pad
 grids) -- so it resolves side-aware to ``"Jog wheel"`` / ``"Jog wheel
-(R)"``. DDJ-1000, DDJ-FLX10 and DDJ-REV1 are also 2-deck, but their
+(R)"``. DDJ-REV5 (issue #339) is the same: its jogs print "1/3" and "2/4". DDJ-1000, DDJ-FLX10 and DDJ-REV1 are also 2-deck, but their
 schematics draw only the left deck, so every deck channel resolves to
 their single ``"Jog wheel"`` marker.
 
@@ -72,6 +74,7 @@ _DDJ_1000_JOG_DATA1 = frozenset({"31", "33", "41"})  # 0x1F/0x21/0x29
 _DDJ_FLX10_JOG_DATA1 = frozenset({"31", "33", "34", "35", "38", "41"})
 #                                  0x1F 0x21 0x22 0x23 0x26 0x29
 _DDJ_REV1_JOG_DATA1 = frozenset({"31", "33", "34", "35", "38"})  # FLX10 minus 0x29
+_DDJ_REV5_JOG_DATA1 = _DDJ_REV1_JOG_DATA1  # the same five CCs (its MIDI Message List, D3)
 
 # Single-jog controllers: (data1 set, its one marker key).
 _SINGLE_JOG_RULES: tuple[tuple[frozenset[str], CellKey], ...] = (
@@ -84,6 +87,16 @@ _XDJ_XZ_LEFT_KEY: CellKey = ("XDJ-XZ", "DISPLAY", "Jog wheel")
 # The right-tray jog's schematic key carries layout._RIGHT_GRID_SUFFIX, the
 # same way real_position_markers() keys the mirrored pad grid / DECK cluster.
 _XDJ_XZ_RIGHT_KEY: CellKey = ("XDJ-XZ", "DISPLAY", "Jog wheel (R)")
+
+# Two-jog controllers: (data1 set, left key for decks 1/3, right key for 2/4).
+_TWO_JOG_RULES: tuple[tuple[frozenset[str], CellKey, CellKey], ...] = (
+    (_XDJ_XZ_JOG_DATA1, _XDJ_XZ_LEFT_KEY, _XDJ_XZ_RIGHT_KEY),
+    (
+        _DDJ_REV5_JOG_DATA1,
+        ("DDJ-REV5", "DISPLAY", "Jog wheel"),
+        ("DDJ-REV5", "DISPLAY", "Jog wheel (R)"),
+    ),
+)
 
 
 def decode_jog_delta(value: object) -> int:
@@ -109,10 +122,9 @@ def jog_cell_keys_for_event(
     if event_type != "Control Change" or channel not in _DECK_CHANNELS:
         return []
     keys: list[CellKey] = []
-    if data1 in _XDJ_XZ_JOG_DATA1:
-        keys.append(
-            _XDJ_XZ_RIGHT_KEY if channel in _RIGHT_DECK_CHANNELS else _XDJ_XZ_LEFT_KEY
-        )
+    for data1_set, left_key, right_key in _TWO_JOG_RULES:
+        if data1 in data1_set:
+            keys.append(right_key if channel in _RIGHT_DECK_CHANNELS else left_key)
     for data1_set, key in _SINGLE_JOG_RULES:
         if data1 in data1_set:
             keys.append(key)

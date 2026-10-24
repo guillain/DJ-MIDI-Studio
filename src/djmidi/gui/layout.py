@@ -384,6 +384,9 @@ _RIGHT_GRID_DECKS: dict[str, frozenset[int]] = {
     "DDJ-FLX10": frozenset({2, 4}),
     "DDJ-REV1": frozenset({2, 4}),
     "Numark Mixtrack Pro FX": frozenset({2}),
+    # issue #339 (keep in sync with geometry.py's copy).
+    "DDJ-REV5": frozenset({2, 4}),
+    "Hercules DJControl Inpulse 500": frozenset({2}),
 }
 _DECK_NUM_RE = re.compile(r"^Deck (\d+)")
 

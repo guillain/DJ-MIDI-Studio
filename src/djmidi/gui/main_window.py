@@ -107,7 +107,7 @@ from djmidi.gui.edit_panel import EditPanel
 from djmidi.gui.file_reveal import reveal_in_file_manager
 from djmidi.gui.first_run_wizard import FirstRunWizard
 from djmidi.gui.function_search_view import FunctionSearchView
-from djmidi.gui.geometry import resolve_geometry_label
+from djmidi.gui.geometry import CONTROL_GEOMETRY, resolve_geometry_label
 from djmidi.gui.helpful_notes_dialog import HelpfulNotesDialog
 from djmidi.gui.introduction_view import IntroductionView
 from djmidi.gui.layer_map_dialog import LayerMapDialog
@@ -2657,14 +2657,16 @@ class MainWindow(QMainWindow):
                 for view in self._emulator_views():
                     for key in jog_keys:
                         view.spin_jog_from_key(key, delta)
-                # The Controller Images overlay only carries the one
-                # "Jog wheel" geometry entry (no left/right split), so strip
-                # the mirror suffix and spin it when this tab shows that
-                # controller.
+                # Spin the Controller Images overlay's own marker when this
+                # tab shows that controller: the right-hand "Jog wheel (R)"
+                # when the controller's geometry has one (DDJ-REV5, XDJ-XZ),
+                # else its single "Jog wheel".
                 image_controller = self.controller_image_view.current_controller_name()
                 for key in jog_keys:
                     if key[0] == image_controller:
-                        label = key[2].removesuffix(layout_mod._RIGHT_GRID_SUFFIX)
+                        label = key[2]
+                        if label not in CONTROL_GEOMETRY.get(image_controller, {}):
+                            label = label.removesuffix(layout_mod._RIGHT_GRID_SUFFIX)
                         self.controller_image_view.spin_jog(label, delta)
             return
 
