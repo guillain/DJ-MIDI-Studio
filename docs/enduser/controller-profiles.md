@@ -13,6 +13,7 @@
 - [Behringer CMD Micro](#behringer-cmd-micro)
 - [Behringer CMD Studio 4a](#behringer-cmd-studio-4a)
 - [Korg nanoPAD2](#korg-nanopad2)
+- [Pioneer DDJ-FLX4](#pioneer-ddj-flx4)
 - [Hercules DJControl Inpulse 500](#hercules-djcontrol-inpulse-500)
 - [Pad modes](#pad-modes)
 - [Add your own controller](#add-your-own-controller)
@@ -29,8 +30,8 @@
 | Pioneer DDJ-FLX10 | Official MIDI Message List E1 | ✅ | ✅ | Not yet |
 | Pioneer DDJ-REV1 | Official MIDI Message List E1 | ✅ | ✅ | Not yet |
 | Pioneer DDJ-REV5 | Official MIDI Message List E1 | Grid | — | Not yet |
-| Pioneer DDJ-800 | Official MIDI Message List E3 | Grid | — | Not yet |
-| Pioneer DDJ-FLX4 | Conservative DDJ-400-family values; official list archived, not yet cross-checked | Grid | — | Not yet |
+| Pioneer DDJ-800 | Official MIDI Message List E3 | ✅ | ✅ | Not yet |
+| Pioneer DDJ-FLX4 | Official MIDI Message List E1 | ✅ | ✅ | Not yet |
 | Numark Mixtrack Pro FX | Conservative community values; user guide for the layout | ✅ | — | Not yet |
 | Hercules DJControl Inpulse 500 | Official MIDI Commands sheet (2022) | Grid | — | Not yet |
 | Behringer CMD LC-1 | Captured from a real unit with Controller Setup (no vendor list exists), checked against a real Serato export | ✅ | — | ✅ |
@@ -109,6 +110,23 @@ only change the controller's own state and send nothing to map. In
 Controller Images, the `MIDI` layer shows a Korg editor layout
 (notes 36–51) that differs from the captured unit: use it for pad positions,
 not note numbers.
+
+## Pioneer DDJ-FLX4
+
+Transcribed from the official Pioneer MIDI Message List bundled with the
+app (`Help → Controller References`); not yet checked on a real unit. Deck
+buttons send on MIDI channel 1 (deck 1) and 2 (deck 2), e.g. `PLAY/PAUSE`
+is note 11 and `CUE` note 12. The pads send on channel 8 (deck 1) and 10
+(deck 2), one channel higher with SHIFT; each of the 8 pad modes has its own
+16 notes, so a pad is named with its mode, e.g.
+`Deck 1 Pad 3 (BEAT JUMP)`. The four pad-mode buttons, `BROWSE` push, both
+`LOAD` buttons, the Beat FX buttons, both `CUE` buttons of the mixer,
+`MASTER CUE`, `SMART CFX` and `SMART FADER` are named too. The FX CH SELECT
+switch and the rear MONO/STEREO switch are left out.
+
+Profiles before v0.48.138 used community values (`PLAY/PAUSE` on note 0,
+pads on channels 6 and 7, and KEYLOCK/SLIP/REVERSE/QUANTIZE buttons the
+FLX4 doesn't have) that don't match the official list.
 
 ## Hercules DJControl Inpulse 500
 

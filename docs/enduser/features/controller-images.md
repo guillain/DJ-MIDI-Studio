@@ -49,11 +49,12 @@ other way round, and both can be off. The layout was measured on the
 photo only, layout only, photo + layout, or the MIDI picture alone. Here the
 layout starts off; in the other views it starts on, over the photo.
 
-Twelve controllers have a measured layout: DDJ-XP2, XDJ-XZ, DDJ-1000,
-DDJ-FLX10, DDJ-REV1, DDJ-REV5, Numark Mixtrack Pro FX, Hercules DJControl
-Inpulse 500, Behringer CMD LC-1, CMD Micro and CMD Studio 4a, and Korg
-nanoPAD2, with both decks where the controller has two. Others show their
-photo here, and a grid in the other views. The Inpulse 500's jog markers
+Every built-in controller has a measured layout: DDJ-XP2, XDJ-XZ, DDJ-1000,
+DDJ-FLX10, DDJ-FLX4, DDJ-REV1, DDJ-REV5, DDJ-800, Numark Mixtrack Pro FX,
+Hercules DJControl Inpulse 500, Behringer CMD LC-1, CMD Micro and CMD
+Studio 4a, and Korg nanoPAD2, with both decks where the controller has two.
+A controller profile you build yourself shows its photo here, and a grid in
+the other views. The Inpulse 500's jog markers
 don't turn with the platter yet: its jogs use a different encoding.
 
 With the [Live Monitor](live-monitor.md) running, a marker flashes when you
