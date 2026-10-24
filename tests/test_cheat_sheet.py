@@ -2,6 +2,8 @@
 
 from pathlib import Path
 
+from djmidi import catalog
+from djmidi.catalog._registry import ControllerDefinition
 from djmidi.gui import cheat_sheet as cs
 from djmidi.model import Control, MappingElement, MidiConfig, UserIO
 from djmidi.parser import parse_file
@@ -106,10 +108,20 @@ def test_build_sheets_on_the_real_fixture():
     assert ("Codfather ST", ("Serato tag: codfather_st",)) in [(e.control, e.functions) for e in glossary.entries]
 
 
-def test_a_controller_with_nothing_mapped_still_gets_a_page():
-    # DDJ-FLX4: no geometry and no trigger shared with the fixture (the
-    # Inpulse 500 shares channel 8 pad notes with DDJ-XP2 since #247).
-    sheets = cs.build_sheets(_config(), ["Korg nanoPAD2", "DDJ-FLX4"])
+def test_a_controller_with_nothing_mapped_still_gets_a_page(monkeypatch):
+    # A throwaway controller with no geometry and no trigger shared with the
+    # fixture: every registered one now has geometry, and DDJ-FLX4's real
+    # pad channels (8-11, issue #338) overlap the fixture's DDJ-XP2 pads.
+    name = "__NothingMappedTest__"
+    monkeypatch.setitem(
+        catalog._registry._REGISTRY,
+        name,
+        ControllerDefinition(
+            name=name,
+            static_entries=[catalog.ControlInfo(name, "DECK", "PLAY", "NOTE", ("16",), "127")],
+        ),
+    )
+    sheets = cs.build_sheets(_config(), ["Korg nanoPAD2", name])
     assert [s.kind for s in sheets] == ["photo", "table", "table"]
     assert all(not s.entries for s in sheets[:2])
     assert sheets[2].title == cs.GLOSSARY_TITLE
