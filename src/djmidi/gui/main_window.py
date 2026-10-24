@@ -2648,29 +2648,30 @@ class MainWindow(QMainWindow):
             event.channel, event.event_type, event.data1
         )
         if jog_keys:
-            delta = jog_mod.decode_jog_delta(value)
-            if delta:
+            # Each controller decodes its own relative encoding (the
+            # Inpulse 500 is two's complement, the rest 0x40-centred).
+            image_controller = self.controller_image_view.current_controller_name()
+            for key in jog_keys:
+                delta = jog_mod.decode_jog_delta_for_key(key, value)
+                if not delta:
+                    continue
                 for lv in (
                     self.layout_view,
                     self.deck_layout_view,
                     self.controller_layout_view,
                 ):
-                    for key in jog_keys:
-                        lv.spin_jog(key, delta)
+                    lv.spin_jog(key, delta)
                 for view in self._emulator_views():
-                    for key in jog_keys:
-                        view.spin_jog_from_key(key, delta)
+                    view.spin_jog_from_key(key, delta)
                 # Spin the Controller Images overlay's own marker when this
                 # tab shows that controller: the right-hand "Jog wheel (R)"
                 # when the controller's geometry has one (DDJ-REV5, XDJ-XZ),
                 # else its single "Jog wheel".
-                image_controller = self.controller_image_view.current_controller_name()
-                for key in jog_keys:
-                    if key[0] == image_controller:
-                        label = key[2]
-                        if label not in CONTROL_GEOMETRY.get(image_controller, {}):
-                            label = label.removesuffix(layout_mod._RIGHT_GRID_SUFFIX)
-                        self.controller_image_view.spin_jog(label, delta)
+                if key[0] == image_controller:
+                    label = key[2]
+                    if label not in CONTROL_GEOMETRY.get(image_controller, {}):
+                        label = label.removesuffix(layout_mod._RIGHT_GRID_SUFFIX)
+                    self.controller_image_view.spin_jog(label, delta)
             return
 
         # A note release arrives as "Note Off" or as "Note On" with velocity

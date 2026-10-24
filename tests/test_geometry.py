@@ -901,13 +901,25 @@ def test_hercules_inpulse_500_geometry_covers_every_catalog_entry_on_both_decks(
         | {f"Pad {n} (R)" for n in range(1, 9)}
     )
     # Every catalog name finds its marker, SHIFT and long-press layers
-    # included -- except the two "(+SHIFT press)" encoder pushes, which
-    # layout._base_name doesn't fold into "(press)".
+    # included (the "(+SHIFT press)" encoder pushes since issue #347).
     for entry in catalog.static_entries("Hercules DJControl Inpulse 500"):
-        if entry.name.endswith("(+SHIFT press)"):
-            continue
         assert resolve_geometry_label("Hercules DJControl Inpulse 500", entry.name) is not None, entry.name
     assert resolve_geometry_label("Hercules DJControl Inpulse 500", "PAD MODE 7") == "PAD MODE 3/7"
+
+
+def test_inpulse_500_shift_encoder_pushes_resolve_to_their_press_marker():
+    # issue #347: "AUTOLOOP (+SHIFT press)" / "BROWSE (+SHIFT press)" are
+    # the same physical push as their plain "(press)" entries.
+    controller = "Hercules DJControl Inpulse 500"
+    for channel, label in (("5", "AUTOLOOP (press)"), ("4", "BROWSE (press)")):
+        data1 = "44" if label.startswith("AUTOLOOP") else "0"
+        (hit,) = [h for h in catalog.lookup(channel, "NOTE", data1) if h.controller == controller]
+        assert hit.name.endswith("(+SHIFT press)")
+        assert resolve_geometry_label(controller, hit.name) == label
+    # DDJ-XP2's bare "Rotary Selector" still resolves through _base_name.
+    assert resolve_geometry_label("DDJ-XP2", "Rotary Selector (+SHIFT press)") == resolve_geometry_label(
+        "DDJ-XP2", "Rotary Selector"
+    )
 
 
 def test_issue_339_markers_do_not_overlap_and_sit_on_their_side():
