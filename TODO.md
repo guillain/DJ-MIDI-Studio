@@ -132,6 +132,10 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Plug-in Sync port identity** (`v0.48.130-plug-in-port-identity`, issue #335) — the trailing port
+  index is stripped only on Windows, where it is appended; on macOS/Linux the full port name identifies a
+  device, so controllers whose names end in a model number (`DJControl Inpulse 500` / `300`) are no longer
+  counted as one, and plugging one never re-syncs the other.
 - [x] **French cheat sheet and mapping comparison** (`v0.48.129-french-cheat-sheet-diff`, issue #333) — the
   cheat sheet export window and the PDF it writes (page titles, glossary, column headings, `Page N`, legend,
   footer, PDF title) follow the interface language; the mapping comparison window and its report (group names,
