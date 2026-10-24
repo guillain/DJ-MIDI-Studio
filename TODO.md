@@ -132,6 +132,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **DDJ-REV5 catalog fix** (`v0.48.139-ddj-rev5-catalog`, issue #346) — BPM TRANSITION SELECT (D9) moved to
+  MIDI channel 7 note 62, as the bundled MIDI Message List prints it (status `0x96`); the catalog had it on deck
+  channels 1-4, where note 62 is DECK1/3 / DECK2/4's deck-on/off indicator (D26), so a live press resolved to
+  nothing. Every other static entry re-checked against a 300 DPI render and matches (pinned by a test); the PDF's
+  own contradiction (BPM TRANSITION SELECT +SHIFT and FX1-1 +SHIFT both on channel 7 note 48) is documented, both
+  rows staying out as `+SHIFT` rows. Geometry labels unchanged.
 - [x] **DDJ-REV5 and Inpulse 500 real layout** (`v0.48.137-geometry-rev5-inpulse500`, issue #339) — every
   catalog control of both controllers has a `CONTROL_GEOMETRY` marker on its flat `reference.png`, both decks
   (`" (R)"` copies) and both pad grids, each tied to its catalog name through the bundled PDF's callouts
@@ -1717,7 +1723,7 @@ of official MIDI documentation, and fit with the current catalog architecture.
 - [x] **DDJ-REV1** — official MIDI Message List E1, conservative Serato profile, and reference artwork delivered.
 - [x] **Numark Mixtrack Pro FX** — initial discrete-control profile delivered.
 - [x] **Hercules DJControl Inpulse 500** — initial discrete-control profile delivered.
-- [x] **DDJ-REV5** (not originally on this list either, and mislabeled as a "two-deck battle controller" before an official MIDI Message List PDF existed — it's actually a four-deck flagship): catalog module transcribed from the maintainer-supplied PDF in `v0.47.96-ddj-rev5-catalog` — see Recent evolution chapters.
+- [x] **DDJ-REV5** (not originally on this list either, and mislabeled as a "two-deck battle controller" before an official MIDI Message List PDF existed — it's actually a four-deck flagship): catalog module transcribed from the maintainer-supplied PDF in `v0.47.96-ddj-rev5-catalog`; BPM TRANSITION SELECT's channel corrected against a 300 DPI render of that PDF in `v0.48.139-ddj-rev5-catalog` (issue #346) — see Recent evolution chapters.
 - [x] **DDJ-800** (not originally on this list either; was listed as a "New candidate" until its own maintainer-supplied MIDI Message List PDF arrived): catalog module transcribed from that PDF in `v0.47.97-ddj-800-catalog` — see Recent evolution chapters.
 - [ ] Verify the delivered FLX4, FLX10, REV1, Numark, Hercules, DDJ-REV5, and DDJ-800 profiles against target hardware/firmware captures; continuous controls and missing vendor-specific evidence remain explicitly out of scope until verified.
 - [x] **DDJ-1000** (not originally on this list, but the same class of problem): its catalog data was checked against the official bundled PDF (not hardware) and corrected in `v0.47.31-ddj-1000-catalog-fix` — see Recent evolution chapters. **DDJ-FLX10 had the same kind of problem, worse**: it had reused DDJ-1000's (wrong) values wholesale, and its real controls diverge substantially from DDJ-1000's (ACTIVE PART DRUMS/VOCAL/INST, MIX POINT SELECT/LINK, CUE/LOOP CALL <>/>>) — fully re-transcribed from FLX10's own PDF (not a value fix) in `v0.47.32-ddj-flx10-catalog-fix`, see Recent evolution chapters.
