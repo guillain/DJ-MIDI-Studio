@@ -31,9 +31,13 @@ from djmidi import catalog
 from djmidi.gui import help_texts
 from djmidi.gui.controller_emulator import ControllerEmulatorView
 from djmidi.gui.help_button import help_button
+from djmidi.gui.translation import translator
 from djmidi.midi_io import MidiEvent
 from djmidi.model import MidiConfig
 from djmidi.stage import DEFAULT_MAX_LINES, StageLog, format_stage_line
+
+# ON/OFF and the raw trigger come from Qt-free djmidi.stage (issue #337).
+_stage_translate = translator("Stage")
 
 # High contrast: pure black background, white text, one bright accent for
 # the newest event. Set on this window only, so it overrides the app theme
@@ -95,7 +99,7 @@ class StageWindow(QWidget):
     ) -> None:
         super().__init__(parent, Qt.WindowType.Window)
         self.setObjectName("stageWindow")
-        self.setWindowTitle("DJ MIDI Studio — Stage Mode")
+        self.setWindowTitle(self.tr("DJ MIDI Studio — Stage Mode"))
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         self.setStyleSheet(STAGE_STYLESHEET)
         self._log = StageLog(max_lines)
@@ -104,9 +108,9 @@ class StageWindow(QWidget):
             config_provider=config_provider, initial_controller=initial_controller
         )
 
-        title = QLabel("Stage Mode")
+        title = QLabel(self.tr("Stage Mode"))
         title.setObjectName("stageTitle")
-        exit_button = QPushButton("Exit (Esc)")
+        exit_button = QPushButton(self.tr("Exit (Esc)"))
         exit_button.clicked.connect(self.close)
 
         header = QHBoxLayout()
@@ -115,9 +119,9 @@ class StageWindow(QWidget):
         header.addWidget(help_button(self, *help_texts.STAGE_MODE))
         header.addWidget(exit_button)
 
-        monitor_title = QLabel("Live MIDI")
+        monitor_title = QLabel(self.tr("Live MIDI"))
         monitor_title.setObjectName("stageTitle")
-        self._latest_label = QLabel("Waiting for MIDI…")
+        self._latest_label = QLabel(self.tr("Waiting for MIDI…"))
         self._latest_label.setObjectName("stageLatest")
         self._latest_label.setWordWrap(True)
         self._log_list = QListWidget()
@@ -157,7 +161,7 @@ class StageWindow(QWidget):
 
     def add_event(self, event: MidiEvent, hits: list[catalog.ControlInfo]) -> None:
         """Show one live event in the compact monitor."""
-        line = format_stage_line(event, hits)
+        line = format_stage_line(event, hits, _stage_translate)
         self._log.add(line)
         self._latest_label.setText(line)
         self._log_list.clear()

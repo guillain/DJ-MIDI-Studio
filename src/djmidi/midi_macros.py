@@ -26,7 +26,11 @@ synchronously with an injectable ``sleep`` (tests, scripts).
 
 Either way a run opens its output port once, sends every step through it
 and closes it when the run ends or fails (issue #308, as Sync does since
-#297): :func:`macro_port_opener` picks how the port is opened.
+#297): :func:`macro_port_opener` picks how the port is opened. A wait longer
+than :data:`HOLD_PORT_MAX_DELAY_MS` is the exception (issue #336): the port
+is closed before it and reopened after, since on Windows an output port
+usually takes one client and a held port would block Sync, Live send and
+other macros on that controller for the whole wait.
 """
 
 from __future__ import annotations
@@ -35,7 +39,7 @@ import json
 import logging
 import time
 from collections.abc import Callable, Iterable, Sequence
-from contextlib import AbstractContextManager, nullcontext
+from contextlib import AbstractContextManager, ExitStack, nullcontext
 from dataclasses import dataclass, field
 from functools import partial
 from pathlib import Path
@@ -54,6 +58,10 @@ FORMAT_VERSION = 1
 # A macro is a quick on-stage action, not a sequencer: one minute per step
 # is far beyond any sensible use and bounds a typo like "20000000".
 MAX_DELAY_MS = 60_000
+# A run keeps its port open through a wait up to this long (a button press
+# and release, issue #308); a longer wait releases it and reopens it after,
+# so the controller stays usable meanwhile (issue #336).
+HOLD_PORT_MAX_DELAY_MS = 500
 
 
 # Editor errors (issue #326): English templates, translated by the caller
@@ -434,20 +442,28 @@ def run_macro(
     port_opener: PortOpener | None = None,
 ) -> MacroResult:
     """Plays ``macro`` synchronously, sleeping each step's delay. The port
-    is opened once for the whole run and closed when it ends (issue #308).
-    A failing open or send stops the macro (later steps may depend on it)
-    and is reported."""
+    is opened once and kept open across the run (issue #308), except that a
+    delay longer than :data:`HOLD_PORT_MAX_DELAY_MS` is slept with the port
+    closed, reopening it for the next step (issue #336). A failing open or
+    send stops the macro (later steps may depend on it) and is reported."""
     failed = unplayable_result(macro, available_ports)
     if failed is not None:
         return failed
     port = resolve_macro_port(macro, available_ports)
     assert port is not None  # checked by unplayable_result
+    opener = macro_port_opener(sender, port_opener)
     sent = 0
     try:
-        with macro_port_opener(sender, port_opener)(port) as send:
+        with ExitStack() as stack:
+            send: Callable[..., None] | None = None
             for step in macro.steps:
+                if step.delay_ms > HOLD_PORT_MAX_DELAY_MS and send is not None:
+                    stack.close()
+                    send = None
                 if step.delay_ms:
                     sleep(step.delay_ms / 1000)
+                if send is None:
+                    send = stack.enter_context(opener(port))
                 send_step(send, step.message)
                 sent += 1
     except Exception as exc:  # noqa: BLE001 - report the failure instead of crashing the caller

@@ -50,6 +50,10 @@ which beats a piece of a word, which beats letters in order (`cs` finds
 it higher. On a tie, actions come first, then tabs, functions and tracks —
 a track called *Save* never pushes **Save Mapping** down.
 
+Case and accents don't matter: `pref`, `préf` and `PRÉF` all find
+**Préférences** in the French interface, `bibliotheque` finds
+**Bibliothèque**.
+
 ## Keys
 
 | Key | Does |

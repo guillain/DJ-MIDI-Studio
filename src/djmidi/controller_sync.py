@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import logging
 import re
+import sys
 from collections import Counter
 from collections.abc import Callable, Iterable, Sequence
 from contextlib import AbstractContextManager, nullcontext
@@ -38,6 +39,14 @@ _NO_SET = QT_TRANSLATE_NOOP("ControllerSync", "No controller sync set recorded")
 _SENT = QT_TRANSLATE_NOOP("ControllerSync", "{controller} ({count} msg)")
 _FAILED = QT_TRANSLATE_NOOP("ControllerSync", "{controller} ({error})")
 _SYNCED = QT_TRANSLATE_NOOP("ControllerSync", "Synced {ok}/{total} controller(s): {parts}")
+# Message validation errors, shown by the sync set editor (issue #337).
+_UNSUPPORTED_TYPE = QT_TRANSLATE_NOOP("ControllerSync", "Unsupported event_type: {type}")
+_NOT_INTEGER = QT_TRANSLATE_NOOP("ControllerSync", "{field} must be an integer")
+_OUT_OF_RANGE = QT_TRANSLATE_NOOP("ControllerSync", "{field} must be in [{low}, {high}]")
+_MESSAGE_ERROR = QT_TRANSLATE_NOOP("ControllerSync", "Message {number}: {error}")
+_FIELD_CHANNEL = QT_TRANSLATE_NOOP("ControllerSync", "channel")
+_FIELD_DATA1 = QT_TRANSLATE_NOOP("ControllerSync", "data1")
+_FIELD_DATA2 = QT_TRANSLATE_NOOP("ControllerSync", "data2")
 
 _EVENT_TYPES = {
     "note on": "Note On",
@@ -47,21 +56,21 @@ _EVENT_TYPES = {
 }
 
 
-def _normalize_event_type(text: str) -> str:
+def _normalize_event_type(text: str, translate: Translate = untranslated) -> str:
     key = str(text).strip().lower().replace("-", " ").replace("_", " ")
     try:
         return _EVENT_TYPES[key]
     except KeyError:
-        raise ValueError(f"Unsupported event_type: {text!r}") from None
+        raise ValueError(translate(_UNSUPPORTED_TYPE).format(type=repr(text))) from None
 
 
-def _bounded(value: object, field_name: str, low: int, high: int) -> int:
+def _bounded(value: object, field_name: str, low: int, high: int, translate: Translate = untranslated) -> int:
     try:
         number = int(str(value).strip())
     except ValueError as exc:
-        raise ValueError(f"{field_name} must be an integer") from exc
+        raise ValueError(translate(_NOT_INTEGER).format(field=translate(field_name))) from exc
     if not low <= number <= high:
-        raise ValueError(f"{field_name} must be in [{low}, {high}]")
+        raise ValueError(translate(_OUT_OF_RANGE).format(field=translate(field_name), low=low, high=high))
     return number
 
 
@@ -73,12 +82,20 @@ class SyncMessage:
     data2: int
 
     @classmethod
-    def create(cls, event_type: object, channel: object, data1: object, data2: object) -> SyncMessage:
+    def create(
+        cls,
+        event_type: object,
+        channel: object,
+        data1: object,
+        data2: object,
+        translate: Translate = untranslated,
+    ) -> SyncMessage:
+        """`translate` words a validation error in the interface language."""
         return cls(
-            event_type=_normalize_event_type(str(event_type)),
-            channel=_bounded(channel, "channel", 1, 16),
-            data1=_bounded(data1, "data1", 0, 127),
-            data2=_bounded(data2, "data2", 0, 127),
+            event_type=_normalize_event_type(str(event_type), translate),
+            channel=_bounded(channel, _FIELD_CHANNEL, 1, 16, translate),
+            data1=_bounded(data1, _FIELD_DATA1, 0, 127, translate),
+            data2=_bounded(data2, _FIELD_DATA2, 0, 127, translate),
         )
 
     def to_dict(self) -> dict[str, object]:
@@ -184,18 +201,21 @@ def move_message(messages: Sequence[SyncMessage], index: int, offset: int) -> tu
     return tuple(items)
 
 
-def messages_from_rows(rows: Iterable[Sequence[object]]) -> tuple[SyncMessage, ...]:
+def messages_from_rows(
+    rows: Iterable[Sequence[object]], translate: Translate = untranslated
+) -> tuple[SyncMessage, ...]:
     """Validates edited ``(event_type, channel, data1, data2)`` rows.
 
     Raises ``ValueError`` naming the first bad row (1-based), so an editor can
-    point at it instead of silently dropping the message."""
+    point at it instead of silently dropping the message; worded in the
+    language `translate` gives (issue #337)."""
     messages: list[SyncMessage] = []
     for number, row in enumerate(rows, start=1):
         try:
             event_type, channel, data1, data2 = row
-            messages.append(SyncMessage.create(event_type, channel, data1, data2))
+            messages.append(SyncMessage.create(event_type, channel, data1, data2, translate))
         except ValueError as exc:
-            raise ValueError(f"Message {number}: {exc}") from None
+            raise ValueError(translate(_MESSAGE_ERROR).format(number=number, error=exc)) from None
     return tuple(messages)
 
 
@@ -400,10 +420,18 @@ def run_sync(
 _PORT_INDEX_SUFFIX = re.compile(r"\s+\d+$")
 
 
-def port_identity(port: str) -> str:
+def port_identity(port: str, platform: str | None = None) -> str:
     """A port name without the trailing index Windows adds (``"DDJ-XP2 1"``
-    -> ``"DDJ-XP2"``), which changes whenever another device comes or goes."""
-    return _PORT_INDEX_SUFFIX.sub("", port.strip())
+    -> ``"DDJ-XP2"``), which changes whenever another device comes or goes.
+
+    Only on Windows (``platform``, default :data:`sys.platform`), and only
+    one number: elsewhere a trailing number is part of the device name
+    (``"DJControl Inpulse 500"``, ``"IAC Driver Bus 1"``), so the full name
+    is the identity (issue #335)."""
+    name = port.strip()
+    if (sys.platform if platform is None else platform) != "win32":
+        return name
+    return _PORT_INDEX_SUFFIX.sub("", name, count=1)
 
 
 class PlugInSyncTracker:
@@ -428,7 +456,8 @@ class PlugInSyncTracker:
     used, so a controller isn't synced twice at launch.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, platform: str | None = None) -> None:
+        self._platform = platform
         self._known: Counter[str] | None = None
 
     @property
@@ -436,7 +465,7 @@ class PlugInSyncTracker:
         return self._known is not None
 
     def seed(self, available_ports: Iterable[str]) -> None:
-        self._known = Counter(port_identity(port) for port in available_ports)
+        self._known = Counter(port_identity(port, self._platform) for port in available_ports)
 
     def reset(self) -> None:
         """Forgets the ports, so the next :meth:`due` call only re-seeds."""
@@ -455,7 +484,7 @@ class PlugInSyncTracker:
             sync_set
             for sync_set in sync_sets
             if (port := resolve_output_port(sync_set, available_ports)) is not None
-            and port_identity(port) in appeared
+            and port_identity(port, self._platform) in appeared
         ]
 
 

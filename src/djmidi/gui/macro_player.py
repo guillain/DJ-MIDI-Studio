@@ -7,13 +7,22 @@ sends the steps due right away and schedules the rest with
 once. A macro whose steps have no delay plays synchronously and
 :meth:`MacroPlayer.play` returns its result immediately.
 
-Each run opens its output port once and keeps it open across its delays
-(issue #308): reopening the port per step is slow and some drivers drop
-messages on reopen (#297). The trade-off is a port held open across
-event-loop turns, so every way a run can end closes it -- the last step,
-a failing open or send, :meth:`MacroPlayer.stop_all`, and the player
-being destroyed with runs still waiting (a pending timer then never fires).
-A macro waits at most ``MAX_DELAY_MS`` per step, so the hold is bounded.
+Each run keeps its output port open across short delays (issue #308):
+reopening the port per step is slow and some drivers drop messages on
+reopen (#297). On Windows, though, an output port usually takes one client
+(issue #336), so the player never lets a run lock a controller out:
+
+* runs on the same port share one ref-counted handle (:class:`_SharedPort`),
+  opened by the first run that needs it and closed when the last one lets
+  go, so overlapping macros -- or the same one pressed twice -- work;
+* a run releases its hold before a delay longer than
+  ``HOLD_PORT_MAX_DELAY_MS`` and reopens the port when the delay is over,
+  so Sync, Live send and other apps can use the controller meanwhile.
+
+A held port spans event-loop turns, so every way a run can end lets go of
+it -- the last step, a failing open or send, :meth:`MacroPlayer.stop_all`,
+and the player being destroyed with runs still waiting (every handle is
+closed then and a pending timer never fires).
 """
 
 from __future__ import annotations
@@ -27,6 +36,7 @@ from functools import partial
 from PySide6.QtCore import QObject, QTimer, Signal
 
 from djmidi.midi_macros import (
+    HOLD_PORT_MAX_DELAY_MS,
     MacroResult,
     MidiMacro,
     PortOpener,
@@ -47,23 +57,31 @@ class _Run:
     port: str
     index: int = 0
     waited: bool = False
-    # Holds the open port until the run ends.
-    stack: ExitStack = field(default_factory=ExitStack)
+    # The shared port's sender while this run holds it, else None.
     send: Callable[..., None] | None = None
 
 
-def _close_run(run: _Run) -> None:
+@dataclass(eq=False)
+class _SharedPort:
+    """One open output port and how many runs hold it."""
+
+    send: Callable[..., None]
+    stack: ExitStack = field(default_factory=ExitStack)
+    holders: int = 0
+
+
+def _close_port(name: str, shared: _SharedPort) -> None:
     try:
-        run.stack.close()
+        shared.stack.close()
     except Exception as exc:  # noqa: BLE001 - closing must never crash the app
-        _LOGGER.warning("Macro %r: closing %r failed: %s", run.macro.name, run.port, exc)
+        _LOGGER.warning("Macro player: closing %r failed: %s", name, exc)
 
 
-def _close_runs(runs: list[_Run]) -> None:
-    """Closes the ports of runs left waiting when the player is destroyed.
-    Takes the list, not the player, since the player is gone by then."""
-    while runs:
-        _close_run(runs.pop())
+def _close_ports(ports: dict[str, _SharedPort]) -> None:
+    """Closes the ports still held when the player is destroyed. Takes the
+    dict, not the player, since the player is gone by then."""
+    while ports:
+        _close_port(*ports.popitem())
 
 
 class MacroPlayer(QObject):
@@ -75,12 +93,16 @@ class MacroPlayer(QObject):
         sender: Callable[..., None] | None = None,
         parent: QObject | None = None,
         port_opener: PortOpener | None = None,
+        hold_port_ms: int = HOLD_PORT_MAX_DELAY_MS,
     ) -> None:
         super().__init__(parent)
         self._sender = sender
         self._port_opener = port_opener
+        # Longest delay a run waits with its port held (tests shorten it).
+        self._hold_port_ms = hold_port_ms
         self._running: list[_Run] = []
-        self.destroyed.connect(partial(_close_runs, self._running))
+        self._ports: dict[str, _SharedPort] = {}
+        self.destroyed.connect(partial(_close_ports, self._ports))
 
     @property
     def running(self) -> int:
@@ -98,14 +120,39 @@ class MacroPlayer(QObject):
         assert port is not None  # checked by unplayable_result
         run = _Run(macro, port)
         self._running.append(run)
-        try:
-            # Resolved per run, so the default stays midi_io.open_midi_output
+        return self._advance(run)
+
+    @property
+    def open_ports(self) -> list[str]:
+        """The ports a run currently holds open."""
+        return list(self._ports)
+
+    def _acquire(self, run: _Run) -> None:
+        """Gives ``run`` the shared handle of its port, opening it first when
+        no other run holds it. Raises when the port won't open."""
+        shared = self._ports.get(run.port)
+        if shared is None:
+            stack = ExitStack()
+            # Resolved per open, so the default stays midi_io.open_midi_output
             # as it is when the macro plays (tests patch it).
             opener = macro_port_opener(self._sender, self._port_opener)
-            run.send = run.stack.enter_context(opener(port))
-        except Exception as exc:  # noqa: BLE001 - a port that won't open must not crash the app
-            return self._finish(run, str(exc))
-        return self._advance(run)
+            send = stack.enter_context(opener(run.port))
+            shared = self._ports[run.port] = _SharedPort(send, stack)
+        shared.holders += 1
+        run.send = shared.send
+
+    def _release(self, run: _Run) -> None:
+        """Lets go of ``run``'s hold; the last holder closes the port."""
+        if run.send is None:
+            return
+        run.send = None
+        shared = self._ports.get(run.port)
+        if shared is None:
+            return
+        shared.holders -= 1
+        if shared.holders <= 0:
+            del self._ports[run.port]
+            _close_port(run.port, shared)
 
     def stop_all(self) -> None:
         """Cancels every waiting run, closing its port; each reports a
@@ -116,16 +163,20 @@ class MacroPlayer(QObject):
     def _advance(self, run: _Run) -> MacroResult | None:
         if run not in self._running:  # cancelled while its timer was pending
             return None
-        assert run.send is not None  # opened by play()
         steps = run.macro.steps
         while run.index < len(steps):
             step = steps[run.index]
             if step.delay_ms and not run.waited:
                 run.waited = True
+                if step.delay_ms > self._hold_port_ms:
+                    self._release(run)  # don't lock the controller out (#336)
                 QTimer.singleShot(step.delay_ms, self, lambda run=run: self._advance(run))
                 return None
             run.waited = False
             try:
+                if run.send is None:
+                    self._acquire(run)
+                assert run.send is not None
                 send_step(run.send, step.message)
             except Exception as exc:  # noqa: BLE001 - a failing port must not crash the app
                 return self._finish(run, str(exc))
@@ -135,7 +186,7 @@ class MacroPlayer(QObject):
     def _finish(self, run: _Run, error: str = "") -> MacroResult:
         if run in self._running:
             self._running.remove(run)
-        _close_run(run)
+        self._release(run)
         if error and error != CANCELLED:
             _LOGGER.warning("Macro %r: sending to %r failed after %d message(s): %s", run.macro.name, run.port, run.index, error)
         result = MacroResult(run.macro.name, run.port, run.index, len(run.macro.steps), error)

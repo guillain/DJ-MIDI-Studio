@@ -326,7 +326,9 @@ class PreferencesDialog(QDialog):
             port_combo.addItem(self.tr("Auto (match controller name)"), "")
             for port in dict.fromkeys([*available, sync_set.output_port]):
                 if port:
-                    port_combo.addItem(port if port in available else f"{port} (not connected)", port)
+                    port_combo.addItem(
+                        port if port in available else self.tr("{port} (not connected)").format(port=port), port
+                    )
             port_combo.setCurrentIndex(max(port_combo.findData(sync_set.output_port), 0))
             self._sync_table.setCellWidget(row, _PORT_COLUMN, port_combo)
             self._sync_table.setItem(row, _MESSAGES_COLUMN, QTableWidgetItem(str(len(sync_set.messages))))
@@ -396,9 +398,9 @@ class PreferencesDialog(QDialog):
     def _browse_log_path(self) -> None:
         path, _ = QFileDialog.getSaveFileName(
             self,
-            "Select log file location",
+            self.tr("Select log file location"),
             self._log_path.text() or str(default_log_path()),
-            "Log files (*.log);;All files (*)",
+            self.tr("Log files (*.log);;All files (*)"),
         )
         if path:
             self._log_path.setText(path)
@@ -406,9 +408,9 @@ class PreferencesDialog(QDialog):
     def _browse_setup_file(self) -> None:
         path, _ = QFileDialog.getOpenFileName(
             self,
-            "Select Controller Setup default file",
+            self.tr("Select Controller Setup default file"),
             self._setup_file.text(),
-            "Controller Setup session or mapping (*.json *.xml *.tsi);;All files (*)",
+            self.tr("Controller Setup session or mapping (*.json *.xml *.tsi);;All files (*)"),
         )
         if path:
             self._setup_file.setText(path)

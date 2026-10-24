@@ -398,6 +398,88 @@ Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-m
     </message>
 </context>
 <context>
+    <name>CommandPaletteDialog</name>
+    <message>
+        <source>{title} (on)</source>
+        <translation>{title} (activé)</translation>
+    </message>
+    <message>
+        <source>{title} (off)</source>
+        <translation>{title} (désactivé)</translation>
+    </message>
+    <message>
+        <source>Command Palette</source>
+        <translation>Palette de commandes</translation>
+    </message>
+    <message>
+        <source>Type an action, a tab, a function or a track…</source>
+        <translation>Tapez une action, un onglet, une fonction ou un morceau…</translation>
+    </message>
+    <message>
+        <source>↑↓ to move · Enter to run · Esc to close</source>
+        <translation>↑↓ pour se déplacer · Entrée pour lancer · Échap pour fermer</translation>
+    </message>
+    <message>
+        <source>Nothing matches.</source>
+        <translation>Aucun résultat.</translation>
+    </message>
+    <message>
+        <source>Nothing to list yet.</source>
+        <translation>Rien à afficher pour l&apos;instant.</translation>
+    </message>
+    <message>
+        <source>Action</source>
+        <translation>Action</translation>
+    </message>
+    <message>
+        <source>Tab</source>
+        <translation>Onglet</translation>
+    </message>
+    <message>
+        <source>Function</source>
+        <translation>Fonction</translation>
+    </message>
+    <message>
+        <source>Track</source>
+        <translation>Morceau</translation>
+    </message>
+</context>
+<context>
+    <name>Commands</name>
+    <message>
+        <source>Edit {attr}</source>
+        <translation>Modifier {attr}</translation>
+    </message>
+    <message>
+        <source>Add alias</source>
+        <translation>Ajouter un alias</translation>
+    </message>
+    <message>
+        <source>Remove alias</source>
+        <translation>Retirer l&apos;alias</translation>
+    </message>
+    <message>
+        <source>Edit {attr} ({count} linked)</source>
+        <translation>Modifier {attr} ({count} liés)</translation>
+    </message>
+    <message>
+        <source>Add alias ({count} linked)</source>
+        <translation>Ajouter un alias ({count} liés)</translation>
+    </message>
+    <message>
+        <source>Remove alias ({count} linked)</source>
+        <translation>Retirer l&apos;alias ({count} liés)</translation>
+    </message>
+    <message>
+        <source>Writing tags…</source>
+        <translation>Écriture des tags…</translation>
+    </message>
+    <message>
+        <source>Restoring tags…</source>
+        <translation>Restauration des tags…</translation>
+    </message>
+</context>
+<context>
     <name>ControllerEmulatorView</name>
     <message>
         <source>Deck {deck} slot {slot}: {tag}</source>
@@ -1269,6 +1351,34 @@ Il reste une étape manuelle : ajoutez &apos;{slug}&apos; au bloc d&apos;imports
         <source>Synced {ok}/{total} controller(s): {parts}</source>
         <translation>{ok}/{total} contrôleur(s) synchronisé(s) : {parts}</translation>
     </message>
+    <message>
+        <source>Unsupported event_type: {type}</source>
+        <translation>Type de message non pris en charge : {type}</translation>
+    </message>
+    <message>
+        <source>{field} must be an integer</source>
+        <translation>{field} doit être un nombre entier</translation>
+    </message>
+    <message>
+        <source>{field} must be in [{low}, {high}]</source>
+        <translation>{field} doit être compris entre {low} et {high}</translation>
+    </message>
+    <message>
+        <source>Message {number}: {error}</source>
+        <translation>Message {number} : {error}</translation>
+    </message>
+    <message>
+        <source>channel</source>
+        <translation>le canal</translation>
+    </message>
+    <message>
+        <source>data1</source>
+        <translation>data1</translation>
+    </message>
+    <message>
+        <source>data2</source>
+        <translation>data2</translation>
+    </message>
 </context>
 <context>
     <name>DuplicatesDialog</name>
@@ -2025,6 +2135,45 @@ Workflow: (1) get the triggers — learn them from the hardware under MIDI input
     <message>
         <source>Install saves this profile in your Controllers folder (Documents/DJ MIDI Studio/Controllers) with a copy of its picture, activates it in every view now, and loads it again at every launch. Installing again under the same name updates it. &quot;Submit to community catalog…&quot; opens a pre-filled GitHub issue with the profile JSON so it can be reviewed and shipped as a built-in (reference images are not included). For developers, the remaining button generates a Python catalog module instead.</source>
         <translation>Installer enregistre ce profil dans votre dossier Controllers (Documents/DJ MIDI Studio/Controllers) avec une copie de son image, l&apos;active tout de suite dans toutes les vues et le recharge à chaque lancement. Installer à nouveau sous le même nom le met à jour. « Proposer au catalogue communautaire… » ouvre une issue GitHub pré-remplie avec le JSON du profil, pour qu&apos;il puisse être relu et livré comme profil intégré (les images de référence ne sont pas incluses). Pour les développeurs, le dernier bouton génère plutôt un module Python de catalogue.</translation>
+    </message>
+</context>
+<context>
+    <name>HelpfulNotesDialog</name>
+    <message>
+        <source>- By Channel: most granular editing (raw Control/UserIO/Mapping).
+- By Deck: grouped editing of Serato duplicate trigger sets (x10) via MappingGroup.
+- By Controller: physical mapping view by controller section.
+- Live Monitor: real-time MIDI display with catalog + Serato function resolution.
+- MIDI Routing: route MIDI and loop Controller Setup session rows.
+- MIDI Clock: configure Clock sources, destinations, and Link following.
+- Controller Setup: create a new catalog module from learned MIDI or imported XML.</source>
+        <translation>- Par canal : l&apos;édition la plus fine (Control/UserIO/Mapping bruts).
+- Par platine : édition groupée des jeux de déclencheurs dupliqués de Serato (x10) via MappingGroup.
+- Par contrôleur : vue du mapping physique par section du contrôleur.
+- Live Monitor : affichage MIDI en temps réel avec résolution catalogue + fonction Serato.
+- Routage MIDI : routez le MIDI et bouclez les lignes d&apos;une session Config. contrôleur.
+- Horloge MIDI : configurez les sources et destinations d&apos;horloge et le suivi Link.
+- Config. contrôleur : créez un nouveau module de catalogue à partir de MIDI appris ou d&apos;un XML importé.</translation>
+    </message>
+    <message>
+        <source>Helpful Notes</source>
+        <translation>Notes utiles</translation>
+    </message>
+    <message>
+        <source>Quick workflow reminders</source>
+        <translation>Rappels rapides sur le fonctionnement</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Fermer</translation>
+    </message>
+    <message>
+        <source>Close Helpful Notes</source>
+        <translation>Fermer les notes utiles</translation>
+    </message>
+    <message>
+        <source>Should Helpful Notes remain closed on the next startup?</source>
+        <translation>Les notes utiles doivent-elles rester fermées au prochain démarrage ?</translation>
     </message>
 </context>
 <context>
@@ -3377,6 +3526,50 @@ Workflow: (1) get the triggers — learn them from the hardware under MIDI input
     <message>
         <source>MIDI controller detected</source>
         <translation>Contrôleur MIDI détecté</translation>
+    </message>
+    <message>
+        <source>Documentation Home</source>
+        <translation>Accueil de la documentation</translation>
+    </message>
+    <message>
+        <source>Features Overview</source>
+        <translation>Aperçu des fonctionnalités</translation>
+    </message>
+    <message>
+        <source>User Guide</source>
+        <translation>Guide de l&apos;utilisateur</translation>
+    </message>
+    <message>
+        <source>Feature Pages</source>
+        <translation>Pages des fonctionnalités</translation>
+    </message>
+    <message>
+        <source>End-to-End Examples</source>
+        <translation>Exemples complets</translation>
+    </message>
+    <message>
+        <source>Supported Controllers</source>
+        <translation>Contrôleurs pris en charge</translation>
+    </message>
+    <message>
+        <source>MIDI Clock Compatibility</source>
+        <translation>Compatibilité de l&apos;horloge MIDI</translation>
+    </message>
+    <message>
+        <source>Developer Documentation</source>
+        <translation>Documentation développeur</translation>
+    </message>
+    <message>
+        <source>Architecture</source>
+        <translation>Architecture</translation>
+    </message>
+    <message>
+        <source>Build and Release</source>
+        <translation>Compilation et publication</translation>
+    </message>
+    <message>
+        <source>Controller documentation index</source>
+        <translation>Index de la documentation des contrôleurs</translation>
     </message>
     <message>
         <source>Enable &apos;{name}&apos;?
@@ -6098,6 +6291,10 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <translation>Auto (selon le nom du contrôleur)</translation>
     </message>
     <message>
+        <source>{port} (not connected)</source>
+        <translation>{port} (non connecté)</translation>
+    </message>
+    <message>
         <source>Edit messages…</source>
         <translation>Modifier les messages…</translation>
     </message>
@@ -6116,6 +6313,22 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>Software: {name}</source>
         <translation>Logiciel : {name}</translation>
+    </message>
+    <message>
+        <source>Select log file location</source>
+        <translation>Choisir l&apos;emplacement du fichier journal</translation>
+    </message>
+    <message>
+        <source>Log files (*.log);;All files (*)</source>
+        <translation>Fichiers journaux (*.log);;Tous les fichiers (*)</translation>
+    </message>
+    <message>
+        <source>Select Controller Setup default file</source>
+        <translation>Choisir le fichier par défaut de Config. contrôleur</translation>
+    </message>
+    <message>
+        <source>Controller Setup session or mapping (*.json *.xml *.tsi);;All files (*)</source>
+        <translation>Session Config. contrôleur ou mapping (*.json *.xml *.tsi);;Tous les fichiers (*)</translation>
     </message>
 </context>
 <context>
@@ -6210,6 +6423,44 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>Serato, Traktor and Rekordbox remember each track by its full path: renamed files will show as missing there until you relink them (their libraries are not modified by this app). Keep the old → new CSV to find each file again.</source>
         <translation>Serato, Traktor et Rekordbox retiennent chaque morceau par son chemin complet : les fichiers renommés y apparaîtront comme manquants jusqu&apos;à ce que vous les relocalisiez (leurs bibliothèques ne sont pas modifiées par cette application). Gardez le CSV ancien → nouveau pour retrouver chaque fichier.</translation>
+    </message>
+</context>
+<context>
+    <name>ReportProblemDialog</name>
+    <message>
+        <source>Report a Problem</source>
+        <translation>Signaler un problème</translation>
+    </message>
+    <message>
+        <source>Check the text below before sending: it lists your app version, system, enabled plugins and the last log lines — no mapping or music-library content, and paths under your home folder are shortened to &lt;code&gt;~&lt;/code&gt;. Edit or remove anything you&apos;d rather not share.&lt;br&gt;&lt;br&gt;&lt;b&gt;Copy &amp;amp; Open GitHub&lt;/b&gt; copies the text to the clipboard and opens a pre-filled issue in your browser; nothing is sent until you submit it there (a GitHub account is needed).</source>
+        <translation>Relisez le texte ci-dessous avant l&apos;envoi : il indique la version de l&apos;application, le système, les plugins activés et les dernières lignes du journal — aucun contenu de mapping ni de bibliothèque musicale, et les chemins sous votre dossier personnel sont raccourcis en &lt;code&gt;~&lt;/code&gt;. Modifiez ou retirez ce que vous préférez ne pas partager.&lt;br&gt;&lt;br&gt;&lt;b&gt;Copier et ouvrir GitHub&lt;/b&gt; copie le texte dans le presse-papiers et ouvre une issue pré-remplie dans votre navigateur ; rien n&apos;est envoyé tant que vous ne la soumettez pas là-bas (un compte GitHub est nécessaire). Le rapport lui-même reste en anglais.</translation>
+    </message>
+    <message>
+        <source>Short summary of the problem</source>
+        <translation>Court résumé du problème (en anglais si possible)</translation>
+    </message>
+    <message>
+        <source>Title</source>
+        <translation>Titre</translation>
+    </message>
+    <message>
+        <source>Copy &amp;&amp; Open GitHub</source>
+        <translation>Copier et ouvrir GitHub</translation>
+    </message>
+</context>
+<context>
+    <name>SafeUpdateDialog</name>
+    <message>
+        <source>Review mapping changes</source>
+        <translation>Vérifier les modifications du mapping</translation>
+    </message>
+    <message>
+        <source>Review changes for {path}. The existing file will be backed up before saving.</source>
+        <translation>Vérifiez les modifications de {path}. Le fichier existant sera sauvegardé avant l&apos;enregistrement.</translation>
+    </message>
+    <message>
+        <source>(No textual changes)</source>
+        <translation>(Aucune modification du texte)</translation>
     </message>
 </context>
 <context>
@@ -6558,6 +6809,103 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>first {limit}</source>
         <translation>les {limit} premiers</translation>
+    </message>
+</context>
+<context>
+    <name>Stage</name>
+    <message>
+        <source>ON</source>
+        <translation>ACTIF</translation>
+    </message>
+    <message>
+        <source>OFF</source>
+        <translation>INACTIF</translation>
+    </message>
+    <message>
+        <source>Ch {channel} {event_type} {data1}</source>
+        <translation>Canal {channel} {event_type} {data1}</translation>
+    </message>
+</context>
+<context>
+    <name>StageWindow</name>
+    <message>
+        <source>DJ MIDI Studio — Stage Mode</source>
+        <translation>DJ MIDI Studio — Mode scène</translation>
+    </message>
+    <message>
+        <source>Stage Mode</source>
+        <translation>Mode scène</translation>
+    </message>
+    <message>
+        <source>Exit (Esc)</source>
+        <translation>Quitter (Échap)</translation>
+    </message>
+    <message>
+        <source>Live MIDI</source>
+        <translation>MIDI en direct</translation>
+    </message>
+    <message>
+        <source>Waiting for MIDI…</source>
+        <translation>En attente de MIDI…</translation>
+    </message>
+</context>
+<context>
+    <name>SyncSetEditorDialog</name>
+    <message>
+        <source>Sync set — {controller}</source>
+        <translation>Jeu de synchronisation — {controller}</translation>
+    </message>
+    <message>
+        <source>Messages are sent in this order. Double-click a value to edit it (channel 1–16, data 0–127).</source>
+        <translation>Les messages sont envoyés dans cet ordre. Double-cliquez sur une valeur pour la modifier (canal 1–16, data 0–127).</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation>Type</translation>
+    </message>
+    <message>
+        <source>Channel</source>
+        <translation>Canal</translation>
+    </message>
+    <message>
+        <source>Data 1</source>
+        <translation>Data 1</translation>
+    </message>
+    <message>
+        <source>Data 2</source>
+        <translation>Data 2</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation>Supprimer</translation>
+    </message>
+    <message>
+        <source>Move up</source>
+        <translation>Monter</translation>
+    </message>
+    <message>
+        <source>Move down</source>
+        <translation>Descendre</translation>
+    </message>
+    <message>
+        <source>Send selected</source>
+        <translation>Envoyer la sélection</translation>
+    </message>
+    <message>
+        <source>{controller} is not connected</source>
+        <translation>{controller} n&apos;est pas connecté</translation>
+    </message>
+    <message>
+        <source>Send the selected message to {port}</source>
+        <translation>Envoie le message sélectionné vers {port}</translation>
+    </message>
+    <message>
+        <source>Sending failed: {error}</source>
+        <translation>Échec de l&apos;envoi : {error}</translation>
+    </message>
+    <message>
+        <source>Sent message {number} to {port}</source>
+        <translation>Message {number} envoyé vers {port}</translation>
     </message>
 </context>
 <context>

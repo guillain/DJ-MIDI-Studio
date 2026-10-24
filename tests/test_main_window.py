@@ -1140,16 +1140,17 @@ def test_live_jog_turn_spins_the_controller_images_overlay_when_it_shows_that_co
     window.controller_image_view.set_controller("XDJ-XZ")
     window.controller_image_view._geometry_checkbox.setChecked(True)
 
-    # deck 2 -> right-tray jog, which the overlay draws as its own
-    # "Jog wheel (R)" marker (issue #338); deck 1 -> the left one.
+    # deck 2 -> right-tray jog, which has its own "Jog wheel (R)" marker:
+    # it spins, the left one doesn't.
     window._on_live_midi_event(
         MidiEvent(direction="in", channel="2", event_type="Control Change", data1="34", data2="70", timestamp=0.0)
     )
     QApplication.processEvents()
     assert window.controller_image_view._jog_angles.get("Jog wheel (R)")
     assert "Jog wheel" not in window.controller_image_view._jog_angles
+    # deck 1 -> the left one.
     window._on_live_midi_event(
-        MidiEvent(direction="in", channel="1", event_type="Control Change", data1="34", data2="70", timestamp=0.0)
+        MidiEvent(direction="in", channel="1", event_type="Control Change", data1="34", data2="70", timestamp=0.05)
     )
     QApplication.processEvents()
     assert window.controller_image_view._jog_angles.get("Jog wheel")
@@ -1160,6 +1161,22 @@ def test_live_jog_turn_spins_the_controller_images_overlay_when_it_shows_that_co
         MidiEvent(direction="in", channel="1", event_type="Control Change", data1="34", data2="70", timestamp=0.1)
     )
     QApplication.processEvents()
+    assert "Jog wheel" not in window.controller_image_view._jog_angles
+    window.close()
+
+
+def test_live_ddj_rev5_jog_turn_spins_the_matching_side_on_controller_images():
+    from djmidi.midi_io import MidiEvent
+
+    window = _loaded_window()
+    window.controller_image_view.set_controller("DDJ-REV5")
+    window.controller_image_view._geometry_checkbox.setChecked(True)
+    # Deck 4 platter (CC 0x22 on channel 4) -> the right jog.
+    window._on_live_midi_event(
+        MidiEvent(direction="in", channel="4", event_type="Control Change", data1="34", data2="70", timestamp=0.0)
+    )
+    QApplication.processEvents()
+    assert window.controller_image_view._jog_angles.get("Jog wheel (R)")
     assert "Jog wheel" not in window.controller_image_view._jog_angles
     window.close()
 

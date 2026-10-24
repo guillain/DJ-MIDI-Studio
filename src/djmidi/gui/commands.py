@@ -2,11 +2,30 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
+from PySide6.QtCore import QT_TRANSLATE_NOOP, QCoreApplication
 from PySide6.QtGui import QUndoCommand
 
 from djmidi.model import Alias, Translation
 
 OnApplied = Callable[[object], None]
+
+_CONTEXT = "Commands"
+
+
+def _texts(template: str, **fields: object) -> tuple[str, str]:
+    """``(English, interface language)`` for a command marked with
+    ``QT_TRANSLATE_NOOP("Commands", ...)``: Edit → Undo/Redo shows the
+    translation, `summary` keeps the English (issue #337)."""
+    return template.format(**fields), QCoreApplication.translate(_CONTEXT, template).format(**fields)
+
+
+def _library_texts(summary: str) -> tuple[str, str]:
+    """Same for a Music Library write, whose English `summary` is what the
+    persistent change log records. Shown through the Change history window's
+    own wording, so the Undo menu and that window always agree."""
+    from djmidi.gui.change_history_dialog import describe_summary
+
+    return summary, describe_summary(summary)
 
 
 class SetAttrCommand(QUndoCommand):
@@ -23,7 +42,11 @@ class SetAttrCommand(QUndoCommand):
         on_applied: OnApplied,
         label: str | None = None,
     ) -> None:
-        super().__init__(label or f"Edit {attr}")
+        if label:
+            self.summary, text = label, label
+        else:
+            self.summary, text = _texts(QT_TRANSLATE_NOOP("Commands", "Edit {attr}"), attr=attr)
+        super().__init__(text)
         self._target = target
         self._attr = attr
         self._old = old_value
@@ -42,7 +65,8 @@ class SetAttrCommand(QUndoCommand):
 
 class AddAliasCommand(QUndoCommand):
     def __init__(self, translation: Translation, alias: Alias, relabel_node: object, on_applied: OnApplied) -> None:
-        super().__init__("Add alias")
+        self.summary, text = _texts(QT_TRANSLATE_NOOP("Commands", "Add alias"))
+        super().__init__(text)
         self._translation = translation
         self._alias = alias
         self._relabel_node = relabel_node
@@ -59,7 +83,8 @@ class AddAliasCommand(QUndoCommand):
 
 class RemoveAliasCommand(QUndoCommand):
     def __init__(self, translation: Translation, index: int, relabel_node: object, on_applied: OnApplied) -> None:
-        super().__init__("Remove alias")
+        self.summary, text = _texts(QT_TRANSLATE_NOOP("Commands", "Remove alias"))
+        super().__init__(text)
         self._translation = translation
         self._index = index
         self._alias = translation.aliases[index]
@@ -91,7 +116,13 @@ class SetGroupAttrCommand(QUndoCommand):
         on_applied: OnGroupApplied,
         label: str | None = None,
     ) -> None:
-        super().__init__(label or f"Edit {attr} ({len(targets)} linked)")
+        if label:
+            self.summary, text = label, label
+        else:
+            self.summary, text = _texts(
+                QT_TRANSLATE_NOOP("Commands", "Edit {attr} ({count} linked)"), attr=attr, count=len(targets)
+            )
+        super().__init__(text)
         self._targets = targets
         self._attr = attr
         self._old_values = old_values
@@ -111,7 +142,10 @@ class SetGroupAttrCommand(QUndoCommand):
 
 class AddGroupAliasCommand(QUndoCommand):
     def __init__(self, translations: list[Translation], aliases: list[Alias], on_applied: OnGroupApplied) -> None:
-        super().__init__(f"Add alias ({len(translations)} linked)")
+        self.summary, text = _texts(
+            QT_TRANSLATE_NOOP("Commands", "Add alias ({count} linked)"), count=len(translations)
+        )
+        super().__init__(text)
         self._translations = translations
         self._aliases = aliases
         self._on_applied = on_applied
@@ -129,7 +163,10 @@ class AddGroupAliasCommand(QUndoCommand):
 
 class RemoveGroupAliasCommand(QUndoCommand):
     def __init__(self, translations: list[Translation], index: int, on_applied: OnGroupApplied) -> None:
-        super().__init__(f"Remove alias ({len(translations)} linked)")
+        self.summary, text = _texts(
+            QT_TRANSLATE_NOOP("Commands", "Remove alias ({count} linked)"), count=len(translations)
+        )
+        super().__init__(text)
         self._translations = translations
         self._index = index
         self._aliases = [t.aliases[index] for t in translations]
@@ -171,7 +208,8 @@ class WriteTrackMetadataCommand(QUndoCommand):
         recorder: ChangeRecorder | None = None,
     ) -> None:
         changed = sorted(new_values)
-        super().__init__(f"Edit {', '.join(changed)} of {path.rsplit('/', 1)[-1]}")
+        self.summary, text = _library_texts(f"Edit {', '.join(changed)} of {path.rsplit('/', 1)[-1]}")
+        super().__init__(text)
         self._path = path
         self._old = {name: old_values.get(name) for name in changed}
         self._new = dict(new_values)
@@ -184,13 +222,13 @@ class WriteTrackMetadataCommand(QUndoCommand):
     def redo(self) -> None:
         self._writer(self._path, **self._new)
         if self._recorder is not None:
-            self._recorder(self.text(), {self._path: (self._old, self._new)})
+            self._recorder(self.summary, {self._path: (self._old, self._new)})
         self._on_applied(self._path)
 
     def undo(self) -> None:
         self._writer(self._path, **self._old)
         if self._recorder is not None:
-            self._recorder(f"Undo: {self.text()}", {self._path: (self._new, self._old)})
+            self._recorder(f"Undo: {self.summary}", {self._path: (self._new, self._old)})
         self._on_applied(self._path)
 
 
@@ -215,7 +253,8 @@ class WriteTrackCoverCommand(QUndoCommand):
         recorder: CoverRecorder | None = None,
     ) -> None:
         verb = "Set" if new_cover is not None else "Remove"
-        super().__init__(f"{verb} cover of {path.rsplit('/', 1)[-1]}")
+        self.summary, text = _library_texts(f"{verb} cover of {path.rsplit('/', 1)[-1]}")
+        super().__init__(text)
         if writer is None or reader is None:
             from djmidi.library.cover_art import read_front_cover, write_cover_art
 
@@ -231,13 +270,13 @@ class WriteTrackCoverCommand(QUndoCommand):
     def redo(self) -> None:
         self._writer(self._path, self._new)
         if self._recorder is not None:
-            self._recorder(self.text(), self._path, self._old, self._new)
+            self._recorder(self.summary, self._path, self._old, self._new)
         self._on_applied(self._path)
 
     def undo(self) -> None:
         self._writer(self._path, self._old)
         if self._recorder is not None:
-            self._recorder(f"Undo: {self.text()}", self._path, self._new, self._old)
+            self._recorder(f"Undo: {self.summary}", self._path, self._new, self._old)
         self._on_applied(self._path)
 
 
@@ -270,7 +309,8 @@ class WriteTracksMetadataCommand(QUndoCommand):
         recorder: ChangeRecorder | None = None,
     ) -> None:
         fields = sorted({name for _old, new in changes.values() for name in new})
-        super().__init__(f"Edit {', '.join(fields)} of {len(changes)} tracks")
+        self.summary, text = _library_texts(f"Edit {', '.join(fields)} of {len(changes)} tracks")
+        super().__init__(text)
         self._changes = {path: (dict(old), dict(new)) for path, (old, new) in changes.items()}
         self._on_applied = on_applied
         if writer is None:
@@ -302,19 +342,19 @@ class WriteTracksMetadataCommand(QUndoCommand):
 
     def redo(self) -> None:
         self.failures = {}
-        self.written = self._write_all("Writing tags…", [(path, new) for path, (_old, new) in self._changes.items()])
+        self.written = self._write_all(QCoreApplication.translate("Commands", "Writing tags…"), [(path, new) for path, (_old, new) in self._changes.items()])
         if not self.written:
             self.setObsolete(True)
             return
         if self._recorder is not None:
-            self._recorder(self.text(), {path: self._changes[path] for path in self.written})
+            self._recorder(self.summary, {path: self._changes[path] for path in self.written})
         self._on_applied(self.written)
 
     def undo(self) -> None:
-        restored = self._write_all("Restoring tags…", [(path, self._changes[path][0]) for path in self.written])
+        restored = self._write_all(QCoreApplication.translate("Commands", "Restoring tags…"), [(path, self._changes[path][0]) for path in self.written])
         if self._recorder is not None and restored:
             self._recorder(
-                f"Undo: {self.text()}", {path: (self._changes[path][1], self._changes[path][0]) for path in restored}
+                f"Undo: {self.summary}", {path: (self._changes[path][1], self._changes[path][0]) for path in restored}
             )
         self._on_applied(restored)
 
@@ -336,7 +376,8 @@ class RenameFilesCommand(QUndoCommand):
         on_applied: Callable[[list[tuple[str, str]]], None],
         recorder: RenameRecorder | None = None,
     ) -> None:
-        super().__init__(f"Rename {len(pairs)} file(s)")
+        self.summary, text = _library_texts(f"Rename {len(pairs)} file(s)")
+        super().__init__(text)
         self._pairs = list(pairs)
         self._apply = apply
         self._on_applied = on_applied
@@ -354,7 +395,7 @@ class RenameFilesCommand(QUndoCommand):
         # A later redo (after an undo) replays only what this one renamed.
         self._pairs = list(self.renamed)
         if self._recorder is not None:
-            self._recorder(self.text(), list(self.renamed))
+            self._recorder(self.summary, list(self.renamed))
         self._on_applied(self.renamed)
 
     def undo(self) -> None:
@@ -362,5 +403,5 @@ class RenameFilesCommand(QUndoCommand):
         self.failures = list(result.failed)
         restored = list(result.renamed)
         if self._recorder is not None and restored:
-            self._recorder(f"Undo: {self.text()}", restored)
+            self._recorder(f"Undo: {self.summary}", restored)
         self._on_applied(restored)

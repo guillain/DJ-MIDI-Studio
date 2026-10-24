@@ -31,6 +31,8 @@ DDJ-FLX10    platter 0x22(Vinyl on) / 0x23(Vinyl off) /     MIDI Message
              wheel-side 0x21 / 0x26(+SHIFT)
 DDJ-REV1     platter 0x22(Vinyl on) / 0x23(Vinyl off) /     MIDI Message
              0x1F(+SHIFT); wheel-side 0x21 / 0x26(+SHIFT)   List E1, Fig D3
+DDJ-REV5     platter 0x22(Vinyl on) / 0x23(Vinyl off) /     MIDI Message
+             0x1F(+SHIFT); wheel-side 0x21 / 0x26(+SHIFT)   List E1, Fig D3
 DDJ-FLX4     platter 0x22 / 0x23 / 0x29(+SHIFT);            MIDI Message
              wheel-side 0x21                                List E1, Fig 1-4
 DDJ-800      platter 0x22 / 0x23 / 0x29(+SEARCH) /          MIDI Message
@@ -44,7 +46,7 @@ DDJ-800) is the right jog.
 XDJ-XZ has two physical jogs -- decks 1/3 on the left, 2/4 on the right
 tray (the same split ``layout.py``'s ``_RIGHT_GRID_DECKS`` uses for the pad
 grids) -- so it resolves side-aware to ``"Jog wheel"`` / ``"Jog wheel
-(R)"``. DDJ-1000, DDJ-FLX10 and DDJ-REV1 are also 2-deck, but their
+(R)"``. DDJ-REV5 (issue #339) is the same: its jogs print "1/3" and "2/4". DDJ-1000, DDJ-FLX10 and DDJ-REV1 are also 2-deck, but their
 schematics draw only the left deck, so every deck channel resolves to
 their single ``"Jog wheel"`` marker.
 
@@ -80,6 +82,7 @@ _DDJ_1000_JOG_DATA1 = frozenset({"31", "33", "41"})  # 0x1F/0x21/0x29
 _DDJ_FLX10_JOG_DATA1 = frozenset({"31", "33", "34", "35", "38", "41"})
 #                                  0x1F 0x21 0x22 0x23 0x26 0x29
 _DDJ_REV1_JOG_DATA1 = frozenset({"31", "33", "34", "35", "38"})  # FLX10 minus 0x29
+_DDJ_REV5_JOG_DATA1 = _DDJ_REV1_JOG_DATA1  # the same five CCs (its MIDI Message List, D3)
 
 # Single-jog controllers: (data1 set, its one marker key).
 _SINGLE_JOG_RULES: tuple[tuple[frozenset[str], CellKey], ...] = (
@@ -93,19 +96,31 @@ _XDJ_XZ_LEFT_KEY: CellKey = ("XDJ-XZ", "DISPLAY", "Jog wheel")
 # same way real_position_markers() keys the mirrored pad grid / DECK cluster.
 _XDJ_XZ_RIGHT_KEY: CellKey = ("XDJ-XZ", "DISPLAY", "Jog wheel (R)")
 
-# issue #338: two-jog controllers whose geometry draws both jogs, resolved
-# by deck channel like XDJ-XZ: (data1 set, right-deck channels, controller).
-# DDJ-FLX4 (MIDI Message List E1, Fig. 1-4): platter 0x22(Vinyl on) /
-# 0x23(Vinyl off) / 0x29(+SHIFT), wheel side 0x21 (+SHIFT too); decks 1/2.
-# DDJ-800 (E3, Fig. D3): platter 0x22 / 0x23 / 0x29(+SEARCH) / 0x1F(+SHIFT),
-# wheel side 0x21 / 0x26(+SHIFT); decks 1/3 left, 2/4 right.
-_SIDED_JOG_RULES: tuple[tuple[frozenset[str], frozenset[str], str], ...] = (
-    (frozenset({"33", "34", "35", "41"}), frozenset({"2"}), "DDJ-FLX4"),
-    (frozenset({"31", "33", "34", "35", "38", "41"}), frozenset({"2", "4"}), "DDJ-800"),
+# Two-jog controllers: (data1 set, left key for decks 1/3, right key for 2/4).
+_TWO_JOG_RULES: tuple[tuple[frozenset[str], CellKey, CellKey], ...] = (
+    (_XDJ_XZ_JOG_DATA1, _XDJ_XZ_LEFT_KEY, _XDJ_XZ_RIGHT_KEY),
+    (
+        _DDJ_REV5_JOG_DATA1,
+        ("DDJ-REV5", "DISPLAY", "Jog wheel"),
+        ("DDJ-REV5", "DISPLAY", "Jog wheel (R)"),
+    ),
+    # issue #338, DDJ-800 (MIDI Message List E3, Fig. D3): platter
+    # 0x22 / 0x23 / 0x29(+SEARCH) / 0x1F(+SHIFT), wheel side 0x21 /
+    # 0x26(+SHIFT); decks 1/3 left, 2/4 right.
+    (
+        frozenset({"31", "33", "34", "35", "38", "41"}),
+        ("DDJ-800", "DISPLAY", "Jog wheel"),
+        ("DDJ-800", "DISPLAY", "Jog wheel (R)"),
+    ),
 )
-_SIDED_JOG_CHANNELS: dict[str, frozenset[str]] = {
-    "DDJ-FLX4": frozenset({"1", "2"}),
-    "DDJ-800": _DECK_CHANNELS,
+
+# issue #338, DDJ-FLX4 (MIDI Message List E1, Fig. 1-4): platter
+# 0x22(Vinyl on) / 0x23(Vinyl off) / 0x29(+SHIFT), wheel side 0x21
+# (+SHIFT too). Only two deck channels: 1 = left jog, 2 = right.
+_DDJ_FLX4_JOG_DATA1 = frozenset({"33", "34", "35", "41"})
+_DDJ_FLX4_JOG_KEYS: dict[str, CellKey] = {
+    "1": ("DDJ-FLX4", "DISPLAY", "Jog wheel"),
+    "2": ("DDJ-FLX4", "DISPLAY", "Jog wheel (R)"),
 }
 
 
@@ -132,17 +147,14 @@ def jog_cell_keys_for_event(
     if event_type != "Control Change" or channel not in _DECK_CHANNELS:
         return []
     keys: list[CellKey] = []
-    if data1 in _XDJ_XZ_JOG_DATA1:
-        keys.append(
-            _XDJ_XZ_RIGHT_KEY if channel in _RIGHT_DECK_CHANNELS else _XDJ_XZ_LEFT_KEY
-        )
+    for data1_set, left_key, right_key in _TWO_JOG_RULES:
+        if data1 in data1_set:
+            keys.append(right_key if channel in _RIGHT_DECK_CHANNELS else left_key)
     for data1_set, key in _SINGLE_JOG_RULES:
         if data1 in data1_set:
             keys.append(key)
-    for data1_set, right_channels, controller in _SIDED_JOG_RULES:
-        if data1 in data1_set and channel in _SIDED_JOG_CHANNELS[controller]:
-            label = "Jog wheel (R)" if channel in right_channels else "Jog wheel"
-            keys.append((controller, "DISPLAY", label))
+    if data1 in _DDJ_FLX4_JOG_DATA1 and channel in _DDJ_FLX4_JOG_KEYS:
+        keys.append(_DDJ_FLX4_JOG_KEYS[channel])
     return keys
 
 

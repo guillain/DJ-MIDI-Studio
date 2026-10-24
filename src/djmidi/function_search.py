@@ -8,7 +8,8 @@ bound to it -- Serato's ~10 verbatim duplicates of a trigger (see CLAUDE.md's
 "10x duplication" finding) collapse into one trigger here, the same way the
 By Deck tab's MappingGroup collapses them.
 
-Matching is tokenized and case-insensitive: a tag is read with its
+Matching is tokenized, case- and accent-insensitive (`search_text`, issue
+#343): a tag is read with its
 underscores as spaces (`auto_loop_roll_specific_length` -> "auto loop roll
 specific length"), and every query token must match something:
 
@@ -32,19 +33,18 @@ control names come from `catalog.lookup`, which is Qt-free too.
 
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass, field
 
 from djmidi import catalog
 from djmidi.function_names import function_name
 from djmidi.i18n import QT_TRANSLATE_NOOP, Translate, untranslated
 from djmidi.model import Control, MappingElement, MidiConfig
+from djmidi.search_text import tokenize
 
 #: A result's location parts, translated by the GUI (issue #318).
 DECK_LABEL = QT_TRANSLATE_NOOP("FunctionSearchView", "Deck {deck}")
 SLOT_LABEL = QT_TRANSLATE_NOOP("FunctionSearchView", "Slot {slot}")
 
-_TOKEN_RE = re.compile(r"[a-z0-9]+")
 _EVENT_WORDS = {
     "click": "click",
     "press": "click",
@@ -114,11 +114,7 @@ class FunctionResult:
 
 def readable_label(tag: str) -> str:
     """`auto_loop_roll_specific_length` -> "auto loop roll specific length"."""
-    return " ".join(_TOKEN_RE.findall(tag.lower())) or tag
-
-
-def tokenize(text: str) -> list[str]:
-    return _TOKEN_RE.findall(text.lower())
+    return " ".join(tokenize(tag)) or tag
 
 
 def physical_names(trigger: Trigger) -> list[str]:

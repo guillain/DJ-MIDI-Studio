@@ -387,6 +387,9 @@ _RIGHT_GRID_DECKS: dict[str, frozenset[int]] = {
     # issue #338 -- keep in sync with geometry.py's copy.
     "DDJ-FLX4": frozenset({2}),
     "DDJ-800": frozenset({2, 4}),
+    # issue #339 (keep in sync with geometry.py's copy).
+    "DDJ-REV5": frozenset({2, 4}),
+    "Hercules DJControl Inpulse 500": frozenset({2}),
 }
 _DECK_NUM_RE = re.compile(r"^Deck (\d+)")
 

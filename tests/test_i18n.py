@@ -1200,3 +1200,109 @@ def test_mapping_diff_report_shows_french(french):
         assert "Brut : codfather_st (platine 3, slot 1) -> play (platine 3, slot 1)" in dialog.entry_items()[0].toolTip(2)
     finally:
         dialog.deleteLater()
+
+
+def test_issue_337_missed_windows_show_french(french, monkeypatch):
+    from PySide6.QtGui import QAction
+    from PySide6.QtWidgets import QLabel, QMenuBar, QPushButton
+
+    from djmidi.command_palette import PaletteEntry, PaletteIndex
+    from djmidi.controller_sync import ControllerSyncSet, SyncMessage
+    from djmidi.gui import preferences_dialog
+    from djmidi.gui.command_palette import CommandPaletteDialog, menu_entries
+    from djmidi.gui.helpful_notes_dialog import HelpfulNotesDialog
+    from djmidi.gui.preferences_dialog import PreferencesDialog
+    from djmidi.gui.report_problem_dialog import ReportProblemDialog
+    from djmidi.gui.safe_update_dialog import SafeUpdateDialog
+    from djmidi.gui.stage_window import StageWindow
+    from djmidi.gui.sync_set_editor import SyncSetEditorDialog
+    from djmidi.midi_io import MidiEvent
+    from djmidi.problem_report import DEFAULT_TITLE, ReportContext, build_report_text
+
+    menu_bar = QMenuBar()
+    view = menu_bar.addMenu("View")
+    toggle = QAction("Performance Mode", menu_bar)
+    toggle.setCheckable(True)
+    view.addAction(toggle)
+    assert [entry.title for entry in menu_entries(menu_bar)] == ["Performance Mode (désactivé)"]
+    toggle.setChecked(True)
+    assert [entry.title for entry in menu_entries(menu_bar)] == ["Performance Mode (activé)"]
+    palette = CommandPaletteDialog(PaletteIndex([PaletteEntry("tab", "Par canal")]))
+    assert palette.windowTitle() == "Palette de commandes"
+    assert palette.search_field.placeholderText() == "Tapez une action, un onglet, une fonction ou un morceau…"
+    assert CommandPaletteDialog(PaletteIndex()).hint.text() == "Rien à afficher pour l'instant."
+    palette.set_query("canal")
+    assert palette.results.item(0).text() == "Par canal\nOnglet"
+    assert palette.hint.text() == "↑↓ pour se déplacer · Entrée pour lancer · Échap pour fermer"
+    palette.set_query("zzz")
+    assert palette.hint.text() == "Aucun résultat."
+
+    notes = HelpfulNotesDialog()
+    assert notes.windowTitle() == "Notes utiles"
+    assert "Fermer" in [button.text() for button in notes.findChildren(QPushButton)]
+    assert any(label.text().startswith("- Par canal :") for label in notes.findChildren(QLabel))
+
+    report = ReportProblemDialog(ReportContext(app_version="1.2.3"), open_url=lambda _url: True)
+    assert report.windowTitle() == "Signaler un problème"
+    assert report.submit_button.text() == "Copier et ouvrir GitHub"
+    # The report itself goes to a GitHub issue: it stays English.
+    assert report.title_edit.text() == DEFAULT_TITLE
+    assert report.report_text() == build_report_text(ReportContext(app_version="1.2.3"))
+
+    review = SafeUpdateDialog("/tmp/map.xml", "")
+    assert review.windowTitle() == "Vérifier les modifications du mapping"
+
+    stage = StageWindow(config_provider=lambda: None)
+    try:
+        assert stage.windowTitle() == "DJ MIDI Studio — Mode scène"
+        assert "Quitter (Échap)" in [button.text() for button in stage.findChildren(QPushButton)]
+        assert stage._latest_label.text() == "En attente de MIDI…"
+        stage.add_event(MidiEvent("in", "1", "Note On", "11", "127", 0.0, ""), [])
+        assert stage.log_lines() == ["IN · Canal 1 Note On 11 · ACTIF"]
+    finally:
+        stage.close()
+
+    editor = SyncSetEditorDialog(ControllerSyncSet("DDJ-XP2", "Gone", (SyncMessage("Note On", 1, 11, 127),)))
+    assert editor.windowTitle() == "Jeu de synchronisation — DDJ-XP2"
+    assert editor.send_button.text() == "Envoyer la sélection"
+    assert editor.send_button.toolTip() == "DDJ-XP2 n'est pas connecté"
+    editor.table.item(0, 1).setText("17")
+    editor.accept()
+    assert editor.status.text() == "Message 1 : le canal doit être compris entre 1 et 16"
+
+    monkeypatch.setattr(preferences_dialog, "list_output_ports", list)
+    preferences = PluginPreferences()
+    preferences.set_sync_set(ControllerSyncSet("XDJ-XZ", "Old port", ()))
+    dialog = PreferencesDialog(preferences)
+    assert dialog._sync_table.cellWidget(0, 2).currentText() == "Old port (non connecté)"
+
+
+def test_issue_337_undo_texts_show_french_and_summaries_stay_english(french):
+    from djmidi.gui.commands import (
+        AddGroupAliasCommand,
+        SetAttrCommand,
+        WriteTrackMetadataCommand,
+    )
+    from djmidi.model import Alias, Translation
+
+    target = Translation(action_on="press", behaviour="toggle")
+    command = SetAttrCommand(target, "behaviour", "toggle", "explicit", None, lambda _node: None)
+    assert command.text() == "Modifier behaviour"
+    assert command.summary == "Edit behaviour"
+    group = AddGroupAliasCommand([target], [Alias(name="on", value="127")], lambda: None)
+    assert group.text() == "Ajouter un alias (1 liés)"
+
+    recorded = []
+    write = WriteTrackMetadataCommand(
+        "/music/a.mp3",
+        {"bpm": None},
+        {"bpm": 128.0},
+        lambda _path: None,
+        writer=lambda _path, **_fields: None,
+        recorder=lambda summary, _changes: recorded.append(summary),
+    )
+    assert write.text() == "Modifier BPM de a.mp3"
+    write.redo()
+    write.undo()
+    # The change log keeps English: Change history re-reads and translates it.
+    assert recorded == ["Edit bpm of a.mp3", "Undo: Edit bpm of a.mp3"]

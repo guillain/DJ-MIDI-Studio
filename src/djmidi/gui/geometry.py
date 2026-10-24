@@ -1174,6 +1174,183 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         "Pad 8 (R)": ControlGeometry(0.8700, 0.8716, 0.0375, 0.0718, "rect", "#e0708f"),
     },
     # ---- end DDJ-800 -------------------------------------------------------
+    # ---- DDJ-REV5 (issue #339) -------------------------------------------
+    "DDJ-REV5": {
+        # Measured against controllers/hardware/pioneer/DDJ-REV5/reference.png
+        # (2000x1037, flat top-down render): the lit pads, pad-mode, FX
+        # SELECT, KEY LOCK, BPM TRANSITION START and headphone CUE outlines
+        # are connected components of saturated pixels (exact pixel bounds);
+        # the unlit buttons, knobs and jogs were read off gridded 2-6x crops.
+        # Every marker is tied to its catalog name through the bundled MIDI
+        # Message List's Fig. callouts (page 1) and its assignment table,
+        # rendered at 300 DPI: D1 PLAY/PAUSE, D2 CUE, D5 TEMPO RANGE, D6 KEY
+        # LOCK, D7 SYNC, D9 BPM TRANSITION SELECT, D10 BPM TRANSITION START,
+        # D12 LOOP 1/2X, D13 LOOP 2X, D14 SLIP, D15 CENSOR, D16/D17 KEY -/+,
+        # D18 STEMS, B1 BROWSE (the rotary's push), B2 BACK, P1-P4 the pad
+        # mode buttons, P5 the pads, E1-E6 FX1-1..FX2-3, E7/E8 BEAT </>,
+        # M11/M12 HEADPHONES CUE CH1/CH3 and CH2/CH4, E12 SHIFT (the table
+        # prints SHIFT under Fig. "M12", a typo: the figure's E12 callout and
+        # the button's own printed label both say SHIFT). The PDF only calls
+        # out the left deck; each right-deck control carries the same printed
+        # label, so it gets a " (R)" copy, measured on its own (the render's
+        # right deck sits ~1270 px right of the left one throughout). Pad
+        # order is the printed one (1-4 top row, 5-8 bottom). Left = decks
+        # 1/3 and right = decks 2/4, as printed on each jog's centre display.
+        # Not drawn: CROSSFADER REVERSE (M20) is on the front panel, and the
+        # catalog's other controls (AUTO LOOP, LOAD, DECK 1/3, ...) are out
+        # of its scope (see catalog/ddj_rev5.py). Colors follow the other
+        # Pioneer blocks: green PLAY, amber CUE/loop, blue SYNC/transition,
+        # purple STEMS (as DDJ-FLX10's stem buttons), pink pads.
+        "Jog wheel": ControlGeometry(0.0395, 0.3394, 0.2860, 0.5419, "circle", "#586b82"),
+        "PLAY/PAUSE": ControlGeometry(0.2925, 0.8322, 0.0430, 0.0839, "circle", "#3ea86b"),
+        "CUE": ControlGeometry(0.3130, 0.7686, 0.0200, 0.0405, "circle", "#e0954a"),
+        "TEMPO RANGE": ControlGeometry(0.0350, 0.1553, 0.0155, 0.0289, "circle", "#4ab8a0"),
+        "KEY LOCK": ControlGeometry(0.0650, 0.1553, 0.0150, 0.0289, "circle", "#4ab8a0"),
+        "SYNC": ControlGeometry(0.0940, 0.1553, 0.0155, 0.0289, "circle", "#4a90d9"),
+        "BPM TRANSITION SELECT": ControlGeometry(0.1830, 0.1610, 0.0245, 0.0174, "rect", "#4a90d9"),
+        "BPM TRANSITION START": ControlGeometry(0.2235, 0.1524, 0.0180, 0.0347, "circle", "#4a90d9"),
+        "LOOP 1/2X": ControlGeometry(0.1170, 0.2266, 0.0210, 0.0251, "rect", "#e0954a"),
+        "LOOP 2X": ControlGeometry(0.1420, 0.2266, 0.0205, 0.0251, "rect", "#e0954a"),
+        "SLIP": ControlGeometry(0.2025, 0.2266, 0.0205, 0.0251, "rect", "#e0954a"),
+        "CENSOR": ControlGeometry(0.2275, 0.2266, 0.0205, 0.0251, "rect", "#e0954a"),
+        "KEY -": ControlGeometry(0.2840, 0.2266, 0.0200, 0.0251, "rect", "#4ab8a0"),
+        "KEY +": ControlGeometry(0.3095, 0.2266, 0.0200, 0.0251, "rect", "#4ab8a0"),
+        "STEMS": ControlGeometry(0.0355, 0.2816, 0.0455, 0.0251, "rect", "#9b6fd9"),
+        "BROWSE": ControlGeometry(0.2900, 0.0636, 0.0330, 0.0656, "circle", "#5f6b7a"),
+        "BACK": ControlGeometry(0.2840, 0.1591, 0.0165, 0.0241, "rect", "#5f6b7a"),
+        "HOT CUE MODE": ControlGeometry(0.3540, 0.4368, 0.0310, 0.0193, "rect", "#7a8aa0"),
+        "ROLL MODE": ControlGeometry(0.3900, 0.4368, 0.0310, 0.0193, "rect", "#7a8aa0"),
+        "SAVED LOOP MODE": ControlGeometry(0.4260, 0.4368, 0.0310, 0.0193, "rect", "#7a8aa0"),
+        "SAMPLER MODE": ControlGeometry(0.4620, 0.4368, 0.0310, 0.0193, "rect", "#7a8aa0"),
+        "HEADPHONES CUE": ControlGeometry(0.6120, 0.6365, 0.0145, 0.0193, "rect", "#e0954a"),
+        "Jog wheel (R)": ControlGeometry(0.6745, 0.3394, 0.2860, 0.5419, "circle", "#586b82"),
+        "PLAY/PAUSE (R)": ControlGeometry(0.9275, 0.8322, 0.0430, 0.0839, "circle", "#3ea86b"),
+        "CUE (R)": ControlGeometry(0.9480, 0.7686, 0.0200, 0.0405, "circle", "#e0954a"),
+        "TEMPO RANGE (R)": ControlGeometry(0.6705, 0.1553, 0.0155, 0.0289, "circle", "#4ab8a0"),
+        "KEY LOCK (R)": ControlGeometry(0.6995, 0.1553, 0.0155, 0.0289, "circle", "#4ab8a0"),
+        "SYNC (R)": ControlGeometry(0.7290, 0.1553, 0.0155, 0.0289, "circle", "#4a90d9"),
+        "BPM TRANSITION SELECT (R)": ControlGeometry(0.8180, 0.1610, 0.0245, 0.0174, "rect", "#4a90d9"),
+        "BPM TRANSITION START (R)": ControlGeometry(0.8585, 0.1524, 0.0180, 0.0347, "circle", "#4a90d9"),
+        "LOOP 1/2X (R)": ControlGeometry(0.7525, 0.2266, 0.0205, 0.0251, "rect", "#e0954a"),
+        "LOOP 2X (R)": ControlGeometry(0.7775, 0.2266, 0.0200, 0.0251, "rect", "#e0954a"),
+        "SLIP (R)": ControlGeometry(0.8375, 0.2266, 0.0205, 0.0251, "rect", "#e0954a"),
+        "CENSOR (R)": ControlGeometry(0.8630, 0.2266, 0.0200, 0.0251, "rect", "#e0954a"),
+        "KEY - (R)": ControlGeometry(0.9195, 0.2266, 0.0200, 0.0251, "rect", "#4ab8a0"),
+        "KEY + (R)": ControlGeometry(0.9445, 0.2266, 0.0205, 0.0251, "rect", "#4ab8a0"),
+        "STEMS (R)": ControlGeometry(0.6705, 0.2816, 0.0460, 0.0251, "rect", "#9b6fd9"),
+        "BROWSE (R)": ControlGeometry(0.9250, 0.0636, 0.0335, 0.0656, "circle", "#5f6b7a"),
+        "BACK (R)": ControlGeometry(0.9195, 0.1591, 0.0160, 0.0241, "rect", "#5f6b7a"),
+        "HOT CUE MODE (R)": ControlGeometry(0.5070, 0.4368, 0.0310, 0.0193, "rect", "#7a8aa0"),
+        "ROLL MODE (R)": ControlGeometry(0.5430, 0.4368, 0.0310, 0.0193, "rect", "#7a8aa0"),
+        "SAVED LOOP MODE (R)": ControlGeometry(0.5790, 0.4368, 0.0310, 0.0193, "rect", "#7a8aa0"),
+        "SAMPLER MODE (R)": ControlGeometry(0.6150, 0.4368, 0.0310, 0.0193, "rect", "#7a8aa0"),
+        "HEADPHONES CUE (R)": ControlGeometry(0.6315, 0.6365, 0.0145, 0.0193, "rect", "#e0954a"),
+        "FX1-1": ControlGeometry(0.3540, 0.2806, 0.0155, 0.0289, "rect", "#e0954a"),
+        "FX1-2": ControlGeometry(0.3730, 0.2806, 0.0150, 0.0289, "rect", "#e0954a"),
+        "FX1-3": ControlGeometry(0.3920, 0.2806, 0.0150, 0.0289, "rect", "#e0954a"),
+        "FX2-1": ControlGeometry(0.5930, 0.2806, 0.0150, 0.0289, "rect", "#e0954a"),
+        "FX2-2": ControlGeometry(0.6120, 0.2806, 0.0150, 0.0289, "rect", "#e0954a"),
+        "FX2-3": ControlGeometry(0.6305, 0.2806, 0.0155, 0.0289, "rect", "#e0954a"),
+        "BEAT <": ControlGeometry(0.4660, 0.2353, 0.0205, 0.0251, "rect", "#e0954a"),
+        "BEAT >": ControlGeometry(0.5140, 0.2353, 0.0205, 0.0251, "rect", "#e0954a"),
+        "SHIFT": ControlGeometry(0.4900, 0.3780, 0.0205, 0.0193, "rect", "#5f6b7a"),
+        "Pad 1": ControlGeometry(0.3550, 0.4841, 0.0295, 0.0482, "rect", "#e0708f"),
+        "Pad 2": ControlGeometry(0.3905, 0.4841, 0.0300, 0.0482, "rect", "#e0708f"),
+        "Pad 3": ControlGeometry(0.4265, 0.4841, 0.0300, 0.0482, "rect", "#e0708f"),
+        "Pad 4": ControlGeometry(0.4625, 0.4841, 0.0295, 0.0482, "rect", "#e0708f"),
+        "Pad 5": ControlGeometry(0.3550, 0.5439, 0.0295, 0.0473, "rect", "#e0708f"),
+        "Pad 6": ControlGeometry(0.3905, 0.5439, 0.0300, 0.0473, "rect", "#e0708f"),
+        "Pad 7": ControlGeometry(0.4265, 0.5439, 0.0300, 0.0473, "rect", "#e0708f"),
+        "Pad 8": ControlGeometry(0.4625, 0.5439, 0.0300, 0.0473, "rect", "#e0708f"),
+        "Pad 1 (R)": ControlGeometry(0.5080, 0.4841, 0.0295, 0.0482, "rect", "#e0708f"),
+        "Pad 2 (R)": ControlGeometry(0.5435, 0.4841, 0.0300, 0.0482, "rect", "#e0708f"),
+        "Pad 3 (R)": ControlGeometry(0.5795, 0.4841, 0.0300, 0.0482, "rect", "#e0708f"),
+        "Pad 4 (R)": ControlGeometry(0.6155, 0.4841, 0.0295, 0.0482, "rect", "#e0708f"),
+        "Pad 5 (R)": ControlGeometry(0.5080, 0.5439, 0.0295, 0.0473, "rect", "#e0708f"),
+        "Pad 6 (R)": ControlGeometry(0.5435, 0.5439, 0.0300, 0.0473, "rect", "#e0708f"),
+        "Pad 7 (R)": ControlGeometry(0.5795, 0.5439, 0.0295, 0.0473, "rect", "#e0708f"),
+        "Pad 8 (R)": ControlGeometry(0.6155, 0.5439, 0.0300, 0.0473, "rect", "#e0708f"),
+    },
+    # ---- end of DDJ-REV5 ----
+    # ---- Hercules DJControl Inpulse 500 (issue #339) ---------------------
+    "Hercules DJControl Inpulse 500": {
+        # Measured against controllers/hardware/hercules/DJControl-Inpulse-500/
+        # reference.png (2000x1571; the top ~500 px is the USB cable, the
+        # device starts below it). Pads are connected components of
+        # saturated pixels (exact bounds); the unlit buttons, the browse
+        # encoder's red ring and the jogs were read off gridded 2-3x crops.
+        # Each marker is tied to its catalog name through the bundled "MIDI
+        # COMMANDS" sheet's figure (page 1) and tables, rendered at 300 DPI:
+        # D1-1 Play, D1-2 Cue, D1-3 Shift, D1-4 In, D1-5 Out, D1-6 Autoloop
+        # (the encoder's push), D1-10 Sync, D1-17/18/19 Vinyl/Slip/Quant,
+        # P1-1..P1-4 the mode buttons (each selects mode N, and N+4 with
+        # SHIFT, hence the combined labels), P1-5..P1-12 Pads 1-8 (1-4 top
+        # row), and the same D2-x/P2-x on deck 2; M-5/M-7 Deck 1/2 pfl,
+        # M-30 Master pfl, M-10..M-13 Fx1..Fx4 (FX1/FX2 top, FX3/FX4
+        # bottom, as printed), M-2 Xfader curve (the switch above the
+        # crossfader), B-1/B-2 Load 1/2, B-3 Browse. Deck-2 controls carry
+        # the deck-1 names plus " (R)". Not drawn: Guides (M-6) and
+        # Assistant (B4), which the catalog drops because the sheet gives
+        # both the same address.
+        "Jog wheel": ControlGeometry(0.0355, 0.3813, 0.2845, 0.3647, "circle", "#586b82"),
+        "PLAY/PAUSE": ControlGeometry(0.0335, 0.9083, 0.0440, 0.0490, "rect", "#3ea86b"),
+        "CUE": ControlGeometry(0.0335, 0.8511, 0.0440, 0.0490, "rect", "#e0954a"),
+        "SHIFT": ControlGeometry(0.0335, 0.8154, 0.0420, 0.0185, "rect", "#5f6b7a"),
+        "LOOP IN": ControlGeometry(0.0330, 0.7683, 0.0170, 0.0191, "rect", "#e0954a"),
+        "LOOP OUT": ControlGeometry(0.0580, 0.7683, 0.0175, 0.0191, "rect", "#e0954a"),
+        "AUTOLOOP (press)": ControlGeometry(0.0370, 0.7174, 0.0265, 0.0331, "circle", "#e0954a"),
+        "SYNC": ControlGeometry(0.2750, 0.7467, 0.0355, 0.0185, "rect", "#4a90d9"),
+        "VINYL": ControlGeometry(0.0380, 0.3488, 0.0345, 0.0204, "rect", "#4ab8a0"),
+        "SLIP": ControlGeometry(0.0765, 0.3488, 0.0340, 0.0204, "rect", "#4ab8a0"),
+        "QUANTIZE": ControlGeometry(0.1140, 0.3488, 0.0345, 0.0204, "rect", "#4ab8a0"),
+        "PAD MODE 1/5": ControlGeometry(0.0900, 0.8154, 0.0365, 0.0191, "rect", "#7a8aa0"),
+        "PAD MODE 2/6": ControlGeometry(0.1350, 0.8154, 0.0365, 0.0191, "rect", "#7a8aa0"),
+        "PAD MODE 3/7": ControlGeometry(0.1805, 0.8154, 0.0365, 0.0191, "rect", "#7a8aa0"),
+        "PAD MODE 4/8": ControlGeometry(0.2260, 0.8154, 0.0360, 0.0191, "rect", "#7a8aa0"),
+        "Jog wheel (R)": ControlGeometry(0.6785, 0.3813, 0.2805, 0.3647, "circle", "#586b82"),
+        "PLAY/PAUSE (R)": ControlGeometry(0.6780, 0.9096, 0.0450, 0.0490, "rect", "#3ea86b"),
+        "CUE (R)": ControlGeometry(0.6780, 0.8523, 0.0445, 0.0477, "rect", "#e0954a"),
+        "SHIFT (R)": ControlGeometry(0.6790, 0.8160, 0.0430, 0.0197, "rect", "#5f6b7a"),
+        "LOOP IN (R)": ControlGeometry(0.6790, 0.7689, 0.0180, 0.0191, "rect", "#e0954a"),
+        "LOOP OUT (R)": ControlGeometry(0.7045, 0.7689, 0.0180, 0.0191, "rect", "#e0954a"),
+        "AUTOLOOP (press) (R)": ControlGeometry(0.6890, 0.7167, 0.0265, 0.0331, "circle", "#e0954a"),
+        "SYNC (R)": ControlGeometry(0.9210, 0.7473, 0.0360, 0.0185, "rect", "#4a90d9"),
+        "VINYL (R)": ControlGeometry(0.6830, 0.3488, 0.0315, 0.0204, "rect", "#4ab8a0"),
+        "SLIP (R)": ControlGeometry(0.7205, 0.3488, 0.0305, 0.0204, "rect", "#4ab8a0"),
+        "QUANTIZE (R)": ControlGeometry(0.7585, 0.3488, 0.0310, 0.0204, "rect", "#4ab8a0"),
+        "PAD MODE 1/5 (R)": ControlGeometry(0.7365, 0.8160, 0.0365, 0.0191, "rect", "#7a8aa0"),
+        "PAD MODE 2/6 (R)": ControlGeometry(0.7820, 0.8160, 0.0365, 0.0191, "rect", "#7a8aa0"),
+        "PAD MODE 3/7 (R)": ControlGeometry(0.8275, 0.8160, 0.0365, 0.0191, "rect", "#7a8aa0"),
+        "PAD MODE 4/8 (R)": ControlGeometry(0.8730, 0.8160, 0.0365, 0.0191, "rect", "#7a8aa0"),
+        "LOAD DECK 1": ControlGeometry(0.4365, 0.3425, 0.0380, 0.0216, "rect", "#5f6b7a"),
+        "LOAD DECK 2": ControlGeometry(0.5250, 0.3425, 0.0380, 0.0216, "rect", "#5f6b7a"),
+        "BROWSE (press)": ControlGeometry(0.4725, 0.3565, 0.0545, 0.0675, "circle", "#5f6b7a"),
+        "FX 1": ControlGeometry(0.4790, 0.6754, 0.0160, 0.0204, "rect", "#e0954a"),
+        "FX 2": ControlGeometry(0.5045, 0.6754, 0.0160, 0.0204, "rect", "#e0954a"),
+        "FX 3": ControlGeometry(0.4790, 0.7072, 0.0160, 0.0204, "rect", "#e0954a"),
+        "FX 4": ControlGeometry(0.5045, 0.7072, 0.0160, 0.0204, "rect", "#e0954a"),
+        "DECK 1 PFL": ControlGeometry(0.4045, 0.7530, 0.0385, 0.0223, "rect", "#e0954a"),
+        "DECK 2 PFL": ControlGeometry(0.5565, 0.7530, 0.0370, 0.0223, "rect", "#e0954a"),
+        "MASTER PFL": ControlGeometry(0.6160, 0.5856, 0.0365, 0.0204, "rect", "#e0954a"),
+        "XFADER CURVE ON/OFF": ControlGeometry(0.4850, 0.8784, 0.0275, 0.0318, "rect", "#5f6b7a"),
+        "Pad 1": ControlGeometry(0.0895, 0.8511, 0.0385, 0.0496, "rect", "#e0708f"),
+        "Pad 2": ControlGeometry(0.1345, 0.8511, 0.0390, 0.0496, "rect", "#e0708f"),
+        "Pad 3": ControlGeometry(0.1800, 0.8517, 0.0380, 0.0490, "rect", "#e0708f"),
+        "Pad 4": ControlGeometry(0.2250, 0.8517, 0.0385, 0.0490, "rect", "#e0708f"),
+        "Pad 5": ControlGeometry(0.0895, 0.9083, 0.0390, 0.0496, "rect", "#e0708f"),
+        "Pad 6": ControlGeometry(0.1350, 0.9090, 0.0385, 0.0490, "rect", "#e0708f"),
+        "Pad 7": ControlGeometry(0.1795, 0.9090, 0.0390, 0.0496, "rect", "#e0708f"),
+        "Pad 8": ControlGeometry(0.2250, 0.9096, 0.0385, 0.0490, "rect", "#e0708f"),
+        "Pad 1 (R)": ControlGeometry(0.7355, 0.8517, 0.0390, 0.0496, "rect", "#e0708f"),
+        "Pad 2 (R)": ControlGeometry(0.7805, 0.8517, 0.0390, 0.0496, "rect", "#e0708f"),
+        "Pad 3 (R)": ControlGeometry(0.8265, 0.8517, 0.0380, 0.0490, "rect", "#e0708f"),
+        "Pad 4 (R)": ControlGeometry(0.8715, 0.8517, 0.0385, 0.0490, "rect", "#e0708f"),
+        "Pad 5 (R)": ControlGeometry(0.7355, 0.9096, 0.0390, 0.0496, "rect", "#e0708f"),
+        "Pad 6 (R)": ControlGeometry(0.7805, 0.9102, 0.0390, 0.0484, "rect", "#e0708f"),
+        "Pad 7 (R)": ControlGeometry(0.8260, 0.9096, 0.0385, 0.0490, "rect", "#e0708f"),
+        "Pad 8 (R)": ControlGeometry(0.8710, 0.9090, 0.0390, 0.0496, "rect", "#e0708f"),
+    },
+    # ---- end of Hercules DJControl Inpulse 500 ----
 }
 
 
@@ -1231,6 +1408,12 @@ _RIGHT_GRID_DECKS: dict[str, frozenset[int]] = {
     # 2); the DDJ-800's right deck answers to decks 2 and 4.
     "DDJ-FLX4": frozenset({2}),
     "DDJ-800": frozenset({2, 4}),
+    # issue #339: both name their pads "Deck N Pad P (...)". DDJ-REV5's
+    # right grid is decks 2/4 (its pad channels 10/11 and 14/15, the right
+    # jog's printed "2/4"); the Inpulse 500 has two decks, deck 2 on the
+    # right (pad channel 8).
+    "DDJ-REV5": frozenset({2, 4}),
+    "Hercules DJControl Inpulse 500": frozenset({2}),
 }
 
 

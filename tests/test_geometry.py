@@ -844,7 +844,110 @@ def test_resolve_geometry_label_picks_the_right_grid_for_ddj_flx4_and_ddj_800():
         assert resolve_geometry_label("DDJ-800", f"Deck {deck} Pad 6 (SAMPLER PAGE 2)") == label
 
 
-def test_both_right_grid_tables_agree():
+# ---- DDJ-REV5 / Hercules DJControl Inpulse 500 (issue #339) ----------------
+
+
+def _boxes_overlap(a: ControlGeometry, b: ControlGeometry) -> bool:
+    if not (a.x < b.x + b.w and b.x < a.x + a.w and a.y < b.y + b.h and b.y < a.y + a.h):
+        return False
+    if a.shape == "circle" and b.shape == "rect":
+        a, b = b, a
+    if b.shape == "circle" and a.shape == "rect":
+        # Closest point of the rect to the ellipse's centre, in the
+        # ellipse's own unit coordinates: inside it means a real overlap.
+        cx, cy, rx, ry = b.x + b.w / 2, b.y + b.h / 2, b.w / 2, b.h / 2
+        px = min(max(cx, a.x), a.x + a.w)
+        py = min(max(cy, a.y), a.y + a.h)
+        return ((px - cx) / rx) ** 2 + ((py - cy) / ry) ** 2 < 1
+    return True
+
+
+def test_ddj_rev5_geometry_covers_every_catalog_entry_on_both_decks():
+    """Every catalog control has a marker except CROSSFADER REVERSE, a
+    front-panel switch (its MIDI Message List, M20) the top view can't show.
+    Per-deck controls get a " (R)" copy; FX/BEAT/SHIFT are single."""
+    geometry = CONTROL_GEOMETRY["DDJ-REV5"]
+    names = {entry.name for entry in catalog.static_entries("DDJ-REV5")}
+    single = {"FX1-1", "FX1-2", "FX1-3", "FX2-1", "FX2-2", "FX2-3", "BEAT <", "BEAT >", "SHIFT"}
+    per_deck = names - single - {"CROSSFADER REVERSE"}
+    assert set(geometry) == (
+        single
+        | per_deck
+        | {f"{name} (R)" for name in per_deck}
+        | {"Jog wheel", "Jog wheel (R)"}
+        | {f"Pad {n}" for n in range(1, 9)}
+        | {f"Pad {n} (R)" for n in range(1, 9)}
+    )
+    for name in names - {"CROSSFADER REVERSE"}:
+        assert resolve_geometry_label("DDJ-REV5", name) == name
+
+
+def test_hercules_inpulse_500_geometry_covers_every_catalog_entry_on_both_decks():
+    geometry = CONTROL_GEOMETRY["Hercules DJControl Inpulse 500"]
+    deck = {
+        "PLAY/PAUSE", "CUE", "SHIFT", "LOOP IN", "LOOP OUT", "AUTOLOOP (press)", "SYNC",
+        "VINYL", "SLIP", "QUANTIZE", "PAD MODE 1/5", "PAD MODE 2/6", "PAD MODE 3/7", "PAD MODE 4/8",
+        "Jog wheel",
+    }  # fmt: skip
+    shared = {
+        "LOAD DECK 1", "LOAD DECK 2", "BROWSE (press)", "FX 1", "FX 2", "FX 3", "FX 4",
+        "DECK 1 PFL", "DECK 2 PFL", "MASTER PFL", "XFADER CURVE ON/OFF",
+    }  # fmt: skip
+    assert set(geometry) == (
+        deck
+        | {f"{name} (R)" for name in deck}
+        | shared
+        | {f"Pad {n}" for n in range(1, 9)}
+        | {f"Pad {n} (R)" for n in range(1, 9)}
+    )
+    # Every catalog name finds its marker, SHIFT and long-press layers
+    # included -- except the two "(+SHIFT press)" encoder pushes, which
+    # layout._base_name doesn't fold into "(press)".
+    for entry in catalog.static_entries("Hercules DJControl Inpulse 500"):
+        if entry.name.endswith("(+SHIFT press)"):
+            continue
+        assert resolve_geometry_label("Hercules DJControl Inpulse 500", entry.name) is not None, entry.name
+    assert resolve_geometry_label("Hercules DJControl Inpulse 500", "PAD MODE 7") == "PAD MODE 3/7"
+
+
+def test_issue_339_markers_do_not_overlap_and_sit_on_their_side():
+    for controller in ("DDJ-REV5", "Hercules DJControl Inpulse 500"):
+        geometry = CONTROL_GEOMETRY[controller]
+        boxes = list(geometry.items())
+        for i, (a_name, a) in enumerate(boxes):
+            for b_name, b in boxes[i + 1 :]:
+                if "Jog wheel" in (a_name.removesuffix(" (R)"), b_name.removesuffix(" (R)")):
+                    continue  # a platter's bounding box covers its corners
+                assert not _boxes_overlap(a, b), (controller, a_name, b_name)
+        for label, box in geometry.items():
+            if label.endswith(" (R)"):
+                left = geometry[label.removesuffix(" (R)")]
+                assert box.x > left.x + left.w, (controller, label)
+                assert abs(box.y - left.y) < 0.01, (controller, label)
+
+
+def test_issue_339_pad_grids_are_2x4_and_resolve_by_deck():
+    for controller in ("DDJ-REV5", "Hercules DJControl Inpulse 500"):
+        geometry = CONTROL_GEOMETRY[controller]
+        for suffix in ("", " (R)"):
+            for row in range(2):
+                xs = [geometry[f"Pad {row * 4 + col + 1}{suffix}"].x for col in range(4)]
+                assert xs == sorted(xs)
+            for col in range(1, 5):
+                assert geometry[f"Pad {col}{suffix}"].y < geometry[f"Pad {col + 4}{suffix}"].y
+    # DDJ-REV5: pad channels 8 (deck 1) / 10 (deck 2) / 12 (deck 3) / 14 (deck 4).
+    for channel, label in (("8", "Pad 3"), ("10", "Pad 3 (R)"), ("12", "Pad 3"), ("14", "Pad 3 (R)")):
+        hit = next(h for h in catalog.lookup(channel, "NOTE", "2") if h.controller == "DDJ-REV5")
+        assert resolve_geometry_label("DDJ-REV5", hit.name) == label
+    # Inpulse 500: pad channels 7 (deck 1) / 8 (deck 2).
+    for channel, label in (("7", "Pad 3"), ("8", "Pad 3 (R)")):
+        hit = next(
+            h for h in catalog.lookup(channel, "NOTE", "2") if h.controller == "Hercules DJControl Inpulse 500"
+        )
+        assert resolve_geometry_label("Hercules DJControl Inpulse 500", hit.name) == label
+
+
+def test_right_grid_tables_stay_in_sync():
     from djmidi.gui import geometry, layout
 
     assert geometry._RIGHT_GRID_DECKS == layout._RIGHT_GRID_DECKS

@@ -60,7 +60,10 @@ def test_mapping_layout_can_hide_the_layout():
     assert len(view._scene.items()) == 1  # the photo only
 
 
-def test_photo_layers_are_unavailable_without_a_measured_layout():
+def test_photo_layers_are_unavailable_without_a_measured_layout(monkeypatch):
+    from djmidi.gui.geometry import CONTROL_GEOMETRY
+
+    monkeypatch.delitem(CONTROL_GEOMETRY, "Hercules DJControl Inpulse 500")
     view = ControllerLayoutView()
     view.set_controller("Hercules DJControl Inpulse 500")
     assert view._layers.controller_box.isEnabled() is False
