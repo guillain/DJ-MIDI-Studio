@@ -131,3 +131,40 @@ def test_ddj_rev5_jogs_resolve_side_aware_by_deck_channel():
     assert not any(
         key[0] == "DDJ-REV5" for key in jog.jog_cell_keys_for_event("1", "Control Change", "41")
     )
+
+
+def test_twos_complement_decoder_matches_the_inpulse_500_sheet():
+    # MIDI COMMANDS sheet, D1-16 / D2-16: "01 > 3F: CC Slow->Fast",
+    # "7F > 40: CCW Slow->Fast".
+    assert jog.decode_twos_complement_delta(0x01) == 1
+    assert jog.decode_twos_complement_delta(0x3F) == 63
+    assert jog.decode_twos_complement_delta(0x7F) == -1
+    assert jog.decode_twos_complement_delta(0x40) == -64
+    assert jog.decode_twos_complement_delta(0) == 0
+    assert jog.decode_twos_complement_delta(None) == 0
+    assert jog.decode_twos_complement_delta(200) == 0
+
+
+def test_inpulse_500_jogs_resolve_by_deck_and_shift_channel():
+    # Status B1/B4 (deck 1, +Shift) and B2/B5 (deck 2), CC 0x09 / 0x0A.
+    left = ("Hercules DJControl Inpulse 500", "DISPLAY", "Jog wheel")
+    right = ("Hercules DJControl Inpulse 500", "DISPLAY", "Jog wheel (R)")
+    for data1 in ("9", "10"):
+        for channel in ("2", "5"):
+            keys = jog.jog_cell_keys_for_event(channel, "Control Change", data1)
+            assert left in keys and right not in keys
+        for channel in ("3", "6"):
+            keys = jog.jog_cell_keys_for_event(channel, "Control Change", data1)
+            assert right in keys and left not in keys
+    # Jog touch (CC 0x08) and deck-1 channel 1 aren't turns.
+    assert jog.jog_cell_keys_for_event("2", "Control Change", "8") == []
+    assert jog.jog_cell_keys_for_event("1", "Control Change", "9") == []
+
+
+def test_decode_jog_delta_for_key_uses_each_controllers_encoding():
+    inpulse = ("Hercules DJControl Inpulse 500", "DISPLAY", "Jog wheel")
+    xdj = ("XDJ-XZ", "DISPLAY", "Jog wheel")
+    assert jog.decode_jog_delta_for_key(inpulse, 0x7F) == -1
+    assert jog.decode_jog_delta_for_key(inpulse, 0x02) == 2
+    assert jog.decode_jog_delta_for_key(xdj, 0x7F) == 63
+    assert jog.decode_jog_delta_for_key(xdj, 0x42) == 2
