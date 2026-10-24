@@ -29,11 +29,11 @@
 | Pioneer DDJ-1000 | Official MIDI Message List E1 | ✅ | ✅ | Not yet |
 | Pioneer DDJ-FLX10 | Official MIDI Message List E1 | ✅ | ✅ | Not yet |
 | Pioneer DDJ-REV1 | Official MIDI Message List E1 | ✅ | ✅ | Not yet |
-| Pioneer DDJ-REV5 | Official MIDI Message List E1 | Grid | — | Not yet |
+| Pioneer DDJ-REV5 | Official MIDI Message List E1 | ✅ | — | Not yet |
 | Pioneer DDJ-800 | Official MIDI Message List E3 | ✅ | ✅ | Not yet |
 | Pioneer DDJ-FLX4 | Official MIDI Message List E1 | ✅ | ✅ | Not yet |
 | Numark Mixtrack Pro FX | Conservative community values; user guide for the layout | ✅ | — | Not yet |
-| Hercules DJControl Inpulse 500 | Official MIDI Commands sheet (2022) | Grid | — | Not yet |
+| Hercules DJControl Inpulse 500 | Official MIDI Commands sheet (2022) | ✅ | — | Not yet |
 | Behringer CMD LC-1 | Captured from a real unit with Controller Setup (no vendor list exists), checked against a real Serato export | ✅ | — | ✅ |
 | Behringer CMD Micro | Captured from a real unit (no vendor list exists), checked against a real Traktor export | ✅ | — | ✅ |
 | Behringer CMD Studio 4a | Captured from a real unit in all 4 deck layers (no vendor list exists), checked against a real Traktor export | ✅ | — | ✅ |
@@ -156,7 +156,14 @@ reached by double-clicking `PAD MODE 1–4`; the hardware then sends a
 distinct note for the second click. The Hercules DJControl Inpulse 500
 resolves its 8 pad modes too, and in the
 [Controller Emulator](features/controller-emulator.md) clicking one of its
-`PAD MODE` buttons steers later pad clicks to that mode's notes. The Numark
+`PAD MODE` buttons steers later pad clicks to that mode's notes. The same
+works for the DDJ-FLX4, DDJ-800 and DDJ-REV5 mode buttons; with SHIFT
+latched, a DDJ-FLX4 mode button selects KEYBOARD / PAD FX 2 / BEAT LOOP /
+KEY SHIFT and a DDJ-REV5 one PITCH PLAY / PIANO PLAY / STEMS / SCRATCH
+BANK (the DDJ-800's list doesn't say which mode SHIFT selects, so SHIFT
+keeps the plain mode there). The DDJ-REV5 profile also has the `HOT CUE`
+and `SCRATCH BANK` buttons under KEY −/+ and the LOAD buttons (`LOAD DECK
+1–4`, one note per target deck). The Numark
 profile covers its main eight-pad bank only: its mode-switch messages aren't
 documented, so they aren't guessed.
 

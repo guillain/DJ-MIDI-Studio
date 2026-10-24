@@ -55,8 +55,11 @@ just like the hardware LED.
 The emulator remembers state the way the hardware does:
 
 - **Pad modes**: click a mode button (DDJ-XP2 `PAD MODE 1–4`, XDJ-XZ
-  `HOT CUE` / `BEAT LOOP` / `SLIP LOOP` / `BEAT JUMP`) and the next pad
-  clicks use that mode's bank.
+  `HOT CUE` / `BEAT LOOP` / `SLIP LOOP` / `BEAT JUMP`, Inpulse 500
+  `PAD MODE 1–8`, DDJ-FLX4 / DDJ-800 / DDJ-REV5 `… MODE`) and the next pad
+  clicks use that mode's bank. On the DDJ-FLX4 and DDJ-REV5, clicking a
+  mode button while SHIFT is latched selects its SHIFT mode (e.g. FLX4
+  `HOT CUE MODE` → KEYBOARD); release SHIFT to play that mode's pads.
 - **SHIFT**: click SHIFT to latch it (it stays lit); pads and buttons then
   resolve to their shifted function. Click again to release. A pad mode
   whose own name contains "SHIFT" (the KEY SHIFT mode of the DDJ-1000,
