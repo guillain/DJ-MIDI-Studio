@@ -110,7 +110,9 @@ once and the status bar says so (`Plugged in -- Synced …`).
 - Unplug it and plug it back in: its set is sent again.
 - On Windows, plugging or unplugging another device can renumber the ports
   (`DDJ-XP2 1` becomes `DDJ-XP2 0`); a controller that only changed number
-  is not sent its set again.
+  is not sent its set again. A number that is part of the device name
+  (`DJControl Inpulse 500` and `DJControl Inpulse 300`) still tells two
+  controllers apart, on every system.
 - Controllers already connected when the app starts are handled by
   [Sync at launch](#sync-at-launch), never twice.
 

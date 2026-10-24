@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import logging
 import re
+import sys
 from collections import Counter
 from collections.abc import Callable, Iterable, Sequence
 from contextlib import AbstractContextManager, nullcontext
@@ -419,10 +420,18 @@ def run_sync(
 _PORT_INDEX_SUFFIX = re.compile(r"\s+\d+$")
 
 
-def port_identity(port: str) -> str:
+def port_identity(port: str, platform: str | None = None) -> str:
     """A port name without the trailing index Windows adds (``"DDJ-XP2 1"``
-    -> ``"DDJ-XP2"``), which changes whenever another device comes or goes."""
-    return _PORT_INDEX_SUFFIX.sub("", port.strip())
+    -> ``"DDJ-XP2"``), which changes whenever another device comes or goes.
+
+    Only on Windows (``platform``, default :data:`sys.platform`), and only
+    one number: elsewhere a trailing number is part of the device name
+    (``"DJControl Inpulse 500"``, ``"IAC Driver Bus 1"``), so the full name
+    is the identity (issue #335)."""
+    name = port.strip()
+    if (sys.platform if platform is None else platform) != "win32":
+        return name
+    return _PORT_INDEX_SUFFIX.sub("", name, count=1)
 
 
 class PlugInSyncTracker:
@@ -447,7 +456,8 @@ class PlugInSyncTracker:
     used, so a controller isn't synced twice at launch.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, platform: str | None = None) -> None:
+        self._platform = platform
         self._known: Counter[str] | None = None
 
     @property
@@ -455,7 +465,7 @@ class PlugInSyncTracker:
         return self._known is not None
 
     def seed(self, available_ports: Iterable[str]) -> None:
-        self._known = Counter(port_identity(port) for port in available_ports)
+        self._known = Counter(port_identity(port, self._platform) for port in available_ports)
 
     def reset(self) -> None:
         """Forgets the ports, so the next :meth:`due` call only re-seeds."""
@@ -474,7 +484,7 @@ class PlugInSyncTracker:
             sync_set
             for sync_set in sync_sets
             if (port := resolve_output_port(sync_set, available_ports)) is not None
-            and port_identity(port) in appeared
+            and port_identity(port, self._platform) in appeared
         ]
 
 
