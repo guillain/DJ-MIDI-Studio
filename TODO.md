@@ -30,9 +30,13 @@ Status rules:
   - [Testing, documentation, and delivery](#testing-documentation-and-delivery)
   - [Phase 3 hardware validation](#phase-3-hardware-validation)
 - [Open backlog](#open-backlog)
+  - [Candidate DJ software integrations](#candidate-dj-software-integrations)
   - [Candidate controller catalogues](#candidate-controller-catalogues)
   - [Future MIDI API extensions](#future-midi-api-extensions)
+  - [DJ layout visual fidelity](#dj-layout-visual-fidelity)
+  - [MIDI controller emulation](#midi-controller-emulation)
   - [External tester feedback (2026-08)](#external-tester-feedback-2026-08)
+  - [One-click controller "Sync" / initialization](#one-click-controller-sync--initialization)
   - [Next phases to define](#next-phases-to-define)
 
 ## Current roadmap status
@@ -53,10 +57,13 @@ transport, and to expose no Clock/MIDI-output configuration of its own — so
 Serato alone can never drive this path; some other genuinely Start-Stop-Sync-
 capable Link peer (Ableton Live here) is required.
 
-The current release baseline is `v0.46.0`. The post-release evolution is
-implemented on the active `feature/independent-midi-clock` line and is tracked
-as focused chapters below. These chapters are software-validated; they do not
-close the open physical Serato/CoreMIDI validation items.
+The current release is `v0.48.143` on `main`; each change since `v0.46.0` is
+one milestone tag (`v0.4x.N-<slug>`) recorded in [Recent evolution
+chapters](#recent-evolution-chapters). Those chapters are software-validated;
+anything that still needs real hardware, a real DJ-software export or a
+third-party document stays unchecked under [Open backlog](#open-backlog). What
+is left there, and the order to finish it in, is in [Next phases to
+define](#next-phases-to-define).
 
 ### Phase 0 — baseline plugin architecture — COMPLETE
 
@@ -132,6 +139,17 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Issue #19 re-audit on macOS, Music Library side panel** (`v0.48.143-library-side-panel-width`, issue #19) —
+  every main tab (and the four tool docks) checked on the real `cocoa` platform at the default (1280x820) and
+  smallest default (1100x720) size, in English and French, with a throwaway script (scratch `DJMIDI_*` paths, no
+  QSettings, MIDI ports patched out). Two real defects, both in the Music Library side panel: its pages were plain
+  `QScrollArea`s that ask for almost no width, so in French the Track panel was 21 px short and its `?` sat half
+  under the scroll bar; and the Playlists panel's three-column button grid (~610 px EN / ~710 px FR) was wider than
+  the side panel in every language, its third column off the right edge. Fixed with `_SidePanelScroll` (vertical
+  scrolling only, minimum width = panel + scroll bar) and a two-column grid. Trade-off: in French below ~1160 px
+  wide the whole tab now scrolls sideways (~60 px at 1100) instead of hiding buttons. Remaining audit hits are
+  cosmetic (menu-bar corner and dock title-bar buttons are 28 px tall against a 32 px hint, text whole) or Qt's own
+  tab scroll arrows. Issue #19 (closed 2026-10-06) is ticked in External tester feedback.
 - [x] **Emulator pad-mode banks for DDJ-FLX4/DDJ-800/DDJ-REV5, DDJ-REV5 catalog gaps**
   (`v0.48.142-pad-modes-rev5-gaps`, issue #350) — `gui/pad_mode.py` maps each of their mode buttons to the bank
   token their pad names carry (DDJ-800: page 1); with SHIFT latched, FLX4/REV5 mode buttons pick the SHIFT-layer
@@ -2876,7 +2894,7 @@ against the current tree and confirmed still open. Tracked as GitHub issues.
   `View -> Show all controllers` escape hatch (persisted), `Enable/Disable all
   controllers` buttons in Preferences, a usage hint, and test isolation so the
   global filter no longer leaks between tests.
-- [ ] **Elements cut off at the default window size on macOS**
+- [x] **Elements cut off at the default window size on macOS**
   ([#19](https://github.com/guillain/DJ-MIDI-Studio/issues/19)). Partially
   addressed in `v0.47.9-adaptive-window-size`: the first-run size is now
   derived from `screen().availableGeometry()` (preferred `1280x820`, scaled
@@ -3333,9 +3351,33 @@ controller name/port. What a set sends is whatever the user recorded, so the
 
 ### Next phases to define
 
-No new phase is committed yet. After the Phase 3 hardware validation review,
-define the next phase together, including its scope, acceptance criteria,
-documentation deliverables, tests, release tag, and any required hardware.
+Agreed plan to finish the backlog (2026-10-25). Almost everything left waits on
+external input, not code, so the order is: gather the input, implement, then
+close what can't be unblocked here.
+
+1. **Phase 0 — housekeeping**: this roadmap status, and the issue #19 re-audit
+   on macOS (`v0.48.143-library-side-panel-width`). Done.
+2. **Phase 1 — maintainer captures** (own hardware/software, one sitting):
+   - Serato: MIDI-learn Play/Cue/Sync (decks 1-2, optionally hot cues 1-8) on
+     the CMD LC-1 or the IAC bus, then export the XML — unblocks #194.
+   - Traktor Controller Manager: an empty Generic MIDI device export, then
+     before/after exports around one added command (a button, a fader) and one
+     changed setting — unblocks #233 and creating `.tsi` bindings.
+   - Traktor: import a `.nml` exported by this app (*Import Playlist*).
+   - rekordbox: a real mapping CSV (exported, or bundled in the app) — unblocks
+     the rekordbox plugin.
+   - VirtualDJ: a real definition + mapping file pair — unblocks its plugin.
+   - CMD LC-1: a flat top-down photo — geometry.
+   - CMD Micro jog CC and CMD Studio 4a pitch-bend jog, via Live Monitor.
+3. **Phase 2 — implementation**, one PR and tag each: #194 converter (Play/Cue/
+   Sync/hot cues only, everything else refused), #233 decision, rekordbox and
+   VirtualDJ plugins, CMD LC-1 geometry, CMD Micro / Studio 4a jogs.
+4. **Phase 3 — close what depends on others**: #11 and #12 (no hardware, no
+   official MIDI list) to `help wanted` and the community-submission route;
+   #13's MIDI 2.0 (dead end, reopen on a UMP controller or mido/rtmidi UMP
+   support) and YAML (conditional, no requirement) closed; the advanced plugin
+   API either gets a concrete requirement and its own issue, or is closed.
+5. **Phase 4 — define the next phase** together, or declare the backlog done.
 
 ## Tracking rules
 
