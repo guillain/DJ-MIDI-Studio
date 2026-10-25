@@ -426,6 +426,55 @@ def test_no_button_is_squeezed_below_its_minimum(size, language):
             QApplication.instance().removeTranslator(translator)
 
 
+def test_side_panel_scroll_asks_for_its_panel_width():
+    """A plain QScrollArea asks for almost no width, so the splitter could
+    leave a side panel narrower than its content (issue #19)."""
+    from PySide6.QtWidgets import QHBoxLayout, QPushButton, QWidget
+
+    panel = QWidget()
+    wide = QPushButton("wide")
+    wide.setMinimumWidth(500)
+    QHBoxLayout(panel).addWidget(wide)
+    area = mlv._scrolled(panel)
+    needed = panel.minimumSizeHint().width() + area.verticalScrollBar().sizeHint().width()
+    assert panel.minimumSizeHint().width() >= 500
+    assert area.minimumSizeHint().width() >= needed
+    assert area.horizontalScrollBarPolicy() == Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+
+
+@pytest.mark.parametrize("language", ["en", "fr"])
+@pytest.mark.parametrize("size", [(1280, 820), (1100, 700), (900, 600)])
+def test_no_side_panel_is_wider_than_its_tab(size, language):
+    """On macOS in French the Track panel's help button sat half under the
+    scroll bar, and the Playlists panel's third column of buttons was off its
+    right edge in every language (issue #19)."""
+    from PySide6.QtCore import QTranslator
+
+    from djmidi import i18n
+    from djmidi.gui.theme import apply_theme
+
+    app = QApplication.instance()
+    if language == "fr":
+        translator = QTranslator()
+        assert translator.load(str(i18n.translation_file("fr")))
+        app.installTranslator(translator)
+    apply_theme(app)
+    view = MusicLibraryView(db_path=":memory:")
+    view.resize(*size)
+    view.show()
+    try:
+        for tab in range(view.side_tabs.count()):
+            view.side_tabs.setCurrentIndex(tab)
+            QApplication.processEvents()
+            page = view.side_tabs.widget(tab)
+            assert page.widget().width() <= page.viewport().width(), (size, view.side_tabs.tabText(tab))
+    finally:
+        view.close_db()
+        view.close()
+        if language == "fr":
+            app.removeTranslator(translator)
+
+
 @pytest.mark.parametrize("size", [(1280, 820), (1000, 650), (900, 600)])
 def test_filter_combos_show_their_whole_all_entry_in_french(size):
     """Issue #327: "Toutes les tonalités" was cut to "Toutes les tonalit"

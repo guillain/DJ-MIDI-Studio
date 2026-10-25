@@ -245,8 +245,24 @@ class _TabContent(QWidget):
         return super().minimumSizeHint().expandedTo(QSize(_CONTENT_MIN_WIDTH, _CONTENT_MIN_HEIGHT))
 
 
+class _SidePanelScroll(QScrollArea):
+    """Scrolls a side panel vertically only, and asks for the panel's whole
+    minimum width plus the scroll bar. A plain QScrollArea asks for almost
+    nothing, so on macOS in French the splitter left the Track panel 21 px
+    short and its help button sat half under the scroll bar (issue #19)."""
+
+    def minimumSizeHint(self) -> QSize:
+        hint = super().minimumSizeHint()
+        panel = self.widget()
+        if panel is None:
+            return hint
+        width = panel.minimumSizeHint().width() + self.verticalScrollBar().sizeHint().width() + 2 * self.frameWidth()
+        return QSize(max(hint.width(), width), hint.height())
+
+
 def _scrolled(panel: QWidget) -> QScrollArea:
-    area = QScrollArea()
+    area = _SidePanelScroll()
+    area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
     area.setWidgetResizable(True)
     area.setFrameShape(QFrame.Shape.NoFrame)
     area.setWidget(panel)
@@ -1461,7 +1477,9 @@ class MusicLibraryView(QWidget):
                 button.setToolTip(tip)
             button.clicked.connect(handler)
             setattr(self, attr, button)
-            grid.addWidget(button, index // 3, index % 3)
+            # Two columns: three made this panel ~690 px wide, wider than the
+            # side panel, so its third column sat off the right edge (issue #19).
+            grid.addWidget(button, index // 2, index % 2)
         box.addLayout(grid)
         return panel
 
