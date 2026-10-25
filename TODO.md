@@ -3363,10 +3363,19 @@ close what can't be unblocked here.
    - Traktor Controller Manager: an empty Generic MIDI device export, then
      before/after exports around one added command (a button, a fader) and one
      changed setting — unblocks #233 and creating `.tsi` bindings.
-   - Traktor: import a `.nml` exported by this app (*Import Playlist*).
+   - Traktor: import a `.nml` exported by this app (*Import Playlist*). A
+     5-track test file is ready: `Exports/djmidi-import-test.nml` in the
+     workspace (playlist `DJMIDI import test`).
    - rekordbox: a real mapping CSV (exported, or bundled in the app) — unblocks
-     the rekordbox plugin.
+     the rekordbox plugin. **Done 2026-10-25** from the 67 CSVs bundled in
+     rekordbox 7: format decoded and cross-checked against the PDF-based
+     catalogs, see `software/rekordbox/README.md`. A user-customized export
+     is still useful for writing, not for reading.
+   - DDJ-XP2: press 1/2X and 2X (plain and SHIFT) with the Live Monitor open —
+     rekordbox's bundled CSV says notes 18/19, the official PDF and the
+     catalog 16/17.
    - VirtualDJ: a real definition + mapping file pair — unblocks its plugin.
+     VirtualDJ isn't installed on the maintainer's Mac.
    - CMD LC-1: a flat top-down photo — geometry.
    - CMD Micro jog CC and CMD Studio 4a pitch-bend jog, via Live Monitor.
 3. **Phase 2 — implementation**, one PR and tag each: #194 converter (Play/Cue/
