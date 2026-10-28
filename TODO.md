@@ -139,6 +139,18 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **rekordbox MIDI mapping plugin, read-only** (`v0.48.144-rekordbox-mapping-plugin`) — phase 2 of the
+  backlog plan. `software/rekordbox.py` reads rekordbox's `.midi.csv` mappings as decoded in phase 1
+  (`software/rekordbox/README.md`): one `Control` per decoded address and deck (`click` input, `output` LED),
+  command = `MappingElement.tag`, deck 1-4 = `deck_id`, control name / type / option / comment in `extra_attrs`;
+  disabled rows and `Fx` internal parameters skipped. Detected by its `@file,` first line through a new optional
+  `SoftwareDefinition.signature` sniffer (`software.signature_matches`; detection scores any signature match
+  100, an extension-only guess 70). Saving raises a readable error — writing waits on a user-customized export.
+  Two fixes found on the real files: `validator`'s "missing deck_id or slot_id" error is now Serato-only (it also
+  flagged every Traktor `.tsi` binding: 380 false errors on the CMD Studio 4a export), and `live_ready.tag_words`
+  splits camelCase so `PlayPause` counts as Play. All 67 bundled rekordbox 7 files parse (37,880 controls) with
+  no validation issue; Ready for live only warns where a device really has no Play/Cue (DDJ-XP2). Tests use a
+  synthetic CSV; File → Open / Compare filters list `*.csv`.
 - [x] **Issue #19 re-audit on macOS, Music Library side panel** (`v0.48.143-library-side-panel-width`, issue #19) —
   every main tab (and the four tool docks) checked on the real `cocoa` platform at the default (1280x820) and
   smallest default (1100x720) size, in English and French, with a throwaway script (scratch `DJMIDI_*` paths, no
@@ -1730,7 +1742,8 @@ See `software/README.md` for the full index (mirrors `controllers/README.md`'s
 software side of the plugin architecture). Format research done
 2026-09-19; no plugin work started for either.
 
-- [ ] **Pioneer/AlphaTheta rekordbox** — real format is a 14/15-field CSV
+- [x] **Pioneer/AlphaTheta rekordbox** (read-only plugin in `v0.48.144-rekordbox-mapping-plugin`;
+  writing still needs a user-customized export) — real format is a 14/15-field CSV
   (`software/rekordbox/README.md`), not XML. Official Pioneer support
   article confirms it but is bot-protected (403 to automated fetches);
   community documentation ([alexrster/rekordbox-dj](https://github.com/alexrster/rekordbox-dj))
@@ -3379,7 +3392,8 @@ close what can't be unblocked here.
    - CMD LC-1: a flat top-down photo — geometry.
    - CMD Micro jog CC and CMD Studio 4a pitch-bend jog, via Live Monitor.
 3. **Phase 2 — implementation**, one PR and tag each: #194 converter (Play/Cue/
-   Sync/hot cues only, everything else refused), #233 decision, rekordbox and
+   Sync/hot cues only, everything else refused), #233 decision, rekordbox
+   (read-only, **done** in `v0.48.144-rekordbox-mapping-plugin`) and
    VirtualDJ plugins, CMD LC-1 geometry, CMD Micro / Studio 4a jogs.
 4. **Phase 3 — close what depends on others**: #11 and #12 (no hardware, no
    official MIDI list) to `help wanted` and the community-submission route;

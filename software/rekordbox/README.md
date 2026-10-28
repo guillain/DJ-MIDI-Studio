@@ -1,11 +1,16 @@
 # Pioneer/AlphaTheta rekordbox mapping format
 
-## Status: candidate, evidence gathered, not yet integrated
+## Status: read-only plugin
 
-No `src/djmidi/software/rekordbox.py` plugin exists yet. This file records
-what's known about the real format so the integration starts from evidence,
-not a guess. Since 2026-10-25 that evidence is the official mapping files
-rekordbox itself ships, not only community documentation.
+`src/djmidi/software/rekordbox.py` (`v0.48.144`) reads these files: each
+decoded address becomes a `Control` (`click` for input, `output` for LED
+feedback), the command is `MappingElement.tag`, the deck 1-4 its `deck_id`
+(none for a global row), and the control name / type / option / comment /
+row number go in its `extra_attrs`. Disabled rows and `Fx` internal
+parameters are skipped. A file is detected by its `@file,` first line
+(`SoftwareDefinition.signature`). All 67 bundled files parse (37,880
+controls) with no validation issue. Saving raises a clear error, see
+below.
 
 ## Real files: the bundled official mappings
 
@@ -87,7 +92,7 @@ describes the same CSV shape: 15 fields, hex MIDI codes, 0-based channels,
 "Function"; the bundled files show column 1 is the command rekordbox runs
 and column 2 the physical control.
 
-## What's still needed before building a plugin
+## What's still needed before writing
 
 - A **user-customized** CSV (exported from rekordbox's MIDI settings) to see
   how a user's own edits are saved next to these defaults.
