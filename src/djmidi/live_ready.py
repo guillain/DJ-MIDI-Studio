@@ -132,13 +132,15 @@ _LED_HINT = QT_TRANSLATE_NOOP(
     "mapping for the same function on this control if you rely on the light.",
 )
 
+_CAMEL_RE = re.compile(r"(?<=[a-z0-9])(?=[A-Z])")
 _WORD_RE = re.compile(r"[a-z0-9]+")
 _NO_DECK = ("", "(none)")
 
 
 def tag_words(tag: str) -> list[str]:
-    """`"Play/Pause"` -> `["play", "pause"]`, `"hot_cue_1"` -> `["hot", "cue", "1"]`."""
-    return _WORD_RE.findall(tag.lower())
+    """`"Play/Pause"` -> `["play", "pause"]`, `"hot_cue_1"` -> `["hot", "cue", "1"]`,
+    rekordbox's camelCase `"PlayPause"` -> `["play", "pause"]`."""
+    return _WORD_RE.findall(_CAMEL_RE.sub(" ", tag).lower())
 
 
 @dataclass(frozen=True)

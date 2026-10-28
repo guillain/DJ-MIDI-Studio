@@ -14,6 +14,7 @@ from djmidi.software._registry import (
     detect_from_text,
     get_definition,
     set_enabled_plugin_ids,
+    signature_matches,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -77,4 +78,5 @@ __all__ = [
     "get_definition",
     "plugin_names",
     "set_enabled_plugin_ids",
+    "signature_matches",
 ]

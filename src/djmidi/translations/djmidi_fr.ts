@@ -3488,12 +3488,20 @@ Workflow: (1) get the triggers — learn them from the hardware under MIDI input
         <translation>Scène de synchro : {scene}</translation>
     </message>
     <message>
+        <source>Supported mapping files (*.xml *.nml *.tsi *.csv);;All files (*)</source>
+        <translation>Fichiers de mapping pris en charge (*.xml *.nml *.tsi *.csv);;Tous les fichiers (*)</translation>
+    </message>
+    <message>
         <source>Recording in progress</source>
         <translation>Enregistrement en cours</translation>
     </message>
     <message>
         <source>A controller sync recording is in progress. Save it before quitting?</source>
         <translation>Un enregistrement de synchronisation des contrôleurs est en cours. L&apos;enregistrer avant de quitter ?</translation>
+    </message>
+    <message>
+        <source>Supported mapping files (*.xml *.nml *.tsi *.csv *.bak);;All files (*)</source>
+        <translation>Fichiers de mapping pris en charge (*.xml *.nml *.tsi *.csv *.bak);;Tous les fichiers (*)</translation>
     </message>
     <message>
         <source>No macro yet</source>
@@ -3770,10 +3778,6 @@ Ouvrir la page de la version pour la télécharger ?</translation>
         <translation>Ouvrir un mapping DJ</translation>
     </message>
     <message>
-        <source>Supported mapping files (*.xml *.nml *.tsi);;All files (*)</source>
-        <translation>Fichiers de mapping pris en charge (*.xml *.nml *.tsi);;Tous les fichiers (*)</translation>
-    </message>
-    <message>
         <source>Failed to open file</source>
         <translation>Échec de l&apos;ouverture du fichier</translation>
     </message>
@@ -3844,10 +3848,6 @@ Les modifications non enregistrées dans l&apos;application seront perdues.</tra
     <message>
         <source>Compare with mapping</source>
         <translation>Comparer avec un mapping</translation>
-    </message>
-    <message>
-        <source>Supported mapping files (*.xml *.nml *.tsi *.bak);;All files (*)</source>
-        <translation>Fichiers de mapping pris en charge (*.xml *.nml *.tsi *.bak);;Tous les fichiers (*)</translation>
     </message>
     <message>
         <source>previous version ({name})</source>
