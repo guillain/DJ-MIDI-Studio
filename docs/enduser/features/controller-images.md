@@ -11,6 +11,7 @@
 - [What it does](#what-it-does)
 - [Browse a controller](#browse-a-controller)
 - [Display layers](#display-layers)
+- [Place the controls of your own profile](#place-the-controls-of-your-own-profile)
 - [Related](#related)
 
 ## What it does
@@ -59,6 +60,34 @@ the other views.
 With the [Live Monitor](live-monitor.md) running, a marker flashes when you
 hit that control on the hardware, a jog marker turns with the platter, and
 LED messages from Serato light it amber.
+
+## Place the controls of your own profile
+
+A profile you installed — from the
+[profile library](../controller-profiles.md#profile-library-rekordbox-devices)
+or made in [Controller Setup](controller-setup.md) — starts without a
+picture, so the layout views show it as a grid of controls. Give it its real
+layout yourself:
+
+1. Pick the controller here and click **`Place controls…`** (or
+   **`File` → `Controller Profile` → `Place Controls on a Picture…`**).
+2. **`Choose picture…`**: a flat, top-down photo or drawing of the
+   controller works best.
+3. The list holds one entry per physical control (a pad's modes and a
+   button's SHIFT layer share it). Pick one, then drag a box over that
+   control on the picture — or just click it for a standard-size box. The
+   next control to place is selected for you; `Shape` switches between a
+   rectangle and a circle, `Remove box` clears one.
+4. **`Save`**: the picture is copied next to the profile and the boxes are
+   stored in it.
+
+From then on the controller shows on its picture here (`Layout` layer), in
+By Channel / By Deck / By Controller, in the
+[Controller Emulator](controller-emulator.md), in live MIDI highlights and
+on the printable [cheat sheet](cheat-sheet.md), exactly like a built-in
+controller. You can place only the controls you care about; the others keep
+working, just without a marker. Built-in controllers already have their
+layout and can't be edited.
 
 ## Related
 

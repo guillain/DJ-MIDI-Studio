@@ -38,6 +38,7 @@ from PySide6.QtWidgets import (
 )
 
 from djmidi import catalog
+from djmidi.catalog.profile import USER_PLUGIN_PREFIX
 from djmidi.gui import help_texts
 from djmidi.gui import layout as layout_mod
 from djmidi.gui.geometry import CONTROL_GEOMETRY
@@ -194,6 +195,9 @@ class ControllerImageView(QWidget):
     """Combo to pick a controller, a zoomable/pannable image of its official
     diagram, and a button to reset the view back to fit-to-window."""
 
+    # "Place controls…" clicked for this installed profile (issue #363).
+    placeControlsRequested = Signal(str)
+
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
 
@@ -205,6 +209,10 @@ class ControllerImageView(QWidget):
         reset_button.clicked.connect(lambda: self._load(self._combo.currentText()))
         self._documentation_button = QPushButton(self.tr("Open documentation"))
         self._documentation_button.clicked.connect(self._open_documentation)
+        # Only a profile the user installed has a file to store a layout in (issue #363).
+        self._place_button = QPushButton(self.tr("Place controls…"))
+        self._place_button.setToolTip(self.tr("Choose this controller's picture and place its controls on it"))
+        self._place_button.clicked.connect(lambda: self.placeControlsRequested.emit(self._combo.currentText()))
         # The display layers (gui/layer_toggles.py): Controller photo, MIDI
         # picture, Layout markers. The Layout starts off here: this tab is
         # first a picture viewer. The old checkbox names stay as aliases.
@@ -227,6 +235,7 @@ class ControllerImageView(QWidget):
         controls.addWidget(self._combo)
         controls.addWidget(reset_button)
         controls.addWidget(self._documentation_button)
+        controls.addWidget(self._place_button)
         controls.addWidget(self._layers)
         controls.addWidget(self._live_send)
         controls.addWidget(help_button(self, *help_texts.CONTROLLER_IMAGES))
@@ -317,6 +326,10 @@ class ControllerImageView(QWidget):
         return self._combo.currentText()
 
     def _load(self, name: str) -> None:
+        definition = catalog._registry._REGISTRY.get(name)
+        self._place_button.setEnabled(
+            definition is not None and (definition.plugin_id or "").startswith(USER_PLUGIN_PREFIX)
+        )
         documentation = documentation_for_controller(name)
         self._documentation_button.setEnabled(documentation is not None)
         self._documentation_button.setToolTip(

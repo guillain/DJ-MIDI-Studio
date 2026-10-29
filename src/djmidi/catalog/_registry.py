@@ -52,6 +52,10 @@ class ControllerDefinition:
     # Display order for gui/layout.py's non-pad sections; sections not listed
     # here are appended after, in whatever order they were first seen.
     section_order: tuple[str, ...] = ()
+    # Marker positions a user placed on `reference_image` (a JSON profile's
+    # "geometry"): (label, x, y, w, h, shape, color), x/y/w/h as fractions of
+    # the image; gui/geometry.sync_profile_geometry() feeds them to the views.
+    marker_geometry: tuple[tuple[str, float, float, float, float, str, str], ...] = ()
 
 
 @dataclass(frozen=True)

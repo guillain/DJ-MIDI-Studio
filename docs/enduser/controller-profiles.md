@@ -176,8 +176,9 @@ profiles for 46 more Pioneer DJ / AlphaTheta devices: DDJ-200, DDJ-400, DDJ-ERGO
 They are built from the MIDI mappings rekordbox ships for each device, so
 they cover each device's **buttons and pads**, named and grouped as
 rekordbox names them (`Sync +SHIFT`, `Pad 3 (HotCue)`); knobs, faders and
-jogs aren't included, and they have no picture (the layout views show them
-as a grid of controls). Their source is rekordbox's default mapping, not the
+jogs aren't included, and they come without a picture: the layout views
+show them as a grid of controls until you
+[place their controls on a picture](features/controller-images.md#place-the-controls-of-your-own-profile). Their source is rekordbox's default mapping, not the
 vendor's MIDI documentation, and none has been checked on a real unit.
 
 They aren't active until you install them, so they don't crowd every

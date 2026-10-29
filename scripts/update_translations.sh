@@ -69,6 +69,7 @@ SOURCES=(
   src/djmidi/gui/controller_emulator.py
   src/djmidi/gui/pad_colour_panel.py
   src/djmidi/gui/profile_library_dialog.py
+  src/djmidi/gui/geometry_editor.py
   src/djmidi/validator.py
   src/djmidi/integration_detection.py
   src/djmidi/function_names.py

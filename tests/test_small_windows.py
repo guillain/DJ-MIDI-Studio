@@ -191,6 +191,18 @@ def _profile_library():
     return ProfileLibraryDialog(list_library_profiles(LIBRARY_DIR), Path("/nonexistent-controllers"))
 
 
+def _geometry_editor():
+    from djmidi.catalog._registry import ControlInfo, ControllerDefinition, register
+    from djmidi.gui.geometry_editor import GeometryEditorDialog
+
+    name = "Small-window profile"
+    register(
+        ControllerDefinition(name=name, static_entries=[ControlInfo(name, "Deck", "Sync", "NOTE", ("1",), "88")]),
+        replace=True,
+    )
+    return GeometryEditorDialog(name, Path("/nonexistent/profile.json"))
+
+
 WINDOWS = {
     "first-run wizard": _wizard,
     "layer map": _layer_map,
@@ -202,6 +214,7 @@ WINDOWS = {
     "change history": _change_history,
     "command palette": _palette,
     "controller profile library": _profile_library,
+    "geometry editor": _geometry_editor,
 }
 
 

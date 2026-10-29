@@ -139,6 +139,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Place a profile's controls on a picture** (`v0.48.149-profile-geometry-editor`, #363, phase 4 item 1) — an
+  installed profile (library or Controller Setup) gets a picture and marker boxes, drawn by the user in a placement
+  editor (drag a box, or click; auto-advance through the layout's controls) and stored in the profile JSON; they feed
+  `CONTROL_GEOMETRY`, so Controller Images, the real-position views, the emulator, live highlights and the cheat sheet
+  all show it like a built-in. Checked end to end in the real window with a synthetic picture.
 - [x] **Profile library: uninstall, and an offer for plugged-in controllers** (`v0.48.148-profile-library-suggest`) —
   follow-up to `v0.48.147`: the library window uninstalls a profile, and at launch a connected controller whose
   profile is in the library but not installed (matched by its port name, as a whole word) gets one question
@@ -3432,6 +3437,7 @@ close what can't be unblocked here.
 5. **Phase 4 — new features, agreed 2026-10-30** (no hardware needed to build
    them; one PR and milestone tag each, in this order):
    1. Place controls on a photo for any profile without geometry (#363).
+      **Done** in `v0.48.149-profile-geometry-editor`.
    2. Guided profile verification through the Live Monitor (#364) — also the
       community route for #11.
    3. Mixxx mapping plugin, read-only, from its documented format and real

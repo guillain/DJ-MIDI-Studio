@@ -75,7 +75,11 @@ from djmidi.catalog.library import (
     install_library_profile,
     list_library_profiles,
 )
-from djmidi.catalog.profile import load_user_profiles
+from djmidi.catalog.profile import (
+    USER_PLUGIN_PREFIX,
+    find_user_profile_file,
+    load_user_profiles,
+)
 from djmidi.command_palette import (
     KIND_ACTION,
     KIND_FUNCTION,
@@ -113,7 +117,12 @@ from djmidi.gui.edit_panel import EditPanel
 from djmidi.gui.file_reveal import reveal_in_file_manager
 from djmidi.gui.first_run_wizard import FirstRunWizard
 from djmidi.gui.function_search_view import FunctionSearchView
-from djmidi.gui.geometry import CONTROL_GEOMETRY, resolve_geometry_label
+from djmidi.gui.geometry import (
+    CONTROL_GEOMETRY,
+    resolve_geometry_label,
+    sync_profile_geometry,
+)
+from djmidi.gui.geometry_editor import GeometryEditorDialog
 from djmidi.gui.helpful_notes_dialog import HelpfulNotesDialog
 from djmidi.gui.introduction_view import IntroductionView
 from djmidi.gui.layer_map_dialog import LayerMapDialog
@@ -342,6 +351,7 @@ class MainWindow(QMainWindow):
         # Controller profiles the user installed from Controller Setup
         # (issue #175): JSON files in their DJ MIDI Studio folder.
         loaded, failed = load_user_profiles(user_paths.controllers_dir())
+        sync_profile_geometry()
         if loaded:
             _LOGGER.info("Loaded %d installed controller profile(s): %s", len(loaded), ", ".join(loaded))
         for path, reason in failed.items():
@@ -460,6 +470,7 @@ class MainWindow(QMainWindow):
             splitter.splitterMoved.connect(lambda *_args, s=splitter: self._remember_pair_ratio(s))
 
         self.controller_image_view = ControllerImageView()
+        self.controller_image_view.placeControlsRequested.connect(lambda name: self.open_geometry_editor(name))
 
         self.live_monitor_view = LiveMonitorView(on_event=self._on_live_midi_event)
         self.live_monitor_view.syncRequested.connect(self._on_sync_controllers)
@@ -871,6 +882,9 @@ class MainWindow(QMainWindow):
             action = QAction(label, self)
             action.triggered.connect(lambda _checked=False, h=handler: self._run_in_tab("setup", h))
             profile_menu.addAction(action)
+        place_action = QAction(self.tr("Place Controls on a Picture..."), self)
+        place_action.triggered.connect(lambda: self.open_geometry_editor())
+        profile_menu.addAction(place_action)
         library_action = QAction(self.tr("Install from Library..."), self)
         library_action.triggered.connect(lambda: self.open_profile_library())
         profile_menu.addAction(library_action)
@@ -2801,6 +2815,7 @@ class MainWindow(QMainWindow):
         # The enabled-controller filter was computed from the controllers
         # registered at startup; recompute it so a new one isn't filtered out.
         self._apply_plugin_preferences()
+        sync_profile_geometry()
         layout_mod.clear_reverse_lookup_cache()
         layout_mod.clear_label_to_key_cache()
         self.layout_view.refresh_controllers()
@@ -2813,6 +2828,52 @@ class MainWindow(QMainWindow):
         if self.config is not None:
             self._refresh_layout_usage()
         self.statusBar().showMessage(self.tr("'{name}' applied for this session.").format(name=name))
+
+    def open_geometry_editor(self, name: str | None = None, dialog_factory=None) -> GeometryEditorDialog | None:
+        """Place a profile's controls on a picture (issue #363). Without a
+        name: the controller Controller Images shows when it is an installed
+        profile, else a choice among the installed profiles."""
+        installed = sorted(
+            definition.name
+            for definition in catalog.all_controller_definitions()
+            if (definition.plugin_id or "").startswith(USER_PLUGIN_PREFIX)
+        )
+        if name is None:
+            shown = self.controller_image_view.current_controller_name()
+            if shown in installed:
+                name = shown
+            elif not installed:
+                QMessageBox.information(
+                    self,
+                    self.tr("Place controls"),
+                    self.tr(
+                        "Only an installed profile can get a picture and a layout: install one from "
+                        "File → Controller Profile → Install from Library…, or make one in Controller Setup."
+                    ),
+                )
+                return None
+            else:
+                name, accepted = QInputDialog.getItem(
+                    self, self.tr("Place controls"), self.tr("Profile:"), installed, 0, False
+                )
+                if not accepted:
+                    return None
+        path = find_user_profile_file(name, user_paths.controllers_dir())
+        if path is None:
+            QMessageBox.warning(
+                self, self.tr("Place controls"), self.tr("No installed profile file found for '{name}'.").format(name=name)
+            )
+            return None
+        dialog = (dialog_factory or GeometryEditorDialog)(name, path, self)
+        dialog.saved.connect(self._on_geometry_saved)
+        dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        dialog.open()
+        return dialog
+
+    def _on_geometry_saved(self, name: str) -> None:
+        self._on_controller_applied(name)
+        self.controller_image_view.set_controller(name)
+        self.statusBar().showMessage(self.tr("Layout of '{name}' saved.").format(name=name), 8000)
 
     def open_profile_library(self, dialog_factory=None) -> ProfileLibraryDialog:
         """File → Controller Profile → Install from Library…: the dialog is
