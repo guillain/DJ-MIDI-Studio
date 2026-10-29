@@ -31,6 +31,10 @@ _SHIFT_SUFFIXES = (
 _PAD_NUM_RE = re.compile(r"(?:Pad|Performance Pad) (\d+)")
 
 _COLS_PER_ROW = 4
+# The plain card grid (a controller with no anchored layout -- today only
+# profiles made in Controller Setup or installed from the profile library)
+# is wider, so a profile with dozens of controls stays readable once fitted.
+_GRID_COLS_PER_ROW = 8
 
 
 def _base_name(name: str) -> str:
@@ -204,19 +208,23 @@ def build_layout(controller: str) -> list[LayoutCell]:
     labels: dict[CellKey, str] = {}
     order: list[CellKey] = []
     for entry in entries:
-        key = (entry.controller, entry.section, _base_name(entry.name))
+        # cell_key, as live hits use: a static PAD-section entry (a JSON
+        # profile's "Pad 3 (HotCue)") groups onto its pad like a pad bank does.
+        key = cell_key(entry)
         if key not in labels:
-            labels[key] = _base_name(entry.name)
+            labels[key] = key[2]
             order.append(key)
 
     section_order = list(definition.section_order)
 
-    def rank(key: CellKey) -> tuple[int, int]:
+    def rank(key: CellKey) -> tuple[int, int, int]:
         try:
             section_rank = section_order.index(key[1])
         except ValueError:
             section_rank = len(section_order)
-        return (section_rank, order.index(key))
+        # Static pads (a JSON profile's) in pad order, not first-seen order.
+        pad = _PAD_NUM_RE.fullmatch(key[2]) if key[1] == "PAD" else None
+        return (section_rank, int(pad.group(1)) if pad else 0, order.index(key))
 
     cells: list[LayoutCell] = []
 
@@ -242,7 +250,7 @@ def build_layout(controller: str) -> list[LayoutCell]:
             col = 0
         cells.append(LayoutCell(key, labels[key], section, row, col, visual_kind_for(section, labels[key])))
         col += 1
-        if col >= _COLS_PER_ROW:
+        if col >= _GRID_COLS_PER_ROW:
             col = 0
             row += 1
 

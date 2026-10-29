@@ -1,0 +1,744 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.plx-crss12",
+  "kind": "controller",
+  "name": "PLX-CRSS12",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Pioneer DJ",
+  "license": "derived from rekordbox's bundled MIDI mapping"
+ },
+ "controller": {
+  "name": "PLX-CRSS12",
+  "entries": [
+   {
+    "section": "Deck",
+    "name": "Shift",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "48"
+   },
+   {
+    "section": "Deck",
+    "name": "5-8 +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "53"
+   },
+   {
+    "section": "Mode",
+    "name": "Pad mode 1",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "50"
+   },
+   {
+    "section": "Mode",
+    "name": "Pad mode 3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "56"
+   },
+   {
+    "section": "Mode",
+    "name": "Pad mode 5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "54"
+   },
+   {
+    "section": "Mode",
+    "name": "Pad mode 2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "51"
+   },
+   {
+    "section": "Mode",
+    "name": "Pad mode 4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "57"
+   },
+   {
+    "section": "Mode",
+    "name": "Pad mode 6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "55"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 1 (HotCue.Call)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "0"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 1 (HotCue.Delete)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "8"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 1 (Sampler.Start)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "16"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 1 (Sampler.Stop)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "24"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 1 (PadFx1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "64"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 1 (BeatJump)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "80"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 2 (HotCue.Call)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 2 (HotCue.Delete)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "9"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 2 (Sampler.Start)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "17"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 2 (Sampler.Stop)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "25"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 2 (PadFx1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "65"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 2 (BeatJump)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "81"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 3 (HotCue.Call)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "2"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 3 (HotCue.Delete)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "10"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 3 (Sampler.Start)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "18"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 3 (Sampler.Stop)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "26"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 3 (PadFx1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "66"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 3 (BeatJump)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "82"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 4 (HotCue.Call)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "3"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 4 (HotCue.Delete)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "11"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 4 (Sampler.Start)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "19"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 4 (Sampler.Stop)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "27"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 4 (PadFx1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "67"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 4 (BeatJump)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "83"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 5 (HotCue.Call)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "4"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 5 (HotCue.Delete)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "12"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 5 (Sampler.Start)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "20"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 5 (Sampler.Stop)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "28"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 1 (PadFx2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "36"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 5 (PadFx1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "68"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 5 (BeatJump)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "84"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 6 (HotCue.Call)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "5"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 6 (HotCue.Delete)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "13"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 6 (Sampler.Start)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "21"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 6 (Sampler.Stop)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "29"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 2 (PadFx2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "37"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 6 (PadFx1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "69"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 6 (BeatJump)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "85"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 7 (HotCue.Call)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "6"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 7 (HotCue.Delete)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "14"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 7 (Sampler.Start)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "22"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 7 (Sampler.Stop)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "30"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 3 (PadFx2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "38"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 7 (PadFx1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "70"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 7 (BeatJump)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "86"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 8 (HotCue.Call)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "7"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 8 (HotCue.Delete)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "15"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 8 (Sampler.Start)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "23"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 8 (Sampler.Stop)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "31"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 4 (PadFx2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "39"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 8 (PadFx1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "71"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 8 (BeatJump)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "87"
+   }
+  ],
+  "supported_software": [
+   "rekordbox"
+  ],
+  "port_names": [
+   "PLX-CRSS12"
+  ],
+  "library_source": "rekordbox"
+ }
+}

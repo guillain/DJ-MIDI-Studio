@@ -1,0 +1,330 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.djm-a9",
+  "kind": "controller",
+  "name": "DJM-A9",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Pioneer DJ",
+  "license": "derived from rekordbox's bundled MIDI mapping"
+ },
+ "controller": {
+  "name": "DJM-A9",
+  "entries": [
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.A (Deck 1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "53"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.A (Deck 2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "57"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.A (Deck 3)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "61"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.A (Deck 4)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "65"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.B (Deck 1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "66"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.B (Deck 2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "68"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.B (Deck 3)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "70"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.B (Deck 4)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "72"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.DIGITAL (Deck 1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "50"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.DIGITAL (Deck 2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "54"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.DIGITAL (Deck 3)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "58"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.DIGITAL (Deck 4)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "62"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.LINE (Deck 1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "51"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.LINE (Deck 2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "55"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.LINE (Deck 3)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "59"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.LINE (Deck 4)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "63"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.PHONO (Deck 1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "52"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.PHONO (Deck 2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "56"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.PHONO (Deck 3)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "60"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.PHONO (Deck 4)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "64"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.RETURN (Deck 1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "67"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.RETURN (Deck 2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "69"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.RETURN (Deck 3)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "71"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.RETURN (Deck 4)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "73"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.USB (Deck 1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "74"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.USB (Deck 2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "75"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.USB (Deck 3)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "76"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.USB (Deck 4)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "77"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.BLUETOOTH (Deck 1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "81"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.BLUETOOTH (Deck 2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "82"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.BLUETOOTH (Deck 3)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "83"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.BLUETOOTH (Deck 4)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "84"
+   },
+   {
+    "section": "USB Peer",
+    "name": "PeerUsbPortName.USBA",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "78"
+   },
+   {
+    "section": "USB Peer",
+    "name": "PeerUsbPortName.USBB",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "79"
+   }
+  ],
+  "supported_software": [
+   "rekordbox"
+  ],
+  "port_names": [
+   "DJM-A9"
+  ],
+  "library_source": "rekordbox"
+ }
+}

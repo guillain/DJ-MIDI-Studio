@@ -1873,6 +1873,14 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
         <translation>Une macro est une liste nommée de messages MIDI, jouée d&apos;un coup depuis le menu &lt;b&gt;Macros&lt;/b&gt; ou son raccourci clavier, depuis n&apos;importe quel onglet.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Port de sortie&lt;/b&gt; : où partent les messages -- un port, ou un nom de contrôleur comparé aux ports branchés comme le fait &lt;b&gt;⟳ Synchro&lt;/b&gt;.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Ajouter une étape&lt;/b&gt; : type, canal (1–16), data 1/2 (0–127) et un délai facultatif (ms) attendu avant l&apos;envoi de l&apos;étape ; &lt;b&gt;Ajouter un jeu de synchronisation…&lt;/b&gt; ajoute les messages d&apos;un jeu de synchronisation enregistré ; &lt;b&gt;Apprendre les étapes&lt;/b&gt; enregistre les messages que vous jouez sur votre contrôleur, avec leurs délais.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Raccourci&lt;/b&gt; : facultatif ; un raccourci déjà pris par les menus de l&apos;application est refusé.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Déclencheur&lt;/b&gt; : &lt;b&gt;Apprendre&lt;/b&gt;, puis appuyez sur un bouton de votre contrôleur, ou sur plusieurs à la suite : ces appuis, dans cet ordre et chacun dans l&apos;&lt;b&gt;Écart max&lt;/b&gt; du précédent, jouent désormais la macro (le Live Monitor doit être à l&apos;écoute).&lt;/li&gt;&lt;/ul&gt;&lt;b&gt;Tester&lt;/b&gt; joue la macro telle qu&apos;elle est modifiée. Chaque macro est un fichier dans &lt;tt&gt;Documents/DJ MIDI Studio/Macros&lt;/tt&gt;.</translation>
     </message>
     <message>
+        <source>Controller Profile Library</source>
+        <translation>Bibliothèque de profils de contrôleurs</translation>
+    </message>
+    <message>
+        <source>Ready-made profiles for Pioneer DJ / AlphaTheta devices the app doesn&apos;t know yet, built from the MIDI mappings rekordbox ships with: each device&apos;s buttons and pads, named and grouped as rekordbox names them. Knobs, faders and jogs aren&apos;t included.&lt;br&gt;&lt;br&gt;Select one or more and click &lt;b&gt;Install&lt;/b&gt; (or double-click one): the profile is saved in your Controllers folder, shows up in every controller list right away, and loads at every launch. These profiles come from rekordbox&apos;s default mappings, not from the vendor&apos;s MIDI documentation, and have no picture; check the controls you rely on with the Live Monitor.</source>
+        <translation>Des profils prêts à l&apos;emploi pour les appareils Pioneer DJ / AlphaTheta que l&apos;application ne connaît pas encore, construits à partir des mappings MIDI fournis avec rekordbox : les boutons et pads de chaque appareil, nommés et groupés comme rekordbox les nomme. Les potentiomètres, faders et jogs n&apos;y sont pas.&lt;br&gt;&lt;br&gt;Sélectionnez-en un ou plusieurs et cliquez sur &lt;b&gt;Installer&lt;/b&gt; (ou double-cliquez sur l&apos;un d&apos;eux) : le profil est enregistré dans votre dossier Controllers, apparaît tout de suite dans toutes les listes de contrôleurs et se charge à chaque lancement. Ces profils viennent des mappings par défaut de rekordbox, pas de la documentation MIDI du fabricant, et n&apos;ont pas d&apos;image ; vérifiez les commandes dont vous dépendez avec le Live Monitor.</translation>
+    </message>
+    <message>
         <source>MIDI Latency Test</source>
         <translation>Test de latence MIDI</translation>
     </message>
@@ -3220,6 +3228,10 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
         <translation>Installer le profil</translation>
     </message>
     <message>
+        <source>Install from Library...</source>
+        <translation>Installer depuis la bibliothèque...</translation>
+    </message>
+    <message>
         <source>Show Installed Profiles</source>
         <translation>Afficher les profils installés</translation>
     </message>
@@ -3542,6 +3554,10 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
     <message>
         <source>Supported mapping files (*.xml *.nml *.tsi *.csv);;All files (*)</source>
         <translation>Fichiers de mapping pris en charge (*.xml *.nml *.tsi *.csv);;Tous les fichiers (*)</translation>
+    </message>
+    <message>
+        <source>&apos;{name}&apos; installed from the profile library.</source>
+        <translation>« {name} » installé depuis la bibliothèque de profils.</translation>
     </message>
     <message>
         <source>Recording in progress</source>
@@ -6401,6 +6417,57 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>Controller Setup session or mapping (*.json *.xml *.tsi *.csv);;All files (*)</source>
         <translation>Session Config. contrôleur ou mapping (*.json *.xml *.tsi *.csv);;Tous les fichiers (*)</translation>
+    </message>
+</context>
+<context>
+    <name>ProfileLibraryDialog</name>
+    <message>
+        <source>Controller</source>
+        <translation>Contrôleur</translation>
+    </message>
+    <message>
+        <source>Vendor</source>
+        <translation>Fabricant</translation>
+    </message>
+    <message>
+        <source>Controls</source>
+        <translation>Commandes</translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation>État</translation>
+    </message>
+    <message>
+        <source>Controller Profile Library</source>
+        <translation>Bibliothèque de profils de contrôleurs</translation>
+    </message>
+    <message>
+        <source>Ready-made profiles for Pioneer DJ / AlphaTheta devices, built from the MIDI mappings rekordbox ships: their buttons and pads, named as rekordbox names them. Install the ones you use; they then work like a profile made in Controller Setup.</source>
+        <translation>Des profils prêts à l&apos;emploi pour les appareils Pioneer DJ / AlphaTheta, construits à partir des mappings MIDI fournis avec rekordbox : leurs boutons et pads, nommés comme rekordbox les nomme. Installez ceux que vous utilisez ; ils fonctionnent ensuite comme un profil créé dans Config. contrôleur.</translation>
+    </message>
+    <message>
+        <source>Filter by name, e.g. DDJ-400</source>
+        <translation>Filtrer par nom, p. ex. DDJ-400</translation>
+    </message>
+    <message>
+        <source>Install</source>
+        <translation>Installer</translation>
+    </message>
+    <message>
+        <source>Built-in</source>
+        <translation>Intégré</translation>
+    </message>
+    <message>
+        <source>Installed</source>
+        <translation>Installé</translation>
+    </message>
+    <message>
+        <source>MIDI ports: {ports}</source>
+        <translation>Ports MIDI : {ports}</translation>
+    </message>
+    <message>
+        <source>Installed: {names}</source>
+        <translation>Installé(s) : {names}</translation>
     </message>
 </context>
 <context>

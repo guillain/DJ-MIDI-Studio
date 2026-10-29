@@ -70,6 +70,7 @@ from djmidi import (
     sync_store,
     user_paths,
 )
+from djmidi.catalog.library import list_library_profiles
 from djmidi.catalog.profile import load_user_profiles
 from djmidi.command_palette import (
     KIND_ACTION,
@@ -125,6 +126,7 @@ from djmidi.gui.midi_latency_dialog import MidiLatencyDialog
 from djmidi.gui.midi_routing_view import MidiRoutingView
 from djmidi.gui.music_library_view import MusicLibraryView
 from djmidi.gui.preferences_dialog import PreferencesDialog
+from djmidi.gui.profile_library_dialog import ProfileLibraryDialog
 from djmidi.gui.report_problem_dialog import ReportProblemDialog
 from djmidi.gui.safe_update_dialog import SafeUpdateDialog
 from djmidi.gui.scroll_utils import AutoSizeScrollArea
@@ -858,6 +860,9 @@ class MainWindow(QMainWindow):
             action = QAction(label, self)
             action.triggered.connect(lambda _checked=False, h=handler: self._run_in_tab("setup", h))
             profile_menu.addAction(action)
+        library_action = QAction(self.tr("Install from Library..."), self)
+        library_action.triggered.connect(lambda: self.open_profile_library())
+        profile_menu.addAction(library_action)
         installed_action = QAction(self.tr("Show Installed Profiles"), self)
         installed_action.triggered.connect(self._on_reveal_installed_profiles)
         profile_menu.addAction(installed_action)
@@ -2782,6 +2787,9 @@ class MainWindow(QMainWindow):
         (in-memory only) — refresh every view whose controller combo/columns
         were only ever populated once, at construction time, so it shows up
         immediately instead of only after restarting the app."""
+        # The enabled-controller filter was computed from the controllers
+        # registered at startup; recompute it so a new one isn't filtered out.
+        self._apply_plugin_preferences()
         layout_mod.clear_reverse_lookup_cache()
         layout_mod.clear_label_to_key_cache()
         self.layout_view.refresh_controllers()
@@ -2794,6 +2802,20 @@ class MainWindow(QMainWindow):
         if self.config is not None:
             self._refresh_layout_usage()
         self.statusBar().showMessage(self.tr("'{name}' applied for this session.").format(name=name))
+
+    def open_profile_library(self, dialog_factory=None) -> ProfileLibraryDialog:
+        """File → Controller Profile → Install from Library…: the dialog is
+        non-modal; each install refreshes the controller lists at once."""
+        factory = dialog_factory or ProfileLibraryDialog
+        dialog = factory(list_library_profiles(), user_paths.controllers_dir(), self)
+        dialog.installed.connect(self._on_library_profile_installed)
+        dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        dialog.open()
+        return dialog
+
+    def _on_library_profile_installed(self, name: str) -> None:
+        self._on_controller_applied(name)
+        self.statusBar().showMessage(self.tr("'{name}' installed from the profile library.").format(name=name), 8000)
 
     def closeEvent(self, event) -> None:
         if self._record_button.isChecked():

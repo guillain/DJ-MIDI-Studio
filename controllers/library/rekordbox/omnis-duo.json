@@ -1,0 +1,528 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.omnis-duo",
+  "kind": "controller",
+  "name": "OMNIS-DUO",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "AlphaTheta",
+  "license": "derived from rekordbox's bundled MIDI mapping"
+ },
+ "controller": {
+  "name": "OMNIS-DUO",
+  "entries": [
+   {
+    "section": "Other",
+    "name": "AutoLoop+Press",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "67"
+   },
+   {
+    "section": "Other",
+    "name": "AutoLoop+Press +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "68"
+   },
+   {
+    "section": "Other",
+    "name": "Shift",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "63"
+   },
+   {
+    "section": "Other",
+    "name": "Cue",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "Other",
+    "name": "Cue +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "5"
+   },
+   {
+    "section": "Other",
+    "name": "PlayPause",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "0"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 1 (HotCue.Call)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "6",
+     "7",
+     "8",
+     "9"
+    ],
+    "data1": "0"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 1 (HotCue.Delete)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "6",
+     "7",
+     "8",
+     "9"
+    ],
+    "data1": "8"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 2 (HotCue.Call)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "6",
+     "7",
+     "8",
+     "9"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 2 (HotCue.Delete)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "6",
+     "7",
+     "8",
+     "9"
+    ],
+    "data1": "9"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 3 (HotCue.Call)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "6",
+     "7",
+     "8",
+     "9"
+    ],
+    "data1": "2"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 3 (HotCue.Delete)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "6",
+     "7",
+     "8",
+     "9"
+    ],
+    "data1": "10"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 4 (HotCue.Call)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "6",
+     "7",
+     "8",
+     "9"
+    ],
+    "data1": "3"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 4 (HotCue.Delete)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "6",
+     "7",
+     "8",
+     "9"
+    ],
+    "data1": "11"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 5 (HotCue.Call)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "6",
+     "7",
+     "8",
+     "9"
+    ],
+    "data1": "4"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 5 (HotCue.Delete)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "6",
+     "7",
+     "8",
+     "9"
+    ],
+    "data1": "12"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 6 (HotCue.Call)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "6",
+     "7",
+     "8",
+     "9"
+    ],
+    "data1": "5"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 6 (HotCue.Delete)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "6",
+     "7",
+     "8",
+     "9"
+    ],
+    "data1": "13"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 7 (HotCue.Call)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "6",
+     "7",
+     "8",
+     "9"
+    ],
+    "data1": "6"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 7 (HotCue.Delete)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "6",
+     "7",
+     "8",
+     "9"
+    ],
+    "data1": "14"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 8 (HotCue.Call)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "6",
+     "7",
+     "8",
+     "9"
+    ],
+    "data1": "7"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 8 (HotCue.Delete)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "6",
+     "7",
+     "8",
+     "9"
+    ],
+    "data1": "15"
+   },
+   {
+    "section": "HotCue",
+    "name": "Load",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "81"
+   },
+   {
+    "section": "TouchPanelComponent",
+    "name": "Vinyl",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "18"
+   },
+   {
+    "section": "TouchPanelComponent",
+    "name": "AutoCue",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "15"
+   },
+   {
+    "section": "TouchPanelComponent",
+    "name": "Quantize",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "9"
+   },
+   {
+    "section": "TouchPanelComponent",
+    "name": "Slip",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "43"
+   },
+   {
+    "section": "TouchPanelComponent",
+    "name": "MasterTempo",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "17"
+   },
+   {
+    "section": "TouchPanelComponent",
+    "name": "Sync",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "31"
+   },
+   {
+    "section": "TouchPanelComponent",
+    "name": "Master",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "30"
+   },
+   {
+    "section": "TouchPanelComponent",
+    "name": "Parameter1Right_HotCue",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "11"
+   },
+   {
+    "section": "TouchPanelComponent",
+    "name": "Parameter1Left_HotCue",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "12"
+   },
+   {
+    "section": "Beat FX",
+    "name": "FX1BeatDown",
+    "note_or_cc": "CC",
+    "channels": [
+     "5"
+    ],
+    "data1": "76"
+   },
+   {
+    "section": "Beat FX",
+    "name": "FX1BeatDown +SHIFT",
+    "note_or_cc": "CC",
+    "channels": [
+     "5"
+    ],
+    "data1": "120"
+   },
+   {
+    "section": "Beat FX",
+    "name": "FX1BeatUp",
+    "note_or_cc": "CC",
+    "channels": [
+     "5"
+    ],
+    "data1": "77"
+   },
+   {
+    "section": "Beat FX",
+    "name": "FX1BeatUp +SHIFT",
+    "note_or_cc": "CC",
+    "channels": [
+     "5"
+    ],
+    "data1": "121"
+   },
+   {
+    "section": "Beat FX",
+    "name": "FX1-1On",
+    "note_or_cc": "CC",
+    "channels": [
+     "5"
+    ],
+    "data1": "114"
+   },
+   {
+    "section": "Beat FX",
+    "name": "FX1-1On +SHIFT",
+    "note_or_cc": "CC",
+    "channels": [
+     "5"
+    ],
+    "data1": "52"
+   },
+   {
+    "section": "SoundColor FX",
+    "name": "HeadphoneCue (Deck 1)",
+    "note_or_cc": "CC",
+    "channels": [
+     "5"
+    ],
+    "data1": "70"
+   },
+   {
+    "section": "SoundColor FX",
+    "name": "HeadphoneCue (Deck 2)",
+    "note_or_cc": "CC",
+    "channels": [
+     "5"
+    ],
+    "data1": "71"
+   },
+   {
+    "section": "SoundColor FX",
+    "name": "HeadphoneCue (Deck 3)",
+    "note_or_cc": "CC",
+    "channels": [
+     "5"
+    ],
+    "data1": "72"
+   },
+   {
+    "section": "SoundColor FX",
+    "name": "HeadphoneCue (Deck 4)",
+    "note_or_cc": "CC",
+    "channels": [
+     "5"
+    ],
+    "data1": "73"
+   },
+   {
+    "section": "SoundColor FX",
+    "name": "Browse+Press",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "51"
+   },
+   {
+    "section": "SoundColor FX",
+    "name": "Browse+Press +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "97"
+   },
+   {
+    "section": "SoundColor FX",
+    "name": "DeckState",
+    "note_or_cc": "CC",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "102"
+   }
+  ],
+  "supported_software": [
+   "rekordbox"
+  ],
+  "port_names": [
+   "OMNIS-DUO"
+  ],
+  "library_source": "rekordbox"
+ }
+}

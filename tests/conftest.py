@@ -95,6 +95,18 @@ def _restore_taxonomy_registry():
     taxonomy_registry._REGISTRY.update(snapshot)
 
 
+@pytest.fixture(autouse=True)
+def _restore_controller_registry():
+    """The controller registry is process-global too: a profile a test
+    installs (Controller Setup, the profile library) must not leak."""
+    from djmidi.catalog._registry import _REGISTRY
+
+    snapshot = dict(_REGISTRY)
+    yield
+    _REGISTRY.clear()
+    _REGISTRY.update(snapshot)
+
+
 GEOMETRY_FREE_CONTROLLER = "Geometry-free DDJ-800 copy"
 
 

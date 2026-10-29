@@ -1,0 +1,168 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.euphonia",
+  "kind": "controller",
+  "name": "EUPHONIA",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "AlphaTheta",
+  "license": "derived from rekordbox's bundled MIDI mapping"
+ },
+ "controller": {
+  "name": "EUPHONIA",
+  "entries": [
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.PC (Deck 1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "53"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.PC (Deck 2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "57"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.PC (Deck 3)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "61"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.PC (Deck 4)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "65"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.DIGITAL (Deck 1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "50"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.DIGITAL (Deck 2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "54"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.DIGITAL (Deck 3)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "58"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.DIGITAL (Deck 4)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "62"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.LINE (Deck 1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "51"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.LINE (Deck 2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "55"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.LINE (Deck 3)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "59"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.LINE (Deck 4)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "63"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.PHONO (Deck 1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "52"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.PHONO (Deck 2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "56"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.PHONO (Deck 3)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "60"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.PHONO (Deck 4)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "64"
+   }
+  ],
+  "supported_software": [
+   "rekordbox"
+  ],
+  "port_names": [
+   "EUPHONIA"
+  ],
+  "library_source": "rekordbox"
+ }
+}

@@ -187,8 +187,8 @@ def test_profile_rows_keep_discrete_inputs_named_and_grouped():
     assert by_trigger[("7", "NOTE", "65")] == ("Browser", "Browse+Press")
     assert by_trigger[("1", "NOTE", "88")] == ("Deck", "Sync")
     assert by_trigger[("2", "NOTE", "88")] == ("Deck", "Sync")
-    assert by_trigger[("1", "NOTE", "92")] == ("Deck", "Sync+Shift")
-    assert by_trigger[("8", "NOTE", "0")] == ("Performance", "PAD1_PadMode1")
+    assert by_trigger[("1", "NOTE", "92")] == ("Deck", "Sync +SHIFT")
+    assert by_trigger[("8", "NOTE", "0")] == ("PAD", "Pad 1 (PadMode1)")
     # Rotary / fader inputs and LED-only rows are left out.
     assert ("7", "CC", "64") not in by_trigger
     assert ("1", "CC", "0") not in by_trigger
@@ -235,3 +235,12 @@ def test_controller_setup_imports_a_rekordbox_csv_with_names(tmp_path):
     assert ("Deck", "Sync") in {(row.section, row.name) for row in view._rows}
     source = generate_module_source(view._controller_name, view._rows)
     assert "'Sync'" in source or '"Sync"' in source
+
+
+def test_profile_names_follow_the_catalog_convention():
+    from djmidi.software.rekordbox import profile_name
+
+    assert profile_name("Deck", "Sync+Shift") == ("Deck", "Sync +SHIFT")
+    assert profile_name("Performance", "PAD3_PadMode2+Shift") == ("PAD", "Pad 3 (PadMode2) +SHIFT")
+    assert profile_name("Performance", "PAD12.HotCue.Call") == ("PAD", "Pad 12 (HotCue.Call)")
+    assert profile_name("", "Load") == ("Other", "Load")

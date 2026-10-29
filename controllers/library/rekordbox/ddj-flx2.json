@@ -1,0 +1,770 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.ddj-flx2",
+  "kind": "controller",
+  "name": "DDJ-FLX2",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Pioneer DJ",
+  "license": "derived from rekordbox's bundled MIDI mapping"
+ },
+ "controller": {
+  "name": "DDJ-FLX2",
+  "entries": [
+   {
+    "section": "Deck",
+    "name": "PlayPause",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "11"
+   },
+   {
+    "section": "Deck",
+    "name": "PlayPause +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "71"
+   },
+   {
+    "section": "Deck",
+    "name": "Cue",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "12"
+   },
+   {
+    "section": "Deck",
+    "name": "Cue +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "72"
+   },
+   {
+    "section": "Scratch",
+    "name": "Sync",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "88"
+   },
+   {
+    "section": "Scratch",
+    "name": "Sync +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "42"
+   },
+   {
+    "section": "Scratch",
+    "name": "Sync+LongPress",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "92"
+   },
+   {
+    "section": "Scratch",
+    "name": "Shift",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "63"
+   },
+   {
+    "section": "Mixer",
+    "name": "ChannelFaderStartPlay",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "102"
+   },
+   {
+    "section": "Mixer",
+    "name": "ChannelFaderStartCue",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "82"
+   },
+   {
+    "section": "Mixer",
+    "name": "MasterCue +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7"
+    ],
+    "data1": "0"
+   },
+   {
+    "section": "Mixer",
+    "name": "HeadphoneCue",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "84"
+   },
+   {
+    "section": "Mixer",
+    "name": "HeadphoneCueCH1 +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "8"
+   },
+   {
+    "section": "Mixer",
+    "name": "HeadphoneCueCH2 +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2"
+    ],
+    "data1": "7"
+   },
+   {
+    "section": "Mixer",
+    "name": "SmartFader",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "Performance",
+    "name": "HotCueMode",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "0"
+   },
+   {
+    "section": "Performance",
+    "name": "BeatJumpMode +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "Performance",
+    "name": "SamplerMode",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "3"
+   },
+   {
+    "section": "Performance",
+    "name": "PadFx1",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "5"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 1 (PadMode1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "10"
+    ],
+    "data1": "0"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 1 (PadMode1) +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "9",
+     "11"
+    ],
+    "data1": "0"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 1 (PadMode2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "10"
+    ],
+    "data1": "16"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 1 (PadMode2) +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "9",
+     "11"
+    ],
+    "data1": "16"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 1 (PadMode3)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "10"
+    ],
+    "data1": "96"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 1 (PadMode4)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "10"
+    ],
+    "data1": "48"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 1 (PadMode4) +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "9",
+     "11"
+    ],
+    "data1": "48"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 2 (PadMode1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "10"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 2 (PadMode1) +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "9",
+     "11"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 2 (PadMode2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "10"
+    ],
+    "data1": "17"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 2 (PadMode2) +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "9",
+     "11"
+    ],
+    "data1": "17"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 2 (PadMode3)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "10"
+    ],
+    "data1": "97"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 2 (PadMode4)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "10"
+    ],
+    "data1": "49"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 2 (PadMode4) +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "9",
+     "11"
+    ],
+    "data1": "49"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 3 (PadMode1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "10"
+    ],
+    "data1": "2"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 3 (PadMode1) +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "9",
+     "11"
+    ],
+    "data1": "2"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 3 (PadMode2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "10"
+    ],
+    "data1": "18"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 3 (PadMode2) +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "9",
+     "11"
+    ],
+    "data1": "18"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 3 (PadMode3)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "10"
+    ],
+    "data1": "98"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 3 (PadMode4)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "10"
+    ],
+    "data1": "50"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 3 (PadMode4) +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "9",
+     "11"
+    ],
+    "data1": "50"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 4 (PadMode1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "10"
+    ],
+    "data1": "3"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 4 (PadMode1) +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "9",
+     "11"
+    ],
+    "data1": "3"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 4 (PadMode2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "10"
+    ],
+    "data1": "19"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 4 (PadMode2) +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "9",
+     "11"
+    ],
+    "data1": "19"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 4 (PadMode3)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "10"
+    ],
+    "data1": "99"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 4 (PadMode4)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "10"
+    ],
+    "data1": "51"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 4 (PadMode4) +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "9",
+     "11"
+    ],
+    "data1": "51"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 5 (PadMode1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "10"
+    ],
+    "data1": "4"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 5 (PadMode1) +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "9",
+     "11"
+    ],
+    "data1": "4"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 5 (PadMode2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "10"
+    ],
+    "data1": "20"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 5 (PadMode2) +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "9",
+     "11"
+    ],
+    "data1": "20"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 5 (PadMode3)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "10"
+    ],
+    "data1": "100"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 5 (PadMode4)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "10"
+    ],
+    "data1": "52"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 5 (PadMode4) +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "9",
+     "11"
+    ],
+    "data1": "52"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 6 (PadMode1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "10"
+    ],
+    "data1": "5"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 6 (PadMode1) +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "9",
+     "11"
+    ],
+    "data1": "5"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 6 (PadMode2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "10"
+    ],
+    "data1": "21"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 6 (PadMode2) +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "9",
+     "11"
+    ],
+    "data1": "21"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 6 (PadMode3)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "10"
+    ],
+    "data1": "101"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 6 (PadMode4)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "10"
+    ],
+    "data1": "53"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 6 (PadMode4) +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "9",
+     "11"
+    ],
+    "data1": "53"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 7 (PadMode1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "10"
+    ],
+    "data1": "6"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 7 (PadMode1) +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "9",
+     "11"
+    ],
+    "data1": "6"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 7 (PadMode2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "10"
+    ],
+    "data1": "22"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 7 (PadMode2) +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "9",
+     "11"
+    ],
+    "data1": "22"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 7 (PadMode3)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "10"
+    ],
+    "data1": "102"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 7 (PadMode4)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "10"
+    ],
+    "data1": "54"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 7 (PadMode4) +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "9",
+     "11"
+    ],
+    "data1": "54"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 8 (PadMode1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "10"
+    ],
+    "data1": "7"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 8 (PadMode1) +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "9",
+     "11"
+    ],
+    "data1": "7"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 8 (PadMode2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "10"
+    ],
+    "data1": "23"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 8 (PadMode2) +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "9",
+     "11"
+    ],
+    "data1": "23"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 8 (PadMode3)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "10"
+    ],
+    "data1": "103"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 8 (PadMode4)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "10"
+    ],
+    "data1": "55"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 8 (PadMode4) +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "9",
+     "11"
+    ],
+    "data1": "55"
+   }
+  ],
+  "supported_software": [
+   "rekordbox"
+  ],
+  "port_names": [
+   "DDJ-FLX2"
+  ],
+  "library_source": "rekordbox"
+ }
+}

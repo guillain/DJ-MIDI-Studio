@@ -1,0 +1,521 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.ddj-wego4",
+  "kind": "controller",
+  "name": "DDJ-WeGO4",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Pioneer DJ",
+  "license": "derived from rekordbox's bundled MIDI mapping"
+ },
+ "controller": {
+  "name": "DDJ-WeGO4",
+  "entries": [
+   {
+    "section": "Browser",
+    "name": "Browse+Press",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7"
+    ],
+    "data1": "65"
+   },
+   {
+    "section": "Browser",
+    "name": "Browse+Press +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7"
+    ],
+    "data1": "66"
+   },
+   {
+    "section": "Browser",
+    "name": "Load (Deck 1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7"
+    ],
+    "data1": "70"
+   },
+   {
+    "section": "Browser",
+    "name": "Load (Deck 2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7"
+    ],
+    "data1": "71"
+   },
+   {
+    "section": "Browser",
+    "name": "Load1 +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7"
+    ],
+    "data1": "88"
+   },
+   {
+    "section": "Browser",
+    "name": "Load2 +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7"
+    ],
+    "data1": "89"
+   },
+   {
+    "section": "Deck",
+    "name": "PlayPause",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "11"
+   },
+   {
+    "section": "Deck",
+    "name": "PlayPause +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "71"
+   },
+   {
+    "section": "Deck",
+    "name": "Cue",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "12"
+   },
+   {
+    "section": "Deck",
+    "name": "Cue +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "72"
+   },
+   {
+    "section": "Deck",
+    "name": "HeadphoneCue +SHIFT (Deck 1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7"
+    ],
+    "data1": "92"
+   },
+   {
+    "section": "Deck",
+    "name": "HeadphoneCue +SHIFT (Deck 2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7"
+    ],
+    "data1": "93"
+   },
+   {
+    "section": "Deck",
+    "name": "Sync",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "88"
+   },
+   {
+    "section": "Deck",
+    "name": "Sync +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "92"
+   },
+   {
+    "section": "Deck",
+    "name": "AutoLoop",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "20"
+   },
+   {
+    "section": "Deck",
+    "name": "LoopOut +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "82"
+   },
+   {
+    "section": "Deck",
+    "name": "LoopHalf",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "18"
+   },
+   {
+    "section": "Deck",
+    "name": "LoopIn",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "81"
+   },
+   {
+    "section": "Deck",
+    "name": "LoopDouble",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "19"
+   },
+   {
+    "section": "Deck",
+    "name": "LoopOut",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "80"
+   },
+   {
+    "section": "Deck",
+    "name": "Shift",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7"
+    ],
+    "data1": "79"
+   },
+   {
+    "section": "Mixer",
+    "name": "HeadphoneCue (Deck 1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7"
+    ],
+    "data1": "84"
+   },
+   {
+    "section": "Mixer",
+    "name": "HeadphoneCue (Deck 2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7"
+    ],
+    "data1": "85"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 6 (PadFx1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6"
+    ],
+    "data1": "67"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 6 (PadFx2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6"
+    ],
+    "data1": "77"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 7 (PadFx1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6"
+    ],
+    "data1": "68"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 7 (PadFx2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6"
+    ],
+    "data1": "78"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 8 (PadFx1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6"
+    ],
+    "data1": "69"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 8 (PadFx2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6"
+    ],
+    "data1": "79"
+   },
+   {
+    "section": "SoundColorFX",
+    "name": "CFXParameterCH1Center",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7"
+    ],
+    "data1": "116"
+   },
+   {
+    "section": "SoundColorFX",
+    "name": "CFXParameterCH2Center",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7"
+    ],
+    "data1": "117"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 1 (HotCue.Call)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "46"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 1 (HotCue.Delete)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "95"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 1 (Sampler.Start)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "60"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 1 (Sampler.Stop)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "61"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 2 (HotCue.Call)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "47"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 2 (HotCue.Delete)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "96"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 2 (Sampler.Start)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "62"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 2 (Sampler.Stop)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "63"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 3 (HotCue.Call)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "48"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 3 (HotCue.Delete)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "97"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 3 (Sampler.Start)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "64"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 3 (Sampler.Stop)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "65"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 4 (HotCue.Call)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "49"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 4 (HotCue.Delete)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "98"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 4 (Sampler.Start)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "66"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 4 (Sampler.Stop)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "67"
+   },
+   {
+    "section": "Performance",
+    "name": "HotCueMode",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "27"
+   },
+   {
+    "section": "Performance",
+    "name": "PadFx1Mode",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "30"
+   },
+   {
+    "section": "Performance",
+    "name": "PadFx2Mode",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "107"
+   },
+   {
+    "section": "Performance",
+    "name": "SamplerMode",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "34"
+   }
+  ],
+  "supported_software": [
+   "rekordbox"
+  ],
+  "port_names": [
+   "DDJ-WeGO4"
+  ],
+  "library_source": "rekordbox"
+ }
+}
