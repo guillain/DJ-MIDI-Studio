@@ -1,0 +1,105 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.djm-250mk2",
+  "kind": "controller",
+  "name": "DJM-250MK2",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Pioneer DJ",
+  "license": "derived from rekordbox's bundled MIDI mapping"
+ },
+ "controller": {
+  "name": "DJM-250MK2",
+  "entries": [
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.PC (Deck 1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "53"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.PC (Deck 2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "57"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.LINE (Deck 1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "51"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.LINE (Deck 2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "55"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.PHONO (Deck 1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "52"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.PHONO (Deck 2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "56"
+   },
+   {
+    "section": "AUX Input Select",
+    "name": "AUXInputSelect.PC",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "74"
+   },
+   {
+    "section": "AUX Input Select",
+    "name": "AUXInputSelect.Line",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "75"
+   },
+   {
+    "section": "USB Peer",
+    "name": "PeerUsbPortName.USBA",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "78"
+   }
+  ],
+  "supported_software": [
+   "rekordbox"
+  ],
+  "port_names": [
+   "DJM-250MK2"
+  ],
+  "library_source": "rekordbox"
+ }
+}

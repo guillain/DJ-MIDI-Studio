@@ -184,6 +184,13 @@ def _palette():
     return CommandPaletteDialog(PaletteIndex([PaletteEntry(KIND_ACTION, name) for name in ("Alpha", "Beta")]))
 
 
+def _profile_library():
+    from djmidi.catalog.library import LIBRARY_DIR, list_library_profiles
+    from djmidi.gui.profile_library_dialog import ProfileLibraryDialog
+
+    return ProfileLibraryDialog(list_library_profiles(LIBRARY_DIR), Path("/nonexistent-controllers"))
+
+
 WINDOWS = {
     "first-run wizard": _wizard,
     "layer map": _layer_map,
@@ -194,6 +201,7 @@ WINDOWS = {
     "rename files": _rename,
     "change history": _change_history,
     "command palette": _palette,
+    "controller profile library": _profile_library,
 }
 
 

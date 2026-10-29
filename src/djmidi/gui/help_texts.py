@@ -79,6 +79,21 @@ MIDI_MACROS: HelpEntry = (
     "midi-macros.md",
 )
 
+PROFILE_LIBRARY: HelpEntry = (
+    QT_TRANSLATE_NOOP("HelpTexts", "Controller Profile Library"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
+        "Ready-made profiles for Pioneer DJ / AlphaTheta devices the app doesn't know yet, built "
+        "from the MIDI mappings rekordbox ships with: each device's buttons and pads, named and "
+        "grouped as rekordbox names them. Knobs, faders and jogs aren't included.<br><br>"
+        "Select one or more and click <b>Install</b> (or double-click one): the profile is saved in "
+        "your Controllers folder, shows up in every controller list right away, and loads at every "
+        "launch. These profiles come from rekordbox's default mappings, not from the vendor's MIDI "
+        "documentation, and have no picture; check the controls you rely on with the Live Monitor.",
+    ),
+    "controller-setup.md",
+)
+
 MIDI_LATENCY: HelpEntry = (
     QT_TRANSLATE_NOOP("HelpTexts", "MIDI Latency Test"),
     QT_TRANSLATE_NOOP(

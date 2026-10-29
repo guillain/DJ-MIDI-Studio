@@ -1,0 +1,1035 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.ddj-sb",
+  "kind": "controller",
+  "name": "DDJ-SB",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Pioneer DJ",
+  "license": "derived from rekordbox's bundled MIDI mapping"
+ },
+ "controller": {
+  "name": "DDJ-SB",
+  "entries": [
+   {
+    "section": "Browser",
+    "name": "Browse+Press",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7"
+    ],
+    "data1": "65"
+   },
+   {
+    "section": "Browser",
+    "name": "Browse+Press +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7"
+    ],
+    "data1": "66"
+   },
+   {
+    "section": "Browser",
+    "name": "Load (Deck 1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7"
+    ],
+    "data1": "70"
+   },
+   {
+    "section": "Browser",
+    "name": "Load (Deck 2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7"
+    ],
+    "data1": "71"
+   },
+   {
+    "section": "Browser",
+    "name": "Load1 +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7"
+    ],
+    "data1": "88"
+   },
+   {
+    "section": "Browser",
+    "name": "Load2 +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7"
+    ],
+    "data1": "89"
+   },
+   {
+    "section": "Browser",
+    "name": "Back",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7"
+    ],
+    "data1": "101"
+   },
+   {
+    "section": "Deck",
+    "name": "PlayPause",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "11"
+   },
+   {
+    "section": "Deck",
+    "name": "PlayPause +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "71"
+   },
+   {
+    "section": "Deck",
+    "name": "Cue",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "12"
+   },
+   {
+    "section": "Deck",
+    "name": "Cue +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "72"
+   },
+   {
+    "section": "Deck",
+    "name": "KeyLock",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "26"
+   },
+   {
+    "section": "Deck",
+    "name": "KeyLock +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "96"
+   },
+   {
+    "section": "Deck",
+    "name": "Sync",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "88"
+   },
+   {
+    "section": "Deck",
+    "name": "Sync +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "92"
+   },
+   {
+    "section": "Deck",
+    "name": "LoopHalf",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "35"
+   },
+   {
+    "section": "Deck",
+    "name": "LoopHalf +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "40"
+   },
+   {
+    "section": "Deck",
+    "name": "LoopDouble",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "43"
+   },
+   {
+    "section": "Deck",
+    "name": "LoopDouble +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "41"
+   },
+   {
+    "section": "Deck",
+    "name": "LoopIn",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "32"
+   },
+   {
+    "section": "Deck",
+    "name": "LoopIn +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "42"
+   },
+   {
+    "section": "Deck",
+    "name": "LoopOut",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "33"
+   },
+   {
+    "section": "Deck",
+    "name": "LoopOut +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "34"
+   },
+   {
+    "section": "Deck",
+    "name": "Vinyl",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "23"
+   },
+   {
+    "section": "Deck",
+    "name": "Slip",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "78"
+   },
+   {
+    "section": "Deck",
+    "name": "BeatLoop1 [BeatLoop1]",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "16"
+   },
+   {
+    "section": "Deck",
+    "name": "BeatLoop2 [BeatLoop2]",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "17"
+   },
+   {
+    "section": "Deck",
+    "name": "BeatLoop4 [BeatLoop4]",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "18"
+   },
+   {
+    "section": "Deck",
+    "name": "BeatLoop8 [BeatLoop8]",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "19"
+   },
+   {
+    "section": "Deck",
+    "name": "BeatLoop1 [BeatLoop1_2]",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "27"
+   },
+   {
+    "section": "Deck",
+    "name": "BeatLoop2 [BeatLoop1_4]",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "26"
+   },
+   {
+    "section": "Deck",
+    "name": "BeatLoop4 [BeatLoop1_8]",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "25"
+   },
+   {
+    "section": "Deck",
+    "name": "BeatLoop8 [BeatLoop1_16]",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "24"
+   },
+   {
+    "section": "Deck",
+    "name": "Shift",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "63"
+   },
+   {
+    "section": "Mixer",
+    "name": "ChannelFaderStartPlay",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "102"
+   },
+   {
+    "section": "Mixer",
+    "name": "ChannelFaderStartCue",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "82"
+   },
+   {
+    "section": "Mixer",
+    "name": "HeadphoneCue",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "84"
+   },
+   {
+    "section": "Mixer",
+    "name": "HeadphoneCue +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "104"
+   },
+   {
+    "section": "Effect",
+    "name": "FX1-1On",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5"
+    ],
+    "data1": "71"
+   },
+   {
+    "section": "Effect",
+    "name": "FX1-1On +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5"
+    ],
+    "data1": "99"
+   },
+   {
+    "section": "Effect",
+    "name": "FX1-2On",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5"
+    ],
+    "data1": "72"
+   },
+   {
+    "section": "Effect",
+    "name": "FX1-2On +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5"
+    ],
+    "data1": "100"
+   },
+   {
+    "section": "Effect",
+    "name": "FX1-3On",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5"
+    ],
+    "data1": "73"
+   },
+   {
+    "section": "Effect",
+    "name": "FX1-3On +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5"
+    ],
+    "data1": "101"
+   },
+   {
+    "section": "Effect",
+    "name": "FX2-1On",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "6"
+    ],
+    "data1": "71"
+   },
+   {
+    "section": "Effect",
+    "name": "FX2-1On +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "6"
+    ],
+    "data1": "99"
+   },
+   {
+    "section": "Effect",
+    "name": "FX2-2On",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "6"
+    ],
+    "data1": "72"
+   },
+   {
+    "section": "Effect",
+    "name": "FX2-2On +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "6"
+    ],
+    "data1": "100"
+   },
+   {
+    "section": "Effect",
+    "name": "FX2-3On",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "6"
+    ],
+    "data1": "73"
+   },
+   {
+    "section": "Effect",
+    "name": "FX2-3On +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "6"
+    ],
+    "data1": "101"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 1 (HotCue.Call)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "0"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 1 (HotCue.Delete)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "8"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 1 (PadFx1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "80"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 1 (Sampler.Start)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "48"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 1 (Sampler.Stop)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "56"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 1 (PadFx2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "96"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 1 (Bank)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "112"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 2 (HotCue.Call)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 2 (HotCue.Delete)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "9"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 2 (PadFx1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "81"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 2 (Sampler.Start)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "49"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 2 (Sampler.Stop)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "57"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 2 (PadFx2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "97"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 2 (Bank)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "113"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 3 (HotCue.Call)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "2"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 3 (HotCue.Delete)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "10"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 3 (PadFx1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "82"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 3 (Sampler.Start)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "50"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 3 (Sampler.Stop)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "58"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 3 (PadFx2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "98"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 3 (Bank)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "114"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 4 (HotCue.Call)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "3"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 4 (HotCue.Delete)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "11"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 4 (PadFx1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "83"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 4 (Sampler.Start)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "51"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 4 (Sampler.Stop)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "59"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 4 (PadFx2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "99"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 4 (Bank)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "115"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 5 (HotCue.Call)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "64"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 5 (HotCue.Delete)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "72"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 5 (PadFx1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "88"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 5 (PadFx2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "104"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 6 (HotCue.Call)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "65"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 6 (HotCue.Delete)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "73"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 6 (PadFx1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "89"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 6 (PadFx2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "105"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 7 (HotCue.Call)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "66"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 7 (HotCue.Delete)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "74"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 7 (PadFx1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "90"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 7 (PadFx2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "106"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 8 (HotCue.Call)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "67"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 8 (HotCue.Delete)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "75"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 8 (PadFx1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "91"
+   },
+   {
+    "section": "PAD",
+    "name": "Pad 8 (PadFx2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9"
+    ],
+    "data1": "107"
+   },
+   {
+    "section": "Performance",
+    "name": "HotCueMode",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "27"
+   },
+   {
+    "section": "Performance",
+    "name": "HotCueMode +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "105"
+   },
+   {
+    "section": "Performance",
+    "name": "AutoLoopMode",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "30"
+   },
+   {
+    "section": "Performance",
+    "name": "AutoLoopMode +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "107"
+   },
+   {
+    "section": "Performance",
+    "name": "ManualLoopMode",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "32"
+   },
+   {
+    "section": "Performance",
+    "name": "ManualLoopMode +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "109"
+   },
+   {
+    "section": "Performance",
+    "name": "SamplerMode",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "34"
+   },
+   {
+    "section": "Performance",
+    "name": "SamplerMode +SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "111"
+   },
+   {
+    "section": "Others",
+    "name": "FxPanel",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7"
+    ],
+    "data1": "102"
+   }
+  ],
+  "supported_software": [
+   "rekordbox"
+  ],
+  "port_names": [
+   "DDJ-SB MIDI",
+   "PIONEER DDJ-SB"
+  ],
+  "library_source": "rekordbox"
+ }
+}

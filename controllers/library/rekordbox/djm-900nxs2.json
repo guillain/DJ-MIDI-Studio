@@ -1,0 +1,258 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.djm-900nxs2",
+  "kind": "controller",
+  "name": "DJM-900NXS2",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Pioneer DJ",
+  "license": "derived from rekordbox's bundled MIDI mapping"
+ },
+ "controller": {
+  "name": "DJM-900NXS2",
+  "entries": [
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.A (Deck 1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "53"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.A (Deck 2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "57"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.A (Deck 3)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "61"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.A (Deck 4)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "65"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.B (Deck 1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "66"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.B (Deck 2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "68"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.B (Deck 3)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "70"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.B (Deck 4)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "72"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.DIGITAL (Deck 1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "50"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.DIGITAL (Deck 2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "54"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.DIGITAL (Deck 3)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "58"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.DIGITAL (Deck 4)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "62"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.LINE (Deck 1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "51"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.LINE (Deck 2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "55"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.LINE (Deck 3)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "59"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.LINE (Deck 4)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "63"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.PHONO (Deck 1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "52"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.PHONO (Deck 2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "56"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.PHONO (Deck 3)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "60"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.PHONO (Deck 4)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "64"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.RETURNAUX (Deck 1)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "67"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.RETURNAUX (Deck 2)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "69"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.RETURNAUX (Deck 3)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "71"
+   },
+   {
+    "section": "CH1-CH4",
+    "name": "InputSelect.RETURNAUX (Deck 4)",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "73"
+   },
+   {
+    "section": "USB Peer",
+    "name": "PeerUsbPortName.USBA",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "78"
+   },
+   {
+    "section": "USB Peer",
+    "name": "PeerUsbPortName.USBB",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "79"
+   }
+  ],
+  "supported_software": [
+   "rekordbox"
+  ],
+  "port_names": [
+   "DJM-900NXS2"
+  ],
+  "library_source": "rekordbox"
+ }
+}

@@ -16,6 +16,7 @@
 - [Pioneer DDJ-FLX4](#pioneer-ddj-flx4)
 - [Hercules DJControl Inpulse 500](#hercules-djcontrol-inpulse-500)
 - [Pad modes](#pad-modes)
+- [Profile library (rekordbox devices)](#profile-library-rekordbox-devices)
 - [Add your own controller](#add-your-own-controller)
 - [JSON profiles](#json-profiles)
 - [Related](#related)
@@ -166,6 +167,26 @@ and `SCRATCH BANK` buttons under KEY −/+ and the LOAD buttons (`LOAD DECK
 1–4`, one note per target deck). The Numark
 profile covers its main eight-pad bank only: its mode-switch messages aren't
 documented, so they aren't guessed.
+
+## Profile library (rekordbox devices)
+
+Beyond the built-in controllers, the app ships a **library** of ready-made
+profiles for 46 more Pioneer DJ / AlphaTheta devices: DDJ-200, DDJ-400, DDJ-ERGO, DDJ-FLX2, DDJ-FLX6, DDJ-GRV6, DDJ-RB, DDJ-REV7, DDJ-RR, DDJ-RX, DDJ-RZ, DDJ-RZX, DDJ-SB, DDJ-SB2, DDJ-SP1, DDJ-SR, DDJ-SX, DDJ-SX2, DDJ-SZ, DDJ-WeGO, DDJ-WeGO2, DDJ-WeGO3, DDJ-WeGO4, DDJ-XP1, DJM-250MK2, DJM-450, DJM-750MK2, DJM-900NXS2, DJM-A9, DJM-S11, DJM-S7, DJM-S9, DJM-T1, DJM-TOUR1, DJM-V10, EUPHONIA, OMNIS-DUO, OPUS-QUAD, PLX-CRSS12, XDJ-AERO, XDJ-AZ, XDJ-R1, XDJ-RR, XDJ-RX, XDJ-RX2, XDJ-RX3.
+
+They are built from the MIDI mappings rekordbox ships for each device, so
+they cover each device's **buttons and pads**, named and grouped as
+rekordbox names them (`Sync +SHIFT`, `Pad 3 (HotCue)`); knobs, faders and
+jogs aren't included, and they have no picture (the layout views show them
+as a grid of controls). Their source is rekordbox's default mapping, not the
+vendor's MIDI documentation, and none has been checked on a real unit.
+
+They aren't active until you install them, so they don't crowd every
+controller list: **`File` → `Controller Profile` → `Install from Library…`**,
+filter (a device's MIDI port names match too), select one or more, then
+**`Install`** (or double-click). An installed profile shows up in every
+view at once and loads at every launch, like a profile made in
+[Controller Setup](features/controller-setup.md); remove its file from
+`Documents/DJ MIDI Studio/Controllers` to uninstall it.
 
 ## Add your own controller
 

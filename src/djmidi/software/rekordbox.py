@@ -28,6 +28,7 @@ from __future__ import annotations
 import csv
 import io
 import logging
+import re
 from dataclasses import dataclass, replace
 
 from djmidi.model import Control, MappingElement, MidiConfig, UserIO
@@ -148,9 +149,30 @@ class ProfileRow:
     name: str
 
 
+DEFAULT_SECTION = "Other"
+_PAD_NAME = re.compile(r"^PAD(\d+)[._](.+)$", re.IGNORECASE)
+_SHIFT_SUFFIX = re.compile(r"\+Shift$", re.IGNORECASE)
+
+
+def profile_name(section: str, control_name: str) -> tuple[str, str]:
+    """(section, name) for a rekordbox control in this app's catalog
+    convention: a ``+Shift`` suffix becomes `` +SHIFT``, and a pad
+    (``PAD3_PadMode2``, ``PAD3.HotCue``) becomes ``Pad 3 (PadMode2)`` in the
+    ``PAD`` section, so the views group a pad's modes, and a button's SHIFT
+    layer, onto one control."""
+    name, shifted = control_name.strip(), False
+    if _SHIFT_SUFFIX.search(name):
+        name, shifted = _SHIFT_SUFFIX.sub("", name).strip(), True
+    if (pad := _PAD_NAME.match(name)) is not None:
+        section, name = "PAD", f"Pad {int(pad.group(1))} ({pad.group(2)})"
+    # A row above the file's first "# Title" has no group; a profile entry needs one.
+    return section.strip() or DEFAULT_SECTION, f"{name} +SHIFT" if shifted else name
+
+
 def profile_rows(config: MidiConfig) -> list[ProfileRow]:
     """The discrete input controls of a parsed rekordbox mapping, in file
-    order, named by rekordbox's own control column (``Sync+Shift``).
+    order, named by rekordbox's own control column through
+    :func:`profile_name` (``Sync+Shift`` -> ``Sync +SHIFT``).
 
     That column isn't unique per address, so two suffixes keep every row's
     name distinct: a control with several notes on one deck (a pad-mode
@@ -177,13 +199,8 @@ def profile_rows(config: MidiConfig) -> list[ProfileRow]:
         if mapping is None:
             continue
         seen.add((control.channel, kind, control.control))
-        row = ProfileRow(
-            control.channel,
-            kind,
-            control.control,
-            mapping.extra_attrs.get("section", ""),
-            mapping.extra_attrs["control_name"],
-        )
+        section, name = profile_name(mapping.extra_attrs.get("section", ""), mapping.extra_attrs["control_name"])
+        row = ProfileRow(control.channel, kind, control.control, section, name)
         found.append((row, mapping.deck_id, mapping.tag))
 
     def numbers_by(key) -> dict:
@@ -244,11 +261,13 @@ register(
 
 
 __all__ = [
+    "DEFAULT_SECTION",
     "DISCRETE_TYPES",
     "ProfileRow",
     "RekordboxMappingError",
     "is_rekordbox_text",
     "parse_string",
+    "profile_name",
     "profile_rows",
     "to_csv_string",
 ]
