@@ -3392,18 +3392,19 @@ close what can't be unblocked here.
      catalog 16/17.
    - VirtualDJ: a real definition + mapping file pair — unblocks its plugin.
      VirtualDJ isn't installed on the maintainer's Mac.
-   - CMD LC-1: a flat top-down photo — geometry.
+   - ~~CMD LC-1: a flat top-down photo — geometry.~~ Already shipped in
+     `v0.48.47-cmd-lc-1-images` (photo + 52 markers); this entry was stale.
    - CMD Micro jog CC and CMD Studio 4a pitch-bend jog, via Live Monitor.
 3. **Phase 2 — implementation**, one PR and tag each: #194 converter (Play/Cue/
    Sync/hot cues only, everything else refused), #233 decision, rekordbox
    (read-only, **done** in `v0.48.144-rekordbox-mapping-plugin`) and
-   VirtualDJ plugins, CMD LC-1 geometry, CMD Micro / Studio 4a jogs.
+   VirtualDJ plugins, CMD Micro / Studio 4a jogs.
 4. **Phase 3 — close what depends on others**. **Done 2026-10-29**: #11 and
    #12 labelled `help wanted` with the community-submission route explained;
    #13 closed (MIDI 2.0, YAML and the advanced plugin API have no trigger or
    requirement — see [Future MIDI API extensions](#future-midi-api-extensions));
-   its two hardware leftovers (CMD LC-1 geometry, CMD Micro / Studio 4a
-   jogs) and every remaining phase 1 capture are tracked in #356.
+   its hardware leftover (CMD Micro / Studio 4a jogs) and every remaining
+   phase 1 capture are tracked in #356.
 5. **Phase 4 — define the next phase** together, or declare the backlog done.
 
 ## Tracking rules
