@@ -151,3 +151,87 @@ def test_main_window_opens_a_rekordbox_csv_and_refuses_to_save_it(tmp_path, monk
     assert errors and "isn't supported" in errors[0]
     assert path.read_text(encoding="utf-8") == CSV
     window.close()
+
+
+# ─── Controller Setup import: named, discrete profile rows ────────────────────
+
+PROFILE_ROWS = (
+    "# Browser,,,,,,,,,,,,,,",
+    "Browse,Browse,Rotary,B640,,,,,,,,,,,",
+    "Forward,Browse+Press,Button,9641,,,,,,,,,,,",
+    "Load,Load,Button,,9646,9647,,,,,,,,,",
+    "# Deck,,,,,,,,,,,,,,",
+    "Sync,Sync,Button,9058,0,1,,,9058,0,1,,,,",
+    "Master,Sync+Shift,Button,905C,0,1,,,,,,,,,",
+    "TempoSlider,TempoSlider,KnobSliderHiRes,B000,0,1,,,,,,,,,",
+    "SyncLed,SyncLed,Indicator,,,,,,9070,0,1,,,,",
+    "# Performance,,,,,,,,,,,,,,",
+    "PageLeft_PadMode3,PageLeft,Button,9026,0,1,,,,,,,,,",
+    "Parameter1Left_Sampler,PageLeft,Button,9003,0,1,,,,,,,,,",
+    "Forward2,Twice,Button,9050,0,,,,,,,,,,",
+    "Forward2,Twice,Button,9051,0,,,,,,,,,,",
+    "PAD1_PadMode1,PAD1_PadMode1,Pad,9700,0,2,,,,,,,,,",
+)
+PROFILE_CSV = "\n".join(("@file,1,Test Controller", HEADER, *PROFILE_ROWS))
+
+
+def _rows():
+    from djmidi.software.rekordbox import profile_rows
+
+    return profile_rows(parse_string(PROFILE_CSV))
+
+
+def test_profile_rows_keep_discrete_inputs_named_and_grouped():
+    rows = _rows()
+    by_trigger = {(r.channel, r.kind, r.data1): (r.section, r.name) for r in rows}
+    assert by_trigger[("7", "NOTE", "65")] == ("Browser", "Browse+Press")
+    assert by_trigger[("1", "NOTE", "88")] == ("Deck", "Sync")
+    assert by_trigger[("2", "NOTE", "88")] == ("Deck", "Sync")
+    assert by_trigger[("1", "NOTE", "92")] == ("Deck", "Sync+Shift")
+    assert by_trigger[("8", "NOTE", "0")] == ("Performance", "PAD1_PadMode1")
+    # Rotary / fader inputs and LED-only rows are left out.
+    assert ("7", "CC", "64") not in by_trigger
+    assert ("1", "CC", "0") not in by_trigger
+    assert ("1", "NOTE", "112") not in by_trigger
+
+
+def test_profile_rows_disambiguate_reused_control_names():
+    by_trigger = {(r.channel, r.data1): r.name for r in _rows()}
+    # A per-deck note on one channel -> deck suffix.
+    assert by_trigger[("7", "70")] == "Load (Deck 1)"
+    assert by_trigger[("7", "71")] == "Load (Deck 2)"
+    # One button, a note per pad mode -> command in brackets.
+    assert by_trigger[("1", "38")] == "PageLeft [PageLeft_PadMode3]"
+    assert by_trigger[("1", "3")] == "PageLeft [Parameter1Left_Sampler]"
+    # Same control and command on two notes -> numbered.
+    assert {by_trigger[("1", "80")], by_trigger[("1", "81")]} == {"Twice [Forward2] (Deck 1)", "Twice [Forward2] (Deck 1) #2"}
+
+
+def test_profile_rows_fold_by_channel_without_conflicts():
+    from djmidi.catalog._registry import ControlInfo
+    from djmidi.catalog.codegen import find_trigger_conflicts, merge_by_channel
+
+    entries = [ControlInfo("X", r.section, r.name, r.kind, (r.channel,), r.data1) for r in _rows()]
+    assert find_trigger_conflicts(entries) == []
+    merged = merge_by_channel(entries)
+    names = [(m.section, m.name) for m in merged]
+    assert len(names) == len(set(names))
+    sync = next(m for m in merged if m.name == "Sync")
+    assert sync.channels == ("1", "2")
+
+
+def test_controller_setup_imports_a_rekordbox_csv_with_names(tmp_path):
+    from djmidi.catalog.codegen import generate_module_source
+    from djmidi.gui.controller_setup import ControllerSetupView
+
+    path = tmp_path / "Test.midi.csv"
+    path.write_text(PROFILE_CSV, encoding="utf-8")
+    view = ControllerSetupView()
+    view._name_edit.setText("Test Controller (rekordbox)")
+    view.load_file(path)
+    assert view._rows and all(row.name and row.section for row in view._rows)
+    assert set(view._sources) == {"rekordbox-import"}
+    assert all(device == path.name for device in view._devices)
+    assert ("Deck", "Sync") in {(row.section, row.name) for row in view._rows}
+    source = generate_module_source(view._controller_name, view._rows)
+    assert "'Sync'" in source or '"Sync"' in source

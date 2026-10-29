@@ -410,7 +410,7 @@ class PreferencesDialog(QDialog):
             self,
             self.tr("Select Controller Setup default file"),
             self._setup_file.text(),
-            self.tr("Controller Setup session or mapping (*.json *.xml *.tsi);;All files (*)"),
+            self.tr("Controller Setup session or mapping (*.json *.xml *.tsi *.csv);;All files (*)"),
         )
         if path:
             self._setup_file.setText(path)

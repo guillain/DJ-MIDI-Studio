@@ -28,6 +28,7 @@ from __future__ import annotations
 import csv
 import io
 import logging
+from dataclasses import dataclass, replace
 
 from djmidi.model import Control, MappingElement, MidiConfig, UserIO
 from djmidi.software._registry import SoftwareDefinition, register
@@ -88,12 +89,18 @@ def parse_string(text: str) -> MidiConfig:
     header = rows[0]
     device = header[2] if len(header) > 2 else ""
     controls: dict[tuple[str, str, str], Control] = {}
+    section = ""
     for line_number, row in enumerate(rows[1:], start=2):
+        if row and row[0].startswith("#") and not any(row[1:]):
+            section = row[0].lstrip("#").strip()  # "# Deck,,,," titles the rows below
+            continue
         if not row or not row[0] or row[0].startswith("#"):
             continue
         row = row + [""] * (15 - len(row))
         command, control_name, kind = row[0], row[1], row[2]
         attrs = {"software": "rekordbox", "control_name": control_name, "type": kind, "row": str(line_number)}
+        if section:
+            attrs["section"] = section
         if row[_OPTION_COLUMN]:
             attrs["option"] = row[_OPTION_COLUMN]
         if row[_COMMENT_COLUMN]:
@@ -123,6 +130,98 @@ def parse_string(text: str) -> MidiConfig:
     )
 
 
+# Control types that are one press, the catalog's scope (continuous
+# controls -- knobs, faders, jogs, encoders -- are left out of profiles).
+DISCRETE_TYPES = frozenset({"Button", "Pad"})
+_KINDS = {"Note On": "NOTE", "Control Change": "CC"}
+
+
+@dataclass(frozen=True)
+class ProfileRow:
+    """One input trigger of a rekordbox mapping, named for a controller
+    profile: `section` is the file's `# Title` group, `name` its control."""
+
+    channel: str
+    kind: str  # "NOTE" or "CC"
+    data1: str
+    section: str
+    name: str
+
+
+def profile_rows(config: MidiConfig) -> list[ProfileRow]:
+    """The discrete input controls of a parsed rekordbox mapping, in file
+    order, named by rekordbox's own control column (``Sync+Shift``).
+
+    That column isn't unique per address, so two suffixes keep every row's
+    name distinct: a control with several notes on one deck (a pad-mode
+    page button: one note per mode) gets its command in brackets, and one
+    with its own note per deck (``Load``: notes 70-73 on one channel) gets
+    `` (Deck N)``, since a profile row can only fold decks that differ by
+    channel."""
+    found: list[tuple[ProfileRow, str | None, str]] = []
+    seen: set[tuple[str, str, str]] = set()
+    for control in config.controls:
+        kind = _KINDS.get(control.event_type)
+        if kind is None or (control.channel, kind, control.control) in seen:
+            continue
+        mapping = next(
+            (
+                m
+                for u in control.userios
+                if u.event == "click"
+                for m in u.mappings
+                if m.extra_attrs.get("type") in DISCRETE_TYPES and m.extra_attrs.get("control_name")
+            ),
+            None,
+        )
+        if mapping is None:
+            continue
+        seen.add((control.channel, kind, control.control))
+        row = ProfileRow(
+            control.channel,
+            kind,
+            control.control,
+            mapping.extra_attrs.get("section", ""),
+            mapping.extra_attrs["control_name"],
+        )
+        found.append((row, mapping.deck_id, mapping.tag))
+
+    def numbers_by(key) -> dict:
+        grouped: dict = {}
+        for row, deck, command in found:
+            grouped.setdefault(key(row, deck, command), set()).add((row.kind, row.data1))
+        return grouped
+
+    per_deck = numbers_by(lambda row, deck, _command: (row.section, row.name, deck))
+    found = [
+        (
+            replace(row, name=f"{row.name} [{command}]") if len(per_deck[(row.section, row.name, deck)]) > 1 else row,
+            deck,
+            command,
+        )
+        for row, deck, command in found
+    ]
+    per_name = numbers_by(lambda row, _deck, _command: (row.section, row.name))
+    named = [
+        replace(row, name=f"{row.name} (Deck {deck})")
+        if deck is not None and len(per_name[(row.section, row.name)]) > 1
+        else row
+        for row, deck, _command in found
+    ]
+    # Last resort (same control and command on several notes): number the
+    # addresses in file order, the first one keeping the plain name.
+    order: dict[tuple[str, str], list[tuple[str, str]]] = {}
+    for row in named:
+        numbers = order.setdefault((row.section, row.name), [])
+        if (row.kind, row.data1) not in numbers:
+            numbers.append((row.kind, row.data1))
+    unique = []
+    for row in named:
+        index = order[(row.section, row.name)].index((row.kind, row.data1))
+        unique.append(replace(row, name=f"{row.name} #{index + 1}") if index else row)
+    return unique
+
+
 def to_csv_string(config: MidiConfig) -> str:
     raise RekordboxMappingError(
         "Saving a rekordbox mapping isn't supported yet: edit it in rekordbox's MIDI settings."
@@ -144,4 +243,12 @@ register(
 )
 
 
-__all__ = ["RekordboxMappingError", "is_rekordbox_text", "parse_string", "to_csv_string"]
+__all__ = [
+    "DISCRETE_TYPES",
+    "ProfileRow",
+    "RekordboxMappingError",
+    "is_rekordbox_text",
+    "parse_string",
+    "profile_rows",
+    "to_csv_string",
+]

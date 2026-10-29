@@ -791,6 +791,10 @@ Mappé sur : {functions}</translation>
         <translation>Délai (ms)</translation>
     </message>
     <message>
+        <source>rekordbox import</source>
+        <translation>import rekordbox</translation>
+    </message>
+    <message>
         <source>Send message</source>
         <translation>Envoyer un message</translation>
     </message>
@@ -1061,10 +1065,6 @@ Importer les déclencheurs de :</translation>
         <translation>Apprendre les déclencheurs d&apos;un mapping</translation>
     </message>
     <message>
-        <source>MIDI mappings (*.xml *.tsi);;Serato XML (*.xml);;Traktor TSI (*.tsi)</source>
-        <translation>Mappings MIDI (*.xml *.tsi);;XML Serato (*.xml);;TSI Traktor (*.tsi)</translation>
-    </message>
-    <message>
         <source>Failed to import file</source>
         <translation>Échec de l&apos;import du fichier</translation>
     </message>
@@ -1079,6 +1079,18 @@ Open this same file as an editable mapping too (By Channel / By Deck / By Contro
         <translation>{count} nouvelle(s) ligne(s) de déclencheur ajoutée(s) au profil (doublons ignorés).
 
 Ouvrir aussi ce fichier comme mapping modifiable (Par canal / Par platine / Par contrôleur) ?</translation>
+    </message>
+    <message>
+        <source>MIDI mappings (*.xml *.tsi *.csv);;Serato XML (*.xml);;Traktor TSI (*.tsi);;rekordbox CSV (*.csv)</source>
+        <translation>Mappings MIDI (*.xml *.tsi *.csv);;XML Serato (*.xml);;TSI Traktor (*.tsi);;CSV rekordbox (*.csv)</translation>
+    </message>
+    <message>
+        <source>Added {count} new trigger row(s) to the profile (duplicates skipped), named and grouped as in rekordbox. Knobs, faders, jogs and LEDs were left out.
+
+Open this same file as a read-only mapping too (By Channel / By Deck / By Controller)?</source>
+        <translation>{count} nouvelle(s) ligne(s) de déclencheur ajoutée(s) au profil (doublons ignorés), nommées et groupées comme dans rekordbox. Les potentiomètres, faders, jogs et voyants ont été laissés de côté.
+
+Ouvrir aussi ce fichier comme mapping en lecture seule (Par canal / Par platine / Par contrôleur) ?</translation>
     </message>
     <message>
         <source>Reference image: {name}</source>
@@ -2107,10 +2119,10 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     <message>
         <source>Controller Setup builds a *controller profile* — the map from a device&apos;s MIDI triggers to readable physical control names — for a controller DJ MIDI Studio doesn&apos;t know yet. It does NOT open a Serato mapping for editing; that is File → Open.
 
-Workflow: (1) get the triggers — learn them from the hardware under MIDI input, Import them from an existing Serato XML or Traktor TSI mapping, or Start from a controller already in the catalog (a named copy to adapt); (2) type a Section and Name for each row; (3) Apply / Export to use the profile now or write it to disk.</source>
+Workflow: (1) get the triggers — learn them from the hardware under MIDI input, Import them from an existing Serato XML, Traktor TSI or rekordbox CSV mapping, or Start from a controller already in the catalog (a named copy to adapt); (2) type a Section and Name for each row; (3) Apply / Export to use the profile now or write it to disk.</source>
         <translation>Config. contrôleur crée un *profil de contrôleur* — la correspondance entre les déclencheurs MIDI d&apos;un appareil et des noms lisibles de commandes physiques — pour un contrôleur que DJ MIDI Studio ne connaît pas encore. Cet onglet n&apos;ouvre PAS de mapping Serato pour le modifier : pour cela, utilisez Fichier → Ouvrir un mapping…
 
-Étapes : (1) obtenez les déclencheurs — apprenez-les depuis le matériel sous MIDI input, importez-les d&apos;un mapping Serato XML ou Traktor TSI existant, ou partez d&apos;un contrôleur déjà dans le catalogue (une copie renommée à adapter) ; (2) tapez une Section et un Name pour chaque ligne ; (3) Apply / Export pour utiliser le profil tout de suite ou l&apos;écrire sur le disque.</translation>
+Étapes : (1) obtenez les déclencheurs — apprenez-les depuis le matériel sous MIDI input, importez-les d&apos;un mapping Serato XML, Traktor TSI ou rekordbox CSV existant, ou partez d&apos;un contrôleur déjà dans le catalogue (une copie renommée à adapter) ; (2) tapez une Section et un Name pour chaque ligne ; (3) Apply / Export pour utiliser le profil tout de suite ou l&apos;écrire sur le disque.</translation>
     </message>
     <message>
         <source>MIDI input (learn from controller)</source>
@@ -2125,8 +2137,12 @@ Workflow: (1) get the triggers — learn them from the hardware under MIDI input
         <translation>Apprendre les déclencheurs d&apos;un mapping</translation>
     </message>
     <message>
-        <source>Learn triggers from a Serato XML or a Traktor TSI mapping: adds one row per unique (channel, type, control) the file uses. It seeds the profile so you don&apos;t have to press every button on the hardware — it does NOT open the mapping for editing (that&apos;s File → Open Mapping). Mapped functions aren&apos;t physical control names, so Section and Name still have to be filled in by hand. A TSI export can hold several devices (one per controller); you pick which one to import. After importing you&apos;re offered to open the same file as an editable mapping too.</source>
-        <translation>Apprend les déclencheurs d&apos;un mapping Serato XML ou Traktor TSI : ajoute une ligne par (canal, type, commande) distinct utilisé dans le fichier. Cela amorce le profil sans avoir à presser chaque bouton du matériel — le mapping n&apos;est PAS ouvert pour être modifié (pour cela : Fichier → Ouvrir un mapping…). Les fonctions mappées ne sont pas des noms de commandes physiques : Section et Nom restent à remplir à la main. Un export TSI peut contenir plusieurs appareils (un par contrôleur) ; vous choisissez lequel importer. Après l&apos;import, l&apos;application propose aussi d&apos;ouvrir ce même fichier comme mapping modifiable.</translation>
+        <source>Learn triggers from a Serato XML or a Traktor TSI mapping: adds one row per unique (channel, type, control) the file uses. It seeds the profile so you don&apos;t have to press every button on the hardware — it does NOT open the mapping for editing (that&apos;s File → Open Mapping). Mapped functions aren&apos;t physical control names, so Section and Name still have to be filled in by hand. A TSI export can hold several devices (one per controller); you pick which one to import. After importing you&apos;re offered to open the same file as an editable mapping too.
+
+A rekordbox CSV (rekordbox ships one per supported device) names its controls: its buttons and pads arrive with Section and Name filled in; knobs, faders and jogs are left out.</source>
+        <translation>Apprend les déclencheurs d&apos;un mapping Serato XML ou Traktor TSI : ajoute une ligne par (canal, type, commande) distinct utilisé dans le fichier. Cela amorce le profil sans avoir à presser chaque bouton du matériel — le mapping n&apos;est PAS ouvert pour être modifié (pour cela : Fichier → Ouvrir un mapping…). Les fonctions mappées ne sont pas des noms de commandes physiques : Section et Nom restent à remplir à la main. Un export TSI peut contenir plusieurs appareils (un par contrôleur) ; vous choisissez lequel importer. Après l&apos;import, l&apos;application propose aussi d&apos;ouvrir ce même fichier comme mapping modifiable.
+
+Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses commandes : ses boutons et pads arrivent avec Section et Nom déjà remplis ; les potentiomètres, faders et jogs sont laissés de côté.</translation>
     </message>
     <message>
         <source>Apply / Export</source>
@@ -6327,8 +6343,8 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <translation>Choisir le fichier par défaut de Config. contrôleur</translation>
     </message>
     <message>
-        <source>Controller Setup session or mapping (*.json *.xml *.tsi);;All files (*)</source>
-        <translation>Session Config. contrôleur ou mapping (*.json *.xml *.tsi);;Tous les fichiers (*)</translation>
+        <source>Controller Setup session or mapping (*.json *.xml *.tsi *.csv);;All files (*)</source>
+        <translation>Session Config. contrôleur ou mapping (*.json *.xml *.tsi *.csv);;Tous les fichiers (*)</translation>
     </message>
 </context>
 <context>
