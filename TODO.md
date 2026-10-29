@@ -139,6 +139,13 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Controller Setup imports rekordbox mappings with names** (`v0.48.145-controller-setup-rekordbox-import`) —
+  hardware-free follow-up to the rekordbox plugin. Serato/Traktor imports only seed raw triggers, but a rekordbox
+  `.midi.csv` names every control and groups it under `# Title` rows, so `rekordbox.profile_rows` turns it into
+  named, sectioned profile rows (buttons and pads only), with ` [command]` / ` (Deck N)` / ` #N` suffixes where
+  rekordbox reuses a control name for several notes. Checked on all 67 files rekordbox 7 ships: every
+  `(section, name)` is unique after `merge_by_channel`, no trigger conflict (DDJ-XP2: 1,261 rows → 324 entries in
+  3 sections). Gives a named starting profile for any of those devices without a PDF.
 - [x] **rekordbox MIDI mapping plugin, read-only** (`v0.48.144-rekordbox-mapping-plugin`) — phase 2 of the
   backlog plan. `software/rekordbox.py` reads rekordbox's `.midi.csv` mappings as decoded in phase 1
   (`software/rekordbox/README.md`): one `Control` per decoded address and deck (`click` input, `output` LED),

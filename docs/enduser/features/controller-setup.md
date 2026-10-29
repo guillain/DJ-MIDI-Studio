@@ -83,6 +83,23 @@ column names the Traktor device it came from.
 After a successful import, the app offers to also open that file as an
 editable mapping in `By Channel` / `By Deck` / `By Controller`.
 
+### From a rekordbox mapping (names included)
+
+A rekordbox `.midi.csv` mapping is different: it names every physical
+control and groups them (`Browser`, `Deck`, `Performance`…), so its rows
+arrive with **Section** and **Name** already filled in. rekordbox ships one
+for every device it supports — on macOS in
+`rekordbox.app/Contents/Resources/MidiMappings/` (right-click the app →
+*Show Package Contents*) — which makes it a quick start for a controller
+that has no profile here yet. Only buttons and pads are imported; knobs,
+faders, jogs and LED-only rows are left out, as for every profile.
+
+Names are rekordbox's own (`Sync+Shift` is SHIFT + SYNC). When rekordbox
+uses one name for several notes, a suffix keeps each row distinct: the
+rekordbox command in brackets (a pad-mode button sends a different note per
+mode), ` (Deck N)` when each deck has its own note on one channel, or
+` #2`, ` #3` as a last resort. Rename what you like before installing.
+
 ## Label many controls at once
 
 Select several rows (Shift/Cmd-click) and use:
@@ -133,8 +150,8 @@ attached image) as a JSON file so you can continue later. The repository
 ships recorded sessions for the DDJ-XP2 and XDJ-XZ in `data/controllers/`.
 
 To pick up where you left off every time, set ⚙ Preferences →
-`Controller Setup default file` to a session `.json`, a Serato `.xml` or a
-Traktor `.tsi`. It is loaded the first time the tab is shown in a session, as
+`Controller Setup default file` to a session `.json`, a Serato `.xml`, a
+Traktor `.tsi` or a rekordbox `.csv`. It is loaded the first time the tab is shown in a session, as
 long as the draft is still empty (a mapping only seeds triggers, every device
 of a `.tsi` included, without offering to open it as a mapping). A missing or unreadable file is skipped and logged.
 

@@ -10,6 +10,7 @@
 
 - [Supported files](#supported-files)
 - [What you see](#what-you-see)
+- [Building a controller profile from it](#building-a-controller-profile-from-it)
 - [Saving](#saving)
 - [Technical reference](#technical-reference)
 - [Related](#related)
@@ -41,6 +42,12 @@ Each mapping row becomes one control per deck it applies to:
 
 Disabled rows (starting with `#`) and rekordbox's internal parameters are
 not shown. Validation and **Ready for live** work as for any other mapping.
+
+## Building a controller profile from it
+
+Because these files name every control, Controller Setup can turn one into
+a named controller profile: `Learn triggers from a mapping…` → pick the
+`.midi.csv`. See [Controller Setup](controller-setup.md#from-a-rekordbox-mapping-names-included).
 
 ## Saving
 
