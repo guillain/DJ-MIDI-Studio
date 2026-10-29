@@ -94,7 +94,10 @@ for every device it supports — on macOS in
 that has no profile here yet. Only buttons and pads are imported; knobs,
 faders, jogs and LED-only rows are left out, as for every profile.
 
-Names are rekordbox's own (`Sync+Shift` is SHIFT + SYNC). When rekordbox
+Names are rekordbox's own, written the way this app's profiles write them:
+`Sync+Shift` becomes `Sync +SHIFT`, and a pad such as `PAD3_HotCue` becomes
+`Pad 3 (HotCue)` in the `PAD` section, so every mode of a pad shows on one
+control. When rekordbox
 uses one name for several notes, a suffix keeps each row distinct: the
 rekordbox command in brackets (a pad-mode button sends a different note per
 mode), ` (Deck N)` when each deck has its own note on one channel, or

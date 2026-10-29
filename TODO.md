@@ -139,6 +139,13 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Controller profile library from rekordbox's mappings** (`v0.48.147-rekordbox-profile-library`) — agreed with
+  the maintainer: 46 more Pioneer DJ / AlphaTheta devices (DDJ-400/FLX6/REV7/SX…, DJM-S7/S11…, XDJ-RX3, OPUS-QUAD…)
+  as JSON profiles built from rekordbox 7's bundled mappings (buttons and pads, rekordbox's names in catalog
+  convention), installed on demand from `File → Controller Profile → Install from Library…` rather than registered
+  at startup. Found on the way: a profile registered mid-session stayed hidden by the startup enabled-controller
+  filter (Controller Setup's Install too), and the plain card grid keyed static pads differently from live hits;
+  both fixed. Source is rekordbox's default mapping, not vendor documentation, and nothing was checked on a unit.
 - [x] **MIDI macros: trigger sequences and step Learn** (`v0.48.146-macro-trigger-sequences`) — requested by the
   maintainer: a macro's controller trigger can be a series of presses (each within a configurable *Max gap*, 1 s by
   default) instead of one, and both the trigger and the steps are filled by Learn — every captured press is added

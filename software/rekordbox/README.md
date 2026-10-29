@@ -92,6 +92,14 @@ describes the same CSV shape: 15 fields, hex MIDI codes, 0-based channels,
 "Function"; the bundled files show column 1 is the command rekordbox runs
 and column 2 the physical control.
 
+## Profile library
+
+`scripts/generate_rekordbox_profiles.py` turns these same files into the
+installable controller profiles under `controllers/library/rekordbox/`
+(`djmidi.catalog.library`): one per device, port-name variants (`MIDI`,
+`2IN2OUT`) merged since their messages are identical, built-ins skipped —
+46 profiles from the 67 rekordbox 7 files.
+
 ## What's still needed before writing
 
 - A **user-customized** CSV (exported from rekordbox's MIDI settings) to see
