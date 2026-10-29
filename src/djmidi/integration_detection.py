@@ -113,9 +113,10 @@ def detect_software_mapping(text: str, suffix: str = "", translate: Translate = 
     """Rank mapping plugins from XML signatures and file extension.
     Reasons are in English unless the GUI passes a `translate` (issue #326)."""
     definitions = software.detect_from_text(text, suffix)
+    signed = {definition.plugin_id for definition in software.signature_matches(text)}
     candidates: list[DetectionCandidate] = []
     for definition in definitions:
-        score = 100 if definition.plugin_id in {"serato", "traktor"} else 70
+        score = 100 if definition.plugin_id in signed else 70
         reason = translate(_SIGNATURE) if score == 100 else translate(_EXTENSION).format(suffix=repr(suffix))
         candidates.append(
             DetectionCandidate(

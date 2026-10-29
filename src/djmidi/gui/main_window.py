@@ -2082,7 +2082,7 @@ class MainWindow(QMainWindow):
             self,
             self.tr("Open DJ mapping"),
             str(self._mapping_start_dir()),
-            self.tr("Supported mapping files (*.xml *.nml *.tsi);;All files (*)"),
+            self.tr("Supported mapping files (*.xml *.nml *.tsi *.csv);;All files (*)"),
         )
         if not path_str:
             return
@@ -2979,7 +2979,7 @@ class MainWindow(QMainWindow):
             self,
             self.tr("Compare with mapping"),
             str(self._mapping_start_dir()),
-            self.tr("Supported mapping files (*.xml *.nml *.tsi *.bak);;All files (*)"),
+            self.tr("Supported mapping files (*.xml *.nml *.tsi *.csv *.bak);;All files (*)"),
         )
         if path_str:
             self._compare_with_path(Path(path_str))

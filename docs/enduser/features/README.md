@@ -27,6 +27,7 @@
 | --- | --- | --- |
 | 🗺️ | [Mapping editor](mapping-editor.md) | Open, explore, edit, validate and save Serato mappings |
 | 🎧 | [Traktor mappings](traktor-mappings.md) | The same for Traktor `.tsi` controller mappings |
+| 🎛️ | [rekordbox mappings](rekordbox-mappings.md) | rekordbox `.midi.csv` mappings, read-only |
 | 🔍 | [Compare mappings](mapping-diff.md) | What changed between two mappings, highlighted on the layouts |
 | ✅ | [Ready for live](live-ready-check.md) | A pre-gig check of the mapping, explained and never auto-fixed |
 | 🏷️ | [Readable function names](function-names.md) | `Loop roll` instead of `auto_loop_roll_specific_length`, original tag on hover |
@@ -54,6 +55,7 @@
 | [controller-emulator.md](controller-emulator.md) | Click-to-resolve, modes and SHIFT, Live send |
 | [mapping-editor.md](mapping-editor.md) | Dashboard, the three views, editing, validation, saving |
 | [traktor-mappings.md](traktor-mappings.md) | Traktor `.tsi` support and its limits |
+| [rekordbox-mappings.md](rekordbox-mappings.md) | rekordbox `.midi.csv` support (read-only) |
 | [mapping-diff.md](mapping-diff.md) | Comparing with another file or the previous version, change kinds, duplicates |
 | [live-ready-check.md](live-ready-check.md) | Missing essentials per deck, conflicts, LED feedback, reading the report |
 | [function-names.md](function-names.md) | Short names for Serato function tags, where they show, finding the original tag |

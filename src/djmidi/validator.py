@@ -169,6 +169,9 @@ def _check_duplicate_triggers(config: MidiConfig, translate: Translate = untrans
 
 def _check_required_fields(config: MidiConfig, translate: Translate = untranslated) -> list[ValidationIssue]:
     issues: list[ValidationIssue] = []
+    # deck_id/slot_id are Serato attributes: a Traktor or rekordbox binding
+    # has no slot, and a global one (browse, master) no deck.
+    needs_slot = config.extra_attrs.get("software", "serato") == "serato"
     for control in config.controls:
         if not control.channel or not control.event_type or not control.control:
             issues.append(
@@ -180,7 +183,7 @@ def _check_required_fields(config: MidiConfig, translate: Translate = untranslat
             )
         for userio in control.userios:
             for mapping in userio.mappings:
-                if not mapping.deck_id or not mapping.slot_id:
+                if needs_slot and (not mapping.deck_id or not mapping.slot_id):
                     issues.append(
                         ValidationIssue(
                             severity="error",

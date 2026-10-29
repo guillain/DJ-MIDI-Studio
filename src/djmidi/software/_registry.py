@@ -33,6 +33,9 @@ class SoftwareDefinition:
     change_summary: Callable[[str, str], str] | None = None
     """Optional human-readable description of the changes between two
     exports, shown before a save when the raw diff isn't readable."""
+    signature: Callable[[str], bool] | None = None
+    """Optional content sniffer for a non-XML format (rekordbox's CSV): a
+    file it accepts is a signature match, like Serato's ``<midi>`` root."""
 
     def parse_file(self, path: str | PathLike[str]) -> MidiConfig:
         return self.parser(Path(path).read_text(encoding="utf-8"))
@@ -99,27 +102,38 @@ def active_definitions() -> list[SoftwareDefinition]:
     return [definition for definition in definitions if definition.plugin_id in _ENABLED_PLUGIN_IDS]
 
 
-def detect_from_text(text: str, suffix: str = "") -> list[SoftwareDefinition]:
-    """Returns software plugins compatible with an XML root and extension."""
+def signature_matches(text: str) -> list[SoftwareDefinition]:
+    """Active plugins whose content signature accepts `text`: an XML root
+    (Serato, Traktor) or a plugin's own `signature` sniffer."""
+    sniffed = [
+        definition for definition in active_definitions() if definition.signature is not None and definition.signature(text)
+    ]
+    if sniffed:
+        return sniffed
     try:
         root_tag = ET.fromstring(text).tag
     except ET.ParseError:
-        _LOGGER.debug("Software detection: text is not valid XML (suffix=%r)", suffix)
         return []
-    signature_matches = [
+    return [
         definition
         for definition in active_definitions()
         if (definition.plugin_id == "serato" and root_tag == "midi")
         or (definition.plugin_id == "traktor" and root_tag in _TRAKTOR_ROOTS)
     ]
-    matches = signature_matches or [
-        definition for definition in active_definitions() if definition.can_parse(root_tag, suffix)
-    ]
+
+
+def detect_from_text(text: str, suffix: str = "") -> list[SoftwareDefinition]:
+    """Returns software plugins compatible with a file's content signature,
+    else with its extension."""
+    matches = signature_matches(text)
+    if not matches:
+        try:
+            root_tag = ET.fromstring(text).tag
+        except ET.ParseError:
+            root_tag = ""
+        matches = [definition for definition in active_definitions() if definition.can_parse(root_tag, suffix)]
     _LOGGER.debug(
-        "Software detection for root=<%s> suffix=%r: %s",
-        root_tag,
-        suffix,
-        [definition.plugin_id for definition in matches] or "no match",
+        "Software detection (suffix=%r): %s", suffix, [definition.plugin_id for definition in matches] or "no match"
     )
     return matches
 
@@ -132,4 +146,5 @@ __all__ = [
     "get_definition",
     "register",
     "set_enabled_plugin_ids",
+    "signature_matches",
 ]
