@@ -32,7 +32,12 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 
-from djmidi.catalog._registry import _REGISTRY, ControlInfo, ControllerDefinition
+from djmidi.catalog._registry import (
+    _REGISTRY,
+    ControlInfo,
+    ControllerDefinition,
+    detect_controller,
+)
 from djmidi.catalog.codegen import infer_section_order, merge_by_channel
 from djmidi.catalog.profile import (
     USER_PLUGIN_PREFIX,
@@ -200,6 +205,35 @@ def install_library_profile(profile: LibraryProfile, controllers_dir: str | Path
     return load_controller_profile(target, replace=True)
 
 
+def _mentions(port: str, name: str) -> bool:
+    """Whether `name` appears in `port` as a whole word (``DDJ-SB`` is in
+    ``PIONEER DDJ-SB`` and ``DDJ-SB 1``, not in ``DDJ-SB2``)."""
+    if not name.strip():
+        return False
+    return re.search(rf"(?<![a-z0-9]){re.escape(name.casefold())}(?![a-z0-9])", port.casefold()) is not None
+
+
+def connected_library_profiles(
+    port_names: Iterable[str], profiles: Iterable[LibraryProfile]
+) -> list[tuple[LibraryProfile, str]]:
+    """The library profiles worth offering for the connected MIDI ports:
+    one whose name or a port name of it appears in a port, isn't installed
+    yet, and isn't already covered -- a port some registered controller
+    names exactly (a built-in, or an installed profile) is skipped. Each
+    profile once, with the first port it matched, in port order."""
+    candidates = [profile for profile in profiles if not profile.is_installed and not profile.is_built_in]
+    found: list[tuple[LibraryProfile, str]] = []
+    for port in port_names:
+        if any(match.score == 100 for match in detect_controller(port, include_disabled=True)):
+            continue
+        for profile in candidates:
+            if any(found_profile.name == profile.name for found_profile, _port in found):
+                continue
+            if any(_mentions(port, name) for name in (profile.name, *profile.port_names)):
+                found.append((profile, port))
+    return found
+
+
 __all__ = [
     "LIBRARY_DIR",
     "MIN_ENTRIES",
@@ -207,6 +241,7 @@ __all__ = [
     "SOURCE_REKORDBOX",
     "LibraryProfile",
     "build_rekordbox_profiles",
+    "connected_library_profiles",
     "device_name",
     "install_library_profile",
     "library_document",

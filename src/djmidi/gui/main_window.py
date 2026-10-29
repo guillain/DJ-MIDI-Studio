@@ -70,7 +70,11 @@ from djmidi import (
     sync_store,
     user_paths,
 )
-from djmidi.catalog.library import list_library_profiles
+from djmidi.catalog.library import (
+    connected_library_profiles,
+    install_library_profile,
+    list_library_profiles,
+)
 from djmidi.catalog.profile import load_user_profiles
 from djmidi.command_palette import (
     KIND_ACTION,
@@ -203,6 +207,10 @@ _validator_translate = translator("Validator")
 _detection_translate = translator("IntegrationDetection")
 # Startup update check (issue #193): after the window is up, at most once a day.
 _STARTUP_UPDATE_CHECK_DELAY_MS = 3000
+# After launch Sync and the update check: offer library profiles for the
+# controllers plugged in.
+_STARTUP_LIBRARY_SUGGEST_DELAY_MS = 4500
+_DISMISSED_LIBRARY_PROFILES_KEY = "library/dismissed_profiles"
 _LAST_UPDATE_CHECK_SETTINGS_KEY = "updates/last_check"
 # How often output ports are listed to spot a controller being plugged in.
 _PLUG_IN_POLL_MS = 2000
@@ -349,6 +357,8 @@ class MainWindow(QMainWindow):
         self._macro_player = MacroPlayer(parent=self)
         # Remembers recent presses so a trigger sequence can complete.
         self._macro_matcher = midi_macros.MacroTriggerMatcher()
+        # Library profiles declined this session, when there are no QSettings (tests).
+        self._session_dismissed_profiles: set[str] = set()
         self._macro_player.finished.connect(self._on_macro_finished)
         # The open Manage Macros dialog, fed live events for its Learn button
         # (issue #252); macros don't fire from the controller while it's open.
@@ -604,6 +614,7 @@ class MainWindow(QMainWindow):
             QTimer.singleShot(_STARTUP_SYNC_DELAY_MS, self._start_controller_sync)
             # Controller-triggered macros (issue #252) need the inputs open.
             QTimer.singleShot(0, self._ensure_macro_triggers_listening)
+            QTimer.singleShot(_STARTUP_LIBRARY_SUGGEST_DELAY_MS, self._suggest_library_profiles)
         self._update_checker = UpdateChecker(self)
         self._update_checker.finished.connect(self._on_update_check_finished)
         self._update_label = QLabel()
@@ -2809,6 +2820,7 @@ class MainWindow(QMainWindow):
         factory = dialog_factory or ProfileLibraryDialog
         dialog = factory(list_library_profiles(), user_paths.controllers_dir(), self)
         dialog.installed.connect(self._on_library_profile_installed)
+        dialog.uninstalled.connect(self._on_library_profile_uninstalled)
         dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         dialog.open()
         return dialog
@@ -2816,6 +2828,70 @@ class MainWindow(QMainWindow):
     def _on_library_profile_installed(self, name: str) -> None:
         self._on_controller_applied(name)
         self.statusBar().showMessage(self.tr("'{name}' installed from the profile library.").format(name=name), 8000)
+
+    def _on_library_profile_uninstalled(self, name: str) -> None:
+        self._on_controller_applied(name)
+        self.statusBar().showMessage(self.tr("'{name}' uninstalled.").format(name=name), 8000)
+
+    def _dismissed_library_profiles(self) -> set[str]:
+        settings = self._layout_settings()
+        if settings is None:
+            return set(self._session_dismissed_profiles)
+        value = settings.value(_DISMISSED_LIBRARY_PROFILES_KEY, [])
+        return {str(item) for item in (value if isinstance(value, list) else [value]) if item}
+
+    def _dismiss_library_profiles(self, names: list[str]) -> None:
+        dismissed = self._dismissed_library_profiles() | set(names)
+        self._session_dismissed_profiles = dismissed
+        settings = self._layout_settings()
+        if settings is not None:
+            settings.setValue(_DISMISSED_LIBRARY_PROFILES_KEY, sorted(dismissed))
+
+    def _suggest_library_profiles(self, ports: list[str] | None = None, ask=None) -> list[str]:
+        """At launch: a connected controller with an uninstalled library
+        profile (a DDJ-400 plugged in) gets one question offering to install
+        it. "No" is remembered per profile, so it is asked once. Returns the
+        names installed. Skipped while another window (the first-run wizard)
+        is modal."""
+        if ask is None and QApplication.activeModalWidget() is not None:
+            return []
+        dismissed = self._dismissed_library_profiles()
+        matches = [
+            (profile, port)
+            for profile, port in connected_library_profiles(
+                list_input_ports() if ports is None else ports, list_library_profiles()
+            )
+            if profile.name not in dismissed
+        ]
+        if not matches:
+            return []
+        lines = "\n".join(f"• {profile.name} ({port})" for profile, port in matches)
+        question = self.tr(
+            "These connected controllers have a ready-made profile in the library:\n\n{lines}\n\n"
+            "Install them? (File → Controller Profile → Install from Library… does it later too.)"
+        ).format(lines=lines)
+        if ask is None:
+            answer = QMessageBox.question(self, self.tr("Controller profiles available"), question)
+            accepted = answer == QMessageBox.StandardButton.Yes
+        else:
+            accepted = ask(question)
+        if not accepted:
+            self._dismiss_library_profiles([profile.name for profile, _port in matches])
+            return []
+        installed: list[str] = []
+        for profile, _port in matches:
+            try:
+                install_library_profile(profile, user_paths.controllers_dir())
+            except (OSError, ValueError, TypeError) as exc:
+                _LOGGER.warning("Could not install library profile %s: %s", profile.name, exc)
+                continue
+            installed.append(profile.name)
+            self._on_controller_applied(profile.name)
+        if installed:
+            self.statusBar().showMessage(
+                self.tr("Installed from the profile library: {names}").format(names=", ".join(installed)), 8000
+            )
+        return installed
 
     def closeEvent(self, event) -> None:
         if self._record_button.isChecked():

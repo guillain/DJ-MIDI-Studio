@@ -185,8 +185,12 @@ controller list: **`File` → `Controller Profile` → `Install from Library…`
 filter (a device's MIDI port names match too), select one or more, then
 **`Install`** (or double-click). An installed profile shows up in every
 view at once and loads at every launch, like a profile made in
-[Controller Setup](features/controller-setup.md); remove its file from
-`Documents/DJ MIDI Studio/Controllers` to uninstall it.
+[Controller Setup](features/controller-setup.md); **`Uninstall`** in the
+same window removes it again.
+
+When you launch the app with such a controller plugged in (its MIDI port
+names it), the app asks once whether to install its profile. Answer No and
+it won't ask again for that device; the library window still has it.
 
 ## Add your own controller
 

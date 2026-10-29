@@ -139,6 +139,10 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Profile library: uninstall, and an offer for plugged-in controllers** (`v0.48.148-profile-library-suggest`) —
+  follow-up to `v0.48.147`: the library window uninstalls a profile, and at launch a connected controller whose
+  profile is in the library but not installed (matched by its port name, as a whole word) gets one question
+  offering to install it; "No" is remembered per device.
 - [x] **Controller profile library from rekordbox's mappings** (`v0.48.147-rekordbox-profile-library`) — agreed with
   the maintainer: 46 more Pioneer DJ / AlphaTheta devices (DDJ-400/FLX6/REV7/SX…, DJM-S7/S11…, XDJ-RX3, OPUS-QUAD…)
   as JSON profiles built from rekordbox 7's bundled mappings (buttons and pads, rekordbox's names in catalog
