@@ -29,11 +29,11 @@
 | Pioneer DDJ-1000 | Official MIDI Message List E1 | ✅ | ✅ | Not yet |
 | Pioneer DDJ-FLX10 | Official MIDI Message List E1 | ✅ | ✅ | Not yet |
 | Pioneer DDJ-REV1 | Official MIDI Message List E1 | ✅ | ✅ | Not yet |
-| Pioneer DDJ-REV5 | Official MIDI Message List E1 | ✅ | — | Not yet |
+| Pioneer DDJ-REV5 | Official MIDI Message List E1 | ✅ | ✅ | Not yet |
 | Pioneer DDJ-800 | Official MIDI Message List E3 | ✅ | ✅ | Not yet |
 | Pioneer DDJ-FLX4 | Official MIDI Message List E1 | ✅ | ✅ | Not yet |
 | Numark Mixtrack Pro FX | Conservative community values; user guide for the layout | ✅ | — | Not yet |
-| Hercules DJControl Inpulse 500 | Official MIDI Commands sheet (2022) | ✅ | — | Not yet |
+| Hercules DJControl Inpulse 500 | Official MIDI Commands sheet (2022) | ✅ | ✅ | Not yet |
 | Behringer CMD LC-1 | Captured from a real unit with Controller Setup (no vendor list exists), checked against a real Serato export | ✅ | — | ✅ |
 | Behringer CMD Micro | Captured from a real unit (no vendor list exists), checked against a real Traktor export | ✅ | — | ✅ |
 | Behringer CMD Studio 4a | Captured from a real unit in all 4 deck layers (no vendor list exists), checked against a real Traktor export | ✅ | — | ✅ |
