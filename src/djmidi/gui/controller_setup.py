@@ -107,6 +107,7 @@ from djmidi.session_player import (
     play_control_info_entries,
     replay_midi_events,
 )
+from djmidi.software import rekordbox
 from djmidi.software.traktor import parse_string as parse_traktor
 
 _LOGGER = logging.getLogger(__name__)
@@ -126,6 +127,7 @@ _SOURCE_LABELS = {
     "learned": QT_TRANSLATE_NOOP("ControllerSetupView", "learned"),
     "xml-import": QT_TRANSLATE_NOOP("ControllerSetupView", "XML import"),
     "tsi-import": QT_TRANSLATE_NOOP("ControllerSetupView", "TSI import"),
+    "rekordbox-import": QT_TRANSLATE_NOOP("ControllerSetupView", "rekordbox import"),
     "manual": QT_TRANSLATE_NOOP("ControllerSetupView", "manual"),
 }
 _SOURCE_CATALOG = QT_TRANSLATE_NOOP("ControllerSetupView", "copy of {controller}")
@@ -144,10 +146,13 @@ def source_label(source: str) -> str:
 
 
 def read_mapping_file(path: str | Path) -> MidiConfig:
-    """Serato `.xml` or Traktor `.tsi` mapping -> model, chosen by suffix."""
+    """Serato `.xml`, Traktor `.tsi` or rekordbox `.csv` mapping -> model,
+    chosen by suffix."""
     target = Path(path)
     if target.suffix.lower() == ".tsi":
         return parse_traktor(target.read_text(encoding="utf-8"))
+    if target.suffix.lower() == ".csv":
+        return rekordbox.parse_string(target.read_text(encoding="utf-8"))
     return parse_file(target)
 
 
@@ -761,11 +766,13 @@ class ControllerSetupView(QWidget):
                 keys.add((channel, entry.note_or_cc, entry.data1))
         return keys
 
-    def _maybe_add_row(self, channel: str, kind: str, data1: str, source: str, device: str = "") -> bool:
+    def _maybe_add_row(
+        self, channel: str, kind: str, data1: str, source: str, device: str = "", section: str = "", name: str = ""
+    ) -> bool:
         if (channel, kind, data1) in self._existing_keys():
             return False
         typed_kind = cast(NoteOrCC, kind)
-        entry = ControlInfo(self._controller_name, "", "", typed_kind, (channel,), data1)
+        entry = ControlInfo(self._controller_name, section, name, typed_kind, (channel,), data1)
         self._rows.append(entry)
         self._sources.append(source)
         self._devices.append(device)
@@ -1017,7 +1024,7 @@ class ControllerSetupView(QWidget):
         self.start_from_controller(controller)
 
     def set_default_file(self, path: str) -> None:
-        """Session JSON, Serato XML or Traktor TSI to load the first time the tab is shown."""
+        """Session JSON, Serato XML, Traktor TSI or rekordbox CSV to load the first time the tab is shown."""
         self._default_file = path.strip()
 
     def load_file(self, path: str | Path) -> None:
@@ -1025,7 +1032,7 @@ class ControllerSetupView(QWidget):
         triggers (every device) into a fresh draft (no "open as mapping"
         prompt). Raises on an unreadable file."""
         target = Path(path)
-        if target.suffix.lower() in (".xml", ".tsi"):
+        if target.suffix.lower() in (".xml", ".tsi", ".csv"):
             config = read_mapping_file(target)
             self._reset(clear_name=False)
             added = self._import_config(config, target.name)
@@ -1347,6 +1354,12 @@ class ControllerSetupView(QWidget):
         """One row per new trigger of `config`. For a Traktor `.tsi`,
         `tsi_device` limits the import to that device, and each row's Device
         column names the Traktor device it came from."""
+        if config.extra_attrs.get("software") == "rekordbox":
+            # rekordbox names every control, so these rows arrive named.
+            return sum(
+                self._maybe_add_row(row.channel, row.kind, row.data1, "rekordbox-import", device, row.section, row.name)
+                for row in rekordbox.profile_rows(config)
+            )
         labels = tsi_device_labels(config)
         source = "tsi-import" if labels else "xml-import"
         added = 0
@@ -1387,7 +1400,9 @@ class ControllerSetupView(QWidget):
             self,
             self.tr("Learn triggers from a mapping"),
             "",
-            self.tr("MIDI mappings (*.xml *.tsi);;Serato XML (*.xml);;Traktor TSI (*.tsi)"),
+            self.tr(
+                "MIDI mappings (*.xml *.tsi *.csv);;Serato XML (*.xml);;Traktor TSI (*.tsi);;rekordbox CSV (*.csv)"
+            ),
         )
         if not path_str:
             return
@@ -1402,14 +1417,23 @@ class ControllerSetupView(QWidget):
             return
         added = self._import_config(config, Path(path_str).name, tsi_device)
         _LOGGER.info("Imported %d new trigger(s) from %s into Controller Setup", added, path_str)
-        reply = QMessageBox.question(
-            self,
-            self.tr("Import complete"),
-            self.tr(
+        if config.extra_attrs.get("software") == "rekordbox":
+            message = self.tr(
+                "Added {count} new trigger row(s) to the profile (duplicates skipped), named and grouped "
+                "as in rekordbox. Knobs, faders, jogs and LEDs were left out.\n\n"
+                "Open this same file as a read-only mapping too "
+                "(By Channel / By Deck / By Controller)?"
+            ).format(count=added)
+        else:
+            message = self.tr(
                 "Added {count} new trigger row(s) to the profile (duplicates skipped).\n\n"
                 "Open this same file as an editable mapping too "
                 "(By Channel / By Deck / By Controller)?"
-            ).format(count=added),
+            ).format(count=added)
+        reply = QMessageBox.question(
+            self,
+            self.tr("Import complete"),
+            message,
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
         )

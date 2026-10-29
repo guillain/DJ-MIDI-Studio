@@ -623,7 +623,8 @@ CONTROLLER_SETUP_TAB: HelpEntry = (
         "doesn't know yet. It does NOT open a Serato mapping for editing; that is "
         "File → Open.\n\n"
         "Workflow: (1) get the triggers — learn them from the hardware under MIDI input, "
-        "Import them from an existing Serato XML or Traktor TSI mapping, or Start from a controller already in the "
+        "Import them from an existing Serato XML, Traktor TSI or rekordbox CSV mapping, or Start from a controller "
+        "already in the "
         "catalog (a named copy to adapt); (2) type a Section and Name for each "
         "row; (3) Apply / Export to use the profile now or write it to disk.",
     ),
@@ -652,7 +653,10 @@ CONTROLLER_SETUP_IMPORT: HelpEntry = (
         "editing (that's File → Open Mapping). Mapped functions aren't physical control names, so "
         "Section and Name still have to be filled in by hand. A TSI export can hold several "
         "devices (one per controller); you pick which one to import. After importing you're "
-        "offered to open the same file as an editable mapping too.",
+        "offered to open the same file as an editable mapping too.\n\n"
+        "A rekordbox CSV (rekordbox ships one per supported device) names its controls: "
+        "its buttons and pads arrive with Section and Name filled in; knobs, faders and jogs "
+        "are left out.",
     ),
     "controller-setup.md",
 )
