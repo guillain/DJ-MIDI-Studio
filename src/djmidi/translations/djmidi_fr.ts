@@ -1869,8 +1869,8 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
         <translation>Macros MIDI</translation>
     </message>
     <message>
-        <source>A macro is a named list of MIDI messages played in one go from the &lt;b&gt;Macros&lt;/b&gt; menu or its keyboard shortcut, from any tab.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Output port&lt;/b&gt;: where the messages go -- a port, or a controller name matched against the connected ports like &lt;b&gt;⟳ Sync&lt;/b&gt; does.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Steps&lt;/b&gt;: type, channel (1–16), data 1/2 (0–127) and an optional delay (ms) waited before the step is sent; &lt;b&gt;Add sync set…&lt;/b&gt; appends a recorded sync set&apos;s messages.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Shortcut&lt;/b&gt;: optional; one the app&apos;s menus already use is refused.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Trigger&lt;/b&gt;: &lt;b&gt;Learn&lt;/b&gt;, then press a button on your controller: that press plays the macro from then on (the Live Monitor must be listening).&lt;/li&gt;&lt;/ul&gt;&lt;b&gt;Test&lt;/b&gt; plays the macro as edited. Each macro is a file in &lt;tt&gt;Documents/DJ MIDI Studio/Macros&lt;/tt&gt;.</source>
-        <translation>Une macro est une liste nommée de messages MIDI, jouée d&apos;un coup depuis le menu &lt;b&gt;Macros&lt;/b&gt; ou son raccourci clavier, depuis n&apos;importe quel onglet.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Port de sortie&lt;/b&gt; : où partent les messages -- un port, ou un nom de contrôleur comparé aux ports branchés comme le fait &lt;b&gt;⟳ Synchro&lt;/b&gt;.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Ajouter une étape&lt;/b&gt; : type, canal (1–16), data 1/2 (0–127) et un délai facultatif (ms) attendu avant l&apos;envoi de l&apos;étape ; &lt;b&gt;Ajouter un jeu de synchronisation…&lt;/b&gt; ajoute les messages d&apos;un jeu de synchronisation enregistré.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Raccourci&lt;/b&gt; : facultatif ; un raccourci déjà pris par les menus de l&apos;application est refusé.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Déclencheur&lt;/b&gt; : &lt;b&gt;Apprendre&lt;/b&gt;, puis appuyez sur un bouton de votre contrôleur : cet appui joue désormais la macro (le Live Monitor doit être à l&apos;écoute).&lt;/li&gt;&lt;/ul&gt;&lt;b&gt;Tester&lt;/b&gt; joue la macro telle qu&apos;elle est modifiée. Chaque macro est un fichier dans &lt;tt&gt;Documents/DJ MIDI Studio/Macros&lt;/tt&gt;.</translation>
+        <source>A macro is a named list of MIDI messages played in one go from the &lt;b&gt;Macros&lt;/b&gt; menu or its keyboard shortcut, from any tab.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Output port&lt;/b&gt;: where the messages go -- a port, or a controller name matched against the connected ports like &lt;b&gt;⟳ Sync&lt;/b&gt; does.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Steps&lt;/b&gt;: type, channel (1–16), data 1/2 (0–127) and an optional delay (ms) waited before the step is sent; &lt;b&gt;Add sync set…&lt;/b&gt; appends a recorded sync set&apos;s messages; &lt;b&gt;Learn steps&lt;/b&gt; records the messages you play on your controller, with their delays.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Shortcut&lt;/b&gt;: optional; one the app&apos;s menus already use is refused.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Trigger&lt;/b&gt;: &lt;b&gt;Learn&lt;/b&gt;, then press a button on your controller, or several in a row: those presses, in that order and each within the &lt;b&gt;Max gap&lt;/b&gt; of the previous one, play the macro from then on (the Live Monitor must be listening).&lt;/li&gt;&lt;/ul&gt;&lt;b&gt;Test&lt;/b&gt; plays the macro as edited. Each macro is a file in &lt;tt&gt;Documents/DJ MIDI Studio/Macros&lt;/tt&gt;.</source>
+        <translation>Une macro est une liste nommée de messages MIDI, jouée d&apos;un coup depuis le menu &lt;b&gt;Macros&lt;/b&gt; ou son raccourci clavier, depuis n&apos;importe quel onglet.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Port de sortie&lt;/b&gt; : où partent les messages -- un port, ou un nom de contrôleur comparé aux ports branchés comme le fait &lt;b&gt;⟳ Synchro&lt;/b&gt;.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Ajouter une étape&lt;/b&gt; : type, canal (1–16), data 1/2 (0–127) et un délai facultatif (ms) attendu avant l&apos;envoi de l&apos;étape ; &lt;b&gt;Ajouter un jeu de synchronisation…&lt;/b&gt; ajoute les messages d&apos;un jeu de synchronisation enregistré ; &lt;b&gt;Apprendre les étapes&lt;/b&gt; enregistre les messages que vous jouez sur votre contrôleur, avec leurs délais.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Raccourci&lt;/b&gt; : facultatif ; un raccourci déjà pris par les menus de l&apos;application est refusé.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Déclencheur&lt;/b&gt; : &lt;b&gt;Apprendre&lt;/b&gt;, puis appuyez sur un bouton de votre contrôleur, ou sur plusieurs à la suite : ces appuis, dans cet ordre et chacun dans l&apos;&lt;b&gt;Écart max&lt;/b&gt; du précédent, jouent désormais la macro (le Live Monitor doit être à l&apos;écoute).&lt;/li&gt;&lt;/ul&gt;&lt;b&gt;Tester&lt;/b&gt; joue la macro telle qu&apos;elle est modifiée. Chaque macro est un fichier dans &lt;tt&gt;Documents/DJ MIDI Studio/Macros&lt;/tt&gt;.</translation>
     </message>
     <message>
         <source>MIDI Latency Test</source>
@@ -2945,6 +2945,10 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
         <translation>Macros MIDI</translation>
     </message>
     <message>
+        <source>Press one button, or several in a row, on your controller: this macro then plays whenever they are pressed in that order. Learning stops once you stop pressing for the maximum gap, or when you click again.</source>
+        <translation>Appuyez sur un bouton de votre contrôleur, ou sur plusieurs à la suite : cette macro sera jouée chaque fois qu&apos;ils sont pressés dans cet ordre. L&apos;apprentissage s&apos;arrête dès que vous cessez d&apos;appuyer pendant l&apos;écart maximal, ou quand vous cliquez à nouveau.</translation>
+    </message>
+    <message>
         <source>No control pressed — Learn timed out.</source>
         <translation>Aucune commande pressée — l&apos;apprentissage a expiré.</translation>
     </message>
@@ -2973,12 +2977,16 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
         <translation>Apprendre</translation>
     </message>
     <message>
-        <source>Listen for the next button pressed on your controller and play this macro whenever it is pressed. Click again (or wait {seconds} s) to cancel.</source>
-        <translation>Écoute le prochain bouton pressé sur votre contrôleur et joue cette macro à chaque appui. Cliquez à nouveau (ou attendez {seconds} s) pour annuler.</translation>
-    </message>
-    <message>
         <source>MIDI Learn needs the main window&apos;s Live Monitor</source>
         <translation>L&apos;apprentissage MIDI a besoin du Live Monitor de la fenêtre principale</translation>
+    </message>
+    <message>
+        <source> ms</source>
+        <translation> ms</translation>
+    </message>
+    <message>
+        <source>For a trigger of several presses: the longest pause allowed between two of them. Learn also stops after this pause.</source>
+        <translation>Pour un déclencheur de plusieurs appuis : la pause la plus longue permise entre deux d&apos;entre eux. L&apos;apprentissage s&apos;arrête aussi après cette pause.</translation>
     </message>
     <message>
         <source>Name</source>
@@ -2997,6 +3005,10 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
         <translation>Déclencheur</translation>
     </message>
     <message>
+        <source>Max gap</source>
+        <translation>Écart max</translation>
+    </message>
+    <message>
         <source>Add step</source>
         <translation>Ajouter une étape</translation>
     </message>
@@ -3011,6 +3023,14 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
     <message>
         <source>Move down</source>
         <translation>Descendre</translation>
+    </message>
+    <message>
+        <source>Learn steps</source>
+        <translation>Apprendre les étapes</translation>
+    </message>
+    <message>
+        <source>Play the notes on your controller: each message is added as a step, with the delay you actually waited. Click again (or pause {seconds} s) to stop.</source>
+        <translation>Jouez les notes sur votre contrôleur : chaque message est ajouté comme étape, avec le délai réellement attendu. Cliquez à nouveau (ou faites une pause de {seconds} s) pour arrêter.</translation>
     </message>
     <message>
         <source>Add sync set…</source>
@@ -3057,20 +3077,36 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
         <translation>Ajouter les messages de :</translation>
     </message>
     <message>
+        <source>Stop</source>
+        <translation>Arrêter</translation>
+    </message>
+    <message>
+        <source>Press a button, or several in a row, on your controller… ({seconds} s)</source>
+        <translation>Appuyez sur un bouton de votre contrôleur, ou sur plusieurs à la suite… ({seconds} s)</translation>
+    </message>
+    <message>
+        <source>Play the notes to record on your controller… ({seconds} s)</source>
+        <translation>Jouez sur votre contrôleur les notes à enregistrer… ({seconds} s)</translation>
+    </message>
+    <message>
+        <source>Learned {count} step(s).</source>
+        <translation>{count} étape(s) apprise(s).</translation>
+    </message>
+    <message>
         <source>Learn cancelled.</source>
         <translation>Apprentissage annulé.</translation>
     </message>
     <message>
+        <source>Learning {trigger}… press the next one, or pause {ms} ms to finish.</source>
+        <translation>Apprentissage de {trigger}… appuyez sur le suivant, ou faites une pause de {ms} ms pour terminer.</translation>
+    </message>
+    <message>
+        <source>Recorded {count} step(s)… click Stop when done.</source>
+        <translation>{count} étape(s) enregistrée(s)… cliquez sur Arrêter quand vous avez fini.</translation>
+    </message>
+    <message>
         <source>No MIDI input is open: connect a controller, or pick one in Live Monitor.</source>
         <translation>Aucune entrée MIDI n&apos;est ouverte : branchez un contrôleur ou choisissez-en une dans le Live Monitor.</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation>Annuler</translation>
-    </message>
-    <message>
-        <source>Press a button on your controller… ({seconds} s)</source>
-        <translation>Appuyez sur un bouton de votre contrôleur… ({seconds} s)</translation>
     </message>
     <message>
         <source>Learned {trigger}.</source>
@@ -4554,8 +4590,28 @@ Lignes sélectionnées dans Configuration du contrôleur : {selected}</translati
         <translation>« {name} » et « {other} » utilisent le même déclencheur de contrôleur {trigger}</translation>
     </message>
     <message>
+        <source>&quot;{name}&quot; would also fire in the middle of the trigger sequence of &quot;{other}&quot; ({trigger})</source>
+        <translation>« {name} » se déclencherait aussi au milieu de la suite de déclenchement de « {other} » ({trigger})</translation>
+    </message>
+    <message>
         <source>&quot;{name}&quot; sends its own trigger back to {port} and would loop</source>
         <translation>« {name} » renvoie son propre déclencheur vers {port} et tournerait en boucle</translation>
+    </message>
+    <message>
+        <source>{sequence} on {port}</source>
+        <translation>{sequence} sur {port}</translation>
+    </message>
+    <message>
+        <source>the gap between trigger presses must be a number of milliseconds</source>
+        <translation>l&apos;écart entre les appuis du déclencheur doit être un nombre de millisecondes</translation>
+    </message>
+    <message>
+        <source>the gap between trigger presses must be in [{low}, {high}] ms</source>
+        <translation>l&apos;écart entre les appuis du déclencheur doit être dans [{low}, {high}] ms</translation>
+    </message>
+    <message>
+        <source>a trigger sequence has at most {max} presses</source>
+        <translation>une suite de déclenchement compte au plus {max} appuis</translation>
     </message>
     <message>
         <source>Note {data1}, ch {channel}</source>
