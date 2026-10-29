@@ -157,3 +157,83 @@ def test_main_window_shows_an_installed_library_profile_at_once(tmp_path, monkey
         dialog.close()
     finally:
         window.close()
+
+
+# --- suggestion for connected controllers, uninstall -------------------------
+
+
+def _library(tmp_path, *devices):
+    write_library(build_rekordbox_profiles([_csv(device) for device in devices], skip_names=["DDJ-XP2"]), tmp_path)
+    return list_library_profiles(tmp_path)
+
+
+def test_connected_profiles_match_whole_names_and_skip_covered_ports(tmp_path):
+    from djmidi.catalog.library import connected_library_profiles
+
+    profiles = _library(tmp_path, "PIONEER DDJ-SB", "DDJ-SB2", "DDJ-TEST MIDI")
+    ports = ["PIONEER DDJ-SB2", "DDJ-TEST MIDI 1", "PIONEER DDJ-XP2", "IAC Driver Bus 1"]
+    found = connected_library_profiles(ports, profiles)
+    assert [(profile.name, port) for profile, port in found] == [
+        ("DDJ-SB2", "PIONEER DDJ-SB2"),  # not DDJ-SB: "DDJ-SB" isn't a whole word of "DDJ-SB2"
+        ("DDJ-TEST", "DDJ-TEST MIDI 1"),
+    ]
+    install_library_profile(found[1][0], tmp_path / "Controllers")
+    assert [profile.name for profile, _port in connected_library_profiles(ports, list_library_profiles(tmp_path))] == [
+        "DDJ-SB2"
+    ]
+
+
+def test_uninstall_removes_the_file_and_the_controller(tmp_path):
+    from djmidi.catalog.profile import uninstall_user_profile
+
+    profile = _library(tmp_path / "library", "DDJ-TEST")[0]
+    install_library_profile(profile, tmp_path / "Controllers")
+    assert uninstall_user_profile("DDJ-TEST", tmp_path / "Controllers") == [tmp_path / "Controllers" / "ddj-test.json"]
+    assert "DDJ-TEST" not in catalog.CONTROLLER_NAMES and not profile.is_installed
+    with pytest.raises(ValueError, match="built-in"):
+        uninstall_user_profile("DDJ-XP2", tmp_path / "Controllers")
+
+
+def test_dialog_uninstalls_installed_profiles(tmp_path):
+    from djmidi.gui.profile_library_dialog import ProfileLibraryDialog
+
+    profiles = _library(tmp_path / "library", "DDJ-TEST")
+    dialog = ProfileLibraryDialog(profiles, tmp_path / "Controllers")
+    dialog.select_profile("DDJ-TEST")
+    assert not dialog.uninstall_button.isEnabled()
+    dialog.install_selected()
+    dialog.select_profile("DDJ-TEST")
+    assert dialog.uninstall_button.isEnabled()
+    removed = []
+    dialog.uninstalled.connect(removed.append)
+    assert dialog.uninstall_selected() == ["DDJ-TEST"] == removed
+    assert dialog.table.item(0, 3).text() == "" and dialog.status.text() == "Uninstalled: DDJ-TEST"
+
+
+def test_main_window_offers_connected_library_profiles_once(tmp_path, monkeypatch):
+    from djmidi.gui import main_window as main_window_module
+    from djmidi.gui.main_window import MainWindow
+
+    _library(tmp_path, "DDJ-TEST", "DDJ-OTHER")
+    monkeypatch.setattr(main_window_module, "list_library_profiles", lambda: list_library_profiles(tmp_path))
+    window = MainWindow()
+    try:
+        questions = []
+        ports = ["DDJ-TEST", "DDJ-OTHER 2"]
+        declined = window._suggest_library_profiles(ports, ask=lambda text: questions.append(text) or False)
+        assert declined == [] and "DDJ-TEST (DDJ-TEST)" in questions[0] and "DDJ-OTHER" in questions[0]
+        assert window._suggest_library_profiles(ports, ask=lambda text: True) == []  # "No" is remembered
+        window._session_dismissed_profiles = set()
+        assert window._suggest_library_profiles(ports, ask=lambda text: True) == ["DDJ-TEST", "DDJ-OTHER"]
+        tabs = window.layout_view._controller_tabs
+        assert "DDJ-OTHER" in [tabs.tabText(index) for index in range(tabs.count())]
+        assert window._suggest_library_profiles(ports, ask=lambda text: True) == []  # installed now
+
+        dialog = window.open_profile_library()
+        dialog.select_profile("DDJ-OTHER")
+        dialog.uninstall_selected()
+        assert "DDJ-OTHER" not in [tabs.tabText(index) for index in range(tabs.count())]
+        assert window.statusBar().currentMessage() == "'DDJ-OTHER' uninstalled."
+        dialog.close()
+    finally:
+        window.close()

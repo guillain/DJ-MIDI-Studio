@@ -88,8 +88,10 @@ PROFILE_LIBRARY: HelpEntry = (
         "grouped as rekordbox names them. Knobs, faders and jogs aren't included.<br><br>"
         "Select one or more and click <b>Install</b> (or double-click one): the profile is saved in "
         "your Controllers folder, shows up in every controller list right away, and loads at every "
-        "launch. These profiles come from rekordbox's default mappings, not from the vendor's MIDI "
-        "documentation, and have no picture; check the controls you rely on with the Live Monitor.",
+        "launch; <b>Uninstall</b> removes it again. When a controller with a library profile is "
+        "plugged in at launch, the app offers to install it (once). These profiles come from "
+        "rekordbox's default mappings, not from the vendor's MIDI documentation, and have no picture; "
+        "check the controls you rely on with the Live Monitor.",
     ),
     "controller-setup.md",
 )

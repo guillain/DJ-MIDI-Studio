@@ -4,7 +4,8 @@ controller profiles (``djmidi.catalog.library``) and install them.
 Thin by design: listing and installing live in the Qt-free library module;
 the dialog filters the list, shows what is already installed, and emits
 :attr:`ProfileLibraryDialog.installed` with each newly installed name so the
-main window refreshes its controller lists.
+main window refreshes its controller lists (and :attr:`uninstalled` for
+each one removed).
 """
 
 from __future__ import annotations
@@ -28,6 +29,7 @@ from PySide6.QtWidgets import (
 )
 
 from djmidi.catalog.library import LibraryProfile, install_library_profile
+from djmidi.catalog.profile import uninstall_user_profile
 from djmidi.gui.help_button import help_button
 from djmidi.gui.help_texts import PROFILE_LIBRARY
 from djmidi.gui.window_size import (
@@ -47,6 +49,7 @@ _COLUMNS = (
 
 class ProfileLibraryDialog(QDialog):
     installed = Signal(str)
+    uninstalled = Signal(str)
 
     def __init__(
         self,
@@ -54,12 +57,14 @@ class ProfileLibraryDialog(QDialog):
         controllers_dir: str | Path,
         parent=None,
         install: Callable[[LibraryProfile, str | Path], object] = install_library_profile,
+        uninstall: Callable[[str, str | Path], object] = uninstall_user_profile,
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle(self.tr("Controller Profile Library"))
         self._profiles = list(profiles)
         self._controllers_dir = controllers_dir
         self._install = install
+        self._uninstall = uninstall
 
         intro = QLabel(
             self.tr(
@@ -90,6 +95,9 @@ class ProfileLibraryDialog(QDialog):
 
         self.install_button = QPushButton(self.tr("Install"))
         self.install_button.clicked.connect(self.install_selected)
+        self.uninstall_button = QPushButton(self.tr("Uninstall"))
+        self.uninstall_button.setToolTip(self.tr("Remove the selected installed profiles from your Controllers folder"))
+        self.uninstall_button.clicked.connect(self.uninstall_selected)
         self.status = QLabel("")
         self.status.setWordWrap(True)
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
@@ -97,6 +105,7 @@ class ProfileLibraryDialog(QDialog):
         bottom = QHBoxLayout()
         bottom.addWidget(help_button(self, *PROFILE_LIBRARY))
         bottom.addWidget(self.install_button)
+        bottom.addWidget(self.uninstall_button)
         bottom.addWidget(self.status, 1)
         bottom.addWidget(buttons)
 
@@ -145,7 +154,9 @@ class ProfileLibraryDialog(QDialog):
         return [self._profiles[row] for row in rows if not self.table.isRowHidden(row)]
 
     def _update_buttons(self) -> None:
-        self.install_button.setEnabled(any(not p.is_built_in for p in self._selected_profiles()))
+        selected = self._selected_profiles()
+        self.install_button.setEnabled(any(not p.is_built_in for p in selected))
+        self.uninstall_button.setEnabled(any(p.is_installed for p in selected))
 
     def select_profile(self, name: str) -> None:
         for row, profile in enumerate(self._profiles):
@@ -172,4 +183,25 @@ class ProfileLibraryDialog(QDialog):
             self.status.setText(errors[0])
         elif done:
             self.status.setText(self.tr("Installed: {names}").format(names=", ".join(done)))
+        return done
+
+    def uninstall_selected(self) -> list[str]:
+        """Uninstalls the selected installed profiles; returns their names."""
+        done: list[str] = []
+        errors: list[str] = []
+        for profile in self._selected_profiles():
+            if not profile.is_installed:
+                continue
+            try:
+                self._uninstall(profile.name, self._controllers_dir)
+            except (OSError, ValueError) as exc:
+                errors.append(f"{profile.name}: {exc}")
+                continue
+            done.append(profile.name)
+            self.uninstalled.emit(profile.name)
+        self._fill()
+        if errors:
+            self.status.setText(errors[0])
+        elif done:
+            self.status.setText(self.tr("Uninstalled: {names}").format(names=", ".join(done)))
         return done

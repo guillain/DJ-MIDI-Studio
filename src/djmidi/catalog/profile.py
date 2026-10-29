@@ -154,6 +154,30 @@ def load_user_profiles(directory: str | Path) -> tuple[list[str], dict[str, str]
     return loaded, errors
 
 
+def uninstall_user_profile(name: str, directory: str | Path) -> list[Path]:
+    """Removes an installed profile: unregisters it and deletes every
+    profile file in `directory` holding that name (a picture it came with
+    is left alone). Returns the files deleted. Raises ``ValueError`` for a
+    built-in controller, which has no file to remove."""
+    from djmidi.catalog._registry import _REGISTRY
+
+    existing = _REGISTRY.get(name)
+    if existing is not None and not (existing.plugin_id or "").startswith(USER_PLUGIN_PREFIX):
+        raise ValueError(f"'{name}' is a built-in controller")
+    removed: list[Path] = []
+    folder = Path(directory)
+    for path in sorted(folder.glob("*.json")) if folder.is_dir() else []:
+        try:
+            if json.loads(path.read_text(encoding="utf-8"))["manifest"]["name"] != name:
+                continue
+        except (OSError, ValueError, KeyError, TypeError):
+            continue
+        path.unlink()
+        removed.append(path)
+    _REGISTRY.pop(name, None)
+    return removed
+
+
 def _slug(name: str) -> str:
     return "".join(char if char.isalnum() else "-" for char in name.lower()).strip("-") or "controller"
 
@@ -164,4 +188,5 @@ __all__ = [
     "load_user_profiles",
     "profile_document",
     "save_controller_profile",
+    "uninstall_user_profile",
 ]
