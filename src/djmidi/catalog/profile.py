@@ -45,9 +45,43 @@ def load_controller_profile(path: str | Path, *, replace: bool = False) -> Contr
         display_order=int(controller.get("display_order", 100)),
         static_entries=entries,
         section_order=tuple(dict.fromkeys(entry.section for entry in entries)),
+        marker_geometry=_geometry_from_mapping(controller.get("geometry", {})),
     )
     register(definition, replace=replace)
     return definition
+
+
+SHAPES = ("rect", "circle")
+
+
+def _geometry_from_mapping(raw: object) -> tuple[tuple[str, float, float, float, float, str, str], ...]:
+    """A profile's ``"geometry"``: ``{label: {x, y, w, h, shape, color}}``,
+    x/y/w/h fractions of the reference image in [0, 1]."""
+    if not isinstance(raw, dict):
+        raise TypeError("Profile 'geometry' must be an object")
+    markers = []
+    for label, box in raw.items():
+        if not isinstance(label, str) or not label.strip() or not isinstance(box, dict):
+            raise ValueError("Each profile 'geometry' entry must be a label and an object")
+        try:
+            x, y, w, h = (float(box[key]) for key in ("x", "y", "w", "h"))
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ValueError(f"Geometry of {label!r} needs numeric x, y, w, h") from exc
+        if not (0 <= x <= 1 and 0 <= y <= 1 and 0 < w <= 1 and 0 < h <= 1):
+            raise ValueError(f"Geometry of {label!r} must be fractions of the image")
+        shape = str(box.get("shape", "rect"))
+        if shape not in SHAPES:
+            raise ValueError(f"Geometry shape must be one of {SHAPES}")
+        markers.append((label.strip(), x, y, w, h, shape, str(box.get("color", "#4a90d9"))))
+    return tuple(markers)
+
+
+def geometry_mapping(markers) -> dict[str, dict[str, object]]:
+    """The JSON ``"geometry"`` object for ``ControllerDefinition.marker_geometry``."""
+    return {
+        label: {"x": round(x, 4), "y": round(y, 4), "w": round(w, 4), "h": round(h, 4), "shape": shape, "color": color}
+        for label, x, y, w, h, shape, color in markers
+    }
 
 
 def _entry_from_mapping(controller: str, raw: object) -> ControlInfo:
@@ -106,6 +140,8 @@ def profile_document(definition: ControllerDefinition, *, vendor: str = "User", 
         controller["port_names"] = list(definition.port_names)
     if definition.reference_image:
         controller["reference_image"] = definition.reference_image
+    if definition.marker_geometry:
+        controller["geometry"] = geometry_mapping(definition.marker_geometry)
     return {
         "manifest": {
             "schema_version": 1,
@@ -154,6 +190,36 @@ def load_user_profiles(directory: str | Path) -> tuple[list[str], dict[str, str]
     return loaded, errors
 
 
+def find_user_profile_file(name: str, directory: str | Path) -> Path | None:
+    """The installed profile file holding `name`, or None."""
+    folder = Path(directory)
+    for path in sorted(folder.glob("*.json")) if folder.is_dir() else []:
+        try:
+            if json.loads(path.read_text(encoding="utf-8"))["manifest"]["name"] == name:
+                return path
+        except (OSError, ValueError, KeyError, TypeError):
+            continue
+    return None
+
+
+def save_profile_layout(path: str | Path, reference_image: str | None, markers) -> ControllerDefinition:
+    """Writes a picture and its marker positions into an installed profile
+    file, keeping everything else in it as is, then re-registers it."""
+    target = Path(path)
+    raw = json.loads(target.read_text(encoding="utf-8"))
+    controller = raw["controller"]
+    if reference_image:
+        controller["reference_image"] = reference_image
+    else:
+        controller.pop("reference_image", None)
+    if markers:
+        controller["geometry"] = geometry_mapping(markers)
+    else:
+        controller.pop("geometry", None)
+    target.write_text(json.dumps(raw, indent=2) + "\n", encoding="utf-8")
+    return load_controller_profile(target, replace=True)
+
+
 def uninstall_user_profile(name: str, directory: str | Path) -> list[Path]:
     """Removes an installed profile: unregisters it and deletes every
     profile file in `directory` holding that name (a picture it came with
@@ -183,10 +249,14 @@ def _slug(name: str) -> str:
 
 
 __all__ = [
+    "SHAPES",
     "USER_PLUGIN_PREFIX",
+    "find_user_profile_file",
+    "geometry_mapping",
     "load_controller_profile",
     "load_user_profiles",
     "profile_document",
     "save_controller_profile",
+    "save_profile_layout",
     "uninstall_user_profile",
 ]

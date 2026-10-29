@@ -180,6 +180,7 @@ import re
 from dataclasses import dataclass
 from typing import Literal
 
+from djmidi import catalog
 from djmidi.gui.layout import _PAD_NUM_RE, _base_name
 
 Shape = Literal["rect", "circle"]
@@ -1478,4 +1479,35 @@ def resolve_geometry_label(controller: str, hit_name: str) -> str | None:
     return None
 
 
-__all__ = ["CONTROL_GEOMETRY", "ControlGeometry", "Shape", "resolve_geometry_label"]
+# Controllers whose CONTROL_GEOMETRY entry came from a profile's own
+# "geometry" (placed by the user, issue #363), so it can be replaced or
+# dropped when that profile changes -- a built-in's entry is never touched.
+_PROFILE_GEOMETRY_NAMES: set[str] = set()
+
+
+def sync_profile_geometry() -> None:
+    """Mirrors every registered profile's ``marker_geometry`` (a JSON
+    profile's placed markers) into CONTROL_GEOMETRY, so the real-position
+    views, the emulator, live flashes and the cheat sheet use it exactly
+    like a built-in's measured geometry. Call after registering, editing or
+    uninstalling a profile."""
+    definitions = {definition.name: definition for definition in catalog.all_controller_definitions()}
+    for name in list(_PROFILE_GEOMETRY_NAMES):
+        definition = definitions.get(name)
+        if definition is None or not definition.marker_geometry:
+            CONTROL_GEOMETRY.pop(name, None)
+            _PROFILE_GEOMETRY_NAMES.discard(name)
+    for name, definition in definitions.items():
+        if not definition.marker_geometry:
+            continue
+        if name in CONTROL_GEOMETRY and name not in _PROFILE_GEOMETRY_NAMES:
+            continue  # a built-in's measured geometry wins
+        CONTROL_GEOMETRY[name] = {
+            label: ControlGeometry(x, y, w, h, shape if shape in ("rect", "circle") else "rect", color)  # type: ignore[arg-type]
+            for label, x, y, w, h, shape, color in definition.marker_geometry
+        }
+        _PROFILE_GEOMETRY_NAMES.add(name)
+    _REVERSE_INDEX_CACHE.clear()
+
+
+__all__ = ["CONTROL_GEOMETRY", "ControlGeometry", "Shape", "resolve_geometry_label", "sync_profile_geometry"]

@@ -100,11 +100,19 @@ def _restore_controller_registry():
     """The controller registry is process-global too: a profile a test
     installs (Controller Setup, the profile library) must not leak."""
     from djmidi.catalog._registry import _REGISTRY
+    from djmidi.gui import geometry
 
     snapshot = dict(_REGISTRY)
+    geometry_snapshot = dict(geometry.CONTROL_GEOMETRY)
+    profile_names = set(geometry._PROFILE_GEOMETRY_NAMES)
     yield
     _REGISTRY.clear()
     _REGISTRY.update(snapshot)
+    geometry.CONTROL_GEOMETRY.clear()
+    geometry.CONTROL_GEOMETRY.update(geometry_snapshot)
+    geometry._PROFILE_GEOMETRY_NAMES.clear()
+    geometry._PROFILE_GEOMETRY_NAMES.update(profile_names)
+    geometry._REVERSE_INDEX_CACHE.clear()
 
 
 GEOMETRY_FREE_CONTROLLER = "Geometry-free DDJ-800 copy"

@@ -79,6 +79,24 @@ MIDI_MACROS: HelpEntry = (
     "midi-macros.md",
 )
 
+GEOMETRY_EDITOR: HelpEntry = (
+    QT_TRANSLATE_NOOP("HelpTexts", "Place controls"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
+        "Gives a profile without a built-in layout (one from the profile library or made in Controller "
+        "Setup) its controller picture and the position of each control on it.<ul>"
+        "<li><b>Choose picture…</b>: a flat, top-down photo or drawing of the controller works best.</li>"
+        "<li>Pick a control in the list, then drag a box over it on the picture, or click it for a "
+        "standard-size box; the next control to place is selected for you. <b>Shape</b> switches "
+        "between a rectangle and a circle, <b>Remove box</b> clears the selected one.</li></ul>"
+        "<b>Save</b> stores the picture and the boxes in the profile: the controller's real layout then "
+        "shows in Controller Images, By Channel/Deck/Controller, the Controller Emulator, live MIDI "
+        "highlights and the printable cheat sheet. Controls you don't place keep working, just without "
+        "a marker.",
+    ),
+    "controller-images.md",
+)
+
 PROFILE_LIBRARY: HelpEntry = (
     QT_TRANSLATE_NOOP("HelpTexts", "Controller Profile Library"),
     QT_TRANSLATE_NOOP(

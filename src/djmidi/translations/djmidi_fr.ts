@@ -573,6 +573,14 @@ Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-m
         <translation>Ouvrir la documentation</translation>
     </message>
     <message>
+        <source>Place controls…</source>
+        <translation>Placer les commandes…</translation>
+    </message>
+    <message>
+        <source>Choose this controller&apos;s picture and place its controls on it</source>
+        <translation>Choisir l&apos;image de ce contrôleur et y placer ses commandes</translation>
+    </message>
+    <message>
         <source>No local controller document bundled</source>
         <translation>Aucun document local fourni pour ce contrôleur</translation>
     </message>
@@ -1723,6 +1731,53 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     </message>
 </context>
 <context>
+    <name>GeometryEditorDialog</name>
+    <message>
+        <source>Place controls — {name}</source>
+        <translation>Placer les commandes — {name}</translation>
+    </message>
+    <message>
+        <source>Pick a control in the list, then drag a box over it on the picture (or click it for a standard-size box). The next control is selected for you. Save stores the picture and the boxes in the profile.</source>
+        <translation>Choisissez une commande dans la liste, puis tracez un cadre dessus sur l&apos;image (ou cliquez dessus pour un cadre de taille standard). La commande suivante est sélectionnée pour vous. Enregistrer range l&apos;image et les cadres dans le profil.</translation>
+    </message>
+    <message>
+        <source>Rectangle</source>
+        <translation>Rectangle</translation>
+    </message>
+    <message>
+        <source>Circle</source>
+        <translation>Cercle</translation>
+    </message>
+    <message>
+        <source>Remove box</source>
+        <translation>Retirer le cadre</translation>
+    </message>
+    <message>
+        <source>Shape</source>
+        <translation>Forme</translation>
+    </message>
+    <message>
+        <source>Choose picture…</source>
+        <translation>Choisir une image…</translation>
+    </message>
+    <message>
+        <source>{placed} of {total} controls placed.</source>
+        <translation>{placed} commande(s) placée(s) sur {total}.</translation>
+    </message>
+    <message>
+        <source>No picture yet: choose one first.</source>
+        <translation>Pas encore d&apos;image : choisissez-en une d&apos;abord.</translation>
+    </message>
+    <message>
+        <source>Controller picture</source>
+        <translation>Image du contrôleur</translation>
+    </message>
+    <message>
+        <source>Images (*.png *.jpg *.jpeg *.webp)</source>
+        <translation>Images (*.png *.jpg *.jpeg *.webp)</translation>
+    </message>
+</context>
+<context>
     <name>HealthReportDialog</name>
     <message>
         <source>Issue</source>
@@ -1871,6 +1926,14 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     <message>
         <source>A macro is a named list of MIDI messages played in one go from the &lt;b&gt;Macros&lt;/b&gt; menu or its keyboard shortcut, from any tab.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Output port&lt;/b&gt;: where the messages go -- a port, or a controller name matched against the connected ports like &lt;b&gt;⟳ Sync&lt;/b&gt; does.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Steps&lt;/b&gt;: type, channel (1–16), data 1/2 (0–127) and an optional delay (ms) waited before the step is sent; &lt;b&gt;Add sync set…&lt;/b&gt; appends a recorded sync set&apos;s messages; &lt;b&gt;Learn steps&lt;/b&gt; records the messages you play on your controller, with their delays.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Shortcut&lt;/b&gt;: optional; one the app&apos;s menus already use is refused.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Trigger&lt;/b&gt;: &lt;b&gt;Learn&lt;/b&gt;, then press a button on your controller, or several in a row: those presses, in that order and each within the &lt;b&gt;Max gap&lt;/b&gt; of the previous one, play the macro from then on (the Live Monitor must be listening).&lt;/li&gt;&lt;/ul&gt;&lt;b&gt;Test&lt;/b&gt; plays the macro as edited. Each macro is a file in &lt;tt&gt;Documents/DJ MIDI Studio/Macros&lt;/tt&gt;.</source>
         <translation>Une macro est une liste nommée de messages MIDI, jouée d&apos;un coup depuis le menu &lt;b&gt;Macros&lt;/b&gt; ou son raccourci clavier, depuis n&apos;importe quel onglet.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Port de sortie&lt;/b&gt; : où partent les messages -- un port, ou un nom de contrôleur comparé aux ports branchés comme le fait &lt;b&gt;⟳ Synchro&lt;/b&gt;.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Ajouter une étape&lt;/b&gt; : type, canal (1–16), data 1/2 (0–127) et un délai facultatif (ms) attendu avant l&apos;envoi de l&apos;étape ; &lt;b&gt;Ajouter un jeu de synchronisation…&lt;/b&gt; ajoute les messages d&apos;un jeu de synchronisation enregistré ; &lt;b&gt;Apprendre les étapes&lt;/b&gt; enregistre les messages que vous jouez sur votre contrôleur, avec leurs délais.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Raccourci&lt;/b&gt; : facultatif ; un raccourci déjà pris par les menus de l&apos;application est refusé.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Déclencheur&lt;/b&gt; : &lt;b&gt;Apprendre&lt;/b&gt;, puis appuyez sur un bouton de votre contrôleur, ou sur plusieurs à la suite : ces appuis, dans cet ordre et chacun dans l&apos;&lt;b&gt;Écart max&lt;/b&gt; du précédent, jouent désormais la macro (le Live Monitor doit être à l&apos;écoute).&lt;/li&gt;&lt;/ul&gt;&lt;b&gt;Tester&lt;/b&gt; joue la macro telle qu&apos;elle est modifiée. Chaque macro est un fichier dans &lt;tt&gt;Documents/DJ MIDI Studio/Macros&lt;/tt&gt;.</translation>
+    </message>
+    <message>
+        <source>Place controls</source>
+        <translation>Placer les commandes</translation>
+    </message>
+    <message>
+        <source>Gives a profile without a built-in layout (one from the profile library or made in Controller Setup) its controller picture and the position of each control on it.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Choose picture…&lt;/b&gt;: a flat, top-down photo or drawing of the controller works best.&lt;/li&gt;&lt;li&gt;Pick a control in the list, then drag a box over it on the picture, or click it for a standard-size box; the next control to place is selected for you. &lt;b&gt;Shape&lt;/b&gt; switches between a rectangle and a circle, &lt;b&gt;Remove box&lt;/b&gt; clears the selected one.&lt;/li&gt;&lt;/ul&gt;&lt;b&gt;Save&lt;/b&gt; stores the picture and the boxes in the profile: the controller&apos;s real layout then shows in Controller Images, By Channel/Deck/Controller, the Controller Emulator, live MIDI highlights and the printable cheat sheet. Controls you don&apos;t place keep working, just without a marker.</source>
+        <translation>Donne à un profil sans disposition intégrée (issu de la bibliothèque de profils ou créé dans Config. contrôleur) l&apos;image de son contrôleur et la position de chaque commande dessus.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Choisir une image…&lt;/b&gt; : une photo ou un dessin à plat, vu de dessus, donne le meilleur résultat.&lt;/li&gt;&lt;li&gt;Choisissez une commande dans la liste, puis tracez un cadre dessus sur l&apos;image, ou cliquez dessus pour un cadre de taille standard ; la commande suivante à placer est sélectionnée pour vous. &lt;b&gt;Forme&lt;/b&gt; passe du rectangle au cercle, &lt;b&gt;Retirer le cadre&lt;/b&gt; efface celui de la commande sélectionnée.&lt;/li&gt;&lt;/ul&gt;&lt;b&gt;Enregistrer&lt;/b&gt; range l&apos;image et les cadres dans le profil : la vraie disposition du contrôleur apparaît alors dans Images contrôleur, Par canal/platine/contrôleur, l&apos;émulateur de contrôleur, les surlignages MIDI en direct et l&apos;antisèche imprimable. Les commandes non placées continuent de fonctionner, simplement sans repère.</translation>
     </message>
     <message>
         <source>Controller Profile Library</source>
@@ -3228,6 +3291,10 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
         <translation>Installer le profil</translation>
     </message>
     <message>
+        <source>Place Controls on a Picture...</source>
+        <translation>Placer les commandes sur une image...</translation>
+    </message>
+    <message>
         <source>Install from Library...</source>
         <translation>Installer depuis la bibliothèque...</translation>
     </message>
@@ -3554,6 +3621,26 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
     <message>
         <source>Supported mapping files (*.xml *.nml *.tsi *.csv);;All files (*)</source>
         <translation>Fichiers de mapping pris en charge (*.xml *.nml *.tsi *.csv);;Tous les fichiers (*)</translation>
+    </message>
+    <message>
+        <source>Place controls</source>
+        <translation>Placer les commandes</translation>
+    </message>
+    <message>
+        <source>Only an installed profile can get a picture and a layout: install one from File → Controller Profile → Install from Library…, or make one in Controller Setup.</source>
+        <translation>Seul un profil installé peut recevoir une image et une disposition : installez-en un via Fichier → Profil de contrôleur → Installer depuis la bibliothèque…, ou créez-en un dans Config. contrôleur.</translation>
+    </message>
+    <message>
+        <source>Profile:</source>
+        <translation>Profil :</translation>
+    </message>
+    <message>
+        <source>No installed profile file found for &apos;{name}&apos;.</source>
+        <translation>Aucun fichier de profil installé trouvé pour « {name} ».</translation>
+    </message>
+    <message>
+        <source>Layout of &apos;{name}&apos; saved.</source>
+        <translation>Disposition de « {name} » enregistrée.</translation>
     </message>
     <message>
         <source>&apos;{name}&apos; installed from the profile library.</source>
