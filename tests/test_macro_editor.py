@@ -376,23 +376,26 @@ def test_dialog_learns_a_trigger_from_the_next_press():
     assert dialog.trigger_label.text() == "None" and not dialog.clear_trigger_button.isEnabled()
     assert not dialog.feed_learn_event(_press())  # not learning: ignored
     dialog.learn_button.click()
-    assert dialog.is_learning and dialog.learn_button.text() == "Cancel"
+    assert dialog.is_learning and dialog.learn_button.text() == "Stop"
     assert not dialog.feed_learn_event(_press(data2="0"))  # a release doesn't count
     assert dialog.feed_learn_event(_press())
+    assert dialog.is_learning  # waits for a next press, up to the max gap
+    dialog._learn_timer.timeout.emit()  # the pause after the last press ends it
     assert not dialog.is_learning
     assert dialog.trigger_label.text() == "Note 40, ch 1 on DDJ-XP2"
+    assert dialog.status.text() == "Learned Note 40, ch 1 on DDJ-XP2."
     dialog.accept()
-    assert dialog.edited_macros()[0].trigger == MacroTrigger("Note On", 1, 40, "DDJ-XP2")
+    assert dialog.edited_macros()[0].triggers == (MacroTrigger("Note On", 1, 40, "DDJ-XP2"),)
 
 
 def test_dialog_learn_reports_no_input_cancels_and_clears():
     trigger = MacroTrigger("Note On", 1, 40, "DDJ-XP2")
-    dialog = MacroManagerDialog([MidiMacro("A", PORT, (), "", trigger)], [PORT], ensure_listening=lambda: False)
+    dialog = MacroManagerDialog([MidiMacro("A", PORT, (), "", (trigger,))], [PORT], ensure_listening=lambda: False)
     assert not dialog.start_learn()
     assert "No MIDI input" in dialog.status.text()
     dialog.clear_trigger_button.click()
     dialog.accept()
-    assert dialog.edited_macros()[0].trigger is None
+    assert dialog.edited_macros()[0].triggers == ()
 
     unavailable = MacroManagerDialog([_macro("A")], [PORT])
     assert not unavailable.learn_button.isEnabled()
@@ -407,7 +410,7 @@ def test_dialog_learn_reports_no_input_cancels_and_clears():
 
 
 def test_controller_press_plays_its_macro_unless_the_editor_is_open(tmp_path, monkeypatch):
-    bound = MidiMacro("Bound", PORT, (MacroStep(PRESS),), trigger=MacroTrigger("Note On", 1, 40, "DDJ-XP2"))
+    bound = MidiMacro("Bound", PORT, (MacroStep(PRESS),), triggers=(MacroTrigger("Note On", 1, 40, "DDJ-XP2"),))
     midi_macros.save_macros(user_paths.macros_dir(), [bound])
     window = _window(tmp_path)
     output = _FakeOutput()
@@ -453,3 +456,73 @@ def test_closing_the_main_window_stops_waiting_macros(tmp_path, monkeypatch):
     assert output.closed == 0 and window._macro_player.running == 1
     window.close()
     assert output.closed == 1 and window._macro_player.running == 0
+
+
+# --- trigger sequences and step Learn ----------------------------------------
+
+
+def _timed(data1, seconds, data2="127", event_type="Note On", direction="in"):
+    return MidiEvent(direction, "1", event_type, str(data1), data2, seconds, "DDJ-XP2")
+
+
+def test_dialog_learns_a_sequence_of_presses_and_its_gap():
+    dialog = MacroManagerDialog([_macro("A")], [PORT], ensure_listening=lambda: True)
+    dialog.gap_spin.setValue(800)
+    assert dialog.start_learn()
+    for note in (40, 41, 42):
+        assert dialog.feed_learn_event(_timed(note, 0.0))
+        assert dialog._learn_timer.interval() == 800  # waits one gap for the next press
+    dialog.learn_button.click()  # Stop keeps what was pressed
+    assert not dialog.is_learning
+    assert dialog.trigger_label.text() == "Note 40, ch 1 → Note 41, ch 1 → Note 42, ch 1 on DDJ-XP2"
+    dialog.accept()
+    macro = dialog.edited_macros()[0]
+    assert [trigger.data1 for trigger in macro.triggers] == [40, 41, 42]
+    assert macro.trigger_gap_ms == 800
+
+    relearn = MacroManagerDialog([macro], [PORT], ensure_listening=lambda: True)
+    assert relearn.gap_spin.value() == 800
+    relearn.start_learn()
+    relearn.feed_learn_event(_timed(50, 0.0))  # a new Learn starts a new sequence
+    relearn._learn_timer.timeout.emit()
+    relearn.accept()
+    assert [trigger.data1 for trigger in relearn.edited_macros()[0].triggers] == [50]
+
+
+def test_dialog_learn_steps_appends_messages_with_their_delays():
+    dialog = MacroManagerDialog([_macro("A")], [PORT], ensure_listening=lambda: True)
+    before = dialog.table.rowCount()
+    dialog.learn_steps_button.click()
+    assert dialog.is_learning and dialog.learn_steps_button.text() == "Stop"
+    assert not dialog.feed_learn_event(_timed(40, 1.0, direction="out"))  # LED feedback ignored
+    assert dialog.feed_learn_event(_timed(40, 1.0))
+    assert dialog.feed_learn_event(_timed(40, 1.25, data2="0"))
+    assert dialog.feed_learn_event(_timed(7, 1.75, "64", "Control Change"))
+    dialog.learn_steps_button.click()
+    assert not dialog.is_learning and dialog.status.text() == "Learned 3 step(s)."
+    rows = dialog._rows()[before:]
+    assert rows == [
+        ("Note On", "1", "40", "127", "0"),
+        ("Note Off", "1", "40", "0", "250"),
+        ("Control Change", "1", "7", "64", "500"),
+    ]
+    # Starting one Learn stops the other.
+    dialog.start_learn()
+    dialog.start_step_learn()
+    assert dialog.learn_button.text() == "Learn" and dialog.learn_steps_button.text() == "Stop"
+
+
+def test_controller_sequence_plays_its_macro_after_the_last_press(tmp_path, monkeypatch):
+    triggers = tuple(MacroTrigger("Note On", 1, note, "DDJ-XP2") for note in (40, 41))
+    midi_macros.save_macros(user_paths.macros_dir(), [MidiMacro("Seq", PORT, (MacroStep(PRESS),), triggers=triggers)])
+    window = _window(tmp_path)
+    output = _FakeOutput()
+    monkeypatch.setattr(main_window_module, "list_output_ports", lambda: [PORT])
+    monkeypatch.setattr("djmidi.midi_io.open_midi_output", output)
+    try:
+        window._on_live_midi_event(_timed(40, 10.0))
+        assert output.sent == []
+        window._on_live_midi_event(_timed(41, 10.3))
+        assert len(output.sent) == 1
+    finally:
+        window.close()

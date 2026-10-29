@@ -345,6 +345,8 @@ class MainWindow(QMainWindow):
         # MIDI macros (issue #228): one file per macro in the Macros folder.
         self.macros: list[midi_macros.MidiMacro] = midi_macros.load_macros(user_paths.macros_dir())
         self._macro_player = MacroPlayer(parent=self)
+        # Remembers recent presses so a trigger sequence can complete.
+        self._macro_matcher = midi_macros.MacroTriggerMatcher()
         self._macro_player.finished.connect(self._on_macro_finished)
         # The open Manage Macros dialog, fed live events for its Learn button
         # (issue #252); macros don't fire from the controller while it's open.
@@ -3289,6 +3291,8 @@ class MainWindow(QMainWindow):
             accepted = dialog.exec() == QDialog.DialogCode.Accepted
         finally:
             self._macro_dialog = None
+            # Presses made while editing (Learn, tests) never start a sequence.
+            self._macro_matcher.reset()
         if not accepted:
             return False
         self.macros = list(dialog.edited_macros())
@@ -3305,8 +3309,9 @@ class MainWindow(QMainWindow):
         return self._macro_player.play(macro, list_output_ports())
 
     def _play_triggered_macros(self, event: MidiEvent) -> list[str]:
-        """Plays every macro bound to this controller press; returns their names."""
-        fired = midi_macros.macros_for_event(self.macros, event)
+        """Plays every macro this controller press fires -- a one-press
+        trigger, or the last press of a trigger sequence; returns their names."""
+        fired = self._macro_matcher.feed(self.macros, event)
         if fired:
             ports = list_output_ports()
             for macro in fired:
@@ -3316,7 +3321,7 @@ class MainWindow(QMainWindow):
     def _ensure_macro_triggers_listening(self) -> None:
         """A controller-triggered macro only fires while its input is open:
         start the Live Monitor when one exists, if the user lets it auto-start."""
-        if self.preferences.auto_start_live_monitor and any(macro.trigger for macro in self.macros):
+        if self.preferences.auto_start_live_monitor and any(macro.triggers for macro in self.macros):
             self.live_monitor_view.ensure_monitoring_started()
 
     def _on_macro_finished(self, result: midi_macros.MacroResult) -> None:

@@ -139,6 +139,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **MIDI macros: trigger sequences and step Learn** (`v0.48.146-macro-trigger-sequences`) — requested by the
+  maintainer: a macro's controller trigger can be a series of presses (each within a configurable *Max gap*, 1 s by
+  default) instead of one, and both the trigger and the steps are filled by Learn — every captured press is added
+  to the trigger, every captured Note On/Off/CC becomes a step with the delay actually waited. Old macro files load
+  unchanged (a one-press trigger keeps its JSON shape). A sequence that is part of another macro's is refused, since
+  it would fire in the middle of it. Software-verified (fake events with timestamps); not tried on a controller.
 - [x] **Controller Setup imports rekordbox mappings with names** (`v0.48.145-controller-setup-rekordbox-import`) —
   hardware-free follow-up to the rekordbox plugin. Serato/Traktor imports only seed raw triggers, but a rekordbox
   `.midi.csv` names every control and groups it under `# Title` rows, so `rekordbox.profile_rows` turns it into

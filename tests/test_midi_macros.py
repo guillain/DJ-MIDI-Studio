@@ -238,12 +238,13 @@ def test_trigger_learned_from_a_press_only():
 
 def test_trigger_round_trips_and_old_files_still_load():
     trigger = MacroTrigger("Note On", 1, 40, "DDJ-XP2")
-    macro = MidiMacro("Fx", "DDJ-XP2", (MacroStep(PRESS),), trigger=trigger)
+    macro = MidiMacro("Fx", "DDJ-XP2", (MacroStep(PRESS),), triggers=(trigger,))
     raw = json.loads(json.dumps(macro.to_dict()))
     assert raw["trigger"] == {"event_type": "Note On", "channel": 1, "data1": 40, "port": "DDJ-XP2"}
     assert MidiMacro.from_dict(raw) == macro
     assert "trigger" not in _macro().to_dict()
-    assert MidiMacro.from_dict({"name": "x", "trigger": None}).trigger is None
+    assert MidiMacro.from_dict({"name": "x", "trigger": None}).triggers == ()
+    assert "trigger_gap_ms" not in raw  # a single press keeps the old file shape
     with pytest.raises(ValueError):
         MacroTrigger.from_dict({"event_type": "Note Off", "channel": 1, "data1": 40})
     with pytest.raises(ValueError):
@@ -261,7 +262,7 @@ def test_trigger_matches_presses_on_its_port_only():
 
 
 def test_macros_for_event_and_store_keep_the_binding(tmp_path):
-    bound = MidiMacro("Bound", "P", (MacroStep(PRESS),), trigger=MacroTrigger("Control Change", 2, 7, "DDJ-XP2"))
+    bound = MidiMacro("Bound", "P", (MacroStep(PRESS),), triggers=(MacroTrigger("Control Change", 2, 7, "DDJ-XP2"),))
     unbound = _macro("Unbound")
     assert macros_for_event([bound, unbound], _event("Control Change", "2", "7", "0")) == [bound]
     assert macros_for_event([bound, unbound], _event()) == []
@@ -271,16 +272,105 @@ def test_macros_for_event_and_store_keep_the_binding(tmp_path):
 
 def test_validate_flags_shared_triggers_and_self_loops():
     trigger = MacroTrigger("Note On", 1, 40, "DDJ-XP2")
-    a = MidiMacro("A", "XDJ-XZ", (MacroStep(PRESS),), trigger=trigger)
-    b = MidiMacro("B", "XDJ-XZ", (MacroStep(PRESS),), trigger=MacroTrigger("Note On", 1, 40))
-    other_port = MidiMacro("C", "XDJ-XZ", (MacroStep(PRESS),), trigger=MacroTrigger("Note On", 1, 40, "XDJ-XZ"))
+    a = MidiMacro("A", "XDJ-XZ", (MacroStep(PRESS),), triggers=(trigger,))
+    b = MidiMacro("B", "XDJ-XZ", (MacroStep(PRESS),), triggers=(MacroTrigger("Note On", 1, 40),))
+    other_port = MidiMacro("C", "XDJ-XZ", (MacroStep(PRESS),), triggers=(MacroTrigger("Note On", 1, 40, "XDJ-XZ"),))
     assert validate_macros([a, other_port]) == []
     assert any("same controller trigger" in problem for problem in validate_macros([a, b]))
 
     echo = SyncMessage("Note On", 1, 40, 127)
-    looping = MidiMacro("Loop", "IAC Bus", (MacroStep(echo),), trigger=MacroTrigger("Note On", 1, 40, "IAC Bus"))
+    looping = MidiMacro("Loop", "IAC Bus", (MacroStep(echo),), triggers=(MacroTrigger("Note On", 1, 40, "IAC Bus"),))
     assert retriggers_itself(looping)
     assert any("would loop" in problem for problem in validate_macros([looping]))
-    released = MidiMacro("Rel", "IAC Bus", (MacroStep(SyncMessage("Note On", 1, 40, 0)),), trigger=looping.trigger)
+    released = MidiMacro("Rel", "IAC Bus", (MacroStep(SyncMessage("Note On", 1, 40, 0)),), triggers=looping.triggers)
     assert not retriggers_itself(released)
-    assert not retriggers_itself(MidiMacro("Out", "XDJ-XZ", (MacroStep(echo),), trigger=looping.trigger))
+    assert not retriggers_itself(MidiMacro("Out", "XDJ-XZ", (MacroStep(echo),), triggers=looping.triggers))
+
+
+# --- trigger sequences --------------------------------------------------------
+
+
+def _at(data1, seconds, event_type="Note On", data2="127", port="DDJ-XP2"):
+    return MidiEvent("in", "1", event_type, str(data1), data2, seconds, port)
+
+
+def _sequence(*notes, port="DDJ-XP2"):
+    return tuple(MacroTrigger("Note On", 1, note, port) for note in notes)
+
+
+def test_sequence_round_trips_as_a_list_with_its_gap():
+    macro = MidiMacro("Seq", "XDJ-XZ", (MacroStep(PRESS),), triggers=_sequence(40, 41, 42), trigger_gap_ms=700)
+    raw = json.loads(json.dumps(macro.to_dict()))
+    assert [item["data1"] for item in raw["trigger"]] == [40, 41, 42]
+    assert raw["trigger_gap_ms"] == 700
+    assert MidiMacro.from_dict(raw) == macro
+    assert macro.trigger_label() == "Note 40, ch 1 → Note 41, ch 1 → Note 42, ch 1 on DDJ-XP2"
+    mixed = (MacroTrigger("Note On", 1, 40, "A"), MacroTrigger("Control Change", 2, 7))
+    assert MidiMacro("M", triggers=mixed).trigger_label() == "Note 40, ch 1 on A → CC 7, ch 2"
+    with pytest.raises(ValueError):
+        MidiMacro.from_dict({**raw, "trigger_gap_ms": 50})
+    with pytest.raises(ValueError):
+        MidiMacro.from_dict({**raw, "trigger": raw["trigger"] * 6})  # 18 presses > 16
+
+
+def test_matcher_fires_a_sequence_only_once_it_is_complete():
+    from djmidi.midi_macros import MacroTriggerMatcher
+
+    seq = MidiMacro("Seq", "P", (MacroStep(PRESS),), triggers=_sequence(40, 41, 42))
+    single = MidiMacro("One", "P", (MacroStep(PRESS),), triggers=_sequence(50))
+    matcher = MacroTriggerMatcher()
+    assert matcher.feed([seq, single], _at(40, 0.0)) == []
+    assert matcher.feed([seq, single], _at(40, 0.1, data2="0")) == []  # releases don't count
+    assert matcher.feed([seq, single], _at(41, 0.5)) == []
+    assert matcher.feed([seq, single], _at(42, 1.2)) == [seq]
+    assert matcher.feed([seq, single], _at(42, 1.3)) == []  # history cleared after firing
+    assert matcher.feed([seq, single], _at(50, 1.4)) == [single]
+
+
+def test_matcher_breaks_a_sequence_on_a_slow_or_wrong_press_but_ignores_cc_noise():
+    from djmidi.midi_macros import MacroTriggerMatcher
+
+    seq = MidiMacro("Seq", "P", (MacroStep(PRESS),), triggers=_sequence(40, 41), trigger_gap_ms=500)
+    matcher = MacroTriggerMatcher()
+    matcher.feed([seq], _at(40, 0.0))
+    assert matcher.feed([seq], _at(41, 0.6)) == []  # 600 ms > 500 ms
+    matcher.feed([seq], _at(40, 1.0))
+    matcher.feed([seq], _at(60, 1.1))  # another note in between
+    assert matcher.feed([seq], _at(41, 1.2)) == []
+    matcher.feed([seq], _at(40, 2.0))
+    matcher.feed([seq], _at(33, 2.1, "Control Change", "65"))  # a jog tick
+    assert matcher.feed([seq], _at(41, 2.2)) == [seq]
+    other_port = MacroTriggerMatcher()
+    other_port.feed([seq], _at(40, 0.0))
+    assert other_port.feed([seq], _at(41, 0.1, port="XDJ-XZ")) == []
+    # The one-press helper never completes a sequence.
+    assert macros_for_event([seq], _at(41, 0.0)) == []
+
+
+def test_validate_refuses_a_sequence_inside_another():
+    whole = MidiMacro("Whole", "XDJ-XZ", (MacroStep(PRESS),), triggers=_sequence(40, 41, 42))
+    tail = MidiMacro("Tail", "XDJ-XZ", (MacroStep(PRESS),), triggers=_sequence(41, 42))
+    first = MidiMacro("First", "XDJ-XZ", (MacroStep(PRESS),), triggers=_sequence(40))
+    other = MidiMacro("Other", "XDJ-XZ", (MacroStep(PRESS),), triggers=_sequence(42, 41))
+    same = MidiMacro("Same", "XDJ-XZ", (MacroStep(PRESS),), triggers=_sequence(40, 41, 42))
+    assert validate_macros([whole, other]) == []
+    assert "in the middle of the trigger sequence" in validate_macros([whole, tail])[0]
+    assert "in the middle of the trigger sequence" in validate_macros([first, whole])[0]
+    assert "same controller trigger" in validate_macros([whole, same])[0]
+
+
+def test_a_sequence_loops_only_when_the_steps_replay_all_of_it():
+    seq = _sequence(40, 41, port="IAC Bus")
+    both = (MacroStep(SyncMessage("Note On", 1, 40, 127)), MacroStep(SyncMessage("Note On", 1, 41, 127)))
+    assert retriggers_itself(MidiMacro("Loop", "IAC Bus", both, triggers=seq))
+    assert not retriggers_itself(MidiMacro("Half", "IAC Bus", both[1:], triggers=seq))
+
+
+def test_step_from_event_records_presses_releases_and_cc():
+    from djmidi.midi_macros import MAX_DELAY_MS, step_from_event
+
+    assert step_from_event(_at(40, 0), 12.6) == MacroStep(SyncMessage("Note On", 1, 40, 127), 13)
+    assert step_from_event(_at(40, 0, data2="0")).message.event_type == "Note Off"
+    assert step_from_event(_at(7, 0, "Control Change", "64")).message == SyncMessage("Control Change", 1, 7, 64)
+    assert step_from_event(_at(40, 0), 10**9).delay_ms == MAX_DELAY_MS
+    assert step_from_event(MidiEvent("out", "1", "Note On", "40", "127", 0.0, "P")) is None

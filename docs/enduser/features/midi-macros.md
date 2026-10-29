@@ -43,6 +43,14 @@ Open **`Macros` → `Manage Macros…`**:
 5. Optionally click the **Shortcut** field and press a key combination.
    `Clear` removes it.
 
+Instead of typing the steps, you can **play them**: click **`Learn steps`**,
+then play the notes on your controller. Each message it sends (press,
+release, knob move) is added as a step, with the delay you actually waited
+since the previous one — the first one starts at 0 ms. Click `Learn steps`
+again (it reads `Stop`) when you are done; it also stops after 10 seconds
+without a message. The steps are added after the existing ones, so you can
+record in several goes, and you can edit or delete them like any other.
+
 `Move up` / `Move down` reorder the selected step, `Delete step` removes it,
 and **`Test`** plays the macro exactly as edited. `OK` saves every macro;
 an invalid value, a shortcut already used by the app's menus (`Ctrl+O`,
@@ -63,19 +71,26 @@ macro, since the next steps may depend on it.
 ## Play a macro from a controller button
 
 A macro can also be fired by a button (or knob, fader…) on your
-controller, with **MIDI Learn**:
+controller — or by a **series of buttons** pressed in order — with
+**MIDI Learn**:
 
 1. In **`Macros` → `Manage Macros…`**, select the macro.
 2. Next to **Trigger**, click **`Learn`**, then press the button on your
-   controller within 10 seconds. The trigger shows what was learned, for
-   example `Note 40, ch 1 on PIONEER DDJ-XP2`. Click `Learn` again (it reads
-   `Cancel` while waiting) to stop listening.
-3. Click `OK`. The trigger is saved in the macro's file.
+   controller within 10 seconds — or several buttons, one after the other.
+   Every press is added to the trigger, which shows what was learned, for
+   example `Note 40, ch 1 → Note 41, ch 1 on PIONEER DDJ-XP2`.
+3. Learning stops by itself once you stop pressing for the **Max gap**
+   (1000 ms by default), or when you click `Learn` again (it reads `Stop`).
+4. Click `OK`. The trigger is saved in the macro's file.
 
-From then on, pressing that button plays the macro, whichever tab is open.
-Only the press counts — releasing the button doesn't play it a second
-time — and a knob or fader (a Control Change) plays it on every move, so
-a button is usually the better choice. `Clear` removes the trigger.
+From then on, pressing that button — or those buttons in that order, each
+within the **Max gap** of the previous one — plays the macro, whichever tab
+is open. Pressing another button in between, or waiting too long, starts
+the series over; knob, fader and jog moves in between don't. Only presses
+count — releasing a button doesn't play it a second time — and a knob or
+fader (a Control Change) used as a trigger fires on every move, so buttons
+are usually the better choice. `Clear` removes the trigger; a new `Learn`
+replaces it.
 
 - The app listens through the [Live Monitor](live-monitor.md): `Learn`
   starts it on every MIDI input if it isn't running yet, and at launch it
@@ -87,9 +102,11 @@ a button is usually the better choice. `Clear` removes the trigger.
   so learning a button never fires its old macro.
 - Macros don't play from the controller while **`● Rec`** records a
   [sync set](controller-sync.md) either: those presses belong to the recording.
-- `OK` is refused when two macros use the same trigger, or when a macro
-  would send its own trigger back to the port it listens on (a virtual
-  loopback port such as IAC would replay it forever).
+- `OK` is refused when two macros use the same trigger, when one macro's
+  series of presses is part of another's (it would fire in the middle of
+  it — for example `A` then `B` next to a macro triggered by `B` alone), or
+  when a macro would send its own trigger back to the port it listens on (a
+  virtual loopback port such as IAC would replay it forever).
 - The button keeps doing whatever your DJ software maps it to: the macro
   plays *in addition*, so pick a button your mapping leaves free.
 

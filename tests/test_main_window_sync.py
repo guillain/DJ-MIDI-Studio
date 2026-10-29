@@ -652,7 +652,7 @@ def test_recording_suspends_controller_bound_macros(tmp_path, monkeypatch):
     window = _window(tmp_path)
     port = "PIONEER DDJ-XP2"
     window.macros = [
-        MidiMacro("Bound", port, (MacroStep(SyncMessage("Note On", 1, 11, 127)),), trigger=MacroTrigger("Note On", 1, 40, "DDJ-XP2"))
+        MidiMacro("Bound", port, (MacroStep(SyncMessage("Note On", 1, 11, 127)),), triggers=(MacroTrigger("Note On", 1, 40, "DDJ-XP2"),))
     ]
     sent = []
     monkeypatch.setattr(main_window_module, "list_output_ports", lambda: [port])

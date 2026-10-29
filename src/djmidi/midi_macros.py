@@ -11,10 +11,13 @@ Storage mirrors the sync sets: one JSON file per macro in the user's
 ``Macros`` folder (:func:`load_macros` / :func:`save_macros`), the name only
 a label (loading reads the macro's name from the file's content).
 
-A macro can also be bound to a controller button (issue #252, MIDI Learn
-for macros): :class:`MacroTrigger` is the Note On / Control Change the
-macro editor's Learn button captured, stored in the macro's own file, and
-:func:`macros_for_event` finds the macros a live press fires. Only a press
+A macro can also be bound to controller presses (issue #252, MIDI Learn
+for macros): :class:`MacroTrigger` is one Note On / Control Change the
+macro editor's Learn button captured, and a macro's ``triggers`` is a
+*sequence* of them -- one press, or a series of presses each within
+``trigger_gap_ms`` of the previous one. :class:`MacroTriggerMatcher` keeps
+the recent presses and finds the macros a live press completes;
+:func:`macros_for_event` is its one-press, stateless form. Only a press
 counts -- the same rule as the mapping editor's MIDI Learn
 (:func:`djmidi.midi_learn.trigger_from_event`) -- so a button's release
 never plays its macro a second time.
@@ -42,6 +45,7 @@ from collections.abc import Callable, Iterable, Sequence
 from contextlib import AbstractContextManager, ExitStack, nullcontext
 from dataclasses import dataclass, field
 from functools import partial
+from itertools import pairwise
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -62,6 +66,12 @@ MAX_DELAY_MS = 60_000
 # and release, issue #308); a longer wait releases it and reopens it after,
 # so the controller stays usable meanwhile (issue #336).
 HOLD_PORT_MAX_DELAY_MS = 500
+# A trigger sequence: the longest pause allowed between two of its presses.
+DEFAULT_TRIGGER_GAP_MS = 1000
+MIN_TRIGGER_GAP_MS = 100
+MAX_TRIGGER_GAP_MS = 10_000
+# Longest trigger sequence, so the matcher's history stays bounded.
+MAX_TRIGGER_LENGTH = 16
 
 
 # Editor errors (issue #326): English templates, translated by the caller
@@ -81,7 +91,14 @@ _SAME_SHORTCUT = QT_TRANSLATE_NOOP("MidiMacros", '"{name}" and "{other}" use the
 _SAME_TRIGGER = QT_TRANSLATE_NOOP(
     "MidiMacros", '"{name}" and "{other}" use the same controller trigger {trigger}'
 )
+_NESTED_TRIGGER = QT_TRANSLATE_NOOP(
+    "MidiMacros", '"{name}" would also fire in the middle of the trigger sequence of "{other}" ({trigger})'
+)
 _LOOPS = QT_TRANSLATE_NOOP("MidiMacros", '"{name}" sends its own trigger back to {port} and would loop')
+_SEQUENCE_ON_PORT = QT_TRANSLATE_NOOP("MidiMacros", "{sequence} on {port}")
+_GAP_NOT_INTEGER = QT_TRANSLATE_NOOP("MidiMacros", "the gap between trigger presses must be a number of milliseconds")
+_GAP_OUT_OF_RANGE = QT_TRANSLATE_NOOP("MidiMacros", "the gap between trigger presses must be in [{low}, {high}] ms")
+_TOO_LONG = QT_TRANSLATE_NOOP("MidiMacros", "a trigger sequence has at most {max} presses")
 _TRIGGER_NOTE = QT_TRANSLATE_NOOP("MidiMacros", "Note {data1}, ch {channel}")
 _TRIGGER_CC = QT_TRANSLATE_NOOP("MidiMacros", "CC {data1}, ch {channel}")
 _TRIGGER_ON_PORT = QT_TRANSLATE_NOOP("MidiMacros", "{trigger} on {port}")
@@ -151,19 +168,22 @@ class MacroTrigger:
     def matches(self, event: MidiEvent) -> bool:
         """Whether a live event is a press of this trigger."""
         pressed = MacroTrigger.from_event(event)
-        if pressed is None or (pressed.event_type, pressed.channel, pressed.data1) != (
-            self.event_type,
-            self.channel,
-            self.data1,
-        ):
-            return False
-        return not self.port or _port_key(self.port) == _port_key(pressed.port)
+        return pressed is not None and self.accepts(pressed)
 
-    def label(self, translate: Translate = untranslated) -> str:
+    def label(self, translate: Translate = untranslated, with_port: bool = True) -> str:
         """"Note 36, ch 1 on <port>"; the GUI passes a `translate` (issue #326)."""
         template = _TRIGGER_NOTE if self.event_type == "Note On" else _TRIGGER_CC
         text = translate(template).format(data1=self.data1, channel=self.channel)
-        return translate(_TRIGGER_ON_PORT).format(trigger=text, port=self.port) if self.port else text
+        if with_port and self.port:
+            return translate(_TRIGGER_ON_PORT).format(trigger=text, port=self.port)
+        return text
+
+    def accepts(self, press: MacroTrigger) -> bool:
+        """Whether `press` (a press read from a live event, port included)
+        is this trigger: same message, and same port unless this one is blank."""
+        if (press.event_type, press.channel, press.data1) != (self.event_type, self.channel, self.data1):
+            return False
+        return not self.port or _port_key(self.port) == _port_key(press.port)
 
     def to_dict(self) -> dict[str, object]:
         return {"event_type": self.event_type, "channel": self.channel, "data1": self.data1, "port": self.port}
@@ -200,12 +220,18 @@ class MidiMacro:
     steps: tuple[MacroStep, ...] = field(default_factory=tuple)
     # QKeySequence portable text ("Ctrl+Shift+1"), "" for none.
     shortcut: str = ""
-    # Controller press that plays the macro (issue #252), None for none.
-    trigger: MacroTrigger | None = None
+    # Controller presses that play the macro (issue #252), in order; empty
+    # for none. Two or more make a sequence, each press within
+    # `trigger_gap_ms` of the previous one.
+    triggers: tuple[MacroTrigger, ...] = ()
+    trigger_gap_ms: int = DEFAULT_TRIGGER_GAP_MS
 
     @property
     def duration_ms(self) -> int:
         return sum(step.delay_ms for step in self.steps)
+
+    def trigger_label(self, translate: Translate = untranslated) -> str:
+        return sequence_label(self.triggers, translate)
 
     def to_dict(self) -> dict[str, object]:
         raw: dict[str, object] = {
@@ -215,9 +241,13 @@ class MidiMacro:
             "shortcut": self.shortcut,
             "steps": [step.to_dict() for step in self.steps],
         }
-        # Only written when set, so a macro without one keeps its old file shape.
-        if self.trigger is not None:
-            raw["trigger"] = self.trigger.to_dict()
+        # Only written when set, so a macro without one keeps its old file
+        # shape; a single press stays an object, a sequence is a list.
+        if len(self.triggers) == 1:
+            raw["trigger"] = self.triggers[0].to_dict()
+        elif self.triggers:
+            raw["trigger"] = [trigger.to_dict() for trigger in self.triggers]
+            raw["trigger_gap_ms"] = self.trigger_gap_ms
         return raw
 
     @classmethod
@@ -235,8 +265,59 @@ class MidiMacro:
             output_port=str(raw.get("output_port", "") or ""),
             steps=tuple(MacroStep.from_dict(step) for step in steps),
             shortcut=str(raw.get("shortcut", "") or "").strip(),
-            trigger=MacroTrigger.from_dict(raw["trigger"]) if raw.get("trigger") else None,
+            triggers=_triggers_from_raw(raw.get("trigger")),
+            trigger_gap_ms=trigger_gap(raw.get("trigger_gap_ms", DEFAULT_TRIGGER_GAP_MS)),
         )
+
+
+def _triggers_from_raw(raw: object) -> tuple[MacroTrigger, ...]:
+    if not raw:
+        return ()
+    items = raw if isinstance(raw, list) else [raw]
+    if len(items) > MAX_TRIGGER_LENGTH:
+        raise ValueError(_TOO_LONG.format(max=MAX_TRIGGER_LENGTH))
+    return tuple(MacroTrigger.from_dict(item) for item in items)
+
+
+def trigger_gap(value: object, translate: Translate = untranslated) -> int:
+    """A validated `trigger_gap_ms`."""
+    try:
+        number = int(str(value).strip())
+    except (TypeError, ValueError) as exc:
+        raise ValueError(translate(_GAP_NOT_INTEGER)) from exc
+    if not MIN_TRIGGER_GAP_MS <= number <= MAX_TRIGGER_GAP_MS:
+        raise ValueError(translate(_GAP_OUT_OF_RANGE).format(low=MIN_TRIGGER_GAP_MS, high=MAX_TRIGGER_GAP_MS))
+    return number
+
+
+def sequence_label(triggers: Sequence[MacroTrigger], translate: Translate = untranslated) -> str:
+    """"Note 36, ch 1 → Note 37, ch 1 on <port>": the port is named once when
+    every press shares it, else after each press."""
+    if not triggers:
+        return ""
+    ports = {_port_key(trigger.port) for trigger in triggers}
+    if len(ports) == 1 and triggers[0].port:
+        text = " → ".join(trigger.label(translate, with_port=False) for trigger in triggers)
+        return translate(_SEQUENCE_ON_PORT).format(sequence=text, port=triggers[0].port)
+    return " → ".join(trigger.label(translate) for trigger in triggers)
+
+
+def step_from_event(event: MidiEvent, delay_ms: float = 0) -> MacroStep | None:
+    """The step a captured input message becomes (the editor's step Learn):
+    a Note On, Note Off or Control Change from a controller, sent after
+    `delay_ms` (rounded, capped at :data:`MAX_DELAY_MS`). A Note On with
+    velocity 0 is a release, so it becomes a Note Off. ``None`` for LED
+    feedback (output direction) or anything else."""
+    if event.direction != "in" or event.event_type not in ("Note On", "Note Off", "Control Change"):
+        return None
+    event_type = event.event_type
+    if event_type == "Note On" and str(event.data2).strip() == "0":
+        event_type = "Note Off"
+    try:
+        message = SyncMessage.create(event_type, event.channel, event.data1, event.data2)
+    except ValueError:
+        return None
+    return MacroStep(message, min(MAX_DELAY_MS, max(0, round(delay_ms))))
 
 
 def _step(row: Sequence[object], translate: Translate) -> MacroStep:
@@ -272,30 +353,46 @@ def _triggers_overlap(a: MacroTrigger, b: MacroTrigger) -> bool:
     return not a.port or not b.port or _port_key(a.port) == _port_key(b.port)
 
 
-def retriggers_itself(macro: MidiMacro) -> bool:
-    """Whether playing ``macro`` sends its own trigger back to the port it
-    listens on -- a virtual loopback port (IAC, loopMIDI) would then fire it
-    forever. Only checked when both ports are named and equal."""
-    trigger = macro.trigger
-    if trigger is None or not trigger.port or _port_key(trigger.port) != _port_key(macro.output_port):
+def _contains_run(outer: Sequence[MacroTrigger], inner: Sequence[MacroTrigger]) -> bool:
+    """Whether `inner` appears as consecutive presses of `outer`: playing
+    `outer`'s sequence then also completes `inner`'s."""
+    if not inner or len(inner) > len(outer):
         return False
-    for step in macro.steps:
-        message = step.message
-        if (message.event_type, message.channel, message.data1) != (trigger.event_type, trigger.channel, trigger.data1):
-            continue
-        if message.event_type == "Control Change" or message.data2 > 0:
-            return True
-    return False
+    return any(
+        all(_triggers_overlap(a, b) for a, b in zip(outer[start : start + len(inner)], inner, strict=True))
+        for start in range(len(outer) - len(inner) + 1)
+    )
+
+
+def retriggers_itself(macro: MidiMacro) -> bool:
+    """Whether playing ``macro`` sends its own trigger sequence back to the
+    port it listens on -- a virtual loopback port (IAC, loopMIDI) would then
+    fire it forever. Only checked when every press's port and the output
+    port are named and equal; the steps' presses (Note On above 0, CC) must
+    contain the sequence as consecutive presses."""
+    triggers = macro.triggers
+    if not triggers or any(
+        not trigger.port or _port_key(trigger.port) != _port_key(macro.output_port) for trigger in triggers
+    ):
+        return False
+    presses = [
+        MacroTrigger(step.message.event_type, step.message.channel, step.message.data1)
+        for step in macro.steps
+        if step.message.event_type == "Control Change"
+        or (step.message.event_type == "Note On" and step.message.data2 > 0)
+    ]
+    return _contains_run(presses, [MacroTrigger(t.event_type, t.channel, t.data1) for t in triggers])
 
 
 def validate_macros(macros: Sequence[MidiMacro], translate: Translate = untranslated) -> list[str]:
     """Problems that must be fixed before saving: a blank or duplicate name
     (case-insensitive -- names become file names), a shortcut or controller
-    trigger used twice, a macro that would retrigger itself."""
+    trigger used twice, a trigger sequence found inside another macro's (it
+    would fire in the middle of it), a macro that would retrigger itself."""
     problems: list[str] = []
     names: set[str] = set()
     shortcuts: dict[str, str] = {}
-    triggers: list[tuple[MacroTrigger, str]] = []
+    sequences: list[tuple[tuple[MacroTrigger, ...], str]] = []
     for macro in macros:
         name = macro.name.strip()
         if not name:
@@ -310,22 +407,80 @@ def validate_macros(macros: Sequence[MidiMacro], translate: Translate = untransl
                 problems.append(translate(_SAME_SHORTCUT).format(name=name, other=other, shortcut=macro.shortcut))
             else:
                 shortcuts[macro.shortcut.casefold()] = name
-        if macro.trigger is not None:
-            other = next((owner for trigger, owner in triggers if _triggers_overlap(trigger, macro.trigger)), None)
-            if other is not None:
-                problems.append(
-                    translate(_SAME_TRIGGER).format(name=name, other=other, trigger=macro.trigger.label(translate))
-                )
+        if len(macro.triggers) > MAX_TRIGGER_LENGTH:
+            problems.append(translate(_TOO_LONG).format(max=MAX_TRIGGER_LENGTH))
+        if macro.triggers:
+            label = macro.trigger_label(translate)
+            clash = None
+            for sequence, owner in sequences:
+                if len(sequence) == len(macro.triggers) and _contains_run(sequence, macro.triggers):
+                    clash = translate(_SAME_TRIGGER).format(name=name, other=owner, trigger=label)
+                elif _contains_run(sequence, macro.triggers):
+                    clash = translate(_NESTED_TRIGGER).format(name=name, other=owner, trigger=label)
+                elif _contains_run(macro.triggers, sequence):
+                    clash = translate(_NESTED_TRIGGER).format(
+                        name=owner, other=name, trigger=sequence_label(sequence, translate)
+                    )
+                if clash:
+                    break
+            if clash:
+                problems.append(clash)
             else:
-                triggers.append((macro.trigger, name))
+                sequences.append((macro.triggers, name))
             if retriggers_itself(macro):
                 problems.append(translate(_LOOPS).format(name=name, port=macro.output_port))
     return problems
 
 
+class MacroTriggerMatcher:
+    """Finds the macros live presses fire, trigger sequences included.
+
+    It remembers the last presses (with their ``MidiEvent.timestamp``) and
+    fires a macro when they end with its whole ``triggers`` sequence, each
+    press within the macro's ``trigger_gap_ms`` of the previous one. A Note
+    On press that isn't the next expected one breaks a sequence; a Control
+    Change no macro listens to is ignored, since knobs, faders and jogs
+    stream them all the time. After a macro fires the history is cleared,
+    so a press never counts towards two runs."""
+
+    def __init__(self) -> None:
+        self._history: list[tuple[MacroTrigger, float]] = []
+
+    def reset(self) -> None:
+        self._history.clear()
+
+    def feed(self, macros: Iterable[MidiMacro], event: MidiEvent) -> list[MidiMacro]:
+        candidates = [macro for macro in macros if macro.triggers]
+        press = MacroTrigger.from_event(event)
+        if press is None or not candidates:
+            return []
+        if press.event_type == "Control Change" and not any(
+            trigger.accepts(press) for macro in candidates for trigger in macro.triggers
+        ):
+            return []
+        self._history.append((press, event.timestamp))
+        longest = max(len(macro.triggers) for macro in candidates)
+        del self._history[:-longest]
+        fired = [macro for macro in candidates if self._completes(macro)]
+        if fired:
+            self._history.clear()
+        return fired
+
+    def _completes(self, macro: MidiMacro) -> bool:
+        count = len(macro.triggers)
+        if len(self._history) < count:
+            return False
+        recent = self._history[-count:]
+        if not all(trigger.accepts(press) for trigger, (press, _time) in zip(macro.triggers, recent, strict=True)):
+            return False
+        gap = macro.trigger_gap_ms / 1000
+        return all(later - earlier <= gap for (_a, earlier), (_b, later) in pairwise(recent))
+
+
 def macros_for_event(macros: Iterable[MidiMacro], event: MidiEvent) -> list[MidiMacro]:
-    """The macros a live MIDI event fires (only presses do)."""
-    return [macro for macro in macros if macro.trigger is not None and macro.trigger.matches(event)]
+    """The macros a single live press fires on its own (one-press triggers;
+    sequences need a :class:`MacroTriggerMatcher` that saw the earlier presses)."""
+    return MacroTriggerMatcher().feed(macros, event)
 
 
 def macro_schedule(macro: MidiMacro) -> list[tuple[int, SyncMessage]]:
@@ -536,10 +691,15 @@ def save_macros(directory: str | Path, macros: Iterable[MidiMacro]) -> None:
 
 
 __all__ = [
+    "DEFAULT_TRIGGER_GAP_MS",
     "MAX_DELAY_MS",
+    "MAX_TRIGGER_GAP_MS",
+    "MAX_TRIGGER_LENGTH",
+    "MIN_TRIGGER_GAP_MS",
     "MacroResult",
     "MacroStep",
     "MacroTrigger",
+    "MacroTriggerMatcher",
     "MidiMacro",
     "PortOpener",
     "load_macros",
@@ -554,7 +714,10 @@ __all__ = [
     "save_macros",
     "send_message",
     "send_step",
+    "sequence_label",
+    "step_from_event",
     "steps_from_rows",
+    "trigger_gap",
     "unplayable_result",
     "validate_macros",
 ]
