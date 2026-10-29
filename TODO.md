@@ -3429,7 +3429,19 @@ close what can't be unblocked here.
    requirement — see [Future MIDI API extensions](#future-midi-api-extensions));
    its hardware leftover (CMD Micro / Studio 4a jogs) and every remaining
    phase 1 capture are tracked in #356.
-5. **Phase 4 — define the next phase** together, or declare the backlog done.
+5. **Phase 4 — new features, agreed 2026-10-30** (no hardware needed to build
+   them; one PR and milestone tag each, in this order):
+   1. Place controls on a photo for any profile without geometry (#363).
+   2. Guided profile verification through the Live Monitor (#364) — also the
+      community route for #11.
+   3. Mixxx mapping plugin, read-only, from its documented format and real
+      public mappings (#365) — possibly seeds non-Pioneer library profiles (#12).
+   4. Live set mode: set preparation on the Stage Mode screen (#366).
+   5. MIDI macros step 2: toggles, scene conditions, wait for a press (#367).
+   6. Per-controller MIDI remapper layer over the existing routing (#368).
+   - Not scheduled: macOS signing/notarization (waits on the maintainer's
+     Apple Developer account), Windows signing. Rejected: writing undocumented
+     proprietary binary formats (Serato cue points, rekordbox `export.pdb`).
 
 ## Tracking rules
 
