@@ -1751,7 +1751,7 @@ software side of the plugin architecture). Format research done
   CSV to validate against — rekordbox itself bundles official per-controller
   mapping files inside its own app resources, a legitimate already-licensed
   source if the app is installed locally.
-- [ ] **VirtualDJ** — real format is two XML files (a "definition" file
+- [ ] **VirtualDJ** (sample file pair requested in #356) — real format is two XML files (a "definition" file
   naming every MIDI code, a "mapping" file tying those names to VDJScript
   actions), officially documented on VirtualDJ's own wiki
   (`software/virtualdj/README.md`). Best-documented of the four formats
@@ -1780,10 +1780,12 @@ of official MIDI documentation, and fit with the current catalog architecture.
 - [x] **Hercules DJControl Inpulse 500** — initial discrete-control profile delivered.
 - [x] **DDJ-REV5** (not originally on this list either, and mislabeled as a "two-deck battle controller" before an official MIDI Message List PDF existed — it's actually a four-deck flagship): catalog module transcribed from the maintainer-supplied PDF in `v0.47.96-ddj-rev5-catalog`; BPM TRANSITION SELECT's channel corrected against a 300 DPI render of that PDF in `v0.48.139-ddj-rev5-catalog` (issue #346) — see Recent evolution chapters.
 - [x] **DDJ-800** (not originally on this list either; was listed as a "New candidate" until its own maintainer-supplied MIDI Message List PDF arrived): catalog module transcribed from that PDF in `v0.47.97-ddj-800-catalog` — see Recent evolution chapters.
-- [ ] Verify the delivered FLX4, FLX10, REV1, Numark, Hercules, DDJ-REV5, and DDJ-800 profiles against target hardware/firmware captures; continuous controls and missing vendor-specific evidence remain explicitly out of scope until verified.
+- [ ] Verify the delivered FLX4, FLX10, REV1, Numark, Hercules, DDJ-REV5, and DDJ-800 profiles against target hardware/firmware captures; continuous controls and missing vendor-specific evidence remain explicitly out of scope until verified. **`help wanted`** since 2026-10-29 (#11): the maintainer owns none of them; a comment on #11 explains the Live Monitor / Controller Setup → *Submit to community catalog…* route.
 - [x] **DDJ-1000** (not originally on this list, but the same class of problem): its catalog data was checked against the official bundled PDF (not hardware) and corrected in `v0.47.31-ddj-1000-catalog-fix` — see Recent evolution chapters. **DDJ-FLX10 had the same kind of problem, worse**: it had reused DDJ-1000's (wrong) values wholesale, and its real controls diverge substantially from DDJ-1000's (ACTIVE PART DRUMS/VOCAL/INST, MIX POINT SELECT/LINK, CUE/LOOP CALL <>/>>) — fully re-transcribed from FLX10's own PDF (not a value fix) in `v0.47.32-ddj-flx10-catalog-fix`, see Recent evolution chapters.
 
 #### New candidates
+
+The three unchecked ones below are **`help wanted`** since 2026-10-29 (#12): no official MIDI list, no unit here; a Controller Setup capture submitted through *Submit to community catalog…* is the way in.
 
 - [ ] **Native Instruments Traktor Kontrol S2 MK3** — representative non-Pioneer
   Traktor controller. **Checked 2026-09-19**: the maintainer-supplied PDF
@@ -1847,24 +1849,24 @@ documentation index.
 
 ### Future MIDI API extensions
 
-- [ ] Add MIDI 2.0/UMP support through a separate adapter after the MIDI 1.0 routing and Clock validation is complete.
-  Scoped (not built) on 2026-09-06: not concretely buildable yet, confirmed
-  "not applicable" rather than merely under-scoped. Neither `mido` (1.3.3)
-  nor `python-rtmidi` (1.5.8) has any UMP/MIDI 2.0 support to build on, and
-  no controller in `catalog/*.py` — delivered or on the New candidates list
-  above — advertises or needs MIDI 2.0/UMP (`ControlInfo` is flatly MIDI 1.0:
-  `note_or_cc: Literal["NOTE","CC"]`, no group/per-note-controller/resolution
-  field). The Phase 3 checklist item "Specify MIDI 2.0/UMP as a future
-  adapter instead of mixing it into the MIDI 1.0 router" only recorded the
-  *design decision* to keep it separate — `midi_api.py`'s `MidiMessage`
-  deliberately keeps raw bytes rather than parsing channel/data1/data2 for
-  exactly this reason, but that's a seam, not an adapter. Even the smallest
-  possible slice (detect a UMP-capable port if one exists, log raw packets
-  without acting on them) would be dead code with no consuming hardware.
-  Revisit only if a MIDI 2.0/UMP-capable DJ controller actually appears, or
-  `mido`/`rtmidi` gain UMP support — until then, deliberately deferred.
-- [ ] Revisit external YAML profile support only if JSON profiles cannot express an agreed requirement.
-- [ ] Define a future plugin API for advanced DJ software features such as multi-deck, multi-controller, and multi-software operations.
+Closed 2026-10-29 with issue #13 (phase 3 of the backlog plan), none of them
+built: each needs an external trigger, and a new issue with that trigger is
+the way back in. Kept here for the research.
+
+- **MIDI 2.0/UMP support** through a separate adapter — dead end for now.
+  Scoped on 2026-09-06: neither `mido` (1.3.3) nor `python-rtmidi` (1.5.8)
+  has any UMP/MIDI 2.0 support to build on, and no controller in
+  `catalog/*.py` advertises or needs MIDI 2.0/UMP (`ControlInfo` is flatly
+  MIDI 1.0: `note_or_cc: Literal["NOTE","CC"]`, no group/per-note-controller/
+  resolution field). `midi_api.py`'s `MidiMessage` keeps raw bytes, a seam
+  for a future adapter, not an adapter. Even the smallest slice (detect a UMP
+  port, log raw packets) would be dead code with no consuming hardware.
+  Reopen when a MIDI 2.0/UMP DJ controller appears or `mido`/`rtmidi` gain
+  UMP support.
+- **External YAML profiles** — no requirement JSON profiles can't express.
+- **Plugin API for advanced DJ software features** (multi-deck,
+  multi-controller, multi-software) — no concrete requirement to design
+  against.
 
 ### DJ layout visual fidelity
 
@@ -3370,7 +3372,8 @@ close what can't be unblocked here.
 
 1. **Phase 0 — housekeeping**: this roadmap status, and the issue #19 re-audit
    on macOS (`v0.48.143-library-side-panel-width`). Done.
-2. **Phase 1 — maintainer captures** (own hardware/software, one sitting):
+2. **Phase 1 — maintainer captures** (own hardware/software, one sitting;
+   tracked in #356):
    - Serato: MIDI-learn Play/Cue/Sync (decks 1-2, optionally hot cues 1-8) on
      the CMD LC-1 or the IAC bus, then export the XML — unblocks #194.
    - Traktor Controller Manager: an empty Generic MIDI device export, then
@@ -3395,11 +3398,12 @@ close what can't be unblocked here.
    Sync/hot cues only, everything else refused), #233 decision, rekordbox
    (read-only, **done** in `v0.48.144-rekordbox-mapping-plugin`) and
    VirtualDJ plugins, CMD LC-1 geometry, CMD Micro / Studio 4a jogs.
-4. **Phase 3 — close what depends on others**: #11 and #12 (no hardware, no
-   official MIDI list) to `help wanted` and the community-submission route;
-   #13's MIDI 2.0 (dead end, reopen on a UMP controller or mido/rtmidi UMP
-   support) and YAML (conditional, no requirement) closed; the advanced plugin
-   API either gets a concrete requirement and its own issue, or is closed.
+4. **Phase 3 — close what depends on others**. **Done 2026-10-29**: #11 and
+   #12 labelled `help wanted` with the community-submission route explained;
+   #13 closed (MIDI 2.0, YAML and the advanced plugin API have no trigger or
+   requirement — see [Future MIDI API extensions](#future-midi-api-extensions));
+   its two hardware leftovers (CMD LC-1 geometry, CMD Micro / Studio 4a
+   jogs) and every remaining phase 1 capture are tracked in #356.
 5. **Phase 4 — define the next phase** together, or declare the backlog done.
 
 ## Tracking rules
