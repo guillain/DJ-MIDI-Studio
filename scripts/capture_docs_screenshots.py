@@ -67,6 +67,7 @@ from djmidi.midi_macros import MacroStep, MacroTrigger, MidiMacro
 from djmidi.midi_router import BLOCK, CC, NOTE, MidiValueTransform, RemapRule
 from djmidi.plugins.preferences import PluginPreferences
 from djmidi.software.traktor import parse_string as parse_traktor
+from djmidi.stage import suggest_next_tracks
 
 # Purely cosmetic noise from running under QT_QPA_PLATFORM=offscreen: the
 # offscreen platform plugin has no real window manager, so every
@@ -934,11 +935,17 @@ def _capture_stage_set(app: QApplication, window: MainWindow) -> None:
         SetTrack("/tmp/c.mp3", "Peak Time", "Other Artist", 128.0, "9B", 8),
     ]
     transitions = analyze_set(tracks)
+    library = [
+        SetTrack("/tmp/d.mp3", "Second Wind", "Third Artist", 126.5, "9A", 6),
+        SetTrack("/tmp/e.mp3", "Deep Cut", "Demo Artist", 125.0, "10A", 5),
+        SetTrack("/tmp/f.mp3", "Late Hour", "Other Artist", 127.0, "9B", 7),
+    ]
     stage = StageWindow(
         config_provider=lambda: window.config,
         initial_controller="XDJ-XZ",
         set_provider=lambda: (tracks, transitions),
         set_index=1,
+        suggestion_provider=lambda current, paths: suggest_next_tracks(current, library, paths),
     )
     stage.resize(1600, 900)
     stage.show()
