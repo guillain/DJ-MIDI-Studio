@@ -139,6 +139,9 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **BPM/key analysis in the background** (`v0.48.169-background-analysis`, phase 6 item 1) — each track's audio is
+  decoded and analysed on a worker thread; the GUI only polls and stores the result, so the Music Library stays
+  responsive during a long analysis. Also fixed: the progress bar started at the previous job's value.
 - [x] **Mixxx mapping from a profile** (`v0.48.168-mixxx-export`, phase 5 item 8) — `File → Export → Mixxx Mapping from
   Profile…` lists a profile's buttons and pads, suggests a Mixxx function from each name (reviewed by the user), and
   writes a `.midi.xml` Mixxx loads. Only the ~40 deck functions Mixxx's own mappings bind to a button are offered;
@@ -3554,6 +3557,19 @@ close what can't be unblocked here.
    - Not scheduled: macOS signing/notarization (waits on the maintainer's
      Apple Developer account), Windows signing. Rejected: writing undocumented
      proprietary binary formats (Serato cue points, rekordbox `export.pdb`).
+
+7. **Phase 6 — new features, agreed 2026-10-30** (no hardware needed; one PR
+   and milestone tag each, in this order):
+   1. BPM/key analysis on a worker thread (the window no longer freezes
+      for each track). **Done** in `v0.48.169-background-analysis`.
+   2. Propose an order for a prepared set (mix-path engine, before/after,
+      never applied without confirmation).
+   3. Per-track notes shown on stage.
+   4. Performance budget for the library benchmark in CI.
+   5. Export every smart playlist at once (Serato crates / Traktor).
+   6. Interactive cheat sheet as a standalone web page.
+   7. Software plugin kit: guide, contract tests, example plugin.
+   8. A third interface language.
 
 ## Tracking rules
 

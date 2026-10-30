@@ -214,7 +214,8 @@ Camelot wheel. `Analyse BPM/key` listens to them and suggests the values:
 
 1. Scan your folders first, so the tags are known.
 2. Click `Analyse BPM/key`. Only tracks missing a BPM or a key are analysed
-   (a minute from the middle of each track); the window stays usable, and
+   (a minute from the middle of each track, listened to in the background,
+   so you can keep browsing, filtering and previewing meanwhile), and
    the button turns into `Stop analysis` until it's done. Stopping keeps
    what was found so far.
 3. Estimates appear in amber with a `?` in the BPM, Key and Camelot

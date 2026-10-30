@@ -241,6 +241,48 @@ def _default_analyser(path: str, want_bpm: bool, want_key: bool) -> tuple[float 
     return analyse_clip(path, want_bpm=want_bpm, want_key=want_key)
 
 
+@dataclass(frozen=True)
+class AnalysisTarget:
+    """One track to analyse, and which of its two values are missing."""
+
+    record: TrackRecord
+    want_bpm: bool
+    want_key: bool
+
+
+def analysis_targets(db: LibraryDB) -> list[AnalysisTarget]:
+    """Present tracks missing a BPM or key, not yet analysed at their mtime."""
+    cached = {record.id: metadata for record, metadata in db.list_tracks_with_metadata()}
+    targets = []
+    for record in db.tracks_needing_analysis():
+        metadata = cached.get(record.id) or TrackMetadata()
+        targets.append(AnalysisTarget(record, metadata.bpm is None, not (metadata.key or "").strip()))
+    return targets
+
+
+def run_analyser(target: AnalysisTarget, analyser: Analyser | None = None) -> tuple[float | None, str | None]:
+    """The audio estimate for one target; a decode failure is logged and
+    returns (None, None). Safe to call off the GUI thread: it touches no
+    database."""
+    try:
+        return (analyser or _default_analyser)(target.record.path, target.want_bpm, target.want_key)
+    except Exception:
+        _LOGGER.warning("Could not analyse %s", target.record.path, exc_info=True)
+        return None, None
+
+
+def record_analysis(db: LibraryDB, target: AnalysisTarget, result: tuple[float | None, str | None]) -> bool:
+    """Stores one estimate (only the values that were missing; an empty
+    attempt too, so it isn't retried until the file changes) and commits.
+    True when something was found."""
+    bpm, key = result
+    bpm = round(bpm, 2) if target.want_bpm and bpm is not None else None
+    key = key if target.want_key else None
+    db.set_analysis_suggestion(target.record.id, target.record.mtime, bpm, key)
+    db.commit()
+    return bpm is not None or key is not None
+
+
 def iter_analyse_missing(db: LibraryDB, analyser: Analyser | None = None) -> Generator[int, None, int]:
     """Estimate BPM/key from audio for every present track missing one of
     them, yielding the running count (one track per step); returns how many
@@ -249,23 +291,11 @@ def iter_analyse_missing(db: LibraryDB, analyser: Analyser | None = None) -> Gen
     Results go to the `analysis_suggestions` table only -- never to a file.
     A track that fails to decode records an empty attempt (logged) so the
     next run skips it until the file changes. Committed after every track,
-    so a job stopped half-way keeps what it found."""
-    analyser = analyser or _default_analyser
-    cached = {record.id: metadata for record, metadata in db.list_tracks_with_metadata()}
+    so a job stopped half-way keeps what it found. (The Music Library tab
+    runs the same three steps with the audio part on a worker thread.)"""
     found = 0
-    for index, record in enumerate(db.tracks_needing_analysis(), start=1):
-        metadata = cached.get(record.id) or TrackMetadata()
-        want_bpm, want_key = metadata.bpm is None, not (metadata.key or "").strip()
-        try:
-            bpm, key = analyser(record.path, want_bpm, want_key)
-        except Exception:
-            _LOGGER.warning("Could not analyse %s", record.path, exc_info=True)
-            bpm = key = None
-        bpm = round(bpm, 2) if want_bpm and bpm is not None else None
-        key = key if want_key else None
-        db.set_analysis_suggestion(record.id, record.mtime, bpm, key)
-        db.commit()
-        if bpm is not None or key is not None:
+    for index, target in enumerate(analysis_targets(db), start=1):
+        if record_analysis(db, target, run_analyser(target, analyser)):
             found += 1
         yield index
     return found

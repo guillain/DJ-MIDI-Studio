@@ -35,6 +35,7 @@ from __future__ import annotations
 import logging
 import time
 from collections.abc import Callable, Generator, Iterator
+from concurrent.futures import Future, ThreadPoolExecutor
 from pathlib import Path
 
 from PySide6.QtCore import (
@@ -1050,6 +1051,8 @@ class MusicLibraryView(QWidget):
     def __init__(self, db_path: str | Path | None = None, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self._db_path = db_path
+        self._executor: ThreadPoolExecutor | None = None
+        self._analysis_future: Future | None = None
         self._db: LibraryDB | None = None
         self.undo_stack = QUndoStack(self)
         self._job: Iterator[None] | None = None
@@ -1603,6 +1606,9 @@ class MusicLibraryView(QWidget):
     def close_db(self) -> None:
         self.audio_preview.stop()
         self._stop_job()
+        if self._executor is not None:
+            self._executor.shutdown(wait=False, cancel_futures=True)
+            self._executor = None
         if self.history_dialog is not None:
             # It holds the connection about to close.
             self.history_dialog.close()
@@ -2024,26 +2030,50 @@ class MusicLibraryView(QWidget):
         self._reload_rows()
 
     def _analysis_job(self, pending: int, analyser: workspace.Analyser | None) -> Generator[None]:
+        """Each track's audio is decoded and analysed on a worker thread
+        (a 60 s clip takes seconds); this generator only hands the next track
+        over, checks whether the result is in at every timer slice, and
+        records it -- the database stays on the GUI thread. The window keeps
+        responding the whole time."""
         self.progress_bar.setRange(0, pending)
+        self.progress_bar.setValue(0)  # not the previous job's last value
         self.status_label.setText(self.tr("Analysing audio… {count}/{total}").format(count=0, total=pending))
         yield
-        steps = workspace.iter_analyse_missing(self.db, analyser)
-        while True:
-            try:
-                count = next(steps)
-            except StopIteration as done:
-                found = done.value
-                break
-            self.progress_bar.setValue(count)
-            self.status_label.setText(self.tr("Analysing audio… {count}/{total}").format(count=count, total=pending))
+        executor = self._analysis_executor()
+        found = 0
+        targets = workspace.analysis_targets(self.db)
+        for index, target in enumerate(targets, start=1):
+            future = executor.submit(workspace.run_analyser, target, analyser)
+            self._analysis_future = future
+            while not future.done():
+                yield
+            self._analysis_future = None
+            if workspace.record_analysis(self.db, target, future.result()):
+                found += 1
+            self.progress_bar.setValue(index)
+            self.status_label.setText(
+                self.tr("Analysing audio… {count}/{total}").format(count=index, total=len(targets))
+            )
             yield
         self.status_label.setText(
             self.tr(
                 "Analysis done: estimates for {found} of {total} track(s), shown in amber. "
                 "Select tracks and use Apply analysis suggestions… to write them."
-            ).format(found=found, total=pending)
+            ).format(found=found, total=len(targets))
         )
         self._reload_rows()
+
+    def _analysis_executor(self) -> ThreadPoolExecutor:
+        if self._executor is None:
+            self._executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="djmidi-analysis")
+        return self._executor
+
+    def _drop_analysis_future(self) -> None:
+        """A stopped analysis can't interrupt the clip being decoded; its
+        result is simply never recorded."""
+        if self._analysis_future is not None:
+            self._analysis_future.cancel()
+            self._analysis_future = None
 
     def _start_job(self, job: Generator[None]) -> None:
         self._job = job
@@ -2058,6 +2088,7 @@ class MusicLibraryView(QWidget):
     def _stop_job(self) -> None:
         self._job_timer.stop()
         self._job = None
+        self._drop_analysis_future()
         self._analysing = False
         self.scan_button.setEnabled(True)
         self.relink_button.setEnabled(True)
