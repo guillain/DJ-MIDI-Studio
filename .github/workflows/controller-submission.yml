@@ -1,0 +1,98 @@
+name: Controller submission to PR
+
+# A maintainer labels a "Submit to community catalog…" issue
+# `controller-submission` (labels in the app's pre-filled URL only stick for
+# collaborators, so a stranger's issue never starts this on its own); the
+# workflow validates the JSON and opens a PR adding the profile to
+# controllers/library/community/. The issue body is untrusted: it is only
+# read from a file by the Python script, never interpolated into a command.
+
+on:
+  issues:
+    types: [labeled]
+  workflow_dispatch:
+    inputs:
+      issue:
+        description: Issue number holding the submission
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: controller-submission-${{ github.event.issue.number || inputs.issue }}
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'controller-submission'
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      ISSUE: ${{ github.event.issue.number || inputs.issue }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: main
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v9.0.0
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+
+      - name: Install
+        run: uv sync --no-dev
+
+      - name: Read the issue
+        run: |
+          [[ "$ISSUE" =~ ^[0-9]+$ ]] || { echo "Bad issue number" >&2; exit 1; }
+          gh issue view "$ISSUE" --json body --jq .body > "$RUNNER_TEMP/body.md"
+
+      - name: Build the profile
+        id: build
+        run: |
+          set +e
+          uv run --no-dev python scripts/ingest_controller_submission.py \
+            --body-file "$RUNNER_TEMP/body.md" --issue "$ISSUE" \
+            --pr-body "$RUNNER_TEMP/pr.md" --error-file "$RUNNER_TEMP/error.md" > "$RUNNER_TEMP/out.txt"
+          status=$?
+          cat "$RUNNER_TEMP/out.txt" >> "$GITHUB_OUTPUT"
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+
+      - name: Report a bad submission
+        if: steps.build.outputs.status != '0'
+        run: |
+          gh issue comment "$ISSUE" --body-file "$RUNNER_TEMP/error.md"
+          exit 1
+
+      - name: Open or update the pull request
+        if: steps.build.outputs.status == '0'
+        env:
+          NAME: ${{ steps.build.outputs.name }}
+          PROFILE: ${{ steps.build.outputs.path }}
+        run: |
+          branch="community/issue-$ISSUE"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -C "$branch"
+          git add -- "$PROFILE"
+          if git diff --cached --quiet; then
+            gh issue comment "$ISSUE" --body "This profile is already in the library, unchanged."
+            exit 0
+          fi
+          git commit -m "feat: community profile for $NAME (#$ISSUE)"
+          git push --force origin "$branch"
+          if gh pr view "$branch" --json number > /dev/null 2>&1; then
+            gh pr edit "$branch" --body-file "$RUNNER_TEMP/pr.md"
+          else
+            gh pr create --base main --head "$branch" \
+              --title "Community profile: $NAME (#$ISSUE)" --body-file "$RUNNER_TEMP/pr.md"
+          fi
+          url="$(gh pr view "$branch" --json url --jq .url)"
+          gh issue comment "$ISSUE" --body "Thanks! The profile is ready for review in $url."
