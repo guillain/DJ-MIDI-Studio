@@ -46,7 +46,7 @@ launches. See [Workspace and preferences](features/workspace.md).
 | --- | --- | --- |
 | `.xml` MIDI mapping | Serato DJ Pro | Open, explore, edit, validate, save ([Mapping editor](features/mapping-editor.md)) |
 | `.tsi` controller mapping | Traktor Pro | Open, explore, re-assign MIDI triggers ([Traktor mappings](features/traktor-mappings.md)) |
-| `.midi.xml` controller mapping | Mixxx | Open and explore, read-only ([Mixxx mappings](features/mixxx-mappings.md)) |
+| `.midi.xml` controller mapping | Mixxx | Open, explore, re-assign MIDI triggers ([Mixxx mappings](features/mixxx-mappings.md)) |
 | `.midi.csv` MIDI mapping | rekordbox | Open and explore, read-only ([rekordbox mappings](features/rekordbox-mappings.md)) |
 | `.crate` crates | Serato | Import playlists, export new crates ([Music Library](features/music-library.md)) |
 | `collection.nml` | Traktor | Import playlists; export a new playlist `.nml` |

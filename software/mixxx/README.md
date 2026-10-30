@@ -1,6 +1,6 @@
 # Mixxx mapping format
 
-## Status: read-only plugin
+## Status: read, and byte-safe trigger re-assignment
 
 `src/djmidi/software/mixxx.py` (`v0.48.151`, issue #365) reads Mixxx
 controller mappings. Mixxx is the one major DJ program whose mapping format
@@ -55,11 +55,15 @@ device:
 | DDJ-FLX4 | official PDF | 46 % (Mixxx maps fewer pad modes) |
 | Numark Mixtrack Pro FX | community values | 41 % — real disagreement; re-derived from this mapping in `v0.48.155` (issue #372) |
 
-## What's still needed before writing
+## Writing back
 
-Writing must keep the file's comments and layout byte for byte except the
-edited bindings (like the Traktor `.tsi` writer), which means patching the
-XML text rather than re-serializing it. Not implemented.
+Since `v0.48.159` an edited binding's new MIDI address is written by
+patching the text of its `<status>` / `<midino>` in place (byte offsets
+from expat), keeping the file's hex style (`0x0B` stays upper-case, two
+digits). On all 142 files an unedited export is byte-identical, and moving
+one binding per file round-trips. Adding/removing bindings, changing a key
+or deck, numbering a binding with no `<midino>`, and patching a value
+spelled as an XML entity (one real file, Behringer CMD MM1) are refused.
 
 ## Sources
 
