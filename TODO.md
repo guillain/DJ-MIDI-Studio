@@ -139,6 +139,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Numark Mixtrack Pro FX profile re-derived from Mixxx** (`v0.48.155-numark-from-mixxx`, #372) — the old
+  "conservative community values" (pads on notes 36-43 of the deck channels, a LOOP button on note 3) contradicted
+  the mapping Mixxx maintains for this device; the profile now follows it: deck buttons with their SHIFT notes, loop
+  and pad-mode buttons, LOAD, and 8 pads (+SHIFT) on channels 5/6. Still not vendor documentation, and not checked
+  on a unit — the guided profile check (#364) is how an owner can confirm it. New controls have no geometry marker yet.
 - [x] **Per-control MIDI remapper** (`v0.48.154-midi-remapper`, #368, phase 4 item 6) — a route's transform gains
   remap rows (one note/CC in → another note/CC out, or blocked; value kept, Learn for the source), and a virtual
   output, *DJ MIDI Studio Remap*, to pick in the DJ software instead of the controller (macOS/Linux; Windows needs a

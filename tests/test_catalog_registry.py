@@ -224,7 +224,7 @@ def test_ddj_flx10_deck_section_covers_controls_ddj_1000_does_not_have():
 
 
 def test_non_pioneer_controller_plugins_resolve_pad_controls():
-    numark_hits = catalog.lookup("1", "Note On", "36")
+    numark_hits = catalog.lookup("5", "Note On", "20")
     assert any(hit.controller == "Numark Mixtrack Pro FX" and hit.name == "Deck 1 Pad 1" for hit in numark_hits)
 
     hercules_hits = catalog.lookup("8", "Note On", "7")
@@ -336,3 +336,23 @@ def test_make_sequential_pad_lookup_out_of_range_returns_none():
     assert pad_lookup("1", "NOTE", "32") is None  # mode_index 2 >= len(modes)
     assert pad_lookup("9", "NOTE", "0") is None  # unknown channel
     assert pad_lookup("1", "CC", "0") is None  # wrong kind
+
+
+def test_numark_mixtrack_pro_fx_follows_mixxx_mapping():
+    """Issue #372: values from Mixxx's maintained mapping for this device
+    (no vendor MIDI list exists). The old community values are gone."""
+
+    def names(channel, note):
+        return {
+            hit.name for hit in catalog.lookup(channel, "Note On", str(note)) if hit.controller == "Numark Mixtrack Pro FX"
+        }
+
+    assert names("1", 0) == {"PLAY/PAUSE"} and names("2", 4) == {"PLAY/PAUSE +SHIFT"}
+    assert names("1", 3) == {"SYNC +SHIFT"}  # was a "LOOP" button before
+    assert names("1", 43) == {"PITCH BEND UP +SHIFT"}  # was "Pad 8"
+    assert names("1", 36) == set()  # no pad on the deck channels
+    assert names("5", 64) == {"LOOP"} and names("6", 53) == {"LOOP x2"}
+    assert names("5", 13) == {"AUTO LOOP"}
+    assert names("16", 3) == {"LOAD DECK 2"}
+    assert names("5", 27) == {"Deck 1 Pad 8"} and names("6", 35) == {"Deck 2 Pad 8 +SHIFT"}
+    assert names("5", 36) == set()

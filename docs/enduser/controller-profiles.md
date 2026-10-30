@@ -33,7 +33,7 @@
 | Pioneer DDJ-REV5 | Official MIDI Message List E1 | ✅ | ✅ | Not yet |
 | Pioneer DDJ-800 | Official MIDI Message List E3 | ✅ | ✅ | Not yet |
 | Pioneer DDJ-FLX4 | Official MIDI Message List E1 | ✅ | ✅ | Not yet |
-| Numark Mixtrack Pro FX | Conservative community values; user guide for the layout | ✅ | — | Not yet |
+| Numark Mixtrack Pro FX | Mixxx's maintained mapping (Numark publishes no MIDI list); user guide for the layout | ✅ | — | Not yet |
 | Hercules DJControl Inpulse 500 | Official MIDI Commands sheet (2022) | ✅ | ✅ | Not yet |
 | Behringer CMD LC-1 | Captured from a real unit with Controller Setup (no vendor list exists), checked against a real Serato export | ✅ | — | ✅ |
 | Behringer CMD Micro | Captured from a real unit (no vendor list exists), checked against a real Traktor export | ✅ | — | ✅ |
@@ -167,8 +167,10 @@ BANK (the DDJ-800's list doesn't say which mode SHIFT selects, so SHIFT
 keeps the plain mode there). The DDJ-REV5 profile also has the `HOT CUE`
 and `SCRATCH BANK` buttons under KEY −/+ and the LOAD buttons (`LOAD DECK
 1–4`, one note per target deck). The Numark
-profile covers its main eight-pad bank only: its mode-switch messages aren't
-documented, so they aren't guessed.
+profile follows the mapping the Mixxx project maintains for it (Numark
+publishes no MIDI list): deck buttons and their SHIFT layer, the loop and
+pad-mode buttons, LOAD, and the 8 pads (+ SHIFT) per deck. Its pad mode is
+kept by the DJ software, so a pad sends the same note in every mode.
 
 ## Profile library (rekordbox devices)
 

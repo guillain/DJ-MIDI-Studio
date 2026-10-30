@@ -53,7 +53,7 @@ device:
 | Behringer CMD Studio 4a | hardware capture | 96 % |
 | Hercules DJControl Inpulse 500 | official sheet | 79 % |
 | DDJ-FLX4 | official PDF | 46 % (Mixxx maps fewer pad modes) |
-| Numark Mixtrack Pro FX | community values | 41 % — real disagreement, issue #372 |
+| Numark Mixtrack Pro FX | community values | 41 % — real disagreement; re-derived from this mapping in `v0.48.155` (issue #372) |
 
 ## What's still needed before writing
 
