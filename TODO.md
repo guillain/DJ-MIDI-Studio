@@ -139,6 +139,9 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **DDJ-1000 pad markers re-measured** (`v0.48.158-ddj1000-pads`, #379 follow-up) — the one leftover of the overlay
+  audit: both pad grids' markers were a few pixels off (the right grid narrower than its pads); re-measured and checked
+  on the overlay.
 - [x] **Layout markers re-measured on DDJ-REV1, DDJ-FLX10 and DDJ-1000** (`v0.48.157-geometry-remeasure`, #379) — an
   audit of every controller's Controller Images overlay in the running app found these three drifted since the
   `v0.48.46` image normalization (REV1's pad grids ran together, most FLX10 markers were off, DDJ-1000's top row,
