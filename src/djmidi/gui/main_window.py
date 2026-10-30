@@ -108,6 +108,7 @@ from djmidi.gui import jog as jog_mod
 from djmidi.gui import layout as layout_mod
 from djmidi.gui.accessibility import name_icon_buttons
 from djmidi.gui.cheat_sheet_dialog import CheatSheetExportDialog
+from djmidi.gui.cheat_sheet_html import write_cheat_sheet_html
 from djmidi.gui.cheat_sheet_pdf import write_cheat_sheet_pdf
 from djmidi.gui.command_palette import CommandPaletteDialog, menu_entries
 from djmidi.gui.commands import ReplaceControlsCommand
@@ -957,6 +958,13 @@ class MainWindow(QMainWindow):
         self._cheat_sheet_action.setEnabled(False)
         self._cheat_sheet_action.triggered.connect(lambda _checked=False: self._on_export_cheat_sheet())
         export_menu.addAction(self._cheat_sheet_action)
+        self._cheat_sheet_web_action = QAction(self.tr("Cheat Sheet (Web Page)..."), self)
+        self._cheat_sheet_web_action.setToolTip(
+            self.tr("One offline web page to open on a phone or tablet: tap a control to see its functions")
+        )
+        self._cheat_sheet_web_action.setEnabled(False)
+        self._cheat_sheet_web_action.triggered.connect(lambda _checked=False: self._on_export_cheat_sheet(web=True))
+        export_menu.addAction(self._cheat_sheet_web_action)
         mixxx_export_action = QAction(self.tr("Mixxx Mapping from Profile..."), self)
         mixxx_export_action.setToolTip(self.tr("Write a Mixxx mapping for a controller profile, a function per button"))
         mixxx_export_action.triggered.connect(lambda _checked=False: self.open_mixxx_export())
@@ -3655,10 +3663,11 @@ class MainWindow(QMainWindow):
         return chosen or set(candidates[:1])
 
     def _on_export_cheat_sheet(
-        self, controllers: list[str] | None = None, path: Path | None = None
+        self, controllers: list[str] | None = None, path: Path | None = None, web: bool = False
     ) -> Path | None:
-        """File -> Export -> Cheat Sheet (PDF) (issue #182). `controllers`
-        and `path` skip the dialogs (tests)."""
+        """File -> Export -> Cheat Sheet (PDF) (issue #182), or with `web`
+        the interactive web page (phase 6 item 6). `controllers` and `path`
+        skip the dialogs (tests)."""
         if self.config is None:
             QMessageBox.information(self, self.tr("Cheat Sheet"), self.tr("Open a mapping first."))
             return None
@@ -3681,8 +3690,8 @@ class MainWindow(QMainWindow):
             path_str, _ = QFileDialog.getSaveFileName(
                 self,
                 self.tr("Export cheat sheet"),
-                str(user_paths.subfolder(user_paths.EXPORTS) / f"{stem}-cheat-sheet.pdf"),
-                self.tr("PDF files (*.pdf)"),
+                str(user_paths.subfolder(user_paths.EXPORTS) / f"{stem}-cheat-sheet.{'html' if web else 'pdf'}"),
+                self.tr("Web pages (*.html)") if web else self.tr("PDF files (*.pdf)"),
             )
             if not path_str:
                 return None
@@ -3692,15 +3701,25 @@ class MainWindow(QMainWindow):
         )
         source = self.current_path.name if self.current_path is not None else None
         try:
-            pages = write_cheat_sheet_pdf(path, sheets, source)
+            if web:
+                size = write_cheat_sheet_html(path, sheets, source)
+            else:
+                pages = write_cheat_sheet_pdf(path, sheets, source)
         except OSError as exc:
             QMessageBox.warning(
                 self, self.tr("Cheat Sheet"), self.tr("Could not write {path}:\n{error}").format(path=path, error=exc)
             )
             return None
-        self.statusBar().showMessage(
-            self.tr("Cheat sheet exported: {path} ({count} page(s))").format(path=path, count=pages)
-        )
+        if web:
+            self.statusBar().showMessage(
+                self.tr("Cheat sheet web page exported: {path} ({size} KB, opens offline on any device)").format(
+                    path=path, size=max(1, size // 1024)
+                )
+            )
+        else:
+            self.statusBar().showMessage(
+                self.tr("Cheat sheet exported: {path} ({count} page(s))").format(path=path, count=pages)
+            )
         return path
 
     def _on_show_layer_map(self) -> LayerMapDialog | None:
@@ -3841,6 +3860,7 @@ class MainWindow(QMainWindow):
         self._save_snapshot_action.setEnabled(has_file and self.config is not None)
         self._snapshots_action.setEnabled(has_file and self.config is not None)
         self._cheat_sheet_action.setEnabled(self.config is not None)
+        self._cheat_sheet_web_action.setEnabled(self.config is not None)
         self._layer_map_action.setEnabled(self.config is not None)
         self.introduction_view.set_files_summary(
             mapping=self.current_path,

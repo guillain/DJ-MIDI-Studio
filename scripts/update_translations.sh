@@ -87,6 +87,7 @@ SOURCES=(
   src/djmidi/gui/cheat_sheet.py
   src/djmidi/gui/cheat_sheet_dialog.py
   src/djmidi/gui/cheat_sheet_pdf.py
+  src/djmidi/gui/cheat_sheet_html.py
   src/djmidi/mapping_diff.py
   src/djmidi/gui/mapping_diff_dialog.py
   src/djmidi/gui/command_palette.py

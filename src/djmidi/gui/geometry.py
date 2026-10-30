@@ -391,44 +391,46 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         # (3950x2900) in v0.47.54 -- the earlier fractions were for the
         # callout-annotated ddj-xp2-midi.png, a different crop/aspect.
         # Salmon-pink: matches the pad grid's own highlight color.
-        # Left grid: cols x = 0.135/0.222/0.309/0.396 (w 0.070),
-        # rows y = 0.429/0.536/0.659/0.789 (h 0.095) -- the growing row gaps
-        # are real on the device.
-        "Pad 1": ControlGeometry(0.1082, 0.4254, 0.0816, 0.1127, "rect", "#e0708f"),
-        "Pad 2": ControlGeometry(0.2017, 0.4254, 0.0816, 0.1127, "rect", "#e0708f"),
-        "Pad 3": ControlGeometry(0.2951, 0.4254, 0.0816, 0.1127, "rect", "#e0708f"),
-        "Pad 4": ControlGeometry(0.3885, 0.4254, 0.0816, 0.1127, "rect", "#e0708f"),
-        "Pad 5": ControlGeometry(0.1082, 0.5448, 0.0816, 0.1127, "rect", "#e0708f"),
-        "Pad 6": ControlGeometry(0.2017, 0.5448, 0.0816, 0.1127, "rect", "#e0708f"),
-        "Pad 7": ControlGeometry(0.2951, 0.5448, 0.0816, 0.1127, "rect", "#e0708f"),
-        "Pad 8": ControlGeometry(0.3885, 0.5448, 0.0816, 0.1127, "rect", "#e0708f"),
-        "Pad 9": ControlGeometry(0.1082, 0.6820, 0.0816, 0.1127, "rect", "#e0708f"),
-        "Pad 10": ControlGeometry(0.2017, 0.6820, 0.0816, 0.1127, "rect", "#e0708f"),
-        "Pad 11": ControlGeometry(0.2951, 0.6820, 0.0816, 0.1127, "rect", "#e0708f"),
-        "Pad 12": ControlGeometry(0.3885, 0.6820, 0.0816, 0.1127, "rect", "#e0708f"),
-        "Pad 13": ControlGeometry(0.1082, 0.8270, 0.0816, 0.1127, "rect", "#e0708f"),
-        "Pad 14": ControlGeometry(0.2017, 0.8270, 0.0816, 0.1127, "rect", "#e0708f"),
-        "Pad 15": ControlGeometry(0.2951, 0.8270, 0.0816, 0.1127, "rect", "#e0708f"),
-        "Pad 16": ControlGeometry(0.3885, 0.8270, 0.0816, 0.1127, "rect", "#e0708f"),
+        # Pads re-measured in v0.48.174 on the processed 2000x1413 image: each
+        # pad's lit face located as a run of saturated pixels (exact pixel
+        # bounds, both grids), since the v0.48.46 remap had left the left grid
+        # too wide and the right grid ~35 px to the right. Rows 605-757,
+        # 793-945, 981-1136, 1169-1323 px on both grids.
+        "Pad 1": ControlGeometry(0.1200, 0.4282, 0.0785, 0.1083, "rect", "#e0708f"),
+        "Pad 2": ControlGeometry(0.2150, 0.4282, 0.0765, 0.1083, "rect", "#e0708f"),
+        "Pad 3": ControlGeometry(0.3080, 0.4282, 0.0785, 0.1083, "rect", "#e0708f"),
+        "Pad 4": ControlGeometry(0.4030, 0.4282, 0.0765, 0.1083, "rect", "#e0708f"),
+        "Pad 5": ControlGeometry(0.1200, 0.5612, 0.0785, 0.1083, "rect", "#e0708f"),
+        "Pad 6": ControlGeometry(0.2150, 0.5612, 0.0765, 0.1083, "rect", "#e0708f"),
+        "Pad 7": ControlGeometry(0.3080, 0.5612, 0.0785, 0.1083, "rect", "#e0708f"),
+        "Pad 8": ControlGeometry(0.4030, 0.5612, 0.0765, 0.1083, "rect", "#e0708f"),
+        "Pad 9": ControlGeometry(0.1200, 0.6943, 0.0785, 0.1104, "rect", "#e0708f"),
+        "Pad 10": ControlGeometry(0.2150, 0.6943, 0.0765, 0.1104, "rect", "#e0708f"),
+        "Pad 11": ControlGeometry(0.3080, 0.6943, 0.0785, 0.1104, "rect", "#e0708f"),
+        "Pad 12": ControlGeometry(0.4030, 0.6943, 0.0765, 0.1104, "rect", "#e0708f"),
+        "Pad 13": ControlGeometry(0.1200, 0.8273, 0.0785, 0.1097, "rect", "#e0708f"),
+        "Pad 14": ControlGeometry(0.2150, 0.8273, 0.0765, 0.1097, "rect", "#e0708f"),
+        "Pad 15": ControlGeometry(0.3080, 0.8273, 0.0785, 0.1097, "rect", "#e0708f"),
+        "Pad 16": ControlGeometry(0.4030, 0.8273, 0.0765, 0.1097, "rect", "#e0708f"),
         # The second, physically distinct pad grid to the right (decks 2/4)
         # -- see "Right pad grid" in the module docstring. Same row Y's/size
         # as the left grid; cols x = 0.535/0.622/0.709/0.796.
-        "Pad 1 (R)": ControlGeometry(0.5377, 0.4254, 0.0816, 0.1127, "rect", "#e0708f"),
-        "Pad 2 (R)": ControlGeometry(0.6311, 0.4254, 0.0816, 0.1127, "rect", "#e0708f"),
-        "Pad 3 (R)": ControlGeometry(0.7245, 0.4254, 0.0816, 0.1127, "rect", "#e0708f"),
-        "Pad 4 (R)": ControlGeometry(0.8179, 0.4254, 0.0816, 0.1127, "rect", "#e0708f"),
-        "Pad 5 (R)": ControlGeometry(0.5377, 0.5448, 0.0816, 0.1127, "rect", "#e0708f"),
-        "Pad 6 (R)": ControlGeometry(0.6311, 0.5448, 0.0816, 0.1127, "rect", "#e0708f"),
-        "Pad 7 (R)": ControlGeometry(0.7245, 0.5448, 0.0816, 0.1127, "rect", "#e0708f"),
-        "Pad 8 (R)": ControlGeometry(0.8179, 0.5448, 0.0816, 0.1127, "rect", "#e0708f"),
-        "Pad 9 (R)": ControlGeometry(0.5377, 0.6820, 0.0816, 0.1127, "rect", "#e0708f"),
-        "Pad 10 (R)": ControlGeometry(0.6311, 0.6820, 0.0816, 0.1127, "rect", "#e0708f"),
-        "Pad 11 (R)": ControlGeometry(0.7245, 0.6820, 0.0816, 0.1127, "rect", "#e0708f"),
-        "Pad 12 (R)": ControlGeometry(0.8179, 0.6820, 0.0816, 0.1127, "rect", "#e0708f"),
-        "Pad 13 (R)": ControlGeometry(0.5377, 0.8270, 0.0816, 0.1127, "rect", "#e0708f"),
-        "Pad 14 (R)": ControlGeometry(0.6311, 0.8270, 0.0816, 0.1127, "rect", "#e0708f"),
-        "Pad 15 (R)": ControlGeometry(0.7245, 0.8270, 0.0816, 0.1127, "rect", "#e0708f"),
-        "Pad 16 (R)": ControlGeometry(0.8179, 0.8270, 0.0816, 0.1127, "rect", "#e0708f"),
+        "Pad 1 (R)": ControlGeometry(0.5200, 0.4282, 0.0775, 0.1083, "rect", "#e0708f"),
+        "Pad 2 (R)": ControlGeometry(0.6140, 0.4282, 0.0775, 0.1083, "rect", "#e0708f"),
+        "Pad 3 (R)": ControlGeometry(0.7080, 0.4282, 0.0775, 0.1083, "rect", "#e0708f"),
+        "Pad 4 (R)": ControlGeometry(0.8020, 0.4282, 0.0775, 0.1083, "rect", "#e0708f"),
+        "Pad 5 (R)": ControlGeometry(0.5200, 0.5612, 0.0775, 0.1083, "rect", "#e0708f"),
+        "Pad 6 (R)": ControlGeometry(0.6140, 0.5612, 0.0775, 0.1083, "rect", "#e0708f"),
+        "Pad 7 (R)": ControlGeometry(0.7080, 0.5612, 0.0775, 0.1083, "rect", "#e0708f"),
+        "Pad 8 (R)": ControlGeometry(0.8020, 0.5612, 0.0775, 0.1083, "rect", "#e0708f"),
+        "Pad 9 (R)": ControlGeometry(0.5200, 0.6943, 0.0775, 0.1104, "rect", "#e0708f"),
+        "Pad 10 (R)": ControlGeometry(0.6140, 0.6943, 0.0775, 0.1104, "rect", "#e0708f"),
+        "Pad 11 (R)": ControlGeometry(0.7080, 0.6943, 0.0775, 0.1104, "rect", "#e0708f"),
+        "Pad 12 (R)": ControlGeometry(0.8020, 0.6943, 0.0775, 0.1104, "rect", "#e0708f"),
+        "Pad 13 (R)": ControlGeometry(0.5200, 0.8273, 0.0775, 0.1097, "rect", "#e0708f"),
+        "Pad 14 (R)": ControlGeometry(0.6140, 0.8273, 0.0775, 0.1097, "rect", "#e0708f"),
+        "Pad 15 (R)": ControlGeometry(0.7080, 0.8273, 0.0775, 0.1097, "rect", "#e0708f"),
+        "Pad 16 (R)": ControlGeometry(0.8020, 0.8273, 0.0775, 0.1097, "rect", "#e0708f"),
         # Re-measured in the issue-#118 pass ("layout" session): every entry
         # below this point (everything except the pad grid) had drifted well
         # off the real button on the clean render -- some by up to a third

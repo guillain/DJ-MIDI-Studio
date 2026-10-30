@@ -363,6 +363,37 @@ Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-m
     </message>
 </context>
 <context>
+    <name>CheatSheetHtml</name>
+    <message>
+        <source>DJ MIDI Studio cheat sheet</source>
+        <translation>Antisèche DJ MIDI Studio</translation>
+    </message>
+    <message>
+        <source>Tap or hover a highlighted control to see what it does.</source>
+        <translation>Touchez ou survolez un contrôle en surbrillance pour voir ce qu&apos;il fait.</translation>
+    </message>
+    <message>
+        <source>Section</source>
+        <translation>Section</translation>
+    </message>
+    <message>
+        <source>Control</source>
+        <translation>Contrôle</translation>
+    </message>
+    <message>
+        <source>Functions</source>
+        <translation>Fonctions</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Fermer</translation>
+    </message>
+    <message>
+        <source>No picture of this controller: its mapped controls are listed below.</source>
+        <translation>Pas d&apos;image de ce contrôleur : ses contrôles mappés sont listés ci-dessous.</translation>
+    </message>
+</context>
+<context>
     <name>CheatSheetPdf</name>
     <message>
         <source>Page {number}</source>
@@ -3509,6 +3540,14 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
         <translation>Antisèche (PDF)...</translation>
     </message>
     <message>
+        <source>Cheat Sheet (Web Page)...</source>
+        <translation>Antisèche (page web)...</translation>
+    </message>
+    <message>
+        <source>One offline web page to open on a phone or tablet: tap a control to see its functions</source>
+        <translation>Une page web hors ligne à ouvrir sur un téléphone ou une tablette : touchez un contrôle pour voir ses fonctions</translation>
+    </message>
+    <message>
         <source>Mixxx Mapping from Profile...</source>
         <translation>Mapping Mixxx depuis un profil...</translation>
     </message>
@@ -3879,6 +3918,14 @@ Les installer ? (Fichier → Profil de contrôleur → Installer depuis la bibli
     <message>
         <source>Show Macros Folder</source>
         <translation>Afficher le dossier des macros</translation>
+    </message>
+    <message>
+        <source>Web pages (*.html)</source>
+        <translation>Pages web (*.html)</translation>
+    </message>
+    <message>
+        <source>Cheat sheet web page exported: {path} ({size} KB, opens offline on any device)</source>
+        <translation>Page web de l&apos;antisèche exportée : {path} ({size} Ko, s&apos;ouvre hors ligne sur tout appareil)</translation>
     </message>
     <message>
         <source>Layer Map</source>
