@@ -374,3 +374,55 @@ def test_step_from_event_records_presses_releases_and_cc():
     assert step_from_event(_at(7, 0, "Control Change", "64")).message == SyncMessage("Control Change", 1, 7, 64)
     assert step_from_event(_at(40, 0), 10**9).delay_ms == MAX_DELAY_MS
     assert step_from_event(MidiEvent("out", "1", "Note On", "40", "127", 0.0, "P")) is None
+
+
+# --- step 2: toggles, scenes, wait steps (issue #367) ------------------------
+
+
+def test_toggle_scenes_and_wait_steps_round_trip():
+    wait = MacroStep(SyncMessage("Note On", 1, 50, 0), 5000, wait=True)
+    macro = MidiMacro(
+        "Fx",
+        "P",
+        (MacroStep(PRESS), wait, MacroStep(RELEASE)),
+        alternate_steps=(MacroStep(CC),),
+        scenes=("Club", "Radio"),
+    )
+    raw = json.loads(json.dumps(macro.to_dict()))
+    assert raw["steps"][1]["wait"] is True and "wait" not in raw["steps"][0]
+    assert raw["alternate_steps"][0]["event_type"] == "Control Change"
+    assert raw["scenes"] == ["Club", "Radio"]
+    assert MidiMacro.from_dict(raw) == macro
+    assert "alternate_steps" not in _macro().to_dict() and "scenes" not in _macro().to_dict()
+    assert macro.is_toggle and macro.variant(True).steps == (MacroStep(CC),) and macro.variant(False) is macro
+    assert macro.plays_in_scene("club") and not macro.plays_in_scene("Default")
+    assert _macro().plays_in_scene("anything")
+    assert wait.wait_trigger == MacroTrigger("Note On", 1, 50) and wait.wait_timeout_ms == 5000
+    with pytest.raises(ValueError):
+        MacroStep.from_dict({"event_type": "Note Off", "channel": 1, "data1": 1, "data2": 0, "wait": True})
+
+
+def test_wait_rows_and_their_type_label():
+    from djmidi.midi_macros import step_type
+
+    (step,) = steps_from_rows([("Wait for Control Change", "2", "7", "", "0")])
+    assert step.wait and step.message == SyncMessage("Control Change", 2, 7, 0)
+    assert step_type(step) == "Wait for Control Change" and step.wait_timeout_ms == 60_000
+    with pytest.raises(ValueError, match="Step 1"):
+        steps_from_rows([("Wait for Note Off", "1", "1", "", "0")])
+
+
+def test_same_trigger_allowed_on_macros_of_disjoint_scenes():
+    trigger = (MacroTrigger("Note On", 1, 40),)
+    club = MidiMacro("Club", "X", (MacroStep(PRESS),), triggers=trigger, scenes=("Club",))
+    radio = MidiMacro("Radio", "X", (MacroStep(PRESS),), triggers=trigger, scenes=("Radio",))
+    everywhere = MidiMacro("All", "X", (MacroStep(PRESS),), triggers=trigger)
+    assert validate_macros([club, radio]) == []
+    assert validate_macros([club, everywhere])  # "All" also plays in Club
+    assert validate_macros([club, MidiMacro("Club2", "X", (MacroStep(PRESS),), triggers=trigger, scenes=("club",))])
+
+
+def test_synchronous_play_refuses_a_wait_step():
+    macro = MidiMacro("W", "P", (MacroStep(PRESS), MacroStep(SyncMessage("Note On", 1, 9, 0), wait=True)))
+    result = run_macro(macro, ["P"], sender=lambda **kw: None, sleep=lambda s: None)
+    assert not result.ok and result.sent == 1 and "waits for a controller press" in result.error

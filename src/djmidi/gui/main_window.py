@@ -366,6 +366,8 @@ class MainWindow(QMainWindow):
         # MIDI macros (issue #228): one file per macro in the Macros folder.
         self.macros: list[midi_macros.MidiMacro] = midi_macros.load_macros(user_paths.macros_dir())
         self._macro_player = MacroPlayer(parent=self)
+        # Which side each toggle macro plays next (issue #367), session only.
+        self._macro_toggles: dict[str, bool] = {}
         # Remembers recent presses so a trigger sequence can complete.
         self._macro_matcher = midi_macros.MacroTriggerMatcher()
         # Where Stage Mode's set panel stood when it last closed (issue #366).
@@ -3519,20 +3521,34 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(self.tr("{count} macro(s) saved").format(count=len(self.macros)), 5000)
         return True
 
+    def _macro_to_play(self, macro: midi_macros.MidiMacro) -> midi_macros.MidiMacro:
+        """The side of a toggle macro due now, flipping it for next time
+        (issue #367); any other macro as is."""
+        if not macro.is_toggle:
+            return macro
+        alternate = self._macro_toggles.get(macro.name, False)
+        self._macro_toggles[macro.name] = not alternate
+        return macro.variant(alternate)
+
     def _play_macro(self, name: str) -> midi_macros.MacroResult | None:
         macro = next((macro for macro in self.macros if macro.name == name), None)
         if macro is None:
             return None
-        return self._macro_player.play(macro, list_output_ports())
+        return self._macro_player.play(self._macro_to_play(macro), list_output_ports())
 
     def _play_triggered_macros(self, event: MidiEvent) -> list[str]:
         """Plays every macro this controller press fires -- a one-press
-        trigger, or the last press of a trigger sequence; returns their names."""
-        fired = self._macro_matcher.feed(self.macros, event)
+        trigger, or the last press of a trigger sequence, among the macros
+        allowed in the active sync scene; returns their names. A press a
+        playing macro's wait step was waiting for resumes it instead."""
+        if self._macro_player.feed_event(event):
+            return []
+        scene = self.preferences.active_sync_scene
+        fired = self._macro_matcher.feed([m for m in self.macros if m.plays_in_scene(scene)], event)
         if fired:
             ports = list_output_ports()
             for macro in fired:
-                self._macro_player.play(macro, ports)
+                self._macro_player.play(self._macro_to_play(macro), ports)
         return [macro.name for macro in fired]
 
     def _ensure_macro_triggers_listening(self) -> None:

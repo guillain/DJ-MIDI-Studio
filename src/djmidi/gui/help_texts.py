@@ -72,7 +72,12 @@ MIDI_MACROS: HelpEntry = (
         "<li><b>Shortcut</b>: optional; one the app's menus already use is refused.</li>"
         "<li><b>Trigger</b>: <b>Learn</b>, then press a button on your controller, or several "
         "in a row: those presses, in that order and each within the <b>Max gap</b> of the "
-        "previous one, play the macro from then on (the Live Monitor must be listening).</li></ul>"
+        "previous one, play the macro from then on (the Live Monitor must be listening).</li>"
+        "<li><b>Only in scenes</b>: limit the controller trigger to some sync scenes, so one button can "
+        "play a different macro per scene.</li>"
+        "<li><b>Toggle</b>: a second step list (B), played every other time.</li>"
+        "<li>A <b>Wait for Note On</b> / <b>Wait for Control Change</b> step pauses the macro until that "
+        "press comes (its delay is the longest wait).</li></ul>"
         "<b>Test</b> plays the macro as edited. Each macro is a file in "
         "<tt>Documents/DJ MIDI Studio/Macros</tt>.",
     ),

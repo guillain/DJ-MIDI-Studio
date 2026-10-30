@@ -25,6 +25,7 @@ from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QKeySequence
 from PySide6.QtWidgets import (
     QAbstractItemView,
+    QCheckBox,
     QComboBox,
     QDialog,
     QDialogButtonBox,
@@ -38,6 +39,7 @@ from PySide6.QtWidgets import (
     QListWidget,
     QPushButton,
     QSpinBox,
+    QTabBar,
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
@@ -55,12 +57,14 @@ from djmidi.midi_macros import (
     MAX_TRIGGER_GAP_MS,
     MAX_TRIGGER_LENGTH,
     MIN_TRIGGER_GAP_MS,
+    WAIT_TYPES,
     MacroStep,
     MacroTrigger,
     MidiMacro,
     PortOpener,
     sequence_label,
     step_from_event,
+    step_type,
     steps_from_rows,
     validate_macros,
 )
@@ -69,6 +73,11 @@ if TYPE_CHECKING:
     from djmidi.midi_io import MidiEvent
 
 _EVENT_TYPES = ("Note On", "Note Off", "Control Change")
+# Wait steps (issue #367): the stored type key, and its label in the Type list.
+_WAIT_LABELS = {
+    WAIT_TYPES[0]: QT_TRANSLATE_NOOP("MacroManagerDialog", "Wait for Note On"),
+    WAIT_TYPES[1]: QT_TRANSLATE_NOOP("MacroManagerDialog", "Wait for Control Change"),
+}
 _COLUMNS = (
     QT_TRANSLATE_NOOP("MacroManagerDialog", "Type"),
     QT_TRANSLATE_NOOP("MacroManagerDialog", "Channel"),
@@ -181,6 +190,25 @@ class MacroManagerDialog(QDialog):
         form.addRow(self.tr("Shortcut"), shortcut_row)
         form.addRow(self.tr("Trigger"), trigger_row)
         form.addRow(self.tr("Max gap"), self.gap_spin)
+        self.scenes_edit = QLineEdit()
+        self.scenes_edit.setPlaceholderText(self.tr("All scenes"))
+        self.scenes_edit.setToolTip(
+            self.tr(
+                "Sync scenes the controller trigger plays this macro in, separated by commas (empty: every "
+                "scene). Two macros on the same trigger are fine when their scenes don't overlap. The "
+                "Macros menu and the shortcut always play it."
+            )
+        )
+        form.addRow(self.tr("Only in scenes"), self.scenes_edit)
+        # A toggle (issue #367): two step lists, played in turn.
+        self.toggle_box = QCheckBox(self.tr("Toggle: alternate between two step lists"))
+        self.toggle_box.toggled.connect(self._on_toggle_changed)
+        self.side_tabs = QTabBar()
+        self.side_tabs.addTab(self.tr("A — 1st, 3rd… play"))
+        self.side_tabs.addTab(self.tr("B — 2nd, 4th… play"))
+        self.side_tabs.currentChanged.connect(self._on_side_changed)
+        self._sides: list[tuple[MacroStep, ...]] = [(), ()]
+        self._side = 0
 
         self.table = QTableWidget(0, len(_COLUMNS))
         self.table.setHorizontalHeaderLabels([self.tr(column) for column in _COLUMNS])
@@ -238,6 +266,8 @@ class MacroManagerDialog(QDialog):
         )
         hint.setWordWrap(True)
         right.addWidget(hint)
+        right.addWidget(self.toggle_box)
+        right.addWidget(self.side_tabs)
         right.addWidget(self.table, 1)
         right.addLayout(step_buttons)
 
@@ -278,7 +308,42 @@ class MacroManagerDialog(QDialog):
         self.cancel_learn(None)
         self._set_triggers(macro.triggers)
         self.gap_spin.setValue(macro.trigger_gap_ms)
+        self.scenes_edit.setText(", ".join(macro.scenes))
+        self._sides = [macro.steps, macro.alternate_steps]
+        self._side = 0
+        self.side_tabs.blockSignals(True)
+        self.side_tabs.setCurrentIndex(0)
+        self.side_tabs.blockSignals(False)
+        self.toggle_box.blockSignals(True)
+        self.toggle_box.setChecked(macro.is_toggle)
+        self.toggle_box.blockSignals(False)
+        self.side_tabs.setVisible(macro.is_toggle)
         self._fill(macro.steps)
+
+    def _store_side(self) -> bool:
+        """Keeps the visible table as its side's steps; False if invalid."""
+        try:
+            self._sides[self._side] = steps_from_rows(self._rows(), _macro_translate)
+        except ValueError as exc:
+            self.status.setText(str(exc))
+            return False
+        return True
+
+    def _on_side_changed(self, index: int) -> None:
+        if index == self._side:
+            return
+        if not self._store_side():
+            self.side_tabs.blockSignals(True)
+            self.side_tabs.setCurrentIndex(self._side)
+            self.side_tabs.blockSignals(False)
+            return
+        self._side = index
+        self._fill(self._sides[index])
+
+    def _on_toggle_changed(self, checked: bool) -> None:
+        self.side_tabs.setVisible(checked)
+        if not checked and self._side != 0:
+            self.side_tabs.setCurrentIndex(0)
 
     def _fill(self, steps: Sequence[MacroStep]) -> None:
         self.table.setRowCount(0)
@@ -289,8 +354,11 @@ class MacroManagerDialog(QDialog):
         row = self.table.rowCount()
         self.table.insertRow(row)
         combo = QComboBox()
-        combo.addItems(_EVENT_TYPES)
-        combo.setCurrentText(step.message.event_type)
+        for event_type in _EVENT_TYPES:
+            combo.addItem(event_type, event_type)
+        for key, label in _WAIT_LABELS.items():
+            combo.addItem(self.tr(label), key)
+        combo.setCurrentIndex(max(combo.findData(step_type(step)), 0))
         self.table.setCellWidget(row, 0, combo)
         values = (step.message.channel, step.message.data1, step.message.data2, step.delay_ms)
         for column, value in enumerate(values, start=1):
@@ -304,7 +372,7 @@ class MacroManagerDialog(QDialog):
             combo = self.table.cellWidget(row, 0)
             cells = [self.table.item(row, column) for column in range(1, len(_COLUMNS))]
             values = [cell.text() if cell is not None else "" for cell in cells]
-            rows.append((combo.currentText() if isinstance(combo, QComboBox) else "", *values))
+            rows.append((combo.currentData() if isinstance(combo, QComboBox) else "", *values))
         return rows
 
     def _edited(self) -> MidiMacro | None:
@@ -313,17 +381,24 @@ class MacroManagerDialog(QDialog):
         if not name:
             self.status.setText(self.tr("A macro needs a name"))
             return None
-        try:
-            steps = steps_from_rows(self._rows(), _macro_translate)
-        except ValueError as exc:
-            self.status.setText(str(exc))
+        if not self._store_side():
             return None
+        steps = self._sides[0]
+        alternate = self._sides[1] if self.toggle_box.isChecked() else ()
+        scenes = tuple(dict.fromkeys(part.strip() for part in self.scenes_edit.text().split(",") if part.strip()))
         shortcut = self.shortcut_edit.keySequence().toString(QKeySequence.SequenceFormat.PortableText)
         if shortcut and shortcut.casefold() in self._reserved:
             self.status.setText(self.tr("{shortcut} is already used by the app's menus").format(shortcut=shortcut))
             return None
         return MidiMacro(
-            name, self.port_combo.currentText().strip(), steps, shortcut, self._triggers, self.gap_spin.value()
+            name,
+            self.port_combo.currentText().strip(),
+            steps,
+            shortcut,
+            self._triggers,
+            self.gap_spin.value(),
+            alternate,
+            scenes,
         )
 
     def _commit(self) -> bool:
@@ -437,9 +512,10 @@ class MacroManagerDialog(QDialog):
             self.port_combo.setCurrentText(sync_set.output_port or sync_set.controller)
 
     def _test_macro(self) -> None:
+        """Plays the step list on screen (side B of a toggle when shown)."""
         macro = self._edited()
         if macro is not None:
-            self._player.play(macro, self._ports)
+            self._player.play(macro.variant(self.toggle_box.isChecked() and self._side == 1), self._ports)
 
     # --- MIDI Learn (issues #252, trigger sequences) ------------------------
 
@@ -547,7 +623,8 @@ class MacroManagerDialog(QDialog):
             return self._capture_trigger(event)
         if self._learn_target == "steps":
             return self._capture_step(event)
-        return False
+        # A Test run waiting for a press (issue #367) gets it.
+        return self._player.feed_event(event)
 
     def _capture_trigger(self, event: MidiEvent) -> bool:
         press = MacroTrigger.from_event(event)
