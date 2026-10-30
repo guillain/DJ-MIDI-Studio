@@ -139,6 +139,10 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Guided profile verification** (`v0.48.150-profile-check`, #364, phase 4 item 2) — `File → Controller Profile →
+  Verify Profile with the Controller…` asks for each physical control (and its SHIFT layer), judges the press against
+  the profile (ok / mismatch naming what came and who the profile gives it to / skipped) and builds a report that
+  opens as a pre-filled `profile-check` issue — the route for owners to verify the `Not yet` profiles (#11).
 - [x] **Place a profile's controls on a picture** (`v0.48.149-profile-geometry-editor`, #363, phase 4 item 1) — an
   installed profile (library or Controller Setup) gets a picture and marker boxes, drawn by the user in a placement
   editor (drag a box, or click; auto-advance through the layout's controls) and stored in the profile JSON; they feed
@@ -3439,7 +3443,7 @@ close what can't be unblocked here.
    1. Place controls on a photo for any profile without geometry (#363).
       **Done** in `v0.48.149-profile-geometry-editor`.
    2. Guided profile verification through the Live Monitor (#364) — also the
-      community route for #11.
+      community route for #11. **Done** in `v0.48.150-profile-check`.
    3. Mixxx mapping plugin, read-only, from its documented format and real
       public mappings (#365) — possibly seeds non-Pioneer library profiles (#12).
    4. Live set mode: set preparation on the Stage Mode screen (#366).
