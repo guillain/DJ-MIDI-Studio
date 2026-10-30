@@ -526,3 +526,83 @@ def test_controller_sequence_plays_its_macro_after_the_last_press(tmp_path, monk
         assert len(output.sent) == 1
     finally:
         window.close()
+
+
+# --- step 2: toggles, scenes, wait steps (issue #367) ------------------------
+
+
+def test_player_waits_for_a_press_then_finishes_or_times_out():
+    output = _FakeOutput()
+    player = MacroPlayer(port_opener=output)
+    results = []
+    player.finished.connect(results.append)
+    wait = MacroStep(SyncMessage("Note On", 1, 50, 0), 5000, wait=True)
+    macro = MidiMacro("W", PORT, (MacroStep(PRESS), wait, MacroStep(PRESS)))
+    assert player.play(macro, [PORT]) is None
+    assert output.sent == ["Note On"] and player.waiting == 1 and output.closed == 1  # port let go while waiting
+    assert not player.feed_event(_press(data1="49"))
+    assert player.feed_event(_press(data1="50"))
+    assert output.sent == ["Note On", "Note On"] and player.running == 0 and results[-1].ok
+
+    player.play(macro, [PORT])
+    run = player._running[0]
+    player._wait_expired(run, run.index)
+    assert not results[-1].ok and results[-1].error == midi_macros.WAIT_TIMED_OUT
+
+
+def test_dialog_edits_both_sides_of_a_toggle_and_scenes():
+    dialog = MacroManagerDialog([_macro("A")], [PORT], ensure_listening=lambda: True)
+    assert not dialog.side_tabs.isVisible() and not dialog.toggle_box.isChecked()
+    dialog.toggle_box.setChecked(True)
+    dialog.side_tabs.setCurrentIndex(1)
+    assert dialog.table.rowCount() == 0
+    dialog._add_step()
+    combo = dialog.table.cellWidget(0, 0)
+    combo.setCurrentIndex(combo.findData("Wait for Note On"))
+    dialog.scenes_edit.setText("Club, Radio, Club")
+    dialog.side_tabs.setCurrentIndex(0)
+    assert dialog.table.rowCount() == len(_macro("A").steps)
+    dialog.accept()
+    macro = dialog.edited_macros()[0]
+    assert macro.steps == _macro("A").steps
+    assert len(macro.alternate_steps) == 1 and macro.alternate_steps[0].wait
+    assert macro.scenes == ("Club", "Radio")
+
+    reopened = MacroManagerDialog([macro], [PORT])
+    assert reopened.toggle_box.isChecked() and reopened.scenes_edit.text() == "Club, Radio"
+    reopened.toggle_box.setChecked(False)
+    reopened.accept()
+    assert reopened.edited_macros()[0].alternate_steps == ()
+
+
+def test_main_window_alternates_toggles_filters_scenes_and_resumes_waits(tmp_path, monkeypatch):
+    press_a = SyncMessage("Note On", 1, 11, 127)
+    press_b = SyncMessage("Control Change", 1, 20, 64)
+    trigger = (MacroTrigger("Note On", 1, 40, "DDJ-XP2"),)
+    toggle = MidiMacro("T", PORT, (MacroStep(press_a),), triggers=trigger, alternate_steps=(MacroStep(press_b),))
+    radio = MidiMacro("R", PORT, (MacroStep(press_a),), triggers=(MacroTrigger("Note On", 1, 41),), scenes=("Radio",))
+    waiting = MidiMacro(
+        "Wt", PORT, (MacroStep(SyncMessage("Note On", 1, 60, 0), wait=True), MacroStep(press_a)),
+        triggers=(MacroTrigger("Note On", 1, 42),),
+    )
+    midi_macros.save_macros(user_paths.macros_dir(), [toggle, radio, waiting])
+    window = _window(tmp_path)
+    output = _FakeOutput()
+    monkeypatch.setattr(main_window_module, "list_output_ports", lambda: [PORT])
+    monkeypatch.setattr("djmidi.midi_io.open_midi_output", output)
+    try:
+        window._on_live_midi_event(_press())
+        window._on_live_midi_event(_press())
+        window._on_live_midi_event(_press())
+        assert output.sent == ["Note On", "Control Change", "Note On"]  # A, B, A
+        window._on_live_midi_event(_press(data1="41"))
+        assert len(output.sent) == 3  # only in the Radio scene
+        window.preferences.active_sync_scene = "Radio"
+        window._on_live_midi_event(_press(data1="41"))
+        assert len(output.sent) == 4
+        window._on_live_midi_event(_press(data1="42"))
+        assert window._macro_player.waiting == 1 and len(output.sent) == 4
+        assert window._play_triggered_macros(_press(data1="60")) == []  # resumed, nothing else fired
+        assert len(output.sent) == 5 and window._macro_player.running == 0
+    finally:
+        window.close()

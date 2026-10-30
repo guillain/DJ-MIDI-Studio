@@ -1924,8 +1924,8 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
         <translation>Macros MIDI</translation>
     </message>
     <message>
-        <source>A macro is a named list of MIDI messages played in one go from the &lt;b&gt;Macros&lt;/b&gt; menu or its keyboard shortcut, from any tab.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Output port&lt;/b&gt;: where the messages go -- a port, or a controller name matched against the connected ports like &lt;b&gt;⟳ Sync&lt;/b&gt; does.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Steps&lt;/b&gt;: type, channel (1–16), data 1/2 (0–127) and an optional delay (ms) waited before the step is sent; &lt;b&gt;Add sync set…&lt;/b&gt; appends a recorded sync set&apos;s messages; &lt;b&gt;Learn steps&lt;/b&gt; records the messages you play on your controller, with their delays.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Shortcut&lt;/b&gt;: optional; one the app&apos;s menus already use is refused.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Trigger&lt;/b&gt;: &lt;b&gt;Learn&lt;/b&gt;, then press a button on your controller, or several in a row: those presses, in that order and each within the &lt;b&gt;Max gap&lt;/b&gt; of the previous one, play the macro from then on (the Live Monitor must be listening).&lt;/li&gt;&lt;/ul&gt;&lt;b&gt;Test&lt;/b&gt; plays the macro as edited. Each macro is a file in &lt;tt&gt;Documents/DJ MIDI Studio/Macros&lt;/tt&gt;.</source>
-        <translation>Une macro est une liste nommée de messages MIDI, jouée d&apos;un coup depuis le menu &lt;b&gt;Macros&lt;/b&gt; ou son raccourci clavier, depuis n&apos;importe quel onglet.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Port de sortie&lt;/b&gt; : où partent les messages -- un port, ou un nom de contrôleur comparé aux ports branchés comme le fait &lt;b&gt;⟳ Synchro&lt;/b&gt;.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Ajouter une étape&lt;/b&gt; : type, canal (1–16), data 1/2 (0–127) et un délai facultatif (ms) attendu avant l&apos;envoi de l&apos;étape ; &lt;b&gt;Ajouter un jeu de synchronisation…&lt;/b&gt; ajoute les messages d&apos;un jeu de synchronisation enregistré ; &lt;b&gt;Apprendre les étapes&lt;/b&gt; enregistre les messages que vous jouez sur votre contrôleur, avec leurs délais.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Raccourci&lt;/b&gt; : facultatif ; un raccourci déjà pris par les menus de l&apos;application est refusé.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Déclencheur&lt;/b&gt; : &lt;b&gt;Apprendre&lt;/b&gt;, puis appuyez sur un bouton de votre contrôleur, ou sur plusieurs à la suite : ces appuis, dans cet ordre et chacun dans l&apos;&lt;b&gt;Écart max&lt;/b&gt; du précédent, jouent désormais la macro (le Live Monitor doit être à l&apos;écoute).&lt;/li&gt;&lt;/ul&gt;&lt;b&gt;Tester&lt;/b&gt; joue la macro telle qu&apos;elle est modifiée. Chaque macro est un fichier dans &lt;tt&gt;Documents/DJ MIDI Studio/Macros&lt;/tt&gt;.</translation>
+        <source>A macro is a named list of MIDI messages played in one go from the &lt;b&gt;Macros&lt;/b&gt; menu or its keyboard shortcut, from any tab.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Output port&lt;/b&gt;: where the messages go -- a port, or a controller name matched against the connected ports like &lt;b&gt;⟳ Sync&lt;/b&gt; does.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Steps&lt;/b&gt;: type, channel (1–16), data 1/2 (0–127) and an optional delay (ms) waited before the step is sent; &lt;b&gt;Add sync set…&lt;/b&gt; appends a recorded sync set&apos;s messages; &lt;b&gt;Learn steps&lt;/b&gt; records the messages you play on your controller, with their delays.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Shortcut&lt;/b&gt;: optional; one the app&apos;s menus already use is refused.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Trigger&lt;/b&gt;: &lt;b&gt;Learn&lt;/b&gt;, then press a button on your controller, or several in a row: those presses, in that order and each within the &lt;b&gt;Max gap&lt;/b&gt; of the previous one, play the macro from then on (the Live Monitor must be listening).&lt;/li&gt;&lt;li&gt;&lt;b&gt;Only in scenes&lt;/b&gt;: limit the controller trigger to some sync scenes, so one button can play a different macro per scene.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Toggle&lt;/b&gt;: a second step list (B), played every other time.&lt;/li&gt;&lt;li&gt;A &lt;b&gt;Wait for Note On&lt;/b&gt; / &lt;b&gt;Wait for Control Change&lt;/b&gt; step pauses the macro until that press comes (its delay is the longest wait).&lt;/li&gt;&lt;/ul&gt;&lt;b&gt;Test&lt;/b&gt; plays the macro as edited. Each macro is a file in &lt;tt&gt;Documents/DJ MIDI Studio/Macros&lt;/tt&gt;.</source>
+        <translation>Une macro est une liste nommée de messages MIDI, jouée d&apos;un coup depuis le menu &lt;b&gt;Macros&lt;/b&gt; ou son raccourci clavier, depuis n&apos;importe quel onglet.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Port de sortie&lt;/b&gt; : où partent les messages -- un port, ou un nom de contrôleur comparé aux ports branchés comme le fait &lt;b&gt;⟳ Synchro&lt;/b&gt;.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Ajouter une étape&lt;/b&gt; : type, canal (1–16), data 1/2 (0–127) et un délai facultatif (ms) attendu avant l&apos;envoi de l&apos;étape ; &lt;b&gt;Ajouter un jeu de synchronisation…&lt;/b&gt; ajoute les messages d&apos;un jeu de synchronisation enregistré ; &lt;b&gt;Apprendre les étapes&lt;/b&gt; enregistre les messages que vous jouez sur votre contrôleur, avec leurs délais.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Raccourci&lt;/b&gt; : facultatif ; un raccourci déjà pris par les menus de l&apos;application est refusé.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Déclencheur&lt;/b&gt; : &lt;b&gt;Apprendre&lt;/b&gt;, puis appuyez sur un bouton de votre contrôleur, ou sur plusieurs à la suite : ces appuis, dans cet ordre et chacun dans l&apos;&lt;b&gt;Écart max&lt;/b&gt; du précédent, jouent désormais la macro (le Live Monitor doit être à l&apos;écoute).&lt;/li&gt;&lt;li&gt;&lt;b&gt;Seulement dans les scènes&lt;/b&gt; : limite le déclencheur du contrôleur à certaines scènes de synchro, pour qu&apos;un même bouton joue une macro différente selon la scène.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Bascule&lt;/b&gt; : une seconde liste d&apos;étapes (B), jouée une fois sur deux.&lt;/li&gt;&lt;li&gt;Une étape &lt;b&gt;Attendre un Note On&lt;/b&gt; / &lt;b&gt;Attendre un Control Change&lt;/b&gt; met la macro en pause jusqu&apos;à cet appui (son délai est l&apos;attente maximale).&lt;/li&gt;&lt;/ul&gt;&lt;b&gt;Tester&lt;/b&gt; joue la macro telle qu&apos;elle est modifiée. Chaque macro est un fichier dans &lt;tt&gt;Documents/DJ MIDI Studio/Macros&lt;/tt&gt;.</translation>
     </message>
     <message>
         <source>Place controls</source>
@@ -3036,6 +3036,14 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
         <translation>Nouvelle</translation>
     </message>
     <message>
+        <source>Wait for Note On</source>
+        <translation>Attendre un Note On</translation>
+    </message>
+    <message>
+        <source>Wait for Control Change</source>
+        <translation>Attendre un Control Change</translation>
+    </message>
+    <message>
         <source>Delete</source>
         <translation>Supprimer</translation>
     </message>
@@ -3086,6 +3094,30 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
     <message>
         <source>Max gap</source>
         <translation>Écart max</translation>
+    </message>
+    <message>
+        <source>All scenes</source>
+        <translation>Toutes les scènes</translation>
+    </message>
+    <message>
+        <source>Sync scenes the controller trigger plays this macro in, separated by commas (empty: every scene). Two macros on the same trigger are fine when their scenes don&apos;t overlap. The Macros menu and the shortcut always play it.</source>
+        <translation>Scènes de synchro dans lesquelles le déclencheur du contrôleur joue cette macro, séparées par des virgules (vide : toutes les scènes). Deux macros sur le même déclencheur sont acceptées si leurs scènes ne se recoupent pas. Le menu Macros et le raccourci la jouent toujours.</translation>
+    </message>
+    <message>
+        <source>Only in scenes</source>
+        <translation>Seulement dans les scènes</translation>
+    </message>
+    <message>
+        <source>Toggle: alternate between two step lists</source>
+        <translation>Bascule : alterner entre deux listes d&apos;étapes</translation>
+    </message>
+    <message>
+        <source>A — 1st, 3rd… play</source>
+        <translation>A — 1re, 3e… lecture</translation>
+    </message>
+    <message>
+        <source>B — 2nd, 4th… play</source>
+        <translation>B — 2e, 4e… lecture</translation>
     </message>
     <message>
         <source>Add step</source>
@@ -4791,6 +4823,14 @@ Lignes sélectionnées dans Configuration du contrôleur : {selected}</translati
     <message>
         <source>cancelled</source>
         <translation>annulée</translation>
+    </message>
+    <message>
+        <source>the awaited controller press never came</source>
+        <translation>l&apos;appui attendu sur le contrôleur n&apos;est jamais venu</translation>
+    </message>
+    <message>
+        <source>a step waits for a controller press: play it from the app</source>
+        <translation>une étape attend un appui sur le contrôleur : jouez-la depuis l&apos;application</translation>
     </message>
 </context>
 <context>

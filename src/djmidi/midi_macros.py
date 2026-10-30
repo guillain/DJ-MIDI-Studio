@@ -22,6 +22,13 @@ counts -- the same rule as the mapping editor's MIDI Learn
 (:func:`djmidi.midi_learn.trigger_from_event`) -- so a button's release
 never plays its macro a second time.
 
+Step 2 (issue #367) adds three things: ``alternate_steps``, a second step
+list that every other play uses (a toggle: press once for A, again for B);
+``scenes``, the sync scenes a controller trigger fires the macro in (so one
+button can run a different macro per scene); and *wait* steps, which send
+nothing and pause the macro until a given controller press arrives, their
+``delay_ms`` being the longest wait.
+
 Playing is split in two so the GUI never blocks its event loop on a delay:
 :func:`macro_schedule` turns the per-step delays into absolute offsets the
 GUI feeds to timers, and :func:`run_macro` plays the same schedule
@@ -43,7 +50,7 @@ import logging
 import time
 from collections.abc import Callable, Iterable, Sequence
 from contextlib import AbstractContextManager, ExitStack, nullcontext
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from functools import partial
 from itertools import pairwise
 from pathlib import Path
@@ -198,17 +205,35 @@ class MacroTrigger:
 @dataclass(frozen=True)
 class MacroStep:
     message: SyncMessage
-    # Pause before this message is sent, in milliseconds.
+    # Pause before this message is sent, in milliseconds -- or, for a wait
+    # step, the longest wait for its press (0: MAX_DELAY_MS).
     delay_ms: int = 0
+    # A wait step sends nothing: the macro pauses until a press of
+    # `message`'s type/channel/data1 arrives on any input (issue #367).
+    wait: bool = False
+
+    @property
+    def wait_trigger(self) -> MacroTrigger:
+        return MacroTrigger(self.message.event_type, self.message.channel, self.message.data1)
+
+    @property
+    def wait_timeout_ms(self) -> int:
+        return self.delay_ms or MAX_DELAY_MS
 
     def to_dict(self) -> dict[str, object]:
-        return {**self.message.to_dict(), "delay_ms": self.delay_ms}
+        raw: dict[str, object] = {**self.message.to_dict(), "delay_ms": self.delay_ms}
+        if self.wait:
+            raw["wait"] = True
+        return raw
 
     @classmethod
     def from_dict(cls, raw: object) -> MacroStep:
         if not isinstance(raw, dict):
             raise TypeError("A macro step must be an object")
-        return cls(SyncMessage.from_dict(raw), _delay(raw.get("delay_ms", 0)))
+        step = cls(SyncMessage.from_dict(raw), _delay(raw.get("delay_ms", 0)), bool(raw.get("wait", False)))
+        if step.wait and step.message.event_type not in TRIGGER_EVENT_TYPES:
+            raise ValueError("A wait step waits for a Note On or a Control Change")
+        return step
 
 
 @dataclass(frozen=True)
@@ -225,6 +250,22 @@ class MidiMacro:
     # `trigger_gap_ms` of the previous one.
     triggers: tuple[MacroTrigger, ...] = ()
     trigger_gap_ms: int = DEFAULT_TRIGGER_GAP_MS
+    # Step 2 (issue #367): a toggle's second step list, played every other
+    # time (empty: no toggle); and the sync scenes a controller trigger
+    # fires the macro in (empty: every scene).
+    alternate_steps: tuple[MacroStep, ...] = ()
+    scenes: tuple[str, ...] = ()
+
+    @property
+    def is_toggle(self) -> bool:
+        return bool(self.alternate_steps)
+
+    def plays_in_scene(self, scene: str) -> bool:
+        return not self.scenes or scene.casefold() in {name.casefold() for name in self.scenes}
+
+    def variant(self, alternate: bool) -> MidiMacro:
+        """This macro with the steps of one side of its toggle."""
+        return replace(self, steps=self.alternate_steps) if alternate and self.alternate_steps else self
 
     @property
     def duration_ms(self) -> int:
@@ -248,6 +289,10 @@ class MidiMacro:
         elif self.triggers:
             raw["trigger"] = [trigger.to_dict() for trigger in self.triggers]
             raw["trigger_gap_ms"] = self.trigger_gap_ms
+        if self.alternate_steps:
+            raw["alternate_steps"] = [step.to_dict() for step in self.alternate_steps]
+        if self.scenes:
+            raw["scenes"] = list(self.scenes)
         return raw
 
     @classmethod
@@ -267,6 +312,8 @@ class MidiMacro:
             shortcut=str(raw.get("shortcut", "") or "").strip(),
             triggers=_triggers_from_raw(raw.get("trigger")),
             trigger_gap_ms=trigger_gap(raw.get("trigger_gap_ms", DEFAULT_TRIGGER_GAP_MS)),
+            alternate_steps=tuple(MacroStep.from_dict(step) for step in raw.get("alternate_steps", []) or []),
+            scenes=tuple(str(scene).strip() for scene in raw.get("scenes", []) or [] if str(scene).strip()),
         )
 
 
@@ -320,8 +367,25 @@ def step_from_event(event: MidiEvent, delay_ms: float = 0) -> MacroStep | None:
     return MacroStep(message, min(MAX_DELAY_MS, max(0, round(delay_ms))))
 
 
+WAIT_PREFIX = "Wait for "
+# The editor's step types: the sendable messages, then the wait steps.
+WAIT_TYPES = tuple(f"{WAIT_PREFIX}{event_type}" for event_type in TRIGGER_EVENT_TYPES)
+
+
+def step_type(step: MacroStep) -> str:
+    """A step's type as the editor's Type column shows it."""
+    return f"{WAIT_PREFIX}{step.message.event_type}" if step.wait else step.message.event_type
+
+
 def _step(row: Sequence[object], translate: Translate) -> MacroStep:
     event_type, channel, data1, data2, delay_ms = row
+    if str(event_type).startswith(WAIT_PREFIX):
+        waited = str(event_type).removeprefix(WAIT_PREFIX)
+        if waited not in TRIGGER_EVENT_TYPES:
+            raise ValueError(translate(_UNSUPPORTED_TYPE).format(type=repr(str(event_type))))
+        _bounded(channel, _FIELD_CHANNEL, 1, 16, translate)
+        _bounded(data1, _FIELD_DATA1, 0, 127, translate)
+        return MacroStep(SyncMessage.create(waited, channel, data1, 0), _delay(delay_ms, translate), wait=True)
     # Checked here first so the error is worded in the interface language;
     # SyncMessage.create then normalizes the values.
     try:
@@ -375,13 +439,20 @@ def retriggers_itself(macro: MidiMacro) -> bool:
         not trigger.port or _port_key(trigger.port) != _port_key(macro.output_port) for trigger in triggers
     ):
         return False
-    presses = [
-        MacroTrigger(step.message.event_type, step.message.channel, step.message.data1)
-        for step in macro.steps
-        if step.message.event_type == "Control Change"
-        or (step.message.event_type == "Note On" and step.message.data2 > 0)
-    ]
-    return _contains_run(presses, [MacroTrigger(t.event_type, t.channel, t.data1) for t in triggers])
+    wanted = [MacroTrigger(t.event_type, t.channel, t.data1) for t in triggers]
+    for steps in (macro.steps, macro.alternate_steps):
+        presses = [
+            MacroTrigger(step.message.event_type, step.message.channel, step.message.data1)
+            for step in steps
+            if not step.wait
+            and (
+                step.message.event_type == "Control Change"
+                or (step.message.event_type == "Note On" and step.message.data2 > 0)
+            )
+        ]
+        if _contains_run(presses, wanted):
+            return True
+    return False
 
 
 def validate_macros(macros: Sequence[MidiMacro], translate: Translate = untranslated) -> list[str]:
@@ -392,7 +463,7 @@ def validate_macros(macros: Sequence[MidiMacro], translate: Translate = untransl
     problems: list[str] = []
     names: set[str] = set()
     shortcuts: dict[str, str] = {}
-    sequences: list[tuple[tuple[MacroTrigger, ...], str]] = []
+    sequences: list[tuple[tuple[MacroTrigger, ...], str, tuple[str, ...]]] = []
     for macro in macros:
         name = macro.name.strip()
         if not name:
@@ -412,7 +483,9 @@ def validate_macros(macros: Sequence[MidiMacro], translate: Translate = untransl
         if macro.triggers:
             label = macro.trigger_label(translate)
             clash = None
-            for sequence, owner in sequences:
+            for sequence, owner, scenes in sequences:
+                if scenes and macro.scenes and not {s.casefold() for s in scenes} & {s.casefold() for s in macro.scenes}:
+                    continue  # never active at the same time (issue #367)
                 if len(sequence) == len(macro.triggers) and _contains_run(sequence, macro.triggers):
                     clash = translate(_SAME_TRIGGER).format(name=name, other=owner, trigger=label)
                 elif _contains_run(sequence, macro.triggers):
@@ -426,7 +499,7 @@ def validate_macros(macros: Sequence[MidiMacro], translate: Translate = untransl
             if clash:
                 problems.append(clash)
             else:
-                sequences.append((macro.triggers, name))
+                sequences.append((macro.triggers, name, macro.scenes))
             if retriggers_itself(macro):
                 problems.append(translate(_LOOPS).format(name=name, port=macro.output_port))
     return problems
@@ -540,6 +613,8 @@ NO_MESSAGE = QT_TRANSLATE_NOOP("MidiMacros", "no message to send")
 NO_PORT = QT_TRANSLATE_NOOP("MidiMacros", "no output port chosen")
 NOT_CONNECTED = QT_TRANSLATE_NOOP("MidiMacros", "{port} is not connected")
 CANCELLED = QT_TRANSLATE_NOOP("MidiMacros", "cancelled")
+WAIT_TIMED_OUT = QT_TRANSLATE_NOOP("MidiMacros", "the awaited controller press never came")
+WAIT_NOT_PLAYABLE = QT_TRANSLATE_NOOP("MidiMacros", "a step waits for a controller press: play it from the app")
 
 
 @dataclass(frozen=True)
@@ -612,6 +687,8 @@ def run_macro(
         with ExitStack() as stack:
             send: Callable[..., None] | None = None
             for step in macro.steps:
+                if step.wait:
+                    raise RuntimeError(WAIT_NOT_PLAYABLE)
                 if step.delay_ms > HOLD_PORT_MAX_DELAY_MS and send is not None:
                     stack.close()
                     send = None
@@ -696,6 +773,9 @@ __all__ = [
     "MAX_TRIGGER_GAP_MS",
     "MAX_TRIGGER_LENGTH",
     "MIN_TRIGGER_GAP_MS",
+    "WAIT_PREFIX",
+    "WAIT_TIMED_OUT",
+    "WAIT_TYPES",
     "MacroResult",
     "MacroStep",
     "MacroTrigger",
@@ -716,6 +796,7 @@ __all__ = [
     "send_step",
     "sequence_label",
     "step_from_event",
+    "step_type",
     "steps_from_rows",
     "trigger_gap",
     "unplayable_result",

@@ -19,6 +19,10 @@ reopen (#297). On Windows, though, an output port usually takes one client
   ``HOLD_PORT_MAX_DELAY_MS`` and reopens the port when the delay is over,
   so Sync, Live send and other apps can use the controller meanwhile.
 
+A *wait* step (issue #367) pauses a run until the main window feeds it the
+awaited controller press (:meth:`MacroPlayer.feed_event`); the run lets go
+of its port meanwhile and gives up after the step's timeout.
+
 A held port spans event-loop turns, so every way a run can end lets go of
 it -- the last step, a failing open or send, :meth:`MacroPlayer.stop_all`,
 and the player being destroyed with runs still waiting (every handle is
@@ -37,7 +41,9 @@ from PySide6.QtCore import QObject, QTimer, Signal
 
 from djmidi.midi_macros import (
     HOLD_PORT_MAX_DELAY_MS,
+    WAIT_TIMED_OUT,
     MacroResult,
+    MacroTrigger,
     MidiMacro,
     PortOpener,
     macro_port_opener,
@@ -59,6 +65,8 @@ class _Run:
     waited: bool = False
     # The shared port's sender while this run holds it, else None.
     send: Callable[..., None] | None = None
+    # The press a wait step is waiting for, else None.
+    waiting_for: MacroTrigger | None = None
 
 
 @dataclass(eq=False)
@@ -106,8 +114,23 @@ class MacroPlayer(QObject):
 
     @property
     def running(self) -> int:
-        """How many macros are still waiting on a delay."""
+        """How many macros are still waiting on a delay or a press."""
         return len(self._running)
+
+    @property
+    def waiting(self) -> int:
+        """How many runs are waiting for a controller press."""
+        return sum(1 for run in self._running if run.waiting_for is not None)
+
+    def feed_event(self, event) -> bool:
+        """Resumes the runs waiting for this live press; True when one was
+        (the press then belongs to them, not to another macro's trigger)."""
+        resumed = [run for run in self._running if run.waiting_for is not None and run.waiting_for.matches(event)]
+        for run in resumed:
+            run.waiting_for = None
+            run.index += 1
+            self._advance(run)
+        return bool(resumed)
 
     def play(self, macro: MidiMacro, available_ports: Sequence[str]) -> MacroResult | None:
         """Starts ``macro``; returns its result when it finished right away
@@ -166,6 +189,12 @@ class MacroPlayer(QObject):
         steps = run.macro.steps
         while run.index < len(steps):
             step = steps[run.index]
+            if step.wait:
+                run.waiting_for = step.wait_trigger
+                self._release(run)  # nobody knows how long the press takes
+                index = run.index
+                QTimer.singleShot(step.wait_timeout_ms, self, lambda run=run, index=index: self._wait_expired(run, index))
+                return None
             if step.delay_ms and not run.waited:
                 run.waited = True
                 if step.delay_ms > self._hold_port_ms:
@@ -182,6 +211,10 @@ class MacroPlayer(QObject):
                 return self._finish(run, str(exc))
             run.index += 1
         return self._finish(run)
+
+    def _wait_expired(self, run: _Run, index: int) -> None:
+        if run in self._running and run.waiting_for is not None and run.index == index:
+            self._finish(run, WAIT_TIMED_OUT)
 
     def _finish(self, run: _Run, error: str = "") -> MacroResult:
         if run in self._running:
