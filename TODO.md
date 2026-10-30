@@ -139,6 +139,10 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **MIDI macros step 2** (`v0.48.153-macros-step2`, #367, phase 4 item 5) — toggles (a B step list played every
+  other time), scene conditions (a controller trigger fires the macro only in chosen sync scenes; one button can run a
+  different macro per scene), and wait steps (pause until a given controller press, with a timeout). Old macro files
+  load unchanged.
 - [x] **Live set mode** (`v0.48.152-stage-set`, #366, phase 4 item 4) — Stage Mode shows the set prepared in Music
   Library → Set: position, current and next track (BPM / Camelot / energy), the transition into the next one (OK with
   its BPM change, or what clashes), moved by ◀ / ▶ or PageUp / PageDown (presenter remote); position kept for the
@@ -3459,6 +3463,7 @@ close what can't be unblocked here.
    4. Live set mode: set preparation on the Stage Mode screen (#366).
       **Done** in `v0.48.152-stage-set`.
    5. MIDI macros step 2: toggles, scene conditions, wait for a press (#367).
+      **Done** in `v0.48.153-macros-step2`.
    6. Per-controller MIDI remapper layer over the existing routing (#368).
    - Not scheduled: macOS signing/notarization (waits on the maintainer's
      Apple Developer account), Windows signing. Rejected: writing undocumented

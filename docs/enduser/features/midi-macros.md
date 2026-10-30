@@ -12,6 +12,7 @@
 - [Create a macro](#create-a-macro)
 - [Play a macro](#play-a-macro)
 - [Play a macro from a controller button](#play-a-macro-from-a-controller-button)
+- [Toggles, scenes and waits](#toggles-scenes-and-waits)
 - [Where the messages go](#where-the-messages-go)
 - [Macro files](#macro-files)
 - [Related](#related)
@@ -109,6 +110,26 @@ replaces it.
   virtual loopback port such as IAC would replay it forever).
 - The button keeps doing whatever your DJ software maps it to: the macro
   plays *in addition*, so pick a button your mapping leaves free.
+
+## Toggles, scenes and waits
+
+- **Toggle** — tick **`Toggle: alternate between two step lists`**: two
+  tabs appear, **A** and **B**. The macro plays A, then B the next time,
+  then A again… (for example *effect on* / *effect off* on one button). The
+  `Test` button plays the tab on screen. Which side comes next is kept until
+  you quit the app.
+- **Only in scenes** — type sync scene names, separated by commas: the
+  controller trigger then plays the macro only while one of those
+  [scenes](controller-sync.md) is active. Two macros may share a trigger
+  when their scenes don't overlap, so one button can do something different
+  per scene. The `Macros` menu and the keyboard shortcut always play it.
+- **Wait for a press** — pick **`Wait for Note On`** or
+  **`Wait for Control Change`** as a step's type and set its channel and
+  data 1: the macro sends nothing there and pauses until that control is
+  pressed on any controller, then carries on. Its **Delay** column is the
+  longest wait (0 = 60 s); after that the macro stops and the status bar
+  says so. A press a waiting macro takes doesn't fire other macros. This
+  kind of step only plays from the app (not from a script).
 
 ## Where the messages go
 
