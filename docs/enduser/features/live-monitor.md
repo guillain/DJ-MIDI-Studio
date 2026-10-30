@@ -61,7 +61,11 @@ loaded meanwhile starts the monitor right after `■ Stop`.
 
 Physical names are matched against the source device, so a pad on one
 controller is never mistaken for the same note on another one.
-`Clear log` empties the table; `Save log…` exports it. `Sync controllers`
+`Clear log` empties the table; `Save log…` exports it, either as a CSV
+table or as a **MIDI file** (`.mid`, pick it in the file type list). The
+MIDI file keeps the real timing — one track per port, plus a `(out)` track
+for what the DJ software sent back — so a session can be opened in a DAW
+or any MIDI tool, replayed, or attached to a bug report. `Sync controllers`
 runs [Controller Sync](controller-sync.md).
 
 ## Spot conflicts live
