@@ -245,7 +245,7 @@ class _FakeTransformDialog:
         self._exec_result = exec_result
         self._transform = transform
 
-    def __call__(self, _current_transform, _parent=None):
+    def __call__(self, _current_transform, _parent=None, ensure_listening=None):
         return self
 
     def exec(self):
