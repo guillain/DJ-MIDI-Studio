@@ -209,13 +209,21 @@ is on several buttons (often its SHIFT layer). The library window's
 **Source** column says where each profile comes from. Devices already built
 in, or covered by the rekordbox side, aren't repeated.
 
+Profiles shared by other DJs through Controller Setup's **Submit to
+community catalog…** join the library too, with **community** as their
+source: once a maintainer has reviewed a submission, it ships with the next
+version. Because a contributed profile was captured on the controller
+itself, it replaces a rekordbox- or Mixxx-built profile of the same name.
+
 ## Add your own controller
 
 Any controller can be added without its manufacturer's MIDI documentation:
 [Controller Setup](features/controller-setup.md) learns it from the
 hardware, or from a Serato mapping you already use. `Install` keeps it for
 every launch, as a JSON profile in `Documents/DJ MIDI Studio/Controllers`,
-and it can be shared with the community catalog.
+and it can be shared with the community catalog: `Submit to community
+catalog…` opens a pre-filled GitHub issue, and once a maintainer has
+reviewed it, the profile is added to the [profile library](#profile-library).
 
 ## JSON profiles
 

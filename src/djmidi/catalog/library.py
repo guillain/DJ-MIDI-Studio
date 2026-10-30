@@ -53,10 +53,15 @@ LIBRARY_DIR = _RESOURCE_ROOT / "controllers" / "library"
 
 SOURCE_REKORDBOX = "rekordbox"
 SOURCE_MIXXX = "mixxx"
+SOURCE_COMMUNITY = "community"
 # The manifest licence of a generated profile: it names where the data came from.
 REKORDBOX_LICENSE = "derived from rekordbox's bundled MIDI mapping"
 MIXXX_LICENSE = "derived from the Mixxx project's controller mapping (GPL)"
-_LICENSES = {SOURCE_REKORDBOX: REKORDBOX_LICENSE, SOURCE_MIXXX: MIXXX_LICENSE}
+COMMUNITY_LICENSE = "contributed through a community submission"
+_LICENSES = {SOURCE_REKORDBOX: REKORDBOX_LICENSE, SOURCE_MIXXX: MIXXX_LICENSE, SOURCE_COMMUNITY: COMMUNITY_LICENSE}
+# When two library files name the same device, the first source here wins:
+# a contributed profile was captured on the unit, the others are derived.
+_SOURCE_PRIORITY = (SOURCE_COMMUNITY, SOURCE_REKORDBOX, SOURCE_MIXXX)
 _VENDOR_PREFIX = re.compile(r"^(?:pioneer dj|pioneer)\s+", re.IGNORECASE)
 # Another port name for the same device: identical messages (checked on
 # every pair rekordbox 7 ships), so it only adds a port name.
@@ -291,7 +296,23 @@ def list_library_profiles(directory: str | Path = LIBRARY_DIR) -> list[LibraryPr
             )
         except (OSError, ValueError, KeyError, TypeError):
             continue
-    return sorted(profiles, key=lambda profile: profile.name.casefold())
+    return sorted(_one_per_name(profiles), key=lambda profile: profile.name.casefold())
+
+
+def _priority(profile: LibraryProfile) -> int:
+    try:
+        return _SOURCE_PRIORITY.index(profile.source)
+    except ValueError:
+        return len(_SOURCE_PRIORITY)
+
+
+def _one_per_name(profiles: list[LibraryProfile]) -> list[LibraryProfile]:
+    best: dict[str, LibraryProfile] = {}
+    for profile in profiles:
+        key = profile.name.casefold()
+        if key not in best or _priority(profile) < _priority(best[key]):
+            best[key] = profile
+    return list(best.values())
 
 
 def install_library_profile(profile: LibraryProfile, controllers_dir: str | Path) -> ControllerDefinition:
@@ -336,10 +357,12 @@ def connected_library_profiles(
 
 
 __all__ = [
+    "COMMUNITY_LICENSE",
     "LIBRARY_DIR",
     "MIN_ENTRIES",
     "MIXXX_LICENSE",
     "REKORDBOX_LICENSE",
+    "SOURCE_COMMUNITY",
     "SOURCE_MIXXX",
     "SOURCE_REKORDBOX",
     "LibraryProfile",
