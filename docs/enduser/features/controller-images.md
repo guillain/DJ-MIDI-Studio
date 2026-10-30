@@ -64,7 +64,7 @@ LED messages from Serato light it amber.
 ## Place the controls of your own profile
 
 A profile you installed — from the
-[profile library](../controller-profiles.md#profile-library-rekordbox-devices)
+[profile library](../controller-profiles.md#profile-library)
 or made in [Controller Setup](controller-setup.md) — starts without a
 picture, so the layout views show it as a grid of controls. Give it its real
 layout yourself:

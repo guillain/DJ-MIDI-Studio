@@ -1,0 +1,709 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.vestax-vci-100mkii",
+  "kind": "controller",
+  "name": "Vestax VCI-100MKII",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Vestax",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "Vestax VCI-100MKII",
+  "entries": [
+   {
+    "section": "DECK",
+    "name": "SET SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5"
+    ],
+    "data1": "36"
+   },
+   {
+    "section": "DECK",
+    "name": "SET SHIFT #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5"
+    ],
+    "data1": "52"
+   },
+   {
+    "section": "BROWSE",
+    "name": "GO TO ITEM",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5"
+    ],
+    "data1": "54"
+   },
+   {
+    "section": "BROWSE",
+    "name": "SELECT PREV",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5"
+    ],
+    "data1": "55"
+   },
+   {
+    "section": "BROWSE",
+    "name": "SELECT NEXT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5"
+    ],
+    "data1": "56"
+   },
+   {
+    "section": "DECK",
+    "name": "LOAD SELECTED TRACK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "55"
+   },
+   {
+    "section": "DECK",
+    "name": "SCRATCH ENABLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "59"
+   },
+   {
+    "section": "EFFECT",
+    "name": "NO SLOT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "32"
+   },
+   {
+    "section": "EFFECT",
+    "name": "NEXT SLOT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "33"
+   },
+   {
+    "section": "DECK",
+    "name": "PLAY",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "34"
+   },
+   {
+    "section": "DECK",
+    "name": "REVERSE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "66"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE DEFAULT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "35"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE GOTOANDPLAY",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "67"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 1 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "42"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 1 CLEAR",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "74"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 2 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "43"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 2 CLEAR",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "75"
+   },
+   {
+    "section": "DECK",
+    "name": "SYNC ENABLED",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "36"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATS TRANSLATE CURPOS",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "68"
+   },
+   {
+    "section": "DECK",
+    "name": "KEYLOCK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "45"
+   },
+   {
+    "section": "DECK",
+    "name": "QUANTIZE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "77"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "3"
+    ],
+    "data1": "38"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "4"
+    ],
+    "data1": "51"
+   },
+   {
+    "section": "DECK",
+    "name": "RELOOP",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "3"
+    ],
+    "data1": "70"
+   },
+   {
+    "section": "DECK",
+    "name": "RELOOP #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "4"
+    ],
+    "data1": "83"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP HALVE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "3"
+    ],
+    "data1": "51"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP HALVE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "4"
+    ],
+    "data1": "41"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATJUMP BACKWARD",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "3"
+    ],
+    "data1": "83"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATJUMP BACKWARD #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "4"
+    ],
+    "data1": "73"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP DOUBLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "3"
+    ],
+    "data1": "41"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP DOUBLE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "4"
+    ],
+    "data1": "38"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATJUMP FORWARD",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "3"
+    ],
+    "data1": "73"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATJUMP FORWARD #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "4"
+    ],
+    "data1": "70"
+   },
+   {
+    "section": "EFFECT",
+    "name": "ENABLED",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "3"
+    ],
+    "data1": "44"
+   },
+   {
+    "section": "EFFECT",
+    "name": "ENABLED #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "4"
+    ],
+    "data1": "40"
+   },
+   {
+    "section": "EFFECT",
+    "name": "NEXT EFFECT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "3"
+    ],
+    "data1": "76"
+   },
+   {
+    "section": "EFFECT",
+    "name": "NEXT EFFECT #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "4"
+    ],
+    "data1": "72"
+   },
+   {
+    "section": "EFFECT",
+    "name": "ENABLED #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "37"
+   },
+   {
+    "section": "EFFECT",
+    "name": "NEXT EFFECT #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "69"
+   },
+   {
+    "section": "EFFECT",
+    "name": "ENABLED #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "39"
+   },
+   {
+    "section": "EFFECT",
+    "name": "NEXT EFFECT #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "71"
+   },
+   {
+    "section": "EFFECT",
+    "name": "MIX TOGGLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "3"
+    ],
+    "data1": "40"
+   },
+   {
+    "section": "EFFECT",
+    "name": "MIX TOGGLE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "4"
+    ],
+    "data1": "44"
+   },
+   {
+    "section": "EFFECT",
+    "name": "NEXT CHAIN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "3"
+    ],
+    "data1": "72"
+   },
+   {
+    "section": "EFFECT",
+    "name": "NEXT CHAIN #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "4"
+    ],
+    "data1": "76"
+   },
+   {
+    "section": "DECK",
+    "name": "SET DECK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "52"
+   },
+   {
+    "section": "DECK",
+    "name": "SET DECK #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "53"
+   },
+   {
+    "section": "DECK",
+    "name": "PFL",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "54"
+   },
+   {
+    "section": "DECK",
+    "name": "SOLO",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "82"
+   },
+   {
+    "section": "DECK",
+    "name": "SLIP ENABLED",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "57"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL1] ENABLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "58"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL2] ENABLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2"
+    ],
+    "data1": "58"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL3] ENABLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "58"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL4] ENABLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "58"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL1] ENABLE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "56"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL2] ENABLE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2"
+    ],
+    "data1": "56"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL3] ENABLE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "56"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL4] ENABLE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "56"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL1] ENABLE #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "79"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL2] ENABLE #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2"
+    ],
+    "data1": "79"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL3] ENABLE #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "79"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL4] ENABLE #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "79"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL1] ENABLE #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "80"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL2] ENABLE #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2"
+    ],
+    "data1": "80"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL3] ENABLE #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "80"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL4] ENABLE #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "80"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "VCI-100MKII"
+  ],
+  "library_source": "mixxx"
+ }
+}

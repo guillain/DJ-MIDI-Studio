@@ -16,7 +16,7 @@
 - [Pioneer DDJ-FLX4](#pioneer-ddj-flx4)
 - [Hercules DJControl Inpulse 500](#hercules-djcontrol-inpulse-500)
 - [Pad modes](#pad-modes)
-- [Profile library (rekordbox devices)](#profile-library-rekordbox-devices)
+- [Profile library](#profile-library)
 - [Add your own controller](#add-your-own-controller)
 - [JSON profiles](#json-profiles)
 - [Related](#related)
@@ -172,7 +172,7 @@ publishes no MIDI list): deck buttons and their SHIFT layer, the loop and
 pad-mode buttons, LOAD, and the 8 pads (+ SHIFT) per deck. Its pad mode is
 kept by the DJ software, so a pad sends the same note in every mode.
 
-## Profile library (rekordbox devices)
+## Profile library
 
 Beyond the built-in controllers, the app ships a **library** of ready-made
 profiles for 46 more Pioneer DJ / AlphaTheta devices: DDJ-200, DDJ-400, DDJ-ERGO, DDJ-FLX2, DDJ-FLX6, DDJ-GRV6, DDJ-RB, DDJ-REV7, DDJ-RR, DDJ-RX, DDJ-RZ, DDJ-RZX, DDJ-SB, DDJ-SB2, DDJ-SP1, DDJ-SR, DDJ-SX, DDJ-SX2, DDJ-SZ, DDJ-WeGO, DDJ-WeGO2, DDJ-WeGO3, DDJ-WeGO4, DDJ-XP1, DJM-250MK2, DJM-450, DJM-750MK2, DJM-900NXS2, DJM-A9, DJM-S11, DJM-S7, DJM-S9, DJM-T1, DJM-TOUR1, DJM-V10, EUPHONIA, OMNIS-DUO, OPUS-QUAD, PLX-CRSS12, XDJ-AERO, XDJ-AZ, XDJ-R1, XDJ-RR, XDJ-RX, XDJ-RX2, XDJ-RX3.
@@ -196,6 +196,16 @@ same window removes it again.
 When you launch the app with such a controller plugged in (its MIDI port
 names it), the app asks once whether to install its profile. Answer No and
 it won't ask again for that device; the library window still has it.
+
+The library also holds **115 profiles for other brands**, built from the
+controller mappings the Mixxx project maintains: Akai, Allen&Heath, American Audio, Arturia, Behringer, Denon, DJ TechTools, DJ-Tech, Electrix, Evolution, FaderFox, Gemini, Hercules, Icon, Intech, Ion, Keith, Kontrol, Korg, M-Audio, M-Vave, MIDI, MidiTech, Mixman, MixVibes, Novation, Numark, Pioneer, Reloop, Roland, Soundless, Stanton, Tascam, Vestax, Wireless, Yaeltex. Mixxx names the
+function a button drives, not the button itself, so these are the coarsest
+profiles: their buttons (no pads layout, knobs or faders) are named after
+the Mixxx function (`PLAY`, `HOTCUE 1 ACTIVATE`, `PLAY BUTTON`), grouped as
+DECK, MIXER, SAMPLER, EFFECT or BROWSE, with `#2`, `#3` when one function
+is on several buttons (often its SHIFT layer). The library window's
+**Source** column says where each profile comes from. Devices already built
+in, or covered by the rekordbox side, aren't repeated.
 
 ## Add your own controller
 

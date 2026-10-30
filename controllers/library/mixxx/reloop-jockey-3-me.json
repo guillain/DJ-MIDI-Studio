@@ -1,0 +1,605 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.reloop-jockey-3-me",
+  "kind": "controller",
+  "name": "Reloop Jockey 3 ME",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Reloop",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "Reloop Jockey 3 ME",
+  "entries": [
+   {
+    "section": "BROWSE",
+    "name": "TOGGLE SELECTED SIDEBAR ITEM",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "116"
+   },
+   {
+    "section": "OTHER",
+    "name": "SHOW MAXIMIZED LIBRARY",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "53"
+   },
+   {
+    "section": "MIXER",
+    "name": "TALKOVER",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "86"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "LOAD SELECTED TRACK AND PLAY",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "91"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "STOP",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2"
+    ],
+    "data1": "91"
+   },
+   {
+    "section": "EFFECT",
+    "name": "EFFECT SELECT PUSH",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "93"
+   },
+   {
+    "section": "EFFECT",
+    "name": "EFFECT SELECT PUSH #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "94"
+   },
+   {
+    "section": "EFFECT",
+    "name": "EFFECT SELECT PUSH #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "95"
+   },
+   {
+    "section": "EFFECT",
+    "name": "ENABLED",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "EFFECT",
+    "name": "ENABLED #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "2"
+   },
+   {
+    "section": "EFFECT",
+    "name": "ENABLED #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "3"
+   },
+   {
+    "section": "EFFECT",
+    "name": "ENABLED #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "4"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL1] ENABLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "64"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL2] ENABLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "65"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL3] ENABLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "66"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL4] ENABLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "67"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE DEFAULT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "25"
+   },
+   {
+    "section": "DECK",
+    "name": "PLAY",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "26"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE GOTOANDPLAY",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "24"
+   },
+   {
+    "section": "DECK",
+    "name": "LOAD SELECTED TRACK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "27"
+   },
+   {
+    "section": "DECK",
+    "name": "SYNC ENABLED",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "23"
+   },
+   {
+    "section": "DECK",
+    "name": "KEYLOCK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "89"
+   },
+   {
+    "section": "DECK",
+    "name": "QUANTIZE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "88"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATS TRANSLATE CURPOS",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "104"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "11"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE ACTIVATE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "12"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE ACTIVATE #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "13"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE ACTIVATE #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "14"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE ACTIVATE #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "15"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE ACTIVATE #6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "16"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE ACTIVATE #7",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "17"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE ACTIVATE #8",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "18"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE CLEAR",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "9"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP IN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "68"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP OUT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "69"
+   },
+   {
+    "section": "DECK",
+    "name": "RELOOP EXIT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "5"
+   },
+   {
+    "section": "DECK",
+    "name": "REPEAT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "6"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATJUMP 1 FORWARD",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "7"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATJUMP 1 BACKWARD",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "8"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATLOOP 4 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "43"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP MOVE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "44"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATS ADJUST FASTER",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "70"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATS ADJUST SLOWER",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "71"
+   },
+   {
+    "section": "DECK",
+    "name": "RATE TEMP UP",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "42"
+   },
+   {
+    "section": "DECK",
+    "name": "RATE TEMP DOWN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "41"
+   },
+   {
+    "section": "DECK",
+    "name": "WHEEL TOUCH",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "34"
+   },
+   {
+    "section": "DECK",
+    "name": "WHEEL TOUCH #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "4"
+    ],
+    "data1": "38"
+   },
+   {
+    "section": "DECK",
+    "name": "DECK SWITCH",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "60"
+   },
+   {
+    "section": "DECK",
+    "name": "PFL",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "28"
+   },
+   {
+    "section": "DECK",
+    "name": "DECK SWITCH #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "63"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "Jockey 3 ME"
+  ],
+  "library_source": "mixxx"
+ }
+}

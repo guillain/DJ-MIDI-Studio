@@ -1,0 +1,124 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.dj-tech-mixer-one",
+  "kind": "controller",
+  "name": "DJ-Tech Mixer One",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "DJ-Tech",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "DJ-Tech Mixer One",
+  "entries": [
+   {
+    "section": "MIXER",
+    "name": "CLEAR VOLUME LEDS",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "6"
+    ],
+    "data1": "10"
+   },
+   {
+    "section": "MIXER",
+    "name": "MUTE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "6"
+    ],
+    "data1": "5"
+   },
+   {
+    "section": "DECK",
+    "name": "FILTER LOW KILL",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "6",
+     "8"
+    ],
+    "data1": "8"
+   },
+   {
+    "section": "DECK",
+    "name": "FILTER MID KILL",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "6",
+     "8"
+    ],
+    "data1": "9"
+   },
+   {
+    "section": "DECK",
+    "name": "FILTER HIGH KILL",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "6",
+     "8"
+    ],
+    "data1": "6"
+   },
+   {
+    "section": "DECK",
+    "name": "PFL",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "6",
+     "8"
+    ],
+    "data1": "7"
+   },
+   {
+    "section": "DECK",
+    "name": "FILTER LOW KILL #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7",
+     "9"
+    ],
+    "data1": "4"
+   },
+   {
+    "section": "DECK",
+    "name": "FILTER MID KILL #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7",
+     "9"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "DECK",
+    "name": "FILTER HIGH KILL #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7",
+     "9"
+    ],
+    "data1": "2"
+   },
+   {
+    "section": "DECK",
+    "name": "PFL #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7",
+     "9"
+    ],
+    "data1": "3"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "Mixer One"
+  ],
+  "library_source": "mixxx"
+ }
+}

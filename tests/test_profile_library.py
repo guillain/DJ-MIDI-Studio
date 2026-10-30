@@ -125,7 +125,7 @@ def test_dialog_filters_installs_and_marks_installed(tmp_path):
     dialog = ProfileLibraryDialog(list_library_profiles(tmp_path), tmp_path / "Controllers")
     rows = [dialog.table.item(row, 0).text() for row in range(dialog.table.rowCount())]
     assert rows == ["DDJ-OTHER", "DDJ-TEST", "DDJ-XP2"]
-    assert dialog.table.item(2, 3).text() == "Built-in"
+    assert dialog.table.item(2, 4).text() == "Built-in"
     dialog.filter_edit.setText("pioneer ddj other")  # port names match too
     assert [dialog.table.isRowHidden(row) for row in range(3)] == [False, True, True]
     dialog.filter_edit.clear()
@@ -136,7 +136,7 @@ def test_dialog_filters_installs_and_marks_installed(tmp_path):
     dialog.select_profile("DDJ-TEST")
     assert dialog.install_button.isEnabled()
     assert dialog.install_selected() == ["DDJ-TEST"] == installed
-    assert dialog.table.item(1, 3).text() == "Installed"
+    assert dialog.table.item(1, 4).text() == "Installed"
     assert dialog.status.text() == "Installed: DDJ-TEST"
 
 
@@ -207,7 +207,7 @@ def test_dialog_uninstalls_installed_profiles(tmp_path):
     removed = []
     dialog.uninstalled.connect(removed.append)
     assert dialog.uninstall_selected() == ["DDJ-TEST"] == removed
-    assert dialog.table.item(0, 3).text() == "" and dialog.status.text() == "Uninstalled: DDJ-TEST"
+    assert dialog.table.item(0, 4).text() == "" and dialog.status.text() == "Uninstalled: DDJ-TEST"
 
 
 def test_main_window_offers_connected_library_profiles_once(tmp_path, monkeypatch):
@@ -237,3 +237,77 @@ def test_main_window_offers_connected_library_profiles_once(tmp_path, monkeypatc
         dialog.close()
     finally:
         window.close()
+
+
+# --- profiles from Mixxx's mappings -------------------------------------------
+
+MIXXX = """<?xml version='1.0' encoding='utf-8'?>
+<MixxxControllerPreset schemaVersion="1" mixxxVersion="2.3.0+">
+  <info><name>{name}</name></info>
+  <controller id="T"><controls>
+{controls}
+  </controls></controller>
+</MixxxControllerPreset>"""
+_BINDING = "<control><group>{group}</group><key>{key}</key><status>{status}</status><midino>{no}</midino></control>"
+
+
+def _mixxx(name, bindings):
+    controls = "\n".join(_BINDING.format(group=g, key=k, status=s, no=n) for g, k, s, n in bindings)
+    return MIXXX.format(name=name, controls=controls)
+
+
+BINDINGS = [
+    ("[Channel1]", "play", "0x90", "0x01"),
+    ("[Channel2]", "play", "0x91", "0x01"),
+    ("[Channel1]", "Ctrl.deck[0].cueButton.input", "0x90", "0x02"),
+    ("[Channel1]", "hotcue_1_activate", "0x94", "0x10"),
+    ("[Channel1]", "hotcue_1_activate", "0x94", "0x18"),  # its SHIFT layer, same key
+    ("[Master]", "crossfader", "0xB0", "0x08"),  # a CC: not a button
+    ("[Library]", "MoveDown", "0x9F", "0x05"),
+    ("[Sampler1]", "cue_gotoandplay", "0x9A", "0x00"),
+]
+
+
+def test_mixxx_names_and_sections():
+    from djmidi.catalog.library import mixxx_control_name
+
+    assert mixxx_control_name("hotcue_1_activate") == "HOTCUE 1 ACTIVATE"
+    assert mixxx_control_name("Ctrl.deck[0].playButton.input") == "PLAY BUTTON"
+    assert mixxx_control_name("Ctrl.shift") == "SHIFT"
+
+
+def test_build_mixxx_profiles_keeps_buttons_and_skips_known_devices():
+    from djmidi.catalog.library import build_mixxx_profiles
+
+    texts = [
+        _mixxx("Acme Mixmaster 4", BINDINGS),
+        _mixxx("Acme Mixmaster 4", BINDINGS[:6]),  # a second mapping of one device: first wins
+        _mixxx("Pioneer DDJ-TEST", BINDINGS),  # the rekordbox side covers it
+        _mixxx("Acme Tiny", BINDINGS[:2]),  # under MIN_ENTRIES
+        _mixxx("Acme Beta (unfinished)", BINDINGS),
+    ]
+    (definition,) = build_mixxx_profiles(texts, skip_names=["DDJ-TEST"])
+    assert (definition.name, definition.manufacturer, definition.port_names) == (
+        "Acme Mixmaster 4", "Acme", ("Mixmaster 4",),
+    )
+    names = {(e.section, e.name): (e.channels, e.data1) for e in definition.static_entries}
+    assert names[("DECK", "PLAY")] == (("1", "2"), "1")
+    assert names[("DECK", "CUE BUTTON")] == (("1",), "2")
+    assert names[("DECK", "HOTCUE 1 ACTIVATE")] == (("5",), "16")
+    assert names[("DECK", "HOTCUE 1 ACTIVATE #2")] == (("5",), "24")
+    assert ("BROWSE", "MOVE DOWN") in names and ("SAMPLER", "CUE GOTOANDPLAY") in names
+    assert not any("CROSSFADER" in name for _section, name in names)
+
+
+def test_mixxx_library_profiles_list_with_their_source(tmp_path):
+    from djmidi.catalog.library import MIXXX_LICENSE, SOURCE_MIXXX, build_mixxx_profiles
+    from djmidi.gui.profile_library_dialog import ProfileLibraryDialog
+
+    write_library(build_mixxx_profiles([_mixxx("Acme Mixmaster 4", BINDINGS)]), tmp_path / "mixxx", SOURCE_MIXXX)
+    write_library(build_rekordbox_profiles([_csv("DDJ-TEST")]), tmp_path / "rekordbox")
+    raw = json.loads((tmp_path / "mixxx" / "acme-mixmaster-4.json").read_text(encoding="utf-8"))
+    assert raw["manifest"]["license"] == MIXXX_LICENSE
+    profiles = list_library_profiles(tmp_path)
+    assert [(p.name, p.source) for p in profiles] == [("Acme Mixmaster 4", "mixxx"), ("DDJ-TEST", "rekordbox")]
+    dialog = ProfileLibraryDialog(profiles, tmp_path / "Controllers")
+    assert [dialog.table.item(row, 2).text() for row in range(2)] == ["Mixxx", "rekordbox"]

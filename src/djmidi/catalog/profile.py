@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 from djmidi.catalog._registry import ControlInfo, ControllerDefinition, register
@@ -245,7 +246,8 @@ def uninstall_user_profile(name: str, directory: str | Path) -> list[Path]:
 
 
 def _slug(name: str) -> str:
-    return "".join(char if char.isalnum() else "-" for char in name.lower()).strip("-") or "controller"
+    # One dash per run of other characters: a plugin id refuses "--".
+    return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-") or "controller"
 
 
 __all__ = [

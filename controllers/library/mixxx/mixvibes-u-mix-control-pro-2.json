@@ -1,0 +1,251 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.mixvibes-u-mix-control-pro-2",
+  "kind": "controller",
+  "name": "MixVibes U-Mix Control Pro 2",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "MixVibes",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "MixVibes U-Mix Control Pro 2",
+  "entries": [
+   {
+    "section": "DECK",
+    "name": "WHEEL TOUCH",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "22"
+   },
+   {
+    "section": "DECK",
+    "name": "PFL",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "16"
+   },
+   {
+    "section": "DECK",
+    "name": "KEYLOCK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "7"
+   },
+   {
+    "section": "DECK",
+    "name": "BPM TAP",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4",
+     "5"
+    ],
+    "data1": "3"
+   },
+   {
+    "section": "DECK",
+    "name": "FILTER HIGH KILL",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "18"
+   },
+   {
+    "section": "DECK",
+    "name": "FILTER MID KILL",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "19"
+   },
+   {
+    "section": "DECK",
+    "name": "FILTER LOW KILL",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "20"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE DEFAULT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "DECK",
+    "name": "PLAY",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "2"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATSYNC",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "3"
+   },
+   {
+    "section": "DECK",
+    "name": "RATE TEMP UP SMALL",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "5"
+   },
+   {
+    "section": "DECK",
+    "name": "RATE TEMP DOWN SMALL",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "4"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 1 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "9"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 2 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "10"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 3 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "11"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 4 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "12"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 1 CLEAR",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4",
+     "5"
+    ],
+    "data1": "9"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 2 CLEAR",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4",
+     "5"
+    ],
+    "data1": "10"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 3 CLEAR",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4",
+     "5"
+    ],
+    "data1": "11"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 4 CLEAR",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4",
+     "5"
+    ],
+    "data1": "12"
+   },
+   {
+    "section": "DECK",
+    "name": "LOAD SELECTED TRACK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "5"
+   },
+   {
+    "section": "DECK",
+    "name": "LOAD SELECTED TRACK #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "6"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "LOAD SELECTED TRACK AND PLAY",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "4"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "U-Mix Control Pro 2"
+  ],
+  "library_source": "mixxx"
+ }
+}

@@ -1,0 +1,168 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.dj-techtools-midi-fighter",
+  "kind": "controller",
+  "name": "DJ TechTools MIDI Fighter",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "DJ TechTools",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "DJ TechTools MIDI Fighter",
+  "entries": [
+   {
+    "section": "MIXER",
+    "name": "BUTTON DOWN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "36"
+   },
+   {
+    "section": "MIXER",
+    "name": "BUTTON DOWN #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "37"
+   },
+   {
+    "section": "MIXER",
+    "name": "BUTTON DOWN #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "38"
+   },
+   {
+    "section": "MIXER",
+    "name": "BUTTON DOWN #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "39"
+   },
+   {
+    "section": "MIXER",
+    "name": "BUTTON DOWN #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "40"
+   },
+   {
+    "section": "MIXER",
+    "name": "BUTTON DOWN #6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "41"
+   },
+   {
+    "section": "MIXER",
+    "name": "BUTTON DOWN #7",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "42"
+   },
+   {
+    "section": "MIXER",
+    "name": "BUTTON DOWN #8",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "43"
+   },
+   {
+    "section": "MIXER",
+    "name": "BUTTON DOWN #9",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "44"
+   },
+   {
+    "section": "MIXER",
+    "name": "BUTTON DOWN #10",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "45"
+   },
+   {
+    "section": "MIXER",
+    "name": "BUTTON DOWN #11",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "46"
+   },
+   {
+    "section": "MIXER",
+    "name": "BUTTON DOWN #12",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "47"
+   },
+   {
+    "section": "MIXER",
+    "name": "BUTTON DOWN #13",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "48"
+   },
+   {
+    "section": "MIXER",
+    "name": "BUTTON DOWN #14",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "49"
+   },
+   {
+    "section": "MIXER",
+    "name": "BUTTON DOWN #15",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "50"
+   },
+   {
+    "section": "MIXER",
+    "name": "BUTTON DOWN #16",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "51"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "MIDI Fighter"
+  ],
+  "library_source": "mixxx"
+ }
+}

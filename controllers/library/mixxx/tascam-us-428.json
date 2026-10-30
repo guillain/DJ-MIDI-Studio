@@ -1,0 +1,128 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.tascam-us-428",
+  "kind": "controller",
+  "name": "Tascam US-428",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Tascam",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "Tascam US-428",
+  "entries": [
+   {
+    "section": "DECK",
+    "name": "PLAY",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "62"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE GOTO",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "63"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE SET",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "64"
+   },
+   {
+    "section": "DECK",
+    "name": "PFL",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "51"
+   },
+   {
+    "section": "DECK",
+    "name": "FLANGER",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "102"
+   },
+   {
+    "section": "DECK",
+    "name": "REVERSE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "110"
+   },
+   {
+    "section": "DECK",
+    "name": "SLOWBACK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "60"
+   },
+   {
+    "section": "DECK",
+    "name": "SLOWFWD",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "61"
+   },
+   {
+    "section": "DECK",
+    "name": "PREPLAY",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2"
+    ],
+    "data1": "62"
+   },
+   {
+    "section": "DECK",
+    "name": "FLANGER #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "103"
+   },
+   {
+    "section": "DECK",
+    "name": "REVERSE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "111"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "US-428"
+  ],
+  "library_source": "mixxx"
+ }
+}

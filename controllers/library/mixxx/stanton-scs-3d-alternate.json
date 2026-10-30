@@ -1,0 +1,276 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.stanton-scs-3d-alternate",
+  "kind": "controller",
+  "name": "Stanton SCS.3d (alternate)",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Stanton",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "Stanton SCS.3d (alternate)",
+  "entries": [
+   {
+    "section": "OTHER",
+    "name": "RECEIVE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "3"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "7"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "12"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "14"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "32"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #7",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "34"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #8",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "36"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #9",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "38"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #10",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "40"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #11",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "42"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #12",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "44"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #13",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "46"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #14",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "48"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #15",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "50"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #16",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "72"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #17",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "74"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #18",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "76"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #19",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "78"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #20",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "79"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #21",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "81"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #22",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "83"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #23",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "85"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #24",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "98"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #25",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "109"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #26",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "110"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #27",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "111"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #28",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "112"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "SCS.3d (alternate)"
+  ],
+  "library_source": "mixxx"
+ }
+}

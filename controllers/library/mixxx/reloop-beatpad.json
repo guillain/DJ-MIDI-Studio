@@ -1,0 +1,802 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.reloop-beatpad",
+  "kind": "controller",
+  "name": "Reloop Beatpad",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Reloop",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "Reloop Beatpad",
+  "entries": [
+   {
+    "section": "DECK",
+    "name": "FILTER MID",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "117"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE GOTOANDSTOP",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "115"
+   },
+   {
+    "section": "DECK",
+    "name": "FXSELECT PUSH",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "114"
+   },
+   {
+    "section": "DECK",
+    "name": "WHEEL SEEK TOUCH",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "101"
+   },
+   {
+    "section": "DECK",
+    "name": "WHEEL SCRATCH TOUCH",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2"
+    ],
+    "data1": "101"
+   },
+   {
+    "section": "DECK",
+    "name": "WHEEL BEND TOUCH",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "100"
+   },
+   {
+    "section": "DECK",
+    "name": "WHEEL SCRATCH TOUCH #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "99"
+   },
+   {
+    "section": "DECK",
+    "name": "WHEEL SEEK TOUCH #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2"
+    ],
+    "data1": "99"
+   },
+   {
+    "section": "DECK",
+    "name": "LOAD BTN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "98"
+   },
+   {
+    "section": "DECK",
+    "name": "PFL BTN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "97"
+   },
+   {
+    "section": "DECK",
+    "name": "PLAY BTN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "96"
+   },
+   {
+    "section": "DECK",
+    "name": "JUMP BTN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "95"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE DEFAULT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "94"
+   },
+   {
+    "section": "DECK",
+    "name": "SYNC BTN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "93"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLER PAD",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "91"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLER PAD #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "90"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLER PAD #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "89"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLER PAD #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "88"
+   },
+   {
+    "section": "DECK",
+    "name": "INSTANT FXPAD",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "87"
+   },
+   {
+    "section": "DECK",
+    "name": "INSTANT FXPAD #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "86"
+   },
+   {
+    "section": "DECK",
+    "name": "INSTANT FXPAD #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "85"
+   },
+   {
+    "section": "DECK",
+    "name": "INSTANT FXPAD #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "84"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP PAD",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "83"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP PAD #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "82"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP PAD #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "81"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP PAD #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "80"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 4 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "79"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 3 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "78"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 2 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "77"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 1 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "76"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLER BTN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "75"
+   },
+   {
+    "section": "DECK",
+    "name": "INSTANT FXBTN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "74"
+   },
+   {
+    "section": "DECK",
+    "name": "BOUNCE BTN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "73"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE BTN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "72"
+   },
+   {
+    "section": "DECK",
+    "name": "FX ONBTN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "71"
+   },
+   {
+    "section": "DECK",
+    "name": "JOG SEEK BTN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "70"
+   },
+   {
+    "section": "DECK",
+    "name": "JOG SCRATCH BTN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "69"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP BTN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "68"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP SIZE BTN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "67"
+   },
+   {
+    "section": "DECK",
+    "name": "RATE PERM UP",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "66"
+   },
+   {
+    "section": "BROWSE",
+    "name": "LOAD SELECTED INTO FIRST STOPPED",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5"
+    ],
+    "data1": "70"
+   },
+   {
+    "section": "DECK",
+    "name": "RATE TEMP DOWN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "65"
+   },
+   {
+    "section": "OTHER",
+    "name": "REC BTN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5"
+    ],
+    "data1": "65"
+   },
+   {
+    "section": "DECK",
+    "name": "PITCH SET DEFAULT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "53"
+   },
+   {
+    "section": "DECK",
+    "name": "S FXSELECT PUSH",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "50"
+   },
+   {
+    "section": "DECK",
+    "name": "WHEEL SCRATCH TOUCH #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2"
+    ],
+    "data1": "37"
+   },
+   {
+    "section": "DECK",
+    "name": "WHEEL SCRATCH TOUCH #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "35"
+   },
+   {
+    "section": "DECK",
+    "name": "SPFL BTN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "33"
+   },
+   {
+    "section": "DECK",
+    "name": "REVERSE ROLL",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "32"
+   },
+   {
+    "section": "DECK",
+    "name": "BRAKE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "31"
+   },
+   {
+    "section": "DECK",
+    "name": "KEYLOCK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "30"
+   },
+   {
+    "section": "DECK",
+    "name": "START BTN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "29"
+   },
+   {
+    "section": "OTHER",
+    "name": "SHIFT BTN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "28"
+   },
+   {
+    "section": "DECK",
+    "name": "S SAMPLER PAD",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "27"
+   },
+   {
+    "section": "DECK",
+    "name": "S SAMPLER PAD #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "26"
+   },
+   {
+    "section": "DECK",
+    "name": "S SAMPLER PAD #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "25"
+   },
+   {
+    "section": "DECK",
+    "name": "S SAMPLER PAD #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "24"
+   },
+   {
+    "section": "DECK",
+    "name": "S INSTANT FXPAD",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "23"
+   },
+   {
+    "section": "DECK",
+    "name": "S INSTANT FXPAD #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "22"
+   },
+   {
+    "section": "DECK",
+    "name": "S INSTANT FXPAD #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "21"
+   },
+   {
+    "section": "DECK",
+    "name": "S INSTANT FXPAD #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "20"
+   },
+   {
+    "section": "DECK",
+    "name": "S LOOP PAD",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "19"
+   },
+   {
+    "section": "DECK",
+    "name": "S LOOP PAD #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "18"
+   },
+   {
+    "section": "DECK",
+    "name": "S LOOP PAD #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "17"
+   },
+   {
+    "section": "DECK",
+    "name": "S LOOP PAD #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "16"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 4 CLEAR",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "15"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 3 CLEAR",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "14"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 2 CLEAR",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "13"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 1 CLEAR",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "12"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLER BTN #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "11"
+   },
+   {
+    "section": "DECK",
+    "name": "INSTANT FXBTNK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "10"
+   },
+   {
+    "section": "DECK",
+    "name": "INSTANT FXBTN #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2"
+    ],
+    "data1": "10"
+   },
+   {
+    "section": "DECK",
+    "name": "BOUNCE BTN #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "9"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE BTN #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "8"
+   },
+   {
+    "section": "DECK",
+    "name": "S LOOP SIZE BTN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "3"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATJUMP 1 FORWARD",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "2"
+   },
+   {
+    "section": "BROWSE",
+    "name": "TOGGLE SELECTED SIDEBAR ITEM",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5"
+    ],
+    "data1": "6"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATJUMP 1 BACKWARD",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "OTHER",
+    "name": "S REC BTN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5"
+    ],
+    "data1": "1"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "Beatpad"
+  ],
+  "library_source": "mixxx"
+ }
+}

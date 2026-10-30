@@ -1,0 +1,755 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.denon-mc6000mk2",
+  "kind": "controller",
+  "name": "Denon MC6000MK2",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Denon",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "Denon MC6000MK2",
+  "entries": [
+   {
+    "section": "DECK",
+    "name": "HOTCUE BUTTONS",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "32"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV DECK BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "89"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECV FILTER BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "30"
+   },
+   {
+    "section": "OTHER",
+    "name": "ENABLE BUTTONS",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "85"
+   },
+   {
+    "section": "OTHER",
+    "name": "ENABLE BUTTONS #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "83"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE BUTTONS #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "24"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV JOG TOUCH VINYL",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "81"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECV FILTER BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "22"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECV AREA BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "77"
+   },
+   {
+    "section": "OTHER",
+    "name": "ENABLE BUTTONS #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "18"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECV TAP BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "71"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV BEND PLUS BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "12"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV DECK BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "10"
+   },
+   {
+    "section": "DECK",
+    "name": "PLAY BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "67"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV DECK BUTTON #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "8"
+   },
+   {
+    "section": "OTHER",
+    "name": "EFFECT FOCUS BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "65"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV KEY LOCK BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "6"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV XFADER ASSIGN RIGHT BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "63"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV VINYL BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "4"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV XFADER ASSIGN LEFT BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "61"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV CUE MIX BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "2"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV XFADER ASSIGN THRU BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "59"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP OUT BUTTON INPUT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3",
+     "4",
+     "1",
+     "2"
+    ],
+    "data1": "57"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP IN BUTTON INPUT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3",
+     "4",
+     "1",
+     "2"
+    ],
+    "data1": "55"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV XFADER ASSIGN THRU BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "53"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV XFADER ASSIGN RIGHT BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "51"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV XFADER ASSIGN LEFT BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "49"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV LOOP CUT PLUS BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "106"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECV PANEL BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "100"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECV FWD BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "41"
+   },
+   {
+    "section": "DECK",
+    "name": "LOAD BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "98"
+   },
+   {
+    "section": "DECK",
+    "name": "SHIFT BUTTON INPUT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "96"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV DECK BUTTON #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "94"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "RECV SAMPLER BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "3"
+    ],
+    "data1": "35"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV DECK BUTTON #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "92"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "RECV SAMPLER BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "3"
+    ],
+    "data1": "33"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV DECK BUTTON #6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "90"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV DECK BUTTON #7",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "88"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV AUTO LOOP BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "29"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV JOG TOUCH",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "86"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE BUTTONS #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "25"
+   },
+   {
+    "section": "OTHER",
+    "name": "ENABLE BUTTONS #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "82"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE BUTTONS #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "23"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV CENSOR BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "80"
+   },
+   {
+    "section": "OTHER",
+    "name": "ENABLE BUTTONS #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "21"
+   },
+   {
+    "section": "OTHER",
+    "name": "ENABLE BUTTONS #6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "19"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECV VIEW BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "76"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV BEND MINUS BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "13"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECV TAP BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "70"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV DECK BUTTON #8",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2"
+    ],
+    "data1": "9"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "66"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV CUE MIX BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "7"
+   },
+   {
+    "section": "OTHER",
+    "name": "EFFECT FOCUS BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "64"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV CUE MIX BUTTON #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "5"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV XFADER ASSIGN THRU BUTTON #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "62"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV DECK BUTTON #9",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "3"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV XFADER ASSIGN RIGHT BUTTON #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "60"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV CUE MIX BUTTON #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV XFADER ASSIGN LEFT BUTTON #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "58"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV XFADER ASSIGN RIGHT BUTTON #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "54"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV XFADER ASSIGN LEFT BUTTON #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "52"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV XFADER ASSIGN THRU BUTTON #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "50"
+   },
+   {
+    "section": "DECK",
+    "name": "SYNC BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "107"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECV BACK BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "48"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV LOOP CUT MINUS BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "105"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECV LIST BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "101"
+   },
+   {
+    "section": "DECK",
+    "name": "LOAD BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3",
+     "4"
+    ],
+    "data1": "99"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECV TRACK SELECT BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "40"
+   },
+   {
+    "section": "DECK",
+    "name": "SHIFT BUTTON INPUT #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3",
+     "4"
+    ],
+    "data1": "97"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV DECK BUTTON #10",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "95"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "RECV SAMPLER BUTTON #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "3"
+    ],
+    "data1": "36"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV DECK BUTTON #11",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "93"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "RECV SAMPLER BUTTON #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "3"
+    ],
+    "data1": "34"
+   },
+   {
+    "section": "DECK",
+    "name": "RECV DECK BUTTON #12",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "91"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "MC6000MK2"
+  ],
+  "library_source": "mixxx"
+ }
+}

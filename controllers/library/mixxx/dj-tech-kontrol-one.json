@@ -1,0 +1,564 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.dj-tech-kontrol-one",
+  "kind": "controller",
+  "name": "DJ-Tech Kontrol One",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "DJ-Tech",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "DJ-Tech Kontrol One",
+  "entries": [
+   {
+    "section": "DECK",
+    "name": "BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3"
+    ],
+    "data1": "31"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3"
+    ],
+    "data1": "4"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3"
+    ],
+    "data1": "3"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3"
+    ],
+    "data1": "2"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON #6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3"
+    ],
+    "data1": "26"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON #7",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3"
+    ],
+    "data1": "25"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON #8",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3"
+    ],
+    "data1": "30"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON #9",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3"
+    ],
+    "data1": "29"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON #10",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3"
+    ],
+    "data1": "28"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON #11",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3"
+    ],
+    "data1": "27"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON #12",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3"
+    ],
+    "data1": "9"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON #13",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3"
+    ],
+    "data1": "8"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON #14",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3"
+    ],
+    "data1": "7"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON #15",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3"
+    ],
+    "data1": "6"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON #16",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3"
+    ],
+    "data1": "14"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON #17",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3"
+    ],
+    "data1": "13"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON #18",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3"
+    ],
+    "data1": "12"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON #19",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3"
+    ],
+    "data1": "11"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON #20",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3"
+    ],
+    "data1": "19"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON #21",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3"
+    ],
+    "data1": "18"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON #22",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3"
+    ],
+    "data1": "17"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON #23",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3"
+    ],
+    "data1": "16"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON #24",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3"
+    ],
+    "data1": "24"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON #25",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3"
+    ],
+    "data1": "23"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON #26",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3"
+    ],
+    "data1": "22"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON #27",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3"
+    ],
+    "data1": "21"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "31"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "4"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "BUTTON #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "3"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "BUTTON #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "2"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "BUTTON #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "BUTTON #6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "26"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "BUTTON #7",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "25"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "BUTTON #8",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "30"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "BUTTON #9",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "29"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "BUTTON #10",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "28"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "BUTTON #11",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "27"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "BUTTON #12",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "9"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "BUTTON #13",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "8"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "BUTTON #14",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "7"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "BUTTON #15",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "6"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "BUTTON #16",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "14"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "BUTTON #17",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "13"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "BUTTON #18",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "12"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "BUTTON #19",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "11"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "BUTTON #20",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "19"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "BUTTON #21",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "18"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "BUTTON #22",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "17"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "BUTTON #23",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "16"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "BUTTON #24",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "24"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "BUTTON #25",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "23"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "BUTTON #26",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "22"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "BUTTON #27",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "21"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "Kontrol One"
+  ],
+  "library_source": "mixxx"
+ }
+}

@@ -1,0 +1,658 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.numark-mixtrack-platinum-fx",
+  "kind": "controller",
+  "name": "Numark Mixtrack Platinum FX",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Numark",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "Numark Mixtrack Platinum FX",
+  "entries": [
+   {
+    "section": "DECK",
+    "name": "PLAY BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "0"
+   },
+   {
+    "section": "DECK",
+    "name": "MODE BUTTON PRESS",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6",
+     "7",
+     "8"
+    ],
+    "data1": "0"
+   },
+   {
+    "section": "EFFECT",
+    "name": "EFFECT1",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "9"
+    ],
+    "data1": "0"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "EFFECT",
+    "name": "EFFECT2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "9"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "DECK",
+    "name": "SYNC BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "2"
+   },
+   {
+    "section": "DECK",
+    "name": "MODE BUTTON PRESS #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6",
+     "7",
+     "8"
+    ],
+    "data1": "2"
+   },
+   {
+    "section": "EFFECT",
+    "name": "EFFECT3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "9"
+    ],
+    "data1": "2"
+   },
+   {
+    "section": "DECK",
+    "name": "LOAD BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "16"
+    ],
+    "data1": "2"
+   },
+   {
+    "section": "DECK",
+    "name": "SYNC BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "3"
+   },
+   {
+    "section": "EFFECT",
+    "name": "EFFECT1 #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "10"
+    ],
+    "data1": "3"
+   },
+   {
+    "section": "DECK",
+    "name": "LOAD BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "16"
+    ],
+    "data1": "3"
+   },
+   {
+    "section": "DECK",
+    "name": "PLAY BUTTONBEATGRID",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "4"
+   },
+   {
+    "section": "EFFECT",
+    "name": "EFFECT2 #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "10"
+    ],
+    "data1": "4"
+   },
+   {
+    "section": "DECK",
+    "name": "LOAD BUTTON #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "16"
+    ],
+    "data1": "4"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "5"
+   },
+   {
+    "section": "EFFECT",
+    "name": "EFFECT3 #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "10"
+    ],
+    "data1": "5"
+   },
+   {
+    "section": "DECK",
+    "name": "LOAD BUTTON #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "16"
+    ],
+    "data1": "5"
+   },
+   {
+    "section": "DECK",
+    "name": "WHEEL TOUCH",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "6"
+   },
+   {
+    "section": "BROWSE",
+    "name": "KNOB BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "16"
+    ],
+    "data1": "6"
+   },
+   {
+    "section": "DECK",
+    "name": "SCRATCH TOGGLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "7"
+   },
+   {
+    "section": "DECK",
+    "name": "MODE BUTTON PRESS #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6",
+     "7",
+     "8"
+    ],
+    "data1": "7"
+   },
+   {
+    "section": "BROWSE",
+    "name": "KNOB BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "16"
+    ],
+    "data1": "7"
+   },
+   {
+    "section": "DECK",
+    "name": "DECK SWITCH",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "8"
+   },
+   {
+    "section": "DECK",
+    "name": "TAP",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "9",
+     "10"
+    ],
+    "data1": "9"
+   },
+   {
+    "section": "DECK",
+    "name": "PITCH BEND UP",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "11"
+   },
+   {
+    "section": "DECK",
+    "name": "MODE BUTTON PRESS #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6",
+     "7",
+     "8"
+    ],
+    "data1": "11"
+   },
+   {
+    "section": "DECK",
+    "name": "PITCH BEND DOWN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "12"
+   },
+   {
+    "section": "DECK",
+    "name": "MODE BUTTON PRESS #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6",
+     "7",
+     "8"
+    ],
+    "data1": "13"
+   },
+   {
+    "section": "DECK",
+    "name": "MODE BUTTON PRESS #6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6",
+     "7",
+     "8"
+    ],
+    "data1": "15"
+   },
+   {
+    "section": "DECK",
+    "name": "PAD PRESS",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6",
+     "7",
+     "8"
+    ],
+    "data1": "20"
+   },
+   {
+    "section": "DECK",
+    "name": "PAD PRESS #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6",
+     "7",
+     "8"
+    ],
+    "data1": "21"
+   },
+   {
+    "section": "DECK",
+    "name": "PAD PRESS #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6",
+     "7",
+     "8"
+    ],
+    "data1": "22"
+   },
+   {
+    "section": "DECK",
+    "name": "PAD PRESS #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6",
+     "7",
+     "8"
+    ],
+    "data1": "23"
+   },
+   {
+    "section": "DECK",
+    "name": "PAD PRESS #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6",
+     "7",
+     "8"
+    ],
+    "data1": "24"
+   },
+   {
+    "section": "DECK",
+    "name": "PAD PRESS #6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6",
+     "7",
+     "8"
+    ],
+    "data1": "25"
+   },
+   {
+    "section": "DECK",
+    "name": "PAD PRESS #7",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6",
+     "7",
+     "8"
+    ],
+    "data1": "26"
+   },
+   {
+    "section": "DECK",
+    "name": "PFL BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "27"
+   },
+   {
+    "section": "DECK",
+    "name": "PAD PRESS #8",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6",
+     "7",
+     "8"
+    ],
+    "data1": "27"
+   },
+   {
+    "section": "DECK",
+    "name": "PAD PRESS #9",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6",
+     "7",
+     "8"
+    ],
+    "data1": "28"
+   },
+   {
+    "section": "DECK",
+    "name": "PAD PRESS #10",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6",
+     "7",
+     "8"
+    ],
+    "data1": "29"
+   },
+   {
+    "section": "DECK",
+    "name": "PAD PRESS #11",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6",
+     "7",
+     "8"
+    ],
+    "data1": "30"
+   },
+   {
+    "section": "DECK",
+    "name": "PAD PRESS #12",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6",
+     "7",
+     "8"
+    ],
+    "data1": "31"
+   },
+   {
+    "section": "MIXER",
+    "name": "SHIFT TOGGLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "32"
+   },
+   {
+    "section": "DECK",
+    "name": "PAD PRESS #13",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6",
+     "7",
+     "8"
+    ],
+    "data1": "32"
+   },
+   {
+    "section": "DECK",
+    "name": "PAD PRESS #14",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6",
+     "7",
+     "8"
+    ],
+    "data1": "33"
+   },
+   {
+    "section": "DECK",
+    "name": "PAD PRESS #15",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6",
+     "7",
+     "8"
+    ],
+    "data1": "34"
+   },
+   {
+    "section": "DECK",
+    "name": "PAD PRESS #16",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6",
+     "7",
+     "8"
+    ],
+    "data1": "35"
+   },
+   {
+    "section": "DECK",
+    "name": "PITCH BEND UP #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "43"
+   },
+   {
+    "section": "DECK",
+    "name": "PITCH BEND DOWN #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "44"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP HALF",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6",
+     "7",
+     "8"
+    ],
+    "data1": "52"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP DOUBLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6",
+     "7",
+     "8"
+    ],
+    "data1": "53"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP HALF #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6",
+     "7",
+     "8"
+    ],
+    "data1": "54"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP DOUBLE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6",
+     "7",
+     "8"
+    ],
+    "data1": "55"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6",
+     "7",
+     "8"
+    ],
+    "data1": "64"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6",
+     "7",
+     "8"
+    ],
+    "data1": "65"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "Mixtrack Platinum FX"
+  ],
+  "library_source": "mixxx"
+ }
+}

@@ -1,0 +1,405 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.numark-n4",
+  "kind": "controller",
+  "name": "Numark N4",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Numark",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "Numark N4",
+  "entries": [
+   {
+    "section": "BROWSE",
+    "name": "NAVIGATION ENCODER BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "8"
+   },
+   {
+    "section": "DECK",
+    "name": "ORIENTATION BUTTON LEFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "53"
+   },
+   {
+    "section": "DECK",
+    "name": "ORIENTATION BUTTON RIGHT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "54"
+   },
+   {
+    "section": "DECK",
+    "name": "ORIENTATION BUTTON LEFT #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "55"
+   },
+   {
+    "section": "DECK",
+    "name": "ORIENTATION BUTTON RIGHT #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "56"
+   },
+   {
+    "section": "DECK",
+    "name": "ORIENTATION BUTTON LEFT #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "57"
+   },
+   {
+    "section": "DECK",
+    "name": "ORIENTATION BUTTON RIGHT #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "58"
+   },
+   {
+    "section": "DECK",
+    "name": "ORIENTATION BUTTON LEFT #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "59"
+   },
+   {
+    "section": "DECK",
+    "name": "ORIENTATION BUTTON RIGHT #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "60"
+   },
+   {
+    "section": "DECK",
+    "name": "BTN EFFECT1",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "19"
+   },
+   {
+    "section": "DECK",
+    "name": "BTN EFFECT2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "20"
+   },
+   {
+    "section": "DECK",
+    "name": "BTN SAMPLE3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "21"
+   },
+   {
+    "section": "DECK",
+    "name": "BTN SAMPLE4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "22"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE BUTTONS",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "39"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE BUTTONS #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "40"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE BUTTONS #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "41"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE BUTTONS #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "42"
+   },
+   {
+    "section": "DECK",
+    "name": "LOAD BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "6"
+   },
+   {
+    "section": "DECK",
+    "name": "PFL BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "49"
+   },
+   {
+    "section": "DECK",
+    "name": "PFL BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "50"
+   },
+   {
+    "section": "DECK",
+    "name": "PFL BUTTON #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "51"
+   },
+   {
+    "section": "DECK",
+    "name": "PFL BUTTON #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "52"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "16"
+   },
+   {
+    "section": "DECK",
+    "name": "SEARCH BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "33"
+   },
+   {
+    "section": "OTHER",
+    "name": "CHANGE CROSSFADER CONTOUR",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "75"
+   },
+   {
+    "section": "DECK",
+    "name": "CHANNEL INPUT SWITCHER L",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "73"
+   },
+   {
+    "section": "DECK",
+    "name": "CHANNEL INPUT SWITCHER R",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "74"
+   },
+   {
+    "section": "DECK",
+    "name": "PLAY BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "17"
+   },
+   {
+    "section": "DECK",
+    "name": "SYNC BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "15"
+   },
+   {
+    "section": "DECK",
+    "name": "TAP BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "30"
+   },
+   {
+    "section": "DECK",
+    "name": "KEYLOCK BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "27"
+   },
+   {
+    "section": "DECK",
+    "name": "PITCH RANGE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "26"
+   },
+   {
+    "section": "DECK",
+    "name": "JOG WHEEL SCRATCH ENABLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "44"
+   },
+   {
+    "section": "DECK",
+    "name": "SHIFT BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "18"
+   },
+   {
+    "section": "DECK",
+    "name": "PITCH BEND MINUS",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "24"
+   },
+   {
+    "section": "DECK",
+    "name": "PITCH BEND PLUS",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "25"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "library_source": "mixxx"
+ }
+}

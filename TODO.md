@@ -139,6 +139,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Profile library: 115 other-brand profiles from Mixxx's mappings** (`v0.48.160-mixxx-library`, #12) — the
+  controllers Mixxx maps (Hercules, Numark, Reloop, Denon, Allen & Heath, Akai, Behringer, Vestax, Stanton…), minus
+  built-ins and rekordbox-library devices, as installable profiles: their buttons named after the Mixxx function they
+  drive, grouped by Mixxx group; Source column in the library window. Coarser than the rekordbox ones (function names,
+  not control names) and never checked on a unit. Fixed on the way: a name with runs of punctuation made an invalid
+  plugin id (also for Controller Setup installs).
 - [x] **Mixxx mappings: byte-safe trigger re-assignment** (`v0.48.159-mixxx-write`, #365 follow-up) — saving an edited
   Mixxx mapping rewrites only the `<status>` / `<midino>` text of the bindings that moved, in place, in the file's own
   hex style; comments and layout untouched. Checked on Mixxx 2.5's 142 real mappings: unedited exports byte-identical,

@@ -1,0 +1,308 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.novation-dicer",
+  "kind": "controller",
+  "name": "Novation Dicer",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Novation",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "Novation Dicer",
+  "entries": [
+   {
+    "section": "BROWSE",
+    "name": "SELECT PREV TRACK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "13",
+     "16"
+    ],
+    "data1": "66"
+   },
+   {
+    "section": "DECK",
+    "name": "LOAD SELECTED TRACK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "13",
+     "16"
+    ],
+    "data1": "67"
+   },
+   {
+    "section": "BROWSE",
+    "name": "SELECT NEXT TRACK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "13",
+     "16"
+    ],
+    "data1": "68"
+   },
+   {
+    "section": "BROWSE",
+    "name": "SELECT NEXT PLAYLIST",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "13",
+     "16"
+    ],
+    "data1": "69"
+   },
+   {
+    "section": "DECK",
+    "name": "EFFECT THEN CONTINUE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "12",
+     "16",
+     "15",
+     "13"
+    ],
+    "data1": "60"
+   },
+   {
+    "section": "DECK",
+    "name": "EFFECT THEN CONTINUE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "12",
+     "15"
+    ],
+    "data1": "61"
+   },
+   {
+    "section": "DECK",
+    "name": "EFFECT THEN CONTINUE #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "12",
+     "15"
+    ],
+    "data1": "62"
+   },
+   {
+    "section": "DECK",
+    "name": "EFFECT THEN CONTINUE #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "12",
+     "15"
+    ],
+    "data1": "63"
+   },
+   {
+    "section": "DECK",
+    "name": "EFFECT THEN CONTINUE #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "12",
+     "16",
+     "15",
+     "13"
+    ],
+    "data1": "64"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATLOOP 1 TOGGLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "12",
+     "15"
+    ],
+    "data1": "65"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATLOOP 2 TOGGLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "12",
+     "15"
+    ],
+    "data1": "66"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATLOOP 4 TOGGLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "12",
+     "15"
+    ],
+    "data1": "67"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATLOOP 8 TOGGLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "12",
+     "15"
+    ],
+    "data1": "68"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATLOOP 16 TOGGLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "12",
+     "15"
+    ],
+    "data1": "69"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 1 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "11",
+     "14"
+    ],
+    "data1": "60"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 2 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "11",
+     "14"
+    ],
+    "data1": "61"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 3 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "11",
+     "14"
+    ],
+    "data1": "62"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 4 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "11",
+     "14"
+    ],
+    "data1": "63"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 5 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "11",
+     "14"
+    ],
+    "data1": "64"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 1 CLEAR",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "11",
+     "14"
+    ],
+    "data1": "65"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 2 CLEAR",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "11",
+     "14"
+    ],
+    "data1": "66"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 3 CLEAR",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "11",
+     "14"
+    ],
+    "data1": "67"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 4 CLEAR",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "11",
+     "14"
+    ],
+    "data1": "68"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "16",
+     "13"
+    ],
+    "data1": "61"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 5 CLEAR",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "11",
+     "14"
+    ],
+    "data1": "69"
+   },
+   {
+    "section": "EFFECT",
+    "name": "TOGGLE QUICK EFFECT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "16",
+     "13"
+    ],
+    "data1": "62"
+   },
+   {
+    "section": "DECK",
+    "name": "TRANSFORMER",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "16",
+     "13"
+    ],
+    "data1": "63"
+   },
+   {
+    "section": "BROWSE",
+    "name": "SELECT PREV PLAYLIST",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "16",
+     "13"
+    ],
+    "data1": "65"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "Dicer"
+  ],
+  "library_source": "mixxx"
+ }
+}

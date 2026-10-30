@@ -1,0 +1,159 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.m-vave-smk-25-ii",
+  "kind": "controller",
+  "name": "M-Vave SMK-25 II",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "M-Vave",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "M-Vave SMK-25 II",
+  "entries": [
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLERS",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "10"
+    ],
+    "data1": "40"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLERS #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "10"
+    ],
+    "data1": "41"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLERS #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "10"
+    ],
+    "data1": "42"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLERS #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "10"
+    ],
+    "data1": "43"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLERS #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "10"
+    ],
+    "data1": "48"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLERS #6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "10"
+    ],
+    "data1": "49"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLERS #7",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "10"
+    ],
+    "data1": "50"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLERS #8",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "10"
+    ],
+    "data1": "51"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLERS #9",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "10"
+    ],
+    "data1": "36"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLERS #10",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "10"
+    ],
+    "data1": "37"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLERS #11",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "10"
+    ],
+    "data1": "38"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLERS #12",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "10"
+    ],
+    "data1": "39"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLERS #13",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "10"
+    ],
+    "data1": "44"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLERS #14",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "10"
+    ],
+    "data1": "45"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLERS #15",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "10"
+    ],
+    "data1": "46"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "SMK-25 II"
+  ],
+  "library_source": "mixxx"
+ }
+}

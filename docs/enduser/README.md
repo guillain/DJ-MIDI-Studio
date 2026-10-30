@@ -93,8 +93,8 @@ Supported out of the box: Serato DJ Pro and Traktor mappings, Mixxx mappings, re
 XDJ-XZ, DDJ-1000, DDJ-FLX4, DDJ-FLX10, DDJ-REV1, DDJ-REV5, DDJ-800, Numark
 Mixtrack Pro FX, Hercules DJControl Inpulse 500, Behringer CMD LC-1, CMD Micro and CMD Studio 4a, and Korg nanoPAD2 — and any other
 controller through Controller Setup — plus 46 Pioneer DJ / AlphaTheta profiles
-from rekordbox's mappings, installed on demand from the
-[profile library](controller-profiles.md#profile-library-rekordbox-devices). See
+from rekordbox's mappings and 115 other-brand profiles from Mixxx's, installed on demand from the
+[profile library](controller-profiles.md#profile-library). See
 [Supported controllers](controller-profiles.md).
 
 ## Get started

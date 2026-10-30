@@ -1,0 +1,168 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.arturia-keylab-mk-1",
+  "kind": "controller",
+  "name": "Arturia KeyLab Mk 1",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Arturia",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "Arturia KeyLab Mk 1",
+  "entries": [
+   {
+    "section": "OTHER",
+    "name": "PAD GRID",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "10"
+    ],
+    "data1": "48"
+   },
+   {
+    "section": "OTHER",
+    "name": "PAD GRID #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "10"
+    ],
+    "data1": "49"
+   },
+   {
+    "section": "OTHER",
+    "name": "PAD GRID #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "10"
+    ],
+    "data1": "50"
+   },
+   {
+    "section": "OTHER",
+    "name": "PAD GRID #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "10"
+    ],
+    "data1": "51"
+   },
+   {
+    "section": "OTHER",
+    "name": "PAD GRID #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "10"
+    ],
+    "data1": "44"
+   },
+   {
+    "section": "OTHER",
+    "name": "PAD GRID #6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "10"
+    ],
+    "data1": "45"
+   },
+   {
+    "section": "OTHER",
+    "name": "PAD GRID #7",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "10"
+    ],
+    "data1": "46"
+   },
+   {
+    "section": "OTHER",
+    "name": "PAD GRID #8",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "10"
+    ],
+    "data1": "47"
+   },
+   {
+    "section": "OTHER",
+    "name": "PAD GRID #9",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "10"
+    ],
+    "data1": "40"
+   },
+   {
+    "section": "OTHER",
+    "name": "PAD GRID #10",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "10"
+    ],
+    "data1": "41"
+   },
+   {
+    "section": "OTHER",
+    "name": "PAD GRID #11",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "10"
+    ],
+    "data1": "42"
+   },
+   {
+    "section": "OTHER",
+    "name": "PAD GRID #12",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "10"
+    ],
+    "data1": "43"
+   },
+   {
+    "section": "OTHER",
+    "name": "PAD GRID #13",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "10"
+    ],
+    "data1": "36"
+   },
+   {
+    "section": "OTHER",
+    "name": "PAD GRID #14",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "10"
+    ],
+    "data1": "37"
+   },
+   {
+    "section": "OTHER",
+    "name": "PAD GRID #15",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "10"
+    ],
+    "data1": "38"
+   },
+   {
+    "section": "OTHER",
+    "name": "PAD GRID #16",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "10"
+    ],
+    "data1": "39"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "KeyLab Mk 1"
+  ],
+  "library_source": "mixxx"
+ }
+}

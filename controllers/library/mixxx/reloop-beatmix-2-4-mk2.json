@@ -1,0 +1,699 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.reloop-beatmix-2-4-mk2",
+  "kind": "controller",
+  "name": "Reloop Beatmix 2/4 MK2",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Reloop",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "Reloop Beatmix 2/4 MK2",
+  "entries": [
+   {
+    "section": "DECK",
+    "name": "SYNC ENABLED",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "33"
+   },
+   {
+    "section": "DECK",
+    "name": "MASTER SYNC",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "97"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE GOTOANDPLAY",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "34"
+   },
+   {
+    "section": "DECK",
+    "name": "RANGE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "98"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE DEFAULT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "35"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE GOTOANDSTOP",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "99"
+   },
+   {
+    "section": "DECK",
+    "name": "PLAY",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "36"
+   },
+   {
+    "section": "DECK",
+    "name": "REVERSEROLL",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "100"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 1 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "0"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 1 CLEAR",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "8"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLER PAD",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "16"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SHIFT SAMPLER PAD",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "24"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 2 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 2 CLEAR",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "9"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLER PAD #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "17"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SHIFT SAMPLER PAD #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "25"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 3 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "2"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 3 CLEAR",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "10"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLER PAD #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "18"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SHIFT SAMPLER PAD #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "26"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 4 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "3"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 4 CLEAR",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "11"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLER PAD #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "19"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SHIFT SAMPLER PAD #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "27"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATLOOP 1 TOGGLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "4"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP SET",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "12"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLER PAD #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "20"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SHIFT SAMPLER PAD #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "28"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATLOOP 2 TOGGLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "5"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP HALVE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "13"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLER PAD #6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "21"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SHIFT SAMPLER PAD #6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "29"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATLOOP 4 TOGGLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "6"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP DOUBLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "14"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLER PAD #7",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "22"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SHIFT SAMPLER PAD #7",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "30"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATLOOP 8 TOGGLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "7"
+   },
+   {
+    "section": "DECK",
+    "name": "RELOOP EXIT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "15"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLER PAD #8",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "23"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SHIFT SAMPLER PAD #8",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "31"
+   },
+   {
+    "section": "DECK",
+    "name": "RATE TEMP DOWN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "38"
+   },
+   {
+    "section": "DECK",
+    "name": "RATE TEMP UP",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "39"
+   },
+   {
+    "section": "DECK",
+    "name": "ACTIVATE FX",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "102"
+   },
+   {
+    "section": "DECK",
+    "name": "ACTIVATE FX #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "103"
+   },
+   {
+    "section": "DECK",
+    "name": "LOAD BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "80"
+   },
+   {
+    "section": "DECK",
+    "name": "PFL",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "82"
+   },
+   {
+    "section": "DECK",
+    "name": "WHEEL TOUCH",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "data1": "63"
+   },
+   {
+    "section": "EFFECT",
+    "name": "FX KNOB ON OFF",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3"
+    ],
+    "data1": "113"
+   },
+   {
+    "section": "EFFECT",
+    "name": "SHIFT FX KNOB ON OFF",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3"
+    ],
+    "data1": "116"
+   },
+   {
+    "section": "EFFECT",
+    "name": "FX KNOB ON OFF #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3"
+    ],
+    "data1": "114"
+   },
+   {
+    "section": "EFFECT",
+    "name": "SHIFT FX KNOB ON OFF #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3"
+    ],
+    "data1": "117"
+   },
+   {
+    "section": "EFFECT",
+    "name": "FX KNOB ON OFF #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3"
+    ],
+    "data1": "115"
+   },
+   {
+    "section": "EFFECT",
+    "name": "SHIFT FX KNOB ON OFF #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3"
+    ],
+    "data1": "118"
+   },
+   {
+    "section": "EFFECT",
+    "name": "FX ENCODER PUSH",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "4",
+     "3",
+     "5"
+    ],
+    "data1": "37"
+   },
+   {
+    "section": "EFFECT",
+    "name": "SHIFT FX ENCODER PUSH",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "4",
+     "3",
+     "5"
+    ],
+    "data1": "101"
+   },
+   {
+    "section": "BROWSE",
+    "name": "TRAX PUSH",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "6"
+    ],
+    "data1": "9"
+   },
+   {
+    "section": "BROWSE",
+    "name": "TRAX PUSH #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "6"
+    ],
+    "data1": "73"
+   },
+   {
+    "section": "BROWSE",
+    "name": "BACK BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "6"
+    ],
+    "data1": "8"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "Beatmix 2/4 MK2"
+  ],
+  "library_source": "mixxx"
+ }
+}

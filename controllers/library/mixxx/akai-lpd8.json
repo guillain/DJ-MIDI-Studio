@@ -1,0 +1,288 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.akai-lpd8",
+  "kind": "controller",
+  "name": "Akai LPD8",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Akai",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "Akai LPD8",
+  "entries": [
+   {
+    "section": "DECK",
+    "name": "HOTCUE BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "43"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "42"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE BUTTON #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "41"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE BUTTON #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "39"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE BUTTON #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "38"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE BUTTON #6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "37"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATJUMP",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "40"
+   },
+   {
+    "section": "DECK",
+    "name": "CLEAR",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "36"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE BUTTON #7",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2"
+    ],
+    "data1": "44"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE BUTTON #8",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2"
+    ],
+    "data1": "46"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE BUTTON #9",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2"
+    ],
+    "data1": "36"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATJUMP #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2"
+    ],
+    "data1": "37"
+   },
+   {
+    "section": "DECK",
+    "name": "CLEAR #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2"
+    ],
+    "data1": "35"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "HOTCUE BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "72"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "HOTCUE BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "65"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "HOTCUE BUTTON #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "71"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "HOTCUE BUTTON #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "64"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "HOTCUE BUTTON #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "69"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "HOTCUE BUTTON #6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "62"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "BEATJUMP",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "67"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "CLEAR",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "60"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "HOTCUE BUTTON #7",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "48"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "HOTCUE BUTTON #8",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "41"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "HOTCUE BUTTON #9",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "47"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "HOTCUE BUTTON #10",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "40"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "HOTCUE BUTTON #11",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "45"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "HOTCUE BUTTON #12",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "38"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "BEATJUMP #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "43"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "CLEAR #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "36"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "LPD8"
+  ],
+  "library_source": "mixxx"
+ }
+}

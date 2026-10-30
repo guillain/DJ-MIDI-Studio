@@ -1,0 +1,181 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.numark-party-mix",
+  "kind": "controller",
+  "name": "Numark Party Mix",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Numark",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "Numark Party Mix",
+  "entries": [
+   {
+    "section": "DECK",
+    "name": "HEADPHONE BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "27"
+   },
+   {
+    "section": "DECK",
+    "name": "SYNC BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "2"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "DECK",
+    "name": "PLAY BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "0"
+   },
+   {
+    "section": "DECK",
+    "name": "SCRATCH TOGGLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "7"
+   },
+   {
+    "section": "DECK",
+    "name": "MODE BUTTON PRESS",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6"
+    ],
+    "data1": "0"
+   },
+   {
+    "section": "DECK",
+    "name": "MODE BUTTON PRESS #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6"
+    ],
+    "data1": "11"
+   },
+   {
+    "section": "DECK",
+    "name": "MODE BUTTON PRESS #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6"
+    ],
+    "data1": "14"
+   },
+   {
+    "section": "DECK",
+    "name": "MODE BUTTON PRESS #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6"
+    ],
+    "data1": "24"
+   },
+   {
+    "section": "DECK",
+    "name": "PAD PRESS",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6"
+    ],
+    "data1": "20"
+   },
+   {
+    "section": "DECK",
+    "name": "PAD PRESS #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6"
+    ],
+    "data1": "21"
+   },
+   {
+    "section": "DECK",
+    "name": "PAD PRESS #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6"
+    ],
+    "data1": "22"
+   },
+   {
+    "section": "DECK",
+    "name": "PAD PRESS #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6"
+    ],
+    "data1": "23"
+   },
+   {
+    "section": "BROWSE",
+    "name": "KNOB BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "16"
+    ],
+    "data1": "0"
+   },
+   {
+    "section": "DECK",
+    "name": "LOAD BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "16"
+    ],
+    "data1": "2"
+   },
+   {
+    "section": "DECK",
+    "name": "LOAD BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "16"
+    ],
+    "data1": "3"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "Party Mix"
+  ],
+  "library_source": "mixxx"
+ }
+}
