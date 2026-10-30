@@ -139,6 +139,10 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Music Library faster on a large collection** (`v0.48.167-library-speed`, phase 5 item 7) — measured on a
+  synthetic 85,000-track index (`scripts/benchmark_library.py`): opening the tab 5.8 s → 1.2 s, a text filter
+  1.9 s → 0.4 s, clearing it 3.5 s → 0.17 s. The table model sorts itself, the text filter reads cached row text,
+  no-op filter changes are skipped, folder hints avoid pathlib, and categories are cached per top-two folders.
 - [x] **Accessibility audit** (`v0.48.166-accessibility`, phase 5 item 6) — icon-only buttons (Controller Setup's
   toolbar, ⚙, ☰, ⟳, dock Close) now carry their tooltip as accessible name, kept in step when it changes; a test
   checks every button of the main window and of every audited dialog has a name, every control takes Tab focus, and
@@ -3539,6 +3543,7 @@ close what can't be unblocked here.
       **Done** in `v0.48.166-accessibility`: ~20 icon-only buttons had no
       name; focus and contrast already passed.
    7. Music Library at 85k tracks: measure, then cut the open/filter time.
+      **Done** in `v0.48.167-library-speed` (open 5.8 s → 1.2 s).
    8. Generate a Mixxx mapping from a controller profile (documented Mixxx
       control names, picked per button).
    - Not scheduled: macOS signing/notarization (waits on the maintainer's
