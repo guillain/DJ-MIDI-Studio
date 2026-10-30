@@ -139,6 +139,10 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Live set mode** (`v0.48.152-stage-set`, #366, phase 4 item 4) — Stage Mode shows the set prepared in Music
+  Library → Set: position, current and next track (BPM / Camelot / energy), the transition into the next one (OK with
+  its BPM change, or what clashes), moved by ◀ / ▶ or PageUp / PageDown (presenter remote); position kept for the
+  session. No time left: durations aren't in the tag cache.
 - [x] **Mixxx mapping plugin, read-only** (`v0.48.151-mixxx-plugin`, #365, phase 4 item 3) — `.midi.xml` mappings open
   in every view (both root shapes, detected by content), checked on the 142 real mappings Mixxx 2.5 ships (17,095
   controls, none rejected). Comparing the built-in profiles with Mixxx's mappings for the same devices confirmed the
@@ -3453,6 +3457,7 @@ close what can't be unblocked here.
       public mappings (#365) — possibly seeds non-Pioneer library profiles (#12).
       **Done** (read-only) in `v0.48.151-mixxx-plugin`; it surfaced #372.
    4. Live set mode: set preparation on the Stage Mode screen (#366).
+      **Done** in `v0.48.152-stage-set`.
    5. MIDI macros step 2: toggles, scene conditions, wait for a press (#367).
    6. Per-controller MIDI remapper layer over the existing routing (#368).
    - Not scheduled: macOS signing/notarization (waits on the maintainer's

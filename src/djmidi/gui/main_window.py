@@ -368,6 +368,8 @@ class MainWindow(QMainWindow):
         self._macro_player = MacroPlayer(parent=self)
         # Remembers recent presses so a trigger sequence can complete.
         self._macro_matcher = midi_macros.MacroTriggerMatcher()
+        # Where Stage Mode's set panel stood when it last closed (issue #366).
+        self._stage_set_index = 0
         # The open "Verify Profile" window (issue #364), fed every live event.
         self._profile_check_dialog: ProfileCheckDialog | None = None
         # Library profiles declined this session, when there are no QSettings (tests).
@@ -2068,7 +2070,12 @@ class MainWindow(QMainWindow):
                 (view.current_controller() for view in self._emulator_views()),
                 self.controller_image_view.current_controller_name(),
             )
-            window = StageWindow(config_provider=lambda: self.config, initial_controller=controller)
+            window = StageWindow(
+                config_provider=lambda: self.config,
+                initial_controller=controller,
+                set_provider=self._stage_set,
+                set_index=self._stage_set_index,
+            )
             window.closed.connect(self._on_stage_window_closed)
             self._stage_window = window
             window.showFullScreen()
@@ -2079,9 +2086,23 @@ class MainWindow(QMainWindow):
             # the reference and unchecks the action (already unchecked here).
             self._stage_window.close()
 
+    def _stage_set(self):
+        """The set prepared in Music Library → Set, for Stage Mode (issue
+        #366); opens the library index if the tab wasn't shown yet."""
+        try:
+            self.music_library_view.ensure_open()
+        except Exception:
+            _LOGGER.warning("Could not open the music library for Stage Mode's set", exc_info=True)
+            return (), ()
+        panel = self.music_library_view.set_panel
+        return panel.tracks, panel.transitions
+
     def _on_stage_window_closed(self) -> None:
         window = self._stage_window
         self._stage_window = None
+        if window is not None:
+            # Reopening Stage Mode this session resumes at the same track.
+            self._stage_set_index = window.set_index
         if window is not None:
             window.deleteLater()
         if self._stage_mode_action.isChecked():

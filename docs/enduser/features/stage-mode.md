@@ -10,6 +10,7 @@
 - [What it does](#what-it-does)
 - [Open and leave Stage Mode](#open-and-leave-stage-mode)
 - [The emulator](#the-emulator)
+- [Your prepared set](#your-prepared-set)
 - [The compact monitor](#the-compact-monitor)
 - [Related](#related)
 
@@ -42,6 +43,26 @@ the hardware exactly like an emulator window: a hit flashes the control, a
 held button stays amber, and Serato's LED messages latch it. Clicking a
 control still shows what the loaded mapping does, and `Live send` still
 works.
+
+## Your prepared set
+
+Above the monitor, Stage Mode shows the set you prepared in
+[Music Library → Set](music-library.md):
+
+- **Set 3/12** — where you are in it;
+- the **current track** in large type, with its BPM, Camelot key and
+  energy (when its tags have them);
+- **Next:** the following track, the same way;
+- the **transition** into it: green *Transition OK* with the BPM change, or
+  in red what clashes (BPM jump beyond the set's tolerance, incompatible
+  keys), grey when a BPM or key is missing.
+
+**`Next ▶`** and **`◀ Previous`** move through the set, and so do
+**PageDown** / **PageUp** — what most presenter remotes send, so a remote in
+your pocket can turn the page. The app can't know which track your DJ
+software is playing, so moving on is your click. Leaving and reopening
+Stage Mode during the session resumes at the same track. There is no time
+left: track durations aren't in the tag cache.
 
 ## The compact monitor
 

@@ -336,7 +336,11 @@ STAGE_MODE: HelpEntry = (
         "controller in its list.</li>"
         "<li>The monitor shows the latest event in large type and the last few below it. "
         "The full log stays in the Live Monitor window.</li>"
-        "<li>Live monitoring starts on its own when Stage Mode opens.</li></ul>"
+        "<li>Live monitoring starts on its own when Stage Mode opens.</li>"
+        "<li>Above the monitor, the set prepared in Music Library → Set: the current and next "
+        "track with BPM, key and energy, and whether the mix into the next one is compatible. "
+        "<b>Next ▶</b> / <b>◀ Previous</b>, or PageDown / PageUp (a presenter remote), move "
+        "through it.</li></ul>"
         "Press <b>Esc</b> (or <b>Exit</b>) to leave. Open it again with "
         "<b>View → Stage Mode</b>; it is not remembered across restarts.",
     ),
