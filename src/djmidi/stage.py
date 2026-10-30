@@ -4,17 +4,20 @@ Stage Mode shows only a Controller Emulator and a compact Live Monitor,
 large and high-contrast, for reading from a distance on stage. The window
 itself lives in ``gui/stage_window.py``; this module holds the parts that
 don't need a ``QApplication``: turning a live ``MidiEvent`` into one short,
-readable line, and the bounded list of recent lines the compact monitor
-shows (newest first), so both can be tested without Qt.
+readable line, the bounded list of recent lines the compact monitor
+shows (newest first), and the prepared set's panel (:func:`stage_set_view`,
+issue #366), so all can be tested without Qt.
 """
 
 from __future__ import annotations
 
 from collections import deque
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
+from dataclasses import dataclass
 
 from djmidi import catalog
 from djmidi.i18n import QT_TRANSLATE_NOOP, Translate, untranslated
+from djmidi.library.set_prep import STATUS_OK, SetTrack, Transition
 from djmidi.midi_io import MidiEvent
 
 # How many recent events the compact monitor keeps. Deliberately small: at
@@ -92,3 +95,67 @@ class StageLog:
 
     def clear(self) -> None:
         self._lines.clear()
+
+
+# --- the prepared set on stage (issue #366) ---------------------------------
+
+_SET_POSITION = QT_TRANSLATE_NOOP("Stage", "Set {position}/{total}")
+_NEXT = QT_TRANSLATE_NOOP("Stage", "Next: {track}")
+_LAST = QT_TRANSLATE_NOOP("Stage", "Last track of the set")
+_COMPATIBLE = QT_TRANSLATE_NOOP("Stage", "Transition OK")
+_BPM_CHANGE = QT_TRANSLATE_NOOP("Stage", "BPM {change}")
+_ENERGY = QT_TRANSLATE_NOOP("Stage", "energy {energy}")
+
+
+@dataclass(frozen=True)
+class StageSetView:
+    """What the Stage Mode set panel shows for one position of the set."""
+
+    position: str
+    current: str
+    current_details: str
+    next: str
+    transition: str
+    status: str  # set_prep.STATUS_* of the next transition, "" for the last track
+
+
+def _details(track: SetTrack, translate: Translate) -> str:
+    parts = []
+    if track.bpm:
+        parts.append(f"{track.bpm:g} BPM")
+    if track.camelot_key:
+        parts.append(track.camelot_key)
+    if track.energy is not None:
+        parts.append(translate(_ENERGY).format(energy=track.energy))
+    return _SEPARATOR.join(parts)
+
+
+def stage_set_view(
+    tracks: Sequence[SetTrack], transitions: Sequence[Transition], index: int, translate: Translate = untranslated
+) -> StageSetView | None:
+    """The set panel for track `index` (clamped), or None for an empty set.
+    The transition line is the mix into the next track: "Transition OK" with
+    its BPM change, or the set preparation's own notes on what clashes."""
+    if not tracks:
+        return None
+    index = max(0, min(index, len(tracks) - 1))
+    track = tracks[index]
+    position = translate(_SET_POSITION).format(position=index + 1, total=len(tracks))
+    if index + 1 >= len(tracks):
+        return StageSetView(position, track.label, _details(track, translate), translate(_LAST), "", "")
+    following = tracks[index + 1]
+    transition = transitions[index] if index < len(transitions) else None
+    next_text = translate(_NEXT).format(track=following.label)
+    next_details = _details(following, translate)
+    if next_details:
+        next_text = f"{next_text}{_SEPARATOR}{next_details}"
+    if transition is None:
+        return StageSetView(position, track.label, _details(track, translate), next_text, "", "")
+    if transition.status == STATUS_OK:
+        text = translate(_COMPATIBLE)
+        if transition.bpm_change_pct is not None:
+            change = translate(_BPM_CHANGE).format(change=f"{transition.bpm_change_pct:+.1f} %")
+            text = f"{text}{_SEPARATOR}{change}"
+    else:
+        text = _SEPARATOR.join(transition.issues)
+    return StageSetView(position, track.label, _details(track, translate), next_text, text, transition.status)

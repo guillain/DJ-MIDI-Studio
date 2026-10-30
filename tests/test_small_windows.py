@@ -269,7 +269,13 @@ def test_stage_window_is_usable_at_small_sizes(size):
     from djmidi.gui.stage_window import StageWindow
 
     apply_theme(QApplication.instance())
-    window = StageWindow(config_provider=lambda: None)
+    from djmidi.library.set_prep import SetTrack, analyze_set
+
+    tracks = [
+        SetTrack("/a.mp3", "A long track title, extended mix", "Some artist", 124.0, "8A", 5),
+        SetTrack("/b.mp3", "Next one", "Other artist", 140.0, "3B"),
+    ]
+    window = StageWindow(config_provider=lambda: None, set_provider=lambda: (tracks, analyze_set(tracks)))
     window.show()
     try:
         window.resize(*size)
