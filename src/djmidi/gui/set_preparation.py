@@ -23,6 +23,7 @@ from PySide6.QtCore import QCoreApplication, QPointF, QRectF, Qt, Signal
 from PySide6.QtGui import QBrush, QColor, QPainter, QPainterPath, QPalette, QPen
 from PySide6.QtWidgets import (
     QAbstractItemView,
+    QDialog,
     QDoubleSpinBox,
     QFileDialog,
     QGridLayout,
@@ -41,6 +42,7 @@ from PySide6.QtWidgets import (
 from djmidi import user_paths
 from djmidi.gui import help_texts
 from djmidi.gui.help_button import help_row
+from djmidi.gui.set_order_dialog import SetOrderDialog
 from djmidi.gui.translation import translator
 from djmidi.library import set_prep, workspace
 from djmidi.library.db import LibraryDB
@@ -258,6 +260,8 @@ class SetPreparationPanel(QWidget):
         self._loaded = False
         self.tracks: list[set_prep.SetTrack] = []
         self.transitions: list[set_prep.Transition] = []
+        self._previous_order: list[str] | None = None
+        self.order_dialog_factory = SetOrderDialog
 
         box = QVBoxLayout(self)
         box.addLayout(help_row(self, *help_texts.LIBRARY_SET))
@@ -292,6 +296,10 @@ class SetPreparationPanel(QWidget):
             ("clear_button", self.tr("Clear"), self.clear, ""),
             ("up_button", self.tr("Move up"), lambda: self.move_selected(-1), ""),
             ("down_button", self.tr("Move down"), lambda: self.move_selected(1), ""),
+            ("propose_button", self.tr("Propose an order…"), self.propose_order,
+             self.tr("Suggests an order where every mix stays compatible; you compare before using it.")),
+            ("undo_order_button", self.tr("Back to my order"), self.restore_previous_order,
+             self.tr("Puts back the order you had before using a proposed one.")),
             ("load_button", self.tr("Load playlist"), self.load_selected_playlist,
              self.tr("Replaces the draft with the playlist selected in the Playlists tab.")),
             ("save_button", self.tr("Save as playlist…"), self._on_save_clicked,
@@ -378,6 +386,26 @@ class SetPreparationPanel(QWidget):
         self.set_paths(self._db().playlist_paths(playlist_id))
         self._status(self.tr("Loaded “{name}” into the set.").format(name=name))
 
+    def propose_order(self) -> bool:
+        """Shows the engine's order beside the current one; applies it only
+        when the user accepts. True when the order changed."""
+        if len(self._paths) < 3:
+            return False
+        dialog = self.order_dialog_factory(self.tracks, self.tolerance_spin.value(), self)
+        if dialog.exec() != QDialog.DialogCode.Accepted or not dialog.order():
+            return False
+        self._previous_order = list(self._paths)
+        self._paths = dialog.order()
+        self._refresh()
+        self._status(self.tr("Set re-ordered. “Back to my order” puts the previous order back."))
+        return True
+
+    def restore_previous_order(self) -> None:
+        if self._previous_order is None:
+            return
+        self._paths, self._previous_order = self._previous_order, None
+        self._refresh()
+
     def _sync_from_list(self) -> None:
         """After an internal drag: the list's order becomes the draft's."""
         self._paths = [self.list.item(row).data(PATH_ROLE) for row in range(self.list.count())]
@@ -401,6 +429,10 @@ class SetPreparationPanel(QWidget):
         has_tracks = bool(self._paths)
         for button in (self.save_button, self.export_serato_button, self.export_traktor_button, self.clear_button):
             button.setEnabled(has_tracks)
+        self.propose_button.setEnabled(len(self._paths) > 2)
+        if self._previous_order is not None and sorted(self._previous_order) != sorted(self._paths):
+            self._previous_order = None  # tracks were added or removed since
+        self.undo_order_button.setEnabled(self._previous_order is not None)
         if save and self._loaded:
             set_prep.save_set_draft(self._db(), set_prep.SetDraft(tuple(self._paths), tolerance))
 
