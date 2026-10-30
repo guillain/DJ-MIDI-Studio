@@ -2042,6 +2042,14 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
         <translation>Envoie un Note On vers la &lt;b&gt;sortie&lt;/b&gt; et chronomètre le Note On correspondant qui revient sur l&apos;&lt;b&gt;entrée&lt;/b&gt;, puis affiche min / médiane / max et la gigue sur l&apos;ensemble des pings.&lt;br&gt;&lt;br&gt;&lt;b&gt;N&apos;a de sens qu&apos;avec un appareil qui renvoie l&apos;écho&lt;/b&gt; : le bus IAC Driver ou un câble MIDI virtuel choisi à la fois en sortie et en entrée, un MIDI thru, ou un contrôleur connu pour renvoyer ses messages de LED. Avec un contrôleur qui ne renvoie rien, chaque ping expire -- cela ne dit rien de sa vraie latence.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Intervalle&lt;/b&gt; : temps entre le départ de deux pings ; &lt;b&gt;Délai d&apos;attente&lt;/b&gt; : combien de temps un ping attend avant d&apos;être compté comme perdu.&lt;/li&gt;&lt;li&gt;Chaque ping a sa propre vélocité, pour qu&apos;un écho en retard ne soit jamais compté pour le suivant ; décochez la case de vélocité pour un appareil qui renvoie une autre valeur.&lt;/li&gt;&lt;li&gt;Un Note Off suit chaque ping, pour qu&apos;une LED qui renvoie l&apos;écho ne reste pas allumée.&lt;/li&gt;&lt;/ul&gt;</translation>
     </message>
     <message>
+        <source>Export a Mixxx mapping</source>
+        <translation>Exporter un mapping Mixxx</translation>
+    </message>
+    <message>
+        <source>Writes a Mixxx mapping (&lt;tt&gt;.midi.xml&lt;/tt&gt;) for a controller profile. Each row is one button or pad on one MIDI channel; double-click its &lt;b&gt;Mixxx function&lt;/b&gt; to pick what it does and its &lt;b&gt;Deck&lt;/b&gt; to change the deck. The functions guessed from the control names are only suggestions: check them. Only Mixxx functions its own mappings use for a button are offered. Tick &lt;b&gt;Also bind Note Off&lt;/b&gt; when the controller releases its buttons with a Note Off. Copy the saved file into Mixxx&apos;s controllers folder.</source>
+        <translation>Écrit un mapping Mixxx (&lt;tt&gt;.midi.xml&lt;/tt&gt;) pour un profil de contrôleur. Chaque ligne est un bouton ou un pad sur un canal MIDI ; double-cliquez sa &lt;b&gt;Fonction Mixxx&lt;/b&gt; pour choisir ce qu&apos;il fait et sa &lt;b&gt;Platine&lt;/b&gt; pour changer de platine. Les fonctions devinées d&apos;après le nom des contrôles ne sont que des suggestions : vérifiez-les. Seules les fonctions que les mappings de Mixxx eux-mêmes utilisent pour un bouton sont proposées. Cochez &lt;b&gt;Lier aussi le Note Off&lt;/b&gt; quand le contrôleur relâche ses boutons avec un Note Off. Copiez le fichier enregistré dans le dossier des contrôleurs de Mixxx.</translation>
+    </message>
+    <message>
         <source>Snapshots</source>
         <translation>Instantanés</translation>
     </message>
@@ -3499,6 +3507,14 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
     <message>
         <source>Cheat Sheet (PDF)...</source>
         <translation>Antisèche (PDF)...</translation>
+    </message>
+    <message>
+        <source>Mixxx Mapping from Profile...</source>
+        <translation>Mapping Mixxx depuis un profil...</translation>
+    </message>
+    <message>
+        <source>Write a Mixxx mapping for a controller profile, a function per button</source>
+        <translation>Écrire un mapping Mixxx pour un profil de contrôleur, une fonction par bouton</translation>
     </message>
     <message>
         <source>&amp;Back Up Workspace...</source>
@@ -5346,6 +5362,196 @@ Lignes sélectionnées dans Configuration du contrôleur : {selected}</translati
     <message>
         <source>Uses only the {count} track(s) the current filter shows (plus the selected start track). Clear the filters first to build from the whole library.</source>
         <translation>N&apos;utilise que le(s) {count} morceau(x) affiché(s) par le filtre actuel (plus le morceau de départ sélectionné). Videz d&apos;abord les filtres pour partir de toute la bibliothèque.</translation>
+    </message>
+</context>
+<context>
+    <name>MixxxExport</name>
+    <message>
+        <source>Hot cue {number}</source>
+        <translation>Hot cue {number}</translation>
+    </message>
+    <message>
+        <source>Hot cue {number}: clear</source>
+        <translation>Hot cue {number} : effacer</translation>
+    </message>
+    <message>
+        <source>Play / pause</source>
+        <translation>Lecture / pause</translation>
+    </message>
+    <message>
+        <source>Cue</source>
+        <translation>Cue</translation>
+    </message>
+    <message>
+        <source>Cue: go to and play</source>
+        <translation>Cue : aller et lire</translation>
+    </message>
+    <message>
+        <source>Start / stop</source>
+        <translation>Départ / arrêt</translation>
+    </message>
+    <message>
+        <source>Sync (lock)</source>
+        <translation>Sync (verrouillée)</translation>
+    </message>
+    <message>
+        <source>Beat sync (one shot)</source>
+        <translation>Beat sync (ponctuelle)</translation>
+    </message>
+    <message>
+        <source>Key lock</source>
+        <translation>Verrouillage de tonalité</translation>
+    </message>
+    <message>
+        <source>Quantize</source>
+        <translation>Quantize</translation>
+    </message>
+    <message>
+        <source>Slip</source>
+        <translation>Slip</translation>
+    </message>
+    <message>
+        <source>Reverse</source>
+        <translation>Lecture inversée</translation>
+    </message>
+    <message>
+        <source>Headphone cue (PFL)</source>
+        <translation>Pré-écoute casque (PFL)</translation>
+    </message>
+    <message>
+        <source>Load selected track</source>
+        <translation>Charger le morceau sélectionné</translation>
+    </message>
+    <message>
+        <source>Eject</source>
+        <translation>Éjecter</translation>
+    </message>
+    <message>
+        <source>Loop in</source>
+        <translation>Début de boucle</translation>
+    </message>
+    <message>
+        <source>Loop out</source>
+        <translation>Fin de boucle</translation>
+    </message>
+    <message>
+        <source>Reloop / exit</source>
+        <translation>Reloop / sortie</translation>
+    </message>
+    <message>
+        <source>Reloop exit</source>
+        <translation>Sortie de reloop</translation>
+    </message>
+    <message>
+        <source>4-beat loop</source>
+        <translation>Boucle de 4 temps</translation>
+    </message>
+    <message>
+        <source>Loop ½</source>
+        <translation>Boucle ½</translation>
+    </message>
+    <message>
+        <source>Loop ×2</source>
+        <translation>Boucle ×2</translation>
+    </message>
+    <message>
+        <source>Rewind (hold)</source>
+        <translation>Retour rapide (maintenu)</translation>
+    </message>
+    <message>
+        <source>Fast forward (hold)</source>
+        <translation>Avance rapide (maintenue)</translation>
+    </message>
+    <message>
+        <source>Pitch bend −</source>
+        <translation>Pitch bend −</translation>
+    </message>
+    <message>
+        <source>Pitch bend +</source>
+        <translation>Pitch bend +</translation>
+    </message>
+</context>
+<context>
+    <name>MixxxExportDialog</name>
+    <message>
+        <source>Export a Mixxx Mapping</source>
+        <translation>Exporter un mapping Mixxx</translation>
+    </message>
+    <message>
+        <source>Pick a Mixxx function for the buttons and pads you want; the guesses from their names are only suggestions. Rows without a function are left out. Knobs, faders and jog wheels aren&apos;t in profiles, so map those in Mixxx.</source>
+        <translation>Choisissez une fonction Mixxx pour les boutons et pads voulus ; celles devinées d&apos;après leur nom ne sont que des suggestions. Les lignes sans fonction sont laissées de côté. Les potentiomètres, faders et jog wheels ne sont pas dans les profils : mappez-les dans Mixxx.</translation>
+    </message>
+    <message>
+        <source>Filter controls…</source>
+        <translation>Filtrer les contrôles…</translation>
+    </message>
+    <message>
+        <source>Only rows with a function</source>
+        <translation>Seulement les lignes avec une fonction</translation>
+    </message>
+    <message>
+        <source>Controller:</source>
+        <translation>Contrôleur :</translation>
+    </message>
+    <message>
+        <source>Section</source>
+        <translation>Section</translation>
+    </message>
+    <message>
+        <source>Control</source>
+        <translation>Contrôle</translation>
+    </message>
+    <message>
+        <source>MIDI</source>
+        <translation>MIDI</translation>
+    </message>
+    <message>
+        <source>Deck</source>
+        <translation>Platine</translation>
+    </message>
+    <message>
+        <source>Mixxx function</source>
+        <translation>Fonction Mixxx</translation>
+    </message>
+    <message>
+        <source>— none —</source>
+        <translation>— aucune —</translation>
+    </message>
+    <message>
+        <source>Also bind Note Off (for a controller that releases buttons with Note Off)</source>
+        <translation>Lier aussi le Note Off (pour un contrôleur qui relâche ses boutons avec un Note Off)</translation>
+    </message>
+    <message>
+        <source>Save Mixxx mapping…</source>
+        <translation>Enregistrer le mapping Mixxx…</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Fermer</translation>
+    </message>
+    <message>
+        <source>ch {channel} {kind} {number}</source>
+        <translation>canal {channel} {kind} {number}</translation>
+    </message>
+    <message>
+        <source>note</source>
+        <translation>note</translation>
+    </message>
+    <message>
+        <source>{count} control(s) get a Mixxx function.</source>
+        <translation>{count} contrôle(s) reçoivent une fonction Mixxx.</translation>
+    </message>
+    <message>
+        <source>Save Mixxx mapping</source>
+        <translation>Enregistrer le mapping Mixxx</translation>
+    </message>
+    <message>
+        <source>Mixxx mappings (*.midi.xml)</source>
+        <translation>Mappings Mixxx (*.midi.xml)</translation>
+    </message>
+    <message>
+        <source>Saved {path}: copy it to Mixxx&apos;s controllers folder, then pick it in Preferences → Controllers.</source>
+        <translation>{path} enregistré : copiez-le dans le dossier des contrôleurs de Mixxx, puis choisissez-le dans Préférences → Contrôleurs.</translation>
     </message>
 </context>
 <context>

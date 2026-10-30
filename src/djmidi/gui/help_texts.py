@@ -158,6 +158,21 @@ MIDI_LATENCY: HelpEntry = (
     "midi-latency.md",
 )
 
+MIXXX_EXPORT: HelpEntry = (
+    QT_TRANSLATE_NOOP("HelpTexts", "Export a Mixxx mapping"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
+        "Writes a Mixxx mapping (<tt>.midi.xml</tt>) for a controller profile. Each row is one "
+        "button or pad on one MIDI channel; double-click its <b>Mixxx function</b> to pick what it "
+        "does and its <b>Deck</b> to change the deck. The functions guessed from the control "
+        "names are only suggestions: check them. Only Mixxx functions its own mappings use for a "
+        "button are offered. Tick <b>Also bind Note Off</b> when the controller releases its "
+        "buttons with a Note Off. Copy the saved file into Mixxx's controllers folder.",
+    ),
+    "mixxx-mappings.md",
+)
+
+
 SNAPSHOTS: HelpEntry = (
     QT_TRANSLATE_NOOP("HelpTexts", "Snapshots"),
     QT_TRANSLATE_NOOP(

@@ -30,6 +30,8 @@ SOURCES=(
   src/djmidi/gui/layer_map_dialog.py
   src/djmidi/gui/deck_copy_dialog.py
   src/djmidi/gui/snapshots_dialog.py
+  src/djmidi/gui/mixxx_export_dialog.py
+  src/djmidi/mixxx_export.py
   src/djmidi/deck_copy.py
   src/djmidi/gui/music_library_view.py
   src/djmidi/gui/library_stats_dialog.py
