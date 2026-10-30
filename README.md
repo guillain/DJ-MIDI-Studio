@@ -72,6 +72,7 @@ what the mapping does, switch pad modes, latch SHIFT, and turn on
 | 🗺️ | [Mapping editor](docs/enduser/features/mapping-editor.md) | Serato mappings by channel, deck or physical control; grouped edits, validation, diff before save, rollback |
 | 🎧 | [Traktor mappings](docs/enduser/features/traktor-mappings.md) | Open Traktor `.tsi` mappings and re-assign MIDI triggers byte-safely |
 | 🎛️ | [rekordbox mappings](docs/enduser/features/rekordbox-mappings.md) | Open rekordbox `.midi.csv` mappings read-only, every bundled device file included |
+| 🎚️ | [Mixxx mappings](docs/enduser/features/mixxx-mappings.md) | Open Mixxx `.midi.xml` mappings read-only |
 | ✅ | [Verify a controller profile](docs/enduser/features/profile-check.md) | Check a profile against your controller, control by control, and share the report |
 | 🔍 | [Compare mappings](docs/enduser/features/mapping-diff.md) | What changed between two mappings or since the last save, by physical control, highlighted on the layouts |
 | ✅ | [Ready for live](docs/enduser/features/live-ready-check.md) | A pre-gig check: decks missing Play/Cue/Sync/Load, conflicting controls, buttons without LED feedback — explained, never auto-fixed |
@@ -93,7 +94,8 @@ what the mapping does, switch pad modes, latch SHIFT, and turn on
 
 - **DJ software:** Serato DJ Pro (`.xml` mappings, crates), Traktor Pro
   (`.tsi` mappings, `collection.nml` playlists), Rekordbox (`.midi.csv`
-  mappings, read-only; USB `export.pdb` playlists).
+  mappings, read-only; USB `export.pdb` playlists), Mixxx (`.midi.xml` mappings,
+  read-only).
 - **Controllers:** Pioneer DDJ-XP2, XDJ-XZ, DDJ-1000, DDJ-FLX4, DDJ-FLX10,
   DDJ-REV1, DDJ-REV5, DDJ-800, Numark Mixtrack Pro FX, Hercules DJControl
   Inpulse 500, Behringer CMD LC-1, CMD Micro, CMD Studio 4a, Korg nanoPAD2 — plus any controller through Controller Setup.
