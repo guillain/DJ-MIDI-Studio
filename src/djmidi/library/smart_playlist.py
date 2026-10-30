@@ -30,9 +30,11 @@ Missing files never match. Qt-free, like the rest of `djmidi.library`.
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import Iterable, Mapping
 from dataclasses import asdict, dataclass, fields, replace
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 
 from djmidi.i18n import QT_TRANSLATE_NOOP, Translate, untranslated
 
@@ -353,3 +355,94 @@ def refresh_smart_playlists(
         db.set_playlist_paths(playlist_id, paths)
         counts[playlist_id] = len(paths)
     return counts
+
+
+# --- exporting every smart playlist at once (phase 6 item 5) ---------------
+
+EXPORT_FORMATS = ("serato", "traktor")
+EXPORT_SETTING = "smart_export"
+_UNSAFE_NAME = re.compile(r'[\\/:*?"<>|\x00-\x1f]+')
+
+
+@dataclass(frozen=True)
+class SmartExportOptions:
+    folder: str = ""
+    serato: bool = True
+    traktor: bool = False
+
+    def formats(self) -> tuple[str, ...]:
+        return tuple(name for name in EXPORT_FORMATS if getattr(self, name))
+
+
+@dataclass(frozen=True)
+class SmartExportResult:
+    written: tuple[Path, ...]
+    failed: tuple[tuple[str, str], ...]  # (playlist name, error)
+    playlists: int
+
+
+def export_file_name(name: str) -> str:
+    """A playlist name as a file name: characters no file system takes are
+    replaced, leading dots/spaces dropped."""
+    cleaned = _UNSAFE_NAME.sub("-", name).strip().lstrip(".")
+    return cleaned or "Smart playlist"
+
+
+def export_smart_playlists(
+    db: LibraryDB,
+    options: SmartExportOptions,
+    rows: list[LibraryRow] | None = None,
+    now: datetime | None = None,
+) -> SmartExportResult:
+    """Re-evaluates every smart playlist, then writes each one in the chosen
+    formats into `options.folder` (``<name>.crate`` / ``<name>.nml``),
+    replacing the files a previous export wrote there. Nothing else in the
+    folder is touched, and Serato's / Traktor's own folders are only written
+    to if the user picked one of them."""
+    from .workspace import export_serato_crate, export_traktor_playlist
+
+    folder = Path(options.folder)
+    if not options.folder or not options.formats():
+        raise ValueError("Pick a folder and at least one format")
+    folder.mkdir(parents=True, exist_ok=True)
+    refresh_smart_playlists(db, rows, now)
+    smart = db.list_smart_rules()
+    playlists = [record for record in db.list_playlists() if record.id in smart]
+    written: list[Path] = []
+    failed: list[tuple[str, str]] = []
+    used: set[str] = set()
+    for record in playlists:
+        base = export_file_name(record.name)
+        stem, counter = base, 2
+        while stem.casefold() in used:
+            stem = f"{base} ({counter})"
+            counter += 1
+        used.add(stem.casefold())
+        paths = db.playlist_paths(record.id)
+        try:
+            if options.serato:
+                target = folder / f"{stem}.crate"
+                export_serato_crate(target, paths)
+                written.append(target)
+            if options.traktor:
+                target = folder / f"{stem}.nml"
+                export_traktor_playlist(target, record.name, paths, db=db)
+                written.append(target)
+        except (OSError, ValueError) as exc:
+            failed.append((record.name, str(exc)))
+    return SmartExportResult(tuple(written), tuple(failed), len(playlists))
+
+
+def load_export_options(db: LibraryDB) -> SmartExportOptions:
+    raw = db.get_setting(EXPORT_SETTING, {})
+    if not isinstance(raw, dict):
+        return SmartExportOptions()
+    return SmartExportOptions(
+        folder=str(raw.get("folder", "") or ""),
+        serato=bool(raw.get("serato", True)),
+        traktor=bool(raw.get("traktor", False)),
+    )
+
+
+def save_export_options(db: LibraryDB, options: SmartExportOptions) -> None:
+    db.set_setting(EXPORT_SETTING, asdict(options))

@@ -248,6 +248,13 @@ def _set_order():
     return SetOrderDialog(tracks, 6.0)
 
 
+def _smart_export():
+    from djmidi.gui.smart_export_dialog import SmartExportDialog
+    from djmidi.library.smart_playlist import SmartExportOptions
+
+    return SmartExportDialog(SmartExportOptions("/Users/dj/Music/Exports/Smart", True, True), 12)
+
+
 WINDOWS = {
     "first-run wizard": _wizard,
     "layer map": _layer_map,
@@ -266,6 +273,7 @@ WINDOWS = {
     "snapshots": _snapshots,
     "mixxx export": _mixxx_export,
     "set order": _set_order,
+    "smart export": _smart_export,
 }
 
 

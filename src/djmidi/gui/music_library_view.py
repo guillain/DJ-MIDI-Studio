@@ -112,6 +112,7 @@ from djmidi.gui.set_preparation import (
     SetPreparationPanel,
     encode_paths,
 )
+from djmidi.gui.smart_export_dialog import SmartExportDialog
 from djmidi.gui.translation import translator
 from djmidi.gui.window_size import keep_tab_titles_whole, keep_wrapped_text_visible
 from djmidi.library import (
@@ -1070,6 +1071,7 @@ class MusicLibraryView(QWidget):
         super().__init__(parent)
         self._db_path = db_path
         self._executor: ThreadPoolExecutor | None = None
+        self.smart_export_dialog_factory = SmartExportDialog
         self._analysis_future: Future | None = None
         self._db: LibraryDB | None = None
         self.undo_stack = QUndoStack(self)
@@ -1553,6 +1555,9 @@ class MusicLibraryView(QWidget):
              self.tr("Changes the rules of the selected smart playlist and re-evaluates it.")),
             ("refresh_smart_button", self.tr("Refresh smart playlists"), self._on_refresh_smart_clicked,
              self.tr("Re-evaluates every smart playlist against the current library and play history.")),
+            ("export_smart_button", self.tr("Export all smart…"), self._on_export_smart_clicked,
+             self.tr("Re-evaluates every smart playlist and writes each as a Serato crate and/or Traktor "
+                     "playlist into one folder, in one go.")),
             ("import_serato_button", self.tr("Import Serato crate…"), self._on_import_serato_clicked, ""),
             ("import_traktor_button", self.tr("Import Traktor NML…"), self._on_import_traktor_clicked, ""),
             ("import_rekordbox_button", self.tr("Import Rekordbox export…"), self._on_import_rekordbox_clicked, ""),
@@ -3336,6 +3341,28 @@ class MusicLibraryView(QWidget):
             self.status_label.setText(self.tr("Refreshed {count} smart playlist(s).").format(count=len(counts)))
         else:
             self.status_label.setText(self.tr("No smart playlist to refresh."))
+
+    def export_smart_playlists(self, options: smart_playlist.SmartExportOptions) -> smart_playlist.SmartExportResult:
+        result = smart_playlist.export_smart_playlists(self.db, options, self.table_model.rows())
+        smart_playlist.save_export_options(self.db, options)
+        self._reload_playlists()
+        self._show_selected_playlist_tracks()
+        message = self.tr("Exported {count} smart playlist(s): {files} file(s) in {folder}.").format(
+            count=result.playlists, files=len(result.written), folder=options.folder
+        )
+        if result.failed:
+            message += " " + self.tr("Failed: {names}.").format(names=", ".join(name for name, _ in result.failed))
+        self.status_label.setText(message)
+        return result
+
+    def _on_export_smart_clicked(self) -> None:
+        count = len(self.db.list_smart_rules())
+        if not count:
+            self.status_label.setText(self.tr("No smart playlist to export: create one with New smart playlist…."))
+            return
+        dialog = self.smart_export_dialog_factory(smart_playlist.load_export_options(self.db), count, self)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            self.export_smart_playlists(dialog.options())
 
     def _on_delete_playlist_clicked(self) -> None:
         playlist_id = self.selected_playlist_id()
