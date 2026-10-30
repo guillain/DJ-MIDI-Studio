@@ -92,6 +92,7 @@ def test_controls_and_outputs_become_triggers():
         "group": "[Channel1]",
         "description": "Play button",
         "options": "normal",
+        "mixxx_element": "control:0",
     }
     led = play.userios[1].mappings[0]
     assert led.extra_attrs["on"] == "0x7F" and led.extra_attrs["minimum"] == "0.5"
@@ -113,8 +114,10 @@ def test_refusals():
         parse_string("<midi app='Serato'/>")
     with pytest.raises(MixxxMappingError):
         parse_string("not xml")
-    with pytest.raises(ValueError, match="isn't supported"):
-        to_xml_string(parse_string(MAPPING))
+    with pytest.raises(MixxxMappingError, match="opened from a Mixxx file"):
+        from djmidi.model import MidiConfig
+
+        to_xml_string(MidiConfig())
 
 
 def test_detected_by_content_even_with_a_plain_xml_suffix():
@@ -141,3 +144,78 @@ def test_controller_setup_learns_triggers_from_a_mixxx_file(tmp_path):
     view._name_edit.setText("From Mixxx")
     view.load_file(path)
     assert {(row.channels[0], row.data1) for row in view._rows} >= {("1", "11"), ("2", "11"), ("7", "31")}
+
+
+# --- writing back (v0.48.159) -------------------------------------------------
+
+
+def _find(config, channel, event_type, number):
+    return next(c for c in config.controls if (c.channel, c.event_type, c.control) == (channel, event_type, number))
+
+
+def test_unedited_export_is_byte_identical():
+    assert to_xml_string(parse_string(MAPPING)) == MAPPING
+
+
+def test_an_edited_address_rewrites_only_its_status_and_midino():
+    config = parse_string(MAPPING)
+    play = _find(config, "1", "Note On", "11")
+    play.channel, play.control = "3", "12"
+    out = to_xml_string(config)
+    changed = [(a, b) for a, b in zip(MAPPING.splitlines(), out.splitlines(), strict=True) if a != b]
+    # The input binding and the LED output on that address both moved; comments and layout kept.
+    assert changed == [
+        ("        <status>0x90</status>", "        <status>0x92</status>"),
+        ("        <midino>0x0B</midino>", "        <midino>0x0C</midino>"),
+        ("        <status>0x90</status>", "        <status>0x92</status>"),
+        ("        <midino>0x0B</midino>", "        <midino>0x0C</midino>"),
+    ]
+    assert "<!-- deck 1 play -->" in out
+    reread = _find(parse_string(out), "3", "Note On", "12")
+    assert [u.event for u in reread.userios] == ["click", "output"]
+
+
+def test_hex_case_and_width_follow_the_file():
+    text = MAPPING.replace("<midino>0x1F</midino>", "<midino>0x1f</midino>")
+    config = parse_string(text)
+    _find(config, "7", "Control Change", "31").control = "45"
+    assert "<midino>0x2d</midino>" in to_xml_string(config)
+
+
+def test_structural_or_non_address_edits_are_refused():
+    from djmidi.model import Control, MappingElement, UserIO
+
+    added = parse_string(MAPPING)
+    added.controls.append(Control("1", "Note On", "99", [UserIO("click", [MappingElement("play")])]))
+    with pytest.raises(MixxxMappingError, match="adding"):
+        to_xml_string(added)
+    removed = parse_string(MAPPING)
+    removed.controls.pop()
+    with pytest.raises(MixxxMappingError, match="removing"):
+        to_xml_string(removed)
+    renamed = parse_string(MAPPING)
+    _find(renamed, "1", "Note On", "11").userios[0].mappings[0].tag = "cue_default"
+    with pytest.raises(MixxxMappingError, match="Mixxx key or deck"):
+        to_xml_string(renamed)
+    numbered = parse_string(MAPPING)
+    _find(numbered, "1", "Pitch Bend", "0").control = "5"
+    with pytest.raises(MixxxMappingError, match="no field"):
+        to_xml_string(numbered)
+    out_of_range = parse_string(MAPPING)
+    _find(out_of_range, "1", "Note On", "11").control = "200"
+    with pytest.raises(MixxxMappingError):
+        to_xml_string(out_of_range)
+
+
+def test_a_value_spelled_as_an_entity_is_kept_but_not_patched():
+    text = MAPPING.replace(
+        "<MixxxControllerPreset",
+        '<!DOCTYPE MixxxControllerPreset [<!ENTITY NOTE1 "0x90">]>\n<MixxxControllerPreset',
+        1,
+    ).replace("<status>0x90</status>\n        <midino>0x0B</midino>\n        <options><normal/>", "<status>&NOTE1;</status>\n        <midino>0x0B</midino>\n        <options><normal/>", 1)
+    assert "&NOTE1;" in text
+    config = parse_string(text)
+    assert to_xml_string(config) == text  # untouched: fine
+    _find(config, "1", "Note On", "11").channel = "2"
+    with pytest.raises(MixxxMappingError, match="as a number"):
+        to_xml_string(config)
