@@ -139,6 +139,9 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Music Library performance budget** (`v0.48.172-perf-budget`, phase 6 item 4) — tests that count the operations
+  behind the old slowness (data() round trips, category resolutions, pathlib work, no-op re-filters) on 20,000 tracks,
+  so a regression fails CI without flaky timings. It found one more round trip: filtering at 85k is now ~2x faster.
 - [x] **Stage notes** (`v0.48.171-stage-notes`, phase 6 item 3) — a free note per track (Music Library Track panel),
   shown large in Stage Mode under the current track and with the next one. Kept in the library index, follows a
   relinked file, never written into the audio file.
@@ -3571,7 +3574,8 @@ close what can't be unblocked here.
    2. Propose an order for a prepared set (mix-path engine, before/after,
       never applied without confirmation). **Done** in `v0.48.170-set-order`.
    3. Per-track notes shown on stage. **Done** in `v0.48.171-stage-notes`.
-   4. Performance budget for the library benchmark in CI.
+   4. Performance budget for the library benchmark in CI. **Done** in
+      `v0.48.172-perf-budget` (operation counts, not seconds).
    5. Export every smart playlist at once (Serato crates / Traktor).
    6. Interactive cheat sheet as a standalone web page.
    7. Software plugin kit: guide, contract tests, example plugin.
