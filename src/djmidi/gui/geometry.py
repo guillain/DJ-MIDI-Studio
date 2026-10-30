@@ -662,14 +662,14 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         # both rows individually corner-checked, not eyeballed from a
         # cluttered wide shot). cols x = 0.081/0.127/0.172/0.217 (w
         # 0.038-0.040), rows y = 0.741/0.820 (h 0.070).
-        "Pad 1": ControlGeometry(0.0808, 0.7469, 0.0399, 0.0703, "rect", "#e0708f"),
-        "Pad 2": ControlGeometry(0.1265, 0.7469, 0.0390, 0.0703, "rect", "#e0708f"),
-        "Pad 3": ControlGeometry(0.1719, 0.7469, 0.0383, 0.0703, "rect", "#e0708f"),
-        "Pad 4": ControlGeometry(0.2166, 0.7469, 0.0383, 0.0703, "rect", "#e0708f"),
-        "Pad 5": ControlGeometry(0.0808, 0.8271, 0.0399, 0.0704, "rect", "#e0708f"),
-        "Pad 6": ControlGeometry(0.1265, 0.8271, 0.0390, 0.0704, "rect", "#e0708f"),
-        "Pad 7": ControlGeometry(0.1719, 0.8271, 0.0383, 0.0704, "rect", "#e0708f"),
-        "Pad 8": ControlGeometry(0.2166, 0.8271, 0.0383, 0.0704, "rect", "#e0708f"),
+        "Pad 1": ControlGeometry(0.0840, 0.7459, 0.0365, 0.0697, "rect", "#e0708f"),
+        "Pad 2": ControlGeometry(0.1275, 0.7459, 0.0365, 0.0697, "rect", "#e0708f"),
+        "Pad 3": ControlGeometry(0.1705, 0.7459, 0.0365, 0.0697, "rect", "#e0708f"),
+        "Pad 4": ControlGeometry(0.2140, 0.7459, 0.0365, 0.0697, "rect", "#e0708f"),
+        "Pad 5": ControlGeometry(0.0840, 0.8281, 0.0365, 0.0697, "rect", "#e0708f"),
+        "Pad 6": ControlGeometry(0.1275, 0.8281, 0.0365, 0.0697, "rect", "#e0708f"),
+        "Pad 7": ControlGeometry(0.1705, 0.8281, 0.0365, 0.0697, "rect", "#e0708f"),
+        "Pad 8": ControlGeometry(0.2140, 0.8281, 0.0365, 0.0697, "rect", "#e0708f"),
         # Right deck (deck 2/4) -- issue #103: every entry above only ever
         # had its left-deck (deck 1/3) copy recorded, so a deck 2/4 hit had
         # no marker of its own on the real-position overlay at all (worse
@@ -712,14 +712,14 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         # ~0.038-0.040 -- close, but a mirror would have been off). cols x =
         # 0.710/0.753/0.795/0.838 (w 0.033), rows y = 0.741/0.820 (h 0.070,
         # same rows as the left grid).
-        "Pad 1 (R)": ControlGeometry(0.7104, 0.7469, 0.0329, 0.0703, "rect", "#e0708f"),
-        "Pad 2 (R)": ControlGeometry(0.7529, 0.7469, 0.0326, 0.0703, "rect", "#e0708f"),
-        "Pad 3 (R)": ControlGeometry(0.7951, 0.7469, 0.0326, 0.0703, "rect", "#e0708f"),
-        "Pad 4 (R)": ControlGeometry(0.8377, 0.7469, 0.0326, 0.0703, "rect", "#e0708f"),
-        "Pad 5 (R)": ControlGeometry(0.7104, 0.8271, 0.0329, 0.0704, "rect", "#e0708f"),
-        "Pad 6 (R)": ControlGeometry(0.7529, 0.8271, 0.0326, 0.0704, "rect", "#e0708f"),
-        "Pad 7 (R)": ControlGeometry(0.7951, 0.8271, 0.0326, 0.0704, "rect", "#e0708f"),
-        "Pad 8 (R)": ControlGeometry(0.8377, 0.8271, 0.0326, 0.0704, "rect", "#e0708f"),
+        "Pad 1 (R)": ControlGeometry(0.7080, 0.7459, 0.0365, 0.0697, "rect", "#e0708f"),
+        "Pad 2 (R)": ControlGeometry(0.7515, 0.7459, 0.0365, 0.0697, "rect", "#e0708f"),
+        "Pad 3 (R)": ControlGeometry(0.7950, 0.7459, 0.0365, 0.0697, "rect", "#e0708f"),
+        "Pad 4 (R)": ControlGeometry(0.8380, 0.7459, 0.0365, 0.0697, "rect", "#e0708f"),
+        "Pad 5 (R)": ControlGeometry(0.7080, 0.8281, 0.0365, 0.0697, "rect", "#e0708f"),
+        "Pad 6 (R)": ControlGeometry(0.7515, 0.8281, 0.0365, 0.0697, "rect", "#e0708f"),
+        "Pad 7 (R)": ControlGeometry(0.7950, 0.8281, 0.0365, 0.0697, "rect", "#e0708f"),
+        "Pad 8 (R)": ControlGeometry(0.8380, 0.8281, 0.0365, 0.0697, "rect", "#e0708f"),
     },
     "DDJ-FLX10": {
         # Re-measured against the clean render controllers/hardware/pioneer/DDJ-FLX10/reference.png
