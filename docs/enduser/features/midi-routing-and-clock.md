@@ -68,6 +68,9 @@ Every other message of the controller goes through unchanged (with the
 route's channel/offset/invert settings, if any). The `Transform` column
 counts the remaps, for example `3 remap(s)`.
 
+![Remapping one note to another and blocking a CC](../../images/layout/midi-route-remap.png)
+
+
 ## MIDI Clock
 
 Serato doesn't send MIDI Clock, but it does share its tempo over **Ableton

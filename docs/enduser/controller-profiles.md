@@ -193,6 +193,8 @@ view at once and loads at every launch, like a profile made in
 [Controller Setup](features/controller-setup.md); **`Uninstall`** in the
 same window removes it again.
 
+![The controller profile library: rekordbox- and Mixxx-built profiles](../images/layout/profile-library.png)
+
 When you launch the app with such a controller plugged in (its MIDI port
 names it), the app asks once whether to install its profile. Answer No and
 it won't ask again for that device; the library window still has it.

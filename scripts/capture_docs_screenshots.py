@@ -37,26 +37,34 @@ os.environ.setdefault("DJMIDI_PREFERENCES_FILE", str(Path(tempfile.mkdtemp()) / 
 
 from mutagen.id3 import ID3, TBPM, TCON, TIT2, TKEY, TPE1
 
-from djmidi import catalog
+from djmidi import catalog, user_paths
+from djmidi.catalog.library import list_library_profiles
 from djmidi.controller_sync import ControllerSyncSet, SyncMessage
 from djmidi.exporter import write_file
 from djmidi.gui import cheat_sheet
 from djmidi.gui.cheat_sheet_dialog import CheatSheetExportDialog
 from djmidi.gui.cheat_sheet_pdf import render_sheet_image
 from djmidi.gui.first_run_wizard import FirstRunWizard
+from djmidi.gui.macro_editor import MacroManagerDialog
 from djmidi.gui.main_window import MainWindow
 from djmidi.gui.midi_latency_dialog import MidiLatencyDialog
+from djmidi.gui.midi_route_transform_dialog import MidiRouteTransformDialog
 from djmidi.gui.music_library_view import (
     BulkTagDialog,
     RelinkDialog,
     SmartPlaylistDialog,
 )
 from djmidi.gui.preferences_dialog import PreferencesDialog
+from djmidi.gui.profile_check_dialog import ProfileCheckDialog
+from djmidi.gui.profile_library_dialog import ProfileLibraryDialog
 from djmidi.gui.rename_files_dialog import RenameFilesDialog
 from djmidi.gui.stage_window import StageWindow
 from djmidi.gui.translation import install_translators
 from djmidi.library import relink, rename, smart_playlist, workspace
+from djmidi.library.set_prep import SetTrack, analyze_set
 from djmidi.midi_io import MidiEvent
+from djmidi.midi_macros import MacroStep, MacroTrigger, MidiMacro
+from djmidi.midi_router import BLOCK, CC, NOTE, MidiValueTransform, RemapRule
 from djmidi.plugins.preferences import PluginPreferences
 from djmidi.software.traktor import parse_string as parse_traktor
 
@@ -300,6 +308,11 @@ def main() -> int:
         _capture_traktor_mapping(app, window)
         _capture_preferences_sync(app)
         _capture_stage_mode(app, window)
+        _capture_stage_set(app, window)
+        _capture_profile_library(app, window)
+        _capture_profile_check(app, window)
+        _capture_macro_editor(app, window)
+        _capture_route_remap(app, window)
         _capture_interface_language(app)
         # Last: it records sync sets and switches the active scene, which
         # the menu bar of every later window capture would show.
@@ -910,6 +923,102 @@ def _capture_traktor_mapping(app: QApplication, window: MainWindow) -> None:
     window._on_intro_drilldown_requested("channel", "XDJ-XZ")
     app.processEvents()
     _save(window, "traktor-tsi.png")
+
+
+def _capture_stage_set(app: QApplication, window: MainWindow) -> None:
+    """Stage Mode with a prepared set (issue #366): made-up tracks, the
+    second one current, so the panel shows its next track and transition."""
+    tracks = [
+        SetTrack("/tmp/a.mp3", "Opening Groove", "Demo Artist", 124.0, "8A", 5),
+        SetTrack("/tmp/b.mp3", "Night Drive", "Demo Artist", 126.0, "9A", 6),
+        SetTrack("/tmp/c.mp3", "Peak Time", "Other Artist", 128.0, "9B", 8),
+    ]
+    transitions = analyze_set(tracks)
+    stage = StageWindow(
+        config_provider=lambda: window.config,
+        initial_controller="XDJ-XZ",
+        set_provider=lambda: (tracks, transitions),
+        set_index=1,
+    )
+    stage.resize(1600, 900)
+    stage.show()
+    app.processEvents()
+    _save(stage, "stage-mode-set.png")
+    stage.close()
+    stage.deleteLater()
+    app.processEvents()
+
+
+def _capture_profile_library(app: QApplication, window: MainWindow) -> None:
+    """The controller profile library (rekordbox- and Mixxx-built profiles)."""
+    dialog = ProfileLibraryDialog(list_library_profiles(), user_paths.controllers_dir(), window)
+    dialog.resize(900, 600)
+    dialog.show()
+    app.processEvents()
+    _save(dialog, "profile-library.png")
+    dialog.close()
+    dialog.deleteLater()
+
+
+def _capture_profile_check(app: QApplication, window: MainWindow) -> None:
+    """Verify Profile with the Controller (issue #364), fed synthetic presses:
+    two that match the DDJ-XP2 profile and one that doesn't."""
+    dialog = ProfileCheckDialog(
+        ["DDJ-XP2"], ["DDJ-XP2"], window, ensure_listening=lambda: True, initial="DDJ-XP2",
+        open_url=lambda _url: None,
+    )
+    dialog.resize(760, 560)
+    dialog.show()
+    dialog.start()
+    for _ in range(2):
+        item = dialog.check.current
+        channel, kind, data1 = min(item.triggers)
+        event_type = "Note On" if kind == "NOTE" else "Control Change"
+        dialog.feed_event(MidiEvent("in", channel, event_type, data1, "127", 0.0, "DDJ-XP2"))
+    dialog.feed_event(MidiEvent("in", "16", "Note On", "127", "127", 0.0, "DDJ-XP2"))
+    app.processEvents()
+    _save(dialog, "profile-check.png")
+    dialog.close()
+    dialog.deleteLater()
+
+
+def _capture_macro_editor(app: QApplication, window: MainWindow) -> None:
+    """MIDI macros (issues #252/#360/#367): a two-press trigger sequence and
+    an A/B toggle, on a made-up port."""
+
+    def step(event_type: str, channel: int, data1: int, data2: int, delay: int = 0, wait: bool = False):
+        return MacroStep(SyncMessage(event_type, channel, data1, data2), delay, wait)
+
+    macro = MidiMacro(
+        name="FX on / off",
+        output_port="DDJ-XP2",
+        steps=(step("Note On", 1, 71, 127), step("Note On", 1, 72, 127, 250)),
+        triggers=(MacroTrigger("Note On", 8, 0, "DDJ-XP2"), MacroTrigger("Note On", 8, 1, "DDJ-XP2")),
+        alternate_steps=(step("Note On", 1, 71, 0), step("Note On", 1, 72, 0, 250)),
+        scenes=("Default",),
+    )
+    dialog = MacroManagerDialog([macro], ["DDJ-XP2"], parent=window, ensure_listening=lambda: True)
+    dialog.resize(900, 640)
+    dialog.show()
+    dialog.macro_list.setCurrentRow(0)
+    app.processEvents()
+    _save(dialog, "midi-macros.png")
+    dialog.close()
+    dialog.deleteLater()
+
+
+def _capture_route_remap(app: QApplication, window: MainWindow) -> None:
+    """A route's per-control remaps (issue #368): one note sent as another,
+    one CC blocked."""
+    transform = MidiValueTransform(
+        remaps=(RemapRule(NOTE, 1, 11, NOTE, 1, 12), RemapRule(CC, 1, 19, BLOCK, 1, 0)),
+    )
+    dialog = MidiRouteTransformDialog(transform, window, ensure_listening=lambda: True)
+    dialog.show()
+    app.processEvents()
+    _save(dialog, "midi-route-remap.png")
+    dialog.close()
+    dialog.deleteLater()
 
 
 if __name__ == "__main__":

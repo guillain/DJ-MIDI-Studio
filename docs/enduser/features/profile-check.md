@@ -42,6 +42,9 @@ they don't fire [macros](midi-macros.md).
 
 ## Read the results
 
+![A profile check in progress: two controls confirmed, one mismatch](../../images/layout/profile-check.png)
+
+
 Each answer is listed as it comes:
 
 - ✓ the control sends what the profile says;

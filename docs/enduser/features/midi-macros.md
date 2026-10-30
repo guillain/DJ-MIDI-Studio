@@ -30,6 +30,9 @@ if you want, a keyboard shortcut.
 
 Open **`Macros` → `Manage Macros…`**:
 
+![The macro editor: a two-press trigger sequence and an A/B toggle](../../images/layout/midi-macros.png)
+
+
 1. Click **`New`** and type the macro's name.
 2. Pick its **output port** (or type a controller name, see
    [below](#where-the-messages-go)).
