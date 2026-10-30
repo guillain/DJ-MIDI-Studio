@@ -1,0 +1,105 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.dj-tech-mix-101",
+  "kind": "controller",
+  "name": "DJ-Tech MIX-101",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "DJ-Tech",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "DJ-Tech MIX-101",
+  "entries": [
+   {
+    "section": "DECK",
+    "name": "PFL",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "DECK",
+    "name": "PFL #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "2"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE DEFAULT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "3"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE DEFAULT #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "4"
+   },
+   {
+    "section": "DECK",
+    "name": "PLAY",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "7"
+   },
+   {
+    "section": "DECK",
+    "name": "PLAY #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "9"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "PLAY",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "13"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "PLAY #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "11"
+   },
+   {
+    "section": "BROWSE",
+    "name": "LOAD SELECTED INTO FIRST STOPPED",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "12"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "MIX-101"
+  ],
+  "library_source": "mixxx"
+ }
+}

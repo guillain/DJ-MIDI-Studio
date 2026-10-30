@@ -1,0 +1,618 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.icon-p1-nano-midi-1",
+  "kind": "controller",
+  "name": "Icon P1-Nano MIDI 1",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Icon",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "Icon P1-Nano MIDI 1",
+  "entries": [
+   {
+    "section": "DECK",
+    "name": "KNOB PRESS",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "32"
+   },
+   {
+    "section": "DECK",
+    "name": "KNOB PRESS #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "33"
+   },
+   {
+    "section": "DECK",
+    "name": "KNOB PRESS #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "34"
+   },
+   {
+    "section": "DECK",
+    "name": "KNOB PRESS #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "35"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "86"
+   },
+   {
+    "section": "DECK",
+    "name": "BACK BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "91"
+   },
+   {
+    "section": "DECK",
+    "name": "FORWARD BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "92"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "93"
+   },
+   {
+    "section": "DECK",
+    "name": "PLAY BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "94"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECORD BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "95"
+   },
+   {
+    "section": "DECK",
+    "name": "DECK SELECT INPUT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "24"
+   },
+   {
+    "section": "DECK",
+    "name": "DECK SELECT INPUT #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "25"
+   },
+   {
+    "section": "DECK",
+    "name": "DECK SELECT INPUT #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "26"
+   },
+   {
+    "section": "DECK",
+    "name": "DECK SELECT INPUT #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "27"
+   },
+   {
+    "section": "BROWSE",
+    "name": "JOG UP",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "96"
+   },
+   {
+    "section": "BROWSE",
+    "name": "JOG DOWN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "97"
+   },
+   {
+    "section": "BROWSE",
+    "name": "JOG LEFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "98"
+   },
+   {
+    "section": "BROWSE",
+    "name": "JOG RIGHT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "99"
+   },
+   {
+    "section": "BROWSE",
+    "name": "FOCUS MODE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "100"
+   },
+   {
+    "section": "BROWSE",
+    "name": "JOG BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "101"
+   },
+   {
+    "section": "DECK",
+    "name": "SHIFT BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "50"
+   },
+   {
+    "section": "DECK",
+    "name": "MUTE BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "16"
+   },
+   {
+    "section": "DECK",
+    "name": "MUTE BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "17"
+   },
+   {
+    "section": "DECK",
+    "name": "MUTE BUTTON #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "18"
+   },
+   {
+    "section": "DECK",
+    "name": "MUTE BUTTON #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "19"
+   },
+   {
+    "section": "DECK",
+    "name": "SOLO BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "8"
+   },
+   {
+    "section": "DECK",
+    "name": "SOLO BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "9"
+   },
+   {
+    "section": "DECK",
+    "name": "SOLO BUTTON #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "10"
+   },
+   {
+    "section": "DECK",
+    "name": "SOLO BUTTON #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "11"
+   },
+   {
+    "section": "DECK",
+    "name": "RECORD BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "0"
+   },
+   {
+    "section": "DECK",
+    "name": "RECORD BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "DECK",
+    "name": "RECORD BUTTON #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "2"
+   },
+   {
+    "section": "DECK",
+    "name": "RECORD BUTTON #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "3"
+   },
+   {
+    "section": "DECK",
+    "name": "TAP TEMPO BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "85"
+   },
+   {
+    "section": "DECK",
+    "name": "INTRO START BTN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2"
+    ],
+    "data1": "0"
+   },
+   {
+    "section": "DECK",
+    "name": "INTRO END BTN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "DECK",
+    "name": "OUTRO START BTN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2"
+    ],
+    "data1": "2"
+   },
+   {
+    "section": "DECK",
+    "name": "OUTRO END BTN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2"
+    ],
+    "data1": "3"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUES",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "0"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUES #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUES #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "2"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUES #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "3"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUES #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "4"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUES #6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "5"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUES #7",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "6"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUES #8",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "7"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUES #9",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "8"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUES #10",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "9"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUES #11",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "10"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUES #12",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "11"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLERS",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "0"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLERS #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLERS #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "2"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLERS #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "3"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLERS #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "4"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLERS #6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "5"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLERS #7",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "6"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLERS #8",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "7"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLERS #9",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "8"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLERS #10",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "9"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLERS #11",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "10"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLERS #12",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "11"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLERS #13",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "12"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLERS #14",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "13"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLERS #15",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "14"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLERS #16",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "15"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "P1-Nano MIDI 1"
+  ],
+  "library_source": "mixxx"
+ }
+}

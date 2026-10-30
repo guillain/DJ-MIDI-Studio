@@ -1,0 +1,465 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.vestax-vci-300",
+  "kind": "controller",
+  "name": "Vestax VCI-300",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Vestax",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "Vestax VCI-300",
+  "entries": [
+   {
+    "section": "MIXER",
+    "name": "ON SCROLL BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "82"
+   },
+   {
+    "section": "MIXER",
+    "name": "ON CRATES BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "74"
+   },
+   {
+    "section": "MIXER",
+    "name": "ON FILES BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "75"
+   },
+   {
+    "section": "MIXER",
+    "name": "ON BROWSE BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "76"
+   },
+   {
+    "section": "MIXER",
+    "name": "ON NAVIGATION UP BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "77"
+   },
+   {
+    "section": "MIXER",
+    "name": "ON NAVIGATION DOWN BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "78"
+   },
+   {
+    "section": "MIXER",
+    "name": "ON NAVIGATION BACK BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "79"
+   },
+   {
+    "section": "MIXER",
+    "name": "ON NAVIGATION FWD BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "80"
+   },
+   {
+    "section": "MIXER",
+    "name": "ON NAVIGATION TAB BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "81"
+   },
+   {
+    "section": "DECK",
+    "name": "ON PFLBUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "54"
+   },
+   {
+    "section": "DECK",
+    "name": "ON PFLBUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "73"
+   },
+   {
+    "section": "DECK",
+    "name": "ON SHIFT BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "49"
+   },
+   {
+    "section": "DECK",
+    "name": "ON SHIFT BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "68"
+   },
+   {
+    "section": "DECK",
+    "name": "ON CUE BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "36"
+   },
+   {
+    "section": "DECK",
+    "name": "ON CUE BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "55"
+   },
+   {
+    "section": "DECK",
+    "name": "ON PLAY BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "37"
+   },
+   {
+    "section": "DECK",
+    "name": "ON PLAY BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "56"
+   },
+   {
+    "section": "DECK",
+    "name": "ON CENSOR FILTER BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "50"
+   },
+   {
+    "section": "DECK",
+    "name": "ON CENSOR FILTER BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "69"
+   },
+   {
+    "section": "DECK",
+    "name": "ON KEY LOCK BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "38"
+   },
+   {
+    "section": "DECK",
+    "name": "ON KEY LOCK BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "57"
+   },
+   {
+    "section": "DECK",
+    "name": "SYNC ENABLED",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "41"
+   },
+   {
+    "section": "DECK",
+    "name": "SYNC ENABLED #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "60"
+   },
+   {
+    "section": "DECK",
+    "name": "ON PITCH SHIFT DOWN BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "39"
+   },
+   {
+    "section": "DECK",
+    "name": "ON PITCH SHIFT UP BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "40"
+   },
+   {
+    "section": "DECK",
+    "name": "ON PITCH SHIFT DOWN BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "58"
+   },
+   {
+    "section": "DECK",
+    "name": "ON PITCH SHIFT UP BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "59"
+   },
+   {
+    "section": "DECK",
+    "name": "ON SCRATCH BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "45"
+   },
+   {
+    "section": "DECK",
+    "name": "ON JOG TOUCH",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "83"
+   },
+   {
+    "section": "DECK",
+    "name": "ON SCRATCH BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "64"
+   },
+   {
+    "section": "DECK",
+    "name": "ON JOG TOUCH #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "84"
+   },
+   {
+    "section": "DECK",
+    "name": "ON CUE1 IN BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "42"
+   },
+   {
+    "section": "DECK",
+    "name": "ON CUE2 IN BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "43"
+   },
+   {
+    "section": "DECK",
+    "name": "ON CUE3 IN BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "44"
+   },
+   {
+    "section": "DECK",
+    "name": "ON OUT1 LOOP BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "46"
+   },
+   {
+    "section": "DECK",
+    "name": "ON OUT2 LOOP BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "47"
+   },
+   {
+    "section": "DECK",
+    "name": "ON OUT3 LOOP BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "48"
+   },
+   {
+    "section": "DECK",
+    "name": "ON CUE1 IN BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "61"
+   },
+   {
+    "section": "DECK",
+    "name": "ON CUE2 IN BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "62"
+   },
+   {
+    "section": "DECK",
+    "name": "ON CUE3 IN BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "63"
+   },
+   {
+    "section": "DECK",
+    "name": "ON OUT1 LOOP BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "65"
+   },
+   {
+    "section": "DECK",
+    "name": "ON OUT2 LOOP BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "66"
+   },
+   {
+    "section": "DECK",
+    "name": "ON OUT3 LOOP BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "67"
+   },
+   {
+    "section": "DECK",
+    "name": "ON AUTO LOOP BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "51"
+   },
+   {
+    "section": "DECK",
+    "name": "ON HALF PREV BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "52"
+   },
+   {
+    "section": "DECK",
+    "name": "ON DOUBLE NEXT BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "53"
+   },
+   {
+    "section": "DECK",
+    "name": "ON AUTO LOOP BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "70"
+   },
+   {
+    "section": "DECK",
+    "name": "ON HALF PREV BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "71"
+   },
+   {
+    "section": "DECK",
+    "name": "ON DOUBLE NEXT BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "72"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "VCI-300"
+  ],
+  "library_source": "mixxx"
+ }
+}

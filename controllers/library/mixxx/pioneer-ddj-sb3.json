@@ -1,0 +1,1376 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.pioneer-ddj-sb3",
+  "kind": "controller",
+  "name": "Pioneer DDJ-SB3",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Pioneer",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "Pioneer DDJ-SB3",
+  "entries": [
+   {
+    "section": "DECK",
+    "name": "PLAY BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "11"
+   },
+   {
+    "section": "DECK",
+    "name": "PLAY BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "71"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "12"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "72"
+   },
+   {
+    "section": "DECK",
+    "name": "SYNC BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "88"
+   },
+   {
+    "section": "DECK",
+    "name": "SYNC BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "92"
+   },
+   {
+    "section": "DECK",
+    "name": "JOG TOUCH",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "54"
+   },
+   {
+    "section": "DECK",
+    "name": "JOG TOUCH #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "53"
+   },
+   {
+    "section": "DECK",
+    "name": "JOG TOUCH #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "103"
+   },
+   {
+    "section": "DECK",
+    "name": "VINYL BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "23"
+   },
+   {
+    "section": "DECK",
+    "name": "SLIP BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "64"
+   },
+   {
+    "section": "DECK",
+    "name": "KEY LOCK BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "26"
+   },
+   {
+    "section": "DECK",
+    "name": "SHIFT KEY LOCK BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "96"
+   },
+   {
+    "section": "DECK",
+    "name": "SHIFT BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "63"
+   },
+   {
+    "section": "DECK",
+    "name": "DECK1 BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "114"
+   },
+   {
+    "section": "DECK",
+    "name": "DECK3 BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "114"
+   },
+   {
+    "section": "DECK",
+    "name": "DECK2 BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2"
+    ],
+    "data1": "114"
+   },
+   {
+    "section": "DECK",
+    "name": "DECK4 BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "114"
+   },
+   {
+    "section": "OTHER",
+    "name": "AUTODJ SKIP NEXT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "3"
+    ],
+    "data1": "115"
+   },
+   {
+    "section": "OTHER",
+    "name": "AUTODJ TOGGLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "4"
+    ],
+    "data1": "115"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "ROTARY SELECTOR CLICK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7"
+    ],
+    "data1": "65"
+   },
+   {
+    "section": "BROWSE",
+    "name": "ROTARY SELECTOR SHIFTED CLICK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7"
+    ],
+    "data1": "66"
+   },
+   {
+    "section": "DECK",
+    "name": "LOAD BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7"
+    ],
+    "data1": "70"
+   },
+   {
+    "section": "EFFECT",
+    "name": "SHOW",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7"
+    ],
+    "data1": "88"
+   },
+   {
+    "section": "DECK",
+    "name": "LOAD BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7"
+    ],
+    "data1": "72"
+   },
+   {
+    "section": "EFFECT",
+    "name": "SHOW #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7"
+    ],
+    "data1": "96"
+   },
+   {
+    "section": "DECK",
+    "name": "LOAD BUTTON #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7"
+    ],
+    "data1": "71"
+   },
+   {
+    "section": "OTHER",
+    "name": "SHOW SAMPLERS",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7"
+    ],
+    "data1": "89"
+   },
+   {
+    "section": "DECK",
+    "name": "LOAD BUTTON #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7"
+    ],
+    "data1": "73"
+   },
+   {
+    "section": "OTHER",
+    "name": "SHOW SAMPLERS #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7"
+    ],
+    "data1": "97"
+   },
+   {
+    "section": "EFFECT",
+    "name": "BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6"
+    ],
+    "data1": "71"
+   },
+   {
+    "section": "EFFECT",
+    "name": "BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6"
+    ],
+    "data1": "99"
+   },
+   {
+    "section": "EFFECT",
+    "name": "BUTTON #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6"
+    ],
+    "data1": "72"
+   },
+   {
+    "section": "EFFECT",
+    "name": "BUTTON #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6"
+    ],
+    "data1": "100"
+   },
+   {
+    "section": "EFFECT",
+    "name": "BUTTON #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6"
+    ],
+    "data1": "73"
+   },
+   {
+    "section": "EFFECT",
+    "name": "BUTTON #6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "6"
+    ],
+    "data1": "101"
+   },
+   {
+    "section": "MIXER",
+    "name": "MASTER CUE BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7"
+    ],
+    "data1": "91"
+   },
+   {
+    "section": "MIXER",
+    "name": "MASTER CUE BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "7"
+    ],
+    "data1": "120"
+   },
+   {
+    "section": "DECK",
+    "name": "HEADPHONE CUE BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "84"
+   },
+   {
+    "section": "DECK",
+    "name": "HEADPHONE SHIFT CUE BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "104"
+   },
+   {
+    "section": "DECK",
+    "name": "AUTO LOOP BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "20"
+   },
+   {
+    "section": "DECK",
+    "name": "RELOOP BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "80"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP HALVE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "18"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP IN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "97"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP DOUBLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "19"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP OUT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "98"
+   },
+   {
+    "section": "DECK",
+    "name": "BEAT JUMP DIVIDE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "64"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATJUMP 4 BACKWARD",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "72"
+   },
+   {
+    "section": "DECK",
+    "name": "BEAT JUMP MULTIPLY",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "65"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATJUMP 8 BACKWARD",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "73"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATJUMP BACKWARD",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "66"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATJUMP 16 BACKWARD",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "74"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATJUMP FORWARD",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "67"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATJUMP 32 BACKWARD",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "75"
+   },
+   {
+    "section": "DECK",
+    "name": "START",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "68"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATJUMP 4 FORWARD",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "76"
+   },
+   {
+    "section": "DECK",
+    "name": "BACK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "69"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATJUMP 8 FORWARD",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "77"
+   },
+   {
+    "section": "DECK",
+    "name": "FWD",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "70"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATJUMP 16 FORWARD",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "78"
+   },
+   {
+    "section": "DECK",
+    "name": "REVERSE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "71"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATJUMP 32 FORWARD",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "79"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 1 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "0"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 1 CLEAR",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "8"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 2 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 2 CLEAR",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "9"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 3 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "2"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 3 CLEAR",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "10"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 4 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "3"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 4 CLEAR",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "11"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 5 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "4"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 5 CLEAR",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "12"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 6 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "5"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 6 CLEAR",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "13"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 7 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "6"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 7 CLEAR",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "14"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 8 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "7"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 8 CLEAR",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "15"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE MODE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "27"
+   },
+   {
+    "section": "DECK",
+    "name": "BEAT JUMP MODE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "105"
+   },
+   {
+    "section": "DECK",
+    "name": "FX FADE MODE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "30"
+   },
+   {
+    "section": "DECK",
+    "name": "ROLL MODE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "107"
+   },
+   {
+    "section": "DECK",
+    "name": "PAD SCRATCH MODE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "32"
+   },
+   {
+    "section": "DECK",
+    "name": "SLICER MODE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "109"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLER MODE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "34"
+   },
+   {
+    "section": "DECK",
+    "name": "TRANS MODE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ],
+    "data1": "110"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATLOOP ROLL BUTTONS",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "80"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATLOOP ROLL BUTTONS #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "81"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATLOOP ROLL BUTTONS #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "82"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATLOOP ROLL BUTTONS #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "83"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATLOOP ROLL BUTTONS #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "84"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATLOOP ROLL BUTTONS #6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "85"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATLOOP ROLL BUTTONS #7",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "86"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATLOOP ROLL BUTTONS #8",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "87"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "START PLAY",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "48"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "STOP",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "56"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "START PLAY #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "49"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "STOP #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "57"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "START PLAY #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "50"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "STOP #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "58"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "START PLAY #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "51"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "STOP #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "59"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "LOAD SELECTED TRACK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "52"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "EJECT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "60"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "LOAD SELECTED TRACK #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "53"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "EJECT #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "61"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "LOAD SELECTED TRACK #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "54"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "EJECT #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "62"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "LOAD SELECTED TRACK #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "55"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "EJECT #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "63"
+   },
+   {
+    "section": "DECK",
+    "name": "SLICER BUTTONS",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "96"
+   },
+   {
+    "section": "DECK",
+    "name": "SLICER BUTTONS #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "97"
+   },
+   {
+    "section": "DECK",
+    "name": "SLICER BUTTONS #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "98"
+   },
+   {
+    "section": "DECK",
+    "name": "SLICER BUTTONS #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "99"
+   },
+   {
+    "section": "DECK",
+    "name": "SLICER BUTTONS #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "100"
+   },
+   {
+    "section": "DECK",
+    "name": "SLICER BUTTONS #6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "101"
+   },
+   {
+    "section": "DECK",
+    "name": "SLICER BUTTONS #7",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "102"
+   },
+   {
+    "section": "DECK",
+    "name": "SLICER BUTTONS #8",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "8",
+     "9",
+     "10",
+     "11"
+    ],
+    "data1": "103"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "DDJ-SB3"
+  ],
+  "library_source": "mixxx"
+ }
+}

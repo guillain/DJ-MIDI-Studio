@@ -1,0 +1,438 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.vestax-vci-100-hile-mod",
+  "kind": "controller",
+  "name": "Vestax VCI-100 Hile Mod",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Vestax",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "Vestax VCI-100 Hile Mod",
+  "entries": [
+   {
+    "section": "BROWSE",
+    "name": "BUTTONS",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "96"
+   },
+   {
+    "section": "BROWSE",
+    "name": "BUTTONS #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "97"
+   },
+   {
+    "section": "BROWSE",
+    "name": "BUTTONS #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "92"
+   },
+   {
+    "section": "BROWSE",
+    "name": "BUTTONS #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "93"
+   },
+   {
+    "section": "BROWSE",
+    "name": "BUTTONS #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "94"
+   },
+   {
+    "section": "OTHER",
+    "name": "BUTTONS",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "98"
+   },
+   {
+    "section": "OTHER",
+    "name": "BUTTONS #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "99"
+   },
+   {
+    "section": "OTHER",
+    "name": "BUTTONS #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "100"
+   },
+   {
+    "section": "OTHER",
+    "name": "BUTTONS #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "101"
+   },
+   {
+    "section": "OTHER",
+    "name": "BUTTONS #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "102"
+   },
+   {
+    "section": "OTHER",
+    "name": "BUTTONS #6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "103"
+   },
+   {
+    "section": "OTHER",
+    "name": "BUTTONS #7",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "104"
+   },
+   {
+    "section": "OTHER",
+    "name": "BUTTONS #8",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "85"
+   },
+   {
+    "section": "OTHER",
+    "name": "BUTTONS #9",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "88"
+   },
+   {
+    "section": "OTHER",
+    "name": "BUTTONS #10",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "91"
+   },
+   {
+    "section": "OTHER",
+    "name": "BUTTONS #11",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "76"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTONS",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "12"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTONS #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "46"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTONS #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "107"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTONS #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "50"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTONS #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "51"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTONS #6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "52"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTONS #7",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "53"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTONS #8",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "58"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTONS #9",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "59"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTONS #10",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "74"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTONS #11",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "66"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTONS #12",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "68"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTONS #13",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "70"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTONS #14",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "72"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTONS #15",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "13"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTONS #16",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "47"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTONS #17",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "108"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTONS #18",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "54"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTONS #19",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "55"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTONS #20",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "56"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTONS #21",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "57"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTONS #22",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "60"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTONS #23",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "61"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTONS #24",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "67"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTONS #25",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "69"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTONS #26",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "71"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTONS #27",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "73"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTONS #28",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "75"
+   },
+   {
+    "section": "BROWSE",
+    "name": "BUTTONS #6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "79"
+   },
+   {
+    "section": "BROWSE",
+    "name": "BUTTONS #7",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "82"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "VCI-100 Hile Mod"
+  ],
+  "library_source": "mixxx"
+ }
+}

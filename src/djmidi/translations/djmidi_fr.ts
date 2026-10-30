@@ -1948,8 +1948,8 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
         <translation>Bibliothèque de profils de contrôleurs</translation>
     </message>
     <message>
-        <source>Ready-made profiles for Pioneer DJ / AlphaTheta devices the app doesn&apos;t know yet, built from the MIDI mappings rekordbox ships with: each device&apos;s buttons and pads, named and grouped as rekordbox names them. Knobs, faders and jogs aren&apos;t included.&lt;br&gt;&lt;br&gt;Select one or more and click &lt;b&gt;Install&lt;/b&gt; (or double-click one): the profile is saved in your Controllers folder, shows up in every controller list right away, and loads at every launch; &lt;b&gt;Uninstall&lt;/b&gt; removes it again. When a controller with a library profile is plugged in at launch, the app offers to install it (once). These profiles come from rekordbox&apos;s default mappings, not from the vendor&apos;s MIDI documentation, and have no picture; check the controls you rely on with the Live Monitor.</source>
-        <translation>Des profils prêts à l&apos;emploi pour les appareils Pioneer DJ / AlphaTheta que l&apos;application ne connaît pas encore, construits à partir des mappings MIDI fournis avec rekordbox : les boutons et pads de chaque appareil, nommés et groupés comme rekordbox les nomme. Les potentiomètres, faders et jogs n&apos;y sont pas.&lt;br&gt;&lt;br&gt;Sélectionnez-en un ou plusieurs et cliquez sur &lt;b&gt;Installer&lt;/b&gt; (ou double-cliquez sur l&apos;un d&apos;eux) : le profil est enregistré dans votre dossier Controllers, apparaît tout de suite dans toutes les listes de contrôleurs et se charge à chaque lancement ; &lt;b&gt;Désinstaller&lt;/b&gt; le retire. Quand un contrôleur ayant un profil dans la bibliothèque est branché au lancement, l&apos;application propose de l&apos;installer (une seule fois). Ces profils viennent des mappings par défaut de rekordbox, pas de la documentation MIDI du fabricant, et n&apos;ont pas d&apos;image ; vérifiez les commandes dont vous dépendez avec le Live Monitor.</translation>
+        <source>Ready-made profiles for controllers the app doesn&apos;t know yet, built from existing MIDI mappings: Pioneer DJ / AlphaTheta devices from the ones rekordbox ships (buttons and pads, named and grouped as rekordbox names them), many other brands from the Mixxx project&apos;s (buttons only, named after the Mixxx function they drive -- the coarsest). Knobs, faders and jogs aren&apos;t included.&lt;br&gt;&lt;br&gt;Select one or more and click &lt;b&gt;Install&lt;/b&gt; (or double-click one): the profile is saved in your Controllers folder, shows up in every controller list right away, and loads at every launch; &lt;b&gt;Uninstall&lt;/b&gt; removes it again. When a controller with a library profile is plugged in at launch, the app offers to install it (once). These profiles come from those programs&apos; default mappings, not from the vendor&apos;s MIDI documentation, and have no picture; check the controls you rely on with the Live Monitor.</source>
+        <translation>Des profils prêts à l&apos;emploi pour les contrôleurs que l&apos;application ne connaît pas encore, construits à partir de mappings MIDI existants : les appareils Pioneer DJ / AlphaTheta à partir de ceux fournis avec rekordbox (boutons et pads, nommés et groupés comme rekordbox les nomme), de nombreuses autres marques à partir de ceux du projet Mixxx (boutons seulement, nommés d&apos;après la fonction Mixxx qu&apos;ils déclenchent -- les plus sommaires). Les potentiomètres, faders et jogs n&apos;y sont pas.&lt;br&gt;&lt;br&gt;Sélectionnez-en un ou plusieurs et cliquez sur &lt;b&gt;Installer&lt;/b&gt; (ou double-cliquez sur l&apos;un d&apos;eux) : le profil est enregistré dans votre dossier Controllers, apparaît tout de suite dans toutes les listes de contrôleurs et se charge à chaque lancement ; &lt;b&gt;Désinstaller&lt;/b&gt; le retire. Quand un contrôleur ayant un profil dans la bibliothèque est branché au lancement, l&apos;application propose de l&apos;installer (une seule fois). Ces profils viennent des mappings par défaut de ces logiciels, pas de la documentation MIDI du fabricant, et n&apos;ont pas d&apos;image ; vérifiez les commandes dont vous dépendez avec le Live Monitor.</translation>
     </message>
     <message>
         <source>MIDI Latency Test</source>
@@ -6791,6 +6791,10 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <translation>Fabricant</translation>
     </message>
     <message>
+        <source>Source</source>
+        <translation>Source</translation>
+    </message>
+    <message>
         <source>Controls</source>
         <translation>Commandes</translation>
     </message>
@@ -6803,8 +6807,8 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <translation>Bibliothèque de profils de contrôleurs</translation>
     </message>
     <message>
-        <source>Ready-made profiles for Pioneer DJ / AlphaTheta devices, built from the MIDI mappings rekordbox ships: their buttons and pads, named as rekordbox names them. Install the ones you use; they then work like a profile made in Controller Setup.</source>
-        <translation>Des profils prêts à l&apos;emploi pour les appareils Pioneer DJ / AlphaTheta, construits à partir des mappings MIDI fournis avec rekordbox : leurs boutons et pads, nommés comme rekordbox les nomme. Installez ceux que vous utilisez ; ils fonctionnent ensuite comme un profil créé dans Config. contrôleur.</translation>
+        <source>Ready-made profiles built from existing MIDI mappings: Pioneer DJ / AlphaTheta devices from rekordbox&apos;s (buttons and pads, named as rekordbox names them), many other brands from the Mixxx project&apos;s (buttons, named after the Mixxx function they drive). Install the ones you use; they then work like a profile made in Controller Setup.</source>
+        <translation>Des profils prêts à l&apos;emploi construits à partir de mappings MIDI existants : les appareils Pioneer DJ / AlphaTheta à partir de ceux de rekordbox (boutons et pads, nommés comme rekordbox les nomme), de nombreuses autres marques à partir de ceux du projet Mixxx (boutons, nommés d&apos;après la fonction Mixxx qu&apos;ils déclenchent). Installez ceux que vous utilisez ; ils fonctionnent ensuite comme un profil créé dans Config. contrôleur.</translation>
     </message>
     <message>
         <source>Filter by name, e.g. DDJ-400</source>

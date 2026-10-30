@@ -29,7 +29,7 @@ import re
 import shutil
 import sys
 from collections.abc import Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from djmidi.catalog._registry import (
@@ -52,8 +52,11 @@ else:
 LIBRARY_DIR = _RESOURCE_ROOT / "controllers" / "library"
 
 SOURCE_REKORDBOX = "rekordbox"
+SOURCE_MIXXX = "mixxx"
 # The manifest licence of a generated profile: it names where the data came from.
 REKORDBOX_LICENSE = "derived from rekordbox's bundled MIDI mapping"
+MIXXX_LICENSE = "derived from the Mixxx project's controller mapping (GPL)"
+_LICENSES = {SOURCE_REKORDBOX: REKORDBOX_LICENSE, SOURCE_MIXXX: MIXXX_LICENSE}
 _VENDOR_PREFIX = re.compile(r"^(?:pioneer dj|pioneer)\s+", re.IGNORECASE)
 # Another port name for the same device: identical messages (checked on
 # every pair rekordbox 7 ships), so it only adds a port name.
@@ -95,7 +98,8 @@ def device_name(header_name: str) -> str:
 
 
 def _profile_slug(name: str) -> str:
-    return "".join(char if char.isalnum() else "-" for char in name.lower()).strip("-") or "controller"
+    # One dash per run of other characters: a plugin id refuses "--".
+    return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-") or "controller"
 
 
 def build_rekordbox_profiles(
@@ -143,16 +147,113 @@ def build_rekordbox_profiles(
     return definitions
 
 
-def library_document(definition: ControllerDefinition) -> dict:
+# --- profiles from Mixxx's mappings ----------------------------------------------
+
+# Vendors whose name is two words in Mixxx's mapping names.
+_TWO_WORD_VENDORS = ("american audio", "dj techtools", "native instruments", "stanton scs")
+_SECTION_OF_GROUP = (
+    (re.compile(r"^\[Channel\d+\]$"), "DECK"),
+    (re.compile(r"^\[(Sampler|PreviewDeck)\d*\]$"), "SAMPLER"),
+    (re.compile(r"^\[(Master|Mixer|Microphone|Auxiliary)\d*\]$"), "MIXER"),
+    (re.compile(r"^\[(EffectRack|QuickEffectRack)"), "EFFECT"),
+    (re.compile(r"^\[(Library|Playlist)\]$"), "BROWSE"),
+)
+_CAMEL = re.compile(r"(?<=[a-z0-9])(?=[A-Z])")
+
+
+def _mixxx_section(group: str) -> str:
+    return next((section for pattern, section in _SECTION_OF_GROUP if pattern.match(group)), "OTHER")
+
+
+def mixxx_control_name(key: str) -> str:
+    """A readable name for a Mixxx binding's key: ``hotcue_1_activate`` ->
+    ``HOTCUE 1 ACTIVATE``; a script function's last meaningful part,
+    ``MyCtrl.deck[0].playButton.input`` -> ``PLAY BUTTON``."""
+    name = key.strip()
+    if "." in name:
+        parts = [part for part in name.split(".") if part not in ("input", "output")]
+        name = re.sub(r"\[\d+\]$", "", parts[-1] if parts else name)
+    name = _CAMEL.sub(" ", name).replace("_", " ")
+    return " ".join(name.split()).upper() or key
+
+
+def _mixxx_vendor(name: str) -> str:
+    for vendor in _TWO_WORD_VENDORS:
+        if name.casefold().startswith(vendor + " "):
+            return name[: len(vendor)]
+    return name.split()[0] if name.split() else ""
+
+
+def build_mixxx_profiles(texts: Iterable[str], skip_names: Iterable[str] = ()) -> list[ControllerDefinition]:
+    """One controller definition per Mixxx mapping text: its buttons (the
+    Note On bindings) named after the Mixxx function they drive and grouped
+    by Mixxx group. Mixxx names functions, not physical controls, so these
+    are the coarsest profiles of the library. Devices named in `skip_names`
+    (built-ins, rekordbox-derived profiles -- compared with and without the
+    vendor) and mappings with fewer than :data:`MIN_ENTRIES` buttons are
+    left out; several mappings of one device keep the first."""
+    from djmidi.software.mixxx import parse_string
+
+    skipped = {name.casefold() for name in skip_names}
+    definitions: dict[str, ControllerDefinition] = {}
+    for text in texts:
+        config = parse_string(text)
+        name = config.extra_attrs.get("device", "").strip()
+        vendor = _mixxx_vendor(name)
+        model = name[len(vendor) :].strip() if vendor else name
+        if not name or name in definitions or name.casefold() in skipped or model.casefold() in skipped:
+            continue
+        if "unfinished" in name.casefold():
+            continue  # its own authors say it isn't done
+        rows: list[ControlInfo] = []
+        for control in config.controls:
+            if control.event_type != "Note On":
+                continue
+            mapping = next((m for u in control.userios if u.event == "click" for m in u.mappings), None)
+            if mapping is None:
+                continue
+            section = _mixxx_section(mapping.extra_attrs.get("group", ""))
+            rows.append(ControlInfo(name, section, mixxx_control_name(mapping.tag), "NOTE", (control.channel,), control.control))
+        entries = _numbered(merge_by_channel(rows))
+        if len(entries) < MIN_ENTRIES:
+            continue
+        definitions[name] = ControllerDefinition(
+            name=name,
+            plugin_id=USER_PLUGIN_PREFIX + _profile_slug(name),
+            manufacturer=vendor or None,
+            supported_software=("mixxx",),
+            port_names=(model,) if model and model != name and len(model) >= 3 else (),
+            static_entries=entries,
+            section_order=infer_section_order(entries),
+        )
+    return [definitions[name] for name in sorted(definitions, key=str.casefold)]
+
+
+def _numbered(entries: list[ControlInfo]) -> list[ControlInfo]:
+    """Keeps (section, name) unique: a name used for several notes (a
+    function bound to two buttons, or to a button and its SHIFT layer)
+    gets " #2", " #3"... in order."""
+    seen: dict[tuple[str, str], int] = {}
+    unique = []
+    for entry in entries:
+        key = (entry.section, entry.name)
+        seen[key] = seen.get(key, 0) + 1
+        unique.append(entry if seen[key] == 1 else replace(entry, name=f"{entry.name} #{seen[key]}"))
+    return unique
+
+
+def library_document(definition: ControllerDefinition, source: str = SOURCE_REKORDBOX) -> dict:
     """The JSON a library profile file holds: an ordinary installed-profile
     document (so installing it is a copy), whose licence names its source."""
     document = profile_document(definition)
-    document["manifest"]["license"] = REKORDBOX_LICENSE
-    document["controller"]["library_source"] = SOURCE_REKORDBOX
+    document["manifest"]["license"] = _LICENSES[source]
+    document["controller"]["library_source"] = source
     return document
 
 
-def write_library(definitions: Iterable[ControllerDefinition], directory: str | Path) -> list[Path]:
+def write_library(
+    definitions: Iterable[ControllerDefinition], directory: str | Path, source: str = SOURCE_REKORDBOX
+) -> list[Path]:
     """Writes one ``<slug>.json`` per definition into `directory`, removing
     the JSON files of devices no longer generated."""
     folder = Path(directory)
@@ -160,7 +261,7 @@ def write_library(definitions: Iterable[ControllerDefinition], directory: str | 
     written = []
     for definition in definitions:
         path = folder / f"{_profile_slug(definition.name)}.json"
-        path.write_text(json.dumps(library_document(definition), indent=1) + "\n", encoding="utf-8")
+        path.write_text(json.dumps(library_document(definition, source), indent=1) + "\n", encoding="utf-8")
         written.append(path)
     for stale in set(folder.glob("*.json")) - set(written):
         stale.unlink()
@@ -237,14 +338,18 @@ def connected_library_profiles(
 __all__ = [
     "LIBRARY_DIR",
     "MIN_ENTRIES",
+    "MIXXX_LICENSE",
     "REKORDBOX_LICENSE",
+    "SOURCE_MIXXX",
     "SOURCE_REKORDBOX",
     "LibraryProfile",
+    "build_mixxx_profiles",
     "build_rekordbox_profiles",
     "connected_library_profiles",
     "device_name",
     "install_library_profile",
     "library_document",
     "list_library_profiles",
+    "mixxx_control_name",
     "write_library",
 ]

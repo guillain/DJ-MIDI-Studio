@@ -1,0 +1,312 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.behringer-bcd3000",
+  "kind": "controller",
+  "name": "Behringer BCD3000",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Behringer",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "Behringer BCD3000",
+  "entries": [
+   {
+    "section": "DECK",
+    "name": "BACK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "0"
+   },
+   {
+    "section": "DECK",
+    "name": "FWD",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "DECK",
+    "name": "RATE TEMP DOWN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "2"
+   },
+   {
+    "section": "DECK",
+    "name": "RATE TEMP UP",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "3"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE SET",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "4"
+   },
+   {
+    "section": "DECK",
+    "name": "RELOOP EXIT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "5"
+   },
+   {
+    "section": "DECK",
+    "name": "BACK #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "6"
+   },
+   {
+    "section": "DECK",
+    "name": "FWD #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "7"
+   },
+   {
+    "section": "DECK",
+    "name": "RATE TEMP DOWN #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "8"
+   },
+   {
+    "section": "DECK",
+    "name": "RATE TEMP UP #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "9"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE SET #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "10"
+   },
+   {
+    "section": "DECK",
+    "name": "RELOOP EXIT #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "11"
+   },
+   {
+    "section": "DECK",
+    "name": "FILTER LOW KILL",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "12"
+   },
+   {
+    "section": "DECK",
+    "name": "FILTER MID KILL",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "13"
+   },
+   {
+    "section": "DECK",
+    "name": "FILTER HIGH KILL",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "14"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "15"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATSYNC",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "16"
+   },
+   {
+    "section": "DECK",
+    "name": "SCRATCH BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "17"
+   },
+   {
+    "section": "DECK",
+    "name": "PLAY",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "18"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE DEFAULT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "19"
+   },
+   {
+    "section": "DECK",
+    "name": "FILTER LOW KILL #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "20"
+   },
+   {
+    "section": "DECK",
+    "name": "FILTER MID KILL #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "21"
+   },
+   {
+    "section": "DECK",
+    "name": "FILTER HIGH KILL #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "22"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "23"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATSYNC #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "24"
+   },
+   {
+    "section": "DECK",
+    "name": "SCRATCH BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "25"
+   },
+   {
+    "section": "DECK",
+    "name": "PLAY #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "26"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE DEFAULT #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "27"
+   },
+   {
+    "section": "DECK",
+    "name": "FLANGER",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "32"
+   },
+   {
+    "section": "DECK",
+    "name": "FLANGER #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "33"
+   },
+   {
+    "section": "DECK",
+    "name": "PFL",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "35"
+   },
+   {
+    "section": "DECK",
+    "name": "PFL #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "36"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "BCD3000"
+  ],
+  "library_source": "mixxx"
+ }
+}

@@ -1,0 +1,600 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.novation-launchpad-mini-mk3",
+  "kind": "controller",
+  "name": "Novation Launchpad Mini MK3",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Novation",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "Novation Launchpad Mini MK3",
+  "entries": [
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X51",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "81"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X52",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "82"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X53",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "83"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X54",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "84"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X55",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "85"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X56",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "86"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X57",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "87"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X58",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "88"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X47",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "71"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X48",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "72"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X49",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "73"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X4 A",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "74"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X4 B",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "75"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X4 C",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "76"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X4 D",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "77"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X4 E",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "78"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X3 D",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "61"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X3 E",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "62"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X3 F",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "63"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X40",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "64"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X41",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "65"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X42",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "66"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X43",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "67"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X44",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "68"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X33",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "51"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X34",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "52"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X35",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "53"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X36",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "54"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X37",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "55"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X38",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "56"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X39",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "57"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X3 A",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "58"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X29",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "41"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X2 A",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "42"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X2 B",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "43"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X2 C",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "44"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X2 D",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "45"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X2 E",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "46"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X2 F",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "47"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X30",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "48"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X1 F",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "31"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X20",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "32"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X21",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "33"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X22",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "34"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X23",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "35"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X24",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "36"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X25",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "37"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X26",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "38"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X15",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "21"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X16",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "22"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X17",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "23"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X18",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "24"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X19",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "25"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X1 A",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "26"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X1 B",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "27"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X1 C",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "28"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X0 B",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "11"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X0 C",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "12"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X0 D",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "13"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X0 E",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "14"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X0 F",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "15"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X10",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "16"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X11",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "17"
+   },
+   {
+    "section": "OTHER",
+    "name": "MIDI 0X90 0X12",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "18"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "Launchpad Mini MK3"
+  ],
+  "library_source": "mixxx"
+ }
+}

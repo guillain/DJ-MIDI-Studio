@@ -1,0 +1,411 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.m-vave-smc-mixer",
+  "kind": "controller",
+  "name": "M-Vave SMC-Mixer",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "M-Vave",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "M-Vave SMC-Mixer",
+  "entries": [
+   {
+    "section": "OTHER",
+    "name": "MID KILL BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "8"
+   },
+   {
+    "section": "OTHER",
+    "name": "LOW KILL BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "0"
+   },
+   {
+    "section": "OTHER",
+    "name": "HIGH KILL BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "16"
+   },
+   {
+    "section": "EFFECT",
+    "name": "QUICK EFFECT BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "24"
+   },
+   {
+    "section": "OTHER",
+    "name": "MID KILL BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "9"
+   },
+   {
+    "section": "OTHER",
+    "name": "LOW KILL BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "OTHER",
+    "name": "HIGH KILL BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "17"
+   },
+   {
+    "section": "EFFECT",
+    "name": "QUICK EFFECT BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "25"
+   },
+   {
+    "section": "OTHER",
+    "name": "MID KILL BUTTON #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "10"
+   },
+   {
+    "section": "OTHER",
+    "name": "LOW KILL BUTTON #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "2"
+   },
+   {
+    "section": "OTHER",
+    "name": "HIGH KILL BUTTON #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "18"
+   },
+   {
+    "section": "EFFECT",
+    "name": "QUICK EFFECT BUTTON #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "26"
+   },
+   {
+    "section": "OTHER",
+    "name": "MID KILL BUTTON #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "11"
+   },
+   {
+    "section": "OTHER",
+    "name": "LOW KILL BUTTON #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "3"
+   },
+   {
+    "section": "OTHER",
+    "name": "HIGH KILL BUTTON #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "19"
+   },
+   {
+    "section": "EFFECT",
+    "name": "QUICK EFFECT BUTTON #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "27"
+   },
+   {
+    "section": "DECK",
+    "name": "SLIP BUTTONS",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "20"
+   },
+   {
+    "section": "DECK",
+    "name": "SLIP BUTTONS #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "21"
+   },
+   {
+    "section": "DECK",
+    "name": "SLIP BUTTONS #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "22"
+   },
+   {
+    "section": "DECK",
+    "name": "SLIP BUTTONS #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "23"
+   },
+   {
+    "section": "DECK",
+    "name": "QUANTIZE BUTTONS",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "12"
+   },
+   {
+    "section": "DECK",
+    "name": "QUANTIZE BUTTONS #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "13"
+   },
+   {
+    "section": "DECK",
+    "name": "QUANTIZE BUTTONS #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "14"
+   },
+   {
+    "section": "DECK",
+    "name": "QUANTIZE BUTTONS #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "15"
+   },
+   {
+    "section": "DECK",
+    "name": "KEYLOCK BUTTONS",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "4"
+   },
+   {
+    "section": "DECK",
+    "name": "KEYLOCK BUTTONS #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "5"
+   },
+   {
+    "section": "DECK",
+    "name": "KEYLOCK BUTTONS #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "6"
+   },
+   {
+    "section": "DECK",
+    "name": "KEYLOCK BUTTONS #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "7"
+   },
+   {
+    "section": "DECK",
+    "name": "PFL BUTTONS",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "28"
+   },
+   {
+    "section": "DECK",
+    "name": "PFL BUTTONS #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "29"
+   },
+   {
+    "section": "DECK",
+    "name": "PFL BUTTONS #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "30"
+   },
+   {
+    "section": "DECK",
+    "name": "PFL BUTTONS #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "31"
+   },
+   {
+    "section": "DECK",
+    "name": "DECK LEFT BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "46"
+   },
+   {
+    "section": "DECK",
+    "name": "DECK RIGHT BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "47"
+   },
+   {
+    "section": "DECK",
+    "name": "BACK BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "91"
+   },
+   {
+    "section": "DECK",
+    "name": "FORWARD BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "92"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "93"
+   },
+   {
+    "section": "DECK",
+    "name": "PLAY BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "94"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECORD BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "95"
+   },
+   {
+    "section": "DECK",
+    "name": "DOWN BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "97"
+   },
+   {
+    "section": "DECK",
+    "name": "UP BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "96"
+   },
+   {
+    "section": "DECK",
+    "name": "LEFT BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "98"
+   },
+   {
+    "section": "DECK",
+    "name": "RIGHT BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "99"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "SMC-Mixer"
+  ],
+  "library_source": "mixxx"
+ }
+}

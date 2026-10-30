@@ -1,0 +1,78 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.mixman-dm2-os-x",
+  "kind": "controller",
+  "name": "Mixman DM2 (OS X)",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Mixman",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "Mixman DM2 (OS X)",
+  "entries": [
+   {
+    "section": "DECK",
+    "name": "PLAY",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "39"
+   },
+   {
+    "section": "DECK",
+    "name": "PLAY #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "38"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATSYNC",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "47"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATSYNC #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "48"
+   },
+   {
+    "section": "DECK",
+    "name": "PFL",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "42"
+   },
+   {
+    "section": "DECK",
+    "name": "PFL #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "41"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "DM2 (OS X)"
+  ],
+  "library_source": "mixxx"
+ }
+}

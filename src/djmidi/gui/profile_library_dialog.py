@@ -42,6 +42,7 @@ from djmidi.i18n import QT_TRANSLATE_NOOP
 _COLUMNS = (
     QT_TRANSLATE_NOOP("ProfileLibraryDialog", "Controller"),
     QT_TRANSLATE_NOOP("ProfileLibraryDialog", "Vendor"),
+    QT_TRANSLATE_NOOP("ProfileLibraryDialog", "Source"),
     QT_TRANSLATE_NOOP("ProfileLibraryDialog", "Controls"),
     QT_TRANSLATE_NOOP("ProfileLibraryDialog", "Status"),
 )
@@ -68,9 +69,10 @@ class ProfileLibraryDialog(QDialog):
 
         intro = QLabel(
             self.tr(
-                "Ready-made profiles for Pioneer DJ / AlphaTheta devices, built from the MIDI mappings "
-                "rekordbox ships: their buttons and pads, named as rekordbox names them. Install the ones "
-                "you use; they then work like a profile made in Controller Setup."
+                "Ready-made profiles built from existing MIDI mappings: Pioneer DJ / AlphaTheta devices from "
+                "rekordbox's (buttons and pads, named as rekordbox names them), many other brands from the "
+                "Mixxx project's (buttons, named after the Mixxx function they drive). Install the ones you "
+                "use; they then work like a profile made in Controller Setup."
             )
         )
         intro.setWordWrap(True)
@@ -131,10 +133,11 @@ class ProfileLibraryDialog(QDialog):
         for profile in self._profiles:
             row = self.table.rowCount()
             self.table.insertRow(row)
-            values = (profile.name, profile.vendor, str(profile.entries), self._status_text(profile))
+            source = {"rekordbox": "rekordbox", "mixxx": "Mixxx"}.get(profile.source, profile.source)
+            values = (profile.name, profile.vendor, source, str(profile.entries), self._status_text(profile))
             for column, value in enumerate(values):
                 item = QTableWidgetItem(value)
-                if column == 2:
+                if column == 3:
                     item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
                 if column == 0 and profile.port_names:
                     item.setToolTip(self.tr("MIDI ports: {ports}").format(ports=", ".join(profile.port_names)))

@@ -1,0 +1,294 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.pioneer-cdj-2000",
+  "kind": "controller",
+  "name": "Pioneer CDJ-2000",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Pioneer",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "Pioneer CDJ-2000",
+  "entries": [
+   {
+    "section": "DECK",
+    "name": "LOAD SELECTED TRACK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "51"
+   },
+   {
+    "section": "DECK",
+    "name": "BACK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "3"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATS TRANSLATE CURPOS",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "14"
+   },
+   {
+    "section": "DECK",
+    "name": "BPM TAP",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "16"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE DEFAULT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "DECK",
+    "name": "EJECT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "47"
+   },
+   {
+    "section": "DECK",
+    "name": "FWD",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "2"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 1 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "40"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 1 ACTIVATE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "24"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 2 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "41"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 2 ACTIVATE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "25"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 3 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "42"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 3 ACTIVATE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "26"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 3 ACTIVATE #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "43"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 4 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "28"
+   },
+   {
+    "section": "DECK",
+    "name": "KEYLOCK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "17"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP DOUBLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "11"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP ENABLED",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "45"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP HALVE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "12"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP IN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "6"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP OUT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "7"
+   },
+   {
+    "section": "DECK",
+    "name": "PLAY",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "0"
+   },
+   {
+    "section": "DECK",
+    "name": "RELOOP EXIT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "8"
+   },
+   {
+    "section": "DECK",
+    "name": "REVERSE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "33"
+   },
+   {
+    "section": "DECK",
+    "name": "SCRATCH2 ENABLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "32"
+   },
+   {
+    "section": "BROWSE",
+    "name": "SELECT NEXT TRACK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "4"
+   },
+   {
+    "section": "BROWSE",
+    "name": "SELECT PREV TRACK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "5"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "CDJ-2000"
+  ],
+  "library_source": "mixxx"
+ }
+}

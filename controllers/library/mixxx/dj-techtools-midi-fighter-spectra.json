@@ -1,0 +1,456 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.dj-techtools-midi-fighter-spectra",
+  "kind": "controller",
+  "name": "DJ TechTools MIDI Fighter Spectra",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "DJ TechTools",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "DJ TechTools MIDI Fighter Spectra",
+  "entries": [
+   {
+    "section": "DECK",
+    "name": "EQ LAYER",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "48"
+   },
+   {
+    "section": "DECK",
+    "name": "EQ LAYER #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "49"
+   },
+   {
+    "section": "DECK",
+    "name": "EQ LAYER #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "50"
+   },
+   {
+    "section": "DECK",
+    "name": "EQ LAYER #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "51"
+   },
+   {
+    "section": "DECK",
+    "name": "EQ LAYER #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "44"
+   },
+   {
+    "section": "DECK",
+    "name": "EQ LAYER #6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "45"
+   },
+   {
+    "section": "DECK",
+    "name": "EQ LAYER #7",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "46"
+   },
+   {
+    "section": "DECK",
+    "name": "EQ LAYER #8",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "47"
+   },
+   {
+    "section": "DECK",
+    "name": "EQ LAYER #9",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "40"
+   },
+   {
+    "section": "DECK",
+    "name": "EQ LAYER #10",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "41"
+   },
+   {
+    "section": "DECK",
+    "name": "EQ LAYER #11",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "42"
+   },
+   {
+    "section": "DECK",
+    "name": "EQ LAYER #12",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "43"
+   },
+   {
+    "section": "DECK",
+    "name": "EQ LAYER #13",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "36"
+   },
+   {
+    "section": "DECK",
+    "name": "EQ LAYER #14",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "37"
+   },
+   {
+    "section": "DECK",
+    "name": "EQ LAYER #15",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "38"
+   },
+   {
+    "section": "DECK",
+    "name": "EQ LAYER #16",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "39"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE LAYER",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "64"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE LAYER #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "65"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE LAYER #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "66"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE LAYER #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "67"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE LAYER #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "60"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE LAYER #6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "61"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE LAYER #7",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "62"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE LAYER #8",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "63"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE LAYER #9",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "56"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE LAYER #10",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "57"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE LAYER #11",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "58"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE LAYER #12",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "59"
+   },
+   {
+    "section": "DECK",
+    "name": "SELECT CUE DECK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "52"
+   },
+   {
+    "section": "DECK",
+    "name": "SELECT CUE DECK #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "53"
+   },
+   {
+    "section": "DECK",
+    "name": "SELECT CUE DECK #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "54"
+   },
+   {
+    "section": "DECK",
+    "name": "SELECT CUE DECK #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "55"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLER LAYER",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "80"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLER LAYER #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "81"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLER LAYER #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "82"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLER LAYER #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "83"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLER LAYER #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "76"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLER LAYER #6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "77"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLER LAYER #7",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "78"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLER LAYER #8",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "79"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLER LAYER #9",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "72"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLER LAYER #10",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "73"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLER LAYER #11",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "74"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLER LAYER #12",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "75"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLER LAYER #13",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "68"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLER LAYER #14",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "69"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLER LAYER #15",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "70"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "SAMPLER LAYER #16",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "71"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "MIDI Fighter Spectra"
+  ],
+  "library_source": "mixxx"
+ }
+}

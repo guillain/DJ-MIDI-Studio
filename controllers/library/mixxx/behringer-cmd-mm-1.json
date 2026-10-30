@@ -1,0 +1,168 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.behringer-cmd-mm-1",
+  "kind": "controller",
+  "name": "Behringer CMD MM-1",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Behringer",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "Behringer CMD MM-1",
+  "entries": [
+   {
+    "section": "DECK",
+    "name": "BUTTON CUE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5"
+    ],
+    "data1": "51"
+   },
+   {
+    "section": "EFFECT",
+    "name": "BUTTON1",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5"
+    ],
+    "data1": "23"
+   },
+   {
+    "section": "MIXER",
+    "name": "CTRL BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5"
+    ],
+    "data1": "17"
+   },
+   {
+    "section": "EFFECT",
+    "name": "BUTTON2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5"
+    ],
+    "data1": "28"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON CUE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5"
+    ],
+    "data1": "50"
+   },
+   {
+    "section": "MIXER",
+    "name": "SHIFT BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5"
+    ],
+    "data1": "16"
+   },
+   {
+    "section": "EFFECT",
+    "name": "BUTTON1 #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5"
+    ],
+    "data1": "27"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON CUE #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5"
+    ],
+    "data1": "49"
+   },
+   {
+    "section": "EFFECT",
+    "name": "BUTTON2 #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5"
+    ],
+    "data1": "32"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON CUE #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5"
+    ],
+    "data1": "48"
+   },
+   {
+    "section": "EFFECT",
+    "name": "BUTTON2 #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5"
+    ],
+    "data1": "20"
+   },
+   {
+    "section": "EFFECT",
+    "name": "BUTTON1 #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5"
+    ],
+    "data1": "31"
+   },
+   {
+    "section": "BROWSE",
+    "name": "LIBRARY BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5"
+    ],
+    "data1": "3"
+   },
+   {
+    "section": "EFFECT",
+    "name": "BUTTON1 #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5"
+    ],
+    "data1": "19"
+   },
+   {
+    "section": "EFFECT",
+    "name": "BUTTON2 #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5"
+    ],
+    "data1": "24"
+   },
+   {
+    "section": "MIXER",
+    "name": "MIDDLE BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5"
+    ],
+    "data1": "18"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "CMD MM-1"
+  ],
+  "library_source": "mixxx"
+ }
+}

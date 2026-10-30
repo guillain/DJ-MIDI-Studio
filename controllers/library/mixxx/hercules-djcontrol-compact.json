@@ -1,0 +1,627 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.hercules-djcontrol-compact",
+  "kind": "controller",
+  "name": "Hercules DJControl Compact",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Hercules",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "Hercules DJControl Compact",
+  "entries": [
+   {
+    "section": "DECK",
+    "name": "5 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "79"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL2] ENABLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "12"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 3 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "51"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE DEFAULT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "34"
+   },
+   {
+    "section": "DECK",
+    "name": "RELOOP EXIT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "73"
+   },
+   {
+    "section": "MIXER",
+    "name": "SCRATCH",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "45"
+   },
+   {
+    "section": "OTHER",
+    "name": "ENABLED",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "46"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "CUE GOTOANDPLAY",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "17"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP DOUBLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "28"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "CUE GOTOANDPLAY #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "67"
+   },
+   {
+    "section": "DECK",
+    "name": "25 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "78"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL1] ENABLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "11"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 2 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "50"
+   },
+   {
+    "section": "DECK",
+    "name": "PLAY",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "33"
+   },
+   {
+    "section": "DECK",
+    "name": "START STOP",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "36"
+   },
+   {
+    "section": "DECK",
+    "name": "START STOP #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "84"
+   },
+   {
+    "section": "DECK",
+    "name": "SYNC ENABLED",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "83"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP HALVE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "27"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "CUE GOTOANDPLAY #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "66"
+   },
+   {
+    "section": "DECK",
+    "name": "125 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "77"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL2] ENABLE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "10"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 1 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "49"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL2] ENABLE #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "60"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATLOOPROLL 1 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "32"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 4 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "4"
+   },
+   {
+    "section": "OTHER",
+    "name": "TOGGLE RECORDING",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "43"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE DEFAULT #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "82"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATLOOP 8 ACTIVATE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "26"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "CUE GOTOANDPLAY #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "65"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP DOUBLE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "76"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL1] ENABLE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "9"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "CUE GOTOANDPLAY #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "20"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL1] ENABLE #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "59"
+   },
+   {
+    "section": "DECK",
+    "name": "5 ACTIVATE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "31"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 3 ACTIVATE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "3"
+   },
+   {
+    "section": "DECK",
+    "name": "PLAY #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "81"
+   },
+   {
+    "section": "DECK",
+    "name": "RELOOP EXIT #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "25"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP HALVE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "75"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "CUE GOTOANDPLAY #6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "19"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL2] ENABLE #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "58"
+   },
+   {
+    "section": "DECK",
+    "name": "25 ACTIVATE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "30"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 2 ACTIVATE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "2"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATLOOPROLL 1 ACTIVATE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "80"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 4 ACTIVATE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "52"
+   },
+   {
+    "section": "DECK",
+    "name": "SYNC ENABLED #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "35"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATLOOP 8 ACTIVATE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "74"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "CUE GOTOANDPLAY #7",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "18"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL1] ENABLE #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "57"
+   },
+   {
+    "section": "DECK",
+    "name": "125 ACTIVATE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "29"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 1 ACTIVATE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 1 CLEAR",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "5"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 2 CLEAR",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "6"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 3 CLEAR",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "7"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 4 CLEAR",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "8"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 1 CLEAR #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "53"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 2 CLEAR #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "54"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 3 CLEAR #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "55"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE 4 CLEAR #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "56"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "CUE GOTOANDPLAY #8",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "68"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "CUE GOTOANDSTOP",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "21"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "CUE GOTOANDSTOP #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "22"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "CUE GOTOANDSTOP #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "23"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "CUE GOTOANDSTOP #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "24"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "CUE GOTOANDSTOP #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "69"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "CUE GOTOANDSTOP #6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "70"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "CUE GOTOANDSTOP #7",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "71"
+   },
+   {
+    "section": "SAMPLER",
+    "name": "CUE GOTOANDSTOP #8",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "72"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "DJControl Compact"
+  ],
+  "library_source": "mixxx"
+ }
+}

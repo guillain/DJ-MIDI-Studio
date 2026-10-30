@@ -1,0 +1,204 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.midi-keyboard",
+  "kind": "controller",
+  "name": "MIDI Keyboard",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "MIDI",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "MIDI Keyboard",
+  "entries": [
+   {
+    "section": "DECK",
+    "name": "PLAY",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "36"
+   },
+   {
+    "section": "DECK",
+    "name": "REVERSE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "38"
+   },
+   {
+    "section": "DECK",
+    "name": "BACK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "40"
+   },
+   {
+    "section": "DECK",
+    "name": "FWD",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "41"
+   },
+   {
+    "section": "DECK",
+    "name": "RATE PERM DOWN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "43"
+   },
+   {
+    "section": "DECK",
+    "name": "RATE PERM UP",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "44"
+   },
+   {
+    "section": "DECK",
+    "name": "RATE TEMP DOWN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "45"
+   },
+   {
+    "section": "DECK",
+    "name": "RATE TEMP UP",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "46"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE DEFAULT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "47"
+   },
+   {
+    "section": "DECK",
+    "name": "FLANGER",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "52"
+   },
+   {
+    "section": "DECK",
+    "name": "PLAY #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "60"
+   },
+   {
+    "section": "DECK",
+    "name": "REVERSE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "62"
+   },
+   {
+    "section": "DECK",
+    "name": "BACK #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "64"
+   },
+   {
+    "section": "DECK",
+    "name": "FWD #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "65"
+   },
+   {
+    "section": "DECK",
+    "name": "RATE PERM DOWN #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "67"
+   },
+   {
+    "section": "DECK",
+    "name": "RATE PERM UP #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "68"
+   },
+   {
+    "section": "DECK",
+    "name": "RATE TEMP DOWN #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "69"
+   },
+   {
+    "section": "DECK",
+    "name": "RATE TEMP UP #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "70"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE DEFAULT #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "71"
+   },
+   {
+    "section": "DECK",
+    "name": "FLANGER #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "76"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "Keyboard"
+  ],
+  "library_source": "mixxx"
+ }
+}

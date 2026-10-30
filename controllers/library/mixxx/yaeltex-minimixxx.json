@@ -1,0 +1,204 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.yaeltex-minimixxx",
+  "kind": "controller",
+  "name": "Yaeltex MiniMixxx",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Yaeltex",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "Yaeltex MiniMixxx",
+  "entries": [
+   {
+    "section": "DECK",
+    "name": "PLAY",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "12"
+   },
+   {
+    "section": "DECK",
+    "name": "PLAY #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "15"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE DEFAULT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "4"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE DEFAULT #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "7"
+   },
+   {
+    "section": "DECK",
+    "name": "ENCODER BUTTON HANDLER",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "0"
+   },
+   {
+    "section": "DECK",
+    "name": "ENCODER BUTTON HANDLER #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "DECK",
+    "name": "ENCODER BUTTON HANDLER #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "2"
+   },
+   {
+    "section": "DECK",
+    "name": "ENCODER BUTTON HANDLER #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "3"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON HANDLER",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "5"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON HANDLER #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "6"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON HANDLER #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "8"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON HANDLER #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "9"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON HANDLER #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "10"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON HANDLER #6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "11"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON HANDLER #7",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "13"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON HANDLER #8",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "14"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON HANDLER #9",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "16"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON HANDLER #10",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "17"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON HANDLER #11",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "18"
+   },
+   {
+    "section": "DECK",
+    "name": "BUTTON HANDLER #12",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "19"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "MiniMixxx"
+  ],
+  "library_source": "mixxx"
+ }
+}

@@ -1,0 +1,231 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.stanton-scs-3m",
+  "kind": "controller",
+  "name": "Stanton SCS.3m",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Stanton",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "Stanton SCS.3m",
+  "entries": [
+   {
+    "section": "OTHER",
+    "name": "RECEIVE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "12"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "81"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "82"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "83"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "84"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "85"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #7",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "86"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #8",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "0"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #9",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #10",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "6"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #11",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "11"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #12",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "5"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #13",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "16"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #14",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "10"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #15",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "4"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #16",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "15"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #17",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "9"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #18",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "3"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #19",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "14"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #20",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "8"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #21",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "2"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #22",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "13"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECEIVE #23",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "7"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "SCS.3m"
+  ],
+  "library_source": "mixxx"
+ }
+}

@@ -1,0 +1,247 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.vestax-typhoon",
+  "kind": "controller",
+  "name": "Vestax Typhoon",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Vestax",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "Vestax Typhoon",
+  "entries": [
+   {
+    "section": "EFFECT",
+    "name": "ENABLED",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "41"
+   },
+   {
+    "section": "EFFECT",
+    "name": "ENABLED #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "40"
+   },
+   {
+    "section": "BROWSE",
+    "name": "SELECT NEXT PLAYLIST",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "38"
+   },
+   {
+    "section": "DECK",
+    "name": "PLAY",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "50"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE DEFAULT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "53"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE GOTOANDPLAY",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "51"
+   },
+   {
+    "section": "DECK",
+    "name": "START STOP",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "54"
+   },
+   {
+    "section": "DECK",
+    "name": "BACK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "55"
+   },
+   {
+    "section": "DECK",
+    "name": "FWD",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "56"
+   },
+   {
+    "section": "DECK",
+    "name": "CHANGE MODE SIMPLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "36"
+   },
+   {
+    "section": "DECK",
+    "name": "RATE TEMP DOWN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "34"
+   },
+   {
+    "section": "DECK",
+    "name": "RATE TEMP UP",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "35"
+   },
+   {
+    "section": "DECK",
+    "name": "WHEEL TOUCH",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "46"
+   },
+   {
+    "section": "DECK",
+    "name": "WHEEL TOUCH #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "47"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOPS",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "32"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP HALVE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "33"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP DOUBLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "66"
+   },
+   {
+    "section": "DECK",
+    "name": "LOAD SELECTED TRACK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "96"
+   },
+   {
+    "section": "DECK",
+    "name": "LOAD SELECTED TRACK #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "97"
+   },
+   {
+    "section": "DECK",
+    "name": "PFL",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "37"
+   },
+   {
+    "section": "DECK",
+    "name": "SET SYNC SIMPLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "70"
+   },
+   {
+    "section": "BROWSE",
+    "name": "SELECT PREV TRACK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "92"
+   },
+   {
+    "section": "BROWSE",
+    "name": "SELECT NEXT TRACK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3"
+    ],
+    "data1": "93"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "Typhoon"
+  ],
+  "library_source": "mixxx"
+ }
+}

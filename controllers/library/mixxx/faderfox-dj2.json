@@ -1,0 +1,456 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.faderfox-dj2",
+  "kind": "controller",
+  "name": "FaderFox DJ2",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "FaderFox",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "FaderFox DJ2",
+  "entries": [
+   {
+    "section": "DECK",
+    "name": "MUTE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "72"
+   },
+   {
+    "section": "DECK",
+    "name": "SYNC ENABLED",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "9"
+   },
+   {
+    "section": "DECK",
+    "name": "LOAD SELECTED TRACK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "15"
+   },
+   {
+    "section": "DECK",
+    "name": "RATE TEMP UP",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "29"
+   },
+   {
+    "section": "DECK",
+    "name": "RATE TEMP DOWN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "28"
+   },
+   {
+    "section": "DECK",
+    "name": "RATE TEMP UP SMALL",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "44"
+   },
+   {
+    "section": "DECK",
+    "name": "RATE TEMP DOWN SMALL",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "43"
+   },
+   {
+    "section": "DECK",
+    "name": "PLAY",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "26"
+   },
+   {
+    "section": "DECK",
+    "name": "KEYLOCK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "33"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATS TRANSLATE CURPOS",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "24"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE DEFAULT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "25"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATJUMP 1 BACKWARD",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "41"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATJUMP 1 FORWARD",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "40"
+   },
+   {
+    "section": "DECK",
+    "name": "QUANTIZE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "39"
+   },
+   {
+    "section": "DECK",
+    "name": "REVERSE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "48"
+   },
+   {
+    "section": "OTHER",
+    "name": "BUTTON PARAMETER1",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "23"
+   },
+   {
+    "section": "OTHER",
+    "name": "BUTTON PARAMETER2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "32"
+   },
+   {
+    "section": "OTHER",
+    "name": "BUTTON PARAMETER3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "38"
+   },
+   {
+    "section": "DECK",
+    "name": "PFL",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "17"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL1] ENABLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "20"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL1] ENABLE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "21"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL1] ENABLE #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "35"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL1] ENABLE #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "36"
+   },
+   {
+    "section": "DECK",
+    "name": "MUTE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "77"
+   },
+   {
+    "section": "DECK",
+    "name": "SYNC ENABLED #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "10"
+   },
+   {
+    "section": "DECK",
+    "name": "LOAD SELECTED TRACK #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "16"
+   },
+   {
+    "section": "DECK",
+    "name": "RATE TEMP UP #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "59"
+   },
+   {
+    "section": "DECK",
+    "name": "RATE TEMP DOWN #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "58"
+   },
+   {
+    "section": "DECK",
+    "name": "RATE TEMP UP SMALL #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "74"
+   },
+   {
+    "section": "DECK",
+    "name": "RATE TEMP DOWN SMALL #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "73"
+   },
+   {
+    "section": "DECK",
+    "name": "PLAY #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "56"
+   },
+   {
+    "section": "DECK",
+    "name": "KEYLOCK #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "63"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATS TRANSLATE CURPOS #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "54"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE DEFAULT #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "55"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATJUMP 1 BACKWARD #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "71"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATJUMP 1 FORWARD #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "70"
+   },
+   {
+    "section": "DECK",
+    "name": "QUANTIZE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "69"
+   },
+   {
+    "section": "DECK",
+    "name": "REVERSE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "78"
+   },
+   {
+    "section": "OTHER",
+    "name": "BUTTON PARAMETER1 #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "53"
+   },
+   {
+    "section": "OTHER",
+    "name": "BUTTON PARAMETER2 #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "34"
+   },
+   {
+    "section": "OTHER",
+    "name": "BUTTON PARAMETER3 #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "68"
+   },
+   {
+    "section": "DECK",
+    "name": "PFL #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "19"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL2] ENABLE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "51"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL2] ENABLE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "50"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL2] ENABLE #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "66"
+   },
+   {
+    "section": "EFFECT",
+    "name": "GROUP [CHANNEL2] ENABLE #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "65"
+   },
+   {
+    "section": "BROWSE",
+    "name": "SELECT NEXT TRACK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "11"
+   },
+   {
+    "section": "BROWSE",
+    "name": "SELECT PREV TRACK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "12"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "DJ2"
+  ],
+  "library_source": "mixxx"
+ }
+}

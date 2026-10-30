@@ -1,0 +1,78 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.intech-tek2",
+  "kind": "controller",
+  "name": "Intech TEK2",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Intech",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "Intech TEK2",
+  "entries": [
+   {
+    "section": "DECK",
+    "name": "WHEEL TOUCH",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "40"
+   },
+   {
+    "section": "DECK",
+    "name": "WHEEL TOUCH #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "41"
+   },
+   {
+    "section": "DECK",
+    "name": "PLAY",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "32"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE DEFAULT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "33"
+   },
+   {
+    "section": "DECK",
+    "name": "PLAY #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "34"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE DEFAULT #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "35"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "TEK2"
+  ],
+  "library_source": "mixxx"
+ }
+}

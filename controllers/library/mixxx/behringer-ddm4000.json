@@ -1,0 +1,555 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.behringer-ddm4000",
+  "kind": "controller",
+  "name": "Behringer DDM4000",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Behringer",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "Behringer DDM4000",
+  "entries": [
+   {
+    "section": "OTHER",
+    "name": "DDM4000",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "0"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "2"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "3"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "32"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "63"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #7",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "4"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #8",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "5"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #9",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "6"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #10",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "7"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #11",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "34"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #12",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "73"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #13",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "8"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #14",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "9"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #15",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "10"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #16",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "11"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #17",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "36"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #18",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "83"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #19",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "12"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #20",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "13"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #21",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "14"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #22",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "15"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #23",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "38"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #24",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "93"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #25",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "49"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #26",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "50"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #27",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "51"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #28",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "52"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #29",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "53"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #30",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "23"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #31",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "24"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #32",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "25"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #33",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "26"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #34",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "27"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #35",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "28"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #36",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "29"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #37",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "30"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #38",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "31"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #39",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "40"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #40",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "41"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #41",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "42"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #42",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "43"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #43",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "44"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #44",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "95"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #45",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "96"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #46",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "97"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #47",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "102"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #48",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "103"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #49",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "104"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #50",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "108"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #51",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "109"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #52",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "110"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #53",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "113"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #54",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "115"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #55",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "118"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #56",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "120"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #57",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "121"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #58",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "122"
+   },
+   {
+    "section": "OTHER",
+    "name": "DDM4000 #59",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "124"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "DDM4000"
+  ],
+  "library_source": "mixxx"
+ }
+}

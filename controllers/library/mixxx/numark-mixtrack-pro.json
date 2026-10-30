@@ -1,0 +1,402 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.numark-mixtrack-pro",
+  "kind": "controller",
+  "name": "Numark MixTrack Pro",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Numark",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "Numark MixTrack Pro",
+  "entries": [
+   {
+    "section": "BROWSE",
+    "name": "TOGGLE DIRECTORY MODE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "105"
+   },
+   {
+    "section": "BROWSE",
+    "name": "LOAD SELECTED INTO FIRST STOPPED",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "79"
+   },
+   {
+    "section": "DECK",
+    "name": "PLAYBUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "59"
+   },
+   {
+    "section": "DECK",
+    "name": "CUEBUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "51"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATSYNC",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "64"
+   },
+   {
+    "section": "DECK",
+    "name": "PLAY FROM CUE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "74"
+   },
+   {
+    "section": "DECK",
+    "name": "PFL",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "101"
+   },
+   {
+    "section": "DECK",
+    "name": "CHANGE HOT CUE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "92"
+   },
+   {
+    "section": "DECK",
+    "name": "CHANGE HOT CUE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "91"
+   },
+   {
+    "section": "DECK",
+    "name": "CHANGE HOT CUE #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "90"
+   },
+   {
+    "section": "DECK",
+    "name": "TOGGLE DELETE KEY",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "89"
+   },
+   {
+    "section": "DECK",
+    "name": "TOGGLE MANUAL LOOPING",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "97"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP IN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "83"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP OUT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "84"
+   },
+   {
+    "section": "DECK",
+    "name": "RE LOOP",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "85"
+   },
+   {
+    "section": "DECK",
+    "name": "LOAD TRACK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "75"
+   },
+   {
+    "section": "DECK",
+    "name": "RATE TEMP UP",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "68"
+   },
+   {
+    "section": "DECK",
+    "name": "RATE TEMP DOWN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "67"
+   },
+   {
+    "section": "DECK",
+    "name": "TOGGLE SCRATCH MODE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "72"
+   },
+   {
+    "section": "DECK",
+    "name": "WHEEL TOUCH",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "78"
+   },
+   {
+    "section": "DECK",
+    "name": "KEYLOCK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "81"
+   },
+   {
+    "section": "DECK",
+    "name": "FLANGER",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "99"
+   },
+   {
+    "section": "DECK",
+    "name": "PLAYBUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "66"
+   },
+   {
+    "section": "DECK",
+    "name": "CUEBUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "60"
+   },
+   {
+    "section": "DECK",
+    "name": "BEATSYNC #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "71"
+   },
+   {
+    "section": "DECK",
+    "name": "PLAY FROM CUE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "76"
+   },
+   {
+    "section": "DECK",
+    "name": "PFL #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "102"
+   },
+   {
+    "section": "DECK",
+    "name": "CHANGE HOT CUE #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "96"
+   },
+   {
+    "section": "DECK",
+    "name": "CHANGE HOT CUE #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "95"
+   },
+   {
+    "section": "DECK",
+    "name": "CHANGE HOT CUE #6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "94"
+   },
+   {
+    "section": "DECK",
+    "name": "TOGGLE DELETE KEY #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "93"
+   },
+   {
+    "section": "DECK",
+    "name": "TOGGLE MANUAL LOOPING #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "98"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP IN #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "86"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP OUT #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "87"
+   },
+   {
+    "section": "DECK",
+    "name": "RE LOOP #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "88"
+   },
+   {
+    "section": "DECK",
+    "name": "LOAD TRACK #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "52"
+   },
+   {
+    "section": "DECK",
+    "name": "RATE TEMP UP #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "70"
+   },
+   {
+    "section": "DECK",
+    "name": "RATE TEMP DOWN #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "69"
+   },
+   {
+    "section": "DECK",
+    "name": "TOGGLE SCRATCH MODE #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "80"
+   },
+   {
+    "section": "DECK",
+    "name": "WHEEL TOUCH #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "77"
+   },
+   {
+    "section": "DECK",
+    "name": "KEYLOCK #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "82"
+   },
+   {
+    "section": "DECK",
+    "name": "FLANGER #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "100"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "MixTrack Pro"
+  ],
+  "library_source": "mixxx"
+ }
+}

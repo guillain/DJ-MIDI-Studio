@@ -1,0 +1,334 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.denon-dn-sc2000",
+  "kind": "controller",
+  "name": "Denon DN SC2000",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Denon",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "Denon DN SC2000",
+  "entries": [
+   {
+    "section": "DECK",
+    "name": "CHANGE DECK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "3"
+   },
+   {
+    "section": "DECK",
+    "name": "JOG TOUCH",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "81"
+   },
+   {
+    "section": "DECK",
+    "name": "SHIFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "96"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP OR HOTCUES",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "23"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP OR HOTCUES #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "24"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP OR HOTCUES #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "25"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP OR HOTCUES #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "32"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP OR HOTCUES #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "33"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP OR HOTCUES #6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "34"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP OR HOTCUES #7",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "35"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP OR HOTCUES #8",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "36"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP OR HOTCUES #9",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "55"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP OR HOTCUES #10",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "57"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP OR HOTCUES #11",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "29"
+   },
+   {
+    "section": "DECK",
+    "name": "MOVE LOOP LEFT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "105"
+   },
+   {
+    "section": "DECK",
+    "name": "MOVE LOOP RIGHT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "106"
+   },
+   {
+    "section": "BROWSE",
+    "name": "SELECT PREV PLAYLIST",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "48"
+   },
+   {
+    "section": "BROWSE",
+    "name": "SELECT NEXT PLAYLIST",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "41"
+   },
+   {
+    "section": "DECK",
+    "name": "LOAD SELECTED TRACK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "40"
+   },
+   {
+    "section": "DECK",
+    "name": "FWD",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "16"
+   },
+   {
+    "section": "DECK",
+    "name": "BACK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "17"
+   },
+   {
+    "section": "DECK",
+    "name": "PLAY",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "67"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "66"
+   },
+   {
+    "section": "DECK",
+    "name": "KEY LOCK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "6"
+   },
+   {
+    "section": "DECK",
+    "name": "BEAT SYNC",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "107"
+   },
+   {
+    "section": "DECK",
+    "name": "FLANGER",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "86"
+   },
+   {
+    "section": "OTHER",
+    "name": "RESET DEPTH",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "18"
+   },
+   {
+    "section": "OTHER",
+    "name": "RESET DELAY",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "19"
+   },
+   {
+    "section": "OTHER",
+    "name": "RESET LFO",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "20"
+   },
+   {
+    "section": "DECK",
+    "name": "PITCH BEND",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "13"
+   },
+   {
+    "section": "DECK",
+    "name": "PITCH BEND #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1",
+     "2"
+    ],
+    "data1": "12"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "DN SC2000"
+  ],
+  "library_source": "mixxx"
+ }
+}

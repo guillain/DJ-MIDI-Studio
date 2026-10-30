@@ -1,0 +1,240 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.icon-icontrols",
+  "kind": "controller",
+  "name": "Icon iControls",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Icon",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "Icon iControls",
+  "entries": [
+   {
+    "section": "DECK",
+    "name": "PFL BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "8"
+   },
+   {
+    "section": "DECK",
+    "name": "PFL BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "9"
+   },
+   {
+    "section": "DECK",
+    "name": "PFL BUTTON #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "10"
+   },
+   {
+    "section": "DECK",
+    "name": "PFL BUTTON #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "11"
+   },
+   {
+    "section": "EFFECT",
+    "name": "NEXT EFFECT BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "12"
+   },
+   {
+    "section": "EFFECT",
+    "name": "NEXT EFFECT BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "13"
+   },
+   {
+    "section": "EFFECT",
+    "name": "NEXT EFFECT BUTTON #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "14"
+   },
+   {
+    "section": "EFFECT",
+    "name": "NEXT EFFECT BUTTON #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "15"
+   },
+   {
+    "section": "DECK",
+    "name": "SLIP BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "16"
+   },
+   {
+    "section": "DECK",
+    "name": "SLIP BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "17"
+   },
+   {
+    "section": "DECK",
+    "name": "SLIP BUTTON #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "18"
+   },
+   {
+    "section": "DECK",
+    "name": "SLIP BUTTON #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "19"
+   },
+   {
+    "section": "DECK",
+    "name": "SUPER BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "20"
+   },
+   {
+    "section": "DECK",
+    "name": "SUPER BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "21"
+   },
+   {
+    "section": "DECK",
+    "name": "SUPER BUTTON #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "22"
+   },
+   {
+    "section": "DECK",
+    "name": "SUPER BUTTON #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "23"
+   },
+   {
+    "section": "DECK",
+    "name": "LEFT DECK BTN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "48"
+   },
+   {
+    "section": "DECK",
+    "name": "RIGHT DECK BTN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "49"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "86"
+   },
+   {
+    "section": "DECK",
+    "name": "BACK BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "91"
+   },
+   {
+    "section": "DECK",
+    "name": "FORWARD BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "92"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "93"
+   },
+   {
+    "section": "DECK",
+    "name": "PLAY BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "94"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECORD BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "95"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "iControls"
+  ],
+  "library_source": "mixxx"
+ }
+}

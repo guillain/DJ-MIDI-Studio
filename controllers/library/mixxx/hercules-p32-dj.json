@@ -1,0 +1,760 @@
+{
+ "manifest": {
+  "schema_version": 1,
+  "plugin_id": "user.hercules-p32-dj",
+  "kind": "controller",
+  "name": "Hercules P32 DJ",
+  "version": "1.0.0",
+  "api_version": "1",
+  "vendor": "Hercules",
+  "license": "derived from the Mixxx project's controller mapping (GPL)"
+ },
+ "controller": {
+  "name": "Hercules P32 DJ",
+  "entries": [
+   {
+    "section": "OTHER",
+    "name": "SHOW MAXIMIZED LIBRARY",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "MIXER",
+    "name": "HEAD SPLIT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "4"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "DECK",
+    "name": "LEFT ENCODER PRESS",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "DECK",
+    "name": "RIGHT ENCODER PRESS",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5"
+    ],
+    "data1": "2"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP IN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "80"
+   },
+   {
+    "section": "DECK",
+    "name": "LOOP OUT",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "81"
+   },
+   {
+    "section": "DECK",
+    "name": "RELOOP",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "82"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "96"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "97"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE BUTTON #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "98"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE BUTTON #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "99"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE BUTTON #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "92"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE BUTTON #6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "93"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE BUTTON #7",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "94"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE BUTTON #8",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "95"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE BUTTON #9",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "88"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE BUTTON #10",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "89"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE BUTTON #11",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "90"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE BUTTON #12",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "91"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE BUTTON #13",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "84"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE BUTTON #14",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "85"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE BUTTON #15",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "86"
+   },
+   {
+    "section": "DECK",
+    "name": "HOTCUE BUTTON #16",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "87"
+   },
+   {
+    "section": "DECK",
+    "name": "ENABLE BUTTONS",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "3"
+   },
+   {
+    "section": "DECK",
+    "name": "ENABLE BUTTONS #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "4"
+   },
+   {
+    "section": "DECK",
+    "name": "ENABLE BUTTONS #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "5"
+   },
+   {
+    "section": "DECK",
+    "name": "EFFECT FOCUS BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "6"
+   },
+   {
+    "section": "DECK",
+    "name": "PLAY",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "10"
+   },
+   {
+    "section": "DECK",
+    "name": "CUE",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "9"
+   },
+   {
+    "section": "DECK",
+    "name": "SYNC",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "8"
+   },
+   {
+    "section": "DECK",
+    "name": "TEMP SLOW",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "68"
+   },
+   {
+    "section": "DECK",
+    "name": "TEMP FAST",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "69"
+   },
+   {
+    "section": "DECK",
+    "name": "ALIGN BEATS",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "70"
+   },
+   {
+    "section": "DECK",
+    "name": "SYNC KEY",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3"
+    ],
+    "data1": "83"
+   },
+   {
+    "section": "DECK",
+    "name": "PITCH UP",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3"
+    ],
+    "data1": "79"
+   },
+   {
+    "section": "DECK",
+    "name": "PITCH DOWN",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3"
+    ],
+    "data1": "75"
+   },
+   {
+    "section": "DECK",
+    "name": "RESET KEY",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3"
+    ],
+    "data1": "71"
+   },
+   {
+    "section": "DECK",
+    "name": "ENABLE EFFECT UNIT BUTTONS",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "64"
+   },
+   {
+    "section": "DECK",
+    "name": "ENABLE EFFECT UNIT BUTTONS #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "65"
+   },
+   {
+    "section": "DECK",
+    "name": "ENABLE EFFECT UNIT BUTTONS #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "5",
+     "2",
+     "3",
+     "6"
+    ],
+    "data1": "60"
+   },
+   {
+    "section": "DECK",
+    "name": "ENABLE EFFECT UNIT BUTTONS #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "61"
+   },
+   {
+    "section": "DECK",
+    "name": "SHIFT BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3"
+    ],
+    "data1": "7"
+   },
+   {
+    "section": "DECK",
+    "name": "PFL",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "3"
+    ],
+    "data1": "16"
+   },
+   {
+    "section": "DECK",
+    "name": "LOAD TRACK",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "15"
+   },
+   {
+    "section": "OTHER",
+    "name": "RECORD BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "2"
+   },
+   {
+    "section": "DECK",
+    "name": "LEFT ENCODER PRESS #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3",
+     "6"
+    ],
+    "data1": "2"
+   },
+   {
+    "section": "DECK",
+    "name": "RIGHT ENCODER PRESS #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "3",
+     "6"
+    ],
+    "data1": "1"
+   },
+   {
+    "section": "OTHER",
+    "name": "SLIP BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "1"
+    ],
+    "data1": "3"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLER BUTTON",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "48"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLER BUTTON #2",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "49"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLER BUTTON #3",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "50"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLER BUTTON #4",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "51"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLER BUTTON #5",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "44"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLER BUTTON #6",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "45"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLER BUTTON #7",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "46"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLER BUTTON #8",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "47"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLER BUTTON #9",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "40"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLER BUTTON #10",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "41"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLER BUTTON #11",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "42"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLER BUTTON #12",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "43"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLER BUTTON #13",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "36"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLER BUTTON #14",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "37"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLER BUTTON #15",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "38"
+   },
+   {
+    "section": "DECK",
+    "name": "SAMPLER BUTTON #16",
+    "note_or_cc": "NOTE",
+    "channels": [
+     "2",
+     "5",
+     "3",
+     "6"
+    ],
+    "data1": "39"
+   }
+  ],
+  "supported_software": [
+   "mixxx"
+  ],
+  "port_names": [
+   "P32 DJ"
+  ],
+  "library_source": "mixxx"
+ }
+}
