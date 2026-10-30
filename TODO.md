@@ -139,6 +139,8 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Live Monitor log as a MIDI file** (`v0.48.164-monitor-midi-export`, phase 5 item 4) — `Save log…` can write a
+  Standard MIDI File besides CSV: real timing, one track per port and direction, opens in any DAW or MIDI tool.
 - [x] **Next-track suggestions in Stage Mode** (`v0.48.163-stage-suggestions`, phase 5 item 3) — under the set panel,
   up to five library tracks that would also mix after the current one (BPM within the set's tolerance, compatible
   Camelot key, closest BPM first; set tracks, missing files and untagged tracks left out), for when the night leaves
@@ -3522,7 +3524,8 @@ close what can't be unblocked here.
       `v0.48.162-deck-copy`.
    3. Next-track suggestions in Stage Mode's set panel (compatible BPM/key
       from the library). **Done** in `v0.48.163-stage-suggestions`.
-   4. Live Monitor session export (`.mid` / CSV).
+   4. Live Monitor session export (`.mid` / CSV). **Done** in
+      `v0.48.164-monitor-midi-export` (CSV already existed).
    5. Mapping snapshots: named versions compared with the mapping diff.
    6. Accessibility audit (keyboard, accessible names, contrast) with a test.
    7. Music Library at 85k tracks: measure, then cut the open/filter time.

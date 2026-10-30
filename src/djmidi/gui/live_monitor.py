@@ -40,6 +40,7 @@ from djmidi.gui.mapping_group import build_mapping_groups
 from djmidi.gui.port_list_utils import refresh_checked_port_list
 from djmidi.gui.scroll_utils import AutoSizeScrollArea
 from djmidi.gui.translation import translator
+from djmidi.midi_export import write_midi_file
 from djmidi.midi_io import MidiEvent, MidiMonitor, list_input_ports
 from djmidi.model import MidiConfig
 from djmidi.validator import DeckConflict, TriggerKey, find_deck_conflicts
@@ -381,34 +382,50 @@ class LiveMonitorView(QWidget):
         if not self._events:
             self._status_label.setText(self.tr("No MIDI events to save."))
             return
-        path_str, _ = QFileDialog.getSaveFileName(
+        csv_filter = self.tr("CSV files (*.csv)")
+        midi_filter = self.tr("MIDI files (*.mid)")
+        path_str, chosen = QFileDialog.getSaveFileName(
             self,
             self.tr("Save Live Monitor log"),
             str(user_paths.subfolder(user_paths.LOGS) / "midi-monitor-log.csv"),
-            self.tr("CSV files (*.csv)"),
+            f"{csv_filter};;{midi_filter}",
         )
-        if not path_str:
-            return
+        if path_str:
+            self.save_log(path_str, as_midi=chosen == midi_filter)
+
+    def save_log(self, path: str | Path, as_midi: bool | None = None) -> bool:
+        """Writes the log to `path`: a Standard MIDI File when `as_midi` (by
+        default when the name ends in .mid/.midi), else CSV."""
+        path = Path(path)
+        if as_midi is None:
+            as_midi = path.suffix.lower() in (".mid", ".midi")
+        if as_midi and path.suffix.lower() not in (".mid", ".midi"):
+            path = path.with_suffix(".mid")
         try:
-            with Path(path_str).open("w", newline="", encoding="utf-8") as handle:
-                writer = csv.writer(handle)
-                writer.writerow(["Timestamp", "Direction", "Port", "Channel", "Type", "Data1", "Data2"])
-                for event in self._events:
-                    writer.writerow([
-                        event.timestamp,
-                        event.direction,
-                        event.port,
-                        event.channel,
-                        event.event_type,
-                        event.data1,
-                        event.data2,
-                    ])
+            if as_midi:
+                count = write_midi_file(self._events, path)
+            else:
+                count = len(self._events)
+                with path.open("w", newline="", encoding="utf-8") as handle:
+                    writer = csv.writer(handle)
+                    writer.writerow(["Timestamp", "Direction", "Port", "Channel", "Type", "Data1", "Data2"])
+                    for event in self._events:
+                        writer.writerow([
+                            event.timestamp,
+                            event.direction,
+                            event.port,
+                            event.channel,
+                            event.event_type,
+                            event.data1,
+                            event.data2,
+                        ])
         except OSError as exc:
-            _LOGGER.exception("Failed to save Live Monitor CSV log")
+            _LOGGER.exception("Failed to save Live Monitor log")
             self._status_label.setText(self.tr("Failed to save log: {error}").format(error=exc))
-            return
-        _LOGGER.info("Saved %d MIDI event(s) to CSV", len(self._events))
-        self._status_label.setText(self.tr("Saved {count} MIDI event(s).").format(count=len(self._events)))
+            return False
+        _LOGGER.info("Saved %d MIDI event(s) to %s", count, path)
+        self._status_label.setText(self.tr("Saved {count} MIDI event(s).").format(count=count))
+        return True
 
     @property
     def is_running(self) -> bool:

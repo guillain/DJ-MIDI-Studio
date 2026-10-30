@@ -2902,6 +2902,10 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
         <translation>Aucun événement MIDI à enregistrer.</translation>
     </message>
     <message>
+        <source>MIDI files (*.mid)</source>
+        <translation>Fichiers MIDI (*.mid)</translation>
+    </message>
+    <message>
         <source>Save Live Monitor log</source>
         <translation>Enregistrer le journal du Live Monitor</translation>
     </message>
