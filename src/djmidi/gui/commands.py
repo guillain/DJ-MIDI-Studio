@@ -5,7 +5,7 @@ from collections.abc import Callable
 from PySide6.QtCore import QT_TRANSLATE_NOOP, QCoreApplication
 from PySide6.QtGui import QUndoCommand
 
-from djmidi.model import Alias, Translation
+from djmidi.model import Alias, Control, MidiConfig, Translation
 
 OnApplied = Callable[[object], None]
 
@@ -180,6 +180,34 @@ class RemoveGroupAliasCommand(QUndoCommand):
     def undo(self) -> None:
         for translation, alias in zip(self._translations, self._aliases, strict=True):
             translation.aliases.insert(self._index, alias)
+        self._on_applied()
+
+
+class ReplaceControlsCommand(QUndoCommand):
+    """Swaps the mapping's whole control list for another (a structural edit
+    such as copying a deck's mappings): one undo step whatever its size."""
+
+    def __init__(
+        self,
+        config: MidiConfig,
+        controls: list[Control],
+        summary: str,
+        text: str,
+        on_applied: Callable[[], None],
+    ) -> None:
+        super().__init__(text)
+        self.summary = summary
+        self._config = config
+        self._old = list(config.controls)
+        self._new = list(controls)
+        self._on_applied = on_applied
+
+    def redo(self) -> None:
+        self._config.controls = list(self._new)
+        self._on_applied()
+
+    def undo(self) -> None:
+        self._config.controls = list(self._old)
         self._on_applied()
 
 

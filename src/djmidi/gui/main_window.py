@@ -100,6 +100,7 @@ from djmidi.controller_sync import (
     scene_names,
     summarize_results,
 )
+from djmidi.deck_copy import DeckCopyPlan
 from djmidi.first_run import FirstRunChoices
 from djmidi.function_search import FunctionResult
 from djmidi.gui import cheat_sheet
@@ -108,10 +109,12 @@ from djmidi.gui import layout as layout_mod
 from djmidi.gui.cheat_sheet_dialog import CheatSheetExportDialog
 from djmidi.gui.cheat_sheet_pdf import write_cheat_sheet_pdf
 from djmidi.gui.command_palette import CommandPaletteDialog, menu_entries
+from djmidi.gui.commands import ReplaceControlsCommand
 from djmidi.gui.controller_emulator import ControllerEmulatorView
 from djmidi.gui.controller_image_view import ControllerImageView
 from djmidi.gui.controller_setup import ControllerSetupView
 from djmidi.gui.controller_tree import CELL_KEY_ROLE, build_controller_columns
+from djmidi.gui.deck_copy_dialog import DeckCopyDialog
 from djmidi.gui.deck_tree import build_deck_columns
 from djmidi.gui.edit_panel import EditPanel
 from djmidi.gui.file_reveal import reveal_in_file_manager
@@ -959,6 +962,11 @@ class MainWindow(QMainWindow):
         validate_action = QAction(self.tr("&Validate"), self)
         validate_action.triggered.connect(self._on_validate)
         edit_menu.addAction(validate_action)
+
+        self._deck_copy_action = QAction(self.tr("Copy &Deck Mappings…"), self)
+        self._deck_copy_action.setStatusTip(self.tr("Copy one deck's mappings onto another deck."))
+        self._deck_copy_action.triggered.connect(lambda _checked=False: self.open_deck_copy())
+        edit_menu.addAction(self._deck_copy_action)
 
         live_ready_action = QAction(self.tr("Ready for &Live…"), self)
         live_ready_action.setStatusTip(self.tr("Check the mapping before a gig (read-only)."))
@@ -3779,6 +3787,52 @@ class MainWindow(QMainWindow):
             sync_sets=[sync_set.label for sync_set in self.preferences.controller_sync_sets],
             recents=file_locations.existing_recents(self._recent_mappings),
         )
+
+    def open_deck_copy(self) -> DeckCopyDialog | None:
+        """Edit → Copy Deck Mappings… (Serato only: the other formats' writers
+        can't add bindings)."""
+        if self.config is None:
+            self.statusBar().showMessage(self.tr("Copy deck mappings: open a mapping first."))
+            return None
+        if self.software_id != "serato":
+            QMessageBox.information(
+                self,
+                self.tr("Copy Deck Mappings"),
+                self.tr("Copying a deck's mappings works on Serato mappings only."),
+            )
+            return None
+        dialog = DeckCopyDialog(self.config, self)
+        dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        dialog.accepted.connect(lambda: self.apply_deck_copy(dialog.plan, dialog.source_combo.currentData(),
+                                                             dialog.target_combo.currentData()))  # fmt: skip
+        dialog.open()
+        return dialog
+
+    def apply_deck_copy(self, plan: DeckCopyPlan | None, source: str, target: str) -> None:
+        if self.config is None or plan is None or not plan.copied:
+            return
+        summary = f"Copy deck {source} mappings to deck {target}"
+        text = self.tr("Copy deck {source} mappings to deck {target}").format(source=source, target=target)
+        self.undo_stack.push(
+            ReplaceControlsCommand(self.config, plan.controls, summary, text, self._on_structure_changed)
+        )
+        self.statusBar().showMessage(
+            self.tr("Copied deck {source} to deck {target}: {count} control(s).").format(
+                source=source, target=target, count=len(plan.copied)
+            )
+        )
+
+    def _on_structure_changed(self) -> None:
+        """After an edit that adds or removes controls: rebuild every view."""
+        if self.config is None:
+            return
+        self.edit_panel.set_node(None)
+        self._rebuild_channel_columns()
+        self._refresh_layout_usage()
+        self._refresh_deck_view()
+        self.function_search_view.set_config(self.config)
+        self.live_monitor_view.set_config(self.config)
+        self._on_validate()
 
     def _on_live_ready_check(self) -> LiveReadyDialog | None:
         """Issue #254: the pre-gig report, in a non-modal window. Read-only."""

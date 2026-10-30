@@ -158,6 +158,20 @@ MIDI_LATENCY: HelpEntry = (
     "midi-latency.md",
 )
 
+DECK_COPY: HelpEntry = (
+    QT_TRANSLATE_NOOP("HelpTexts", "Copy deck mappings"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
+        "Copies every mapping of the <b>From</b> deck onto the <b>To</b> deck. Each source "
+        "MIDI channel goes to the channel set in the table (by default the channel the target "
+        "deck already uses). A control the target deck already uses is skipped, unless "
+        "<b>Replace</b> is ticked: its target-deck mappings are then replaced. The preview "
+        "says what will change; <b>Edit → Undo</b> takes the whole copy back in one step.",
+    ),
+    "deck-copy.md",
+)
+
+
 LAYER_MAP: HelpEntry = (
     QT_TRANSLATE_NOOP("HelpTexts", "Layer Map"),
     QT_TRANSLATE_NOOP(

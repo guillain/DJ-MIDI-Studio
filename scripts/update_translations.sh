@@ -28,6 +28,8 @@ SOURCES=(
   src/djmidi/gui/live_ready_dialog.py
   src/djmidi/gui/midi_latency_dialog.py
   src/djmidi/gui/layer_map_dialog.py
+  src/djmidi/gui/deck_copy_dialog.py
+  src/djmidi/deck_copy.py
   src/djmidi/gui/music_library_view.py
   src/djmidi/gui/library_stats_dialog.py
   src/djmidi/gui/rename_files_dialog.py
