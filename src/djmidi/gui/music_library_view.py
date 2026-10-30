@@ -36,6 +36,7 @@ import logging
 import time
 from collections.abc import Callable, Generator, Iterator
 from concurrent.futures import Future, ThreadPoolExecutor
+from dataclasses import replace
 from pathlib import Path
 
 from PySide6.QtCore import (
@@ -814,6 +815,17 @@ class LibraryTableModel(QAbstractTableModel):
         self.changePersistentIndexList(before, [self.index(position[id(row)], col) for row, col in moved])
         self.layoutChanged.emit()
 
+    def replace_row(self, old: workspace.LibraryRow, new: workspace.LibraryRow) -> None:
+        """Swaps one row in place (a stage note edit) without a model reset."""
+        for number, row in enumerate(self._rows):
+            if row is old:
+                self._rows[number] = new
+                if self._search_text is not None:
+                    self._search_text.pop(id(old), None)
+                    self._search_text = None
+                self.dataChanged.emit(self.index(number, 0), self.index(number, len(COLUMNS) - 1))
+                return
+
     def search_text(self, row_number: int) -> str:
         """Every column's display text of a row, lower-cased, for the free
         text filter."""
@@ -1356,6 +1368,13 @@ class MusicLibraryView(QWidget):
         self.analysis_value_label = QLabel()
         self.analysis_value_label.setWordWrap(True)
         form.addRow(self.tr("Analysis"), self.analysis_value_label)
+        self.note_edit = QLineEdit()
+        self.note_edit.setPlaceholderText(self.tr("e.g. long intro, mix out on the break"))
+        self.note_edit.setToolTip(
+            self.tr("Shown in Stage Mode when this track is in your set. Kept in this app, never in the file.")
+        )
+        self.note_edit.editingFinished.connect(self.save_track_note)
+        form.addRow(self.tr("Stage note"), self.note_edit)
         box.addLayout(form)
 
         self.accept_suggestion_button = QPushButton(self.tr("Confirm suggested category"))
@@ -2374,6 +2393,8 @@ class MusicLibraryView(QWidget):
         for widget in (*self.field_edits.values(), self.apply_button, self.revert_button, self.clean_button):
             widget.setEnabled(editable)
         self._show_cover(row)
+        self.note_edit.setText((row.note or "") if row is not None else "")
+        self.note_edit.setEnabled(row is not None)
         if row is None:
             self.track_path_label.setText(self.tr("Select a track in the table."))
             self.camelot_label.setText("")
@@ -2386,6 +2407,24 @@ class MusicLibraryView(QWidget):
         self.category_value_label.setText(self._category_text(row))
         self.analysis_value_label.setText(_analysis_text(row))
         self.accept_suggestion_button.setEnabled(_can_confirm_suggestion(row))
+
+    def save_track_note(self, text: str | None = None) -> bool:
+        """Stores the current track's stage note (phase 6 item 3). Only that
+        row is refreshed -- reloading a large collection per note would lag."""
+        row = self._current_row()
+        if row is None or self._db is None:
+            return False
+        note = (self.note_edit.text() if text is None else text).strip() or None
+        if note == row.note:
+            return False
+        self.db.set_track_note(row.track_id, note or "")
+        updated = replace(row, note=note)
+        self.table_model.replace_row(row, updated)
+        self.set_panel.update_row(updated)
+        self.status_label.setText(
+            self.tr("Stage note saved.") if note else self.tr("Stage note removed.")
+        )
+        return True
 
     # --- cover art (issue #256) --------------------------------------------
 

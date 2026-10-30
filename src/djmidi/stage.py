@@ -124,6 +124,8 @@ class StageSetView:
     next: str
     transition: str
     status: str  # set_prep.STATUS_* of the next transition, "" for the last track
+    current_note: str = ""
+    next_note: str = ""
 
 
 def _details(track: SetTrack, translate: Translate) -> str:
@@ -149,15 +151,17 @@ def stage_set_view(
     track = tracks[index]
     position = translate(_SET_POSITION).format(position=index + 1, total=len(tracks))
     if index + 1 >= len(tracks):
-        return StageSetView(position, track.label, _details(track, translate), translate(_LAST), "", "")
+        return StageSetView(position, track.label, _details(track, translate), translate(_LAST), "", "",
+                            track.note or "")  # fmt: skip
     following = tracks[index + 1]
     transition = transitions[index] if index < len(transitions) else None
     next_text = translate(_NEXT).format(track=following.label)
     next_details = _details(following, translate)
     if next_details:
         next_text = f"{next_text}{_SEPARATOR}{next_details}"
+    notes = (track.note or "", following.note or "")
     if transition is None:
-        return StageSetView(position, track.label, _details(track, translate), next_text, "", "")
+        return StageSetView(position, track.label, _details(track, translate), next_text, "", "", *notes)
     if transition.status == STATUS_OK:
         text = translate(_COMPATIBLE)
         if transition.bpm_change_pct is not None:
@@ -165,7 +169,7 @@ def stage_set_view(
             text = f"{text}{_SEPARATOR}{change}"
     else:
         text = _SEPARATOR.join(transition.issues)
-    return StageSetView(position, track.label, _details(track, translate), next_text, text, transition.status)
+    return StageSetView(position, track.label, _details(track, translate), next_text, text, transition.status, *notes)
 
 
 # How many library tracks the set panel suggests.

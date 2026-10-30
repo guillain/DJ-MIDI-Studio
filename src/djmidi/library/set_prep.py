@@ -80,6 +80,7 @@ class SetTrack:
     camelot_key: str | None = None
     energy: int | None = None
     indexed: bool = True
+    note: str | None = None  # the stage note (phase 6 item 3)
 
     @property
     def label(self) -> str:
@@ -98,6 +99,7 @@ def set_track_from_row(row: LibraryRow) -> SetTrack:
         camelot_key=row.camelot_key,
         energy=parse_energy(metadata.energy) if metadata else None,
         indexed=not row.missing,
+        note=row.note,
     )
 
 

@@ -137,3 +137,21 @@ def test_main_window_suggests_from_the_library_rows(monkeypatch):
         assert [track.path for track in suggestions] == ["/near.mp3"]
     finally:
         window.close()
+
+
+def test_stage_window_shows_the_current_note_and_the_next_one():
+    from djmidi.gui.stage_window import StageWindow
+
+    tracks = [
+        SetTrack("/a.mp3", "Intro", "DJ A", 124.0, "8A", note="long intro"),
+        SetTrack("/b.mp3", "Build", "DJ B", 126.0, "9A", note="mix out on the break"),
+        SetTrack("/c.mp3", "Peak", "DJ C", 127.0, "9A"),
+    ]
+    window = StageWindow(config_provider=lambda: None, set_provider=lambda: (tracks, analyze_set(tracks)))
+    try:
+        assert window._set_note.text() == "long intro" and not window._set_note.isHidden()
+        assert "Note: mix out on the break" in window._set_next.text()
+        window.move_in_set(2)
+        assert window._set_note.isHidden() and "Note:" not in window._set_next.text()
+    finally:
+        window.close()
