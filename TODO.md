@@ -139,6 +139,10 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Per-control MIDI remapper** (`v0.48.154-midi-remapper`, #368, phase 4 item 6) — a route's transform gains
+  remap rows (one note/CC in → another note/CC out, or blocked; value kept, Learn for the source), and a virtual
+  output, *DJ MIDI Studio Remap*, to pick in the DJ software instead of the controller (macOS/Linux; Windows needs a
+  loopMIDI port). Software-verified with fake ports; not tried with a DJ program reading the virtual port.
 - [x] **MIDI macros step 2** (`v0.48.153-macros-step2`, #367, phase 4 item 5) — toggles (a B step list played every
   other time), scene conditions (a controller trigger fires the macro only in chosen sync scenes; one button can run a
   different macro per scene), and wait steps (pause until a given controller press, with a timeout). Old macro files
@@ -3465,6 +3469,7 @@ close what can't be unblocked here.
    5. MIDI macros step 2: toggles, scene conditions, wait for a press (#367).
       **Done** in `v0.48.153-macros-step2`.
    6. Per-controller MIDI remapper layer over the existing routing (#368).
+      **Done** in `v0.48.154-midi-remapper`.
    - Not scheduled: macOS signing/notarization (waits on the maintainer's
      Apple Developer account), Windows signing. Rejected: writing undocumented
      proprietary binary formats (Serato cue points, rekordbox `export.pdb`).

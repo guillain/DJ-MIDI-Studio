@@ -10,6 +10,7 @@
 - [What it does](#what-it-does)
 - [Turn routing on](#turn-routing-on)
 - [MIDI Routing](#midi-routing)
+- [Remap single controls](#remap-single-controls)
 - [MIDI Clock](#midi-clock)
 - [Metronome](#metronome)
 - [Related](#related)
@@ -46,6 +47,26 @@ by your routes are opened when you click `Start routing`, and
 Routes that would loop back on themselves are refused.
 
 ![MIDI Routing](../../images/layout/midi-routing.png)
+
+## Remap single controls
+
+A route can also change **individual controls** — make a pad send another
+note, turn a button into a CC, or silence a control your DJ software
+misbehaves on:
+
+1. Add a route from your controller to **`DJ MIDI Studio Remap`**: a MIDI
+   port the app creates while routing runs (macOS and Linux; Windows has no
+   built-in virtual ports — use a loopMIDI port as the destination there).
+2. Select the route, **`Edit transform…`**, then under *Remap controls*:
+   **`Add remap`** (or **`Learn`** and press the control) and set what it
+   becomes — another `Note` or `CC` on any channel, or `Blocked`. The value
+   is kept: a press's velocity becomes the CC value, a release becomes 0.
+3. `Start routing`, then in your DJ software pick **DJ MIDI Studio Remap**
+   as the controller's MIDI input instead of the controller itself.
+
+Every other message of the controller goes through unchanged (with the
+route's channel/offset/invert settings, if any). The `Transform` column
+counts the remaps, for example `3 remap(s)`.
 
 ## MIDI Clock
 
