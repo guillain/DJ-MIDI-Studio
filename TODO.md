@@ -139,6 +139,9 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Stage notes** (`v0.48.171-stage-notes`, phase 6 item 3) — a free note per track (Music Library Track panel),
+  shown large in Stage Mode under the current track and with the next one. Kept in the library index, follows a
+  relinked file, never written into the audio file.
 - [x] **Propose an order for a set** (`v0.48.170-set-order`, phase 6 item 2) — the Set panel's `Propose an order…`
   shows the mix-path engine's order beside yours, with the clash count of each and an honest verdict; it is applied
   only on `Use this order`, and `Back to my order` restores yours. On an 80-track random set: 69 → 9 clashing mixes.
@@ -3567,7 +3570,7 @@ close what can't be unblocked here.
       for each track). **Done** in `v0.48.169-background-analysis`.
    2. Propose an order for a prepared set (mix-path engine, before/after,
       never applied without confirmation). **Done** in `v0.48.170-set-order`.
-   3. Per-track notes shown on stage.
+   3. Per-track notes shown on stage. **Done** in `v0.48.171-stage-notes`.
    4. Performance budget for the library benchmark in CI.
    5. Export every smart playlist at once (Serato crates / Traktor).
    6. Interactive cheat sheet as a standalone web page.
