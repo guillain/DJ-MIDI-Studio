@@ -9,6 +9,7 @@
 ## Table of Contents
 
 - [Export a cheat sheet](#export-a-cheat-sheet)
+- [On a phone or tablet: the web page](#on-a-phone-or-tablet-the-web-page)
 - [Choose the controllers](#choose-the-controllers)
 - [What each page shows](#what-each-page-shows)
 - [Pad banks and SHIFT](#pad-banks-and-shift)
@@ -24,6 +25,22 @@
    [workspace](workspace.md).
 
 The PDF is A4 landscape. Nothing in your mapping is changed.
+
+## On a phone or tablet: the web page
+
+`File → Export → Cheat Sheet (Web Page)...` exports the same pages as one
+`.html` file you can open in any browser, on a phone or tablet beside the
+decks:
+
+- each controller's photo with a highlighted box on every mapped control:
+  tap it (or hover with a mouse) to read what your mapping does there,
+  SHIFT layer included;
+- links at the top to jump between controllers and pad banks;
+- the tables and the function-name glossary, like in the PDF.
+
+It is a single file with the photos inside: it works offline, and you can
+send it to yourself or put it in a cloud folder. A two-controller sheet
+weighs about 700 KB.
 
 ## Choose the controllers
 

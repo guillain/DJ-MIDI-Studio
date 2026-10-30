@@ -139,6 +139,10 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Cheat sheet as a web page** (`v0.48.174-cheat-sheet-web`, phase 6 item 6) — `File → Export → Cheat Sheet (Web
+  Page)...` writes one offline `.html` (photos embedded) to open on a phone or tablet: tap a control to read what the
+  mapping does there. Checking it in a browser showed the DDJ-XP2 pad markers were off; all 32 re-measured from pixel
+  runs of the lit pads and checked in the running app (fixes the PDF and Controller Images too).
 - [x] **Export every smart playlist at once** (`v0.48.173-export-smart-playlists`, phase 6 item 5) — one button
   re-evaluates the smart playlists and writes each as a Serato crate and/or Traktor playlist into a remembered folder;
   only those files are replaced.
@@ -3581,7 +3585,8 @@ close what can't be unblocked here.
       `v0.48.172-perf-budget` (operation counts, not seconds).
    5. Export every smart playlist at once (Serato crates / Traktor).
       **Done** in `v0.48.173-export-smart-playlists`.
-   6. Interactive cheat sheet as a standalone web page.
+   6. Interactive cheat sheet as a standalone web page. **Done** in
+      `v0.48.174-cheat-sheet-web` (also re-measured the DDJ-XP2 pads).
    7. Software plugin kit: guide, contract tests, example plugin.
    8. A third interface language.
 
