@@ -97,6 +97,24 @@ GEOMETRY_EDITOR: HelpEntry = (
     "controller-images.md",
 )
 
+PROFILE_CHECK: HelpEntry = (
+    QT_TRANSLATE_NOOP("HelpTexts", "Verify a controller profile"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
+        "Checks a profile against your real controller, one control at a time: the app asks for each "
+        "physical control (then SHIFT + it, when the profile has a SHIFT layer) and compares what the "
+        "controller sends with what the profile says.<ul>"
+        "<li><b>Listen on</b>: pick your controller's input if several are connected.</li>"
+        "<li><b>Skip (not on my unit)</b> for a control your controller doesn't have; <b>Back</b> to redo one.</li>"
+        "<li>✓ means it matches; ✗ shows what came instead, and whether the profile gives that message "
+        "to another control or doesn't know it.</li></ul>"
+        "Then <b>Submit to the project…</b> opens a pre-filled GitHub issue with the report, so the profile "
+        "can be marked verified or corrected; <b>Copy report</b> and <b>Save report…</b> keep it for you. "
+        "Nothing is sent until you submit the issue yourself.",
+    ),
+    "profile-check.md",
+)
+
 PROFILE_LIBRARY: HelpEntry = (
     QT_TRANSLATE_NOOP("HelpTexts", "Controller Profile Library"),
     QT_TRANSLATE_NOOP(

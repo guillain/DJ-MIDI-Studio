@@ -203,6 +203,12 @@ def _geometry_editor():
     return GeometryEditorDialog(name, Path("/nonexistent/profile.json"))
 
 
+def _profile_check():
+    from djmidi.gui.profile_check_dialog import ProfileCheckDialog
+
+    return ProfileCheckDialog(["DDJ-XP2", "XDJ-XZ"], ["PIONEER DDJ-XP2"], initial="DDJ-XP2")
+
+
 WINDOWS = {
     "first-run wizard": _wizard,
     "layer map": _layer_map,
@@ -215,6 +221,7 @@ WINDOWS = {
     "command palette": _palette,
     "controller profile library": _profile_library,
     "geometry editor": _geometry_editor,
+    "profile check": _profile_check,
 }
 
 
