@@ -6,18 +6,25 @@ itself lives in ``gui/stage_window.py``; this module holds the parts that
 don't need a ``QApplication``: turning a live ``MidiEvent`` into one short,
 readable line, the bounded list of recent lines the compact monitor
 shows (newest first), and the prepared set's panel (:func:`stage_set_view`,
-issue #366), so all can be tested without Qt.
+issue #366) with its next-track suggestions (:func:`suggest_next_tracks`),
+so all can be tested without Qt.
 """
 
 from __future__ import annotations
 
 from collections import deque
-from collections.abc import Iterable, Sequence
+from collections.abc import Collection, Iterable, Sequence
 from dataclasses import dataclass
 
 from djmidi import catalog
 from djmidi.i18n import QT_TRANSLATE_NOOP, Translate, untranslated
-from djmidi.library.set_prep import STATUS_OK, SetTrack, Transition
+from djmidi.library.playlist import PlaylistTrack, find_compatible_tracks
+from djmidi.library.set_prep import (
+    DEFAULT_BPM_TOLERANCE_PCT,
+    STATUS_OK,
+    SetTrack,
+    Transition,
+)
 from djmidi.midi_io import MidiEvent
 
 # How many recent events the compact monitor keeps. Deliberately small: at
@@ -159,3 +166,36 @@ def stage_set_view(
     else:
         text = _SEPARATOR.join(transition.issues)
     return StageSetView(position, track.label, _details(track, translate), next_text, text, transition.status)
+
+
+# How many library tracks the set panel suggests.
+SUGGESTION_LIMIT = 5
+
+
+def suggest_next_tracks(
+    current: SetTrack,
+    candidates: Iterable[SetTrack],
+    exclude: Collection[str] = (),
+    bpm_tolerance_pct: float = DEFAULT_BPM_TOLERANCE_PCT,
+    limit: int = SUGGESTION_LIMIT,
+) -> list[SetTrack]:
+    """Library tracks that mix well after `current` -- BPM within the
+    tolerance and a compatible Camelot key, closest BPM first -- for when
+    the night leaves the prepared set. Empty when `current` lacks a BPM or a
+    key; tracks in `exclude` (the set itself), missing files and tracks
+    without BPM/key are never suggested."""
+    if not current.bpm or not current.camelot_key:
+        return []
+    by_path: dict[str, SetTrack] = {}
+    for track in candidates:
+        if track.indexed and track.bpm and track.camelot_key and track.path not in exclude:
+            by_path.setdefault(track.path, track)
+    seed = PlaylistTrack(current.path, bpm=current.bpm, camelot_key=current.camelot_key)
+    pool = [PlaylistTrack(path, bpm=track.bpm, camelot_key=track.camelot_key) for path, track in sorted(by_path.items())]
+    matches = find_compatible_tracks(seed, pool, bpm_tolerance_pct)
+    return [by_path[match.identifier] for match in matches[:limit]]
+
+
+def suggestion_line(track: SetTrack, translate: Translate = untranslated) -> str:
+    details = _details(track, translate)
+    return f"{track.label}{_SEPARATOR}{details}" if details else track.label

@@ -20,6 +20,7 @@ software is playing, so moving on is the DJ's click.
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Callable, Sequence
 
 from PySide6.QtCore import Qt, Signal
@@ -44,10 +45,19 @@ from djmidi.gui.window_size import keep_wrapped_text_visible
 from djmidi.library.set_prep import STATUS_INCOMPATIBLE, STATUS_OK, SetTrack, Transition
 from djmidi.midi_io import MidiEvent
 from djmidi.model import MidiConfig
-from djmidi.stage import DEFAULT_MAX_LINES, StageLog, format_stage_line, stage_set_view
+from djmidi.stage import (
+    DEFAULT_MAX_LINES,
+    StageLog,
+    format_stage_line,
+    stage_set_view,
+    suggestion_line,
+)
 
 # The prepared set's tracks and transitions, read again on every move.
+_LOGGER = logging.getLogger(__name__)
 SetProvider = Callable[[], tuple[Sequence[SetTrack], Sequence[Transition]]]
+# (current track, the set's paths) -> library tracks to suggest after it.
+SuggestionProvider = Callable[[SetTrack, set[str]], Sequence[SetTrack]]
 
 # ON/OFF and the raw trigger come from Qt-free djmidi.stage (issue #337).
 _stage_translate = translator("Stage")
@@ -97,6 +107,10 @@ QWidget#stageWindow QLabel#stageTransition[status="incompatible"] {
 QWidget#stageWindow QLabel#stageTransition[status="unknown"] {
     color: #bbbbbb;
 }
+QWidget#stageWindow QLabel#stageSuggestions {
+    color: #bbbbbb;
+    font-size: 15pt;
+}
 QWidget#stageWindow QListWidget#stageLog {
     border: 2px solid #ffffff;
     font-size: 20pt;
@@ -127,6 +141,7 @@ class StageWindow(QWidget):
         parent: QWidget | None = None,
         set_provider: SetProvider | None = None,
         set_index: int = 0,
+        suggestion_provider: SuggestionProvider | None = None,
     ) -> None:
         super().__init__(parent, Qt.WindowType.Window)
         self.setObjectName("stageWindow")
@@ -164,6 +179,10 @@ class StageWindow(QWidget):
         self._set_transition = QLabel()
         self._set_transition.setObjectName("stageTransition")
         self._set_transition.setWordWrap(True)
+        self._suggestion_provider = suggestion_provider
+        self._set_suggestions = QLabel()
+        self._set_suggestions.setObjectName("stageSuggestions")
+        self._set_suggestions.setWordWrap(True)
         self._set_previous_button = QPushButton(self.tr("◀ Previous"))
         self._set_previous_button.clicked.connect(lambda: self.move_in_set(-1))
         self._set_next_button = QPushButton(self.tr("Next ▶"))
@@ -177,6 +196,7 @@ class StageWindow(QWidget):
         for widget in (self._set_title, self._set_current, self._set_details, self._set_next, self._set_transition):
             set_layout.addWidget(widget)
         set_layout.addLayout(set_buttons)
+        set_layout.addWidget(self._set_suggestions)
 
         monitor_title = QLabel(self.tr("Live MIDI"))
         monitor_title.setObjectName("stageTitle")
@@ -252,8 +272,9 @@ class StageWindow(QWidget):
             self._set_title.setText(self.tr("Set"))
             self._set_current.setText("")
             self._set_details.setText(self.tr("No set prepared: build one in Music Library → Set."))
-            for label in (self._set_next, self._set_transition):
+            for label in (self._set_next, self._set_transition, self._set_suggestions):
                 label.setText("")
+            self._set_suggestions.setVisible(False)
             return
         self._set_title.setText(view.position)
         self._set_current.setText(view.current)
@@ -264,6 +285,30 @@ class StageWindow(QWidget):
         self._set_transition.setProperty("status", status)
         self._set_transition.style().unpolish(self._set_transition)
         self._set_transition.style().polish(self._set_transition)
+        self._show_suggestions(tracks[self.set_index], {track.path for track in tracks})
+
+    def _show_suggestions(self, current: SetTrack, set_paths: set[str]) -> None:
+        """Compatible library tracks after the current one, in case the
+        night leaves the prepared set (phase 5 item 3)."""
+        if self._suggestion_provider is None:
+            self._set_suggestions.setVisible(False)
+            return
+        try:
+            suggestions = list(self._suggestion_provider(current, set_paths))
+        except Exception:
+            _LOGGER.warning("Could not compute Stage Mode suggestions", exc_info=True)
+            suggestions = []
+        if not current.bpm or not current.camelot_key:
+            text = self.tr("No suggestions: this track has no BPM or key tag.")
+        elif not suggestions:
+            text = self.tr("No other compatible track in the library.")
+        else:
+            lines = [self.tr("Off the plan, these mix well:")]
+            lines += [f"• {suggestion_line(track, _stage_translate)}" for track in suggestions]
+            text = "\n".join(lines)
+        self.set_suggestions_text = text
+        self._set_suggestions.setText(text)
+        self._set_suggestions.setVisible(True)
 
     def move_in_set(self, step: int) -> int:
         """Moves the current track by `step`; returns the new index."""

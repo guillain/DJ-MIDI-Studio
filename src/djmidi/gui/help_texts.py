@@ -361,7 +361,8 @@ STAGE_MODE: HelpEntry = (
         "<li>Above the monitor, the set prepared in Music Library → Set: the current and next "
         "track with BPM, key and energy, and whether the mix into the next one is compatible. "
         "<b>Next ▶</b> / <b>◀ Previous</b>, or PageDown / PageUp (a presenter remote), move "
-        "through it.</li></ul>"
+        "through it. Below, up to five library tracks that would also mix well after the "
+        "current one, in case the night leaves the plan.</li></ul>"
         "Press <b>Esc</b> (or <b>Exit</b>) to leave. Open it again with "
         "<b>View → Stage Mode</b>; it is not remembered across restarts.",
     ),

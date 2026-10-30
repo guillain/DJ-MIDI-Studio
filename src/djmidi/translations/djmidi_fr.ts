@@ -2134,8 +2134,8 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
         <translation>Mode scène</translation>
     </message>
     <message>
-        <source>A full-screen, high-contrast view for playing live: one Controller Emulator and a compact Live Monitor, nothing else.&lt;ul&gt;&lt;li&gt;The emulator follows the real controller like any other emulator; pick the controller in its list.&lt;/li&gt;&lt;li&gt;The monitor shows the latest event in large type and the last few below it. The full log stays in the Live Monitor window.&lt;/li&gt;&lt;li&gt;Live monitoring starts on its own when Stage Mode opens.&lt;/li&gt;&lt;li&gt;Above the monitor, the set prepared in Music Library → Set: the current and next track with BPM, key and energy, and whether the mix into the next one is compatible. &lt;b&gt;Next ▶&lt;/b&gt; / &lt;b&gt;◀ Previous&lt;/b&gt;, or PageDown / PageUp (a presenter remote), move through it.&lt;/li&gt;&lt;/ul&gt;Press &lt;b&gt;Esc&lt;/b&gt; (or &lt;b&gt;Exit&lt;/b&gt;) to leave. Open it again with &lt;b&gt;View → Stage Mode&lt;/b&gt;; it is not remembered across restarts.</source>
-        <translation>Une vue plein écran à fort contraste pour jouer en live : un émulateur de contrôleur et un Live Monitor compact, rien d&apos;autre.&lt;ul&gt;&lt;li&gt;L&apos;émulateur suit le vrai contrôleur comme tout autre émulateur ; choisissez le contrôleur dans sa liste.&lt;/li&gt;&lt;li&gt;Le moniteur affiche le dernier événement en gros caractères et les quelques précédents en dessous. Le journal complet reste dans la fenêtre Live Monitor.&lt;/li&gt;&lt;li&gt;L&apos;écoute MIDI démarre toute seule à l&apos;ouverture du Mode scène.&lt;/li&gt;&lt;li&gt;Au-dessus du moniteur, le set préparé dans Bibliothèque → Set : le morceau en cours et le suivant avec BPM, tonalité et énergie, et si l&apos;enchaînement vers le suivant est compatible. &lt;b&gt;Suivant ▶&lt;/b&gt; / &lt;b&gt;◀ Précédent&lt;/b&gt;, ou PageDown / PageUp (une télécommande de présentation), s&apos;y déplacent.&lt;/li&gt;&lt;/ul&gt;Appuyez sur &lt;b&gt;Échap&lt;/b&gt; (ou &lt;b&gt;Exit&lt;/b&gt;) pour quitter. Rouvrez-le avec &lt;b&gt;Affichage → Mode scène&lt;/b&gt; ; il n&apos;est pas mémorisé d&apos;un lancement à l&apos;autre.</translation>
+        <source>A full-screen, high-contrast view for playing live: one Controller Emulator and a compact Live Monitor, nothing else.&lt;ul&gt;&lt;li&gt;The emulator follows the real controller like any other emulator; pick the controller in its list.&lt;/li&gt;&lt;li&gt;The monitor shows the latest event in large type and the last few below it. The full log stays in the Live Monitor window.&lt;/li&gt;&lt;li&gt;Live monitoring starts on its own when Stage Mode opens.&lt;/li&gt;&lt;li&gt;Above the monitor, the set prepared in Music Library → Set: the current and next track with BPM, key and energy, and whether the mix into the next one is compatible. &lt;b&gt;Next ▶&lt;/b&gt; / &lt;b&gt;◀ Previous&lt;/b&gt;, or PageDown / PageUp (a presenter remote), move through it. Below, up to five library tracks that would also mix well after the current one, in case the night leaves the plan.&lt;/li&gt;&lt;/ul&gt;Press &lt;b&gt;Esc&lt;/b&gt; (or &lt;b&gt;Exit&lt;/b&gt;) to leave. Open it again with &lt;b&gt;View → Stage Mode&lt;/b&gt;; it is not remembered across restarts.</source>
+        <translation>Une vue plein écran à fort contraste pour jouer en live : un émulateur de contrôleur et un Live Monitor compact, rien d&apos;autre.&lt;ul&gt;&lt;li&gt;L&apos;émulateur suit le vrai contrôleur comme tout autre émulateur ; choisissez le contrôleur dans sa liste.&lt;/li&gt;&lt;li&gt;Le moniteur affiche le dernier événement en gros caractères et les quelques précédents en dessous. Le journal complet reste dans la fenêtre Live Monitor.&lt;/li&gt;&lt;li&gt;L&apos;écoute MIDI démarre toute seule à l&apos;ouverture du Mode scène.&lt;/li&gt;&lt;li&gt;Au-dessus du moniteur, le set préparé dans Bibliothèque → Set : le morceau en cours et le suivant avec BPM, tonalité et énergie, et si l&apos;enchaînement vers le suivant est compatible. &lt;b&gt;Suivant ▶&lt;/b&gt; / &lt;b&gt;◀ Précédent&lt;/b&gt;, ou PageDown / PageUp (une télécommande de présentation), s&apos;y déplacent. En dessous, jusqu&apos;à cinq morceaux de la bibliothèque qui s&apos;enchaîneraient bien aussi après le morceau en cours, au cas où la soirée s&apos;écarte du programme.&lt;/li&gt;&lt;/ul&gt;Appuyez sur &lt;b&gt;Échap&lt;/b&gt; (ou &lt;b&gt;Exit&lt;/b&gt;) pour quitter. Rouvrez-le avec &lt;b&gt;Affichage → Mode scène&lt;/b&gt; ; il n&apos;est pas mémorisé d&apos;un lancement à l&apos;autre.</translation>
     </message>
     <message>
         <source>Live Monitor</source>
@@ -7521,6 +7521,18 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>No set prepared: build one in Music Library → Set.</source>
         <translation>Aucun set préparé : créez-en un dans Bibliothèque → Set.</translation>
+    </message>
+    <message>
+        <source>No suggestions: this track has no BPM or key tag.</source>
+        <translation>Pas de suggestion : ce morceau n&apos;a pas de tag BPM ou de tonalité.</translation>
+    </message>
+    <message>
+        <source>No other compatible track in the library.</source>
+        <translation>Aucun autre morceau compatible dans la bibliothèque.</translation>
+    </message>
+    <message>
+        <source>Off the plan, these mix well:</source>
+        <translation>Hors programme, ceux-ci s&apos;enchaînent bien :</translation>
     </message>
 </context>
 <context>

@@ -164,6 +164,7 @@ from djmidi.integration_detection import (
     detect_controller_ports,
     detect_software_mapping,
 )
+from djmidi.library.set_prep import SetTrack, set_track_from_row
 from djmidi.live_ready import check_live_ready
 from djmidi.logging_config import configure_logging, current_log_path, default_log_path
 from djmidi.mapping_diff import diff_configs
@@ -172,6 +173,7 @@ from djmidi.model import Control, MappingElement, MidiConfig
 from djmidi.plugins import PluginPreferences, default_preferences_path
 from djmidi.problem_report import ReportContext, collect_context
 from djmidi.safe_update import prepare_update
+from djmidi.stage import suggest_next_tracks
 from djmidi.update_check import ReleaseInfo, current_version, is_check_due, is_newer
 from djmidi.validator import ValidationIssue, severity_label, validate
 
@@ -375,6 +377,8 @@ class MainWindow(QMainWindow):
         self._macro_matcher = midi_macros.MacroTriggerMatcher()
         # Where Stage Mode's set panel stood when it last closed (issue #366).
         self._stage_set_index = 0
+        self._stage_candidates: list[SetTrack] = []
+        self._stage_candidates_key: tuple[int, int] | None = None
         # The open "Verify Profile" window (issue #364), fed every live event.
         self._profile_check_dialog: ProfileCheckDialog | None = None
         # Library profiles declined this session, when there are no QSettings (tests).
@@ -2086,6 +2090,7 @@ class MainWindow(QMainWindow):
                 initial_controller=controller,
                 set_provider=self._stage_set,
                 set_index=self._stage_set_index,
+                suggestion_provider=self._stage_suggestions,
             )
             window.closed.connect(self._on_stage_window_closed)
             self._stage_window = window
@@ -2107,6 +2112,17 @@ class MainWindow(QMainWindow):
             return (), ()
         panel = self.music_library_view.set_panel
         return panel.tracks, panel.transitions
+
+    def _stage_suggestions(self, current: SetTrack, set_paths: set[str]) -> list[SetTrack]:
+        """Library tracks that mix after `current`, within the set panel's own
+        BPM tolerance. The rows' SetTracks are cached per loaded row list."""
+        rows = self.music_library_view.table_model.rows()
+        key = (len(rows), id(self.music_library_view.table_model._rows))
+        if self._stage_candidates_key != key:
+            self._stage_candidates = [set_track_from_row(row) for row in rows]
+            self._stage_candidates_key = key
+        tolerance = self.music_library_view.set_panel.tolerance_spin.value()
+        return suggest_next_tracks(current, self._stage_candidates, set_paths, tolerance)
 
     def _on_stage_window_closed(self) -> None:
         window = self._stage_window
