@@ -1089,8 +1089,8 @@ Open this same file as an editable mapping too (By Channel / By Deck / By Contro
 Ouvrir aussi ce fichier comme mapping modifiable (Par canal / Par platine / Par contrôleur) ?</translation>
     </message>
     <message>
-        <source>MIDI mappings (*.xml *.tsi *.csv);;Serato XML (*.xml);;Traktor TSI (*.tsi);;rekordbox CSV (*.csv)</source>
-        <translation>Mappings MIDI (*.xml *.tsi *.csv);;XML Serato (*.xml);;TSI Traktor (*.tsi);;CSV rekordbox (*.csv)</translation>
+        <source>MIDI mappings (*.xml *.tsi *.csv);;Serato XML (*.xml);;Mixxx (*.midi.xml);;Traktor TSI (*.tsi);;rekordbox CSV (*.csv)</source>
+        <translation>Mappings MIDI (*.xml *.tsi *.csv);;XML Serato (*.xml);;Mixxx (*.midi.xml);;TSI Traktor (*.tsi);;CSV rekordbox (*.csv)</translation>
     </message>
     <message>
         <source>Added {count} new trigger row(s) to the profile (duplicates skipped), named and grouped as in rekordbox. Knobs, faders, jogs and LEDs were left out.

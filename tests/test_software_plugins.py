@@ -4,7 +4,7 @@ from djmidi.software.traktor import parse_string, to_xml_string
 
 def test_software_plugins_are_discovered():
     definitions = software.all_definitions()
-    assert [definition.plugin_id for definition in definitions] == ["serato", "traktor", "rekordbox"]
+    assert [definition.plugin_id for definition in definitions] == ["serato", "traktor", "rekordbox", "mixxx"]
     assert ".nml" in software.get_definition("traktor").extensions
 
 

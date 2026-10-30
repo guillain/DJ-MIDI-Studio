@@ -107,7 +107,7 @@ from djmidi.session_player import (
     play_control_info_entries,
     replay_midi_events,
 )
-from djmidi.software import rekordbox
+from djmidi.software import mixxx, rekordbox
 from djmidi.software.traktor import parse_string as parse_traktor
 
 _LOGGER = logging.getLogger(__name__)
@@ -146,13 +146,16 @@ def source_label(source: str) -> str:
 
 
 def read_mapping_file(path: str | Path) -> MidiConfig:
-    """Serato `.xml`, Traktor `.tsi` or rekordbox `.csv` mapping -> model,
-    chosen by suffix."""
+    """Serato `.xml`, Mixxx `.midi.xml`, Traktor `.tsi` or rekordbox `.csv`
+    mapping -> model, chosen by suffix (and, for `.xml`, by content)."""
     target = Path(path)
     if target.suffix.lower() == ".tsi":
         return parse_traktor(target.read_text(encoding="utf-8"))
     if target.suffix.lower() == ".csv":
         return rekordbox.parse_string(target.read_text(encoding="utf-8"))
+    text = target.read_text(encoding="utf-8")
+    if mixxx.is_mixxx_text(text):
+        return mixxx.parse_string(text)
     return parse_file(target)
 
 
@@ -1401,7 +1404,8 @@ class ControllerSetupView(QWidget):
             self.tr("Learn triggers from a mapping"),
             "",
             self.tr(
-                "MIDI mappings (*.xml *.tsi *.csv);;Serato XML (*.xml);;Traktor TSI (*.tsi);;rekordbox CSV (*.csv)"
+                "MIDI mappings (*.xml *.tsi *.csv);;Serato XML (*.xml);;Mixxx (*.midi.xml);;"
+                "Traktor TSI (*.tsi);;rekordbox CSV (*.csv)"
             ),
         )
         if not path_str:
