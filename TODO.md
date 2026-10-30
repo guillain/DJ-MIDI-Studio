@@ -139,6 +139,10 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Copy deck mappings** (`v0.48.162-deck-copy`, phase 5 item 2) — `Edit → Copy Deck Mappings…` copies every
+  mapping of one deck onto another, each source channel to a chosen target channel (default: the target deck's own),
+  with a preview; controls the target deck already uses are skipped or, on request, replaced. Each repeated
+  `<control>` is copied, so the 10x repetition stays intact; one undo step. Serato mappings only.
 - [x] **Community submissions become PRs** (`v0.48.161-community-submission-pr`, phase 5 item 1) — labelling a
   *Submit to community catalog…* issue `controller-submission` runs a workflow that validates its JSON (types,
   ranges, sizes, built-in names, conflicting triggers) and opens a PR adding the profile to
@@ -3510,7 +3514,8 @@ close what can't be unblocked here.
       the maintainer owning the devices). **Done** in
       `v0.48.161-community-submission-pr`.
    2. Copy a deck's mappings onto another deck (channel shift, preview, one
-      undo step, the 10x copies kept consistent).
+      undo step, the 10x copies kept consistent). **Done** in
+      `v0.48.162-deck-copy`.
    3. Next-track suggestions in Stage Mode's set panel (compatible BPM/key
       from the library).
    4. Live Monitor session export (`.mid` / CSV).
