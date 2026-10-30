@@ -139,6 +139,10 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Accessibility audit** (`v0.48.166-accessibility`, phase 5 item 6) — icon-only buttons (Controller Setup's
+  toolbar, ⚙, ☰, ⟳, dock Close) now carry their tooltip as accessible name, kept in step when it changes; a test
+  checks every button of the main window and of every audited dialog has a name, every control takes Tab focus, and
+  every theme text colour reaches WCAG AA contrast in both themes (it already did).
 - [x] **Mapping snapshots** (`v0.48.165-mapping-snapshots`, phase 5 item 5) — `File → Save Snapshot…` keeps the mapping
   as it is in the app under a name; `File → Snapshots…` compares one with the mapping diff, restores it (one undo step,
   Serato) or deletes it. Kept per mapping in the workspace's new `Snapshots` folder, covered by the workspace backup.
@@ -3532,6 +3536,8 @@ close what can't be unblocked here.
    5. Mapping snapshots: named versions compared with the mapping diff.
       **Done** in `v0.48.165-mapping-snapshots`.
    6. Accessibility audit (keyboard, accessible names, contrast) with a test.
+      **Done** in `v0.48.166-accessibility`: ~20 icon-only buttons had no
+      name; focus and contrast already passed.
    7. Music Library at 85k tracks: measure, then cut the open/filter time.
    8. Generate a Mixxx mapping from a controller profile (documented Mixxx
       control names, picked per button).

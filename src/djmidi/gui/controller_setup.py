@@ -84,6 +84,7 @@ from djmidi.catalog.community import (
 from djmidi.catalog.profile import USER_PLUGIN_PREFIX, save_controller_profile
 from djmidi.controller_sync import ControllerSyncSet, sync_set_from_events
 from djmidi.gui import help_texts
+from djmidi.gui.accessibility import name_icon_buttons
 from djmidi.gui.controller_submission_dialog import ControllerSubmissionDialog
 from djmidi.gui.help_button import help_button
 from djmidi.gui.port_list_utils import refresh_checked_port_list
@@ -646,6 +647,7 @@ class ControllerSetupView(QWidget):
         theme_signals.themeChanged.connect(self._restyle_theme)
         self._refresh_ports()
         self._refresh_output_ports()
+        name_icon_buttons(self)
 
     def _restyle_theme(self, *_args: object) -> None:
         """Rebuild every custom-styled element this view registered above

@@ -106,6 +106,7 @@ from djmidi.function_search import FunctionResult
 from djmidi.gui import cheat_sheet
 from djmidi.gui import jog as jog_mod
 from djmidi.gui import layout as layout_mod
+from djmidi.gui.accessibility import name_icon_buttons
 from djmidi.gui.cheat_sheet_dialog import CheatSheetExportDialog
 from djmidi.gui.cheat_sheet_pdf import write_cheat_sheet_pdf
 from djmidi.gui.command_palette import CommandPaletteDialog, menu_entries
@@ -636,6 +637,7 @@ class MainWindow(QMainWindow):
         self.helpful_notes_dialog.closedPersistently.connect(self._persist_helpful_notes_closed)
         self.helpful_notes_dialog.closedForSession.connect(self._allow_helpful_notes_next_start)
         self._restore_user_layout()
+        name_icon_buttons(self)
         self.controller_setup_view.draftFileChanged.connect(self._remember_draft)
         self._prepare_reopen_last_files()
         if self._layout_settings() is not None:
@@ -1307,6 +1309,7 @@ class MainWindow(QMainWindow):
         close_button.setToolTip(self.tr("Close"))
         close_button.clicked.connect(dock.close)
         bar_layout.addWidget(close_button)
+        name_icon_buttons(bar)
         return bar
 
     def _build_window_control_buttons(self, dock: QDockWidget) -> list[QPushButton]:
@@ -1491,6 +1494,7 @@ class MainWindow(QMainWindow):
         close_button.setToolTip(self.tr("Close"))
         close_button.clicked.connect(lambda: self._close_emulator_instance(instance_id))
         bar_layout.addWidget(close_button)
+        name_icon_buttons(bar)
         return bar
 
     def _close_emulator_instance(self, instance_id: str) -> None:

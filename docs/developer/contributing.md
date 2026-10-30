@@ -10,6 +10,7 @@
 - [What to contribute](#what-to-contribute)
 - [Branch and change proposal](#branch-and-change-proposal)
 - [Pull request checklist](#pull-request-checklist)
+- [Accessibility](#accessibility)
 - [Controller and MIDI contributions](#controller-and-midi-contributions)
 - [AI-assisted contributions](#ai-assisted-contributions)
 - [Review expectations](#review-expectations)
@@ -44,6 +45,25 @@ described in [Build and Release](cicd/build-and-release.md).
 - [ ] No private mappings, credentials, generated caches, or unrelated files
       are included.
 - [ ] Hardware claims identify their evidence and limitations.
+
+## Accessibility
+
+`tests/test_accessibility.py` keeps three things true; a new window or
+widget should too:
+
+- **Every button has a name a screen reader can announce.** A button with
+  readable text is named by it; an icon or a bare glyph (`⚙`, `☰`, `⟳`)
+  needs a tooltip saying what it does, and
+  `gui.accessibility.name_icon_buttons(widget)` (called at the end of the
+  window's construction) copies it into the accessible name and keeps it
+  in step when the tooltip changes. New dialogs join
+  `tests/test_small_windows.py`'s list, which this test also walks.
+- **Every control is reachable with Tab** (no `Qt.NoFocus`), except the two
+  on purpose: the command palette's result list (the search field drives
+  it) and Stage Mode's log.
+- **Theme text reaches WCAG AA contrast** (4.5:1) in both themes, for every
+  text/background pair in `gui.accessibility.TEXT_PAIRS`. Add the pair when
+  the QSS draws text with a new token.
 
 ## Controller and MIDI contributions
 
