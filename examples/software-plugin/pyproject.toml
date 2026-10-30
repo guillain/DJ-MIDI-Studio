@@ -1,0 +1,17 @@
+[project]
+name = "djmidi-example-plugin"
+version = "0.1.0"
+description = "Example DJ MIDI Studio software plugin (a made-up .djmap format)"
+requires-python = ">=3.14"
+dependencies = ["djmidi"]
+
+# How DJ MIDI Studio finds the plugin once it's installed in the same
+# environment: an entry point in the "djmidi.software" group. The app loads
+# external plugins only when Preferences → General → "Trust external
+# plugins" is on.
+[project.entry-points."djmidi.software"]
+djmap = "djmidi_example_plugin"
+
+[build-system]
+requires = ["uv_build>=0.8"]
+build-backend = "uv_build"
