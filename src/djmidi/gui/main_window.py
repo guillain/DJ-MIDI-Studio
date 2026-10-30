@@ -141,6 +141,7 @@ from djmidi.gui.metronome_view import MetronomeView
 from djmidi.gui.midi_clock_view import MidiClockView
 from djmidi.gui.midi_latency_dialog import MidiLatencyDialog
 from djmidi.gui.midi_routing_view import MidiRoutingView
+from djmidi.gui.mixxx_export_dialog import MixxxExportDialog
 from djmidi.gui.music_library_view import MusicLibraryView
 from djmidi.gui.preferences_dialog import PreferencesDialog
 from djmidi.gui.profile_check_dialog import ProfileCheckDialog
@@ -381,6 +382,7 @@ class MainWindow(QMainWindow):
         # Where Stage Mode's set panel stood when it last closed (issue #366).
         self._stage_set_index = 0
         self._snapshots_dialog: SnapshotsDialog | None = None
+        self._mixxx_export_dialog: MixxxExportDialog | None = None
         self._stage_candidates: list[SetTrack] = []
         self._stage_candidates_key: tuple[int, int] | None = None
         # The open "Verify Profile" window (issue #364), fed every live event.
@@ -955,6 +957,10 @@ class MainWindow(QMainWindow):
         self._cheat_sheet_action.setEnabled(False)
         self._cheat_sheet_action.triggered.connect(lambda _checked=False: self._on_export_cheat_sheet())
         export_menu.addAction(self._cheat_sheet_action)
+        mixxx_export_action = QAction(self.tr("Mixxx Mapping from Profile..."), self)
+        mixxx_export_action.setToolTip(self.tr("Write a Mixxx mapping for a controller profile, a function per button"))
+        mixxx_export_action.triggered.connect(lambda _checked=False: self.open_mixxx_export())
+        export_menu.addAction(mixxx_export_action)
 
         file_menu.addSeparator()
         backup_action = QAction(self.tr("&Back Up Workspace..."), self)
@@ -2907,6 +2913,25 @@ class MainWindow(QMainWindow):
         if self.config is not None:
             self._refresh_layout_usage()
         self.statusBar().showMessage(self.tr("'{name}' applied for this session.").format(name=name))
+
+    def open_mixxx_export(self, controller: str | None = None) -> MixxxExportDialog:
+        """File → Export → Mixxx Mapping from Profile…: one non-modal window,
+        preselecting the controller Controller Images shows."""
+        if self._mixxx_export_dialog is not None:
+            self._mixxx_export_dialog.raise_()
+            return self._mixxx_export_dialog
+        names = sorted(catalog.CONTROLLER_NAMES, key=str.casefold)
+        dialog = MixxxExportDialog(
+            names,
+            initial=controller or self.controller_image_view.current_controller_name(),
+            parent=self,
+            save_dir=user_paths.subfolder(user_paths.EXPORTS),
+        )
+        dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        dialog.destroyed.connect(lambda _obj=None: setattr(self, "_mixxx_export_dialog", None))
+        self._mixxx_export_dialog = dialog
+        dialog.show()
+        return dialog
 
     def open_profile_check(self, controller: str | None = None) -> ProfileCheckDialog:
         """File → Controller Profile → Verify Profile with the Controller…:

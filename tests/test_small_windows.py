@@ -234,6 +234,12 @@ def _snapshots():
     return SnapshotsDialog("mapping.xml", lambda: [snapshot])
 
 
+def _mixxx_export():
+    from djmidi.gui.mixxx_export_dialog import MixxxExportDialog
+
+    return MixxxExportDialog(["DDJ-FLX4", "XDJ-XZ"], initial="DDJ-FLX4")
+
+
 WINDOWS = {
     "first-run wizard": _wizard,
     "layer map": _layer_map,
@@ -250,6 +256,7 @@ WINDOWS = {
     "route transform": _route_transform,
     "deck copy": _deck_copy,
     "snapshots": _snapshots,
+    "mixxx export": _mixxx_export,
 }
 
 
