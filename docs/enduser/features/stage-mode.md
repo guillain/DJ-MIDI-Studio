@@ -46,6 +46,9 @@ works.
 
 ## Your prepared set
 
+![Stage Mode with a prepared set: current track, next track and transition](../../images/layout/stage-mode-set.png)
+
+
 Above the monitor, Stage Mode shows the set you prepared in
 [Music Library → Set](music-library.md):
 
