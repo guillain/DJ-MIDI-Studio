@@ -216,6 +216,13 @@ def _route_transform():
     return MidiRouteTransformDialog(MidiValueTransform(remaps=(RemapRule(NOTE, 1, 40, CC, 2, 7),)))
 
 
+def _deck_copy():
+    from djmidi.gui.deck_copy_dialog import DeckCopyDialog
+    from djmidi.parser import parse_file
+
+    return DeckCopyDialog(parse_file(FIXTURE))
+
+
 WINDOWS = {
     "first-run wizard": _wizard,
     "layer map": _layer_map,
@@ -230,6 +237,7 @@ WINDOWS = {
     "geometry editor": _geometry_editor,
     "profile check": _profile_check,
     "route transform": _route_transform,
+    "deck copy": _deck_copy,
 }
 
 

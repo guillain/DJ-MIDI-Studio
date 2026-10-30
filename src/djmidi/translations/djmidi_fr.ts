@@ -1401,6 +1401,88 @@ Il reste une étape manuelle : ajoutez &apos;{slug}&apos; au bloc d&apos;imports
     </message>
 </context>
 <context>
+    <name>DeckCopy</name>
+    <message>
+        <source>Pick two different decks.</source>
+        <translation>Choisissez deux platines différentes.</translation>
+    </message>
+    <message>
+        <source>Deck {deck} has no mappings to copy.</source>
+        <translation>La platine {deck} n&apos;a aucun mapping à copier.</translation>
+    </message>
+    <message>
+        <source>Channel {channel} isn&apos;t a MIDI channel (1-16).</source>
+        <translation>Le canal {channel} n&apos;est pas un canal MIDI (1-16).</translation>
+    </message>
+</context>
+<context>
+    <name>DeckCopyDialog</name>
+    <message>
+        <source>Copy Deck Mappings</source>
+        <translation>Copier les mappings d&apos;une platine</translation>
+    </message>
+    <message>
+        <source>Copies every mapping of one deck onto another deck, on the MIDI channel you choose for it. The repeated copies of each control are kept as they are.</source>
+        <translation>Copie tous les mappings d&apos;une platine sur une autre, sur le canal MIDI que vous choisissez. Les copies répétées de chaque contrôle sont conservées telles quelles.</translation>
+    </message>
+    <message>
+        <source>Deck {deck}</source>
+        <translation>Platine {deck}</translation>
+    </message>
+    <message>
+        <source>From:</source>
+        <translation>De :</translation>
+    </message>
+    <message>
+        <source>To:</source>
+        <translation>Vers :</translation>
+    </message>
+    <message>
+        <source>Source channel</source>
+        <translation>Canal source</translation>
+    </message>
+    <message>
+        <source>Target channel</source>
+        <translation>Canal cible</translation>
+    </message>
+    <message>
+        <source>Replace the target deck&apos;s mappings on the same controls</source>
+        <translation>Remplacer les mappings de la platine cible sur les mêmes contrôles</translation>
+    </message>
+    <message>
+        <source>Copy</source>
+        <translation>Copier</translation>
+    </message>
+    <message>
+        <source>ch {channel} {kind} {number}</source>
+        <translation>canal {channel} {kind} {number}</translation>
+    </message>
+    <message>
+        <source>note</source>
+        <translation>note</translation>
+    </message>
+    <message>
+        <source>… and {count} more</source>
+        <translation>… et {count} de plus</translation>
+    </message>
+    <message>
+        <source>This mapping has no decks.</source>
+        <translation>Ce mapping n&apos;a aucune platine.</translation>
+    </message>
+    <message>
+        <source>{controls} control(s) get a copy ({elements} mapping element(s) written).</source>
+        <translation>{controls} contrôle(s) reçoivent une copie ({elements} élément(s) de mapping écrits).</translation>
+    </message>
+    <message>
+        <source>Deck {deck}&apos;s current mappings are replaced on: {triggers}.</source>
+        <translation>Les mappings actuels de la platine {deck} sont remplacés sur : {triggers}.</translation>
+    </message>
+    <message>
+        <source>Skipped, deck {deck} already uses them: {triggers}.</source>
+        <translation>Ignorés, la platine {deck} les utilise déjà : {triggers}.</translation>
+    </message>
+</context>
+<context>
     <name>DuplicatesDialog</name>
     <message>
         <source>Track / file</source>
@@ -1958,6 +2040,14 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     <message>
         <source>Sends a Note On to the &lt;b&gt;output&lt;/b&gt; and times the matching Note On coming back on the &lt;b&gt;input&lt;/b&gt;, then shows min / median / max and jitter over all pings.&lt;br&gt;&lt;br&gt;&lt;b&gt;Only meaningful with something that echoes&lt;/b&gt;: the IAC Driver bus or a virtual MIDI cable chosen as both output and input, a MIDI thru, or a controller known to echo its LED messages. A controller that doesn&apos;t echo makes every ping time out -- that says nothing about its real latency.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Interval&lt;/b&gt;: time between two ping starts; &lt;b&gt;Timeout&lt;/b&gt;: how long a ping waits before it counts as lost.&lt;/li&gt;&lt;li&gt;Each ping uses its own velocity so a late echo is never counted for the next one; untick the velocity box for a device that echoes a different value.&lt;/li&gt;&lt;li&gt;A Note Off follows every ping, so an echoing LED isn&apos;t left lit.&lt;/li&gt;&lt;/ul&gt;</source>
         <translation>Envoie un Note On vers la &lt;b&gt;sortie&lt;/b&gt; et chronomètre le Note On correspondant qui revient sur l&apos;&lt;b&gt;entrée&lt;/b&gt;, puis affiche min / médiane / max et la gigue sur l&apos;ensemble des pings.&lt;br&gt;&lt;br&gt;&lt;b&gt;N&apos;a de sens qu&apos;avec un appareil qui renvoie l&apos;écho&lt;/b&gt; : le bus IAC Driver ou un câble MIDI virtuel choisi à la fois en sortie et en entrée, un MIDI thru, ou un contrôleur connu pour renvoyer ses messages de LED. Avec un contrôleur qui ne renvoie rien, chaque ping expire -- cela ne dit rien de sa vraie latence.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Intervalle&lt;/b&gt; : temps entre le départ de deux pings ; &lt;b&gt;Délai d&apos;attente&lt;/b&gt; : combien de temps un ping attend avant d&apos;être compté comme perdu.&lt;/li&gt;&lt;li&gt;Chaque ping a sa propre vélocité, pour qu&apos;un écho en retard ne soit jamais compté pour le suivant ; décochez la case de vélocité pour un appareil qui renvoie une autre valeur.&lt;/li&gt;&lt;li&gt;Un Note Off suit chaque ping, pour qu&apos;une LED qui renvoie l&apos;écho ne reste pas allumée.&lt;/li&gt;&lt;/ul&gt;</translation>
+    </message>
+    <message>
+        <source>Copy deck mappings</source>
+        <translation>Copier les mappings d&apos;une platine</translation>
+    </message>
+    <message>
+        <source>Copies every mapping of the &lt;b&gt;From&lt;/b&gt; deck onto the &lt;b&gt;To&lt;/b&gt; deck. Each source MIDI channel goes to the channel set in the table (by default the channel the target deck already uses). A control the target deck already uses is skipped, unless &lt;b&gt;Replace&lt;/b&gt; is ticked: its target-deck mappings are then replaced. The preview says what will change; &lt;b&gt;Edit → Undo&lt;/b&gt; takes the whole copy back in one step.</source>
+        <translation>Copie tous les mappings de la platine &lt;b&gt;De&lt;/b&gt; sur la platine &lt;b&gt;Vers&lt;/b&gt;. Chaque canal MIDI source va vers le canal indiqué dans le tableau (par défaut celui que la platine cible utilise déjà). Un contrôle que la platine cible utilise déjà est ignoré, sauf si &lt;b&gt;Remplacer&lt;/b&gt; est coché : ses mappings de la platine cible sont alors remplacés. L&apos;aperçu indique ce qui va changer ; &lt;b&gt;Édition → Annuler&lt;/b&gt; annule toute la copie en une étape.</translation>
     </message>
     <message>
         <source>Layer Map</source>
@@ -3415,6 +3505,14 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
         <translation>&amp;Valider</translation>
     </message>
     <message>
+        <source>Copy &amp;Deck Mappings…</source>
+        <translation>Copier les mappings d&apos;une &amp;platine…</translation>
+    </message>
+    <message>
+        <source>Copy one deck&apos;s mappings onto another deck.</source>
+        <translation>Copier les mappings d&apos;une platine sur une autre.</translation>
+    </message>
+    <message>
         <source>Ready for &amp;Live…</source>
         <translation>Prêt pour le &amp;live…</translation>
     </message>
@@ -4221,6 +4319,26 @@ Quitter maintenant ?</translation>
     <message>
         <source>Cheat sheet exported: {path} ({count} page(s))</source>
         <translation>Antisèche exportée : {path} ({count} page(s))</translation>
+    </message>
+    <message>
+        <source>Copy deck mappings: open a mapping first.</source>
+        <translation>Copier les mappings d&apos;une platine : ouvrez d&apos;abord un mapping.</translation>
+    </message>
+    <message>
+        <source>Copy Deck Mappings</source>
+        <translation>Copier les mappings d&apos;une platine</translation>
+    </message>
+    <message>
+        <source>Copying a deck&apos;s mappings works on Serato mappings only.</source>
+        <translation>La copie des mappings d&apos;une platine ne fonctionne que sur les mappings Serato.</translation>
+    </message>
+    <message>
+        <source>Copy deck {source} mappings to deck {target}</source>
+        <translation>Copier les mappings de la platine {source} vers la platine {target}</translation>
+    </message>
+    <message>
+        <source>Copied deck {source} to deck {target}: {count} control(s).</source>
+        <translation>Platine {source} copiée vers la platine {target} : {count} contrôle(s).</translation>
     </message>
     <message>
         <source>Validation: {errors} error(s), {warnings} warning(s), {infos} info</source>
