@@ -139,6 +139,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Layout markers re-measured on DDJ-REV1, DDJ-FLX10 and DDJ-1000** (`v0.48.157-geometry-remeasure`, #379) — an
+  audit of every controller's Controller Images overlay in the running app found these three drifted since the
+  `v0.48.46` image normalization (REV1's pad grids ran together, most FLX10 markers were off, DDJ-1000's top row,
+  BEAT SYNC/KEY buttons and jogs). Every marker of the three was re-measured on zoomed, finely gridded crops of the
+  current images and checked on the overlay; the other eleven controllers were already aligned.
 - [x] **Numark Mixtrack Pro FX: markers for the new controls, existing ones re-measured** (`v0.48.156-numark-geometry`,
   #372 follow-up) — SHIFT, SCRATCH, PITCH BEND ±, the four pad-mode buttons, LOOP HALF/DOUBLE (each side) and LOAD 1/2
   placed on the reference diagram from zoomed, finely gridded crops; checking them in the running app showed the
