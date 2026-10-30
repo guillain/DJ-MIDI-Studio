@@ -416,7 +416,7 @@ def test_resolve_geometry_label_extracts_pad_number_from_numark_pad_names():
     "Deck 1 Pad 4" -- verified against the real lookup path."""
     hit = next(
         hit
-        for hit in catalog.lookup("1", "NOTE", "39")  # deck-1 pad channel, note 36+3
+        for hit in catalog.lookup("5", "NOTE", "23")  # deck-1 pad channel 5, pad 4 = note 20+3 (#372)
         if hit.controller == "Numark Mixtrack Pro FX"
     )
     assert resolve_geometry_label("Numark Mixtrack Pro FX", hit.name) == "Pad 4"
@@ -428,7 +428,7 @@ def test_resolve_geometry_label_picks_the_right_grid_for_numark_deck_2():
     free, the same mechanism DDJ-1000/DDJ-FLX10 already use."""
     hit = next(
         hit
-        for hit in catalog.lookup("2", "NOTE", "39")  # deck-2 pad channel, note 36+3
+        for hit in catalog.lookup("6", "NOTE", "31")  # deck-2 pad channel 6, SHIFT + pad 4 = 20+3+8 (#372)
         if hit.controller == "Numark Mixtrack Pro FX"
     )
     assert resolve_geometry_label("Numark Mixtrack Pro FX", hit.name) == "Pad 4 (R)"

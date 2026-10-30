@@ -201,8 +201,8 @@ def test_definition_entries_flattens_static_and_pad_entries():
     assert entries[: len(definition.static_entries)] == list(definition.static_entries)
     pads = entries[len(definition.static_entries) :]
     # 8 pads x 2 deck channels, every one re-resolvable through lookup().
-    assert len(pads) == 16
-    assert {(p.channels, p.data1) for p in pads} == {((ch,), str(n)) for ch in ("1", "2") for n in range(36, 44)}
+    assert len(pads) == 32  # 8 pads + their SHIFT layer, two decks (#372)
+    assert {(p.channels, p.data1) for p in pads} == {((ch,), str(n)) for ch in ("5", "6") for n in range(20, 36)}
 
 
 def test_definition_entries_relabels_controller():

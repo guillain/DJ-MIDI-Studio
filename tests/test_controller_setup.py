@@ -1356,7 +1356,7 @@ def test_start_from_controller_button_uses_chosen_controller(monkeypatch):
     )
     view._on_start_from_controller_clicked()
     assert view._controller_name == "Numark Mixtrack Pro FX (copy)"
-    assert len(view._rows) == 4 + 16
+    assert len(view._rows) == 28 + 32  # static entries + pads with their SHIFT layer (#372)
 
 
 def test_start_from_controller_cancel_keeps_draft(monkeypatch):

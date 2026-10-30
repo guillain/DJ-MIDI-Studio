@@ -436,6 +436,11 @@ _RIGHT_SIDE_CHANNELS: dict[str, dict[str, frozenset[str]]] = {
         "DECK": frozenset({"2", "4"}),
         "MIXER": frozenset({"2", "4"}),
     },
+    # issue #372: deck buttons on channel 1/2, the loop section on 5/6.
+    "Numark Mixtrack Pro FX": {
+        "DECK": frozenset({"2"}),
+        "LOOP": frozenset({"6"}),
+    },
 }
 
 
