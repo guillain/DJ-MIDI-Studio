@@ -139,6 +139,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Mixxx mapping plugin, read-only** (`v0.48.151-mixxx-plugin`, #365, phase 4 item 3) — `.midi.xml` mappings open
+  in every view (both root shapes, detected by content), checked on the 142 real mappings Mixxx 2.5 ships (17,095
+  controls, none rejected). Comparing the built-in profiles with Mixxx's mappings for the same devices confirmed the
+  hardware-captured CMD profiles (96-100 %) and found the Numark Mixtrack Pro FX profile wrong (#372). Seeding library
+  profiles from Mixxx (#12) is left: its descriptions aren't consistent control names.
 - [x] **Guided profile verification** (`v0.48.150-profile-check`, #364, phase 4 item 2) — `File → Controller Profile →
   Verify Profile with the Controller…` asks for each physical control (and its SHIFT layer), judges the press against
   the profile (ok / mismatch naming what came and who the profile gives it to / skipped) and builds a report that
@@ -3446,6 +3451,7 @@ close what can't be unblocked here.
       community route for #11. **Done** in `v0.48.150-profile-check`.
    3. Mixxx mapping plugin, read-only, from its documented format and real
       public mappings (#365) — possibly seeds non-Pioneer library profiles (#12).
+      **Done** (read-only) in `v0.48.151-mixxx-plugin`; it surfaced #372.
    4. Live set mode: set preparation on the Stage Mode screen (#366).
    5. MIDI macros step 2: toggles, scene conditions, wait for a press (#367).
    6. Per-controller MIDI remapper layer over the existing routing (#368).

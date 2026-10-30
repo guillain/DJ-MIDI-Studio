@@ -39,6 +39,7 @@ someone read once or a docstring's claims.
 | [Serato DJ](serato/README.md) | `src/djmidi/software/serato.py` (thin wrapper around `parser.py`/`exporter.py`) | Well-grounded — real fixture, byte-for-byte round-trip tested |
 | [Native Instruments Traktor](traktor/README.md) | `src/djmidi/software/traktor.py` | Being rewritten (issue #122) — the original plugin targeted the wrong file structure entirely |
 | [Pioneer/AlphaTheta rekordbox](rekordbox/README.md) | `src/djmidi/software/rekordbox.py` | Read-only — decoded from the 67 mappings rekordbox 7 ships; writing waits on a user-customized export |
+| [Mixxx](mixxx/README.md) | `src/djmidi/software/mixxx.py` | Read-only — checked on the 142 mappings Mixxx 2.5 ships; writing not implemented |
 | [VirtualDJ](virtualdj/README.md) | — none yet | Candidate — real format researched (two XML files, officially documented), no plugin, blocked on a real sample file pair |
 
 ## How to extend this index

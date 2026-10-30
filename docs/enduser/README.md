@@ -71,6 +71,7 @@ Open several, one per controller.
 | 🗺️ | [Mapping editor](features/mapping-editor.md) | Serato mappings by channel, deck or physical control; safe edits, validation, diff before save |
 | 🎧 | [Traktor mappings](features/traktor-mappings.md) | Open Traktor `.tsi` mappings and re-assign MIDI triggers |
 | 🎛️ | [rekordbox mappings](features/rekordbox-mappings.md) | Open rekordbox `.midi.csv` mappings read-only |
+| 🎚️ | [Mixxx mappings](features/mixxx-mappings.md) | Open Mixxx `.midi.xml` mappings read-only |
 | ✅ | [Verify a controller profile](features/profile-check.md) | Check a profile against your controller, control by control, and share the report |
 | 🔍 | [Compare mappings](features/mapping-diff.md) | What changed between two mappings, by physical control |
 | ✅ | [Ready for live](features/live-ready-check.md) | Pre-gig check: missing Play/Cue/Sync/Load, conflicts, unlit buttons |
@@ -88,7 +89,7 @@ Open several, one per controller.
 | 🌐 | [Interface language](features/interface-language.md) | French menus, tabs and Preferences, or follow the system language |
 | 🐞 | [Report a Problem](features/report-a-problem.md) | An editable bug report, opened as a pre-filled GitHub issue |
 
-Supported out of the box: Serato DJ Pro and Traktor mappings, rekordbox mappings (read-only); DDJ-XP2,
+Supported out of the box: Serato DJ Pro and Traktor mappings, rekordbox and Mixxx mappings (read-only); DDJ-XP2,
 XDJ-XZ, DDJ-1000, DDJ-FLX4, DDJ-FLX10, DDJ-REV1, DDJ-REV5, DDJ-800, Numark
 Mixtrack Pro FX, Hercules DJControl Inpulse 500, Behringer CMD LC-1, CMD Micro and CMD Studio 4a, and Korg nanoPAD2 — and any other
 controller through Controller Setup — plus 46 Pioneer DJ / AlphaTheta profiles
