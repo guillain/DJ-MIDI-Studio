@@ -351,7 +351,7 @@ def test_numark_mixtrack_pro_fx_follows_mixxx_mapping():
     assert names("1", 3) == {"SYNC +SHIFT"}  # was a "LOOP" button before
     assert names("1", 43) == {"PITCH BEND UP +SHIFT"}  # was "Pad 8"
     assert names("1", 36) == set()  # no pad on the deck channels
-    assert names("5", 64) == {"LOOP"} and names("6", 53) == {"LOOP x2"}
+    assert names("5", 64) == {"LOOP"} and names("6", 53) == {"LOOP DOUBLE"}
     assert names("5", 13) == {"AUTO LOOP"}
     assert names("16", 3) == {"LOAD DECK 2"}
     assert names("5", 27) == {"Deck 1 Pad 8"} and names("6", 35) == {"Deck 2 Pad 8 +SHIFT"}

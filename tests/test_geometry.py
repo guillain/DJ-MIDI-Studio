@@ -351,18 +351,31 @@ def test_resolve_geometry_label_extracts_pad_number_from_ddj_rev1_pad_names():
 
 
 def test_numark_mixtrack_pro_fx_geometry_covers_every_catalog_entry():
-    """Numark Mixtrack Pro FX's catalog (catalog/numark_mixtrack_pro_fx.py)
-    has exactly four DECK entries plus an 8-pad grid -- this is the whole
-    controller, not a subset. v0.47.89 (issue #103) added a right-deck
-    (deck 2) " (R)" copy of every entry, re-measured from scratch against a
-    replacement reference image (see the module's Numark comment)."""
-    non_pad = {"PLAY/PAUSE", "CUE", "SYNC", "LOOP"}
+    """Every physical control of the Numark profile has a marker on each
+    side (" (R)" = deck 2), except the CUE/PFL buttons -- the reference
+    diagram's numbered badge covers them -- and the BEAT JUMP / SAMPLE 2
+    pad modes, which are the mode buttons' SHIFT layer. LOAD sits between
+    the decks, one per deck. v0.47.89 measured the transport and pads; the
+    rest came with the Mixxx-derived profile (issue #372)."""
+    sided = {
+        "PLAY/PAUSE", "CUE", "SYNC", "LOOP", "SHIFT", "SCRATCH", "PITCH BEND UP", "PITCH BEND DOWN",
+        "HOT CUE", "AUTO LOOP", "FADER CUTS", "SAMPLE", "LOOP HALF", "LOOP DOUBLE",
+    }
     assert set(CONTROL_GEOMETRY["Numark Mixtrack Pro FX"]) == (
-        non_pad
-        | {f"{name} (R)" for name in non_pad}
+        sided
+        | {f"{name} (R)" for name in sided}
+        | {"LOAD DECK 1", "LOAD DECK 2"}
         | {f"Pad {n}" for n in range(1, 9)}
         | {f"Pad {n} (R)" for n in range(1, 9)}
     )
+
+
+def test_numark_mixtrack_pro_fx_markers_resolve_to_catalog_cells():
+    from djmidi.gui.layout import cell_key_for_geometry_label
+
+    for label in CONTROL_GEOMETRY["Numark Mixtrack Pro FX"]:
+        assert cell_key_for_geometry_label("Numark Mixtrack Pro FX", label) is not None, label
+    assert resolve_geometry_label("Numark Mixtrack Pro FX", "SYNC +SHIFT") == "SYNC"
 
 
 def test_numark_mixtrack_pro_fx_pad_grid_is_a_non_overlapping_2x4_layout():
