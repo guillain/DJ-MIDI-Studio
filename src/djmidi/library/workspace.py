@@ -88,6 +88,18 @@ def folder_hint(track_path: str, root_path: str | None) -> str | None:
     """The track's folder relative to its library root, `/`-joined (e.g.
     ``Tek/PsyTrance/Album``) -- the hand-curated hierarchy
     `taxonomy.resolve_category` weighs over the raw genre tag."""
+    # String fast path for the common case (a track inside its root, both
+    # absolute and plainly written): Path objects cost ~30 us per track,
+    # which adds up to seconds on an 85k-track collection.
+    if root_path:
+        parent_text = os.path.dirname(track_path)
+        root_text = root_path.rstrip("/\\")
+        if root_text and parent_text == root_text:
+            return None
+        if root_text and parent_text.startswith(root_text + os.sep):
+            relative = parent_text[len(root_text) + 1 :]
+            if all(part not in ("", ".", "..") for part in relative.split(os.sep)):
+                return relative.replace(os.sep, "/")
     parent = Path(track_path).parent
     if root_path:
         try:
@@ -119,10 +131,7 @@ def consolidate(db: LibraryDB) -> list[LibraryRow]:
     for record, metadata in db.list_tracks_with_metadata():
         genre = metadata.genre if metadata else None
         hints = (genre, folder_hint(record.path, roots.get(record.root_id)), crates.get(record.path))
-        match = resolved.get(hints)
-        if match is None:
-            match = taxonomy.resolve_category(hints[0], folder_hint=hints[1], crate_hint=hints[2])
-            resolved[hints] = match
+        match = _resolve(hints, resolved)
         canonical = match.category.canonical if match.category is not None else None
         confident = match.confidence in ("exact", "alias")
         estimated_bpm, estimated_key = estimates.get(record.id, (None, None))
@@ -141,6 +150,45 @@ def consolidate(db: LibraryDB) -> list[LibraryRow]:
             )
         )
     return rows
+
+
+def _exact_folder_key(folder: str | None) -> str | None:
+    """The part of a folder hint an exact/alias match can depend on: the
+    first two segments (``Tek/PsyTrance`` of ``Tek/PsyTrance/Album/CD1``),
+    which is all `taxonomy` reads of a ``/`` path. None when the folder also
+    holds another separator taxonomy splits on, or has a single segment."""
+    if folder is None or "%%" in folder or ">" in folder:
+        return None
+    parts = [part for part in folder.split("/") if part.strip()]
+    return "/".join(parts[:2]) if len(parts) > 2 else None
+
+
+def _resolve(
+    hints: tuple[str | None, str | None, str | None],
+    cache: dict[tuple[str | None, str | None, str | None], taxonomy.CategoryMatch],
+) -> taxonomy.CategoryMatch:
+    """`taxonomy.resolve_category` for one track, memoized. Albums make
+    nearly every folder unique, so a deep folder is first resolved by its
+    first two segments: an exact/alias answer can't differ from the full
+    folder's, and only a track left without one is resolved (fuzzily) on its
+    whole folder."""
+    match = cache.get(hints)
+    if match is not None:
+        return match
+    genre, folder, crate = hints
+    short = _exact_folder_key(folder)
+    if short is not None:
+        short_hints = (genre, short, crate)
+        short_match = cache.get(short_hints)
+        if short_match is None:
+            short_match = taxonomy.resolve_category(genre, folder_hint=short, crate_hint=crate)
+            cache[short_hints] = short_match
+        if short_match.confidence in ("exact", "alias"):
+            cache[hints] = short_match
+            return short_match
+    match = taxonomy.resolve_category(genre, folder_hint=folder, crate_hint=crate)
+    cache[hints] = match
+    return match
 
 
 def iter_refresh_metadata(db: LibraryDB) -> Generator[int, None, int]:

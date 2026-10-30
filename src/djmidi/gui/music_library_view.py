@@ -777,11 +777,51 @@ class LibraryTableModel(QAbstractTableModel):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self._rows: list[workspace.LibraryRow] = []
+        # The model sorts itself (the proxy forwards sort() here): one Python
+        # sort with a key beats Qt calling data() ~2.5M times on 85k rows.
+        self._sort: tuple[int, Qt.SortOrder] | None = None
+        # Lower-cased, tab-joined display text of each row, built on the
+        # first text filter, keyed by row identity so a re-sort keeps it.
+        self._search_text: dict[int, str] | None = None
 
     def set_rows(self, rows: list[workspace.LibraryRow]) -> None:
         self.beginResetModel()
         self._rows = list(rows)
+        self._search_text = None
+        if self._sort is not None:
+            self._rows.sort(key=self._sort_key(self._sort[0]), reverse=self._sort[1] == Qt.SortOrder.DescendingOrder)
         self.endResetModel()
+
+    @staticmethod
+    def _sort_key(column: int):
+        key = COLUMNS[column][1]
+        if key == "bpm":
+            return lambda row: row.bpm if row.bpm is not None else -1.0
+        return lambda row: LibraryTableModel._display(row, key).casefold()
+
+    def sort(self, column: int, order: Qt.SortOrder = Qt.SortOrder.AscendingOrder) -> None:
+        """Sorts in place (same keys as `SORT_ROLE`), keeping selections:
+        the persistent indexes follow their rows."""
+        if not 0 <= column < len(COLUMNS):
+            return
+        self._sort = (column, order)
+        self.layoutAboutToBeChanged.emit()
+        before = self.persistentIndexList()
+        moved = [(self._rows[index.row()], index.column()) for index in before]
+        self._rows.sort(key=self._sort_key(column), reverse=order == Qt.SortOrder.DescendingOrder)
+        position = {id(row): number for number, row in enumerate(self._rows)}
+        self.changePersistentIndexList(before, [self.index(position[id(row)], col) for row, col in moved])
+        self.layoutChanged.emit()
+
+    def search_text(self, row_number: int) -> str:
+        """Every column's display text of a row, lower-cased, for the free
+        text filter."""
+        if self._search_text is None:
+            self._search_text = {
+                id(row): "\t".join(self._display(row, key) for _header, key in COLUMNS).casefold() for row in self._rows
+            }
+        row = self._rows[row_number]
+        return self._search_text.get(id(row), "")
 
     def rows(self) -> list[workspace.LibraryRow]:
         return list(self._rows)
@@ -892,9 +932,31 @@ class LibraryFilterProxy(QSortFilterProxyModel):
         self._key: str | None = None
         self._camelot: str | None = None
         self._camelot_compatible = False
+        self._text = ""
         self.setFilterCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.setFilterKeyColumn(-1)
         self.setSortRole(SORT_ROLE)
+
+    def sort(self, column: int, order: Qt.SortOrder = Qt.SortOrder.AscendingOrder) -> None:
+        """Sorting is done by the source model (much faster on a large
+        collection); the proxy keeps its order and only filters."""
+        source = self.sourceModel()
+        if isinstance(source, LibraryTableModel):
+            source.sort(column, order)
+        else:
+            super().sort(column, order)
+
+    def set_text_filter(self, text: str) -> None:
+        """Case-insensitive substring in any column (what
+        `setFilterFixedString` did, from cached row text)."""
+        if text.casefold() != self._text:
+            self._change_filter(lambda: setattr(self, "_text", text.casefold()))
+
+    def is_filtering(self) -> bool:
+        return bool(self._text) or self._category != ALL_CATEGORIES or self.has_track_filters()
+
+    def text_filter(self) -> str:
+        return self._text
 
     def _change_filter(self, apply: Callable[[], None]) -> None:
         # Qt 6.10 deprecated invalidateFilter() for this begin/end pair.
@@ -907,11 +969,14 @@ class LibraryFilterProxy(QSortFilterProxyModel):
             self.invalidateFilter()
 
     def set_category_filter(self, category: str) -> None:
-        self._change_filter(lambda: setattr(self, "_category", category))
+        if category != self._category:
+            self._change_filter(lambda: setattr(self, "_category", category))
 
     def set_genre_filter(self, genre: str | None) -> None:
         """Exact genre tag (case-insensitive); None for every genre."""
-        self._change_filter(lambda: setattr(self, "_genre", _norm(genre) or None))
+        value = _norm(genre) or None
+        if value != self._genre:
+            self._change_filter(lambda: setattr(self, "_genre", value))
 
     def set_bpm_range(self, minimum: float | None, maximum: float | None) -> None:
         """Inclusive BPM bounds; None leaves that side open. With any bound
@@ -920,11 +985,14 @@ class LibraryFilterProxy(QSortFilterProxyModel):
         def apply() -> None:
             self._bpm_min, self._bpm_max = minimum, maximum
 
-        self._change_filter(apply)
+        if (minimum, maximum) != (self._bpm_min, self._bpm_max):
+            self._change_filter(apply)
 
     def set_key_filter(self, key: str | None) -> None:
         """Exact key tag as written in the file (case-insensitive)."""
-        self._change_filter(lambda: setattr(self, "_key", _norm(key) or None))
+        value = _norm(key) or None
+        if value != self._key:
+            self._change_filter(lambda: setattr(self, "_key", value))
 
     def set_camelot_filter(self, camelot: str | None, compatible: bool = False) -> None:
         """One Camelot code; with `compatible`, also every harmonically
@@ -934,7 +1002,8 @@ class LibraryFilterProxy(QSortFilterProxyModel):
             self._camelot = camelot.upper() if camelot else None
             self._camelot_compatible = compatible
 
-        self._change_filter(apply)
+        if (camelot.upper() if camelot else None, compatible) != (self._camelot, self._camelot_compatible):
+            self._change_filter(apply)
 
     def has_track_filters(self) -> bool:
         return any(
@@ -972,7 +1041,9 @@ class LibraryFilterProxy(QSortFilterProxyModel):
             return False
         if not self._accepts_track(row):
             return False
-        return super().filterAcceptsRow(source_row, source_parent)
+        if self._text:
+            return self._text in model.search_text(source_row)
+        return True
 
 
 class MusicLibraryView(QWidget):
@@ -2079,7 +2150,7 @@ class MusicLibraryView(QWidget):
     # --- table ------------------------------------------------------------
 
     def _on_filter_changed(self, text: str) -> None:
-        self.proxy.setFilterFixedString(text)
+        self.proxy.set_text_filter(text)
         self._update_count_label()
 
     def _on_category_filter_changed(self, text: str) -> None:
@@ -2162,7 +2233,7 @@ class MusicLibraryView(QWidget):
         self.camelot_compatible_check.setChecked(False)
         for widget in widgets:
             widget.blockSignals(False)
-        self.proxy.setFilterFixedString("")
+        self.proxy.set_text_filter("")
         self.proxy.set_category_filter(ALL_CATEGORIES)
         self.proxy.set_genre_filter(None)
         self.proxy.set_key_filter(None)
@@ -2231,7 +2302,12 @@ class MusicLibraryView(QWidget):
             self.confirm_all_suggestions()
 
     def visible_rows(self) -> list[workspace.LibraryRow]:
-        return [self.proxy.index(r, 0).data(ROW_ROLE) for r in range(self.proxy.rowCount())]
+        # The proxy only filters (the model sorts), so with no filter its
+        # rows are the model's, in the same order.
+        if not self.proxy.is_filtering():
+            return self.table_model.rows()
+        rows = self.table_model._rows
+        return [rows[self.proxy.mapToSource(self.proxy.index(r, 0)).row()] for r in range(self.proxy.rowCount())]
 
     def selected_rows(self) -> list[workspace.LibraryRow]:
         rows = sorted({index.row() for index in self.table.selectionModel().selectedRows()})
