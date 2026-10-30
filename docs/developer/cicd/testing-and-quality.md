@@ -10,6 +10,7 @@
 - [Quality Goals](#quality-goals)
 - [Command Reference](#command-reference)
 - [Bash Test Script](#bash-test-script)
+- [Performance budget](#performance-budget)
 - [CI Recommendation](#ci-recommendation)
 
 ## Quality Goals
@@ -47,6 +48,25 @@ Modes:
 - `test`: tests only
 - `path <target>`: targeted pytest execution
 - `quality`: objective gate (coverage/smell/duplication/security)
+
+## Performance budget
+
+The Music Library has to stay usable on a large collection (the
+maintainer's has 85,000 tracks). Wall-clock limits would be flaky in CI,
+so `tests/test_library_perf_budget.py` counts operations instead, on a
+synthetic 20,000-track index:
+
+| Budget | Why |
+| --- | --- |
+| Category resolutions < tracks / 3 | `consolidate` memoizes by the folder's first two segments |
+| No `Path.relative_to` while building rows | `folder_hint`'s string fast path |
+| Python `data()` calls while sorting and filtering < one per track | the model sorts itself, filters read rows and cached text directly |
+| No re-filtering on a filter change that changes nothing | the proxy's setters skip no-ops |
+
+A budget fails only on a real regression, with the old cost far above it.
+For seconds, run `uv run python scripts/benchmark_library.py` (85,000
+tracks by default) before and after a change to the library's load or
+filter path.
 
 ## CI Recommendation
 

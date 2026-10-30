@@ -815,6 +815,9 @@ class LibraryTableModel(QAbstractTableModel):
         self.changePersistentIndexList(before, [self.index(position[id(row)], col) for row, col in moved])
         self.layoutChanged.emit()
 
+    def row_at(self, row_number: int) -> workspace.LibraryRow:
+        return self._rows[row_number]
+
     def replace_row(self, old: workspace.LibraryRow, new: workspace.LibraryRow) -> None:
         """Swaps one row in place (a stage note edit) without a model reset."""
         for number, row in enumerate(self._rows):
@@ -1047,7 +1050,10 @@ class LibraryFilterProxy(QSortFilterProxyModel):
 
     def filterAcceptsRow(self, source_row: int, source_parent: QModelIndex | QPersistentModelIndex) -> bool:
         model = self.sourceModel()
-        row = model.data(model.index(source_row, 0, source_parent), ROW_ROLE)
+        if isinstance(model, LibraryTableModel):
+            row = model.row_at(source_row)  # no data() round trip per row
+        else:
+            row = model.data(model.index(source_row, 0, source_parent), ROW_ROLE)
         if self._category == UNCATEGORIZED and row.category is not None:
             return False
         if self._category not in (ALL_CATEGORIES, UNCATEGORIZED) and row.category != self._category:
