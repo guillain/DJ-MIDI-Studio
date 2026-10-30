@@ -2042,6 +2042,14 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
         <translation>Envoie un Note On vers la &lt;b&gt;sortie&lt;/b&gt; et chronomètre le Note On correspondant qui revient sur l&apos;&lt;b&gt;entrée&lt;/b&gt;, puis affiche min / médiane / max et la gigue sur l&apos;ensemble des pings.&lt;br&gt;&lt;br&gt;&lt;b&gt;N&apos;a de sens qu&apos;avec un appareil qui renvoie l&apos;écho&lt;/b&gt; : le bus IAC Driver ou un câble MIDI virtuel choisi à la fois en sortie et en entrée, un MIDI thru, ou un contrôleur connu pour renvoyer ses messages de LED. Avec un contrôleur qui ne renvoie rien, chaque ping expire -- cela ne dit rien de sa vraie latence.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Intervalle&lt;/b&gt; : temps entre le départ de deux pings ; &lt;b&gt;Délai d&apos;attente&lt;/b&gt; : combien de temps un ping attend avant d&apos;être compté comme perdu.&lt;/li&gt;&lt;li&gt;Chaque ping a sa propre vélocité, pour qu&apos;un écho en retard ne soit jamais compté pour le suivant ; décochez la case de vélocité pour un appareil qui renvoie une autre valeur.&lt;/li&gt;&lt;li&gt;Un Note Off suit chaque ping, pour qu&apos;une LED qui renvoie l&apos;écho ne reste pas allumée.&lt;/li&gt;&lt;/ul&gt;</translation>
     </message>
     <message>
+        <source>Snapshots</source>
+        <translation>Instantanés</translation>
+    </message>
+    <message>
+        <source>Named versions of the open mapping, kept in the &lt;b&gt;Snapshots&lt;/b&gt; folder of your DJ MIDI Studio folder. &lt;b&gt;File → Save Snapshot…&lt;/b&gt; keeps the mapping as it is in the app, unsaved edits included.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Compare&lt;/b&gt; lists what changed since that version, control by control.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Restore&lt;/b&gt; brings its mappings back as one step of &lt;b&gt;Edit → Undo&lt;/b&gt; (Serato mappings only). Save the mapping afterwards to keep it.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Delete&lt;/b&gt; removes the snapshot.&lt;/li&gt;&lt;/ul&gt;</source>
+        <translation>Des versions nommées du mapping ouvert, rangées dans le dossier &lt;b&gt;Snapshots&lt;/b&gt; de votre dossier DJ MIDI Studio. &lt;b&gt;Fichier → Enregistrer un instantané…&lt;/b&gt; garde le mapping tel qu&apos;il est dans l&apos;application, modifications non enregistrées comprises.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Comparer&lt;/b&gt; liste ce qui a changé depuis cette version, contrôle par contrôle.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Restaurer&lt;/b&gt; remet ses mappings en une seule étape d&apos;&lt;b&gt;Édition → Annuler&lt;/b&gt; (mappings Serato uniquement). Enregistrez ensuite le mapping pour le garder.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Supprimer&lt;/b&gt; efface l&apos;instantané.&lt;/li&gt;&lt;/ul&gt;</translation>
+    </message>
+    <message>
         <source>Copy deck mappings</source>
         <translation>Copier les mappings d&apos;une platine</translation>
     </message>
@@ -3393,6 +3401,22 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
         <translation>Liste ce qui a changé depuis la version enregistrée avant la dernière sauvegarde.</translation>
     </message>
     <message>
+        <source>Save S&amp;napshot...</source>
+        <translation>Enregistrer un &amp;instantané...</translation>
+    </message>
+    <message>
+        <source>Keep the mapping as it is now under a name, to compare or restore later.</source>
+        <translation>Garder le mapping tel qu&apos;il est sous un nom, pour le comparer ou le restaurer plus tard.</translation>
+    </message>
+    <message>
+        <source>Snapshots...</source>
+        <translation>Instantanés...</translation>
+    </message>
+    <message>
+        <source>Compare, restore or delete this mapping&apos;s snapshots.</source>
+        <translation>Comparer, restaurer ou supprimer les instantanés de ce mapping.</translation>
+    </message>
+    <message>
         <source>Show Mapping in Finder</source>
         <translation>Afficher le mapping dans le Finder</translation>
     </message>
@@ -4323,6 +4347,34 @@ Quitter maintenant ?</translation>
     <message>
         <source>Cheat sheet exported: {path} ({count} page(s))</source>
         <translation>Antisèche exportée : {path} ({count} page(s))</translation>
+    </message>
+    <message>
+        <source>Save Snapshot</source>
+        <translation>Enregistrer un instantané</translation>
+    </message>
+    <message>
+        <source>Name of this version (e.g. before the gig):</source>
+        <translation>Nom de cette version (par ex. avant la soirée) :</translation>
+    </message>
+    <message>
+        <source>Snapshot “{name}” saved.</source>
+        <translation>Instantané « {name} » enregistré.</translation>
+    </message>
+    <message>
+        <source>snapshot “{name}”</source>
+        <translation>l&apos;instantané « {name} »</translation>
+    </message>
+    <message>
+        <source>Restore Snapshot</source>
+        <translation>Restaurer un instantané</translation>
+    </message>
+    <message>
+        <source>Restore snapshot “{name}”</source>
+        <translation>Restaurer l&apos;instantané « {name} »</translation>
+    </message>
+    <message>
+        <source>Snapshot “{name}” restored (Edit → Undo takes it back).</source>
+        <translation>Instantané « {name} » restauré (Édition → Annuler le défait).</translation>
     </message>
     <message>
         <source>Copy deck mappings: open a mapping first.</source>
@@ -7447,6 +7499,57 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>first {limit}</source>
         <translation>les {limit} premiers</translation>
+    </message>
+</context>
+<context>
+    <name>SnapshotsDialog</name>
+    <message>
+        <source>Snapshots — {name}</source>
+        <translation>Instantanés — {name}</translation>
+    </message>
+    <message>
+        <source>Named versions of this mapping, newest first. Compare lists what changed since a snapshot; Restore brings its mappings back (Edit → Undo takes it back).</source>
+        <translation>Les versions nommées de ce mapping, les plus récentes d&apos;abord. Comparer liste ce qui a changé depuis un instantané ; Restaurer remet ses mappings (Édition → Annuler le défait).</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation>Nom</translation>
+    </message>
+    <message>
+        <source>Saved</source>
+        <translation>Enregistré</translation>
+    </message>
+    <message>
+        <source>Compare</source>
+        <translation>Comparer</translation>
+    </message>
+    <message>
+        <source>Restore</source>
+        <translation>Restaurer</translation>
+    </message>
+    <message>
+        <source>Restoring works on Serato mappings; compare instead.</source>
+        <translation>La restauration ne fonctionne que sur les mappings Serato ; comparez plutôt.</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation>Supprimer</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Fermer</translation>
+    </message>
+    <message>
+        <source>No snapshot yet: File → Save Snapshot… keeps the mapping as it is now.</source>
+        <translation>Aucun instantané pour l&apos;instant : Fichier → Enregistrer un instantané… garde le mapping tel qu&apos;il est.</translation>
+    </message>
+    <message>
+        <source>Delete snapshot</source>
+        <translation>Supprimer l&apos;instantané</translation>
+    </message>
+    <message>
+        <source>Delete the snapshot “{name}”?</source>
+        <translation>Supprimer l&apos;instantané « {name} » ?</translation>
     </message>
 </context>
 <context>

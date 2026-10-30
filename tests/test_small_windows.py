@@ -223,6 +223,17 @@ def _deck_copy():
     return DeckCopyDialog(parse_file(FIXTURE))
 
 
+def _snapshots():
+    from datetime import UTC, datetime
+
+    from djmidi.gui.snapshots_dialog import SnapshotsDialog
+    from djmidi.snapshots import Snapshot
+
+    snapshot = Snapshot("before the club gig", datetime(2026, 10, 1, tzinfo=UTC).isoformat(), "a.xml", "serato",
+                        FIXTURE)  # fmt: skip
+    return SnapshotsDialog("mapping.xml", lambda: [snapshot])
+
+
 WINDOWS = {
     "first-run wizard": _wizard,
     "layer map": _layer_map,
@@ -238,6 +249,7 @@ WINDOWS = {
     "profile check": _profile_check,
     "route transform": _route_transform,
     "deck copy": _deck_copy,
+    "snapshots": _snapshots,
 }
 
 

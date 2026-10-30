@@ -147,6 +147,7 @@ from djmidi.gui.profile_library_dialog import ProfileLibraryDialog
 from djmidi.gui.report_problem_dialog import ReportProblemDialog
 from djmidi.gui.safe_update_dialog import SafeUpdateDialog
 from djmidi.gui.scroll_utils import AutoSizeScrollArea
+from djmidi.gui.snapshots_dialog import SnapshotsDialog
 from djmidi.gui.splitter_utils import replace_splitter, scrollable_columns
 from djmidi.gui.stage_window import StageWindow
 from djmidi.gui.theme import apply_theme, mapping_tree_stylesheet
@@ -173,6 +174,7 @@ from djmidi.model import Control, MappingElement, MidiConfig
 from djmidi.plugins import PluginPreferences, default_preferences_path
 from djmidi.problem_report import ReportContext, collect_context
 from djmidi.safe_update import prepare_update
+from djmidi.snapshots import Snapshot, list_snapshots, save_snapshot
 from djmidi.stage import suggest_next_tracks
 from djmidi.update_check import ReleaseInfo, current_version, is_check_due, is_newer
 from djmidi.validator import ValidationIssue, severity_label, validate
@@ -377,6 +379,7 @@ class MainWindow(QMainWindow):
         self._macro_matcher = midi_macros.MacroTriggerMatcher()
         # Where Stage Mode's set panel stood when it last closed (issue #366).
         self._stage_set_index = 0
+        self._snapshots_dialog: SnapshotsDialog | None = None
         self._stage_candidates: list[SetTrack] = []
         self._stage_candidates_key: tuple[int, int] | None = None
         # The open "Verify Profile" window (issue #364), fed every live event.
@@ -875,6 +878,17 @@ class MainWindow(QMainWindow):
         self._compare_backup_action.setEnabled(False)
         self._compare_backup_action.triggered.connect(self._on_compare_with_backup)
         file_menu.addAction(self._compare_backup_action)
+
+        self._save_snapshot_action = QAction(self.tr("Save S&napshot..."), self)
+        self._save_snapshot_action.setToolTip(self.tr("Keep the mapping as it is now under a name, to compare or restore later."))
+        self._save_snapshot_action.setEnabled(False)
+        self._save_snapshot_action.triggered.connect(lambda _checked=False: self.save_snapshot())
+        file_menu.addAction(self._save_snapshot_action)
+        self._snapshots_action = QAction(self.tr("Snapshots..."), self)
+        self._snapshots_action.setToolTip(self.tr("Compare, restore or delete this mapping's snapshots."))
+        self._snapshots_action.setEnabled(False)
+        self._snapshots_action.triggered.connect(lambda _checked=False: self.open_snapshots())
+        file_menu.addAction(self._snapshots_action)
 
         reveal_label = (
             self.tr("Show Mapping in Finder") if sys.platform == "darwin" else self.tr("Show Mapping in File Manager")
@@ -3795,6 +3809,8 @@ class MainWindow(QMainWindow):
         self._compare_action.setEnabled(self.config is not None)
         self._compare_backup_action.setEnabled(self.config is not None and backup is not None and backup.is_file())
         self._reveal_action.setEnabled(has_file)
+        self._save_snapshot_action.setEnabled(has_file and self.config is not None)
+        self._snapshots_action.setEnabled(has_file and self.config is not None)
         self._cheat_sheet_action.setEnabled(self.config is not None)
         self._layer_map_action.setEnabled(self.config is not None)
         self.introduction_view.set_files_summary(
@@ -3803,6 +3819,70 @@ class MainWindow(QMainWindow):
             sync_sets=[sync_set.label for sync_set in self.preferences.controller_sync_sets],
             recents=file_locations.existing_recents(self._recent_mappings),
         )
+
+    def save_snapshot(self, name: str | None = None) -> Snapshot | None:
+        """File → Save Snapshot…: the mapping as it is in the app, unsaved
+        edits included, kept under a name."""
+        if self.config is None or self.current_path is None:
+            return None
+        if name is None:
+            name, accepted = QInputDialog.getText(
+                self, self.tr("Save Snapshot"), self.tr("Name of this version (e.g. before the gig):")
+            )
+            if not accepted:
+                return None
+        definition = software.get_definition(self.software_id)
+        try:
+            snapshot = save_snapshot(self.current_path, name, definition.exporter(self.config), self.software_id)
+        except Exception as exc:
+            _LOGGER.exception("Failed to save a snapshot of %s", self.current_path)
+            QMessageBox.warning(self, self.tr("Save Snapshot"), str(exc))
+            return None
+        self.statusBar().showMessage(self.tr("Snapshot “{name}” saved.").format(name=snapshot.name))
+        if self._snapshots_dialog is not None:
+            self._snapshots_dialog.refresh()
+        return snapshot
+
+    def open_snapshots(self) -> SnapshotsDialog | None:
+        if self.config is None or self.current_path is None:
+            return None
+        if self._snapshots_dialog is not None:
+            self._snapshots_dialog.close()
+        path = self.current_path
+        dialog = SnapshotsDialog(
+            path.name, lambda: list_snapshots(path), can_restore=self.software_id == "serato", parent=self
+        )
+        dialog.compareRequested.connect(self._compare_with_snapshot)
+        dialog.restoreRequested.connect(self.restore_snapshot)
+        dialog.finished.connect(lambda _result: setattr(self, "_snapshots_dialog", None))
+        self._snapshots_dialog = dialog
+        dialog.show()
+        return dialog
+
+    def _compare_with_snapshot(self, snapshot: Snapshot) -> MappingDiffDialog | None:
+        if self.config is None:
+            return None
+        return self._compare_with_path(snapshot.path, name=self.tr("snapshot “{name}”").format(name=snapshot.name))
+
+    def restore_snapshot(self, snapshot: Snapshot) -> bool:
+        """Puts the snapshot's mappings back as one undo step (Serato only:
+        the other writers patch their source file and can't take a
+        different set of bindings)."""
+        if self.config is None or self.software_id != "serato":
+            return False
+        try:
+            restored = software.get_definition("serato").parser(snapshot.path.read_text(encoding="utf-8"))
+        except Exception as exc:
+            _LOGGER.exception("Failed to read snapshot %s", snapshot.path)
+            QMessageBox.warning(self, self.tr("Restore Snapshot"), str(exc))
+            return False
+        summary = f"Restore snapshot {snapshot.name}"
+        text = self.tr("Restore snapshot “{name}”").format(name=snapshot.name)
+        self.undo_stack.push(
+            ReplaceControlsCommand(self.config, restored.controls, summary, text, self._on_structure_changed)
+        )
+        self.statusBar().showMessage(self.tr("Snapshot “{name}” restored (Edit → Undo takes it back).").format(name=snapshot.name))
+        return True
 
     def open_deck_copy(self) -> DeckCopyDialog | None:
         """Edit → Copy Deck Mappings… (Serato only: the other formats' writers

@@ -158,6 +158,22 @@ MIDI_LATENCY: HelpEntry = (
     "midi-latency.md",
 )
 
+SNAPSHOTS: HelpEntry = (
+    QT_TRANSLATE_NOOP("HelpTexts", "Snapshots"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
+        "Named versions of the open mapping, kept in the <b>Snapshots</b> folder of your DJ MIDI "
+        "Studio folder. <b>File → Save Snapshot…</b> keeps the mapping as it is in the app, unsaved "
+        "edits included.<ul>"
+        "<li><b>Compare</b> lists what changed since that version, control by control.</li>"
+        "<li><b>Restore</b> brings its mappings back as one step of <b>Edit → Undo</b> (Serato "
+        "mappings only). Save the mapping afterwards to keep it.</li>"
+        "<li><b>Delete</b> removes the snapshot.</li></ul>",
+    ),
+    "snapshots.md",
+)
+
+
 DECK_COPY: HelpEntry = (
     QT_TRANSLATE_NOOP("HelpTexts", "Copy deck mappings"),
     QT_TRANSLATE_NOOP(

@@ -18,7 +18,8 @@ MACROS = "Macros"
 DRAFTS = "Drafts"
 LOGS = "Logs"
 EXPORTS = "Exports"
-SUBFOLDERS = (CONTROLLERS, SYNC, MACROS, DRAFTS, LOGS, EXPORTS)
+SNAPSHOTS = "Snapshots"
+SUBFOLDERS = (CONTROLLERS, SYNC, MACROS, DRAFTS, LOGS, EXPORTS, SNAPSHOTS)
 _README = """DJ MIDI Studio -- your files
 
 Controllers  controller profiles you installed from Controller Setup (JSON)
@@ -27,6 +28,7 @@ Macros       your MIDI macros, one per file (JSON)
 Drafts       Controller Setup drafts you saved
 Logs         Live Monitor logs you saved
 Exports      playlists exported from the Music Library, cheat sheets (PDF)
+Snapshots    named versions of your mappings, one folder per mapping
 
 Your Serato / Traktor mappings are not here: they stay where your DJ
 software keeps them, and DJ MIDI Studio remembers where they are.
@@ -73,6 +75,7 @@ __all__ = [
     "EXPORTS",
     "LOGS",
     "MACROS",
+    "SNAPSHOTS",
     "SUBFOLDERS",
     "SYNC",
     "controllers_dir",
