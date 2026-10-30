@@ -139,6 +139,10 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Mixxx mapping from a profile** (`v0.48.168-mixxx-export`, phase 5 item 8) — `File → Export → Mixxx Mapping from
+  Profile…` lists a profile's buttons and pads, suggests a Mixxx function from each name (reviewed by the user), and
+  writes a `.midi.xml` Mixxx loads. Only the ~40 deck functions Mixxx's own mappings bind to a button are offered;
+  knobs/faders/jogs stay out (not in profiles). Not yet loaded in a running Mixxx.
 - [x] **Music Library faster on a large collection** (`v0.48.167-library-speed`, phase 5 item 7) — measured on a
   synthetic 85,000-track index (`scripts/benchmark_library.py`): opening the tab 5.8 s → 1.2 s, a text filter
   1.9 s → 0.4 s, clearing it 3.5 s → 0.17 s. The table model sorts itself, the text filter reads cached row text,
@@ -3545,7 +3549,8 @@ close what can't be unblocked here.
    7. Music Library at 85k tracks: measure, then cut the open/filter time.
       **Done** in `v0.48.167-library-speed` (open 5.8 s → 1.2 s).
    8. Generate a Mixxx mapping from a controller profile (documented Mixxx
-      control names, picked per button).
+      control names, picked per button). **Done** in
+      `v0.48.168-mixxx-export`.
    - Not scheduled: macOS signing/notarization (waits on the maintainer's
      Apple Developer account), Windows signing. Rejected: writing undocumented
      proprietary binary formats (Serato cue points, rekordbox `export.pdb`).

@@ -11,6 +11,7 @@
 - [Supported files](#supported-files)
 - [What you see](#what-you-see)
 - [Saving](#saving)
+- [Create a Mixxx mapping from a profile](#create-a-mixxx-mapping-from-a-profile)
 - [Technical reference](#technical-reference)
 - [Related](#related)
 
@@ -53,6 +54,29 @@ binding, changing its Mixxx key or deck (do that in Mixxx), giving a number
 to a binding that has none (pitch bend), and a value the file spells as an
 XML entity (`&CC;`). Keep a copy of the original and check the result in
 Mixxx before using it live.
+
+## Create a Mixxx mapping from a profile
+
+For a controller Mixxx doesn't support yet, or one you've captured
+yourself in Controller Setup, `File → Export → Mixxx Mapping from
+Profile...` writes a Mixxx mapping you can load in Mixxx:
+
+1. Pick the controller. Every button and pad of its profile is listed, one
+   row per MIDI channel (SHIFT layers left out).
+2. Double-click **Mixxx function** to choose what a row does, and **Deck**
+   to change the deck. Rows start with a guess from the control's name
+   (`PLAY/PAUSE` → Play / pause, a hot cue pad → its hot cue); check them.
+   Use the filter and **Only rows with a function** to review them quickly.
+3. **Save Mixxx mapping…**, then copy the `.midi.xml` file into Mixxx's
+   controllers folder and pick it in Mixxx's Preferences → Controllers.
+
+Only rows with a function are written, and only Mixxx functions that
+Mixxx's own mappings use for a button are offered (about 40: transport,
+sync, key lock, loops, hot cues, load, PFL…). Knobs, faders and jog wheels
+aren't in profiles, so map those in Mixxx's own MIDI learning wizard.
+Tick **Also bind Note Off** if your controller releases its buttons with a
+Note Off rather than a Note On at zero (Pioneer controllers use the
+latter): without it, a held function such as Cue would never let go.
 
 ## Technical reference
 
