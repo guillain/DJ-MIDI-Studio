@@ -5801,6 +5801,18 @@ Lignes sélectionnées dans Configuration du contrôleur : {selected}</translati
         <translation>Analyse</translation>
     </message>
     <message>
+        <source>e.g. long intro, mix out on the break</source>
+        <translation>par ex. intro longue, sortir sur le break</translation>
+    </message>
+    <message>
+        <source>Shown in Stage Mode when this track is in your set. Kept in this app, never in the file.</source>
+        <translation>Affichée dans le Mode scène quand ce morceau est dans votre set. Gardée dans l&apos;application, jamais dans le fichier.</translation>
+    </message>
+    <message>
+        <source>Stage note</source>
+        <translation>Note de scène</translation>
+    </message>
+    <message>
         <source>Confirm suggested category</source>
         <translation>Confirmer la catégorie suggérée</translation>
     </message>
@@ -6263,6 +6275,14 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>  (missing on disk)</source>
         <translation>  (introuvable sur le disque)</translation>
+    </message>
+    <message>
+        <source>Stage note saved.</source>
+        <translation>Note de scène enregistrée.</translation>
+    </message>
+    <message>
+        <source>Stage note removed.</source>
+        <translation>Note de scène supprimée.</translation>
     </message>
     <message>
         <source>Unreadable cover</source>
@@ -7905,6 +7925,10 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>No set prepared: build one in Music Library → Set.</source>
         <translation>Aucun set préparé : créez-en un dans Bibliothèque → Set.</translation>
+    </message>
+    <message>
+        <source>Note: {note}</source>
+        <translation>Note : {note}</translation>
     </message>
     <message>
         <source>No suggestions: this track has no BPM or key tag.</source>

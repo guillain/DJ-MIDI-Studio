@@ -479,7 +479,13 @@ or key, or too far from the rest) go last in their current order. The
 window also says plainly when the proposal is no better than yours.
 `Use this order` applies it; `Back to my order` puts yours back.
 
-The draft is remembered with the library index until you change it. `Save as playlist…` stores it as an app playlist
+The draft is remembered with the library index until you change it.
+
+Each track can carry a **stage note** (Track panel, `Stage note` field,
+saved when you leave the field): a reminder for the set, shown in
+[Stage Mode](stage-mode.md) when that track is playing or next. Notes stay
+in this app's index (they follow a relinked file) and are never written
+into the audio file. `Save as playlist…` stores it as an app playlist
 (shown with the source `set` in the Playlists panel); `Export as Serato
 crate…` and `Export as Traktor playlist…` write a new file where you choose,
 exactly like the Playlists panel's exports.

@@ -107,6 +107,11 @@ QWidget#stageWindow QLabel#stageTransition[status="incompatible"] {
 QWidget#stageWindow QLabel#stageTransition[status="unknown"] {
     color: #bbbbbb;
 }
+QWidget#stageWindow QLabel#stageNote {
+    color: #ffd400;
+    font-size: 20pt;
+    font-weight: bold;
+}
 QWidget#stageWindow QLabel#stageSuggestions {
     color: #bbbbbb;
     font-size: 15pt;
@@ -176,6 +181,11 @@ class StageWindow(QWidget):
         self._set_details.setWordWrap(True)
         self._set_next = QLabel()
         self._set_next.setWordWrap(True)
+        # The current track's stage note, large and bright: read mid-mix.
+        self._set_note = QLabel()
+        self._set_note.setObjectName("stageNote")
+        self._set_note.setWordWrap(True)
+        self._set_note.setVisible(False)
         self._set_transition = QLabel()
         self._set_transition.setObjectName("stageTransition")
         self._set_transition.setWordWrap(True)
@@ -193,7 +203,9 @@ class StageWindow(QWidget):
         self.set_panel = QWidget()
         set_layout = QVBoxLayout(self.set_panel)
         set_layout.setContentsMargins(0, 0, 0, 12)
-        for widget in (self._set_title, self._set_current, self._set_details, self._set_next, self._set_transition):
+        for widget in (
+            self._set_title, self._set_current, self._set_details, self._set_note, self._set_next, self._set_transition
+        ):
             set_layout.addWidget(widget)
         set_layout.addLayout(set_buttons)
         set_layout.addWidget(self._set_suggestions)
@@ -272,14 +284,20 @@ class StageWindow(QWidget):
             self._set_title.setText(self.tr("Set"))
             self._set_current.setText("")
             self._set_details.setText(self.tr("No set prepared: build one in Music Library → Set."))
-            for label in (self._set_next, self._set_transition, self._set_suggestions):
+            for label in (self._set_next, self._set_transition, self._set_suggestions, self._set_note):
                 label.setText("")
+            self._set_note.setVisible(False)
             self._set_suggestions.setVisible(False)
             return
         self._set_title.setText(view.position)
         self._set_current.setText(view.current)
         self._set_details.setText(view.current_details)
-        self._set_next.setText(view.next)
+        self._set_note.setText(view.current_note)
+        self._set_note.setVisible(bool(view.current_note))
+        next_text = view.next
+        if view.next_note:
+            next_text += "\n" + self.tr("Note: {note}").format(note=view.next_note)
+        self._set_next.setText(next_text)
         self._set_transition.setText(view.transition)
         status = {STATUS_OK: "ok", STATUS_INCOMPATIBLE: "incompatible"}.get(view.status, "unknown")
         self._set_transition.setProperty("status", status)

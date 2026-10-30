@@ -1690,3 +1690,45 @@ def test_set_panel_applies_a_proposed_order_only_when_accepted(library, monkeypa
     assert panel.undo_order_button.isEnabled()
     panel.restore_previous_order()
     assert panel.paths() == original and not panel.undo_order_button.isEnabled()
+
+
+def test_a_stage_note_is_saved_in_the_index_and_reaches_the_stage(library):
+    from djmidi.library.workspace import consolidate
+    from djmidi.stage import stage_set_view
+
+    view, _music, _ = library
+    by_title = _paths_by_title(view)
+    assert view.select_path(by_title["Alpha"])
+    assert view.note_edit.text() == "" and view.note_edit.isEnabled()
+    view.note_edit.setText("  long intro, mix out on the break ")
+    assert view.save_track_note()
+    assert not view.save_track_note()  # unchanged: nothing written
+    note = "long intro, mix out on the break"
+    assert [row.note for row in consolidate(view.db) if row.path == by_title["Alpha"]] == [note]
+    assert view._current_row().note == note
+    view.set_panel.insert_paths([by_title["Alpha"], by_title["Bravo"]])
+    first = stage_set_view(view.set_panel.tracks, view.set_panel.transitions, 0)
+    assert first.current_note == note and first.next_note == ""
+    view.select_path(by_title["Bravo"])
+    view.save_track_note("check the key")
+    second = stage_set_view(view.set_panel.tracks, view.set_panel.transitions, 0)
+    assert second.next_note == "check the key"
+    view.select_path(by_title["Alpha"])
+    assert view.note_edit.text() == note
+    view.save_track_note("")
+    assert list(view.db.track_notes().values()) == ["check the key"]
+
+
+def test_a_note_follows_a_relinked_track(tmp_path):
+    from djmidi.library.db import LibraryDB
+
+    db = LibraryDB(":memory:")
+    root = db.add_root(tmp_path)
+    db.upsert_track(root.id, tmp_path / "old.mp3", 10, 1.0)
+    db.upsert_track(root.id, tmp_path / "new.mp3", 10, 2.0)
+    old, new = (db.get_track_by_path(tmp_path / name) for name in ("old.mp3", "new.mp3"))
+    db.set_track_note(old.id, "keep me")
+    db.mark_paths_missing([str(tmp_path / "old.mp3")])
+    db.relink_tracks([(old.id, str(tmp_path / "new.mp3"), root.id, 10, 2.0)])
+    assert db.track_notes() == {new.id: "keep me"}
+    db.close()

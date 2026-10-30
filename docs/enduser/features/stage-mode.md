@@ -67,6 +67,12 @@ software is playing, so moving on is your click. Leaving and reopening
 Stage Mode during the session resumes at the same track. There is no time
 left: track durations aren't in the tag cache.
 
+**Stage notes** — a reminder you wrote for a track ("long intro", "mix out
+on the break") — appear in large yellow type under the current track, and
+the next track's note under its line. Write them in the Music Library's
+Track panel, `Stage note` field; they stay in this app and are never
+written into your files.
+
 Below the buttons, **Off the plan, these mix well** lists up to five
 tracks from your library that would also follow the current one: a BPM
 within the set's tolerance and a compatible Camelot key, closest BPM

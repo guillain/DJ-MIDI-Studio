@@ -338,6 +338,12 @@ class SetPreparationPanel(QWidget):
             self.tolerance_spin.blockSignals(False)
         self._refresh(save=False)
 
+    def update_row(self, row: workspace.LibraryRow) -> None:
+        """One library row changed (its stage note): refresh if it's in the set."""
+        self._rows[row.path] = row
+        if row.path in self._paths:
+            self._refresh(save=False)
+
     def set_paths(self, paths: Sequence[str]) -> None:
         self._paths = set_prep.insert_paths([], paths)
         self._refresh()

@@ -41,6 +41,13 @@ CREATE TABLE IF NOT EXISTS track_metadata (
 -- a file changed since (e.g. tagged in Serato) drops its stale estimate;
 -- a row with both values NULL records an attempt that found nothing, so
 -- the job doesn't retry that file every run.
+-- A free note per track for the stage (phase 6 item 3) -- this app's only,
+-- never written into the audio file.
+CREATE TABLE IF NOT EXISTS track_notes (
+    track_id INTEGER PRIMARY KEY REFERENCES tracks(id) ON DELETE CASCADE,
+    note TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS analysis_suggestions (
     track_id INTEGER PRIMARY KEY REFERENCES tracks(id) ON DELETE CASCADE,
     mtime REAL NOT NULL,
@@ -358,6 +365,11 @@ class LibraryDB:
                             "UPDATE track_metadata SET track_id = ? WHERE track_id = ?", (target[0], missing_id)
                         )
                     self._conn.execute("DELETE FROM track_metadata WHERE track_id = ?", (missing_id,))
+                    # A note follows the file unless the target has its own.
+                    self._conn.execute(
+                        "UPDATE OR IGNORE track_notes SET track_id = ? WHERE track_id = ?", (target[0], missing_id)
+                    )
+                    self._conn.execute("DELETE FROM track_notes WHERE track_id = ?", (missing_id,))
                     self._conn.execute("DELETE FROM tracks WHERE id = ?", (missing_id,))
                 self._conn.execute("UPDATE playlist_tracks SET path = ? WHERE path = ?", (new_path, old_path))
                 applied += 1
@@ -467,6 +479,22 @@ class LibraryDB:
             "UPDATE analysis_suggestions SET mtime = ? WHERE track_id = ? AND mtime = ?",
             (new_mtime, track_id, old_mtime),
         )
+
+    def set_track_note(self, track_id: int, note: str) -> None:
+        """Stores a track's stage note; a blank note removes it."""
+        text = note.strip()
+        if text:
+            self._conn.execute(
+                "INSERT INTO track_notes (track_id, note) VALUES (?, ?) "
+                "ON CONFLICT(track_id) DO UPDATE SET note = excluded.note",
+                (track_id, text),
+            )
+        else:
+            self._conn.execute("DELETE FROM track_notes WHERE track_id = ?", (track_id,))
+        self._conn.commit()
+
+    def track_notes(self) -> dict[int, str]:
+        return dict(self._conn.execute("SELECT track_id, note FROM track_notes").fetchall())
 
     def analysis_suggestions(self) -> dict[int, tuple[float | None, str | None]]:
         """Track id -> (suggested BPM, suggested key), current estimates only

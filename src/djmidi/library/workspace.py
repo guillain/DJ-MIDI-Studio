@@ -69,6 +69,8 @@ class LibraryRow:
     bpm_suggestion: float | None = None
     """Audio-analysis BPM estimate for a track with no BPM tag (issue #224)."""
     key_suggestion: str | None = None
+    note: str | None = None
+    """The track's stage note (this app's only, never in the file)."""
     """Audio-analysis key estimate for a track with no key tag (issue #224)."""
 
     @property
@@ -126,6 +128,7 @@ def consolidate(db: LibraryDB) -> list[LibraryRow]:
     roots = {root.id: root.path for root in db.list_roots()}
     crates = crate_hints(db)
     estimates = db.analysis_suggestions()
+    notes = db.track_notes()
     resolved: dict[tuple[str | None, str | None, str | None], taxonomy.CategoryMatch] = {}
     rows: list[LibraryRow] = []
     for record, metadata in db.list_tracks_with_metadata():
@@ -147,6 +150,7 @@ def consolidate(db: LibraryDB) -> list[LibraryRow]:
                 # Only offered while the tag is still empty.
                 bpm_suggestion=estimated_bpm if metadata is None or metadata.bpm is None else None,
                 key_suggestion=estimated_key if metadata is None or not (metadata.key or "").strip() else None,
+                note=notes.get(record.id),
             )
         )
     return rows
