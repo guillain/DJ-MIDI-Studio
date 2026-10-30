@@ -106,6 +106,7 @@ class MidiLatencyDialog(QDialog):
         refresh.setProperty("compact", True)
         refresh.setFixedSize(26, 26)
         refresh.setToolTip(self.tr("Refresh the MIDI port lists"))
+        refresh.setAccessibleName(self.tr("Refresh the MIDI port lists"))
         refresh.clicked.connect(self.refresh_ports)
         output_row = QHBoxLayout()
         output_row.addWidget(self.output_combo, 1)

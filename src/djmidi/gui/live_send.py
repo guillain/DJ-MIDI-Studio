@@ -50,6 +50,7 @@ from PySide6.QtWidgets import (
 from djmidi import catalog, midi_io
 from djmidi.catalog._registry import ControlInfo
 from djmidi.gui import layout as layout_mod
+from djmidi.gui.accessibility import name_icon_buttons
 from djmidi.gui.theme import colors as theme_colors
 from djmidi.gui.theme import signals as theme_signals
 from djmidi.session_player import send_control_info_entry
@@ -142,6 +143,7 @@ class LiveSendControl(QWidget):
 
         if not defer_port_scan:
             self.refresh_ports()
+        name_icon_buttons(self)
 
     def showEvent(self, event: QShowEvent) -> None:
         self._ensure_ports_scanned()
