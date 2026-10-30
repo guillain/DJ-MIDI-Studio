@@ -139,6 +139,10 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Software plugin kit** (`v0.48.175-plugin-kit`, phase 6 item 7) — a guide
+  (`docs/developer/design/software-plugins.md`), a contract check any plugin runs on its own sample files
+  (`check_software_plugin`, `scripts/check_software_plugin.py`; Serato and Traktor pass it), and a complete example
+  plugin in `examples/software-plugin`. The route for VirtualDJ or Engine DJ support from people who have the files.
 - [x] **Cheat sheet as a web page** (`v0.48.174-cheat-sheet-web`, phase 6 item 6) — `File → Export → Cheat Sheet (Web
   Page)...` writes one offline `.html` (photos embedded) to open on a phone or tablet: tap a control to read what the
   mapping does there. Checking it in a browser showed the DDJ-XP2 pad markers were off; all 32 re-measured from pixel
@@ -3587,7 +3591,8 @@ close what can't be unblocked here.
       **Done** in `v0.48.173-export-smart-playlists`.
    6. Interactive cheat sheet as a standalone web page. **Done** in
       `v0.48.174-cheat-sheet-web` (also re-measured the DDJ-XP2 pads).
-   7. Software plugin kit: guide, contract tests, example plugin.
+   7. Software plugin kit: guide, contract tests, example plugin. **Done**
+      in `v0.48.175-plugin-kit`.
    8. A third interface language.
 
 ## Tracking rules

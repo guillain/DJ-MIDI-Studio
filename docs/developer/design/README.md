@@ -14,6 +14,7 @@
 | --- | --- |
 | [Architecture](architecture.md) | Services, data flow, GUI navigation, catalog registry, detection and MIDI API |
 | [Plugin manifest](plugin-manifest.md) | The identity card every controller/software plugin declares |
+| [Writing a software plugin](software-plugins.md) | Support another DJ program: the model, the contract check, the example plugin |
 | [Evolution record](evolution.md) | The post-`v0.46.0` chapters, with screenshots and validation boundaries |
 
 The detailed, per-feature design notes are kept in [`CLAUDE.md`](../../../CLAUDE.md),
