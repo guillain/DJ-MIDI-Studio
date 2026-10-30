@@ -421,6 +421,7 @@ your DJ history, and whenever you click `Refresh smart playlists`.
 | `New smart playlist…` | Opens the rules dialog, then creates the playlist with the tracks that match now |
 | `Edit smart rules…` | Changes the name or rules of the selected smart playlist and refreshes it |
 | `Refresh smart playlists` | Re-evaluates every smart playlist against the current library and play history |
+| `Export all smart…` | Re-evaluates every smart playlist, then writes each one, named after it, as a Serato crate and/or a Traktor playlist into one folder you choose — remembered, so after each scan it's one click again. Files a previous export wrote there are replaced; nothing else in the folder is touched |
 
 Every rule left at *Any*/*Off* is ignored; the others must all match:
 
