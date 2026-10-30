@@ -100,8 +100,9 @@ what the mapping does, switch pad modes, latch SHIFT, and turn on
   Inpulse 500, Behringer CMD LC-1, CMD Micro, CMD Studio 4a, Korg nanoPAD2 — plus any controller through Controller Setup.
   [Verification status](docs/enduser/controller-profiles.md).
   Plus a library of 46 more Pioneer DJ / AlphaTheta profiles (DDJ-400, DDJ-FLX6, DDJ-REV7,
-  DJM-S11, XDJ-RX3…) built from rekordbox's own mappings, installed on demand
-  ([profile library](docs/enduser/controller-profiles.md#profile-library-rekordbox-devices)).
+  DJM-S11, XDJ-RX3…) built from rekordbox's own mappings and 115 other-brand profiles
+  (Hercules, Numark, Reloop, Denon, Allen & Heath…) built from Mixxx's, installed on demand
+  ([profile library](docs/enduser/controller-profiles.md#profile-library)).
 - **Systems:** macOS, Windows, Linux.
 
 ## Install
