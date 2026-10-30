@@ -139,6 +139,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Community submissions become PRs** (`v0.48.161-community-submission-pr`, phase 5 item 1) — labelling a
+  *Submit to community catalog…* issue `controller-submission` runs a workflow that validates its JSON (types,
+  ranges, sizes, built-in names, conflicting triggers) and opens a PR adding the profile to
+  `controllers/library/community/`; a bad submission gets the reason as an issue comment. In the library a community
+  profile hides a rekordbox- or Mixxx-built one of the same name. The route for #11/#12 without owning the devices.
 - [x] **Profile library: 115 other-brand profiles from Mixxx's mappings** (`v0.48.160-mixxx-library`, #12) — the
   controllers Mixxx maps (Hercules, Numark, Reloop, Denon, Allen & Heath, Akai, Behringer, Vestax, Stanton…), minus
   built-ins and rekordbox-library devices, as installable profiles: their buttons named after the Mixxx function they
@@ -3498,6 +3503,22 @@ close what can't be unblocked here.
       **Done** in `v0.48.153-macros-step2`.
    6. Per-controller MIDI remapper layer over the existing routing (#368).
       **Done** in `v0.48.154-midi-remapper`.
+6. **Phase 5 — new features, agreed 2026-10-30** (no hardware needed; one PR
+   and milestone tag each, in this order):
+   1. Community submissions become PRs: a maintainer labels the issue, a
+      workflow validates the JSON and opens the PR (unblocks #11/#12 without
+      the maintainer owning the devices). **Done** in
+      `v0.48.161-community-submission-pr`.
+   2. Copy a deck's mappings onto another deck (channel shift, preview, one
+      undo step, the 10x copies kept consistent).
+   3. Next-track suggestions in Stage Mode's set panel (compatible BPM/key
+      from the library).
+   4. Live Monitor session export (`.mid` / CSV).
+   5. Mapping snapshots: named versions compared with the mapping diff.
+   6. Accessibility audit (keyboard, accessible names, contrast) with a test.
+   7. Music Library at 85k tracks: measure, then cut the open/filter time.
+   8. Generate a Mixxx mapping from a controller profile (documented Mixxx
+      control names, picked per button).
    - Not scheduled: macOS signing/notarization (waits on the maintainer's
      Apple Developer account), Windows signing. Rejected: writing undocumented
      proprietary binary formats (Serato cue points, rekordbox `export.pdb`).
