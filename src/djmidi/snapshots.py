@@ -46,7 +46,7 @@ def _slug(text: str) -> str:
 
 def snapshot_dir(mapping_path: str | Path, root: str | Path | None = None) -> Path:
     mapping = Path(mapping_path).expanduser().resolve()
-    digest = hashlib.sha1(str(mapping).encode("utf-8")).hexdigest()[:8]
+    digest = hashlib.sha1(str(mapping).encode("utf-8"), usedforsecurity=False).hexdigest()[:8]
     stem = mapping.name.split(".")[0]
     base = Path(root) if root is not None else user_paths.subfolder(user_paths.SNAPSHOTS)
     return base / f"{_slug(stem)}-{digest}"
