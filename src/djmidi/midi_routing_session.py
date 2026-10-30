@@ -45,6 +45,8 @@ class MidiRoutingSession:
         virtual_input_ids: Iterable[str] = (),
         virtual_input_opener: InputOpener | None = None,
         link_followers: Iterable[LinkClockFollower] = (),
+        virtual_output_ids: Iterable[str] = (),
+        virtual_output_opener: OutputOpener | None = None,
     ) -> None:
         self.router = router
         self._input_opener = input_opener
@@ -53,6 +55,11 @@ class MidiRoutingSession:
             lambda name: mido.open_input(name, virtual=True)
         )
         self._virtual_input_ids = frozenset(virtual_input_ids)
+        # Outputs this app creates (the remapper's port the DJ software reads, issue #368).
+        self._virtual_output_opener = virtual_output_opener or (
+            lambda name: mido.open_output(name, virtual=True)
+        )
+        self._virtual_output_ids = frozenset(virtual_output_ids)
         if clock_mirror is not None and clock_mirrors is not None:
             raise ValueError("use clock_mirror or clock_mirrors, not both")
         self._clock_mirrors = tuple(clock_mirrors or ((clock_mirror,) if clock_mirror else ()))
@@ -88,6 +95,11 @@ class MidiRoutingSession:
             raise RuntimeError("stop the routing session before changing the Link policy")
         self._link_followers = tuple(followers)
 
+    def set_virtual_output_ids(self, output_ids: Iterable[str]) -> None:
+        if self.running:
+            raise RuntimeError("stop the routing session before changing virtual MIDI outputs")
+        self._virtual_output_ids = frozenset(output_ids)
+
     def set_virtual_input_ids(self, input_ids: Iterable[str]) -> None:
         if self.running:
             raise RuntimeError("stop the routing session before changing virtual MIDI inputs")
@@ -115,7 +127,12 @@ class MidiRoutingSession:
                 )
                 self._inputs[port_id] = opener(port_id)
             for port_id in sorted(output_ids):
-                self._outputs[port_id] = self._output_opener(port_id)
+                opener = (
+                    self._virtual_output_opener
+                    if port_id in self._virtual_output_ids
+                    else self._output_opener
+                )
+                self._outputs[port_id] = opener(port_id)
         except Exception:
             _LOGGER.exception("Failed to open MIDI ports for routing (inputs=%s, outputs=%s)", input_ids, output_ids)
             self.stop()

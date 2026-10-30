@@ -380,7 +380,9 @@ MIDI_ROUTING: HelpEntry = (
         "touches real hardware).</li>"
         "<li>Pick a source and a destination, <b>Add route</b>.</li>"
         "<li>Optionally <b>Edit transform…</b> to change the channel, offset the note/CC "
-        "or invert the value.</li>"
+        "or invert the value, or to remap single controls (one note or CC in, another out, "
+        "or blocked). To remap a controller, route it to <i>DJ MIDI Studio Remap</i> and pick "
+        "that port in your DJ software instead of the controller (macOS / Linux).</li>"
         "<li><b>Start routing</b>. Only the ports your routes use are opened.</li></ol>"
         "Routes that would loop back on themselves are refused.",
     ),

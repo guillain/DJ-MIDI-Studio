@@ -14,6 +14,64 @@ _LOGGER = logging.getLogger(__name__)
 SendMessage = Callable[[str, MidiMessage], None]
 
 
+NOTE, CC, BLOCK = "note", "cc", "block"
+
+
+@dataclass(frozen=True)
+class RemapRule:
+    """One control of a controller remapped (issue #368): every message of
+    the source control -- a note's press and release, or a CC's values --
+    leaves as the target control instead, or is dropped (``target_kind``
+    ``"block"``). The value is kept: a note's velocity becomes the CC value
+    and back, a release (Note Off / velocity 0) becomes value 0. Channels
+    are 1-16, data1 0-127."""
+
+    source_kind: str  # NOTE or CC
+    source_channel: int
+    source_data1: int
+    target_kind: str  # NOTE, CC or BLOCK
+    target_channel: int = 1
+    target_data1: int = 0
+
+    def __post_init__(self) -> None:
+        if self.source_kind not in (NOTE, CC) or self.target_kind not in (NOTE, CC, BLOCK):
+            raise ValueError("a remap goes from a note or CC to a note, a CC, or nothing")
+        for channel in (self.source_channel, self.target_channel):
+            if not 1 <= channel <= 16:
+                raise ValueError("channels are 1-16")
+        for number in (self.source_data1, self.target_data1):
+            if not 0 <= number <= 127:
+                raise ValueError("note and CC numbers are 0-127")
+
+    def matches(self, message: MidiMessage) -> bool:
+        if message.is_sysex or len(message.data) < 3:
+            return False
+        nibble, channel, data1 = message.status & 0xF0, (message.status & 0x0F) + 1, message.data[1]
+        kinds = (0x80, 0x90) if self.source_kind == NOTE else (0xB0,)
+        return nibble in kinds and channel == self.source_channel and data1 == self.source_data1
+
+    def apply(self, message: MidiMessage) -> MidiMessage | None:
+        if self.target_kind == BLOCK:
+            return None
+        nibble, value = message.status & 0xF0, message.data[2]
+        if nibble == 0x80:
+            value = 0  # a release, whatever velocity the Note Off carries
+        if self.target_kind == CC:
+            status = 0xB0
+        else:
+            status = 0x90 if value > 0 else 0x80
+        status |= self.target_channel - 1
+        return replace(message, data=bytes((status, self.target_data1, value)))
+
+    def label(self) -> str:
+        """"Note 40 ch 1 → CC 7 ch 2", "Note 40 ch 1 → blocked"."""
+        def side(kind: str, channel: int, data1: int) -> str:
+            return f"{'Note' if kind == NOTE else 'CC'} {data1} ch {channel}"
+
+        target = "blocked" if self.target_kind == BLOCK else side(self.target_kind, self.target_channel, self.target_data1)
+        return f"{side(self.source_kind, self.source_channel, self.source_data1)} → {target}"
+
+
 @dataclass(frozen=True)
 class MidiValueTransform:
     """A small, deterministic per-route value transform.
@@ -29,10 +87,17 @@ class MidiValueTransform:
     channel_override: int | None = None
     data1_offset: int = 0
     invert_data2: bool = False
+    # Per-control remaps (issue #368), checked first: a message one rule
+    # matches leaves as that rule says and skips the stream-wide values.
+    remaps: tuple[RemapRule, ...] = ()
 
-    def apply(self, message: MidiMessage) -> MidiMessage:
+    def apply(self, message: MidiMessage) -> MidiMessage | None:
+        """The message to send, or None when a remap blocks it."""
         if message.is_sysex or not 0x80 <= message.status <= 0xEF:
             return message
+        for rule in self.remaps:
+            if rule.matches(message):
+                return rule.apply(message)
         data = bytearray(message.data)
         if self.channel_override is not None:
             data[0] = (data[0] & 0xF0) | (self.channel_override - 1)
@@ -120,6 +185,9 @@ class MidiRouter:
                 self.stats.dropped += 1
                 continue
             outgoing = route.transform.apply(message) if route.transform else message
+            if outgoing is None:  # blocked by a remap
+                self.stats.dropped += 1
+                continue
             try:
                 send(route.destination_port_id, outgoing)
             except Exception as exc:  # noqa: BLE001 - route diagnostics must not kill monitoring
@@ -155,4 +223,4 @@ class MidiRouter:
         return False
 
 
-__all__ = ["MidiRoute", "MidiRouter", "MidiValueTransform", "RouteStats"]
+__all__ = ["BLOCK", "CC", "NOTE", "MidiRoute", "MidiRouter", "MidiValueTransform", "RemapRule", "RouteStats"]

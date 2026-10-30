@@ -489,6 +489,7 @@ class MainWindow(QMainWindow):
         self.controller_setup_view.syncSetSaveRequested.connect(self._on_sync_set_save_requested)
 
         self.midi_routing_view = MidiRoutingView()
+        self.midi_routing_view.ensure_listening = self._ensure_learn_listening
         self.midi_routing_view.set_routing_enabled(self.preferences.routing_enabled)
         self.midi_clock_view = MidiClockView(self.midi_routing_view.take_clock_panel())
         self.metronome_view = MetronomeView(
@@ -2664,6 +2665,11 @@ class MainWindow(QMainWindow):
             pass
         elif self._profile_check_dialog is not None and self._profile_check_dialog.feed_event(event):
             pass  # a press being verified (issue #364) is neither a macro nor a Learn
+        elif (
+            self.midi_routing_view.active_transform_dialog is not None
+            and self.midi_routing_view.active_transform_dialog.feed_learn_event(event)
+        ):
+            pass  # a remap Learn (issue #368)
         elif self._macro_dialog is not None:
             self._macro_dialog.feed_learn_event(event)
         elif not self.edit_panel.feed_learn_event(event):

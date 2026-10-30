@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import sys
 import time
 from dataclasses import asdict, replace
 
@@ -39,7 +40,7 @@ from djmidi.gui.theme import midi_tools_stylesheet
 from djmidi.gui.theme import signals as theme_signals
 from djmidi.midi_clock import MidiClockMirror
 from djmidi.midi_io import list_input_ports, list_output_ports
-from djmidi.midi_router import MidiRoute, MidiRouter, MidiValueTransform
+from djmidi.midi_router import MidiRoute, MidiRouter, MidiValueTransform, RemapRule
 from djmidi.midi_routing_session import SERATO_CLOCK_INPUT_NAME, MidiRoutingSession
 
 _LOGGER = logging.getLogger(__name__)
@@ -63,6 +64,13 @@ def _load_json_list(raw: object) -> list:
     return decoded if isinstance(decoded, list) else []
 
 
+# The output this app creates for a remapped controller (issue #368): pick
+# it in the DJ software instead of the controller. Virtual ports need
+# CoreMIDI or ALSA; Windows has none (loopMIDI is a separate install).
+REMAP_PORT_NAME = "DJ MIDI Studio Remap"
+VIRTUAL_OUTPUTS_SUPPORTED = sys.platform != "win32"
+
+
 def _transform_to_dict(transform: MidiValueTransform | None) -> dict | None:
     return asdict(transform) if transform is not None else None
 
@@ -70,10 +78,17 @@ def _transform_to_dict(transform: MidiValueTransform | None) -> dict | None:
 def _transform_from_dict(data: object) -> MidiValueTransform | None:
     if not isinstance(data, dict):
         return None
+    remaps = []
+    for raw in data.get("remaps") or ():
+        try:
+            remaps.append(RemapRule(**raw))
+        except (TypeError, ValueError):
+            _LOGGER.warning("Ignoring an unreadable remap rule: %r", raw)
     return MidiValueTransform(
         channel_override=data.get("channel_override"),
         data1_offset=int(data.get("data1_offset", 0) or 0),
         invert_data2=bool(data.get("invert_data2", False)),
+        remaps=tuple(remaps),
     )
 
 
@@ -120,6 +135,10 @@ class MidiRoutingView(QWidget):
         self._clock_inactive_since: float | None = None
         self._clock_inactive_escalated = False
         self._routing_session = MidiRoutingSession(self._router)
+        # MIDI Learn in the transform dialog (issue #368): the main window
+        # sets `ensure_listening` and feeds live events to the open dialog.
+        self.ensure_listening = None
+        self.active_transform_dialog: MidiRouteTransformDialog | None = None
         self._routing_timer = QTimer(self)
         self._routing_timer.setInterval(10)
         self._routing_timer.timeout.connect(self._poll_routing)
@@ -317,6 +336,9 @@ class MidiRoutingView(QWidget):
             self._stop_routing()
             return
         try:
+            self._routing_session.set_virtual_output_ids(
+                {REMAP_PORT_NAME} if VIRTUAL_OUTPUTS_SUPPORTED else set()
+            )
             self._routing_session.start()
         except Exception as exc:
             _LOGGER.exception("Cannot start MIDI routing")
@@ -457,7 +479,8 @@ class MidiRoutingView(QWidget):
         input_names = sorted(set(list_input_ports()))
         output_names = sorted(set(list_output_ports()))
         self._replace_port_combo(self._source_combo, input_names)
-        self._replace_port_combo(self._destination_combo, output_names)
+        destinations = [*output_names, REMAP_PORT_NAME] if VIRTUAL_OUTPUTS_SUPPORTED else output_names
+        self._replace_port_combo(self._destination_combo, destinations)
         clock_inputs = [*input_names, ABLETON_LINK_CLOCK_SOURCE_NAME]
         if self._serato_virtual_checkbox.isChecked():
             clock_inputs = [*clock_inputs, SERATO_CLOCK_INPUT_NAME]
@@ -500,8 +523,13 @@ class MidiRoutingView(QWidget):
         if row < 0 or row >= len(self._router.routes):
             return
         route = self._router.routes[row]
-        dialog = MidiRouteTransformDialog(route.transform, self)
-        if dialog.exec() != QDialog.DialogCode.Accepted:
+        dialog = MidiRouteTransformDialog(route.transform, self, ensure_listening=self.ensure_listening)
+        self.active_transform_dialog = dialog
+        try:
+            accepted = dialog.exec() == QDialog.DialogCode.Accepted
+        finally:
+            self.active_transform_dialog = None
+        if not accepted:
             return
         self._router.remove_route(route)
         self._router.add_route(replace(route, transform=dialog.result_transform()))
@@ -519,6 +547,8 @@ class MidiRoutingView(QWidget):
             parts.append(f"{transform.data1_offset:+d}")
         if transform.invert_data2:
             parts.append(self.tr("invert"))
+        if transform.remaps:
+            parts.append(self.tr("{count} remap(s)").format(count=len(transform.remaps)))
         return ", ".join(parts) or "—"
 
     def _refresh_routes_table(self) -> None:

@@ -209,6 +209,13 @@ def _profile_check():
     return ProfileCheckDialog(["DDJ-XP2", "XDJ-XZ"], ["PIONEER DDJ-XP2"], initial="DDJ-XP2")
 
 
+def _route_transform():
+    from djmidi.gui.midi_route_transform_dialog import MidiRouteTransformDialog
+    from djmidi.midi_router import CC, NOTE, MidiValueTransform, RemapRule
+
+    return MidiRouteTransformDialog(MidiValueTransform(remaps=(RemapRule(NOTE, 1, 40, CC, 2, 7),)))
+
+
 WINDOWS = {
     "first-run wizard": _wizard,
     "layer map": _layer_map,
@@ -222,6 +229,7 @@ WINDOWS = {
     "controller profile library": _profile_library,
     "geometry editor": _geometry_editor,
     "profile check": _profile_check,
+    "route transform": _route_transform,
 }
 
 

@@ -2060,8 +2060,8 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
         <translation>Routage MIDI</translation>
     </message>
     <message>
-        <source>One-way routes from a MIDI input to a MIDI output.&lt;ol&gt;&lt;li&gt;Enable &lt;i&gt;MIDI routing policies&lt;/i&gt; in ⚙ Preferences (off by default: it touches real hardware).&lt;/li&gt;&lt;li&gt;Pick a source and a destination, &lt;b&gt;Add route&lt;/b&gt;.&lt;/li&gt;&lt;li&gt;Optionally &lt;b&gt;Edit transform…&lt;/b&gt; to change the channel, offset the note/CC or invert the value.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Start routing&lt;/b&gt;. Only the ports your routes use are opened.&lt;/li&gt;&lt;/ol&gt;Routes that would loop back on themselves are refused.</source>
-        <translation>Des routes à sens unique d&apos;une entrée MIDI vers une sortie MIDI.&lt;ol&gt;&lt;li&gt;Cochez &lt;i&gt;Activer les règles de routage MIDI&lt;/i&gt; dans ⚙ Préférences (désactivé par défaut : cela agit sur du vrai matériel).&lt;/li&gt;&lt;li&gt;Choisissez une source et une destination, &lt;b&gt;Ajouter une route&lt;/b&gt;.&lt;/li&gt;&lt;li&gt;Si besoin, &lt;b&gt;Transformation…&lt;/b&gt; pour changer le canal, décaler la note/le CC ou inverser la valeur.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Démarrer le routage&lt;/b&gt;. Seuls les ports utilisés par vos routes sont ouverts.&lt;/li&gt;&lt;/ol&gt;Les routes qui reboucleraient sur elles-mêmes sont refusées.</translation>
+        <source>One-way routes from a MIDI input to a MIDI output.&lt;ol&gt;&lt;li&gt;Enable &lt;i&gt;MIDI routing policies&lt;/i&gt; in ⚙ Preferences (off by default: it touches real hardware).&lt;/li&gt;&lt;li&gt;Pick a source and a destination, &lt;b&gt;Add route&lt;/b&gt;.&lt;/li&gt;&lt;li&gt;Optionally &lt;b&gt;Edit transform…&lt;/b&gt; to change the channel, offset the note/CC or invert the value, or to remap single controls (one note or CC in, another out, or blocked). To remap a controller, route it to &lt;i&gt;DJ MIDI Studio Remap&lt;/i&gt; and pick that port in your DJ software instead of the controller (macOS / Linux).&lt;/li&gt;&lt;li&gt;&lt;b&gt;Start routing&lt;/b&gt;. Only the ports your routes use are opened.&lt;/li&gt;&lt;/ol&gt;Routes that would loop back on themselves are refused.</source>
+        <translation>Des routes à sens unique d&apos;une entrée MIDI vers une sortie MIDI.&lt;ol&gt;&lt;li&gt;Cochez &lt;i&gt;Activer les règles de routage MIDI&lt;/i&gt; dans ⚙ Préférences (désactivé par défaut : cela agit sur du vrai matériel).&lt;/li&gt;&lt;li&gt;Choisissez une source et une destination, &lt;b&gt;Ajouter une route&lt;/b&gt;.&lt;/li&gt;&lt;li&gt;Si besoin, &lt;b&gt;Transformation…&lt;/b&gt; pour changer le canal, décaler la note/le CC ou inverser la valeur, ou remapper des commandes une à une (une note ou un CC en entrée, un autre en sortie, ou bloqué). Pour remapper un contrôleur, routez-le vers &lt;i&gt;DJ MIDI Studio Remap&lt;/i&gt; et choisissez ce port dans votre logiciel DJ à la place du contrôleur (macOS / Linux).&lt;/li&gt;&lt;li&gt;&lt;b&gt;Démarrer le routage&lt;/b&gt;. Seuls les ports utilisés par vos routes sont ouverts.&lt;/li&gt;&lt;/ol&gt;Les routes qui reboucleraient sur elles-mêmes sont refusées.</translation>
     </message>
     <message>
         <source>MIDI Clock</source>
@@ -4836,8 +4836,36 @@ Lignes sélectionnées dans Configuration du contrôleur : {selected}</translati
 <context>
     <name>MidiRouteTransformDialog</name>
     <message>
+        <source>From</source>
+        <translation>De</translation>
+    </message>
+    <message>
+        <source>Ch</source>
+        <translation>Can.</translation>
+    </message>
+    <message>
+        <source>No.</source>
+        <translation>N°</translation>
+    </message>
+    <message>
+        <source>To</source>
+        <translation>Vers</translation>
+    </message>
+    <message>
+        <source>Note</source>
+        <translation>Note</translation>
+    </message>
+    <message>
+        <source>Blocked</source>
+        <translation>Bloqué</translation>
+    </message>
+    <message>
         <source>Edit route transform</source>
         <translation>Modifier la transformation de la route</translation>
+    </message>
+    <message>
+        <source>No control pressed — Learn timed out.</source>
+        <translation>Aucune commande pressée — apprentissage expiré.</translation>
     </message>
     <message>
         <source>(unchanged)</source>
@@ -4856,12 +4884,56 @@ Lignes sélectionnées dans Configuration du contrôleur : {selected}</translati
         <translation>Décalage note/CC :</translation>
     </message>
     <message>
+        <source>Remap controls: each row sends another note or CC instead of one control (or blocks it); the value is kept. Rows win over the settings above. Route the controller to “DJ MIDI Studio Remap” and pick that port in your DJ software instead of the controller.</source>
+        <translation>Remapper des commandes : chaque ligne envoie une autre note ou un autre CC à la place d&apos;une commande (ou la bloque) ; la valeur est conservée. Les lignes l&apos;emportent sur les réglages ci-dessus. Routez le contrôleur vers « DJ MIDI Studio Remap » et choisissez ce port dans votre logiciel DJ à la place du contrôleur.</translation>
+    </message>
+    <message>
+        <source>Add remap</source>
+        <translation>Ajouter un remappage</translation>
+    </message>
+    <message>
+        <source>Learn</source>
+        <translation>Apprendre</translation>
+    </message>
+    <message>
+        <source>Press the control to remap on your controller</source>
+        <translation>Appuyez sur la commande à remapper de votre contrôleur</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>Retirer</translation>
+    </message>
+    <message>
+        <source>No MIDI input is open: connect a controller, or pick one in Live Monitor.</source>
+        <translation>Aucune entrée MIDI ouverte : branchez un contrôleur, ou choisissez-en une dans le Live Monitor.</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Annuler</translation>
+    </message>
+    <message>
+        <source>Press the control to remap…</source>
+        <translation>Appuyez sur la commande à remapper…</translation>
+    </message>
+    <message>
+        <source>Learn cancelled.</source>
+        <translation>Apprentissage annulé.</translation>
+    </message>
+    <message>
+        <source>Learned {kind} {number} on channel {channel}.</source>
+        <translation>Appris : {kind} {number} sur le canal {channel}.</translation>
+    </message>
+    <message>
         <source>Invalid transform</source>
         <translation>Transformation invalide</translation>
     </message>
     <message>
         <source>Note/CC offset must be a whole number from -127 to 127.</source>
         <translation>Le décalage note/CC doit être un nombre entier de -127 à 127.</translation>
+    </message>
+    <message>
+        <source>Two rows remap the same control: keep one.</source>
+        <translation>Deux lignes remappent la même commande : gardez-en une.</translation>
     </message>
 </context>
 <context>
@@ -4973,6 +5045,10 @@ Lignes sélectionnées dans Configuration du contrôleur : {selected}</translati
     <message>
         <source>invert</source>
         <translation>inversé</translation>
+    </message>
+    <message>
+        <source>{count} remap(s)</source>
+        <translation>{count} remappage(s)</translation>
     </message>
     <message>
         <source>Enabled</source>
