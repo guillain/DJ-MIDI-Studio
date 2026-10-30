@@ -1644,3 +1644,49 @@ def test_stopping_mid_track_never_records_that_track(untagged_library):
     release.set()
     assert not view.is_busy()
     assert all(row.bpm_suggestion is None for row in view.table_model.rows())
+
+
+def test_set_panel_applies_a_proposed_order_only_when_accepted(library, monkeypatch):
+    from djmidi.gui.set_order_dialog import SetOrderDialog
+
+    view, _music, _ = library
+    panel = view.set_panel
+    by_title = _paths_by_title(view)
+    panel.insert_paths([by_title["Charlie"], by_title["Bravo"], by_title["Alpha"]])
+    original = panel.paths()
+    dialog = SetOrderDialog(panel.tracks, panel.tolerance_spin.value())
+    dialog.keep_opener.setChecked(False)
+    assert set(dialog.order()[:2]) == {by_title["Alpha"], by_title["Bravo"]}
+    assert dialog.order()[2] == by_title["Charlie"]  # 80 BPM chains with neither
+    # Charlie (80 BPM) clashes wherever it goes: one clash either way, so
+    # the dialog honestly says the proposal isn't better.
+    assert "isn't better" in dialog.verdict.text()
+    dialog.close()
+
+    class _Refused:
+        def __init__(self, *args):
+            pass
+
+        def exec(self):
+            return QDialog.DialogCode.Rejected
+
+        def order(self):
+            return ["unused"]
+
+    panel.order_dialog_factory = _Refused
+    assert not panel.propose_order() and panel.paths() == original
+
+    proposed = [by_title["Alpha"], by_title["Bravo"], by_title["Charlie"]]
+
+    class _Accepted(_Refused):
+        def exec(self):
+            return QDialog.DialogCode.Accepted
+
+        def order(self):
+            return list(proposed)
+
+    panel.order_dialog_factory = _Accepted
+    assert panel.propose_order() and panel.paths() == proposed
+    assert panel.undo_order_button.isEnabled()
+    panel.restore_previous_order()
+    assert panel.paths() == original and not panel.undo_order_button.isEnabled()

@@ -240,6 +240,14 @@ def _mixxx_export():
     return MixxxExportDialog(["DDJ-FLX4", "XDJ-XZ"], initial="DDJ-FLX4")
 
 
+def _set_order():
+    from djmidi.gui.set_order_dialog import SetOrderDialog
+    from djmidi.library.set_prep import SetTrack
+
+    tracks = [SetTrack(f"/{n}.mp3", f"Track {n}", "Artist", 120.0 + n, "8A") for n in range(6)]
+    return SetOrderDialog(tracks, 6.0)
+
+
 WINDOWS = {
     "first-run wizard": _wizard,
     "layer map": _layer_map,
@@ -257,6 +265,7 @@ WINDOWS = {
     "deck copy": _deck_copy,
     "snapshots": _snapshots,
     "mixxx export": _mixxx_export,
+    "set order": _set_order,
 }
 
 

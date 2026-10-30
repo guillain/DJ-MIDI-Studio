@@ -139,6 +139,9 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Propose an order for a set** (`v0.48.170-set-order`, phase 6 item 2) — the Set panel's `Propose an order…`
+  shows the mix-path engine's order beside yours, with the clash count of each and an honest verdict; it is applied
+  only on `Use this order`, and `Back to my order` restores yours. On an 80-track random set: 69 → 9 clashing mixes.
 - [x] **BPM/key analysis in the background** (`v0.48.169-background-analysis`, phase 6 item 1) — each track's audio is
   decoded and analysed on a worker thread; the GUI only polls and stores the result, so the Music Library stays
   responsive during a long analysis. Also fixed: the progress bar started at the previous job's value.
@@ -3563,7 +3566,7 @@ close what can't be unblocked here.
    1. BPM/key analysis on a worker thread (the window no longer freezes
       for each track). **Done** in `v0.48.169-background-analysis`.
    2. Propose an order for a prepared set (mix-path engine, before/after,
-      never applied without confirmation).
+      never applied without confirmation). **Done** in `v0.48.170-set-order`.
    3. Per-track notes shown on stage.
    4. Performance budget for the library benchmark in CI.
    5. Export every smart playlist at once (Serato crates / Traktor).

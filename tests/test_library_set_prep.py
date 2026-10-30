@@ -108,3 +108,23 @@ def test_draft_roundtrip_and_bad_values():
         assert set_prep.load_set_draft(db) == SetDraft((), 20.0)
         db.set_setting("set_draft", ["junk"])
         assert set_prep.load_set_draft(db) == SetDraft()
+
+
+def test_propose_order_chains_compatible_tracks_and_keeps_the_rest():
+    from djmidi.library.set_prep import propose_order
+
+    tracks = [
+        SetTrack("/c", bpm=128.0, camelot_key="9A"),
+        SetTrack("/a", bpm=124.0, camelot_key="8A"),
+        SetTrack("/x"),  # no BPM/key: goes last, kept
+        SetTrack("/b", bpm=126.0, camelot_key="8A"),
+        SetTrack("/z", bpm=170.0, camelot_key="2B"),  # unreachable
+    ]
+    proposal = propose_order(tracks, 6.0, "up", keep_opener=False)
+    assert proposal.order == ("/a", "/b", "/c", "/x", "/z") and proposal.chained == 3
+    assert sorted(proposal.order) == sorted(track.path for track in tracks)
+    assert proposal.improves()
+    kept = propose_order(tracks, 6.0, "flat", keep_opener=True)
+    assert kept.order[0] == "/c" and kept.order[-2:] == ("/x", "/z")
+    nothing = propose_order([SetTrack("/x"), SetTrack("/y")])
+    assert nothing.order == ("/x", "/y") and nothing.chained == 0 and not nothing.improves()

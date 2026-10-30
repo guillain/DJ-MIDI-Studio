@@ -7386,6 +7386,57 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     </message>
 </context>
 <context>
+    <name>SetOrderDialog</name>
+    <message>
+        <source>Smallest BPM moves, either way</source>
+        <translation>Plus petits écarts de BPM, dans les deux sens</translation>
+    </message>
+    <message>
+        <source>Rising BPM</source>
+        <translation>BPM croissant</translation>
+    </message>
+    <message>
+        <source>Falling BPM</source>
+        <translation>BPM décroissant</translation>
+    </message>
+    <message>
+        <source>Propose an order</source>
+        <translation>Proposer un ordre</translation>
+    </message>
+    <message>
+        <source>Chains the tracks so each mix keeps the BPM within ±{tolerance} % and the keys compatible. Tracks it can&apos;t chain (no BPM or key, or too far) go last, in their current order.</source>
+        <translation>Enchaîne les morceaux pour que chaque mix garde le BPM à ±{tolerance} % et des tonalités compatibles. Les morceaux impossibles à enchaîner (sans BPM ni tonalité, ou trop éloignés) vont à la fin, dans leur ordre actuel.</translation>
+    </message>
+    <message>
+        <source>Keep the current first track</source>
+        <translation>Garder le premier morceau actuel</translation>
+    </message>
+    <message>
+        <source>Current order</source>
+        <translation>Ordre actuel</translation>
+    </message>
+    <message>
+        <source>Proposed order</source>
+        <translation>Ordre proposé</translation>
+    </message>
+    <message>
+        <source>Use this order</source>
+        <translation>Utiliser cet ordre</translation>
+    </message>
+    <message>
+        <source>The current order is already what the engine proposes.</source>
+        <translation>L&apos;ordre actuel est déjà celui que propose le moteur.</translation>
+    </message>
+    <message>
+        <source>The proposed order has fewer clashing or unchecked mixes.</source>
+        <translation>L&apos;ordre proposé a moins de mix incompatibles ou non vérifiés.</translation>
+    </message>
+    <message>
+        <source>The proposed order isn&apos;t better than yours: keep yours unless you prefer its flow.</source>
+        <translation>L&apos;ordre proposé n&apos;est pas meilleur que le vôtre : gardez le vôtre, sauf si vous préférez son déroulé.</translation>
+    </message>
+</context>
+<context>
     <name>SetPreparationPanel</name>
     <message>
         <source>Drag tracks here from the table; drag inside the list to reorder.</source>
@@ -7418,6 +7469,22 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>Move down</source>
         <translation>Descendre</translation>
+    </message>
+    <message>
+        <source>Propose an order…</source>
+        <translation>Proposer un ordre…</translation>
+    </message>
+    <message>
+        <source>Suggests an order where every mix stays compatible; you compare before using it.</source>
+        <translation>Suggère un ordre où chaque mix reste compatible ; vous comparez avant de l&apos;utiliser.</translation>
+    </message>
+    <message>
+        <source>Back to my order</source>
+        <translation>Revenir à mon ordre</translation>
+    </message>
+    <message>
+        <source>Puts back the order you had before using a proposed one.</source>
+        <translation>Remet l&apos;ordre que vous aviez avant d&apos;utiliser un ordre proposé.</translation>
     </message>
     <message>
         <source>Load playlist</source>
@@ -7470,6 +7537,10 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>Loaded “{name}” into the set.</source>
         <translation>« {name} » chargée dans le set.</translation>
+    </message>
+    <message>
+        <source>Set re-ordered. “Back to my order” puts the previous order back.</source>
+        <translation>Set réordonné. « Revenir à mon ordre » remet l&apos;ordre précédent.</translation>
     </message>
     <message>
         <source>Not in the indexed folders: {path}</source>

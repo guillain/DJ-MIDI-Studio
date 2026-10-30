@@ -469,8 +469,17 @@ Each transition is checked with the same rules as the automatic playlists:
 | Dashed grey segment | A BPM or key is missing, so it can't be checked |
 | Blue segment | Compatible |
 
-Nothing is reordered for you, and the draft is remembered with the library
-index until you change it. `Save as playlist…` stores it as an app playlist
+Nothing is reordered unless you ask: `Propose an order…` shows, beside
+your order, one where as many mixes as possible stay compatible (BPM
+within the tolerance, Camelot keys that match), with the clash count of
+each. Pick the direction (smallest BPM moves, rising or falling BPM) and
+whether your first track stays first; without it, every track is tried as
+the opener and the longest chain wins. Tracks that can't be chained (no BPM
+or key, or too far from the rest) go last in their current order. The
+window also says plainly when the proposal is no better than yours.
+`Use this order` applies it; `Back to my order` puts yours back.
+
+The draft is remembered with the library index until you change it. `Save as playlist…` stores it as an app playlist
 (shown with the source `set` in the Playlists panel); `Export as Serato
 crate…` and `Export as Traktor playlist…` write a new file where you choose,
 exactly like the Playlists panel's exports.

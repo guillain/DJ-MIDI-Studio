@@ -280,3 +280,70 @@ def save_set_draft(db: LibraryDB, draft: SetDraft) -> None:
         _DRAFT_SETTING,
         {"paths": list(draft.paths), "bpm_tolerance_pct": _clamp_tolerance(draft.bpm_tolerance_pct)},
     )
+
+
+# --- proposing an order (phase 6 item 2) --------------------------------
+
+
+# Without a fixed opener every track is tried as the first one; past this
+# many the engine's default start is used alone (a set is rarely this long).
+MAX_OPENERS_TRIED = 80
+
+
+@dataclass(frozen=True)
+class OrderProposal:
+    """A suggested order for the draft: every path exactly once, the tracks
+    the mix path could chain first, the rest (no BPM/key, or unreachable
+    within the tolerance and direction) after them in their current order.
+    `before`/`after` let the user compare before accepting."""
+
+    order: tuple[str, ...]
+    chained: int
+    before: SetSummary
+    after: SetSummary
+
+    def improves(self) -> bool:
+        """Fewer clashing transitions, or as many with fewer unchecked ones."""
+        return (self.after.incompatible, self.after.unknown) < (self.before.incompatible, self.before.unknown)
+
+
+def propose_order(
+    tracks: Sequence[SetTrack],
+    bpm_tolerance_pct: float = DEFAULT_BPM_TOLERANCE_PCT,
+    direction: str = "flat",
+    keep_opener: bool = True,
+) -> OrderProposal:
+    """Re-order `tracks` with the mix-path engine (`playlist.build_playlist_path`).
+    With `keep_opener` the current first track stays first when it has a
+    BPM and a key. Nothing is applied: the caller shows the proposal."""
+    from djmidi.library.playlist import PlaylistTrack, build_playlist_path
+
+    candidates = [
+        PlaylistTrack(track.path, bpm=track.bpm, camelot_key=track.camelot_key)
+        for track in tracks
+        if track.bpm and track.camelot_key
+    ]
+    by_path = {track.path: track for track in tracks}
+
+    def proposal_from(start: str | None) -> OrderProposal:
+        chained = [track.identifier for track in build_playlist_path(
+            candidates, start, tolerance_pct=bpm_tolerance_pct, direction=direction
+        ).path] if candidates else []  # fmt: skip
+        placed = set(chained)
+        order = (*chained, *(track.path for track in tracks if track.path not in placed))
+        reordered = [by_path[path] for path in order]
+        return OrderProposal(
+            order=order,
+            chained=len(chained),
+            before=summarize(tracks, analyze_set(tracks, bpm_tolerance_pct)),
+            after=summarize(reordered, analyze_set(reordered, bpm_tolerance_pct)),
+        )
+
+    if keep_opener and tracks and tracks[0].bpm and tracks[0].camelot_key:
+        return proposal_from(tracks[0].path)
+    if not candidates or len(candidates) > MAX_OPENERS_TRIED:
+        return proposal_from(None)
+    # No fixed opener: try each one, keep the longest chain, then the fewest
+    # clashes; ties go to the engine's own default start (first tried).
+    tries = [proposal_from(None), *(proposal_from(track.identifier) for track in candidates)]
+    return max(tries, key=lambda p: (p.chained, -p.after.incompatible, -p.after.unknown))
