@@ -566,27 +566,55 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         # Gray-blue: utility accent, matches loop-style buttons elsewhere.
         # x re-measured (issue #118 pass): sat a full button-width left of
         # the real "LOOP" button, over blank panel.
-        "LOOP": ControlGeometry(0.3297, 0.7659, 0.0403, 0.0479, "rect", "#7a8aa0"),
-        "LOOP (R)": ControlGeometry(0.8981, 0.7659, 0.0403, 0.0479, "rect", "#7a8aa0"),
+        "LOOP": ControlGeometry(0.3130, 0.7968, 0.0370, 0.0347, "rect", "#7a8aa0"),
+        "LOOP (R)": ControlGeometry(0.9095, 0.7968, 0.0370, 0.0347, "rect", "#7a8aa0"),
         # Salmon-pink: matches the pad grid accent used on the other
         # controllers. x re-measured (issue #118 pass): columns had drifted
         # up to 0.028 left of the real pad by column 4.
-        "Pad 1": ControlGeometry(0.0910, 0.7527, 0.0413, 0.0734, "rect", "#e0708f"),
-        "Pad 2": ControlGeometry(0.1499, 0.7527, 0.0413, 0.0734, "rect", "#e0708f"),
-        "Pad 3": ControlGeometry(0.2077, 0.7527, 0.0413, 0.0734, "rect", "#e0708f"),
-        "Pad 4": ControlGeometry(0.2656, 0.7527, 0.0413, 0.0734, "rect", "#e0708f"),
-        "Pad 5": ControlGeometry(0.0910, 0.8342, 0.0413, 0.0764, "rect", "#e0708f"),
-        "Pad 6": ControlGeometry(0.1499, 0.8342, 0.0413, 0.0764, "rect", "#e0708f"),
-        "Pad 7": ControlGeometry(0.2077, 0.8342, 0.0413, 0.0764, "rect", "#e0708f"),
-        "Pad 8": ControlGeometry(0.2656, 0.8342, 0.0413, 0.0764, "rect", "#e0708f"),
-        "Pad 1 (R)": ControlGeometry(0.6904, 0.7527, 0.0413, 0.0734, "rect", "#e0708f"),
-        "Pad 2 (R)": ControlGeometry(0.7493, 0.7527, 0.0413, 0.0734, "rect", "#e0708f"),
-        "Pad 3 (R)": ControlGeometry(0.8082, 0.7527, 0.0413, 0.0734, "rect", "#e0708f"),
-        "Pad 4 (R)": ControlGeometry(0.8671, 0.7527, 0.0413, 0.0734, "rect", "#e0708f"),
-        "Pad 5 (R)": ControlGeometry(0.6904, 0.8342, 0.0413, 0.0764, "rect", "#e0708f"),
-        "Pad 6 (R)": ControlGeometry(0.7493, 0.8342, 0.0413, 0.0764, "rect", "#e0708f"),
-        "Pad 7 (R)": ControlGeometry(0.8082, 0.8342, 0.0413, 0.0764, "rect", "#e0708f"),
-        "Pad 8 (R)": ControlGeometry(0.8671, 0.8342, 0.0413, 0.0764, "rect", "#e0708f"),
+        "Pad 1": ControlGeometry(0.0945, 0.7537, 0.0405, 0.0611, "rect", "#e0708f"),
+        "Pad 2": ControlGeometry(0.1425, 0.7537, 0.0405, 0.0611, "rect", "#e0708f"),
+        "Pad 3": ControlGeometry(0.1910, 0.7537, 0.0405, 0.0611, "rect", "#e0708f"),
+        "Pad 4": ControlGeometry(0.2395, 0.7537, 0.0405, 0.0611, "rect", "#e0708f"),
+        "Pad 5": ControlGeometry(0.0945, 0.8358, 0.0405, 0.0611, "rect", "#e0708f"),
+        "Pad 6": ControlGeometry(0.1425, 0.8358, 0.0405, 0.0611, "rect", "#e0708f"),
+        "Pad 7": ControlGeometry(0.1910, 0.8358, 0.0405, 0.0611, "rect", "#e0708f"),
+        "Pad 8": ControlGeometry(0.2395, 0.8358, 0.0405, 0.0611, "rect", "#e0708f"),
+        "Pad 1 (R)": ControlGeometry(0.6900, 0.7537, 0.0405, 0.0611, "rect", "#e0708f"),
+        "Pad 2 (R)": ControlGeometry(0.7385, 0.7537, 0.0405, 0.0611, "rect", "#e0708f"),
+        "Pad 3 (R)": ControlGeometry(0.7870, 0.7537, 0.0405, 0.0611, "rect", "#e0708f"),
+        "Pad 4 (R)": ControlGeometry(0.8355, 0.7537, 0.0405, 0.0611, "rect", "#e0708f"),
+        "Pad 5 (R)": ControlGeometry(0.6900, 0.8358, 0.0405, 0.0611, "rect", "#e0708f"),
+        "Pad 6 (R)": ControlGeometry(0.7385, 0.8358, 0.0405, 0.0611, "rect", "#e0708f"),
+        "Pad 7 (R)": ControlGeometry(0.7870, 0.8358, 0.0405, 0.0611, "rect", "#e0708f"),
+        "Pad 8 (R)": ControlGeometry(0.8355, 0.8358, 0.0405, 0.0611, "rect", "#e0708f"),
+        # Issue #372 follow-up: the controls the Mixxx-derived profile added,
+        # measured on this same diagram (2000x950) on 3-5x zoomed crops with a
+        # 5-10 px grid, each side on its own (the drawing isn't a mirror), then
+        # checked on the running app's Controller Images overlay. The CUE/PFL
+        # buttons (13) stay unmarked: the diagram's numbered badge covers them.
+        "SHIFT": ControlGeometry(0.0460, 0.5895, 0.0380, 0.0821, "circle", "#9aa4b2"),
+        "SHIFT (R)": ControlGeometry(0.6430, 0.5895, 0.0380, 0.0821, "circle", "#9aa4b2"),
+        "SCRATCH": ControlGeometry(0.2890, 0.5874, 0.0385, 0.0821, "circle", "#7a8aa0"),
+        "SCRATCH (R)": ControlGeometry(0.8855, 0.5821, 0.0370, 0.0821, "circle", "#7a8aa0"),
+        "PITCH BEND DOWN": ControlGeometry(0.3355, 0.6537, 0.0175, 0.0368, "circle", "#7a8aa0"),
+        "PITCH BEND UP": ControlGeometry(0.3605, 0.6537, 0.0175, 0.0368, "circle", "#7a8aa0"),
+        "PITCH BEND DOWN (R)": ControlGeometry(0.9315, 0.6526, 0.0175, 0.0368, "circle", "#7a8aa0"),
+        "PITCH BEND UP (R)": ControlGeometry(0.9565, 0.6526, 0.0175, 0.0368, "circle", "#7a8aa0"),
+        # Pad-mode buttons: the row above the pads, in the pads' own columns.
+        "HOT CUE": ControlGeometry(0.0940, 0.6968, 0.0400, 0.0316, "rect", "#c9a227"),
+        "AUTO LOOP": ControlGeometry(0.1425, 0.6968, 0.0400, 0.0316, "rect", "#c9a227"),
+        "FADER CUTS": ControlGeometry(0.1900, 0.6968, 0.0400, 0.0316, "rect", "#c9a227"),
+        "SAMPLE": ControlGeometry(0.2390, 0.6968, 0.0400, 0.0316, "rect", "#c9a227"),
+        "HOT CUE (R)": ControlGeometry(0.6910, 0.6968, 0.0400, 0.0316, "rect", "#c9a227"),
+        "AUTO LOOP (R)": ControlGeometry(0.7390, 0.6968, 0.0400, 0.0316, "rect", "#c9a227"),
+        "FADER CUTS (R)": ControlGeometry(0.7865, 0.6968, 0.0400, 0.0316, "rect", "#c9a227"),
+        "SAMPLE (R)": ControlGeometry(0.8350, 0.6968, 0.0400, 0.0316, "rect", "#c9a227"),
+        "LOOP HALF": ControlGeometry(0.3100, 0.8611, 0.0240, 0.0337, "rect", "#7a8aa0"),
+        "LOOP DOUBLE": ControlGeometry(0.3460, 0.8611, 0.0240, 0.0337, "rect", "#7a8aa0"),
+        "LOOP HALF (R)": ControlGeometry(0.9060, 0.8611, 0.0240, 0.0337, "rect", "#7a8aa0"),
+        "LOOP DOUBLE (R)": ControlGeometry(0.9420, 0.8611, 0.0240, 0.0337, "rect", "#7a8aa0"),
+        "LOAD DECK 1": ControlGeometry(0.4565, 0.0684, 0.0150, 0.0316, "circle", "#4a90d9"),
+        "LOAD DECK 2": ControlGeometry(0.5400, 0.0684, 0.0150, 0.0316, "circle", "#4a90d9"),
     },
     "DDJ-1000": {
         # Re-measured against the clean render controllers/hardware/pioneer/DDJ-1000/reference.png

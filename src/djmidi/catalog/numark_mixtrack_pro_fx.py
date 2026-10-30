@@ -70,10 +70,10 @@ _STATIC = [
         (
             ("LOOP", 64),
             ("LOOP +SHIFT", 65),
-            ("LOOP 1/2", 52),
-            ("LOOP 1/2 +SHIFT", 54),
-            ("LOOP x2", 53),
-            ("LOOP x2 +SHIFT", 55),
+            ("LOOP HALF", 52),
+            ("LOOP HALF +SHIFT", 54),
+            ("LOOP DOUBLE", 53),
+            ("LOOP DOUBLE +SHIFT", 55),
         ),
     ),
     # Mixxx's PadModeControls; BEAT JUMP and SAMPLE 2 are the mode buttons'

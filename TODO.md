@@ -139,6 +139,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Numark Mixtrack Pro FX: markers for the new controls, existing ones re-measured** (`v0.48.156-numark-geometry`,
+  #372 follow-up) — SHIFT, SCRATCH, PITCH BEND ±, the four pad-mode buttons, LOOP HALF/DOUBLE (each side) and LOAD 1/2
+  placed on the reference diagram from zoomed, finely gridded crops; checking them in the running app showed the
+  v0.47.89 pad and LOOP markers had drifted, so those were re-measured too. CUE/PFL stays unmarked (covered by the
+  diagram's numbered badge).
 - [x] **Numark Mixtrack Pro FX profile re-derived from Mixxx** (`v0.48.155-numark-from-mixxx`, #372) — the old
   "conservative community values" (pads on notes 36-43 of the deck channels, a LOOP button on note 3) contradicted
   the mapping Mixxx maintains for this device; the profile now follows it: deck buttons with their SHIFT notes, loop

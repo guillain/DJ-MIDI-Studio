@@ -440,6 +440,7 @@ _RIGHT_SIDE_CHANNELS: dict[str, dict[str, frozenset[str]]] = {
     "Numark Mixtrack Pro FX": {
         "DECK": frozenset({"2"}),
         "LOOP": frozenset({"6"}),
+        "PAD MODE": frozenset({"6"}),
     },
 }
 
