@@ -139,6 +139,9 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Mapping snapshots** (`v0.48.165-mapping-snapshots`, phase 5 item 5) — `File → Save Snapshot…` keeps the mapping
+  as it is in the app under a name; `File → Snapshots…` compares one with the mapping diff, restores it (one undo step,
+  Serato) or deletes it. Kept per mapping in the workspace's new `Snapshots` folder, covered by the workspace backup.
 - [x] **Live Monitor log as a MIDI file** (`v0.48.164-monitor-midi-export`, phase 5 item 4) — `Save log…` can write a
   Standard MIDI File besides CSV: real timing, one track per port and direction, opens in any DAW or MIDI tool.
 - [x] **Next-track suggestions in Stage Mode** (`v0.48.163-stage-suggestions`, phase 5 item 3) — under the set panel,
@@ -3527,6 +3530,7 @@ close what can't be unblocked here.
    4. Live Monitor session export (`.mid` / CSV). **Done** in
       `v0.48.164-monitor-midi-export` (CSV already existed).
    5. Mapping snapshots: named versions compared with the mapping diff.
+      **Done** in `v0.48.165-mapping-snapshots`.
    6. Accessibility audit (keyboard, accessible names, contrast) with a test.
    7. Music Library at 85k tracks: measure, then cut the open/filter time.
    8. Generate a Mixxx mapping from a controller profile (documented Mixxx

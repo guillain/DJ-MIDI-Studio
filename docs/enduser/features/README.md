@@ -36,6 +36,7 @@
 | ⌨️ | [Command palette](command-palette.md) | Cmd+K: search every action, tab, mapping function and library track |
 | 🖼️ | [Controller Images](controller-images.md) | Official diagrams and manuals, offline, with real control positions |
 | 🖨️ | [Cheat Sheet (PDF)](cheat-sheet.md) | Print each controller's photo with the function of every mapped pad and button |
+| 📸 | [Snapshots](snapshots.md) | Named versions of a mapping: compare, restore, delete |
 | 📋 | [Copy Deck Mappings](deck-copy.md) | One deck's mappings copied onto another, channel by channel |
 | 🧩 | [Layer Map](layer-map.md) | Every control in every layer (normal, SHIFT, pad modes), free combinations highlighted |
 | 🔀 | [MIDI Routing, Clock and Metronome](midi-routing-and-clock.md) | Route MIDI, generate Clock from Ableton Link, loop MIDI |
@@ -67,6 +68,7 @@
 | [command-palette.md](command-palette.md) | Cmd+K search over actions, tabs, functions and tracks, ranking, keys |
 | [controller-images.md](controller-images.md) | Reference pictures, real layout overlay, MIDI info |
 | [cheat-sheet.md](cheat-sheet.md) | Printable PDF of the mapping on each controller's photo |
+| [snapshots.md](snapshots.md) | Save, compare, restore and delete named mapping versions |
 | [deck-copy.md](deck-copy.md) | Source/target deck, channel table, skip or replace, undo |
 | [layer-map.md](layer-map.md) | Controls × layers table, free and partly free combinations, filters |
 | [midi-routing-and-clock.md](midi-routing-and-clock.md) | Routes, transforms, MIDI Clock from Link, Metronome |
