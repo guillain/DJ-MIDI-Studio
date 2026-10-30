@@ -139,6 +139,10 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Next-track suggestions in Stage Mode** (`v0.48.163-stage-suggestions`, phase 5 item 3) — under the set panel,
+  up to five library tracks that would also mix after the current one (BPM within the set's tolerance, compatible
+  Camelot key, closest BPM first; set tracks, missing files and untagged tracks left out), for when the night leaves
+  the plan. Display only.
 - [x] **Copy deck mappings** (`v0.48.162-deck-copy`, phase 5 item 2) — `Edit → Copy Deck Mappings…` copies every
   mapping of one deck onto another, each source channel to a chosen target channel (default: the target deck's own),
   with a preview; controls the target deck already uses are skipped or, on request, replaced. Each repeated
@@ -3517,7 +3521,7 @@ close what can't be unblocked here.
       undo step, the 10x copies kept consistent). **Done** in
       `v0.48.162-deck-copy`.
    3. Next-track suggestions in Stage Mode's set panel (compatible BPM/key
-      from the library).
+      from the library). **Done** in `v0.48.163-stage-suggestions`.
    4. Live Monitor session export (`.mid` / CSV).
    5. Mapping snapshots: named versions compared with the mapping diff.
    6. Accessibility audit (keyboard, accessible names, contrast) with a test.

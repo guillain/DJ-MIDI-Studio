@@ -67,6 +67,13 @@ software is playing, so moving on is your click. Leaving and reopening
 Stage Mode during the session resumes at the same track. There is no time
 left: track durations aren't in the tag cache.
 
+Below the buttons, **Off the plan, these mix well** lists up to five
+tracks from your library that would also follow the current one: a BPM
+within the set's tolerance and a compatible Camelot key, closest BPM
+first. Tracks already in the set, missing files and tracks without a BPM
+or key tag are left out. It's a list to glance at when the crowd asks for
+something else — nothing is added to the set or loaded anywhere.
+
 ## The compact monitor
 
 The right side shows the latest MIDI message in large yellow type and the
