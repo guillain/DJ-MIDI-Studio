@@ -139,6 +139,7 @@ from djmidi.gui.midi_latency_dialog import MidiLatencyDialog
 from djmidi.gui.midi_routing_view import MidiRoutingView
 from djmidi.gui.music_library_view import MusicLibraryView
 from djmidi.gui.preferences_dialog import PreferencesDialog
+from djmidi.gui.profile_check_dialog import ProfileCheckDialog
 from djmidi.gui.profile_library_dialog import ProfileLibraryDialog
 from djmidi.gui.report_problem_dialog import ReportProblemDialog
 from djmidi.gui.safe_update_dialog import SafeUpdateDialog
@@ -367,6 +368,8 @@ class MainWindow(QMainWindow):
         self._macro_player = MacroPlayer(parent=self)
         # Remembers recent presses so a trigger sequence can complete.
         self._macro_matcher = midi_macros.MacroTriggerMatcher()
+        # The open "Verify Profile" window (issue #364), fed every live event.
+        self._profile_check_dialog: ProfileCheckDialog | None = None
         # Library profiles declined this session, when there are no QSettings (tests).
         self._session_dismissed_profiles: set[str] = set()
         self._macro_player.finished.connect(self._on_macro_finished)
@@ -882,6 +885,9 @@ class MainWindow(QMainWindow):
             action = QAction(label, self)
             action.triggered.connect(lambda _checked=False, h=handler: self._run_in_tab("setup", h))
             profile_menu.addAction(action)
+        check_action = QAction(self.tr("Verify Profile with the Controller..."), self)
+        check_action.triggered.connect(lambda: self.open_profile_check())
+        profile_menu.addAction(check_action)
         place_action = QAction(self.tr("Place Controls on a Picture..."), self)
         place_action.triggered.connect(lambda: self.open_geometry_editor())
         profile_menu.addAction(place_action)
@@ -2633,6 +2639,8 @@ class MainWindow(QMainWindow):
         # for the sync set, not for a macro or a pending Learn.
         if self._record_button.isChecked():
             pass
+        elif self._profile_check_dialog is not None and self._profile_check_dialog.feed_event(event):
+            pass  # a press being verified (issue #364) is neither a macro nor a Learn
         elif self._macro_dialog is not None:
             self._macro_dialog.feed_learn_event(event)
         elif not self.edit_panel.feed_learn_event(event):
@@ -2828,6 +2836,35 @@ class MainWindow(QMainWindow):
         if self.config is not None:
             self._refresh_layout_usage()
         self.statusBar().showMessage(self.tr("'{name}' applied for this session.").format(name=name))
+
+    def open_profile_check(self, controller: str | None = None) -> ProfileCheckDialog:
+        """File → Controller Profile → Verify Profile with the Controller…:
+        one non-modal window, preselecting the controller detected on an
+        input (else the one Controller Images shows)."""
+        if self._profile_check_dialog is not None:
+            self._profile_check_dialog.raise_()
+            self._profile_check_dialog.activateWindow()
+            return self._profile_check_dialog
+        ports = list(dict.fromkeys(list_input_ports()))
+        if controller is None:
+            detected = [match.controller.name for port in ports for match in catalog.detect_controller(port)]
+            controller = detected[0] if detected else self.controller_image_view.current_controller_name()
+        dialog = ProfileCheckDialog(
+            catalog.CONTROLLER_NAMES,
+            ports,
+            self,
+            ensure_listening=self._ensure_learn_listening,
+            initial=controller,
+            reports_dir=user_paths.subfolder(user_paths.EXPORTS),
+        )
+        dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        dialog.finished.connect(self._on_profile_check_closed)
+        self._profile_check_dialog = dialog
+        dialog.show()
+        return dialog
+
+    def _on_profile_check_closed(self, _result: int = 0) -> None:
+        self._profile_check_dialog = None
 
     def open_geometry_editor(self, name: str | None = None, dialog_factory=None) -> GeometryEditorDialog | None:
         """Place a profile's controls on a picture (issue #363). Without a

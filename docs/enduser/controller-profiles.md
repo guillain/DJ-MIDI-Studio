@@ -41,7 +41,9 @@
 | Korg nanoPAD2 | Captured from a real unit in all 4 scenes (Korg publishes no note table) | ✅ | — | ✅ |
 
 "Not yet" means the profile was transcribed from documentation but hasn't
-been checked against a real device. Check the controls you rely on with the
+been checked against a real device. If you own one, a
+[guided profile check](features/profile-check.md) takes a few minutes and
+its report helps everyone. Check the controls you rely on with the
 [Live Monitor](features/live-monitor.md) before playing live, and report any
 difference.
 

@@ -1936,6 +1936,14 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
         <translation>Donne à un profil sans disposition intégrée (issu de la bibliothèque de profils ou créé dans Config. contrôleur) l&apos;image de son contrôleur et la position de chaque commande dessus.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Choisir une image…&lt;/b&gt; : une photo ou un dessin à plat, vu de dessus, donne le meilleur résultat.&lt;/li&gt;&lt;li&gt;Choisissez une commande dans la liste, puis tracez un cadre dessus sur l&apos;image, ou cliquez dessus pour un cadre de taille standard ; la commande suivante à placer est sélectionnée pour vous. &lt;b&gt;Forme&lt;/b&gt; passe du rectangle au cercle, &lt;b&gt;Retirer le cadre&lt;/b&gt; efface celui de la commande sélectionnée.&lt;/li&gt;&lt;/ul&gt;&lt;b&gt;Enregistrer&lt;/b&gt; range l&apos;image et les cadres dans le profil : la vraie disposition du contrôleur apparaît alors dans Images contrôleur, Par canal/platine/contrôleur, l&apos;émulateur de contrôleur, les surlignages MIDI en direct et l&apos;antisèche imprimable. Les commandes non placées continuent de fonctionner, simplement sans repère.</translation>
     </message>
     <message>
+        <source>Verify a controller profile</source>
+        <translation>Vérifier un profil de contrôleur</translation>
+    </message>
+    <message>
+        <source>Checks a profile against your real controller, one control at a time: the app asks for each physical control (then SHIFT + it, when the profile has a SHIFT layer) and compares what the controller sends with what the profile says.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Listen on&lt;/b&gt;: pick your controller&apos;s input if several are connected.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Skip (not on my unit)&lt;/b&gt; for a control your controller doesn&apos;t have; &lt;b&gt;Back&lt;/b&gt; to redo one.&lt;/li&gt;&lt;li&gt;✓ means it matches; ✗ shows what came instead, and whether the profile gives that message to another control or doesn&apos;t know it.&lt;/li&gt;&lt;/ul&gt;Then &lt;b&gt;Submit to the project…&lt;/b&gt; opens a pre-filled GitHub issue with the report, so the profile can be marked verified or corrected; &lt;b&gt;Copy report&lt;/b&gt; and &lt;b&gt;Save report…&lt;/b&gt; keep it for you. Nothing is sent until you submit the issue yourself.</source>
+        <translation>Compare un profil à votre vrai contrôleur, une commande à la fois : l&apos;application demande chaque commande physique (puis SHIFT + celle-ci, quand le profil a une couche SHIFT) et compare ce que le contrôleur envoie à ce que dit le profil.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Écouter sur&lt;/b&gt; : choisissez l&apos;entrée de votre contrôleur si plusieurs sont branchés.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Passer (absente de mon appareil)&lt;/b&gt; pour une commande que votre contrôleur n&apos;a pas ; &lt;b&gt;Retour&lt;/b&gt; pour en refaire une.&lt;/li&gt;&lt;li&gt;✓ signifie que c&apos;est conforme ; ✗ montre ce qui est arrivé à la place, et si le profil donne ce message à une autre commande ou ne le connaît pas.&lt;/li&gt;&lt;/ul&gt;Ensuite, &lt;b&gt;Envoyer au projet…&lt;/b&gt; ouvre une issue GitHub pré-remplie avec le rapport, pour que le profil soit marqué vérifié ou corrigé ; &lt;b&gt;Copier le rapport&lt;/b&gt; et &lt;b&gt;Enregistrer le rapport…&lt;/b&gt; le gardent pour vous. Rien n&apos;est envoyé tant que vous ne soumettez pas l&apos;issue vous-même.</translation>
+    </message>
+    <message>
         <source>Controller Profile Library</source>
         <translation>Bibliothèque de profils de contrôleurs</translation>
     </message>
@@ -3289,6 +3297,10 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
     <message>
         <source>Install Profile</source>
         <translation>Installer le profil</translation>
+    </message>
+    <message>
+        <source>Verify Profile with the Controller...</source>
+        <translation>Vérifier le profil avec le contrôleur...</translation>
     </message>
     <message>
         <source>Place Controls on a Picture...</source>
@@ -6528,6 +6540,128 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>Controller Setup session or mapping (*.json *.xml *.tsi *.csv);;All files (*)</source>
         <translation>Session Config. contrôleur ou mapping (*.json *.xml *.tsi *.csv);;Tous les fichiers (*)</translation>
+    </message>
+</context>
+<context>
+    <name>ProfileCheck</name>
+    <message>
+        <source>Press {control}</source>
+        <translation>Appuyez sur {control}</translation>
+    </message>
+    <message>
+        <source>Hold SHIFT and press {control}</source>
+        <translation>Maintenez SHIFT et appuyez sur {control}</translation>
+    </message>
+    <message>
+        <source>got {trigger}, which the profile gives to {other}</source>
+        <translation>reçu {trigger}, que le profil attribue à {other}</translation>
+    </message>
+    <message>
+        <source>got {trigger}, which isn&apos;t in the profile</source>
+        <translation>reçu {trigger}, absent du profil</translation>
+    </message>
+</context>
+<context>
+    <name>ProfileCheckDialog</name>
+    <message>
+        <source>Verify a controller profile</source>
+        <translation>Vérifier un profil de contrôleur</translation>
+    </message>
+    <message>
+        <source>Press each control of your controller when asked: the app checks that it sends what the profile says. Skip the ones your unit doesn&apos;t have. At the end, share the report so the profile can be marked verified or corrected.</source>
+        <translation>Appuyez sur chaque commande de votre contrôleur quand elle est demandée : l&apos;application vérifie qu&apos;elle envoie ce que dit le profil. Passez celles que votre appareil n&apos;a pas. À la fin, partagez le rapport pour que le profil soit marqué vérifié ou corrigé.</translation>
+    </message>
+    <message>
+        <source>Any input</source>
+        <translation>N&apos;importe quelle entrée</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>Démarrer</translation>
+    </message>
+    <message>
+        <source>Controller</source>
+        <translation>Contrôleur</translation>
+    </message>
+    <message>
+        <source>Listen on</source>
+        <translation>Écouter sur</translation>
+    </message>
+    <message>
+        <source>Click Start, then press the controls one by one.</source>
+        <translation>Cliquez sur Démarrer, puis appuyez sur les commandes une par une.</translation>
+    </message>
+    <message>
+        <source>Skip (not on my unit)</source>
+        <translation>Passer (absente de mon appareil)</translation>
+    </message>
+    <message>
+        <source>Back</source>
+        <translation>Retour</translation>
+    </message>
+    <message>
+        <source>Copy report</source>
+        <translation>Copier le rapport</translation>
+    </message>
+    <message>
+        <source>Save report…</source>
+        <translation>Enregistrer le rapport…</translation>
+    </message>
+    <message>
+        <source>Submit to the project…</source>
+        <translation>Envoyer au projet…</translation>
+    </message>
+    <message>
+        <source>Opens a pre-filled GitHub issue with the report; nothing is sent until you submit it there</source>
+        <translation>Ouvre une issue GitHub pré-remplie avec le rapport ; rien n&apos;est envoyé tant que vous ne la soumettez pas</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Fermer</translation>
+    </message>
+    <message>
+        <source>No MIDI input is open: connect a controller, or pick one in Live Monitor.</source>
+        <translation>Aucune entrée MIDI ouverte : branchez un contrôleur, ou choisissez-en une dans le Live Monitor.</translation>
+    </message>
+    <message>
+        <source>OK: {trigger}</source>
+        <translation>Conforme : {trigger}</translation>
+    </message>
+    <message>
+        <source>Restart</source>
+        <translation>Recommencer</translation>
+    </message>
+    <message>
+        <source>{done}/{total} · {ok} ok · {bad} mismatch</source>
+        <translation>{done}/{total} · {ok} conforme(s) · {bad} écart(s)</translation>
+    </message>
+    <message>
+        <source>Done — share the report below.</source>
+        <translation>Terminé — partagez le rapport ci-dessous.</translation>
+    </message>
+    <message>
+        <source>Report copied to the clipboard.</source>
+        <translation>Rapport copié dans le presse-papiers.</translation>
+    </message>
+    <message>
+        <source>Save report</source>
+        <translation>Enregistrer le rapport</translation>
+    </message>
+    <message>
+        <source>Markdown (*.md)</source>
+        <translation>Markdown (*.md)</translation>
+    </message>
+    <message>
+        <source>Report saved to {path}</source>
+        <translation>Rapport enregistré dans {path}</translation>
+    </message>
+    <message>
+        <source>Issue opened in your browser.</source>
+        <translation>Issue ouverte dans votre navigateur.</translation>
+    </message>
+    <message>
+        <source>Issue opened in your browser: paste the report (already copied) into it.</source>
+        <translation>Issue ouverte dans votre navigateur : collez-y le rapport (déjà copié).</translation>
     </message>
 </context>
 <context>

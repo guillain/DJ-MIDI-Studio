@@ -71,6 +71,7 @@ Open several, one per controller.
 | 🗺️ | [Mapping editor](features/mapping-editor.md) | Serato mappings by channel, deck or physical control; safe edits, validation, diff before save |
 | 🎧 | [Traktor mappings](features/traktor-mappings.md) | Open Traktor `.tsi` mappings and re-assign MIDI triggers |
 | 🎛️ | [rekordbox mappings](features/rekordbox-mappings.md) | Open rekordbox `.midi.csv` mappings read-only |
+| ✅ | [Verify a controller profile](features/profile-check.md) | Check a profile against your controller, control by control, and share the report |
 | 🔍 | [Compare mappings](features/mapping-diff.md) | What changed between two mappings, by physical control |
 | ✅ | [Ready for live](features/live-ready-check.md) | Pre-gig check: missing Play/Cue/Sync/Load, conflicts, unlit buttons |
 | 🏷️ | [Readable function names](features/function-names.md) | Short names for Serato function tags, original tag on hover |
