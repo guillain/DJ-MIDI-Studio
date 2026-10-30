@@ -1336,8 +1336,8 @@ def test_stopping_the_analysis_keeps_what_was_found(untagged_library):
     view.run_pending_job()
     view.start_analysis(analyser=lambda path, want_bpm, want_key: (140.0, None))
     view._job_timer.stop()  # step by hand: a whole slice would finish both
-    next(view._job)  # announce
-    next(view._job)  # one track
+    while not view.db.analysis_suggestions():  # until the first track is recorded
+        next(view._job)
     view.stop_analysis()
     assert not view.is_busy()
     assert "stopped" in view.status_label.text()
@@ -1600,3 +1600,47 @@ def test_cover_buttons_disabled_without_a_track():
     assert not view.remove_cover_button.isEnabled()
     assert not view.remove_cover()
     view.close_db()
+
+
+def test_the_audio_is_analysed_off_the_gui_thread(untagged_library):
+    import threading
+
+    view, _music = untagged_library
+    release = threading.Event()
+    threads = []
+
+    def slow_analyser(path, want_bpm, want_key):
+        threads.append(threading.current_thread())
+        assert release.wait(5)
+        return 128.0, "Am"
+
+    view.start_analysis(analyser=slow_analyser)
+    view._job_timer.stop()
+    for _ in range(5):  # the GUI side keeps stepping while the worker is busy
+        next(view._job)
+    assert view.is_analysing() and not view.db.analysis_suggestions()
+    release.set()
+    view.run_pending_job()
+    assert threads and threads[0] is not threading.main_thread()
+    assert any(row.bpm_suggestion == 128.0 for row in view.table_model.rows())
+
+
+def test_stopping_mid_track_never_records_that_track(untagged_library):
+    import threading
+
+    view, _music = untagged_library
+    started, release = threading.Event(), threading.Event()
+
+    def blocked(path, want_bpm, want_key):
+        started.set()
+        release.wait(5)
+        return 99.0, None
+
+    view.start_analysis(analyser=blocked)
+    view._job_timer.stop()
+    while not started.is_set():
+        next(view._job)
+    view.stop_analysis()
+    release.set()
+    assert not view.is_busy()
+    assert all(row.bpm_suggestion is None for row in view.table_model.rows())
