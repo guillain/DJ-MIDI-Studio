@@ -139,6 +139,9 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Export every smart playlist at once** (`v0.48.173-export-smart-playlists`, phase 6 item 5) — one button
+  re-evaluates the smart playlists and writes each as a Serato crate and/or Traktor playlist into a remembered folder;
+  only those files are replaced.
 - [x] **Music Library performance budget** (`v0.48.172-perf-budget`, phase 6 item 4) — tests that count the operations
   behind the old slowness (data() round trips, category resolutions, pathlib work, no-op re-filters) on 20,000 tracks,
   so a regression fails CI without flaky timings. It found one more round trip: filtering at 85k is now ~2x faster.
@@ -3577,6 +3580,7 @@ close what can't be unblocked here.
    4. Performance budget for the library benchmark in CI. **Done** in
       `v0.48.172-perf-budget` (operation counts, not seconds).
    5. Export every smart playlist at once (Serato crates / Traktor).
+      **Done** in `v0.48.173-export-smart-playlists`.
    6. Interactive cheat sheet as a standalone web page.
    7. Software plugin kit: guide, contract tests, example plugin.
    8. A third interface language.

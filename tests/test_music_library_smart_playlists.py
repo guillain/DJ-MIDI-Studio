@@ -158,3 +158,41 @@ def test_ask_smart_rules_cancel(library, monkeypatch):
     monkeypatch.setattr(mlv.SmartPlaylistDialog, "exec", lambda self: QDialog.DialogCode.Accepted)
     view._on_new_smart_clicked()
     assert len(view.db.list_smart_rules()) == 1
+
+
+def test_export_all_smart_playlists_remembers_its_choices(library, monkeypatch):
+    from djmidi.gui.smart_export_dialog import SmartExportDialog
+    from djmidi.library.smart_playlist import SmartExportOptions, load_export_options
+
+    view, _music, tmp_path = library
+    view._on_export_smart_clicked()  # none yet: just says so
+    assert "No smart playlist" in view.status_label.text()
+    monkeypatch.setattr(view, "_ask_smart_rules", lambda name, current: ("Fast", SmartRules(bpm_min=170)))
+    view._on_new_smart_clicked()
+    out = tmp_path / "exports"
+    chosen = SmartExportOptions(str(out), serato=True, traktor=False)
+
+    class _Accepting:
+        def __init__(self, options, count, parent):
+            assert count == 1 and options == SmartExportOptions()
+
+        def exec(self):
+            return QDialog.DialogCode.Accepted
+
+        def options(self):
+            return chosen
+
+    view.smart_export_dialog_factory = _Accepting
+    view._on_export_smart_clicked()
+    assert _names(parse_crate(out / "Fast.crate")) == ["a.mp3", "b.mp3"]
+    assert "1 smart playlist(s): 1 file(s)" in view.status_label.text()
+    assert load_export_options(view.db) == chosen
+
+    dialog = SmartExportDialog(chosen, 1, choose_folder=lambda start: str(tmp_path / "other"))
+    assert dialog.buttons.button(dialog.buttons.StandardButton.Ok).isEnabled()
+    dialog.serato_box.setChecked(False)
+    assert not dialog.buttons.button(dialog.buttons.StandardButton.Ok).isEnabled()
+    dialog.traktor_box.setChecked(True)
+    dialog._browse()
+    assert dialog.options() == SmartExportOptions(str(tmp_path / "other"), serato=False, traktor=True)
+    dialog.close()

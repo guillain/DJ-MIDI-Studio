@@ -39,6 +39,7 @@ SOURCES=(
   src/djmidi/gui/change_history_dialog.py
   src/djmidi/gui/set_preparation.py
   src/djmidi/gui/set_order_dialog.py
+  src/djmidi/gui/smart_export_dialog.py
   src/djmidi/gui/audio_preview.py
   src/djmidi/midi_latency.py
   src/djmidi/library/rename.py

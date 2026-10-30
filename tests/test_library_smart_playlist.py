@@ -191,3 +191,41 @@ def test_ordinary_playlists_have_no_rules_and_unreadable_rules_are_skipped():
         db.set_smart_rules(broken, "not json")
         assert refresh_smart_playlists(db, now=NOW) == {}
         assert db.playlist_paths(broken) == ["/m/b.mp3"]
+
+
+def test_every_smart_playlist_is_exported_into_one_folder(tmp_path):
+    from djmidi.library.serato_library import parse_crate
+    from djmidi.library.smart_playlist import (
+        SmartExportOptions,
+        export_file_name,
+        export_smart_playlists,
+        load_export_options,
+        save_export_options,
+    )
+    from djmidi.library.traktor_library import parse_playlists
+
+    with _db_with_tracks() as db:
+        create_smart_playlist(db, "Fast/Hard: 8A?", SmartRules(bpm_min=170, camelot_key="8A"), now=NOW)
+        create_smart_playlist(db, "Fast-Hard- 8A-", SmartRules(bpm_min=100), now=NOW)  # same file name
+        db.create_playlist("Hand-made", ["/m/b.mp3"])  # not smart: not exported
+        (tmp_path / "keep.txt").write_text("mine")
+        options = SmartExportOptions(str(tmp_path), serato=True, traktor=True)
+        result = export_smart_playlists(db, options, now=NOW)
+        assert result.playlists == 2 and not result.failed
+        names = sorted(path.name for path in result.written)
+        assert names == [
+            "Fast-Hard- 8A- (2).crate", "Fast-Hard- 8A- (2).nml", "Fast-Hard- 8A-.crate", "Fast-Hard- 8A-.nml",
+        ]  # fmt: skip
+        assert (tmp_path / "keep.txt").read_text() == "mine"
+        # Playlists go in name order: "Fast-Hard- 8A-" sorts first and keeps
+        # the plain file name, "Fast/Hard: 8A?" gets the "(2)" one.
+        crate = parse_crate(tmp_path / "Fast-Hard- 8A- (2).crate")
+        assert [path.rsplit("/", 1)[-1] for path in crate] == ["a.mp3"]
+        assert list(parse_playlists(tmp_path / "Fast-Hard- 8A- (2).nml")) == ["Fast/Hard: 8A?"]
+        # Re-exporting replaces the same files.
+        assert len(export_smart_playlists(db, options, now=NOW).written) == 4
+        save_export_options(db, options)
+        assert load_export_options(db) == options
+    assert export_file_name("  ..  ") == "Smart playlist"
+    with pytest.raises(ValueError):
+        export_smart_playlists(LibraryDB(), SmartExportOptions(str(tmp_path), serato=False, traktor=False))

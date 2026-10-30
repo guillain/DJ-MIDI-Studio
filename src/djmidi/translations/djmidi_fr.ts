@@ -5985,6 +5985,14 @@ Lignes sélectionnées dans Configuration du contrôleur : {selected}</translati
         <translation>Réévalue chaque playlist intelligente avec la bibliothèque et l&apos;historique de lecture actuels.</translation>
     </message>
     <message>
+        <source>Export all smart…</source>
+        <translation>Exporter les intelligentes…</translation>
+    </message>
+    <message>
+        <source>Re-evaluates every smart playlist and writes each as a Serato crate and/or Traktor playlist into one folder, in one go.</source>
+        <translation>Réévalue chaque playlist intelligente et écrit chacune en crate Serato et/ou playlist Traktor dans un même dossier, en une fois.</translation>
+    </message>
+    <message>
         <source>Import Serato crate…</source>
         <translation>Importer une crate Serato…</translation>
     </message>
@@ -6695,6 +6703,18 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>No smart playlist to refresh.</source>
         <translation>Aucune playlist intelligente à actualiser.</translation>
+    </message>
+    <message>
+        <source>Exported {count} smart playlist(s): {files} file(s) in {folder}.</source>
+        <translation>{count} playlist(s) intelligente(s) exportée(s) : {files} fichier(s) dans {folder}.</translation>
+    </message>
+    <message>
+        <source>Failed: {names}.</source>
+        <translation>Échec : {names}.</translation>
+    </message>
+    <message>
+        <source>No smart playlist to export: create one with New smart playlist….</source>
+        <translation>Aucune playlist intelligente à exporter : créez-en une avec Nouvelle playlist intelligente….</translation>
     </message>
     <message>
         <source>Delete playlist</source>
@@ -7637,6 +7657,41 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>{count} unchecked (missing BPM/key)</source>
         <translation>{count} non vérifiée(s) (BPM/tonalité manquant)</translation>
+    </message>
+</context>
+<context>
+    <name>SmartExportDialog</name>
+    <message>
+        <source>Export all smart playlists</source>
+        <translation>Exporter toutes les playlists intelligentes</translation>
+    </message>
+    <message>
+        <source>Re-evaluates your {count} smart playlist(s), then writes each one into this folder, named after the playlist. Files a previous export wrote there are replaced; nothing else is touched.</source>
+        <translation>Réévalue vos {count} playlist(s) intelligente(s), puis écrit chacune dans ce dossier, sous le nom de la playlist. Les fichiers qu&apos;un export précédent y a écrits sont remplacés ; rien d&apos;autre n&apos;est touché.</translation>
+    </message>
+    <message>
+        <source>Folder</source>
+        <translation>Dossier</translation>
+    </message>
+    <message>
+        <source>Choose…</source>
+        <translation>Choisir…</translation>
+    </message>
+    <message>
+        <source>Serato crates (.crate): copy them into _Serato_/Subcrates</source>
+        <translation>Crates Serato (.crate) : copiez-les dans _Serato_/Subcrates</translation>
+    </message>
+    <message>
+        <source>Traktor playlists (.nml): Import Playlist in Traktor</source>
+        <translation>Playlists Traktor (.nml) : Import Playlist dans Traktor</translation>
+    </message>
+    <message>
+        <source>Export</source>
+        <translation>Exporter</translation>
+    </message>
+    <message>
+        <source>Export folder</source>
+        <translation>Dossier d&apos;export</translation>
     </message>
 </context>
 <context>
