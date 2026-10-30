@@ -139,6 +139,10 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Mixxx mappings: byte-safe trigger re-assignment** (`v0.48.159-mixxx-write`, #365 follow-up) — saving an edited
+  Mixxx mapping rewrites only the `<status>` / `<midino>` text of the bindings that moved, in place, in the file's own
+  hex style; comments and layout untouched. Checked on Mixxx 2.5's 142 real mappings: unedited exports byte-identical,
+  one moved binding per file round-trips. Structural edits, key/deck edits and entity-spelled values are refused.
 - [x] **DDJ-1000 pad markers re-measured** (`v0.48.158-ddj1000-pads`, #379 follow-up) — the one leftover of the overlay
   audit: both pad grids' markers were a few pixels off (the right grid narrower than its pads); re-measured and checked
   on the overlay.

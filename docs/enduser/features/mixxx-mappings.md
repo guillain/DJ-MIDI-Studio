@@ -1,8 +1,8 @@
 # 🎚️ Mixxx mappings
 
-> 🎚️ Mixxx controller mappings (`.midi.xml`) open read-only in the same
-> channel, deck and control views as Serato, Traktor and rekordbox
-> mappings.
+> 🎚️ Mixxx controller mappings (`.midi.xml`) open in the same channel,
+> deck and control views as the other software, and a re-assigned MIDI
+> trigger saves back into the original file without touching anything else.
 
 📍 [Docs](../../README.md) › [End user](../README.md) › [Features](README.md) › Mixxx mappings
 
@@ -42,9 +42,17 @@ triggers of a Mixxx file to start a controller profile.
 
 ## Saving
 
-Saving is refused with an explanation: a faithful write has to keep the
-file's comments and layout, which isn't implemented yet. Edit mappings in
-Mixxx's controller preferences.
+Change a binding's channel, type or number and save: only the `<status>`
+and `<midino>` of the bindings that moved are rewritten, in place. Every
+other byte — comments, indentation, script references, options, LED
+values — stays exactly as it was, and a file you open and save without
+changes comes out identical. The save confirmation shows the changed lines.
+
+Refused with an explanation rather than approximated: adding or removing a
+binding, changing its Mixxx key or deck (do that in Mixxx), giving a number
+to a binding that has none (pitch bend), and a value the file spells as an
+XML entity (`&CC;`). Keep a copy of the original and check the result in
+Mixxx before using it live.
 
 ## Technical reference
 
