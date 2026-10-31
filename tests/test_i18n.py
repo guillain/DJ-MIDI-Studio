@@ -44,7 +44,9 @@ def _qt_tool(name: str) -> str | None:
         ("system", "fr-CA", "fr"),
         ("system", "FR", "fr"),
         ("system", "en_GB", "en"),
-        ("system", "de_DE", "en"),
+        ("system", "de_DE", "de"),
+        ("de", "fr_FR", "de"),
+        ("system", "it_IT", "en"),
         ("system", "", "en"),
         ("klingon", "fr_FR", "en"),
     ],
@@ -55,8 +57,9 @@ def test_resolve_language(preference, locale, expected):
 
 def test_translation_file_only_for_translated_languages():
     assert i18n.translation_file("en") is None
-    assert i18n.translation_file("de") is None
+    assert i18n.translation_file("it") is None
     assert i18n.translation_file("fr") == i18n.translations_dir() / "djmidi_fr.qm"
+    assert i18n.translation_file("de") == i18n.translations_dir() / "djmidi_de.qm"
 
 
 def test_every_translated_language_ships_a_catalogue():
@@ -85,7 +88,7 @@ def test_language_preference_roundtrips():
 
 
 def test_unknown_language_falls_back_without_losing_other_preferences():
-    loaded = PluginPreferences.from_json(json.dumps({"enabled": {}, "language": "de", "theme": "dark"}))
+    loaded = PluginPreferences.from_json(json.dumps({"enabled": {}, "language": "it", "theme": "dark"}))
     assert loaded.language == "en"
     assert loaded.theme == "dark"
 
@@ -93,8 +96,12 @@ def test_unknown_language_falls_back_without_losing_other_preferences():
 # --- Catalogue -----------------------------------------------------------------
 
 
-def test_french_catalogue_is_complete():
-    root = ET.parse(i18n.translations_dir() / "djmidi_fr.ts").getroot()
+TRANSLATED = [language for language in i18n.SUPPORTED_LANGUAGES if language != i18n.SOURCE_LANGUAGE]
+
+
+@pytest.mark.parametrize("language", TRANSLATED)
+def test_every_catalogue_is_complete(language):
+    root = ET.parse(i18n.translations_dir() / f"djmidi_{language}.ts").getroot()
     messages = list(root.iter("message"))
     assert len(messages) > 50
     for message in messages:
@@ -104,14 +111,15 @@ def test_french_catalogue_is_complete():
         assert (translation.text or "").strip(), f"empty translation: {source!r}"
 
 
-def test_catalogue_lists_every_wrapped_string(tmp_path):
+@pytest.mark.parametrize("language", TRANSLATED)
+def test_catalogue_lists_every_wrapped_string(tmp_path, language):
     """Running lupdate over the sources finds nothing new: every tr() string
     added to main_window.py / preferences_dialog.py has been translated."""
     lupdate = _qt_tool("pyside6-lupdate")
     if lupdate is None:
         pytest.skip("pyside6-lupdate not installed")
-    catalogue = tmp_path / "djmidi_fr.ts"
-    shutil.copy(i18n.translations_dir() / "djmidi_fr.ts", catalogue)
+    catalogue = tmp_path / f"djmidi_{language}.ts"
+    shutil.copy(i18n.translations_dir() / f"djmidi_{language}.ts", catalogue)
     subprocess.run(
         [lupdate, "-no-obsolete", "-locations", "none", *map(str, _script_sources()), "-ts", str(catalogue)],
         check=True,
@@ -125,18 +133,19 @@ def test_catalogue_lists_every_wrapped_string(tmp_path):
     assert unfinished == [], "run scripts/update_translations.sh and translate: " + repr(unfinished)
 
 
-def test_compiled_catalogue_matches_its_source(tmp_path):
+@pytest.mark.parametrize("language", TRANSLATED)
+def test_compiled_catalogue_matches_its_source(tmp_path, language):
     lrelease = _qt_tool("pyside6-lrelease")
     if lrelease is None:
         pytest.skip("pyside6-lrelease not installed")
-    compiled = tmp_path / "djmidi_fr.qm"
+    compiled = tmp_path / f"djmidi_{language}.qm"
     subprocess.run(
-        [lrelease, str(i18n.translations_dir() / "djmidi_fr.ts"), "-qm", str(compiled)],
+        [lrelease, str(i18n.translations_dir() / f"djmidi_{language}.ts"), "-qm", str(compiled)],
         check=True,
         capture_output=True,
     )
-    assert compiled.read_bytes() == (i18n.translations_dir() / "djmidi_fr.qm").read_bytes(), (
-        "djmidi_fr.qm is stale: run scripts/update_translations.sh"
+    assert compiled.read_bytes() == (i18n.translations_dir() / f"djmidi_{language}.qm").read_bytes(), (
+        f"djmidi_{language}.qm is stale: run scripts/update_translations.sh"
     )
 
 
@@ -146,6 +155,14 @@ def test_compiled_catalogue_translates_menus():
     assert translator.translate("MainWindow", "&File") == "&Fichier"
     assert translator.translate("MainWindow", "Music Library") == "Bibliothèque"
     assert translator.translate("PreferencesDialog", "Language:") == "Langue :"
+
+
+def test_german_catalogue_translates_menus():
+    translator = QTranslator()
+    assert translator.load(str(i18n.translation_file("de")))
+    assert translator.translate("MainWindow", "&File") == "&Datei"
+    assert translator.translate("MainWindow", "Music Library") == "Musikbibliothek"
+    assert translator.translate("PreferencesDialog", "Language:") == "Sprache:"
 
 
 # --- GUI -----------------------------------------------------------------------
@@ -216,12 +233,13 @@ def test_compiled_catalogue_translates_the_follow_up_menu_entries():
     assert translator.translate("MusicLibraryView", "Statistics…") == "Statistiques…"
 
 
-def test_every_formatted_translation_keeps_its_placeholders():
-    """A `{name}` placeholder renamed or dropped in French would raise (or
-    print a wrong value) when the code calls .format() on the translation."""
+@pytest.mark.parametrize("language", TRANSLATED)
+def test_every_formatted_translation_keeps_its_placeholders(language):
+    """A `{name}` placeholder renamed or dropped in a translation would raise
+    (or print a wrong value) when the code calls .format() on it."""
     import re
 
-    root = ET.parse(i18n.translations_dir() / "djmidi_fr.ts").getroot()
+    root = ET.parse(i18n.translations_dir() / f"djmidi_{language}.ts").getroot()
     for message in root.iter("message"):
         source = message.find("source").text
         translation = message.find("translation").text or ""

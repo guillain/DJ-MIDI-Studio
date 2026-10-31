@@ -1,6 +1,6 @@
 """Interface language choice (issue #263), independent of Qt.
 
-The preference stores ``"system"``, ``"en"`` or ``"fr"``; ``resolve_language``
+The preference stores ``"system"``, ``"en"``, ``"fr"`` or ``"de"``; ``resolve_language``
 turns it into the language actually shown, given the OS locale name Qt reports
 (``QLocale.system().name()``, e.g. ``"fr_FR"``).  English is the source
 language of every string, so it needs no translation file; any other
@@ -33,13 +33,13 @@ def QT_TRANSLATE_NOOP(context: str, text: str) -> str:
     text with ``QCoreApplication.translate(context, text)``."""
     return text
 
-LanguagePreference = Literal["system", "en", "fr"]
+LanguagePreference = Literal["system", "en", "fr", "de"]
 
 #: Source language of every user-visible string in the code.
 SOURCE_LANGUAGE = "en"
 
 #: Languages with a translation (plus the source language), in menu order.
-SUPPORTED_LANGUAGES: tuple[str, ...] = ("en", "fr")
+SUPPORTED_LANGUAGES: tuple[str, ...] = ("en", "fr", "de")
 
 #: Preference values and the label each one shows in Preferences.  The
 #: language names are written in their own language, so a user who cannot
@@ -48,6 +48,7 @@ LANGUAGE_CHOICES: tuple[tuple[LanguagePreference, str], ...] = (
     ("system", "System"),
     ("en", "English"),
     ("fr", "Français"),
+    ("de", "Deutsch"),
 )
 
 LANGUAGE_PREFERENCES: tuple[str, ...] = tuple(value for value, _label in LANGUAGE_CHOICES)

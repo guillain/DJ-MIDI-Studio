@@ -89,7 +89,7 @@ what the mapping does, switch pad modes, latch SHIFT, and turn on
 | 🧭 | [First-run setup](docs/enduser/features/first-run-wizard.md) | Detect your controllers, open your Serato mapping, record a sync set — on first launch or from Help |
 | 🪟 | [Workspace and preferences](docs/enduser/features/workspace.md) | Dockable tools, Performance Mode, light/dark theme |
 | 🎤 | [Stage Mode](docs/enduser/features/stage-mode.md) | Full-screen, high-contrast Controller Emulator and live MIDI for playing on stage — Esc to exit |
-| 🌐 | [Interface language](docs/enduser/features/interface-language.md) | French menus, main tabs and Preferences (Preferences → Language), or follow the system language |
+| 🌐 | [Interface language](docs/enduser/features/interface-language.md) | French or German interface (Preferences → Language), or follow the system language |
 | 🐞 | [Report a Problem](docs/enduser/features/report-a-problem.md) | Versions, plugins and recent log in an editable preview, opened as a pre-filled GitHub issue |
 
 ## Supported hardware and software

@@ -139,6 +139,10 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **German interface** (`v0.48.176-german`, phase 6 item 8) — the whole interface in German (Preferences →
+  Language → Deutsch, or System on a German Mac): 1,976 messages, every placeholder and tag checked against the
+  English, every audited window and main-window tab checked for squeezed or clipped text in German. Native review
+  invited from the docs.
 - [x] **Software plugin kit** (`v0.48.175-plugin-kit`, phase 6 item 7) — a guide
   (`docs/developer/design/software-plugins.md`), a contract check any plugin runs on its own sample files
   (`check_software_plugin`, `scripts/check_software_plugin.py`; Serato and Traktor pass it), and a complete example
@@ -3593,7 +3597,8 @@ close what can't be unblocked here.
       `v0.48.174-cheat-sheet-web` (also re-measured the DDJ-XP2 pads).
    7. Software plugin kit: guide, contract tests, example plugin. **Done**
       in `v0.48.175-plugin-kit`.
-   8. A third interface language.
+   8. A third interface language. **Done** in `v0.48.176-german`
+      (German; a native speaker's review is welcome).
 
 ## Tracking rules
 
