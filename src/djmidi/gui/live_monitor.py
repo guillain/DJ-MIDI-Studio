@@ -47,6 +47,27 @@ from djmidi.validator import DeckConflict, TriggerKey, find_deck_conflicts
 
 _MAX_ROWS = 500
 _POLL_INTERVAL_MS = 30
+# A read whose events take longer than this to handle is logged as a warning:
+# the GUI thread is busy that long (issue: freezes under MIDI bursts).
+SLOW_BATCH_MS = 250
+# A read this large is logged (info) even when fast: what floods the input
+# (a jog, a fader sweep, LED feedback, a MIDI loop) is worth knowing.
+BURST_EVENTS = 200
+
+
+def describe_burst(events) -> str:
+    """'XDJ-XZ (1) Control Change ch1 #34 ×580, …': the five commonest
+    (port, type, channel, number) of a batch, for the log."""
+    from collections import Counter
+
+    counts = Counter((e.port or "?", e.direction, e.event_type, e.channel, e.data1) for e in events)
+    parts = [
+        f"{port} {'out ' if direction == 'out' else ''}{kind} ch{channel} #{data1} ×{count}"
+        for (port, direction, kind, channel, data1), count in counts.most_common(5)
+    ]
+    if len(counts) > 5:
+        parts.append(f"… {len(counts) - 5} other message(s)")
+    return ", ".join(parts)
 # Amber, readable on both light and dark themes behind default text.
 _CONFLICT_BRUSH = QBrush(QColor(255, 176, 32, 90))
 
@@ -82,6 +103,9 @@ class _CheckBoxLabel(QLabel):
 
 class LiveMonitorView(QWidget):
     eventReceived = Signal(object)  # MidiEvent
+    # Around every read's events (one MIDI poll), so views redraw once.
+    batchStarted = Signal()
+    batchFinished = Signal()
     portNamesChanged = Signal(list)
     # self.tr("Sync controllers") clicked; MainWindow owns the stored sync sets.
     syncRequested = Signal()
@@ -213,6 +237,7 @@ class LiveMonitorView(QWidget):
         layout.addWidget(self._log, 1)
 
         self._timer = QTimer(self)
+        self._in_batch = False
         self._timer.setInterval(_POLL_INTERVAL_MS)
         self._timer.timeout.connect(self._poll)
 
@@ -293,12 +318,33 @@ class LiveMonitorView(QWidget):
         _LOGGER.info("Live Monitor stopped")
 
     def _poll(self) -> None:
-        for event in self._monitor.poll():
-            self._events.append(event)
-            while len(self._events) > _MAX_ROWS:
-                self._events.pop(0)
-            self._append_event(event)
-            self.eventReceived.emit(event)
+        events = self._monitor.poll()
+        if not events:
+            return
+        started = time.monotonic()
+        # One batch per read: the controller drawings coalesce every change
+        # of the batch into a single redraw (see gui/deferred_rebuild.py).
+        self.batchStarted.emit()
+        self._in_batch = True
+        try:
+            for event in events:
+                self._events.append(event)
+                while len(self._events) > _MAX_ROWS:
+                    self._events.pop(0)
+                self._append_event(event)
+                self.eventReceived.emit(event)
+        finally:
+            self._in_batch = False
+            self._log.scrollToBottom()
+            self.batchFinished.emit()
+        elapsed_ms = (time.monotonic() - started) * 1000
+        if elapsed_ms >= SLOW_BATCH_MS:
+            _LOGGER.warning(
+                "Live MIDI: %d event(s) took %.0f ms to process (the window doesn't respond meanwhile): %s",
+                len(events), elapsed_ms, describe_burst(events),
+            )
+        elif len(events) >= BURST_EVENTS:
+            _LOGGER.info("Live MIDI burst: %d event(s) in %.0f ms: %s", len(events), elapsed_ms, describe_burst(events))
 
     def _append_event(self, event: MidiEvent) -> None:
         hits = catalog.lookup(event.channel, event.event_type, event.data1)
@@ -338,7 +384,8 @@ class LiveMonitorView(QWidget):
                 item.setBackground(_CONFLICT_BRUSH)
                 item.setToolTip(conflict_text)
             self._log.setItem(row, col, item)
-        self._log.scrollToBottom()
+        if not self._in_batch:
+            self._log.scrollToBottom()
 
         while self._log.rowCount() > _MAX_ROWS:
             self._log.removeRow(0)

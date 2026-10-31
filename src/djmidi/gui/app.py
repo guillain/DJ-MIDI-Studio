@@ -10,6 +10,7 @@ from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QApplication, QWidget
 
 from djmidi import startup_timing
+from djmidi.gui.freeze_watchdog import FreezeWatchdog
 from djmidi.gui.main_window import MainWindow
 from djmidi.gui.theme import apply_theme
 from djmidi.gui.translation import install_translators
@@ -113,7 +114,11 @@ def run(argv: list[str] | None = None) -> int:
             max(0, arguments.startup_screenshot_delay_ms),
             lambda: save_window_screenshot(window, arguments.startup_screenshot),
         )
+    # Logs where the GUI thread is stuck if the window stops responding.
+    watchdog = FreezeWatchdog()
+    watchdog.start()
     result = app.exec()
+    watchdog.stop()
     logger.info("DJ MIDI Studio stopped with exit code %s; log file: %s", result, log_path)
     return result
 
