@@ -1,7 +1,8 @@
 # 🌐 Interface language
 
-> Show DJ MIDI Studio in French (or follow your computer's language)
-> instead of English. Chosen in Preferences, applied at the next launch.
+> Show DJ MIDI Studio in French or German (or follow your computer's
+> language) instead of English. Chosen in Preferences, applied at the next
+> launch.
 
 📍 [Docs](../../README.md) › [End user](../README.md) › [Features](README.md) › Interface language
 
@@ -21,7 +22,8 @@ Open Preferences with the **⚙** button at the top right, then pick a
 | --- | --- |
 | `English` | English — the default |
 | `Français` | French |
-| `System` | French when your computer's language is French, English otherwise |
+| `Deutsch` | German |
+| `System` | French or German when your computer's language is one of them, English otherwise |
 
 Click `Save`, then quit and restart DJ MIDI Studio: the language is applied
 when the app starts. Language names are always written in their own
@@ -30,6 +32,17 @@ language, so you can find yours even when you can't read the current one.
 ![Preferences, General tab, in French with Français selected](../../images/layout/interface-language-preferences.png)
 
 ## What is translated
+
+Both languages cover the whole interface: every menu, tab, window, button,
+tooltip, status message and `?` help text. The examples below are the
+French names; the German interface follows the same structure (`Datei`,
+`Bearbeiten`, `Ansicht`, `Makros`, `Hilfe`; `Übersicht`,
+`Controller-Einrichtung`, `Controller-Bilder`, `Nach Kanal`, `Nach Deck`,
+`Nach Controller`, `Musikbibliothek`).
+
+The German translation is new: if a wording reads oddly, report it with
+`Hilfe → Problem melden…` — corrections from German-speaking DJs are very
+welcome.
 
 This first version translates what you use most:
 
