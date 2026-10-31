@@ -110,7 +110,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from PySide6.QtCore import QCoreApplication, QRectF, Qt, QTimer, Signal
+from PySide6.QtCore import QCoreApplication, QRectF, Qt, Signal
 from PySide6.QtGui import QBrush, QColor, QFont
 from PySide6.QtWidgets import (
     QComboBox,
@@ -132,6 +132,7 @@ from djmidi.controller_sync import ControllerSyncSet
 from djmidi.gui import help_texts, layout_view
 from djmidi.gui import layout as layout_mod
 from djmidi.gui import pad_mode as pad_mode_mod
+from djmidi.gui.deferred_rebuild import DeferredRebuild
 from djmidi.gui.help_button import help_button
 from djmidi.gui.layer_toggles import LayerToggles
 from djmidi.gui.layout import CellKey
@@ -251,7 +252,7 @@ class _ClickableEmulatorView(QGraphicsView):
         self.viewportResized.emit()
 
 
-class EmulatorLayoutView(QWidget):
+class EmulatorLayoutView(DeferredRebuild, QWidget):
     """A single controller's interactive, clickable schematic -- one flat row
     per cell (no split-half "other controller" comparison, no tab bar, no
     deck filter). Clicking a pad/button flashes it and emits its CellKey."""
@@ -260,6 +261,7 @@ class EmulatorLayoutView(QWidget):
 
     def __init__(self, controller: str, parent: QWidget | None = None) -> None:
         super().__init__(parent)
+        self._init_deferred_rebuild(_FLASH_DURATION_MS)
         self._controller = controller
         self._metrics = layout_view.metrics_for(controller)
         self._flash_keys: set[CellKey] = set()
@@ -425,19 +427,13 @@ class EmulatorLayoutView(QWidget):
         self._rebuild()
 
     def flash_key(self, key: CellKey) -> None:
-        self._flash_keys.add(key)
-        self._rebuild()
-        QTimer.singleShot(_FLASH_DURATION_MS, lambda k=key: self._clear_flash(k))
-
-    def _clear_flash(self, key: CellKey) -> None:
-        self._flash_keys.discard(key)
-        self._rebuild()
+        self._flash(key)
 
     def _on_control_pressed(self, key: CellKey) -> None:
         self.flash_key(key)
         self.controlPressed.emit(key)
 
-    def _rebuild(self) -> None:
+    def _rebuild_scene(self) -> None:
         self._scene.clear()
         self._scene.setBackgroundBrush(layout_view._SCENE_BRUSH)
         if not self._controller:
@@ -736,6 +732,13 @@ class ControllerEmulatorView(QWidget):
         if hit.controller != self._combo.currentText():
             return
         self._emulator.flash_key(layout_mod.presentation_key_for_hit(hit))
+
+    def begin_batch(self) -> None:
+        """Coalesce the redraws of one batch of live MIDI (gui/deferred_rebuild.py)."""
+        self._emulator.begin_batch()
+
+    def end_batch(self) -> None:
+        self._emulator.end_batch()
 
     def set_live_active_from_hit(self, hit: catalog.ControlInfo, active: bool) -> None:
         """Persistent "held down" amber highlight from a live Note On

@@ -495,6 +495,9 @@ class MainWindow(QMainWindow):
 
         self.live_monitor_view = LiveMonitorView(on_event=self._on_live_midi_event)
         self.live_monitor_view.syncRequested.connect(self._on_sync_controllers)
+        self.live_monitor_view.batchStarted.connect(self._begin_live_batch)
+        self.live_monitor_view.batchFinished.connect(self._end_live_batch)
+        self._live_batch_views: list = []
 
         self.controller_setup_view = ControllerSetupView()
         self.controller_setup_view.set_default_file(self.preferences.controller_setup_default_file)
@@ -2167,6 +2170,26 @@ class MainWindow(QMainWindow):
         if self._stage_mode_action.isChecked():
             self._stage_mode_action.setChecked(False)
         self.statusBar().showMessage(self.tr("Stage mode off"))
+
+    def _begin_live_batch(self) -> None:
+        """One Live Monitor read starts: the drawings that follow live MIDI
+        only record changes until it ends, then redraw once. Without this, a
+        burst (a jog turned, LED feedback) redrew every view per event and
+        froze the window."""
+        self._end_live_batch()
+        self._live_batch_views = [
+            self.layout_view, self.deck_layout_view, self.controller_layout_view, *self._emulator_views()
+        ]
+        for view in self._live_batch_views:
+            view.begin_batch()
+
+    def _end_live_batch(self) -> None:
+        views, self._live_batch_views = self._live_batch_views, []
+        for view in views:
+            try:
+                view.end_batch()
+            except RuntimeError:  # an emulator closed during the batch
+                continue
 
     def _emulator_views(self) -> list[ControllerEmulatorView]:
         """Every live Controller Emulator: each emulator dock's view plus

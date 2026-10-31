@@ -5,7 +5,7 @@ import math
 from dataclasses import dataclass
 from pathlib import Path
 
-from PySide6.QtCore import QLineF, QPointF, QRectF, Qt, QTimer, Signal
+from PySide6.QtCore import QLineF, QPointF, QRectF, Qt, Signal
 from PySide6.QtGui import QBrush, QColor, QFont, QPen, QPixmap
 from PySide6.QtWidgets import (
     QComboBox,
@@ -29,6 +29,7 @@ from djmidi.gui import controller_image_view, help_texts
 from djmidi.gui import geometry as geometry_mod
 from djmidi.gui import jog as jog_mod
 from djmidi.gui import layout as layout_mod
+from djmidi.gui.deferred_rebuild import DeferredRebuild
 from djmidi.gui.help_button import help_button
 from djmidi.gui.layer_toggles import LayerToggles
 from djmidi.gui.layout import CellKey
@@ -574,7 +575,7 @@ class _ClickableView(QGraphicsView):
         self.viewportResized.emit()
 
 
-class ControllerLayoutView(QWidget):
+class ControllerLayoutView(DeferredRebuild, QWidget):
     """Schematic, clickable layout of a controller's physical buttons/pads.
     Each cell is split in two: the top half is this controller's own view
     (physical name, Serato function(s), deck(s)); the bottom half shows the
@@ -587,6 +588,7 @@ class ControllerLayoutView(QWidget):
 
     def __init__(self, show_deck_filter: bool = False, parent: QWidget | None = None) -> None:
         super().__init__(parent)
+        self._init_deferred_rebuild(_FLASH_DURATION_MS)
         # Built-in catalog modules are discovered dynamically.  A frozen
         # application can briefly start with an empty registry if discovery
         # failed or a future plugin package is unavailable; the layout must
@@ -879,13 +881,7 @@ class ControllerLayoutView(QWidget):
 
     def flash_key(self, key: CellKey) -> None:
         """Briefly highlight a pad/button glyph in response to a live MIDI hit."""
-        self._flash_keys.add(key)
-        self._rebuild()
-        QTimer.singleShot(_FLASH_DURATION_MS, lambda k=key: self._clear_flash(k))
-
-    def _clear_flash(self, key: CellKey) -> None:
-        self._flash_keys.discard(key)
-        self._rebuild()
+        self._flash(key)
 
     def set_value(self, key: CellKey, value: int) -> None:
         """Record a live 7-bit MIDI value for a knob/fader glyph."""
@@ -1162,7 +1158,7 @@ class ControllerLayoutView(QWidget):
             title.setPos(x0 + 10, y0 + 4)
             self._scene.addItem(title)
 
-    def _rebuild(self) -> None:
+    def _rebuild_scene(self) -> None:
         self._scene.clear()
         self._pad_center = None
         self._scene.setBackgroundBrush(_SCENE_BRUSH)
