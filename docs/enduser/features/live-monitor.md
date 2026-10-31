@@ -68,6 +68,13 @@ for what the DJ software sent back — so a session can be opened in a DAW
 or any MIDI tool, replayed, or attached to a bug report. `Sync controllers`
 runs [Controller Sync](controller-sync.md).
 
+A controller can send hundreds of messages in a fraction of a second (a
+jog wheel spun fast, a fader swept, LED feedback): the drawings redraw once
+per batch of messages, so the window keeps up. Such a burst is noted in the
+log file with what sent it, and if the window ever stops responding for
+5 seconds, the log records where — attach the log to a problem report
+(`Help → Report a Problem…`).
+
 ## Spot conflicts live
 
 When a button or pad you press triggers **two or more different functions

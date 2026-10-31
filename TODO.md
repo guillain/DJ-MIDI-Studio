@@ -139,6 +139,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Fix: freezes under live MIDI bursts** (`v0.48.177-live-midi-freeze`) — RCA: every live MIDI event redrew every
+  controller drawing (hidden tabs too), ~12 ms each; a jog tick cost 248 ms, so the 614–9,378-event bursts in the log
+  froze the window for minutes. Redraws are now coalesced to one per MIDI read and skipped on hidden tabs (jog
+  0.07 ms/event). Logging added: slow/large MIDI reads with what flooded them, and a watchdog that logs the GUI
+  thread's stack after 5 s without a response.
 - [x] **German interface** (`v0.48.176-german`, phase 6 item 8) — the whole interface in German (Preferences →
   Language → Deutsch, or System on a German Mac): 1,976 messages, every placeholder and tag checked against the
   English, every audited window and main-window tab checked for squeezed or clipped text in German. Native review
