@@ -361,6 +361,28 @@ def french():
         app.removeTranslator(translator)
 
 
+@pytest.fixture
+def german():
+    """The German catalogue installed: the longest labels of the three."""
+    from PySide6.QtCore import QTranslator
+
+    from djmidi import i18n
+
+    app = QApplication.instance()
+    translator = QTranslator()
+    assert translator.load(str(i18n.translation_file("de")))
+    app.installTranslator(translator)
+    try:
+        yield
+    finally:
+        app.removeTranslator(translator)
+
+
+@pytest.mark.parametrize("name", list(WINDOWS))
+def test_window_is_usable_in_german(name, german):
+    test_window_is_usable_at_default_and_minimum_size(name)
+
+
 @pytest.mark.parametrize("name", list(WINDOWS))
 def test_window_is_usable_in_french(name, french):
     # Longer French labels clipped the wizard's checkbox and pushed Layer
@@ -368,7 +390,7 @@ def test_window_is_usable_in_french(name, french):
     test_window_is_usable_at_default_and_minimum_size(name)
 
 
-@pytest.mark.parametrize("language", ["en", "fr"])
+@pytest.mark.parametrize("language", ["en", "fr", "de"])
 def test_preferences_minimum_ignores_the_workspace_path_length(language, monkeypatch, request):
     from djmidi import user_paths
     from djmidi.gui.preferences_dialog import PreferencesDialog
@@ -376,6 +398,8 @@ def test_preferences_minimum_ignores_the_workspace_path_length(language, monkeyp
 
     if language == "fr":
         request.getfixturevalue("french")
+    elif language == "de":
+        request.getfixturevalue("german")
     # A real path can be long (a network home, a nested Documents folder):
     # it once set the dialog's minimum to 1118 px (1243 in French).
     long_path = Path("/Users/someone-with-a-long-name/Library/Mobile Documents/" + "nested-folder/" * 8)
@@ -414,5 +438,28 @@ def test_tab_titles_are_never_elided(french):
         # The side tabs grow instead (their panel is in a scroll area).
         assert not window.music_library_view.side_tabs.usesScrollButtons()
         assert window.left_tabs.tabText(window._tab_indexes["library"]) == "Bibliothèque"
+    finally:
+        window.close()
+
+
+def test_main_window_tabs_are_usable_in_german(german):
+    """German labels are the longest: every tab of the main window at
+    1100x700 still has no squeezed control or clipped text."""
+    from djmidi.gui.main_window import MainWindow
+
+    apply_theme(QApplication.instance())
+    window = MainWindow()
+    window.resize(1100, 700)
+    window.show()
+    try:
+        problems = {}
+        for index in range(window.left_tabs.count()):
+            window.left_tabs.setCurrentIndex(index)
+            QApplication.processEvents()
+            found = _layout_problems(window.left_tabs.currentWidget())
+            if found:
+                problems[window.left_tabs.tabText(index)] = found[:6]
+        assert problems == {}
+        assert window.left_tabs.tabText(window._tab_indexes["library"]) == "Musikbibliothek"
     finally:
         window.close()

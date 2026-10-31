@@ -100,7 +100,7 @@ SOURCES=(
   src/djmidi/gui/sync_set_editor.py
   src/djmidi/gui/commands.py
 )
-LANGUAGES=(fr)
+LANGUAGES=(fr de)
 
 for language in "${LANGUAGES[@]}"; do
   catalogue="src/djmidi/translations/djmidi_${language}.ts"
