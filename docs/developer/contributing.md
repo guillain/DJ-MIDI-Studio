@@ -73,6 +73,12 @@ the raw channel/type/data values, cite the official source in
 provisional when they have not been checked on target hardware. Do not infer a
 complete MIDI map from a product image.
 
+Support for **another DJ program** is a software plugin: see
+[Writing a software plugin](design/software-plugins.md), start from
+[`examples/software-plugin`](../../examples/software-plugin/README.md), and
+run `scripts/check_software_plugin.py` on real sample files before opening
+the pull request.
+
 ## AI-assisted contributions
 
 AI tools may help explore, draft, test, or review code, but the contributor is

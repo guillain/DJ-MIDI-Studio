@@ -1,0 +1,7 @@
+# channel;message;number;event;function;deck
+1;Note On;11;click;play;1
+1;Note On;11;output;play_led;1
+1;Note On;12;click;cue;1
+2;Note On;11;click;play;2
+2;Note On;12;click;cue;2
+1;Control Change;19;click;filter;1

@@ -7,12 +7,15 @@ import importlib.metadata
 import logging
 import pkgutil
 
+from djmidi.software._contract import ERROR as ERROR_SEVERITY
+from djmidi.software._contract import ContractIssue, check_software_plugin
 from djmidi.software._registry import (
     SoftwareDefinition,
     active_definitions,
     all_definitions,
     detect_from_text,
     get_definition,
+    register,
     set_enabled_plugin_ids,
     signature_matches,
 )
@@ -70,13 +73,17 @@ def plugin_names() -> list[str]:
 
 __all__ = [
     "DISCOVERY_DIAGNOSTICS",
+    "ERROR_SEVERITY",
+    "ContractIssue",
     "SoftwareDefinition",
     "active_definitions",
     "all_definitions",
+    "check_software_plugin",
     "detect_from_text",
     "discover_plugins",
     "get_definition",
     "plugin_names",
+    "register",
     "set_enabled_plugin_ids",
     "signature_matches",
 ]
