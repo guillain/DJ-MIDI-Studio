@@ -139,6 +139,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Mixxx export checked against Mixxx's loader; help-label check fixed and extended to German**
+  (`v0.48.178-checks`) — a test ports Mixxx 2.5's MIDI mapping loader (which silently turns an unparsable number
+  into 0x00) and loads a generated mapping for every controller through it. The translated help-label check had
+  been a no-op (a placeholder-only translation became a catch-all pattern); fixed, given a negative control and run
+  for German too, it found four wrong German labels, a French one left in English (Exit) and an English help that
+  quoted a non-existent "Replace" button (now the real checkbox label, in all three languages).
 - [x] **Fix: freezes under live MIDI bursts** (`v0.48.177-live-midi-freeze`) — RCA: every live MIDI event redrew every
   controller drawing (hidden tabs too), ~12 ms each; a jog tick cost 248 ms, so the 614–9,378-event bursts in the log
   froze the window for minutes. Redraws are now coalesced to one per MIDI read and skipped on hidden tabs (jog
