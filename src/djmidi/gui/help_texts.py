@@ -196,7 +196,8 @@ DECK_COPY: HelpEntry = (
         "Copies every mapping of the <b>From</b> deck onto the <b>To</b> deck. Each source "
         "MIDI channel goes to the channel set in the table (by default the channel the target "
         "deck already uses). A control the target deck already uses is skipped, unless "
-        "<b>Replace</b> is ticked: its target-deck mappings are then replaced. The preview "
+        "<b>Replace the target deck's mappings on the same controls</b> is ticked: its "
+        "target-deck mappings are then replaced. The preview "
         "says what will change; <b>Edit → Undo</b> takes the whole copy back in one step.",
     ),
     "deck-copy.md",

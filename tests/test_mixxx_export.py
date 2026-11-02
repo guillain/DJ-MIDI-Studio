@@ -129,3 +129,83 @@ def test_main_window_opens_one_export_window():
         dialog.close()
     finally:
         window.close()
+
+
+# --- Loaded the way Mixxx loads it -----------------------------------------------
+#
+# A port of the input half of Mixxx 2.5's
+# src/controllers/midi/legacymidicontrollermappingfilehandler.cpp (read, not
+# copied): <controller> under the root, each <controls>/<control>, <status>
+# and <midino> read with QString::toInt(&ok, 0) -- base auto-detected, so
+# "0x90" / "144" / "0220" all parse -- and *silently replaced by 0x00* when
+# they don't parse; option element names matched case-insensitively against
+# a fixed list ("normal" means no option, anything else unknown is ignored).
+# The silent 0x00 is why this matters: a malformed number never fails the
+# load in Mixxx, it just makes a dead binding.
+
+_MIXXX_OPTIONS = {
+    "normal", "invert", "rot64", "rot64inv", "rot64fast", "diff", "button", "switch", "hercjog",
+    "hercjogfast", "spread64", "selectknob", "soft-takeover", "script-binding", "fourteen-bit-msb",
+    "fourteen-bit-lsb",
+}
+
+
+def _qt_to_int(text: str) -> int | None:
+    """QString::toInt(&ok, 0): optional sign, 0x hex, leading-0 octal, else decimal."""
+    value = text.strip()
+    try:
+        if value.lower().startswith(("0x", "-0x", "+0x")):
+            return int(value, 16)
+        if len(value) > 1 and value.startswith("0") and value.isdigit():
+            return int(value, 8)
+        return int(value, 10)
+    except ValueError:
+        return None
+
+
+def load_like_mixxx(text: str) -> list[dict]:
+    import xml.etree.ElementTree as ET
+
+    root = ET.fromstring(text)
+    controller = root.find("controller")
+    assert controller is not None, "Mixxx returns no mapping without <controller>"
+    bindings = []
+    controls = controller.find("controls")
+    for control in [] if controls is None else controls.findall("control"):
+        status = _qt_to_int(control.findtext("status") or "")
+        midino = _qt_to_int(control.findtext("midino") or "")
+        options = control.find("options")
+        names = [child.tag.lower() for child in ([] if options is None else options)]
+        bindings.append({
+            "status": status, "midino": midino, "options": names,
+            "group": control.findtext("group") or "", "key": control.findtext("key") or "",
+        })  # fmt: skip
+    return bindings
+
+
+def test_generated_mappings_load_cleanly_the_way_mixxx_reads_them():
+    from djmidi import catalog
+
+    checked = 0
+    for controller in catalog.CONTROLLER_NAMES:
+        buttons = profile_buttons(controller)
+        assignments = [Assignment(b, key, b.deck) for b in buttons if (key := suggest_function(b))]
+        if not assignments:
+            continue
+        for note_off in (False, True):
+            bindings = load_like_mixxx(build_mixxx_mapping(controller, assignments, note_off=note_off))
+            expected = len(assignments) + (sum(a.button.kind == "NOTE" for a in assignments) if note_off else 0)
+            assert len(bindings) == expected, controller
+            for binding in bindings:
+                # Never the silent 0x00 fallback: every number parsed.
+                assert binding["status"] is not None and 0x80 <= binding["status"] <= 0xBF, (controller, binding)
+                assert binding["midino"] is not None and 0 <= binding["midino"] <= 127, (controller, binding)
+                assert set(binding["options"]) <= _MIXXX_OPTIONS, (controller, binding)
+                assert binding["group"].startswith("[Channel") and binding["key"], (controller, binding)
+        checked += 1
+    assert checked >= 10
+
+
+def test_the_port_parses_numbers_like_qt():
+    assert _qt_to_int("0x9F") == 0x9F and _qt_to_int("144") == 144 and _qt_to_int("0220") == 0o220
+    assert _qt_to_int("") is None and _qt_to_int("&CC;") is None
