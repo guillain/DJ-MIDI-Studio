@@ -139,6 +139,50 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **BPM x key compatibility heatmap** (`v0.48.186-bpm-key-heatmap`, issue #410) — a new `BPM x Key` tab in
+  Library Statistics: a dense grid (BPM bins x the 24 Camelot codes), each cell shaded by how many tracks fall in
+  it, to spot which parts of the collection are easiest to chain mixes within. `stats.compute_bpm_key_heatmap`
+  (Qt-free, same binning/`missing`-counting discipline as the existing BPM/key charts) and
+  `gui/library_stats_dialog.HeatmapWidget` (`BarChart`'s sibling for a 2D grid, no charting dependency). Eighth and
+  last of the overnight brainstorm batch (issues #403–#410).
+- [x] **"What's new" release notes dialog** (`v0.48.185-whats-new`, issue #409) — the silent background update
+  check now shows a `WhatsNewDialog` (GitHub's own release notes, rendered as Markdown) the first time a given
+  version is detected, instead of only the status-bar link; a manual `Help → Check for Updates…` keeps its
+  existing dialog unchanged. `ReleaseInfo` gained a `body` field; `QSettings` `updates/last_announced_version`
+  keeps it to once per version. Seventh of the overnight brainstorm batch (issues #403–#410).
+- [x] **Export/import MIDI macros** (`v0.48.184-macro-sharing`, issue #408) — `Export…`/`Import…` in Manage Macros
+  share the whole macro list as one versioned bundle file (`MACRO_BUNDLE_SCHEMA` = `djmidi-macros/1`). A name
+  collision on import asks once whether to replace or keep both (the imported one renamed `"(2)"`, `"(3)"`...) —
+  `merge_imported_macros`, Qt-free. Sixth of the overnight brainstorm batch (issues #403–#410).
+- [x] **Mini-waveform in the audio preview bar** (`v0.48.183-waveform`, issue #407) — a precomputed amplitude
+  envelope above the preview bar's transport controls, click/drag to seek. Only appears with the optional
+  `analysis` extra (librosa) installed, like BPM/key estimation; computed off the main thread
+  (`gui/waveform_loader.WaveformLoader`, mirroring the update checker's `QThreadPool` pattern) and cached by the
+  file's mtime in a new `waveform_cache` table. Fifth of the overnight brainstorm batch (issues #403–#410).
+- [x] **Auto-organize library files into category folders** (`v0.48.182-organize-into-folders`, issue #406) — a
+  sibling to the template-based renamer (#260): `Organize into folders…` moves each selected track into
+  `<its own library root>/Family/Name`, following its confirmed category (never a fuzzy one), filename unchanged.
+  Reuses the renamer's guardrails (`in_protected_folder`, `is_within_roots`) and its `rename_track_paths` DB update
+  directly; `gui.commands.RenameFilesCommand` was generalized (an optional `summary` override) rather than
+  duplicated into a second command class. Fourth of the overnight brainstorm batch (issues #403–#410).
+- [x] **Gig journal** (`v0.48.181-gig-journal`, issue #405) — a free-text note per gig, not tied to any track,
+  below the Music Library History panel's play history: `library/gig_journal.py` (a plain `gig_journal` table in
+  `LibraryDB`, newest-first, blank notes refused) and a list + text box + `Add journal entry`/`Delete entry` in the
+  panel, double-click to edit. Kept only in this app's own index. Third of the overnight brainstorm batch (issues
+  #403–#410).
+- [x] **Generate a set from the library** (`v0.48.180-generate-set`, issue #404) — `Build a set from the library…`
+  in the Set panel builds a set from scratch out of the whole indexed collection rather than reordering the
+  hand-picked draft: pick a target duration (or no limit) and a direction, preview the chain and its running time
+  (`set_prep.generate_set_from_library`, the same mix-path engine `Propose an order…` already used), then replace
+  the draft with it on accept. Second of the overnight brainstorm batch (issues #403–#410).
+- [x] **Time remaining on stage** (`v0.48.179-stage-time-remaining`, issue #403) — the Music Library Set panel and
+  Stage Mode's set view have a running clock now: each file's own audio stream length (not a tag) joins the
+  existing per-file metadata cache, and `set_prep.total_duration`/`format_duration` sum it from wherever you are in
+  the set to the end, shown as `"Set 3/12 · 34:12 left"` on stage and as the set's total in the Music Library
+  summary line. A `+` means at least one later track's duration isn't known yet (a lower bound, not the exact
+  total) rather than silently under-reporting. Resolves the "no durations in the tag cache" limitation the Stage
+  Mode docs used to call out explicitly. First of an 8-item brainstorm batch picked by the maintainer overnight
+  (issues #403–#410) — see the entries below for the rest.
 - [x] **Mixxx export checked against Mixxx's loader; help-label check fixed and extended to German**
   (`v0.48.178-checks`) — a test ports Mixxx 2.5's MIDI mapping loader (which silently turns an unparsable number
   into 0x00) and loads a generated mapping for every controller through it. The translated help-label check had

@@ -32,13 +32,16 @@ SOURCES=(
   src/djmidi/gui/snapshots_dialog.py
   src/djmidi/gui/mixxx_export_dialog.py
   src/djmidi/mixxx_export.py
+  src/djmidi/gui/whats_new_dialog.py
   src/djmidi/deck_copy.py
   src/djmidi/gui/music_library_view.py
   src/djmidi/gui/library_stats_dialog.py
   src/djmidi/gui/rename_files_dialog.py
+  src/djmidi/gui/organize_files_dialog.py
   src/djmidi/gui/change_history_dialog.py
   src/djmidi/gui/set_preparation.py
   src/djmidi/gui/set_order_dialog.py
+  src/djmidi/gui/generate_set_dialog.py
   src/djmidi/gui/smart_export_dialog.py
   src/djmidi/gui/audio_preview.py
   src/djmidi/midi_latency.py

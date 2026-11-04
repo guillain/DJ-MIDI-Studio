@@ -19,7 +19,7 @@ so it survives a restart; saving it as a real playlist goes through
 from __future__ import annotations
 
 import re
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Collection, Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -53,6 +53,27 @@ _KEY_UNKNOWN = QT_TRANSLATE_NOOP("SetPreparationPanel", "Key unknown")
 _SUMMARY_TRACKS = QT_TRANSLATE_NOOP("SetPreparationPanel", "{count} track(s)")
 _SUMMARY_INCOMPATIBLE = QT_TRANSLATE_NOOP("SetPreparationPanel", "{count} incompatible transition(s)")
 _SUMMARY_UNKNOWN = QT_TRANSLATE_NOOP("SetPreparationPanel", "{count} unchecked (missing BPM/key)")
+_SUMMARY_DURATION = QT_TRANSLATE_NOOP("SetPreparationPanel", "{duration} total")
+_SUMMARY_DURATION_APPROX = QT_TRANSLATE_NOOP("SetPreparationPanel", "{duration}+ total (some durations unknown)")
+
+
+def format_duration(seconds: float) -> str:
+    """``"M:SS"``, or ``"H:MM:SS"`` at an hour or more. Negative/zero inputs
+    clamp to zero rather than producing a confusing negative clock."""
+    total = max(0, round(seconds))
+    hours, remainder = divmod(total, 3600)
+    minutes, secs = divmod(remainder, 60)
+    if hours:
+        return f"{hours}:{minutes:02d}:{secs:02d}"
+    return f"{minutes}:{secs:02d}"
+
+
+def total_duration(tracks: Sequence[SetTrack]) -> tuple[float, bool]:
+    """Sum of the known durations and whether every track's duration is
+    known -- a missing duration means the real total is *at least* this
+    much, not exactly this much, so the caller can flag it as approximate."""
+    durations = [track.duration for track in tracks]
+    return sum(value for value in durations if value), bool(tracks) and all(value for value in durations)
 
 
 def parse_energy(text: str | None) -> int | None:
@@ -81,6 +102,7 @@ class SetTrack:
     energy: int | None = None
     indexed: bool = True
     note: str | None = None  # the stage note (phase 6 item 3)
+    duration: float | None = None  # seconds, from the file's own stream header (issue #403)
 
     @property
     def label(self) -> str:
@@ -100,6 +122,7 @@ def set_track_from_row(row: LibraryRow) -> SetTrack:
         energy=parse_energy(metadata.energy) if metadata else None,
         indexed=not row.missing,
         note=row.note,
+        duration=row.duration,
     )
 
 
@@ -183,6 +206,8 @@ class SetSummary:
     tracks: int
     incompatible: int
     unknown: int
+    duration_seconds: float = 0.0
+    duration_known: bool = False
 
     @property
     def text(self) -> str:
@@ -195,12 +220,19 @@ class SetSummary:
             parts.append(translate(_SUMMARY_INCOMPATIBLE).format(count=self.incompatible))
             if self.unknown:
                 parts.append(translate(_SUMMARY_UNKNOWN).format(count=self.unknown))
+        if self.duration_seconds:
+            template = _SUMMARY_DURATION if self.duration_known else _SUMMARY_DURATION_APPROX
+            parts.append(translate(template).format(duration=format_duration(self.duration_seconds)))
         return " · ".join(parts)
 
 
 def summarize(tracks: Sequence[SetTrack], transitions: Sequence[Transition]) -> SetSummary:
     statuses = [transition.status for transition in transitions]
-    return SetSummary(len(tracks), statuses.count(STATUS_INCOMPATIBLE), statuses.count(STATUS_UNKNOWN))
+    duration_seconds, duration_known = total_duration(tracks)
+    return SetSummary(
+        len(tracks), statuses.count(STATUS_INCOMPATIBLE), statuses.count(STATUS_UNKNOWN),
+        duration_seconds, duration_known,
+    )  # fmt: skip
 
 
 # --- editing the order -------------------------------------------------
@@ -349,3 +381,75 @@ def propose_order(
     # clashes; ties go to the engine's own default start (first tried).
     tries = [proposal_from(None), *(proposal_from(track.identifier) for track in candidates)]
     return max(tries, key=lambda p: (p.chained, -p.after.incompatible, -p.after.unknown))
+
+
+# --- generating a set from the whole library (issue #404) --------------
+
+# A chain this long already takes a moment to build and to scroll through;
+# the engine itself stays well under a second even at full-library scale
+# (`_PathIndex` scans outward from the current BPM, not the whole pool), but
+# nothing asks for more than a few hours of music in one set.
+MAX_GENERATED_LENGTH = 300
+# Used only to size the search when a target duration is given but most
+# candidate tracks have no known duration yet -- a rough DJ-set average.
+DEFAULT_TRACK_SECONDS_ESTIMATE = 240.0
+
+
+@dataclass(frozen=True)
+class GeneratedSet:
+    """A brand-new set built from the whole library, not a reordering of a
+    hand-picked draft -- see `generate_set_from_library`."""
+
+    tracks: tuple[str, ...]
+    duration_seconds: float
+    duration_known: bool
+    reached_target: bool
+
+
+def generate_set_from_library(
+    candidates: Sequence[SetTrack],
+    target_duration_seconds: float | None = None,
+    bpm_tolerance_pct: float = DEFAULT_BPM_TOLERANCE_PCT,
+    direction: str = "flat",
+    start: str | None = None,
+    exclude: Collection[str] = (),
+) -> GeneratedSet:
+    """Build a set from scratch out of `candidates` (normally every indexed
+    library row, not just a draft) via the same mix-path engine
+    `propose_order` reorders an existing draft with. Walks the longest
+    BPM/Camelot-compatible chain the engine can build and stops once the
+    running duration reaches `target_duration_seconds` -- or at the end of
+    the chain, when no target is given or no duration is known for any
+    track, so this never silently returns an empty set over a missing tag.
+    Tracks without a BPM or key, or in `exclude` (e.g. already in the
+    current draft), are never candidates."""
+    from djmidi.library.playlist import PlaylistTrack, build_playlist_path
+
+    usable = [track for track in candidates if track.bpm and track.camelot_key and track.path not in exclude]
+    pool = [PlaylistTrack(track.path, bpm=track.bpm, camelot_key=track.camelot_key) for track in usable]
+    by_path = {track.path: track for track in usable}
+
+    max_length = MAX_GENERATED_LENGTH
+    if target_duration_seconds is not None:
+        known = [track.duration for track in usable if track.duration]
+        average = (sum(known) / len(known)) if known else DEFAULT_TRACK_SECONDS_ESTIMATE
+        # A margin over the naive estimate: real durations vary a lot, and
+        # trimming an over-long chain to the target is cheap, while running
+        # the search again because it fell short is not.
+        max_length = min(MAX_GENERATED_LENGTH, max(1, round(target_duration_seconds / average * 1.5)))
+
+    chain = build_playlist_path(
+        pool, start, tolerance_pct=bpm_tolerance_pct, direction=direction, max_length=max_length
+    ).path
+
+    selected: list[str] = []
+    running = 0.0
+    for item in chain:
+        selected.append(item.identifier)
+        running += by_path[item.identifier].duration or 0.0
+        if target_duration_seconds is not None and running >= target_duration_seconds:
+            break
+
+    duration_seconds, duration_known = total_duration([by_path[path] for path in selected])
+    reached = target_duration_seconds is not None and duration_seconds >= target_duration_seconds
+    return GeneratedSet(tuple(selected), duration_seconds, duration_known, reached)

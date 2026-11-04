@@ -346,3 +346,28 @@ def test_cover_and_rename_commands_log_every_pass_in_the_change_history():
     logged.clear()
     stack.push(RenameFilesCommand([("/m/bad.mp3", "/m/x.mp3")], apply, lambda p: None, recorder=record))
     assert logged == []
+
+
+def test_rename_files_command_summary_override_for_a_non_rename_caller():
+    """issue #406: Organize into folders… reuses this command with its own
+    wording instead of the default "Rename N file(s)"."""
+    from types import SimpleNamespace
+
+    from djmidi.gui.commands import RenameFilesCommand
+
+    logged = []
+
+    def apply(pairs):
+        return SimpleNamespace(renamed=list(pairs), failed=[])
+
+    stack = QUndoStack()
+    command = RenameFilesCommand(
+        [("/m/a.mp3", "/m/Tek/a.mp3")],
+        apply,
+        lambda p: None,
+        recorder=lambda *args: logged.append(args),
+        summary="Organize 1 file(s) into category folders",
+    )
+    stack.push(command)
+    assert command.summary == "Organize 1 file(s) into category folders"
+    assert logged == [("Organize 1 file(s) into category folders", [("/m/a.mp3", "/m/Tek/a.mp3")])]

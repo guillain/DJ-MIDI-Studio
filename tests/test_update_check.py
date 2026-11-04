@@ -74,6 +74,13 @@ def test_latest_release_parses_the_github_payload():
     )
 
 
+def test_latest_release_carries_the_release_notes_body():
+    release = latest_release(_fetcher(_payload(body="## Added\n- a thing")))
+    assert release.body == "## Added\n- a thing"
+    assert latest_release(_fetcher(_payload())).body == ""  # none in the payload
+    assert latest_release(_fetcher(_payload(body=None))).body == ""
+
+
 def test_latest_release_ignores_drafts_and_prereleases():
     assert latest_release(_fetcher(_payload(draft=True))) is None
     assert latest_release(_fetcher(_payload(prerelease=True))) is None

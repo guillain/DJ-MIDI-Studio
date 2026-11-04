@@ -6,20 +6,26 @@ import pytest
 from djmidi.controller_sync import ControllerSyncSet, SyncMessage
 from djmidi.midi_io import MidiEvent
 from djmidi.midi_macros import (
+    MacroBundleError,
     MacroStep,
     MacroTrigger,
     MidiMacro,
+    build_macro_bundle,
     load_macros,
     macro_file_name,
     macro_from_sync_set,
     macro_schedule,
     macros_for_event,
+    macros_from_bundle,
+    merge_imported_macros,
+    read_macro_bundle,
     resolve_macro_port,
     retriggers_itself,
     run_macro,
     save_macros,
     steps_from_rows,
     validate_macros,
+    write_macro_bundle,
 )
 
 PRESS = SyncMessage("Note On", 1, 11, 127)
@@ -219,6 +225,80 @@ def test_store_keeps_colliding_slugs_apart(tmp_path):
     assert len(load_macros(tmp_path)) == 2
     assert macro_file_name("  ") == "macro.json"
     assert load_macros(tmp_path / "missing") == []
+
+
+# --- sharing macros between users (issue #408) ----------------------------
+
+
+def test_build_and_read_back_a_macro_bundle():
+    first, second = _macro("Loop roll"), _macro("FX on", shortcut="")
+    bundle = build_macro_bundle([first, second])
+    assert bundle["schema"] == "djmidi-macros/1"
+    assert macros_from_bundle(json.loads(json.dumps(bundle))) == [first, second]
+
+
+def test_macros_from_bundle_rejects_the_wrong_shape():
+    with pytest.raises(MacroBundleError, match="Not a"):
+        macros_from_bundle({"schema": "something-else/1", "macros": []})
+    with pytest.raises(MacroBundleError, match="Not a"):
+        macros_from_bundle("not even a dict")
+    with pytest.raises(MacroBundleError, match="no macros"):
+        macros_from_bundle({"schema": "djmidi-macros/1", "macros": []})
+    with pytest.raises(MacroBundleError, match="Could not read"):
+        macros_from_bundle({"schema": "djmidi-macros/1", "macros": [{"steps": []}]})  # no name
+
+
+def test_write_and_read_macro_bundle_file(tmp_path):
+    macro = _macro("Loop roll")
+    path = tmp_path / "shared.json"
+    write_macro_bundle(path, [macro])
+    assert read_macro_bundle(path) == [macro]
+    with pytest.raises(OSError):
+        read_macro_bundle(tmp_path / "nonexistent.json")
+
+
+def test_read_macro_bundle_rejects_invalid_json(tmp_path):
+    path = tmp_path / "broken.json"
+    path.write_text("not json")
+    with pytest.raises(MacroBundleError, match="Not valid JSON"):
+        read_macro_bundle(path)
+
+
+def test_merge_imported_macros_adds_new_ones_unchanged():
+    existing = [_macro("Loop roll")]
+    imported = [_macro("FX on", shortcut="")]
+    merged = merge_imported_macros(existing, imported, overwrite=False)
+    assert merged == [existing[0], imported[0]]
+
+
+def test_merge_imported_macros_renames_on_collision_when_not_overwriting():
+    existing = [_macro("Loop roll")]
+    imported = [_macro("Loop roll", shortcut="")]
+    merged = merge_imported_macros(existing, imported, overwrite=False)
+    assert [macro.name for macro in merged] == ["Loop roll", "Loop roll (2)"]
+    assert merged[0] == existing[0]  # untouched
+
+
+def test_merge_imported_macros_overwrites_in_place_and_keeps_position():
+    existing = [_macro("Loop roll"), _macro("FX on", shortcut="")]
+    imported = [_macro("Loop roll", shortcut="Ctrl+9")]
+    merged = merge_imported_macros(existing, imported, overwrite=True)
+    assert [macro.name for macro in merged] == ["Loop roll", "FX on"]
+    assert merged[0].shortcut == "Ctrl+9"
+
+
+def test_merge_imported_macros_keeps_renamed_copies_unique():
+    existing = [_macro("Loop roll"), _macro("Loop roll (2)", shortcut="")]
+    imported = [_macro("Loop roll", shortcut="Ctrl+9")]
+    merged = merge_imported_macros(existing, imported, overwrite=False)
+    assert [macro.name for macro in merged] == ["Loop roll", "Loop roll (2)", "Loop roll (3)"]
+
+
+def test_merge_imported_macros_is_case_insensitive():
+    existing = [_macro("Loop Roll")]
+    imported = [_macro("loop roll", shortcut="")]
+    merged = merge_imported_macros(existing, imported, overwrite=False)
+    assert [macro.name for macro in merged] == ["Loop Roll", "loop roll (2)"]
 
 
 # --- controller triggers (issue #252) -------------------------------------------

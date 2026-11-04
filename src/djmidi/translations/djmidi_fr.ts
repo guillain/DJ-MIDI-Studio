@@ -9,8 +9,12 @@
         <translation>Pré-écoute indisponible : le module QtMultimedia de PySide6 n&apos;a pas pu être chargé.</translation>
     </message>
     <message>
+        <source>The track&apos;s amplitude over time; click or drag to seek.</source>
+        <extracomment>Where in the track (0..1) the user clicked or dragged to. Auto-advance is on and the current track played to its end.</extracomment>
+        <translation>L&apos;amplitude de la piste dans le temps ; cliquez ou glissez pour naviguer.</translation>
+    </message>
+    <message>
         <source>▶ Play</source>
-        <extracomment>Auto-advance is on and the current track played to its end.</extracomment>
         <translation>▶ Lecture</translation>
     </message>
     <message>
@@ -218,6 +222,10 @@ Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-m
     <message>
         <source>Rename {count} file(s)</source>
         <translation>Renommer {count} fichier(s)</translation>
+    </message>
+    <message>
+        <source>Organize {count} file(s) into category folders</source>
+        <translation>Organiser {count} fichier(s) dans des dossiers de catégorie</translation>
     </message>
     <message>
         <source>Move {count} duplicate(s) to the Trash</source>
@@ -1844,6 +1852,45 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     </message>
 </context>
 <context>
+    <name>GenerateSetDialog</name>
+    <message>
+        <source>Build a set from the library</source>
+        <translation>Générer un set depuis la bibliothèque</translation>
+    </message>
+    <message>
+        <source>Chains compatible tracks from your whole library -- not just the current draft -- until the target duration is reached. Replaces the draft, but nothing changes until you accept.</source>
+        <translation>Enchaîne des pistes compatibles de toute votre bibliothèque -- pas seulement le brouillon actuel -- jusqu&apos;à la durée cible. Remplace le brouillon, mais rien ne change avant que vous n&apos;acceptiez.</translation>
+    </message>
+    <message>
+        <source> min</source>
+        <translation> min</translation>
+    </message>
+    <message>
+        <source>No limit</source>
+        <translation>Sans limite</translation>
+    </message>
+    <message>
+        <source>Target duration</source>
+        <translation>Durée cible</translation>
+    </message>
+    <message>
+        <source>Generate</source>
+        <translation>Générer</translation>
+    </message>
+    <message>
+        <source>Use this set</source>
+        <translation>Utiliser ce set</translation>
+    </message>
+    <message>
+        <source>No compatible tracks found -- every candidate needs a BPM and a key tag.</source>
+        <translation>Aucune piste compatible trouvée -- chaque candidate a besoin d&apos;un BPM et d&apos;une clef.</translation>
+    </message>
+    <message>
+        <source>{count} track(s), {duration}.</source>
+        <translation>{count} piste(s), {duration}.</translation>
+    </message>
+</context>
+<context>
     <name>GeometryEditorDialog</name>
     <message>
         <source>Place controls — {name}</source>
@@ -2249,6 +2296,14 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
         <translation>Tapez un modèle comme &lt;i&gt;{artist} - {title}&lt;/i&gt; ; les champs sont {artist}, {title}, {album}, {genre}, {bpm}, {key}, {camelot} et {filename} (le nom actuel). L&apos;aperçu montre le nouveau nom de chaque fichier sélectionné avant tout changement.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Ignoré&lt;/b&gt; : un champ du modèle n&apos;est pas renseigné dans les tags.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Conflit&lt;/b&gt; : le nouveau nom est déjà pris (sur le disque, dans la bibliothèque ou par un autre morceau sélectionné) -- ce fichier reste tel quel.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Refusé&lt;/b&gt; : le fichier est hors de vos dossiers musicaux ou dans un dossier de logiciel DJ (&lt;i&gt;_Serato_&lt;/i&gt;, &lt;i&gt;PIONEER&lt;/i&gt;, …).&lt;/li&gt;&lt;/ul&gt;Les fichiers restent dans leur dossier ; les caractères interdits dans un nom de fichier deviennent &lt;i&gt;_&lt;/i&gt;. &lt;b&gt;Annuler&lt;/b&gt; leur rend leur ancien nom. Serato, Traktor et Rekordbox afficheront les fichiers renommés comme manquants jusqu&apos;à leur relocalisation : gardez le CSV ancien → nouveau proposé après le renommage.</translation>
     </message>
     <message>
+        <source>Organize into folders</source>
+        <translation>Organiser dans des dossiers</translation>
+    </message>
+    <message>
+        <source>Moves each selected track into &lt;i&gt;&amp;lt;its library root&amp;gt;/Family/Name&lt;/i&gt;, following the confirmed category the table already shows it -- the filename itself never changes.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Skipped&lt;/b&gt;: no confirmed category yet (a fuzzy suggestion is never used; confirm it first).&lt;/li&gt;&lt;li&gt;&lt;b&gt;Conflict&lt;/b&gt;: a file already exists at the target path (on disk, in the library, or another selected track lands there too) -- that file is left as it is.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Refused&lt;/b&gt;: the file is outside its own library root or inside a DJ software folder (&lt;i&gt;_Serato_&lt;/i&gt;, &lt;i&gt;PIONEER&lt;/i&gt;, …).&lt;/li&gt;&lt;/ul&gt;&lt;b&gt;Undo&lt;/b&gt; moves them back. Serato, Traktor and Rekordbox will show moved files as missing until relinked.</source>
+        <translation>Déplace chaque piste sélectionnée dans &lt;i&gt;&amp;lt;sa racine de bibliothèque&amp;gt;/Famille/Nom&lt;/i&gt;, selon la catégorie confirmée que le tableau affiche déjà -- le nom du fichier lui-même ne change jamais.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Ignoré&lt;/b&gt; : pas encore de catégorie confirmée (une suggestion approximative n&apos;est jamais utilisée ; confirmez-la d&apos;abord).&lt;/li&gt;&lt;li&gt;&lt;b&gt;Conflit&lt;/b&gt; : un fichier existe déjà au chemin cible (sur le disque, dans la bibliothèque, ou un autre morceau sélectionné y arrive aussi) -- ce fichier reste tel quel.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Refusé&lt;/b&gt; : le fichier est hors de sa propre racine de bibliothèque ou dans un dossier de logiciel DJ (&lt;i&gt;_Serato_&lt;/i&gt;, &lt;i&gt;PIONEER&lt;/i&gt;, …).&lt;/li&gt;&lt;/ul&gt;&lt;b&gt;Annuler&lt;/b&gt; les remet à leur place. Serato, Traktor et Rekordbox afficheront les fichiers déplacés comme manquants jusqu&apos;à leur relocalisation.</translation>
+    </message>
+    <message>
         <source>Audio preview</source>
         <translation>Pré-écoute audio</translation>
     </message>
@@ -2309,8 +2364,8 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
         <translation>Historique de lecture</translation>
     </message>
     <message>
-        <source>&lt;b&gt;Load DJ history&lt;/b&gt; reads Serato&apos;s and Traktor&apos;s own history from &lt;i&gt;~/Music/_Serato_/History&lt;/i&gt; and &lt;i&gt;~/Music/_Traktor/History&lt;/i&gt;; &lt;b&gt;Load from folder…&lt;/b&gt; takes another one. Each session lists the tracks played, with the time and deck; double-click one to select it in the table. Grey rows were only loaded (or pre-listened in Traktor), or aren&apos;t in your indexed folders.&lt;br&gt;&lt;br&gt;&lt;b&gt;Select never played&lt;/b&gt; selects the visible tracks no session played, ready for a playlist. History files are only ever read, never changed.</source>
-        <translation>&lt;b&gt;Charger l&apos;historique DJ&lt;/b&gt; lit l&apos;historique de Serato et de Traktor dans &lt;i&gt;~/Music/_Serato_/History&lt;/i&gt; et &lt;i&gt;~/Music/_Traktor/History&lt;/i&gt; ; &lt;b&gt;Charger depuis un dossier…&lt;/b&gt; en prend un autre. Chaque session liste les morceaux joués, avec l&apos;heure et la platine ; double-cliquez sur un morceau pour le sélectionner dans le tableau. Les lignes grises n&apos;ont été que chargées (ou pré-écoutées dans Traktor), ou ne sont pas dans vos dossiers indexés.&lt;br&gt;&lt;br&gt;&lt;b&gt;Sélectionner les jamais joués&lt;/b&gt; sélectionne les morceaux affichés qu&apos;aucune session n&apos;a joués, prêts pour une playlist. Les fichiers d&apos;historique sont seulement lus, jamais modifiés.</translation>
+        <source>&lt;b&gt;Load DJ history&lt;/b&gt; reads Serato&apos;s and Traktor&apos;s own history from &lt;i&gt;~/Music/_Serato_/History&lt;/i&gt; and &lt;i&gt;~/Music/_Traktor/History&lt;/i&gt;; &lt;b&gt;Load from folder…&lt;/b&gt; takes another one. Each session lists the tracks played, with the time and deck; double-click one to select it in the table. Grey rows were only loaded (or pre-listened in Traktor), or aren&apos;t in your indexed folders.&lt;br&gt;&lt;br&gt;&lt;b&gt;Select never played&lt;/b&gt; selects the visible tracks no session played, ready for a playlist. History files are only ever read, never changed.&lt;br&gt;&lt;br&gt;The &lt;b&gt;Gig journal&lt;/b&gt; below is yours to write in: a free-text note per gig, not tied to any track. &lt;b&gt;Add journal entry&lt;/b&gt; saves it; double-click an entry to edit it (the button becomes &lt;b&gt;Save changes&lt;/b&gt;); &lt;b&gt;Delete entry&lt;/b&gt; removes the selected one(s). Kept only in this app&apos;s own index.</source>
+        <translation>&lt;b&gt;Charger l&apos;historique DJ&lt;/b&gt; lit l&apos;historique de Serato et de Traktor depuis &lt;i&gt;~/Music/_Serato_/History&lt;/i&gt; et &lt;i&gt;~/Music/_Traktor/History&lt;/i&gt; ; &lt;b&gt;Charger depuis un dossier…&lt;/b&gt; en prend un autre. Chaque session liste les pistes jouées, avec l&apos;heure et la platine ; double-cliquez sur une pour la sélectionner dans le tableau. Les lignes grises n&apos;ont été que chargées (ou pré-écoutées dans Traktor), ou ne sont pas dans vos dossiers indexés.&lt;br&gt;&lt;br&gt;&lt;b&gt;Sélectionner les jamais joués&lt;/b&gt; sélectionne les pistes visibles qu&apos;aucune session n&apos;a jouées, prêtes pour une playlist. Les fichiers d&apos;historique ne sont jamais que lus, jamais modifiés.&lt;br&gt;&lt;br&gt;Le &lt;b&gt;Journal de soirées&lt;/b&gt; ci-dessous est à vous d&apos;écrire : une note libre par soirée, non liée à une piste. &lt;b&gt;Ajouter une entrée&lt;/b&gt; l&apos;enregistre ; double-cliquez sur une entrée pour la modifier (le bouton devient &lt;b&gt;Enregistrer les modifications&lt;/b&gt;) ; &lt;b&gt;Supprimer l&apos;entrée&lt;/b&gt; retire celle(s) sélectionnée(s). Conservé uniquement dans l&apos;index de cette application.</translation>
     </message>
     <message>
         <source>Set preparation</source>
@@ -2775,6 +2830,18 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
         <translation>Ordre de la roue Camelot. {count} morceau(x) sans tonalité reconnue ({percent}).</translation>
     </message>
     <message>
+        <source>BPM x Key</source>
+        <translation>BPM x Clef</translation>
+    </message>
+    <message>
+        <source>No track has both a BPM and a recognised key.</source>
+        <translation>Aucune piste n&apos;a à la fois un BPM et une clef reconnue.</translation>
+    </message>
+    <message>
+        <source>Darker means more tracks mix well together at that tempo and key. {count} track(s) without both a usable BPM and a recognised key ({percent}).</source>
+        <translation>Plus sombre signifie plus de pistes se mixent bien ensemble à ce tempo et cette clef. {count} piste(s) sans à la fois un BPM utilisable et une clef reconnue ({percent}).</translation>
+    </message>
+    <message>
         <source>Added per month</source>
         <translation>Ajouts par mois</translation>
     </message>
@@ -3189,6 +3256,22 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
         <translation>Supprimer</translation>
     </message>
     <message>
+        <source>Export…</source>
+        <translation>Exporter…</translation>
+    </message>
+    <message>
+        <source>Saves every macro above to a file another user can import.</source>
+        <translation>Enregistre toutes les macros ci-dessus dans un fichier qu&apos;un autre utilisateur peut importer.</translation>
+    </message>
+    <message>
+        <source>Import…</source>
+        <translation>Importer…</translation>
+    </message>
+    <message>
+        <source>Adds the macros from a file someone else exported.</source>
+        <translation>Ajoute les macros d&apos;un fichier exporté par quelqu&apos;un d&apos;autre.</translation>
+    </message>
+    <message>
         <source>Output port, or a controller name: matched against the connected ports like ⟳ Sync does</source>
         <translation>Port de sortie, ou nom de contrôleur : comparé aux ports branchés comme le fait ⟳ Synchro</translation>
     </message>
@@ -3315,6 +3398,42 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
     <message>
         <source>Macro {number}</source>
         <translation>Macro {number}</translation>
+    </message>
+    <message>
+        <source>Nothing to export yet.</source>
+        <translation>Rien à exporter pour l&apos;instant.</translation>
+    </message>
+    <message>
+        <source>Export macros</source>
+        <translation>Exporter les macros</translation>
+    </message>
+    <message>
+        <source>JSON files (*.json)</source>
+        <translation>Fichiers JSON (*.json)</translation>
+    </message>
+    <message>
+        <source>Could not write {path}:</source>
+        <translation>Impossible d&apos;écrire {path} :</translation>
+    </message>
+    <message>
+        <source>Exported {count} macro(s) to {path}.</source>
+        <translation>{count} macro(s) exportée(s) vers {path}.</translation>
+    </message>
+    <message>
+        <source>Import macros</source>
+        <translation>Importer des macros</translation>
+    </message>
+    <message>
+        <source>Could not read {path}:</source>
+        <translation>Impossible de lire {path} :</translation>
+    </message>
+    <message>
+        <source>{count} of the {total} imported macro(s) share a name with one you already have. Replace them, or keep both (the imported one renamed)?</source>
+        <translation>{count} des {total} macro(s) importée(s) partagent un nom avec une macro que vous avez déjà. Les remplacer, ou garder les deux (l&apos;importée renommée) ?</translation>
+    </message>
+    <message>
+        <source>Imported {count} macro(s).</source>
+        <translation>{count} macro(s) importée(s).</translation>
     </message>
     <message>
         <source>{label} ({count} msg)</source>
@@ -5920,6 +6039,14 @@ Lignes sélectionnées dans Configuration du contrôleur : {selected}</translati
         <translation>Renomme les fichiers sélectionnés d&apos;après leurs tags (par ex. {artist} - {title}) dans leur dossier, après un aperçu, en une seule étape annulable. Les logiciels DJ devront les relocaliser.</translation>
     </message>
     <message>
+        <source>Organize into folders…</source>
+        <translation>Organiser dans des dossiers…</translation>
+    </message>
+    <message>
+        <source>Moves the selected files into &lt;root&gt;/Family/Name, following their confirmed category, after a preview, as one undoable step. DJ software will need relinking.</source>
+        <translation>Déplace les fichiers sélectionnés dans &lt;racine&gt;/Famille/Nom, selon leur catégorie confirmée, après un aperçu, en une seule étape annulable. Les logiciels DJ devront les relocaliser.</translation>
+    </message>
+    <message>
         <source>Clean noise frames…</source>
         <translation>Nettoyer les frames parasites…</translation>
     </message>
@@ -6118,6 +6245,26 @@ Lignes sélectionnées dans Configuration du contrôleur : {selected}</translati
     <message>
         <source>Deck</source>
         <translation>Platine</translation>
+    </message>
+    <message>
+        <source>Gig journal</source>
+        <translation>Journal de soirées</translation>
+    </message>
+    <message>
+        <source>Double-click an entry to edit it.</source>
+        <translation>Double-cliquez sur une entrée pour la modifier.</translation>
+    </message>
+    <message>
+        <source>What worked, what didn&apos;t, for next time…</source>
+        <translation>Ce qui a marché, ce qui n&apos;a pas marché, pour la prochaine fois…</translation>
+    </message>
+    <message>
+        <source>Add journal entry</source>
+        <translation>Ajouter une entrée</translation>
+    </message>
+    <message>
+        <source>Delete entry</source>
+        <translation>Supprimer l&apos;entrée</translation>
     </message>
     <message>
         <source>Could not open the music library index (see the log).</source>
@@ -6424,6 +6571,10 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <translation>{count} fichier(s) renommé(s). Serato, Traktor et Rekordbox doivent les relocaliser pour les retrouver.</translation>
     </message>
     <message>
+        <source>Moved {count} file(s) into their category folders. Serato, Traktor and Rekordbox need relinking to find them.</source>
+        <translation>{count} fichier(s) déplacé(s) dans leurs dossiers de catégorie. Serato, Traktor et Rekordbox doivent les relocaliser pour les retrouver.</translation>
+    </message>
+    <message>
         <source>Save old → new paths</source>
         <translation>Enregistrer les chemins ancien → nouveau</translation>
     </message>
@@ -6438,6 +6589,14 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>Renamed {count} file(s); old → new paths saved to {path}</source>
         <translation>{count} fichier(s) renommé(s) ; chemins ancien → nouveau enregistrés dans {path}</translation>
+    </message>
+    <message>
+        <source>Some files were not moved</source>
+        <translation>Certains fichiers n&apos;ont pas été déplacés</translation>
+    </message>
+    <message>
+        <source>{moved} file(s) moved, {failed} left as they were:</source>
+        <translation>{moved} fichier(s) déplacé(s), {failed} laissé(s) tel(s) quel(s) :</translation>
     </message>
     <message>
         <source>Cancel</source>
@@ -6812,8 +6971,83 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <translation>Ce morceau n&apos;est pas visible dans le tableau (non indexé, ou masqué par les filtres).</translation>
     </message>
     <message>
+        <source>Save changes</source>
+        <translation>Enregistrer les modifications</translation>
+    </message>
+    <message>
+        <source>Journal entry updated.</source>
+        <translation>Entrée de journal mise à jour.</translation>
+    </message>
+    <message>
+        <source>Journal entry added.</source>
+        <translation>Entrée de journal ajoutée.</translation>
+    </message>
+    <message>
+        <source>Write something before adding a journal entry.</source>
+        <translation>Écrivez quelque chose avant d&apos;ajouter une entrée de journal.</translation>
+    </message>
+    <message>
+        <source>Select a journal entry first.</source>
+        <translation>Sélectionnez d&apos;abord une entrée de journal.</translation>
+    </message>
+    <message>
+        <source>{count} journal entry(ies) deleted.</source>
+        <translation>{count} entrée(s) de journal supprimée(s).</translation>
+    </message>
+    <message>
         <source>Not in the indexed folders: {path}</source>
         <translation>Hors des dossiers indexés : {path}</translation>
+    </message>
+</context>
+<context>
+    <name>OrganizeFilesDialog</name>
+    <message>
+        <source>Organize into folders</source>
+        <translation>Organiser dans des dossiers</translation>
+    </message>
+    <message>
+        <source>Move</source>
+        <translation>Déplacer</translation>
+    </message>
+    <message>
+        <source>Unchanged</source>
+        <translation>Inchangé</translation>
+    </message>
+    <message>
+        <source>Skipped</source>
+        <translation>Ignoré</translation>
+    </message>
+    <message>
+        <source>Conflict</source>
+        <translation>Conflit</translation>
+    </message>
+    <message>
+        <source>Refused</source>
+        <translation>Refusé</translation>
+    </message>
+    <message>
+        <source>Moves each selected track into &lt;root&gt;/Family/Name, following its confirmed category. The filename itself doesn&apos;t change.</source>
+        <translation>Déplace chaque piste sélectionnée dans &lt;racine&gt;/Famille/Nom, selon sa catégorie confirmée. Le nom du fichier lui-même ne change pas.</translation>
+    </message>
+    <message>
+        <source>Current path</source>
+        <translation>Chemin actuel</translation>
+    </message>
+    <message>
+        <source>New path</source>
+        <translation>Nouveau chemin</translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation>État</translation>
+    </message>
+    <message>
+        <source>{count} file(s) will move</source>
+        <translation>{count} fichier(s) seront déplacé(s)</translation>
+    </message>
+    <message>
+        <source>Move {count} file(s)</source>
+        <translation>Déplacer {count} fichier(s)</translation>
     </message>
 </context>
 <context>
@@ -7574,6 +7808,14 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <translation>Remet l&apos;ordre que vous aviez avant d&apos;utiliser un ordre proposé.</translation>
     </message>
     <message>
+        <source>Build a set from the library…</source>
+        <translation>Générer un set depuis la bibliothèque…</translation>
+    </message>
+    <message>
+        <source>Builds a brand-new set from every indexed track, not just this draft; replaces the draft only if you accept it.</source>
+        <translation>Génère un set entièrement nouveau à partir de toutes les pistes indexées, pas seulement ce brouillon ; ne remplace le brouillon que si vous acceptez.</translation>
+    </message>
+    <message>
         <source>Load playlist</source>
         <translation>Charger une playlist</translation>
     </message>
@@ -7628,6 +7870,14 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>Set re-ordered. “Back to my order” puts the previous order back.</source>
         <translation>Set réordonné. « Revenir à mon ordre » remet l&apos;ordre précédent.</translation>
+    </message>
+    <message>
+        <source>No tracks indexed yet.</source>
+        <translation>Aucune piste indexée pour l&apos;instant.</translation>
+    </message>
+    <message>
+        <source>Built a {count}-track set from the library.</source>
+        <translation>Set de {count} piste(s) généré depuis la bibliothèque.</translation>
     </message>
     <message>
         <source>Not in the indexed folders: {path}</source>
@@ -7704,6 +7954,14 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>{count} unchecked (missing BPM/key)</source>
         <translation>{count} non vérifiée(s) (BPM/tonalité manquant)</translation>
+    </message>
+    <message>
+        <source>{duration} total</source>
+        <translation>{duration} au total</translation>
+    </message>
+    <message>
+        <source>{duration}+ total (some durations unknown)</source>
+        <translation>{duration}+ au total (certaines durées sont inconnues)</translation>
     </message>
 </context>
 <context>
@@ -7989,6 +8247,14 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <source>energy {energy}</source>
         <translation>énergie {energy}</translation>
     </message>
+    <message>
+        <source>{time} left</source>
+        <translation>reste {time}</translation>
+    </message>
+    <message>
+        <source>{time}+ left</source>
+        <translation>reste {time}+</translation>
+    </message>
 </context>
 <context>
     <name>StageWindow</name>
@@ -8157,6 +8423,25 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>deck {deck}: {functions}</source>
         <translation>platine {deck} : {functions}</translation>
+    </message>
+</context>
+<context>
+    <name>WhatsNewDialog</name>
+    <message>
+        <source>What&apos;s new in v{version}</source>
+        <translation>Quoi de neuf dans la v{version}</translation>
+    </message>
+    <message>
+        <source>DJ MIDI Studio v{version}</source>
+        <translation>DJ MIDI Studio v{version}</translation>
+    </message>
+    <message>
+        <source>No release notes were provided for this version.</source>
+        <translation>Aucune note de version n&apos;a été fournie pour cette version.</translation>
+    </message>
+    <message>
+        <source>Open Release Page</source>
+        <translation>Ouvrir la page de la version</translation>
     </message>
 </context>
 <context>

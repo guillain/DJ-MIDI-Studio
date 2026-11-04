@@ -24,6 +24,11 @@ drive is unmounted.
   last is listed.
 - **Plays**: most-played present tracks and how many were never played;
   `None` when no history is loaded (no history is not "never played").
+- **BPM x key heatmap** (issue #410): a dense grid of BPM bin x Camelot
+  code, for spotting which parts of the collection are easiest to chain
+  mixes within. Only tracks with both a usable BPM and a recognised key
+  count; the rest are in `heatmap.missing`, same honesty as the BPM/key
+  charts above.
 """
 
 from __future__ import annotations
@@ -31,7 +36,7 @@ from __future__ import annotations
 import math
 from collections import Counter
 from collections.abc import Iterable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 
@@ -63,6 +68,36 @@ class PlayedTrack:
 
 
 @dataclass(frozen=True)
+class HeatmapCell:
+    bpm_bin: str
+    camelot: str
+    count: int
+
+
+@dataclass(frozen=True)
+class BpmKeyHeatmap:
+    """A dense BPM-bin x Camelot-key grid (issue #410): every combination
+    of `bpm_bins` x `camelot_codes` has one `HeatmapCell`, in that order
+    (row-major by Camelot code), zeros included, so the grid's shape never
+    depends on which cells happen to be occupied."""
+
+    bpm_bins: tuple[str, ...]
+    camelot_codes: tuple[str, ...]
+    cells: tuple[HeatmapCell, ...]
+    missing: int
+    """Present tracks excluded for lacking a usable BPM or a recognised key."""
+
+    def count_at(self, bpm_bin: str, camelot: str) -> int:
+        return next(
+            (cell.count for cell in self.cells if cell.bpm_bin == bpm_bin and cell.camelot == camelot), 0
+        )
+
+    @property
+    def peak(self) -> int:
+        return max((cell.count for cell in self.cells), default=0)
+
+
+@dataclass(frozen=True)
 class LibraryStats:
     total: int
     """Present tracks counted below."""
@@ -79,6 +114,9 @@ class LibraryStats:
     never_played: int | None = None
     played: int | None = None
     """Present tracks played at least once (`None` without history)."""
+    heatmap: BpmKeyHeatmap = field(
+        default_factory=lambda: BpmKeyHeatmap((), CAMELOT_ORDER, (), 0)
+    )
 
 
 def category_label(canonical: str) -> str:
@@ -159,6 +197,51 @@ def camelot_distribution(keys: Iterable[str | None]) -> tuple[tuple[Bucket, ...]
     return tuple(Bucket(code, counts.get(code, 0)) for code in CAMELOT_ORDER), missing
 
 
+def _bpm_bin_label(bpm: float, bin_width: int) -> str:
+    start = int(bpm // bin_width) * bin_width
+    return f"{start}–{start + bin_width - 1}" if bin_width > 1 else str(start)
+
+
+def compute_bpm_key_heatmap(
+    rows: Iterable[LibraryRow], bin_width: int = DEFAULT_BPM_BIN_WIDTH
+) -> BpmKeyHeatmap:
+    """Which BPM/Camelot-key combinations are easiest to mix within, at a
+    glance: a dense grid, every `bin_width`-wide BPM bin from the lowest to
+    the highest present x the 24 Camelot codes in wheel order. Only present
+    tracks with *both* a usable BPM and a recognised key are counted --
+    `missing` is how many present tracks had neither or only one, same
+    honesty as `bpm_histogram`/`camelot_distribution`'s own `missing`."""
+    if bin_width < 1:
+        raise ValueError("bin_width must be at least 1")
+    present = [row for row in rows if not row.missing]
+    pairs: list[tuple[float, str]] = []
+    missing = 0
+    for row in present:
+        bpm = row.bpm
+        key = (row.camelot_key or "").strip().upper()
+        if bpm is None or not math.isfinite(bpm) or bpm <= 0 or key not in CAMELOT_ORDER:
+            missing += 1
+            continue
+        pairs.append((bpm, key))
+    if not pairs:
+        return BpmKeyHeatmap((), CAMELOT_ORDER, (), missing)
+    counts: Counter[tuple[str, str]] = Counter()
+    for bpm, key in pairs:
+        counts[(_bpm_bin_label(bpm, bin_width), key)] += 1
+    low = int(min(bpm for bpm, _ in pairs) // bin_width) * bin_width
+    high = int(max(bpm for bpm, _ in pairs) // bin_width) * bin_width
+    bpm_bins = tuple(
+        f"{start}–{start + bin_width - 1}" if bin_width > 1 else str(start)
+        for start in range(low, high + bin_width, bin_width)
+    )
+    cells = tuple(
+        HeatmapCell(bpm_bin, camelot, counts.get((bpm_bin, camelot), 0))
+        for camelot in CAMELOT_ORDER
+        for bpm_bin in bpm_bins
+    )
+    return BpmKeyHeatmap(bpm_bins, CAMELOT_ORDER, cells, missing)
+
+
 def added_per_month(mtimes: Iterable[float]) -> tuple[Bucket, ...]:
     """``"YYYY-MM"`` (local time) → files, every month from first to last."""
     counts: Counter[tuple[int, int]] = Counter()
@@ -233,4 +316,5 @@ def compute_library_stats(
         most_played=most_played,
         never_played=never,
         played=played,
+        heatmap=compute_bpm_key_heatmap(present, bpm_bin_width),
     )

@@ -80,6 +80,44 @@ def test_resolve_set_tracks_reads_rows_and_flags_unknown_paths():
     assert unknown.label == "b.mp3"
 
 
+def test_resolve_set_tracks_carries_duration_from_the_row():
+    row = LibraryRow(
+        track_id=1, path="/m/a.mp3", missing=False,
+        metadata=TrackMetadata(title="Alpha", duration=185.0), camelot_key=None, category=None,
+    )  # fmt: skip
+    known, = set_prep.resolve_set_tracks(["/m/a.mp3"], {row.path: row})
+    assert known.duration == pytest.approx(185.0)
+
+
+@pytest.mark.parametrize(
+    ("seconds", "expected"),
+    [(0, "0:00"), (59, "0:59"), (60, "1:00"), (185, "3:05"), (3599, "59:59"), (3600, "1:00:00"), (3725, "1:02:05")],
+)
+def test_format_duration(seconds, expected):
+    assert set_prep.format_duration(seconds) == expected
+
+
+def test_total_duration_known_partial_and_none():
+    assert set_prep.total_duration([_track("a")]) == (0, False)
+    assert set_prep.total_duration([]) == (0, False)
+    known = SetTrack("a", duration=100.0)
+    also_known = SetTrack("b", duration=50.0)
+    unknown = SetTrack("c")
+    assert set_prep.total_duration([known, also_known]) == (150.0, True)
+    assert set_prep.total_duration([known, unknown]) == (100.0, False)
+
+
+def test_summary_describes_total_duration():
+    known = SetTrack("a", duration=65.0)
+    also_known = SetTrack("b", duration=55.0)
+    unknown = SetTrack("c")
+    summary = set_prep.summarize([known, also_known], set_prep.analyze_set([known, also_known]))
+    assert summary.text.endswith("2:00 total")
+    approx = set_prep.summarize([known, unknown], set_prep.analyze_set([known, unknown]))
+    assert approx.text.endswith("1:05+ total (some durations unknown)")
+    assert set_prep.summarize([], []).text == "0 track(s)"
+
+
 def test_insert_paths_skips_duplicates_and_clamps_index():
     assert set_prep.insert_paths(["a", "b"], ["c", "a", "c", "d"], 1) == ["a", "c", "d", "b"]
     assert set_prep.insert_paths(["a"], ["b"]) == ["a", "b"]
@@ -128,3 +166,55 @@ def test_propose_order_chains_compatible_tracks_and_keeps_the_rest():
     assert kept.order[0] == "/c" and kept.order[-2:] == ("/x", "/z")
     nothing = propose_order([SetTrack("/x"), SetTrack("/y")])
     assert nothing.order == ("/x", "/y") and nothing.chained == 0 and not nothing.improves()
+
+
+def test_generate_set_from_library_stops_at_the_target_duration():
+    from djmidi.library.set_prep import generate_set_from_library
+
+    library = [
+        SetTrack("/a", bpm=124.0, camelot_key="8A", duration=60.0),
+        SetTrack("/b", bpm=126.0, camelot_key="8A", duration=60.0),
+        SetTrack("/c", bpm=128.0, camelot_key="9A", duration=60.0),
+        SetTrack("/d", bpm=130.0, camelot_key="9A", duration=60.0),
+    ]
+    generated = generate_set_from_library(library, target_duration_seconds=125.0, direction="up")
+    # Stops as soon as the running total reaches the target -- 3 tracks (180s), not 2 (120s) or all 4.
+    assert generated.tracks == ("/a", "/b", "/c")
+    assert generated.duration_seconds == pytest.approx(180.0)
+    assert generated.duration_known is True
+    assert generated.reached_target is True
+
+
+def test_generate_set_from_library_with_no_target_chains_everything_reachable():
+    from djmidi.library.set_prep import generate_set_from_library
+
+    library = [
+        SetTrack("/a", bpm=124.0, camelot_key="8A"),
+        SetTrack("/b", bpm=126.0, camelot_key="8A"),
+        SetTrack("/unreachable", bpm=170.0, camelot_key="2B"),
+        SetTrack("/no_tags"),
+    ]
+    generated = generate_set_from_library(library, target_duration_seconds=None, direction="up")
+    assert generated.tracks == ("/a", "/b")
+    assert generated.duration_seconds == 0 and generated.duration_known is False
+    assert generated.reached_target is False
+
+
+def test_generate_set_from_library_excludes_paths_and_respects_start():
+    from djmidi.library.set_prep import generate_set_from_library
+
+    library = [
+        SetTrack("/a", bpm=124.0, camelot_key="8A", duration=60.0),
+        SetTrack("/b", bpm=126.0, camelot_key="8A", duration=60.0),
+        SetTrack("/c", bpm=128.0, camelot_key="9A", duration=60.0),
+    ]
+    generated = generate_set_from_library(library, exclude={"/a"}, direction="up")
+    assert "/a" not in generated.tracks
+    started = generate_set_from_library(library, start="/c", direction="flat")
+    assert started.tracks[0] == "/c"
+
+
+def test_generate_set_from_library_empty_pool_is_an_empty_set():
+    from djmidi.library.set_prep import generate_set_from_library
+
+    assert generate_set_from_library([SetTrack("/x")]).tracks == ()

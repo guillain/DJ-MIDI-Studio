@@ -14,7 +14,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 from PySide6.QtCore import QEvent, QPoint, QRect, QSize, Qt, Signal
-from PySide6.QtGui import QHelpEvent, QMouseEvent, QPainter, QPaintEvent
+from PySide6.QtGui import QColor, QHelpEvent, QMouseEvent, QPainter, QPaintEvent
 from PySide6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
@@ -37,6 +37,7 @@ from djmidi.gui.window_size import (
 from djmidi.library.stats import (
     NO_GENRE_LABEL,
     UNCATEGORIZED_LABEL,
+    BpmKeyHeatmap,
     Bucket,
     LibraryStats,
 )
@@ -211,6 +212,107 @@ class BarChart(QWidget):
         super().mouseDoubleClickEvent(event)
 
 
+_CELL_WIDTH = 40
+_CELL_HEIGHT = 20
+_Y_LABEL_WIDTH = 34
+_X_LABEL_HEIGHT = 56
+
+
+class HeatmapWidget(QWidget):
+    """A dense BPM-bin x Camelot-key grid (issue #410): each cell is
+    shaded by how many tracks fall in it, so the easiest-to-mix-within
+    corners of the collection stand out at a glance. Hover a cell for its
+    exact count; read-only, no activation (unlike `BarChart`, a cell
+    doesn't name one track to jump to)."""
+
+    def __init__(
+        self,
+        heatmap: BpmKeyHeatmap | None = None,
+        empty_text: str = "Nothing to show.",
+        parent: QWidget | None = None,
+    ) -> None:
+        super().__init__(parent)
+        self.empty_text = empty_text
+        self.heatmap = heatmap or BpmKeyHeatmap((), (), (), 0)
+        self._by_cell: dict[tuple[str, str], int] = {}
+        self.setMouseTracking(True)
+        self.set_heatmap(self.heatmap)
+
+    def set_heatmap(self, heatmap: BpmKeyHeatmap) -> None:
+        self.heatmap = heatmap
+        self._by_cell = {(cell.bpm_bin, cell.camelot): cell.count for cell in heatmap.cells}
+        self.updateGeometry()
+        self.update()
+
+    def minimumSizeHint(self) -> QSize:
+        if not self.heatmap.bpm_bins:
+            return QSize(200, 60)
+        return QSize(
+            _Y_LABEL_WIDTH + len(self.heatmap.bpm_bins) * _CELL_WIDTH + _PAD,
+            _PAD + len(self.heatmap.camelot_codes) * _CELL_HEIGHT + _X_LABEL_HEIGHT,
+        )
+
+    def sizeHint(self) -> QSize:
+        hint = self.minimumSizeHint()
+        return QSize(max(hint.width(), 480), max(hint.height(), 320))
+
+    def _cell_rect(self, row: int, col: int) -> QRect:
+        return QRect(_Y_LABEL_WIDTH + col * _CELL_WIDTH, _PAD + row * _CELL_HEIGHT, _CELL_WIDTH, _CELL_HEIGHT)
+
+    def _cell_at(self, pos: QPoint) -> tuple[str, str] | None:
+        if not self.heatmap.bpm_bins:
+            return None
+        row = (pos.y() - _PAD) // _CELL_HEIGHT
+        col = (pos.x() - _Y_LABEL_WIDTH) // _CELL_WIDTH
+        codes, bins = self.heatmap.camelot_codes, self.heatmap.bpm_bins
+        if 0 <= row < len(codes) and 0 <= col < len(bins):
+            return bins[col], codes[row]
+        return None
+
+    def paintEvent(self, _event: QPaintEvent) -> None:
+        painter = QPainter(self)
+        palette = self.palette()
+        painter.setPen(palette.text().color())
+        if not self.heatmap.bpm_bins:
+            painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, self.empty_text)
+            return
+        peak = self.heatmap.peak or 1
+        base_color = palette.highlight().color()
+        empty_color = palette.base().color()
+        metrics = self.fontMetrics()
+        for row, camelot in enumerate(self.heatmap.camelot_codes):
+            label_rect = QRect(0, _PAD + row * _CELL_HEIGHT, _Y_LABEL_WIDTH - 4, _CELL_HEIGHT)
+            painter.drawText(label_rect, Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight, camelot)
+            for col in range(len(self.heatmap.bpm_bins)):
+                count = self._by_cell.get((self.heatmap.bpm_bins[col], camelot), 0)
+                rect = self._cell_rect(row, col).adjusted(1, 1, -1, -1)
+                if count:
+                    shade = QColor(base_color)
+                    shade.setAlphaF(0.12 + 0.88 * (count / peak))
+                    painter.fillRect(rect, shade)
+                else:
+                    painter.fillRect(rect, empty_color)
+        grid_bottom = _PAD + len(self.heatmap.camelot_codes) * _CELL_HEIGHT
+        for col, bpm_bin in enumerate(self.heatmap.bpm_bins):
+            painter.save()
+            painter.translate(_Y_LABEL_WIDTH + col * _CELL_WIDTH + _CELL_WIDTH / 2 + metrics.ascent() / 2, grid_bottom + 4)
+            painter.rotate(90)
+            painter.drawText(0, 0, bpm_bin)
+            painter.restore()
+
+    def event(self, event: QEvent) -> bool:
+        if event.type() == QEvent.Type.ToolTip and isinstance(event, QHelpEvent):
+            cell = self._cell_at(event.pos())
+            if cell is None:
+                QToolTip.hideText()
+            else:
+                bpm_bin, camelot = cell
+                count = self._by_cell.get(cell, 0)
+                QToolTip.showText(event.globalPos(), f"{bpm_bin} BPM, {camelot}: {count}", self)
+            return True
+        return super().event(event)
+
+
 def _relabel(buckets: tuple[Bucket, ...], labels: dict[str, str]) -> tuple[Bucket, ...]:
     """The buckets with the stats module's English placeholder labels
     ("Uncategorized", "(no genre)") swapped for their translations."""
@@ -249,7 +351,7 @@ class LibraryStatsDialog(QDialog):
         box.addLayout(header)
 
         self.tabs = QTabWidget()
-        self.charts: dict[str, BarChart] = {}
+        self.charts: dict[str, QWidget] = {}
         self.notes: dict[str, QLabel] = {}
         uncategorized = next(
             (b.count for b in stats.by_category if b.label == UNCATEGORIZED_LABEL), 0
@@ -295,6 +397,15 @@ class LibraryStatsDialog(QDialog):
             ),
         )
         self._add_tab(
+            "heatmap",
+            self.tr("BPM x Key"),
+            HeatmapWidget(stats.heatmap, empty_text=self.tr("No track has both a BPM and a recognised key.")),
+            self.tr(
+                "Darker means more tracks mix well together at that tempo and key. "
+                "{count} track(s) without both a usable BPM and a recognised key ({percent})."
+            ).format(count=stats.heatmap.missing, percent=_percent(stats.heatmap.missing, stats.total)),
+        )
+        self._add_tab(
             "added",
             self.tr("Added per month"),
             BarChart(
@@ -337,7 +448,7 @@ class LibraryStatsDialog(QDialog):
         box.addWidget(buttons)
         keep_wrapped_text_visible(self)
 
-    def _add_tab(self, key: str, title: str, chart: BarChart, note: str) -> None:
+    def _add_tab(self, key: str, title: str, chart: QWidget, note: str) -> None:
         page = QWidget()
         layout = QVBoxLayout(page)
         scroll = QScrollArea()

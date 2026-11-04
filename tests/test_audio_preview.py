@@ -14,7 +14,12 @@ from PySide6.QtCore import QEvent, QObject, Qt, QUrl, Signal
 from PySide6.QtGui import QHideEvent, QKeyEvent
 
 from djmidi.gui import audio_preview
-from djmidi.gui.audio_preview import AudioPreviewBar, format_time, start_position_ms
+from djmidi.gui.audio_preview import (
+    AudioPreviewBar,
+    WaveformWidget,
+    format_time,
+    start_position_ms,
+)
 
 
 class FakePlayer(QObject):
@@ -160,6 +165,81 @@ def test_position_updates_slider_and_label(tmp_path):
     assert created[0].positions[-1] == 90_000
 
 
+# --- waveform (issue #407) --------------------------------------------
+
+
+def test_waveform_widget_set_peaks_and_position():
+    widget = WaveformWidget()
+    assert widget._peaks is None
+    widget.set_peaks([0.1, 0.5, 1.0])
+    assert widget._peaks == [0.1, 0.5, 1.0]
+    widget.set_position_fraction(0.75)
+    assert widget._position_fraction == 0.75
+    widget.set_position_fraction(1.5)  # clamped
+    assert widget._position_fraction == 1.0
+    widget.set_peaks(None)
+    assert widget._peaks is None
+
+
+def test_waveform_widget_click_emits_fraction_only_with_peaks():
+    from PySide6.QtCore import QPointF
+    from PySide6.QtGui import QMouseEvent
+
+    widget = WaveformWidget()
+    widget.resize(200, 40)
+    received = []
+    widget.seekFractionRequested.connect(received.append)
+
+    def press(x: float) -> QMouseEvent:
+        local = QPointF(x, 20)
+        return QMouseEvent(
+            QEvent.Type.MouseButtonPress, local, local,
+            Qt.MouseButton.LeftButton, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier,
+        )  # fmt: skip
+
+    widget.mousePressEvent(press(100.0))
+    assert received == []  # no peaks yet: nothing to seek in
+
+    widget.set_peaks([0.2, 0.8])
+    widget.mousePressEvent(press(100.0))
+    assert received == [pytest.approx(0.5)]
+
+
+def test_audio_preview_bar_clears_waveform_on_new_source(tmp_path):
+    bar, _created = _bar()
+    bar.set_waveform_peaks([0.1, 0.2, 0.3])
+    assert bar.waveform._peaks == [0.1, 0.2, 0.3]
+    bar.set_source(str(tmp_path / "a.wav"))
+    assert bar.waveform._peaks is None
+
+
+def test_audio_preview_bar_updates_waveform_playhead(tmp_path):
+    bar, created = _bar()
+    bar.set_source(str(tmp_path / "a.wav"))
+    bar.play()
+    created[0].durationChanged.emit(100_000)
+    created[0].positionChanged.emit(25_000)
+    assert bar.waveform._position_fraction == pytest.approx(0.25)
+
+
+def test_waveform_seek_moves_the_player_and_slider(tmp_path):
+    bar, created = _bar()
+    bar.set_source(str(tmp_path / "a.wav"))
+    bar.play()
+    created[0].durationChanged.emit(100_000)
+    bar.waveform.seekFractionRequested.emit(0.4)
+    assert created[0].positions[-1] == 40_000
+    assert bar.seek_slider.value() == 40_000
+
+
+def test_waveform_seek_is_a_no_op_without_a_known_duration(tmp_path):
+    bar, created = _bar()
+    bar.set_source(str(tmp_path / "a.wav"))
+    bar.play()
+    bar.waveform.seekFractionRequested.emit(0.4)
+    assert created[0].positions == []
+
+
 def test_player_error_is_shown(tmp_path):
     bar, created = _bar()
     bar.set_source(str(tmp_path / "a.wav"))
@@ -234,6 +314,96 @@ def test_selecting_a_track_sets_the_preview_source(tmp_path):
     assert view.select_path(str(root / "one.wav"))
     assert view.audio_preview.source_path == str(root / "one.wav")
     view.close_db()
+
+
+def test_selecting_a_track_shows_its_cached_waveform_without_a_background_load(tmp_path, monkeypatch):
+    view, root, _created = _library_with_fake_player(tmp_path)
+    record = view.db.get_track_by_path(str(root / "one.wav"))
+    view.db.set_cached_waveform(record.id, record.mtime, [0.1, 0.9])
+    loaded = []
+    monkeypatch.setattr(view._waveform_loader, "load", lambda *a, **k: loaded.append(a))
+
+    assert view.select_path(str(root / "one.wav"))
+
+    assert view.audio_preview.waveform._peaks == [0.1, 0.9]
+    assert loaded == []
+    view.close_db()
+
+
+def test_selecting_an_uncached_track_starts_a_background_load(tmp_path, monkeypatch):
+    from djmidi.gui import music_library_view as mlv_module
+
+    view, root, _created = _library_with_fake_player(tmp_path)
+    monkeypatch.setattr(mlv_module.waveform, "waveform_available", lambda: True)
+    loaded = []
+    monkeypatch.setattr(view._waveform_loader, "load", lambda *a, **k: loaded.append(a))
+
+    assert view.select_path(str(root / "one.wav"))
+
+    record = view.db.get_track_by_path(str(root / "one.wav"))
+    assert loaded == [(str(root / "one.wav"), record.id, record.mtime)]
+    assert view.audio_preview.waveform._peaks is None  # nothing shown yet
+    view.close_db()
+
+
+def test_no_background_load_without_librosa(tmp_path, monkeypatch):
+    from djmidi.gui import music_library_view as mlv_module
+
+    view, root, _created = _library_with_fake_player(tmp_path)
+    monkeypatch.setattr(mlv_module.waveform, "waveform_available", lambda: False)
+    loaded = []
+    monkeypatch.setattr(view._waveform_loader, "load", lambda *a, **k: loaded.append(a))
+
+    assert view.select_path(str(root / "one.wav"))
+
+    assert loaded == []
+    view.close_db()
+
+
+def test_waveform_result_caches_and_updates_the_bar_when_still_current(tmp_path):
+    view, root, _created = _library_with_fake_player(tmp_path)
+    assert view.select_path(str(root / "one.wav"))
+    record = view.db.get_track_by_path(str(root / "one.wav"))
+
+    view._on_waveform_loaded(str(root / "one.wav"), record.id, record.mtime, [0.2, 0.7])
+
+    assert view.audio_preview.waveform._peaks == [0.2, 0.7]
+    cached = view.db.get_cached_waveform(record.id)
+    assert cached == (record.mtime, [0.2, 0.7])
+    view.close_db()
+
+
+def test_stale_waveform_result_still_caches_but_does_not_repaint(tmp_path):
+    view, root, _created = _library_with_fake_player(tmp_path)
+    assert view.select_path(str(root / "one.wav"))
+    assert view.select_path(str(root / "two.wav"))  # moved on before "one.wav" finished decoding
+    one = view.db.get_track_by_path(str(root / "one.wav"))
+
+    view._on_waveform_loaded(str(root / "one.wav"), one.id, one.mtime, [0.3, 0.6])
+
+    assert view.audio_preview.waveform._peaks is None  # "two.wav" has none cached
+    assert view.db.get_cached_waveform(one.id) == (one.mtime, [0.3, 0.6])
+    view.close_db()
+
+
+def test_a_failed_decode_is_not_cached():
+    from djmidi.gui.music_library_view import MusicLibraryView
+
+    view = MusicLibraryView(db_path=":memory:")
+    view.ensure_open()
+    view._on_waveform_loaded("/music/a.mp3", 1, 1.0, None)
+    view.close_db()  # would raise if it had tried to touch a closed-out track_id
+
+
+def test_waveform_result_after_closing_the_db_is_a_safe_no_op(tmp_path):
+    view, root, _created = _library_with_fake_player(tmp_path)
+    assert view.select_path(str(root / "one.wav"))
+    record = view.db.get_track_by_path(str(root / "one.wav"))
+    view.close_db()
+
+    view._on_waveform_loaded(str(root / "one.wav"), record.id, record.mtime, [0.1, 0.2])  # must not reopen the db
+
+    assert view._db is None
 
 
 def test_hiding_the_tab_and_closing_stop_playback(tmp_path):

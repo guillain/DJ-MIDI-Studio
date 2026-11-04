@@ -70,6 +70,10 @@ _SUMMARY_PATTERNS: tuple[tuple[re.Pattern[str], str], ...] = (
     (re.compile(r"Remove cover of (?P<name>.+)"), QT_TRANSLATE_NOOP("ChangeHistoryDialog", "Remove cover of {name}")),
     (re.compile(r"Rename (?P<count>\d+) file\(s\)"), QT_TRANSLATE_NOOP("ChangeHistoryDialog", "Rename {count} file(s)")),
     (
+        re.compile(r"Organize (?P<count>\d+) file\(s\) into category folders"),
+        QT_TRANSLATE_NOOP("ChangeHistoryDialog", "Organize {count} file(s) into category folders"),
+    ),
+    (
         re.compile(r"Move (?P<count>\d+) duplicate\(s\) to the Trash"),
         QT_TRANSLATE_NOOP("ChangeHistoryDialog", "Move {count} duplicate(s) to the Trash"),
     ),

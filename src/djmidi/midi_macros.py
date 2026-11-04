@@ -767,8 +767,87 @@ def save_macros(directory: str | Path, macros: Iterable[MidiMacro]) -> None:
         path.unlink()
 
 
+# --- sharing macros between users (issue #408) --------------------------
+
+MACRO_BUNDLE_SCHEMA = "djmidi-macros/1"
+
+
+class MacroBundleError(ValueError):
+    """A file/payload that isn't a readable macro bundle."""
+
+
+def build_macro_bundle(macros: Iterable[MidiMacro]) -> dict[str, object]:
+    """A versioned, self-contained dict of macros to share -- the same
+    shape `write_macro_bundle` writes and `macros_from_bundle` reads back."""
+    return {"schema": MACRO_BUNDLE_SCHEMA, "macros": [macro.to_dict() for macro in macros]}
+
+
+def macros_from_bundle(raw: object) -> list[MidiMacro]:
+    """The macros of a bundle `build_macro_bundle` produced. Raises
+    `MacroBundleError` for anything else -- wrong/missing schema, no
+    macros, or one that doesn't validate -- so an import is refused
+    wholesale rather than silently applying half of a corrupt file."""
+    if not isinstance(raw, dict) or raw.get("schema") != MACRO_BUNDLE_SCHEMA:
+        raise MacroBundleError(f"Not a {MACRO_BUNDLE_SCHEMA} macro bundle.")
+    items = raw.get("macros")
+    if not isinstance(items, list) or not items:
+        raise MacroBundleError("The bundle has no macros.")
+    try:
+        return [MidiMacro.from_dict(item) for item in items]
+    except (TypeError, ValueError, KeyError) as exc:
+        raise MacroBundleError(f"Could not read a macro: {exc}") from exc
+
+
+def write_macro_bundle(path: str | Path, macros: Iterable[MidiMacro]) -> None:
+    Path(path).write_text(json.dumps(build_macro_bundle(macros), indent=2) + "\n", encoding="utf-8")
+
+
+def read_macro_bundle(path: str | Path) -> list[MidiMacro]:
+    """Raises `MacroBundleError` (see `macros_from_bundle`, and for a file
+    that isn't even valid JSON) or `OSError`."""
+    try:
+        raw = json.loads(Path(path).read_text(encoding="utf-8"))
+    except ValueError as exc:
+        raise MacroBundleError(f"Not valid JSON: {exc}") from exc
+    return macros_from_bundle(raw)
+
+
+def _renamed_copy(macro: MidiMacro, taken: set[str]) -> MidiMacro:
+    number = 2
+    name = f"{macro.name} ({number})"
+    while name.casefold() in taken:
+        number += 1
+        name = f"{macro.name} ({number})"
+    return replace(macro, name=name)
+
+
+def merge_imported_macros(existing: Sequence[MidiMacro], imported: Sequence[MidiMacro], overwrite: bool) -> list[MidiMacro]:
+    """`existing` with `imported` merged in. A name collision (case-
+    insensitive) replaces the existing macro in place when `overwrite`,
+    else the imported one is renamed with a " (2)", " (3)"... suffix kept
+    unique against both lists -- nothing is ever silently dropped.
+    Existing macros keep their position; a renamed or genuinely new one
+    is appended, in `imported`'s order."""
+    result = list(existing)
+    index_by_name = {macro.name.casefold(): index for index, macro in enumerate(result)}
+    taken = set(index_by_name)
+    for macro in imported:
+        key = macro.name.casefold()
+        if key in index_by_name:
+            if overwrite:
+                result[index_by_name[key]] = macro
+                continue
+            macro = _renamed_copy(macro, taken)
+            key = macro.name.casefold()
+        taken.add(key)
+        index_by_name[key] = len(result)
+        result.append(macro)
+    return result
+
+
 __all__ = [
     "DEFAULT_TRIGGER_GAP_MS",
+    "MACRO_BUNDLE_SCHEMA",
     "MAX_DELAY_MS",
     "MAX_TRIGGER_GAP_MS",
     "MAX_TRIGGER_LENGTH",
@@ -776,18 +855,23 @@ __all__ = [
     "WAIT_PREFIX",
     "WAIT_TIMED_OUT",
     "WAIT_TYPES",
+    "MacroBundleError",
     "MacroResult",
     "MacroStep",
     "MacroTrigger",
     "MacroTriggerMatcher",
     "MidiMacro",
     "PortOpener",
+    "build_macro_bundle",
     "load_macros",
     "macro_file_name",
     "macro_from_sync_set",
     "macro_port_opener",
     "macro_schedule",
     "macros_for_event",
+    "macros_from_bundle",
+    "merge_imported_macros",
+    "read_macro_bundle",
     "resolve_macro_port",
     "retriggers_itself",
     "run_macro",
@@ -801,4 +885,5 @@ __all__ = [
     "trigger_gap",
     "unplayable_result",
     "validate_macros",
+    "write_macro_bundle",
 ]

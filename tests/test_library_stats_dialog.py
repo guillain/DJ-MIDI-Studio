@@ -7,10 +7,15 @@ import pytest
 from mutagen.id3 import ID3, TBPM, TCON, TIT2, TKEY, TPE1
 from PySide6.QtCore import QPoint
 
-from djmidi.gui.library_stats_dialog import BarChart, LibraryStatsDialog
+from djmidi.gui.library_stats_dialog import BarChart, HeatmapWidget, LibraryStatsDialog
 from djmidi.gui.music_library_view import MusicLibraryView
 from djmidi.library import history
-from djmidi.library.stats import Bucket, compute_library_stats
+from djmidi.library.stats import (
+    BpmKeyHeatmap,
+    Bucket,
+    HeatmapCell,
+    compute_library_stats,
+)
 
 
 def _mp3(path: Path, **tags: str) -> Path:
@@ -81,6 +86,28 @@ def test_bar_chart_sizes_with_buckets_and_maps_positions():
     BarChart().grab()  # empty state
 
 
+def test_heatmap_widget_sizes_counts_cells_and_paints():
+    heatmap = BpmKeyHeatmap(
+        ("120–124", "125–129"),
+        ("8A", "8B"),
+        (
+            HeatmapCell("120–124", "8A", 3),
+            HeatmapCell("125–129", "8A", 0),
+            HeatmapCell("120–124", "8B", 1),
+            HeatmapCell("125–129", "8B", 0),
+        ),
+        missing=2,
+    )
+    widget = HeatmapWidget(heatmap)
+    one_bin = BpmKeyHeatmap(heatmap.bpm_bins[:1], heatmap.camelot_codes, heatmap.cells[:1], missing=0)
+    assert widget.minimumSizeHint().width() > HeatmapWidget(one_bin).minimumSizeHint().width()
+    widget.resize(widget.sizeHint())
+    assert widget._cell_at(widget._cell_rect(0, 0).center()) == ("120–124", "8A")
+    assert widget._cell_at(QPoint(-5, -5)) is None
+    widget.grab()  # paints without error
+    HeatmapWidget().grab()  # empty state
+
+
 def test_dialog_without_history_explains_plays():
     stats = compute_library_stats([])
     dialog = LibraryStatsDialog(stats, "all indexed tracks")
@@ -89,12 +116,13 @@ def test_dialog_without_history_explains_plays():
         "genres",
         "bpm",
         "keys",
+        "heatmap",
         "added",
         "plays",
     }
     assert dialog.charts["plays"].buckets == ()
     assert "No play history" in dialog.notes["plays"].text()
-    assert dialog.tabs.count() == 6
+    assert dialog.tabs.count() == 7
     dialog.close()
 
 

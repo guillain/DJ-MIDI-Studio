@@ -248,6 +248,38 @@ def _set_order():
     return SetOrderDialog(tracks, 6.0)
 
 
+def _organize_files():
+    from djmidi.gui.organize_files_dialog import OrganizeFilesDialog
+    from djmidi.library.organize import OrganizeItem, OrganizePlan
+
+    items = tuple(
+        OrganizeItem(n, f"/music/misc/{n}.mp3", f"/music/Tek/Tribe/{n}.mp3", "move") for n in range(6)
+    )
+    return OrganizeFilesDialog(lambda: OrganizePlan(items))
+
+
+def _generate_set():
+    from djmidi.gui.generate_set_dialog import GenerateSetDialog
+    from djmidi.library.set_prep import SetTrack
+
+    tracks = [SetTrack(f"/{n}.mp3", f"Track {n}", "Artist", 120.0 + n, "8A") for n in range(6)]
+    return GenerateSetDialog(tracks, (), 6.0)
+
+
+def _whats_new():
+    from djmidi.gui.whats_new_dialog import WhatsNewDialog
+    from djmidi.update_check import ReleaseInfo
+
+    release = ReleaseInfo(
+        tag="v9.1.0-future",
+        version=(9, 1, 0),
+        url="https://github.com/guillain/DJ-MIDI-Studio/releases/tag/v9.1.0-future",
+        name="DJ MIDI Studio v9.1.0",
+        body="## Added\n\n- A great new thing\n- Another one",
+    )
+    return WhatsNewDialog(release)
+
+
 def _smart_export():
     from djmidi.gui.smart_export_dialog import SmartExportDialog
     from djmidi.library.smart_playlist import SmartExportOptions
@@ -263,6 +295,7 @@ WINDOWS = {
     "library statistics": _stats,
     "smart playlist": _smart_playlist,
     "rename files": _rename,
+    "organize files": _organize_files,
     "change history": _change_history,
     "command palette": _palette,
     "controller profile library": _profile_library,
@@ -273,7 +306,9 @@ WINDOWS = {
     "snapshots": _snapshots,
     "mixxx export": _mixxx_export,
     "set order": _set_order,
+    "generate set": _generate_set,
     "smart export": _smart_export,
+    "whats new": _whats_new,
 }
 
 

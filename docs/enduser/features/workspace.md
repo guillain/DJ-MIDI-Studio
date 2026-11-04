@@ -170,8 +170,10 @@ guide` for its page of this documentation (bundled, so it works offline).
 ## New version notice
 
 Once a day at most, a few seconds after launch, the app asks GitHub whether a
-newer DJ MIDI Studio release exists. If there is one, the status bar shows
-it, with an **Update available: vX.Y.Z** link on the right that opens the
+newer DJ MIDI Studio release exists. The first time a given version is found
+this way, a **What's new** window shows that release's own notes (and an
+`Open Release Page` button); after that, the status bar shows it instead,
+with an **Update available: vX.Y.Z** link on the right that opens the
 release page in your browser. Nothing is ever downloaded or installed for
 you: you get the new version from that page, when you choose.
 

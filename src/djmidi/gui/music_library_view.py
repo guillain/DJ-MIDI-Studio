@@ -77,6 +77,7 @@ from PySide6.QtWidgets import (
     QListWidget,
     QListWidgetItem,
     QMessageBox,
+    QPlainTextEdit,
     QProgressBar,
     QProgressDialog,
     QPushButton,
@@ -106,6 +107,7 @@ from djmidi.gui.duplicates_dialog import DuplicatesDialog
 from djmidi.gui.health_report_dialog import HealthReportDialog
 from djmidi.gui.help_button import help_button, help_row
 from djmidi.gui.library_stats_dialog import LibraryStatsDialog
+from djmidi.gui.organize_files_dialog import OrganizeFilesDialog
 from djmidi.gui.rename_files_dialog import RenameFilesDialog
 from djmidi.gui.set_preparation import (
     SET_TRACKS_MIME,
@@ -114,18 +116,22 @@ from djmidi.gui.set_preparation import (
 )
 from djmidi.gui.smart_export_dialog import SmartExportDialog
 from djmidi.gui.translation import translator
+from djmidi.gui.waveform_loader import WaveformLoader
 from djmidi.gui.window_size import keep_tab_titles_whole, keep_wrapped_text_visible
 from djmidi.library import (
     change_log,
     discard,
     duplicates,
+    gig_journal,
     health,
     history,
+    organize,
     relink,
     rename,
     set_prep,
     smart_playlist,
     stats,
+    waveform,
     workspace,
 )
 from djmidi.library.analysis import analysis_available, to_camelot
@@ -1136,6 +1142,10 @@ class MusicLibraryView(QWidget):
         # and auto-advance moves to the next row when a track ends.
         self.table.installEventFilter(self)
         self.audio_preview.advanceRequested.connect(self._advance_preview)
+        # Issue #407: the waveform is computed off the main thread and
+        # cached, so the bar itself never knows about the library index.
+        self._waveform_loader = WaveformLoader(self)
+        self._waveform_loader.finished.connect(self._on_waveform_loaded)
         self._update_track_panel(None)
 
     # --- construction ---------------------------------------------------
@@ -1453,6 +1463,15 @@ class MusicLibraryView(QWidget):
         )
         self.rename_files_button.clicked.connect(self._on_rename_files_clicked)
         box.addWidget(self.rename_files_button)
+        self.organize_files_button = QPushButton(self.tr("Organize into folders…"))
+        self.organize_files_button.setToolTip(
+            self.tr(
+                "Moves the selected files into <root>/Family/Name, following their confirmed "
+                "category, after a preview, as one undoable step. DJ software will need relinking."
+            )
+        )
+        self.organize_files_button.clicked.connect(self._on_organize_files_clicked)
+        box.addWidget(self.organize_files_button)
         self.table.selectionModel().selectionChanged.connect(self._update_selection_actions)
 
         self.clean_button = QPushButton(self.tr("Clean noise frames…"))
@@ -1617,6 +1636,25 @@ class MusicLibraryView(QWidget):
         self.history_tree.setHeaderLabels([self.tr("When"), self.tr("Track"), self.tr("Deck")])
         self.history_tree.itemDoubleClicked.connect(self._on_history_item_activated)
         box.addWidget(self.history_tree, 1)
+
+        box.addWidget(QLabel(self.tr("Gig journal")))
+        self.journal_list = QListWidget()
+        self.journal_list.setToolTip(self.tr("Double-click an entry to edit it."))
+        self.journal_list.itemDoubleClicked.connect(self._on_journal_entry_activated)
+        box.addWidget(self.journal_list, 1)
+        self.journal_text = QPlainTextEdit()
+        self.journal_text.setPlaceholderText(self.tr("What worked, what didn't, for next time…"))
+        self.journal_text.setMaximumHeight(80)
+        box.addWidget(self.journal_text)
+        journal_buttons = QHBoxLayout()
+        self.journal_save_button = QPushButton(self.tr("Add journal entry"))
+        self.journal_save_button.clicked.connect(self._on_journal_save_clicked)
+        self.journal_delete_button = QPushButton(self.tr("Delete entry"))
+        self.journal_delete_button.clicked.connect(self._on_journal_delete_clicked)
+        journal_buttons.addWidget(self.journal_save_button)
+        journal_buttons.addWidget(self.journal_delete_button)
+        box.addLayout(journal_buttons)
+        self._editing_journal_id: int | None = None
         return panel
 
     # --- database lifecycle --------------------------------------------
@@ -1657,7 +1695,33 @@ class MusicLibraryView(QWidget):
 
     def _preview_current_row(self, current: QModelIndex, _previous: QModelIndex) -> None:
         row = current.data(ROW_ROLE) if current.isValid() else None
-        self.audio_preview.set_source(row.path if row is not None and not row.missing else None)
+        path = row.path if row is not None and not row.missing else None
+        self.audio_preview.set_source(path)
+        self._load_waveform_for(path)
+
+    def _load_waveform_for(self, path: str | None) -> None:
+        """Shows the cached waveform right away, else kicks off a
+        background decode (issue #407); never blocks the GUI thread."""
+        if path is None or self._db is None:
+            return
+        record = self.db.get_track_by_path(path)
+        if record is None:
+            return
+        cached = waveform.cached_peaks(self.db, record)
+        if cached is not None:
+            self.audio_preview.set_waveform_peaks(cached)
+        elif waveform.waveform_available():
+            self._waveform_loader.load(path, record.id, record.mtime)
+
+    def _on_waveform_loaded(self, path: str, track_id: int, mtime: float, peaks: object) -> None:
+        if self._db is None:
+            return  # the tab's index closed while this decode was running
+        if peaks is not None:
+            self._db.set_cached_waveform(track_id, mtime, peaks)
+        # The user may already have moved to another track by the time a
+        # slow decode finishes; never paint a stale result over it.
+        if path == self.audio_preview.source_path:
+            self.audio_preview.set_waveform_peaks(peaks if isinstance(peaks, list) else None)
 
     def eventFilter(self, watched, event) -> bool:
         if (
@@ -1704,6 +1768,7 @@ class MusicLibraryView(QWidget):
             self.roots_list.addItem(item)
         self._reload_rows()
         self._reload_playlists()
+        self._reload_journal()
 
     def _reload_rows(self) -> None:
         current = self._current_path
@@ -2510,6 +2575,7 @@ class MusicLibraryView(QWidget):
         writable = self._writable_selection()
         self.write_selection_button.setEnabled(bool(writable))
         self.rename_files_button.setEnabled(bool(writable))
+        self.organize_files_button.setEnabled(any(row.category for row in writable))
         self.apply_analysis_button.setEnabled(any(row.has_analysis_suggestion for row in writable))
 
     @staticmethod
@@ -2690,7 +2756,9 @@ class MusicLibraryView(QWidget):
             )
         return command.renamed
 
-    def _on_files_renamed(self, pairs: list[tuple[str, str]]) -> None:
+    def _after_paths_moved(self, pairs: list[tuple[str, str]]) -> None:
+        """Common bookkeeping after a rename or an organize move: re-select
+        the same tracks (and the current row) under their new path."""
         moved = dict(pairs)
         selected = [moved.get(row.path, row.path) for row in self.selected_rows()]
         if self._current_path is not None:
@@ -2698,10 +2766,22 @@ class MusicLibraryView(QWidget):
         self._reload_rows()
         self._reload_playlists()
         self.select_paths(selected)
+
+    def _on_files_renamed(self, pairs: list[tuple[str, str]]) -> None:
+        self._after_paths_moved(pairs)
         self.status_label.setText(
             self.tr("Renamed {count} file(s). Serato, Traktor and Rekordbox need relinking to find them.").format(
                 count=len(pairs)
             )
+        )
+
+    def _on_files_organized(self, pairs: list[tuple[str, str]]) -> None:
+        self._after_paths_moved(pairs)
+        self.status_label.setText(
+            self.tr(
+                "Moved {count} file(s) into their category folders. Serato, Traktor and Rekordbox need "
+                "relinking to find them."
+            ).format(count=len(pairs))
         )
 
     def _save_rename_csv(self, pairs: list[tuple[str, str]]) -> None:
@@ -2721,6 +2801,44 @@ class MusicLibraryView(QWidget):
         self.status_label.setText(
             self.tr("Renamed {count} file(s); old → new paths saved to {path}").format(count=count, path=path)
         )
+
+    # --- organize into category folders (issue #406) --------------------
+
+    def _on_organize_files_clicked(self) -> None:
+        rows = self._writable_selection()
+        if not rows:
+            return
+        dialog = OrganizeFilesDialog(lambda: organize.plan_from_rows(self.db, rows), self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+        self.organize_files(dialog.moves())
+
+    def organize_files(self, pairs: list[tuple[str, str]]) -> list[tuple[str, str]]:
+        """Moves ``(old, new)`` files into their category folders as one
+        undo step (no confirmation -- the dialog previewed them) and
+        returns the pairs actually moved."""
+        if not pairs:
+            return []
+        command = RenameFilesCommand(
+            pairs,
+            lambda batch: organize.apply_organize(self.db, batch),
+            self._on_files_organized,
+            recorder=self._record_renames,
+            summary=f"Organize {len(pairs)} file(s) into category folders",
+        )
+        self.undo_stack.push(command)
+        if command.failures:
+            _LOGGER.warning("Organize failed for %d file(s): %s", len(command.failures), command.failures)
+            QMessageBox.warning(
+                self,
+                self.tr("Some files were not moved"),
+                self.tr("{moved} file(s) moved, {failed} left as they were:").format(
+                    moved=len(command.renamed), failed=len(command.failures)
+                )
+                + "\n\n"
+                + _bullet_list(f"{Path(path).name}: {reason}" for path, reason in command.failures),
+            )
+        return command.renamed
 
     def _tag_write_progress(self, label: str, total: int, cancellable: bool = True) -> Callable[[int, int], bool]:
         """A progress window for one pass of a bulk tag write (write, undo or
@@ -3489,6 +3607,57 @@ class MusicLibraryView(QWidget):
         path = item.data(0, Qt.ItemDataRole.UserRole)
         if path and not self.select_path(path):
             self.status_label.setText(self.tr("That track isn't visible in the table (not indexed, or filtered out)."))
+
+    # --- gig journal (issue #405) ---------------------------------------
+
+    def _reload_journal(self) -> None:
+        if self._db is None:
+            return
+        self.journal_list.clear()
+        for entry in gig_journal.list_entries(self._db):
+            item = QListWidgetItem(gig_journal.format_entry_line(entry))
+            item.setData(Qt.ItemDataRole.UserRole, entry.id)
+            self.journal_list.addItem(item)
+
+    def _stop_editing_journal_entry(self) -> None:
+        self._editing_journal_id = None
+        self.journal_text.clear()
+        self.journal_save_button.setText(self.tr("Add journal entry"))
+
+    def _on_journal_entry_activated(self, item: QListWidgetItem) -> None:
+        entry_id = item.data(Qt.ItemDataRole.UserRole)
+        entry = next((entry for entry in gig_journal.list_entries(self.db) if entry.id == entry_id), None)
+        if entry is None:
+            return
+        self._editing_journal_id = entry.id
+        self.journal_text.setPlainText(entry.note)
+        self.journal_save_button.setText(self.tr("Save changes"))
+
+    def _on_journal_save_clicked(self) -> None:
+        note = self.journal_text.toPlainText()
+        if self._editing_journal_id is not None:
+            if gig_journal.update_entry(self.db, self._editing_journal_id, note):
+                self.status_label.setText(self.tr("Journal entry updated."))
+            self._stop_editing_journal_entry()
+        elif gig_journal.add_entry(self.db, note) is not None:
+            self.journal_text.clear()
+            self.status_label.setText(self.tr("Journal entry added."))
+        else:
+            self.status_label.setText(self.tr("Write something before adding a journal entry."))
+            return
+        self._reload_journal()
+
+    def _on_journal_delete_clicked(self) -> None:
+        items = self.journal_list.selectedItems()
+        if not items:
+            self.status_label.setText(self.tr("Select a journal entry first."))
+            return
+        for item in items:
+            gig_journal.delete_entry(self.db, item.data(Qt.ItemDataRole.UserRole))
+        if self._editing_journal_id in {item.data(Qt.ItemDataRole.UserRole) for item in items}:
+            self._stop_editing_journal_entry()
+        self._reload_journal()
+        self.status_label.setText(self.tr("{count} journal entry(ies) deleted.").format(count=len(items)))
 
 
 def _playlist_track_label(path: str, row: workspace.LibraryRow | None) -> str:

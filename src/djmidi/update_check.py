@@ -46,6 +46,9 @@ class ReleaseInfo:
     version: Version
     url: str
     name: str = ""
+    body: str = ""
+    """GitHub's own release notes (Markdown), for the "What's new" dialog
+    (issue #409) -- empty when the API response has none."""
 
 
 def parse_version(tag: str | None) -> Version | None:
@@ -107,7 +110,14 @@ def latest_release(fetch: Fetcher | None = None) -> ReleaseInfo | None:
     if not isinstance(url, str) or not url.startswith("https://"):
         url = RELEASES_PAGE_URL
     name = payload.get("name")
-    return ReleaseInfo(tag=tag, version=version, url=url, name=name if isinstance(name, str) else "")
+    body = payload.get("body")
+    return ReleaseInfo(
+        tag=tag,
+        version=version,
+        url=url,
+        name=name if isinstance(name, str) else "",
+        body=body if isinstance(body, str) else "",
+    )
 
 
 def check_for_update(local: str | None = None, fetch: Fetcher | None = None) -> ReleaseInfo | None:

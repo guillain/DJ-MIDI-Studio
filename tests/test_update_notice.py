@@ -127,6 +127,52 @@ def test_automatic_check_is_silent_when_up_to_date_or_offline(tmp_path, monkeypa
     assert window._update_label.isHidden()
 
 
+def test_automatic_check_shows_whats_new_once_per_version(tmp_path, monkeypatch):
+    window = _window(tmp_path, monkeypatch)
+    settings = _settings(tmp_path)
+    monkeypatch.setattr(window, "_layout_settings", lambda: settings)
+    shown = []
+    window.whats_new_dialog_factory = lambda release, parent: shown.append((release, parent)) or _FakeDialog()
+
+    window._on_update_check_finished(_RELEASE, False)  # first time: shown
+    assert [release for release, _parent in shown] == [_RELEASE]
+
+    window._on_update_check_finished(_RELEASE, False)  # same version again: not re-shown
+    assert len(shown) == 1
+
+    newer = ReleaseInfo(tag="v9.1.0-future", version=(9, 1, 0), url=_RELEASE.url)
+    window._on_update_check_finished(newer, False)  # a genuinely newer one: shown
+    assert [release for release, _parent in shown] == [_RELEASE, newer]
+
+
+def test_manual_check_never_shows_the_whats_new_dialog(tmp_path, monkeypatch):
+    """A manual check already asks its own question; issue #409 only
+    covers the silent background check."""
+    window = _window(tmp_path, monkeypatch)
+    settings = _settings(tmp_path)
+    monkeypatch.setattr(window, "_layout_settings", lambda: settings)
+    monkeypatch.setattr(QMessageBox, "question", lambda *a: QMessageBox.StandardButton.No)
+    shown = []
+    window.whats_new_dialog_factory = lambda release, parent: shown.append(release) or _FakeDialog()
+
+    window._on_update_check_finished(_RELEASE, True)
+
+    assert shown == []
+
+
+def test_maybe_show_whats_new_without_settings_does_nothing(tmp_path, monkeypatch):
+    window = _window(tmp_path, monkeypatch)  # _layout_settings() is None outside the real app
+    shown = []
+    window.whats_new_dialog_factory = lambda release, parent: shown.append(release) or _FakeDialog()
+    assert window._maybe_show_whats_new(_RELEASE) is False
+    assert shown == []
+
+
+class _FakeDialog:
+    def exec(self) -> int:
+        return 0
+
+
 def test_manual_check_reports_every_outcome(tmp_path, monkeypatch):
     window = _window(tmp_path, monkeypatch)
     shown = []

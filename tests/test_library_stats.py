@@ -12,6 +12,7 @@ from djmidi.library.stats import (
     added_per_month,
     bpm_histogram,
     camelot_distribution,
+    compute_bpm_key_heatmap,
     compute_library_stats,
     count_genres,
 )
@@ -65,6 +66,45 @@ def test_camelot_distribution_lists_all_24_codes_in_wheel_order():
     assert {b.label: b.count for b in keys}["8A"] == 2
     assert {b.label: b.count for b in keys}["9B"] == 1
     assert missing == 2
+
+
+def test_compute_bpm_key_heatmap_fills_a_dense_grid_and_counts_missing():
+    rows = [
+        _row("a", bpm=120.0, camelot="8A"),
+        _row("b", bpm=122.0, camelot="8A"),
+        _row("c", bpm=130.0, camelot="9B"),
+        _row("d", bpm=None, camelot="8A"),  # no BPM
+        _row("e", bpm=120.0, camelot=None),  # no key
+        _row("f", bpm=120.0, camelot="8A", missing=True),  # not present
+    ]
+    heatmap = compute_bpm_key_heatmap(rows, bin_width=5)
+    assert heatmap.bpm_bins == ("120–124", "125–129", "130–134")
+    assert heatmap.camelot_codes == CAMELOT_ORDER
+    assert len(heatmap.cells) == 3 * 24  # every bin x every Camelot code
+    assert heatmap.count_at("120–124", "8A") == 2
+    assert heatmap.count_at("130–134", "9B") == 1
+    assert heatmap.count_at("125–129", "8A") == 0  # an empty cell in the grid
+    assert heatmap.missing == 2  # "d" and "e"
+    assert heatmap.peak == 2
+
+
+def test_compute_bpm_key_heatmap_empty_and_bad_width():
+    empty = compute_bpm_key_heatmap([])
+    assert empty.bpm_bins == () and empty.cells == () and empty.missing == 0
+    assert empty.camelot_codes == CAMELOT_ORDER and empty.peak == 0
+    with pytest.raises(ValueError):
+        compute_bpm_key_heatmap([_row("a", bpm=120.0, camelot="8A")], bin_width=0)
+
+
+def test_compute_bpm_key_heatmap_single_bin_width_labels_are_plain_integers():
+    heatmap = compute_bpm_key_heatmap([_row("a", bpm=120.0, camelot="8A")], bin_width=1)
+    assert heatmap.bpm_bins == ("120",)
+
+
+def test_compute_library_stats_includes_the_heatmap():
+    rows = [_row("a", bpm=120.0, camelot="8A"), _row("b", bpm=120.0, camelot="8A")]
+    stats = compute_library_stats(rows)
+    assert stats.heatmap.count_at("120–124", "8A") == 2
 
 
 def test_added_per_month_is_contiguous():

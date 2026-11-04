@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS track_metadata (
     track_id INTEGER PRIMARY KEY REFERENCES tracks(id) ON DELETE CASCADE,
     mtime REAL NOT NULL,
     title TEXT, artist TEXT, album TEXT, genre TEXT, bpm REAL, key TEXT,
-    comment TEXT, rating TEXT, energy TEXT
+    comment TEXT, rating TEXT, energy TEXT, duration REAL
 );
 
 -- Audio-analysis estimates for tracks missing a BPM or key tag (issue
@@ -132,6 +132,24 @@ CREATE TABLE IF NOT EXISTS change_items (
     after TEXT NOT NULL DEFAULT '{}',
     PRIMARY KEY (change_id, position)
 );
+
+-- A free-text note per gig/session (issue #405), browsable alongside the
+-- play history already read from Serato/Traktor. This app's own log only:
+-- never tied to a track, never written anywhere else.
+CREATE TABLE IF NOT EXISTS gig_journal (
+    id INTEGER PRIMARY KEY,
+    created_at REAL NOT NULL,
+    note TEXT NOT NULL
+);
+
+-- A cache of each file's precomputed waveform amplitude envelope (issue
+-- #407), keyed to the file's mtime like the metadata/analysis caches: a
+-- JSON array of 0..1 peaks, re-read whenever the file changes.
+CREATE TABLE IF NOT EXISTS waveform_cache (
+    track_id INTEGER PRIMARY KEY REFERENCES tracks(id) ON DELETE CASCADE,
+    mtime REAL NOT NULL,
+    peaks TEXT NOT NULL
+);
 """
 
 _METADATA_COLUMNS = tuple(f.name for f in fields(TrackMetadata))
@@ -217,7 +235,16 @@ class LibraryDB:
         self._conn = sqlite3.connect(str(db_path))
         self._conn.execute("PRAGMA foreign_keys = ON")
         self._conn.executescript(_SCHEMA)
+        self._migrate_columns()
         self._conn.commit()
+
+    def _migrate_columns(self) -> None:
+        """`CREATE TABLE IF NOT EXISTS` never retrofits a column onto a table
+        that already existed -- the one case so far is `duration` added to
+        `track_metadata` after the cache was already shipped (issue #403)."""
+        existing = {row[1] for row in self._conn.execute("PRAGMA table_info(track_metadata)")}
+        if "duration" not in existing:
+            self._conn.execute("ALTER TABLE track_metadata ADD COLUMN duration REAL")
 
     def close(self) -> None:
         self._conn.close()
@@ -495,6 +522,54 @@ class LibraryDB:
 
     def track_notes(self) -> dict[int, str]:
         return dict(self._conn.execute("SELECT track_id, note FROM track_notes").fetchall())
+
+    # --- gig journal (issue #405) --------------------------------------
+
+    def add_journal_entry(self, note: str, created_at: float) -> int:
+        cur = self._conn.execute(
+            "INSERT INTO gig_journal (created_at, note) VALUES (?, ?)", (created_at, note)
+        )
+        self._conn.commit()
+        return int(cur.lastrowid)
+
+    def update_journal_entry(self, entry_id: int, note: str) -> None:
+        self._conn.execute("UPDATE gig_journal SET note = ? WHERE id = ?", (note, entry_id))
+        self._conn.commit()
+
+    def delete_journal_entry(self, entry_id: int) -> None:
+        self._conn.execute("DELETE FROM gig_journal WHERE id = ?", (entry_id,))
+        self._conn.commit()
+
+    def list_journal_entries(self) -> list[tuple[int, float, str]]:
+        """``(id, created_at, note)``, newest first."""
+        return self._conn.execute(
+            "SELECT id, created_at, note FROM gig_journal ORDER BY created_at DESC, id DESC"
+        ).fetchall()
+
+    # --- waveform cache (issue #407) -------------------------------------
+
+    def set_cached_waveform(self, track_id: int, mtime: float, peaks: list[float]) -> None:
+        self._conn.execute(
+            "INSERT OR REPLACE INTO waveform_cache (track_id, mtime, peaks) VALUES (?, ?, ?)",
+            (track_id, mtime, json.dumps(peaks)),
+        )
+        self._conn.commit()
+
+    def get_cached_waveform(self, track_id: int) -> tuple[float, list[float]] | None:
+        """``(mtime, peaks)`` cached for `track_id`, or `None` when there is
+        none or it's unreadable."""
+        row = self._conn.execute(
+            "SELECT mtime, peaks FROM waveform_cache WHERE track_id = ?", (track_id,)
+        ).fetchone()
+        if row is None:
+            return None
+        try:
+            peaks = json.loads(row[1])
+        except ValueError:
+            return None
+        if not isinstance(peaks, list):
+            return None
+        return row[0], peaks
 
     def analysis_suggestions(self) -> dict[int, tuple[float | None, str | None]]:
         """Track id -> (suggested BPM, suggested key), current estimates only

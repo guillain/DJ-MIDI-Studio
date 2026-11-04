@@ -105,6 +105,11 @@ The preview bar under the table plays the selected track, so you can check
 a category or a key by ear without opening your DJ software:
 
 - `▶ Play` / `❚❚ Pause` and `■ Stop` (stop rewinds to the start).
+- A waveform above the controls shows the track's structure at a glance
+  (intro, drop, outro); click or drag it to seek, same as the slider
+  below it. It only appears with the optional `analysis` extra installed
+  (`uv sync --extra analysis`) — the same one BPM/key estimation uses —
+  and is computed once per track, in the background, then remembered.
 - Drag the slider to move through the track; the label shows position and
   length.
 - While a track plays, selecting another one switches to it straight away —
@@ -206,6 +211,26 @@ this app follow the new names.
 > are not modified. With `Save an old → new path CSV for relinking` ticked
 > (the default), the app asks where to save a CSV of every renamed file's
 > old and new path once the renames are done.
+
+## Organize into category folders
+
+For a collection that grew over years without any real folder structure,
+`Organize into folders…` moves selected tracks into
+`<their own library root>/Family/Name`, following the confirmed category
+the table already shows — the filename itself never changes (combine
+with `Rename files…` for both at once). Only tracks with a **confirmed**
+category move; a fuzzy suggestion is never acted on — confirm it first.
+
+1. Select the tracks and click `Organize into folders…`.
+2. Check the preview: every selected file, its target path, and a status
+   (`Move`, `Unchanged`, `Skipped` — no confirmed category yet, `Conflict`
+   — something's already at the target, or `Refused` — outside the file's
+   own library root or inside a DJ software folder).
+3. Click `Move N file(s)`.
+
+The whole batch is one `Undo` step, which moves the files right back.
+Like renaming, Serato, Traktor and Rekordbox will show moved files as
+missing until you relink them.
 
 ## Estimate missing BPM and keys
 
@@ -345,6 +370,7 @@ collection as bar charts, one tab each:
 | Genres | Tracks per genre tag. Spellings that only differ by case or spaces (`Psy Trance`, `psy  trance`) count together |
 | BPM | A histogram in 5 BPM steps, with the number of tracks without a BPM |
 | Keys | The 24 Camelot keys in wheel order (1A, 1B … 12B), with the number of tracks without a key |
+| BPM x Key | A heatmap: BPM bins across, Camelot keys down, darker meaning more tracks mix well together at that tempo and key. Only tracks with both a usable BPM and a recognised key are counted; hover a cell for its exact number |
 | Added per month | Files per month of their modification date — the closest thing to a "date added" the files carry. A tag edit makes a file count as recent |
 | Most played | The 25 most-played tracks and how many were never played, once you've loaded your DJ history in the [History panel](#play-history) |
 
@@ -461,6 +487,11 @@ every track yourself and only need the app to check the mixes:
 - The curve above the list shows the BPM (blue, left scale) and the energy
   (orange, 1–10, read from the `Energy` tag, e.g. Mixed In Key's) across the
   set.
+- The summary line under the list also totals the set's running time, read
+  from each file's own audio stream (no tag needed) — `+` means at least
+  one track's length isn't known yet, so it's a minimum, not the exact
+  total. The same running time, counted from wherever you are, is what
+  [Stage Mode](stage-mode.md) shows as time left.
 
 Each transition is checked with the same rules as the automatic playlists:
 
@@ -479,6 +510,16 @@ the opener and the longest chain wins. Tracks that can't be chained (no BPM
 or key, or too far from the rest) go last in their current order. The
 window also says plainly when the proposal is no better than yours.
 `Use this order` applies it; `Back to my order` puts yours back.
+
+Don't want to hand-pick every track? `Build a set from the library…`
+builds one from scratch out of your whole indexed collection instead of
+reordering the draft: pick a target duration (or `No limit`) and a
+direction, click `Generate` to preview the chain and its running time, and
+`Use this set` replaces the draft with it. It stops as soon as the target
+duration is reached (a running total from each track's own audio length,
+`+` when some aren't known yet) or when no more tracks chain. This
+replaces the whole draft, so there's no `Back to my order` afterwards —
+cancel the dialog instead if you don't like the preview.
 
 The draft is remembered with the library index until you change it.
 
@@ -553,6 +594,16 @@ The summary line gives the totals: sessions, plays, distinct tracks, and
 how many of your indexed tracks were never played. History files are only
 ever read; the per-track play counts are kept in the library index for
 [smart playlists](#smart-playlists)' `Not played for` rule.
+
+### Gig journal
+
+Below the history, the **Gig journal** is a place to write your own
+notes — not tied to any track, just a free-text line or paragraph per gig
+("great crowd, long intro ran too long", "fix the opener next time").
+`Add journal entry` saves it, newest first in the list; double-click an
+entry to edit it (the button becomes `Save changes`); `Delete entry`
+removes the selected one(s). It's entirely this app's own log — never
+written into Serato, Traktor, or any audio file.
 
 ## Safety: what is never touched
 

@@ -5,7 +5,13 @@ from pathlib import Path
 import pytest
 from mutagen.id3 import ID3, TBPM, TCON, TIT2, TKEY, TPE1
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QApplication, QDialog, QInputDialog, QMessageBox
+from PySide6.QtWidgets import (
+    QApplication,
+    QDialog,
+    QDialogButtonBox,
+    QInputDialog,
+    QMessageBox,
+)
 
 from djmidi import taxonomy
 from djmidi.gui import music_library_view as mlv
@@ -15,7 +21,7 @@ from djmidi.gui.music_library_view import (
     MusicLibraryView,
 )
 from djmidi.gui.set_preparation import SET_TRACKS_MIME, decode_paths
-from djmidi.library import workspace
+from djmidi.library import organize, set_prep, workspace
 from djmidi.library.db import TrackRecord
 from djmidi.library.metadata import read_metadata, write_metadata
 from djmidi.library.relink import (
@@ -1185,6 +1191,126 @@ def test_history_panel_lists_sessions_and_never_played(library):
     assert view._current_row().title == "Alpha"
 
 
+def test_gig_journal_add_edit_and_delete(library):
+    view, _music, _ = library
+
+    view.journal_text.setPlainText("   ")
+    view._on_journal_save_clicked()
+    assert view.journal_list.count() == 0
+    assert "Write something" in view.status_label.text()
+
+    view.journal_text.setPlainText("Great crowd, long intro on track 3")
+    view._on_journal_save_clicked()
+    assert view.journal_list.count() == 1
+    assert "Great crowd" in view.journal_list.item(0).text()
+    assert view.journal_text.toPlainText() == ""  # cleared after adding
+    assert view.journal_save_button.text() == "Add journal entry"
+
+    view._on_journal_entry_activated(view.journal_list.item(0))
+    assert view.journal_text.toPlainText() == "Great crowd, long intro on track 3"
+    assert view.journal_save_button.text() == "Save changes"
+    view.journal_text.setPlainText("Great crowd, long intro on track 3 -- fix next time")
+    view._on_journal_save_clicked()
+    assert view.journal_list.count() == 1
+    assert "fix next time" in view.journal_list.item(0).text()
+    assert view.journal_save_button.text() == "Add journal entry"
+
+    view.journal_list.item(0).setSelected(True)
+    view._on_journal_delete_clicked()
+    assert view.journal_list.count() == 0
+    assert "1 journal entry(ies) deleted" in view.status_label.text()
+
+
+def test_gig_journal_delete_without_selection_asks_first(library):
+    view, _music, _ = library
+    view._on_journal_delete_clicked()
+    assert "Select a journal entry" in view.status_label.text()
+
+
+def test_gig_journal_survives_closing_and_reopening_the_tab(tmp_path):
+    from djmidi.library import gig_journal
+
+    db_path = tmp_path / "library.sqlite3"
+    view = mlv.MusicLibraryView(db_path=db_path)
+    view.ensure_open()
+    view.journal_text.setPlainText("Remember the opener")
+    view._on_journal_save_clicked()
+    view.close_db()
+
+    reopened = mlv.MusicLibraryView(db_path=db_path)
+    try:
+        reopened.ensure_open()
+        assert [entry.note for entry in gig_journal.list_entries(reopened._db)] == ["Remember the opener"]
+        assert reopened.journal_list.count() == 1
+    finally:
+        reopened.close_db()
+        reopened.deleteLater()
+
+
+def test_organize_files_button_enabled_only_with_a_confirmed_category(library):
+    view, _music, _ = library
+    by_title = _paths_by_title(view)
+    view.select_path(by_title["Alpha"])  # "Tek%%Tribe", a confirmed match
+    assert view.organize_files_button.isEnabled()
+    view.table.clearSelection()
+    view.select_path(by_title["Charlie"])  # only a fuzzy suggestion
+    assert not view.organize_files_button.isEnabled()
+
+
+def test_organize_files_moves_a_misfiled_track_and_undo_restores(tmp_path):
+    music = tmp_path / "music"
+    # Folder hint only reads the first two segments, so this still resolves
+    # "Tek%%Tribe" even though the file itself sits one level too deep.
+    misfiled = _mp3(music / "Tek" / "Tribe" / "Old" / "d.mp3", title="Delta", artist="W", bpm="140", key="G")
+    view = mlv.MusicLibraryView(db_path=":memory:")
+    view.add_root(music)
+    view.start_scan()
+    view.run_pending_job()
+    try:
+        row = next(r for r in view.table_model.rows() if r.title == "Delta")
+        assert row.category == "Tek%%Tribe"
+        view.select_path(row.path)
+        playlist = view.db.create_playlist("Friday", [str(misfiled)])
+
+        plan = organize.plan_from_rows(view.db, [row])
+        target = str(music / "Tek" / "Tribe" / "d.mp3")
+        assert plan.moves == [(str(misfiled), target)]
+
+        moved = view.organize_files(plan.moves)
+        assert moved == [(str(misfiled), target)]
+        assert Path(target).is_file() and not misfiled.exists()
+        assert "Moved 1 file(s)" in view.status_label.text()
+        assert view.db.playlist_paths(playlist) == [target]
+        assert [r.path for r in view.table_model.rows()] == [target]
+
+        view.undo_stack.undo()
+        assert misfiled.is_file() and not Path(target).exists()
+        assert view.db.playlist_paths(playlist) == [str(misfiled)]
+    finally:
+        view.close_db()
+        view.deleteLater()
+
+
+def test_organize_files_dialog_previews_before_accepting(tmp_path):
+    from djmidi.gui.organize_files_dialog import OrganizeFilesDialog
+
+    music = tmp_path / "music"
+    misfiled = _mp3(music / "Tek" / "Tribe" / "Old" / "d.mp3", title="Delta", artist="W", bpm="140", key="G")
+    view = mlv.MusicLibraryView(db_path=":memory:")
+    view.add_root(music)
+    view.start_scan()
+    view.run_pending_job()
+    try:
+        row = next(r for r in view.table_model.rows() if r.title == "Delta")
+        dialog = OrganizeFilesDialog(lambda: organize.plan_from_rows(view.db, [row]))
+        assert dialog.moves() == [(str(misfiled), str(music / "Tek" / "Tribe" / "d.mp3"))]
+        assert dialog.buttons.button(QDialogButtonBox.StandardButton.Ok).isEnabled()
+        dialog.close()
+    finally:
+        view.close_db()
+        view.deleteLater()
+
+
 def test_history_without_default_folders_explains(library, monkeypatch):
     from djmidi.library import history
 
@@ -1690,6 +1816,64 @@ def test_set_panel_applies_a_proposed_order_only_when_accepted(library, monkeypa
     assert panel.undo_order_button.isEnabled()
     panel.restore_previous_order()
     assert panel.paths() == original and not panel.undo_order_button.isEnabled()
+
+
+def test_set_panel_builds_a_set_from_the_library_only_when_accepted(library):
+    view, _music, _ = library
+    panel = view.set_panel
+    by_title = _paths_by_title(view)
+    panel.insert_paths([by_title["Alpha"]])
+    original = panel.paths()
+
+    class _Refused:
+        def __init__(self, *args):
+            pass
+
+        def exec(self):
+            return QDialog.DialogCode.Rejected
+
+        def tracks(self):
+            return ["unused"]
+
+    panel.generate_dialog_factory = _Refused
+    assert not panel.generate_set_from_library() and panel.paths() == original
+
+    generated = [by_title["Bravo"], by_title["Charlie"]]
+
+    class _Accepted(_Refused):
+        def exec(self):
+            return QDialog.DialogCode.Accepted
+
+        def tracks(self):
+            return list(generated)
+
+    panel.generate_dialog_factory = _Accepted
+    assert panel.generate_set_from_library() and panel.paths() == generated
+
+    panel._rows = {}
+    assert not panel.generate_set_from_library()
+
+
+def test_generate_set_dialog_previews_before_accepting(library):
+    from djmidi.gui.generate_set_dialog import GenerateSetDialog
+
+    view, _music, _ = library
+    candidates = [set_prep.set_track_from_row(row) for row in view.table_model.rows()]
+    dialog = GenerateSetDialog(candidates, (), tolerance=6.0)
+    assert not dialog.buttons.button(QDialogButtonBox.StandardButton.Ok).isEnabled()
+
+    # "down" starts from the fastest track (Bravo, 175 BPM) -- it can reach
+    # Alpha (172 BPM, one step down within tolerance); Charlie (80 BPM) is
+    # too far from either to chain.
+    dialog.direction_combo.setCurrentIndex(dialog.direction_combo.findData("down"))
+    dialog.generate()
+
+    by_title = {row.title: row.path for row in view.table_model.rows()}
+    assert dialog.preview_list.count() == 2
+    assert dialog.tracks() == [by_title["Bravo"], by_title["Alpha"]]
+    assert dialog.buttons.button(QDialogButtonBox.StandardButton.Ok).isEnabled()
+    assert "2 track(s)" in dialog.summary_label.text()
+    dialog.close()
 
 
 def test_a_stage_note_is_saved_in_the_index_and_reaches_the_stage(library):

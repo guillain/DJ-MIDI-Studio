@@ -33,6 +33,11 @@ class TrackMetadata:
     comment: str | None = None
     rating: str | None = None
     energy: str | None = None
+    duration: float | None = None
+    """Stream length in seconds, from the file's own audio header -- not a
+    tag, never written by `write_metadata` (absent from `MANAGED_FIELDS`),
+    cached here only because it needs the same re-read-on-mtime-change
+    plumbing every other cached field already has."""
 
 
 def read_metadata(path: str | Path) -> TrackMetadata | None:
@@ -46,12 +51,15 @@ def metadata_from_audio(audio: mutagen.FileType) -> TrackMetadata:
     """Normalized tags of an already-opened mutagen file (lets a caller that
     needs the stream info too, like the health report, open it only once)."""
     if isinstance(audio.tags, ID3):
-        return _read_id3(audio.tags)
-    if isinstance(audio, MP4):
-        return _read_mp4(audio.tags)
-    if _looks_like_vorbis(audio.tags):
-        return _read_vorbis(audio.tags)
-    return TrackMetadata()
+        meta = _read_id3(audio.tags)
+    elif isinstance(audio, MP4):
+        meta = _read_mp4(audio.tags)
+    elif _looks_like_vorbis(audio.tags):
+        meta = _read_vorbis(audio.tags)
+    else:
+        meta = TrackMetadata()
+    meta.duration = getattr(audio.info, "length", None) or None
+    return meta
 
 
 def _looks_like_vorbis(tags: object) -> bool:

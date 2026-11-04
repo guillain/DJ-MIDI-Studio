@@ -30,6 +30,19 @@ def test_view_shows_position_current_next_and_transition():
     assert stage_set_view([], [], 0) is None
 
 
+def test_view_shows_time_remaining_when_durations_are_known():
+    tracks = [
+        SetTrack("/a.mp3", "Intro", "DJ A", 124.0, "8A", 5, duration=60.0),
+        SetTrack("/b.mp3", "Build", "DJ B", 126.0, "9A", 7, duration=125.0),
+        SetTrack("/c.mp3", "Clash", None, 150.0, "2B"),  # duration unknown
+    ]
+    transitions = analyze_set(tracks)
+    first = stage_set_view(tracks, transitions, 0)
+    assert first.position == "Set 1/3 · 3:05+ left"  # the last track's duration is unknown
+    last = stage_set_view(tracks, transitions, 2)
+    assert last.position == "Set 3/3"  # nothing left is known from here
+
+
 def test_stage_window_moves_through_the_set():
     from djmidi.gui.stage_window import StageWindow
 

@@ -85,6 +85,10 @@ class LibraryRow:
     def bpm(self) -> float | None:
         return self.metadata.bpm if self.metadata else None
 
+    @property
+    def duration(self) -> float | None:
+        return self.metadata.duration if self.metadata else None
+
 
 def folder_hint(track_path: str, root_path: str | None) -> str | None:
     """The track's folder relative to its library root, `/`-joined (e.g.
