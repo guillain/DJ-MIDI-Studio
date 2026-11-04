@@ -9,8 +9,12 @@
         <translation>Audio-Vorschau nicht verfügbar: Das QtMultimedia-Modul von PySide6 konnte nicht geladen werden.</translation>
     </message>
     <message>
+        <source>The track&apos;s amplitude over time; click or drag to seek.</source>
+        <extracomment>Where in the track (0..1) the user clicked or dragged to. Auto-advance is on and the current track played to its end.</extracomment>
+        <translation>Die Amplitude des Titels über die Zeit; klicken oder ziehen, um zu navigieren.</translation>
+    </message>
+    <message>
         <source>▶ Play</source>
-        <extracomment>Auto-advance is on and the current track played to its end.</extracomment>
         <translation>▶ Abspielen</translation>
     </message>
     <message>

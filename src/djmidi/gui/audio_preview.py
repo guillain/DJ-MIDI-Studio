@@ -34,13 +34,15 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-from PySide6.QtCore import QT_TRANSLATE_NOOP, QObject, Qt, QUrl, Signal
+from PySide6.QtCore import QT_TRANSLATE_NOOP, QObject, QRectF, Qt, QUrl, Signal
+from PySide6.QtGui import QMouseEvent, QPainter, QPaintEvent, QPalette, QPen
 from PySide6.QtWidgets import (
     QCheckBox,
     QHBoxLayout,
     QLabel,
     QPushButton,
     QSlider,
+    QVBoxLayout,
     QWidget,
 )
 
@@ -142,6 +144,67 @@ def _default_player_factory(parent: QObject) -> Any:
     return player
 
 
+class WaveformWidget(QWidget):
+    """A precomputed amplitude envelope (issue #407), drawn as bars with a
+    playhead line; click or drag to seek. Purely a display -- it knows
+    nothing about the player or the library index; `AudioPreviewBar` feeds
+    it peaks via `set_peaks` and reads clicks via `seekFractionRequested`.
+    Shows a plain placeholder with no peaks (unavailable, not yet computed,
+    or no track), never an empty/broken-looking box."""
+
+    #: Where in the track (0..1) the user clicked or dragged to.
+    seekFractionRequested = Signal(float)
+
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        self._peaks: list[float] | None = None
+        self._position_fraction = 0.0
+        self.setMinimumHeight(36)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+
+    def set_peaks(self, peaks: list[float] | None) -> None:
+        self._peaks = list(peaks) if peaks else None
+        self.update()
+
+    def set_position_fraction(self, fraction: float) -> None:
+        clamped = min(max(fraction, 0.0), 1.0)
+        if clamped == self._position_fraction:
+            return
+        self._position_fraction = clamped
+        self.update()
+
+    def _fraction_at(self, x: float) -> float:
+        return min(max(x / max(self.width(), 1), 0.0), 1.0)
+
+    def mousePressEvent(self, event: QMouseEvent) -> None:
+        if self._peaks and event.button() == Qt.MouseButton.LeftButton:
+            self.seekFractionRequested.emit(self._fraction_at(event.position().x()))
+
+    def mouseMoveEvent(self, event: QMouseEvent) -> None:
+        if self._peaks and event.buttons() & Qt.MouseButton.LeftButton:
+            self.seekFractionRequested.emit(self._fraction_at(event.position().x()))
+
+    def paintEvent(self, _event: QPaintEvent) -> None:
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        rect = QRectF(self.rect())
+        if not self._peaks:
+            painter.setPen(QPen(self.palette().color(QPalette.ColorRole.Mid)))
+            painter.drawLine(rect.left(), rect.center().y(), rect.right(), rect.center().y())
+            return
+        bar_colour = self.palette().color(QPalette.ColorRole.Mid)
+        count = len(self._peaks)
+        bar_width = rect.width() / count
+        mid = rect.center().y()
+        for index, peak in enumerate(self._peaks):
+            x = rect.left() + index * bar_width
+            half_height = max(peak, 0.02) * rect.height() / 2
+            painter.fillRect(QRectF(x, mid - half_height, max(bar_width - 1, 1), half_height * 2), bar_colour)
+        playhead_x = rect.left() + rect.width() * self._position_fraction
+        painter.setPen(QPen(self.palette().color(QPalette.ColorRole.Highlight), 2))
+        painter.drawLine(playhead_x, rect.top(), playhead_x, rect.bottom())
+
+
 class AudioPreviewBar(QWidget):
     """Play the selected library track; see the module docstring.
 
@@ -172,8 +235,14 @@ class AudioPreviewBar(QWidget):
         self._error: str | None = None
         self._settings: Any = None
 
-        row = QHBoxLayout(self)
-        row.setContentsMargins(0, 0, 0, 0)
+        box = QVBoxLayout(self)
+        box.setContentsMargins(0, 0, 0, 0)
+        self.waveform = WaveformWidget()
+        self.waveform.setToolTip(self.tr("The track's amplitude over time; click or drag to seek."))
+        self.waveform.seekFractionRequested.connect(self._on_waveform_seek)
+        box.addWidget(self.waveform)
+        row = QHBoxLayout()
+        box.addLayout(row)
         self.play_button = QPushButton(self.tr("▶ Play"))
         self.play_button.clicked.connect(self.toggle_play)
         self.stop_button = QPushButton(self.tr("■ Stop"))
@@ -262,11 +331,19 @@ class AudioPreviewBar(QWidget):
         self._pending_offset = False
         self._error = None
         self.seek_slider.setRange(0, 0)
+        self.waveform.set_peaks(None)
+        self.waveform.set_position_fraction(0.0)
         if self._player is not None:
             self._player.setSource(QUrl.fromLocalFile(new_path) if new_path else QUrl())
         if was_playing and new_path:
             self.play()
         self._update_controls()
+
+    def set_waveform_peaks(self, peaks: list[float] | None) -> None:
+        """The precomputed envelope of the track currently previewed
+        (issue #407); the caller (which owns the library index) resolves
+        and caches it, this bar only draws it."""
+        self.waveform.set_peaks(peaks)
 
     # --- transport ------------------------------------------------------
 
@@ -332,6 +409,14 @@ class AudioPreviewBar(QWidget):
         if self._player is None or self._duration <= 0:
             return
         target = relative_seek_target(self.seek_slider.value(), delta_ms, self._duration)
+        self.seek(target)
+        self.seek_slider.setValue(target)
+        self._update_time_label(target)
+
+    def _on_waveform_seek(self, fraction: float) -> None:
+        if self._player is None or self._duration <= 0:
+            return
+        target = int(fraction * self._duration)
         self.seek(target)
         self.seek_slider.setValue(target)
         self._update_time_label(target)
@@ -410,6 +495,7 @@ class AudioPreviewBar(QWidget):
             return
         total = format_time(self._duration) if self._duration > 0 else "--:--"
         self.time_label.setText(f"{format_time(position)} / {total}")
+        self.waveform.set_position_fraction(position / self._duration if self._duration > 0 else 0.0)
 
     def _update_controls(self, *_args: object) -> None:
         available = self.available

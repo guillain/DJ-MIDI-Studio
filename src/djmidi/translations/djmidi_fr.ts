@@ -9,8 +9,12 @@
         <translation>Pré-écoute indisponible : le module QtMultimedia de PySide6 n&apos;a pas pu être chargé.</translation>
     </message>
     <message>
+        <source>The track&apos;s amplitude over time; click or drag to seek.</source>
+        <extracomment>Where in the track (0..1) the user clicked or dragged to. Auto-advance is on and the current track played to its end.</extracomment>
+        <translation>L&apos;amplitude de la piste dans le temps ; cliquez ou glissez pour naviguer.</translation>
+    </message>
+    <message>
         <source>▶ Play</source>
-        <extracomment>Auto-advance is on and the current track played to its end.</extracomment>
         <translation>▶ Lecture</translation>
     </message>
     <message>

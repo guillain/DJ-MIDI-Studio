@@ -141,6 +141,15 @@ CREATE TABLE IF NOT EXISTS gig_journal (
     created_at REAL NOT NULL,
     note TEXT NOT NULL
 );
+
+-- A cache of each file's precomputed waveform amplitude envelope (issue
+-- #407), keyed to the file's mtime like the metadata/analysis caches: a
+-- JSON array of 0..1 peaks, re-read whenever the file changes.
+CREATE TABLE IF NOT EXISTS waveform_cache (
+    track_id INTEGER PRIMARY KEY REFERENCES tracks(id) ON DELETE CASCADE,
+    mtime REAL NOT NULL,
+    peaks TEXT NOT NULL
+);
 """
 
 _METADATA_COLUMNS = tuple(f.name for f in fields(TrackMetadata))
@@ -536,6 +545,31 @@ class LibraryDB:
         return self._conn.execute(
             "SELECT id, created_at, note FROM gig_journal ORDER BY created_at DESC, id DESC"
         ).fetchall()
+
+    # --- waveform cache (issue #407) -------------------------------------
+
+    def set_cached_waveform(self, track_id: int, mtime: float, peaks: list[float]) -> None:
+        self._conn.execute(
+            "INSERT OR REPLACE INTO waveform_cache (track_id, mtime, peaks) VALUES (?, ?, ?)",
+            (track_id, mtime, json.dumps(peaks)),
+        )
+        self._conn.commit()
+
+    def get_cached_waveform(self, track_id: int) -> tuple[float, list[float]] | None:
+        """``(mtime, peaks)`` cached for `track_id`, or `None` when there is
+        none or it's unreadable."""
+        row = self._conn.execute(
+            "SELECT mtime, peaks FROM waveform_cache WHERE track_id = ?", (track_id,)
+        ).fetchone()
+        if row is None:
+            return None
+        try:
+            peaks = json.loads(row[1])
+        except ValueError:
+            return None
+        if not isinstance(peaks, list):
+            return None
+        return row[0], peaks
 
     def analysis_suggestions(self) -> dict[int, tuple[float | None, str | None]]:
         """Track id -> (suggested BPM, suggested key), current estimates only

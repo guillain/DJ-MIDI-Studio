@@ -116,6 +116,7 @@ from djmidi.gui.set_preparation import (
 )
 from djmidi.gui.smart_export_dialog import SmartExportDialog
 from djmidi.gui.translation import translator
+from djmidi.gui.waveform_loader import WaveformLoader
 from djmidi.gui.window_size import keep_tab_titles_whole, keep_wrapped_text_visible
 from djmidi.library import (
     change_log,
@@ -130,6 +131,7 @@ from djmidi.library import (
     set_prep,
     smart_playlist,
     stats,
+    waveform,
     workspace,
 )
 from djmidi.library.analysis import analysis_available, to_camelot
@@ -1140,6 +1142,10 @@ class MusicLibraryView(QWidget):
         # and auto-advance moves to the next row when a track ends.
         self.table.installEventFilter(self)
         self.audio_preview.advanceRequested.connect(self._advance_preview)
+        # Issue #407: the waveform is computed off the main thread and
+        # cached, so the bar itself never knows about the library index.
+        self._waveform_loader = WaveformLoader(self)
+        self._waveform_loader.finished.connect(self._on_waveform_loaded)
         self._update_track_panel(None)
 
     # --- construction ---------------------------------------------------
@@ -1689,7 +1695,33 @@ class MusicLibraryView(QWidget):
 
     def _preview_current_row(self, current: QModelIndex, _previous: QModelIndex) -> None:
         row = current.data(ROW_ROLE) if current.isValid() else None
-        self.audio_preview.set_source(row.path if row is not None and not row.missing else None)
+        path = row.path if row is not None and not row.missing else None
+        self.audio_preview.set_source(path)
+        self._load_waveform_for(path)
+
+    def _load_waveform_for(self, path: str | None) -> None:
+        """Shows the cached waveform right away, else kicks off a
+        background decode (issue #407); never blocks the GUI thread."""
+        if path is None or self._db is None:
+            return
+        record = self.db.get_track_by_path(path)
+        if record is None:
+            return
+        cached = waveform.cached_peaks(self.db, record)
+        if cached is not None:
+            self.audio_preview.set_waveform_peaks(cached)
+        elif waveform.waveform_available():
+            self._waveform_loader.load(path, record.id, record.mtime)
+
+    def _on_waveform_loaded(self, path: str, track_id: int, mtime: float, peaks: object) -> None:
+        if self._db is None:
+            return  # the tab's index closed while this decode was running
+        if peaks is not None:
+            self._db.set_cached_waveform(track_id, mtime, peaks)
+        # The user may already have moved to another track by the time a
+        # slow decode finishes; never paint a stale result over it.
+        if path == self.audio_preview.source_path:
+            self.audio_preview.set_waveform_peaks(peaks if isinstance(peaks, list) else None)
 
     def eventFilter(self, watched, event) -> bool:
         if (
