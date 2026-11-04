@@ -248,6 +248,14 @@ def _set_order():
     return SetOrderDialog(tracks, 6.0)
 
 
+def _generate_set():
+    from djmidi.gui.generate_set_dialog import GenerateSetDialog
+    from djmidi.library.set_prep import SetTrack
+
+    tracks = [SetTrack(f"/{n}.mp3", f"Track {n}", "Artist", 120.0 + n, "8A") for n in range(6)]
+    return GenerateSetDialog(tracks, (), 6.0)
+
+
 def _smart_export():
     from djmidi.gui.smart_export_dialog import SmartExportDialog
     from djmidi.library.smart_playlist import SmartExportOptions
@@ -273,6 +281,7 @@ WINDOWS = {
     "snapshots": _snapshots,
     "mixxx export": _mixxx_export,
     "set order": _set_order,
+    "generate set": _generate_set,
     "smart export": _smart_export,
 }
 

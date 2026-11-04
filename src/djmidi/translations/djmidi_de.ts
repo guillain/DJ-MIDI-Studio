@@ -1844,6 +1844,45 @@ Trotzdem neu zuweisen? Beide lösen auf demselben Bedienelement aus.</translatio
     </message>
 </context>
 <context>
+    <name>GenerateSetDialog</name>
+    <message>
+        <source>Build a set from the library</source>
+        <translation>Set aus der Bibliothek erstellen</translation>
+    </message>
+    <message>
+        <source>Chains compatible tracks from your whole library -- not just the current draft -- until the target duration is reached. Replaces the draft, but nothing changes until you accept.</source>
+        <translation>Verkettet kompatible Titel aus Ihrer gesamten Bibliothek -- nicht nur dem aktuellen Entwurf -- bis die Zieldauer erreicht ist. Ersetzt den Entwurf, aber nichts ändert sich, bis Sie bestätigen.</translation>
+    </message>
+    <message>
+        <source> min</source>
+        <translation> Min.</translation>
+    </message>
+    <message>
+        <source>No limit</source>
+        <translation>Keine Grenze</translation>
+    </message>
+    <message>
+        <source>Target duration</source>
+        <translation>Zieldauer</translation>
+    </message>
+    <message>
+        <source>Generate</source>
+        <translation>Generieren</translation>
+    </message>
+    <message>
+        <source>Use this set</source>
+        <translation>Dieses Set verwenden</translation>
+    </message>
+    <message>
+        <source>No compatible tracks found -- every candidate needs a BPM and a key tag.</source>
+        <translation>Keine kompatiblen Titel gefunden -- jeder Kandidat braucht ein BPM- und ein Tonart-Tag.</translation>
+    </message>
+    <message>
+        <source>{count} track(s), {duration}.</source>
+        <translation>{count} Titel, {duration}.</translation>
+    </message>
+</context>
+<context>
     <name>GeometryEditorDialog</name>
     <message>
         <source>Place controls — {name}</source>
@@ -7574,6 +7613,14 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
         <translation>Stellt die Reihenfolge wieder her, die Sie vor dem Verwenden einer vorgeschlagenen hatten.</translation>
     </message>
     <message>
+        <source>Build a set from the library…</source>
+        <translation>Set aus der Bibliothek erstellen…</translation>
+    </message>
+    <message>
+        <source>Builds a brand-new set from every indexed track, not just this draft; replaces the draft only if you accept it.</source>
+        <translation>Erstellt ein völlig neues Set aus allen indizierten Titeln, nicht nur aus diesem Entwurf; ersetzt den Entwurf nur, wenn Sie bestätigen.</translation>
+    </message>
+    <message>
         <source>Load playlist</source>
         <translation>Playlist laden</translation>
     </message>
@@ -7628,6 +7675,14 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     <message>
         <source>Set re-ordered. “Back to my order” puts the previous order back.</source>
         <translation>Set umsortiert. „Zurück zu meiner Reihenfolge“ stellt die vorherige Reihenfolge wieder her.</translation>
+    </message>
+    <message>
+        <source>No tracks indexed yet.</source>
+        <translation>Noch keine Titel indiziert.</translation>
+    </message>
+    <message>
+        <source>Built a {count}-track set from the library.</source>
+        <translation>Set mit {count} Titeln aus der Bibliothek erstellt.</translation>
     </message>
     <message>
         <source>Not in the indexed folders: {path}</source>

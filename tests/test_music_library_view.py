@@ -5,7 +5,13 @@ from pathlib import Path
 import pytest
 from mutagen.id3 import ID3, TBPM, TCON, TIT2, TKEY, TPE1
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QApplication, QDialog, QInputDialog, QMessageBox
+from PySide6.QtWidgets import (
+    QApplication,
+    QDialog,
+    QDialogButtonBox,
+    QInputDialog,
+    QMessageBox,
+)
 
 from djmidi import taxonomy
 from djmidi.gui import music_library_view as mlv
@@ -15,7 +21,7 @@ from djmidi.gui.music_library_view import (
     MusicLibraryView,
 )
 from djmidi.gui.set_preparation import SET_TRACKS_MIME, decode_paths
-from djmidi.library import workspace
+from djmidi.library import set_prep, workspace
 from djmidi.library.db import TrackRecord
 from djmidi.library.metadata import read_metadata, write_metadata
 from djmidi.library.relink import (
@@ -1690,6 +1696,64 @@ def test_set_panel_applies_a_proposed_order_only_when_accepted(library, monkeypa
     assert panel.undo_order_button.isEnabled()
     panel.restore_previous_order()
     assert panel.paths() == original and not panel.undo_order_button.isEnabled()
+
+
+def test_set_panel_builds_a_set_from_the_library_only_when_accepted(library):
+    view, _music, _ = library
+    panel = view.set_panel
+    by_title = _paths_by_title(view)
+    panel.insert_paths([by_title["Alpha"]])
+    original = panel.paths()
+
+    class _Refused:
+        def __init__(self, *args):
+            pass
+
+        def exec(self):
+            return QDialog.DialogCode.Rejected
+
+        def tracks(self):
+            return ["unused"]
+
+    panel.generate_dialog_factory = _Refused
+    assert not panel.generate_set_from_library() and panel.paths() == original
+
+    generated = [by_title["Bravo"], by_title["Charlie"]]
+
+    class _Accepted(_Refused):
+        def exec(self):
+            return QDialog.DialogCode.Accepted
+
+        def tracks(self):
+            return list(generated)
+
+    panel.generate_dialog_factory = _Accepted
+    assert panel.generate_set_from_library() and panel.paths() == generated
+
+    panel._rows = {}
+    assert not panel.generate_set_from_library()
+
+
+def test_generate_set_dialog_previews_before_accepting(library):
+    from djmidi.gui.generate_set_dialog import GenerateSetDialog
+
+    view, _music, _ = library
+    candidates = [set_prep.set_track_from_row(row) for row in view.table_model.rows()]
+    dialog = GenerateSetDialog(candidates, (), tolerance=6.0)
+    assert not dialog.buttons.button(QDialogButtonBox.StandardButton.Ok).isEnabled()
+
+    # "down" starts from the fastest track (Bravo, 175 BPM) -- it can reach
+    # Alpha (172 BPM, one step down within tolerance); Charlie (80 BPM) is
+    # too far from either to chain.
+    dialog.direction_combo.setCurrentIndex(dialog.direction_combo.findData("down"))
+    dialog.generate()
+
+    by_title = {row.title: row.path for row in view.table_model.rows()}
+    assert dialog.preview_list.count() == 2
+    assert dialog.tracks() == [by_title["Bravo"], by_title["Alpha"]]
+    assert dialog.buttons.button(QDialogButtonBox.StandardButton.Ok).isEnabled()
+    assert "2 track(s)" in dialog.summary_label.text()
+    dialog.close()
 
 
 def test_a_stage_note_is_saved_in_the_index_and_reaches_the_stage(library):

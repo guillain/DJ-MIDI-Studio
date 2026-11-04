@@ -1844,6 +1844,45 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     </message>
 </context>
 <context>
+    <name>GenerateSetDialog</name>
+    <message>
+        <source>Build a set from the library</source>
+        <translation>Générer un set depuis la bibliothèque</translation>
+    </message>
+    <message>
+        <source>Chains compatible tracks from your whole library -- not just the current draft -- until the target duration is reached. Replaces the draft, but nothing changes until you accept.</source>
+        <translation>Enchaîne des pistes compatibles de toute votre bibliothèque -- pas seulement le brouillon actuel -- jusqu&apos;à la durée cible. Remplace le brouillon, mais rien ne change avant que vous n&apos;acceptiez.</translation>
+    </message>
+    <message>
+        <source> min</source>
+        <translation> min</translation>
+    </message>
+    <message>
+        <source>No limit</source>
+        <translation>Sans limite</translation>
+    </message>
+    <message>
+        <source>Target duration</source>
+        <translation>Durée cible</translation>
+    </message>
+    <message>
+        <source>Generate</source>
+        <translation>Générer</translation>
+    </message>
+    <message>
+        <source>Use this set</source>
+        <translation>Utiliser ce set</translation>
+    </message>
+    <message>
+        <source>No compatible tracks found -- every candidate needs a BPM and a key tag.</source>
+        <translation>Aucune piste compatible trouvée -- chaque candidate a besoin d&apos;un BPM et d&apos;une clef.</translation>
+    </message>
+    <message>
+        <source>{count} track(s), {duration}.</source>
+        <translation>{count} piste(s), {duration}.</translation>
+    </message>
+</context>
+<context>
     <name>GeometryEditorDialog</name>
     <message>
         <source>Place controls — {name}</source>
@@ -7574,6 +7613,14 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <translation>Remet l&apos;ordre que vous aviez avant d&apos;utiliser un ordre proposé.</translation>
     </message>
     <message>
+        <source>Build a set from the library…</source>
+        <translation>Générer un set depuis la bibliothèque…</translation>
+    </message>
+    <message>
+        <source>Builds a brand-new set from every indexed track, not just this draft; replaces the draft only if you accept it.</source>
+        <translation>Génère un set entièrement nouveau à partir de toutes les pistes indexées, pas seulement ce brouillon ; ne remplace le brouillon que si vous acceptez.</translation>
+    </message>
+    <message>
         <source>Load playlist</source>
         <translation>Charger une playlist</translation>
     </message>
@@ -7628,6 +7675,14 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>Set re-ordered. “Back to my order” puts the previous order back.</source>
         <translation>Set réordonné. « Revenir à mon ordre » remet l&apos;ordre précédent.</translation>
+    </message>
+    <message>
+        <source>No tracks indexed yet.</source>
+        <translation>Aucune piste indexée pour l&apos;instant.</translation>
+    </message>
+    <message>
+        <source>Built a {count}-track set from the library.</source>
+        <translation>Set de {count} piste(s) généré depuis la bibliothèque.</translation>
     </message>
     <message>
         <source>Not in the indexed folders: {path}</source>

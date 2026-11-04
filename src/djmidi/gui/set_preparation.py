@@ -41,6 +41,7 @@ from PySide6.QtWidgets import (
 
 from djmidi import user_paths
 from djmidi.gui import help_texts
+from djmidi.gui.generate_set_dialog import GenerateSetDialog
 from djmidi.gui.help_button import help_row
 from djmidi.gui.set_order_dialog import SetOrderDialog
 from djmidi.gui.translation import translator
@@ -262,6 +263,7 @@ class SetPreparationPanel(QWidget):
         self.transitions: list[set_prep.Transition] = []
         self._previous_order: list[str] | None = None
         self.order_dialog_factory = SetOrderDialog
+        self.generate_dialog_factory = GenerateSetDialog
 
         box = QVBoxLayout(self)
         box.addLayout(help_row(self, *help_texts.LIBRARY_SET))
@@ -300,6 +302,9 @@ class SetPreparationPanel(QWidget):
              self.tr("Suggests an order where every mix stays compatible; you compare before using it.")),
             ("undo_order_button", self.tr("Back to my order"), self.restore_previous_order,
              self.tr("Puts back the order you had before using a proposed one.")),
+            ("generate_button", self.tr("Build a set from the library…"), self.generate_set_from_library,
+             self.tr("Builds a brand-new set from every indexed track, not just this draft; replaces the draft "
+                      "only if you accept it.")),
             ("load_button", self.tr("Load playlist"), self.load_selected_playlist,
              self.tr("Replaces the draft with the playlist selected in the Playlists tab.")),
             ("save_button", self.tr("Save as playlist…"), self._on_save_clicked,
@@ -411,6 +416,20 @@ class SetPreparationPanel(QWidget):
             return
         self._paths, self._previous_order = self._previous_order, None
         self._refresh()
+
+    def generate_set_from_library(self) -> bool:
+        """Opens a dialog that builds a brand-new set from every indexed
+        track, not just this draft; replaces the draft only on accept."""
+        if not self._rows:
+            self._status(self.tr("No tracks indexed yet."))
+            return False
+        candidates = [set_prep.set_track_from_row(row) for row in self._rows.values()]
+        dialog = self.generate_dialog_factory(candidates, (), self.tolerance_spin.value(), self)
+        if dialog.exec() != QDialog.DialogCode.Accepted or not dialog.tracks():
+            return False
+        self.set_paths(dialog.tracks())
+        self._status(self.tr("Built a {count}-track set from the library.").format(count=len(dialog.tracks())))
+        return True
 
     def _sync_from_list(self) -> None:
         """After an internal drag: the list's order becomes the draft's."""

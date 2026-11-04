@@ -166,3 +166,55 @@ def test_propose_order_chains_compatible_tracks_and_keeps_the_rest():
     assert kept.order[0] == "/c" and kept.order[-2:] == ("/x", "/z")
     nothing = propose_order([SetTrack("/x"), SetTrack("/y")])
     assert nothing.order == ("/x", "/y") and nothing.chained == 0 and not nothing.improves()
+
+
+def test_generate_set_from_library_stops_at_the_target_duration():
+    from djmidi.library.set_prep import generate_set_from_library
+
+    library = [
+        SetTrack("/a", bpm=124.0, camelot_key="8A", duration=60.0),
+        SetTrack("/b", bpm=126.0, camelot_key="8A", duration=60.0),
+        SetTrack("/c", bpm=128.0, camelot_key="9A", duration=60.0),
+        SetTrack("/d", bpm=130.0, camelot_key="9A", duration=60.0),
+    ]
+    generated = generate_set_from_library(library, target_duration_seconds=125.0, direction="up")
+    # Stops as soon as the running total reaches the target -- 3 tracks (180s), not 2 (120s) or all 4.
+    assert generated.tracks == ("/a", "/b", "/c")
+    assert generated.duration_seconds == pytest.approx(180.0)
+    assert generated.duration_known is True
+    assert generated.reached_target is True
+
+
+def test_generate_set_from_library_with_no_target_chains_everything_reachable():
+    from djmidi.library.set_prep import generate_set_from_library
+
+    library = [
+        SetTrack("/a", bpm=124.0, camelot_key="8A"),
+        SetTrack("/b", bpm=126.0, camelot_key="8A"),
+        SetTrack("/unreachable", bpm=170.0, camelot_key="2B"),
+        SetTrack("/no_tags"),
+    ]
+    generated = generate_set_from_library(library, target_duration_seconds=None, direction="up")
+    assert generated.tracks == ("/a", "/b")
+    assert generated.duration_seconds == 0 and generated.duration_known is False
+    assert generated.reached_target is False
+
+
+def test_generate_set_from_library_excludes_paths_and_respects_start():
+    from djmidi.library.set_prep import generate_set_from_library
+
+    library = [
+        SetTrack("/a", bpm=124.0, camelot_key="8A", duration=60.0),
+        SetTrack("/b", bpm=126.0, camelot_key="8A", duration=60.0),
+        SetTrack("/c", bpm=128.0, camelot_key="9A", duration=60.0),
+    ]
+    generated = generate_set_from_library(library, exclude={"/a"}, direction="up")
+    assert "/a" not in generated.tracks
+    started = generate_set_from_library(library, start="/c", direction="flat")
+    assert started.tracks[0] == "/c"
+
+
+def test_generate_set_from_library_empty_pool_is_an_empty_set():
+    from djmidi.library.set_prep import generate_set_from_library
+
+    assert generate_set_from_library([SetTrack("/x")]).tracks == ()
