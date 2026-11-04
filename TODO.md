@@ -139,6 +139,10 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Export/import MIDI macros** (`v0.48.184-macro-sharing`, issue #408) — `Export…`/`Import…` in Manage Macros
+  share the whole macro list as one versioned bundle file (`MACRO_BUNDLE_SCHEMA` = `djmidi-macros/1`). A name
+  collision on import asks once whether to replace or keep both (the imported one renamed `"(2)"`, `"(3)"`...) —
+  `merge_imported_macros`, Qt-free. Sixth of the overnight brainstorm batch (issues #403–#410).
 - [x] **Mini-waveform in the audio preview bar** (`v0.48.183-waveform`, issue #407) — a precomputed amplitude
   envelope above the preview bar's transport controls, click/drag to seek. Only appears with the optional
   `analysis` extra (librosa) installed, like BPM/key estimation; computed off the main thread

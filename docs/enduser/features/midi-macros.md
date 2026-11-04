@@ -163,6 +163,15 @@ to another computer, or back them up with **File → Back Up Workspace…**
 like the rest of your files. A file the app can't read is skipped (and left
 in place) rather than stopping the others from loading.
 
+## Share macros with another user
+
+In **Manage Macros…**, `Export…` saves every macro currently in the list
+to one file; `Import…` reads one back and adds its macros to yours. If an
+imported macro has the same name as one you already have, you're asked
+once whether to replace it or keep both (the imported one gets a
+`(2)` suffix) — nothing is ever silently overwritten or dropped. Click
+`OK` afterwards to keep the import, same as any other change in the dialog.
+
 ## Related
 
 - [Controller Sync](controller-sync.md): the initialization sets a macro can start from.
