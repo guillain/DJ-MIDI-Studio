@@ -569,6 +569,16 @@ how many of your indexed tracks were never played. History files are only
 ever read; the per-track play counts are kept in the library index for
 [smart playlists](#smart-playlists)' `Not played for` rule.
 
+### Gig journal
+
+Below the history, the **Gig journal** is a place to write your own
+notes — not tied to any track, just a free-text line or paragraph per gig
+("great crowd, long intro ran too long", "fix the opener next time").
+`Add journal entry` saves it, newest first in the list; double-click an
+entry to edit it (the button becomes `Save changes`); `Delete entry`
+removes the selected one(s). It's entirely this app's own log — never
+written into Serato, Traktor, or any audio file.
+
 ## Safety: what is never touched
 
 - Tag writes change only the fields you edit. Serato and Traktor data stored

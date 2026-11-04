@@ -139,6 +139,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Gig journal** (`v0.48.181-gig-journal`, issue #405) — a free-text note per gig, not tied to any track,
+  below the Music Library History panel's play history: `library/gig_journal.py` (a plain `gig_journal` table in
+  `LibraryDB`, newest-first, blank notes refused) and a list + text box + `Add journal entry`/`Delete entry` in the
+  panel, double-click to edit. Kept only in this app's own index. Third of the overnight brainstorm batch (issues
+  #403–#410).
 - [x] **Generate a set from the library** (`v0.48.180-generate-set`, issue #404) — `Build a set from the library…`
   in the Set panel builds a set from scratch out of the whole indexed collection rather than reordering the
   hand-picked draft: pick a target duration (or no limit) and a direction, preview the chain and its running time
