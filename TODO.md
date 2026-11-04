@@ -139,6 +139,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **BPM x key compatibility heatmap** (`v0.48.186-bpm-key-heatmap`, issue #410) — a new `BPM x Key` tab in
+  Library Statistics: a dense grid (BPM bins x the 24 Camelot codes), each cell shaded by how many tracks fall in
+  it, to spot which parts of the collection are easiest to chain mixes within. `stats.compute_bpm_key_heatmap`
+  (Qt-free, same binning/`missing`-counting discipline as the existing BPM/key charts) and
+  `gui/library_stats_dialog.HeatmapWidget` (`BarChart`'s sibling for a 2D grid, no charting dependency). Eighth and
+  last of the overnight brainstorm batch (issues #403–#410).
 - [x] **"What's new" release notes dialog** (`v0.48.185-whats-new`, issue #409) — the silent background update
   check now shows a `WhatsNewDialog` (GitHub's own release notes, rendered as Markdown) the first time a given
   version is detected, instead of only the status-bar link; a manual `Help → Check for Updates…` keeps its

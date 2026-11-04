@@ -370,6 +370,7 @@ collection as bar charts, one tab each:
 | Genres | Tracks per genre tag. Spellings that only differ by case or spaces (`Psy Trance`, `psy  trance`) count together |
 | BPM | A histogram in 5 BPM steps, with the number of tracks without a BPM |
 | Keys | The 24 Camelot keys in wheel order (1A, 1B … 12B), with the number of tracks without a key |
+| BPM x Key | A heatmap: BPM bins across, Camelot keys down, darker meaning more tracks mix well together at that tempo and key. Only tracks with both a usable BPM and a recognised key are counted; hover a cell for its exact number |
 | Added per month | Files per month of their modification date — the closest thing to a "date added" the files carry. A tag edit makes a file count as recent |
 | Most played | The 25 most-played tracks and how many were never played, once you've loaded your DJ history in the [History panel](#play-history) |
 
