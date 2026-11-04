@@ -2830,6 +2830,18 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
         <translation>Reihenfolge des Camelot-Rads. {count} Track(s) ohne erkannte Tonart ({percent}).</translation>
     </message>
     <message>
+        <source>BPM x Key</source>
+        <translation>BPM x Tonart</translation>
+    </message>
+    <message>
+        <source>No track has both a BPM and a recognised key.</source>
+        <translation>Kein Titel hat sowohl ein BPM als auch eine erkannte Tonart.</translation>
+    </message>
+    <message>
+        <source>Darker means more tracks mix well together at that tempo and key. {count} track(s) without both a usable BPM and a recognised key ({percent}).</source>
+        <translation>Dunkler bedeutet, dass sich bei diesem Tempo und dieser Tonart mehr Titel gut mischen lassen. {count} Titel ohne sowohl ein brauchbares BPM als auch eine erkannte Tonart ({percent}).</translation>
+    </message>
+    <message>
         <source>Added per month</source>
         <translation>Pro Monat hinzugefügt</translation>
     </message>

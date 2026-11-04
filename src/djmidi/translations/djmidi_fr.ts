@@ -2830,6 +2830,18 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
         <translation>Ordre de la roue Camelot. {count} morceau(x) sans tonalité reconnue ({percent}).</translation>
     </message>
     <message>
+        <source>BPM x Key</source>
+        <translation>BPM x Clef</translation>
+    </message>
+    <message>
+        <source>No track has both a BPM and a recognised key.</source>
+        <translation>Aucune piste n&apos;a à la fois un BPM et une clef reconnue.</translation>
+    </message>
+    <message>
+        <source>Darker means more tracks mix well together at that tempo and key. {count} track(s) without both a usable BPM and a recognised key ({percent}).</source>
+        <translation>Plus sombre signifie plus de pistes se mixent bien ensemble à ce tempo et cette clef. {count} piste(s) sans à la fois un BPM utilisable et une clef reconnue ({percent}).</translation>
+    </message>
+    <message>
         <source>Added per month</source>
         <translation>Ajouts par mois</translation>
     </message>
