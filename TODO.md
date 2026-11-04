@@ -139,6 +139,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **"What's new" release notes dialog** (`v0.48.185-whats-new`, issue #409) — the silent background update
+  check now shows a `WhatsNewDialog` (GitHub's own release notes, rendered as Markdown) the first time a given
+  version is detected, instead of only the status-bar link; a manual `Help → Check for Updates…` keeps its
+  existing dialog unchanged. `ReleaseInfo` gained a `body` field; `QSettings` `updates/last_announced_version`
+  keeps it to once per version. Seventh of the overnight brainstorm batch (issues #403–#410).
 - [x] **Export/import MIDI macros** (`v0.48.184-macro-sharing`, issue #408) — `Export…`/`Import…` in Manage Macros
   share the whole macro list as one versioned bundle file (`MACRO_BUNDLE_SCHEMA` = `djmidi-macros/1`). A name
   collision on import asks once whether to replace or keep both (the imported one renamed `"(2)"`, `"(3)"`...) —
