@@ -29,6 +29,7 @@ from PySide6.QtWidgets import (
     QComboBox,
     QDialog,
     QDialogButtonBox,
+    QFileDialog,
     QFormLayout,
     QHBoxLayout,
     QHeaderView,
@@ -37,6 +38,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QLineEdit,
     QListWidget,
+    QMessageBox,
     QPushButton,
     QSpinBox,
     QTabBar,
@@ -46,6 +48,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from djmidi import user_paths
 from djmidi.controller_sync import ControllerSyncSet, move_message
 from djmidi.gui.help_button import help_button
 from djmidi.gui.help_texts import MIDI_MACROS
@@ -58,15 +61,19 @@ from djmidi.midi_macros import (
     MAX_TRIGGER_LENGTH,
     MIN_TRIGGER_GAP_MS,
     WAIT_TYPES,
+    MacroBundleError,
     MacroStep,
     MacroTrigger,
     MidiMacro,
     PortOpener,
+    merge_imported_macros,
+    read_macro_bundle,
     sequence_label,
     step_from_event,
     step_type,
     steps_from_rows,
     validate_macros,
+    write_macro_bundle,
 )
 
 if TYPE_CHECKING:
@@ -135,9 +142,19 @@ class MacroManagerDialog(QDialog):
         list_buttons = QHBoxLayout()
         list_buttons.addWidget(self.new_button)
         list_buttons.addWidget(self.delete_macro_button)
+        self.export_button = QPushButton(self.tr("Export…"))
+        self.export_button.setToolTip(self.tr("Saves every macro above to a file another user can import."))
+        self.export_button.clicked.connect(self._on_export_clicked)
+        self.import_button = QPushButton(self.tr("Import…"))
+        self.import_button.setToolTip(self.tr("Adds the macros from a file someone else exported."))
+        self.import_button.clicked.connect(self._on_import_clicked)
+        share_buttons = QHBoxLayout()
+        share_buttons.addWidget(self.export_button)
+        share_buttons.addWidget(self.import_button)
         left = QVBoxLayout()
         left.addWidget(self.macro_list, 1)
         left.addLayout(list_buttons)
+        left.addLayout(share_buttons)
 
         # Right: the selected macro.
         self.name_edit = QLineEdit()
@@ -456,6 +473,67 @@ class MacroManagerDialog(QDialog):
             self._on_macro_selected(next_row)
         else:
             self._show(None)
+
+    # --- sharing (issue #408) --------------------------------------------------
+
+    def _on_export_clicked(self) -> None:
+        if not self._commit():
+            return
+        if not self._macros:
+            self.status.setText(self.tr("Nothing to export yet."))
+            return
+        default = str(user_paths.subfolder(user_paths.EXPORTS) / "macros.json")
+        path, _ = QFileDialog.getSaveFileName(self, self.tr("Export macros"), default, self.tr("JSON files (*.json)"))
+        if not path:
+            return
+        try:
+            write_macro_bundle(path, self._macros)
+        except OSError as exc:
+            QMessageBox.warning(
+                self, self.tr("Export macros"), self.tr("Could not write {path}:").format(path=path) + f"\n{exc}"
+            )
+            return
+        self.status.setText(self.tr("Exported {count} macro(s) to {path}.").format(count=len(self._macros), path=path))
+
+    def _on_import_clicked(self) -> None:
+        default = str(user_paths.subfolder(user_paths.EXPORTS))
+        path, _ = QFileDialog.getOpenFileName(self, self.tr("Import macros"), default, self.tr("JSON files (*.json)"))
+        if not path:
+            return
+        try:
+            imported = read_macro_bundle(path)
+        except (OSError, MacroBundleError) as exc:
+            QMessageBox.warning(self, self.tr("Import macros"), self.tr("Could not read {path}:").format(path=path) + f"\n{exc}")
+            return
+        existing_names = {macro.name.casefold() for macro in self._macros}
+        colliding = sum(1 for macro in imported if macro.name.casefold() in existing_names)
+        overwrite = False
+        if colliding:
+            choice = QMessageBox.question(
+                self,
+                self.tr("Import macros"),
+                self.tr(
+                    "{count} of the {total} imported macro(s) share a name with one you already have. "
+                    "Replace them, or keep both (the imported one renamed)?"
+                ).format(count=colliding, total=len(imported)),
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No | QMessageBox.StandardButton.Cancel,
+                QMessageBox.StandardButton.No,
+            )
+            if choice == QMessageBox.StandardButton.Cancel:
+                return
+            overwrite = choice == QMessageBox.StandardButton.Yes
+        if not self._commit():
+            return
+        self._macros = merge_imported_macros(self._macros, imported, overwrite)
+        self.macro_list.blockSignals(True)
+        self.macro_list.clear()
+        for macro in self._macros:
+            self.macro_list.addItem(macro.name)
+        self.macro_list.blockSignals(False)
+        self._current = -1
+        if self._macros:
+            self.macro_list.setCurrentRow(0)
+        self.status.setText(self.tr("Imported {count} macro(s).").format(count=len(imported)))
 
     # --- steps ----------------------------------------------------------------
 

@@ -3244,6 +3244,22 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
         <translation>Supprimer</translation>
     </message>
     <message>
+        <source>Export…</source>
+        <translation>Exporter…</translation>
+    </message>
+    <message>
+        <source>Saves every macro above to a file another user can import.</source>
+        <translation>Enregistre toutes les macros ci-dessus dans un fichier qu&apos;un autre utilisateur peut importer.</translation>
+    </message>
+    <message>
+        <source>Import…</source>
+        <translation>Importer…</translation>
+    </message>
+    <message>
+        <source>Adds the macros from a file someone else exported.</source>
+        <translation>Ajoute les macros d&apos;un fichier exporté par quelqu&apos;un d&apos;autre.</translation>
+    </message>
+    <message>
         <source>Output port, or a controller name: matched against the connected ports like ⟳ Sync does</source>
         <translation>Port de sortie, ou nom de contrôleur : comparé aux ports branchés comme le fait ⟳ Synchro</translation>
     </message>
@@ -3370,6 +3386,42 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
     <message>
         <source>Macro {number}</source>
         <translation>Macro {number}</translation>
+    </message>
+    <message>
+        <source>Nothing to export yet.</source>
+        <translation>Rien à exporter pour l&apos;instant.</translation>
+    </message>
+    <message>
+        <source>Export macros</source>
+        <translation>Exporter les macros</translation>
+    </message>
+    <message>
+        <source>JSON files (*.json)</source>
+        <translation>Fichiers JSON (*.json)</translation>
+    </message>
+    <message>
+        <source>Could not write {path}:</source>
+        <translation>Impossible d&apos;écrire {path} :</translation>
+    </message>
+    <message>
+        <source>Exported {count} macro(s) to {path}.</source>
+        <translation>{count} macro(s) exportée(s) vers {path}.</translation>
+    </message>
+    <message>
+        <source>Import macros</source>
+        <translation>Importer des macros</translation>
+    </message>
+    <message>
+        <source>Could not read {path}:</source>
+        <translation>Impossible de lire {path} :</translation>
+    </message>
+    <message>
+        <source>{count} of the {total} imported macro(s) share a name with one you already have. Replace them, or keep both (the imported one renamed)?</source>
+        <translation>{count} des {total} macro(s) importée(s) partagent un nom avec une macro que vous avez déjà. Les remplacer, ou garder les deux (l&apos;importée renommée) ?</translation>
+    </message>
+    <message>
+        <source>Imported {count} macro(s).</source>
+        <translation>{count} macro(s) importée(s).</translation>
     </message>
     <message>
         <source>{label} ({count} msg)</source>

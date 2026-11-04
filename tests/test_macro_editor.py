@@ -294,6 +294,123 @@ def test_dialog_reorders_appends_sync_set_and_tests():
     ]
 
 
+# --- sharing: export/import (issue #408) -----------------------------------
+
+
+def test_export_writes_every_macro_to_the_chosen_file(tmp_path, monkeypatch):
+    import djmidi.gui.macro_editor as macro_editor_module
+
+    first, second = _macro("Loop"), _macro("FX on", shortcut="")
+    dialog = MacroManagerDialog([first, second], [PORT])
+    path = tmp_path / "shared.json"
+    monkeypatch.setattr(macro_editor_module.QFileDialog, "getSaveFileName", lambda *a, **k: (str(path), ""))
+
+    dialog._on_export_clicked()
+
+    assert midi_macros.read_macro_bundle(path) == [first, second]
+    assert "Exported 2 macro(s)" in dialog.status.text()
+
+
+def test_export_with_nothing_to_export_says_so(tmp_path, monkeypatch):
+    import djmidi.gui.macro_editor as macro_editor_module
+
+    dialog = MacroManagerDialog([], [PORT])
+    monkeypatch.setattr(
+        macro_editor_module.QFileDialog, "getSaveFileName", lambda *a, **k: pytest.fail("no dialog expected")
+    )
+    dialog._on_export_clicked()
+    assert "Nothing to export" in dialog.status.text()
+
+
+def test_import_without_collisions_adds_the_macros_directly(tmp_path, monkeypatch):
+    import djmidi.gui.macro_editor as macro_editor_module
+
+    path = tmp_path / "shared.json"
+    midi_macros.write_macro_bundle(path, [_macro("New one", shortcut="")])
+    dialog = MacroManagerDialog([_macro("Loop")], [PORT])
+    monkeypatch.setattr(macro_editor_module.QFileDialog, "getOpenFileName", lambda *a, **k: (str(path), ""))
+    monkeypatch.setattr(
+        macro_editor_module.QMessageBox, "question", lambda *a, **k: pytest.fail("no collision to ask about")
+    )
+
+    dialog._on_import_clicked()
+
+    assert [dialog.macro_list.item(i).text() for i in range(dialog.macro_list.count())] == ["Loop", "New one"]
+    assert "Imported 1 macro(s)" in dialog.status.text()
+
+
+def test_import_with_a_collision_renames_when_the_user_declines_overwrite(tmp_path, monkeypatch):
+    import djmidi.gui.macro_editor as macro_editor_module
+
+    path = tmp_path / "shared.json"
+    midi_macros.write_macro_bundle(path, [_macro("Loop", shortcut="")])
+    dialog = MacroManagerDialog([_macro("Loop")], [PORT])
+    monkeypatch.setattr(macro_editor_module.QFileDialog, "getOpenFileName", lambda *a, **k: (str(path), ""))
+    monkeypatch.setattr(
+        macro_editor_module.QMessageBox, "question", lambda *a, **k: macro_editor_module.QMessageBox.StandardButton.No
+    )
+
+    dialog._on_import_clicked()
+
+    names = [dialog.macro_list.item(i).text() for i in range(dialog.macro_list.count())]
+    assert names == ["Loop", "Loop (2)"]
+    dialog.accept()
+    assert dialog.edited_macros()[0].shortcut == "Ctrl+Shift+1"  # the original, untouched
+
+
+def test_import_with_a_collision_overwrites_when_the_user_accepts(tmp_path, monkeypatch):
+    import djmidi.gui.macro_editor as macro_editor_module
+
+    path = tmp_path / "shared.json"
+    midi_macros.write_macro_bundle(path, [_macro("Loop", shortcut="")])
+    dialog = MacroManagerDialog([_macro("Loop")], [PORT])
+    monkeypatch.setattr(macro_editor_module.QFileDialog, "getOpenFileName", lambda *a, **k: (str(path), ""))
+    monkeypatch.setattr(
+        macro_editor_module.QMessageBox, "question", lambda *a, **k: macro_editor_module.QMessageBox.StandardButton.Yes
+    )
+
+    dialog._on_import_clicked()
+
+    names = [dialog.macro_list.item(i).text() for i in range(dialog.macro_list.count())]
+    assert names == ["Loop"]
+    dialog.accept()
+    assert dialog.edited_macros()[0].shortcut == ""  # replaced by the imported one
+
+
+def test_import_cancelled_at_the_collision_prompt_changes_nothing(tmp_path, monkeypatch):
+    import djmidi.gui.macro_editor as macro_editor_module
+
+    path = tmp_path / "shared.json"
+    midi_macros.write_macro_bundle(path, [_macro("Loop", shortcut="")])
+    dialog = MacroManagerDialog([_macro("Loop")], [PORT])
+    monkeypatch.setattr(macro_editor_module.QFileDialog, "getOpenFileName", lambda *a, **k: (str(path), ""))
+    monkeypatch.setattr(
+        macro_editor_module.QMessageBox,
+        "question",
+        lambda *a, **k: macro_editor_module.QMessageBox.StandardButton.Cancel,
+    )
+
+    dialog._on_import_clicked()
+
+    assert [dialog.macro_list.item(i).text() for i in range(dialog.macro_list.count())] == ["Loop"]
+
+
+def test_import_of_a_broken_file_warns_instead_of_raising(tmp_path, monkeypatch):
+    import djmidi.gui.macro_editor as macro_editor_module
+
+    path = tmp_path / "broken.json"
+    path.write_text("not json")
+    dialog = MacroManagerDialog([_macro("Loop")], [PORT])
+    monkeypatch.setattr(macro_editor_module.QFileDialog, "getOpenFileName", lambda *a, **k: (str(path), ""))
+    warnings = []
+    monkeypatch.setattr(macro_editor_module.QMessageBox, "warning", lambda *a: warnings.append(a))
+
+    dialog._on_import_clicked()
+
+    assert warnings
+    assert [dialog.macro_list.item(i).text() for i in range(dialog.macro_list.count())] == ["Loop"]
+
+
 @pytest.mark.parametrize("close", ["accept", "reject", "close"])
 def test_closing_the_dialog_stops_its_test_player(close):
     """Issue #314: a Test run waiting on a delay releases its port when the
