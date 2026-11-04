@@ -52,7 +52,10 @@ works.
 Above the monitor, Stage Mode shows the set you prepared in
 [Music Library → Set](music-library.md):
 
-- **Set 3/12** — where you are in it;
+- **Set 3/12 · 34:12 left** — where you are in it, and how much of the set
+  is left from here to the end (summed from each track's own audio file,
+  not a tag — a `+` after the time means at least one later track's
+  duration isn't known yet, so the real time left is at least that much);
 - the **current track** in large type, with its BPM, Camelot key and
   energy (when its tags have them);
 - **Next:** the following track, the same way;
@@ -64,8 +67,7 @@ Above the monitor, Stage Mode shows the set you prepared in
 **PageDown** / **PageUp** — what most presenter remotes send, so a remote in
 your pocket can turn the page. The app can't know which track your DJ
 software is playing, so moving on is your click. Leaving and reopening
-Stage Mode during the session resumes at the same track. There is no time
-left: track durations aren't in the tag cache.
+Stage Mode during the session resumes at the same track.
 
 **Stage notes** — a reminder you wrote for a track ("long intro", "mix out
 on the break") — appear in large yellow type under the current track, and

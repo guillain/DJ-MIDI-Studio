@@ -139,6 +139,14 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Time remaining on stage** (`v0.48.179-stage-time-remaining`, issue #403) — the Music Library Set panel and
+  Stage Mode's set view have a running clock now: each file's own audio stream length (not a tag) joins the
+  existing per-file metadata cache, and `set_prep.total_duration`/`format_duration` sum it from wherever you are in
+  the set to the end, shown as `"Set 3/12 · 34:12 left"` on stage and as the set's total in the Music Library
+  summary line. A `+` means at least one later track's duration isn't known yet (a lower bound, not the exact
+  total) rather than silently under-reporting. Resolves the "no durations in the tag cache" limitation the Stage
+  Mode docs used to call out explicitly. First of an 8-item brainstorm batch picked by the maintainer overnight
+  (issues #403–#410) — see the entries below for the rest.
 - [x] **Mixxx export checked against Mixxx's loader; help-label check fixed and extended to German**
   (`v0.48.178-checks`) — a test ports Mixxx 2.5's MIDI mapping loader (which silently turns an unparsable number
   into 0x00) and loads a generated mapping for every controller through it. The translated help-label check had

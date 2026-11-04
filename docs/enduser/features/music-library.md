@@ -461,6 +461,11 @@ every track yourself and only need the app to check the mixes:
 - The curve above the list shows the BPM (blue, left scale) and the energy
   (orange, 1–10, read from the `Energy` tag, e.g. Mixed In Key's) across the
   set.
+- The summary line under the list also totals the set's running time, read
+  from each file's own audio stream (no tag needed) — `+` means at least
+  one track's length isn't known yet, so it's a minimum, not the exact
+  total. The same running time, counted from wherever you are, is what
+  [Stage Mode](stage-mode.md) shows as time left.
 
 Each transition is checked with the same rules as the automatic playlists:
 
