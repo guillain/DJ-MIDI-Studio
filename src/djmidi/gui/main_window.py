@@ -163,6 +163,7 @@ from djmidi.gui.tree_model import (
     relabel_item,
 )
 from djmidi.gui.update_notice import UpdateChecker
+from djmidi.gui.whats_new_dialog import WhatsNewDialog
 from djmidi.gui.window_size import keep_tab_titles_whole
 from djmidi.integration_detection import (
     detect_controller_ports,
@@ -232,6 +233,7 @@ _STARTUP_UPDATE_CHECK_DELAY_MS = 3000
 _STARTUP_LIBRARY_SUGGEST_DELAY_MS = 4500
 _DISMISSED_LIBRARY_PROFILES_KEY = "library/dismissed_profiles"
 _LAST_UPDATE_CHECK_SETTINGS_KEY = "updates/last_check"
+_LAST_ANNOUNCED_VERSION_SETTINGS_KEY = "updates/last_announced_version"
 # How often output ports are listed to spot a controller being plugged in.
 _PLUG_IN_POLL_MS = 2000
 
@@ -654,6 +656,7 @@ class MainWindow(QMainWindow):
             QTimer.singleShot(_STARTUP_LIBRARY_SUGGEST_DELAY_MS, self._suggest_library_profiles)
         self._update_checker = UpdateChecker(self)
         self._update_checker.finished.connect(self._on_update_check_finished)
+        self.whats_new_dialog_factory = WhatsNewDialog
         self._update_label = QLabel()
         self._update_label.setTextFormat(Qt.TextFormat.RichText)
         self._update_label.setOpenExternalLinks(True)
@@ -1749,6 +1752,8 @@ class MainWindow(QMainWindow):
                 ),
                 15_000,
             )
+            if not manual:
+                self._maybe_show_whats_new(release)
         if not manual:
             return
         title = self.tr("Check for Updates")
@@ -1783,6 +1788,22 @@ class MainWindow(QMainWindow):
                 title,
                 self.tr("You're up to date (v{local}, latest release {tag}).").format(local=local, tag=release.tag),
             )
+
+    def _maybe_show_whats_new(self, release: ReleaseInfo) -> bool:
+        """Shows the full release notes once per newly detected version
+        (issue #409), from a silent background check -- a manual check
+        already asks its own question. False when there is nothing new to
+        announce (already shown for this version, or no settings to
+        remember it in, i.e. the test suite)."""
+        settings = self._layout_settings()
+        if settings is None:
+            return False
+        version = ".".join(map(str, release.version))
+        if settings.value(_LAST_ANNOUNCED_VERSION_SETTINGS_KEY, "") == version:
+            return False
+        settings.setValue(_LAST_ANNOUNCED_VERSION_SETTINGS_KEY, version)
+        self.whats_new_dialog_factory(release, self).exec()
+        return True
 
     def _on_record_toggled(self, recording: bool) -> None:
         if recording:

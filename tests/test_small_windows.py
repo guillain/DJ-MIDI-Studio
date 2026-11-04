@@ -266,6 +266,20 @@ def _generate_set():
     return GenerateSetDialog(tracks, (), 6.0)
 
 
+def _whats_new():
+    from djmidi.gui.whats_new_dialog import WhatsNewDialog
+    from djmidi.update_check import ReleaseInfo
+
+    release = ReleaseInfo(
+        tag="v9.1.0-future",
+        version=(9, 1, 0),
+        url="https://github.com/guillain/DJ-MIDI-Studio/releases/tag/v9.1.0-future",
+        name="DJ MIDI Studio v9.1.0",
+        body="## Added\n\n- A great new thing\n- Another one",
+    )
+    return WhatsNewDialog(release)
+
+
 def _smart_export():
     from djmidi.gui.smart_export_dialog import SmartExportDialog
     from djmidi.library.smart_playlist import SmartExportOptions
@@ -294,6 +308,7 @@ WINDOWS = {
     "set order": _set_order,
     "generate set": _generate_set,
     "smart export": _smart_export,
+    "whats new": _whats_new,
 }
 
 

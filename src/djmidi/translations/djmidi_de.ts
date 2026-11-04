@@ -8414,6 +8414,25 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     </message>
 </context>
 <context>
+    <name>WhatsNewDialog</name>
+    <message>
+        <source>What&apos;s new in v{version}</source>
+        <translation>Was ist neu in v{version}</translation>
+    </message>
+    <message>
+        <source>DJ MIDI Studio v{version}</source>
+        <translation>DJ MIDI Studio v{version}</translation>
+    </message>
+    <message>
+        <source>No release notes were provided for this version.</source>
+        <translation>Für diese Version wurden keine Versionshinweise bereitgestellt.</translation>
+    </message>
+    <message>
+        <source>Open Release Page</source>
+        <translation>Release-Seite öffnen</translation>
+    </message>
+</context>
+<context>
     <name>_ControllersPage</name>
     <message>
         <source>Your controllers</source>

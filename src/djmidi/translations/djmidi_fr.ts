@@ -8414,6 +8414,25 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     </message>
 </context>
 <context>
+    <name>WhatsNewDialog</name>
+    <message>
+        <source>What&apos;s new in v{version}</source>
+        <translation>Quoi de neuf dans la v{version}</translation>
+    </message>
+    <message>
+        <source>DJ MIDI Studio v{version}</source>
+        <translation>DJ MIDI Studio v{version}</translation>
+    </message>
+    <message>
+        <source>No release notes were provided for this version.</source>
+        <translation>Aucune note de version n&apos;a été fournie pour cette version.</translation>
+    </message>
+    <message>
+        <source>Open Release Page</source>
+        <translation>Ouvrir la page de la version</translation>
+    </message>
+</context>
+<context>
     <name>_ControllersPage</name>
     <message>
         <source>Your controllers</source>
