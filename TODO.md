@@ -139,6 +139,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Auto-organize library files into category folders** (`v0.48.182-organize-into-folders`, issue #406) — a
+  sibling to the template-based renamer (#260): `Organize into folders…` moves each selected track into
+  `<its own library root>/Family/Name`, following its confirmed category (never a fuzzy one), filename unchanged.
+  Reuses the renamer's guardrails (`in_protected_folder`, `is_within_roots`) and its `rename_track_paths` DB update
+  directly; `gui.commands.RenameFilesCommand` was generalized (an optional `summary` override) rather than
+  duplicated into a second command class. Fourth of the overnight brainstorm batch (issues #403–#410).
 - [x] **Gig journal** (`v0.48.181-gig-journal`, issue #405) — a free-text note per gig, not tied to any track,
   below the Music Library History panel's play history: `library/gig_journal.py` (a plain `gig_journal` table in
   `LibraryDB`, newest-first, blank notes refused) and a list + text box + `Add journal entry`/`Delete entry` in the

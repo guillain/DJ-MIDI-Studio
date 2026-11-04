@@ -207,6 +207,26 @@ this app follow the new names.
 > (the default), the app asks where to save a CSV of every renamed file's
 > old and new path once the renames are done.
 
+## Organize into category folders
+
+For a collection that grew over years without any real folder structure,
+`Organize into folders…` moves selected tracks into
+`<their own library root>/Family/Name`, following the confirmed category
+the table already shows — the filename itself never changes (combine
+with `Rename files…` for both at once). Only tracks with a **confirmed**
+category move; a fuzzy suggestion is never acted on — confirm it first.
+
+1. Select the tracks and click `Organize into folders…`.
+2. Check the preview: every selected file, its target path, and a status
+   (`Move`, `Unchanged`, `Skipped` — no confirmed category yet, `Conflict`
+   — something's already at the target, or `Refused` — outside the file's
+   own library root or inside a DJ software folder).
+3. Click `Move N file(s)`.
+
+The whole batch is one `Undo` step, which moves the files right back.
+Like renaming, Serato, Traktor and Rekordbox will show moved files as
+missing until you relink them.
+
 ## Estimate missing BPM and keys
 
 Tracks with no BPM or key tag can't be filtered by tempo or matched on the
