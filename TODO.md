@@ -139,6 +139,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Mini-waveform in the audio preview bar** (`v0.48.183-waveform`, issue #407) — a precomputed amplitude
+  envelope above the preview bar's transport controls, click/drag to seek. Only appears with the optional
+  `analysis` extra (librosa) installed, like BPM/key estimation; computed off the main thread
+  (`gui/waveform_loader.WaveformLoader`, mirroring the update checker's `QThreadPool` pattern) and cached by the
+  file's mtime in a new `waveform_cache` table. Fifth of the overnight brainstorm batch (issues #403–#410).
 - [x] **Auto-organize library files into category folders** (`v0.48.182-organize-into-folders`, issue #406) — a
   sibling to the template-based renamer (#260): `Organize into folders…` moves each selected track into
   `<its own library root>/Family/Name`, following its confirmed category (never a fuzzy one), filename unchanged.

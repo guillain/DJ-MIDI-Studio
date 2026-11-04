@@ -105,6 +105,11 @@ The preview bar under the table plays the selected track, so you can check
 a category or a key by ear without opening your DJ software:
 
 - `▶ Play` / `❚❚ Pause` and `■ Stop` (stop rewinds to the start).
+- A waveform above the controls shows the track's structure at a glance
+  (intro, drop, outro); click or drag it to seek, same as the slider
+  below it. It only appears with the optional `analysis` extra installed
+  (`uv sync --extra analysis`) — the same one BPM/key estimation uses —
+  and is computed once per track, in the background, then remembered.
 - Drag the slider to move through the track; the label shows position and
   length.
 - While a track plays, selecting another one switches to it straight away —
