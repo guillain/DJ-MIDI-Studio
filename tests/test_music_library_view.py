@@ -21,7 +21,7 @@ from djmidi.gui.music_library_view import (
     MusicLibraryView,
 )
 from djmidi.gui.set_preparation import SET_TRACKS_MIME, decode_paths
-from djmidi.library import set_prep, workspace
+from djmidi.library import organize, set_prep, workspace
 from djmidi.library.db import TrackRecord
 from djmidi.library.metadata import read_metadata, write_metadata
 from djmidi.library.relink import (
@@ -1245,6 +1245,70 @@ def test_gig_journal_survives_closing_and_reopening_the_tab(tmp_path):
     finally:
         reopened.close_db()
         reopened.deleteLater()
+
+
+def test_organize_files_button_enabled_only_with_a_confirmed_category(library):
+    view, _music, _ = library
+    by_title = _paths_by_title(view)
+    view.select_path(by_title["Alpha"])  # "Tek%%Tribe", a confirmed match
+    assert view.organize_files_button.isEnabled()
+    view.table.clearSelection()
+    view.select_path(by_title["Charlie"])  # only a fuzzy suggestion
+    assert not view.organize_files_button.isEnabled()
+
+
+def test_organize_files_moves_a_misfiled_track_and_undo_restores(tmp_path):
+    music = tmp_path / "music"
+    # Folder hint only reads the first two segments, so this still resolves
+    # "Tek%%Tribe" even though the file itself sits one level too deep.
+    misfiled = _mp3(music / "Tek" / "Tribe" / "Old" / "d.mp3", title="Delta", artist="W", bpm="140", key="G")
+    view = mlv.MusicLibraryView(db_path=":memory:")
+    view.add_root(music)
+    view.start_scan()
+    view.run_pending_job()
+    try:
+        row = next(r for r in view.table_model.rows() if r.title == "Delta")
+        assert row.category == "Tek%%Tribe"
+        view.select_path(row.path)
+        playlist = view.db.create_playlist("Friday", [str(misfiled)])
+
+        plan = organize.plan_from_rows(view.db, [row])
+        target = str(music / "Tek" / "Tribe" / "d.mp3")
+        assert plan.moves == [(str(misfiled), target)]
+
+        moved = view.organize_files(plan.moves)
+        assert moved == [(str(misfiled), target)]
+        assert Path(target).is_file() and not misfiled.exists()
+        assert "Moved 1 file(s)" in view.status_label.text()
+        assert view.db.playlist_paths(playlist) == [target]
+        assert [r.path for r in view.table_model.rows()] == [target]
+
+        view.undo_stack.undo()
+        assert misfiled.is_file() and not Path(target).exists()
+        assert view.db.playlist_paths(playlist) == [str(misfiled)]
+    finally:
+        view.close_db()
+        view.deleteLater()
+
+
+def test_organize_files_dialog_previews_before_accepting(tmp_path):
+    from djmidi.gui.organize_files_dialog import OrganizeFilesDialog
+
+    music = tmp_path / "music"
+    misfiled = _mp3(music / "Tek" / "Tribe" / "Old" / "d.mp3", title="Delta", artist="W", bpm="140", key="G")
+    view = mlv.MusicLibraryView(db_path=":memory:")
+    view.add_root(music)
+    view.start_scan()
+    view.run_pending_job()
+    try:
+        row = next(r for r in view.table_model.rows() if r.title == "Delta")
+        dialog = OrganizeFilesDialog(lambda: organize.plan_from_rows(view.db, [row]))
+        assert dialog.moves() == [(str(misfiled), str(music / "Tek" / "Tribe" / "d.mp3"))]
+        assert dialog.buttons.button(QDialogButtonBox.StandardButton.Ok).isEnabled()
+        dialog.close()
+    finally:
+        view.close_db()
+        view.deleteLater()
 
 
 def test_history_without_default_folders_explains(library, monkeypatch):

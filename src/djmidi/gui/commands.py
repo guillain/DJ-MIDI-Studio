@@ -388,14 +388,19 @@ class WriteTracksMetadataCommand(QUndoCommand):
 
 
 class RenameFilesCommand(QUndoCommand):
-    """Undoable rename of audio files from a tag template (Music Library
-    tab, issue #260). `apply(pairs)` renames ``(old, new)`` pairs and returns
-    a `library.rename.RenameResult`; undo calls it again with every pair it
-    actually renamed swapped back. A pair that fails (on redo or undo) is
-    recorded in `failures` instead of aborting the rest; if nothing at all
-    was renamed the command marks itself obsolete so `QUndoStack.push`
-    drops it. An optional `recorder(summary, pairs)` logs the pairs each
-    pass actually renamed in the persistent change history (issue #279)."""
+    """Undoable rename-or-move of audio files from one path to another
+    (Music Library tab: a tag template for "Rename files…", issue #260, or
+    a category folder for "Organize into folders…", issue #406 -- the apply
+    function is the only thing that differs). `apply(pairs)` moves
+    ``(old, new)`` pairs and returns an object with `.renamed`/`.failed`
+    (`library.rename.RenameResult` or `library.organize.OrganizeResult`);
+    undo calls it again with every pair it actually moved swapped back. A
+    pair that fails (on redo or undo) is recorded in `failures` instead of
+    aborting the rest; if nothing at all moved the command marks itself
+    obsolete so `QUndoStack.push` drops it. An optional
+    `recorder(summary, pairs)` logs the pairs each pass actually moved in
+    the persistent change history (issue #279); `summary` overrides the
+    default "Rename N file(s)" wording for a non-rename caller."""
 
     def __init__(
         self,
@@ -403,8 +408,9 @@ class RenameFilesCommand(QUndoCommand):
         apply: Callable[[list[tuple[str, str]]], object],
         on_applied: Callable[[list[tuple[str, str]]], None],
         recorder: RenameRecorder | None = None,
+        summary: str | None = None,
     ) -> None:
-        self.summary, text = _library_texts(f"Rename {len(pairs)} file(s)")
+        self.summary, text = _library_texts(summary or f"Rename {len(pairs)} file(s)")
         super().__init__(text)
         self._pairs = list(pairs)
         self._apply = apply

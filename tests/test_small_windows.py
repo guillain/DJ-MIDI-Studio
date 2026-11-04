@@ -248,6 +248,16 @@ def _set_order():
     return SetOrderDialog(tracks, 6.0)
 
 
+def _organize_files():
+    from djmidi.gui.organize_files_dialog import OrganizeFilesDialog
+    from djmidi.library.organize import OrganizeItem, OrganizePlan
+
+    items = tuple(
+        OrganizeItem(n, f"/music/misc/{n}.mp3", f"/music/Tek/Tribe/{n}.mp3", "move") for n in range(6)
+    )
+    return OrganizeFilesDialog(lambda: OrganizePlan(items))
+
+
 def _generate_set():
     from djmidi.gui.generate_set_dialog import GenerateSetDialog
     from djmidi.library.set_prep import SetTrack
@@ -271,6 +281,7 @@ WINDOWS = {
     "library statistics": _stats,
     "smart playlist": _smart_playlist,
     "rename files": _rename,
+    "organize files": _organize_files,
     "change history": _change_history,
     "command palette": _palette,
     "controller profile library": _profile_library,

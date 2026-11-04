@@ -591,6 +591,9 @@ def test_change_history_entries_show_french(french):
         "Annulation de n°4 : Annulation : Définir la pochette de a.mp3"
     )
     assert describe_summary("Move 2 duplicate(s) to the Trash") == "Mettre 2 doublon(s) à la corbeille"
+    assert describe_summary("Organize 3 file(s) into category folders") == (
+        "Organiser 3 fichier(s) dans des dossiers de catégorie"
+    )
     # Another writer's own text is shown as stored.
     assert describe_summary("Something else") == "Something else"
     tags = ChangeItem("/x/a.mp3", {"title": None}, {"title": "Intro"})

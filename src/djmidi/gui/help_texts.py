@@ -537,6 +537,24 @@ LIBRARY_RENAME: HelpEntry = (
     "music-library.md",
 )
 
+LIBRARY_ORGANIZE: HelpEntry = (
+    QT_TRANSLATE_NOOP("HelpTexts", "Organize into folders"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
+        "Moves each selected track into <i>&lt;its library root&gt;/Family/Name</i>, following the "
+        "confirmed category the table already shows it -- the filename itself never changes."
+        "<ul><li><b>Skipped</b>: no confirmed category yet (a fuzzy suggestion is never used; "
+        "confirm it first).</li>"
+        "<li><b>Conflict</b>: a file already exists at the target path (on disk, in the library, or "
+        "another selected track lands there too) -- that file is left as it is.</li>"
+        "<li><b>Refused</b>: the file is outside its own library root or inside a DJ software "
+        "folder (<i>_Serato_</i>, <i>PIONEER</i>, …).</li></ul>"
+        "<b>Undo</b> moves them back. Serato, Traktor and Rekordbox will show moved files as "
+        "missing until relinked.",
+    ),
+    "music-library.md",
+)
+
 LIBRARY_PREVIEW: HelpEntry = (
     QT_TRANSLATE_NOOP("HelpTexts", "Audio preview"),
     QT_TRANSLATE_NOOP(

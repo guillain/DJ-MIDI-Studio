@@ -107,6 +107,7 @@ from djmidi.gui.duplicates_dialog import DuplicatesDialog
 from djmidi.gui.health_report_dialog import HealthReportDialog
 from djmidi.gui.help_button import help_button, help_row
 from djmidi.gui.library_stats_dialog import LibraryStatsDialog
+from djmidi.gui.organize_files_dialog import OrganizeFilesDialog
 from djmidi.gui.rename_files_dialog import RenameFilesDialog
 from djmidi.gui.set_preparation import (
     SET_TRACKS_MIME,
@@ -123,6 +124,7 @@ from djmidi.library import (
     gig_journal,
     health,
     history,
+    organize,
     relink,
     rename,
     set_prep,
@@ -1455,6 +1457,15 @@ class MusicLibraryView(QWidget):
         )
         self.rename_files_button.clicked.connect(self._on_rename_files_clicked)
         box.addWidget(self.rename_files_button)
+        self.organize_files_button = QPushButton(self.tr("Organize into folders…"))
+        self.organize_files_button.setToolTip(
+            self.tr(
+                "Moves the selected files into <root>/Family/Name, following their confirmed "
+                "category, after a preview, as one undoable step. DJ software will need relinking."
+            )
+        )
+        self.organize_files_button.clicked.connect(self._on_organize_files_clicked)
+        box.addWidget(self.organize_files_button)
         self.table.selectionModel().selectionChanged.connect(self._update_selection_actions)
 
         self.clean_button = QPushButton(self.tr("Clean noise frames…"))
@@ -2532,6 +2543,7 @@ class MusicLibraryView(QWidget):
         writable = self._writable_selection()
         self.write_selection_button.setEnabled(bool(writable))
         self.rename_files_button.setEnabled(bool(writable))
+        self.organize_files_button.setEnabled(any(row.category for row in writable))
         self.apply_analysis_button.setEnabled(any(row.has_analysis_suggestion for row in writable))
 
     @staticmethod
@@ -2712,7 +2724,9 @@ class MusicLibraryView(QWidget):
             )
         return command.renamed
 
-    def _on_files_renamed(self, pairs: list[tuple[str, str]]) -> None:
+    def _after_paths_moved(self, pairs: list[tuple[str, str]]) -> None:
+        """Common bookkeeping after a rename or an organize move: re-select
+        the same tracks (and the current row) under their new path."""
         moved = dict(pairs)
         selected = [moved.get(row.path, row.path) for row in self.selected_rows()]
         if self._current_path is not None:
@@ -2720,10 +2734,22 @@ class MusicLibraryView(QWidget):
         self._reload_rows()
         self._reload_playlists()
         self.select_paths(selected)
+
+    def _on_files_renamed(self, pairs: list[tuple[str, str]]) -> None:
+        self._after_paths_moved(pairs)
         self.status_label.setText(
             self.tr("Renamed {count} file(s). Serato, Traktor and Rekordbox need relinking to find them.").format(
                 count=len(pairs)
             )
+        )
+
+    def _on_files_organized(self, pairs: list[tuple[str, str]]) -> None:
+        self._after_paths_moved(pairs)
+        self.status_label.setText(
+            self.tr(
+                "Moved {count} file(s) into their category folders. Serato, Traktor and Rekordbox need "
+                "relinking to find them."
+            ).format(count=len(pairs))
         )
 
     def _save_rename_csv(self, pairs: list[tuple[str, str]]) -> None:
@@ -2743,6 +2769,44 @@ class MusicLibraryView(QWidget):
         self.status_label.setText(
             self.tr("Renamed {count} file(s); old → new paths saved to {path}").format(count=count, path=path)
         )
+
+    # --- organize into category folders (issue #406) --------------------
+
+    def _on_organize_files_clicked(self) -> None:
+        rows = self._writable_selection()
+        if not rows:
+            return
+        dialog = OrganizeFilesDialog(lambda: organize.plan_from_rows(self.db, rows), self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+        self.organize_files(dialog.moves())
+
+    def organize_files(self, pairs: list[tuple[str, str]]) -> list[tuple[str, str]]:
+        """Moves ``(old, new)`` files into their category folders as one
+        undo step (no confirmation -- the dialog previewed them) and
+        returns the pairs actually moved."""
+        if not pairs:
+            return []
+        command = RenameFilesCommand(
+            pairs,
+            lambda batch: organize.apply_organize(self.db, batch),
+            self._on_files_organized,
+            recorder=self._record_renames,
+            summary=f"Organize {len(pairs)} file(s) into category folders",
+        )
+        self.undo_stack.push(command)
+        if command.failures:
+            _LOGGER.warning("Organize failed for %d file(s): %s", len(command.failures), command.failures)
+            QMessageBox.warning(
+                self,
+                self.tr("Some files were not moved"),
+                self.tr("{moved} file(s) moved, {failed} left as they were:").format(
+                    moved=len(command.renamed), failed=len(command.failures)
+                )
+                + "\n\n"
+                + _bullet_list(f"{Path(path).name}: {reason}" for path, reason in command.failures),
+            )
+        return command.renamed
 
     def _tag_write_progress(self, label: str, total: int, cancellable: bool = True) -> Callable[[int, int], bool]:
         """A progress window for one pass of a bulk tag write (write, undo or

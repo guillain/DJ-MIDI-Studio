@@ -36,6 +36,7 @@ SOURCES=(
   src/djmidi/gui/music_library_view.py
   src/djmidi/gui/library_stats_dialog.py
   src/djmidi/gui/rename_files_dialog.py
+  src/djmidi/gui/organize_files_dialog.py
   src/djmidi/gui/change_history_dialog.py
   src/djmidi/gui/set_preparation.py
   src/djmidi/gui/set_order_dialog.py

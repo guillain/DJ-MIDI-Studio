@@ -148,6 +148,10 @@
         <translation>{count} Datei(en) umbenennen</translation>
     </message>
     <message>
+        <source>Organize {count} file(s) into category folders</source>
+        <translation>{count} Datei(en) in Kategorieordner einordnen</translation>
+    </message>
+    <message>
         <source>Move {count} duplicate(s) to the Trash</source>
         <translation>{count} Duplikat(e) in den Papierkorb verschieben</translation>
     </message>
@@ -2286,6 +2290,14 @@ Trotzdem neu zuweisen? Beide lösen auf demselben Bedienelement aus.</translatio
     <message>
         <source>Type a template such as &lt;i&gt;{artist} - {title}&lt;/i&gt;; fields are {artist}, {title}, {album}, {genre}, {bpm}, {key}, {camelot} and {filename} (the current name). The preview shows each selected file&apos;s new name before anything changes.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Skipped&lt;/b&gt;: a field of the template is not tagged.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Conflict&lt;/b&gt;: the new name is already taken (on disk, in the library, or by another selected track) -- that file is left as it is.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Refused&lt;/b&gt;: the file is outside your music folders or inside a DJ software folder (&lt;i&gt;_Serato_&lt;/i&gt;, &lt;i&gt;PIONEER&lt;/i&gt;, …).&lt;/li&gt;&lt;/ul&gt;Files stay in their folder; characters a file name can&apos;t hold become &lt;i&gt;_&lt;/i&gt;. &lt;b&gt;Undo&lt;/b&gt; renames them back. Serato, Traktor and Rekordbox will show renamed files as missing until relinked: keep the old → new CSV offered after renaming.</source>
         <translation>Geben Sie eine Vorlage wie &lt;i&gt;{artist} - {title}&lt;/i&gt; ein; Felder sind {artist}, {title}, {album}, {genre}, {bpm}, {key}, {camelot} und {filename} (der aktuelle Name). Die Vorschau zeigt den neuen Namen jeder ausgewählten Datei, bevor sich etwas ändert.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Übersprungen&lt;/b&gt;: Ein Feld der Vorlage ist nicht getaggt.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Konflikt&lt;/b&gt;: Der neue Name ist bereits vergeben (auf der Festplatte, in der Bibliothek oder durch einen anderen ausgewählten Track) -- diese Datei bleibt, wie sie ist.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Abgelehnt&lt;/b&gt;: Die Datei liegt außerhalb Ihrer Musikordner oder in einem Ordner einer DJ-Software (&lt;i&gt;_Serato_&lt;/i&gt;, &lt;i&gt;PIONEER&lt;/i&gt;, …).&lt;/li&gt;&lt;/ul&gt;Dateien bleiben in ihrem Ordner; Zeichen, die ein Dateiname nicht enthalten kann, werden zu &lt;i&gt;_&lt;/i&gt;. &lt;b&gt;Rückgängig&lt;/b&gt; benennt sie zurück. Serato, Traktor und Rekordbox zeigen umbenannte Dateien als fehlend an, bis sie neu verknüpft werden: Bewahren Sie die nach dem Umbenennen angebotene CSV alt → neu auf.</translation>
+    </message>
+    <message>
+        <source>Organize into folders</source>
+        <translation>In Ordner einordnen</translation>
+    </message>
+    <message>
+        <source>Moves each selected track into &lt;i&gt;&amp;lt;its library root&amp;gt;/Family/Name&lt;/i&gt;, following the confirmed category the table already shows it -- the filename itself never changes.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Skipped&lt;/b&gt;: no confirmed category yet (a fuzzy suggestion is never used; confirm it first).&lt;/li&gt;&lt;li&gt;&lt;b&gt;Conflict&lt;/b&gt;: a file already exists at the target path (on disk, in the library, or another selected track lands there too) -- that file is left as it is.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Refused&lt;/b&gt;: the file is outside its own library root or inside a DJ software folder (&lt;i&gt;_Serato_&lt;/i&gt;, &lt;i&gt;PIONEER&lt;/i&gt;, …).&lt;/li&gt;&lt;/ul&gt;&lt;b&gt;Undo&lt;/b&gt; moves them back. Serato, Traktor and Rekordbox will show moved files as missing until relinked.</source>
+        <translation>Verschiebt jeden ausgewählten Titel nach &lt;i&gt;&amp;lt;seine Bibliotheksbasis&amp;gt;/Familie/Name&lt;/i&gt;, gemäß der bestätigten Kategorie, die die Tabelle bereits zeigt -- der Dateiname selbst ändert sich nie.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Übersprungen&lt;/b&gt;: noch keine bestätigte Kategorie (ein unsicherer Vorschlag wird nie verwendet; bestätigen Sie ihn zuerst).&lt;/li&gt;&lt;li&gt;&lt;b&gt;Konflikt&lt;/b&gt;: am Zielpfad existiert bereits eine Datei (auf der Festplatte, in der Bibliothek, oder ein anderer ausgewählter Titel landet dort auch) -- diese Datei bleibt, wie sie ist.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Abgelehnt&lt;/b&gt;: die Datei liegt außerhalb ihrer eigenen Bibliotheksbasis oder in einem Ordner einer DJ-Software (&lt;i&gt;_Serato_&lt;/i&gt;, &lt;i&gt;PIONEER&lt;/i&gt;, …).&lt;/li&gt;&lt;/ul&gt;&lt;b&gt;Rückgängig&lt;/b&gt; verschiebt sie zurück. Serato, Traktor und Rekordbox zeigen verschobene Dateien als fehlend an, bis sie neu verknüpft werden.</translation>
     </message>
     <message>
         <source>Audio preview</source>
@@ -5959,6 +5971,14 @@ Ausgewählte Zeilen in der Controller-Einrichtung: {selected}</translation>
         <translation>Benennt die ausgewählten Dateien anhand ihrer Tags (z. B. {artist} - {title}) in ihrem Ordner um, nach einer Vorschau, als ein rückgängig zu machender Schritt. Die DJ-Software muss neu verknüpft werden.</translation>
     </message>
     <message>
+        <source>Organize into folders…</source>
+        <translation>In Ordner einordnen…</translation>
+    </message>
+    <message>
+        <source>Moves the selected files into &lt;root&gt;/Family/Name, following their confirmed category, after a preview, as one undoable step. DJ software will need relinking.</source>
+        <translation>Verschiebt die ausgewählten Dateien nach &lt;Basis&gt;/Familie/Name, gemäß ihrer bestätigten Kategorie, nach einer Vorschau, als ein rückgängig zu machender Schritt. Die DJ-Software muss neu verknüpft werden.</translation>
+    </message>
+    <message>
         <source>Clean noise frames…</source>
         <translation>Störframes bereinigen…</translation>
     </message>
@@ -6483,6 +6503,10 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
         <translation>{count} Datei(en) umbenannt. Serato, Traktor und Rekordbox müssen neu verknüpft werden, um sie zu finden.</translation>
     </message>
     <message>
+        <source>Moved {count} file(s) into their category folders. Serato, Traktor and Rekordbox need relinking to find them.</source>
+        <translation>{count} Datei(en) in ihre Kategorieordner verschoben. Serato, Traktor und Rekordbox müssen neu verknüpft werden, um sie zu finden.</translation>
+    </message>
+    <message>
         <source>Save old → new paths</source>
         <translation>Alte → neue Pfade speichern</translation>
     </message>
@@ -6497,6 +6521,14 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     <message>
         <source>Renamed {count} file(s); old → new paths saved to {path}</source>
         <translation>{count} Datei(en) umbenannt; alte → neue Pfade in {path} gespeichert</translation>
+    </message>
+    <message>
+        <source>Some files were not moved</source>
+        <translation>Einige Dateien wurden nicht verschoben</translation>
+    </message>
+    <message>
+        <source>{moved} file(s) moved, {failed} left as they were:</source>
+        <translation>{moved} Datei(en) verschoben, {failed} unverändert gelassen:</translation>
     </message>
     <message>
         <source>Cancel</source>
@@ -6897,6 +6929,57 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     <message>
         <source>Not in the indexed folders: {path}</source>
         <translation>Nicht in den indizierten Ordnern: {path}</translation>
+    </message>
+</context>
+<context>
+    <name>OrganizeFilesDialog</name>
+    <message>
+        <source>Organize into folders</source>
+        <translation>In Ordner einordnen</translation>
+    </message>
+    <message>
+        <source>Move</source>
+        <translation>Verschieben</translation>
+    </message>
+    <message>
+        <source>Unchanged</source>
+        <translation>Unverändert</translation>
+    </message>
+    <message>
+        <source>Skipped</source>
+        <translation>Übersprungen</translation>
+    </message>
+    <message>
+        <source>Conflict</source>
+        <translation>Konflikt</translation>
+    </message>
+    <message>
+        <source>Refused</source>
+        <translation>Abgelehnt</translation>
+    </message>
+    <message>
+        <source>Moves each selected track into &lt;root&gt;/Family/Name, following its confirmed category. The filename itself doesn&apos;t change.</source>
+        <translation>Verschiebt jeden ausgewählten Titel nach &lt;Basis&gt;/Familie/Name, gemäß seiner bestätigten Kategorie. Der Dateiname selbst ändert sich nicht.</translation>
+    </message>
+    <message>
+        <source>Current path</source>
+        <translation>Aktueller Pfad</translation>
+    </message>
+    <message>
+        <source>New path</source>
+        <translation>Neuer Pfad</translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation>Status</translation>
+    </message>
+    <message>
+        <source>{count} file(s) will move</source>
+        <translation>{count} Datei(en) werden verschoben</translation>
+    </message>
+    <message>
+        <source>Move {count} file(s)</source>
+        <translation>{count} Datei(en) verschieben</translation>
     </message>
 </context>
 <context>
