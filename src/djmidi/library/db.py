@@ -132,6 +132,15 @@ CREATE TABLE IF NOT EXISTS change_items (
     after TEXT NOT NULL DEFAULT '{}',
     PRIMARY KEY (change_id, position)
 );
+
+-- A free-text note per gig/session (issue #405), browsable alongside the
+-- play history already read from Serato/Traktor. This app's own log only:
+-- never tied to a track, never written anywhere else.
+CREATE TABLE IF NOT EXISTS gig_journal (
+    id INTEGER PRIMARY KEY,
+    created_at REAL NOT NULL,
+    note TEXT NOT NULL
+);
 """
 
 _METADATA_COLUMNS = tuple(f.name for f in fields(TrackMetadata))
@@ -504,6 +513,29 @@ class LibraryDB:
 
     def track_notes(self) -> dict[int, str]:
         return dict(self._conn.execute("SELECT track_id, note FROM track_notes").fetchall())
+
+    # --- gig journal (issue #405) --------------------------------------
+
+    def add_journal_entry(self, note: str, created_at: float) -> int:
+        cur = self._conn.execute(
+            "INSERT INTO gig_journal (created_at, note) VALUES (?, ?)", (created_at, note)
+        )
+        self._conn.commit()
+        return int(cur.lastrowid)
+
+    def update_journal_entry(self, entry_id: int, note: str) -> None:
+        self._conn.execute("UPDATE gig_journal SET note = ? WHERE id = ?", (note, entry_id))
+        self._conn.commit()
+
+    def delete_journal_entry(self, entry_id: int) -> None:
+        self._conn.execute("DELETE FROM gig_journal WHERE id = ?", (entry_id,))
+        self._conn.commit()
+
+    def list_journal_entries(self) -> list[tuple[int, float, str]]:
+        """``(id, created_at, note)``, newest first."""
+        return self._conn.execute(
+            "SELECT id, created_at, note FROM gig_journal ORDER BY created_at DESC, id DESC"
+        ).fetchall()
 
     def analysis_suggestions(self) -> dict[int, tuple[float | None, str | None]]:
         """Track id -> (suggested BPM, suggested key), current estimates only

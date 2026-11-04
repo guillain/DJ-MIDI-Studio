@@ -77,6 +77,7 @@ from PySide6.QtWidgets import (
     QListWidget,
     QListWidgetItem,
     QMessageBox,
+    QPlainTextEdit,
     QProgressBar,
     QProgressDialog,
     QPushButton,
@@ -119,6 +120,7 @@ from djmidi.library import (
     change_log,
     discard,
     duplicates,
+    gig_journal,
     health,
     history,
     relink,
@@ -1617,6 +1619,25 @@ class MusicLibraryView(QWidget):
         self.history_tree.setHeaderLabels([self.tr("When"), self.tr("Track"), self.tr("Deck")])
         self.history_tree.itemDoubleClicked.connect(self._on_history_item_activated)
         box.addWidget(self.history_tree, 1)
+
+        box.addWidget(QLabel(self.tr("Gig journal")))
+        self.journal_list = QListWidget()
+        self.journal_list.setToolTip(self.tr("Double-click an entry to edit it."))
+        self.journal_list.itemDoubleClicked.connect(self._on_journal_entry_activated)
+        box.addWidget(self.journal_list, 1)
+        self.journal_text = QPlainTextEdit()
+        self.journal_text.setPlaceholderText(self.tr("What worked, what didn't, for next time…"))
+        self.journal_text.setMaximumHeight(80)
+        box.addWidget(self.journal_text)
+        journal_buttons = QHBoxLayout()
+        self.journal_save_button = QPushButton(self.tr("Add journal entry"))
+        self.journal_save_button.clicked.connect(self._on_journal_save_clicked)
+        self.journal_delete_button = QPushButton(self.tr("Delete entry"))
+        self.journal_delete_button.clicked.connect(self._on_journal_delete_clicked)
+        journal_buttons.addWidget(self.journal_save_button)
+        journal_buttons.addWidget(self.journal_delete_button)
+        box.addLayout(journal_buttons)
+        self._editing_journal_id: int | None = None
         return panel
 
     # --- database lifecycle --------------------------------------------
@@ -1704,6 +1725,7 @@ class MusicLibraryView(QWidget):
             self.roots_list.addItem(item)
         self._reload_rows()
         self._reload_playlists()
+        self._reload_journal()
 
     def _reload_rows(self) -> None:
         current = self._current_path
@@ -3489,6 +3511,57 @@ class MusicLibraryView(QWidget):
         path = item.data(0, Qt.ItemDataRole.UserRole)
         if path and not self.select_path(path):
             self.status_label.setText(self.tr("That track isn't visible in the table (not indexed, or filtered out)."))
+
+    # --- gig journal (issue #405) ---------------------------------------
+
+    def _reload_journal(self) -> None:
+        if self._db is None:
+            return
+        self.journal_list.clear()
+        for entry in gig_journal.list_entries(self._db):
+            item = QListWidgetItem(gig_journal.format_entry_line(entry))
+            item.setData(Qt.ItemDataRole.UserRole, entry.id)
+            self.journal_list.addItem(item)
+
+    def _stop_editing_journal_entry(self) -> None:
+        self._editing_journal_id = None
+        self.journal_text.clear()
+        self.journal_save_button.setText(self.tr("Add journal entry"))
+
+    def _on_journal_entry_activated(self, item: QListWidgetItem) -> None:
+        entry_id = item.data(Qt.ItemDataRole.UserRole)
+        entry = next((entry for entry in gig_journal.list_entries(self.db) if entry.id == entry_id), None)
+        if entry is None:
+            return
+        self._editing_journal_id = entry.id
+        self.journal_text.setPlainText(entry.note)
+        self.journal_save_button.setText(self.tr("Save changes"))
+
+    def _on_journal_save_clicked(self) -> None:
+        note = self.journal_text.toPlainText()
+        if self._editing_journal_id is not None:
+            if gig_journal.update_entry(self.db, self._editing_journal_id, note):
+                self.status_label.setText(self.tr("Journal entry updated."))
+            self._stop_editing_journal_entry()
+        elif gig_journal.add_entry(self.db, note) is not None:
+            self.journal_text.clear()
+            self.status_label.setText(self.tr("Journal entry added."))
+        else:
+            self.status_label.setText(self.tr("Write something before adding a journal entry."))
+            return
+        self._reload_journal()
+
+    def _on_journal_delete_clicked(self) -> None:
+        items = self.journal_list.selectedItems()
+        if not items:
+            self.status_label.setText(self.tr("Select a journal entry first."))
+            return
+        for item in items:
+            gig_journal.delete_entry(self.db, item.data(Qt.ItemDataRole.UserRole))
+        if self._editing_journal_id in {item.data(Qt.ItemDataRole.UserRole) for item in items}:
+            self._stop_editing_journal_entry()
+        self._reload_journal()
+        self.status_label.setText(self.tr("{count} journal entry(ies) deleted.").format(count=len(items)))
 
 
 def _playlist_track_label(path: str, row: workspace.LibraryRow | None) -> str:

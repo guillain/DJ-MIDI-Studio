@@ -2348,8 +2348,8 @@ Trotzdem neu zuweisen? Beide lösen auf demselben Bedienelement aus.</translatio
         <translation>Wiedergabeverlauf</translation>
     </message>
     <message>
-        <source>&lt;b&gt;Load DJ history&lt;/b&gt; reads Serato&apos;s and Traktor&apos;s own history from &lt;i&gt;~/Music/_Serato_/History&lt;/i&gt; and &lt;i&gt;~/Music/_Traktor/History&lt;/i&gt;; &lt;b&gt;Load from folder…&lt;/b&gt; takes another one. Each session lists the tracks played, with the time and deck; double-click one to select it in the table. Grey rows were only loaded (or pre-listened in Traktor), or aren&apos;t in your indexed folders.&lt;br&gt;&lt;br&gt;&lt;b&gt;Select never played&lt;/b&gt; selects the visible tracks no session played, ready for a playlist. History files are only ever read, never changed.</source>
-        <translation>&lt;b&gt;DJ-Verlauf laden&lt;/b&gt; liest den eigenen Verlauf von Serato und Traktor aus &lt;i&gt;~/Music/_Serato_/History&lt;/i&gt; und &lt;i&gt;~/Music/_Traktor/History&lt;/i&gt;; &lt;b&gt;Aus Ordner laden…&lt;/b&gt; nimmt einen anderen. Jede Sitzung listet die gespielten Tracks mit Uhrzeit und Deck; doppelklicken Sie einen, um ihn in der Tabelle auszuwählen. Graue Zeilen wurden nur geladen (oder in Traktor vorgehört) oder liegen nicht in Ihren indizierten Ordnern.&lt;br&gt;&lt;br&gt;&lt;b&gt;Nie gespielte auswählen&lt;/b&gt; wählt die sichtbaren Tracks, die keine Sitzung gespielt hat, bereit für eine Playlist. Verlaufsdateien werden immer nur gelesen, nie geändert.</translation>
+        <source>&lt;b&gt;Load DJ history&lt;/b&gt; reads Serato&apos;s and Traktor&apos;s own history from &lt;i&gt;~/Music/_Serato_/History&lt;/i&gt; and &lt;i&gt;~/Music/_Traktor/History&lt;/i&gt;; &lt;b&gt;Load from folder…&lt;/b&gt; takes another one. Each session lists the tracks played, with the time and deck; double-click one to select it in the table. Grey rows were only loaded (or pre-listened in Traktor), or aren&apos;t in your indexed folders.&lt;br&gt;&lt;br&gt;&lt;b&gt;Select never played&lt;/b&gt; selects the visible tracks no session played, ready for a playlist. History files are only ever read, never changed.&lt;br&gt;&lt;br&gt;The &lt;b&gt;Gig journal&lt;/b&gt; below is yours to write in: a free-text note per gig, not tied to any track. &lt;b&gt;Add journal entry&lt;/b&gt; saves it; double-click an entry to edit it (the button becomes &lt;b&gt;Save changes&lt;/b&gt;); &lt;b&gt;Delete entry&lt;/b&gt; removes the selected one(s). Kept only in this app&apos;s own index.</source>
+        <translation>&lt;b&gt;DJ-Verlauf laden&lt;/b&gt; liest Seratos und Traktors eigenen Verlauf aus &lt;i&gt;~/Music/_Serato_/History&lt;/i&gt; und &lt;i&gt;~/Music/_Traktor/History&lt;/i&gt;; &lt;b&gt;Aus Ordner laden…&lt;/b&gt; nimmt einen anderen. Jede Sitzung listet die gespielten Titel mit Zeit und Deck auf; Doppelklick wählt ihn in der Tabelle aus. Graue Zeilen wurden nur geladen (oder in Traktor vorgehört) oder sind nicht in Ihren indizierten Ordnern.&lt;br&gt;&lt;br&gt;&lt;b&gt;Nie gespielte auswählen&lt;/b&gt; wählt die sichtbaren Titel aus, die keine Sitzung gespielt hat, bereit für eine Playlist. Verlaufsdateien werden nur gelesen, nie geändert.&lt;br&gt;&lt;br&gt;Das &lt;b&gt;Gig-Tagebuch&lt;/b&gt; unten ist Ihres zum Schreiben: eine freie Notiz pro Gig, ohne Bezug zu einem Titel. &lt;b&gt;Eintrag hinzufügen&lt;/b&gt; speichert ihn; Doppelklick auf einen Eintrag bearbeitet ihn (die Schaltfläche wird zu &lt;b&gt;Änderungen speichern&lt;/b&gt;); &lt;b&gt;Eintrag löschen&lt;/b&gt; entfernt die ausgewählten. Nur im Index dieser App gespeichert.</translation>
     </message>
     <message>
         <source>Set preparation</source>
@@ -6159,6 +6159,26 @@ Ausgewählte Zeilen in der Controller-Einrichtung: {selected}</translation>
         <translation>Deck</translation>
     </message>
     <message>
+        <source>Gig journal</source>
+        <translation>Gig-Tagebuch</translation>
+    </message>
+    <message>
+        <source>Double-click an entry to edit it.</source>
+        <translation>Doppelklicken Sie auf einen Eintrag, um ihn zu bearbeiten.</translation>
+    </message>
+    <message>
+        <source>What worked, what didn&apos;t, for next time…</source>
+        <translation>Was funktioniert hat, was nicht, für das nächste Mal…</translation>
+    </message>
+    <message>
+        <source>Add journal entry</source>
+        <translation>Eintrag hinzufügen</translation>
+    </message>
+    <message>
+        <source>Delete entry</source>
+        <translation>Eintrag löschen</translation>
+    </message>
+    <message>
         <source>Could not open the music library index (see the log).</source>
         <translation>Der Index der Musikbibliothek konnte nicht geöffnet werden (siehe Protokoll).</translation>
     </message>
@@ -6849,6 +6869,30 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     <message>
         <source>That track isn&apos;t visible in the table (not indexed, or filtered out).</source>
         <translation>Dieser Track ist in der Tabelle nicht sichtbar (nicht indiziert oder herausgefiltert).</translation>
+    </message>
+    <message>
+        <source>Save changes</source>
+        <translation>Änderungen speichern</translation>
+    </message>
+    <message>
+        <source>Journal entry updated.</source>
+        <translation>Tagebucheintrag aktualisiert.</translation>
+    </message>
+    <message>
+        <source>Journal entry added.</source>
+        <translation>Tagebucheintrag hinzugefügt.</translation>
+    </message>
+    <message>
+        <source>Write something before adding a journal entry.</source>
+        <translation>Schreiben Sie etwas, bevor Sie einen Tagebucheintrag hinzufügen.</translation>
+    </message>
+    <message>
+        <source>Select a journal entry first.</source>
+        <translation>Wählen Sie zuerst einen Tagebucheintrag aus.</translation>
+    </message>
+    <message>
+        <source>{count} journal entry(ies) deleted.</source>
+        <translation>{count} Tagebucheintrag/-einträge gelöscht.</translation>
     </message>
     <message>
         <source>Not in the indexed folders: {path}</source>

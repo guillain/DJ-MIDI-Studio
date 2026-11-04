@@ -684,7 +684,11 @@ LIBRARY_HISTORY: HelpEntry = (
         "Grey rows were only loaded (or pre-listened in Traktor), or aren't in your "
         "indexed folders.<br><br>"
         "<b>Select never played</b> selects the visible tracks no session played, ready "
-        "for a playlist. History files are only ever read, never changed.",
+        "for a playlist. History files are only ever read, never changed.<br><br>"
+        "The <b>Gig journal</b> below is yours to write in: a free-text note per gig, not "
+        "tied to any track. <b>Add journal entry</b> saves it; double-click an entry to "
+        "edit it (the button becomes <b>Save changes</b>); <b>Delete entry</b> removes the "
+        "selected one(s). Kept only in this app's own index.",
     ),
     "music-library.md",
 )

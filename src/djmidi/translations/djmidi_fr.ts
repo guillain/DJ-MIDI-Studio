@@ -2348,8 +2348,8 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
         <translation>Historique de lecture</translation>
     </message>
     <message>
-        <source>&lt;b&gt;Load DJ history&lt;/b&gt; reads Serato&apos;s and Traktor&apos;s own history from &lt;i&gt;~/Music/_Serato_/History&lt;/i&gt; and &lt;i&gt;~/Music/_Traktor/History&lt;/i&gt;; &lt;b&gt;Load from folder…&lt;/b&gt; takes another one. Each session lists the tracks played, with the time and deck; double-click one to select it in the table. Grey rows were only loaded (or pre-listened in Traktor), or aren&apos;t in your indexed folders.&lt;br&gt;&lt;br&gt;&lt;b&gt;Select never played&lt;/b&gt; selects the visible tracks no session played, ready for a playlist. History files are only ever read, never changed.</source>
-        <translation>&lt;b&gt;Charger l&apos;historique DJ&lt;/b&gt; lit l&apos;historique de Serato et de Traktor dans &lt;i&gt;~/Music/_Serato_/History&lt;/i&gt; et &lt;i&gt;~/Music/_Traktor/History&lt;/i&gt; ; &lt;b&gt;Charger depuis un dossier…&lt;/b&gt; en prend un autre. Chaque session liste les morceaux joués, avec l&apos;heure et la platine ; double-cliquez sur un morceau pour le sélectionner dans le tableau. Les lignes grises n&apos;ont été que chargées (ou pré-écoutées dans Traktor), ou ne sont pas dans vos dossiers indexés.&lt;br&gt;&lt;br&gt;&lt;b&gt;Sélectionner les jamais joués&lt;/b&gt; sélectionne les morceaux affichés qu&apos;aucune session n&apos;a joués, prêts pour une playlist. Les fichiers d&apos;historique sont seulement lus, jamais modifiés.</translation>
+        <source>&lt;b&gt;Load DJ history&lt;/b&gt; reads Serato&apos;s and Traktor&apos;s own history from &lt;i&gt;~/Music/_Serato_/History&lt;/i&gt; and &lt;i&gt;~/Music/_Traktor/History&lt;/i&gt;; &lt;b&gt;Load from folder…&lt;/b&gt; takes another one. Each session lists the tracks played, with the time and deck; double-click one to select it in the table. Grey rows were only loaded (or pre-listened in Traktor), or aren&apos;t in your indexed folders.&lt;br&gt;&lt;br&gt;&lt;b&gt;Select never played&lt;/b&gt; selects the visible tracks no session played, ready for a playlist. History files are only ever read, never changed.&lt;br&gt;&lt;br&gt;The &lt;b&gt;Gig journal&lt;/b&gt; below is yours to write in: a free-text note per gig, not tied to any track. &lt;b&gt;Add journal entry&lt;/b&gt; saves it; double-click an entry to edit it (the button becomes &lt;b&gt;Save changes&lt;/b&gt;); &lt;b&gt;Delete entry&lt;/b&gt; removes the selected one(s). Kept only in this app&apos;s own index.</source>
+        <translation>&lt;b&gt;Charger l&apos;historique DJ&lt;/b&gt; lit l&apos;historique de Serato et de Traktor depuis &lt;i&gt;~/Music/_Serato_/History&lt;/i&gt; et &lt;i&gt;~/Music/_Traktor/History&lt;/i&gt; ; &lt;b&gt;Charger depuis un dossier…&lt;/b&gt; en prend un autre. Chaque session liste les pistes jouées, avec l&apos;heure et la platine ; double-cliquez sur une pour la sélectionner dans le tableau. Les lignes grises n&apos;ont été que chargées (ou pré-écoutées dans Traktor), ou ne sont pas dans vos dossiers indexés.&lt;br&gt;&lt;br&gt;&lt;b&gt;Sélectionner les jamais joués&lt;/b&gt; sélectionne les pistes visibles qu&apos;aucune session n&apos;a jouées, prêtes pour une playlist. Les fichiers d&apos;historique ne sont jamais que lus, jamais modifiés.&lt;br&gt;&lt;br&gt;Le &lt;b&gt;Journal de soirées&lt;/b&gt; ci-dessous est à vous d&apos;écrire : une note libre par soirée, non liée à une piste. &lt;b&gt;Ajouter une entrée&lt;/b&gt; l&apos;enregistre ; double-cliquez sur une entrée pour la modifier (le bouton devient &lt;b&gt;Enregistrer les modifications&lt;/b&gt;) ; &lt;b&gt;Supprimer l&apos;entrée&lt;/b&gt; retire celle(s) sélectionnée(s). Conservé uniquement dans l&apos;index de cette application.</translation>
     </message>
     <message>
         <source>Set preparation</source>
@@ -6159,6 +6159,26 @@ Lignes sélectionnées dans Configuration du contrôleur : {selected}</translati
         <translation>Platine</translation>
     </message>
     <message>
+        <source>Gig journal</source>
+        <translation>Journal de soirées</translation>
+    </message>
+    <message>
+        <source>Double-click an entry to edit it.</source>
+        <translation>Double-cliquez sur une entrée pour la modifier.</translation>
+    </message>
+    <message>
+        <source>What worked, what didn&apos;t, for next time…</source>
+        <translation>Ce qui a marché, ce qui n&apos;a pas marché, pour la prochaine fois…</translation>
+    </message>
+    <message>
+        <source>Add journal entry</source>
+        <translation>Ajouter une entrée</translation>
+    </message>
+    <message>
+        <source>Delete entry</source>
+        <translation>Supprimer l&apos;entrée</translation>
+    </message>
+    <message>
         <source>Could not open the music library index (see the log).</source>
         <translation>Impossible d&apos;ouvrir l&apos;index de la bibliothèque (voir le journal).</translation>
     </message>
@@ -6849,6 +6869,30 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>That track isn&apos;t visible in the table (not indexed, or filtered out).</source>
         <translation>Ce morceau n&apos;est pas visible dans le tableau (non indexé, ou masqué par les filtres).</translation>
+    </message>
+    <message>
+        <source>Save changes</source>
+        <translation>Enregistrer les modifications</translation>
+    </message>
+    <message>
+        <source>Journal entry updated.</source>
+        <translation>Entrée de journal mise à jour.</translation>
+    </message>
+    <message>
+        <source>Journal entry added.</source>
+        <translation>Entrée de journal ajoutée.</translation>
+    </message>
+    <message>
+        <source>Write something before adding a journal entry.</source>
+        <translation>Écrivez quelque chose avant d&apos;ajouter une entrée de journal.</translation>
+    </message>
+    <message>
+        <source>Select a journal entry first.</source>
+        <translation>Sélectionnez d&apos;abord une entrée de journal.</translation>
+    </message>
+    <message>
+        <source>{count} journal entry(ies) deleted.</source>
+        <translation>{count} entrée(s) de journal supprimée(s).</translation>
     </message>
     <message>
         <source>Not in the indexed folders: {path}</source>

@@ -1191,6 +1191,62 @@ def test_history_panel_lists_sessions_and_never_played(library):
     assert view._current_row().title == "Alpha"
 
 
+def test_gig_journal_add_edit_and_delete(library):
+    view, _music, _ = library
+
+    view.journal_text.setPlainText("   ")
+    view._on_journal_save_clicked()
+    assert view.journal_list.count() == 0
+    assert "Write something" in view.status_label.text()
+
+    view.journal_text.setPlainText("Great crowd, long intro on track 3")
+    view._on_journal_save_clicked()
+    assert view.journal_list.count() == 1
+    assert "Great crowd" in view.journal_list.item(0).text()
+    assert view.journal_text.toPlainText() == ""  # cleared after adding
+    assert view.journal_save_button.text() == "Add journal entry"
+
+    view._on_journal_entry_activated(view.journal_list.item(0))
+    assert view.journal_text.toPlainText() == "Great crowd, long intro on track 3"
+    assert view.journal_save_button.text() == "Save changes"
+    view.journal_text.setPlainText("Great crowd, long intro on track 3 -- fix next time")
+    view._on_journal_save_clicked()
+    assert view.journal_list.count() == 1
+    assert "fix next time" in view.journal_list.item(0).text()
+    assert view.journal_save_button.text() == "Add journal entry"
+
+    view.journal_list.item(0).setSelected(True)
+    view._on_journal_delete_clicked()
+    assert view.journal_list.count() == 0
+    assert "1 journal entry(ies) deleted" in view.status_label.text()
+
+
+def test_gig_journal_delete_without_selection_asks_first(library):
+    view, _music, _ = library
+    view._on_journal_delete_clicked()
+    assert "Select a journal entry" in view.status_label.text()
+
+
+def test_gig_journal_survives_closing_and_reopening_the_tab(tmp_path):
+    from djmidi.library import gig_journal
+
+    db_path = tmp_path / "library.sqlite3"
+    view = mlv.MusicLibraryView(db_path=db_path)
+    view.ensure_open()
+    view.journal_text.setPlainText("Remember the opener")
+    view._on_journal_save_clicked()
+    view.close_db()
+
+    reopened = mlv.MusicLibraryView(db_path=db_path)
+    try:
+        reopened.ensure_open()
+        assert [entry.note for entry in gig_journal.list_entries(reopened._db)] == ["Remember the opener"]
+        assert reopened.journal_list.count() == 1
+    finally:
+        reopened.close_db()
+        reopened.deleteLater()
+
+
 def test_history_without_default_folders_explains(library, monkeypatch):
     from djmidi.library import history
 
