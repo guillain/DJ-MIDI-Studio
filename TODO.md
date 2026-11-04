@@ -139,6 +139,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Generate a set from the library** (`v0.48.180-generate-set`, issue #404) — `Build a set from the library…`
+  in the Set panel builds a set from scratch out of the whole indexed collection rather than reordering the
+  hand-picked draft: pick a target duration (or no limit) and a direction, preview the chain and its running time
+  (`set_prep.generate_set_from_library`, the same mix-path engine `Propose an order…` already used), then replace
+  the draft with it on accept. Second of the overnight brainstorm batch (issues #403–#410).
 - [x] **Time remaining on stage** (`v0.48.179-stage-time-remaining`, issue #403) — the Music Library Set panel and
   Stage Mode's set view have a running clock now: each file's own audio stream length (not a tag) joins the
   existing per-file metadata cache, and `set_prep.total_duration`/`format_duration` sum it from wherever you are in

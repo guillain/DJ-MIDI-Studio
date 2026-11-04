@@ -485,6 +485,16 @@ or key, or too far from the rest) go last in their current order. The
 window also says plainly when the proposal is no better than yours.
 `Use this order` applies it; `Back to my order` puts yours back.
 
+Don't want to hand-pick every track? `Build a set from the library…`
+builds one from scratch out of your whole indexed collection instead of
+reordering the draft: pick a target duration (or `No limit`) and a
+direction, click `Generate` to preview the chain and its running time, and
+`Use this set` replaces the draft with it. It stops as soon as the target
+duration is reached (a running total from each track's own audio length,
+`+` when some aren't known yet) or when no more tracks chain. This
+replaces the whole draft, so there's no `Back to my order` afterwards —
+cancel the dialog instead if you don't like the preview.
+
 The draft is remembered with the library index until you change it.
 
 Each track can carry a **stage note** (Track panel, `Stage note` field,
