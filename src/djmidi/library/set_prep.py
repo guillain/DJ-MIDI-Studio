@@ -53,6 +53,27 @@ _KEY_UNKNOWN = QT_TRANSLATE_NOOP("SetPreparationPanel", "Key unknown")
 _SUMMARY_TRACKS = QT_TRANSLATE_NOOP("SetPreparationPanel", "{count} track(s)")
 _SUMMARY_INCOMPATIBLE = QT_TRANSLATE_NOOP("SetPreparationPanel", "{count} incompatible transition(s)")
 _SUMMARY_UNKNOWN = QT_TRANSLATE_NOOP("SetPreparationPanel", "{count} unchecked (missing BPM/key)")
+_SUMMARY_DURATION = QT_TRANSLATE_NOOP("SetPreparationPanel", "{duration} total")
+_SUMMARY_DURATION_APPROX = QT_TRANSLATE_NOOP("SetPreparationPanel", "{duration}+ total (some durations unknown)")
+
+
+def format_duration(seconds: float) -> str:
+    """``"M:SS"``, or ``"H:MM:SS"`` at an hour or more. Negative/zero inputs
+    clamp to zero rather than producing a confusing negative clock."""
+    total = max(0, round(seconds))
+    hours, remainder = divmod(total, 3600)
+    minutes, secs = divmod(remainder, 60)
+    if hours:
+        return f"{hours}:{minutes:02d}:{secs:02d}"
+    return f"{minutes}:{secs:02d}"
+
+
+def total_duration(tracks: Sequence[SetTrack]) -> tuple[float, bool]:
+    """Sum of the known durations and whether every track's duration is
+    known -- a missing duration means the real total is *at least* this
+    much, not exactly this much, so the caller can flag it as approximate."""
+    durations = [track.duration for track in tracks]
+    return sum(value for value in durations if value), bool(tracks) and all(value for value in durations)
 
 
 def parse_energy(text: str | None) -> int | None:
@@ -81,6 +102,7 @@ class SetTrack:
     energy: int | None = None
     indexed: bool = True
     note: str | None = None  # the stage note (phase 6 item 3)
+    duration: float | None = None  # seconds, from the file's own stream header (issue #403)
 
     @property
     def label(self) -> str:
@@ -100,6 +122,7 @@ def set_track_from_row(row: LibraryRow) -> SetTrack:
         energy=parse_energy(metadata.energy) if metadata else None,
         indexed=not row.missing,
         note=row.note,
+        duration=row.duration,
     )
 
 
@@ -183,6 +206,8 @@ class SetSummary:
     tracks: int
     incompatible: int
     unknown: int
+    duration_seconds: float = 0.0
+    duration_known: bool = False
 
     @property
     def text(self) -> str:
@@ -195,12 +220,19 @@ class SetSummary:
             parts.append(translate(_SUMMARY_INCOMPATIBLE).format(count=self.incompatible))
             if self.unknown:
                 parts.append(translate(_SUMMARY_UNKNOWN).format(count=self.unknown))
+        if self.duration_seconds:
+            template = _SUMMARY_DURATION if self.duration_known else _SUMMARY_DURATION_APPROX
+            parts.append(translate(template).format(duration=format_duration(self.duration_seconds)))
         return " · ".join(parts)
 
 
 def summarize(tracks: Sequence[SetTrack], transitions: Sequence[Transition]) -> SetSummary:
     statuses = [transition.status for transition in transitions]
-    return SetSummary(len(tracks), statuses.count(STATUS_INCOMPATIBLE), statuses.count(STATUS_UNKNOWN))
+    duration_seconds, duration_known = total_duration(tracks)
+    return SetSummary(
+        len(tracks), statuses.count(STATUS_INCOMPATIBLE), statuses.count(STATUS_UNKNOWN),
+        duration_seconds, duration_known,
+    )  # fmt: skip
 
 
 # --- editing the order -------------------------------------------------

@@ -7705,6 +7705,14 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
         <source>{count} unchecked (missing BPM/key)</source>
         <translation>{count} ungeprüft (BPM/Tonart fehlt)</translation>
     </message>
+    <message>
+        <source>{duration} total</source>
+        <translation>{duration} insgesamt</translation>
+    </message>
+    <message>
+        <source>{duration}+ total (some durations unknown)</source>
+        <translation>{duration}+ insgesamt (einige Längen unbekannt)</translation>
+    </message>
 </context>
 <context>
     <name>SmartExportDialog</name>
@@ -7988,6 +7996,14 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     <message>
         <source>energy {energy}</source>
         <translation>Energie {energy}</translation>
+    </message>
+    <message>
+        <source>{time} left</source>
+        <translation>noch {time}</translation>
+    </message>
+    <message>
+        <source>{time}+ left</source>
+        <translation>noch {time}+</translation>
     </message>
 </context>
 <context>

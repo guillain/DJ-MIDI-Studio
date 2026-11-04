@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS track_metadata (
     track_id INTEGER PRIMARY KEY REFERENCES tracks(id) ON DELETE CASCADE,
     mtime REAL NOT NULL,
     title TEXT, artist TEXT, album TEXT, genre TEXT, bpm REAL, key TEXT,
-    comment TEXT, rating TEXT, energy TEXT
+    comment TEXT, rating TEXT, energy TEXT, duration REAL
 );
 
 -- Audio-analysis estimates for tracks missing a BPM or key tag (issue
@@ -217,7 +217,16 @@ class LibraryDB:
         self._conn = sqlite3.connect(str(db_path))
         self._conn.execute("PRAGMA foreign_keys = ON")
         self._conn.executescript(_SCHEMA)
+        self._migrate_columns()
         self._conn.commit()
+
+    def _migrate_columns(self) -> None:
+        """`CREATE TABLE IF NOT EXISTS` never retrofits a column onto a table
+        that already existed -- the one case so far is `duration` added to
+        `track_metadata` after the cache was already shipped (issue #403)."""
+        existing = {row[1] for row in self._conn.execute("PRAGMA table_info(track_metadata)")}
+        if "duration" not in existing:
+            self._conn.execute("ALTER TABLE track_metadata ADD COLUMN duration REAL")
 
     def close(self) -> None:
         self._conn.close()

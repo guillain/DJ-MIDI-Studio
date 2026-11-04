@@ -80,6 +80,44 @@ def test_resolve_set_tracks_reads_rows_and_flags_unknown_paths():
     assert unknown.label == "b.mp3"
 
 
+def test_resolve_set_tracks_carries_duration_from_the_row():
+    row = LibraryRow(
+        track_id=1, path="/m/a.mp3", missing=False,
+        metadata=TrackMetadata(title="Alpha", duration=185.0), camelot_key=None, category=None,
+    )  # fmt: skip
+    known, = set_prep.resolve_set_tracks(["/m/a.mp3"], {row.path: row})
+    assert known.duration == pytest.approx(185.0)
+
+
+@pytest.mark.parametrize(
+    ("seconds", "expected"),
+    [(0, "0:00"), (59, "0:59"), (60, "1:00"), (185, "3:05"), (3599, "59:59"), (3600, "1:00:00"), (3725, "1:02:05")],
+)
+def test_format_duration(seconds, expected):
+    assert set_prep.format_duration(seconds) == expected
+
+
+def test_total_duration_known_partial_and_none():
+    assert set_prep.total_duration([_track("a")]) == (0, False)
+    assert set_prep.total_duration([]) == (0, False)
+    known = SetTrack("a", duration=100.0)
+    also_known = SetTrack("b", duration=50.0)
+    unknown = SetTrack("c")
+    assert set_prep.total_duration([known, also_known]) == (150.0, True)
+    assert set_prep.total_duration([known, unknown]) == (100.0, False)
+
+
+def test_summary_describes_total_duration():
+    known = SetTrack("a", duration=65.0)
+    also_known = SetTrack("b", duration=55.0)
+    unknown = SetTrack("c")
+    summary = set_prep.summarize([known, also_known], set_prep.analyze_set([known, also_known]))
+    assert summary.text.endswith("2:00 total")
+    approx = set_prep.summarize([known, unknown], set_prep.analyze_set([known, unknown]))
+    assert approx.text.endswith("1:05+ total (some durations unknown)")
+    assert set_prep.summarize([], []).text == "0 track(s)"
+
+
 def test_insert_paths_skips_duplicates_and_clamps_index():
     assert set_prep.insert_paths(["a", "b"], ["c", "a", "c", "d"], 1) == ["a", "c", "d", "b"]
     assert set_prep.insert_paths(["a"], ["b"]) == ["a", "b"]

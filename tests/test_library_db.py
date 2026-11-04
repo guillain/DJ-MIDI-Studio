@@ -1,4 +1,9 @@
+import sqlite3
+
+import pytest
+
 from djmidi.library import LibraryDB
+from djmidi.library.metadata import TrackMetadata
 
 
 def test_add_root_is_idempotent():
@@ -90,3 +95,43 @@ def test_settings_roundtrip_and_survive_reopen(tmp_path):
     reopened = LibraryDB(path)
     assert reopened.get_setting("mix") == {"direction": "up", "max_length": 12}
     reopened.close()
+
+
+def test_cached_metadata_roundtrips_duration():
+    db = LibraryDB()
+    root = db.add_root("/music/root")
+    db.upsert_track(root.id, "/music/root/a.mp3", size=1, mtime=1.0)
+    track = db.list_tracks()[0]
+
+    db.set_cached_metadata(track.id, track.mtime, TrackMetadata(title="A", duration=123.4))
+
+    _mtime, cached = db.get_cached_metadata(track.id)
+    assert cached.duration == pytest.approx(123.4)
+
+
+def test_duration_column_is_added_to_a_pre_existing_track_metadata_table(tmp_path):
+    """A library index created before `duration` existed (issue #403) gains
+    the column in place instead of failing at the next cache write."""
+    path = tmp_path / "library.sqlite3"
+    conn = sqlite3.connect(str(path))
+    conn.execute(
+        """
+        CREATE TABLE track_metadata (
+            track_id INTEGER PRIMARY KEY, mtime REAL NOT NULL,
+            title TEXT, artist TEXT, album TEXT, genre TEXT, bpm REAL, key TEXT,
+            comment TEXT, rating TEXT, energy TEXT
+        )
+        """
+    )
+    conn.commit()
+    conn.close()
+
+    db = LibraryDB(path)
+    root = db.add_root("/music/root")
+    db.upsert_track(root.id, "/music/root/a.mp3", size=1, mtime=1.0)
+    track = db.list_tracks()[0]
+    db.set_cached_metadata(track.id, track.mtime, TrackMetadata(duration=42.0))
+
+    _mtime, cached = db.get_cached_metadata(track.id)
+    assert cached.duration == pytest.approx(42.0)
+    db.close()

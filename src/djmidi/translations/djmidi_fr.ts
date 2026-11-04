@@ -7705,6 +7705,14 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <source>{count} unchecked (missing BPM/key)</source>
         <translation>{count} non vérifiée(s) (BPM/tonalité manquant)</translation>
     </message>
+    <message>
+        <source>{duration} total</source>
+        <translation>{duration} au total</translation>
+    </message>
+    <message>
+        <source>{duration}+ total (some durations unknown)</source>
+        <translation>{duration}+ au total (certaines durées sont inconnues)</translation>
+    </message>
 </context>
 <context>
     <name>SmartExportDialog</name>
@@ -7988,6 +7996,14 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>energy {energy}</source>
         <translation>énergie {energy}</translation>
+    </message>
+    <message>
+        <source>{time} left</source>
+        <translation>reste {time}</translation>
+    </message>
+    <message>
+        <source>{time}+ left</source>
+        <translation>reste {time}+</translation>
     </message>
 </context>
 <context>

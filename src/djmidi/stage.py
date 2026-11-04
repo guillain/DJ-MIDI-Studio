@@ -24,6 +24,8 @@ from djmidi.library.set_prep import (
     STATUS_OK,
     SetTrack,
     Transition,
+    format_duration,
+    total_duration,
 )
 from djmidi.midi_io import MidiEvent
 
@@ -112,6 +114,8 @@ _LAST = QT_TRANSLATE_NOOP("Stage", "Last track of the set")
 _COMPATIBLE = QT_TRANSLATE_NOOP("Stage", "Transition OK")
 _BPM_CHANGE = QT_TRANSLATE_NOOP("Stage", "BPM {change}")
 _ENERGY = QT_TRANSLATE_NOOP("Stage", "energy {energy}")
+_TIME_LEFT = QT_TRANSLATE_NOOP("Stage", "{time} left")
+_TIME_LEFT_APPROX = QT_TRANSLATE_NOOP("Stage", "{time}+ left")
 
 
 @dataclass(frozen=True)
@@ -139,6 +143,17 @@ def _details(track: SetTrack, translate: Translate) -> str:
     return _SEPARATOR.join(parts)
 
 
+def _time_remaining_text(tracks: Sequence[SetTrack], translate: Translate) -> str:
+    """How much of the set is left from here to the end, or "" when no
+    remaining track's duration is known (issue #403). A missing duration
+    for *some* tracks still gives a lower-bound total, flagged with "+"."""
+    seconds, known = total_duration(tracks)
+    if not seconds:
+        return ""
+    template = _TIME_LEFT if known else _TIME_LEFT_APPROX
+    return translate(template).format(time=format_duration(seconds))
+
+
 def stage_set_view(
     tracks: Sequence[SetTrack], transitions: Sequence[Transition], index: int, translate: Translate = untranslated
 ) -> StageSetView | None:
@@ -150,6 +165,9 @@ def stage_set_view(
     index = max(0, min(index, len(tracks) - 1))
     track = tracks[index]
     position = translate(_SET_POSITION).format(position=index + 1, total=len(tracks))
+    remaining = _time_remaining_text(tracks[index:], translate)
+    if remaining:
+        position = f"{position}{_SEPARATOR}{remaining}"
     if index + 1 >= len(tracks):
         return StageSetView(position, track.label, _details(track, translate), translate(_LAST), "", "",
                             track.note or "")  # fmt: skip

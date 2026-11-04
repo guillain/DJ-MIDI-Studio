@@ -381,4 +381,62 @@ def test_ogg_uses_same_vorbis_helpers_as_flac(tmp_path):
 def test_managed_fields_matches_track_metadata_dataclass():
     from djmidi.library.metadata import TrackMetadata
 
-    assert MANAGED_FIELDS == set(TrackMetadata.__dataclass_fields__)
+    # `duration` (issue #403) is the one `TrackMetadata` field that isn't a
+    # tag: it comes from the file's own stream header, is never written,
+    # and is deliberately absent from `MANAGED_FIELDS`.
+    assert set(TrackMetadata.__dataclass_fields__) - MANAGED_FIELDS == {"duration"}
+
+
+def test_duration_is_not_a_managed_field():
+    assert "duration" not in MANAGED_FIELDS
+
+
+def test_write_metadata_rejects_duration():
+    with pytest.raises(ValueError):
+        write_metadata("whatever.mp3", duration=5.0)
+
+
+def _make_flac_with_duration(path, seconds: float, sample_rate: int = 44100) -> None:
+    """Like `_make_flac`, but with a real (nonzero) `total_samples`, so the
+    stream's duration can be asserted exactly instead of just "truthy"."""
+    total_samples = round(seconds * sample_rate)
+    bits = (
+        format(4096, "016b")
+        + format(4096, "016b")
+        + format(0, "024b")
+        + format(0, "024b")
+        + format(sample_rate, "020b")
+        + format(1, "03b")
+        + format(15, "05b")
+        + format(total_samples, "036b")
+    )
+    streaminfo = int(bits, 2).to_bytes(18, "big") + b"\x00" * 16
+    header = bytes([0x80]) + len(streaminfo).to_bytes(3, "big")
+    path.write_bytes(b"fLaC" + header + streaminfo + b"\x00" * 32)
+
+
+def test_read_metadata_includes_duration_from_the_audio_stream(tmp_path):
+    path = tmp_path / "f.flac"
+    _make_flac_with_duration(path, seconds=5.0)
+
+    meta = read_metadata(path)
+
+    assert meta.duration == pytest.approx(5.0)
+
+
+def test_read_metadata_duration_is_none_without_a_real_stream(tmp_path):
+    path = tmp_path / "f.flac"
+    _make_flac(path)  # the shared fixture's STREAMINFO has total_samples = 0
+
+    meta = read_metadata(path)
+
+    assert meta.duration is None
+
+
+def test_write_metadata_never_touches_duration(tmp_path):
+    path = tmp_path / "f.flac"
+    _make_flac_with_duration(path, seconds=5.0)
+
+    write_metadata(path, title="New Title")
+
+    assert read_metadata(path).duration == pytest.approx(5.0)
