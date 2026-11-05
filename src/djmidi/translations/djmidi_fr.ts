@@ -2838,8 +2838,8 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
         <translation>Aucune piste n&apos;a à la fois un BPM et une clef reconnue.</translation>
     </message>
     <message>
-        <source>Darker means more tracks mix well together at that tempo and key. {count} track(s) without both a usable BPM and a recognised key ({percent}).</source>
-        <translation>Plus sombre signifie plus de pistes se mixent bien ensemble à ce tempo et cette clef. {count} piste(s) sans à la fois un BPM utilisable et une clef reconnue ({percent}).</translation>
+        <source>The stronger the colour, the more tracks share that tempo and key, so the easier they mix. {count} track(s) without both a usable BPM and a recognised key ({percent}).</source>
+        <translation>Plus la couleur est intense, plus de pistes partagent ce tempo et cette clef, donc plus elles se mixent facilement. {count} piste(s) sans à la fois un BPM utilisable et une clef reconnue ({percent}).</translation>
     </message>
     <message>
         <source>Added per month</source>
@@ -7030,16 +7030,20 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <translation>Déplace chaque piste sélectionnée dans &lt;racine&gt;/Famille/Nom, selon sa catégorie confirmée. Le nom du fichier lui-même ne change pas.</translation>
     </message>
     <message>
-        <source>Current path</source>
-        <translation>Chemin actuel</translation>
-    </message>
-    <message>
-        <source>New path</source>
-        <translation>Nouveau chemin</translation>
-    </message>
-    <message>
         <source>Status</source>
         <translation>État</translation>
+    </message>
+    <message>
+        <source>File</source>
+        <translation>Fichier</translation>
+    </message>
+    <message>
+        <source>Current folder</source>
+        <translation>Dossier actuel</translation>
+    </message>
+    <message>
+        <source>New folder</source>
+        <translation>Nouveau dossier</translation>
     </message>
     <message>
         <source>{count} file(s) will move</source>

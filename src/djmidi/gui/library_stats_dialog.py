@@ -249,8 +249,15 @@ class HeatmapWidget(QWidget):
             return QSize(200, 60)
         return QSize(
             _Y_LABEL_WIDTH + len(self.heatmap.bpm_bins) * _CELL_WIDTH + _PAD,
-            _PAD + len(self.heatmap.camelot_codes) * _CELL_HEIGHT + _X_LABEL_HEIGHT,
+            _PAD + len(self.heatmap.camelot_codes) * _CELL_HEIGHT + self._x_label_height(),
         )
+
+    def _x_label_height(self) -> int:
+        """Room under the grid for the rotated BPM labels: their longest
+        text, not a fixed guess (a fixed 56 px cut "140–144" short)."""
+        metrics = self.fontMetrics()
+        widest = max((metrics.horizontalAdvance(label) for label in self.heatmap.bpm_bins), default=0)
+        return max(_X_LABEL_HEIGHT, widest + 4 + _PAD)
 
     def sizeHint(self) -> QSize:
         hint = self.minimumSizeHint()
@@ -401,7 +408,7 @@ class LibraryStatsDialog(QDialog):
             self.tr("BPM x Key"),
             HeatmapWidget(stats.heatmap, empty_text=self.tr("No track has both a BPM and a recognised key.")),
             self.tr(
-                "Darker means more tracks mix well together at that tempo and key. "
+                "The stronger the colour, the more tracks share that tempo and key, so the easier they mix. "
                 "{count} track(s) without both a usable BPM and a recognised key ({percent})."
             ).format(count=stats.heatmap.missing, percent=_percent(stats.heatmap.missing, stats.total)),
         )

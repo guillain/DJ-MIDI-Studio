@@ -438,18 +438,75 @@ def generate_set_from_library(
         # the search again because it fell short is not.
         max_length = min(MAX_GENERATED_LENGTH, max(1, round(target_duration_seconds / average * 1.5)))
 
-    chain = build_playlist_path(
-        pool, start, tolerance_pct=bpm_tolerance_pct, direction=direction, max_length=max_length
-    ).path
+    def generated_from(opener: str | None) -> GeneratedSet:
+        chain = build_playlist_path(
+            pool, opener, tolerance_pct=bpm_tolerance_pct, direction=direction, max_length=max_length
+        ).path
+        selected: list[str] = []
+        running = 0.0
+        for item in chain:
+            selected.append(item.identifier)
+            running += by_path[item.identifier].duration or 0.0
+            if target_duration_seconds is not None and running >= target_duration_seconds:
+                break
+        duration_seconds, duration_known = total_duration([by_path[path] for path in selected])
+        reached = target_duration_seconds is not None and duration_seconds >= target_duration_seconds
+        return GeneratedSet(tuple(selected), duration_seconds, duration_known, reached)
 
-    selected: list[str] = []
-    running = 0.0
-    for item in chain:
-        selected.append(item.identifier)
-        running += by_path[item.identifier].duration or 0.0
-        if target_duration_seconds is not None and running >= target_duration_seconds:
+    def complete(generated: GeneratedSet) -> bool:
+        return generated.reached_target or len(generated.tracks) >= max_length
+
+    best = generated_from(start)
+    if start is not None or complete(best) or not pool:
+        return best
+    # The engine's default opener (the slowest or fastest track) is often an
+    # outlier with no compatible neighbour, which made a one-track "set" out
+    # of a library holding long chains. Try the best-connected tracks too,
+    # a bounded number of them (each try re-indexes the whole pool).
+    def score(generated: GeneratedSet) -> tuple[bool, float, int]:
+        return generated.reached_target, generated.duration_seconds, len(generated.tracks)
+
+    for opener in _best_connected_openers(usable, bpm_tolerance_pct, GENERATE_OPENERS_TRIED):
+        if best.tracks and opener == best.tracks[0]:
+            continue
+        candidate = generated_from(opener)
+        if score(candidate) > score(best):
+            best = candidate
+        if complete(best):
             break
+    return best
 
-    duration_seconds, duration_known = total_duration([by_path[path] for path in selected])
-    reached = target_duration_seconds is not None and duration_seconds >= target_duration_seconds
-    return GeneratedSet(tuple(selected), duration_seconds, duration_known, reached)
+
+# How many alternative openers `generate_set_from_library` tries when the
+# engine's own default start falls short (~0.15 s each on an 85k library).
+GENERATE_OPENERS_TRIED = 12
+
+
+def _best_connected_openers(tracks: Sequence[SetTrack], bpm_tolerance_pct: float, limit: int) -> list[str]:
+    """The `limit` tracks with the most BPM- and key-compatible neighbours
+    (ties by path), i.e. the openers most likely to start a long chain."""
+    from bisect import bisect_left, bisect_right
+
+    from djmidi.library.playlist import _compatible_keys, _parse_camelot
+
+    by_key: dict[tuple[int, str], list[float]] = {}
+    parsed: list[tuple[SetTrack, tuple[int, str]]] = []
+    for track in tracks:
+        key = _parse_camelot(track.camelot_key or "")
+        if key is None or not track.bpm:
+            continue
+        parsed.append((track, key))
+        by_key.setdefault(key, []).append(track.bpm)
+    for bpms in by_key.values():
+        bpms.sort()
+    ratio = bpm_tolerance_pct / 100.0
+    ranked: list[tuple[int, str]] = []
+    for track, key in parsed:
+        low, high = track.bpm * (1 - ratio), track.bpm / (1 - ratio) if ratio < 1 else float("inf")
+        count = -1  # the track itself
+        for other in _compatible_keys(key):
+            bpms = by_key.get(other, ())
+            count += bisect_right(bpms, high) - bisect_left(bpms, low)
+        ranked.append((count, track.path))
+    ranked.sort(key=lambda item: (-item[0], item[1]))
+    return [path for _count, path in ranked[:limit]]

@@ -253,7 +253,10 @@ Captures the maintainer could make, in order of value:
    Cue and Sync, then export the mapping XML. Better still: one export per
    step (Play only, then Play + Cue, …) so each new element is
    unambiguous. Hot cues 1-8 on one deck the same way, if hot cues are
-   wanted too.
+   wanted too. With no controller at hand, `scripts/serato_learn_iac.py`
+   sends one distinct note per step on the IAC bus (Play/Cue/Sync on
+   channels 1-2 notes 0-2, deck 1 hot cues on notes 10-17): click the
+   function in Serato's MIDI Learn, then press Enter in the terminal.
 2. **A Traktor template with every target command.** A `.tsi` for the
    destination controller that already has Play, Cue and Sync (and hot cues
    if wanted) mapped on every deck, without modifier conditions — the
