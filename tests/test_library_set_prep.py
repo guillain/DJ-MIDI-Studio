@@ -214,6 +214,26 @@ def test_generate_set_from_library_excludes_paths_and_respects_start():
     assert started.tracks[0] == "/c"
 
 
+def test_generate_set_from_library_skips_an_isolated_default_opener():
+    """The engine starts on the slowest track by default; when that one has
+    no compatible neighbour, the set must still come from the long chain the
+    library holds, not stop at one track (found checking #404 in the app)."""
+    from djmidi.library.set_prep import generate_set_from_library
+
+    library = [
+        SetTrack("/dub", bpm=140.0, camelot_key="10B", duration=360.0),
+        SetTrack("/a", bpm=174.0, camelot_key="8A", duration=300.0),
+        SetTrack("/b", bpm=172.0, camelot_key="9A", duration=300.0),
+        SetTrack("/c", bpm=174.0, camelot_key="10A", duration=300.0),
+        SetTrack("/d", bpm=174.0, camelot_key="10A", duration=300.0),
+    ]
+    generated = generate_set_from_library(library, target_duration_seconds=1200.0, direction="flat")
+    assert len(generated.tracks) == 4 and "/dub" not in generated.tracks
+    assert generated.reached_target is True
+    # No target: the longest chain still wins over the isolated default.
+    assert len(generate_set_from_library(library, direction="flat").tracks) == 4
+
+
 def test_generate_set_from_library_empty_pool_is_an_empty_set():
     from djmidi.library.set_prep import generate_set_from_library
 

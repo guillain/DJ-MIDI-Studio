@@ -2838,8 +2838,8 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
         <translation>Kein Titel hat sowohl ein BPM als auch eine erkannte Tonart.</translation>
     </message>
     <message>
-        <source>Darker means more tracks mix well together at that tempo and key. {count} track(s) without both a usable BPM and a recognised key ({percent}).</source>
-        <translation>Dunkler bedeutet, dass sich bei diesem Tempo und dieser Tonart mehr Titel gut mischen lassen. {count} Titel ohne sowohl ein brauchbares BPM als auch eine erkannte Tonart ({percent}).</translation>
+        <source>The stronger the colour, the more tracks share that tempo and key, so the easier they mix. {count} track(s) without both a usable BPM and a recognised key ({percent}).</source>
+        <translation>Je kräftiger die Farbe, desto mehr Titel teilen sich dieses Tempo und diese Tonart und desto leichter lassen sie sich mischen. {count} Titel ohne sowohl ein brauchbares BPM als auch eine erkannte Tonart ({percent}).</translation>
     </message>
     <message>
         <source>Added per month</source>
@@ -7030,16 +7030,20 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
         <translation>Verschiebt jeden ausgewählten Titel nach &lt;Basis&gt;/Familie/Name, gemäß seiner bestätigten Kategorie. Der Dateiname selbst ändert sich nicht.</translation>
     </message>
     <message>
-        <source>Current path</source>
-        <translation>Aktueller Pfad</translation>
-    </message>
-    <message>
-        <source>New path</source>
-        <translation>Neuer Pfad</translation>
-    </message>
-    <message>
         <source>Status</source>
         <translation>Status</translation>
+    </message>
+    <message>
+        <source>File</source>
+        <translation>Datei</translation>
+    </message>
+    <message>
+        <source>Current folder</source>
+        <translation>Aktueller Ordner</translation>
+    </message>
+    <message>
+        <source>New folder</source>
+        <translation>Neuer Ordner</translation>
     </message>
     <message>
         <source>{count} file(s) will move</source>

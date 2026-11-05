@@ -1305,6 +1305,14 @@ def test_organize_files_dialog_previews_before_accepting(tmp_path):
         dialog = OrganizeFilesDialog(lambda: organize.plan_from_rows(view.db, [row]))
         assert dialog.moves() == [(str(misfiled), str(music / "Tek" / "Tribe" / "d.mp3"))]
         assert dialog.buttons.button(QDialogButtonBox.StandardButton.Ok).isEnabled()
+        # File name and folders in their own columns, so the part that
+        # changes is readable (a full path showed only its common prefix).
+        first = dialog.tree.topLevelItem(0)
+        assert first.text(0) == "Move"
+        assert first.text(1) == "d.mp3"
+        assert first.text(2) == str(misfiled.parent)
+        assert first.text(3) == str(music / "Tek" / "Tribe")
+        assert dialog.tree.textElideMode() == Qt.TextElideMode.ElideLeft
         dialog.close()
     finally:
         view.close_db()

@@ -1,6 +1,7 @@
 """Organize into folders… dialog of the Music Library tab (issue #406).
 
-A preview table (current path, new path, status per selected track) built
+A preview table (status, file, current folder, new folder per selected
+track, files that move listed first) built
 by `library.organize.plan_from_rows` through the `planner` the view passes
 in -- nothing to type, since the target only depends on each track's
 already-resolved category. The dialog itself never moves a file: on
@@ -11,8 +12,9 @@ generalized it to take any old/new pair, not just a template rename).
 from __future__ import annotations
 
 from collections.abc import Callable
+from pathlib import Path
 
-from PySide6.QtCore import QCoreApplication
+from PySide6.QtCore import QCoreApplication, Qt
 from PySide6.QtGui import QBrush, QColor
 from PySide6.QtWidgets import (
     QDialog,
@@ -39,6 +41,14 @@ _STATUS_COLOUR = {
     organize.STATUS_CONFLICT: QColor("#c0392b"),
     organize.STATUS_REFUSED: QColor("#c0392b"),
     organize.STATUS_NO_CATEGORY: QColor("#b7791f"),
+}
+# Listing order: what will move first, then what needs attention.
+_STATUS_ORDER = {
+    organize.STATUS_MOVE: 0,
+    organize.STATUS_CONFLICT: 1,
+    organize.STATUS_REFUSED: 1,
+    organize.STATUS_NO_CATEGORY: 2,
+    organize.STATUS_UNCHANGED: 3,
 }
 
 
@@ -73,11 +83,20 @@ class OrganizeFilesDialog(QDialog):
         box.addWidget(warning)
 
         self.tree = QTreeWidget()
-        self.tree.setHeaderLabels([self.tr("Current path"), self.tr("New path"), self.tr("Status")])
+        self.tree.setHeaderLabels(
+            [self.tr("Status"), self.tr("File"), self.tr("Current folder"), self.tr("New folder")]
+        )
         self.tree.setRootIsDecorated(False)
-        self.tree.header().setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
-        self.tree.setColumnWidth(0, 330)
-        self.tree.setColumnWidth(1, 330)
+        # Folders share a long common prefix: elide on the left so the
+        # Family/Name part that actually changes stays visible.
+        self.tree.setTextElideMode(Qt.TextElideMode.ElideLeft)
+        header = self.tree.header()
+        # The status is one short word (its reason is in the tooltip), so it
+        # never gets elided; the three path columns share the rest.
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        for column in (1, 2, 3):
+            header.setSectionResizeMode(column, QHeaderView.ResizeMode.Interactive)
+            self.tree.setColumnWidth(column, 210)
         usable_minimum(self.tree, 480, 140)
         box.addWidget(self.tree, 1)
         self.summary_label = QLabel()
@@ -97,16 +116,19 @@ class OrganizeFilesDialog(QDialog):
 
     def _fill(self) -> None:
         self.tree.clear()
-        for item in self.plan.items:
+        items = sorted(self.plan.items, key=lambda item: _STATUS_ORDER.get(item.status, 4))
+        for item in items:
             status = self._status_text.get(item.status, item.status)
-            row = QTreeWidgetItem(
-                [item.old_path, item.new_path or "", f"{status}: {item.reason}" if item.reason else status]
-            )
-            row.setToolTip(0, item.old_path)
-            row.setToolTip(1, item.new_path or "")
+            old = Path(item.old_path)
+            new_folder = str(Path(item.new_path).parent) if item.new_path else ""
+            row = QTreeWidgetItem([status, old.name, str(old.parent), new_folder])
+            row.setToolTip(0, f"{status}: {item.reason}" if item.reason else status)
+            row.setToolTip(1, item.old_path)
+            row.setToolTip(2, item.old_path)
+            row.setToolTip(3, item.new_path or "")
             colour = _STATUS_COLOUR.get(item.status)
             if colour is not None:
-                row.setForeground(2, QBrush(colour))
+                row.setForeground(0, QBrush(colour))
             self.tree.addTopLevelItem(row)
         count = len(self.plan.moves)
         other_statuses = (
