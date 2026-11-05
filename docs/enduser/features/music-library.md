@@ -222,10 +222,12 @@ with `Rename files…` for both at once). Only tracks with a **confirmed**
 category move; a fuzzy suggestion is never acted on — confirm it first.
 
 1. Select the tracks and click `Organize into folders…`.
-2. Check the preview: every selected file, its target path, and a status
-   (`Move`, `Unchanged`, `Skipped` — no confirmed category yet, `Conflict`
-   — something's already at the target, or `Refused` — outside the file's
-   own library root or inside a DJ software folder).
+2. Check the preview (files that will move are listed first): a status,
+   the file name, its current folder and its target folder
+   — `Move`, `Unchanged`, `Skipped` (no confirmed category yet), `Conflict`
+   (something's already at the target) or `Refused` (outside the file's
+   own library root or inside a DJ software folder); hover a status for its
+   reason.
 3. Click `Move N file(s)`.
 
 The whole batch is one `Undo` step, which moves the files right back.
@@ -370,7 +372,7 @@ collection as bar charts, one tab each:
 | Genres | Tracks per genre tag. Spellings that only differ by case or spaces (`Psy Trance`, `psy  trance`) count together |
 | BPM | A histogram in 5 BPM steps, with the number of tracks without a BPM |
 | Keys | The 24 Camelot keys in wheel order (1A, 1B … 12B), with the number of tracks without a key |
-| BPM x Key | A heatmap: BPM bins across, Camelot keys down, darker meaning more tracks mix well together at that tempo and key. Only tracks with both a usable BPM and a recognised key are counted; hover a cell for its exact number |
+| BPM x Key | A heatmap: BPM bins across, Camelot keys down, the stronger the colour, the more tracks share that tempo and key, so the easier they mix. Only tracks with both a usable BPM and a recognised key are counted; hover a cell for its exact number |
 | Added per month | Files per month of their modification date — the closest thing to a "date added" the files carry. A tag edit makes a file count as recent |
 | Most played | The 25 most-played tracks and how many were never played, once you've loaded your DJ history in the [History panel](#play-history) |
 
@@ -517,7 +519,10 @@ reordering the draft: pick a target duration (or `No limit`) and a
 direction, click `Generate` to preview the chain and its running time, and
 `Use this set` replaces the draft with it. It stops as soon as the target
 duration is reached (a running total from each track's own audio length,
-`+` when some aren't known yet) or when no more tracks chain. This
+`+` when some aren't known yet) or when no more tracks chain. It starts
+from the best-connected tracks (the ones with the most BPM- and
+key-compatible neighbours) when the slowest one leads nowhere, so a lone
+outlier in your collection can't cut the set down to one track. This
 replaces the whole draft, so there's no `Back to my order` afterwards —
 cancel the dialog instead if you don't like the preview.
 

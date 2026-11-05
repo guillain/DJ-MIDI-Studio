@@ -57,7 +57,7 @@ transport, and to expose no Clock/MIDI-output configuration of its own — so
 Serato alone can never drive this path; some other genuinely Start-Stop-Sync-
 capable Link peer (Ableton Live here) is required.
 
-The current release is `v0.48.143` on `main`; each change since `v0.46.0` is
+The current release is `v0.48.187` on `main`; each change since `v0.46.0` is
 one milestone tag (`v0.4x.N-<slug>`) recorded in [Recent evolution
 chapters](#recent-evolution-chapters). Those chapters are software-validated;
 anything that still needs real hardware, a real DJ-software export or a
@@ -139,6 +139,14 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Night batch checked in the running app** (`v0.48.187-night-batch-fixes`) — every feature of
+  `v0.48.179`–`v0.48.186` (#403–#410) screenshotted in the real `MainWindow` on a synthetic library. Three fixes:
+  `Build a set from the library…` returned a one-track set whenever the slowest track had no compatible neighbour
+  (it now also tries the best-connected openers, ~0.3 s worst case at 85k tracks); `Organize into folders…` showed
+  two columns of identical, truncated absolute paths (now Status / File / Current folder / New folder, elided on
+  the left, moves first); the BPM x Key heatmap cut its rotated BPM labels and its legend said "darker" where more
+  tracks draw a *stronger* colour. Also published the missing `v0.48.186` release: the night batch's 8 tags were
+  pushed together, and GitHub starts no workflow for a push of more than 3 tags.
 - [x] **BPM x key compatibility heatmap** (`v0.48.186-bpm-key-heatmap`, issue #410) — a new `BPM x Key` tab in
   Library Statistics: a dense grid (BPM bins x the 24 Camelot codes), each cell shaded by how many tracks fall in
   it, to spot which parts of the collection are easiest to chain mixes within. `stats.compute_bpm_key_heatmap`
@@ -3654,6 +3662,17 @@ close what can't be unblocked here.
       in `v0.48.175-plugin-kit`.
    8. A third interface language. **Done** in `v0.48.176-german`
       (German; a native speaker's review is welcome).
+
+8. **Phase 7 — overnight brainstorm batch, 2026-11-04** (#403–#410, one PR, a
+   tag each, `v0.48.179`–`v0.48.186`): stage time remaining, a set generated
+   from the library, gig journal, organize into category folders, waveform
+   preview, macro export/import, "What's new" dialog, BPM x key heatmap.
+   **Done**, then checked in the running app in `v0.48.187-night-batch-fixes`
+   (three fixes, see Recent evolution chapters). Release tags must be pushed
+   one at a time: GitHub starts no workflow for a push of more than 3 tags.
+9. **Waiting on hardware**: the DDJ-XP2 1/2X / 2X notes, the CMD Micro and
+   CMD Studio 4a jogs, and a live session with the Live Monitor to confirm the
+   `v0.48.177` freeze fix and log where MIDI bursts come from (#356).
 
 ## Tracking rules
 
