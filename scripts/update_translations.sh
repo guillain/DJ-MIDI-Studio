@@ -77,6 +77,7 @@ SOURCES=(
   src/djmidi/gui/midi_route_transform_dialog.py
   src/djmidi/gui/metronome_view.py
   src/djmidi/gui/controller_emulator.py
+  src/djmidi/gui/feature_card.py
   src/djmidi/gui/pad_colour_panel.py
   src/djmidi/gui/profile_library_dialog.py
   src/djmidi/gui/geometry_editor.py

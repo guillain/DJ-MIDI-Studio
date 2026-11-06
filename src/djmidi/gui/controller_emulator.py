@@ -128,11 +128,13 @@ from PySide6.QtWidgets import (
 )
 
 from djmidi import catalog, pad_colours
+from djmidi.atelier.features import Feature, feature_for_message
 from djmidi.controller_sync import ControllerSyncSet
 from djmidi.gui import help_texts, layout_view
 from djmidi.gui import layout as layout_mod
 from djmidi.gui import pad_mode as pad_mode_mod
 from djmidi.gui.deferred_rebuild import DeferredRebuild
+from djmidi.gui.feature_card import FeatureCard
 from djmidi.gui.help_button import help_button
 from djmidi.gui.layer_toggles import LayerToggles
 from djmidi.gui.layout import CellKey
@@ -662,6 +664,9 @@ class ControllerEmulatorView(QWidget):
 
         self._status_label = QLabel(self.tr("Click a control to see what it resolves to."))
         self._status_label.setWordWrap(True)
+        # The Atelier's inspector (issue #413, step 2): the clicked control
+        # as a feature object, raw MIDI underneath.
+        self.feature_card = FeatureCard()
 
         self._live_send = LiveSendControl()
 
@@ -701,6 +706,7 @@ class ControllerEmulatorView(QWidget):
         content_layout.addWidget(self._pad_colours)
         content_layout.addWidget(self._emulator, 1)
         content_layout.addWidget(self._status_label)
+        content_layout.addWidget(self.feature_card)
 
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
@@ -811,6 +817,7 @@ class ControllerEmulatorView(QWidget):
         self._selected_slot.clear()
         self._selected_cell.clear()
         self._status_label.setText(self.tr("Click a control to see what it resolves to."))
+        self.feature_card.set_feature(None)
 
     def _load_pad_colours(self, controller: str) -> None:
         """Shows the Pad colours row for ``controller`` (if it has a
@@ -919,6 +926,7 @@ class ControllerEmulatorView(QWidget):
             self._status_label.setText(painted)
             return
         text = self._resolve(key)
+        self._show_feature(key)  # before a mode/SHIFT click changes the state it reads
         text += self._apply_output_state(key)
         text += self._select_pad_mode(key)
         text += self._toggle_shift(key)
@@ -994,6 +1002,22 @@ class ControllerEmulatorView(QWidget):
         if aliases_text:
             return self.tr("  [output aliases: {aliases}]").format(aliases=aliases_text)
         return ""
+
+    def feature_for_key(self, key: CellKey) -> Feature | None:
+        """The atelier feature `key` stands for right now: the same variant
+        `_resolve` picks (this side's deck, the latched pad mode and SHIFT)."""
+        entry = layout_mod.resolve_side_aware_variant(
+            key[0], key, self._current_pad_mode_token(key), self._shift_held
+        )
+        if entry is None or not entry.channels or not entry.channels[0].isdigit() or not entry.data1.isdigit():
+            return None
+        return feature_for_message(
+            key[0], _EVENT_TYPE_FOR_KIND[entry.note_or_cc], int(entry.channels[0]), int(entry.data1)
+        )
+
+    def _show_feature(self, key: CellKey) -> None:
+        feature = self.feature_for_key(key)
+        self.feature_card.set_feature(feature, unresolved=None if feature else f"{key[1]} {key[2]}")
 
     def _resolve(self, key: CellKey) -> str:
         # resolve_side_aware_variant (not a plain reverse_lookup() +

@@ -1801,6 +1801,133 @@ Trotzdem neu zuweisen? Beide lösen auf demselben Bedienelement aus.</translatio
     </message>
 </context>
 <context>
+    <name>FeatureCard</name>
+    <message>
+        <source>Button</source>
+        <translation>Taste</translation>
+    </message>
+    <message>
+        <source>Pad</source>
+        <translation>Pad</translation>
+    </message>
+    <message>
+        <source>Knob</source>
+        <translation>Regler</translation>
+    </message>
+    <message>
+        <source>Fader</source>
+        <translation>Fader</translation>
+    </message>
+    <message>
+        <source>Jog</source>
+        <translation>Jog</translation>
+    </message>
+    <message>
+        <source>tap</source>
+        <translation>Antippen</translation>
+    </message>
+    <message>
+        <source>press</source>
+        <translation>Drücken</translation>
+    </message>
+    <message>
+        <source>release</source>
+        <translation>Loslassen</translation>
+    </message>
+    <message>
+        <source>value</source>
+        <translation>Wert</translation>
+    </message>
+    <message>
+        <source>LED on</source>
+        <translation>LED an</translation>
+    </message>
+    <message>
+        <source>LED off</source>
+        <translation>LED aus</translation>
+    </message>
+    <message>
+        <source>LED value</source>
+        <translation>LED-Wert</translation>
+    </message>
+    <message>
+        <source>Feature</source>
+        <translation>Funktion</translation>
+    </message>
+    <message>
+        <source>Click a control to see it as a feature.</source>
+        <translation>Klicken Sie auf ein Bedienelement, um es als Funktion zu sehen.</translation>
+    </message>
+    <message>
+        <source>Id</source>
+        <translation>Kennung</translation>
+    </message>
+    <message>
+        <source>Control</source>
+        <translation>Bedienelement</translation>
+    </message>
+    <message>
+        <source>Kind</source>
+        <translation>Art</translation>
+    </message>
+    <message>
+        <source>Layer</source>
+        <translation>Ebene</translation>
+    </message>
+    <message>
+        <source>Sends</source>
+        <translation>Sendet</translation>
+    </message>
+    <message>
+        <source>LED</source>
+        <translation>LED</translation>
+    </message>
+    <message>
+        <source>Actions</source>
+        <translation>Aktionen</translation>
+    </message>
+    <message>
+        <source>{control}: no feature (no raw MIDI trigger known for it).</source>
+        <translation>{control}: keine Funktion (kein MIDI-Auslöser dafür bekannt).</translation>
+    </message>
+    <message>
+        <source>{kind}, deck {deck}</source>
+        <translation>{kind}, Deck {deck}</translation>
+    </message>
+    <message>
+        <source>SHIFT</source>
+        <translation>SHIFT</translation>
+    </message>
+    <message>
+        <source>plain</source>
+        <translation>normal</translation>
+    </message>
+    <message>
+        <source>{layer}, pad mode {bank}</source>
+        <translation>{layer}, Pad-Modus {bank}</translation>
+    </message>
+    <message>
+        <source>Note On / Off · ch {channel} · note {number}</source>
+        <translation>Note On / Off · Kanal {channel} · Note {number}</translation>
+    </message>
+    <message>
+        <source>Control Change · ch {channel} · CC {number}</source>
+        <translation>Control Change · Kanal {channel} · CC {number}</translation>
+    </message>
+    <message>
+        <source>none</source>
+        <translation>keine</translation>
+    </message>
+    <message>
+        <source>Note On · ch {channel} · note {note} · on {on} / off {off}</source>
+        <translation>Note On · Kanal {channel} · Note {note} · an {on} / aus {off}</translation>
+    </message>
+    <message>
+        <source>assumed (same note as the button), not verified on the hardware</source>
+        <translation>angenommen (gleiche Note wie die Taste), nicht an der Hardware geprüft</translation>
+    </message>
+</context>
+<context>
     <name>FirstRunWizard</name>
     <message>
         <source>Welcome to DJ MIDI Studio</source>
