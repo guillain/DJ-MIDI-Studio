@@ -1801,6 +1801,133 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     </message>
 </context>
 <context>
+    <name>FeatureCard</name>
+    <message>
+        <source>Button</source>
+        <translation>Bouton</translation>
+    </message>
+    <message>
+        <source>Pad</source>
+        <translation>Pad</translation>
+    </message>
+    <message>
+        <source>Knob</source>
+        <translation>Potentiomètre</translation>
+    </message>
+    <message>
+        <source>Fader</source>
+        <translation>Fader</translation>
+    </message>
+    <message>
+        <source>Jog</source>
+        <translation>Jog</translation>
+    </message>
+    <message>
+        <source>tap</source>
+        <translation>appui bref</translation>
+    </message>
+    <message>
+        <source>press</source>
+        <translation>appui</translation>
+    </message>
+    <message>
+        <source>release</source>
+        <translation>relâchement</translation>
+    </message>
+    <message>
+        <source>value</source>
+        <translation>valeur</translation>
+    </message>
+    <message>
+        <source>LED on</source>
+        <translation>LED allumée</translation>
+    </message>
+    <message>
+        <source>LED off</source>
+        <translation>LED éteinte</translation>
+    </message>
+    <message>
+        <source>LED value</source>
+        <translation>valeur de LED</translation>
+    </message>
+    <message>
+        <source>Feature</source>
+        <translation>Fonction</translation>
+    </message>
+    <message>
+        <source>Click a control to see it as a feature.</source>
+        <translation>Cliquez sur un contrôle pour le voir comme une fonction.</translation>
+    </message>
+    <message>
+        <source>Id</source>
+        <translation>Identifiant</translation>
+    </message>
+    <message>
+        <source>Control</source>
+        <translation>Contrôle</translation>
+    </message>
+    <message>
+        <source>Kind</source>
+        <translation>Type</translation>
+    </message>
+    <message>
+        <source>Layer</source>
+        <translation>Couche</translation>
+    </message>
+    <message>
+        <source>Sends</source>
+        <translation>Envoie</translation>
+    </message>
+    <message>
+        <source>LED</source>
+        <translation>LED</translation>
+    </message>
+    <message>
+        <source>Actions</source>
+        <translation>Actions</translation>
+    </message>
+    <message>
+        <source>{control}: no feature (no raw MIDI trigger known for it).</source>
+        <translation>{control} : aucune fonction (aucun déclencheur MIDI connu pour ce contrôle).</translation>
+    </message>
+    <message>
+        <source>{kind}, deck {deck}</source>
+        <translation>{kind}, platine {deck}</translation>
+    </message>
+    <message>
+        <source>SHIFT</source>
+        <translation>SHIFT</translation>
+    </message>
+    <message>
+        <source>plain</source>
+        <translation>normale</translation>
+    </message>
+    <message>
+        <source>{layer}, pad mode {bank}</source>
+        <translation>{layer}, mode de pad {bank}</translation>
+    </message>
+    <message>
+        <source>Note On / Off · ch {channel} · note {number}</source>
+        <translation>Note On / Off · canal {channel} · note {number}</translation>
+    </message>
+    <message>
+        <source>Control Change · ch {channel} · CC {number}</source>
+        <translation>Control Change · canal {channel} · CC {number}</translation>
+    </message>
+    <message>
+        <source>none</source>
+        <translation>aucune</translation>
+    </message>
+    <message>
+        <source>Note On · ch {channel} · note {note} · on {on} / off {off}</source>
+        <translation>Note On · canal {channel} · note {note} · allumée {on} / éteinte {off}</translation>
+    </message>
+    <message>
+        <source>assumed (same note as the button), not verified on the hardware</source>
+        <translation>supposée (même note que le bouton), non vérifiée sur le matériel</translation>
+    </message>
+</context>
+<context>
     <name>FirstRunWizard</name>
     <message>
         <source>Welcome to DJ MIDI Studio</source>
