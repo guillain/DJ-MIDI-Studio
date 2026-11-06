@@ -102,6 +102,67 @@ def configure_logging(
     return target
 
 
+CRASH_LOG_SUFFIX = "-crash.log"
+# How much of a crash trace is copied into the main log at the next start.
+_CRASH_REPORT_MAX_CHARS = 20_000
+_crash_file = None  # the open file faulthandler writes to (kept alive)
+
+
+def crash_log_path(log_path: str | Path) -> Path:
+    """``djmidi.log`` -> ``djmidi-crash.log``, in the same folder."""
+    path = Path(log_path)
+    return path.with_name(path.stem + CRASH_LOG_SUFFIX)
+
+
+def enable_crash_log(log_path: str | Path, *, only_if_enabled: bool = False) -> Path | None:
+    """Make a native crash (a Qt segfault, an abort) leave its Python stack.
+
+    `faulthandler` writes every thread's Python stack to a file of its own
+    beside the log -- not the rotating log itself, which may be renamed under
+    it -- that stays empty while all goes well. A crash left in that file by
+    the previous session is copied into the main log first (a warning) and
+    the file archived as ``.1``. Safe to call again: a changed log folder
+    moves the crash file with it (`only_if_enabled`: only then -- what a
+    Preferences change uses, so tests never turn it on). Returns the crash
+    file, or None if it is off or can't be opened (crash reporting is best
+    effort, never fatal)."""
+    global _crash_file
+    import faulthandler
+
+    if only_if_enabled and _crash_file is None:
+        return None
+    target = crash_log_path(log_path)
+    if _crash_file is not None and Path(_crash_file.name) == target:
+        return target
+    _report_previous_crash(target)
+    try:
+        handle = open(target, "a", encoding="utf-8")  # noqa: SIM115 -- must outlive this call
+    except OSError:
+        logging.getLogger(LOGGER_NAME).warning("Could not open the crash log %s", target, exc_info=True)
+        return None
+    faulthandler.enable(file=handle, all_threads=True)
+    if _crash_file is not None:
+        _crash_file.close()
+    _crash_file = handle
+    return target
+
+
+def _report_previous_crash(target: Path) -> None:
+    try:
+        text = target.read_text(encoding="utf-8", errors="replace") if target.exists() else ""
+    except OSError:
+        return
+    if not text.strip():
+        return
+    if len(text) > _CRASH_REPORT_MAX_CHARS:
+        text = "…\n" + text[-_CRASH_REPORT_MAX_CHARS:]
+    logging.getLogger(LOGGER_NAME).warning("The previous session crashed. Its Python stack:\n%s", text.rstrip())
+    try:
+        target.replace(target.with_name(target.name + ".1"))
+    except OSError:
+        pass
+
+
 def current_log_path() -> Path | None:
     """Return the file path the active rotating log handler writes to, if any."""
     for handler in logging.getLogger(LOGGER_NAME).handlers:
@@ -110,4 +171,11 @@ def current_log_path() -> Path | None:
     return None
 
 
-__all__ = ["configure_logging", "current_log_path", "default_log_path", "normalize_level"]
+__all__ = [
+    "configure_logging",
+    "crash_log_path",
+    "current_log_path",
+    "default_log_path",
+    "enable_crash_log",
+    "normalize_level",
+]
