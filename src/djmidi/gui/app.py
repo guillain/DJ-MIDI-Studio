@@ -10,11 +10,12 @@ from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QApplication, QWidget
 
 from djmidi import startup_timing
+from djmidi.gui.click_trail import install_click_trail
 from djmidi.gui.freeze_watchdog import FreezeWatchdog
 from djmidi.gui.main_window import MainWindow
 from djmidi.gui.theme import apply_theme
 from djmidi.gui.translation import install_translators
-from djmidi.logging_config import configure_logging
+from djmidi.logging_config import configure_logging, enable_crash_log
 from djmidi.plugins.preferences import PluginPreferences, default_preferences_path
 
 
@@ -93,6 +94,11 @@ def run(argv: list[str] | None = None) -> int:
     log_path = configure_logging(arguments.log_level, preferred_log_path)
     logger = logging.getLogger("djmidi.gui.app")
     logger.info("Starting DJ MIDI Studio")
+    # A native crash (Qt segfault) kills the process with no Python trace;
+    # this keeps one beside the log, reported into it at the next start.
+    crash_log = enable_crash_log(log_path)
+    if crash_log is not None:
+        logger.info("Native crash traces go to %s", crash_log)
     timer.mark("preferences and logging")
     app = QApplication(sys.argv if argv is None else [sys.argv[0], *argv])
     app.setOrganizationName("DJ MIDI Studio")
@@ -117,6 +123,9 @@ def run(argv: list[str] | None = None) -> int:
     # Logs where the GUI thread is stuck if the window stops responding.
     watchdog = FreezeWatchdog()
     watchdog.start()
+    # At DEBUG, names the list/tree a click lands on: the last such line
+    # before a native crash says which widget it happened in.
+    click_trail = install_click_trail(app)  # noqa: F841 -- kept alive with run()
     result = app.exec()
     watchdog.stop()
     logger.info("DJ MIDI Studio stopped with exit code %s; log file: %s", result, log_path)

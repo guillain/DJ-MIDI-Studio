@@ -57,6 +57,15 @@ def _delete_leftover_windows():
 
 
 @pytest.fixture(autouse=True)
+def _no_crash_log(monkeypatch):
+    """gui.app.run() turns faulthandler's crash log on for the real app; in
+    tests it would replace pytest's own faulthandler for the whole session
+    (and run() often gets a mocked log path). Its own tests call
+    logging_config.enable_crash_log directly."""
+    monkeypatch.setattr("djmidi.gui.app.enable_crash_log", lambda *_args, **_kwargs: None)
+
+
+@pytest.fixture(autouse=True)
 def _fresh_workspace(tmp_path, monkeypatch):
     """Each test gets its own empty DJ MIDI Studio folder, so a profile one
     test installs is never loaded by the next test's MainWindow."""

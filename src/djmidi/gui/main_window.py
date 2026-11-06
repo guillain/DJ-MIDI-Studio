@@ -171,7 +171,12 @@ from djmidi.integration_detection import (
 )
 from djmidi.library.set_prep import SetTrack, set_track_from_row
 from djmidi.live_ready import check_live_ready
-from djmidi.logging_config import configure_logging, current_log_path, default_log_path
+from djmidi.logging_config import (
+    configure_logging,
+    current_log_path,
+    default_log_path,
+    enable_crash_log,
+)
 from djmidi.mapping_diff import diff_configs
 from djmidi.midi_io import MidiEvent, MidiMonitor, list_input_ports, list_output_ports
 from djmidi.model import Control, MappingElement, MidiConfig, iter_bindings
@@ -1576,7 +1581,8 @@ class MainWindow(QMainWindow):
             self.midi_routing_view.set_routing_enabled(self.preferences.routing_enabled)
             self.controller_setup_view.set_default_file(self.preferences.controller_setup_default_file)
             log_path = self.preferences.log_path or current_log_path()
-            configure_logging(self.preferences.log_level, log_path)
+            log_path = configure_logging(self.preferences.log_level, log_path)
+            enable_crash_log(log_path, only_if_enabled=True)
             if self._layout_settings() is not None:
                 self._update_plug_in_watch()
             if self.preferences.auto_start_live_monitor and self.config is not None:
