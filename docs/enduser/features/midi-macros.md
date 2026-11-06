@@ -15,6 +15,7 @@
 - [Toggles, scenes and waits](#toggles-scenes-and-waits)
 - [Where the messages go](#where-the-messages-go)
 - [Read the steps as controller features](#read-the-steps-as-controller-features)
+- [Add steps from a controller](#add-steps-from-a-controller)
 - [Macro files](#macro-files)
 - [Related](#related)
 
@@ -167,6 +168,20 @@ updates as you edit a step or change the port, and stays empty for a wait
 step, for a message that matches no control, and for a port that isn't a
 known controller (a virtual bus, the DJ software). It's only a reading
 aid: the macro file is unchanged.
+
+## Add steps from a controller
+
+With a controller as the output port, **Add from controller…** lets you
+build a step without typing numbers: filter its controls (`deck 1 pad 3`,
+`beat sync`), pick one, choose **LED on**, **LED off** or **LED value**
+(with its 0-127 value) and click **Add step**. The new row shows the MIDI
+message it stands for, and the **Feature** column names it.
+
+When you save, every step that drives one of that controller's controls
+remembers which one, in the macro file. If a later version of the app
+corrects that control's note, your macro follows the correction the next
+time it loads. If the control no longer exists, the saved message is used
+as it was.
 
 ## Macro files
 

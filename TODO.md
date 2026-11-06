@@ -57,7 +57,7 @@ transport, and to expose no Clock/MIDI-output configuration of its own — so
 Serato alone can never drive this path; some other genuinely Start-Stop-Sync-
 capable Link peer (Ableton Live here) is required.
 
-The current release is `v0.48.192` on `main`; each change since `v0.46.0` is
+The current release is `v0.48.193` on `main`; each change since `v0.46.0` is
 one milestone tag (`v0.4x.N-<slug>`) recorded in [Recent evolution
 chapters](#recent-evolution-chapters). Those chapters are software-validated;
 anything that still needs real hardware, a real DJ-software export or a
@@ -139,6 +139,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Atelier step 3, second slice: macro steps from features** (`v0.48.193-atelier-macro-features`, epic #413) —
+  **Add from controller…** in the macro editor picks one of the output controller's controls and an LED action
+  (on / off / value) instead of typing numbers; and every step that drives a control now records it in the macro
+  file beside the MIDI message (decision 3 of #413), so a later catalog correction of that control's note reaches
+  saved macros. Old files load unchanged; a control that disappears falls back to the stored message.
 - [x] **Atelier step 3, first slice: macro steps read as features** (`v0.48.192-atelier-macro-steps`, epic #413) —
   the macro editor's new **Feature** column names each step sent to a known controller by its own control
   ("BEAT SYNC: LED on", "Deck 1 Pad 1 (PAD MODE 1): LED value 42"), live as steps or the port change. Read-only: macro
@@ -3704,7 +3709,9 @@ close what can't be unblocked here.
    raw MIDI; one PR and tag per step. 1. Feature model and actions —
    **done** in `v0.48.190-atelier-feature-model`. 2. Inspector in the
    Controller Emulator — **done** in `v0.48.191-atelier-inspector`. 3. Macro editor by features — first
-   slice (steps read as features) **done** in `v0.48.192-atelier-macro-steps`. 4. Scene / sync-set
+   slice (steps read as features) **done** in `v0.48.192-atelier-macro-steps`, second
+   (steps built from and stored with features) in `v0.48.193-atelier-macro-features`;
+   picking on the photo and simulation macros remain. 4. Scene / sync-set
    designer. 5. LED data per controller (LED probe with the hardware;
    Pioneer colour hypothesis). 6. Optional: remap / assign by drag and drop.
 10. **Waiting on hardware**: the DDJ-XP2 1/2X / 2X notes, the CMD Micro and
