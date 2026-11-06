@@ -78,6 +78,35 @@ class FeatureAction:
         return cls(str(raw["feature"]), str(raw["verb"]), int(value) if value is not None else None)
 
 
+@dataclass(frozen=True)
+class FeatureRef:
+    """A stored step's feature (issue #413, decision 3): which controller's
+    control and which single-message action the step's MIDI stands for.
+    Kept beside the compiled message, which stays the fallback."""
+
+    controller: str
+    action: FeatureAction
+
+    def to_dict(self) -> dict[str, object]:
+        return {"controller": self.controller, **self.action.to_dict()}
+
+    @classmethod
+    def from_dict(cls, raw: object) -> FeatureRef:
+        if not isinstance(raw, dict) or not raw.get("controller") or not raw.get("feature") or not raw.get("verb"):
+            raise ValueError("A step feature needs a controller, a feature and a verb")
+        return cls(str(raw["controller"]), FeatureAction.from_dict(raw))
+
+    def resolve(self) -> SyncMessage | None:
+        """The one message this reference compiles to now, or None when the
+        controller or feature is gone or the verb takes two messages (TAP)
+        -- the caller then keeps the stored message."""
+        try:
+            messages = compile_action(self.controller, self.action)
+        except ValueError:  # ActionError, or an unknown controller
+            return None
+        return messages[0] if len(messages) == 1 else None
+
+
 def verbs_for(feature: Feature) -> tuple[str, ...]:
     """The verbs that make sense for `feature`: a note can be tapped,
     pressed, released and lit; a CC only takes a value."""
@@ -189,6 +218,7 @@ __all__ = [
     "VERB_LABELS",
     "ActionError",
     "FeatureAction",
+    "FeatureRef",
     "compile_action",
     "compile_actions",
     "decompile",

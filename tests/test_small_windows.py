@@ -258,6 +258,12 @@ def _organize_files():
     return OrganizeFilesDialog(lambda: OrganizePlan(items))
 
 
+def _feature_steps():
+    from djmidi.gui.feature_step_dialog import FeatureStepDialog
+
+    return FeatureStepDialog("DDJ-XP2")
+
+
 def _generate_set():
     from djmidi.gui.generate_set_dialog import GenerateSetDialog
     from djmidi.library.set_prep import SetTrack
@@ -309,6 +315,7 @@ WINDOWS = {
     "generate set": _generate_set,
     "smart export": _smart_export,
     "whats new": _whats_new,
+    "macro steps from a controller": _feature_steps,
 }
 
 

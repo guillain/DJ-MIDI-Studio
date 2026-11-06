@@ -51,6 +51,7 @@ from PySide6.QtWidgets import (
 from djmidi import user_paths
 from djmidi.atelier.describe import controller_for_port, describe_message
 from djmidi.controller_sync import ControllerSyncSet, SyncMessage, move_message
+from djmidi.gui.feature_step_dialog import FeatureStepDialog
 from djmidi.gui.help_button import help_button
 from djmidi.gui.help_texts import MIDI_MACROS
 from djmidi.gui.macro_player import MacroPlayer
@@ -67,6 +68,7 @@ from djmidi.midi_macros import (
     MacroTrigger,
     MidiMacro,
     PortOpener,
+    annotate_with_features,
     merge_imported_macros,
     read_macro_bundle,
     sequence_label,
@@ -167,7 +169,7 @@ class MacroManagerDialog(QDialog):
         self.port_combo = QComboBox()
         self.port_combo.setEditable(True)
         self.port_combo.addItems(self._ports)
-        self.port_combo.currentTextChanged.connect(lambda _text: self._refresh_feature_column())
+        self.port_combo.currentTextChanged.connect(lambda _text: self._on_port_changed())
         self.port_combo.setToolTip(
             self.tr("Output port, or a controller name: matched against the connected ports like ⟳ Sync does")
         )
@@ -248,6 +250,12 @@ class MacroManagerDialog(QDialog):
 
         self.add_step_button = QPushButton(self.tr("Add step"))
         self.add_step_button.clicked.connect(self._add_step)
+        # Atelier (issue #413): pick a control and an LED action instead of
+        # typing the numbers; enabled when the output port is a controller.
+        self.add_feature_button = QPushButton(self.tr("Add from controller…"))
+        self.add_feature_button.clicked.connect(self._add_feature_steps)
+        self.add_feature_button.setEnabled(False)
+        self.feature_step_dialog_factory = FeatureStepDialog
         self.delete_step_button = QPushButton(self.tr("Delete step"))
         self.delete_step_button.clicked.connect(self._delete_step)
         self.up_button = QPushButton(self.tr("Move up"))
@@ -276,6 +284,7 @@ class MacroManagerDialog(QDialog):
         for button in (self.add_step_button, self.delete_step_button, self.up_button, self.down_button):
             step_buttons.addWidget(button)
         step_buttons.addStretch(1)
+        step_buttons.addWidget(self.add_feature_button)
         step_buttons.addWidget(self.learn_steps_button)
         step_buttons.addWidget(self.from_sync_button)
         step_buttons.addWidget(self.test_button)
@@ -330,6 +339,7 @@ class MacroManagerDialog(QDialog):
         macro = macro or MidiMacro("")
         self.name_edit.setText(macro.name)
         self.port_combo.setCurrentText(macro.output_port)
+        self._on_port_changed()
         self.shortcut_edit.setKeySequence(QKeySequence(macro.shortcut))
         self.cancel_learn(None)
         self._set_triggers(macro.triggers)
@@ -409,6 +419,29 @@ class MacroManagerDialog(QDialog):
         if item.column() != _FEATURE_COLUMN:
             self._refresh_feature_row(item.row())
 
+    def _on_port_changed(self) -> None:
+        self._refresh_feature_column()
+        controller = controller_for_port(self.port_combo.currentText())
+        self.add_feature_button.setEnabled(controller is not None)
+        self.add_feature_button.setToolTip(
+            self.tr("Add steps by picking one of {controller}'s controls and an LED action.").format(
+                controller=controller
+            )
+            if controller
+            else self.tr("Pick a controller's output port to add steps from its controls.")
+        )
+
+    def _add_feature_steps(self) -> None:
+        controller = controller_for_port(self.port_combo.currentText())
+        if controller is None:
+            return
+        dialog = self.feature_step_dialog_factory(controller, self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+        for step in dialog.steps():
+            self._append_row(step)
+        self.table.selectRow(self.table.rowCount() - 1)
+
     def _refresh_feature_column(self) -> None:
         for row in range(self.table.rowCount()):
             self._refresh_feature_row(row)
@@ -474,15 +507,18 @@ class MacroManagerDialog(QDialog):
         if shortcut and shortcut.casefold() in self._reserved:
             self.status.setText(self.tr("{shortcut} is already used by the app's menus").format(shortcut=shortcut))
             return None
-        return MidiMacro(
-            name,
-            self.port_combo.currentText().strip(),
-            steps,
-            shortcut,
-            self._triggers,
-            self.gap_spin.value(),
-            alternate,
-            scenes,
+        # Steps that drive a known controller record its feature (issue #413).
+        return annotate_with_features(
+            MidiMacro(
+                name,
+                self.port_combo.currentText().strip(),
+                steps,
+                shortcut,
+                self._triggers,
+                self.gap_spin.value(),
+                alternate,
+                scenes,
+            )
         )
 
     def _commit(self) -> bool:
