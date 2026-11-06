@@ -49,7 +49,8 @@ from PySide6.QtWidgets import (
 )
 
 from djmidi import user_paths
-from djmidi.controller_sync import ControllerSyncSet, move_message
+from djmidi.atelier.describe import controller_for_port, describe_message
+from djmidi.controller_sync import ControllerSyncSet, SyncMessage, move_message
 from djmidi.gui.help_button import help_button
 from djmidi.gui.help_texts import MIDI_MACROS
 from djmidi.gui.macro_player import MacroPlayer
@@ -92,6 +93,11 @@ _COLUMNS = (
     QT_TRANSLATE_NOOP("MacroManagerDialog", "Data 2"),
     QT_TRANSLATE_NOOP("MacroManagerDialog", "Delay (ms)"),
 )
+# Read-only last column (issue #413): each step named by the output
+# controller's feature ("BEAT SYNC: LED on"); not part of the stored step.
+_FEATURE_HEADER = QT_TRANSLATE_NOOP("MacroManagerDialog", "Feature")
+_FEATURE_COLUMN = len(_COLUMNS)
+_verb_translate = translator("FeatureActions")
 # Step errors, duplicate checks and play results come from Qt-free
 # midi_macros (issues #319, #326).
 _macro_translate = translator("MidiMacros")
@@ -161,6 +167,7 @@ class MacroManagerDialog(QDialog):
         self.port_combo = QComboBox()
         self.port_combo.setEditable(True)
         self.port_combo.addItems(self._ports)
+        self.port_combo.currentTextChanged.connect(lambda _text: self._refresh_feature_column())
         self.port_combo.setToolTip(
             self.tr("Output port, or a controller name: matched against the connected ports like ⟳ Sync does")
         )
@@ -227,15 +234,17 @@ class MacroManagerDialog(QDialog):
         self._sides: list[tuple[MacroStep, ...]] = [(), ()]
         self._side = 0
 
-        self.table = QTableWidget(0, len(_COLUMNS))
-        self.table.setHorizontalHeaderLabels([self.tr(column) for column in _COLUMNS])
+        self.table = QTableWidget(0, len(_COLUMNS) + 1)
+        self.table.setHorizontalHeaderLabels([self.tr(column) for column in _COLUMNS] + [self.tr(_FEATURE_HEADER)])
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         for column in range(1, len(_COLUMNS)):
             header.setSectionResizeMode(column, QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(_FEATURE_COLUMN, QHeaderView.ResizeMode.ResizeToContents)
         self.table.setMinimumWidth(440)
+        self.table.itemChanged.connect(self._on_step_item_changed)
 
         self.add_step_button = QPushButton(self.tr("Add step"))
         self.add_step_button.clicked.connect(self._add_step)
@@ -378,10 +387,68 @@ class MacroManagerDialog(QDialog):
         combo.setCurrentIndex(max(combo.findData(step_type(step)), 0))
         self.table.setCellWidget(row, 0, combo)
         values = (step.message.channel, step.message.data1, step.message.data2, step.delay_ms)
+        self.table.blockSignals(True)
         for column, value in enumerate(values, start=1):
             item = QTableWidgetItem(str(value))
             item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
             self.table.setItem(row, column, item)
+        feature_item = QTableWidgetItem()
+        feature_item.setFlags(feature_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+        self.table.setItem(row, _FEATURE_COLUMN, feature_item)
+        self.table.blockSignals(False)
+        combo.currentIndexChanged.connect(lambda _index, combo=combo: self._refresh_feature_row(self._row_of(combo)))
+        self._refresh_feature_row(row)
+
+    def _row_of(self, combo: QComboBox) -> int:
+        for row in range(self.table.rowCount()):
+            if self.table.cellWidget(row, 0) is combo:
+                return row
+        return -1
+
+    def _on_step_item_changed(self, item: QTableWidgetItem) -> None:
+        if item.column() != _FEATURE_COLUMN:
+            self._refresh_feature_row(item.row())
+
+    def _refresh_feature_column(self) -> None:
+        for row in range(self.table.rowCount()):
+            self._refresh_feature_row(row)
+
+    def feature_text(self, row: int) -> str:
+        item = self.table.item(row, _FEATURE_COLUMN)
+        return item.text() if item is not None else ""
+
+    def _refresh_feature_row(self, row: int) -> None:
+        """Names step `row` by the output controller's feature, when the
+        output port is a known controller and the step is a plain message."""
+        item = self.table.item(row, _FEATURE_COLUMN) if row >= 0 else None
+        if item is None:
+            return
+        controller = controller_for_port(self.port_combo.currentText())
+        text = ""
+        if controller is None:
+            tip = self.tr("Pick a controller's output port to see each step as one of its features.")
+        else:
+            tip = self.tr("Steps sent to {controller}, read as its features (LED messages).").format(
+                controller=controller
+            )
+            message = self._row_message(row)
+            if message is not None:
+                text = describe_message(controller, message, translate=_verb_translate) or ""
+        self.table.blockSignals(True)
+        item.setText(text)
+        item.setToolTip(tip)
+        self.table.blockSignals(False)
+
+    def _row_message(self, row: int) -> SyncMessage | None:
+        combo = self.table.cellWidget(row, 0)
+        kind = combo.currentData() if isinstance(combo, QComboBox) else ""
+        if kind not in _EVENT_TYPES:  # a wait step waits for a press, it doesn't drive the controller
+            return None
+        try:
+            values = [int(self.table.item(row, column).text()) for column in (1, 2, 3)]
+            return SyncMessage.create(kind, *values)
+        except (AttributeError, TypeError, ValueError):
+            return None
 
     def _rows(self) -> list[tuple[str, ...]]:
         rows = []

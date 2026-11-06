@@ -1801,27 +1801,7 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     </message>
 </context>
 <context>
-    <name>FeatureCard</name>
-    <message>
-        <source>Button</source>
-        <translation>Bouton</translation>
-    </message>
-    <message>
-        <source>Pad</source>
-        <translation>Pad</translation>
-    </message>
-    <message>
-        <source>Knob</source>
-        <translation>Potentiomètre</translation>
-    </message>
-    <message>
-        <source>Fader</source>
-        <translation>Fader</translation>
-    </message>
-    <message>
-        <source>Jog</source>
-        <translation>Jog</translation>
-    </message>
+    <name>FeatureActions</name>
     <message>
         <source>tap</source>
         <translation>appui bref</translation>
@@ -1849,6 +1829,29 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     <message>
         <source>LED value</source>
         <translation>valeur de LED</translation>
+    </message>
+</context>
+<context>
+    <name>FeatureCard</name>
+    <message>
+        <source>Button</source>
+        <translation>Bouton</translation>
+    </message>
+    <message>
+        <source>Pad</source>
+        <translation>Pad</translation>
+    </message>
+    <message>
+        <source>Knob</source>
+        <translation>Potentiomètre</translation>
+    </message>
+    <message>
+        <source>Fader</source>
+        <translation>Fader</translation>
+    </message>
+    <message>
+        <source>Jog</source>
+        <translation>Jog</translation>
     </message>
     <message>
         <source>Feature</source>
@@ -3395,6 +3398,10 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
         <translation>Attendre un Control Change</translation>
     </message>
     <message>
+        <source>Feature</source>
+        <translation>Fonction</translation>
+    </message>
+    <message>
         <source>Delete</source>
         <translation>Supprimer</translation>
     </message>
@@ -3529,6 +3536,14 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
     <message>
         <source>Steps play top to bottom; each waits its delay before sending (channel 1–16, data 0–127, delay 0–60000 ms).</source>
         <translation>Les étapes sont jouées de haut en bas ; chacune attend son délai avant l&apos;envoi (canal 1–16, data 0–127, délai 0–60000 ms).</translation>
+    </message>
+    <message>
+        <source>Pick a controller&apos;s output port to see each step as one of its features.</source>
+        <translation>Choisissez le port de sortie d’un contrôleur pour voir chaque pas comme une de ses fonctions.</translation>
+    </message>
+    <message>
+        <source>Steps sent to {controller}, read as its features (LED messages).</source>
+        <translation>Pas envoyés à {controller}, lus comme ses fonctions (messages de LED).</translation>
     </message>
     <message>
         <source>A macro needs a name</source>

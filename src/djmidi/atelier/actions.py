@@ -25,6 +25,7 @@ from dataclasses import dataclass
 
 from djmidi.atelier.features import CC, NOTE, Feature, feature_by_id, features_for
 from djmidi.controller_sync import SyncMessage
+from djmidi.i18n import QT_TRANSLATE_NOOP
 
 AS_CONTROLLER = "as_controller"
 TO_CONTROLLER = "to_controller"
@@ -36,6 +37,17 @@ VALUE = "value"
 LED_ON = "led_on"
 LED_OFF = "led_off"
 LED_VALUE = "led_value"
+
+# Readable verb words (the GUI translates them in the "FeatureActions" context).
+VERB_LABELS = {
+    TAP: QT_TRANSLATE_NOOP("FeatureActions", "tap"),
+    PRESS: QT_TRANSLATE_NOOP("FeatureActions", "press"),
+    RELEASE: QT_TRANSLATE_NOOP("FeatureActions", "release"),
+    VALUE: QT_TRANSLATE_NOOP("FeatureActions", "value"),
+    LED_ON: QT_TRANSLATE_NOOP("FeatureActions", "LED on"),
+    LED_OFF: QT_TRANSLATE_NOOP("FeatureActions", "LED off"),
+    LED_VALUE: QT_TRANSLATE_NOOP("FeatureActions", "LED value"),
+}
 
 NOTE_VERBS = (TAP, PRESS, RELEASE, LED_ON, LED_OFF, LED_VALUE)
 CC_VERBS = (VALUE,)
@@ -174,6 +186,7 @@ __all__ = [
     "TAP",
     "TO_CONTROLLER",
     "VALUE",
+    "VERB_LABELS",
     "ActionError",
     "FeatureAction",
     "compile_action",
