@@ -11,6 +11,7 @@
 - [What it does](#what-it-does)
 - [Open an emulator](#open-an-emulator)
 - [Click to resolve a control](#click-to-resolve-a-control)
+- [See a control as a feature](#see-a-control-as-a-feature)
 - [Modes, SHIFT and selections](#modes-shift-and-selections)
 - [Knobs, faders and jog wheels](#knobs-faders-and-jog-wheels)
 - [Send real MIDI (Live send)](#send-real-midi-live-send)
@@ -49,6 +50,27 @@ on.
 
 A control mapped as an on/off toggle keeps an amber highlight while "on",
 just like the hardware LED.
+
+## See a control as a feature
+
+Under the result line, the **Feature** card shows the control you just
+clicked as an object, the way the coming Atelier works with it:
+
+| Row | What it says |
+| --- | --- |
+| Id | A stable name for this control, e.g. `pad.deck-1-pad-3-pad-mode-2@8` |
+| Control | Its name in the controller profile |
+| Kind | Button, pad, knob, fader or jog, and its deck |
+| Layer | Plain or SHIFT, and the pad mode it belongs to |
+| Sends | The MIDI message it sends (channel and note or CC) |
+| LED | The message that lights it |
+| Actions | What a macro or scene can do with it: tap, press, release, light… |
+
+It follows the emulator's state: the side you click (deck 1 or 2), the pad
+mode you picked and a latched SHIFT. The LED row says **assumed, not
+verified** when no document gives the LED's address: the app then supposes
+it answers on the same note as the button, which is true for most Serato
+controllers but not guaranteed until it's checked on the hardware.
 
 ## Modes, SHIFT and selections
 

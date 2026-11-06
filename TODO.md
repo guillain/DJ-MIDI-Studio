@@ -57,7 +57,7 @@ transport, and to expose no Clock/MIDI-output configuration of its own — so
 Serato alone can never drive this path; some other genuinely Start-Stop-Sync-
 capable Link peer (Ableton Live here) is required.
 
-The current release is `v0.48.190` on `main`; each change since `v0.46.0` is
+The current release is `v0.48.191` on `main`; each change since `v0.46.0` is
 one milestone tag (`v0.4x.N-<slug>`) recorded in [Recent evolution
 chapters](#recent-evolution-chapters). Those chapters are software-validated;
 anything that still needs real hardware, a real DJ-software export or a
@@ -139,6 +139,10 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Atelier step 2: the feature inspector** (`v0.48.191-atelier-inspector`, epic #413) — clicking a control in
+  the Controller Emulator now also shows it as a feature: its stable id, kind and deck, SHIFT layer and pad mode, the
+  MIDI it sends and the LED message (flagged *assumed, not verified* when no document gives it), and the actions a
+  macro or scene could apply. It follows the emulator's side, latched pad mode and SHIFT. FR/DE translated.
 - [x] **Atelier step 1: the feature model** (`v0.48.190-atelier-feature-model`, epic #413) — Qt-free `djmidi.atelier`:
   one `Feature` per control, channel and layer of a controller (stable readable id, kind, deck, SHIFT, pad bank, input
   message, assumed-and-marked LED), and feature actions (tap / press / release / value, LED on / off / value) compiled
@@ -3695,7 +3699,7 @@ close what can't be unblocked here.
    sync sets by manipulating controller features on the photo instead of
    raw MIDI; one PR and tag per step. 1. Feature model and actions —
    **done** in `v0.48.190-atelier-feature-model`. 2. Inspector in the
-   Controller Emulator. 3. Macro editor by features. 4. Scene / sync-set
+   Controller Emulator — **done** in `v0.48.191-atelier-inspector`. 3. Macro editor by features. 4. Scene / sync-set
    designer. 5. LED data per controller (LED probe with the hardware;
    Pioneer colour hypothesis). 6. Optional: remap / assign by drag and drop.
 10. **Waiting on hardware**: the DDJ-XP2 1/2X / 2X notes, the CMD Micro and
