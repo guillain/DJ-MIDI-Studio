@@ -222,6 +222,23 @@ confirmed either (`CLAUDE.md`'s 10x-duplication note).
 So no converter shipped for #194 — a half that would only ever report
 "not supported" for every element of every real file would be dead code.
 
+**Update 2026-11-06 — a community source for some tag names.** DJ TechTools'
+"Even More Serato DJ Pro MIDI Hacking" (Teo Tormo, 2018-10-29, a hand-edited
+mapping for a DJ TechTools MIDI Fighter, Serato DJ Pro 2.0.4) shows Serato
+XML using `play` (with an `output` LED block, aliases `on`/`off`), `reverse`,
+`cue_point` (hot cue trigger, `slot_id` = cue number) with `cue_point_set`
+for its LED, `cue_point_delete`, `absolute_key_shift` (`behaviour="static"
+static_value="-4"`), `multi_tab_flip` / `multi_tab_loop` / `multi_tab_cue`,
+and modifiers `modifier_1`..`modifier_3` used through `<case><condition>`
+blocks (several modifier tests per condition, `operator="equal"`,
+`cmp_value="on|off"`). It does **not** name Sync or the main (non-hot) Cue.
+The maintainer's own `default.xml` adds `eject`. This is a third-party,
+hand-edited file, not a Serato export: enough to recognise Play and hot cues
+when reading, but the IAC capture (`scripts/serato_learn_iac.py`) is still
+what confirms them — and the only way to learn Sync and Cue. It also showed
+that the parser dropped `<case>` blocks entirely; they are modelled and
+round-tripped since `v0.48.188`.
+
 ### `CMAD` layout check (for a future "create a binding" feature)
 
 Parsing every one of the 9,360 real `CMAD` payloads with the field list

@@ -57,7 +57,7 @@ transport, and to expose no Clock/MIDI-output configuration of its own — so
 Serato alone can never drive this path; some other genuinely Start-Stop-Sync-
 capable Link peer (Ableton Live here) is required.
 
-The current release is `v0.48.187` on `main`; each change since `v0.46.0` is
+The current release is `v0.48.188` on `main`; each change since `v0.46.0` is
 one milestone tag (`v0.4x.N-<slug>`) recorded in [Recent evolution
 chapters](#recent-evolution-chapters). Those chapters are software-validated;
 anything that still needs real hardware, a real DJ-software export or a
@@ -139,6 +139,16 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Serato `<case>` blocks kept on save** (`v0.48.188-serato-case-blocks`) — reading DJ TechTools' Serato
+  MIDI-hacking article (shared by the maintainer) showed hand-edited mappings put modifier / SHIFT layers in
+  `<case><condition>` blocks, and the parser kept only a `<control>`'s direct `<userio>` children: opening such a
+  mapping and saving it erased every conditional binding. Now modelled (`Case`, `Condition`), round-tripped byte
+  for byte in their original order, and respected everywhere a binding is read (`model.iter_bindings`): By
+  Channel shows `Case` rows, By Deck / function search / cheat sheet / mapping diff carry the condition, conflicts
+  are only reported within one condition, deck copy keeps it, and a `<modifier_N>` definition no longer raises a
+  false "missing deck_id or slot_id" error. Editing the conditions themselves is left for later. The article's
+  tag names (`play`, `cue_point`, `cue_point_delete`, `reverse`, modifiers…) are recorded in
+  `software/traktor/README.md` for #194.
 - [x] **Night batch checked in the running app** (`v0.48.187-night-batch-fixes`) — every feature of
   `v0.48.179`–`v0.48.186` (#403–#410) screenshotted in the real `MainWindow` on a synthetic library. Three fixes:
   `Build a set from the library…` returned a one-track set whenever the slowest track had no compatible neighbour
