@@ -9,8 +9,9 @@ from __future__ import annotations
 from PySide6.QtCore import QT_TRANSLATE_NOOP, Qt
 from PySide6.QtWidgets import QFormLayout, QGroupBox, QLabel, QVBoxLayout, QWidget
 
-from djmidi.atelier.actions import verbs_for
+from djmidi.atelier.actions import VERB_LABELS, verbs_for
 from djmidi.atelier.features import NOTE, Feature
+from djmidi.gui.translation import translator
 
 _KINDS = {
     "button": QT_TRANSLATE_NOOP("FeatureCard", "Button"),
@@ -19,15 +20,7 @@ _KINDS = {
     "fader": QT_TRANSLATE_NOOP("FeatureCard", "Fader"),
     "jog": QT_TRANSLATE_NOOP("FeatureCard", "Jog"),
 }
-_VERBS = {
-    "tap": QT_TRANSLATE_NOOP("FeatureCard", "tap"),
-    "press": QT_TRANSLATE_NOOP("FeatureCard", "press"),
-    "release": QT_TRANSLATE_NOOP("FeatureCard", "release"),
-    "value": QT_TRANSLATE_NOOP("FeatureCard", "value"),
-    "led_on": QT_TRANSLATE_NOOP("FeatureCard", "LED on"),
-    "led_off": QT_TRANSLATE_NOOP("FeatureCard", "LED off"),
-    "led_value": QT_TRANSLATE_NOOP("FeatureCard", "LED value"),
-}
+_verb_translate = translator("FeatureActions")
 
 
 class FeatureCard(QGroupBox):
@@ -114,7 +107,9 @@ class FeatureCard(QGroupBox):
             if not led.verified:
                 text += " — " + self.tr("assumed (same note as the button), not verified on the hardware")
             self.led_label.setText(text)
-        self.actions_label.setText(", ".join(self.tr(_VERBS.get(verb, verb)) for verb in verbs_for(feature)))
+        self.actions_label.setText(
+            ", ".join(_verb_translate(VERB_LABELS.get(verb, verb)) for verb in verbs_for(feature))
+        )
 
 
 __all__ = ["FeatureCard"]

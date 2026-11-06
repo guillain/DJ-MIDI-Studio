@@ -994,7 +994,7 @@ def test_macro_editor_shows_french(french):
         texts = {button.text() for button in dialog.findChildren(QPushButton)}
         assert {"Nouvelle", "Ajouter une étape", "Tester", "Apprendre"} <= texts
         headers = [dialog.table.horizontalHeaderItem(column).text() for column in range(dialog.table.columnCount())]
-        assert headers == ["Type", "Canal", "Data 1", "Data 2", "Délai (ms)"]
+        assert headers == ["Type", "Canal", "Data 1", "Data 2", "Délai (ms)", "Fonction"]
         assert dialog.trigger_label.text() == "Aucun"
         dialog.name_edit.setText("")
         dialog.accept()

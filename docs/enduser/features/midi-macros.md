@@ -14,6 +14,7 @@
 - [Play a macro from a controller button](#play-a-macro-from-a-controller-button)
 - [Toggles, scenes and waits](#toggles-scenes-and-waits)
 - [Where the messages go](#where-the-messages-go)
+- [Read the steps as controller features](#read-the-steps-as-controller-features)
 - [Macro files](#macro-files)
 - [Related](#related)
 
@@ -154,6 +155,18 @@ pressed twice — share one open port. If sending fails, that macro lets go of
 the port right away. Quitting the app, or closing `Manage Macros…` while
 `Test` still waits on a delay, stops that macro and closes its port at once;
 the remaining messages are not sent.
+
+## Read the steps as controller features
+
+When the macro's output port is a controller the app knows (its name, as
+your system lists it), the **Feature** column names every step by that
+controller's own controls instead of leaving you to decode numbers:
+`BEAT SYNC: LED on`, `Deck 1 Pad 1 (PAD MODE 1): LED value 42`. A step
+sent to a controller lights it, so steps read as LED messages. The column
+updates as you edit a step or change the port, and stays empty for a wait
+step, for a message that matches no control, and for a port that isn't a
+known controller (a virtual bus, the DJ software). It's only a reading
+aid: the macro file is unchanged.
 
 ## Macro files
 

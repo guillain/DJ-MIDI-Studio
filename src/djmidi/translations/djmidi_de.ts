@@ -1801,27 +1801,7 @@ Trotzdem neu zuweisen? Beide lösen auf demselben Bedienelement aus.</translatio
     </message>
 </context>
 <context>
-    <name>FeatureCard</name>
-    <message>
-        <source>Button</source>
-        <translation>Taste</translation>
-    </message>
-    <message>
-        <source>Pad</source>
-        <translation>Pad</translation>
-    </message>
-    <message>
-        <source>Knob</source>
-        <translation>Regler</translation>
-    </message>
-    <message>
-        <source>Fader</source>
-        <translation>Fader</translation>
-    </message>
-    <message>
-        <source>Jog</source>
-        <translation>Jog</translation>
-    </message>
+    <name>FeatureActions</name>
     <message>
         <source>tap</source>
         <translation>Antippen</translation>
@@ -1849,6 +1829,29 @@ Trotzdem neu zuweisen? Beide lösen auf demselben Bedienelement aus.</translatio
     <message>
         <source>LED value</source>
         <translation>LED-Wert</translation>
+    </message>
+</context>
+<context>
+    <name>FeatureCard</name>
+    <message>
+        <source>Button</source>
+        <translation>Taste</translation>
+    </message>
+    <message>
+        <source>Pad</source>
+        <translation>Pad</translation>
+    </message>
+    <message>
+        <source>Knob</source>
+        <translation>Regler</translation>
+    </message>
+    <message>
+        <source>Fader</source>
+        <translation>Fader</translation>
+    </message>
+    <message>
+        <source>Jog</source>
+        <translation>Jog</translation>
     </message>
     <message>
         <source>Feature</source>
@@ -3379,6 +3382,10 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
         <translation>Verzögerung (ms)</translation>
     </message>
     <message>
+        <source>Feature</source>
+        <translation>Funktion</translation>
+    </message>
+    <message>
         <source>MIDI Macros</source>
         <translation>MIDI-Makros</translation>
     </message>
@@ -3525,6 +3532,14 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
     <message>
         <source>Steps play top to bottom; each waits its delay before sending (channel 1–16, data 0–127, delay 0–60000 ms).</source>
         <translation>Schritte werden von oben nach unten abgespielt; jeder wartet seine Verzögerung vor dem Senden ab (Kanal 1–16, Data 0–127, Verzögerung 0–60000 ms).</translation>
+    </message>
+    <message>
+        <source>Pick a controller&apos;s output port to see each step as one of its features.</source>
+        <translation>Wählen Sie den Ausgang eines Controllers, um jeden Schritt als eine seiner Funktionen zu sehen.</translation>
+    </message>
+    <message>
+        <source>Steps sent to {controller}, read as its features (LED messages).</source>
+        <translation>An {controller} gesendete Schritte, als seine Funktionen gelesen (LED-Meldungen).</translation>
     </message>
     <message>
         <source>A macro needs a name</source>
