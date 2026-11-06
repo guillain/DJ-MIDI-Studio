@@ -57,7 +57,7 @@ transport, and to expose no Clock/MIDI-output configuration of its own — so
 Serato alone can never drive this path; some other genuinely Start-Stop-Sync-
 capable Link peer (Ableton Live here) is required.
 
-The current release is `v0.48.188` on `main`; each change since `v0.46.0` is
+The current release is `v0.48.189` on `main`; each change since `v0.46.0` is
 one milestone tag (`v0.4x.N-<slug>`) recorded in [Recent evolution
 chapters](#recent-evolution-chapters). Those chapters are software-validated;
 anything that still needs real hardware, a real DJ-software export or a
@@ -139,6 +139,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Native crash traces** (`v0.48.189-crash-log`) — the maintainer's app crashed (a Qt segfault on a list click,
+  `v0.48.186`) leaving nothing in the log or the console. `faulthandler` now writes every thread's Python stack to
+  `djmidi-crash.log` beside the log, copied into the main log at the next start; and at DEBUG every click on a
+  list/tree/table is logged with its widget and item, since a crash inside Qt's click handling shows only the event
+  loop in the Python stack. The crash itself wasn't reproduced (automated clicks on every list, offscreen and on the
+  real macOS platform, with copies of the maintainer's settings): the next one will name its widget.
 - [x] **Serato `<case>` blocks kept on save** (`v0.48.188-serato-case-blocks`) — reading DJ TechTools' Serato
   MIDI-hacking article (shared by the maintainer) showed hand-edited mappings put modifier / SHIFT layers in
   `<case><condition>` blocks, and the parser kept only a `<control>`'s direct `<userio>` children: opening such a

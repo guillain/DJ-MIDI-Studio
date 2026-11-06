@@ -12,6 +12,7 @@
 - [What the report contains](#what-the-report-contains)
 - [What it never contains](#what-it-never-contains)
 - [Long reports](#long-reports)
+- [If the app crashes](#if-the-app-crashes)
 - [Related](#related)
 
 ## Send a report
@@ -54,6 +55,24 @@ A web link can only carry so much text. When the report is too long, the
 issue opens with everything except the log lines, and a note where they
 go: paste the clipboard there — it holds the full report, exactly as you
 edited it.
+
+## If the app crashes
+
+When the app closes on its own (a crash inside Qt, the graphics toolkit),
+it leaves a trace for the next start:
+
+- the crash's Python stack is written to `djmidi-crash.log`, beside the
+  app's log file;
+- at the next start, the app copies it into the main log as a warning
+  ("The previous session crashed") and keeps the file as
+  `djmidi-crash.log.1`;
+- with the log level at **DEBUG** (Preferences, or `--log-level DEBUG`),
+  every click on a list, tree or table is logged too (`click: press on …`):
+  the last such line before the crash names the list and the item you
+  clicked.
+
+Restart the app, then use **Report a Problem…**: its log excerpt includes
+that warning. If you'd rather, attach the log file itself.
 
 ## Related
 
