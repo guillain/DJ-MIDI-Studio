@@ -57,7 +57,7 @@ transport, and to expose no Clock/MIDI-output configuration of its own — so
 Serato alone can never drive this path; some other genuinely Start-Stop-Sync-
 capable Link peer (Ableton Live here) is required.
 
-The current release is `v0.48.189` on `main`; each change since `v0.46.0` is
+The current release is `v0.48.190` on `main`; each change since `v0.46.0` is
 one milestone tag (`v0.4x.N-<slug>`) recorded in [Recent evolution
 chapters](#recent-evolution-chapters). Those chapters are software-validated;
 anything that still needs real hardware, a real DJ-software export or a
@@ -139,6 +139,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Atelier step 1: the feature model** (`v0.48.190-atelier-feature-model`, epic #413) — Qt-free `djmidi.atelier`:
+  one `Feature` per control, channel and layer of a controller (stable readable id, kind, deck, SHIFT, pad bank, input
+  message, assumed-and-marked LED), and feature actions (tap / press / release / value, LED on / off / value) compiled
+  to the MIDI messages macros and sync sets already use, and read back from them. Checked on the maintainer's six
+  controllers (XDJ-XZ 701 features, DDJ-XP2 1,173, CMD LC-1 / Micro / Studio 4a, nanoPAD2).
 - [x] **Native crash traces** (`v0.48.189-crash-log`) — the maintainer's app crashed (a Qt segfault on a list click,
   `v0.48.186`) leaving nothing in the log or the console. `faulthandler` now writes every thread's Python stack to
   `djmidi-crash.log` beside the log, copied into the main log at the next start; and at DEBUG every click on a
@@ -3686,7 +3691,14 @@ close what can't be unblocked here.
    **Done**, then checked in the running app in `v0.48.187-night-batch-fixes`
    (three fixes, see Recent evolution chapters). Release tags must be pushed
    one at a time: GitHub starts no workflow for a push of more than 3 tags.
-9. **Waiting on hardware**: the DDJ-XP2 1/2X / 2X notes, the CMD Micro and
+9. **Phase 8 — Atelier (#413)**, agreed 2026-11-06: build macros, scenes and
+   sync sets by manipulating controller features on the photo instead of
+   raw MIDI; one PR and tag per step. 1. Feature model and actions —
+   **done** in `v0.48.190-atelier-feature-model`. 2. Inspector in the
+   Controller Emulator. 3. Macro editor by features. 4. Scene / sync-set
+   designer. 5. LED data per controller (LED probe with the hardware;
+   Pioneer colour hypothesis). 6. Optional: remap / assign by drag and drop.
+10. **Waiting on hardware**: the DDJ-XP2 1/2X / 2X notes, the CMD Micro and
    CMD Studio 4a jogs, and a live session with the Live Monitor to confirm the
    `v0.48.177` freeze fix and log where MIDI bursts come from (#356).
 
