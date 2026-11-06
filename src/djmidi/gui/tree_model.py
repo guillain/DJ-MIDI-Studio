@@ -12,7 +12,7 @@ from PySide6.QtCore import (
 from PySide6.QtGui import QStandardItem, QStandardItemModel
 
 from djmidi.function_names import function_name, label_with_raw
-from djmidi.model import Control, MappingElement, MidiConfig, UserIO
+from djmidi.model import Case, Control, MappingElement, MidiConfig, UserIO
 
 NODE_ROLE = Qt.ItemDataRole.UserRole + 1
 
@@ -78,12 +78,36 @@ def _userio_item(userio: UserIO) -> QStandardItem:
     return item
 
 
+def case_label(case: Case) -> str:
+    return QCoreApplication.translate("MappingTree", "Case: {condition}").format(
+        condition=case.describe() or QCoreApplication.translate("MappingTree", "(no condition)")
+    )
+
+
+def _case_item(case: Case) -> QStandardItem:
+    """A Serato <case> (a modifier / SHIFT layer): its <userio>s apply only
+    while the condition holds."""
+    item = QStandardItem(case_label(case))
+    item.setData(case, NODE_ROLE)
+    item.setEditable(False)
+    for userio in case.userios:
+        item.appendRow(_userio_item(userio))
+    return item
+
+
 def _control_item(control: Control) -> QStandardItem:
     item = QStandardItem(control_label(control))
     item.setData(control, NODE_ROLE)
     item.setEditable(False)
-    for userio in control.userios:
+    # Same order as the file: each case sits after the direct <userio>s
+    # that precede it (`Case.position`).
+    pending = list(control.cases)
+    for index, userio in enumerate(control.userios):
+        while pending and pending[0].position is not None and pending[0].position <= index:
+            item.appendRow(_case_item(pending.pop(0)))
         item.appendRow(_userio_item(userio))
+    for case in pending:
+        item.appendRow(_case_item(case))
     return item
 
 
@@ -102,13 +126,13 @@ def _group_item(text: str) -> QStandardItem:
 
 
 def _index_control_subtree(control: Control, control_item: QStandardItem, node_to_item: dict[int, QStandardItem]) -> None:
+    """Every node under a control -- cases, userios, mappings, at any depth."""
     node_to_item[id(control)] = control_item
-    for row in range(control_item.rowCount()):
-        userio_item = control_item.child(row)
-        node_to_item[id(userio_item.data(NODE_ROLE))] = userio_item
-        for mapping_row in range(userio_item.rowCount()):
-            mapping_item = userio_item.child(mapping_row)
-            node_to_item[id(mapping_item.data(NODE_ROLE))] = mapping_item
+    stack = [control_item.child(row) for row in range(control_item.rowCount())]
+    while stack:
+        item = stack.pop()
+        node_to_item[id(item.data(NODE_ROLE))] = item
+        stack.extend(item.child(row) for row in range(item.rowCount()))
 
 
 def build_channel_columns(config: MidiConfig) -> list[tuple[str, QStandardItemModel, dict[int, QStandardItem]]]:

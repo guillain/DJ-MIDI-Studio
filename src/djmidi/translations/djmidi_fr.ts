@@ -1619,6 +1619,22 @@ Il reste une étape manuelle : ajoutez &apos;{slug}&apos; au bloc d&apos;imports
         <translation>Sélectionnez un élément de l&apos;arbre pour le modifier.</translation>
     </message>
     <message>
+        <source>Conditional block (case)</source>
+        <translation>Bloc conditionnel (case)</translation>
+    </message>
+    <message>
+        <source>(no condition)</source>
+        <translation>(aucune condition)</translation>
+    </message>
+    <message>
+        <source>Applies while: {condition}</source>
+        <translation>S’applique tant que : {condition}</translation>
+    </message>
+    <message>
+        <source>Select a binding inside it to edit it. The condition itself (which modifier, on or off) is kept as written but can&apos;t be edited here yet.</source>
+        <translation>Sélectionnez une affectation à l’intérieur pour la modifier. La condition elle-même (quel modificateur, activé ou non) est conservée telle quelle mais ne se modifie pas encore ici.</translation>
+    </message>
+    <message>
         <source>(not found in any controller reference table)</source>
         <translation>(absent de toutes les tables de référence des contrôleurs)</translation>
     </message>
@@ -4790,6 +4806,14 @@ Brut : {raw}</translation>
     <message>
         <source>deck {deck}, slot {slot}</source>
         <translation>platine {deck}, slot {slot}</translation>
+    </message>
+    <message>
+        <source>Case: {condition}</source>
+        <translation>Cas : {condition}</translation>
+    </message>
+    <message>
+        <source>(no condition)</source>
+        <translation>(aucune condition)</translation>
     </message>
     <message>
         <source>Channel {channel}</source>
@@ -8419,6 +8443,10 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>Target &lt;{tag}&gt; (deck_id={deck_id}, slot_id={slot_id}) is bound to &apos;click&apos; by {count} different controls with inconsistent behaviour/action_on: {values}.</source>
         <translation>La cible &lt;{tag}&gt; (deck_id={deck_id}, slot_id={slot_id}) est liée à « click » par {count} contrôles différents aux behaviour/action_on incohérents : {values}.</translation>
+    </message>
+    <message>
+        <source>Uses {count} conditional block(s) (&lt;case&gt;, a modifier / SHIFT layer: {functions}). Their bindings are shown and editable; the conditions themselves can&apos;t be edited here yet.</source>
+        <translation>Utilise {count} bloc(s) conditionnel(s) (&lt;case&gt;, une couche modificateur / SHIFT : {functions}). Leurs affectations sont affichées et modifiables ; les conditions elles-mêmes ne se modifient pas encore ici.</translation>
     </message>
     <message>
         <source>{tag} (slot {slot})</source>

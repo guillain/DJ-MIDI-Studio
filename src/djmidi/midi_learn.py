@@ -22,7 +22,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from djmidi.i18n import QT_TRANSLATE_NOOP, Translate, untranslated
-from djmidi.model import Control, MappingElement, MidiConfig
+from djmidi.model import Control, MappingElement, MidiConfig, iter_bindings
 
 #: Words around the function tags in a conflict listing (issue #318).
 CONFLICT_DECK = QT_TRANSLATE_NOOP("EditPanel", "deck {deck}")
@@ -101,10 +101,11 @@ def describe_conflicts(conflicts: Iterable[Control], translate: Translate = untr
     passes a `translate` for the words around the Serato function tags."""
     lines: list[str] = []
     for control in conflicts:
-        for userio in control.userios:
+        for userio, case in iter_bindings(control):
+            layer = f" [{case.describe()}]" if case is not None and case.conditions else ""
             for mapping in userio.mappings:
                 deck = " " + translate(CONFLICT_DECK).format(deck=mapping.deck_id) if mapping.deck_id else ""
-                line = f"{mapping.tag}{deck} [{userio.event}]"
+                line = f"{mapping.tag}{deck} [{userio.event}]{layer}"
                 if line not in lines:
                     lines.append(line)
     if len(lines) > _MAX_CONFLICT_LINES:
@@ -117,7 +118,7 @@ def find_parent_control(config: MidiConfig | None, mapping: MappingElement) -> C
     if config is None:
         return None
     for control in config.controls:
-        for userio in control.userios:
+        for userio, _case in iter_bindings(control):
             if any(candidate is mapping for candidate in userio.mappings):
                 return control
     return None

@@ -38,7 +38,16 @@ from dataclasses import dataclass, field
 from djmidi import catalog
 from djmidi.function_names import function_name
 from djmidi.i18n import QT_TRANSLATE_NOOP, Translate, untranslated
-from djmidi.model import Control, MappingElement, MidiConfig
+from djmidi.model import (
+    NO_CONDITION,
+    ConditionKey,
+    Control,
+    MappingElement,
+    MidiConfig,
+    condition_of,
+    describe_condition,
+    iter_bindings,
+)
 from djmidi.search_text import tokenize
 
 #: A result's location parts, translated by the GUI (issue #318).
@@ -95,6 +104,9 @@ class FunctionResult:
     # Every MappingElement (all duplicates) behind this result.
     mappings: list[MappingElement] = field(default_factory=list)
     score: float = 0.0
+    # The Serato <case> condition this function is bound under (a modifier /
+    # SHIFT layer); NO_CONDITION for an ordinary binding.
+    condition: ConditionKey = NO_CONDITION
 
     @property
     def label(self) -> str:
@@ -109,6 +121,8 @@ class FunctionResult:
             parts.append(translate(DECK_LABEL).format(deck=self.deck_id))
         if self.slot_id:
             parts.append(translate(SLOT_LABEL).format(slot=self.slot_id))
+        if self.condition:
+            parts.append(f"[{describe_condition(self.condition)}]")
         return " · ".join(parts) or "—"
 
 
@@ -129,16 +143,21 @@ def physical_names(trigger: Trigger) -> list[str]:
 
 def index_functions(config: MidiConfig) -> list[FunctionResult]:
     """Every distinct function target in the file, in first-seen order."""
-    results: dict[tuple[str, str, str | None, str | None], FunctionResult] = {}
+    results: dict[tuple[str, str, str | None, str | None, ConditionKey], FunctionResult] = {}
     for control in config.controls:
         trigger = Trigger(control.channel, control.event_type, control.control)
-        for userio in control.userios:
+        for userio, case in iter_bindings(control):
+            condition = condition_of(case)
             for mapping in userio.mappings:
-                key = (mapping.tag, userio.event, mapping.deck_id, mapping.slot_id)
+                key = (mapping.tag, userio.event, mapping.deck_id, mapping.slot_id, condition)
                 result = results.get(key)
                 if result is None:
                     result = results[key] = FunctionResult(
-                        tag=mapping.tag, event=userio.event, deck_id=mapping.deck_id, slot_id=mapping.slot_id
+                        tag=mapping.tag,
+                        event=userio.event,
+                        deck_id=mapping.deck_id,
+                        slot_id=mapping.slot_id,
+                        condition=condition,
                     )
                 if trigger not in result.triggers:
                     result.triggers.append(trigger)

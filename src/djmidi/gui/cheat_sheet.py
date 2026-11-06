@@ -114,7 +114,10 @@ def build_function_index(config: MidiConfig, translate: Translate = untranslated
     for group in build_mapping_groups(config):
         if group.event != "click":
             continue
-        line = (deck_label(group.deck_id), function_text(group.tag, group.slot_id, translate))
+        text = function_text(group.tag, group.slot_id, translate)
+        if group.condition_text:  # a Serato <case> layer (modifier / SHIFT)
+            text = f"{text} [{group.condition_text}]"
+        line = (deck_label(group.deck_id), text)
         lines = index.setdefault(
             (group.channel, group.event_type, group.control_no), []
         )

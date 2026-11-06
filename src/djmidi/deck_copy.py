@@ -20,7 +20,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 
 from djmidi.i18n import QT_TRANSLATE_NOOP, Translate, untranslated
-from djmidi.model import Control, MidiConfig
+from djmidi.model import Control, MidiConfig, iter_bindings
 
 Trigger = tuple[str, str, str]  # (channel, event_type, control)
 
@@ -47,7 +47,26 @@ class DeckCopyPlan:
 
 
 def _deck_elements(control: Control, deck: str):
-    return [mapping for userio in control.userios for mapping in userio.mappings if mapping.deck_id == deck]
+    return [
+        mapping for userio, _case in iter_bindings(control) for mapping in userio.mappings if mapping.deck_id == deck
+    ]
+
+
+def _keep_only(control: Control, keep) -> Control:
+    """In place: every <userio> (direct or inside a <case>) keeps only the
+    mapping elements `keep` accepts; emptied userios and cases are dropped,
+    a kept case keeps its condition."""
+    for userio, _case in iter_bindings(control):
+        userio.mappings = [mapping for mapping in userio.mappings if keep(mapping)]
+    control.userios = [userio for userio in control.userios if userio.mappings]
+    for case in control.cases:
+        case.userios = [userio for userio in case.userios if userio.mappings]
+    control.cases = [case for case in control.cases if case.userios]
+    return control
+
+
+def _has_bindings(control: Control) -> bool:
+    return bool(control.userios or control.cases)
 
 
 def deck_ids(config: MidiConfig) -> list[str]:
@@ -55,7 +74,7 @@ def deck_ids(config: MidiConfig) -> list[str]:
     found = {
         mapping.deck_id
         for control in config.controls
-        for userio in control.userios
+        for userio, _case in iter_bindings(control)
         for mapping in userio.mappings
         if mapping.deck_id is not None
     }
@@ -119,11 +138,8 @@ def plan_deck_copy(
         if (control.channel, control.event_type, control.control) not in cleared:
             controls.append(control)
             continue
-        kept = copy.deepcopy(control)
-        for userio in kept.userios:
-            userio.mappings = [mapping for mapping in userio.mappings if mapping.deck_id != target]
-        kept.userios = [userio for userio in kept.userios if userio.mappings]
-        if kept.userios:
+        kept = _keep_only(copy.deepcopy(control), lambda mapping: mapping.deck_id != target)
+        if _has_bindings(kept):
             controls.append(kept)
 
     elements = 0
@@ -132,14 +148,12 @@ def plan_deck_copy(
         trigger = target_trigger(control)
         if trigger in blocked:
             continue
-        duplicate = copy.deepcopy(control)
+        duplicate = _keep_only(copy.deepcopy(control), lambda mapping: mapping.deck_id == source)
         duplicate.channel = trigger[0]
-        for userio in duplicate.userios:
-            userio.mappings = [mapping for mapping in userio.mappings if mapping.deck_id == source]
+        for userio, _case in iter_bindings(duplicate):
             for mapping in userio.mappings:
                 mapping.deck_id = target
             elements += len(userio.mappings)
-        duplicate.userios = [userio for userio in duplicate.userios if userio.mappings]
         controls.append(duplicate)
         copied.append(trigger)
     return DeckCopyPlan(

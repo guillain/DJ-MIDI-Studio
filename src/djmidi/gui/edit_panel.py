@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from PySide6.QtCore import QTimer
+from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QUndoStack
 from PySide6.QtWidgets import (
     QFormLayout,
@@ -35,7 +35,15 @@ from djmidi.gui.mapping_group import MappingGroup
 from djmidi.gui.translation import translator
 from djmidi.midi_io import MidiEvent
 from djmidi.midi_learn import LearnedTrigger
-from djmidi.model import Alias, Control, MappingElement, MidiConfig, Translation, UserIO
+from djmidi.model import (
+    Alias,
+    Case,
+    Control,
+    MappingElement,
+    MidiConfig,
+    Translation,
+    UserIO,
+)
 
 ConfirmConflict = Callable[[LearnedTrigger, list[str]], bool]
 
@@ -129,11 +137,32 @@ class EditPanel(QWidget):
             self._body = self._build_mapping_form(node)
         elif isinstance(node, MappingGroup):
             self._body = self._build_group_form(node)
+        elif isinstance(node, Case):
+            self._body = self._build_case_form(node)
         # The "select a node…" prompt is only useful while there is nothing to
         # edit; once a form is shown it's just noise above the fields.
         self._prompt_label.setVisible(self._body is None)
         if self._body is not None:
             self._layout.addWidget(self._body)
+
+    def _build_case_form(self, case: Case) -> QWidget:
+        """A Serato <case>: read-only, the condition its bindings apply under."""
+        box = QGroupBox(self.tr("Conditional block (case)"))
+        layout = QVBoxLayout(box)
+        tests = case.describe() or self.tr("(no condition)")
+        condition = QLabel(self.tr("Applies while: {condition}").format(condition=tests))
+        condition.setWordWrap(True)
+        condition.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        layout.addWidget(condition)
+        note = QLabel(
+            self.tr(
+                "Select a binding inside it to edit it. The condition itself (which modifier, on or off) "
+                "is kept as written but can't be edited here yet."
+            )
+        )
+        note.setWordWrap(True)
+        layout.addWidget(note)
+        return box
 
     def _build_physical_control_box(self, channel: str | None, event_type: str | None, control_no: str | None) -> QWidget:
         """A full-width box for the catalog match(es), kept out of any QFormLayout

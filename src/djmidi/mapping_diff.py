@@ -46,7 +46,15 @@ from dataclasses import dataclass, field
 
 from djmidi.function_names import function_name
 from djmidi.i18n import QT_TRANSLATE_NOOP, Translate, untranslated
-from djmidi.model import MappingElement, MidiConfig, Translation
+from djmidi.model import (
+    NO_CONDITION,
+    MappingElement,
+    MidiConfig,
+    Translation,
+    condition_of,
+    describe_condition,
+    iter_bindings,
+)
 
 KINDS = ("reassigned", "added", "removed", "changed", "duplicates")
 #: Group headings, translated by the GUI ("MappingDiff" context).
@@ -87,7 +95,9 @@ _COPIES = QT_TRANSLATE_NOOP("MappingDiff", "copies: x{old} -> x{new}")
 _COPY_MIX = QT_TRANSLATE_NOOP("MappingDiff", "copy mix changed")
 
 Trigger = tuple[str, str, str, str]
-FunctionKey = tuple[str, str | None, str | None, str | None]
+# (tag, deck_set, deck_id, slot_id[, condition]): the optional fifth item is
+# the Serato <case> condition (a modifier / SHIFT layer), omitted outside any.
+FunctionKey = tuple
 # (element extra attrs, translations), every part hashable and order-stable.
 Signature = tuple
 
@@ -159,7 +169,8 @@ def function_label(key: FunctionKey, raw: bool = False, translate: Translate = u
     """`Auto loop (deck 3, slot 8)`, or with `raw` the tag itself
     (`auto_loop_specific_length (deck 3, slot 8)`); a non-default deck set is
     named too, since Serato keeps one binding per set."""
-    tag, deck_set, deck_id, slot_id = key
+    tag, deck_set, deck_id, slot_id, *rest = key
+    condition = rest[0] if rest else NO_CONDITION
     name = tag if raw else function_name(tag)
     parts = []
     if deck_set and deck_set != "Default":
@@ -168,7 +179,8 @@ def function_label(key: FunctionKey, raw: bool = False, translate: Translate = u
         parts.append(translate(_DECK).format(deck=deck_id))
     if slot_id:
         parts.append(translate(_SLOT).format(slot=slot_id))
-    return f"{name} ({', '.join(parts)})" if parts else name
+    label = f"{name} ({', '.join(parts)})" if parts else name
+    return f"{label} [{describe_condition(condition)}]" if condition else label
 
 
 def _raw_label(key: FunctionKey, translate: Translate = untranslated) -> str:
@@ -195,10 +207,13 @@ def _signature(element: MappingElement) -> Signature:
 def _index(config: MidiConfig) -> _Index:
     index: _Index = defaultdict(lambda: defaultdict(Counter))
     for control in config.controls:
-        for userio in control.userios:
+        for userio, case in iter_bindings(control):
             trigger = (control.channel, control.event_type, control.control, userio.event)
+            condition = condition_of(case)
             for element in userio.mappings:
-                key = (element.tag, element.deck_set, element.deck_id, element.slot_id)
+                key: FunctionKey = (element.tag, element.deck_set, element.deck_id, element.slot_id)
+                if condition:
+                    key = (*key, condition)
                 index[trigger][key][_signature(element)] += 1
     return index
 
