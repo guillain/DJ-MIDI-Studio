@@ -276,6 +276,10 @@ class MidiMacro:
     # fires the macro in (empty: every scene).
     alternate_steps: tuple[MacroStep, ...] = ()
     scenes: tuple[str, ...] = ()
+    # Atelier (issue #413): the controller whose presses this macro imitates
+    # when its output port is not that controller (a virtual port to the DJ
+    # software); "" for none. See `atelier.describe.macro_target`.
+    simulates: str = ""
 
     @property
     def is_toggle(self) -> bool:
@@ -314,6 +318,8 @@ class MidiMacro:
             raw["alternate_steps"] = [step.to_dict() for step in self.alternate_steps]
         if self.scenes:
             raw["scenes"] = list(self.scenes)
+        if self.simulates:
+            raw["simulates"] = self.simulates
         return raw
 
     @classmethod
@@ -335,31 +341,32 @@ class MidiMacro:
             trigger_gap_ms=trigger_gap(raw.get("trigger_gap_ms", DEFAULT_TRIGGER_GAP_MS)),
             alternate_steps=tuple(MacroStep.from_dict(step) for step in raw.get("alternate_steps", []) or []),
             scenes=tuple(str(scene).strip() for scene in raw.get("scenes", []) or [] if str(scene).strip()),
+            # Kept as written even when no registered controller has that name
+            # (a profile not installed here): `macro_target` just ignores it.
+            simulates=str(raw.get("simulates", "") or "").strip(),
         )
 
 
 def annotate_with_features(macro: MidiMacro) -> MidiMacro:
-    """`macro` with every step's `feature` derived from its message: when
-    the output port is a known controller (`atelier.describe.controller_for_port`)
-    and a plain step drives one of its controls, the step records that
-    feature; any other step (a wait, an unknown message, a port that is no
-    controller) records none -- so a stale reference never survives an edit."""
-    from djmidi.atelier.actions import (
-        TO_CONTROLLER,
-        FeatureAction,
-        FeatureRef,
-        decompile,
-    )
-    from djmidi.atelier.describe import controller_for_port
+    """`macro` with every step's `feature` derived from its message, by
+    `atelier.describe.macro_target`: a step driving the output controller
+    records the LED action, a step of a macro simulating a controller records
+    the press / release / value it imitates; any other step (a wait, an
+    unknown message, plain MIDI) records none -- so a stale reference never
+    survives an edit. Each step is read alone, so a tap (press then release)
+    becomes two single-message references."""
+    from djmidi.atelier.actions import FeatureAction, FeatureRef, decompile
+    from djmidi.atelier.describe import macro_target
 
-    controller = controller_for_port(macro.output_port)
+    target = macro_target(macro.output_port, macro.simulates)
 
     def annotate(steps: tuple[MacroStep, ...]) -> tuple[MacroStep, ...]:
         annotated = []
         for step in steps:
             feature = None
-            if controller is not None and not step.wait:
-                [item] = decompile(controller, [step.message], TO_CONTROLLER)
+            if target is not None and not step.wait:
+                controller, direction = target
+                [item] = decompile(controller, [step.message], direction)
                 if isinstance(item, FeatureAction):
                     feature = FeatureRef(controller, item)
             annotated.append(replace(step, feature=feature))

@@ -9,7 +9,13 @@ GUI passes a `translate` for the verb words.
 from __future__ import annotations
 
 from djmidi import catalog
-from djmidi.atelier.actions import TO_CONTROLLER, VERB_LABELS, FeatureAction, decompile
+from djmidi.atelier.actions import (
+    AS_CONTROLLER,
+    TO_CONTROLLER,
+    VERB_LABELS,
+    FeatureAction,
+    decompile,
+)
 from djmidi.atelier.features import feature_by_id
 from djmidi.controller_sync import SyncMessage
 from djmidi.i18n import Translate, untranslated
@@ -25,6 +31,26 @@ def controller_for_port(port: str) -> str | None:
         return None
     exact = [match for match in catalog.detect_controller(port, include_disabled=True) if match.score >= _EXACT_PORT_SCORE]
     return exact[0].controller.name if len(exact) == 1 else None
+
+
+def macro_target(output_port: str, simulates: str = "") -> tuple[str, str] | None:
+    """Which controller a macro's steps are about, and in which direction --
+    the one rule the editor, the step dialog and the stored step features
+    all follow:
+
+    - the output port is a known controller: the macro drives it
+      (``TO_CONTROLLER``: its LEDs);
+    - else `simulates` names a registered controller: the macro imitates
+      that controller's presses towards the DJ software through a virtual
+      port (``AS_CONTROLLER``);
+    - else None: the steps are plain MIDI.
+    """
+    controller = controller_for_port(output_port)
+    if controller is not None:
+        return controller, TO_CONTROLLER
+    if simulates and simulates in {definition.name for definition in catalog.all_controller_definitions()}:
+        return simulates, AS_CONTROLLER
+    return None
 
 
 def describe_action(controller: str, action: FeatureAction, translate: Translate = untranslated) -> str | None:
@@ -47,4 +73,4 @@ def describe_message(
     return describe_action(controller, item, translate)
 
 
-__all__ = ["controller_for_port", "describe_action", "describe_message"]
+__all__ = ["controller_for_port", "describe_action", "describe_message", "macro_target"]

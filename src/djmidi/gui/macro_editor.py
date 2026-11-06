@@ -48,8 +48,9 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from djmidi import user_paths
-from djmidi.atelier.describe import controller_for_port, describe_message
+from djmidi import catalog, user_paths
+from djmidi.atelier.actions import TO_CONTROLLER
+from djmidi.atelier.describe import describe_message, macro_target
 from djmidi.controller_sync import ControllerSyncSet, SyncMessage, move_message
 from djmidi.gui.feature_step_dialog import FeatureStepDialog
 from djmidi.gui.help_button import help_button
@@ -213,6 +214,20 @@ class MacroManagerDialog(QDialog):
         form = QFormLayout()
         form.addRow(self.tr("Name"), self.name_edit)
         form.addRow(self.tr("Output port"), self.port_combo)
+        # Atelier (issue #413): with a port that is no controller (a virtual
+        # port to the DJ software), the controller whose presses the macro
+        # imitates -- its steps then read and build as that controller's
+        # presses. Hidden when the port is a controller.
+        self.simulates_combo = QComboBox()
+        self.simulates_combo.addItem(self.tr("None (plain MIDI)"), "")
+        for name in (definition.name for definition in catalog.all_controller_definitions()):
+            self.simulates_combo.addItem(name, name)
+        self.simulates_combo.setToolTip(
+            self.tr("The controller this macro imitates towards the DJ software, through this virtual port.")
+        )
+        self.simulates_combo.currentIndexChanged.connect(lambda _index: self._on_port_changed())
+        self.simulates_label = QLabel(self.tr("Simulates"))
+        form.addRow(self.simulates_label, self.simulates_combo)
         form.addRow(self.tr("Shortcut"), shortcut_row)
         form.addRow(self.tr("Trigger"), trigger_row)
         form.addRow(self.tr("Max gap"), self.gap_spin)
@@ -338,6 +353,7 @@ class MacroManagerDialog(QDialog):
         self.delete_macro_button.setEnabled(macro is not None)
         macro = macro or MidiMacro("")
         self.name_edit.setText(macro.name)
+        self._set_simulates(macro.simulates)
         self.port_combo.setCurrentText(macro.output_port)
         self._on_port_changed()
         self.shortcut_edit.setKeySequence(QKeySequence(macro.shortcut))
@@ -419,23 +435,44 @@ class MacroManagerDialog(QDialog):
         if item.column() != _FEATURE_COLUMN:
             self._refresh_feature_row(item.row())
 
+    def _set_simulates(self, name: str) -> None:
+        index = self.simulates_combo.findData(name)
+        if index < 0 and name:  # a controller not registered here: keep the name
+            self.simulates_combo.addItem(name, name)
+            index = self.simulates_combo.count() - 1
+        self.simulates_combo.blockSignals(True)
+        self.simulates_combo.setCurrentIndex(max(index, 0))
+        self.simulates_combo.blockSignals(False)
+
+    def target(self) -> tuple[str, str] | None:
+        """(controller, direction) the steps are about (`macro_target`)."""
+        return macro_target(self.port_combo.currentText(), self.simulates_combo.currentData() or "")
+
     def _on_port_changed(self) -> None:
+        drives = macro_target(self.port_combo.currentText()) is not None
+        self.simulates_combo.setVisible(not drives)
+        self.simulates_label.setVisible(not drives)
         self._refresh_feature_column()
-        controller = controller_for_port(self.port_combo.currentText())
-        self.add_feature_button.setEnabled(controller is not None)
-        self.add_feature_button.setToolTip(
-            self.tr("Add steps by picking one of {controller}'s controls and an LED action.").format(
-                controller=controller
+        target = self.target()
+        self.add_feature_button.setEnabled(target is not None)
+        if target is None:
+            tip = self.tr("Pick a controller's output port, or the controller this macro simulates, to add steps.")
+        elif target[1] == TO_CONTROLLER:
+            tip = self.tr("Add steps by picking one of {controller}'s controls and an LED action.").format(
+                controller=target[0]
             )
-            if controller
-            else self.tr("Pick a controller's output port to add steps from its controls.")
-        )
+        else:
+            tip = self.tr("Add steps imitating one of {controller}'s controls: a tap, a press, a release or a value.").format(
+                controller=target[0]
+            )
+        self.add_feature_button.setToolTip(tip)
 
     def _add_feature_steps(self) -> None:
-        controller = controller_for_port(self.port_combo.currentText())
-        if controller is None:
+        target = self.target()
+        if target is None:
             return
-        dialog = self.feature_step_dialog_factory(controller, self)
+        controller, direction = target
+        dialog = self.feature_step_dialog_factory(controller, self, direction)
         if dialog.exec() != QDialog.DialogCode.Accepted:
             return
         for step in dialog.steps():
@@ -456,17 +493,23 @@ class MacroManagerDialog(QDialog):
         item = self.table.item(row, _FEATURE_COLUMN) if row >= 0 else None
         if item is None:
             return
-        controller = controller_for_port(self.port_combo.currentText())
+        target = self.target()
         text = ""
-        if controller is None:
-            tip = self.tr("Pick a controller's output port to see each step as one of its features.")
+        if target is None:
+            tip = self.tr("Pick a controller's output port, or the controller this macro simulates, to see each step as one of its features.")
         else:
-            tip = self.tr("Steps sent to {controller}, read as its features (LED messages).").format(
-                controller=controller
-            )
+            controller, direction = target
+            if direction == TO_CONTROLLER:
+                tip = self.tr("Steps sent to {controller}, read as its features (LED messages).").format(
+                    controller=controller
+                )
+            else:
+                tip = self.tr("Steps imitating {controller}, read as its presses and values.").format(
+                    controller=controller
+                )
             message = self._row_message(row)
             if message is not None:
-                text = describe_message(controller, message, translate=_verb_translate) or ""
+                text = describe_message(controller, message, direction, _verb_translate) or ""
         self.table.blockSignals(True)
         item.setText(text)
         item.setToolTip(tip)
@@ -518,6 +561,7 @@ class MacroManagerDialog(QDialog):
                 self.gap_spin.value(),
                 alternate,
                 scenes,
+                self.simulates_combo.currentData() or "",
             )
         )
 

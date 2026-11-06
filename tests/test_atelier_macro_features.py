@@ -87,7 +87,7 @@ def test_the_step_dialog_builds_steps_from_a_picked_control():
 
 
 class _PickBeatSync:
-    def __init__(self, controller, parent):
+    def __init__(self, controller, parent, direction=None):
         self.controller = controller
 
     def exec(self):
