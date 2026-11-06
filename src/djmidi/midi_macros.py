@@ -61,6 +61,7 @@ from djmidi.i18n import QT_TRANSLATE_NOOP, Translate, untranslated
 from djmidi.midi_learn import trigger_from_event
 
 if TYPE_CHECKING:
+    from djmidi.atelier.actions import FeatureRef
     from djmidi.midi_io import MidiEvent
 
 _LOGGER = logging.getLogger(__name__)
@@ -211,6 +212,11 @@ class MacroStep:
     # A wait step sends nothing: the macro pauses until a press of
     # `message`'s type/channel/data1 arrives on any input (issue #367).
     wait: bool = False
+    # The controller feature this step stands for (Atelier, issue #413):
+    # written beside `message`, which stays the fallback; on load a
+    # resolvable feature recompiles `message`, so a catalog fix reaches
+    # saved macros. Set by `annotate_with_features`, never by hand.
+    feature: FeatureRef | None = None
 
     @property
     def wait_trigger(self) -> MacroTrigger:
@@ -224,6 +230,8 @@ class MacroStep:
         raw: dict[str, object] = {**self.message.to_dict(), "delay_ms": self.delay_ms}
         if self.wait:
             raw["wait"] = True
+        if self.feature is not None:
+            raw["feature"] = self.feature.to_dict()
         return raw
 
     @classmethod
@@ -233,6 +241,19 @@ class MacroStep:
         step = cls(SyncMessage.from_dict(raw), _delay(raw.get("delay_ms", 0)), bool(raw.get("wait", False)))
         if step.wait and step.message.event_type not in TRIGGER_EVENT_TYPES:
             raise ValueError("A wait step waits for a Note On or a Control Change")
+        if raw.get("feature") is not None and not step.wait:
+            from djmidi.atelier.actions import FeatureRef
+
+            try:
+                feature = FeatureRef.from_dict(raw["feature"])
+            except ValueError:
+                _LOGGER.warning("Ignoring an unreadable step feature: %r", raw["feature"])
+                return step
+            message = feature.resolve()
+            if message is None:
+                _LOGGER.info("Step feature %r no longer resolves; keeping the stored message", raw["feature"])
+                message = step.message
+            return replace(step, message=message, feature=feature)
         return step
 
 
@@ -315,6 +336,36 @@ class MidiMacro:
             alternate_steps=tuple(MacroStep.from_dict(step) for step in raw.get("alternate_steps", []) or []),
             scenes=tuple(str(scene).strip() for scene in raw.get("scenes", []) or [] if str(scene).strip()),
         )
+
+
+def annotate_with_features(macro: MidiMacro) -> MidiMacro:
+    """`macro` with every step's `feature` derived from its message: when
+    the output port is a known controller (`atelier.describe.controller_for_port`)
+    and a plain step drives one of its controls, the step records that
+    feature; any other step (a wait, an unknown message, a port that is no
+    controller) records none -- so a stale reference never survives an edit."""
+    from djmidi.atelier.actions import (
+        TO_CONTROLLER,
+        FeatureAction,
+        FeatureRef,
+        decompile,
+    )
+    from djmidi.atelier.describe import controller_for_port
+
+    controller = controller_for_port(macro.output_port)
+
+    def annotate(steps: tuple[MacroStep, ...]) -> tuple[MacroStep, ...]:
+        annotated = []
+        for step in steps:
+            feature = None
+            if controller is not None and not step.wait:
+                [item] = decompile(controller, [step.message], TO_CONTROLLER)
+                if isinstance(item, FeatureAction):
+                    feature = FeatureRef(controller, item)
+            annotated.append(replace(step, feature=feature))
+        return tuple(annotated)
+
+    return replace(macro, steps=annotate(macro.steps), alternate_steps=annotate(macro.alternate_steps))
 
 
 def _triggers_from_raw(raw: object) -> tuple[MacroTrigger, ...]:
@@ -862,6 +913,7 @@ __all__ = [
     "MacroTriggerMatcher",
     "MidiMacro",
     "PortOpener",
+    "annotate_with_features",
     "build_macro_bundle",
     "load_macros",
     "macro_file_name",

@@ -1931,6 +1931,37 @@ Trotzdem neu zuweisen? Beide lösen auf demselben Bedienelement aus.</translatio
     </message>
 </context>
 <context>
+    <name>FeatureStepDialog</name>
+    <message>
+        <source>Add steps from {controller}</source>
+        <translation>Schritte von {controller} hinzufügen</translation>
+    </message>
+    <message>
+        <source>Pick a control and what its LED should do; the step&apos;s MIDI message is filled in for you.</source>
+        <translation>Wählen Sie ein Bedienelement und was seine LED tun soll; die MIDI-Meldung des Schritts wird für Sie ausgefüllt.</translation>
+    </message>
+    <message>
+        <source>Filter controls: name, deck, pad mode…</source>
+        <translation>Bedienelemente filtern: Name, Deck, Pad-Modus…</translation>
+    </message>
+    <message>
+        <source>Action</source>
+        <translation>Aktion</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>Wert</translation>
+    </message>
+    <message>
+        <source>Add step</source>
+        <translation>Schritt hinzufügen</translation>
+    </message>
+    <message>
+        <source>{name} (deck {deck})</source>
+        <translation>{name} (Deck {deck})</translation>
+    </message>
+</context>
+<context>
     <name>FirstRunWizard</name>
     <message>
         <source>Welcome to DJ MIDI Studio</source>
@@ -3494,6 +3525,10 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
         <translation>Schritt hinzufügen</translation>
     </message>
     <message>
+        <source>Add from controller…</source>
+        <translation>Vom Controller hinzufügen…</translation>
+    </message>
+    <message>
         <source>Delete step</source>
         <translation>Schritt löschen</translation>
     </message>
@@ -3532,6 +3567,14 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
     <message>
         <source>Steps play top to bottom; each waits its delay before sending (channel 1–16, data 0–127, delay 0–60000 ms).</source>
         <translation>Schritte werden von oben nach unten abgespielt; jeder wartet seine Verzögerung vor dem Senden ab (Kanal 1–16, Data 0–127, Verzögerung 0–60000 ms).</translation>
+    </message>
+    <message>
+        <source>Add steps by picking one of {controller}&apos;s controls and an LED action.</source>
+        <translation>Schritte hinzufügen, indem Sie ein Bedienelement von {controller} und eine LED-Aktion wählen.</translation>
+    </message>
+    <message>
+        <source>Pick a controller&apos;s output port to add steps from its controls.</source>
+        <translation>Wählen Sie den Ausgang eines Controllers, um Schritte aus seinen Bedienelementen hinzuzufügen.</translation>
     </message>
     <message>
         <source>Pick a controller&apos;s output port to see each step as one of its features.</source>

@@ -1931,6 +1931,37 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     </message>
 </context>
 <context>
+    <name>FeatureStepDialog</name>
+    <message>
+        <source>Add steps from {controller}</source>
+        <translation>Ajouter des pas depuis {controller}</translation>
+    </message>
+    <message>
+        <source>Pick a control and what its LED should do; the step&apos;s MIDI message is filled in for you.</source>
+        <translation>Choisissez un contrôle et ce que doit faire sa LED ; le message MIDI du pas est rempli pour vous.</translation>
+    </message>
+    <message>
+        <source>Filter controls: name, deck, pad mode…</source>
+        <translation>Filtrer les contrôles : nom, platine, mode de pad…</translation>
+    </message>
+    <message>
+        <source>Action</source>
+        <translation>Action</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>Valeur</translation>
+    </message>
+    <message>
+        <source>Add step</source>
+        <translation>Ajouter une étape</translation>
+    </message>
+    <message>
+        <source>{name} (deck {deck})</source>
+        <translation>{name} (platine {deck})</translation>
+    </message>
+</context>
+<context>
     <name>FirstRunWizard</name>
     <message>
         <source>Welcome to DJ MIDI Studio</source>
@@ -3498,6 +3529,10 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
         <translation>Ajouter une étape</translation>
     </message>
     <message>
+        <source>Add from controller…</source>
+        <translation>Ajouter depuis le contrôleur…</translation>
+    </message>
+    <message>
         <source>Delete step</source>
         <translation>Supprimer l&apos;étape</translation>
     </message>
@@ -3536,6 +3571,14 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
     <message>
         <source>Steps play top to bottom; each waits its delay before sending (channel 1–16, data 0–127, delay 0–60000 ms).</source>
         <translation>Les étapes sont jouées de haut en bas ; chacune attend son délai avant l&apos;envoi (canal 1–16, data 0–127, délai 0–60000 ms).</translation>
+    </message>
+    <message>
+        <source>Add steps by picking one of {controller}&apos;s controls and an LED action.</source>
+        <translation>Ajouter des pas en choisissant un contrôle de {controller} et une action de LED.</translation>
+    </message>
+    <message>
+        <source>Pick a controller&apos;s output port to add steps from its controls.</source>
+        <translation>Choisissez le port de sortie d’un contrôleur pour ajouter des pas depuis ses contrôles.</translation>
     </message>
     <message>
         <source>Pick a controller&apos;s output port to see each step as one of its features.</source>
