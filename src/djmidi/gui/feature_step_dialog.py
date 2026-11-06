@@ -1,10 +1,18 @@
 """Pick a controller feature and an LED action to add as macro steps
 (Atelier, issue #413, step 3): instead of typing channel / note / velocity,
-choose "BEAT SYNC (deck 1)" and "LED on".
+choose "BEAT SYNC (deck 1)" and "LED on" -- from a filtered list, or by
+clicking the control on the controller's photo.
 
 Only controls with an LED message (notes) are listed, and only LED actions
 offered: the macro's output port is the controller itself, so a step drives
 it. Simulating presses towards the DJ software is a later slice.
+
+The photo tab is the Controller Emulator's clickable schematic
+(`EmulatorLayoutView`) with the same small state the emulator keeps: a
+pad-mode button picks the bank later pad clicks resolve to (per grid side),
+and SHIFT latches the SHIFT layer -- both resolved with the emulator's own
+helpers (`layout.resolve_side_aware_variant`, `pad_mode`), so a click picks
+the same feature the emulator's feature card would show.
 """
 
 from __future__ import annotations
@@ -17,11 +25,14 @@ from PySide6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QFormLayout,
+    QFrame,
     QLabel,
     QLineEdit,
     QListWidget,
     QListWidgetItem,
+    QScrollArea,
     QSpinBox,
+    QTabWidget,
     QVBoxLayout,
     QWidget,
 )
@@ -34,7 +45,11 @@ from djmidi.atelier.actions import (
     FeatureAction,
     compile_action,
 )
-from djmidi.atelier.features import Feature, features_for
+from djmidi.atelier.features import Feature, feature_for_message, features_for
+from djmidi.gui import layout as layout_mod
+from djmidi.gui import pad_mode as pad_mode_mod
+from djmidi.gui.controller_emulator import EmulatorLayoutView
+from djmidi.gui.layout import CellKey
 from djmidi.gui.translation import translator
 from djmidi.gui.window_size import (
     fit_to_screen,
@@ -47,6 +62,7 @@ from djmidi.search_text import tokenize
 _FEATURE_ROLE = Qt.ItemDataRole.UserRole + 1
 _DECK_IN_NAME = re.compile(r"\bDeck\s+[1-4A-D]\b", re.IGNORECASE)
 _LED_VERBS = (LED_ON, LED_OFF, LED_VALUE)
+_EVENT_TYPE_FOR_KIND = {"NOTE": "Note On", "CC": "Control Change"}
 _verb_translate = translator("FeatureActions")
 
 
@@ -56,17 +72,55 @@ class FeatureStepDialog(QDialog):
         self.setWindowTitle(self.tr("Add steps from {controller}").format(controller=controller))
         self.controller = controller
         self._features = [feature for feature in features_for(controller) if feature.led is not None]
+        # The photo's own emulator-like state: per grid side, the pad-mode
+        # token and the button that set it; whether SHIFT is latched; the
+        # cell last picked (kept lit).
+        self._pad_mode: dict[str, str] = {}
+        self._pad_mode_key: dict[str, CellKey] = {}
+        self._shift_held = False
+        self._shift_key: CellKey | None = None
+        self._picked_key: CellKey | None = None
 
         intro = QLabel(
             self.tr("Pick a control and what its LED should do; the step's MIDI message is filled in for you.")
         )
         intro.setWordWrap(True)
+
+        self.photo = EmulatorLayoutView(controller)
+        self.photo.controlPressed.connect(self.pick_key)
+        # Scrolls instead of imposing the schematic's own minimum size on the
+        # dialog (the Controller Emulator dock does the same, issue #19).
+        photo_scroll = QScrollArea()
+        photo_scroll.setWidgetResizable(True)
+        photo_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        photo_scroll.setWidget(self.photo)
+        photo_page = QWidget()
+        photo_layout = QVBoxLayout(photo_page)
+        photo_layout.setContentsMargins(0, 0, 0, 0)
+        # No wrapped label on this page: a height-for-width page would size
+        # the dialog from the photo's preferred height, not its minimum. The
+        # how-to is the status line's opening text instead.
+        photo_layout.addWidget(photo_scroll, 1)
+
         self.filter_edit = QLineEdit()
         self.filter_edit.setPlaceholderText(self.tr("Filter controls: name, deck, pad mode…"))
         self.filter_edit.textChanged.connect(self._fill)
         self.feature_list = QListWidget()
-        usable_minimum(self.feature_list, 360, 200)
-        self.feature_list.currentItemChanged.connect(lambda *_args: self._update_ok())
+        usable_minimum(self.feature_list, 320, 120)
+        self.feature_list.currentItemChanged.connect(lambda *_args: self._on_selection_changed())
+        list_page = QWidget()
+        list_layout = QVBoxLayout(list_page)
+        list_layout.setContentsMargins(0, 0, 0, 0)
+        list_layout.addWidget(self.filter_edit)
+        list_layout.addWidget(self.feature_list, 1)
+
+        self.tabs = QTabWidget()
+        self.tabs.addTab(photo_page, self.tr("Photo"))
+        self.tabs.addTab(list_page, self.tr("List"))
+        usable_minimum(self.tabs, 360, 180)
+
+        self.status_label = QLabel()
+        self.status_label.setWordWrap(True)
 
         self.verb_combo = QComboBox()
         for verb in _LED_VERBS:
@@ -86,19 +140,24 @@ class FeatureStepDialog(QDialog):
 
         layout = QVBoxLayout(self)
         layout.addWidget(intro)
-        layout.addWidget(self.filter_edit)
-        layout.addWidget(self.feature_list, 1)
+        layout.addWidget(self.tabs, 1)
+        layout.addWidget(self.status_label)
         layout.addLayout(form)
         layout.addWidget(self.buttons)
         self._fill()
         self._update_value()
-        fit_to_screen(self, 560, 520)
+        self._on_selection_changed()
+        fit_to_screen(self, 760, 680)
         keep_wrapped_text_visible(self)
+
+    # -- list -----------------------------------------------------------
 
     def _fill(self) -> None:
         # Word prefixes, accent-insensitive (the function search's tokenizer):
         # "pad 3" finds Pad 3, not Pad 13.
         query = tokenize(self.filter_edit.text())
+        current = self.selected_feature()
+        self.feature_list.blockSignals(True)
         self.feature_list.clear()
         for feature in self._features:
             words = tokenize(f"{feature.name} {feature.section}")
@@ -107,7 +166,10 @@ class FeatureStepDialog(QDialog):
                 item.setData(_FEATURE_ROLE, feature)
                 item.setToolTip(feature.id)
                 self.feature_list.addItem(item)
-        self._update_ok()
+                if current is not None and feature.id == current.id:
+                    self.feature_list.setCurrentItem(item)
+        self.feature_list.blockSignals(False)
+        self._on_selection_changed()
 
     def _row_text(self, feature: Feature) -> str:
         if feature.deck is None:
@@ -122,6 +184,17 @@ class FeatureStepDialog(QDialog):
     def _update_ok(self) -> None:
         self.buttons.button(QDialogButtonBox.StandardButton.Ok).setEnabled(self.selected_feature() is not None)
 
+    def _on_selection_changed(self) -> None:
+        self._update_ok()
+        feature = self.selected_feature()
+        if feature is not None:
+            self.status_label.setText(self.tr("Selected: {control}").format(control=self._row_text(feature)))
+        elif self._picked_key is None:
+            self.status_label.setText(
+                self.tr("Click a control on the photo, or pick one in the list. Pad mode buttons choose the bank "
+                        "later pad clicks use; SHIFT latches.")
+            )
+
     def selected_feature(self) -> Feature | None:
         item = self.feature_list.currentItem()
         return item.data(_FEATURE_ROLE) if item is not None else None
@@ -132,6 +205,75 @@ class FeatureStepDialog(QDialog):
                 self.feature_list.setCurrentRow(row)
                 return True
         return False
+
+    # -- photo ----------------------------------------------------------
+
+    def pick_key(self, key: CellKey) -> Feature | None:
+        """A control clicked on the photo: a pad-mode button or SHIFT updates
+        the photo's state; any other control selects its feature in the list
+        (clearing the filter when it hides it). Returns the selected feature,
+        or None."""
+        if self._toggle_shift(key) or self._select_pad_mode(key):
+            return None
+        feature = self.feature_for_key(key)
+        if feature is None or feature.led is None:
+            self.status_label.setText(
+                self.tr("{control}: no LED message known for this control.").format(control=key[2])
+            )
+            return None
+        if not self.select(feature.id):
+            self.filter_edit.clear()  # refills the list
+            self.select(feature.id)
+        if self._picked_key is not None and self._picked_key not in (self._shift_key, *self._pad_mode_key.values()):
+            self.photo.set_active(self._picked_key, False)
+        self._picked_key = key
+        self.photo.set_active(key, True)
+        return feature
+
+    def feature_for_key(self, key: CellKey) -> Feature | None:
+        """The feature `key` stands for now: this side's deck, the latched
+        pad mode and SHIFT -- the variant the Controller Emulator picks."""
+        prefer_token = self._pad_mode.get(pad_mode_mod.grid_side(key[2])) if key[1] == "PAD" else None
+        entry = layout_mod.resolve_side_aware_variant(key[0], key, prefer_token, self._shift_held)
+        if entry is None or not entry.channels or not entry.channels[0].isdigit() or not entry.data1.isdigit():
+            return None
+        return feature_for_message(
+            key[0], _EVENT_TYPE_FOR_KIND[entry.note_or_cc], int(entry.channels[0]), int(entry.data1)
+        )
+
+    def _toggle_shift(self, key: CellKey) -> bool:
+        if key[2].removesuffix(" (R)") != "SHIFT":
+            return False
+        self._shift_held = not self._shift_held
+        previous = self._shift_key
+        self._shift_key = key if self._shift_held else None
+        if previous is not None and previous != key:
+            self.photo.set_active(previous, False)
+        self.photo.set_active(key, self._shift_held)
+        self.status_label.setText(
+            self.tr("SHIFT held: pad and button clicks pick their SHIFT layer.")
+            if self._shift_held
+            else self.tr("SHIFT released.")
+        )
+        return True
+
+    def _select_pad_mode(self, key: CellKey) -> bool:
+        token = pad_mode_mod.mode_token_for_button(key[0], key[2], self._shift_held)
+        if token is None:
+            return False
+        side = pad_mode_mod.grid_side(key[2])
+        previous = self._pad_mode_key.get(side)
+        if previous is not None and previous != key:
+            self.photo.set_active(previous, False)
+        self._pad_mode[side] = token
+        self._pad_mode_key[side] = key
+        self.photo.set_active(key, True)
+        self.status_label.setText(
+            self.tr("Pad mode set: {mode}. Now click a pad.").format(mode=key[2].removesuffix(" (R)"))
+        )
+        return True
+
+    # -- result ---------------------------------------------------------
 
     def action(self) -> FeatureAction | None:
         feature = self.selected_feature()
