@@ -1,5 +1,4 @@
 import random
-import time
 
 import pytest
 
@@ -227,11 +226,25 @@ def test_path_start_and_max_length_and_errors():
     assert build_playlist_path([]) == PathResult(path=[], leftovers=[])
 
 
-def test_path_is_fast_on_a_few_thousand_tracks():
+def test_path_work_stays_linear_on_a_few_thousand_tracks(monkeypatch):
+    """Counts step-cost evaluations instead of timing them (a 2 s budget
+    failed on a busy CI runner at 2.19 s with nothing changed): the beam
+    looks at a bounded set of candidates per committed step (~420 at 3,000
+    tracks), so a quadratic regression would blow this linear budget."""
+    from djmidi.library import playlist
+
+    calls = 0
+    original = playlist._step_cost
+
+    def counted(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(playlist, "_step_cost", counted)
     tracks = _synthetic(3000)
-    began = time.perf_counter()
     result = build_playlist_path(tracks, direction="flat")
-    elapsed = time.perf_counter() - began
     _assert_valid_path(result)
     assert len(result.path) + len(result.leftovers) == 3000
-    assert elapsed < 2.0, elapsed
+    assert len(result.path) > 2000
+    assert calls < 1000 * len(result.path), calls
