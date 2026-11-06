@@ -6,13 +6,27 @@ times, and removing the "duplicates" breaks the config in Serato).
 A MappingGroup is the safe unit of editing: every member shares the same
 trigger (channel/event_type/control) and the same deck/slot/tag/event, so
 editing them together keeps the file internally consistent instead of
-turning identical duplicates into the conflicting kind the validator flags."""
+turning identical duplicates into the conflicting kind the validator flags.
+
+Bindings inside a Serato <case> (a modifier / SHIFT layer) group separately
+per condition: Play while modifier_3 is off and Reverse while it is on are two
+functions of one button, not duplicates."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from djmidi.model import Control, MappingElement, MidiConfig, UserIO
+from djmidi.model import (
+    NO_CONDITION,
+    ConditionKey,
+    Control,
+    MappingElement,
+    MidiConfig,
+    UserIO,
+    condition_of,
+    describe_condition,
+    iter_bindings,
+)
 
 Member = tuple[Control, UserIO, MappingElement]
 
@@ -27,17 +41,24 @@ class MappingGroup:
     control_no: str
     event_type: str
     members: list[Member] = field(default_factory=list)
+    # The <case> condition every member sits under (NO_CONDITION outside any).
+    condition: ConditionKey = NO_CONDITION
 
     @property
     def representative(self) -> MappingElement:
         return self.members[0][2]
 
+    @property
+    def condition_text(self) -> str:
+        """``modifier_3 = on`` -- empty for a binding outside any <case>."""
+        return describe_condition(self.condition)
+
 
 def build_mapping_groups(config: MidiConfig) -> list[MappingGroup]:
-    groups: dict[tuple[str, str, str, str, str, str, str], MappingGroup] = {}
-    order: list[tuple[str, str, str, str, str, str, str]] = []
+    groups: dict[tuple, MappingGroup] = {}
+    order: list[tuple] = []
     for control in config.controls:
-        for userio in control.userios:
+        for userio, case in iter_bindings(control):
             for mapping in userio.mappings:
                 key = (
                     mapping.deck_id or "(none)",
@@ -47,6 +68,7 @@ def build_mapping_groups(config: MidiConfig) -> list[MappingGroup]:
                     control.channel,
                     control.control,
                     control.event_type,
+                    condition_of(case),
                 )
                 if key not in groups:
                     groups[key] = MappingGroup(
@@ -57,6 +79,7 @@ def build_mapping_groups(config: MidiConfig) -> list[MappingGroup]:
                         channel=key[4],
                         control_no=key[5],
                         event_type=key[6],
+                        condition=key[7],
                     )
                     order.append(key)
                 groups[key].members.append((control, userio, mapping))

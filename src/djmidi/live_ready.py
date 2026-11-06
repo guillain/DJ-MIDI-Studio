@@ -39,7 +39,7 @@ from dataclasses import dataclass, field
 
 from djmidi.function_names import function_label
 from djmidi.i18n import QT_TRANSLATE_NOOP, Translate, untranslated
-from djmidi.model import Control, MidiConfig
+from djmidi.model import Control, MidiConfig, iter_bindings
 from djmidi.validator import (
     Severity,
     TriggerKey,
@@ -197,7 +197,7 @@ def mapped_decks(config: MidiConfig) -> tuple[str, ...]:
     decks = {
         mapping.deck_id
         for control in config.controls
-        for userio in control.userios
+        for userio, _case in iter_bindings(control)
         if userio.event == "click"
         for mapping in userio.mappings
         if mapping.deck_id and mapping.deck_id not in _NO_DECK
@@ -222,7 +222,7 @@ def _check_essentials(
         ]
     covered: dict[str, set[str]] = {deck: set() for deck in decks}
     for control in config.controls:
-        for userio in control.userios:
+        for userio, _case in iter_bindings(control):
             if userio.event != "click":
                 continue
             for mapping in userio.mappings:
@@ -301,7 +301,7 @@ def _check_led_feedback(
     output_tags = set(known_output) | {
         mapping.tag
         for control in config.controls
-        for userio in control.userios
+        for userio, _case in iter_bindings(control)
         if userio.event == "output"
         for mapping in userio.mappings
     }
@@ -310,7 +310,7 @@ def _check_led_feedback(
         inputs: set[tuple[str, str | None, str | None]] = set()
         outputs: set[tuple[str, str | None, str | None]] = set()
         for control in controls:
-            for userio in control.userios:
+            for userio, _case in iter_bindings(control):
                 target = inputs if userio.event == "click" else outputs if userio.event == "output" else None
                 if target is None:
                     continue

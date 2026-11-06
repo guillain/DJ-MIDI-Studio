@@ -12,6 +12,7 @@
 - [Open a mapping](#open-a-mapping)
 - [Dashboard](#dashboard)
 - [Three views of the same mapping](#three-views-of-the-same-mapping)
+- [Modifier layers (case blocks)](#modifier-layers-case-blocks)
 - [Find which control triggers a function](#find-which-control-triggers-a-function)
 - [The controller layout](#the-controller-layout)
 - [Edit safely](#edit-safely)
@@ -66,6 +67,28 @@ three layouts. Clicking a control in a layout jumps to its raw entry.
 ![By Deck](../../images/layout/by-deck.png)
 
 ![By Channel](../../images/layout/by-channel.png)
+
+## Modifier layers (case blocks)
+
+Hand-edited Serato mappings can give one button several functions, one per
+modifier state: Play while a modifier is off, Reverse while it is on. Serato
+writes each layer as a `<case>` block with a `<condition>` naming the
+modifiers (`modifier_1` … `modifier_3`) and whether each must be on or off.
+
+DJ MIDI Studio keeps these blocks exactly as written when you save, in their
+original order, and shows them everywhere:
+
+- **By Channel** shows a `Case: modifier_3 = off` row under the control,
+  with its bindings inside; select a binding to edit it as usual.
+- **By Deck**, the function search, the cheat sheet and Compare mappings add
+  the condition in brackets (`reverse [modifier_1 = on]`).
+- Two functions on the same button under *different* conditions are not a
+  conflict; two under the *same* condition still are.
+- A modifier's own definition (`<modifier_3>`) needs no deck or slot.
+
+The condition itself (which modifier, on or off) can't be edited here yet:
+selecting the `Case` row shows it read-only, and Validate lists the controls
+that use such blocks.
 
 ## Find which control triggers a function
 

@@ -28,7 +28,9 @@ def _group_label(group: MappingGroup) -> str:
     hits = catalog.lookup(group.channel, group.event_type, group.control_no)
     physical = "; ".join(f"{h.controller}: {h.name}" for h in hits) or QCoreApplication.translate("MappingTree", "unknown physical control")
     count = f" (x{len(group.members)})" if len(group.members) > 1 else ""
-    return f"{function_name(group.tag)} [{group.event}] — ch{group.channel} {group.event_type} #{group.control_no} -> {physical}{count}"
+    # A <case> layer: the modifier test as the file writes it (tag names, no translation).
+    condition = f" [{group.condition_text}]" if group.condition_text else ""
+    return f"{function_name(group.tag)} [{group.event}]{condition} — ch{group.channel} {group.event_type} #{group.control_no} -> {physical}{count}"
 
 
 def _leaf(group: MappingGroup) -> QStandardItem:

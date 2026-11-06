@@ -1,12 +1,21 @@
 from __future__ import annotations
 
 import logging
+import re
 from collections import Counter
 from dataclasses import dataclass
 from typing import Literal
 
 from djmidi.i18n import QT_TRANSLATE_NOOP, Translate, untranslated
-from djmidi.model import Control, MidiConfig
+from djmidi.model import (
+    NO_CONDITION,
+    ConditionKey,
+    Control,
+    MidiConfig,
+    condition_of,
+    describe_condition,
+    iter_bindings,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -14,6 +23,8 @@ Severity = Literal["error", "warning", "info"]
 
 KNOWN_ACTION_ON = {"press", "any"}
 KNOWN_BEHAVIOUR = {"toggle", "explicit"}
+# A modifier definition (<modifier_3>) belongs to no deck or slot.
+_MODIFIER_TAG = re.compile(r"modifier_\d+$")
 
 # Validation-table texts (issue #326): English templates, translated by the
 # caller through `translate` before they are filled in. Tags, attribute names
@@ -46,6 +57,11 @@ _INCONSISTENT_TARGET = QT_TRANSLATE_NOOP(
     "Target <{tag}> (deck_id={deck_id}, slot_id={slot_id}) is bound to 'click' by "
     "{count} different controls with inconsistent behaviour/action_on: {values}.",
 )
+_HAS_CASES = QT_TRANSLATE_NOOP(
+    "Validator",
+    "Uses {count} conditional block(s) (<case>, a modifier / SHIFT layer: {functions}). Their bindings are "
+    "shown and editable; the conditions themselves can't be edited here yet.",
+)
 _CONFLICT_FUNCTION = QT_TRANSLATE_NOOP("Validator", "{tag} (slot {slot})")
 _CONFLICT_DECK = QT_TRANSLATE_NOOP("Validator", "deck {deck}: {functions}")
 
@@ -74,10 +90,14 @@ class DeckConflict:
 
     deck_id: str
     functions: tuple[tuple[str, str], ...]
+    # The <case> condition these functions share (NO_CONDITION outside any):
+    # two functions under different modifier states are not a conflict.
+    condition: ConditionKey = NO_CONDITION
 
     def describe(self, translate: Translate = untranslated) -> str:
         names = ", ".join(translate(_CONFLICT_FUNCTION).format(tag=tag, slot=slot) for tag, slot in self.functions)
-        return translate(_CONFLICT_DECK).format(deck=self.deck_id, functions=names)
+        text = translate(_CONFLICT_DECK).format(deck=self.deck_id, functions=names)
+        return f"{text} [{describe_condition(self.condition)}]" if self.condition else text
 
 
 def _group_by_trigger(config: MidiConfig) -> dict[TriggerKey, list[Control]]:
@@ -100,17 +120,20 @@ def find_deck_conflicts(config: MidiConfig) -> dict[TriggerKey, list[DeckConflic
     from the result."""
     result: dict[TriggerKey, list[DeckConflict]] = {}
     for key, controls in _group_by_trigger(config).items():
-        by_deck: dict[str, set[tuple[str, str]]] = {}
+        by_deck: dict[tuple[str, ConditionKey], set[tuple[str, str]]] = {}
         for control in controls:
-            for userio in control.userios:
+            for userio, case in iter_bindings(control):
                 if userio.event != "click":
                     continue
                 for mapping in userio.mappings:
+                    if _MODIFIER_TAG.match(mapping.tag):
+                        continue
                     deck = mapping.deck_id or "(none)"
-                    by_deck.setdefault(deck, set()).add((mapping.tag, mapping.slot_id or "(none)"))
+                    functions = by_deck.setdefault((deck, condition_of(case)), set())
+                    functions.add((mapping.tag, mapping.slot_id or "(none)"))
         conflicts = [
-            DeckConflict(deck_id=deck, functions=tuple(sorted(functions)))
-            for deck, functions in sorted(by_deck.items())
+            DeckConflict(deck_id=deck, functions=tuple(sorted(functions)), condition=condition)
+            for (deck, condition), functions in sorted(by_deck.items())
             if len(functions) > 1
         ]
         if conflicts:
@@ -122,8 +145,9 @@ def _control_location(control) -> str:
     return f"control[channel={control.channel}, event_type={control.event_type}, control={control.control}]"
 
 
-def _mapping_location(control, userio, mapping) -> str:
-    return f"{_control_location(control)}/userio[event={userio.event}]/{mapping.tag}[deck_id={mapping.deck_id}, slot_id={mapping.slot_id}]"
+def _mapping_location(control, userio, mapping, case=None) -> str:
+    where = f"/case[{case.describe()}]" if case is not None else ""
+    return f"{_control_location(control)}{where}/userio[event={userio.event}]/{mapping.tag}[deck_id={mapping.deck_id}, slot_id={mapping.slot_id}]"
 
 
 def _check_duplicate_triggers(config: MidiConfig, translate: Translate = untranslated) -> list[ValidationIssue]:
@@ -181,14 +205,15 @@ def _check_required_fields(config: MidiConfig, translate: Translate = untranslat
                     location=_control_location(control),
                 )
             )
-        for userio in control.userios:
+        for userio, case in iter_bindings(control):
             for mapping in userio.mappings:
-                if needs_slot and (not mapping.deck_id or not mapping.slot_id):
+                is_modifier = bool(_MODIFIER_TAG.match(mapping.tag))
+                if needs_slot and not is_modifier and (not mapping.deck_id or not mapping.slot_id):
                     issues.append(
                         ValidationIssue(
                             severity="error",
                             message=translate(_MISSING_DECK_OR_SLOT).format(tag=mapping.tag),
-                            location=_mapping_location(control, userio, mapping),
+                            location=_mapping_location(control, userio, mapping, case),
                         )
                     )
                 for translation in mapping.translations:
@@ -197,7 +222,7 @@ def _check_required_fields(config: MidiConfig, translate: Translate = untranslat
                             ValidationIssue(
                                 severity="error",
                                 message=translate(_MISSING_ACTION_ON).format(tag=mapping.tag),
-                                location=_mapping_location(control, userio, mapping),
+                                location=_mapping_location(control, userio, mapping, case),
                             )
                         )
     return issues
@@ -208,7 +233,7 @@ def _check_unknown_values(config: MidiConfig, translate: Translate = untranslate
     Informational only: the full set of values Serato accepts isn't documented here."""
     issues: list[ValidationIssue] = []
     for control in config.controls:
-        for userio in control.userios:
+        for userio, case in iter_bindings(control):
             for mapping in userio.mappings:
                 for translation in mapping.translations:
                     if translation.action_on and translation.action_on not in KNOWN_ACTION_ON:
@@ -216,7 +241,7 @@ def _check_unknown_values(config: MidiConfig, translate: Translate = untranslate
                             ValidationIssue(
                                 severity="info",
                                 message=translate(_UNKNOWN_ACTION_ON).format(value=translation.action_on),
-                                location=_mapping_location(control, userio, mapping),
+                                location=_mapping_location(control, userio, mapping, case),
                             )
                         )
                     if translation.behaviour and translation.behaviour not in KNOWN_BEHAVIOUR:
@@ -224,7 +249,7 @@ def _check_unknown_values(config: MidiConfig, translate: Translate = untranslate
                             ValidationIssue(
                                 severity="info",
                                 message=translate(_UNKNOWN_BEHAVIOUR).format(value=translation.behaviour),
-                                location=_mapping_location(control, userio, mapping),
+                                location=_mapping_location(control, userio, mapping, case),
                             )
                         )
     return issues
@@ -237,14 +262,14 @@ def _check_inconsistent_click_targets(
     with different behaviour/action_on, the resulting behaviour for that function is ambiguous."""
     targets: dict[tuple[str, str | None, str | None], list[tuple[str, str | None, object]]] = {}
     for control in config.controls:
-        for userio in control.userios:
+        for userio, case in iter_bindings(control):
             if userio.event != "click":
                 continue
             for mapping in userio.mappings:
                 key = (mapping.tag, mapping.deck_id, mapping.slot_id)
                 for translation in mapping.translations:
                     targets.setdefault(key, []).append(
-                        (translation.behaviour, translation.action_on, (control, userio, mapping))
+                        (translation.behaviour, translation.action_on, (control, userio, mapping, case))
                     )
 
     issues: list[ValidationIssue] = []
@@ -252,16 +277,35 @@ def _check_inconsistent_click_targets(
         distinct = {(behaviour, action_on) for behaviour, action_on, _ in bindings}
         if len(bindings) > 1 and len(distinct) > 1:
             tag, deck_id, slot_id = key
-            _, _, (control, userio, mapping) = bindings[-1]
+            _, _, (control, userio, mapping, case) = bindings[-1]
             issues.append(
                 ValidationIssue(
                     severity="warning",
                     message=translate(_INCONSISTENT_TARGET).format(
                         tag=tag, deck_id=deck_id, slot_id=slot_id, count=len(bindings), values=sorted(distinct)
                     ),
-                    location=_mapping_location(control, userio, mapping),
+                    location=_mapping_location(control, userio, mapping, case),
                 )
             )
+    return issues
+
+
+def _check_conditional_cases(config: MidiConfig, translate: Translate = untranslated) -> list[ValidationIssue]:
+    """Controls with <case> blocks: their conditions can't be edited yet."""
+    issues: list[ValidationIssue] = []
+    for control in config.controls:
+        if not control.cases:
+            continue
+        functions = sorted(
+            {mapping.tag for case in control.cases for userio in case.userios for mapping in userio.mappings}
+        )
+        issues.append(
+            ValidationIssue(
+                severity="info",
+                message=translate(_HAS_CASES).format(count=len(control.cases), functions=", ".join(functions) or "-"),
+                location=_control_location(control),
+            )
+        )
     return issues
 
 
@@ -273,6 +317,7 @@ def validate(config: MidiConfig, translate: Translate = untranslated) -> list[Va
     issues += _check_required_fields(config, translate)
     issues += _check_unknown_values(config, translate)
     issues += _check_inconsistent_click_targets(config, translate)
+    issues += _check_conditional_cases(config, translate)
     counts = Counter(issue.severity for issue in issues)
     log = _LOGGER.warning if counts["error"] else _LOGGER.info
     log(

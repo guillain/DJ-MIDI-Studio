@@ -28,7 +28,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 
-from djmidi.model import MidiConfig
+from djmidi.model import MidiConfig, condition_of, iter_bindings
 from djmidi.software._registry import SoftwareDefinition
 
 ERROR, WARNING, INFO = "error", "warning", "info"
@@ -50,9 +50,17 @@ class ContractIssue:
 
 def _bindings(config: MidiConfig) -> Counter:
     return Counter(
-        (control.channel, control.event_type, control.control, userio.event, mapping.tag, mapping.deck_id)
+        (
+            control.channel,
+            control.event_type,
+            control.control,
+            userio.event,
+            mapping.tag,
+            mapping.deck_id,
+            condition_of(case),
+        )
         for control in config.controls
-        for userio in control.userios
+        for userio, case in iter_bindings(control)
         for mapping in userio.mappings
     )
 
@@ -85,7 +93,7 @@ def _check_config(config: object, sample: str) -> list[ContractIssue]:
             issues.append(ContractIssue(ERROR, f"{where}: event_type must be one of {sorted(EVENT_TYPES)}", sample))
         if not (isinstance(control.control, str) and control.control.isdigit() and 0 <= int(control.control) <= 127):
             issues.append(ContractIssue(ERROR, f"{where}: control must be the text '0'..'127'", sample))
-        for userio in control.userios:
+        for userio, _case in iter_bindings(control):
             if userio.event not in USERIO_EVENTS:
                 issues.append(ContractIssue(ERROR, f"{where}: userio event {userio.event!r} isn't click/output", sample))
             for mapping in userio.mappings:

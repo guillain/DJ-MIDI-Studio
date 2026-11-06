@@ -1619,6 +1619,22 @@ Ein manueller Schritt bleibt: &apos;{slug}&apos; zum Import-Block in catalog/__i
         <translation>Wählen Sie einen Knoten im Baum, um ihn zu bearbeiten.</translation>
     </message>
     <message>
+        <source>Conditional block (case)</source>
+        <translation>Bedingter Block (case)</translation>
+    </message>
+    <message>
+        <source>(no condition)</source>
+        <translation>(keine Bedingung)</translation>
+    </message>
+    <message>
+        <source>Applies while: {condition}</source>
+        <translation>Gilt, solange: {condition}</translation>
+    </message>
+    <message>
+        <source>Select a binding inside it to edit it. The condition itself (which modifier, on or off) is kept as written but can&apos;t be edited here yet.</source>
+        <translation>Wählen Sie eine Zuweisung darin aus, um sie zu bearbeiten. Die Bedingung selbst (welcher Modifier, ein oder aus) bleibt unverändert erhalten, lässt sich hier aber noch nicht bearbeiten.</translation>
+    </message>
+    <message>
         <source>(not found in any controller reference table)</source>
         <translation>(in keiner Controller-Referenztabelle gefunden)</translation>
     </message>
@@ -4790,6 +4806,14 @@ Roh: {raw}</translation>
     <message>
         <source>deck {deck}, slot {slot}</source>
         <translation>Deck {deck}, Slot {slot}</translation>
+    </message>
+    <message>
+        <source>Case: {condition}</source>
+        <translation>Fall: {condition}</translation>
+    </message>
+    <message>
+        <source>(no condition)</source>
+        <translation>(keine Bedingung)</translation>
     </message>
     <message>
         <source>Channel {channel}</source>
@@ -8419,6 +8443,10 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     <message>
         <source>Target &lt;{tag}&gt; (deck_id={deck_id}, slot_id={slot_id}) is bound to &apos;click&apos; by {count} different controls with inconsistent behaviour/action_on: {values}.</source>
         <translation>Das Ziel &lt;{tag}&gt; (deck_id={deck_id}, slot_id={slot_id}) ist von {count} verschiedenen Controls mit uneinheitlichem behaviour/action_on an &apos;click&apos; gebunden: {values}.</translation>
+    </message>
+    <message>
+        <source>Uses {count} conditional block(s) (&lt;case&gt;, a modifier / SHIFT layer: {functions}). Their bindings are shown and editable; the conditions themselves can&apos;t be edited here yet.</source>
+        <translation>Verwendet {count} bedingte(n) Block/Blöcke (&lt;case&gt;, eine Modifier-/SHIFT-Ebene: {functions}). Ihre Zuweisungen werden angezeigt und sind bearbeitbar; die Bedingungen selbst lassen sich hier noch nicht bearbeiten.</translation>
     </message>
     <message>
         <source>{tag} (slot {slot})</source>

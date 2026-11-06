@@ -6,6 +6,8 @@ from os import PathLike
 
 from djmidi.model import (
     Alias,
+    Case,
+    Condition,
     Control,
     MappingElement,
     MidiConfig,
@@ -58,15 +60,53 @@ def _parse_userio(element: ET.Element) -> UserIO:
     return UserIO(event=values["event"], mappings=mappings, extra_attrs=extra)
 
 
+def _parse_case(element: ET.Element, where: str) -> Case:
+    conditions: list[Condition] = []
+    condition_attrs: dict[str, str] = {}
+    userios: list[UserIO] = []
+    has_condition = False
+    for child in element:
+        if child.tag == "condition":
+            has_condition = True
+            condition_attrs.update(child.attrib)
+            for test in child:
+                if len(test):
+                    _LOGGER.warning("Nested content under <%s> in a <condition> at %s is not kept", test.tag, where)
+                conditions.append(Condition(tag=test.tag, attrs=dict(test.attrib)))
+        elif child.tag == "userio":
+            userios.append(_parse_userio(child))
+        else:
+            _LOGGER.warning("Unexpected <%s> inside a <case> at %s is not kept", child.tag, where)
+    return Case(
+        conditions=conditions,
+        userios=userios,
+        extra_attrs=dict(element.attrib),
+        condition_attrs=condition_attrs,
+        has_condition=has_condition,
+    )
+
+
 def _parse_control(element: ET.Element) -> Control:
     values, extra = _pop_known(element.attrib, ("channel", "event_type", "control"))
-    userios = [_parse_userio(child) for child in element if child.tag == "userio"]
+    where = f"control channel={values['channel']} control={values['control']}"
+    userios: list[UserIO] = []
+    cases: list[Case] = []
+    for child in element:
+        if child.tag == "userio":
+            userios.append(_parse_userio(child))
+        elif child.tag == "case":
+            case = _parse_case(child, where)
+            case.position = len(userios)
+            cases.append(case)
+        else:
+            _LOGGER.warning("Unexpected <%s> inside a <control> at %s is not kept", child.tag, where)
     return Control(
         channel=values["channel"],
         event_type=values["event_type"],
         control=values["control"],
         userios=userios,
         extra_attrs=extra,
+        cases=cases,
     )
 
 

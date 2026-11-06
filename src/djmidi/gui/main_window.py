@@ -174,7 +174,7 @@ from djmidi.live_ready import check_live_ready
 from djmidi.logging_config import configure_logging, current_log_path, default_log_path
 from djmidi.mapping_diff import diff_configs
 from djmidi.midi_io import MidiEvent, MidiMonitor, list_input_ports, list_output_ports
-from djmidi.model import Control, MappingElement, MidiConfig
+from djmidi.model import Control, MappingElement, MidiConfig, iter_bindings
 from djmidi.plugins import PluginPreferences, default_preferences_path
 from djmidi.problem_report import ReportContext, collect_context
 from djmidi.safe_update import prepare_update
@@ -2461,7 +2461,7 @@ class MainWindow(QMainWindow):
                 others = {other for other in hit_keys if other[0] != key[0]}
                 if others:
                     linked_cells.setdefault(key, set()).update(others)
-            for userio in control.userios:
+            for userio, _case in iter_bindings(control):
                 for mapping in userio.mappings:
                     if not mapping.deck_id:
                         continue

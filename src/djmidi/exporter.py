@@ -6,6 +6,7 @@ from os import PathLike
 
 from djmidi.model import (
     Alias,
+    Case,
     Control,
     MappingElement,
     MidiConfig,
@@ -68,7 +69,25 @@ def _build_control(control: Control) -> ET.Element:
             control.extra_attrs,
         ),
     )
-    for userio in control.userios:
+    # Cases go back where they were among the direct <userio>s (`position`);
+    # a case added in code (no position) goes last.
+    pending = list(control.cases)
+    for index, userio in enumerate(control.userios):
+        while pending and pending[0].position is not None and pending[0].position <= index:
+            element.append(_build_case(pending.pop(0)))
+        element.append(_build_userio(userio))
+    for case in pending:
+        element.append(_build_case(case))
+    return element
+
+
+def _build_case(case: Case) -> ET.Element:
+    element = ET.Element("case", dict(case.extra_attrs))
+    if case.has_condition or case.conditions:
+        condition = ET.SubElement(element, "condition", dict(case.condition_attrs))
+        for test in case.conditions:
+            ET.SubElement(condition, test.tag, dict(test.attrs))
+    for userio in case.userios:
         element.append(_build_userio(userio))
     return element
 
