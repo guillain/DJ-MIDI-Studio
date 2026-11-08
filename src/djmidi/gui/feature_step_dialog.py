@@ -56,11 +56,10 @@ from djmidi.atelier.actions import (
     FeatureAction,
     compile_action,
 )
-from djmidi.atelier.features import NOTE, Feature, feature_for_message, features_for
-from djmidi.gui import layout as layout_mod
-from djmidi.gui import pad_mode as pad_mode_mod
+from djmidi.atelier.features import NOTE, Feature, features_for
 from djmidi.gui.controller_emulator import EmulatorLayoutView
 from djmidi.gui.layout import CellKey
+from djmidi.gui.photo_picker import PAD_MODE, SHIFT, PhotoPicker
 from djmidi.gui.translation import translator
 from djmidi.gui.window_size import (
     fit_to_screen,
@@ -90,14 +89,6 @@ class FeatureStepDialog(QDialog):
         self._features = [
             feature for feature in features_for(controller) if simulating or feature.led is not None
         ]
-        # The photo's own emulator-like state: per grid side, the pad-mode
-        # token and the button that set it; whether SHIFT is latched; the
-        # cell last picked (kept lit).
-        self._pad_mode: dict[str, str] = {}
-        self._pad_mode_key: dict[str, CellKey] = {}
-        self._shift_held = False
-        self._shift_key: CellKey | None = None
-        self._picked_key: CellKey | None = None
 
         intro = QLabel(
             self.tr(
@@ -111,6 +102,9 @@ class FeatureStepDialog(QDialog):
 
         self.photo = EmulatorLayoutView(controller)
         self.photo.controlPressed.connect(self.pick_key)
+        # The photo's emulator-like state (pad mode per side, latched SHIFT,
+        # the picked cell kept lit), shared with the Atelier tab.
+        self._picker = PhotoPicker(self.photo)
         # Scrolls instead of imposing the schematic's own minimum size on the
         # dialog (the Controller Emulator dock does the same, issue #19).
         photo_scroll = QScrollArea()
@@ -222,7 +216,7 @@ class FeatureStepDialog(QDialog):
         self._update_ok()
         if feature is not None:
             self.status_label.setText(self.tr("Selected: {control}").format(control=self._row_text(feature)))
-        elif self._picked_key is None:
+        elif self._picker.picked_key is None:
             self.status_label.setText(
                 self.tr("Click a control on the photo, or pick one in the list. Pad mode buttons choose the bank "
                         "later pad clicks use; SHIFT latches.")
@@ -246,9 +240,18 @@ class FeatureStepDialog(QDialog):
         the photo's state; any other control selects its feature in the list
         (clearing the filter when it hides it). Returns the selected feature,
         or None."""
-        if self._toggle_shift(key) or self._select_pad_mode(key):
+        pick = self._picker.click(key)
+        if pick.kind == SHIFT:
+            self.status_label.setText(
+                self.tr("SHIFT held: pad and button clicks pick their SHIFT layer.")
+                if pick.shift_held
+                else self.tr("SHIFT released.")
+            )
             return None
-        feature = self.feature_for_key(key)
+        if pick.kind == PAD_MODE:
+            self.status_label.setText(self.tr("Pad mode set: {mode}. Now click a pad.").format(mode=pick.mode))
+            return None
+        feature = pick.feature
         if feature is None:
             self.status_label.setText(
                 self.tr("{control}: no MIDI message known for this control.").format(control=key[2])
@@ -262,54 +265,11 @@ class FeatureStepDialog(QDialog):
         if not self.select(feature.id):
             self.filter_edit.clear()  # refills the list
             self.select(feature.id)
-        if self._picked_key is not None and self._picked_key not in (self._shift_key, *self._pad_mode_key.values()):
-            self.photo.set_active(self._picked_key, False)
-        self._picked_key = key
-        self.photo.set_active(key, True)
+        self._picker.mark_picked(key)
         return feature
 
     def feature_for_key(self, key: CellKey) -> Feature | None:
-        """The feature `key` stands for now: this side's deck, the latched
-        pad mode and SHIFT -- the variant the Controller Emulator picks."""
-        prefer_token = self._pad_mode.get(pad_mode_mod.grid_side(key[2])) if key[1] == "PAD" else None
-        entry = layout_mod.resolve_side_aware_variant(key[0], key, prefer_token, self._shift_held)
-        if entry is None or not entry.channels or not entry.channels[0].isdigit() or not entry.data1.isdigit():
-            return None
-        return feature_for_message(
-            key[0], _EVENT_TYPE_FOR_KIND[entry.note_or_cc], int(entry.channels[0]), int(entry.data1)
-        )
-
-    def _toggle_shift(self, key: CellKey) -> bool:
-        if key[2].removesuffix(" (R)") != "SHIFT":
-            return False
-        self._shift_held = not self._shift_held
-        previous = self._shift_key
-        self._shift_key = key if self._shift_held else None
-        if previous is not None and previous != key:
-            self.photo.set_active(previous, False)
-        self.photo.set_active(key, self._shift_held)
-        self.status_label.setText(
-            self.tr("SHIFT held: pad and button clicks pick their SHIFT layer.")
-            if self._shift_held
-            else self.tr("SHIFT released.")
-        )
-        return True
-
-    def _select_pad_mode(self, key: CellKey) -> bool:
-        token = pad_mode_mod.mode_token_for_button(key[0], key[2], self._shift_held)
-        if token is None:
-            return False
-        side = pad_mode_mod.grid_side(key[2])
-        previous = self._pad_mode_key.get(side)
-        if previous is not None and previous != key:
-            self.photo.set_active(previous, False)
-        self._pad_mode[side] = token
-        self._pad_mode_key[side] = key
-        self.photo.set_active(key, True)
-        self.status_label.setText(
-            self.tr("Pad mode set: {mode}. Now click a pad.").format(mode=key[2].removesuffix(" (R)"))
-        )
-        return True
+        return self._picker.feature_for_key(key)
 
     # -- result ---------------------------------------------------------
 

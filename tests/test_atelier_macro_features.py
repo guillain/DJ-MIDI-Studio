@@ -104,7 +104,7 @@ def test_the_editor_adds_feature_steps_and_saves_them_annotated():
     assert dialog.add_feature_button.isEnabled()
     dialog.feature_step_dialog_factory = _PickBeatSync
     dialog._add_feature_steps()
-    assert dialog.feature_text(0) == "BEAT SYNC: LED on"
+    assert dialog.feature_text(0) == "BEAT SYNC (deck 1): LED on"
     edited = dialog._edited()
     assert edited.steps[0].feature == FeatureRef("DDJ-XP2", FeatureAction(SYNC_ID, LED_ON))
 

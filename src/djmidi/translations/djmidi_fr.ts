@@ -2,6 +2,97 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="fr_FR">
 <context>
+    <name>AtelierView</name>
+    <message>
+        <source>Controller</source>
+        <translation>Contrôleur</translation>
+    </message>
+    <message>
+        <source>Scene</source>
+        <translation>Scène</translation>
+    </message>
+    <message>
+        <source>LED in this scene</source>
+        <translation>LED dans cette scène</translation>
+    </message>
+    <message>
+        <source>Not set (left as it is)</source>
+        <translation>Non définie (laissée telle quelle)</translation>
+    </message>
+    <message>
+        <source>Off</source>
+        <translation>Éteinte</translation>
+    </message>
+    <message>
+        <source>On</source>
+        <translation>Allumée</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>Valeur</translation>
+    </message>
+    <message>
+        <source>Reload saved</source>
+        <translation>Recharger l’enregistré</translation>
+    </message>
+    <message>
+        <source>Clear LEDs</source>
+        <translation>Effacer les LED</translation>
+    </message>
+    <message>
+        <source>Save to sync set</source>
+        <translation>Enregistrer dans le sync set</translation>
+    </message>
+    <message>
+        <source>Send to controller</source>
+        <translation>Envoyer au contrôleur</translation>
+    </message>
+    <message>
+        <source>Sends this scene&apos;s messages to the controller now, without saving.</source>
+        <translation>Envoie maintenant les messages de cette scène au contrôleur, sans enregistrer.</translation>
+    </message>
+    <message>
+        <source>Scene state</source>
+        <translation>État de la scène</translation>
+    </message>
+    <message>
+        <source>Loaded the {scene} sync set: {count} LED(s) set.</source>
+        <translation>Sync set {scene} chargé : {count} LED définie(s).</translation>
+    </message>
+    <message>
+        <source>No sync set saved for this controller and scene yet: click a control to start one.</source>
+        <translation>Aucun sync set enregistré pour ce contrôleur et cette scène : cliquez sur un contrôle pour en commencer un.</translation>
+    </message>
+    <message>
+        <source>SHIFT held: clicks pick the SHIFT layer.</source>
+        <translation>SHIFT enfoncé : les clics choisissent la couche SHIFT.</translation>
+    </message>
+    <message>
+        <source>SHIFT released.</source>
+        <translation>SHIFT relâché.</translation>
+    </message>
+    <message>
+        <source>Pad mode set: {mode}. Now click a pad.</source>
+        <translation>Mode de pad choisi : {mode}. Cliquez maintenant sur un pad.</translation>
+    </message>
+    <message>
+        <source>{control}: no LED message known for this control.</source>
+        <translation>{control} : aucun message de LED connu pour ce contrôle.</translation>
+    </message>
+    <message>
+        <source>Not saved yet: click Save to sync set to keep it.</source>
+        <translation>Pas encore enregistré : cliquez sur Enregistrer dans le sync set pour le garder.</translation>
+    </message>
+    <message>
+        <source>{type} · ch {channel} · {data1} · {data2} (kept as is)</source>
+        <translation>{type} · canal {channel} · {data1} · {data2} (conservé tel quel)</translation>
+    </message>
+    <message>
+        <source>Saved: {count} message(s) in the {scene} sync set of {controller}.</source>
+        <translation>Enregistré : {count} message(s) dans le sync set {scene} de {controller}.</translation>
+    </message>
+</context>
+<context>
     <name>AudioPreviewBar</name>
     <message>
         <source>Audio preview unavailable: PySide6&apos;s QtMultimedia module could not be loaded.</source>
@@ -2433,6 +2524,14 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
         <translation>L&apos;image de référence du contrôleur sélectionné : zoomez avec la molette, faites glisser pour vous déplacer, &lt;b&gt;Réinitialiser le zoom&lt;/b&gt; pour l&apos;ajuster à la fenêtre. &lt;b&gt;Ouvrir la documentation&lt;/b&gt; ouvre son manuel ou sa liste de messages MIDI fournis avec l&apos;application.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Contrôleur&lt;/b&gt; : la vraie photo. &lt;b&gt;MIDI&lt;/b&gt; : le même contrôleur avec ses informations MIDI imprimées dessus, quand il en fournit une. Une seule photo à la fois.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Disposition&lt;/b&gt; : un repère sur chaque commande modélisée, à sa position réelle (mesurée sur la photo Contrôleur, donc grisé sur la photo MIDI). Quand le Live Monitor tourne, un repère clignote quand vous touchez cette commande.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Envoi live&lt;/b&gt; envoie le message MIDI d&apos;une commande cliquée vers la sortie choisie.&lt;/li&gt;&lt;/ul&gt;</translation>
     </message>
     <message>
+        <source>Atelier</source>
+        <translation>Atelier</translation>
+    </message>
+    <message>
+        <source>Design what a controller&apos;s LEDs show for a sync scene, on its photo, instead of recording MIDI messages.&lt;ul&gt;&lt;li&gt;Pick the controller and the scene, then click a control: pad mode buttons choose the pads&apos; bank and &lt;b&gt;SHIFT&lt;/b&gt; stays held, as in the emulator.&lt;/li&gt;&lt;li&gt;Choose what its LED does: &lt;b&gt;Off&lt;/b&gt;, &lt;b&gt;On&lt;/b&gt;, a &lt;b&gt;Value&lt;/b&gt; (a colour on controllers that have them), or leave it as it is.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Save to sync set&lt;/b&gt; stores the scene: the next Sync puts the controller in that state. &lt;b&gt;Send to controller&lt;/b&gt; tries it now without saving.&lt;/li&gt;&lt;li&gt;Messages the Atelier doesn&apos;t recognise are kept as they were.&lt;/li&gt;&lt;/ul&gt;LED addresses not given by a document are assumed (same note as the button) until checked on the hardware.</source>
+        <translation>Concevez ce qu’affichent les LED d’un contrôleur pour une scène de sync, sur sa photo, au lieu d’enregistrer des messages MIDI.&lt;ul&gt;&lt;li&gt;Choisissez le contrôleur et la scène, puis cliquez sur un contrôle : les boutons de mode de pad choisissent la banque des pads et &lt;b&gt;SHIFT&lt;/b&gt; reste enfoncé, comme dans l’émulateur.&lt;/li&gt;&lt;li&gt;Choisissez ce que fait sa LED : &lt;b&gt;Éteinte&lt;/b&gt;, &lt;b&gt;Allumée&lt;/b&gt;, une &lt;b&gt;Valeur&lt;/b&gt; (une couleur sur les contrôleurs qui en ont), ou laissez-la telle quelle.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Enregistrer dans le sync set&lt;/b&gt; garde la scène : la prochaine synchronisation met le contrôleur dans cet état. &lt;b&gt;Envoyer au contrôleur&lt;/b&gt; l’essaie tout de suite sans enregistrer.&lt;/li&gt;&lt;li&gt;Les messages que l’Atelier ne reconnaît pas sont conservés tels quels.&lt;/li&gt;&lt;/ul&gt;Les adresses de LED qu’aucun document ne donne sont supposées (même note que le bouton) jusqu’à vérification sur le matériel.</translation>
+    </message>
+    <message>
         <source>Controller Emulator</source>
         <translation>Émulateur de contrôleur</translation>
     </message>
@@ -3776,6 +3875,10 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
         <translation>Bibliothèque</translation>
     </message>
     <message>
+        <source>Atelier</source>
+        <translation>Atelier</translation>
+    </message>
+    <message>
         <source>&amp;File</source>
         <translation>&amp;Fichier</translation>
     </message>
@@ -4206,6 +4309,10 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
     <message>
         <source>{pads} pad colour(s) saved in the sync set for {name} ({count} message(s))</source>
         <translation>{pads} couleur(s) de pad enregistrée(s) dans le jeu de synchronisation de {name} ({count} message(s))</translation>
+    </message>
+    <message>
+        <source>Atelier scene saved in the sync set for {name} ({count} message(s))</source>
+        <translation>Scène de l’Atelier enregistrée dans le sync set de {name} ({count} message(s))</translation>
     </message>
     <message>
         <source>New scene…</source>

@@ -8,6 +8,8 @@ GUI passes a `translate` for the verb words.
 
 from __future__ import annotations
 
+import re
+
 from djmidi import catalog
 from djmidi.atelier.actions import (
     AS_CONTROLLER,
@@ -16,11 +18,13 @@ from djmidi.atelier.actions import (
     FeatureAction,
     decompile,
 )
-from djmidi.atelier.features import feature_by_id
+from djmidi.atelier.features import Feature, feature_by_id
 from djmidi.controller_sync import SyncMessage
-from djmidi.i18n import Translate, untranslated
+from djmidi.i18n import QT_TRANSLATE_NOOP, Translate, untranslated
 
 _EXACT_PORT_SCORE = 100
+_DECK_IN_NAME = re.compile(r"\bDeck\s+[1-4A-D]\b", re.IGNORECASE)
+_NAME_WITH_DECK = QT_TRANSLATE_NOOP("FeatureActions", "{name} (deck {deck})")
 
 
 def controller_for_port(port: str) -> str | None:
@@ -53,6 +57,17 @@ def macro_target(output_port: str, simulates: str = "") -> tuple[str, str] | Non
     return None
 
 
+def feature_name(feature: Feature, translate: Translate = untranslated) -> str:
+    """The control's name, with its deck when the name doesn't say it --
+    two decks' BEAT SYNC must not read the same -- or its channel when it
+    belongs to no deck."""
+    if feature.deck is None:
+        return feature.label
+    if _DECK_IN_NAME.search(feature.name):
+        return feature.name
+    return translate(_NAME_WITH_DECK).format(name=feature.name, deck=feature.deck)
+
+
 def describe_action(controller: str, action: FeatureAction, translate: Translate = untranslated) -> str | None:
     feature = feature_by_id(controller, action.feature_id)
     if feature is None:
@@ -60,7 +75,7 @@ def describe_action(controller: str, action: FeatureAction, translate: Translate
     verb = translate(VERB_LABELS.get(action.verb, action.verb))
     if action.value is not None:
         verb = f"{verb} {action.value}"
-    return f"{feature.label}: {verb}"
+    return f"{feature_name(feature, translate)}: {verb}"
 
 
 def describe_message(
@@ -73,4 +88,4 @@ def describe_message(
     return describe_action(controller, item, translate)
 
 
-__all__ = ["controller_for_port", "describe_action", "describe_message", "macro_target"]
+__all__ = ["controller_for_port", "describe_action", "describe_message", "feature_name", "macro_target"]
