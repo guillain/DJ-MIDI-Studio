@@ -1937,12 +1937,24 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
         <translation>Ajouter des pas depuis {controller}</translation>
     </message>
     <message>
+        <source>Pick a control and what the macro should imitate: a tap, a press, a release or a value. The step&apos;s MIDI message is filled in for you.</source>
+        <translation>Choisissez un contrôle et ce que la macro doit imiter : un appui bref, un appui, un relâchement ou une valeur. Le message MIDI du pas est rempli pour vous.</translation>
+    </message>
+    <message>
         <source>Pick a control and what its LED should do; the step&apos;s MIDI message is filled in for you.</source>
         <translation>Choisissez un contrôle et ce que doit faire sa LED ; le message MIDI du pas est rempli pour vous.</translation>
     </message>
     <message>
         <source>Filter controls: name, deck, pad mode…</source>
         <translation>Filtrer les contrôles : nom, platine, mode de pad…</translation>
+    </message>
+    <message>
+        <source>Photo</source>
+        <translation>Photo</translation>
+    </message>
+    <message>
+        <source>List</source>
+        <translation>Liste</translation>
     </message>
     <message>
         <source>Action</source>
@@ -1959,6 +1971,34 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     <message>
         <source>{name} (deck {deck})</source>
         <translation>{name} (platine {deck})</translation>
+    </message>
+    <message>
+        <source>Selected: {control}</source>
+        <translation>Sélectionné : {control}</translation>
+    </message>
+    <message>
+        <source>Click a control on the photo, or pick one in the list. Pad mode buttons choose the bank later pad clicks use; SHIFT latches.</source>
+        <translation>Cliquez sur un contrôle de la photo, ou choisissez-en un dans la liste. Les boutons de mode de pad choisissent la banque des clics de pad suivants ; SHIFT reste enfoncé.</translation>
+    </message>
+    <message>
+        <source>{control}: no MIDI message known for this control.</source>
+        <translation>{control} : aucun message MIDI connu pour ce contrôle.</translation>
+    </message>
+    <message>
+        <source>{control}: no LED message known for this control.</source>
+        <translation>{control} : aucun message de LED connu pour ce contrôle.</translation>
+    </message>
+    <message>
+        <source>SHIFT held: pad and button clicks pick their SHIFT layer.</source>
+        <translation>SHIFT enfoncé : les clics de pads et de boutons choisissent leur couche SHIFT.</translation>
+    </message>
+    <message>
+        <source>SHIFT released.</source>
+        <translation>SHIFT relâché.</translation>
+    </message>
+    <message>
+        <source>Pad mode set: {mode}. Now click a pad.</source>
+        <translation>Mode de pad choisi : {mode}. Cliquez maintenant sur un pad.</translation>
     </message>
 </context>
 <context>
@@ -3413,6 +3453,14 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
         <translation>Appuyez sur un bouton de votre contrôleur, ou sur plusieurs à la suite : cette macro sera jouée chaque fois qu&apos;ils sont pressés dans cet ordre. L&apos;apprentissage s&apos;arrête dès que vous cessez d&apos;appuyer pendant l&apos;écart maximal, ou quand vous cliquez à nouveau.</translation>
     </message>
     <message>
+        <source>Add steps imitating one of {controller}&apos;s controls: a tap, a press, a release or a value.</source>
+        <translation>Ajouter des pas imitant un contrôle de {controller} : un appui bref, un appui, un relâchement ou une valeur.</translation>
+    </message>
+    <message>
+        <source>Pick a controller&apos;s output port, or the controller this macro simulates, to see each step as one of its features.</source>
+        <translation>Choisissez le port de sortie d’un contrôleur, ou le contrôleur que cette macro simule, pour voir chaque pas comme une de ses fonctions.</translation>
+    </message>
+    <message>
         <source>No control pressed — Learn timed out.</source>
         <translation>Aucune commande pressée — l&apos;apprentissage a expiré.</translation>
     </message>
@@ -3487,6 +3535,18 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
     <message>
         <source>Output port</source>
         <translation>Port de sortie</translation>
+    </message>
+    <message>
+        <source>None (plain MIDI)</source>
+        <translation>Aucun (MIDI brut)</translation>
+    </message>
+    <message>
+        <source>The controller this macro imitates towards the DJ software, through this virtual port.</source>
+        <translation>Le contrôleur que cette macro imite auprès du logiciel DJ, à travers ce port virtuel.</translation>
+    </message>
+    <message>
+        <source>Simulates</source>
+        <translation>Simule</translation>
     </message>
     <message>
         <source>Shortcut</source>
@@ -3573,20 +3633,20 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
         <translation>Les étapes sont jouées de haut en bas ; chacune attend son délai avant l&apos;envoi (canal 1–16, data 0–127, délai 0–60000 ms).</translation>
     </message>
     <message>
+        <source>Pick a controller&apos;s output port, or the controller this macro simulates, to add steps.</source>
+        <translation>Choisissez le port de sortie d’un contrôleur, ou le contrôleur que cette macro simule, pour ajouter des pas.</translation>
+    </message>
+    <message>
         <source>Add steps by picking one of {controller}&apos;s controls and an LED action.</source>
         <translation>Ajouter des pas en choisissant un contrôle de {controller} et une action de LED.</translation>
     </message>
     <message>
-        <source>Pick a controller&apos;s output port to add steps from its controls.</source>
-        <translation>Choisissez le port de sortie d’un contrôleur pour ajouter des pas depuis ses contrôles.</translation>
-    </message>
-    <message>
-        <source>Pick a controller&apos;s output port to see each step as one of its features.</source>
-        <translation>Choisissez le port de sortie d’un contrôleur pour voir chaque pas comme une de ses fonctions.</translation>
-    </message>
-    <message>
         <source>Steps sent to {controller}, read as its features (LED messages).</source>
         <translation>Pas envoyés à {controller}, lus comme ses fonctions (messages de LED).</translation>
+    </message>
+    <message>
+        <source>Steps imitating {controller}, read as its presses and values.</source>
+        <translation>Pas imitant {controller}, lus comme ses appuis et ses valeurs.</translation>
     </message>
     <message>
         <source>A macro needs a name</source>
