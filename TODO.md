@@ -57,7 +57,7 @@ transport, and to expose no Clock/MIDI-output configuration of its own — so
 Serato alone can never drive this path; some other genuinely Start-Stop-Sync-
 capable Link peer (Ableton Live here) is required.
 
-The current release is `v0.48.193` on `main`; each change since `v0.46.0` is
+The current release is `v0.48.194` on `main`; each change since `v0.46.0` is
 one milestone tag (`v0.4x.N-<slug>`) recorded in [Recent evolution
 chapters](#recent-evolution-chapters). Those chapters are software-validated;
 anything that still needs real hardware, a real DJ-software export or a
@@ -139,6 +139,13 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Atelier step 3 completed: photo picking and simulation macros** (`v0.48.194-atelier-step3`, epic #413) —
+  **Add from controller…** opens on the controller's clickable photo (pad-mode buttons pick the bank, SHIFT latches,
+  the right grid is deck 2, the clicked control stays lit) beside the filtered list. A macro whose output port is not
+  a controller can now **simulate** one (`MidiMacro.simulates`, editor row "Simulates"): its steps read and are built
+  as that controller's presses, releases and values towards the DJ software through a virtual port (a tap adds two
+  steps), and are stored with their feature like LED steps. Built by two parallel agents, integrated and translated
+  FR/DE here.
 - [x] **Atelier step 3, second slice: macro steps from features** (`v0.48.193-atelier-macro-features`, epic #413) —
   **Add from controller…** in the macro editor picks one of the output controller's controls and an LED action
   (on / off / value) instead of typing numbers; and every step that drives a control now records it in the macro
@@ -3712,19 +3719,9 @@ close what can't be unblocked here.
    data marked, step list before a timeline).
    1. Feature model and actions — **done** `v0.48.190` (#416).
    2. Feature card in the Controller Emulator — **done** `v0.48.191` (#418).
-   3. Macro editor by features — steps read as features `v0.48.192` (#419),
-      built from and stored with features `v0.48.193` (#420). **In progress
-      (2026-11-06)**, two branches pushed by parallel agents, not yet
-      integrated: `feature/atelier-photo-pick` (pick the control on the
-      photo in "Add from controller…") and
-      `feature/atelier-simulation-macros` (`MidiMacro.simulates`: press /
-      release / value steps towards the DJ software through a virtual
-      port). To finish: merge both into one branch off main (they both
-      touch `gui/feature_step_dialog.py`), translate the new strings
-      FR/DE (`scripts/update_translations.sh`, add any new module to its
-      SOURCES), document (midi-macros guide, CLAUDE.md, this file), full
-      suite + a look at the running dialogs, bump `v0.48.194`, push the tag
-      alone, PR, tick step 3 in #413.
+   3. Macro editor by features — **done**: steps read as features `v0.48.192`
+      (#419), built from and stored with features `v0.48.193` (#420), picked on
+      the photo and simulation macros (`MidiMacro.simulates`) `v0.48.194`.
    4. Scene / sync-set designer (draw the controller's target state).
    5. LED data per controller: an LED probe with the hardware; the Pioneer
       colour hypothesis (0-63 bright / 64-127 dim, 0 and 127 white, steps of
