@@ -57,7 +57,7 @@ transport, and to expose no Clock/MIDI-output configuration of its own — so
 Serato alone can never drive this path; some other genuinely Start-Stop-Sync-
 capable Link peer (Ableton Live here) is required.
 
-The current release is `v0.48.193` on `main`; each change since `v0.46.0` is
+The current release is `v0.48.194` on `main`; each change since `v0.46.0` is
 one milestone tag (`v0.4x.N-<slug>`) recorded in [Recent evolution
 chapters](#recent-evolution-chapters). Those chapters are software-validated;
 anything that still needs real hardware, a real DJ-software export or a
@@ -139,6 +139,13 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Atelier step 3 completed: photo picking and simulation macros** (`v0.48.194-atelier-step3`, epic #413) —
+  **Add from controller…** opens on the controller's clickable photo (pad-mode buttons pick the bank, SHIFT latches,
+  the right grid is deck 2, the clicked control stays lit) beside the filtered list. A macro whose output port is not
+  a controller can now **simulate** one (`MidiMacro.simulates`, editor row "Simulates"): its steps read and are built
+  as that controller's presses, releases and values towards the DJ software through a virtual port (a tap adds two
+  steps), and are stored with their feature like LED steps. Built by two parallel agents, integrated and translated
+  FR/DE here.
 - [x] **Atelier step 3, second slice: macro steps from features** (`v0.48.193-atelier-macro-features`, epic #413) —
   **Add from controller…** in the macro editor picks one of the output controller's controls and an LED action
   (on / off / value) instead of typing numbers; and every step that drives a control now records it in the macro
@@ -3706,17 +3713,32 @@ close what can't be unblocked here.
    one at a time: GitHub starts no workflow for a push of more than 3 tags.
 9. **Phase 8 — Atelier (#413)**, agreed 2026-11-06: build macros, scenes and
    sync sets by manipulating controller features on the photo instead of
-   raw MIDI; one PR and tag per step. 1. Feature model and actions —
-   **done** in `v0.48.190-atelier-feature-model`. 2. Inspector in the
-   Controller Emulator — **done** in `v0.48.191-atelier-inspector`. 3. Macro editor by features — first
-   slice (steps read as features) **done** in `v0.48.192-atelier-macro-steps`, second
-   (steps built from and stored with features) in `v0.48.193-atelier-macro-features`;
-   picking on the photo and simulation macros remain. 4. Scene / sync-set
-   designer. 5. LED data per controller (LED probe with the hardware;
-   Pioneer colour hypothesis). 6. Optional: remap / assign by drag and drop.
-10. **Waiting on hardware**: the DDJ-XP2 1/2X / 2X notes, the CMD Micro and
-   CMD Studio 4a jogs, and a live session with the Live Monitor to confirm the
-   `v0.48.177` freeze fix and log where MIDI bursts come from (#356).
+   raw MIDI; one PR and tag per step. Maintainer decisions are recorded in
+   #413 (start simple, new tab later, features stored with a MIDI
+   fallback, continuous controls in, own controllers first, unverified LED
+   data marked, step list before a timeline).
+   1. Feature model and actions — **done** `v0.48.190` (#416).
+   2. Feature card in the Controller Emulator — **done** `v0.48.191` (#418).
+   3. Macro editor by features — **done**: steps read as features `v0.48.192`
+      (#419), built from and stored with features `v0.48.193` (#420), picked on
+      the photo and simulation macros (`MidiMacro.simulates`) `v0.48.194`.
+   4. Scene / sync-set designer (draw the controller's target state).
+   5. LED data per controller: an LED probe with the hardware; the Pioneer
+      colour hypothesis (0-63 bright / 64-127 dim, 0 and 127 white, steps of
+      5) has no official source and must be checked on the DDJ-XP2/XDJ-XZ.
+   6. Optional: remap / assign by drag and drop.
+10. **Waiting on hardware or the maintainer** (#356): the DDJ-XP2 1/2X / 2X
+   notes; the CMD Micro and CMD Studio 4a jogs; a live session to confirm the
+   `v0.48.177` freeze fix and log where MIDI bursts come from; the Serato
+   MIDI-learn capture on the IAC bus (`scripts/serato_learn_iac.py`; the DJ
+   TechTools article only gave play / cue_point / reverse / modifiers, still
+   no Sync or main Cue) for #194; the Traktor Controller Manager exports for
+   #233 and an *Import Playlist* test of the `.nml` export.
+11. **To watch** (2026-11-06): a native Qt crash on a list click
+   (`v0.48.186`) wasn't reproduced; since `v0.48.189` the next one leaves its
+   Python stack in the log at the next start and, at DEBUG, a `click:` trail
+   naming the widget. The Live Monitor once listed its input ports twice
+   (`IAC 1, IAC 2, IAC 1, IAC 2`) in the same session — not reproduced either.
 
 ## Tracking rules
 

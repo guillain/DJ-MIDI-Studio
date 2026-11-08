@@ -16,6 +16,7 @@
 - [Where the messages go](#where-the-messages-go)
 - [Read the steps as controller features](#read-the-steps-as-controller-features)
 - [Add steps from a controller](#add-steps-from-a-controller)
+- [Simulate a controller towards the DJ software](#simulate-a-controller-towards-the-dj-software)
 - [Macro files](#macro-files)
 - [Related](#related)
 
@@ -172,9 +173,11 @@ aid: the macro file is unchanged.
 ## Add steps from a controller
 
 With a controller as the output port, **Add from controller…** lets you
-build a step without typing numbers: filter its controls (`deck 1 pad 3`,
-`beat sync`), pick one, choose **LED on**, **LED off** or **LED value**
-(with its 0-127 value) and click **Add step**. The new row shows the MIDI
+build a step without typing numbers: click the control on the controller's
+**Photo** (a pad mode button first picks the bank the pads use, SHIFT stays
+held until you click it again, the right-hand pads are deck 2), or filter
+the **List** (`deck 1 pad 3`, `beat sync`). Then choose **LED on**,
+**LED off** or **LED value** (with its 0-127 value) and click **Add step**. The new row shows the MIDI
 message it stands for, and the **Feature** column names it.
 
 When you save, every step that drives one of that controller's controls
@@ -182,6 +185,18 @@ remembers which one, in the macro file. If a later version of the app
 corrects that control's note, your macro follows the correction the next
 time it loads. If the control no longer exists, the saved message is used
 as it was.
+
+## Simulate a controller towards the DJ software
+
+A macro can also *imitate* a controller: send its button presses to the DJ
+software through a virtual port (an IAC bus, the app's own virtual port),
+as if you had pressed them. Pick that port as the output, then the
+controller in **Simulates**. The **Feature** column then reads each step as
+a press, a release or a value (`BEAT SYNC: press`), and **Add from
+controller…** offers **tap** (a press then a release: two steps),
+**press**, **release**, or a **value** for a knob or fader. The row is
+hidden when the output port is itself a controller: then the macro lights
+it instead.
 
 ## Macro files
 

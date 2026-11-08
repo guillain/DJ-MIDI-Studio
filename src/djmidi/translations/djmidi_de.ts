@@ -1937,12 +1937,24 @@ Trotzdem neu zuweisen? Beide lösen auf demselben Bedienelement aus.</translatio
         <translation>Schritte von {controller} hinzufügen</translation>
     </message>
     <message>
+        <source>Pick a control and what the macro should imitate: a tap, a press, a release or a value. The step&apos;s MIDI message is filled in for you.</source>
+        <translation>Wählen Sie ein Bedienelement und was das Makro nachahmen soll: Antippen, Drücken, Loslassen oder einen Wert. Die MIDI-Meldung des Schritts wird für Sie ausgefüllt.</translation>
+    </message>
+    <message>
         <source>Pick a control and what its LED should do; the step&apos;s MIDI message is filled in for you.</source>
         <translation>Wählen Sie ein Bedienelement und was seine LED tun soll; die MIDI-Meldung des Schritts wird für Sie ausgefüllt.</translation>
     </message>
     <message>
         <source>Filter controls: name, deck, pad mode…</source>
         <translation>Bedienelemente filtern: Name, Deck, Pad-Modus…</translation>
+    </message>
+    <message>
+        <source>Photo</source>
+        <translation>Foto</translation>
+    </message>
+    <message>
+        <source>List</source>
+        <translation>Liste</translation>
     </message>
     <message>
         <source>Action</source>
@@ -1959,6 +1971,34 @@ Trotzdem neu zuweisen? Beide lösen auf demselben Bedienelement aus.</translatio
     <message>
         <source>{name} (deck {deck})</source>
         <translation>{name} (Deck {deck})</translation>
+    </message>
+    <message>
+        <source>Selected: {control}</source>
+        <translation>Ausgewählt: {control}</translation>
+    </message>
+    <message>
+        <source>Click a control on the photo, or pick one in the list. Pad mode buttons choose the bank later pad clicks use; SHIFT latches.</source>
+        <translation>Klicken Sie auf ein Bedienelement im Foto oder wählen Sie eines in der Liste. Pad-Modus-Tasten wählen die Bank für spätere Pad-Klicks; SHIFT rastet ein.</translation>
+    </message>
+    <message>
+        <source>{control}: no MIDI message known for this control.</source>
+        <translation>{control}: keine MIDI-Meldung für dieses Bedienelement bekannt.</translation>
+    </message>
+    <message>
+        <source>{control}: no LED message known for this control.</source>
+        <translation>{control}: keine LED-Meldung für dieses Bedienelement bekannt.</translation>
+    </message>
+    <message>
+        <source>SHIFT held: pad and button clicks pick their SHIFT layer.</source>
+        <translation>SHIFT gehalten: Pad- und Tastenklicks wählen ihre SHIFT-Ebene.</translation>
+    </message>
+    <message>
+        <source>SHIFT released.</source>
+        <translation>SHIFT losgelassen.</translation>
+    </message>
+    <message>
+        <source>Pad mode set: {mode}. Now click a pad.</source>
+        <translation>Pad-Modus gesetzt: {mode}. Klicken Sie jetzt auf ein Pad.</translation>
     </message>
 </context>
 <context>
@@ -3485,6 +3525,18 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
         <translation>Ausgangsport</translation>
     </message>
     <message>
+        <source>None (plain MIDI)</source>
+        <translation>Keiner (reines MIDI)</translation>
+    </message>
+    <message>
+        <source>The controller this macro imitates towards the DJ software, through this virtual port.</source>
+        <translation>Der Controller, den dieses Makro gegenüber der DJ-Software über diesen virtuellen Port nachahmt.</translation>
+    </message>
+    <message>
+        <source>Simulates</source>
+        <translation>Simuliert</translation>
+    </message>
+    <message>
         <source>Shortcut</source>
         <translation>Tastenkürzel</translation>
     </message>
@@ -3569,20 +3621,28 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
         <translation>Schritte werden von oben nach unten abgespielt; jeder wartet seine Verzögerung vor dem Senden ab (Kanal 1–16, Data 0–127, Verzögerung 0–60000 ms).</translation>
     </message>
     <message>
+        <source>Pick a controller&apos;s output port, or the controller this macro simulates, to add steps.</source>
+        <translation>Wählen Sie den Ausgang eines Controllers oder den Controller, den dieses Makro simuliert, um Schritte hinzuzufügen.</translation>
+    </message>
+    <message>
         <source>Add steps by picking one of {controller}&apos;s controls and an LED action.</source>
         <translation>Schritte hinzufügen, indem Sie ein Bedienelement von {controller} und eine LED-Aktion wählen.</translation>
     </message>
     <message>
-        <source>Pick a controller&apos;s output port to add steps from its controls.</source>
-        <translation>Wählen Sie den Ausgang eines Controllers, um Schritte aus seinen Bedienelementen hinzuzufügen.</translation>
+        <source>Add steps imitating one of {controller}&apos;s controls: a tap, a press, a release or a value.</source>
+        <translation>Schritte hinzufügen, die ein Bedienelement von {controller} nachahmen: Antippen, Drücken, Loslassen oder einen Wert.</translation>
     </message>
     <message>
-        <source>Pick a controller&apos;s output port to see each step as one of its features.</source>
-        <translation>Wählen Sie den Ausgang eines Controllers, um jeden Schritt als eine seiner Funktionen zu sehen.</translation>
+        <source>Pick a controller&apos;s output port, or the controller this macro simulates, to see each step as one of its features.</source>
+        <translation>Wählen Sie den Ausgang eines Controllers oder den Controller, den dieses Makro simuliert, um jeden Schritt als eine seiner Funktionen zu sehen.</translation>
     </message>
     <message>
         <source>Steps sent to {controller}, read as its features (LED messages).</source>
         <translation>An {controller} gesendete Schritte, als seine Funktionen gelesen (LED-Meldungen).</translation>
+    </message>
+    <message>
+        <source>Steps imitating {controller}, read as its presses and values.</source>
+        <translation>Schritte, die {controller} nachahmen, als seine Drücke und Werte gelesen.</translation>
     </message>
     <message>
         <source>A macro needs a name</source>
