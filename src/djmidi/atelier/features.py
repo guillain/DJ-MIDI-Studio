@@ -56,6 +56,8 @@ class LedOutput:
     off_value: int = 0
     verified: bool = False
     source: str = ASSUMED_LED_SOURCE
+    # (value, colour name) pairs seen on the hardware (`atelier.led_data`).
+    colours: tuple[tuple[int, str], ...] = ()
 
 
 @dataclass(frozen=True)
@@ -108,9 +110,9 @@ def _bank(name: str) -> str | None:
     return match.group(1).strip("()") if match else None
 
 
-# controller -> (the definition object it was built from, its features):
-# a re-registered controller (Controller Setup, an installed profile) is a
-# new object, so the stale entry is rebuilt.
+# controller -> (the definition object it was built from and the LED data
+# file's mtime, its features): a re-registered controller (Controller Setup,
+# an installed profile) or a new LED probe result rebuilds the entry.
 _CACHE: dict[str, tuple[object, tuple[Feature, ...]]] = {}
 
 
@@ -118,15 +120,42 @@ def features_for(controller: str) -> tuple[Feature, ...]:
     """Every feature of a registered controller, in catalog order; the same
     raw trigger is listed once (first entry wins). Cached per definition."""
     definition = catalog.get_definition(controller)
+    stamp = (definition, _led_data_stamp(controller))
     cached = _CACHE.get(controller)
-    if cached is not None and cached[0] is definition:
+    if cached is not None and cached[0][0] is definition and cached[0][1] == stamp[1]:
         return cached[1]
     features = _build_features(controller, definition)
-    _CACHE[controller] = (definition, features)
+    _CACHE[controller] = (stamp, features)
     return features
 
 
+def _led_data_stamp(controller: str) -> float | None:
+    from djmidi.atelier.led_data import led_file
+
+    try:
+        return led_file(controller).stat().st_mtime
+    except OSError:
+        return None
+
+
+def _led_output(record, channel: int, number: int) -> LedOutput:
+    if record is None:
+        return LedOutput(channel=channel, note=number)
+    return LedOutput(
+        channel=record.channel,
+        note=record.note,
+        on_value=record.on_value,
+        off_value=record.off_value,
+        verified=True,
+        source=record.source or "LED probe",
+        colours=tuple(sorted(record.colours.items())),
+    )
+
+
 def _build_features(controller: str, definition) -> tuple[Feature, ...]:
+    from djmidi.atelier.led_data import load_led_data
+
+    probed = load_led_data(controller)
     features: list[Feature] = []
     seen_triggers: set[tuple[str, int, int]] = set()
     seen_ids: set[str] = set()
@@ -160,7 +189,7 @@ def _build_features(controller: str, definition) -> tuple[Feature, ...]:
                     shift=is_shift_variant(entry),
                     bank=_bank(entry.name),
                     input=FeatureInput(kind=entry.note_or_cc, channel=channel, number=number),
-                    led=LedOutput(channel=channel, note=number) if is_note else None,
+                    led=_led_output(probed.get(identifier), channel, number) if is_note else None,
                 )
             )
     return tuple(features)

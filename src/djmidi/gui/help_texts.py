@@ -371,7 +371,7 @@ ATELIER: HelpEntry = (
         "that state. <b>Send to controller</b> tries it now without saving.</li>"
         "<li>Messages the Atelier doesn't recognise are kept as they were.</li></ul>"
         "LED addresses not given by a document are assumed (same note as the button) "
-        "until checked on the hardware.",
+        "until checked on the hardware with <b>Probe this LED…</b>.",
     ),
     "atelier.md",
 )

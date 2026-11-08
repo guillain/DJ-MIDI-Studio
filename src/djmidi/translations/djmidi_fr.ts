@@ -32,6 +32,14 @@
         <translation>Valeur</translation>
     </message>
     <message>
+        <source>Probe this LED…</source>
+        <translation>Sonder cette LED…</translation>
+    </message>
+    <message>
+        <source>With the controller plugged in, check where this LED answers and record its values and colours.</source>
+        <translation>Contrôleur branché, vérifiez où répond cette LED et enregistrez ses valeurs et ses couleurs.</translation>
+    </message>
+    <message>
         <source>Reload saved</source>
         <translation>Recharger l’enregistré</translation>
     </message>
@@ -86,6 +94,10 @@
     <message>
         <source>{type} · ch {channel} · {data1} · {data2} (kept as is)</source>
         <translation>{type} · canal {channel} · {data1} · {data2} (conservé tel quel)</translation>
+    </message>
+    <message>
+        <source>LED recorded as verified for {control}.</source>
+        <translation>LED enregistrée comme vérifiée pour {control}.</translation>
     </message>
     <message>
         <source>Saved: {count} message(s) in the {scene} sync set of {controller}.</source>
@@ -2020,6 +2032,14 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
         <source>assumed (same note as the button), not verified on the hardware</source>
         <translation>supposée (même note que le bouton), non vérifiée sur le matériel</translation>
     </message>
+    <message>
+        <source>verified ({source})</source>
+        <translation>vérifiée ({source})</translation>
+    </message>
+    <message>
+        <source>Colours: {colours}</source>
+        <translation>Couleurs : {colours}</translation>
+    </message>
 </context>
 <context>
     <name>FeatureStepDialog</name>
@@ -2528,8 +2548,8 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
         <translation>Atelier</translation>
     </message>
     <message>
-        <source>Design what a controller&apos;s LEDs show for a sync scene, on its photo, instead of recording MIDI messages.&lt;ul&gt;&lt;li&gt;Pick the controller and the scene, then click a control: pad mode buttons choose the pads&apos; bank and &lt;b&gt;SHIFT&lt;/b&gt; stays held, as in the emulator.&lt;/li&gt;&lt;li&gt;Choose what its LED does: &lt;b&gt;Off&lt;/b&gt;, &lt;b&gt;On&lt;/b&gt;, a &lt;b&gt;Value&lt;/b&gt; (a colour on controllers that have them), or leave it as it is.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Save to sync set&lt;/b&gt; stores the scene: the next Sync puts the controller in that state. &lt;b&gt;Send to controller&lt;/b&gt; tries it now without saving.&lt;/li&gt;&lt;li&gt;Messages the Atelier doesn&apos;t recognise are kept as they were.&lt;/li&gt;&lt;/ul&gt;LED addresses not given by a document are assumed (same note as the button) until checked on the hardware.</source>
-        <translation>Concevez ce qu’affichent les LED d’un contrôleur pour une scène de sync, sur sa photo, au lieu d’enregistrer des messages MIDI.&lt;ul&gt;&lt;li&gt;Choisissez le contrôleur et la scène, puis cliquez sur un contrôle : les boutons de mode de pad choisissent la banque des pads et &lt;b&gt;SHIFT&lt;/b&gt; reste enfoncé, comme dans l’émulateur.&lt;/li&gt;&lt;li&gt;Choisissez ce que fait sa LED : &lt;b&gt;Éteinte&lt;/b&gt;, &lt;b&gt;Allumée&lt;/b&gt;, une &lt;b&gt;Valeur&lt;/b&gt; (une couleur sur les contrôleurs qui en ont), ou laissez-la telle quelle.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Enregistrer dans le sync set&lt;/b&gt; garde la scène : la prochaine synchronisation met le contrôleur dans cet état. &lt;b&gt;Envoyer au contrôleur&lt;/b&gt; l’essaie tout de suite sans enregistrer.&lt;/li&gt;&lt;li&gt;Les messages que l’Atelier ne reconnaît pas sont conservés tels quels.&lt;/li&gt;&lt;/ul&gt;Les adresses de LED qu’aucun document ne donne sont supposées (même note que le bouton) jusqu’à vérification sur le matériel.</translation>
+        <source>Design what a controller&apos;s LEDs show for a sync scene, on its photo, instead of recording MIDI messages.&lt;ul&gt;&lt;li&gt;Pick the controller and the scene, then click a control: pad mode buttons choose the pads&apos; bank and &lt;b&gt;SHIFT&lt;/b&gt; stays held, as in the emulator.&lt;/li&gt;&lt;li&gt;Choose what its LED does: &lt;b&gt;Off&lt;/b&gt;, &lt;b&gt;On&lt;/b&gt;, a &lt;b&gt;Value&lt;/b&gt; (a colour on controllers that have them), or leave it as it is.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Save to sync set&lt;/b&gt; stores the scene: the next Sync puts the controller in that state. &lt;b&gt;Send to controller&lt;/b&gt; tries it now without saving.&lt;/li&gt;&lt;li&gt;Messages the Atelier doesn&apos;t recognise are kept as they were.&lt;/li&gt;&lt;/ul&gt;LED addresses not given by a document are assumed (same note as the button) until checked on the hardware with &lt;b&gt;Probe this LED…&lt;/b&gt;.</source>
+        <translation>Concevez ce qu’affichent les LED d’un contrôleur pour une scène de sync, sur sa photo, au lieu d’enregistrer des messages MIDI.&lt;ul&gt;&lt;li&gt;Choisissez le contrôleur et la scène, puis cliquez sur un contrôle : les boutons de mode de pad choisissent la banque des pads et &lt;b&gt;SHIFT&lt;/b&gt; reste enfoncé, comme dans l’émulateur.&lt;/li&gt;&lt;li&gt;Choisissez ce que fait sa LED : &lt;b&gt;Éteinte&lt;/b&gt;, &lt;b&gt;Allumée&lt;/b&gt;, une &lt;b&gt;Valeur&lt;/b&gt; (une couleur sur les contrôleurs qui en ont), ou laissez-la telle quelle.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Enregistrer dans le sync set&lt;/b&gt; garde la scène : la prochaine synchronisation met le contrôleur dans cet état. &lt;b&gt;Envoyer au contrôleur&lt;/b&gt; l’essaie tout de suite sans enregistrer.&lt;/li&gt;&lt;li&gt;Les messages que l’Atelier ne reconnaît pas sont conservés tels quels.&lt;/li&gt;&lt;/ul&gt;Les adresses de LED qu’aucun document ne donne sont supposées (même note que le bouton) jusqu’à vérification sur le matériel avec &lt;b&gt;Sonder cette LED…&lt;/b&gt;.</translation>
     </message>
     <message>
         <source>Controller Emulator</source>
@@ -3077,6 +3097,77 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
     <message>
         <source>The layout only lines up with the Controller photo: untick MIDI to show it.</source>
         <translation>La disposition ne s&apos;aligne que sur la photo Contrôleur : décochez MIDI pour l&apos;afficher.</translation>
+    </message>
+</context>
+<context>
+    <name>LedProbeDialog</name>
+    <message>
+        <source>Probe the LED of {control}</source>
+        <translation>Sonder la LED de {control}</translation>
+    </message>
+    <message>
+        <source>With the controller plugged in, send a value and look at the control. Record what lights: the note that answers, the values for on and off, and a name for each value that gives a colour. Saving marks this LED as verified.</source>
+        <translation>Contrôleur branché, envoyez une valeur et regardez le contrôle. Notez ce qui s’allume : la note qui répond, les valeurs pour allumée et éteinte, et un nom pour chaque valeur qui donne une couleur. L’enregistrement marque cette LED comme vérifiée.</translation>
+    </message>
+    <message>
+        <source>Send this value</source>
+        <translation>Envoyer cette valeur</translation>
+    </message>
+    <message>
+        <source>Send off</source>
+        <translation>Envoyer « éteinte »</translation>
+    </message>
+    <message>
+        <source>e.g. red, dim blue</source>
+        <translation>par ex. rouge, bleu faible</translation>
+    </message>
+    <message>
+        <source>Name this value</source>
+        <translation>Nommer cette valeur</translation>
+    </message>
+    <message>
+        <source>Remove colour</source>
+        <translation>Retirer la couleur</translation>
+    </message>
+    <message>
+        <source>Output port</source>
+        <translation>Port de sortie</translation>
+    </message>
+    <message>
+        <source>Channel</source>
+        <translation>Canal</translation>
+    </message>
+    <message>
+        <source>Note</source>
+        <translation>Note</translation>
+    </message>
+    <message>
+        <source>Value to send</source>
+        <translation>Valeur à envoyer</translation>
+    </message>
+    <message>
+        <source>On value</source>
+        <translation>Valeur allumée</translation>
+    </message>
+    <message>
+        <source>Off value</source>
+        <translation>Valeur éteinte</translation>
+    </message>
+    <message>
+        <source>Colour at this value</source>
+        <translation>Couleur à cette valeur</translation>
+    </message>
+    <message>
+        <source>Pick the controller&apos;s output port first.</source>
+        <translation>Choisissez d’abord le port de sortie du contrôleur.</translation>
+    </message>
+    <message>
+        <source>Could not send: {error}</source>
+        <translation>Envoi impossible : {error}</translation>
+    </message>
+    <message>
+        <source>Sent value {value} to channel {channel}, note {note}. What do you see?</source>
+        <translation>Valeur {value} envoyée au canal {channel}, note {note}. Que voyez-vous ?</translation>
     </message>
 </context>
 <context>

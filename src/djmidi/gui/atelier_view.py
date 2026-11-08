@@ -18,6 +18,7 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QButtonGroup,
     QComboBox,
+    QDialog,
     QFormLayout,
     QFrame,
     QGroupBox,
@@ -38,6 +39,7 @@ from djmidi import catalog
 from djmidi.atelier.actions import LED_OFF, LED_ON, LED_VALUE, FeatureAction
 from djmidi.atelier.describe import describe_action
 from djmidi.atelier.features import Feature, feature_by_id
+from djmidi.atelier.led_data import LedRecord, save_led_record
 from djmidi.atelier.scene import Scene
 from djmidi.controller_sync import DEFAULT_SCENE, ControllerSyncSet
 from djmidi.gui import help_texts
@@ -45,8 +47,10 @@ from djmidi.gui import layout as layout_mod
 from djmidi.gui.controller_emulator import EmulatorLayoutView
 from djmidi.gui.feature_card import FeatureCard
 from djmidi.gui.help_button import help_button
+from djmidi.gui.led_probe_dialog import LedProbeDialog
 from djmidi.gui.photo_picker import FEATURE, PAD_MODE, SHIFT, PhotoPicker
 from djmidi.gui.translation import translator
+from djmidi.midi_io import list_output_ports
 
 _verb_translate = translator("FeatureActions")
 _FEATURE_ROLE = Qt.ItemDataRole.UserRole + 1
@@ -73,6 +77,8 @@ class AtelierView(QWidget):
     ) -> None:
         super().__init__(parent)
         self._sync_set_provider = sync_set_provider or (lambda _controller, _scene: None)
+        self.ports_provider: Callable[[], list[str]] = list_output_ports
+        self.led_probe_dialog_factory = LedProbeDialog
         self._scene_names_provider = scene_names_provider or (lambda: [DEFAULT_SCENE])
         self._active_scene_provider = active_scene_provider or (lambda: DEFAULT_SCENE)
         self.scene: Scene | None = None
@@ -115,6 +121,14 @@ class AtelierView(QWidget):
         self.value_spin.setValue(64)
         led_layout.addRow(radios)
         led_layout.addRow(self.tr("Value"), self.value_spin)
+        # Step 5: check this LED on the hardware and record what it does.
+        self.probe_button = QPushButton(self.tr("Probe this LED…"))
+        self.probe_button.setToolTip(
+            self.tr("With the controller plugged in, check where this LED answers and record its values and colours.")
+        )
+        self.probe_button.clicked.connect(self.probe_led)
+        self.probe_button.setEnabled(False)
+        led_layout.addRow(self.probe_button)
         self.led_group.idClicked.connect(lambda _id: self._apply_led())
         self.value_spin.valueChanged.connect(lambda _value: self._on_value_changed())
 
@@ -243,6 +257,7 @@ class AtelierView(QWidget):
         value = self.scene.led_value(feature.id) if (feature is not None and self.scene is not None) else None
         for button in self.led_group.buttons():
             button.setEnabled(feature is not None)
+        self.probe_button.setEnabled(feature is not None and feature.led is not None)
         self.value_spin.blockSignals(True)
         if value is None:
             self.led_group.button(_UNSET).setChecked(True)
@@ -349,6 +364,27 @@ class AtelierView(QWidget):
         feature_id = item.data(_FEATURE_ROLE)
         if feature_id:
             self.select_feature(feature_id)
+
+    def probe_led(self) -> LedRecord | None:
+        """Opens the LED probe for the selected control; a saved result is
+        recorded (verified) and the scene reloaded with it."""
+        if self.feature is None or self.feature.led is None:
+            return None
+        dialog = self.led_probe_dialog_factory(self.feature, self.ports_provider(), parent=self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return None
+        record = dialog.record()
+        save_led_record(self.controller, record)
+        feature_id = self.feature.id
+        dirty, unsaved = self._dirty, self.scene
+        self.load()  # features now carry the verified LED
+        if dirty and unsaved is not None:  # keep the edits in progress
+            self.scene = Scene.from_messages(self.controller, unsaved.messages())
+            self._dirty = True
+            self._refresh_state()
+        self.select_feature(feature_id)
+        self.status_label.setText(self.tr("LED recorded as verified for {control}.").format(control=self.feature.name))
+        return record
 
     # -- save / send ------------------------------------------------------
 

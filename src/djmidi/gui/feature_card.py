@@ -106,6 +106,12 @@ class FeatureCard(QGroupBox):
             )
             if not led.verified:
                 text += " — " + self.tr("assumed (same note as the button), not verified on the hardware")
+            else:
+                text += " — " + self.tr("verified ({source})").format(source=led.source)
+            if led.colours:
+                text += "\n" + self.tr("Colours: {colours}").format(
+                    colours=", ".join(f"{value} {name}" for value, name in led.colours)
+                )
             self.led_label.setText(text)
         self.actions_label.setText(
             ", ".join(_verb_translate(VERB_LABELS.get(verb, verb)) for verb in verbs_for(feature))
