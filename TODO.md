@@ -57,7 +57,7 @@ transport, and to expose no Clock/MIDI-output configuration of its own — so
 Serato alone can never drive this path; some other genuinely Start-Stop-Sync-
 capable Link peer (Ableton Live here) is required.
 
-The current release is `v0.48.194` on `main`; each change since `v0.46.0` is
+The current release is `v0.48.195` on `main`; each change since `v0.46.0` is
 one milestone tag (`v0.4x.N-<slug>`) recorded in [Recent evolution
 chapters](#recent-evolution-chapters). Those chapters are software-validated;
 anything that still needs real hardware, a real DJ-software export or a
@@ -139,6 +139,13 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Atelier step 4: the scene designer** (`v0.48.195-atelier-scene-designer`, epic #413) — a new **Atelier** tab:
+  pick a controller and a sync scene, click its controls on the photo (pad modes and SHIFT as in the emulator) and set
+  each LED off / on / to a value; **Save to sync set** stores the scene as that controller's sync set for that scene,
+  **Send to controller** tries it unsaved. Messages it doesn't recognise are kept in place. The photo clicks are now
+  one shared helper (`gui/photo_picker.py`) with the macro step dialog; readable feature names now carry the deck
+  ("BEAT SYNC (deck 1)") so two decks' controls never read the same; a deck-1 LED no longer lights the right-hand
+  control on the photo.
 - [x] **Atelier step 3 completed: photo picking and simulation macros** (`v0.48.194-atelier-step3`, epic #413) —
   **Add from controller…** opens on the controller's clickable photo (pad-mode buttons pick the bank, SHIFT latches,
   the right grid is deck 2, the clicked control stays lit) beside the filtered list. A macro whose output port is not
@@ -3722,7 +3729,7 @@ close what can't be unblocked here.
    3. Macro editor by features — **done**: steps read as features `v0.48.192`
       (#419), built from and stored with features `v0.48.193` (#420), picked on
       the photo and simulation macros (`MidiMacro.simulates`) `v0.48.194`.
-   4. Scene / sync-set designer (draw the controller's target state).
+   4. Scene / sync-set designer — **done** `v0.48.195`: the **Atelier** tab.
    5. LED data per controller: an LED probe with the hardware; the Pioneer
       colour hypothesis (0-63 bright / 64-127 dim, 0 and 127 white, steps of
       5) has no official source and must be checked on the DDJ-XP2/XDJ-XZ.
