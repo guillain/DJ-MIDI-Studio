@@ -57,7 +57,7 @@ transport, and to expose no Clock/MIDI-output configuration of its own — so
 Serato alone can never drive this path; some other genuinely Start-Stop-Sync-
 capable Link peer (Ableton Live here) is required.
 
-The current release is `v0.48.195` on `main`; each change since `v0.46.0` is
+The current release is `v0.48.196` on `main`; each change since `v0.46.0` is
 one milestone tag (`v0.4x.N-<slug>`) recorded in [Recent evolution
 chapters](#recent-evolution-chapters). Those chapters are software-validated;
 anything that still needs real hardware, a real DJ-software export or a
@@ -139,6 +139,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Atelier step 5: the LED probe** (`v0.48.196-atelier-led-probe`, epic #413) — **Probe this LED…** in the
+  Atelier sends LED values to the plugged-in controller on the address being checked and records what was seen (the
+  note that lights, on / off values, named colours) as verified LED data per controller; the feature model, the
+  Atelier, macros and the feature card ("verified (LED probe <date>)") then use it instead of the "same note as the
+  button" assumption. Built without the hardware (tested with fake senders); the actual probing waits for a session
+  with the controllers.
 - [x] **Atelier step 4: the scene designer** (`v0.48.195-atelier-scene-designer`, epic #413) — a new **Atelier** tab:
   pick a controller and a sync scene, click its controls on the photo (pad modes and SHIFT as in the emulator) and set
   each LED off / on / to a value; **Save to sync set** stores the scene as that controller's sync set for that scene,
@@ -3730,9 +3736,12 @@ close what can't be unblocked here.
       (#419), built from and stored with features `v0.48.193` (#420), picked on
       the photo and simulation macros (`MidiMacro.simulates`) `v0.48.194`.
    4. Scene / sync-set designer — **done** `v0.48.195`: the **Atelier** tab.
-   5. LED data per controller: an LED probe with the hardware; the Pioneer
-      colour hypothesis (0-63 bright / 64-127 dim, 0 and 127 white, steps of
-      5) has no official source and must be checked on the DDJ-XP2/XDJ-XZ.
+   5. LED data per controller — the capture tool is **done** `v0.48.196` (the
+      Atelier's **Probe this LED…**, results saved as verified LED data that the
+      feature model uses). Left for a hardware session: actually probing the
+      maintainer's controllers, and checking the Pioneer colour hypothesis
+      (0-63 bright / 64-127 dim, 0 and 127 white, steps of 5; no official
+      source) on the DDJ-XP2 / XDJ-XZ.
    6. Optional: remap / assign by drag and drop.
 10. **Waiting on hardware or the maintainer** (#356): the DDJ-XP2 1/2X / 2X
    notes; the CMD Micro and CMD Studio 4a jogs; a live session to confirm the
