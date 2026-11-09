@@ -170,6 +170,16 @@ class MidiRouter:
         self._routes.append(route)
         _LOGGER.info("Added MIDI route: %s -> %s (channels=%s)", route.source_port_id, route.destination_port_id, sorted(route.channels) or "all")
 
+    def replace_route(self, old: MidiRoute, new: MidiRoute) -> None:
+        """Swaps `old` for `new` at the same position (a transform or filter
+        edit); the source and destination must stay the same, so no loop can
+        appear."""
+        if (old.source_port_id, old.destination_port_id) != (new.source_port_id, new.destination_port_id):
+            raise ValueError("replace_route keeps the route's source and destination")
+        index = self._routes.index(old)
+        self._routes[index] = new
+        _LOGGER.info("Updated MIDI route: %s -> %s", new.source_port_id, new.destination_port_id)
+
     def remove_route(self, route: MidiRoute) -> None:
         if route in self._routes:
             self._routes.remove(route)

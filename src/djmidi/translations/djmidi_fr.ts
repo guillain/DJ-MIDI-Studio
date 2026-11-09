@@ -64,12 +64,52 @@
         <translation>État de la scène</translation>
     </message>
     <message>
+        <source>Remap</source>
+        <translation>Remappage</translation>
+    </message>
+    <message>
         <source>Loaded the {scene} sync set: {count} LED(s) set.</source>
         <translation>Sync set {scene} chargé : {count} LED définie(s).</translation>
     </message>
     <message>
         <source>No sync set saved for this controller and scene yet: click a control to start one.</source>
         <translation>Aucun sync set enregistré pour ce contrôleur et cette scène : cliquez sur un contrôle pour en commencer un.</translation>
+    </message>
+    <message>
+        <source>Remap through a route</source>
+        <translation>Remapper via une route</translation>
+    </message>
+    <message>
+        <source>Remap from this control</source>
+        <translation>Remapper depuis ce contrôle</translation>
+    </message>
+    <message>
+        <source>Then click the control it should act as.</source>
+        <translation>Puis cliquez sur le contrôle dont il doit prendre le rôle.</translation>
+    </message>
+    <message>
+        <source>Block this control</source>
+        <translation>Bloquer ce contrôle</translation>
+    </message>
+    <message>
+        <source>Remove remap</source>
+        <translation>Retirer le remap</translation>
+    </message>
+    <message>
+        <source>No route yet: add one in MIDI Routing</source>
+        <translation>Aucune route : ajoutez-en une dans le routage MIDI</translation>
+    </message>
+    <message>
+        <source>Now click the control {control} should act as.</source>
+        <translation>Cliquez maintenant sur le contrôle dont {control} doit prendre le rôle.</translation>
+    </message>
+    <message>
+        <source>Remap added: {remap}.</source>
+        <translation>Remap ajouté : {remap}.</translation>
+    </message>
+    <message>
+        <source>Pad mode or SHIFT set: now click the target control.</source>
+        <translation>Mode de pad ou SHIFT choisi : cliquez maintenant sur le contrôle cible.</translation>
     </message>
     <message>
         <source>SHIFT held: clicks pick the SHIFT layer.</source>
@@ -1933,6 +1973,18 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
         <source>LED value</source>
         <translation>valeur de LED</translation>
     </message>
+    <message>
+        <source>{name} (deck {deck})</source>
+        <translation>{name} (platine {deck})</translation>
+    </message>
+    <message>
+        <source>{source} → {target}</source>
+        <translation>{source} → {target}</translation>
+    </message>
+    <message>
+        <source>{source} → blocked</source>
+        <translation>{source} → bloqué</translation>
+    </message>
 </context>
 <context>
     <name>FeatureCard</name>
@@ -2548,8 +2600,8 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
         <translation>Atelier</translation>
     </message>
     <message>
-        <source>Design what a controller&apos;s LEDs show for a sync scene, on its photo, instead of recording MIDI messages.&lt;ul&gt;&lt;li&gt;Pick the controller and the scene, then click a control: pad mode buttons choose the pads&apos; bank and &lt;b&gt;SHIFT&lt;/b&gt; stays held, as in the emulator.&lt;/li&gt;&lt;li&gt;Choose what its LED does: &lt;b&gt;Off&lt;/b&gt;, &lt;b&gt;On&lt;/b&gt;, a &lt;b&gt;Value&lt;/b&gt; (a colour on controllers that have them), or leave it as it is.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Save to sync set&lt;/b&gt; stores the scene: the next Sync puts the controller in that state. &lt;b&gt;Send to controller&lt;/b&gt; tries it now without saving.&lt;/li&gt;&lt;li&gt;Messages the Atelier doesn&apos;t recognise are kept as they were.&lt;/li&gt;&lt;/ul&gt;LED addresses not given by a document are assumed (same note as the button) until checked on the hardware with &lt;b&gt;Probe this LED…&lt;/b&gt;.</source>
-        <translation>Concevez ce qu’affichent les LED d’un contrôleur pour une scène de sync, sur sa photo, au lieu d’enregistrer des messages MIDI.&lt;ul&gt;&lt;li&gt;Choisissez le contrôleur et la scène, puis cliquez sur un contrôle : les boutons de mode de pad choisissent la banque des pads et &lt;b&gt;SHIFT&lt;/b&gt; reste enfoncé, comme dans l’émulateur.&lt;/li&gt;&lt;li&gt;Choisissez ce que fait sa LED : &lt;b&gt;Éteinte&lt;/b&gt;, &lt;b&gt;Allumée&lt;/b&gt;, une &lt;b&gt;Valeur&lt;/b&gt; (une couleur sur les contrôleurs qui en ont), ou laissez-la telle quelle.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Enregistrer dans le sync set&lt;/b&gt; garde la scène : la prochaine synchronisation met le contrôleur dans cet état. &lt;b&gt;Envoyer au contrôleur&lt;/b&gt; l’essaie tout de suite sans enregistrer.&lt;/li&gt;&lt;li&gt;Les messages que l’Atelier ne reconnaît pas sont conservés tels quels.&lt;/li&gt;&lt;/ul&gt;Les adresses de LED qu’aucun document ne donne sont supposées (même note que le bouton) jusqu’à vérification sur le matériel avec &lt;b&gt;Sonder cette LED…&lt;/b&gt;.</translation>
+        <source>Design what a controller&apos;s LEDs show for a sync scene, on its photo, instead of recording MIDI messages.&lt;ul&gt;&lt;li&gt;Pick the controller and the scene, then click a control: pad mode buttons choose the pads&apos; bank and &lt;b&gt;SHIFT&lt;/b&gt; stays held, as in the emulator.&lt;/li&gt;&lt;li&gt;Choose what its LED does: &lt;b&gt;Off&lt;/b&gt;, &lt;b&gt;On&lt;/b&gt;, a &lt;b&gt;Value&lt;/b&gt; (a colour on controllers that have them), or leave it as it is.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Save to sync set&lt;/b&gt; stores the scene: the next Sync puts the controller in that state. &lt;b&gt;Send to controller&lt;/b&gt; tries it now without saving.&lt;/li&gt;&lt;li&gt;Messages the Atelier doesn&apos;t recognise are kept as they were.&lt;/li&gt;&lt;li&gt;To make a control act as another one through a MIDI Routing route, pick the route, click &lt;b&gt;Remap from this control&lt;/b&gt; then the target control, or &lt;b&gt;Block this control&lt;/b&gt;.&lt;/li&gt;&lt;/ul&gt;LED addresses not given by a document are assumed (same note as the button) until checked on the hardware with &lt;b&gt;Probe this LED…&lt;/b&gt;.</source>
+        <translation>Concevez ce qu’affichent les LED d’un contrôleur pour une scène de sync, sur sa photo, au lieu d’enregistrer des messages MIDI.&lt;ul&gt;&lt;li&gt;Choisissez le contrôleur et la scène, puis cliquez sur un contrôle : les boutons de mode de pad choisissent la banque des pads et &lt;b&gt;SHIFT&lt;/b&gt; reste enfoncé, comme dans l’émulateur.&lt;/li&gt;&lt;li&gt;Choisissez ce que fait sa LED : &lt;b&gt;Éteinte&lt;/b&gt;, &lt;b&gt;Allumée&lt;/b&gt;, une &lt;b&gt;Valeur&lt;/b&gt; (une couleur sur les contrôleurs qui en ont), ou laissez-la telle quelle.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Enregistrer dans le sync set&lt;/b&gt; garde la scène : la prochaine synchronisation met le contrôleur dans cet état. &lt;b&gt;Envoyer au contrôleur&lt;/b&gt; l’essaie tout de suite sans enregistrer.&lt;/li&gt;&lt;li&gt;Les messages que l’Atelier ne reconnaît pas sont conservés tels quels.&lt;/li&gt;&lt;li&gt;Pour qu’un contrôle agisse comme un autre à travers une route du routage MIDI, choisissez la route, cliquez sur &lt;b&gt;Remapper depuis ce contrôle&lt;/b&gt; puis sur le contrôle cible, ou sur &lt;b&gt;Bloquer ce contrôle&lt;/b&gt;.&lt;/li&gt;&lt;/ul&gt;Les adresses de LED qu’aucun document ne donne sont supposées (même note que le bouton) jusqu’à vérification sur le matériel avec &lt;b&gt;Sonder cette LED…&lt;/b&gt;.</translation>
     </message>
     <message>
         <source>Controller Emulator</source>

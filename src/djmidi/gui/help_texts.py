@@ -369,7 +369,10 @@ ATELIER: HelpEntry = (
         "controllers that have them), or leave it as it is.</li>"
         "<li><b>Save to sync set</b> stores the scene: the next Sync puts the controller in "
         "that state. <b>Send to controller</b> tries it now without saving.</li>"
-        "<li>Messages the Atelier doesn't recognise are kept as they were.</li></ul>"
+        "<li>Messages the Atelier doesn't recognise are kept as they were.</li>"
+        "<li>To make a control act as another one through a MIDI Routing route, pick the route, "
+        "click <b>Remap from this control</b> then the target control, or <b>Block this "
+        "control</b>.</li></ul>"
         "LED addresses not given by a document are assumed (same note as the button) "
         "until checked on the hardware with <b>Probe this LED…</b>.",
     ),
