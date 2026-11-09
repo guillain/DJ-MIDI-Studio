@@ -39,6 +39,8 @@ photo and lets you change it control by control.
 Lit controls show on the photo, and **Scene state** lists every LED the
 scene sets; click a line to select that control again.
 
+![The Atelier tab](../../images/layout/atelier.png)
+
 ## Save, send and reload
 
 | Button | What it does |
@@ -79,6 +81,8 @@ this LED…**:
 The results are kept per controller in the workspace's Controllers folder
 (`<controller>.leds.json`).
 
+![The LED probe](../../images/layout/atelier-led-probe.png)
+
 ## Remap a control
 
 The Atelier can also make one control act as another, without editing the
@@ -97,6 +101,8 @@ The list shows each remap in words (`BEAT SYNC (deck 1) → QUANTIZE
 (deck 1)`); select one and click **Remove remap** to undo it. Remaps are
 the same rules the route's **Transform** dialog edits, and they are saved
 with the routes when the app closes.
+
+![A remap in the Atelier](../../images/layout/atelier-remap.png)
 
 ## Related
 
