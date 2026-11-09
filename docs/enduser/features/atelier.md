@@ -12,6 +12,7 @@
 - [Save, send and reload](#save-send-and-reload)
 - [What is kept](#what-is-kept)
 - [LED addresses](#led-addresses)
+- [Remap a control](#remap-a-control)
 - [Related](#related)
 
 ## What it does
@@ -77,6 +78,25 @@ this LED…**:
 
 The results are kept per controller in the workspace's Controllers folder
 (`<controller>.leds.json`).
+
+## Remap a control
+
+The Atelier can also make one control act as another, without editing the
+DJ software's mapping: messages go through a [MIDI Routing](midi-routing-and-clock.md)
+route (from the controller to the DJ software's virtual port), and the
+route's remaps rewrite them on the way.
+
+1. Under **Remap through a route**, pick the route (add one in MIDI
+   Routing first).
+2. Select the control to remap, click **Remap from this control**, then
+   click the control it should act as: its presses now leave as that
+   control's.
+3. Or click **Block this control** to drop its messages on that route.
+
+The list shows each remap in words (`BEAT SYNC (deck 1) → QUANTIZE
+(deck 1)`); select one and click **Remove remap** to undo it. Remaps are
+the same rules the route's **Transform** dialog edits, and they are saved
+with the routes when the app closes.
 
 ## Related
 

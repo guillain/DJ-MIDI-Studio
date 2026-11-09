@@ -57,7 +57,7 @@ transport, and to expose no Clock/MIDI-output configuration of its own — so
 Serato alone can never drive this path; some other genuinely Start-Stop-Sync-
 capable Link peer (Ableton Live here) is required.
 
-The current release is `v0.48.196` on `main`; each change since `v0.46.0` is
+The current release is `v0.48.197` on `main`; each change since `v0.46.0` is
 one milestone tag (`v0.4x.N-<slug>`) recorded in [Recent evolution
 chapters](#recent-evolution-chapters). Those chapters are software-validated;
 anything that still needs real hardware, a real DJ-software export or a
@@ -139,6 +139,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Atelier step 6: remap by clicking** (`v0.48.197-atelier-remap`, epic #413) — in the Atelier, pick a MIDI
+  Routing route, select a control, click **Remap from this control** then the control it should act as (or **Block
+  this control**): the rule lands in that route's transform, listed in words ("BEAT SYNC (deck 1) → QUANTIZE
+  (deck 1)") with **Remove remap**. Editing a route's transform no longer moves the route to the end of the table
+  (`MidiRouter.replace_route`). Also fixed: the Atelier's "(deck N)" and remap wording were never extracted for
+  translation (their modules were missing from the translation sources).
 - [x] **Atelier step 5: the LED probe** (`v0.48.196-atelier-led-probe`, epic #413) — **Probe this LED…** in the
   Atelier sends LED values to the plugged-in controller on the address being checked and records what was seen (the
   note that lights, on / off values, named colours) as verified LED data per controller; the feature model, the
@@ -3742,7 +3748,9 @@ close what can't be unblocked here.
       maintainer's controllers, and checking the Pioneer colour hypothesis
       (0-63 bright / 64-127 dim, 0 and 127 white, steps of 5; no official
       source) on the DDJ-XP2 / XDJ-XZ.
-   6. Optional: remap / assign by drag and drop.
+   6. Remap by clicking two controls — **done** `v0.48.197` (the Atelier's
+      remap panel over MIDI Routing routes). Assigning a DJ-software function
+      to a control waits for Serato's Play/Cue/Sync tag names (#194).
 10. **Waiting on hardware or the maintainer** (#356): the DDJ-XP2 1/2X / 2X
    notes; the CMD Micro and CMD Studio 4a jogs; a live session to confirm the
    `v0.48.177` freeze fix and log where MIDI bursts come from; the Serato
