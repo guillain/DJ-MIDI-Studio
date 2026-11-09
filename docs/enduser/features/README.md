@@ -38,6 +38,7 @@
 | 🖨️ | [Cheat Sheet (PDF)](cheat-sheet.md) | Print each controller's photo with the function of every mapped pad and button |
 | 📸 | [Snapshots](snapshots.md) | Named versions of a mapping: compare, restore, delete |
 | 📋 | [Copy Deck Mappings](deck-copy.md) | One deck's mappings copied onto another, channel by channel |
+| 🎨 | [Atelier](atelier.md) | A controller's LED state per sync scene, designed on its photo |
 | 🧩 | [Layer Map](layer-map.md) | Every control in every layer (normal, SHIFT, pad modes), free combinations highlighted |
 | 🔀 | [MIDI Routing, Clock and Metronome](midi-routing-and-clock.md) | Route MIDI, generate Clock from Ableton Link, loop MIDI |
 | ⏯️ | [MIDI Macros](midi-macros.md) | Named MIDI message sequences, played from a menu or a keyboard shortcut |
@@ -70,6 +71,7 @@
 | [cheat-sheet.md](cheat-sheet.md) | Printable PDF of the mapping on each controller's photo |
 | [snapshots.md](snapshots.md) | Save, compare, restore and delete named mapping versions |
 | [deck-copy.md](deck-copy.md) | Source/target deck, channel table, skip or replace, undo |
+| [atelier.md](atelier.md) | Scene designer on the photo, LED choices, save / send / reload, what is kept |
 | [layer-map.md](layer-map.md) | Controls × layers table, free and partly free combinations, filters |
 | [midi-routing-and-clock.md](midi-routing-and-clock.md) | Routes, transforms, MIDI Clock from Link, Metronome |
 | [midi-macros.md](midi-macros.md) | Creating, playing and storing MIDI macros, delays, shortcuts |

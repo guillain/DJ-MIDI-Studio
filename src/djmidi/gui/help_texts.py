@@ -357,6 +357,25 @@ CONTROLLER_IMAGES: HelpEntry = (
     "controller-images.md",
 )
 
+ATELIER: HelpEntry = (
+    QT_TRANSLATE_NOOP("HelpTexts", "Atelier"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
+        "Design what a controller's LEDs show for a sync scene, on its photo, instead of "
+        "recording MIDI messages.<ul>"
+        "<li>Pick the controller and the scene, then click a control: pad mode buttons "
+        "choose the pads' bank and <b>SHIFT</b> stays held, as in the emulator.</li>"
+        "<li>Choose what its LED does: <b>Off</b>, <b>On</b>, a <b>Value</b> (a colour on "
+        "controllers that have them), or leave it as it is.</li>"
+        "<li><b>Save to sync set</b> stores the scene: the next Sync puts the controller in "
+        "that state. <b>Send to controller</b> tries it now without saving.</li>"
+        "<li>Messages the Atelier doesn't recognise are kept as they were.</li></ul>"
+        "LED addresses not given by a document are assumed (same note as the button) "
+        "until checked on the hardware with <b>Probe this LED…</b>.",
+    ),
+    "atelier.md",
+)
+
 CONTROLLER_EMULATOR: HelpEntry = (
     QT_TRANSLATE_NOOP("HelpTexts", "Controller Emulator"),
     QT_TRANSLATE_NOOP(

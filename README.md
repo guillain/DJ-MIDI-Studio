@@ -82,6 +82,7 @@ what the mapping does, switch pad modes, latch SHIFT, and turn on
 | 🖨️ | [Cheat Sheet (PDF)](docs/enduser/features/cheat-sheet.md) | Print the mapping on each controller's photo, one page per pad bank |
 | 📸 | [Snapshots](docs/enduser/features/snapshots.md) | Named versions of a mapping, compared with the mapping diff or restored in one undoable step |
 | 📋 | [Copy Deck Mappings](docs/enduser/features/deck-copy.md) | Copy one deck's mappings onto another deck, on its own MIDI channel, as one undo step |
+| 🎨 | [Atelier](docs/enduser/features/atelier.md) | Design a controller's LED state for each sync scene by clicking its controls on its photo |
 | 🧩 | [Layer Map](docs/enduser/features/layer-map.md) | What each control does in every layer — normal, SHIFT, each pad mode — with the free combinations highlighted |
 | 🔀 | [MIDI Routing, Clock and Metronome](docs/enduser/features/midi-routing-and-clock.md) | Route MIDI, generate 24 PPQN MIDI Clock from Ableton Link, loop MIDI |
 | ⏯️ | [MIDI Macros](docs/enduser/features/midi-macros.md) | Named MIDI message sequences with optional delays, from a menu or a keyboard shortcut |

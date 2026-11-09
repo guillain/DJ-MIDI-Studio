@@ -107,6 +107,7 @@ from djmidi.gui import cheat_sheet
 from djmidi.gui import jog as jog_mod
 from djmidi.gui import layout as layout_mod
 from djmidi.gui.accessibility import name_icon_buttons
+from djmidi.gui.atelier_view import AtelierView
 from djmidi.gui.cheat_sheet_dialog import CheatSheetExportDialog
 from djmidi.gui.cheat_sheet_html import write_cheat_sheet_html
 from djmidi.gui.cheat_sheet_pdf import write_cheat_sheet_pdf
@@ -544,6 +545,16 @@ class MainWindow(QMainWindow):
         # Preview volume / auto-advance persist only in the real app (#210).
         self.music_library_view.audio_preview.set_settings(self._layout_settings())
 
+        # The Atelier (issue #413, step 4): a controller's LED state per sync
+        # scene, designed on its photo and stored as that scene's sync set.
+        self.atelier_view = AtelierView(
+            sync_set_provider=lambda controller, scene: self.preferences.sync_set_for(controller, scene),
+            scene_names_provider=lambda: scene_names(self.preferences.controller_sync_sets),
+            active_scene_provider=lambda: self.preferences.active_sync_scene,
+        )
+        self.atelier_view.saveRequested.connect(self._on_atelier_save_requested)
+        self.atelier_view.sendRequested.connect(self._on_atelier_send_requested)
+
         self.left_tabs = QTabWidget()
         self._tab_indexes = {
             "intro": self.left_tabs.addTab(self.introduction_view, self.tr("Dashboard")),
@@ -553,6 +564,7 @@ class MainWindow(QMainWindow):
             "deck": self.left_tabs.addTab(deck_pair, self.tr("By Deck")),
             "controller": self.left_tabs.addTab(controller_pair, self.tr("By Controller")),
             "library": self.left_tabs.addTab(self.music_library_view, self.tr("Music Library")),
+            "atelier": self.left_tabs.addTab(self.atelier_view, self.tr("Atelier")),
         }
         # Whole titles and scroll arrows on a narrow window, rather than three
         # indistinguishable "Pa…" tabs in French on macOS (issue #290).
@@ -2034,6 +2046,29 @@ class MainWindow(QMainWindow):
         )
         return sync_set
 
+    def _on_atelier_save_requested(self, sync_set: ControllerSyncSet) -> None:
+        """The Atelier's scene, stored as that controller's sync set for its
+        scene (the set is rebuilt from the scene, keeping every message the
+        Atelier didn't recognise, so no confirmation is needed)."""
+        self.preferences.set_sync_set(sync_set)
+        self._save_preferences()
+        self._reload_emulator_pad_colours()
+        self.statusBar().showMessage(
+            self.tr("Atelier scene saved in the sync set for {name} ({count} message(s))").format(
+                name=sync_set.label, count=len(sync_set.messages)
+            ),
+            10_000,
+        )
+
+    def _on_atelier_send_requested(self, sync_set: ControllerSyncSet | None) -> list[SyncResult]:
+        """Sends the Atelier's scene to its controller now, unsaved."""
+        if sync_set is None:
+            return []
+        ports = list_output_ports()
+        results = run_sync(self._aim_sync_sets([sync_set], ports), ports)
+        self.statusBar().showMessage(summarize_results(results, _sync_translate), 10_000)
+        return results
+
     def _reload_emulator_pad_colours(self) -> None:
         """Every open Controller Emulator re-reads its saved pad colours."""
         for dock in self._emulator_docks.values():
@@ -2048,6 +2083,8 @@ class MainWindow(QMainWindow):
         which may not have a set yet), then "New scene…"."""
         combo = self._sync_scene_combo
         active = self.preferences.active_sync_scene
+        if hasattr(self, "atelier_view"):
+            self.atelier_view.refresh_scenes()
         combo.blockSignals(True)
         combo.clear()
         for name in scene_names(self.preferences.controller_sync_sets, active):
@@ -2960,6 +2997,7 @@ class MainWindow(QMainWindow):
         self._apply_plugin_preferences()
         sync_profile_geometry()
         layout_mod.clear_reverse_lookup_cache()
+        self.atelier_view.refresh_controllers()
         layout_mod.clear_label_to_key_cache()
         self.layout_view.refresh_controllers()
         self.deck_layout_view.refresh_controllers()

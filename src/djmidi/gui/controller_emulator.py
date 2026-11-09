@@ -341,6 +341,17 @@ class EmulatorLayoutView(DeferredRebuild, QWidget):
         self._cell_colours.clear()
         self._rebuild()
 
+    @property
+    def controller(self) -> str:
+        return self._controller
+
+    def clear_leds(self) -> None:
+        """Unlights every LED set with `set_led` (the Atelier redraws a
+        scene's whole state at once)."""
+        if self._led_keys:
+            self._led_keys.clear()
+            self._rebuild()
+
     def set_cell_colours(self, colours: dict[CellKey, str]) -> None:
         """Resting fill colour per cell (painted pad colours, issue #232)."""
         if colours == self._cell_colours:

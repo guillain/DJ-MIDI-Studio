@@ -81,6 +81,7 @@ Open several, one per controller.
 | 🖨️ | [Cheat Sheet (PDF)](features/cheat-sheet.md) | Print the mapping on each controller's photo |
 | 📸 | [Snapshots](features/snapshots.md) | Named versions of a mapping: compare, restore, delete |
 | 📋 | [Copy Deck Mappings](features/deck-copy.md) | One deck's mappings copied onto another, channel by channel |
+| 🎨 | [Atelier](features/atelier.md) | A controller's LED state per sync scene, designed on its photo |
 | 🧩 | [Layer Map](features/layer-map.md) | Every control × every layer (normal, SHIFT, pad modes), free spots highlighted |
 | 🔀 | [MIDI Routing, Clock and Metronome](features/midi-routing-and-clock.md) | Route MIDI, MIDI Clock from Ableton Link, MIDI loops |
 | ⏯️ | [MIDI Macros](features/midi-macros.md) | Named MIDI message sequences with optional delays, from a menu or a shortcut |

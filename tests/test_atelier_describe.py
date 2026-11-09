@@ -23,9 +23,9 @@ def test_a_port_names_a_controller_only_when_it_is_unambiguous():
 
 
 def test_a_message_to_a_controller_reads_as_its_feature():
-    assert describe_message("DDJ-XP2", SYNC_LED) == "BEAT SYNC: LED on"
-    assert describe_message("DDJ-XP2", SyncMessage("Note On", 1, 88, 0)) == "BEAT SYNC: LED off"
-    assert describe_message("DDJ-XP2", SyncMessage("Note On", 1, 88, 42)) == "BEAT SYNC: LED value 42"
+    assert describe_message("DDJ-XP2", SYNC_LED) == "BEAT SYNC (deck 1): LED on"
+    assert describe_message("DDJ-XP2", SyncMessage("Note On", 1, 88, 0)) == "BEAT SYNC (deck 1): LED off"
+    assert describe_message("DDJ-XP2", SyncMessage("Note On", 1, 88, 42)) == "BEAT SYNC (deck 1): LED value 42"
     assert describe_message("DDJ-XP2", SyncMessage("Note On", 16, 127, 1)) is None
 
 
@@ -36,10 +36,10 @@ def _dialog(port: str, *steps: MacroStep) -> MacroManagerDialog:
 def test_the_macro_editor_names_each_step_sent_to_a_controller():
     wait = MacroStep(SyncMessage("Note On", 1, 88, 127), 0, wait=True)
     dialog = _dialog("DDJ-XP2", MacroStep(SYNC_LED), wait)
-    assert dialog.feature_text(0) == "BEAT SYNC: LED on"
+    assert dialog.feature_text(0) == "BEAT SYNC (deck 1): LED on"
     assert dialog.feature_text(1) == ""  # a wait step listens, it doesn't drive the controller
     dialog.table.item(0, 3).setText("50")
-    assert dialog.feature_text(0) == "BEAT SYNC: LED value 50"
+    assert dialog.feature_text(0) == "BEAT SYNC (deck 1): LED value 50"
     dialog.port_combo.setCurrentText("IAC Driver Bus 1")
     assert dialog.feature_text(0) == ""
     assert "Pick a controller" in dialog.table.item(0, 5).toolTip()

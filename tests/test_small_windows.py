@@ -264,6 +264,15 @@ def _feature_steps():
     return FeatureStepDialog("DDJ-XP2")
 
 
+def _led_probe():
+    from djmidi import catalog
+    from djmidi.atelier import feature_by_id
+    from djmidi.gui.led_probe_dialog import LedProbeDialog
+
+    catalog.set_enabled_plugin_ids(None)
+    return LedProbeDialog(feature_by_id("DDJ-XP2", "deck.beat-sync@1"), ["DDJ-XP2"], sender=lambda **_k: None)
+
+
 def _generate_set():
     from djmidi.gui.generate_set_dialog import GenerateSetDialog
     from djmidi.library.set_prep import SetTrack
@@ -316,6 +325,7 @@ WINDOWS = {
     "smart export": _smart_export,
     "whats new": _whats_new,
     "macro steps from a controller": _feature_steps,
+    "led probe": _led_probe,
 }
 
 

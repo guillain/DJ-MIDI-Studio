@@ -79,6 +79,8 @@ SOURCES=(
   src/djmidi/gui/controller_emulator.py
   src/djmidi/gui/feature_card.py
   src/djmidi/gui/feature_step_dialog.py
+  src/djmidi/gui/atelier_view.py
+  src/djmidi/gui/led_probe_dialog.py
   src/djmidi/atelier/actions.py
   src/djmidi/gui/pad_colour_panel.py
   src/djmidi/gui/profile_library_dialog.py

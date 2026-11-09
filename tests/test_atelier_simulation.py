@@ -81,8 +81,8 @@ def test_the_editor_reads_a_simulation_macro_as_presses():
     dialog = MacroManagerDialog([macro], [IAC, "DDJ-XP2"])
     assert dialog.simulates_combo.currentData() == "DDJ-XP2"
     assert not dialog.simulates_combo.isHidden()
-    assert dialog.feature_text(0) == "BEAT SYNC: press"
-    assert dialog.feature_text(1) == "BEAT SYNC: release"
+    assert dialog.feature_text(0) == "BEAT SYNC (deck 1): press"
+    assert dialog.feature_text(1) == "BEAT SYNC (deck 1): release"
     assert dialog.add_feature_button.isEnabled()
     edited = dialog._edited()
     assert edited.simulates == "DDJ-XP2"
@@ -92,7 +92,7 @@ def test_the_editor_reads_a_simulation_macro_as_presses():
     assert not dialog.add_feature_button.isEnabled()
     dialog.port_combo.setCurrentText("DDJ-XP2")  # a controller port: the simulation row hides
     assert dialog.simulates_combo.isHidden()
-    assert dialog.feature_text(0) == "BEAT SYNC: LED on"
+    assert dialog.feature_text(0) == "BEAT SYNC (deck 1): LED on"
 
 
 def test_the_step_dialog_in_simulation_mode():
