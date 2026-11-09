@@ -314,6 +314,7 @@ def main() -> int:
         _capture_profile_check(app, window)
         _capture_macro_editor(app, window)
         _capture_route_remap(app, window)
+        _capture_atelier(app, window)
         _capture_interface_language(app)
         # Last: it records sync sets and switches the active scene, which
         # the menu bar of every later window capture would show.
@@ -1026,6 +1027,64 @@ def _capture_route_remap(app: QApplication, window: MainWindow) -> None:
     _save(dialog, "midi-route-remap.png")
     dialog.close()
     dialog.deleteLater()
+
+
+def _capture_atelier(app: QApplication, window: MainWindow) -> None:
+    """The Atelier tab (issue #413): a DDJ-XP2 scene (both BEAT SYNC LEDs on,
+    a pad at value 42, one message kept as is), its Remap tab with one remap
+    over a demo route, and the LED probe."""
+    from djmidi.atelier import feature_by_id
+    from djmidi.gui.led_probe_dialog import LedProbeDialog
+    from djmidi.midi_router import MidiRoute
+
+    catalog.set_enabled_plugin_ids(None)
+    window.preferences.set_sync_set(
+        ControllerSyncSet(
+            "DDJ-XP2",
+            messages=(
+                SyncMessage("Note On", 1, 88, 127),
+                SyncMessage("Note On", 2, 88, 127),
+                SyncMessage("Control Change", 16, 120, 5),
+            ),
+        )
+    )
+    router = window.midi_routing_view.router
+    route = MidiRoute("DDJ-XP2", "IAC Driver Bus 1")
+    router.add_route(route)
+    window.midi_routing_view._refresh_routes_table()
+    window.midi_routing_view.routesChanged.emit()
+    window.left_tabs.setCurrentIndex(window._tab_indexes["atelier"])
+    view = window.atelier_view
+    view.refresh_controllers()
+    view.controller_combo.setCurrentText("DDJ-XP2")
+    view.load()
+    view.pick_key(("DDJ-XP2", "PAD MODE", "PAD MODE 1"))
+    view.pick_key(("DDJ-XP2", "PAD", "Pad 1"))
+    view.set_led_choice(3, 42)
+    app.processEvents()
+    _save(window, "atelier.png")
+
+    view.select_feature("deck.beat-sync@1")
+    view.start_remap()
+    view.pick_key(("DDJ-XP2", "DECK", "QUANTIZE"))
+    view.lower_tabs.setCurrentIndex(1)
+    app.processEvents()
+    _save(window, "atelier-remap.png")
+
+    probe = LedProbeDialog(feature_by_id("DDJ-XP2", "deck.beat-sync@1"), ["DDJ-XP2"], sender=lambda **_kwargs: None)
+    probe.value_spin.setValue(5)
+    probe.send(5)
+    probe.colour_edit.setText("red")
+    probe.name_button.click()
+    probe.show()
+    app.processEvents()
+    _save(probe, "atelier-led-probe.png")
+    probe.close()
+    probe.deleteLater()
+    # Leave the window as other captures expect it.
+    router.remove_route(router.routes[-1])
+    window.midi_routing_view._refresh_routes_table()
+    window.midi_routing_view.routesChanged.emit()
 
 
 if __name__ == "__main__":
