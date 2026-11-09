@@ -554,6 +554,12 @@ class MainWindow(QMainWindow):
         )
         self.atelier_view.saveRequested.connect(self._on_atelier_save_requested)
         self.atelier_view.sendRequested.connect(self._on_atelier_send_requested)
+        # Step 6: remaps go through the MIDI Routing tab's routes.
+        self.atelier_view.route_labels_provider = self.midi_routing_view.route_labels
+        self.atelier_view.route_transform_provider = self.midi_routing_view.route_transform
+        self.atelier_view.routeTransformChanged.connect(self.midi_routing_view.set_route_transform)
+        self.midi_routing_view.routesChanged.connect(self.atelier_view.refresh_routes)
+        self.atelier_view.refresh_routes()
 
         self.left_tabs = QTabWidget()
         self._tab_indexes = {

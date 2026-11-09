@@ -531,11 +531,32 @@ class MidiRoutingView(QWidget):
             self.active_transform_dialog = None
         if not accepted:
             return
-        self._router.remove_route(route)
-        self._router.add_route(replace(route, transform=dialog.result_transform()))
+        self._router.replace_route(route, replace(route, transform=dialog.result_transform()))
         self._refresh_routes_table()
         self._routes_table.setCurrentCell(row, 0)
         self.routesChanged.emit()
+
+    # -- used by the Atelier's remap panel (issue #413, step 6) ----------
+
+    def route_labels(self) -> list[str]:
+        """"source → destination" for every route, in table order."""
+        return [f"{route.source_port_id} → {route.destination_port_id}" for route in self._router.routes]
+
+    def route_transform(self, index: int) -> MidiValueTransform | None:
+        routes = self._router.routes
+        return routes[index].transform if 0 <= index < len(routes) else None
+
+    def set_route_transform(self, index: int, transform: MidiValueTransform | None) -> bool:
+        """Replaces route `index`'s transform the way the transform dialog
+        does (a running routing session follows it at once)."""
+        routes = self._router.routes
+        if not 0 <= index < len(routes):
+            return False
+        route = routes[index]
+        self._router.replace_route(route, replace(route, transform=transform))
+        self._refresh_routes_table()
+        self.routesChanged.emit()
+        return True
 
     def _transform_summary(self, transform: MidiValueTransform | None) -> str:
         if transform is None:

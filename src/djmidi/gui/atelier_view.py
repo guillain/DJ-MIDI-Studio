@@ -31,6 +31,7 @@ from PySide6.QtWidgets import (
     QScrollArea,
     QSpinBox,
     QSplitter,
+    QTabWidget,
     QVBoxLayout,
     QWidget,
 )
@@ -40,6 +41,7 @@ from djmidi.atelier.actions import LED_OFF, LED_ON, LED_VALUE, FeatureAction
 from djmidi.atelier.describe import describe_action
 from djmidi.atelier.features import Feature, feature_by_id
 from djmidi.atelier.led_data import LedRecord, save_led_record
+from djmidi.atelier.remap import describe_remap, remap_rule, with_remap, without_remap
 from djmidi.atelier.scene import Scene
 from djmidi.controller_sync import DEFAULT_SCENE, ControllerSyncSet
 from djmidi.gui import help_texts
@@ -51,6 +53,7 @@ from djmidi.gui.led_probe_dialog import LedProbeDialog
 from djmidi.gui.photo_picker import FEATURE, PAD_MODE, SHIFT, PhotoPicker
 from djmidi.gui.translation import translator
 from djmidi.midi_io import list_output_ports
+from djmidi.midi_router import MidiValueTransform, RemapRule
 
 _verb_translate = translator("FeatureActions")
 _FEATURE_ROLE = Qt.ItemDataRole.UserRole + 1
@@ -67,6 +70,8 @@ class AtelierView(QWidget):
 
     saveRequested = Signal(object)
     sendRequested = Signal(object)
+    # (route index, new MidiValueTransform): a remap added or removed
+    routeTransformChanged = Signal(int, object)
 
     def __init__(
         self,
@@ -78,6 +83,10 @@ class AtelierView(QWidget):
         super().__init__(parent)
         self._sync_set_provider = sync_set_provider or (lambda _controller, _scene: None)
         self.ports_provider: Callable[[], list[str]] = list_output_ports
+        # Step 6: the MIDI Routing tab's routes (labels, and a route's transform).
+        self.route_labels_provider: Callable[[], list[str]] = list
+        self.route_transform_provider: Callable[[int], MidiValueTransform | None] = lambda _index: None
+        self._remap_source: Feature | None = None
         self.led_probe_dialog_factory = LedProbeDialog
         self._scene_names_provider = scene_names_provider or (lambda: [DEFAULT_SCENE])
         self._active_scene_provider = active_scene_provider or (lambda: DEFAULT_SCENE)
@@ -154,8 +163,13 @@ class AtelierView(QWidget):
         side_layout.setContentsMargins(0, 0, 0, 0)
         side_layout.addWidget(self.feature_card)
         side_layout.addWidget(led_box)
-        side_layout.addWidget(QLabel(self.tr("Scene state")))
-        side_layout.addWidget(self.state_list, 1)
+        # The scene's state and the remap panel share the space below as two
+        # tabs: stacked, they didn't fit a normal window's height.
+        self.lower_tabs = QTabWidget()
+        self.lower_tabs.addTab(self.state_list, self.tr("Scene state"))
+        self.lower_tabs.addTab(self._build_remap_box(), self.tr("Remap"))
+        self.lower_tabs.setMinimumHeight(200)
+        side_layout.addWidget(self.lower_tabs, 1)
         side_scroll = QScrollArea()
         side_scroll.setWidgetResizable(True)
         side_scroll.setFrameShape(QFrame.Shape.NoFrame)
@@ -227,7 +241,104 @@ class AtelierView(QWidget):
             else self.tr("No sync set saved for this controller and scene yet: click a control to start one.")
         )
 
+    def _build_remap_box(self) -> QWidget:
+        """Step 6: make one control act as another (or block it) on a MIDI
+        Routing route, by clicking the two controls."""
+        box = QWidget()
+        layout = QVBoxLayout(box)
+        layout.addWidget(QLabel(self.tr("Remap through a route")))
+        self.route_combo = QComboBox()
+        self.route_combo.currentIndexChanged.connect(lambda _index: self._refresh_remaps())
+        layout.addWidget(self.route_combo)
+        row = QHBoxLayout()
+        self.remap_button = QPushButton(self.tr("Remap from this control"))
+        self.remap_button.setToolTip(self.tr("Then click the control it should act as."))
+        self.remap_button.clicked.connect(self.start_remap)
+        self.block_button = QPushButton(self.tr("Block this control"))
+        self.block_button.clicked.connect(lambda: self.add_remap(self.feature, None))
+        row.addWidget(self.remap_button)
+        row.addWidget(self.block_button)
+        layout.addLayout(row)
+        self.remap_list = QListWidget()
+        self.remap_list.setMaximumHeight(80)
+        layout.addWidget(self.remap_list)
+        self.remove_remap_button = QPushButton(self.tr("Remove remap"))
+        self.remove_remap_button.clicked.connect(self.remove_selected_remap)
+        layout.addWidget(self.remove_remap_button, 0, Qt.AlignmentFlag.AlignLeft)
+        return box
+
+    def refresh_routes(self) -> None:
+        current = self.route_combo.currentIndex()
+        self.route_combo.blockSignals(True)
+        self.route_combo.clear()
+        labels = self.route_labels_provider()
+        self.route_combo.addItems(labels)
+        if labels:
+            self.route_combo.setCurrentIndex(min(max(current, 0), len(labels) - 1))
+        else:
+            self.route_combo.addItem(self.tr("No route yet: add one in MIDI Routing"))
+        self.route_combo.setEnabled(bool(labels))
+        self.route_combo.blockSignals(False)
+        self._refresh_remaps()
+
+    def _route_index(self) -> int:
+        return self.route_combo.currentIndex() if self.route_combo.isEnabled() else -1
+
+    def _refresh_remaps(self) -> None:
+        self.remap_list.clear()
+        index = self._route_index()
+        transform = self.route_transform_provider(index) if index >= 0 else None
+        for rule in transform.remaps if transform is not None else ():
+            item = QListWidgetItem(describe_remap(self.controller, rule, _verb_translate))
+            item.setData(_FEATURE_ROLE, rule)
+            self.remap_list.addItem(item)
+        self._update_remap_buttons()
+
+    def _update_remap_buttons(self) -> None:
+        ready = self._route_index() >= 0 and self.feature is not None
+        self.remap_button.setEnabled(ready)
+        self.block_button.setEnabled(ready)
+        self.remove_remap_button.setEnabled(self.remap_list.count() > 0)
+
+    def start_remap(self) -> None:
+        if self.feature is None or self._route_index() < 0:
+            return
+        self._remap_source = self.feature
+        self.status_label.setText(
+            self.tr("Now click the control {control} should act as.").format(control=self.feature.name)
+        )
+
+    def add_remap(self, source: Feature | None, target: Feature | None) -> RemapRule | None:
+        index = self._route_index()
+        if source is None or index < 0:
+            return None
+        rule = remap_rule(source, target)
+        transform = with_remap(self.route_transform_provider(index), rule)
+        self.routeTransformChanged.emit(index, transform)
+        self._refresh_remaps()
+        self.status_label.setText(
+            self.tr("Remap added: {remap}.").format(remap=describe_remap(self.controller, rule, _verb_translate))
+        )
+        return rule
+
+    def remove_selected_remap(self) -> None:
+        item = self.remap_list.currentItem()
+        index = self._route_index()
+        if item is None or index < 0:
+            return
+        self.routeTransformChanged.emit(index, without_remap(self.route_transform_provider(index), item.data(_FEATURE_ROLE)))
+        self._refresh_remaps()
+
     def pick_key(self, key) -> Feature | None:
+        if self._remap_source is not None:
+            pick = self._picker.click(key)
+            if pick.kind == FEATURE:
+                source, self._remap_source = self._remap_source, None
+                self.add_remap(source, pick.feature)
+                return pick.feature
+            if pick.kind == PAD_MODE or pick.kind == SHIFT:
+                self.status_label.setText(self.tr("Pad mode or SHIFT set: now click the target control."))
+            return None
         pick = self._picker.click(key)
         if pick.kind == SHIFT:
             self.status_label.setText(
@@ -258,6 +369,8 @@ class AtelierView(QWidget):
         for button in self.led_group.buttons():
             button.setEnabled(feature is not None)
         self.probe_button.setEnabled(feature is not None and feature.led is not None)
+        if hasattr(self, "remap_button"):
+            self._update_remap_buttons()
         self.value_spin.blockSignals(True)
         if value is None:
             self.led_group.button(_UNSET).setChecked(True)
