@@ -139,6 +139,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **rekordbox XML export** (`v0.48.206-rekordbox-xml`, #441) — `Export as rekordbox XML…` in the Music
+  Library's Playlists and Set panels writes a new file in Pioneer's published "XML file format for playlists
+  sharing" (`DJ_PLAYLISTS` 1.0.0, a `COLLECTION` of the playlist's tracks with `file://localhost/` locations
+  and the cached tags, a `ROOT` folder holding one `KeyType="0"` playlist), read from the PDF linked by
+  rekordbox.com's developer page. rekordbox's library is never written; not yet imported in a real rekordbox.
 - [x] **Atelier macros: toggles and waits** (`v0.48.204-atelier-toggle-macros`, #435) — the Atelier's Macros tab
   gains a **Steps** choice (main steps / second steps of a toggle) and a **wait for a press** click: a wait step
   on that control's input address (value 0, like the macro editor's wait rows), its delay field relabelled

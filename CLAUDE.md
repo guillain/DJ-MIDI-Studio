@@ -250,7 +250,8 @@ surgical and logged. Qt-free modules; the tab is a thin view over `library/works
   behind the optional `analysis` extra, gap-filling only, user-confirmed), `waveform.py`.
 - Formats: `serato_library.py` (crates only, never `database V2`), `traktor_library.py` (`collection.nml`
   streamed with `iterparse`; standalone single-playlist `.nml` export), `rekordbox_library.py` (`export.pdb`,
-  hand-written from the crate-digger spec), `history.py` (Serato/Traktor play history, read-only).
+  hand-written from the crate-digger spec), `history.py` (Serato/Traktor play history, read-only), `rekordbox_xml.py` (a playlist as
+  Pioneer's published rekordbox XML import format, #441; new file only, untested in a running rekordbox).
 - Features: `playlist.py` (harmonic/BPM compatibility, simple draft order, receding-horizon mix path),
   `taxonomy/` (genre families, aliases, fuzzy suggestions never auto-applied), `smart_playlist.py`,
   `set_prep.py` (hand-ordered set, transitions, order proposal, generate from library, stage notes),
