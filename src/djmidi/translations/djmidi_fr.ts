@@ -4,8 +4,24 @@
 <context>
     <name>AtelierMacroPanel</name>
     <message>
+        <source>Main steps</source>
+        <translation>Étapes principales</translation>
+    </message>
+    <message>
+        <source>Second steps (toggle)</source>
+        <translation>Secondes étapes (bascule)</translation>
+    </message>
+    <message>
+        <source>A macro with second steps is a toggle: it plays them every other time.</source>
+        <translation>Une macro avec des secondes étapes est une bascule : elle les joue une fois sur deux.</translation>
+    </message>
+    <message>
         <source>Macro</source>
         <translation>Macro</translation>
+    </message>
+    <message>
+        <source>Steps</source>
+        <translation>Étapes</translation>
     </message>
     <message>
         <source>A click adds</source>
@@ -58,6 +74,14 @@
     <message>
         <source>Clicks add LED changes on the {controller}.</source>
         <translation>Les clics ajoutent des changements de LED sur le {controller}.</translation>
+    </message>
+    <message>
+        <source>Wait at most</source>
+        <translation>Attendre au plus</translation>
+    </message>
+    <message>
+        <source>wait for a press</source>
+        <translation>attendre un appui</translation>
     </message>
 </context>
 <context>
@@ -2996,8 +3020,8 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
         <translation>Atelier</translation>
     </message>
     <message>
-        <source>Design what a controller&apos;s LEDs show for a sync scene, on its photo, instead of recording MIDI messages.&lt;ul&gt;&lt;li&gt;Pick the controller and the scene, then click a control: pad mode buttons choose the pads&apos; bank and &lt;b&gt;SHIFT&lt;/b&gt; stays held, as in the emulator.&lt;/li&gt;&lt;li&gt;Choose what its LED does: &lt;b&gt;Off&lt;/b&gt;, &lt;b&gt;On&lt;/b&gt;, a &lt;b&gt;Value&lt;/b&gt; (a colour on controllers that have them), or leave it as it is.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Save to sync set&lt;/b&gt; stores the scene: the next Sync puts the controller in that state. &lt;b&gt;Send to controller&lt;/b&gt; tries it now without saving.&lt;/li&gt;&lt;li&gt;Edits of each controller are kept while you switch: the line under the controller names the controllers the scene covers. &lt;b&gt;Save all&lt;/b&gt; saves every controller&apos;s changes for the scene, &lt;b&gt;Send all&lt;/b&gt; sends the scene to all of them at once.&lt;/li&gt;&lt;li&gt;Messages the Atelier doesn&apos;t recognise are kept as they were.&lt;/li&gt;&lt;li&gt;To make a control act as another one through a MIDI Routing route, pick the route, click &lt;b&gt;Remap from this control&lt;/b&gt; then the target control, or &lt;b&gt;Block this control&lt;/b&gt;.&lt;/li&gt;&lt;li&gt;In the &lt;b&gt;Macros&lt;/b&gt; tab, pick a macro: each click on the photo adds a step (an LED change, or a press the macro imitates). Set a step&apos;s delay, reorder or remove steps, then &lt;b&gt;Save macros&lt;/b&gt;.&lt;/li&gt;&lt;/ul&gt;LED addresses not given by a document are assumed (same note as the button) until checked on the hardware with &lt;b&gt;Probe this LED…&lt;/b&gt;.</source>
-        <translation>Concevez ce qu’affichent les LED d’un contrôleur pour une scène de sync, sur sa photo, au lieu d’enregistrer des messages MIDI.&lt;ul&gt;&lt;li&gt;Choisissez le contrôleur et la scène, puis cliquez sur un contrôle : les boutons de mode de pad choisissent la banque des pads et &lt;b&gt;SHIFT&lt;/b&gt; reste enfoncé, comme dans l’émulateur.&lt;/li&gt;&lt;li&gt;Choisissez ce que fait sa LED : &lt;b&gt;Éteinte&lt;/b&gt;, &lt;b&gt;Allumée&lt;/b&gt;, une &lt;b&gt;Valeur&lt;/b&gt; (une couleur sur les contrôleurs qui en ont), ou laissez-la telle quelle.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Enregistrer dans le sync set&lt;/b&gt; garde la scène : la prochaine synchronisation met le contrôleur dans cet état. &lt;b&gt;Envoyer au contrôleur&lt;/b&gt; l’essaie tout de suite sans enregistrer.&lt;/li&gt;&lt;li&gt;Les modifications de chaque contrôleur sont conservées quand vous changez : la ligne sous le contrôleur nomme les contrôleurs que la scène couvre. &lt;b&gt;Tout enregistrer&lt;/b&gt; enregistre les modifications de chaque contrôleur pour la scène, &lt;b&gt;Tout envoyer&lt;/b&gt; envoie la scène à tous d’un coup.&lt;/li&gt;&lt;li&gt;Les messages que l’Atelier ne reconnaît pas sont conservés tels quels.&lt;/li&gt;&lt;li&gt;Pour qu’un contrôle agisse comme un autre à travers une route du routage MIDI, choisissez la route, cliquez sur &lt;b&gt;Remapper depuis ce contrôle&lt;/b&gt; puis sur le contrôle cible, ou sur &lt;b&gt;Bloquer ce contrôle&lt;/b&gt;.&lt;/li&gt;&lt;li&gt;Dans l’onglet &lt;b&gt;Macros&lt;/b&gt;, choisissez une macro : chaque clic sur la photo ajoute une étape (un changement de LED, ou un appui que la macro imite). Réglez le délai d’une étape, réordonnez ou retirez des étapes, puis &lt;b&gt;Enregistrer les macros&lt;/b&gt;.&lt;/li&gt;&lt;/ul&gt;Les adresses de LED qu’aucun document ne donne sont supposées (même note que le bouton) jusqu’à vérification sur le matériel avec &lt;b&gt;Sonder cette LED…&lt;/b&gt;.</translation>
+        <source>Design what a controller&apos;s LEDs show for a sync scene, on its photo, instead of recording MIDI messages.&lt;ul&gt;&lt;li&gt;Pick the controller and the scene, then click a control: pad mode buttons choose the pads&apos; bank and &lt;b&gt;SHIFT&lt;/b&gt; stays held, as in the emulator.&lt;/li&gt;&lt;li&gt;Choose what its LED does: &lt;b&gt;Off&lt;/b&gt;, &lt;b&gt;On&lt;/b&gt;, a &lt;b&gt;Value&lt;/b&gt; (a colour on controllers that have them), or leave it as it is.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Save to sync set&lt;/b&gt; stores the scene: the next Sync puts the controller in that state. &lt;b&gt;Send to controller&lt;/b&gt; tries it now without saving.&lt;/li&gt;&lt;li&gt;Edits of each controller are kept while you switch: the line under the controller names the controllers the scene covers. &lt;b&gt;Save all&lt;/b&gt; saves every controller&apos;s changes for the scene, &lt;b&gt;Send all&lt;/b&gt; sends the scene to all of them at once.&lt;/li&gt;&lt;li&gt;Messages the Atelier doesn&apos;t recognise are kept as they were.&lt;/li&gt;&lt;li&gt;To make a control act as another one through a MIDI Routing route, pick the route, click &lt;b&gt;Remap from this control&lt;/b&gt; then the target control, or &lt;b&gt;Block this control&lt;/b&gt;.&lt;/li&gt;&lt;li&gt;In the &lt;b&gt;Macros&lt;/b&gt; tab, pick a macro: each click on the photo adds a step (an LED change, or a press the macro imitates). Set a step&apos;s delay, reorder or remove steps, then &lt;b&gt;Save macros&lt;/b&gt;. Pick &lt;b&gt;Second steps (toggle)&lt;/b&gt; to build a toggle, played every other time; &lt;b&gt;wait for a press&lt;/b&gt; adds a step that waits for that control.&lt;/li&gt;&lt;/ul&gt;LED addresses not given by a document are assumed (same note as the button) until checked on the hardware with &lt;b&gt;Probe this LED…&lt;/b&gt;.</source>
+        <translation>Concevez ce qu’affichent les LED d’un contrôleur pour une scène de sync, sur sa photo, au lieu d’enregistrer des messages MIDI.&lt;ul&gt;&lt;li&gt;Choisissez le contrôleur et la scène, puis cliquez sur un contrôle : les boutons de mode de pad choisissent la banque des pads et &lt;b&gt;SHIFT&lt;/b&gt; reste enfoncé, comme dans l’émulateur.&lt;/li&gt;&lt;li&gt;Choisissez ce que fait sa LED : &lt;b&gt;Éteinte&lt;/b&gt;, &lt;b&gt;Allumée&lt;/b&gt;, une &lt;b&gt;Valeur&lt;/b&gt; (une couleur sur les contrôleurs qui en ont), ou laissez-la telle quelle.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Enregistrer dans le sync set&lt;/b&gt; garde la scène : la prochaine synchronisation met le contrôleur dans cet état. &lt;b&gt;Envoyer au contrôleur&lt;/b&gt; l’essaie tout de suite sans enregistrer.&lt;/li&gt;&lt;li&gt;Les modifications de chaque contrôleur sont conservées quand vous changez : la ligne sous le contrôleur nomme les contrôleurs que la scène couvre. &lt;b&gt;Tout enregistrer&lt;/b&gt; enregistre les modifications de chaque contrôleur pour la scène, &lt;b&gt;Tout envoyer&lt;/b&gt; envoie la scène à tous d’un coup.&lt;/li&gt;&lt;li&gt;Les messages que l’Atelier ne reconnaît pas sont conservés tels quels.&lt;/li&gt;&lt;li&gt;Pour qu’un contrôle agisse comme un autre à travers une route du routage MIDI, choisissez la route, cliquez sur &lt;b&gt;Remapper depuis ce contrôle&lt;/b&gt; puis sur le contrôle cible, ou sur &lt;b&gt;Bloquer ce contrôle&lt;/b&gt;.&lt;/li&gt;&lt;li&gt;Dans l’onglet &lt;b&gt;Macros&lt;/b&gt;, choisissez une macro : chaque clic sur la photo ajoute une étape (un changement de LED, ou un appui que la macro imite). Réglez le délai d’une étape, réordonnez ou retirez des étapes, puis &lt;b&gt;Enregistrer les macros&lt;/b&gt;. Choisissez &lt;b&gt;Secondes étapes (bascule)&lt;/b&gt; pour construire une bascule, jouée une fois sur deux ; &lt;b&gt;attendre un appui&lt;/b&gt; ajoute une étape qui attend ce contrôle.&lt;/li&gt;&lt;/ul&gt;Les adresses de LED qu’aucun document ne donne sont supposées (même note que le bouton) jusqu’à vérification sur le matériel avec &lt;b&gt;Sonder cette LED…&lt;/b&gt;.</translation>
     </message>
     <message>
         <source>Controller Emulator</source>
@@ -4073,6 +4097,10 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
     <message>
         <source>after {delay} ms</source>
         <translation>après {delay} ms</translation>
+    </message>
+    <message>
+        <source>Wait for {step} (at most {delay} ms)</source>
+        <translation>Attendre {step} (au plus {delay} ms)</translation>
     </message>
 </context>
 <context>

@@ -230,7 +230,7 @@ note, unverified) unless verified LED data exists (`led_data.py`, `Controllers/<
 the LED probe). `actions.py` compiles/decompiles `FeatureAction`s (tap/press/release/value, LED on/off/value) to
 `SyncMessage`s. `describe.macro_target(output_port, simulates)` is the single direction rule (controller port →
 drive its LEDs; else `simulates` → imitate its presses). `scene.py`: LED state ↔ sync set (unknown messages kept
-in place), `scene_coverage`. `remap.py`: remap rules from two features. `macro_edit.py`: macro steps from clicks.
+in place), `scene_coverage`. `remap.py`: remap rules from two features. `macro_edit.py`: macro steps from clicks (main or toggle `alternate_steps`, wait steps via `wait_step_for`).
 The Atelier tab: scene designer (drafts per controller and scene, Save all / Send all), Remap tab over MIDI
 Routing routes, Macros tab (clicks add steps; the scene's LED box hides). `gui/photo_picker.PhotoPicker` is the
 shared click state machine (SHIFT, pad mode per side). Real LED probing and the Pioneer colour table are still

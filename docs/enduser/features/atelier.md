@@ -143,9 +143,17 @@ messages.
    **Remove** it.
 4. **Save macros** keeps the changes; **Revert** drops them.
 
+**Steps** picks the list you edit: the **Main steps**, or the **Second steps
+(toggle)**. A macro with second steps is a toggle: it plays them every other
+time.
+
+Choose **wait for a press** in **A click adds** to add a step that pauses
+the macro until that control is pressed. For such a step the delay field
+reads **Wait at most**: how long it waits before giving up (0 = the longest
+wait).
+
 Saving in **Manage Macros…** reloads this tab and drops changes not saved
-here. Only a macro's main steps are edited here, not the second list of a
-toggle macro.
+here.
 
 ## Related
 
