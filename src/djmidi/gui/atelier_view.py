@@ -46,6 +46,7 @@ from djmidi.atelier.scene import Scene, scene_coverage
 from djmidi.controller_sync import DEFAULT_SCENE, ControllerSyncSet
 from djmidi.gui import help_texts
 from djmidi.gui import layout as layout_mod
+from djmidi.gui.atelier_macro_panel import AtelierMacroPanel
 from djmidi.gui.controller_emulator import EmulatorLayoutView
 from djmidi.gui.feature_card import FeatureCard
 from djmidi.gui.help_button import help_button
@@ -120,7 +121,7 @@ class AtelierView(QWidget):
         self._picker: PhotoPicker | None = None
 
         self.feature_card = FeatureCard()
-        led_box = QGroupBox(self.tr("LED in this scene"))
+        self.led_box = led_box = QGroupBox(self.tr("LED in this scene"))
         led_layout = QFormLayout(led_box)
         self.led_group = QButtonGroup(self)
         radios = QVBoxLayout()
@@ -188,6 +189,13 @@ class AtelierView(QWidget):
         self.lower_tabs = QTabWidget()
         self.lower_tabs.addTab(self.state_list, self.tr("Scene state"))
         self.lower_tabs.addTab(self._build_remap_box(), self.tr("Remap"))
+        # Issue #428: while this tab shows, photo clicks add macro steps.
+        self.macro_panel = AtelierMacroPanel()
+        self.macro_panel.targetChanged.connect(self._on_macro_target_changed)
+        self.lower_tabs.addTab(self.macro_panel, self.tr("Macros"))
+        # The scene's LED choices mean nothing while editing a macro, and the
+        # macro's step list needs their room.
+        self.lower_tabs.currentChanged.connect(lambda _index: self.led_box.setVisible(not self.editing_macros))
         self.lower_tabs.setMinimumHeight(200)
         side_layout.addWidget(self.lower_tabs, 1)
         side_scroll = QScrollArea()
@@ -409,7 +417,53 @@ class AtelierView(QWidget):
         self.routeTransformChanged.emit(index, without_remap(self.route_transform_provider(index), item.data(_FEATURE_ROLE)))
         self._refresh_remaps()
 
+    @property
+    def editing_macros(self) -> bool:
+        return self.lower_tabs.currentWidget() is self.macro_panel
+
+    def _on_macro_target_changed(self, controller: str) -> None:
+        """Shows the photo of the controller the selected macro is about."""
+        if controller and controller != self.controller and self.controller_combo.findText(controller) >= 0:
+            self.controller_combo.setCurrentText(controller)
+
+    def _pick_for_macro(self, key) -> Feature | None:
+        pick = self._picker.click(key)
+        if pick.kind == SHIFT:
+            self.status_label.setText(
+                self.tr("SHIFT held: clicks pick the SHIFT layer.") if pick.shift_held else self.tr("SHIFT released.")
+            )
+            return None
+        if pick.kind == PAD_MODE:
+            self.status_label.setText(self.tr("Pad mode set: {mode}. Now click a pad.").format(mode=pick.mode))
+            return None
+        if pick.kind != FEATURE:
+            self.status_label.setText(self.tr("{control}: no MIDI message known for this control.").format(control=key[2]))
+            return None
+        target = self.macro_panel.target
+        if target is None:
+            self.status_label.setText(self.tr("Pick a macro that drives or simulates a controller first."))
+            return None
+        if target[0] != self.controller:
+            self.status_label.setText(
+                self.tr("This macro is about the {controller}: switch the controller to add steps.").format(
+                    controller=target[0]
+                )
+            )
+            return None
+        self._picker.mark_picked(key)
+        self.feature = pick.feature
+        self.feature_card.set_feature(pick.feature)
+        if not self.macro_panel.add_feature(self.controller, pick.feature):
+            self.status_label.setText(
+                self.tr("{control}: nothing this macro can do with it.").format(control=pick.feature.name)
+            )
+            return None
+        self.status_label.setText(self.tr("Step added: click Save macros to keep it."))
+        return pick.feature
+
     def pick_key(self, key) -> Feature | None:
+        if self.editing_macros and self._remap_source is None:
+            return self._pick_for_macro(key)
         if self._remap_source is not None:
             pick = self._picker.click(key)
             if pick.kind == FEATURE:

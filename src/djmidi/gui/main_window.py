@@ -558,6 +558,8 @@ class MainWindow(QMainWindow):
         self.atelier_view.saveRequested.connect(self._on_atelier_save_requested)
         self.atelier_view.sendRequested.connect(self._on_atelier_send_requested)
         self.atelier_view.sendAllRequested.connect(self._on_atelier_send_all_requested)
+        self.atelier_view.macro_panel.macrosSaved.connect(self._on_atelier_macros_saved)
+        self.atelier_view.macro_panel.set_macros(self.macros)
         # Step 6: remaps go through the MIDI Routing tab's routes.
         self.atelier_view.route_labels_provider = self.midi_routing_view.route_labels
         self.atelier_view.route_transform_provider = self.midi_routing_view.route_transform
@@ -2094,6 +2096,14 @@ class MainWindow(QMainWindow):
         results = run_sync(self._aim_sync_sets(sets, ports), ports)
         self.statusBar().showMessage(summarize_results(results, _sync_translate), 10_000)
         return results
+
+    def _on_atelier_macros_saved(self, macros: list) -> None:
+        """The Atelier's Macros tab saved (issue #428): stored like Manage Macros."""
+        self.macros = list(macros)
+        midi_macros.save_macros(user_paths.macros_dir(), self.macros)
+        self._rebuild_macro_menu()
+        self._ensure_macro_triggers_listening()
+        self.statusBar().showMessage(self.tr("{count} macro(s) saved").format(count=len(self.macros)), 5000)
 
     def _reload_emulator_pad_colours(self) -> None:
         """Every open Controller Emulator re-reads its saved pad colours."""
@@ -3735,6 +3745,7 @@ class MainWindow(QMainWindow):
         self.macros = list(dialog.edited_macros())
         midi_macros.save_macros(user_paths.macros_dir(), self.macros)
         self._rebuild_macro_menu()
+        self.atelier_view.macro_panel.set_macros(self.macros)
         self._ensure_macro_triggers_listening()
         self.statusBar().showMessage(self.tr("{count} macro(s) saved").format(count=len(self.macros)), 5000)
         return True
