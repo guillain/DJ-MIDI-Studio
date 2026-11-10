@@ -224,13 +224,13 @@ def test_midi_learn_finds_the_control_of_a_case_binding():
     assert find_parent_control(config, reverse) is config.controls[1]
 
 
-def test_edit_panel_shows_a_read_only_case_card():
+def test_edit_panel_shows_the_case_conditions():
+    # Editable since issue #434 (tests/test_case_edit.py covers the edits).
     from PySide6.QtGui import QUndoStack
-    from PySide6.QtWidgets import QLabel
 
     from djmidi.gui.edit_panel import EditPanel
 
     panel = EditPanel(QUndoStack(), lambda _node: None)
     panel.set_node(parse_string(SAMPLE).controls[1].cases[0])
-    texts = [label.text() for label in panel.findChildren(QLabel)]
-    assert "Applies while: modifier_3 = off" in texts
+    rows = [(tag.currentText(), op.currentText(), value.currentText()) for tag, op, value in panel.condition_rows]
+    assert rows == [("modifier_3", "equal", "off")]

@@ -139,6 +139,13 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Editable Serato modifier / SHIFT layers** (`v0.48.203-editable-layers`, #434) — selecting a `Case`
+  row edits its conditions (modifier, operator, value; add / remove; Apply), **Remove layer** turns its
+  bindings back into ordinary ones, and an ordinary binding gets **Move into a modifier layer**. Each is one
+  undo step that swaps the control's bindings and cases (`case_edit.py`, `SetControlLayersCommand`); edited
+  conditions keep their other attributes and order, an unedited file still round-trips byte for byte. The
+  modifiers / operators offered come from the loaded file ("equal" only is known from real files), values
+  stay free text: no Serato vocabulary invented.
 - [x] **Live pitch bend** (`v0.48.202-live-pitch-bend`, #436) — the Live Monitor reads pitch bend
   (`Pitch Bend`, data1 0, 14-bit value 0-16383, 8192 centre), as the mapping parsers already named it: logged,
   exported in the MIDI log, shown in Stage Mode and captured by the Hardware Session (the CMD Studio 4a jog
@@ -3804,7 +3811,7 @@ close what can't be unblocked here.
    4. Quality pass: split `main_window.py`, trim CLAUDE.md, faster tests (#429) — **done** in `v0.48.201`.
 13. **Phase 10**, agreed 2026-11-10 (one PR and tag each):
    1. Live pitch bend (#436) — **done** in `v0.48.202`.
-   2. Editable Serato SHIFT / modifier layers (#434).
+   2. Editable Serato SHIFT / modifier layers (#434) — **done** in `v0.48.203`.
    3. Atelier macros: toggle second list and wait steps (#435).
 
 ## Tracking rules

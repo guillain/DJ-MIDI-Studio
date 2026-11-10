@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import QT_TRANSLATE_NOOP, QTimer
 from PySide6.QtGui import QUndoStack
 from PySide6.QtWidgets import (
+    QComboBox,
     QFormLayout,
     QGroupBox,
     QHBoxLayout,
@@ -19,7 +20,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from djmidi import catalog, midi_learn
+from djmidi import case_edit, catalog, midi_learn
 from djmidi.gui import help_texts
 from djmidi.gui.commands import (
     AddAliasCommand,
@@ -28,6 +29,7 @@ from djmidi.gui.commands import (
     RemoveAliasCommand,
     RemoveGroupAliasCommand,
     SetAttrCommand,
+    SetControlLayersCommand,
     SetGroupAttrCommand,
 )
 from djmidi.gui.help_button import help_row
@@ -59,6 +61,9 @@ def _field(text: str) -> QLineEdit:
     return field
 
 
+_case_translate = translator("CaseEdit")
+
+
 class EditPanel(QWidget):
     """Shows editable fields for whichever tree node is currently selected.
     Every edit goes through `undo_stack` so it can be undone/redone."""
@@ -71,8 +76,11 @@ class EditPanel(QWidget):
         parent: QWidget | None = None,
         config_provider: Callable[[], MidiConfig | None] | None = None,
         ensure_listening: Callable[[], bool] | None = None,
+        on_layers_changed: Callable[[Control], None] | None = None,
     ) -> None:
         super().__init__(parent)
+        # Issue #434: a control's layers changed (structure, not one attribute).
+        self._on_layers_changed = on_layers_changed or (lambda _control: None)
         self._undo_stack = undo_stack
         self._on_applied = on_applied
         self._on_group_applied = on_group_applied or (lambda: None)
@@ -146,23 +154,102 @@ class EditPanel(QWidget):
             self._layout.addWidget(self._body)
 
     def _build_case_form(self, case: Case) -> QWidget:
-        """A Serato <case>: read-only, the condition its bindings apply under."""
-        box = QGroupBox(self.tr("Conditional block (case)"))
+        """A Serato <case> (a modifier / SHIFT layer, issue #434): its
+        conditions, editable as one undoable change, and Remove layer."""
+        box = QGroupBox(self.tr("Modifier layer (case)"))
         layout = QVBoxLayout(box)
-        tests = case.describe() or self.tr("(no condition)")
-        condition = QLabel(self.tr("Applies while: {condition}").format(condition=tests))
-        condition.setWordWrap(True)
-        condition.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
-        layout.addWidget(condition)
-        note = QLabel(
-            self.tr(
-                "Select a binding inside it to edit it. The condition itself (which modifier, on or off) "
-                "is kept as written but can't be edited here yet."
+        intro = QLabel(self.tr("Its bindings apply only while every condition below holds."))
+        intro.setWordWrap(True)
+        layout.addWidget(intro)
+        config = self._config_provider()
+        rows_box = QWidget()
+        rows = QVBoxLayout(rows_box)
+        rows.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(rows_box)
+        self.condition_rows: list[tuple[QComboBox, QComboBox, QComboBox]] = []
+
+        def add_row(spec: case_edit.ConditionSpec) -> None:
+            row = QWidget()
+            row_layout = QFormLayout(row)
+            row_layout.setContentsMargins(0, 0, 0, 0)
+            tag = _choice(case_edit.known_modifiers(config), spec.tag)
+            operator = _choice(case_edit.known_operators(config), spec.operator)
+            value = _choice(list(case_edit.DEFAULT_VALUES), spec.value)
+            remove = QPushButton(self.tr("Remove condition"))
+            entry = (tag, operator, value)
+            remove.clicked.connect(lambda: (self.condition_rows.remove(entry), row.deleteLater()))
+            row_layout.addRow(self.tr("Modifier"), tag)
+            row_layout.addRow(self.tr("Operator"), operator)
+            row_layout.addRow(self.tr("Value"), value)
+            row_layout.addRow(remove)
+            rows.addWidget(row)
+            self.condition_rows.append(entry)
+
+        for spec in case_edit.specs_of(case):
+            add_row(spec)
+        add_button = QPushButton(self.tr("Add condition"))
+        modifiers = case_edit.known_modifiers(config)
+        add_button.clicked.connect(lambda: add_row(case_edit.ConditionSpec(modifiers[0] if modifiers else "")))
+        apply_button = QPushButton(self.tr("Apply conditions"))
+        apply_button.clicked.connect(lambda: self.apply_conditions(case))
+        remove_layer = QPushButton(self.tr("Remove layer"))
+        remove_layer.setToolTip(self.tr("Its bindings become ordinary ones, active whatever the modifiers."))
+        remove_layer.clicked.connect(lambda: self.remove_layer(case))
+        for button in (add_button, apply_button, remove_layer):
+            layout.addWidget(button)
+        self.layer_status = QLabel()
+        self.layer_status.setWordWrap(True)
+        layout.addWidget(self.layer_status)
+        return box
+
+    def _layer_control(self, node: Case | UserIO) -> Control | None:
+        return case_edit.find_control_of(self._config_provider(), node)
+
+    def _push_layers(self, control: Control, edit: case_edit.LayerEdit, template: str) -> None:
+        summary = template
+        text = self.tr(template)
+        self._undo_stack.push(
+            SetControlLayersCommand(
+                control, edit.userios, edit.cases, summary, text, lambda: self._on_layers_changed(control)
             )
         )
-        note.setWordWrap(True)
-        layout.addWidget(note)
-        return box
+
+    def apply_conditions(self, case: Case) -> bool:
+        """The condition rows as `case`'s conditions (one undo step)."""
+        control = self._layer_control(case)
+        if control is None:
+            return False
+        specs = [
+            case_edit.ConditionSpec(tag.currentText(), operator.currentText(), value.currentText())
+            for tag, operator, value in self.condition_rows
+        ]
+        try:
+            edit = case_edit.set_conditions(control, case, specs)
+        except case_edit.LayerError as exc:
+            self.layer_status.setText(exc.describe(_case_translate))
+            return False
+        self._push_layers(control, edit, QT_TRANSLATE_NOOP("EditPanel", "Edit layer conditions"))
+        return True
+
+    def remove_layer(self, case: Case) -> bool:
+        control = self._layer_control(case)
+        if control is None:
+            return False
+        self._push_layers(control, case_edit.remove_layer(control, case), QT_TRANSLATE_NOOP("EditPanel", "Remove layer"))
+        return True
+
+    def move_into_layer(self, userio: UserIO, tag: str, value: str, operator: str = case_edit.DEFAULT_OPERATOR) -> bool:
+        """A direct binding into a new layer with one condition."""
+        control = self._layer_control(userio)
+        if control is None:
+            return False
+        try:
+            edit = case_edit.move_into_layer(control, userio, [case_edit.ConditionSpec(tag, operator, value)])
+        except case_edit.LayerError as exc:
+            self.layer_status.setText(exc.describe(_case_translate))
+            return False
+        self._push_layers(control, edit, QT_TRANSLATE_NOOP("EditPanel", "Move binding into a layer"))
+        return True
 
     def _build_physical_control_box(self, channel: str | None, event_type: str | None, control_no: str | None) -> QWidget:
         """A full-width box for the catalog match(es), kept out of any QFormLayout
@@ -234,6 +321,25 @@ class EditPanel(QWidget):
 
         form.addRow(self.tr("Event (click/output)"), event)
         form.addRow(QLabel(self.tr("{count} mapping(s)").format(count=len(userio.mappings))))
+        control = self._layer_control(userio)
+        if control is not None and any(direct is userio for direct in control.userios):
+            # Issue #434: put this binding on a modifier / SHIFT layer.
+            config = self._config_provider()
+            modifiers = case_edit.known_modifiers(config)
+            self.layer_tag = _choice(modifiers, modifiers[0] if modifiers else "")
+            self.layer_tag.lineEdit().setPlaceholderText("modifier_N")
+            self.layer_value = _choice(list(case_edit.DEFAULT_VALUES), "on")
+            move = QPushButton(self.tr("Move into a modifier layer"))
+            move.setToolTip(self.tr("The binding then applies only while that modifier has that value."))
+            move.clicked.connect(
+                lambda: self.move_into_layer(userio, self.layer_tag.currentText(), self.layer_value.currentText())
+            )
+            form.addRow(self.tr("Modifier"), self.layer_tag)
+            form.addRow(self.tr("Value"), self.layer_value)
+            form.addRow(move)
+            self.layer_status = QLabel()
+            self.layer_status.setWordWrap(True)
+            form.addRow(self.layer_status)
         return box
 
     def _build_mapping_form(self, mapping: MappingElement) -> QWidget:
@@ -666,3 +772,13 @@ class EditPanel(QWidget):
                     SetGroupAttrCommand([group], group_attr, [old_group_value], new_value, self._on_group_applied)
                 )
         self._undo_stack.endMacro()
+
+
+def _choice(options: list[str], current: str) -> QComboBox:
+    """An editable combo offering `options` (values the file already uses),
+    showing `current` -- free text stays possible (issue #434)."""
+    combo = QComboBox()
+    combo.setEditable(True)
+    combo.addItems(options)
+    combo.setCurrentText(current)
+    return combo

@@ -428,6 +428,7 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
             self._on_group_edit_applied,
             config_provider=lambda: self.config,
             ensure_listening=self._ensure_learn_listening,
+            on_layers_changed=self._on_layers_changed,
         )
 
         self.issues_table = QTableWidget(0, 3)

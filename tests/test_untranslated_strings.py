@@ -92,6 +92,7 @@ ALLOWED = {
     "DJ MIDI Studio",
     "BPM",
     "SHIFT",
+    "modifier_N",  # a Serato condition tag (issue #434)
     "kbps",
     # A trigger's raw channel prefix (``ch1 Note On #36``), as in By Channel.
     "ch",

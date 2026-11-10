@@ -295,6 +295,7 @@ EDIT_PANEL: HelpEntry = (
         "<b>Learn</b> moves the selected trigger to the next control you press on your "
         "controller (10 s, click again to cancel); it warns before reusing a control "
         "another function already uses.<br><br>"
+        "A <b>Modifier layer (case)</b> (SHIFT and other modifier layers) shows its conditions: change them and click <b>Apply conditions</b>, or <b>Remove layer</b>. An ordinary binding goes on a layer with <b>Move into a modifier layer</b>.<br><br>"
         "<b>Edit → Validate</b> lists errors, warnings and info in the table below "
         "(duplicate copies are info only: they are expected); <b>Edit → Ready for Live…</b> checks "
         "for missing Play/Cue/Sync/Load, conflicts and unlit buttons before a gig. "

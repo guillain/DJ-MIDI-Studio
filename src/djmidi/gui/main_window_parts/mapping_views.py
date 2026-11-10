@@ -504,6 +504,12 @@ class MappingViewsMixin:
     def _refresh_edit_panel(self) -> None:
         self.edit_panel.set_node(self.edit_panel.current_node)
 
+    def _on_layers_changed(self, control: Control) -> None:
+        """A control's modifier layers changed (issue #434): rebuild the views
+        and keep that control selected in By Channel."""
+        self._on_structure_changed()
+        self._select_control_in_channel_columns(control)
+
     def _on_structure_changed(self) -> None:
         """After an edit that adds or removes controls: rebuild every view."""
         if self.config is None:

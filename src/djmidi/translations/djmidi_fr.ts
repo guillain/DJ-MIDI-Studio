@@ -368,6 +368,21 @@
     </message>
 </context>
 <context>
+    <name>CaseEdit</name>
+    <message>
+        <source>Condition {number}: &quot;{tag}&quot; isn&apos;t a valid modifier name.</source>
+        <translation>Condition {number} : « {tag} » n&apos;est pas un nom de modificateur valide.</translation>
+    </message>
+    <message>
+        <source>Condition {number}: the operator and the value can&apos;t be empty.</source>
+        <translation>Condition {number} : l&apos;opérateur et la valeur ne peuvent pas être vides.</translation>
+    </message>
+    <message>
+        <source>A layer needs at least one condition.</source>
+        <translation>Une couche a besoin d&apos;au moins une condition.</translation>
+    </message>
+</context>
+<context>
     <name>ChangeHistoryDialog</name>
     <message>
         <source>Change history</source>
@@ -1885,20 +1900,52 @@ Il reste une étape manuelle : ajoutez &apos;{slug}&apos; au bloc d&apos;imports
         <translation>Sélectionnez un élément de l&apos;arbre pour le modifier.</translation>
     </message>
     <message>
-        <source>Conditional block (case)</source>
-        <translation>Bloc conditionnel (case)</translation>
+        <source>Modifier layer (case)</source>
+        <translation>Couche de modificateur (case)</translation>
     </message>
     <message>
-        <source>(no condition)</source>
-        <translation>(aucune condition)</translation>
+        <source>Its bindings apply only while every condition below holds.</source>
+        <translation>Ses liaisons ne s&apos;appliquent que tant que toutes les conditions ci-dessous sont vraies.</translation>
     </message>
     <message>
-        <source>Applies while: {condition}</source>
-        <translation>S’applique tant que : {condition}</translation>
+        <source>Remove condition</source>
+        <translation>Retirer la condition</translation>
     </message>
     <message>
-        <source>Select a binding inside it to edit it. The condition itself (which modifier, on or off) is kept as written but can&apos;t be edited here yet.</source>
-        <translation>Sélectionnez une affectation à l’intérieur pour la modifier. La condition elle-même (quel modificateur, activé ou non) est conservée telle quelle mais ne se modifie pas encore ici.</translation>
+        <source>Modifier</source>
+        <translation>Modificateur</translation>
+    </message>
+    <message>
+        <source>Operator</source>
+        <translation>Opérateur</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>Valeur</translation>
+    </message>
+    <message>
+        <source>Add condition</source>
+        <translation>Ajouter une condition</translation>
+    </message>
+    <message>
+        <source>Apply conditions</source>
+        <translation>Appliquer les conditions</translation>
+    </message>
+    <message>
+        <source>Remove layer</source>
+        <translation>Retirer la couche</translation>
+    </message>
+    <message>
+        <source>Its bindings become ordinary ones, active whatever the modifiers.</source>
+        <translation>Ses liaisons redeviennent ordinaires, actives quels que soient les modificateurs.</translation>
+    </message>
+    <message>
+        <source>Edit layer conditions</source>
+        <translation>Modifier les conditions de la couche</translation>
+    </message>
+    <message>
+        <source>Move binding into a layer</source>
+        <translation>Placer la liaison dans une couche</translation>
     </message>
     <message>
         <source>(not found in any controller reference table)</source>
@@ -1935,6 +1982,14 @@ Il reste une étape manuelle : ajoutez &apos;{slug}&apos; au bloc d&apos;imports
     <message>
         <source>{count} mapping(s)</source>
         <translation>{count} mapping(s)</translation>
+    </message>
+    <message>
+        <source>Move into a modifier layer</source>
+        <translation>Placer dans une couche de modificateur</translation>
+    </message>
+    <message>
+        <source>The binding then applies only while that modifier has that value.</source>
+        <translation>La liaison ne s&apos;applique alors que tant que ce modificateur a cette valeur.</translation>
     </message>
     <message>
         <source>&lt;{tag}&gt; target</source>
@@ -2901,8 +2956,8 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
         <translation>Modifier et valider</translation>
     </message>
     <message>
-        <source>Edits the item selected in a tree. Every change can be undone (&lt;b&gt;Edit → Undo&lt;/b&gt;).&lt;br&gt;&lt;br&gt;Serato repeats each trigger several times in a mapping and those copies must stay identical: edit in &lt;b&gt;By Deck&lt;/b&gt;, which updates every copy at once.&lt;br&gt;&lt;br&gt;&lt;b&gt;Learn&lt;/b&gt; moves the selected trigger to the next control you press on your controller (10 s, click again to cancel); it warns before reusing a control another function already uses.&lt;br&gt;&lt;br&gt;&lt;b&gt;Edit → Validate&lt;/b&gt; lists errors, warnings and info in the table below (duplicate copies are info only: they are expected); &lt;b&gt;Edit → Ready for Live…&lt;/b&gt; checks for missing Play/Cue/Sync/Load, conflicts and unlit buttons before a gig. &lt;b&gt;File → Save Mapping&lt;/b&gt; shows the exact changes before writing, keeps a backup, and &lt;b&gt;File → Restore Previous Version…&lt;/b&gt; restores it.</source>
-        <translation>Modifie l&apos;élément sélectionné dans un arbre. Chaque modification peut être annulée (&lt;b&gt;Édition → Annuler&lt;/b&gt;).&lt;br&gt;&lt;br&gt;Serato répète chaque déclencheur plusieurs fois dans un mapping et ces copies doivent rester identiques : modifiez dans &lt;b&gt;Par platine&lt;/b&gt;, qui met à jour toutes les copies à la fois.&lt;br&gt;&lt;br&gt;&lt;b&gt;Apprendre&lt;/b&gt; déplace le déclencheur sélectionné vers la prochaine commande que vous actionnez sur votre contrôleur (10 s, cliquez à nouveau pour annuler) ; il prévient avant de réutiliser une commande déjà prise par une autre fonction.&lt;br&gt;&lt;br&gt;&lt;b&gt;Édition → Valider&lt;/b&gt; liste les erreurs, avertissements et infos dans le tableau ci-dessous (les copies en double ne sont que des infos : elles sont attendues) ; &lt;b&gt;Édition → Prêt pour le live…&lt;/b&gt; vérifie avant une soirée les Play/Cue/Sync/Load manquants, les conflits et les boutons sans LED. &lt;b&gt;Fichier → Enregistrer le mapping&lt;/b&gt; montre les changements exacts avant d&apos;écrire, garde une sauvegarde, et &lt;b&gt;Fichier → Restaurer la version précédente…&lt;/b&gt; la remet en place.</translation>
+        <source>Edits the item selected in a tree. Every change can be undone (&lt;b&gt;Edit → Undo&lt;/b&gt;).&lt;br&gt;&lt;br&gt;Serato repeats each trigger several times in a mapping and those copies must stay identical: edit in &lt;b&gt;By Deck&lt;/b&gt;, which updates every copy at once.&lt;br&gt;&lt;br&gt;&lt;b&gt;Learn&lt;/b&gt; moves the selected trigger to the next control you press on your controller (10 s, click again to cancel); it warns before reusing a control another function already uses.&lt;br&gt;&lt;br&gt;A &lt;b&gt;Modifier layer (case)&lt;/b&gt; (SHIFT and other modifier layers) shows its conditions: change them and click &lt;b&gt;Apply conditions&lt;/b&gt;, or &lt;b&gt;Remove layer&lt;/b&gt;. An ordinary binding goes on a layer with &lt;b&gt;Move into a modifier layer&lt;/b&gt;.&lt;br&gt;&lt;br&gt;&lt;b&gt;Edit → Validate&lt;/b&gt; lists errors, warnings and info in the table below (duplicate copies are info only: they are expected); &lt;b&gt;Edit → Ready for Live…&lt;/b&gt; checks for missing Play/Cue/Sync/Load, conflicts and unlit buttons before a gig. &lt;b&gt;File → Save Mapping&lt;/b&gt; shows the exact changes before writing, keeps a backup, and &lt;b&gt;File → Restore Previous Version…&lt;/b&gt; restores it.</source>
+        <translation>Modifie l&apos;élément sélectionné dans un arbre. Chaque modification peut être annulée (&lt;b&gt;Édition → Annuler&lt;/b&gt;).&lt;br&gt;&lt;br&gt;Serato répète chaque déclencheur plusieurs fois dans un mapping et ces copies doivent rester identiques : modifiez dans &lt;b&gt;Par platine&lt;/b&gt;, qui met à jour toutes les copies à la fois.&lt;br&gt;&lt;br&gt;&lt;b&gt;Apprendre&lt;/b&gt; déplace le déclencheur sélectionné vers la prochaine commande que vous actionnez sur votre contrôleur (10 s, cliquez à nouveau pour annuler) ; il prévient avant de réutiliser une commande déjà prise par une autre fonction.&lt;br&gt;&lt;br&gt;Une &lt;b&gt;Couche de modificateur (case)&lt;/b&gt; (SHIFT et autres couches de modificateur) affiche ses conditions : modifiez-les et cliquez sur &lt;b&gt;Appliquer les conditions&lt;/b&gt;, ou &lt;b&gt;Retirer la couche&lt;/b&gt;. Une liaison ordinaire passe dans une couche avec &lt;b&gt;Placer dans une couche de modificateur&lt;/b&gt;.&lt;br&gt;&lt;br&gt;&lt;b&gt;Édition → Valider&lt;/b&gt; liste les erreurs, avertissements et infos dans le tableau ci-dessous (les copies en double ne sont que des infos : elles sont attendues) ; &lt;b&gt;Édition → Prêt pour le live…&lt;/b&gt; vérifie avant une soirée les Play/Cue/Sync/Load manquants, les conflits et les boutons sans LED. &lt;b&gt;Fichier → Enregistrer le mapping&lt;/b&gt; montre les changements exacts avant d&apos;écrire, garde une sauvegarde, et &lt;b&gt;Fichier → Restaurer la version précédente…&lt;/b&gt; la remet en place.</translation>
     </message>
     <message>
         <source>Ready for live</source>
