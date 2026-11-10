@@ -2546,16 +2546,16 @@ Trotzdem neu zuweisen? Beide lösen auf demselben Bedienelement aus.</translatio
         <translation>DDJ-XP2: Noten von 1/2X und 2X</translation>
     </message>
     <message>
-        <source>Click Start capture, press 1/2X then 2X on deck 1 (plain, without SHIFT), then Stop capture. The official MIDI Message List and this app&apos;s profile say notes 16 / 17; rekordbox&apos;s bundled mapping says 18 / 19.</source>
-        <translation>Klicken Sie auf Aufnahme starten, drücken Sie auf Deck 1 erst 1/2X, dann 2X (ohne SHIFT) und dann Aufnahme stoppen. Die offizielle MIDI Message List und das Profil der App nennen die Noten 16 / 17; das mit rekordbox gelieferte Mapping nennt 18 / 19.</translation>
+        <source>Click Start capture, press 1/2X then 2X on deck 1 (plain, without SHIFT), then Stop capture. Keep Serato running: the controller then sends 18 / 19 (rekordbox&apos;s bundled mapping and this app&apos;s profile); with no DJ software it sends the official MIDI Message List&apos;s 16 / 17.</source>
+        <translation>Klicken Sie auf Aufnahme starten, drücken Sie auf Deck 1 erst 1/2X, dann 2X (ohne SHIFT), dann auf Aufnahme stoppen. Lassen Sie Serato laufen: Der Controller sendet dann 18 / 19 (das mit rekordbox gelieferte Mapping und das Profil dieser App); ohne DJ-Software sendet er die 16 / 17 der offiziellen MIDI Message List.</translation>
     </message>
     <message>
-        <source>official PDF and this app&apos;s profile</source>
-        <translation>dem offiziellen PDF und dem Profil der App</translation>
+        <source>the official PDF</source>
+        <translation>dem offiziellen PDF</translation>
     </message>
     <message>
-        <source>rekordbox&apos;s bundled mapping</source>
-        <translation>dem mit rekordbox gelieferten Mapping</translation>
+        <source>rekordbox&apos;s bundled mapping and this app&apos;s profile</source>
+        <translation>dem mit rekordbox gelieferten Mapping und dem Profil dieser App</translation>
     </message>
     <message>
         <source>CMD Micro: jog wheel messages</source>

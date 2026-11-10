@@ -68,9 +68,10 @@ def test_verdict_names_the_source_the_capture_agrees_with():
     check = CHECKS_BY_ID["ddj-xp2-loop-notes"]
     assert verdict(check, CheckResult()) == "Nothing captured yet."
     result = CheckResult(captured=[_note(16), _note(16, 0), _note(17), _note(17, 0)])
-    assert verdict(check, result) == "Captured notes 16, 17: they match official PDF and this app's profile."
+    assert verdict(check, result) == "Captured notes 16, 17: they match the official PDF."
     result = CheckResult(captured=[_note(18), _note(19)])
     assert "rekordbox" in verdict(check, result)
+    assert "profile" in verdict(check, result)
     assert "no known source" in verdict(check, CheckResult(captured=[_note(20)]))
     cc_only = CheckResult(captured=[CapturedMessage("p", "Control Change", 1, 33, 65)])
     assert verdict(check, cc_only) == "No press captured: 1 other message(s)."
@@ -138,7 +139,7 @@ def test_report_lists_every_check_with_its_result():
         assert check.title in text
     assert "Note: no Traktor here" in text
     assert "DDJ-XP2 · Note On ch 1 · 16 = 127" in text
-    assert "they match official PDF" in text
+    assert "they match the official PDF" in text
 
 
 # --- the dialog ---------------------------------------------------------------

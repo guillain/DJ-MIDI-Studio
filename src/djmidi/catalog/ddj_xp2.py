@@ -27,9 +27,13 @@ _PAD_SHIFT_CHANNELS = {"9", "11", "13", "15"}
 _STATIC: list[ControlInfo] = [
     ControlInfo("DDJ-XP2", "DECK", "4 BEAT LOOP", "NOTE", _DECK_CH, "20"),
     ControlInfo("DDJ-XP2", "DECK", "4 BEAT LOOP (+SHIFT)", "NOTE", _DECK_CH, "80"),
-    ControlInfo("DDJ-XP2", "DECK", "1/2X", "NOTE", _DECK_CH, "16"),
+    # 1/2X and 2X: a real DDJ-XP2 sends 18 / 19 while Serato drives it (as
+    # rekordbox's bundled mapping says) and 16 / 17 (the official PDF's) with
+    # no DJ software running -- captured 2026-11-10, deck 1, four runs (#356).
+    # Serato also switches the pad notes (modes 5-8 exist only under it).
+    ControlInfo("DDJ-XP2", "DECK", "1/2X", "NOTE", _DECK_CH, "18"),
     ControlInfo("DDJ-XP2", "DECK", "1/2X (+SHIFT)", "NOTE", _DECK_CH, "76"),
-    ControlInfo("DDJ-XP2", "DECK", "2X", "NOTE", _DECK_CH, "17"),
+    ControlInfo("DDJ-XP2", "DECK", "2X", "NOTE", _DECK_CH, "19"),
     ControlInfo("DDJ-XP2", "DECK", "2X (+SHIFT)", "NOTE", _DECK_CH, "77"),
     ControlInfo("DDJ-XP2", "DECK", "QUANTIZE", "NOTE", _DECK_CH, "53"),
     ControlInfo("DDJ-XP2", "DECK", "QUANTIZE (+SHIFT)", "NOTE", _DECK_CH, "57"),
