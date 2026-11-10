@@ -142,6 +142,7 @@ from djmidi.library.playlist import is_camelot_compatible
 from djmidi.library.playlist_compare import PlaylistComparison, compare_playlists
 from djmidi.library.relink import RelinkCandidate, RelinkProposal
 from djmidi.library.scanner import iter_scan_root
+from djmidi.update_check import current_version
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -1585,6 +1586,9 @@ class MusicLibraryView(QWidget):
             ("export_traktor_button", self.tr("Export as Traktor playlist…"), self._on_export_traktor_clicked,
              self.tr("Writes a new single-playlist .nml where you choose, for Traktor's Import Playlist. "
                      "Never touches collection.nml.")),
+            ("export_rekordbox_button", self.tr("Export as rekordbox XML…"), self._on_export_rekordbox_clicked,
+             self.tr("Writes a new rekordbox XML file where you choose, for rekordbox's Imported Library. "
+                     "Never touches rekordbox's own library.")),
             ("compare_serato_button", self.tr("Compare with crate…"), self._on_compare_serato_clicked,
              self.tr("Compares the selected playlist with a Serato crate: tracks only on each side and "
                      "order differences. Read-only.")),
@@ -3309,6 +3313,29 @@ class MusicLibraryView(QWidget):
         if path:
             try:
                 self.export_playlist_as_nml(playlist_id, path, name)
+            except OSError as exc:
+                QMessageBox.warning(self, self.tr("Export failed"), f"{path}\n\n{exc}")
+
+    def export_playlist_as_rekordbox_xml(self, playlist_id: int, xml_path: str, name: str) -> None:
+        workspace.export_rekordbox_xml(
+            xml_path, name, self.db.playlist_paths(playlist_id), db=self.db, product_version=current_version() or ""
+        )
+        self.status_label.setText(self.tr("Exported {name}.").format(name=Path(xml_path).name))
+
+    def _on_export_rekordbox_clicked(self) -> None:
+        playlist_id = self.selected_playlist_id()
+        if playlist_id is None:
+            return
+        name = self.playlist_list.currentItem().text().split("  (", 1)[0]
+        path, _ = QFileDialog.getSaveFileName(
+            self,
+            self.tr("Export as rekordbox XML"),
+            str(user_paths.subfolder(user_paths.EXPORTS) / f"{name}.xml"),
+            self.tr("rekordbox XML (*.xml)"),
+        )
+        if path:
+            try:
+                self.export_playlist_as_rekordbox_xml(playlist_id, path, name)
             except OSError as exc:
                 QMessageBox.warning(self, self.tr("Export failed"), f"{path}\n\n{exc}")
 

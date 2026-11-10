@@ -159,3 +159,59 @@ def test_main_window_rebuilds_and_keeps_the_control_selected(tmp_path):
     window.undo_stack.undo()
     assert to_xml_string(window.config) == SAMPLE
     window.close()
+
+
+# --- every identical copy (issue #440) --------------------------------------------
+
+_LAYERED = SAMPLE[SAMPLE.index('    <control channel="3"') : SAMPLE.index("</midi>")]
+# Three identical copies of the layered control, then one with a different
+# binding on the same trigger, which isn't a copy and must stay as it is.
+_DIFFERENT = _LAYERED.replace('cmp_value="off"', 'cmp_value="on"', 1)
+COPIES = SAMPLE.replace("</midi>", _LAYERED + _LAYERED + _DIFFERENT + "</midi>")
+
+
+def test_identical_copies_are_the_controls_written_the_same():
+    config = parse_string(COPIES)
+    first = config.controls[1]
+    copies = case_edit.identical_copies(config, first)
+    assert len(copies) == 3 and copies[0] is first
+    assert config.controls[4] not in copies  # same trigger, different binding
+    assert case_edit.identical_copies(None, first) == [first]
+
+
+def test_the_real_mapping_has_ten_copies_per_trigger():
+    from pathlib import Path
+
+    from djmidi.parser import parse_file
+
+    config = parse_file(Path(__file__).parent.parent / "data" / "xdj_xz-ddj_xp2-4decks.xml")
+    assert len(case_edit.identical_copies(config, config.controls[0])) == 10
+
+
+def test_panel_edits_every_copy_in_one_undo_step():
+    config = parse_string(COPIES)
+    panel, stack, _changed = _panel(config)
+    first = config.controls[1]
+    panel.set_node(first.cases[0])
+    from PySide6.QtWidgets import QLabel
+
+    assert any("3 identical copies" in label.text() for label in panel.findChildren(QLabel))
+    panel.condition_rows[0][2].setCurrentText("on")
+    assert panel.apply_conditions(first.cases[0])
+    assert stack.count() == 1
+    assert [c.cases[0].describe() for c in config.controls[1:4]] == ["modifier_3 = on"] * 3
+    assert config.controls[4].cases[0].describe() == "modifier_3 = on"  # was already on, untouched
+    assert config.controls[4].cases[1].describe() == "modifier_1 = on, modifier_2 = off"
+    # The copies are still identical to each other after the edit.
+    assert len(case_edit.identical_copies(config, config.controls[1])) == 4  # now equals the 4th too
+    stack.undo()
+    assert to_xml_string(config) == COPIES
+
+
+def test_remove_layer_and_move_into_layer_reach_every_copy():
+    config = parse_string(COPIES)
+    panel, stack, _changed = _panel(config)
+    assert panel.remove_layer(config.controls[2].cases[1])
+    assert [len(c.cases) for c in config.controls[1:5]] == [1, 1, 1, 2]
+    stack.undo()
+    assert to_xml_string(config) == COPIES

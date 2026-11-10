@@ -103,8 +103,9 @@ but you can type anything.
 
 Each of these is one step of **Edit → Undo**. A file you don't edit is
 still saved exactly as it was. Serato repeats a trigger several times in a
-mapping: a layer change applies to the copy you selected, like any edit in
-By Channel.
+mapping, and the copies must stay identical: a layer change applies to
+every identical copy of the trigger at once (the panel says how many), and
+is still one undo step. A copy that already differs is left alone.
 
 ## Find which control triggers a function
 

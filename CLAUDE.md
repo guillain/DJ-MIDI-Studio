@@ -91,6 +91,8 @@ fixed file path; use `tmp_path`.
   `(userios, cases)` lists for one control (`set_conditions`, `move_into_layer`, `remove_layer`; modifiers and
   operators offered come from the file, `known_modifiers`/`known_operators`), applied by
   `gui.commands.SetControlLayersCommand` (one undo step) → `MainWindow._on_layers_changed` (rebuild, reselect).
+  The panel applies every layer edit to all identical copies of the control (#440,
+  `case_edit.identical_copies` = same trigger and same exported XML; `*_everywhere` replay it by position).
 - `exporter.py` round-trips the sample byte for byte; keep it that way (`tests/test_parser.py` roundtrip).
 - **The 10x duplication**: every unique trigger appears exactly 10 times in the real file, and deleting copies
   breaks the config in Serato. It's load-bearing: `validator.py` reports identical duplicates as `info` only;
@@ -250,7 +252,8 @@ surgical and logged. Qt-free modules; the tab is a thin view over `library/works
   behind the optional `analysis` extra, gap-filling only, user-confirmed), `waveform.py`.
 - Formats: `serato_library.py` (crates only, never `database V2`), `traktor_library.py` (`collection.nml`
   streamed with `iterparse`; standalone single-playlist `.nml` export), `rekordbox_library.py` (`export.pdb`,
-  hand-written from the crate-digger spec), `history.py` (Serato/Traktor play history, read-only).
+  hand-written from the crate-digger spec), `history.py` (Serato/Traktor play history, read-only), `rekordbox_xml.py` (a playlist as
+  Pioneer's published rekordbox XML import format, #441; new file only, untested in a running rekordbox).
 - Features: `playlist.py` (harmonic/BPM compatibility, simple draft order, receding-horizon mix path),
   `taxonomy/` (genre families, aliases, fuzzy suggestions never auto-applied), `smart_playlist.py`,
   `set_prep.py` (hand-ordered set, transitions, order proposal, generate from library, stage notes),

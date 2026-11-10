@@ -145,6 +145,16 @@ Implemented contract, runtime, test, and documentation work:
   (absolute), whereas Traktor maps jogs as Encoder / Relative. So the pitch bend is most likely each deck's
   pitch fader, and the earlier "pitch-bend jog" note was a guess. No jog was built on it; the Hardware
   Session check now asks to move the jog and the pitch fader and say which sends it.
+- [x] **rekordbox XML export** (`v0.48.206-rekordbox-xml`, #441) — `Export as rekordbox XML…` in the Music
+  Library's Playlists and Set panels writes a new file in Pioneer's published "XML file format for playlists
+  sharing" (`DJ_PLAYLISTS` 1.0.0, a `COLLECTION` of the playlist's tracks with `file://localhost/` locations
+  and the cached tags, a `ROOT` folder holding one `KeyType="0"` playlist), read from the PDF linked by
+  rekordbox.com's developer page. rekordbox's library is never written; not yet imported in a real rekordbox.
+- [x] **Layer edits on every copy** (`v0.48.205-layer-copies`, #440) — Serato's identical trigger copies
+  (10 per trigger in the maintainer's file) must stay identical, but #434's layer edits touched only the
+  selected copy. Every layer edit (conditions, remove layer, move into a layer) now runs on all controls with
+  the same trigger and the same exported XML, as one undo step; the panel says how many copies it reaches,
+  and a copy that already differs is left alone.
 - [x] **Atelier macros: toggles and waits** (`v0.48.204-atelier-toggle-macros`, #435) — the Atelier's Macros tab
   gains a **Steps** choice (main steps / second steps of a toggle) and a **wait for a press** click: a wait step
   on that control's input address (value 0, like the macro editor's wait rows), its delay field relabelled
@@ -3825,6 +3835,10 @@ close what can't be unblocked here.
    1. Live pitch bend (#436) — **done** in `v0.48.202`.
    2. Editable Serato SHIFT / modifier layers (#434) — **done** in `v0.48.203`.
    3. Atelier macros: toggle second list and wait steps (#435) — **done** in `v0.48.204`.
+14. **Phase 11**, agreed 2026-11-10 (one PR and tag each):
+   1. Modifier-layer edits on every identical copy (#440) — **done** in `v0.48.205`.
+   2. Export a playlist as rekordbox XML (#441) — **done** in `v0.48.206` (not yet imported in a real rekordbox).
+   3. Pitch-bend jogs turn on screen (#442) — **re-scoped** in `v0.48.207`: the Traktor export shows a fader, not a jog; waits for the hardware capture.
 
 ## Tracking rules
 

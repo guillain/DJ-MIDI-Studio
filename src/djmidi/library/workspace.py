@@ -611,6 +611,39 @@ def export_traktor_playlist(
     write_playlist_nml(nml_path, playlist_name, tracks)
 
 
+def export_rekordbox_xml(
+    xml_path: str | os.PathLike[str],
+    playlist_name: str,
+    track_paths: Iterable[str],
+    db: LibraryDB | None = None,
+    product_version: str = "",
+) -> None:
+    """Writes a new rekordbox XML file at exactly `xml_path` holding one
+    playlist (issue #441), for rekordbox's Imported Library. Tags come from
+    the metadata cache when `db` has them; rekordbox's own library is never
+    written."""
+    from djmidi.library.rekordbox_xml import RekordboxXmlTrack, write_playlist_xml
+
+    tracks = []
+    for track_path in track_paths:
+        record = db.get_track_by_path(track_path) if db is not None else None
+        cached = db.get_cached_metadata(record.id) if record is not None else None
+        meta = cached[1] if cached is not None else None
+        tracks.append(
+            RekordboxXmlTrack(
+                track_path,
+                name=(meta.title or "") if meta else "",
+                artist=(meta.artist or "") if meta else "",
+                album=(meta.album or "") if meta else "",
+                genre=(meta.genre or "") if meta else "",
+                bpm=meta.bpm if meta else None,
+                tonality=(meta.key or "") if meta else "",
+                total_time=meta.duration if meta else None,
+            )
+        )
+    write_playlist_xml(xml_path, playlist_name, tracks, product_version)
+
+
 def read_rekordbox_playlists(pdb_path: str | os.PathLike[str]) -> dict[str, list[str]]:
     """Playlists of a Rekordbox device export. Track paths in `export.pdb`
     are relative to the device root, i.e. the folder holding ``PIONEER/``."""

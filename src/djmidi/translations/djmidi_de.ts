@@ -1964,6 +1964,10 @@ Ein manueller Schritt bleibt: &apos;{slug}&apos; zum Import-Block in catalog/__i
         <translation>Ihre Zuweisungen werden wieder normal, aktiv unabhängig von den Modifiern.</translation>
     </message>
     <message>
+        <source>This trigger has {count} identical copies: a layer change applies to all of them.</source>
+        <translation>Dieser Trigger hat {count} identische Kopien: Eine Ebenen-Änderung gilt für alle.</translation>
+    </message>
+    <message>
         <source>Edit layer conditions</source>
         <translation>Ebenen-Bedingungen bearbeiten</translation>
     </message>
@@ -7161,6 +7165,14 @@ Ausgewählte Zeilen in der Controller-Einrichtung: {selected}</translation>
         <translation>Schreibt eine neue .nml mit einer einzelnen Playlist an einen Ort Ihrer Wahl, für Traktors Import Playlist. Berührt nie collection.nml.</translation>
     </message>
     <message>
+        <source>Export as rekordbox XML…</source>
+        <translation>Als rekordbox-XML exportieren…</translation>
+    </message>
+    <message>
+        <source>Writes a new rekordbox XML file where you choose, for rekordbox&apos;s Imported Library. Never touches rekordbox&apos;s own library.</source>
+        <translation>Schreibt eine neue rekordbox-XML-Datei an den gewählten Ort, für die importierte Bibliothek von rekordbox. Rührt die rekordbox-Bibliothek selbst nie an.</translation>
+    </message>
+    <message>
         <source>Compare with crate…</source>
         <translation>Mit Crate vergleichen…</translation>
     </message>
@@ -7799,6 +7811,14 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     <message>
         <source>Traktor playlists (*.nml)</source>
         <translation>Traktor-Playlists (*.nml)</translation>
+    </message>
+    <message>
+        <source>Export as rekordbox XML</source>
+        <translation>Als rekordbox-XML exportieren</translation>
+    </message>
+    <message>
+        <source>rekordbox XML (*.xml)</source>
+        <translation>rekordbox-XML (*.xml)</translation>
     </message>
     <message>
         <source>“{name}” matches {other}.</source>
@@ -8818,6 +8838,14 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
         <translation>Schreibt eine neue .nml mit einer einzelnen Playlist an einen Ort Ihrer Wahl.</translation>
     </message>
     <message>
+        <source>Export as rekordbox XML…</source>
+        <translation>Als rekordbox-XML exportieren…</translation>
+    </message>
+    <message>
+        <source>Writes a new rekordbox XML file where you choose, for rekordbox&apos;s Imported Library.</source>
+        <translation>Schreibt eine neue rekordbox-XML-Datei an den gewählten Ort, für die importierte Bibliothek von rekordbox.</translation>
+    </message>
+    <message>
         <source>Select tracks in the table first.</source>
         <translation>Wählen Sie zuerst Tracks in der Tabelle.</translation>
     </message>
@@ -8888,6 +8916,14 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     <message>
         <source>Serato crates (*.crate)</source>
         <translation>Serato-Crates (*.crate)</translation>
+    </message>
+    <message>
+        <source>Export set as rekordbox XML</source>
+        <translation>Set als rekordbox-XML exportieren</translation>
+    </message>
+    <message>
+        <source>rekordbox XML (*.xml)</source>
+        <translation>rekordbox-XML (*.xml)</translation>
     </message>
     <message>
         <source>Export set as Traktor playlist</source>
