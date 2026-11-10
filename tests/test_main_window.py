@@ -1674,12 +1674,17 @@ def test_last_mapping_reopens_with_its_software_without_asking(tmp_path, monkeyp
     from PySide6.QtCore import QSettings
     from PySide6.QtWidgets import QInputDialog
 
+    from djmidi import first_run
+
     settings = QSettings(str(tmp_path / "settings.ini"), QSettings.Format.IniFormat)
     monkeypatch.setattr(MainWindow, "_layout_settings", staticmethod(lambda: settings))
     mapping = tmp_path / "mapping.xml"
     mapping.write_text(FIXTURE.read_text())
     settings.setValue("files/last_mapping", str(mapping))
     settings.setValue("files/last_mapping_software", "serato")
+    # A returning user: without it the first-run wizard opens (modal) on this
+    # test's fresh preferences file.
+    settings.setValue(first_run.WIZARD_DONE_SETTINGS_KEY, True)
     monkeypatch.setattr(QInputDialog, "getItem", lambda *a, **k: (_ for _ in ()).throw(AssertionError("asked")))
     window = MainWindow()
     try:
