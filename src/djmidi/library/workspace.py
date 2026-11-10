@@ -644,6 +644,20 @@ def export_rekordbox_xml(
     write_playlist_xml(xml_path, playlist_name, tracks, product_version)
 
 
+def read_rekordbox_xml_playlists(xml_path: str | os.PathLike[str]) -> dict[str, list[str]]:
+    """Playlists of a rekordbox XML file (issue #446), read-only."""
+    from djmidi.library.rekordbox_xml import read_playlists
+
+    return read_playlists(xml_path)
+
+
+def read_rekordbox_any(path: str | os.PathLike[str]) -> dict[str, list[str]]:
+    """A rekordbox XML file (``.xml``) or a device export (``export.pdb``)."""
+    if str(path).lower().endswith(".xml"):
+        return read_rekordbox_xml_playlists(path)
+    return read_rekordbox_playlists(path)
+
+
 def read_rekordbox_playlists(pdb_path: str | os.PathLike[str]) -> dict[str, list[str]]:
     """Playlists of a Rekordbox device export. Track paths in `export.pdb`
     are relative to the device root, i.e. the folder holding ``PIONEER/``."""

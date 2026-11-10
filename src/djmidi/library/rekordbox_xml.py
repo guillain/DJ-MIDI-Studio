@@ -128,10 +128,78 @@ def write_playlist_xml(
     os.replace(part, path)
 
 
+def path_from_location(location: str) -> str:
+    """The inverse of `location_uri`: a ``file://localhost/...`` (or
+    ``file:///...``) URI back to a filesystem path; a Windows drive
+    (``/C:/...``) loses its leading slash."""
+    from urllib.parse import unquote, urlparse
+
+    parsed = urlparse(location)
+    if parsed.scheme != "file":
+        return unquote(location)
+    path = unquote(parsed.path)
+    if re.match(r"^/[A-Za-z]:/", path):
+        return path[1:]
+    return path
+
+
+def read_playlists(path: str | os.PathLike[str]) -> dict[str, list[str]]:
+    """Every playlist of a rekordbox XML file (issue #446), read-only:
+    ``{name: [track paths in order]}``, a playlist inside folders named
+    ``"Folder / Sub / Playlist"``. Tracks are resolved through the
+    COLLECTION's ``TrackID`` (``KeyType="0"``) or taken as ``Location``s
+    (``KeyType="1"``); an entry that resolves to nothing is skipped. The
+    COLLECTION is streamed (``iterparse``) and cleared as it goes, since a
+    full rekordbox collection export can be large."""
+    locations: dict[str, str] = {}
+    playlists: dict[str, list[str]] = {}
+    stack: list[str] = []  # element tags from the root
+    folders: list[str] = []  # folder names under PLAYLISTS (the top ROOT excluded)
+    pushed: list[bool] = []  # per open NODE: whether it added a folder name
+    current: tuple[str, str, list[str]] | None = None  # (name, key type, keys)
+    for event, element in ET.iterparse(os.fspath(path), events=("start", "end")):
+        tag = element.tag
+        if event == "start":
+            stack.append(tag)
+            if tag == "NODE" and "PLAYLISTS" in stack:
+                name = element.get("Name", "")
+                is_top = len(pushed) == 0
+                if element.get("Type") == "1":
+                    current = (" / ".join([*folders, name]), element.get("KeyType", "0"), [])
+                    pushed.append(False)
+                elif is_top:  # the ROOT folder itself
+                    pushed.append(False)
+                else:
+                    folders.append(name)
+                    pushed.append(True)
+            elif tag == "TRACK" and current is not None and stack[-2] == "NODE":
+                current[2].append(element.get("Key", ""))
+            continue
+        stack.pop()
+        if tag == "TRACK" and stack and stack[-1] == "COLLECTION":
+            track_id, location = element.get("TrackID"), element.get("Location")
+            if track_id is not None and location:
+                locations[track_id] = path_from_location(location)
+            element.clear()
+        elif tag == "NODE" and "PLAYLISTS" in stack:
+            if current is not None and element.get("Type") == "1":
+                name, key_type, keys = current
+                resolved = [
+                    path_from_location(key) if key_type == "1" else locations.get(key, "") for key in keys
+                ]
+                playlists[name] = [entry for entry in resolved if entry]
+                current = None
+            if pushed.pop():
+                folders.pop()
+    return playlists
+
+
 __all__ = [
     "FORMAT_VERSION",
     "RekordboxXmlTrack",
     "build_playlist_xml",
     "location_uri",
+    "path_from_location",
+    "read_playlists",
     "write_playlist_xml",
 ]

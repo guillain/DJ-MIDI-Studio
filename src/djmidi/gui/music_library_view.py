@@ -1595,6 +1595,9 @@ class MusicLibraryView(QWidget):
             ("compare_traktor_button", self.tr("Compare with Traktor…"), self._on_compare_traktor_clicked,
              self.tr("Compares the selected playlist with a playlist of a Traktor .nml: tracks only on "
                      "each side and order differences. Read-only.")),
+            ("compare_rekordbox_button", self.tr("Compare with rekordbox…"), self._on_compare_rekordbox_clicked,
+             self.tr("Compares the selected playlist with a playlist of a rekordbox XML file or device "
+                     "export: tracks only on each side and order differences. Read-only.")),
             ("rename_playlist_button", self.tr("Rename…"), self._on_rename_playlist_clicked, ""),
             ("delete_playlist_button", self.tr("Delete"), self._on_delete_playlist_clicked, ""),
         ]
@@ -3269,10 +3272,13 @@ class MusicLibraryView(QWidget):
 
     def _on_import_rekordbox_clicked(self) -> None:
         path, _ = QFileDialog.getOpenFileName(
-            self, self.tr("Import Rekordbox playlists"), "", self.tr("Rekordbox device export (export.pdb)")
+            self,
+            self.tr("Import Rekordbox playlists"),
+            "",
+            self.tr("rekordbox XML or device export (*.xml export.pdb)"),
         )
         if path:
-            self._import_with(workspace.read_rekordbox_playlists, path, workspace.SOURCE_REKORDBOX)
+            self._import_with(workspace.read_rekordbox_any, path, workspace.SOURCE_REKORDBOX)
 
     def export_playlist_as_crate(self, playlist_id: int, crate_path: str) -> None:
         workspace.export_serato_crate(crate_path, self.db.playlist_paths(playlist_id))
@@ -3383,19 +3389,36 @@ class MusicLibraryView(QWidget):
         self.compare_playlist(playlist_id, self.tr("crate “{name}”").format(name=Path(path).stem), other)
 
     def _on_compare_traktor_clicked(self) -> None:
+        self._compare_with_file(
+            self.tr("Compare with Traktor playlist"),
+            self.tr("Traktor collection or playlist (*.nml)"),
+            workspace.read_traktor_playlists,
+            self.tr("Traktor playlist"),
+            self.tr("Traktor “{name}”"),
+        )
+
+    def _on_compare_rekordbox_clicked(self) -> None:
+        """Issue #446: one playlist of a rekordbox XML file or device export."""
+        self._compare_with_file(
+            self.tr("Compare with rekordbox playlist"),
+            self.tr("rekordbox XML or device export (*.xml export.pdb)"),
+            workspace.read_rekordbox_any,
+            self.tr("rekordbox playlist"),
+            self.tr("rekordbox “{name}”"),
+        )
+
+    def _compare_with_file(self, title: str, file_filter: str, reader, picker_title: str, label: str) -> None:
         playlist_id = self.selected_playlist_id()
         if playlist_id is None:
             self.status_label.setText(self.tr("Select a playlist to compare first."))
             return
-        path, _ = QFileDialog.getOpenFileName(
-            self, self.tr("Compare with Traktor playlist"), "", self.tr("Traktor collection or playlist (*.nml)")
-        )
+        path, _ = QFileDialog.getOpenFileName(self, title, "", file_filter)
         if not path:
             return
         try:
-            playlists = workspace.read_traktor_playlists(path)
+            playlists = reader(path)
         except Exception as exc:
-            _LOGGER.exception("Traktor read failed: %s", path)
+            _LOGGER.exception("Playlist read failed: %s", path)
             QMessageBox.warning(self, self.tr("Compare failed"), f"{path}\n\n{exc}")
             return
         if not playlists:
@@ -3408,12 +3431,10 @@ class MusicLibraryView(QWidget):
         if len(names) > 1:
             own = self._selected_playlist_name()
             start = names.index(own) if own in names else 0
-            choice, ok = QInputDialog.getItem(
-                self, self.tr("Traktor playlist"), self.tr("Compare with:"), names, start, False
-            )
+            choice, ok = QInputDialog.getItem(self, picker_title, self.tr("Compare with:"), names, start, False)
             if not ok:
                 return
-        self.compare_playlist(playlist_id, self.tr("Traktor “{name}”").format(name=choice), playlists[choice])
+        self.compare_playlist(playlist_id, label.format(name=choice), playlists[choice])
 
     def _on_rename_playlist_clicked(self) -> None:
         playlist_id = self.selected_playlist_id()
