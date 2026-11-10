@@ -726,7 +726,7 @@ LIBRARY_PLAYLISTS: HelpEntry = (
         "<b>Edit smart rules…</b> changes the selected one.</li></ul>"
         "Import Serato crates, Traktor playlists or a Rekordbox USB export (read only); "
         "export to a new Serato crate or Traktor playlist file where you choose. "
-        "<b>Compare with crate…</b> / <b>Compare with Traktor…</b> list the tracks only on each "
+        "<b>Compare with crate…</b> / <b>Compare with Traktor…</b> / <b>Compare with rekordbox…</b> list the tracks only on each "
         "side and the tracks in a different order, without changing either side.",
     ),
     "music-library.md",

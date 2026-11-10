@@ -3168,8 +3168,8 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
         <translation>Playlists</translation>
     </message>
     <message>
-        <source>&lt;ul&gt;&lt;li&gt;&lt;b&gt;New from selection&lt;/b&gt;: the selected tracks.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Auto: sort visible&lt;/b&gt;: every visible track, grouped by category, then BPM range, then key.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Auto: match current&lt;/b&gt;: the selected track followed by visible tracks within ±6&amp;nbsp;% BPM and a compatible key.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Auto: mix path…&lt;/b&gt;: visible tracks chained so each one mixes into the next (BPM rising, falling or steady), from the selected track, with your BPM tolerance (±&amp;nbsp;%) and an optional maximum length (both remembered); tracks that don&apos;t fit go to a separate &lt;i&gt;(leftovers)&lt;/i&gt; playlist. Only the tracks the current filter shows are used.&lt;/li&gt;&lt;li&gt;&lt;b&gt;New smart playlist…&lt;/b&gt;: saved rules (category, BPM range, Camelot key or compatible keys, not played for N days…) evaluated against the whole library, and refreshed after every scan, history load, or &lt;b&gt;Refresh smart playlists&lt;/b&gt;. &lt;b&gt;Edit smart rules…&lt;/b&gt; changes the selected one.&lt;/li&gt;&lt;/ul&gt;Import Serato crates, Traktor playlists or a Rekordbox USB export (read only); export to a new Serato crate or Traktor playlist file where you choose. &lt;b&gt;Compare with crate…&lt;/b&gt; / &lt;b&gt;Compare with Traktor…&lt;/b&gt; list the tracks only on each side and the tracks in a different order, without changing either side.</source>
-        <translation>&lt;ul&gt;&lt;li&gt;&lt;b&gt;Nouvelle depuis la sélection&lt;/b&gt; : les morceaux sélectionnés.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Auto : trier l&apos;affichage&lt;/b&gt; : tous les morceaux affichés, groupés par catégorie, puis par plage de BPM, puis par tonalité.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Auto : compatibles&lt;/b&gt; : le morceau sélectionné suivi des morceaux affichés à ±6&amp;nbsp;% de BPM et de tonalité compatible.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Auto : parcours de mix…&lt;/b&gt; : les morceaux affichés enchaînés pour que chacun se mixe dans le suivant (BPM croissant, décroissant ou stable), à partir du morceau sélectionné, avec votre tolérance BPM (±&amp;nbsp;%) et une longueur maximale facultative (toutes deux mémorisées) ; les morceaux qui ne trouvent pas leur place vont dans une playlist &lt;i&gt;(restes)&lt;/i&gt; à part. Seuls les morceaux affichés par le filtre courant sont utilisés.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Nouvelle playlist intelligente…&lt;/b&gt; : des règles enregistrées (catégorie, plage de BPM, tonalité Camelot ou tonalités compatibles, pas joué depuis N jours…) évaluées sur toute la bibliothèque, et actualisées après chaque scan, chargement d&apos;historique ou &lt;b&gt;Actualiser les playlists intelligentes&lt;/b&gt;. &lt;b&gt;Modifier les règles…&lt;/b&gt; change celle sélectionnée.&lt;/li&gt;&lt;/ul&gt;Importez des crates Serato, des playlists Traktor ou un export USB Rekordbox (en lecture seule) ; exportez vers une nouvelle crate Serato ou un nouveau fichier de playlist Traktor, à l&apos;endroit choisi. &lt;b&gt;Comparer à une crate…&lt;/b&gt; / &lt;b&gt;Comparer à Traktor…&lt;/b&gt; listent les morceaux présents d&apos;un seul côté et ceux dans un ordre différent, sans rien changer d&apos;un côté ni de l&apos;autre.</translation>
+        <source>&lt;ul&gt;&lt;li&gt;&lt;b&gt;New from selection&lt;/b&gt;: the selected tracks.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Auto: sort visible&lt;/b&gt;: every visible track, grouped by category, then BPM range, then key.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Auto: match current&lt;/b&gt;: the selected track followed by visible tracks within ±6&amp;nbsp;% BPM and a compatible key.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Auto: mix path…&lt;/b&gt;: visible tracks chained so each one mixes into the next (BPM rising, falling or steady), from the selected track, with your BPM tolerance (±&amp;nbsp;%) and an optional maximum length (both remembered); tracks that don&apos;t fit go to a separate &lt;i&gt;(leftovers)&lt;/i&gt; playlist. Only the tracks the current filter shows are used.&lt;/li&gt;&lt;li&gt;&lt;b&gt;New smart playlist…&lt;/b&gt;: saved rules (category, BPM range, Camelot key or compatible keys, not played for N days…) evaluated against the whole library, and refreshed after every scan, history load, or &lt;b&gt;Refresh smart playlists&lt;/b&gt;. &lt;b&gt;Edit smart rules…&lt;/b&gt; changes the selected one.&lt;/li&gt;&lt;/ul&gt;Import Serato crates, Traktor playlists or a Rekordbox USB export (read only); export to a new Serato crate or Traktor playlist file where you choose. &lt;b&gt;Compare with crate…&lt;/b&gt; / &lt;b&gt;Compare with Traktor…&lt;/b&gt; / &lt;b&gt;Compare with rekordbox…&lt;/b&gt; list the tracks only on each side and the tracks in a different order, without changing either side.</source>
+        <translation>&lt;ul&gt;&lt;li&gt;&lt;b&gt;Nouvelle depuis la sélection&lt;/b&gt; : les morceaux sélectionnés.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Auto : trier l&apos;affichage&lt;/b&gt; : tous les morceaux affichés, groupés par catégorie, puis par plage de BPM, puis par tonalité.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Auto : compatibles&lt;/b&gt; : le morceau sélectionné suivi des morceaux affichés à ±6&amp;nbsp;% de BPM et de tonalité compatible.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Auto : parcours de mix…&lt;/b&gt; : les morceaux affichés enchaînés pour que chacun se mixe dans le suivant (BPM croissant, décroissant ou stable), à partir du morceau sélectionné, avec votre tolérance BPM (±&amp;nbsp;%) et une longueur maximale facultative (toutes deux mémorisées) ; les morceaux qui ne trouvent pas leur place vont dans une playlist &lt;i&gt;(restes)&lt;/i&gt; à part. Seuls les morceaux affichés par le filtre courant sont utilisés.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Nouvelle playlist intelligente…&lt;/b&gt; : des règles enregistrées (catégorie, plage de BPM, tonalité Camelot ou tonalités compatibles, pas joué depuis N jours…) évaluées sur toute la bibliothèque, et actualisées après chaque scan, chargement d&apos;historique ou &lt;b&gt;Actualiser les playlists intelligentes&lt;/b&gt;. &lt;b&gt;Modifier les règles…&lt;/b&gt; change celle sélectionnée.&lt;/li&gt;&lt;/ul&gt;Importez des crates Serato, des playlists Traktor ou un export USB Rekordbox (en lecture seule) ; exportez vers une nouvelle crate Serato ou un nouveau fichier de playlist Traktor, à l&apos;endroit choisi. &lt;b&gt;Comparer à une crate…&lt;/b&gt; / &lt;b&gt;Comparer à Traktor…&lt;/b&gt; / &lt;b&gt;Comparer à rekordbox…&lt;/b&gt; listent les morceaux présents d&apos;un seul côté et ceux dans un ordre différent, sans rien changer d&apos;un côté ni de l&apos;autre.</translation>
     </message>
     <message>
         <source>Play history</source>
@@ -7189,6 +7189,14 @@ Lignes sélectionnées dans Configuration du contrôleur : {selected}</translati
         <translation>Compare la playlist sélectionnée à une playlist d&apos;un .nml Traktor : morceaux présents d&apos;un seul côté et différences d&apos;ordre. Lecture seule.</translation>
     </message>
     <message>
+        <source>Compare with rekordbox…</source>
+        <translation>Comparer à rekordbox…</translation>
+    </message>
+    <message>
+        <source>Compares the selected playlist with a playlist of a rekordbox XML file or device export: tracks only on each side and order differences. Read-only.</source>
+        <translation>Compare la playlist sélectionnée avec une playlist d&apos;un fichier XML rekordbox ou d&apos;un export pour appareil : morceaux présents d&apos;un seul côté et différences d&apos;ordre. Lecture seule.</translation>
+    </message>
+    <message>
         <source>Load DJ history</source>
         <translation>Charger l&apos;historique DJ</translation>
     </message>
@@ -7789,10 +7797,6 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <translation>Importer des playlists Rekordbox</translation>
     </message>
     <message>
-        <source>Rekordbox device export (export.pdb)</source>
-        <translation>Export Rekordbox pour appareil (export.pdb)</translation>
-    </message>
-    <message>
         <source>Exported {name}.</source>
         <translation>{name} exporté.</translation>
     </message>
@@ -7871,6 +7875,22 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>Traktor “{name}”</source>
         <translation>Traktor « {name} »</translation>
+    </message>
+    <message>
+        <source>rekordbox XML or device export (*.xml export.pdb)</source>
+        <translation>XML rekordbox ou export pour appareil (*.xml export.pdb)</translation>
+    </message>
+    <message>
+        <source>Compare with rekordbox playlist</source>
+        <translation>Comparer avec une playlist rekordbox</translation>
+    </message>
+    <message>
+        <source>rekordbox playlist</source>
+        <translation>Playlist rekordbox</translation>
+    </message>
+    <message>
+        <source>rekordbox “{name}”</source>
+        <translation>rekordbox « {name} »</translation>
     </message>
     <message>
         <source>Smart playlist “{name}”: {count} track(s).</source>
