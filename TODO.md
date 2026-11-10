@@ -139,6 +139,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Atelier macros on the photo** (`v0.48.200-atelier-macros`, #428) — a **Macros** tab in the Atelier: pick a
+  macro (the photo follows the controller it is about), choose what a click adds (LED on / off / value, or a
+  tap / press / release / value it imitates, per `macro_target`), click controls; steps can be given a delay,
+  reordered and removed, then saved like Manage Macros. Only a macro's main steps; plain-MIDI macros need a
+  controller output or *simulates* first.
 - [x] **Atelier scenes across several controllers** (`v0.48.199-atelier-multi-scenes`, #427) — switching the
   Atelier's controller or scene keeps unsaved edits per (controller, scene); a line under the lists names the
   controllers the scene covers (saved, or *(unsaved)*), bold in the controller list; **Save all** saves every
@@ -3780,7 +3785,7 @@ close what can't be unblocked here.
 12. **Phase 9**, agreed 2026-11-09 (one PR and tag each, in this order):
    1. Guided hardware session (#426) — **done** in `v0.48.198`.
    2. Atelier scenes spanning several controllers (#427) — **done** in `v0.48.199`.
-   3. Atelier macros built on the photo (#428).
+   3. Atelier macros built on the photo (#428) — **done** in `v0.48.200`.
    4. Quality pass: split `main_window.py`, trim CLAUDE.md, faster tests (#429).
 
 ## Tracking rules

@@ -14,6 +14,7 @@
 - [What is kept](#what-is-kept)
 - [LED addresses](#led-addresses)
 - [Remap a control](#remap-a-control)
+- [Build a macro on the photo](#build-a-macro-on-the-photo)
 - [Related](#related)
 
 ## What it does
@@ -119,6 +120,32 @@ the same rules the route's **Transform** dialog edits, and they are saved
 with the routes when the app closes.
 
 ![A remap in the Atelier](../../images/layout/atelier-remap.png)
+
+## Build a macro on the photo
+
+The **Macros** tab, beside **Scene state** and **Remap**, edits a
+[MIDI macro](midi-macros.md) by clicking controls instead of typing
+messages.
+
+![The Atelier's Macros tab: two LED steps added by clicking the photo](../../images/layout/atelier-macros.png)
+
+1. Pick the macro. The photo switches to the controller it is about:
+   - a macro whose output is a controller changes that controller's LEDs;
+   - a macro that *simulates* a controller imitates its presses (a tap, a
+     press, a release, or a value for a knob).
+
+   A macro that sends plain MIDI can't be edited this way: give it a
+   controller as output, or the controller it simulates, in
+   **Macros → Manage Macros…** first.
+2. Choose what a click adds in **A click adds**, then click controls on the
+   photo. Pad mode buttons and SHIFT work as on the controller.
+3. Select a step to set its **Delay**, move it **Up** or **Down**, or
+   **Remove** it.
+4. **Save macros** keeps the changes; **Revert** drops them.
+
+Saving in **Manage Macros…** reloads this tab and drops changes not saved
+here. Only a macro's main steps are edited here, not the second list of a
+toggle macro.
 
 ## Related
 
