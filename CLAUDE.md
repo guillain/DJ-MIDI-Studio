@@ -190,8 +190,10 @@ overrides.
 ### Live MIDI (`midi_io.py`, `gui/live_monitor.py`, `main_window_parts/live_midi.py`)
 
 - `MidiMonitor.poll()` from a `QTimer` (never rtmidi callbacks); `MidiEvent` strings match `model.Control`
-  (1-based channel, `"Note On"`/`"Control Change"`, decimal data1). Only notes and CC are converted — **pitch bend
-  is dropped** (`mido_message_to_event`).
+  (1-based channel, `"Note On"`/`"Control Change"`, decimal data1). Notes, CC and **pitch bend** are converted:
+  `midi_io.PITCH_BEND` events have data1 `"0"` and a 14-bit data2 (0-16383, `PITCH_BEND_CENTRE` 8192); note/CC
+  consumers ignore them, the live path returns before the layouts (no selection change), the log, MIDI export,
+  Stage Mode and hardware-session captures keep them.
 - `_on_live_midi_event` order: jog ticks (`gui/jog.py`, per-controller tables, early return) → selection, flash,
   held state, knob values → consumers in priority (● Rec, profile check, hardware session capture, remap Learn,
   macro editor Learn, edit-panel Learn, else macro triggers). Output-direction events (`direction == "out"`, from

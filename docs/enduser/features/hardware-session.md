@@ -41,8 +41,8 @@ workspace), so a session can be continued another day.
 
 The app listens through the [Live Monitor](live-monitor.md), which is started
 for you. While a capture runs, presses only go to the capture: they don't
-fire [macros](midi-macros.md). The capture doesn't see pitch bend messages
-yet: if a CMD Studio 4a jog sends nothing, write that in the note.
+fire [macros](midi-macros.md). Pitch bend shows as `Pitch Bend` lines, with a
+value from 0 to 16383 (8192 is the centre).
 
 ## The checks
 
