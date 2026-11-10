@@ -240,6 +240,16 @@ Routing routes, Macros tab (clicks add steps; the scene's LED box hides). `gui/p
 shared click state machine (SHIFT, pad mode per side). Real LED probing and the Pioneer colour table are still
 unverified on hardware; function assignment waits for Serato's tag names.
 
+**Controller library** (#451): `atelier/captures.py` keeps the guided check's verdicts per controller
+(`Controllers/<slug>.captures.json`, one per check item *and* DJ software — a DDJ-XP2 sends other notes, and
+has pad modes 5-8 at all, only while Serato drives it), `atelier/library.py` merges catalog + captures + LED data
+per `Feature` (`knowledge_for`) and audits per physical control (`audit_controls`, `audit_text`). The guided
+check is `gui/profile_check.py` + `gui/profile_check_dialog.py` (tabs Check / Lights / Audit, photo frame via
+`gui/control_photo.py`): a held SHIFT is never the asked control, presses are judged over a short window
+(double / long press), MIDI-OUT sections are not asked, lights are asked one per address (plain layer, first
+pad bank, decks 1-2). LED data only counts as verified once seen lit. `catalog/profile.py` skips these sidecar
+files (`is_sidecar_file`). Nothing here edits a profile.
+
 ### Music library (`library/`, `taxonomy/`, `gui/music_library_view.py`)
 
 Rules: **read-only towards the collection and other DJ software** except explicit, user-triggered writes, each

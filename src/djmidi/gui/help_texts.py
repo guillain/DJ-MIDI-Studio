@@ -106,16 +106,18 @@ PROFILE_CHECK: HelpEntry = (
     QT_TRANSLATE_NOOP("HelpTexts", "Verify a controller profile"),
     QT_TRANSLATE_NOOP(
         "HelpTexts",
-        "Checks a profile against your real controller, one control at a time: the app asks for each "
-        "physical control (then SHIFT + it, when the profile has a SHIFT layer) and compares what the "
-        "controller sends with what the profile says.<ul>"
-        "<li><b>Listen on</b>: pick your controller's input if several are connected.</li>"
-        "<li><b>Skip (not on my unit)</b> for a control your controller doesn't have; <b>Back</b> to redo one.</li>"
-        "<li>✓ means it matches; ✗ shows what came instead, and whether the profile gives that message "
-        "to another control or doesn't know it.</li></ul>"
-        "Then <b>Submit to the project…</b> opens a pre-filled GitHub issue with the report, so the profile "
-        "can be marked verified or corrected; <b>Copy report</b> and <b>Save report…</b> keep it for you. "
-        "Nothing is sent until you submit the issue yourself.",
+        "Checks a profile against your real controller and builds its library: what each control really "
+        "sends and which lights answer.<ul>"
+        "<li><b>Check</b>: press what is framed on the photo (then SHIFT + it). Pick the <b>Categories</b>, "
+        "say which <b>DJ software running</b> (some controllers answer differently while it drives them) "
+        "and, in <b>Ask</b>, resume only what isn't checked yet or only the mismatches and odd ones. "
+        "<b>Skip (not on my unit)</b>, <b>Back</b> to redo one, <b>That was odd</b> to flag an answer.</li>"
+        "<li><b>Lights</b>: the app lights one LED at a time and you say what lit; "
+        "<b>▶ Play the light show</b> replays them all.</li>"
+        "<li><b>Audit</b>: every control, verified, mismatch or never tested, per DJ software, with its LED; "
+        "<b>Copy audit</b> or <b>Save audit…</b>.</li></ul>"
+        "<b>Submit to the project…</b> opens a pre-filled GitHub issue with the check's report. Nothing is "
+        "sent until you submit it yourself, and nothing here changes the profile.",
     ),
     "profile-check.md",
 )

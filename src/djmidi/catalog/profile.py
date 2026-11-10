@@ -165,6 +165,16 @@ def save_controller_profile(definition: ControllerDefinition, path: str | Path) 
     return target
 
 
+# Data the app keeps beside the profiles, per controller, in the same folder:
+# verified LEDs (`atelier.led_data`) and guided-check captures
+# (`atelier.captures`). They are not profiles.
+SIDECAR_SUFFIXES = (".leds.json", ".captures.json")
+
+
+def is_sidecar_file(path: str | Path) -> bool:
+    return Path(path).name.endswith(SIDECAR_SUFFIXES)
+
+
 def load_user_profiles(directory: str | Path) -> tuple[list[str], dict[str, str]]:
     """Register every installed profile in `directory` (``*.json``).
 
@@ -179,6 +189,8 @@ def load_user_profiles(directory: str | Path) -> tuple[list[str], dict[str, str]
     if not folder.is_dir():
         return loaded, errors
     for path in sorted(folder.glob("*.json")):
+        if is_sidecar_file(path):
+            continue
         try:
             name = json.loads(path.read_text(encoding="utf-8"))["manifest"]["name"]
             existing = _REGISTRY.get(name)

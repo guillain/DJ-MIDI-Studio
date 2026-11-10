@@ -1921,6 +1921,8 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
             ensure_listening=self._ensure_learn_listening,
             initial=controller,
             reports_dir=user_paths.subfolder(user_paths.EXPORTS),
+            output_ports=list(dict.fromkeys(list_output_ports())),
+            judge_delay_ms=800,
         )
         dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         dialog.finished.connect(self._on_profile_check_closed)

@@ -824,6 +824,17 @@ Seitdem erneut geänderte Dateien bleiben unberührt. Das Zurücknehmen wird hie
     </message>
 </context>
 <context>
+    <name>ControllerCaptures</name>
+    <message>
+        <source>No DJ software running</source>
+        <translation>Keine DJ-Software läuft</translation>
+    </message>
+    <message>
+        <source>Other DJ software</source>
+        <translation>Andere DJ-Software</translation>
+    </message>
+</context>
+<context>
     <name>ControllerEmulatorView</name>
     <message>
         <source>Deck {deck} slot {slot}: {tag}</source>
@@ -990,6 +1001,45 @@ Belegt mit: {functions}</translation>
     <message>
         <source>(other controller: n/a)</source>
         <translation>(anderer Controller: n. v.)</translation>
+    </message>
+</context>
+<context>
+    <name>ControllerLibrary</name>
+    <message>
+        <source>verified</source>
+        <translation>geprüft</translation>
+    </message>
+    <message>
+        <source>control verified (other deck or mode)</source>
+        <translation>Bedienelement geprüft (anderes Deck oder anderer Modus)</translation>
+    </message>
+    <message>
+        <source>mismatch</source>
+        <translation>Abweichung</translation>
+    </message>
+    <message>
+        <source>not on the unit</source>
+        <translation>nicht am Gerät</translation>
+    </message>
+    <message>
+        <source>flagged as odd</source>
+        <translation>als seltsam markiert</translation>
+    </message>
+    <message>
+        <source>never tested</source>
+        <translation>nie getestet</translation>
+    </message>
+    <message>
+        <source>LED verified</source>
+        <translation>LED geprüft</translation>
+    </message>
+    <message>
+        <source>LED assumed</source>
+        <translation>LED angenommen</translation>
+    </message>
+    <message>
+        <source>no LED</source>
+        <translation>keine LED</translation>
     </message>
 </context>
 <context>
@@ -2896,8 +2946,8 @@ Trotzdem neu zuweisen? Beide lösen auf demselben Bedienelement aus.</translatio
         <translation>Ein Controller-Profil überprüfen</translation>
     </message>
     <message>
-        <source>Checks a profile against your real controller, one control at a time: the app asks for each physical control (then SHIFT + it, when the profile has a SHIFT layer) and compares what the controller sends with what the profile says.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Listen on&lt;/b&gt;: pick your controller&apos;s input if several are connected.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Skip (not on my unit)&lt;/b&gt; for a control your controller doesn&apos;t have; &lt;b&gt;Back&lt;/b&gt; to redo one.&lt;/li&gt;&lt;li&gt;✓ means it matches; ✗ shows what came instead, and whether the profile gives that message to another control or doesn&apos;t know it.&lt;/li&gt;&lt;/ul&gt;Then &lt;b&gt;Submit to the project…&lt;/b&gt; opens a pre-filled GitHub issue with the report, so the profile can be marked verified or corrected; &lt;b&gt;Copy report&lt;/b&gt; and &lt;b&gt;Save report…&lt;/b&gt; keep it for you. Nothing is sent until you submit the issue yourself.</source>
-        <translation>Prüft ein Profil an Ihrem echten Controller, ein Bedienelement nach dem anderen: Die App fragt nach jedem physischen Bedienelement (dann SHIFT + dieses, wenn das Profil eine SHIFT-Ebene hat) und vergleicht, was der Controller sendet, mit dem, was das Profil angibt.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Hören auf&lt;/b&gt;: Wählen Sie den Eingang Ihres Controllers, wenn mehrere angeschlossen sind.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Überspringen (nicht an meinem Gerät)&lt;/b&gt; für ein Bedienelement, das Ihr Controller nicht hat; &lt;b&gt;Zurück&lt;/b&gt;, um eines zu wiederholen.&lt;/li&gt;&lt;li&gt;✓ bedeutet Übereinstimmung; ✗ zeigt, was stattdessen kam, und ob das Profil diese Nachricht einem anderen Bedienelement zuordnet oder sie nicht kennt.&lt;/li&gt;&lt;/ul&gt;Danach öffnet &lt;b&gt;An das Projekt senden…&lt;/b&gt; ein vorausgefülltes GitHub-Issue mit dem Bericht, damit das Profil als überprüft markiert oder korrigiert werden kann; &lt;b&gt;Bericht kopieren&lt;/b&gt; und &lt;b&gt;Bericht speichern…&lt;/b&gt; bewahren ihn für Sie auf. Nichts wird gesendet, bevor Sie das Issue selbst absenden.</translation>
+        <source>Checks a profile against your real controller and builds its library: what each control really sends and which lights answer.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Check&lt;/b&gt;: press what is framed on the photo (then SHIFT + it). Pick the &lt;b&gt;Categories&lt;/b&gt;, say which &lt;b&gt;DJ software running&lt;/b&gt; (some controllers answer differently while it drives them) and, in &lt;b&gt;Ask&lt;/b&gt;, resume only what isn&apos;t checked yet or only the mismatches and odd ones. &lt;b&gt;Skip (not on my unit)&lt;/b&gt;, &lt;b&gt;Back&lt;/b&gt; to redo one, &lt;b&gt;That was odd&lt;/b&gt; to flag an answer.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Lights&lt;/b&gt;: the app lights one LED at a time and you say what lit; &lt;b&gt;▶ Play the light show&lt;/b&gt; replays them all.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Audit&lt;/b&gt;: every control, verified, mismatch or never tested, per DJ software, with its LED; &lt;b&gt;Copy audit&lt;/b&gt; or &lt;b&gt;Save audit…&lt;/b&gt;.&lt;/li&gt;&lt;/ul&gt;&lt;b&gt;Submit to the project…&lt;/b&gt; opens a pre-filled GitHub issue with the check&apos;s report. Nothing is sent until you submit it yourself, and nothing here changes the profile.</source>
+        <translation>Prüft ein Profil an Ihrem echten Controller und baut seine Bibliothek auf: was jedes Bedienelement wirklich sendet und welche Leuchten antworten.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Prüfen&lt;/b&gt;: Drücken Sie, was auf dem Foto eingerahmt ist (dann SHIFT + es). Wählen Sie die &lt;b&gt;Kategorien&lt;/b&gt;, geben Sie die &lt;b&gt;Laufende DJ-Software&lt;/b&gt; an (manche Controller antworten anders, wenn sie sie steuert) und setzen Sie unter &lt;b&gt;Abfragen&lt;/b&gt; nur das noch nicht Geprüfte oder nur die Abweichungen und seltsamen Antworten fort. &lt;b&gt;Überspringen (nicht an meinem Gerät)&lt;/b&gt;, &lt;b&gt;Zurück&lt;/b&gt;, um eines zu wiederholen, &lt;b&gt;Das war seltsam&lt;/b&gt;, um eine Antwort zu markieren.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Leuchten&lt;/b&gt;: Die App schaltet eine LED nach der anderen ein und Sie sagen, was geleuchtet hat; &lt;b&gt;▶ Lichtshow abspielen&lt;/b&gt; spielt alle erneut ab.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Audit&lt;/b&gt;: jedes Bedienelement, geprüft, abweichend oder nie getestet, je DJ-Software, mit seiner LED; &lt;b&gt;Audit kopieren&lt;/b&gt; oder &lt;b&gt;Audit speichern…&lt;/b&gt;.&lt;/li&gt;&lt;/ul&gt;&lt;b&gt;An das Projekt senden…&lt;/b&gt; öffnet ein vorausgefülltes GitHub-Issue mit dem Bericht der Prüfung. Nichts wird gesendet, bevor Sie es selbst absenden, und nichts hier ändert das Profil.</translation>
     </message>
     <message>
         <source>Hardware session</source>
@@ -8443,10 +8493,6 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
         <translation>Ein Controller-Profil überprüfen</translation>
     </message>
     <message>
-        <source>Press each control of your controller when asked: the app checks that it sends what the profile says. Skip the ones your unit doesn&apos;t have. At the end, share the report so the profile can be marked verified or corrected.</source>
-        <translation>Drücken Sie jedes Bedienelement Ihres Controllers, wenn Sie dazu aufgefordert werden: Die App prüft, ob es sendet, was das Profil angibt. Überspringen Sie die, die Ihr Gerät nicht hat. Teilen Sie am Ende den Bericht, damit das Profil als überprüft markiert oder korrigiert werden kann.</translation>
-    </message>
-    <message>
         <source>Any input</source>
         <translation>Jeder Eingang</translation>
     </message>
@@ -8471,8 +8517,60 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
         <translation>Überspringen (nicht an meinem Gerät)</translation>
     </message>
     <message>
+        <source>Check</source>
+        <translation>Prüfen</translation>
+    </message>
+    <message>
+        <source>Lights</source>
+        <translation>Leuchten</translation>
+    </message>
+    <message>
+        <source>Audit</source>
+        <translation>Audit</translation>
+    </message>
+    <message>
+        <source>Press what is framed on the photo: the app checks that your controller sends what its profile says. Skip what your unit doesn&apos;t have. Keep your DJ software as you use it: some controllers answer differently when it drives them.</source>
+        <translation>Drücken Sie, was auf dem Foto eingerahmt ist: Die App prüft, ob Ihr Controller sendet, was sein Profil sagt. Überspringen Sie, was Ihr Gerät nicht hat. Lassen Sie Ihre DJ-Software so, wie Sie damit spielen: Manche Controller antworten anders, wenn sie sie steuert.</translation>
+    </message>
+    <message>
+        <source>Every control</source>
+        <translation>Alle Bedienelemente</translation>
+    </message>
+    <message>
+        <source>Only what isn&apos;t checked yet</source>
+        <translation>Nur noch nicht Geprüftes</translation>
+    </message>
+    <message>
+        <source>Only mismatches and odd ones</source>
+        <translation>Nur Abweichungen und seltsame</translation>
+    </message>
+    <message>
+        <source>The categories to check: untick the ones to leave out</source>
+        <translation>Die zu prüfenden Kategorien: Entfernen Sie den Haken bei denen, die ausgelassen werden sollen</translation>
+    </message>
+    <message>
+        <source>DJ software running</source>
+        <translation>Laufende DJ-Software</translation>
+    </message>
+    <message>
+        <source>Ask</source>
+        <translation>Abfragen</translation>
+    </message>
+    <message>
+        <source>Categories</source>
+        <translation>Kategorien</translation>
+    </message>
+    <message>
         <source>Back</source>
         <translation>Zurück</translation>
+    </message>
+    <message>
+        <source>That was odd</source>
+        <translation>Das war seltsam</translation>
+    </message>
+    <message>
+        <source>Flags the last answer as odd, to look at it again later</source>
+        <translation>Markiert die letzte Antwort als seltsam, um sie später erneut anzusehen</translation>
     </message>
     <message>
         <source>Copy report</source>
@@ -8495,12 +8593,12 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
         <translation>Schließen</translation>
     </message>
     <message>
-        <source>No MIDI input is open: connect a controller, or pick one in Live Monitor.</source>
-        <translation>Kein MIDI-Eingang geöffnet: Schließen Sie einen Controller an oder wählen Sie einen im Live Monitor.</translation>
+        <source>LEDs verified</source>
+        <translation>LEDs geprüft</translation>
     </message>
     <message>
-        <source>OK: {trigger}</source>
-        <translation>OK: {trigger}</translation>
+        <source>No MIDI input is open: connect a controller, or pick one in Live Monitor.</source>
+        <translation>Kein MIDI-Eingang geöffnet: Schließen Sie einen Controller an oder wählen Sie einen im Live Monitor.</translation>
     </message>
     <message>
         <source>Restart</source>
@@ -8511,8 +8609,8 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
         <translation>{done}/{total} · {ok} ok · {bad} Abweichung(en)</translation>
     </message>
     <message>
-        <source>Done — share the report below.</source>
-        <translation>Fertig — teilen Sie den Bericht unten.</translation>
+        <source>{total} controls · {verified} verified · {mismatch} to look at · {untested} never tested · {leds} with a verified LED</source>
+        <translation>{total} Bedienelemente · {verified} geprüft · {mismatch} anzusehen · {untested} nie getestet · {leds} mit geprüfter LED</translation>
     </message>
     <message>
         <source>Report copied to the clipboard.</source>
@@ -8525,6 +8623,194 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     <message>
         <source>Markdown (*.md)</source>
         <translation>Markdown (*.md)</translation>
+    </message>
+    <message>
+        <source>The app lights one LED at a time: say what lit. That is the only way an LED counts as verified, because a button&apos;s light often answers another message than the button sends. Then play the light show and check that every framed control lights in turn.</source>
+        <translation>Die App schaltet eine LED nach der anderen ein: Sagen Sie, was geleuchtet hat. Nur so gilt eine LED als geprüft, denn das Licht einer Taste antwortet oft auf eine andere Nachricht als die, die die Taste sendet. Spielen Sie dann die Lichtshow ab und prüfen Sie, ob jedes eingerahmte Bedienelement nacheinander leuchtet.</translation>
+    </message>
+    <message>
+        <source>Decks 3 and 4 too</source>
+        <translation>Auch Deck 3 und 4</translation>
+    </message>
+    <message>
+        <source>Decks 3 and 4 usually light the same buttons as decks 1 and 2, once switched to them</source>
+        <translation>Deck 3 und 4 lassen meist dieselben Tasten leuchten wie Deck 1 und 2, sobald man auf sie umgeschaltet hat</translation>
+    </message>
+    <message>
+        <source>Send to</source>
+        <translation>Senden an</translation>
+    </message>
+    <message>
+        <source>Category</source>
+        <translation>Kategorie</translation>
+    </message>
+    <message>
+        <source>Click Light the next one.</source>
+        <translation>Klicken Sie auf Nächste einschalten.</translation>
+    </message>
+    <message>
+        <source>Light the next one</source>
+        <translation>Nächste einschalten</translation>
+    </message>
+    <message>
+        <source>✓ It lit there</source>
+        <translation>✓ Dort hat es geleuchtet</translation>
+    </message>
+    <message>
+        <source>The framed control lit</source>
+        <translation>Das eingerahmte Bedienelement hat geleuchtet</translation>
+    </message>
+    <message>
+        <source>✗ Nothing lit</source>
+        <translation>✗ Nichts hat geleuchtet</translation>
+    </message>
+    <message>
+        <source>No light came on</source>
+        <translation>Kein Licht ging an</translation>
+    </message>
+    <message>
+        <source>The control that lit instead</source>
+        <translation>Das Bedienelement, das stattdessen geleuchtet hat</translation>
+    </message>
+    <message>
+        <source>Another one lit</source>
+        <translation>Ein anderes hat geleuchtet</translation>
+    </message>
+    <message>
+        <source>▶ Play the light show</source>
+        <translation>▶ Lichtshow abspielen</translation>
+    </message>
+    <message>
+        <source>Lights every LED of the category in turn</source>
+        <translation>Schaltet jede LED der Kategorie nacheinander ein</translation>
+    </message>
+    <message>
+        <source>Each one lit</source>
+        <translation>Alle haben geleuchtet</translation>
+    </message>
+    <message>
+        <source>Some didn&apos;t</source>
+        <translation>Manche nicht</translation>
+    </message>
+    <message>
+        <source>Control</source>
+        <translation>Bedienelement</translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation>Status</translation>
+    </message>
+    <message>
+        <source>Captured with</source>
+        <translation>Aufgenommen mit</translation>
+    </message>
+    <message>
+        <source>Copy audit</source>
+        <translation>Audit kopieren</translation>
+    </message>
+    <message>
+        <source>Save audit…</source>
+        <translation>Audit speichern…</translation>
+    </message>
+    <message>
+        <source>All categories</source>
+        <translation>Alle Kategorien</translation>
+    </message>
+    <message>
+        <source>Nothing to ask: every control here is done.</source>
+        <translation>Nichts abzufragen: Alle Bedienelemente hier sind erledigt.</translation>
+    </message>
+    <message>
+        <source>✓ Well done: {trigger}</source>
+        <translation>✓ Gut gemacht: {trigger}</translation>
+    </message>
+    <message>
+        <source>Heard {trigger} (not in the profile)</source>
+        <translation>Gehört: {trigger} (nicht im Profil)</translation>
+    </message>
+    <message>
+        <source>Deck {deck}</source>
+        <translation>Deck {deck}</translation>
+    </message>
+    <message>
+        <source>Heard: {what}</source>
+        <translation>Gehört: {what}</translation>
+    </message>
+    <message>
+        <source>Flagged as odd: it will be asked again with Only mismatches and odd ones.</source>
+        <translation>Als seltsam markiert: Es wird mit Nur Abweichungen und seltsame erneut abgefragt.</translation>
+    </message>
+    <message>
+        <source>This one isn&apos;t marked on the photo: find it by its name.</source>
+        <translation>Dieses ist auf dem Foto nicht markiert: Finden Sie es an seinem Namen.</translation>
+    </message>
+    <message>
+        <source>Done! A few answers differ from the profile: see the list and the Audit tab.</source>
+        <translation>Fertig! Einige Antworten weichen vom Profil ab: Siehe die Liste und den Reiter Audit.</translation>
+    </message>
+    <message>
+        <source>Done, everything matches. Bravo!</source>
+        <translation>Fertig, alles stimmt. Bravo!</translation>
+    </message>
+    <message>
+        <source>{count} lights to check. Click Light the next one.</source>
+        <translation>{count} Leuchten zu prüfen. Klicken Sie auf Nächste einschalten.</translation>
+    </message>
+    <message>
+        <source>Pick the controller&apos;s output port first.</source>
+        <translation>Wählen Sie zuerst den Ausgang des Controllers.</translation>
+    </message>
+    <message>
+        <source>Could not send: {error}</source>
+        <translation>Senden nicht möglich: {error}</translation>
+    </message>
+    <message>
+        <source>All lights asked. Play the light show to check them together.</source>
+        <translation>Alle Leuchten abgefragt. Spielen Sie die Lichtshow ab, um sie zusammen zu prüfen.</translation>
+    </message>
+    <message>
+        <source>{done}/{total} · Is the framed control lit: {name}?</source>
+        <translation>{done}/{total} · Leuchtet das eingerahmte Bedienelement: {name}?</translation>
+    </message>
+    <message>
+        <source>✓ Light recorded.</source>
+        <translation>✓ Leuchte gespeichert.</translation>
+    </message>
+    <message>
+        <source>Recorded: this light belongs to {name}.</source>
+        <translation>Gespeichert: Diese Leuchte gehört zu {name}.</translation>
+    </message>
+    <message>
+        <source>Noted: nothing lit for {name}.</source>
+        <translation>Notiert: Für {name} hat nichts geleuchtet.</translation>
+    </message>
+    <message>
+        <source>Watch the controller: each framed control should light in turn.</source>
+        <translation>Beobachten Sie den Controller: Jedes eingerahmte Bedienelement sollte nacheinander leuchten.</translation>
+    </message>
+    <message>
+        <source>Did each framed control light in turn?</source>
+        <translation>Hat jedes eingerahmte Bedienelement nacheinander geleuchtet?</translation>
+    </message>
+    <message>
+        <source>Bravo, the lights are right!</source>
+        <translation>Bravo, die Leuchten stimmen!</translation>
+    </message>
+    <message>
+        <source>Check the wrong ones one by one with Light the next one.</source>
+        <translation>Prüfen Sie die falschen einzeln mit Nächste einschalten.</translation>
+    </message>
+    <message>
+        <source>Audit copied to the clipboard.</source>
+        <translation>Audit in die Zwischenablage kopiert.</translation>
+    </message>
+    <message>
+        <source>Save audit</source>
+        <translation>Audit speichern</translation>
+    </message>
+    <message>
+        <source>Audit saved to {path}</source>
+        <translation>Audit gespeichert unter {path}</translation>
     </message>
     <message>
         <source>Report saved to {path}</source>
