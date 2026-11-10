@@ -139,6 +139,15 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Quality pass** (`v0.48.201-quality-pass`, #429) — `gui/main_window.py` 4,181 → 2,200 lines: dock
+  windows, mapping views, live MIDI, files, macros and tools became mixins in `gui/main_window_parts/` (moved
+  strings keep the `MainWindow` translation context; the FR/DE catalogues came out identical; methods using
+  names the tests patch on `main_window` stayed). The test suite runs in parallel (`pytest -n auto`,
+  pytest-xdist): ~125 s → ~21 s, the pre-commit smoke set 47 s → 8 s, coverage unchanged at 93 %. Going
+  parallel exposed tests sharing one preferences file (one test only passed because an earlier one had
+  written it): every test now gets its own. The theme stylesheet is no longer re-applied when unchanged (it
+  re-polished every live widget, ~0.7 s per new MainWindow). CLAUDE.md went from 240 KB of history to a
+  22 KB contributor map; the history stays here and in git.
 - [x] **Atelier macros on the photo** (`v0.48.200-atelier-macros`, #428) — a **Macros** tab in the Atelier: pick a
   macro (the photo follows the controller it is about), choose what a click adds (LED on / off / value, or a
   tap / press / release / value it imitates, per `macro_target`), click controls; steps can be given a delay,
@@ -3786,7 +3795,7 @@ close what can't be unblocked here.
    1. Guided hardware session (#426) — **done** in `v0.48.198`.
    2. Atelier scenes spanning several controllers (#427) — **done** in `v0.48.199`.
    3. Atelier macros built on the photo (#428) — **done** in `v0.48.200`.
-   4. Quality pass: split `main_window.py`, trim CLAUDE.md, faster tests (#429).
+   4. Quality pass: split `main_window.py`, trim CLAUDE.md, faster tests (#429) — **done** in `v0.48.201`.
 
 ## Tracking rules
 
