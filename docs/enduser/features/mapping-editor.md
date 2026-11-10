@@ -86,9 +86,25 @@ original order, and shows them everywhere:
   conflict; two under the *same* condition still are.
 - A modifier's own definition (`<modifier_3>`) needs no deck or slot.
 
-The condition itself (which modifier, on or off) can't be edited here yet:
-selecting the `Case` row shows it read-only, and Validate lists the controls
-that use such blocks.
+### Edit a layer
+
+Select the `Case` row: the edit panel shows each condition as a
+**Modifier**, an **Operator** and a **Value**. The lists offer the modifiers
+and operators your file already uses (`equal`, and `on` / `off` for values),
+but you can type anything.
+
+- Change them, **Add condition** or **Remove condition**, then click
+  **Apply conditions**. A layer keeps at least one condition.
+- **Remove layer** turns its bindings back into ordinary ones, active
+  whatever the modifiers.
+- To put an ordinary binding on a layer, select it (the `click` or
+  `output` row), pick the modifier and its value, and click **Move into a
+  modifier layer**.
+
+Each of these is one step of **Edit → Undo**. A file you don't edit is
+still saved exactly as it was. Serato repeats a trigger several times in a
+mapping: a layer change applies to the copy you selected, like any edit in
+By Channel.
 
 ## Find which control triggers a function
 

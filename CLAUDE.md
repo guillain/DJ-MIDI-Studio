@@ -87,7 +87,10 @@ fixed file path; use `tmp_path`.
 - `<case><condition><modifier_N operator="equal" cmp_value/></condition><userio…/></case>` = SHIFT/modifier
   layers: `model.Case`/`Condition` on `Control.cases`, round-tripped byte for byte. **Read bindings with
   `model.iter_bindings(control)`** (yields `(UserIO, Case | None)`), never `control.userios` alone; a binding's
-  layer is `condition_of(case)`. Conditions themselves aren't editable yet.
+  layer is `condition_of(case)`. Layers are editable (#434): Qt-free `case_edit.py` returns new
+  `(userios, cases)` lists for one control (`set_conditions`, `move_into_layer`, `remove_layer`; modifiers and
+  operators offered come from the file, `known_modifiers`/`known_operators`), applied by
+  `gui.commands.SetControlLayersCommand` (one undo step) → `MainWindow._on_layers_changed` (rebuild, reselect).
 - `exporter.py` round-trips the sample byte for byte; keep it that way (`tests/test_parser.py` roundtrip).
 - **The 10x duplication**: every unique trigger appears exactly 10 times in the real file, and deleting copies
   breaks the config in Serato. It's load-bearing: `validator.py` reports identical duplicates as `info` only;
