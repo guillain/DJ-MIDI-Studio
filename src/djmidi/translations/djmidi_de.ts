@@ -368,6 +368,21 @@
     </message>
 </context>
 <context>
+    <name>CaseEdit</name>
+    <message>
+        <source>Condition {number}: &quot;{tag}&quot; isn&apos;t a valid modifier name.</source>
+        <translation>Bedingung {number}: „{tag}“ ist kein gültiger Modifier-Name.</translation>
+    </message>
+    <message>
+        <source>Condition {number}: the operator and the value can&apos;t be empty.</source>
+        <translation>Bedingung {number}: Operator und Wert dürfen nicht leer sein.</translation>
+    </message>
+    <message>
+        <source>A layer needs at least one condition.</source>
+        <translation>Eine Ebene braucht mindestens eine Bedingung.</translation>
+    </message>
+</context>
+<context>
     <name>ChangeHistoryDialog</name>
     <message>
         <source>Tags</source>
@@ -1885,20 +1900,52 @@ Ein manueller Schritt bleibt: &apos;{slug}&apos; zum Import-Block in catalog/__i
         <translation>Wählen Sie einen Knoten im Baum, um ihn zu bearbeiten.</translation>
     </message>
     <message>
-        <source>Conditional block (case)</source>
-        <translation>Bedingter Block (case)</translation>
+        <source>Modifier layer (case)</source>
+        <translation>Modifier-Ebene (case)</translation>
     </message>
     <message>
-        <source>(no condition)</source>
-        <translation>(keine Bedingung)</translation>
+        <source>Its bindings apply only while every condition below holds.</source>
+        <translation>Ihre Zuweisungen gelten nur, solange alle Bedingungen unten erfüllt sind.</translation>
     </message>
     <message>
-        <source>Applies while: {condition}</source>
-        <translation>Gilt, solange: {condition}</translation>
+        <source>Remove condition</source>
+        <translation>Bedingung entfernen</translation>
     </message>
     <message>
-        <source>Select a binding inside it to edit it. The condition itself (which modifier, on or off) is kept as written but can&apos;t be edited here yet.</source>
-        <translation>Wählen Sie eine Zuweisung darin aus, um sie zu bearbeiten. Die Bedingung selbst (welcher Modifier, ein oder aus) bleibt unverändert erhalten, lässt sich hier aber noch nicht bearbeiten.</translation>
+        <source>Modifier</source>
+        <translation>Modifier</translation>
+    </message>
+    <message>
+        <source>Operator</source>
+        <translation>Operator</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>Wert</translation>
+    </message>
+    <message>
+        <source>Add condition</source>
+        <translation>Bedingung hinzufügen</translation>
+    </message>
+    <message>
+        <source>Apply conditions</source>
+        <translation>Bedingungen anwenden</translation>
+    </message>
+    <message>
+        <source>Remove layer</source>
+        <translation>Ebene entfernen</translation>
+    </message>
+    <message>
+        <source>Its bindings become ordinary ones, active whatever the modifiers.</source>
+        <translation>Ihre Zuweisungen werden wieder normal, aktiv unabhängig von den Modifiern.</translation>
+    </message>
+    <message>
+        <source>Edit layer conditions</source>
+        <translation>Ebenen-Bedingungen bearbeiten</translation>
+    </message>
+    <message>
+        <source>Move binding into a layer</source>
+        <translation>Zuweisung in eine Ebene verschieben</translation>
     </message>
     <message>
         <source>(not found in any controller reference table)</source>
@@ -1935,6 +1982,14 @@ Ein manueller Schritt bleibt: &apos;{slug}&apos; zum Import-Block in catalog/__i
     <message>
         <source>{count} mapping(s)</source>
         <translation>{count} Mapping(s)</translation>
+    </message>
+    <message>
+        <source>Move into a modifier layer</source>
+        <translation>In eine Modifier-Ebene verschieben</translation>
+    </message>
+    <message>
+        <source>The binding then applies only while that modifier has that value.</source>
+        <translation>Die Zuweisung gilt dann nur, solange dieser Modifier diesen Wert hat.</translation>
     </message>
     <message>
         <source>&lt;{tag}&gt; target</source>
@@ -2901,8 +2956,8 @@ Trotzdem neu zuweisen? Beide lösen auf demselben Bedienelement aus.</translatio
         <translation>Bearbeiten und prüfen</translation>
     </message>
     <message>
-        <source>Edits the item selected in a tree. Every change can be undone (&lt;b&gt;Edit → Undo&lt;/b&gt;).&lt;br&gt;&lt;br&gt;Serato repeats each trigger several times in a mapping and those copies must stay identical: edit in &lt;b&gt;By Deck&lt;/b&gt;, which updates every copy at once.&lt;br&gt;&lt;br&gt;&lt;b&gt;Learn&lt;/b&gt; moves the selected trigger to the next control you press on your controller (10 s, click again to cancel); it warns before reusing a control another function already uses.&lt;br&gt;&lt;br&gt;&lt;b&gt;Edit → Validate&lt;/b&gt; lists errors, warnings and info in the table below (duplicate copies are info only: they are expected); &lt;b&gt;Edit → Ready for Live…&lt;/b&gt; checks for missing Play/Cue/Sync/Load, conflicts and unlit buttons before a gig. &lt;b&gt;File → Save Mapping&lt;/b&gt; shows the exact changes before writing, keeps a backup, and &lt;b&gt;File → Restore Previous Version…&lt;/b&gt; restores it.</source>
-        <translation>Bearbeitet das in einem Baum ausgewählte Element. Jede Änderung lässt sich rückgängig machen (&lt;b&gt;Bearbeiten → Rückgängig&lt;/b&gt;).&lt;br&gt;&lt;br&gt;Serato wiederholt jeden Trigger mehrmals in einem Mapping, und diese Kopien müssen identisch bleiben: Bearbeiten Sie in &lt;b&gt;Nach Deck&lt;/b&gt;, das jede Kopie gleichzeitig aktualisiert.&lt;br&gt;&lt;br&gt;&lt;b&gt;Lernen&lt;/b&gt; verschiebt den ausgewählten Trigger auf das nächste Bedienelement, das Sie auf Ihrem Controller drücken (10 s, erneut klicken zum Abbrechen); es warnt, bevor ein Bedienelement wiederverwendet wird, das schon eine andere Funktion belegt.&lt;br&gt;&lt;br&gt;&lt;b&gt;Bearbeiten → Prüfen&lt;/b&gt; listet Fehler, Warnungen und Hinweise in der Tabelle darunter (doppelte Kopien sind nur Hinweise: Sie sind erwartet); &lt;b&gt;Bearbeiten → Bereit für den Auftritt…&lt;/b&gt; prüft vor einem Gig auf fehlendes Play/Cue/Sync/Load, Konflikte und Tasten ohne Beleuchtung. &lt;b&gt;Datei → Mapping speichern&lt;/b&gt; zeigt vor dem Schreiben die genauen Änderungen, behält eine Sicherung, und &lt;b&gt;Datei → Vorherige Version wiederherstellen…&lt;/b&gt; stellt sie wieder her.</translation>
+        <source>Edits the item selected in a tree. Every change can be undone (&lt;b&gt;Edit → Undo&lt;/b&gt;).&lt;br&gt;&lt;br&gt;Serato repeats each trigger several times in a mapping and those copies must stay identical: edit in &lt;b&gt;By Deck&lt;/b&gt;, which updates every copy at once.&lt;br&gt;&lt;br&gt;&lt;b&gt;Learn&lt;/b&gt; moves the selected trigger to the next control you press on your controller (10 s, click again to cancel); it warns before reusing a control another function already uses.&lt;br&gt;&lt;br&gt;A &lt;b&gt;Modifier layer (case)&lt;/b&gt; (SHIFT and other modifier layers) shows its conditions: change them and click &lt;b&gt;Apply conditions&lt;/b&gt;, or &lt;b&gt;Remove layer&lt;/b&gt;. An ordinary binding goes on a layer with &lt;b&gt;Move into a modifier layer&lt;/b&gt;.&lt;br&gt;&lt;br&gt;&lt;b&gt;Edit → Validate&lt;/b&gt; lists errors, warnings and info in the table below (duplicate copies are info only: they are expected); &lt;b&gt;Edit → Ready for Live…&lt;/b&gt; checks for missing Play/Cue/Sync/Load, conflicts and unlit buttons before a gig. &lt;b&gt;File → Save Mapping&lt;/b&gt; shows the exact changes before writing, keeps a backup, and &lt;b&gt;File → Restore Previous Version…&lt;/b&gt; restores it.</source>
+        <translation>Bearbeitet das in einem Baum ausgewählte Element. Jede Änderung lässt sich rückgängig machen (&lt;b&gt;Bearbeiten → Rückgängig&lt;/b&gt;).&lt;br&gt;&lt;br&gt;Serato wiederholt jeden Trigger mehrmals in einem Mapping, und diese Kopien müssen identisch bleiben: Bearbeiten Sie in &lt;b&gt;Nach Deck&lt;/b&gt;, das jede Kopie gleichzeitig aktualisiert.&lt;br&gt;&lt;br&gt;&lt;b&gt;Lernen&lt;/b&gt; verschiebt den ausgewählten Trigger auf das nächste Bedienelement, das Sie auf Ihrem Controller drücken (10 s, erneut klicken zum Abbrechen); es warnt, bevor ein Bedienelement wiederverwendet wird, das schon eine andere Funktion belegt.&lt;br&gt;&lt;br&gt;Eine &lt;b&gt;Modifier-Ebene (case)&lt;/b&gt; (SHIFT und andere Modifier-Ebenen) zeigt ihre Bedingungen: Ändern Sie sie und klicken Sie auf &lt;b&gt;Bedingungen anwenden&lt;/b&gt;, oder &lt;b&gt;Ebene entfernen&lt;/b&gt;. Eine normale Zuweisung kommt mit &lt;b&gt;In eine Modifier-Ebene verschieben&lt;/b&gt; in eine Ebene.&lt;br&gt;&lt;br&gt;&lt;b&gt;Bearbeiten → Prüfen&lt;/b&gt; listet Fehler, Warnungen und Hinweise in der Tabelle darunter (doppelte Kopien sind nur Hinweise: Sie sind erwartet); &lt;b&gt;Bearbeiten → Bereit für den Auftritt…&lt;/b&gt; prüft vor einem Gig auf fehlendes Play/Cue/Sync/Load, Konflikte und Tasten ohne Beleuchtung. &lt;b&gt;Datei → Mapping speichern&lt;/b&gt; zeigt vor dem Schreiben die genauen Änderungen, behält eine Sicherung, und &lt;b&gt;Datei → Vorherige Version wiederherstellen…&lt;/b&gt; stellt sie wieder her.</translation>
     </message>
     <message>
         <source>Ready for live</source>

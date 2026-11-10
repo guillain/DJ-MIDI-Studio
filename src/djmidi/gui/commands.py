@@ -211,6 +211,35 @@ class ReplaceControlsCommand(QUndoCommand):
         self._on_applied()
 
 
+class SetControlLayersCommand(QUndoCommand):
+    """Swaps one control's direct bindings and <case> layers (issue #434:
+    a layer's conditions edited, a binding moved into or out of a layer)."""
+
+    def __init__(
+        self,
+        control: Control,
+        userios: list,
+        cases: list,
+        summary: str,
+        text: str,
+        on_applied: Callable[[], None],
+    ) -> None:
+        super().__init__(text)
+        self.summary = summary
+        self._control = control
+        self._old = (list(control.userios), list(control.cases))
+        self._new = (list(userios), list(cases))
+        self._on_applied = on_applied
+
+    def redo(self) -> None:
+        self._control.userios, self._control.cases = list(self._new[0]), list(self._new[1])
+        self._on_applied()
+
+    def undo(self) -> None:
+        self._control.userios, self._control.cases = list(self._old[0]), list(self._old[1])
+        self._on_applied()
+
+
 # Logs a tag write in the persistent change history (issue #261):
 # (summary, {path: (old values, new values)}) for the files written.
 ChangeRecorder = Callable[[str, dict[str, tuple[dict[str, object], dict[str, object]]]], None]
