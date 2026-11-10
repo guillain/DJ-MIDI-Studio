@@ -361,7 +361,7 @@ wheels = [
 
 [[package]]
 name = "djmidi"
-version = "0.48.198"
+version = "0.48.199"
 source = { editable = "." }
 dependencies = [
     { name = "aalink" },
