@@ -1964,6 +1964,10 @@ Ein manueller Schritt bleibt: &apos;{slug}&apos; zum Import-Block in catalog/__i
         <translation>Ihre Zuweisungen werden wieder normal, aktiv unabhängig von den Modifiern.</translation>
     </message>
     <message>
+        <source>This trigger has {count} identical copies: a layer change applies to all of them.</source>
+        <translation>Dieser Trigger hat {count} identische Kopien: Eine Ebenen-Änderung gilt für alle.</translation>
+    </message>
+    <message>
         <source>Edit layer conditions</source>
         <translation>Ebenen-Bedingungen bearbeiten</translation>
     </message>

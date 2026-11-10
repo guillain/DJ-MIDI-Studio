@@ -91,6 +91,8 @@ fixed file path; use `tmp_path`.
   `(userios, cases)` lists for one control (`set_conditions`, `move_into_layer`, `remove_layer`; modifiers and
   operators offered come from the file, `known_modifiers`/`known_operators`), applied by
   `gui.commands.SetControlLayersCommand` (one undo step) → `MainWindow._on_layers_changed` (rebuild, reselect).
+  The panel applies every layer edit to all identical copies of the control (#440,
+  `case_edit.identical_copies` = same trigger and same exported XML; `*_everywhere` replay it by position).
 - `exporter.py` round-trips the sample byte for byte; keep it that way (`tests/test_parser.py` roundtrip).
 - **The 10x duplication**: every unique trigger appears exactly 10 times in the real file, and deleting copies
   breaks the config in Serato. It's load-bearing: `validator.py` reports identical duplicates as `info` only;

@@ -1964,6 +1964,10 @@ Il reste une étape manuelle : ajoutez &apos;{slug}&apos; au bloc d&apos;imports
         <translation>Ses liaisons redeviennent ordinaires, actives quels que soient les modificateurs.</translation>
     </message>
     <message>
+        <source>This trigger has {count} identical copies: a layer change applies to all of them.</source>
+        <translation>Ce déclencheur a {count} copies identiques : une modification de couche s&apos;applique à toutes.</translation>
+    </message>
+    <message>
         <source>Edit layer conditions</source>
         <translation>Modifier les conditions de la couche</translation>
     </message>

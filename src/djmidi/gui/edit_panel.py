@@ -197,6 +197,10 @@ class EditPanel(QWidget):
         remove_layer.clicked.connect(lambda: self.remove_layer(case))
         for button in (add_button, apply_button, remove_layer):
             layout.addWidget(button)
+        control = self._layer_control(case)
+        note = self._copies_note(control) if control is not None else None
+        if note is not None:
+            layout.addWidget(note)
         self.layer_status = QLabel()
         self.layer_status.setWordWrap(True)
         layout.addWidget(self.layer_status)
@@ -205,17 +209,34 @@ class EditPanel(QWidget):
     def _layer_control(self, node: Case | UserIO) -> Control | None:
         return case_edit.find_control_of(self._config_provider(), node)
 
-    def _push_layers(self, control: Control, edit: case_edit.LayerEdit, template: str) -> None:
-        summary = template
-        text = self.tr(template)
+    def _copies_note(self, control: Control) -> QLabel | None:
+        """Says how many identical copies a layer edit reaches (issue #440)."""
+        count = len(case_edit.identical_copies(self._config_provider(), control))
+        if count < 2:
+            return None
+        note = QLabel(
+            self.tr("This trigger has {count} identical copies: a layer change applies to all of them.").format(
+                count=count
+            )
+        )
+        note.setWordWrap(True)
+        return note
+
+    def _push_layers(self, control: Control, changes: list, template: str) -> None:
+        """One undo step for `changes` = [(control, LayerEdit)] -- the edit on
+        every identical copy of the selected control's trigger."""
         self._undo_stack.push(
             SetControlLayersCommand(
-                control, edit.userios, edit.cases, summary, text, lambda: self._on_layers_changed(control)
+                [(copy_, edit.userios, edit.cases) for copy_, edit in changes],
+                template,
+                self.tr(template),
+                lambda: self._on_layers_changed(control),
             )
         )
 
     def apply_conditions(self, case: Case) -> bool:
-        """The condition rows as `case`'s conditions (one undo step)."""
+        """The condition rows as `case`'s conditions, on every identical
+        copy (one undo step)."""
         control = self._layer_control(case)
         if control is None:
             return False
@@ -224,31 +245,34 @@ class EditPanel(QWidget):
             for tag, operator, value in self.condition_rows
         ]
         try:
-            edit = case_edit.set_conditions(control, case, specs)
+            changes = case_edit.set_conditions_everywhere(self._config_provider(), control, case, specs)
         except case_edit.LayerError as exc:
             self.layer_status.setText(exc.describe(_case_translate))
             return False
-        self._push_layers(control, edit, QT_TRANSLATE_NOOP("EditPanel", "Edit layer conditions"))
+        self._push_layers(control, changes, QT_TRANSLATE_NOOP("EditPanel", "Edit layer conditions"))
         return True
 
     def remove_layer(self, case: Case) -> bool:
         control = self._layer_control(case)
         if control is None:
             return False
-        self._push_layers(control, case_edit.remove_layer(control, case), QT_TRANSLATE_NOOP("EditPanel", "Remove layer"))
+        changes = case_edit.remove_layer_everywhere(self._config_provider(), control, case)
+        self._push_layers(control, changes, QT_TRANSLATE_NOOP("EditPanel", "Remove layer"))
         return True
 
     def move_into_layer(self, userio: UserIO, tag: str, value: str, operator: str = case_edit.DEFAULT_OPERATOR) -> bool:
-        """A direct binding into a new layer with one condition."""
+        """A direct binding into a new layer with one condition, on every
+        identical copy."""
         control = self._layer_control(userio)
         if control is None:
             return False
+        specs = [case_edit.ConditionSpec(tag, operator, value)]
         try:
-            edit = case_edit.move_into_layer(control, userio, [case_edit.ConditionSpec(tag, operator, value)])
+            changes = case_edit.move_into_layer_everywhere(self._config_provider(), control, userio, specs)
         except case_edit.LayerError as exc:
             self.layer_status.setText(exc.describe(_case_translate))
             return False
-        self._push_layers(control, edit, QT_TRANSLATE_NOOP("EditPanel", "Move binding into a layer"))
+        self._push_layers(control, changes, QT_TRANSLATE_NOOP("EditPanel", "Move binding into a layer"))
         return True
 
     def _build_physical_control_box(self, channel: str | None, event_type: str | None, control_no: str | None) -> QWidget:
@@ -337,6 +361,9 @@ class EditPanel(QWidget):
             form.addRow(self.tr("Modifier"), self.layer_tag)
             form.addRow(self.tr("Value"), self.layer_value)
             form.addRow(move)
+            note = self._copies_note(control)
+            if note is not None:
+                form.addRow(note)
             self.layer_status = QLabel()
             self.layer_status.setWordWrap(True)
             form.addRow(self.layer_status)
