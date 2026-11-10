@@ -68,20 +68,17 @@ CHECKS: tuple[Check, ...] = (
         QT_TRANSLATE_NOOP(
             "HardwareSession",
             "Click Start capture, press 1/2X then 2X on deck 1 (plain, without SHIFT), then Stop capture. "
-            "The official MIDI Message List and this app's profile say notes 16 / 17; rekordbox's bundled "
-            "mapping says 18 / 19.",
+            "The official MIDI Message List says notes 16 / 17; rekordbox's bundled mapping, a first real "
+            "capture and this app's profile say 18 / 19.",
         ),
         "#356",
         controller="DDJ-XP2",
         capture=True,
         compare={
+            QT_TRANSLATE_NOOP("HardwareSession", "the official PDF"): (16, 17),
             QT_TRANSLATE_NOOP(
-                "HardwareSession", "official PDF and this app's profile"
-            ): (16, 17),
-            QT_TRANSLATE_NOOP("HardwareSession", "rekordbox's bundled mapping"): (
-                18,
-                19,
-            ),
+                "HardwareSession", "rekordbox's bundled mapping and this app's profile"
+            ): (18, 19),
         },
     ),
     Check(

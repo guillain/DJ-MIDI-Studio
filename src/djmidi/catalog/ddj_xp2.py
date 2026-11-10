@@ -27,9 +27,12 @@ _PAD_SHIFT_CHANNELS = {"9", "11", "13", "15"}
 _STATIC: list[ControlInfo] = [
     ControlInfo("DDJ-XP2", "DECK", "4 BEAT LOOP", "NOTE", _DECK_CH, "20"),
     ControlInfo("DDJ-XP2", "DECK", "4 BEAT LOOP (+SHIFT)", "NOTE", _DECK_CH, "80"),
-    ControlInfo("DDJ-XP2", "DECK", "1/2X", "NOTE", _DECK_CH, "16"),
+    # 1/2X and 2X: the official PDF says notes 16 / 17, but a real DDJ-XP2
+    # sends 18 / 19 (captured 2026-11-10, deck 1, as rekordbox's bundled
+    # mapping says, #356). The SHIFT notes below are still the PDF's.
+    ControlInfo("DDJ-XP2", "DECK", "1/2X", "NOTE", _DECK_CH, "18"),
     ControlInfo("DDJ-XP2", "DECK", "1/2X (+SHIFT)", "NOTE", _DECK_CH, "76"),
-    ControlInfo("DDJ-XP2", "DECK", "2X", "NOTE", _DECK_CH, "17"),
+    ControlInfo("DDJ-XP2", "DECK", "2X", "NOTE", _DECK_CH, "19"),
     ControlInfo("DDJ-XP2", "DECK", "2X (+SHIFT)", "NOTE", _DECK_CH, "77"),
     ControlInfo("DDJ-XP2", "DECK", "QUANTIZE", "NOTE", _DECK_CH, "53"),
     ControlInfo("DDJ-XP2", "DECK", "QUANTIZE (+SHIFT)", "NOTE", _DECK_CH, "57"),
