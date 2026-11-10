@@ -7161,6 +7161,14 @@ Lignes sélectionnées dans Configuration du contrôleur : {selected}</translati
         <translation>Écrit un nouveau .nml d&apos;une seule playlist à l&apos;endroit choisi, pour Import Playlist de Traktor. Ne touche jamais à collection.nml.</translation>
     </message>
     <message>
+        <source>Export as rekordbox XML…</source>
+        <translation>Exporter en XML rekordbox…</translation>
+    </message>
+    <message>
+        <source>Writes a new rekordbox XML file where you choose, for rekordbox&apos;s Imported Library. Never touches rekordbox&apos;s own library.</source>
+        <translation>Écrit un nouveau fichier XML rekordbox à l&apos;endroit choisi, pour la bibliothèque importée de rekordbox. Ne touche jamais à la bibliothèque de rekordbox.</translation>
+    </message>
+    <message>
         <source>Compare with crate…</source>
         <translation>Comparer à une crate…</translation>
     </message>
@@ -7799,6 +7807,14 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>Traktor playlists (*.nml)</source>
         <translation>Playlists Traktor (*.nml)</translation>
+    </message>
+    <message>
+        <source>Export as rekordbox XML</source>
+        <translation>Exporter en XML rekordbox</translation>
+    </message>
+    <message>
+        <source>rekordbox XML (*.xml)</source>
+        <translation>XML rekordbox (*.xml)</translation>
     </message>
     <message>
         <source>“{name}” matches {other}.</source>
@@ -8818,6 +8834,14 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <translation>Écrit un nouveau .nml d&apos;une seule playlist à l&apos;endroit choisi.</translation>
     </message>
     <message>
+        <source>Export as rekordbox XML…</source>
+        <translation>Exporter en XML rekordbox…</translation>
+    </message>
+    <message>
+        <source>Writes a new rekordbox XML file where you choose, for rekordbox&apos;s Imported Library.</source>
+        <translation>Écrit un nouveau fichier XML rekordbox à l&apos;endroit choisi, pour la bibliothèque importée de rekordbox.</translation>
+    </message>
+    <message>
         <source>Select tracks in the table first.</source>
         <translation>Sélectionnez d&apos;abord des morceaux dans le tableau.</translation>
     </message>
@@ -8888,6 +8912,14 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>Serato crates (*.crate)</source>
         <translation>Crates Serato (*.crate)</translation>
+    </message>
+    <message>
+        <source>Export set as rekordbox XML</source>
+        <translation>Exporter le set en XML rekordbox</translation>
+    </message>
+    <message>
+        <source>rekordbox XML (*.xml)</source>
+        <translation>XML rekordbox (*.xml)</translation>
     </message>
     <message>
         <source>Export set as Traktor playlist</source>

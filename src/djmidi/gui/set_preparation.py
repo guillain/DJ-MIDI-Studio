@@ -313,6 +313,8 @@ class SetPreparationPanel(QWidget):
              self.tr("Writes a new .crate file where you choose.")),
             ("export_traktor_button", self.tr("Export as Traktor playlist…"), self._on_export_traktor_clicked,
              self.tr("Writes a new single-playlist .nml where you choose.")),
+            ("export_rekordbox_button", self.tr("Export as rekordbox XML…"), self._on_export_rekordbox_clicked,
+             self.tr("Writes a new rekordbox XML file where you choose, for rekordbox's Imported Library.")),
         ]
         for index, (attr, label, handler, tip) in enumerate(specs):
             button = QPushButton(label)
@@ -452,7 +454,13 @@ class SetPreparationPanel(QWidget):
         self.curve.set_data(self.tracks, self.transitions)
         self.summary_label.setText(set_prep.summarize(self.tracks, self.transitions).describe(_translate))
         has_tracks = bool(self._paths)
-        for button in (self.save_button, self.export_serato_button, self.export_traktor_button, self.clear_button):
+        for button in (
+            self.save_button,
+            self.export_serato_button,
+            self.export_traktor_button,
+            self.export_rekordbox_button,
+            self.clear_button,
+        ):
             button.setEnabled(has_tracks)
         self.propose_button.setEnabled(len(self._paths) > 2)
         if self._previous_order is not None and sorted(self._previous_order) != sorted(self._paths):
@@ -521,6 +529,17 @@ class SetPreparationPanel(QWidget):
     def _on_export_serato_clicked(self) -> None:
         self._export(
             self.tr("Export set as Serato crate"), ".crate", self.tr("Serato crates (*.crate)"), self.export_crate
+        )
+
+    def export_rekordbox_xml(self, xml_path: str, name: str) -> None:
+        workspace.export_rekordbox_xml(xml_path, name, self._paths, db=self._db())
+
+    def _on_export_rekordbox_clicked(self) -> None:
+        self._export(
+            self.tr("Export set as rekordbox XML"),
+            ".xml",
+            self.tr("rekordbox XML (*.xml)"),
+            lambda path: self.export_rekordbox_xml(path, Path(path).stem),
         )
 
     def _on_export_traktor_clicked(self) -> None:
