@@ -139,6 +139,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **rekordbox XML export** (`v0.48.206-rekordbox-xml`, #441) — `Export as rekordbox XML…` in the Music
+  Library's Playlists and Set panels writes a new file in Pioneer's published "XML file format for playlists
+  sharing" (`DJ_PLAYLISTS` 1.0.0, a `COLLECTION` of the playlist's tracks with `file://localhost/` locations
+  and the cached tags, a `ROOT` folder holding one `KeyType="0"` playlist), read from the PDF linked by
+  rekordbox.com's developer page. rekordbox's library is never written; not yet imported in a real rekordbox.
 - [x] **Layer edits on every copy** (`v0.48.205-layer-copies`, #440) — Serato's identical trigger copies
   (10 per trigger in the maintainer's file) must stay identical, but #434's layer edits touched only the
   selected copy. Every layer edit (conditions, remove layer, move into a layer) now runs on all controls with
@@ -3825,7 +3830,7 @@ close what can't be unblocked here.
    3. Atelier macros: toggle second list and wait steps (#435) — **done** in `v0.48.204`.
 14. **Phase 11**, agreed 2026-11-10 (one PR and tag each):
    1. Modifier-layer edits on every identical copy (#440) — **done** in `v0.48.205`.
-   2. Export a playlist as rekordbox XML (#441).
+   2. Export a playlist as rekordbox XML (#441) — **done** in `v0.48.206` (not yet imported in a real rekordbox).
    3. Pitch-bend jogs turn on screen, unverified until the hardware session (#442).
 
 ## Tracking rules
