@@ -163,3 +163,68 @@ def test_main_window_saves_atelier_macros(monkeypatch):
     window.atelier_view.macro_panel.macrosSaved.emit([MidiMacro("New", "DDJ-XP2")])
     assert [m.name for m in window.macros] == ["New"] and saved
     assert any(action.text() == "New" for action in window._macro_menu.actions())
+
+
+# --- toggle second list and wait steps (issue #435) ------------------------------
+
+
+def test_edits_on_the_second_list_leave_the_main_steps_alone():
+    from djmidi.atelier.macro_edit import append_steps, steps_of
+
+    macro = MidiMacro("m", "DDJ-XP2", (MacroStep(SYNC_ON),))
+    toggled = append_steps(macro, [MacroStep(SyncMessage("Note On", 1, 88, 0))], alternate=True)
+    assert [s.message for s in toggled.steps] == [s.message for s in macro.steps] and toggled.is_toggle
+    assert steps_of(toggled, alternate=True)[0].message.data2 == 0
+    assert steps_of(toggled, alternate=True)[0].feature is not None  # annotated too
+    moved, _row = move_step(toggled, 0, 1, alternate=True)
+    assert moved.alternate_steps == toggled.alternate_steps
+    assert set_delay(toggled, 0, 300, alternate=True).alternate_steps[0].delay_ms == 300
+    assert remove_step(toggled, 0, alternate=True).alternate_steps == ()
+
+
+def test_wait_step_for_a_control_and_its_wording():
+    from djmidi.atelier.macro_edit import wait_step_for
+
+    step = wait_step_for(_sync(), 500)
+    assert step.wait and step.delay_ms == 500
+    assert step.message == SyncMessage("Note On", 1, 88, 0)
+    macro = MidiMacro("m", "DDJ-XP2", (step, MacroStep(SYNC_ON, 0, wait=True)))
+    assert describe_step(macro, macro.steps[0]) == "Wait for BEAT SYNC (deck 1) (at most 500 ms)"
+    assert describe_step(macro, macro.steps[1]) == "Wait for BEAT SYNC (deck 1)"
+
+
+def test_panel_builds_a_toggle_with_a_wait_from_clicks():
+    view = _view([MidiMacro("Lights", "DDJ-XP2")])
+    panel = view.macro_panel
+    view.pick_key(("DDJ-XP2", "DECK", "BEAT SYNC"))  # main: LED on
+    panel.list_combo.setCurrentIndex(1)  # the toggle's second list
+    assert panel.step_list.count() == 0
+    panel.show_feature(_sync())
+    panel.verb_combo.setCurrentIndex(panel.verb_combo.findData("wait"))
+    view.pick_key(("DDJ-XP2", "DECK", "BEAT SYNC"))
+    assert panel.delay_label.text() == "Wait at most"
+    panel.delay_spin.setValue(2000)
+    panel.verb_combo.setCurrentIndex(panel.verb_combo.findData("led_off"))
+    view.pick_key(("DDJ-XP2", "DECK", "BEAT SYNC"))
+    macro = panel.macro
+    assert len(macro.steps) == 1 and [s.wait for s in macro.alternate_steps] == [True, False]
+    assert macro.alternate_steps[0].delay_ms == 2000
+    assert panel.step_list.item(0).text() == "Wait for BEAT SYNC (deck 1) (at most 2000 ms)"
+    saved = []
+    panel.macrosSaved.connect(saved.append)
+    panel.save()
+    stored = saved[0][0]
+    assert MidiMacro.from_dict(stored.to_dict()).alternate_steps == stored.alternate_steps
+    panel.list_combo.setCurrentIndex(0)
+    assert panel.step_list.count() == 1 and panel.delay_label.text() in ("Delay", "Wait at most")
+
+
+def test_a_cc_control_can_be_waited_for_even_without_an_led():
+    import dataclasses
+
+    sync = _sync()
+    cc = dataclasses.replace(sync, input=dataclasses.replace(sync.input, kind="CC"), led=None)
+    view = _view([MidiMacro("Lights", "DDJ-XP2")])
+    assert "wait" in view.macro_panel._verbs(cc)
+    assert view.macro_panel.add_feature("DDJ-XP2", cc, "wait")
+    assert view.macro_panel.macro.steps[0].message.event_type == "Control Change"

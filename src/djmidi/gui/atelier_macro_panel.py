@@ -35,13 +35,17 @@ from djmidi.atelier.macro_edit import (
     remove_step,
     set_delay,
     steps_for,
+    steps_of,
     verbs_for,
+    wait_step_for,
 )
 from djmidi.gui.translation import translator
 from djmidi.midi_macros import MAX_DELAY_MS, MidiMacro, annotate_with_features
 
 _verb_translate = translator("FeatureActions")
 _edit_translate = translator("MacroEdit")
+# A click that adds a wait for a press of that control (issue #435).
+WAIT = "wait"
 
 
 class AtelierMacroPanel(QWidget):
@@ -68,8 +72,17 @@ class AtelierMacroPanel(QWidget):
         click_row = QHBoxLayout()
         click_row.addWidget(self.verb_combo, 1)
         click_row.addWidget(self.value_spin)
+        # Issue #435: a toggle macro plays its second list every other time.
+        self.list_combo = QComboBox()
+        self.list_combo.addItem(self.tr("Main steps"), False)
+        self.list_combo.addItem(self.tr("Second steps (toggle)"), True)
+        self.list_combo.setToolTip(
+            self.tr("A macro with second steps is a toggle: it plays them every other time.")
+        )
+        self.list_combo.currentIndexChanged.connect(lambda _index: self._refresh_steps())
         form = QFormLayout()
         form.addRow(self.tr("Macro"), self.macro_combo)
+        form.addRow(self.tr("Steps"), self.list_combo)
         form.addRow(self.tr("A click adds"), click_row)
 
         self.step_list = QListWidget()
@@ -86,7 +99,8 @@ class AtelierMacroPanel(QWidget):
         self.remove_button = QPushButton(self.tr("Remove"))
         self.remove_button.clicked.connect(self.remove_selected)
         step_row = QHBoxLayout()
-        step_row.addWidget(QLabel(self.tr("Delay")))
+        self.delay_label = QLabel(self.tr("Delay"))
+        step_row.addWidget(self.delay_label)
         step_row.addWidget(self.delay_spin)
         step_row.addWidget(self.up_button)
         step_row.addWidget(self.down_button)
@@ -141,6 +155,15 @@ class AtelierMacroPanel(QWidget):
     def is_dirty(self) -> bool:
         return self._dirty
 
+    @property
+    def alternate(self) -> bool:
+        """Whether the toggle's second step list is being edited."""
+        return bool(self.list_combo.currentData())
+
+    @property
+    def steps(self) -> tuple:
+        return steps_of(self.macro, self.alternate) if self.macro is not None else ()
+
     def _replace(self, macro: MidiMacro, row: int | None = None) -> None:
         self.macros[self.macro_combo.currentIndex()] = macro
         self._dirty = True
@@ -176,7 +199,7 @@ class AtelierMacroPanel(QWidget):
         macro = self.macro
         self.step_list.blockSignals(True)
         self.step_list.clear()
-        for step in macro.steps if macro is not None else ():
+        for step in self.steps:
             self.step_list.addItem(describe_step(macro, step, _edit_translate_both))
         self.step_list.blockSignals(False)
         if row is not None and 0 <= row < self.step_list.count():
@@ -187,11 +210,15 @@ class AtelierMacroPanel(QWidget):
 
     def _on_step_changed(self) -> None:
         row = self.step_list.currentRow()
-        selected = self.macro is not None and 0 <= row < len(self.macro.steps)
+        steps = self.steps
+        selected = 0 <= row < len(steps)
         for widget in (self.delay_spin, self.up_button, self.down_button, self.remove_button):
             widget.setEnabled(selected)
+        waiting = selected and steps[row].wait
+        # A wait step's "delay" is how long it waits at most (0: the longest).
+        self.delay_label.setText(self.tr("Wait at most") if waiting else self.tr("Delay"))
         self.delay_spin.blockSignals(True)
-        self.delay_spin.setValue(self.macro.steps[row].delay_ms if selected else 0)
+        self.delay_spin.setValue(steps[row].delay_ms if selected else 0)
         self.delay_spin.blockSignals(False)
 
     # -- verbs ------------------------------------------------------------
@@ -201,7 +228,8 @@ class AtelierMacroPanel(QWidget):
         self.verb_combo.blockSignals(True)
         self.verb_combo.clear()
         for verb in verbs:
-            self.verb_combo.addItem(_verb_translate(VERB_LABELS[verb]), verb)
+            label = self.tr("wait for a press") if verb == WAIT else _verb_translate(VERB_LABELS[verb])
+            self.verb_combo.addItem(label, verb)
         if current in verbs:
             self.verb_combo.setCurrentIndex(verbs.index(current))
         self.verb_combo.blockSignals(False)
@@ -213,8 +241,13 @@ class AtelierMacroPanel(QWidget):
 
     def show_feature(self, feature: Feature | None) -> None:
         """A control was selected: offers what a click on it can add."""
+        self._set_verbs(self._verbs(feature))
+
+    def _verbs(self, feature: Feature | None) -> tuple[str, ...]:
         target = self.target
-        self._set_verbs(verbs_for(feature, target[1]) if (feature is not None and target is not None) else ())
+        if feature is None or target is None:
+            return ()
+        return (*verbs_for(feature, target[1]), WAIT)
 
     # -- edits ------------------------------------------------------------
 
@@ -225,29 +258,33 @@ class AtelierMacroPanel(QWidget):
         if macro is None or target is None or target[0] != controller:
             return False
         self.show_feature(feature)
-        verbs = verbs_for(feature, target[1])
         verb = verb or self.verb_combo.currentData()
-        if verb not in verbs:
+        if verb not in self._verbs(feature):
             return False
-        steps = steps_for(controller, feature, verb, self.value_spin.value())
-        self._replace(append_steps(macro, steps), len(macro.steps) + len(steps) - 1)
+        if verb == WAIT:
+            steps = [wait_step_for(feature)]
+        else:
+            steps = steps_for(controller, feature, verb, self.value_spin.value())
+        count = len(self.steps)
+        self._replace(append_steps(macro, steps, self.alternate), count + len(steps) - 1)
         return True
 
     def remove_selected(self) -> None:
         row = self.step_list.currentRow()
-        if self.macro is not None and 0 <= row < len(self.macro.steps):
-            self._replace(remove_step(self.macro, row), min(row, len(self.macro.steps) - 2))
+        count = len(self.steps)
+        if 0 <= row < count:
+            self._replace(remove_step(self.macro, row, self.alternate), min(row, count - 2))
 
     def move_selected(self, offset: int) -> None:
         row = self.step_list.currentRow()
-        if self.macro is not None and 0 <= row < len(self.macro.steps):
-            macro, row = move_step(self.macro, row, offset)
+        if 0 <= row < len(self.steps):
+            macro, row = move_step(self.macro, row, offset, self.alternate)
             self._replace(macro, row)
 
     def _on_delay_changed(self, value: int) -> None:
         row = self.step_list.currentRow()
-        if self.macro is not None and 0 <= row < len(self.macro.steps):
-            self._replace(set_delay(self.macro, row, value), row)
+        if 0 <= row < len(self.steps):
+            self._replace(set_delay(self.macro, row, value, self.alternate), row)
 
     def save(self) -> list[MidiMacro]:
         macros = [annotate_with_features(macro) for macro in self.macros]

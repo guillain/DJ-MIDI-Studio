@@ -391,7 +391,7 @@ ATELIER: HelpEntry = (
         "<li>To make a control act as another one through a MIDI Routing route, pick the route, "
         "click <b>Remap from this control</b> then the target control, or <b>Block this "
         "control</b>.</li>"
-        "<li>In the <b>Macros</b> tab, pick a macro: each click on the photo adds a step (an LED change, or a press the macro imitates). Set a step's delay, reorder or remove steps, then <b>Save macros</b>.</li></ul>"
+        "<li>In the <b>Macros</b> tab, pick a macro: each click on the photo adds a step (an LED change, or a press the macro imitates). Set a step's delay, reorder or remove steps, then <b>Save macros</b>. Pick <b>Second steps (toggle)</b> to build a toggle, played every other time; <b>wait for a press</b> adds a step that waits for that control.</li></ul>"
         "LED addresses not given by a document are assumed (same note as the button) "
         "until checked on the hardware with <b>Probe this LED…</b>.",
     ),
