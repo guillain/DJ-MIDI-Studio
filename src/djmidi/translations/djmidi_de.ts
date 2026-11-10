@@ -2487,8 +2487,8 @@ Trotzdem neu zuweisen? Beide lösen auf demselben Bedienelement aus.</translatio
         <translation>CMD Studio 4a: Meldungen der Jogwheels</translation>
     </message>
     <message>
-        <source>Click Start capture, turn each jog a little both ways, then Stop capture. Traktor&apos;s mapping suggests the jogs send pitch bend, which this app doesn&apos;t read yet: if nothing is captured while you turn them, write that in the note — it confirms it.</source>
-        <translation>Klicken Sie auf Aufnahme starten, drehen Sie jedes Jogwheel etwas in beide Richtungen und klicken Sie auf Aufnahme stoppen. Laut Traktor-Mapping senden die Jogwheels Pitch Bend, das die App noch nicht liest: Wird beim Drehen nichts aufgenommen, notieren Sie das — es bestätigt es.</translation>
+        <source>Click Start capture, turn each jog a little both ways, then Stop capture. Traktor&apos;s mapping suggests the jogs send pitch bend: the capture shows it as Pitch Bend lines, with values around 8192 (the centre).</source>
+        <translation>Klicken Sie auf Aufnahme starten, drehen Sie jedes Jogwheel etwas in beide Richtungen und klicken Sie auf Aufnahme stoppen. Laut Traktor-Mapping senden die Jogwheels Pitch Bend: Die Aufnahme zeigt es als Pitch-Bend-Zeilen mit Werten um 8192 (die Mitte).</translation>
     </message>
     <message>
         <source>Atelier: probe the LEDs</source>

@@ -2487,8 +2487,8 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
         <translation>CMD Studio 4a : messages des jog wheels</translation>
     </message>
     <message>
-        <source>Click Start capture, turn each jog a little both ways, then Stop capture. Traktor&apos;s mapping suggests the jogs send pitch bend, which this app doesn&apos;t read yet: if nothing is captured while you turn them, write that in the note — it confirms it.</source>
-        <translation>Cliquez sur Démarrer la capture, tournez un peu chaque jog dans les deux sens, puis cliquez sur Arrêter la capture. Le mapping Traktor laisse penser que les jogs envoient du pitch bend, que l&apos;application ne lit pas encore : si rien n&apos;est capturé pendant que vous les tournez, notez-le — cela le confirme.</translation>
+        <source>Click Start capture, turn each jog a little both ways, then Stop capture. Traktor&apos;s mapping suggests the jogs send pitch bend: the capture shows it as Pitch Bend lines, with values around 8192 (the centre).</source>
+        <translation>Cliquez sur Démarrer la capture, tournez un peu chaque jog dans les deux sens, puis cliquez sur Arrêter la capture. Le mapping Traktor laisse penser que les jogs envoient du pitch bend : la capture l&apos;affiche en lignes Pitch Bend, avec des valeurs autour de 8192 (le centre).</translation>
     </message>
     <message>
         <source>Atelier: probe the LEDs</source>
