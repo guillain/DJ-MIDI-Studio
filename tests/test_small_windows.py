@@ -203,6 +203,16 @@ def _geometry_editor():
     return GeometryEditorDialog(name, Path("/nonexistent/profile.json"))
 
 
+def _hardware_session():
+    import tempfile
+
+    from djmidi.gui.hardware_session_dialog import HardwareSessionDialog
+
+    dialog = HardwareSessionDialog(Path(tempfile.mkdtemp()) / "hardware-session.json")
+    dialog.select_check("ddj-xp2-loop-notes")
+    return dialog
+
+
 def _profile_check():
     from djmidi.gui.profile_check_dialog import ProfileCheckDialog
 
@@ -316,6 +326,7 @@ WINDOWS = {
     "controller profile library": _profile_library,
     "geometry editor": _geometry_editor,
     "profile check": _profile_check,
+    "hardware session": _hardware_session,
     "route transform": _route_transform,
     "deck copy": _deck_copy,
     "snapshots": _snapshots,

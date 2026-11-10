@@ -120,6 +120,22 @@ PROFILE_CHECK: HelpEntry = (
     "profile-check.md",
 )
 
+HARDWARE_SESSION: HelpEntry = (
+    QT_TRANSLATE_NOOP("HelpTexts", "Hardware session"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
+        "The checks the project still needs on real controllers and DJ software, in one list. Pick a "
+        "check and follow its steps.<ul>"
+        "<li><b>Start capture</b> records what the controller sends while you press or turn what the check "
+        "asks; the line under the capture says which source it agrees with.</li>"
+        "<li><b>Pass</b>, <b>Fail</b> or <b>Skip</b> marks the check; the note keeps what you saw.</li></ul>"
+        "Everything is saved as you go in the workspace's Exports folder. <b>Copy report</b> or "
+        "<b>Save report…</b> gives the results as Markdown for the issue each check names; nothing is "
+        "sent anywhere by the app.",
+    ),
+    "hardware-session.md",
+)
+
 PROFILE_LIBRARY: HelpEntry = (
     QT_TRANSLATE_NOOP("HelpTexts", "Controller Profile Library"),
     QT_TRANSLATE_NOOP(

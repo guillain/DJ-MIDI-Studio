@@ -84,6 +84,8 @@ SOURCES=(
   src/djmidi/atelier/actions.py
   src/djmidi/atelier/describe.py
   src/djmidi/atelier/remap.py
+  src/djmidi/hardware_session.py
+  src/djmidi/gui/hardware_session_dialog.py
   src/djmidi/gui/pad_colour_panel.py
   src/djmidi/gui/profile_library_dialog.py
   src/djmidi/gui/geometry_editor.py

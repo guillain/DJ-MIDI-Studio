@@ -129,6 +129,7 @@ from djmidi.gui.geometry import (
     sync_profile_geometry,
 )
 from djmidi.gui.geometry_editor import GeometryEditorDialog
+from djmidi.gui.hardware_session_dialog import HardwareSessionDialog
 from djmidi.gui.helpful_notes_dialog import HelpfulNotesDialog
 from djmidi.gui.introduction_view import IntroductionView
 from djmidi.gui.layer_map_dialog import LayerMapDialog
@@ -166,6 +167,7 @@ from djmidi.gui.tree_model import (
 from djmidi.gui.update_notice import UpdateChecker
 from djmidi.gui.whats_new_dialog import WhatsNewDialog
 from djmidi.gui.window_size import keep_tab_titles_whole
+from djmidi.hardware_session import SESSION_FILE_NAME
 from djmidi.integration_detection import (
     detect_controller_ports,
     detect_software_mapping,
@@ -396,6 +398,7 @@ class MainWindow(QMainWindow):
         self._stage_candidates_key: tuple[int, int] | None = None
         # The open "Verify Profile" window (issue #364), fed every live event.
         self._profile_check_dialog: ProfileCheckDialog | None = None
+        self._hardware_session_dialog: HardwareSessionDialog | None = None
         # Library profiles declined this session, when there are no QSettings (tests).
         self._session_dismissed_profiles: set[str] = set()
         self._macro_player.finished.connect(self._on_macro_finished)
@@ -1216,6 +1219,12 @@ class MainWindow(QMainWindow):
         )
         self._first_run_action.triggered.connect(lambda: self._on_first_run_wizard())
         help_menu.addAction(self._first_run_action)
+        self._hardware_session_action = QAction(self.tr("&Hardware Session..."), self)
+        self._hardware_session_action.setToolTip(
+            self.tr("The checks still waiting for real controllers and DJ software, with a report to share.")
+        )
+        self._hardware_session_action.triggered.connect(lambda: self.open_hardware_session())
+        help_menu.addAction(self._hardware_session_action)
         self._check_updates_action = QAction(self.tr("Check for &Updates..."), self)
         self._check_updates_action.setToolTip(self.tr("Ask GitHub whether a newer DJ MIDI Studio release exists."))
         self._check_updates_action.triggered.connect(self._on_check_for_updates)
@@ -2814,6 +2823,8 @@ class MainWindow(QMainWindow):
             pass
         elif self._profile_check_dialog is not None and self._profile_check_dialog.feed_event(event):
             pass  # a press being verified (issue #364) is neither a macro nor a Learn
+        elif self._hardware_session_dialog is not None and self._hardware_session_dialog.feed_event(event):
+            pass  # captured for a hardware session check (issue #426)
         elif (
             self.midi_routing_view.active_transform_dialog is not None
             and self.midi_routing_view.active_transform_dialog.feed_learn_event(event)
@@ -3063,6 +3074,27 @@ class MainWindow(QMainWindow):
 
     def _on_profile_check_closed(self, _result: int = 0) -> None:
         self._profile_check_dialog = None
+
+    def open_hardware_session(self) -> HardwareSessionDialog:
+        """Help → Hardware Session… (issue #426): one non-modal window, its
+        session saved in the workspace's Exports folder."""
+        if self._hardware_session_dialog is not None:
+            self._hardware_session_dialog.raise_()
+            self._hardware_session_dialog.activateWindow()
+            return self._hardware_session_dialog
+        dialog = HardwareSessionDialog(
+            user_paths.subfolder(user_paths.EXPORTS) / SESSION_FILE_NAME,
+            self,
+            ensure_listening=self._ensure_learn_listening,
+        )
+        dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        dialog.finished.connect(self._on_hardware_session_closed)
+        self._hardware_session_dialog = dialog
+        dialog.show()
+        return dialog
+
+    def _on_hardware_session_closed(self, _result: int = 0) -> None:
+        self._hardware_session_dialog = None
 
     def open_geometry_editor(self, name: str | None = None, dialog_factory=None) -> GeometryEditorDialog | None:
         """Place a profile's controls on a picture (issue #363). Without a
