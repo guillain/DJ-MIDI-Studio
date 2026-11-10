@@ -2546,8 +2546,8 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
         <translation>DDJ-XP2 : notes 1/2X et 2X</translation>
     </message>
     <message>
-        <source>Click Start capture, press 1/2X then 2X on deck 1 (plain, without SHIFT), then Stop capture. The official MIDI Message List says notes 16 / 17; rekordbox&apos;s bundled mapping, a first real capture and this app&apos;s profile say 18 / 19.</source>
-        <translation>Cliquez sur Démarrer la capture, appuyez sur 1/2X puis 2X sur la platine 1 (sans SHIFT), puis sur Arrêter la capture. La MIDI Message List officielle indique les notes 16 / 17 ; le mapping fourni avec rekordbox, une première capture réelle et le profil de l&apos;application indiquent 18 / 19.</translation>
+        <source>Click Start capture, press 1/2X then 2X on deck 1 (plain, without SHIFT), then Stop capture. Keep Serato running: the controller then sends 18 / 19 (rekordbox&apos;s bundled mapping and this app&apos;s profile); with no DJ software it sends the official MIDI Message List&apos;s 16 / 17.</source>
+        <translation>Cliquez sur Démarrer la capture, appuyez sur 1/2X puis 2X sur la platine 1 (sans SHIFT), puis sur Arrêter la capture. Laissez Serato ouvert : le contrôleur envoie alors 18 / 19 (le mapping fourni avec rekordbox et le profil de l&apos;application) ; sans logiciel DJ, il envoie les 16 / 17 de la MIDI Message List officielle.</translation>
     </message>
     <message>
         <source>the official PDF</source>

@@ -68,8 +68,8 @@ CHECKS: tuple[Check, ...] = (
         QT_TRANSLATE_NOOP(
             "HardwareSession",
             "Click Start capture, press 1/2X then 2X on deck 1 (plain, without SHIFT), then Stop capture. "
-            "The official MIDI Message List says notes 16 / 17; rekordbox's bundled mapping, a first real "
-            "capture and this app's profile say 18 / 19.",
+            "Keep Serato running: the controller then sends 18 / 19 (rekordbox's bundled mapping and this "
+            "app's profile); with no DJ software it sends the official MIDI Message List's 16 / 17.",
         ),
         "#356",
         controller="DDJ-XP2",
