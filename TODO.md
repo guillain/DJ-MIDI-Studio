@@ -139,6 +139,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Atelier macros: toggles and waits** (`v0.48.204-atelier-toggle-macros`, #435) — the Atelier's Macros tab
+  gains a **Steps** choice (main steps / second steps of a toggle) and a **wait for a press** click: a wait step
+  on that control's input address (value 0, like the macro editor's wait rows), its delay field relabelled
+  **Wait at most** (the timeout). Waits are worded by control name ("Wait for BEAT SYNC (deck 1) (at most
+  2000 ms)"), and a CC control without LED can still be waited for. Phase 10 complete.
 - [x] **Editable Serato modifier / SHIFT layers** (`v0.48.203-editable-layers`, #434) — selecting a `Case`
   row edits its conditions (modifier, operator, value; add / remove; Apply), **Remove layer** turns its
   bindings back into ordinary ones, and an ordinary binding gets **Move into a modifier layer**. Each is one
@@ -3812,7 +3817,7 @@ close what can't be unblocked here.
 13. **Phase 10**, agreed 2026-11-10 (one PR and tag each):
    1. Live pitch bend (#436) — **done** in `v0.48.202`.
    2. Editable Serato SHIFT / modifier layers (#434) — **done** in `v0.48.203`.
-   3. Atelier macros: toggle second list and wait steps (#435).
+   3. Atelier macros: toggle second list and wait steps (#435) — **done** in `v0.48.204`.
 
 ## Tracking rules
 
