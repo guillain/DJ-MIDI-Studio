@@ -13,7 +13,7 @@ state the controller ends up in. Qt-free.
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 
 from djmidi.atelier.actions import (
@@ -104,6 +104,32 @@ class Scene:
         return ControllerSyncSet(self.controller, messages=self.messages(), scene=normalize_scene(scene))
 
 
+@dataclass(frozen=True)
+class SceneCoverage:
+    """One controller a sync scene covers (issue #427): it has a stored set
+    for that scene, unsaved Atelier edits, or both."""
+
+    controller: str
+    saved: bool
+    unsaved: bool
+
+
+def scene_coverage(
+    controllers: Iterable[str],
+    scene: str,
+    stored: Callable[[str, str], ControllerSyncSet | None],
+    unsaved: Iterable[str] = (),
+) -> list[SceneCoverage]:
+    """The controllers ``scene`` covers, in ``controllers`` order."""
+    pending = set(unsaved)
+    result = []
+    for controller in controllers:
+        saved = stored(controller, scene) is not None
+        if saved or controller in pending:
+            result.append(SceneCoverage(controller, saved, controller in pending))
+    return result
+
+
 def _value(controller: str, action: FeatureAction) -> int:
     if action.verb == LED_VALUE and action.value is not None:
         return action.value
@@ -123,4 +149,4 @@ def _action(feature: Feature, value: int) -> FeatureAction:
     return FeatureAction(feature.id, LED_VALUE, value)
 
 
-__all__ = ["Scene"]
+__all__ = ["Scene", "SceneCoverage", "scene_coverage"]

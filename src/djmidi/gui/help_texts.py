@@ -385,6 +385,7 @@ ATELIER: HelpEntry = (
         "controllers that have them), or leave it as it is.</li>"
         "<li><b>Save to sync set</b> stores the scene: the next Sync puts the controller in "
         "that state. <b>Send to controller</b> tries it now without saving.</li>"
+        "<li>Edits of each controller are kept while you switch: the line under the controller names the controllers the scene covers. <b>Save all</b> saves every controller's changes for the scene, <b>Send all</b> sends the scene to all of them at once.</li>"
         "<li>Messages the Atelier doesn't recognise are kept as they were.</li>"
         "<li>To make a control act as another one through a MIDI Routing route, pick the route, "
         "click <b>Remap from this control</b> then the target control, or <b>Block this "

@@ -557,6 +557,7 @@ class MainWindow(QMainWindow):
         )
         self.atelier_view.saveRequested.connect(self._on_atelier_save_requested)
         self.atelier_view.sendRequested.connect(self._on_atelier_send_requested)
+        self.atelier_view.sendAllRequested.connect(self._on_atelier_send_all_requested)
         # Step 6: remaps go through the MIDI Routing tab's routes.
         self.atelier_view.route_labels_provider = self.midi_routing_view.route_labels
         self.atelier_view.route_transform_provider = self.midi_routing_view.route_transform
@@ -2081,6 +2082,16 @@ class MainWindow(QMainWindow):
             return []
         ports = list_output_ports()
         results = run_sync(self._aim_sync_sets([sync_set], ports), ports)
+        self.statusBar().showMessage(summarize_results(results, _sync_translate), 10_000)
+        return results
+
+    def _on_atelier_send_all_requested(self, sync_sets: list[ControllerSyncSet]) -> list[SyncResult]:
+        """Sends the Atelier's scene to every controller it covers (issue #427)."""
+        sets = [sync_set for sync_set in sync_sets if sync_set is not None]
+        if not sets:
+            return []
+        ports = list_output_ports()
+        results = run_sync(self._aim_sync_sets(sets, ports), ports)
         self.statusBar().showMessage(summarize_results(results, _sync_translate), 10_000)
         return results
 

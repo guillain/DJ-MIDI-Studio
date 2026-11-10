@@ -1048,6 +1048,9 @@ def _capture_atelier(app: QApplication, window: MainWindow) -> None:
             ),
         )
     )
+    # A second controller in the same scene (issue #427): the coverage line
+    # names both, the DDJ-XP2 as unsaved once its pad is edited below.
+    window.preferences.set_sync_set(ControllerSyncSet("XDJ-XZ", messages=(SyncMessage("Note On", 1, 0, 127),)))
     router = window.midi_routing_view.router
     route = MidiRoute("DDJ-XP2", "IAC Driver Bus 1")
     router.add_route(route)

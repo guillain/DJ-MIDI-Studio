@@ -139,6 +139,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Atelier scenes across several controllers** (`v0.48.199-atelier-multi-scenes`, #427) — switching the
+  Atelier's controller or scene keeps unsaved edits per (controller, scene); a line under the lists names the
+  controllers the scene covers (saved, or *(unsaved)*), bold in the controller list; **Save all** saves every
+  edited controller, **Send all** sends the scene to all of them in one Sync. Also fixed: saving no longer
+  risks reviving the just-saved draft when the scene list reloads.
 - [x] **Guided hardware session** (`v0.48.198-hardware-session`, #426) — **Help → Hardware Session…** lists every
   check still waiting for real controllers or DJ software (DDJ-XP2 1/2X / 2X notes, CMD Micro / Studio 4a jogs, the
   Atelier's LED probe and Pioneer colours, the freeze fix, Serato MIDI-learn, Traktor import and Controller Manager
@@ -3774,7 +3779,7 @@ close what can't be unblocked here.
    (`IAC 1, IAC 2, IAC 1, IAC 2`) in the same session — not reproduced either.
 12. **Phase 9**, agreed 2026-11-09 (one PR and tag each, in this order):
    1. Guided hardware session (#426) — **done** in `v0.48.198`.
-   2. Atelier scenes spanning several controllers (#427).
+   2. Atelier scenes spanning several controllers (#427) — **done** in `v0.48.199`.
    3. Atelier macros built on the photo (#428).
    4. Quality pass: split `main_window.py`, trim CLAUDE.md, faster tests (#429).
 
