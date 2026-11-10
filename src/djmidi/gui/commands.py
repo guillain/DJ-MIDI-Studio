@@ -212,31 +212,35 @@ class ReplaceControlsCommand(QUndoCommand):
 
 
 class SetControlLayersCommand(QUndoCommand):
-    """Swaps one control's direct bindings and <case> layers (issue #434:
-    a layer's conditions edited, a binding moved into or out of a layer)."""
+    """Swaps the direct bindings and <case> layers of one or more controls
+    (issue #434: a layer edited, a binding moved into or out of a layer;
+    #440: the same edit on every identical copy of the trigger), as one
+    undo step. `changes` = [(control, new userios, new cases)]."""
 
     def __init__(
         self,
-        control: Control,
-        userios: list,
-        cases: list,
+        changes: list[tuple[Control, list, list]],
         summary: str,
         text: str,
         on_applied: Callable[[], None],
     ) -> None:
         super().__init__(text)
         self.summary = summary
-        self._control = control
-        self._old = (list(control.userios), list(control.cases))
-        self._new = (list(userios), list(cases))
+        self._old = [(control, list(control.userios), list(control.cases)) for control, _u, _c in changes]
+        self._new = [(control, list(userios), list(cases)) for control, userios, cases in changes]
         self._on_applied = on_applied
 
+    @staticmethod
+    def _set(states: list[tuple[Control, list, list]]) -> None:
+        for control, userios, cases in states:
+            control.userios, control.cases = list(userios), list(cases)
+
     def redo(self) -> None:
-        self._control.userios, self._control.cases = list(self._new[0]), list(self._new[1])
+        self._set(self._new)
         self._on_applied()
 
     def undo(self) -> None:
-        self._control.userios, self._control.cases = list(self._old[0]), list(self._old[1])
+        self._set(self._old)
         self._on_applied()
 
 
