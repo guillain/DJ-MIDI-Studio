@@ -42,7 +42,7 @@ from djmidi.atelier.describe import describe_action
 from djmidi.atelier.features import Feature, feature_by_id
 from djmidi.atelier.led_data import LedRecord, save_led_record
 from djmidi.atelier.remap import describe_remap, remap_rule, with_remap, without_remap
-from djmidi.atelier.scene import Scene
+from djmidi.atelier.scene import Scene, scene_coverage
 from djmidi.controller_sync import DEFAULT_SCENE, ControllerSyncSet
 from djmidi.gui import help_texts
 from djmidi.gui import layout as layout_mod
@@ -70,6 +70,8 @@ class AtelierView(QWidget):
 
     saveRequested = Signal(object)
     sendRequested = Signal(object)
+    # Issue #427: every controller's set for the scene, sent in one go.
+    sendAllRequested = Signal(object)
     # (route index, new MidiValueTransform): a remap added or removed
     routeTransformChanged = Signal(int, object)
 
@@ -92,7 +94,11 @@ class AtelierView(QWidget):
         self._active_scene_provider = active_scene_provider or (lambda: DEFAULT_SCENE)
         self.scene: Scene | None = None
         self.feature: Feature | None = None
-        self._dirty = False
+        # Issue #427: unsaved scenes per (controller, scene name), so switching
+        # controller or scene never loses an edit; the scene on screen is the
+        # one of `_loaded_key`.
+        self._drafts: dict[tuple[str, str], Scene] = {}
+        self._loaded_key: tuple[str, str] | None = None
 
         self.controller_combo = QComboBox()
         self.scene_combo = QComboBox()
@@ -104,6 +110,8 @@ class AtelierView(QWidget):
         top.addWidget(QLabel(self.tr("Scene")))
         top.addWidget(self.scene_combo, 1)
         top.addWidget(help_button(self, *help_texts.ATELIER))
+        self.coverage_label = QLabel()
+        self.coverage_label.setWordWrap(True)
 
         self._photo_scroll = QScrollArea()
         self._photo_scroll.setWidgetResizable(True)
@@ -144,7 +152,8 @@ class AtelierView(QWidget):
         self.state_list = QListWidget()
         self.state_list.itemClicked.connect(self._on_state_item_clicked)
         self.load_button = QPushButton(self.tr("Reload saved"))
-        self.load_button.clicked.connect(self.load)
+        self.load_button.setToolTip(self.tr("Drops this controller's unsaved changes for this scene."))
+        self.load_button.clicked.connect(self.reload_saved)
         self.clear_button = QPushButton(self.tr("Clear LEDs"))
         self.clear_button.clicked.connect(self.clear_leds)
         self.save_button = QPushButton(self.tr("Save to sync set"))
@@ -152,9 +161,20 @@ class AtelierView(QWidget):
         self.send_button = QPushButton(self.tr("Send to controller"))
         self.send_button.setToolTip(self.tr("Sends this scene's messages to the controller now, without saving."))
         self.send_button.clicked.connect(lambda: self.sendRequested.emit(self.current_sync_set()))
+        self.save_all_button = QPushButton(self.tr("Save all"))
+        self.save_all_button.setToolTip(self.tr("Saves this scene's unsaved changes for every controller."))
+        self.save_all_button.clicked.connect(self.save_all)
+        self.send_all_button = QPushButton(self.tr("Send all"))
+        self.send_all_button.setToolTip(
+            self.tr("Sends this scene to every controller it covers, saved or not, in one go.")
+        )
+        self.send_all_button.clicked.connect(self.send_all)
         buttons = QHBoxLayout()
         for button in (self.load_button, self.clear_button, self.save_button, self.send_button):
             buttons.addWidget(button)
+        buttons.addStretch(1)
+        buttons.addWidget(self.save_all_button)
+        buttons.addWidget(self.send_all_button)
         self.status_label = QLabel()
         self.status_label.setWordWrap(True)
 
@@ -184,6 +204,7 @@ class AtelierView(QWidget):
 
         layout = QVBoxLayout(self)
         layout.addLayout(top)
+        layout.addWidget(self.coverage_label)
         layout.addWidget(splitter, 1)
         layout.addLayout(buttons)
         layout.addWidget(self.status_label)
@@ -216,6 +237,10 @@ class AtelierView(QWidget):
     def controller(self) -> str:
         return self.controller_combo.currentText()
 
+    @property
+    def scene_name(self) -> str:
+        return self.scene_combo.currentText() or DEFAULT_SCENE
+
     # -- scene ------------------------------------------------------------
 
     def load(self) -> None:
@@ -228,18 +253,73 @@ class AtelierView(QWidget):
             self.photo.controlPressed.connect(self.pick_key)
             self._photo_scroll.setWidget(self.photo)
             self._picker = PhotoPicker(self.photo)
-        stored = self._sync_set_provider(controller, self.scene_combo.currentText() or DEFAULT_SCENE)
-        self.scene = Scene.from_sync_set(stored, controller)
+        key = (controller, self.scene_name)
+        stored = self._sync_set_provider(*key)
+        draft = self._drafts.get(key)
+        self.scene = draft if draft is not None else Scene.from_sync_set(stored, controller)
+        self._loaded_key = key
         self._set_feature(None)
-        self._dirty = False
         self._refresh_state()
-        self.status_label.setText(
-            self.tr("Loaded the {scene} sync set: {count} LED(s) set.").format(
-                scene=self.scene_combo.currentText(), count=len(self.scene.lit)
+        self._refresh_coverage()
+        if draft is not None:
+            self.status_label.setText(
+                self.tr("Unsaved changes kept for {controller}: click Save to sync set to keep them.").format(
+                    controller=controller
+                )
             )
-            if stored is not None
-            else self.tr("No sync set saved for this controller and scene yet: click a control to start one.")
+        elif stored is not None:
+            self.status_label.setText(
+                self.tr("Loaded the {scene} sync set: {count} LED(s) set.").format(
+                    scene=self.scene_name, count=len(self.scene.lit)
+                )
+            )
+        else:
+            self.status_label.setText(
+                self.tr("No sync set saved for this controller and scene yet: click a control to start one.")
+            )
+
+    def reload_saved(self) -> None:
+        """Drops the unsaved changes of the controller and scene on screen."""
+        if self._loaded_key is not None:
+            self._drafts.pop(self._loaded_key, None)
+        self.load()
+
+    def _mark_dirty(self) -> None:
+        if self._loaded_key is not None and self.scene is not None:
+            self._drafts[self._loaded_key] = self.scene
+        self._refresh_coverage()
+
+    def unsaved_controllers(self, scene: str | None = None) -> list[str]:
+        scene = scene or self.scene_name
+        return [controller for controller, name in self._drafts if name == scene]
+
+    def coverage(self):
+        """The controllers the scene on screen covers (`SceneCoverage`)."""
+        return scene_coverage(
+            catalog.CONTROLLER_NAMES, self.scene_name, self._sync_set_provider, self.unsaved_controllers()
         )
+
+    def _refresh_coverage(self) -> None:
+        covered = self.coverage()
+        names = {entry.controller for entry in covered}
+        for index in range(self.controller_combo.count()):
+            font = self.controller_combo.font()
+            font.setBold(self.controller_combo.itemText(index) in names)
+            self.controller_combo.setItemData(index, font, Qt.ItemDataRole.FontRole)
+        if not covered:
+            self.coverage_label.setText(self.tr("No controller has a set for this scene yet."))
+        else:
+            parts = [
+                self.tr("{controller} (unsaved)").format(controller=entry.controller)
+                if entry.unsaved
+                else entry.controller
+                for entry in covered
+            ]
+            self.coverage_label.setText(
+                self.tr("This scene covers: {controllers}").format(controllers=", ".join(parts))
+            )
+        self.save_all_button.setEnabled(bool(self.unsaved_controllers()))
+        self.send_all_button.setEnabled(bool(covered))
 
     def _build_remap_box(self) -> QWidget:
         """Step 6: make one control act as another (or block it) on a MIDI
@@ -411,7 +491,7 @@ class AtelierView(QWidget):
             _VALUE: self.value_spin.value(),
         }[choice]
         self.scene.set_led(feature.id, value)
-        self._dirty = True
+        self._mark_dirty()
         self._refresh_state()
         self.status_label.setText(self.tr("Not saved yet: click Save to sync set to keep it."))
 
@@ -419,7 +499,7 @@ class AtelierView(QWidget):
         if self.scene is None:
             return
         self.scene.clear()
-        self._dirty = True
+        self._mark_dirty()
         self._set_feature(self.feature)
         self._refresh_state()
 
@@ -489,12 +569,9 @@ class AtelierView(QWidget):
         record = dialog.record()
         save_led_record(self.controller, record)
         feature_id = self.feature.id
-        dirty, unsaved = self._dirty, self.scene
-        self.load()  # features now carry the verified LED
-        if dirty and unsaved is not None:  # keep the edits in progress
-            self.scene = Scene.from_messages(self.controller, unsaved.messages())
-            self._dirty = True
-            self._refresh_state()
+        # Features now carry the verified LED; an unsaved draft keeps its
+        # edits (it stores feature ids, compiled with the new data on save).
+        self.load()
         self.select_feature(feature_id)
         self.status_label.setText(self.tr("LED recorded as verified for {control}.").format(control=self.feature.name))
         return record
@@ -503,20 +580,55 @@ class AtelierView(QWidget):
 
     @property
     def is_dirty(self) -> bool:
-        return self._dirty
+        return self._loaded_key is not None and self._loaded_key in self._drafts
 
     def current_sync_set(self) -> ControllerSyncSet | None:
         if self.scene is None or not self.controller:
             return None
-        scene_name = self.scene_combo.currentText() or DEFAULT_SCENE
-        return self.scene.to_sync_set(self._sync_set_provider(self.controller, scene_name), scene_name)
+        return self.scene.to_sync_set(self._sync_set_provider(self.controller, self.scene_name), self.scene_name)
+
+    def scene_sync_sets(self) -> list[ControllerSyncSet]:
+        """Every covered controller's set for the scene on screen: its
+        unsaved draft when there is one, else what is stored."""
+        result = []
+        for entry in self.coverage():
+            stored = self._sync_set_provider(entry.controller, self.scene_name)
+            draft = self._drafts.get((entry.controller, self.scene_name))
+            result.append(draft.to_sync_set(stored, self.scene_name) if draft is not None else stored)
+        return result
+
+    def send_all(self) -> list[ControllerSyncSet]:
+        sets = self.scene_sync_sets()
+        if sets:
+            self.sendAllRequested.emit(sets)
+        return sets
+
+    def save_all(self) -> list[ControllerSyncSet]:
+        """Saves every unsaved controller of the scene on screen."""
+        saved = []
+        for controller in self.unsaved_controllers():
+            draft = self._drafts.pop((controller, self.scene_name))
+            sync_set = draft.to_sync_set(self._sync_set_provider(controller, self.scene_name), self.scene_name)
+            saved.append(sync_set)
+            self.saveRequested.emit(sync_set)
+        self._refresh_coverage()
+        if saved:
+            self.status_label.setText(
+                self.tr("Saved the {scene} scene for {count} controller(s).").format(
+                    scene=self.scene_name, count=len(saved)
+                )
+            )
+        return saved
 
     def save(self) -> ControllerSyncSet | None:
         sync_set = self.current_sync_set()
         if sync_set is None:
             return None
+        # Dropped before emitting: saving reloads the scene list, which reloads
+        # this scene, and must find it saved.
+        self._drafts.pop(self._loaded_key, None)
         self.saveRequested.emit(sync_set)
-        self._dirty = False
+        self._refresh_coverage()
         self.status_label.setText(
             self.tr("Saved: {count} message(s) in the {scene} sync set of {controller}.").format(
                 count=len(sync_set.messages), scene=sync_set.scene, controller=sync_set.controller
