@@ -29,7 +29,7 @@
 | 🎧 | [Traktor mappings](traktor-mappings.md) | The same for Traktor `.tsi` controller mappings |
 | 🎛️ | [rekordbox mappings](rekordbox-mappings.md) | rekordbox `.midi.csv` mappings, read-only |
 | 🎚️ | [Mixxx mappings](mixxx-mappings.md) | Mixxx `.midi.xml` mappings: explore and re-assign triggers |
-| ✅ | [Verify a controller profile](profile-check.md) | Press each control when asked; share the report |
+| ✅ | [Verify a controller profile](profile-check.md) | Press what is framed; check the lights; audit; share |
 | 🧪 | [Hardware session](hardware-session.md) | The checks still waiting for real hardware, with captures and a report |
 | 🔍 | [Compare mappings](mapping-diff.md) | What changed between two mappings, highlighted on the layouts |
 | ✅ | [Ready for live](live-ready-check.md) | A pre-gig check of the mapping, explained and never auto-fixed |

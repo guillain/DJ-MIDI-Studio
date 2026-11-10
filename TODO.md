@@ -3852,6 +3852,13 @@ close what can't be unblocked here.
    1. Import / compare playlists from a rekordbox XML file (#446) — **done** in `v0.48.208`.
    2. Live Monitor log filters (#447) — **done** in `v0.48.209`.
    3. Modifier layers in the By Deck tab (#448).
+   4. Controller library from real captures (#451, asked 2026-11-11 after a DDJ-XP2 hardware session):
+      the guided check gains categories, photo frame, DJ software context, resume, odd flag, light check
+      and a per-control audit; captures and verified LEDs are kept per controller beside the profiles.
+      Findings that shaped it: the DDJ-XP2 sends 1/2X / 2X = 18 / 19 and has pad modes 5-8 only while
+      Serato drives it (16 / 17 without, PR #452); its LEDs mostly don't answer the button's own note.
+      Left in #451: Serato's startup messages recorded as the controller's init sync set; LOAD DECK 3/4
+      on the DDJ-XP2 and the whole XDJ-XZ still to capture.
 
 ## Tracking rules
 
