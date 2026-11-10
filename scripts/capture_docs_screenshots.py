@@ -1074,6 +1074,19 @@ def _capture_atelier(app: QApplication, window: MainWindow) -> None:
     app.processEvents()
     _save(window, "atelier-remap.png")
 
+    # Issue #428: a macro's steps built by clicking the photo.
+    from djmidi.midi_macros import MidiMacro
+
+    view.macro_panel.set_macros([MidiMacro("Sync lights", "DDJ-XP2")])
+    view.lower_tabs.setCurrentWidget(view.macro_panel)
+    view.pick_key(("DDJ-XP2", "DECK", "BEAT SYNC"))
+    view.pick_key(("DDJ-XP2", "DECK", "QUANTIZE"))
+    view.macro_panel.delay_spin.setValue(250)
+    app.processEvents()
+    _save(window, "atelier-macros.png")
+    view.macro_panel.set_macros(window.macros)
+    view.lower_tabs.setCurrentIndex(0)
+
     probe = LedProbeDialog(feature_by_id("DDJ-XP2", "deck.beat-sync@1"), ["DDJ-XP2"], sender=lambda **_kwargs: None)
     probe.value_spin.setValue(5)
     probe.send(5)
