@@ -184,11 +184,79 @@ __all__ = [
     "LayerEdit",
     "LayerError",
     "find_control_of",
+    "identical_copies",
     "known_modifiers",
     "known_operators",
     "move_into_layer",
+    "move_into_layer_everywhere",
     "remove_layer",
+    "remove_layer_everywhere",
     "set_conditions",
+    "set_conditions_everywhere",
     "specs_of",
     "validate_specs",
 ]
+
+
+# -- every identical copy (issue #440) -------------------------------------------
+#
+# Serato repeats each trigger as identical <control> copies (10 in the
+# maintainer's real file) that must stay identical. A layer edit is computed
+# on the selected copy and replayed at the same position on every control
+# whose XML is the same as the selected one's.
+
+
+def _signature(control: Control) -> bytes:
+    from xml.etree import ElementTree as ET
+
+    from djmidi.exporter import _build_control
+
+    return ET.tostring(_build_control(control))
+
+
+def identical_copies(config: MidiConfig | None, control: Control) -> list[Control]:
+    """`control` and every control written exactly like it, in file order."""
+    if config is None:
+        return [control]
+    wanted = _signature(control)
+    copies = [
+        other
+        for other in config.controls
+        if other is control
+        or (other.channel, other.event_type, other.control) == (control.channel, control.event_type, control.control)
+        and _signature(other) == wanted
+    ]
+    return copies or [control]
+
+
+def _locate(control: Control, node: Case | UserIO) -> tuple[str, int]:
+    for index, case in enumerate(control.cases):
+        if case is node:
+            return "case", index
+    for index, userio in enumerate(control.userios):
+        if userio is node:
+            return "userio", index
+    raise ValueError("not part of this control")
+
+
+def _on_copies(config, control, node, edit) -> list[tuple[Control, LayerEdit]]:
+    kind, index = _locate(control, node)
+    changes = []
+    for copy_ in identical_copies(config, control):
+        twin = copy_.cases[index] if kind == "case" else copy_.userios[index]
+        changes.append((copy_, edit(copy_, twin)))
+    return changes
+
+
+def set_conditions_everywhere(config, control: Control, case: Case, specs) -> list[tuple[Control, LayerEdit]]:
+    specs = validate_specs(specs)
+    return _on_copies(config, control, case, lambda c, twin: set_conditions(c, twin, specs))
+
+
+def move_into_layer_everywhere(config, control: Control, userio: UserIO, specs) -> list[tuple[Control, LayerEdit]]:
+    specs = validate_specs(specs)
+    return _on_copies(config, control, userio, lambda c, twin: move_into_layer(c, twin, specs))
+
+
+def remove_layer_everywhere(config, control: Control, case: Case) -> list[tuple[Control, LayerEdit]]:
+    return _on_copies(config, control, case, remove_layer)
