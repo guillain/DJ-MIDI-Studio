@@ -139,6 +139,11 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **rekordbox XML import** (`v0.48.208-rekordbox-xml-import`, #446) — `Import Rekordbox export…` now also
+  takes a rekordbox XML file and the new `Compare with rekordbox…` takes either form. `rekordbox_xml.read_playlists`
+  streams the COLLECTION (`iterparse`, cleared as it goes), resolves `KeyType` 0 (TrackID) and 1 (Location),
+  names playlists inside folders `Folder / Playlist`, skips entries that resolve to nothing; what #441 writes
+  reads back unchanged. The Traktor compare handler became a shared `_compare_with_file`.
 - [x] **CMD Studio 4a pitch bend: evidence, not a jog** (#442, no release) — building pitch-bend jogs started by
   reading the maintainer's own `data/traktor/cmd-studio-4a.tsi.zip`: device `3- CMD Studio 4a`
   (`S4A_MAPPING`) binds `Ch01..Ch04.PitchBend` to command 4162 on decks A-D as **FaderOrKnob / Direct**
@@ -3839,6 +3844,10 @@ close what can't be unblocked here.
    1. Modifier-layer edits on every identical copy (#440) — **done** in `v0.48.205`.
    2. Export a playlist as rekordbox XML (#441) — **done** in `v0.48.206` (not yet imported in a real rekordbox).
    3. Pitch-bend jogs turn on screen (#442) — **re-scoped** in `v0.48.207`: the Traktor export shows a fader, not a jog; waits for the hardware capture.
+15. **Phase 12**, agreed 2026-11-10 (one PR and tag each):
+   1. Import / compare playlists from a rekordbox XML file (#446) — **done** in `v0.48.208`.
+   2. Live Monitor log filters (#447).
+   3. Modifier layers in the By Deck tab (#448).
 
 ## Tracking rules
 

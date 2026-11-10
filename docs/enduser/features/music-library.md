@@ -27,7 +27,7 @@
 - [Smart playlists](#smart-playlists)
 - [Prepare a set](#prepare-a-set)
 - [Import and export with DJ software](#import-and-export-with-dj-software)
-- [Compare with a Serato crate or Traktor playlist](#compare-with-a-serato-crate-or-traktor-playlist)
+- [Compare with a Serato crate, Traktor or rekordbox playlist](#compare-with-a-serato-crate-traktor-or-rekordbox-playlist)
 - [Play history](#play-history)
 - [Safety: what is never touched](#safety-what-is-never-touched)
 - [Related](#related)
@@ -543,7 +543,7 @@ a new file where you choose, exactly like the Playlists panel's exports.
 | --- | --- | --- |
 | Serato | `Import Serato crate…` (`_Serato_/Subcrates/*.crate`) | `Export as Serato crate…` writes a new `.crate` where you choose; copy it into `_Serato_/Subcrates` yourself |
 | Traktor | `Import Traktor NML…` (playlists of `collection.nml`) | `Export as Traktor playlist…` writes a new `.nml`; in Traktor, right-click `Playlists` → `Import Playlist` |
-| Rekordbox | `Import Rekordbox export…` (USB `PIONEER/rekordbox/export.pdb`) | `Export as rekordbox XML…` writes a new `.xml`; in rekordbox, pick it under *File → Preferences → Bridge → Imported Library*, then import the playlist from the Bridge view |
+| Rekordbox | `Import Rekordbox export…`: a USB `PIONEER/rekordbox/export.pdb`, or a rekordbox XML file (*File → Export Collection in xml format* in rekordbox; playlists in folders are named `Folder / Playlist`) | `Export as rekordbox XML…` writes a new `.xml`; in rekordbox, pick it under *File → Preferences → Bridge → Imported Library*, then import the playlist from the Bridge view |
 
 Imported Serato crate names also help categorize tracks.
 
@@ -555,7 +555,7 @@ written. rekordbox refuses two playlists with the same name in the same
 folder, so rename one first if needed. This export hasn't been tried in a
 running rekordbox yet.
 
-## Compare with a Serato crate or Traktor playlist
+## Compare with a Serato crate, Traktor or rekordbox playlist
 
 Select one of the app's playlists, then:
 
@@ -563,6 +563,7 @@ Select one of the app's playlists, then:
 | --- | --- |
 | `Compare with crate…` | A Serato crate you pick (`_Serato_/Subcrates/*.crate`) |
 | `Compare with Traktor…` | One playlist of a Traktor `.nml` you pick (`collection.nml`, or a single-playlist `.nml`); when the file holds several, you choose which — a playlist with the same name is preselected |
+| `Compare with rekordbox…` | One playlist of a rekordbox XML file or a USB `export.pdb`, chosen the same way |
 
 A window lists the differences in three tabs:
 
