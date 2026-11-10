@@ -74,6 +74,7 @@ what the mapping does, switch pad modes, latch SHIFT, and turn on
 | 🎛️ | [rekordbox mappings](docs/enduser/features/rekordbox-mappings.md) | Open rekordbox `.midi.csv` mappings read-only, every bundled device file included |
 | 🎚️ | [Mixxx mappings](docs/enduser/features/mixxx-mappings.md) | Open Mixxx `.midi.xml` mappings and re-assign MIDI triggers byte-safely |
 | ✅ | [Verify a controller profile](docs/enduser/features/profile-check.md) | Check a profile against your controller, control by control, and share the report |
+| 🧪 | [Hardware session](docs/enduser/features/hardware-session.md) | Run the checks still waiting for real hardware, capture what the controller sends, share the report |
 | 🔍 | [Compare mappings](docs/enduser/features/mapping-diff.md) | What changed between two mappings or since the last save, by physical control, highlighted on the layouts |
 | ✅ | [Ready for live](docs/enduser/features/live-ready-check.md) | A pre-gig check: decks missing Play/Cue/Sync/Load, conflicting controls, buttons without LED feedback — explained, never auto-fixed |
 | 🏷️ | [Readable function names](docs/enduser/features/function-names.md) | `Loop roll` instead of `auto_loop_roll_specific_length` in the trees, search, diff and cheat sheet — original tag on hover |

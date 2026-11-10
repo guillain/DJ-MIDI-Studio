@@ -2318,6 +2318,216 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     </message>
 </context>
 <context>
+    <name>HardwareSession</name>
+    <message>
+        <source>to do</source>
+        <translation>à faire</translation>
+    </message>
+    <message>
+        <source>pass</source>
+        <translation>réussi</translation>
+    </message>
+    <message>
+        <source>fail</source>
+        <translation>échec</translation>
+    </message>
+    <message>
+        <source>skipped</source>
+        <translation>ignoré</translation>
+    </message>
+    <message>
+        <source>DDJ-XP2: 1/2X and 2X notes</source>
+        <translation>DDJ-XP2 : notes 1/2X et 2X</translation>
+    </message>
+    <message>
+        <source>Click Start capture, press 1/2X then 2X on deck 1 (plain, without SHIFT), then Stop capture. The official MIDI Message List and this app&apos;s profile say notes 16 / 17; rekordbox&apos;s bundled mapping says 18 / 19.</source>
+        <translation>Cliquez sur Démarrer la capture, appuyez sur 1/2X puis 2X sur la platine 1 (sans SHIFT), puis sur Arrêter la capture. La MIDI Message List officielle et le profil de l&apos;application indiquent les notes 16 / 17 ; le mapping fourni avec rekordbox indique 18 / 19.</translation>
+    </message>
+    <message>
+        <source>official PDF and this app&apos;s profile</source>
+        <translation>le PDF officiel et le profil de l&apos;application</translation>
+    </message>
+    <message>
+        <source>rekordbox&apos;s bundled mapping</source>
+        <translation>le mapping fourni avec rekordbox</translation>
+    </message>
+    <message>
+        <source>CMD Micro: jog wheel messages</source>
+        <translation>CMD Micro : messages des jog wheels</translation>
+    </message>
+    <message>
+        <source>Click Start capture, turn the left jog a little clockwise, then counter-clockwise, then do the same with the right jog, and Stop capture. The capture shows which Control Change numbers and values the jogs send, which the app needs to turn them on screen.</source>
+        <translation>Cliquez sur Démarrer la capture, tournez un peu le jog gauche dans le sens horaire puis dans l&apos;autre sens, faites de même avec le jog droit, puis cliquez sur Arrêter la capture. La capture montre les numéros et valeurs de Control Change qu&apos;envoient les jogs, dont l&apos;application a besoin pour les faire tourner à l&apos;écran.</translation>
+    </message>
+    <message>
+        <source>CMD Studio 4a: jog wheel messages</source>
+        <translation>CMD Studio 4a : messages des jog wheels</translation>
+    </message>
+    <message>
+        <source>Click Start capture, turn each jog a little both ways, then Stop capture. Traktor&apos;s mapping suggests the jogs send pitch bend, which this app doesn&apos;t read yet: if nothing is captured while you turn them, write that in the note — it confirms it.</source>
+        <translation>Cliquez sur Démarrer la capture, tournez un peu chaque jog dans les deux sens, puis cliquez sur Arrêter la capture. Le mapping Traktor laisse penser que les jogs envoient du pitch bend, que l&apos;application ne lit pas encore : si rien n&apos;est capturé pendant que vous les tournez, notez-le — cela le confirme.</translation>
+    </message>
+    <message>
+        <source>Atelier: probe the LEDs</source>
+        <translation>Atelier : sonder les LED</translation>
+    </message>
+    <message>
+        <source>In the Atelier tab, pick a button of each controller, click Probe this LED…, send its value and watch the button. Save what lights up. Note any button whose LED doesn&apos;t answer on its own note.</source>
+        <translation>Dans l&apos;onglet Atelier, choisissez un bouton de chaque contrôleur, cliquez sur Sonder cette LED…, envoyez sa valeur et regardez le bouton. Enregistrez ce qui s&apos;allume. Notez tout bouton dont la LED ne répond pas sur sa propre note.</translation>
+    </message>
+    <message>
+        <source>Pioneer pad colours</source>
+        <translation>Couleurs des pads Pioneer</translation>
+    </message>
+    <message>
+        <source>In the LED probe, send a few values (1, 8, 16, 24, 32, 40, 48, 56) to a DDJ-XP2 or XDJ-XZ pad and write down the colour each one shows. The colour table the project has for Pioneer pads has no official source yet.</source>
+        <translation>Dans la sonde LED, envoyez quelques valeurs (1, 8, 16, 24, 32, 40, 48, 56) à un pad de DDJ-XP2 ou de XDJ-XZ et notez la couleur affichée pour chacune. La table de couleurs des pads Pioneer dont dispose le projet n&apos;a pas encore de source officielle.</translation>
+    </message>
+    <message>
+        <source>No freeze during a live session</source>
+        <translation>Aucun gel pendant une session live</translation>
+    </message>
+    <message>
+        <source>With Serato or Traktor running and the Live Monitor open, play for ten minutes: jogs, pads, faders. Note whether the window ever stopped responding. Then send the log (Help → Report a Problem…): it now names the port that sends large MIDI bursts.</source>
+        <translation>Avec Serato ou Traktor lancé et le Live Monitor ouvert, jouez dix minutes : jogs, pads, faders. Notez si la fenêtre a cessé de répondre. Envoyez ensuite le journal (Aide → Signaler un problème…) : il nomme désormais le port qui envoie de grosses rafales MIDI.</translation>
+    </message>
+    <message>
+        <source>Serato: MIDI-learn Play, Cue and Sync</source>
+        <translation>Serato : MIDI Learn de Play, Cue et Sync</translation>
+    </message>
+    <message>
+        <source>Run scripts/serato_learn_iac.py, then in Serato&apos;s MIDI mode learn Play, Cue and Sync on decks 1 and 2 from the IAC bus, and export the mapping. Attach the XML to the issue: it gives Serato&apos;s own function names, which the Serato ↔ Traktor converter and the Atelier&apos;s function assignment wait for.</source>
+        <translation>Lancez scripts/serato_learn_iac.py, puis, dans le mode MIDI de Serato, apprenez Play, Cue et Sync sur les platines 1 et 2 depuis le bus IAC, et exportez le mapping. Joignez le XML à l&apos;issue : il donne les noms de fonctions propres à Serato, qu&apos;attendent le convertisseur Serato ↔ Traktor et l&apos;attribution de fonctions de l&apos;Atelier.</translation>
+    </message>
+    <message>
+        <source>Traktor: import a playlist exported by this app</source>
+        <translation>Traktor : importer une playlist exportée par l&apos;application</translation>
+    </message>
+    <message>
+        <source>In Traktor, import Exports/djmidi-import-test.nml from the app&apos;s workspace (Import Playlist). Note whether the playlist DJMIDI import test appears with its five tracks.</source>
+        <translation>Dans Traktor, importez Exports/djmidi-import-test.nml depuis l&apos;espace de travail de l&apos;application (Import Playlist). Notez si la playlist DJMIDI import test apparaît avec ses cinq morceaux.</translation>
+    </message>
+    <message>
+        <source>Traktor: Controller Manager exports</source>
+        <translation>Traktor : exports du Controller Manager</translation>
+    </message>
+    <message>
+        <source>In Traktor&apos;s Controller Manager, export an empty Generic MIDI device, then add one button command and export again, then change one setting and export a third time. Attach the three .tsi files.</source>
+        <translation>Dans le Controller Manager de Traktor, exportez un appareil Generic MIDI vide, ajoutez une commande de bouton et exportez de nouveau, puis changez un réglage et exportez une troisième fois. Joignez les trois fichiers .tsi.</translation>
+    </message>
+    <message>
+        <source>Nothing captured yet.</source>
+        <translation>Rien n&apos;a encore été capturé.</translation>
+    </message>
+    <message>
+        <source>No press captured: {count} other message(s).</source>
+        <translation>Aucun appui capturé : {count} autre(s) message(s).</translation>
+    </message>
+    <message>
+        <source>Captured notes {numbers}: they match {source}.</source>
+        <translation>Notes capturées {numbers} : elles correspondent à {source}.</translation>
+    </message>
+    <message>
+        <source>Captured notes {numbers}: they match no known source.</source>
+        <translation>Notes capturées {numbers} : elles ne correspondent à aucune source connue.</translation>
+    </message>
+    <message>
+        <source>{count} message(s) captured: {kinds}.</source>
+        <translation>{count} message(s) capturé(s) : {kinds}.</translation>
+    </message>
+</context>
+<context>
+    <name>HardwareSessionDialog</name>
+    <message>
+        <source>Hardware session</source>
+        <translation>Session matériel</translation>
+    </message>
+    <message>
+        <source>What the project still needs checked on real controllers and DJ software. Pick a check, follow its steps, then mark it. Everything is saved as you go; share the report in the issue each check names.</source>
+        <translation>Ce que le projet doit encore vérifier sur de vrais contrôleurs et logiciels DJ. Choisissez une vérification, suivez ses étapes, puis notez le résultat. Tout est enregistré au fur et à mesure ; partagez le rapport dans l&apos;issue que nomme chaque vérification.</translation>
+    </message>
+    <message>
+        <source>Start capture</source>
+        <translation>Démarrer la capture</translation>
+    </message>
+    <message>
+        <source>Clear capture</source>
+        <translation>Effacer la capture</translation>
+    </message>
+    <message>
+        <source>Pass</source>
+        <translation>Réussi</translation>
+    </message>
+    <message>
+        <source>Fail</source>
+        <translation>Échec</translation>
+    </message>
+    <message>
+        <source>Skip</source>
+        <translation>Passer</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>Réinitialiser</translation>
+    </message>
+    <message>
+        <source>Note: what you saw, values, anything odd</source>
+        <translation>Note : ce que vous avez vu, les valeurs, toute bizarrerie</translation>
+    </message>
+    <message>
+        <source>Copy report</source>
+        <translation>Copier le rapport</translation>
+    </message>
+    <message>
+        <source>Save report…</source>
+        <translation>Enregistrer le rapport…</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Fermer</translation>
+    </message>
+    <message>
+        <source>{done}/{total} checked · {passed} pass · {failed} fail · {skipped} skipped</source>
+        <translation>{done}/{total} vérifiées · {passed} réussies · {failed} en échec · {skipped} ignorées</translation>
+    </message>
+    <message>
+        <source>Stop capture</source>
+        <translation>Arrêter la capture</translation>
+    </message>
+    <message>
+        <source>Result: {status}</source>
+        <translation>Résultat : {status}</translation>
+    </message>
+    <message>
+        <source>No MIDI input is open: connect a controller, or pick one in Live Monitor.</source>
+        <translation>Aucune entrée MIDI ouverte : branchez un contrôleur, ou choisissez-en une dans le Live Monitor.</translation>
+    </message>
+    <message>
+        <source>Capture full: stop it, or clear it to start again.</source>
+        <translation>Capture pleine : arrêtez-la, ou effacez-la pour recommencer.</translation>
+    </message>
+    <message>
+        <source>Couldn&apos;t save the session: {error}</source>
+        <translation>Impossible d&apos;enregistrer la session : {error}</translation>
+    </message>
+    <message>
+        <source>Report copied to the clipboard.</source>
+        <translation>Rapport copié dans le presse-papiers.</translation>
+    </message>
+    <message>
+        <source>Save report</source>
+        <translation>Enregistrer le rapport</translation>
+    </message>
+    <message>
+        <source>Markdown (*.md)</source>
+        <translation>Markdown (*.md)</translation>
+    </message>
+    <message>
+        <source>Report saved to {path}</source>
+        <translation>Rapport enregistré dans {path}</translation>
+    </message>
+</context>
+<context>
     <name>HealthReportDialog</name>
     <message>
         <source>Issue</source>
@@ -2482,6 +2692,14 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     <message>
         <source>Checks a profile against your real controller, one control at a time: the app asks for each physical control (then SHIFT + it, when the profile has a SHIFT layer) and compares what the controller sends with what the profile says.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Listen on&lt;/b&gt;: pick your controller&apos;s input if several are connected.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Skip (not on my unit)&lt;/b&gt; for a control your controller doesn&apos;t have; &lt;b&gt;Back&lt;/b&gt; to redo one.&lt;/li&gt;&lt;li&gt;✓ means it matches; ✗ shows what came instead, and whether the profile gives that message to another control or doesn&apos;t know it.&lt;/li&gt;&lt;/ul&gt;Then &lt;b&gt;Submit to the project…&lt;/b&gt; opens a pre-filled GitHub issue with the report, so the profile can be marked verified or corrected; &lt;b&gt;Copy report&lt;/b&gt; and &lt;b&gt;Save report…&lt;/b&gt; keep it for you. Nothing is sent until you submit the issue yourself.</source>
         <translation>Compare un profil à votre vrai contrôleur, une commande à la fois : l&apos;application demande chaque commande physique (puis SHIFT + celle-ci, quand le profil a une couche SHIFT) et compare ce que le contrôleur envoie à ce que dit le profil.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Écouter sur&lt;/b&gt; : choisissez l&apos;entrée de votre contrôleur si plusieurs sont branchés.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Passer (absente de mon appareil)&lt;/b&gt; pour une commande que votre contrôleur n&apos;a pas ; &lt;b&gt;Retour&lt;/b&gt; pour en refaire une.&lt;/li&gt;&lt;li&gt;✓ signifie que c&apos;est conforme ; ✗ montre ce qui est arrivé à la place, et si le profil donne ce message à une autre commande ou ne le connaît pas.&lt;/li&gt;&lt;/ul&gt;Ensuite, &lt;b&gt;Envoyer au projet…&lt;/b&gt; ouvre une issue GitHub pré-remplie avec le rapport, pour que le profil soit marqué vérifié ou corrigé ; &lt;b&gt;Copier le rapport&lt;/b&gt; et &lt;b&gt;Enregistrer le rapport…&lt;/b&gt; le gardent pour vous. Rien n&apos;est envoyé tant que vous ne soumettez pas l&apos;issue vous-même.</translation>
+    </message>
+    <message>
+        <source>Hardware session</source>
+        <translation>Session matériel</translation>
+    </message>
+    <message>
+        <source>The checks the project still needs on real controllers and DJ software, in one list. Pick a check and follow its steps.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Start capture&lt;/b&gt; records what the controller sends while you press or turn what the check asks; the line under the capture says which source it agrees with.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Pass&lt;/b&gt;, &lt;b&gt;Fail&lt;/b&gt; or &lt;b&gt;Skip&lt;/b&gt; marks the check; the note keeps what you saw.&lt;/li&gt;&lt;/ul&gt;Everything is saved as you go in the workspace&apos;s Exports folder. &lt;b&gt;Copy report&lt;/b&gt; or &lt;b&gt;Save report…&lt;/b&gt; gives the results as Markdown for the issue each check names; nothing is sent anywhere by the app.</source>
+        <translation>Les vérifications dont le projet a encore besoin sur de vrais contrôleurs et logiciels DJ, en une seule liste. Choisissez une vérification et suivez ses étapes.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Démarrer la capture&lt;/b&gt; enregistre ce qu&apos;envoie le contrôleur pendant que vous appuyez ou tournez ce que demande la vérification ; la ligne sous la capture indique la source avec laquelle elle concorde.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Réussi&lt;/b&gt;, &lt;b&gt;Échec&lt;/b&gt; ou &lt;b&gt;Passer&lt;/b&gt; note la vérification ; la note garde ce que vous avez vu.&lt;/li&gt;&lt;/ul&gt;Tout est enregistré au fur et à mesure dans le dossier Exports de l&apos;espace de travail. &lt;b&gt;Copier le rapport&lt;/b&gt; ou &lt;b&gt;Enregistrer le rapport…&lt;/b&gt; donne les résultats en Markdown pour l&apos;issue que nomme chaque vérification ; l&apos;application n&apos;envoie rien.</translation>
     </message>
     <message>
         <source>Controller Profile Library</source>
@@ -4332,6 +4550,14 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
     <message>
         <source>Detect your controllers, open your Serato mapping and record a controller sync set.</source>
         <translation>Détecte vos contrôleurs, ouvre votre mapping Serato et enregistre un jeu de synchronisation.</translation>
+    </message>
+    <message>
+        <source>&amp;Hardware Session...</source>
+        <translation>Session &amp;matériel...</translation>
+    </message>
+    <message>
+        <source>The checks still waiting for real controllers and DJ software, with a report to share.</source>
+        <translation>Les vérifications qui attendent encore de vrais contrôleurs et logiciels DJ, avec un rapport à partager.</translation>
     </message>
     <message>
         <source>Check for &amp;Updates...</source>

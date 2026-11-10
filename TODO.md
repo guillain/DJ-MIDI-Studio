@@ -139,6 +139,14 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Guided hardware session** (`v0.48.198-hardware-session`, #426) — **Help → Hardware Session…** lists every
+  check still waiting for real controllers or DJ software (DDJ-XP2 1/2X / 2X notes, CMD Micro / Studio 4a jogs, the
+  Atelier's LED probe and Pioneer colours, the freeze fix, Serato MIDI-learn, Traktor import and Controller Manager
+  exports), each with its steps and issue. A check can capture what the controller sends (for the DDJ-XP2 it says
+  whether the notes agree with the official PDF or rekordbox), and is marked pass / fail / skip with a note; the
+  session is saved in `Exports/hardware-session.json` and copied or saved as a Markdown report. Found while
+  building it: the Live Monitor drops pitch bend, so the CMD Studio 4a jog check can only confirm it sends nothing
+  the app reads yet.
 - [x] **Atelier step 6: remap by clicking** (`v0.48.197-atelier-remap`, epic #413) — in the Atelier, pick a MIDI
   Routing route, select a control, click **Remap from this control** then the control it should act as (or **Block
   this control**): the rule lands in that route's transform, listed in words ("BEAT SYNC (deck 1) → QUANTIZE
@@ -3757,12 +3765,18 @@ close what can't be unblocked here.
    MIDI-learn capture on the IAC bus (`scripts/serato_learn_iac.py`; the DJ
    TechTools article only gave play / cue_point / reverse / modifiers, still
    no Sync or main Cue) for #194; the Traktor Controller Manager exports for
-   #233 and an *Import Playlist* test of the `.nml` export.
+   #233 and an *Import Playlist* test of the `.nml` export. Since `v0.48.198`
+   all of these are one checklist in **Help → Hardware Session…** (#426).
 11. **To watch** (2026-11-06): a native Qt crash on a list click
    (`v0.48.186`) wasn't reproduced; since `v0.48.189` the next one leaves its
    Python stack in the log at the next start and, at DEBUG, a `click:` trail
    naming the widget. The Live Monitor once listed its input ports twice
    (`IAC 1, IAC 2, IAC 1, IAC 2`) in the same session — not reproduced either.
+12. **Phase 9**, agreed 2026-11-09 (one PR and tag each, in this order):
+   1. Guided hardware session (#426) — **done** in `v0.48.198`.
+   2. Atelier scenes spanning several controllers (#427).
+   3. Atelier macros built on the photo (#428).
+   4. Quality pass: split `main_window.py`, trim CLAUDE.md, faster tests (#429).
 
 ## Tracking rules
 

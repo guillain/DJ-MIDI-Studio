@@ -73,6 +73,7 @@ Open several, one per controller.
 | 🎛️ | [rekordbox mappings](features/rekordbox-mappings.md) | Open rekordbox `.midi.csv` mappings read-only |
 | 🎚️ | [Mixxx mappings](features/mixxx-mappings.md) | Open Mixxx `.midi.xml` mappings and re-assign MIDI triggers byte-safely |
 | ✅ | [Verify a controller profile](features/profile-check.md) | Check a profile against your controller, control by control, and share the report |
+| 🧪 | [Hardware session](features/hardware-session.md) | Run the checks still waiting for real hardware, capture what the controller sends, share the report |
 | 🔍 | [Compare mappings](features/mapping-diff.md) | What changed between two mappings, by physical control |
 | ✅ | [Ready for live](features/live-ready-check.md) | Pre-gig check: missing Play/Cue/Sync/Load, conflicts, unlit buttons |
 | 🏷️ | [Readable function names](features/function-names.md) | Short names for Serato function tags, original tag on hover |
