@@ -35,7 +35,7 @@ def test_control_change_converts():
 
 
 def test_unmapped_message_type_returns_none():
-    msg = mido.Message("pitchwheel", channel=0, pitch=0)
+    msg = mido.Message("program_change", channel=0, program=3)
     assert mido_message_to_event(msg, "in") is None
 
     clock_msg = mido.Message("clock")

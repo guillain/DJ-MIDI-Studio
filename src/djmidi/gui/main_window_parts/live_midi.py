@@ -14,7 +14,7 @@ from djmidi.gui.geometry import (
     CONTROL_GEOMETRY,
     resolve_geometry_label,
 )
-from djmidi.midi_io import MidiEvent
+from djmidi.midi_io import PITCH_BEND, MidiEvent
 
 
 class LiveMidiMixin:
@@ -97,6 +97,12 @@ class LiveMidiMixin:
         # this is passive state, not a user gesture.
         if event.direction == "out":
             self._on_output_led_event(event, value)
+            return
+
+        # Pitch bend (issue #436) has no catalog entry and streams like a
+        # jog: it reaches the log, Stage Mode and captures above, but must
+        # not clear the layouts' selection or flash anything.
+        if event.event_type == PITCH_BEND:
             return
 
         # A jog-wheel turn is a stream of relative Control Change ticks that

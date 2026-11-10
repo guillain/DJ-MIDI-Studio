@@ -56,8 +56,12 @@ loaded meanwhile starts the monitor right after `■ Stop`.
 | Time | When the message arrived |
 | Dir | `in` (controller → computer) or `out` (software → controller) |
 | Source device | The MIDI port it came from |
-| Channel, Type, Data1, Data2 | The raw MIDI message (Note On/Off or Control Change, number, value) |
+| Channel, Type, Data1, Data2 | The raw MIDI message (Note On/Off, Control Change or Pitch Bend, number, value) |
 | Physical / Serato | The physical control, then the mapped function |
+
+A **Pitch Bend** message has no number (Data1 is 0) and a value from 0 to
+16383, 8192 being the centre. It is logged and saved with the log, but it
+never selects or lights a control.
 
 Physical names are matched against the source device, so a pad on one
 controller is never mistaken for the same note on another one.

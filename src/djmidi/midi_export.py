@@ -15,11 +15,16 @@ from pathlib import Path
 
 import mido
 
-from djmidi.midi_io import MidiEvent
+from djmidi.midi_io import PITCH_BEND, PITCH_BEND_CENTRE, MidiEvent
 
 TICKS_PER_BEAT = 480
 TEMPO = mido.bpm2tempo(120)  # 1 beat = 0.5 s, so 1 tick ~ 1 ms
-_TYPES = {"Note On": "note_on", "Note Off": "note_off", "Control Change": "control_change"}
+_TYPES = {
+    "Note On": "note_on",
+    "Note Off": "note_off",
+    "Control Change": "control_change",
+    PITCH_BEND: "pitchwheel",
+}
 
 
 def _message(event: MidiEvent) -> mido.Message | None:
@@ -30,6 +35,10 @@ def _message(event: MidiEvent) -> mido.Message | None:
         channel, data1, data2 = int(event.channel) - 1, int(event.data1), int(event.data2)
     except ValueError:
         return None
+    if kind == "pitchwheel":  # data2 is the 14-bit value (issue #436)
+        if not (0 <= channel <= 15 and 0 <= data2 <= 16383):
+            return None
+        return mido.Message(kind, channel=channel, pitch=data2 - PITCH_BEND_CENTRE)
     if not (0 <= channel <= 15 and 0 <= data1 <= 127 and 0 <= data2 <= 127):
         return None
     if kind == "control_change":

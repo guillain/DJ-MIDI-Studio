@@ -137,7 +137,7 @@ def test_poll_yields_events_from_input_port():
 def test_poll_filters_unsupported_message_types():
     monitor = MidiMonitor()
     mock_port = MagicMock()
-    mock_port.iter_pending.return_value = [mido.Message("clock"), mido.Message("pitchwheel", pitch=0)]
+    mock_port.iter_pending.return_value = [mido.Message("clock"), mido.Message("program_change", program=3)]
     with patch("mido.open_input", return_value=mock_port):
         monitor.open_input("IAC Bus 1")
     events = monitor.poll()

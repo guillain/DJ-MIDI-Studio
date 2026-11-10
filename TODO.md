@@ -139,6 +139,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Live pitch bend** (`v0.48.202-live-pitch-bend`, #436) — the Live Monitor reads pitch bend
+  (`Pitch Bend`, data1 0, 14-bit value 0-16383, 8192 centre), as the mapping parsers already named it: logged,
+  exported in the MIDI log, shown in Stage Mode and captured by the Hardware Session (the CMD Studio 4a jog
+  check now shows it). Every note/CC consumer (Learn, macro triggers and steps, sync recording, profile
+  check, catalog lookup) ignores it, and the live path returns before the layouts so a bend never clears the
+  selection. Checked end to end on the IAC bus.
 - [x] **Quality pass** (`v0.48.201-quality-pass`, #429) — `gui/main_window.py` 4,181 → 2,200 lines: dock
   windows, mapping views, live MIDI, files, macros and tools became mixins in `gui/main_window_parts/` (moved
   strings keep the `MainWindow` translation context; the FR/DE catalogues came out identical; methods using
@@ -3796,6 +3802,10 @@ close what can't be unblocked here.
    2. Atelier scenes spanning several controllers (#427) — **done** in `v0.48.199`.
    3. Atelier macros built on the photo (#428) — **done** in `v0.48.200`.
    4. Quality pass: split `main_window.py`, trim CLAUDE.md, faster tests (#429) — **done** in `v0.48.201`.
+13. **Phase 10**, agreed 2026-11-10 (one PR and tag each):
+   1. Live pitch bend (#436) — **done** in `v0.48.202`.
+   2. Editable Serato SHIFT / modifier layers (#434).
+   3. Atelier macros: toggle second list and wait steps (#435).
 
 ## Tracking rules
 

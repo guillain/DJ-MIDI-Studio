@@ -103,8 +103,8 @@ CHECKS: tuple[Check, ...] = (
         QT_TRANSLATE_NOOP(
             "HardwareSession",
             "Click Start capture, turn each jog a little both ways, then Stop capture. Traktor's mapping "
-            "suggests the jogs send pitch bend, which this app doesn't read yet: if nothing is captured "
-            "while you turn them, write that in the note — it confirms it.",
+            "suggests the jogs send pitch bend: the capture shows it as Pitch Bend lines, with values "
+            "around 8192 (the centre).",
         ),
         "#356",
         controller="Behringer CMD Studio 4a",

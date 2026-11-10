@@ -39,7 +39,14 @@ _TYPE_TO_EVENT_TYPE = {
     "note_on": "Note On",
     "note_off": "Note Off",
     "control_change": "Control Change",
+    "pitchwheel": "Pitch Bend",
 }
+
+# A pitch bend has no number: like the mapping parsers (Mixxx, Traktor,
+# rekordbox), it is control "0", and its value is the 14-bit amount
+# (0-16383, 8192 = centre) -- not a 7-bit value (issue #436).
+PITCH_BEND = "Pitch Bend"
+PITCH_BEND_CENTRE = 8192
 
 
 @dataclass(frozen=True)
@@ -57,14 +64,16 @@ def mido_message_to_event(
     msg: mido.Message, direction: Direction, timestamp: float | None = None, port: str = ""
 ) -> MidiEvent | None:
     """Converts a mido Message to a MidiEvent, or None for message types this
-    tool doesn't map (clock, sysex, pitchwheel, ...) — only the note/CC
-    triggers a Serato MIDI mapping can actually bind to are meaningful here."""
+    tool doesn't map (clock, sysex, program change, ...): notes, Control
+    Change and pitch bend (data1 "0", data2 the 14-bit value 0-16383)."""
     event_type = _TYPE_TO_EVENT_TYPE.get(msg.type)
     if event_type is None:
         return None
     channel = str(msg.channel + 1)  # mido is 0-indexed; our model/catalog are 1-indexed
     if msg.type in ("note_on", "note_off"):
         data1, data2 = str(msg.note), str(msg.velocity)
+    elif msg.type == "pitchwheel":  # mido's pitch is -8192..8191
+        data1, data2 = "0", str(msg.pitch + PITCH_BEND_CENTRE)
     else:  # control_change
         data1, data2 = str(msg.control), str(msg.value)
     return MidiEvent(
