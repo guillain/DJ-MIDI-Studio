@@ -2566,12 +2566,12 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
         <translation>Cliquez sur Démarrer la capture, tournez un peu le jog gauche dans le sens horaire puis dans l&apos;autre sens, faites de même avec le jog droit, puis cliquez sur Arrêter la capture. La capture montre les numéros et valeurs de Control Change qu&apos;envoient les jogs, dont l&apos;application a besoin pour les faire tourner à l&apos;écran.</translation>
     </message>
     <message>
-        <source>CMD Studio 4a: jog wheel messages</source>
-        <translation>CMD Studio 4a : messages des jog wheels</translation>
+        <source>CMD Studio 4a: jogs and pitch faders</source>
+        <translation>CMD Studio 4a : jogs et faders de pitch</translation>
     </message>
     <message>
-        <source>Click Start capture, turn each jog a little both ways, then Stop capture. Traktor&apos;s mapping suggests the jogs send pitch bend: the capture shows it as Pitch Bend lines, with values around 8192 (the centre).</source>
-        <translation>Cliquez sur Démarrer la capture, tournez un peu chaque jog dans les deux sens, puis cliquez sur Arrêter la capture. Le mapping Traktor laisse penser que les jogs envoient du pitch bend : la capture l&apos;affiche en lignes Pitch Bend, avec des valeurs autour de 8192 (le centre).</translation>
+        <source>Click Start capture, turn the deck 1 jog a little both ways, then move the deck 1 pitch fader from end to end, then Stop capture, and write in the note which control sent what. Your Traktor export binds one pitch bend per deck as an absolute fader, not as a jog: the capture shows whether the jog or the pitch fader sends it (Pitch Bend lines, 0 to 16383).</source>
+        <translation>Cliquez sur Démarrer la capture, tournez un peu le jog de la platine 1 dans les deux sens, puis déplacez le fader de pitch de la platine 1 d&apos;un bout à l&apos;autre, cliquez sur Arrêter la capture et notez quel contrôle a envoyé quoi. Votre export Traktor associe un pitch bend par platine à un fader absolu, pas à un jog : la capture montre si c&apos;est le jog ou le fader de pitch qui l&apos;envoie (lignes Pitch Bend, de 0 à 16383).</translation>
     </message>
     <message>
         <source>Atelier: probe the LEDs</source>

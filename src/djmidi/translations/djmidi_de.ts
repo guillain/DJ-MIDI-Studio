@@ -2566,12 +2566,12 @@ Trotzdem neu zuweisen? Beide lösen auf demselben Bedienelement aus.</translatio
         <translation>Klicken Sie auf Aufnahme starten, drehen Sie das linke Jogwheel etwas im Uhrzeigersinn, dann dagegen, danach ebenso das rechte, und klicken Sie auf Aufnahme stoppen. Die Aufnahme zeigt, welche Control-Change-Nummern und -Werte die Jogwheels senden; die App braucht sie, um sie auf dem Bildschirm zu drehen.</translation>
     </message>
     <message>
-        <source>CMD Studio 4a: jog wheel messages</source>
-        <translation>CMD Studio 4a: Meldungen der Jogwheels</translation>
+        <source>CMD Studio 4a: jogs and pitch faders</source>
+        <translation>CMD Studio 4a: Jogwheels und Pitch-Fader</translation>
     </message>
     <message>
-        <source>Click Start capture, turn each jog a little both ways, then Stop capture. Traktor&apos;s mapping suggests the jogs send pitch bend: the capture shows it as Pitch Bend lines, with values around 8192 (the centre).</source>
-        <translation>Klicken Sie auf Aufnahme starten, drehen Sie jedes Jogwheel etwas in beide Richtungen und klicken Sie auf Aufnahme stoppen. Laut Traktor-Mapping senden die Jogwheels Pitch Bend: Die Aufnahme zeigt es als Pitch-Bend-Zeilen mit Werten um 8192 (die Mitte).</translation>
+        <source>Click Start capture, turn the deck 1 jog a little both ways, then move the deck 1 pitch fader from end to end, then Stop capture, and write in the note which control sent what. Your Traktor export binds one pitch bend per deck as an absolute fader, not as a jog: the capture shows whether the jog or the pitch fader sends it (Pitch Bend lines, 0 to 16383).</source>
+        <translation>Klicken Sie auf Aufnahme starten, drehen Sie das Jogwheel von Deck 1 etwas in beide Richtungen, schieben Sie dann den Pitch-Fader von Deck 1 von Anschlag zu Anschlag, klicken Sie auf Aufnahme stoppen und notieren Sie, welches Bedienelement was gesendet hat. Ihr Traktor-Export bindet pro Deck einen Pitch Bend als absoluten Fader, nicht als Jogwheel: Die Aufnahme zeigt, ob das Jogwheel oder der Pitch-Fader ihn sendet (Pitch-Bend-Zeilen, 0 bis 16383).</translation>
     </message>
     <message>
         <source>Atelier: probe the LEDs</source>

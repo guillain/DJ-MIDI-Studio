@@ -49,7 +49,8 @@ value from 0 to 16383 (8192 is the centre).
 | Check | What it settles | Issue |
 | --- | --- | --- |
 | DDJ-XP2: 1/2X and 2X notes | Notes 16 / 17 (official PDF) or 18 / 19 (rekordbox) | #356 |
-| CMD Micro / CMD Studio 4a jogs | What the jogs send, so they can turn on screen | #356 |
+| CMD Micro jogs | What the jogs send, so they can turn on screen | #356 |
+| CMD Studio 4a: jogs and pitch faders | Whether the pitch bend Traktor binds per deck comes from the jog or the pitch fader | #356 |
 | Atelier: probe the LEDs | Real LED addresses, via [the Atelier](atelier.md)'s LED probe | #413 |
 | Pioneer pad colours | Which value shows which colour | #413 |
 | No freeze during a live session | The freeze fix, and which port sends MIDI bursts | #356 |

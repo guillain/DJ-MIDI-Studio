@@ -139,6 +139,12 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **CMD Studio 4a pitch bend: evidence, not a jog** (#442, no release) — building pitch-bend jogs started by
+  reading the maintainer's own `data/traktor/cmd-studio-4a.tsi.zip`: device `3- CMD Studio 4a`
+  (`S4A_MAPPING`) binds `Ch01..Ch04.PitchBend` to command 4162 on decks A-D as **FaderOrKnob / Direct**
+  (absolute), whereas Traktor maps jogs as Encoder / Relative. So the pitch bend is most likely each deck's
+  pitch fader, and the earlier "pitch-bend jog" note was a guess. No jog was built on it; the Hardware
+  Session check now asks to move the jog and the pitch fader and say which sends it.
 - [x] **rekordbox XML export** (`v0.48.206-rekordbox-xml`, #441) — `Export as rekordbox XML…` in the Music
   Library's Playlists and Set panels writes a new file in Pioneer's published "XML file format for playlists
   sharing" (`DJ_PLAYLISTS` 1.0.0, a `COLLECTION` of the playlist's tracks with `file://localhost/` locations
@@ -3707,7 +3713,8 @@ close what can't be unblocked here.
      VirtualDJ isn't installed on the maintainer's Mac.
    - ~~CMD LC-1: a flat top-down photo — geometry.~~ Already shipped in
      `v0.48.47-cmd-lc-1-images` (photo + 52 markers); this entry was stale.
-   - CMD Micro jog CC and CMD Studio 4a pitch-bend jog, via Live Monitor.
+   - CMD Micro jog CC and CMD Studio 4a jog / pitch-fader messages, via Live Monitor (see the 2026-11-10
+     finding: the Studio 4a's pitch bend is bound as a fader in Traktor, #442).
 3. **Phase 2 — implementation**, one PR and tag each: #194 converter (Play/Cue/
    Sync/hot cues only, everything else refused), #233 decision, rekordbox
    (read-only, **done** in `v0.48.144-rekordbox-mapping-plugin`) and
@@ -3831,7 +3838,7 @@ close what can't be unblocked here.
 14. **Phase 11**, agreed 2026-11-10 (one PR and tag each):
    1. Modifier-layer edits on every identical copy (#440) — **done** in `v0.48.205`.
    2. Export a playlist as rekordbox XML (#441) — **done** in `v0.48.206` (not yet imported in a real rekordbox).
-   3. Pitch-bend jogs turn on screen, unverified until the hardware session (#442).
+   3. Pitch-bend jogs turn on screen (#442) — **re-scoped** in `v0.48.207`: the Traktor export shows a fader, not a jog; waits for the hardware capture.
 
 ## Tracking rules
 

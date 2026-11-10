@@ -99,12 +99,13 @@ CHECKS: tuple[Check, ...] = (
     ),
     Check(
         "cmd-studio-4a-jog",
-        QT_TRANSLATE_NOOP("HardwareSession", "CMD Studio 4a: jog wheel messages"),
+        QT_TRANSLATE_NOOP("HardwareSession", "CMD Studio 4a: jogs and pitch faders"),
         QT_TRANSLATE_NOOP(
             "HardwareSession",
-            "Click Start capture, turn each jog a little both ways, then Stop capture. Traktor's mapping "
-            "suggests the jogs send pitch bend: the capture shows it as Pitch Bend lines, with values "
-            "around 8192 (the centre).",
+            "Click Start capture, turn the deck 1 jog a little both ways, then move the deck 1 pitch fader "
+            "from end to end, then Stop capture, and write in the note which control sent what. Your Traktor "
+            "export binds one pitch bend per deck as an absolute fader, not as a jog: the capture shows "
+            "whether the jog or the pitch fader sends it (Pitch Bend lines, 0 to 16383).",
         ),
         "#356",
         controller="Behringer CMD Studio 4a",
