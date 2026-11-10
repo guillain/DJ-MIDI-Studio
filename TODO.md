@@ -139,6 +139,10 @@ Implemented contract, runtime, test, and documentation work:
 
 ### Recent evolution chapters
 
+- [x] **Live Monitor log filters** (`v0.48.209-live-monitor-filters`, #447) — a **Show** row filters the log
+  by port (ports seen so far), direction, kind (notes / CC / pitch bend) and **Hide jog wheels**, with a hidden
+  count. Display only (`setRowHidden`): drawings, captures, macros and Save log… keep every message. The row
+  lives in the top scroll area, so the dock still never extends past the window edge.
 - [x] **rekordbox XML import** (`v0.48.208-rekordbox-xml-import`, #446) — `Import Rekordbox export…` now also
   takes a rekordbox XML file and the new `Compare with rekordbox…` takes either form. `rekordbox_xml.read_playlists`
   streams the COLLECTION (`iterparse`, cleared as it goes), resolves `KeyType` 0 (TrackID) and 1 (Location),
@@ -3846,7 +3850,7 @@ close what can't be unblocked here.
    3. Pitch-bend jogs turn on screen (#442) — **re-scoped** in `v0.48.207`: the Traktor export shows a fader, not a jog; waits for the hardware capture.
 15. **Phase 12**, agreed 2026-11-10 (one PR and tag each):
    1. Import / compare playlists from a rekordbox XML file (#446) — **done** in `v0.48.208`.
-   2. Live Monitor log filters (#447).
+   2. Live Monitor log filters (#447) — **done** in `v0.48.209`.
    3. Modifier layers in the By Deck tab (#448).
 
 ## Tracking rules

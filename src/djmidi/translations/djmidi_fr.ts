@@ -3879,6 +3879,54 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
         <translation>En cours ({count} entrée(s))</translation>
     </message>
     <message>
+        <source>Show</source>
+        <translation>Afficher</translation>
+    </message>
+    <message>
+        <source>All ports</source>
+        <translation>Tous les ports</translation>
+    </message>
+    <message>
+        <source>In and out</source>
+        <translation>Entrée et sortie</translation>
+    </message>
+    <message>
+        <source>In only</source>
+        <translation>Entrée seulement</translation>
+    </message>
+    <message>
+        <source>Out only</source>
+        <translation>Sortie seulement</translation>
+    </message>
+    <message>
+        <source>Notes</source>
+        <translation>Notes</translation>
+    </message>
+    <message>
+        <source>CC</source>
+        <translation>CC</translation>
+    </message>
+    <message>
+        <source>Pitch bend</source>
+        <translation>Pitch bend</translation>
+    </message>
+    <message>
+        <source>Hide jog wheels</source>
+        <translation>Masquer les jogs</translation>
+    </message>
+    <message>
+        <source>Jog wheels send dozens of messages per turn.</source>
+        <translation>Les jogs envoient des dizaines de messages par tour.</translation>
+    </message>
+    <message>
+        <source>Only hides log rows: monitoring, captures and Save log… keep every message.</source>
+        <translation>Masque seulement des lignes du journal : la surveillance, les captures et Enregistrer le journal… gardent tous les messages.</translation>
+    </message>
+    <message>
+        <source>{hidden} of {total} hidden</source>
+        <translation>{hidden} sur {total} masqués</translation>
+    </message>
+    <message>
         <source>CONFLICT </source>
         <translation>CONFLIT </translation>
     </message>

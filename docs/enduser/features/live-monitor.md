@@ -63,6 +63,16 @@ A **Pitch Bend** message has no number (Data1 is 0) and a value from 0 to
 16383, 8192 being the centre. It is logged and saved with the log, but it
 never selects or lights a control.
 
+### Filter the log
+
+The **Show** row under the controls narrows what the log shows: one port
+(**All ports** lists every port seen so far), **In only** or **Out only**,
+**Notes**, **CC** and **Pitch bend**, and **Hide jog wheels** (a jog sends
+dozens of messages per turn). It only hides rows: everything else —
+the drawings, captures, macros, and **Save log…** — still gets every
+message, and changing a filter shows the hidden rows again at once. The
+count on the right says how many rows are hidden.
+
 Physical names are matched against the source device, so a pad on one
 controller is never mistaken for the same note on another one.
 `Clear log` empties the table; `Save log…` exports it, either as a CSV
