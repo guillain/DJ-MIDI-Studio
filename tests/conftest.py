@@ -6,9 +6,11 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 # MainWindow() loads it on construction and, via _apply_plugin_preferences,
 # pins catalog's enabled-controller filter to whatever the developer has
 # toggled — which then hides throwaway controllers registered by later tests.
+# One file per test process: with `pytest -n auto` (pytest-xdist) a shared
+# path let one worker's saved sync sets show up in another's new window.
 os.environ.setdefault(
     "DJMIDI_PREFERENCES_FILE",
-    os.path.join(tempfile.gettempdir(), "djmidi-test-preferences.json"),
+    os.path.join(tempfile.mkdtemp(prefix="djmidi-test-"), "preferences.json"),
 )
 
 # Same for the music library index (issue #132): a window built by a test
@@ -70,6 +72,9 @@ def _fresh_workspace(tmp_path, monkeypatch):
     """Each test gets its own empty DJ MIDI Studio folder, so a profile one
     test installs is never loaded by the next test's MainWindow."""
     monkeypatch.setenv("DJMIDI_WORKSPACE", str(tmp_path / "workspace"))
+    # Same for preferences (sync sets, the active scene, ...): a window saving
+    # them must not change what the next test's window loads (issue #429).
+    monkeypatch.setenv("DJMIDI_PREFERENCES_FILE", str(tmp_path / "preferences.json"))
 
 
 @pytest.fixture(autouse=True)

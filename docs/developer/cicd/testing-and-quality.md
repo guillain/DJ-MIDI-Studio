@@ -25,9 +25,15 @@
 
 ```bash
 uv run ruff check src tests
+uv run pytest -n auto            # the whole suite in parallel (pytest-xdist), about 20 s
 uv run pytest
 uv run pytest -q tests/test_parser.py tests/test_exporter.py
 ```
+
+`-n auto` runs one worker per CPU core; `scripts/test.sh` and the quality
+gate use it. Tests must not share state through files: `tests/conftest.py`
+gives every test its own workspace and preferences file, and a test that
+writes elsewhere uses `tmp_path`.
 
 ## Bash Test Script
 

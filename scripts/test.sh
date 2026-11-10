@@ -19,12 +19,12 @@ run_lint() {
 
 run_tests_all() {
   echo "==> Pytest (full suite)"
-  uv run pytest
+  uv run pytest -n auto
 }
 
 run_tests_quick() {
   echo "==> Pytest (quick GUI/core smoke set)"
-  uv run pytest -q \
+  uv run pytest -q -n auto \
     tests/test_parser.py \
     tests/test_exporter.py \
     tests/test_validator.py \

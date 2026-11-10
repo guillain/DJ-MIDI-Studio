@@ -181,6 +181,8 @@ def main() -> int:
                 sys.executable,
                 "-m",
                 "pytest",
+                "-n",
+                "auto",
                 "--cov=src/djmidi",
                 f"--cov-report=xml:{coverage_xml}",
                 "--cov-report=term-missing:skip-covered",

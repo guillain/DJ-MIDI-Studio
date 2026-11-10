@@ -516,7 +516,12 @@ def apply_theme(app: QApplication, mode: str = "dark") -> None:
             Qt.ColorScheme.Light if mode == "light" else Qt.ColorScheme.Dark
         )
     concrete = resolve_mode(mode, app)
-    app.setStyleSheet(LIGHT_THEME if concrete == "light" else DARK_THEME)
+    sheet = LIGHT_THEME if concrete == "light" else DARK_THEME
+    # Setting the application stylesheet re-polishes every live widget (about
+    # 0.7 s with a main window open); the same sheet again changes nothing, so
+    # it is skipped -- each new MainWindow re-applies the saved theme (#429).
+    if app.styleSheet() != sheet:
+        app.setStyleSheet(sheet)
     global _current_mode
     _current_mode = concrete
     # Emitted unconditionally, not just on an actual flip: a scoped-QSS
