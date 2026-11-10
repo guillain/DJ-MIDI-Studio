@@ -10,6 +10,7 @@
 - [What it does](#what-it-does)
 - [Design a scene](#design-a-scene)
 - [Save, send and reload](#save-send-and-reload)
+- [Several controllers in one scene](#several-controllers-in-one-scene)
 - [What is kept](#what-is-kept)
 - [LED addresses](#led-addresses)
 - [Remap a control](#remap-a-control)
@@ -48,7 +49,22 @@ scene sets; click a line to select that control again.
 | **Save to sync set** | Stores the scene as the controller's sync set for that scene: the next Sync puts the controller in this state |
 | **Send to controller** | Sends the scene to the controller now, without saving, to try it |
 | **Clear LEDs** | Removes every LED from the scene (other messages stay) |
-| **Reload saved** | Drops your changes and reads the saved sync set again |
+| **Reload saved** | Drops this controller's changes and reads its saved sync set again |
+| **Save all** | Saves the scene's changes for every controller you edited |
+| **Send all** | Sends the scene to every controller it covers at once, saved or not |
+
+## Several controllers in one scene
+
+A scene can set up more than one controller, for example an XDJ-XZ and a
+DDJ-XP2 for the same club. Switch the **Controller** list from one to the
+other: your changes on each one are kept until you save them or click
+**Reload saved**.
+
+The line under the lists names the controllers the scene covers. A
+controller with changes not saved yet is marked *(unsaved)*. Controllers
+that are part of the scene are shown in bold in the **Controller** list.
+**Save all** saves them all, and **Send all** sends the scene to every one
+of them in one go.
 
 ## What is kept
 
