@@ -19,6 +19,7 @@ from PySide6.QtGui import QBrush, QColor
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QCheckBox,
+    QComboBox,
     QFileDialog,
     QFrame,
     QGroupBox,
@@ -36,10 +37,12 @@ from PySide6.QtWidgets import (
 from djmidi import catalog, user_paths
 from djmidi.gui import help_texts
 from djmidi.gui.help_button import help_row
+from djmidi.gui.jog import jog_cell_keys_for_event
 from djmidi.gui.mapping_group import build_mapping_groups
 from djmidi.gui.port_list_utils import refresh_checked_port_list
 from djmidi.gui.scroll_utils import AutoSizeScrollArea
 from djmidi.gui.translation import translator
+from djmidi.live_filter import BEND, CC, NOTES, LogFilter
 from djmidi.midi_export import write_midi_file
 from djmidi.midi_io import MidiEvent, MidiMonitor, list_input_ports
 from djmidi.model import MidiConfig
@@ -226,7 +229,11 @@ class LiveMonitorView(QWidget):
         # track its content) would starve top_row of room even on a window
         # plenty tall enough for both.
         top_row_container = QWidget()
-        top_row_container.setLayout(top_row)
+        top_column = QVBoxLayout(top_row_container)
+        top_column.setContentsMargins(0, 0, 0, 0)
+        top_column.addLayout(top_row)
+        # Issue #447: the log filters scroll with the rest of the top area.
+        top_column.addWidget(self._build_filter_row())
         top_scroll = AutoSizeScrollArea()
         top_scroll.setWidgetResizable(True)
         top_scroll.setFrameShape(QFrame.Shape.NoFrame)
@@ -336,6 +343,7 @@ class LiveMonitorView(QWidget):
         finally:
             self._in_batch = False
             self._log.scrollToBottom()
+            self._update_filter_count()
             self.batchFinished.emit()
         elapsed_ms = (time.monotonic() - started) * 1000
         if elapsed_ms >= SLOW_BATCH_MS:
@@ -345,6 +353,82 @@ class LiveMonitorView(QWidget):
             )
         elif len(events) >= BURST_EVENTS:
             _LOGGER.info("Live MIDI burst: %d event(s) in %.0f ms: %s", len(events), elapsed_ms, describe_burst(events))
+
+    # -- log filters (issue #447): display only --------------------------
+
+    def _build_filter_row(self) -> QWidget:
+        row = QWidget()
+        layout = QHBoxLayout(row)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(QLabel(self.tr("Show")))
+        self.filter_port = QComboBox()
+        self.filter_port.addItem(self.tr("All ports"), "")
+        self.filter_port.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToContents)
+        self.filter_direction = QComboBox()
+        for label, directions in (
+            (self.tr("In and out"), ("in", "out")),
+            (self.tr("In only"), ("in",)),
+            (self.tr("Out only"), ("out",)),
+        ):
+            self.filter_direction.addItem(label, directions)
+        self.filter_kinds = {}
+        layout.addWidget(self.filter_port)
+        layout.addWidget(self.filter_direction)
+        for kind, label in ((NOTES, self.tr("Notes")), (CC, self.tr("CC")), (BEND, self.tr("Pitch bend"))):
+            box = QCheckBox(label)
+            box.setChecked(True)
+            box.toggled.connect(lambda _on: self._apply_filter())
+            self.filter_kinds[kind] = box
+            layout.addWidget(box)
+        self.filter_hide_jogs = QCheckBox(self.tr("Hide jog wheels"))
+        self.filter_hide_jogs.setToolTip(self.tr("Jog wheels send dozens of messages per turn."))
+        self.filter_hide_jogs.toggled.connect(lambda _on: self._apply_filter())
+        layout.addWidget(self.filter_hide_jogs)
+        layout.addStretch(1)
+        self.filter_count = QLabel()
+        layout.addWidget(self.filter_count)
+        self.filter_port.currentIndexChanged.connect(lambda _i: self._apply_filter())
+        self.filter_direction.currentIndexChanged.connect(lambda _i: self._apply_filter())
+        row.setToolTip(self.tr("Only hides log rows: monitoring, captures and Save log… keep every message."))
+        return row
+
+    def log_filter(self) -> LogFilter:
+        return LogFilter(
+            port=self.filter_port.currentData() or "",
+            kinds=frozenset(kind for kind, box in self.filter_kinds.items() if box.isChecked()),
+            directions=frozenset(self.filter_direction.currentData() or ("in", "out")),
+            hide_jogs=self.filter_hide_jogs.isChecked(),
+        )
+
+    def _shown(self, event: MidiEvent, log_filter: LogFilter | None = None) -> bool:
+        log_filter = log_filter or self.log_filter()
+        is_jog = log_filter.hide_jogs and bool(jog_cell_keys_for_event(event.channel, event.event_type, event.data1))
+        return log_filter.accepts(event, is_jog)
+
+    def _remember_port(self, port: str) -> None:
+        if port and self.filter_port.findData(port) < 0:
+            self.filter_port.addItem(port, port)
+
+    def _apply_filter(self) -> None:
+        log_filter = self.log_filter()
+        hidden = 0
+        for row in range(self._log.rowCount()):
+            item = self._log.item(row, 0)
+            event = item.data(Qt.ItemDataRole.UserRole) if item is not None else None
+            hide = event is not None and not self._shown(event, log_filter)
+            self._log.setRowHidden(row, hide)
+            hidden += hide
+        self._update_filter_count(hidden)
+
+    def _update_filter_count(self, hidden: int | None = None) -> None:
+        if hidden is None:
+            hidden = sum(self._log.isRowHidden(row) for row in range(self._log.rowCount()))
+        self.filter_count.setText(
+            self.tr("{hidden} of {total} hidden").format(hidden=hidden, total=self._log.rowCount()) if hidden else ""
+        )
+
+    def visible_rows(self) -> int:
+        return sum(not self._log.isRowHidden(row) for row in range(self._log.rowCount()))
 
     def _append_event(self, event: MidiEvent) -> None:
         hits = catalog.lookup(event.channel, event.event_type, event.data1)
@@ -384,11 +468,17 @@ class LiveMonitorView(QWidget):
                 item.setBackground(_CONFLICT_BRUSH)
                 item.setToolTip(conflict_text)
             self._log.setItem(row, col, item)
+        self._log.item(row, 0).setData(Qt.ItemDataRole.UserRole, event)
+        self._remember_port(event.port)
+        if not self._shown(event):
+            self._log.setRowHidden(row, True)
         if not self._in_batch:
             self._log.scrollToBottom()
 
         while self._log.rowCount() > _MAX_ROWS:
             self._log.removeRow(0)
+        if not self._in_batch:
+            self._update_filter_count()
 
     def _count_conflict(self, event: MidiEvent, trigger: TriggerKey) -> None:
         # A Note On with velocity 0 is a release: still flagged in its row, but
@@ -424,6 +514,7 @@ class LiveMonitorView(QWidget):
         self._events.clear()
         self._log.setRowCount(0)
         self._reset_conflict_count()
+        self._update_filter_count(0)
 
     def _save_log(self) -> None:
         if not self._events:

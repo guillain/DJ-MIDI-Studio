@@ -3879,6 +3879,54 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
         <translation>Läuft ({count} Eingang/Eingänge)</translation>
     </message>
     <message>
+        <source>Show</source>
+        <translation>Anzeigen</translation>
+    </message>
+    <message>
+        <source>All ports</source>
+        <translation>Alle Ports</translation>
+    </message>
+    <message>
+        <source>In and out</source>
+        <translation>Ein und aus</translation>
+    </message>
+    <message>
+        <source>In only</source>
+        <translation>Nur Eingang</translation>
+    </message>
+    <message>
+        <source>Out only</source>
+        <translation>Nur Ausgang</translation>
+    </message>
+    <message>
+        <source>Notes</source>
+        <translation>Noten</translation>
+    </message>
+    <message>
+        <source>CC</source>
+        <translation>CC</translation>
+    </message>
+    <message>
+        <source>Pitch bend</source>
+        <translation>Pitch Bend</translation>
+    </message>
+    <message>
+        <source>Hide jog wheels</source>
+        <translation>Jogwheels ausblenden</translation>
+    </message>
+    <message>
+        <source>Jog wheels send dozens of messages per turn.</source>
+        <translation>Jogwheels senden Dutzende Meldungen pro Umdrehung.</translation>
+    </message>
+    <message>
+        <source>Only hides log rows: monitoring, captures and Save log… keep every message.</source>
+        <translation>Blendet nur Protokollzeilen aus: Überwachung, Aufnahmen und Protokoll speichern… behalten alle Meldungen.</translation>
+    </message>
+    <message>
+        <source>{hidden} of {total} hidden</source>
+        <translation>{hidden} von {total} ausgeblendet</translation>
+    </message>
+    <message>
         <source>CONFLICT </source>
         <translation>KONFLIKT </translation>
     </message>
