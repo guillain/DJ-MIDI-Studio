@@ -973,10 +973,11 @@ def _capture_profile_check(app: QApplication, window: MainWindow) -> None:
     two that match the DDJ-XP2 profile and one that doesn't."""
     dialog = ProfileCheckDialog(
         ["DDJ-XP2"], ["DDJ-XP2"], window, ensure_listening=lambda: True, initial="DDJ-XP2",
-        open_url=lambda _url: None,
+        open_url=lambda _url: None, output_ports=["DDJ-XP2"], sender=lambda **_message: None,
     )
-    dialog.resize(760, 560)
+    dialog.resize(820, 880)
     dialog.show()
+    dialog.software_combo.setCurrentIndex(dialog.software_combo.findData("serato"))
     dialog.start()
     for _ in range(2):
         item = dialog.check.current

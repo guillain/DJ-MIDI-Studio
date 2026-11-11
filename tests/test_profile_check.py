@@ -6,6 +6,7 @@ from urllib.parse import parse_qs, urlparse
 from djmidi.catalog._registry import ControlInfo, ControllerDefinition, register
 from djmidi.gui.profile_check import (
     MISMATCH,
+    ODD,
     OK,
     PLAIN,
     SHIFT,
@@ -63,7 +64,7 @@ def test_presses_are_judged_and_back_redoes_one():
     unknown = check.press(("8", "NOTE", "99"))
     assert unknown.detail() == "got Note 99 on channel 8, which isn't in the profile"
     assert check.done and check.press(("1", "NOTE", "88")) is None
-    assert check.counts() == {OK: 2, MISMATCH: 1, SKIPPED: 1}
+    assert check.counts() == {OK: 2, MISMATCH: 1, SKIPPED: 1, ODD: 0}
 
 
 def test_only_presses_count():
@@ -82,7 +83,7 @@ def test_report_and_issue_url():
     check.skip()
     text = report_text(check, "1.2.3", "DDJ TEST", now=datetime(2026, 10, 30, tzinfo=UTC))
     assert "## Profile check: Check Profile" in text
-    assert "- Result: 1 ok, 1 mismatch, 1 skipped, 1 not checked (of 4)" in text
+    assert "- Result: 1 ok, 1 mismatch, 0 odd, 1 skipped, 1 not checked (of 4)" in text
     assert "- **SHIFT + Sync** (Deck): got Note 99 on channel 1, which isn't in the profile" in text
     assert "### Skipped (not on this unit)" in text and "- Cue (Deck)" in text
     url, inlined = report_issue_url(check, text)
@@ -133,6 +134,7 @@ def test_main_window_routes_presses_to_the_check_not_to_macros(tmp_path, monkeyp
         dialog._ensure_listening = lambda: True
         dialog.start()
         window._on_live_midi_event(_event(88))
+        dialog.judge_now()  # the app waits a moment for a second message
         assert dialog.check.counts()[OK] == 1 and played == []
         dialog.close()
         assert window._profile_check_dialog is None
