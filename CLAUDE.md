@@ -93,6 +93,8 @@ fixed file path; use `tmp_path`.
   `gui.commands.SetControlLayersCommand` (one undo step) → `MainWindow._on_layers_changed` (rebuild, reselect).
   The panel applies every layer edit to all identical copies of the control (#440,
   `case_edit.identical_copies` = same trigger and same exported XML; `*_everywhere` replay it by position).
+  By Deck offers the same edits on a `MappingGroup` (#448, `EditPanel._build_group_layer_box`, reselected by
+  `_select_deck_group_like`).
 - `exporter.py` round-trips the sample byte for byte; keep it that way (`tests/test_parser.py` roundtrip).
 - **The 10x duplication**: every unique trigger appears exactly 10 times in the real file, and deleting copies
   breaks the config in Serato. It's load-bearing: `validator.py` reports identical duplicates as `info` only;

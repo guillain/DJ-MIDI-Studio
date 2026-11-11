@@ -45,6 +45,7 @@ from djmidi.model import (
     MidiConfig,
     Translation,
     UserIO,
+    iter_bindings,
 )
 
 ConfirmConflict = Callable[[LearnedTrigger, list[str]], bool]
@@ -504,6 +505,50 @@ class EditPanel(QWidget):
         layout.addWidget(aliases_box)
         return container
 
+    def _build_group_layer_box(self, group: MappingGroup) -> QWidget | None:
+        """Issue #448: the function's modifier / SHIFT layer, edited from By
+        Deck with the same edits as By Channel (#434), on every identical
+        copy of its trigger in one undo step (#440)."""
+        control, userio, _mapping = group.members[0]
+        case = next((case for binding, case in iter_bindings(control) if binding is userio), None)
+        if case is not None:
+            return self._build_case_form(case)
+        if self._layer_control(userio) is None:
+            return None
+        box = QGroupBox(self.tr("Modifier layer"))
+        form = QFormLayout(box)
+        intro = QLabel(self.tr("Not in a layer: this function answers whatever the modifiers."))
+        intro.setWordWrap(True)
+        form.addRow(intro)
+        modifiers = case_edit.known_modifiers(self._config_provider())
+        self.layer_tag = _choice(modifiers, modifiers[0] if modifiers else "")
+        self.layer_tag.lineEdit().setPlaceholderText("modifier_N")
+        self.layer_value = _choice(list(case_edit.DEFAULT_VALUES), "on")
+        move = QPushButton(self.tr("Move into a modifier layer"))
+        move.setToolTip(self.tr("The function then answers only while that modifier has that value."))
+        move.clicked.connect(
+            lambda: self.move_into_layer(userio, self.layer_tag.currentText(), self.layer_value.currentText())
+        )
+        form.addRow(self.tr("Modifier"), self.layer_tag)
+        form.addRow(self.tr("Value"), self.layer_value)
+        form.addRow(move)
+        others = len(userio.mappings) - 1
+        if others > 0:
+            note = QLabel(
+                self.tr("This binding also carries {count} other function(s): they move into the layer with it.").format(
+                    count=others
+                )
+            )
+            note.setWordWrap(True)
+            form.addRow(note)
+        copies = self._copies_note(control)
+        if copies is not None:
+            form.addRow(copies)
+        self.layer_status = QLabel()
+        self.layer_status.setWordWrap(True)
+        form.addRow(self.layer_status)
+        return box
+
     def _build_group_form(self, group: MappingGroup) -> QWidget:
         """A MappingGroup bundles every Control/MappingElement that shares the same
         trigger and deck/slot/tag/event — normally the ~10 duplicate copies Serato
@@ -528,6 +573,9 @@ class EditPanel(QWidget):
         layout.addWidget(info_box)
 
         layout.addWidget(self._build_physical_control_box(group.channel, group.event_type, group.control_no))
+        layer_box = self._build_group_layer_box(group)
+        if layer_box is not None:
+            layout.addWidget(layer_box)
 
         deck_box = QGroupBox(self.tr("Target (applies to all linked controls)"))
         form = QFormLayout(deck_box)
