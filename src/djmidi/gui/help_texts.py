@@ -272,7 +272,7 @@ MAPPING_VIEWS: HelpEntry = (
         "<li><b>By Channel</b>: MIDI channel → control → event → function. "
         "Inspect or fix one raw entry precisely.</li>"
         "<li><b>By Deck</b>: Serato deck → slot → function. One edit updates every "
-        "duplicate copy at once, so they can never drift apart.</li>"
+        "duplicate copy at once, so they can never drift apart, modifier / SHIFT layers included.</li>"
         "<li><b>By Controller</b>: controller → section → physical control. "
         "Find what a button does.</li>"
         "</ul>"

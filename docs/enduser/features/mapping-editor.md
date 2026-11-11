@@ -100,6 +100,12 @@ but you can type anything.
 - To put an ordinary binding on a layer, select it (the `click` or
   `output` row), pick the modifier and its value, and click **Move into a
   modifier layer**.
+- In **By Deck**, select a function: the panel shows its layer. A function
+  inside a layer gets the same conditions, **Apply conditions** and
+  **Remove layer**; an ordinary one gets **Move into a modifier layer**. The
+  function stays selected in By Deck afterwards, under its new layer. When
+  the binding also carries other functions, the panel says so: they move
+  with it.
 
 Each of these is one step of **Edit → Undo**. A file you don't edit is
 still saved exactly as it was. Serato repeats a trigger several times in a

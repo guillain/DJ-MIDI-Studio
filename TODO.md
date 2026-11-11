@@ -3851,7 +3851,9 @@ close what can't be unblocked here.
 15. **Phase 12**, agreed 2026-11-10 (one PR and tag each):
    1. Import / compare playlists from a rekordbox XML file (#446) — **done** in `v0.48.208`.
    2. Live Monitor log filters (#447) — **done** in `v0.48.209`.
-   3. Modifier layers in the By Deck tab (#448).
+   3. Modifier layers in the By Deck tab (#448) — a By Deck function shows its layer in the edit panel
+      (conditions / Remove layer, or Move into a modifier layer), same edits as By Channel on every identical
+      copy in one undo step; the function stays selected in By Deck.
    4. Controller library from real captures (#451, asked 2026-11-11 after a DDJ-XP2 hardware session):
       the guided check gains categories, photo frame, DJ software context, resume, odd flag, light check
       and a per-control audit; captures and verified LEDs are kept per controller beside the profiles.

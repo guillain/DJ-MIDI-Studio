@@ -506,9 +506,36 @@ class MappingViewsMixin:
 
     def _on_layers_changed(self, control: Control) -> None:
         """A control's modifier layers changed (issue #434): rebuild the views
-        and keep that control selected in By Channel."""
+        and keep that control selected in By Channel -- or, for an edit made
+        from a By Deck function (issue #448), that function in By Deck."""
+        group = self.edit_panel.current_node
         self._on_structure_changed()
+        if isinstance(group, MappingGroup) and self._select_deck_group_like(group):
+            return
         self._select_control_in_channel_columns(control)
+
+    def _select_deck_group_like(self, old: MappingGroup) -> bool:
+        """After a layer edit rebuilt By Deck: the row of the same function
+        (deck, slot, tag, event, trigger), preferably under its new layer."""
+        same = (old.deck_id, old.slot_id, old.tag, old.event, old.channel, old.event_type, old.control_no)
+        matches = []
+        for view in self._deck_tree_views:
+            model = view.model()
+            for row in range(model.rowCount()):
+                slot_index = model.index(row, 0)
+                for child_row in range(model.rowCount(slot_index)):
+                    index = model.index(child_row, 0, slot_index)
+                    group = index.data(NODE_ROLE)
+                    if isinstance(group, MappingGroup) and (
+                        group.deck_id, group.slot_id, group.tag, group.event, group.channel, group.event_type,
+                        group.control_no,
+                    ) == same:
+                        matches.append((group.condition == old.condition, view, index))
+        if not matches:
+            return False
+        _same_layer, view, index = min(matches, key=lambda match: match[0])
+        self._select_model_index(view, index)
+        return True
 
     def _on_structure_changed(self) -> None:
         """After an edit that adds or removes controls: rebuild every view."""

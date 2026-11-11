@@ -2106,6 +2106,22 @@ Il reste une étape manuelle : ajoutez &apos;{slug}&apos; au bloc d&apos;imports
         <translation>Retirer l&apos;alias</translation>
     </message>
     <message>
+        <source>Modifier layer</source>
+        <translation>Couche de modificateur</translation>
+    </message>
+    <message>
+        <source>Not in a layer: this function answers whatever the modifiers.</source>
+        <translation>Hors couche : cette fonction répond quels que soient les modificateurs.</translation>
+    </message>
+    <message>
+        <source>The function then answers only while that modifier has that value.</source>
+        <translation>La fonction ne répond alors que tant que ce modificateur a cette valeur.</translation>
+    </message>
+    <message>
+        <source>This binding also carries {count} other function(s): they move into the layer with it.</source>
+        <translation>Cette liaison porte aussi {count} autre(s) fonction(s) : elles passent dans la couche avec elle.</translation>
+    </message>
+    <message>
         <source>&lt;{tag}&gt; [{event}] — {count} linked control(s)</source>
         <translation>&lt;{tag}&gt; [{event}] — {count} commande(s) liée(s)</translation>
     </message>
@@ -3026,8 +3042,8 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
         <translation>Vues du mapping</translation>
     </message>
     <message>
-        <source>Three views of the same mapping:&lt;ul&gt;&lt;li&gt;&lt;b&gt;By Channel&lt;/b&gt;: MIDI channel → control → event → function. Inspect or fix one raw entry precisely.&lt;/li&gt;&lt;li&gt;&lt;b&gt;By Deck&lt;/b&gt;: Serato deck → slot → function. One edit updates every duplicate copy at once, so they can never drift apart.&lt;/li&gt;&lt;li&gt;&lt;b&gt;By Controller&lt;/b&gt;: controller → section → physical control. Find what a button does.&lt;/li&gt;&lt;/ul&gt;The drawing below each tree shows which controls are mapped, colored by deck. Tick the layers to show: &lt;b&gt;Controller&lt;/b&gt; (the real photo), &lt;b&gt;MIDI&lt;/b&gt; (the photo with its MIDI information, shown alone) and &lt;b&gt;Layout&lt;/b&gt; (the app&apos;s markers), on controllers with a measured layout. Selecting anything highlights it in every view; clicking a control jumps to its raw entry. With &lt;b&gt;Live send&lt;/b&gt; on, clicking a control also sends its MIDI message to the chosen output (&lt;b&gt;⟳&lt;/b&gt; refreshes the ports).</source>
-        <translation>Trois vues du même mapping :&lt;ul&gt;&lt;li&gt;&lt;b&gt;Par canal&lt;/b&gt; : canal MIDI → commande → événement → fonction. Pour examiner ou corriger précisément une entrée brute.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Par platine&lt;/b&gt; : platine Serato → slot → fonction. Une modification met à jour toutes les copies en double à la fois : elles ne peuvent jamais diverger.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Par contrôleur&lt;/b&gt; : contrôleur → section → commande physique. Pour trouver ce que fait un bouton.&lt;/li&gt;&lt;/ul&gt;Le dessin sous chaque arbre montre les commandes mappées, colorées par platine. Cochez les couches à afficher : &lt;b&gt;Contrôleur&lt;/b&gt; (la vraie photo), &lt;b&gt;MIDI&lt;/b&gt; (la photo avec ses informations MIDI, affichée seule) et &lt;b&gt;Disposition&lt;/b&gt; (les repères de l&apos;application), sur les contrôleurs dont la disposition a été mesurée. Sélectionner un élément le met en évidence dans toutes les vues ; cliquer sur une commande affiche son entrée brute. Avec &lt;b&gt;Envoi live&lt;/b&gt; activé, cliquer sur une commande envoie aussi son message MIDI vers la sortie choisie (&lt;b&gt;⟳&lt;/b&gt; actualise les ports).</translation>
+        <source>Three views of the same mapping:&lt;ul&gt;&lt;li&gt;&lt;b&gt;By Channel&lt;/b&gt;: MIDI channel → control → event → function. Inspect or fix one raw entry precisely.&lt;/li&gt;&lt;li&gt;&lt;b&gt;By Deck&lt;/b&gt;: Serato deck → slot → function. One edit updates every duplicate copy at once, so they can never drift apart, modifier / SHIFT layers included.&lt;/li&gt;&lt;li&gt;&lt;b&gt;By Controller&lt;/b&gt;: controller → section → physical control. Find what a button does.&lt;/li&gt;&lt;/ul&gt;The drawing below each tree shows which controls are mapped, colored by deck. Tick the layers to show: &lt;b&gt;Controller&lt;/b&gt; (the real photo), &lt;b&gt;MIDI&lt;/b&gt; (the photo with its MIDI information, shown alone) and &lt;b&gt;Layout&lt;/b&gt; (the app&apos;s markers), on controllers with a measured layout. Selecting anything highlights it in every view; clicking a control jumps to its raw entry. With &lt;b&gt;Live send&lt;/b&gt; on, clicking a control also sends its MIDI message to the chosen output (&lt;b&gt;⟳&lt;/b&gt; refreshes the ports).</source>
+        <translation>Trois vues du même mapping :&lt;ul&gt;&lt;li&gt;&lt;b&gt;Par canal&lt;/b&gt; : canal MIDI → commande → événement → fonction. Pour examiner ou corriger précisément une entrée brute.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Par platine&lt;/b&gt; : platine Serato → slot → fonction. Une modification met à jour toutes les copies en double à la fois : elles ne peuvent jamais diverger, couches de modificateur / SHIFT comprises.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Par contrôleur&lt;/b&gt; : contrôleur → section → commande physique. Pour trouver ce que fait un bouton.&lt;/li&gt;&lt;/ul&gt;Le dessin sous chaque arbre montre les commandes mappées, colorées par platine. Cochez les couches à afficher : &lt;b&gt;Contrôleur&lt;/b&gt; (la vraie photo), &lt;b&gt;MIDI&lt;/b&gt; (la photo avec ses informations MIDI, affichée seule) et &lt;b&gt;Disposition&lt;/b&gt; (les repères de l&apos;application), sur les contrôleurs dont la disposition a été mesurée. Sélectionner un élément le met en évidence dans toutes les vues ; cliquer sur une commande affiche son entrée brute. Avec &lt;b&gt;Envoi live&lt;/b&gt; activé, cliquer sur une commande envoie aussi son message MIDI vers la sortie choisie (&lt;b&gt;⟳&lt;/b&gt; actualise les ports).</translation>
     </message>
     <message>
         <source>Edit and validate</source>
