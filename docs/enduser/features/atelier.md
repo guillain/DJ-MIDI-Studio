@@ -96,7 +96,15 @@ this LED…**:
    address and those values.
 
 The results are kept per controller in the workspace's Controllers folder
-(`<controller>.leds.json`).
+(`<controller>.leds.json`). The **Lights** tab of
+[Verify a controller profile](profile-check.md) records them too, a whole
+category at a time.
+
+The card's **On the unit** line says what that check saw the control send:
+*verified*, a *mismatch* with the message the unit sent, or *never tested on
+the unit*, with the DJ software that was running. A check or a light
+recorded while the Atelier or a Controller Emulator is open shows up there
+at once, without reloading: your unsaved scene stays as it is.
 
 ![The LED probe](../../images/layout/atelier-led-probe.png)
 

@@ -24,7 +24,7 @@ from __future__ import annotations
 from collections.abc import Callable, Sequence
 from pathlib import Path
 
-from PySide6.QtCore import Qt, QTimer, QUrl
+from PySide6.QtCore import Qt, QTimer, QUrl, Signal
 from PySide6.QtGui import QColor, QDesktopServices, QGuiApplication
 from PySide6.QtWidgets import (
     QCheckBox,
@@ -94,6 +94,10 @@ def _port_key(port: str) -> str:
 
 
 class ProfileCheckDialog(QDialog):
+    # A capture or a light was recorded for this controller: the Atelier and
+    # the Controller Emulators re-read its library.
+    libraryChanged = Signal(str)
+
     def __init__(
         self,
         controllers: Sequence[str],
@@ -478,6 +482,7 @@ class ProfileCheckDialog(QDialog):
                 bank=(feature.bank or "") if feature else "",
             ),
         )
+        self.libraryChanged.emit(self.controller)
 
     def _show_state(self, trigger) -> None:
         feature = _feature_for(self.controller, trigger)
@@ -633,6 +638,7 @@ class ProfileCheckDialog(QDialog):
                 source=f"light check {captures_mod.today()}",
             ),
         )
+        self.libraryChanged.emit(self.controller)
 
     def lit_here(self) -> None:
         if self._light_index >= 0:

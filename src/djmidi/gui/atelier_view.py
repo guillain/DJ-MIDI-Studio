@@ -75,6 +75,8 @@ class AtelierView(QWidget):
     sendAllRequested = Signal(object)
     # (route index, new MidiValueTransform): a remap added or removed
     routeTransformChanged = Signal(int, object)
+    # An LED was probed here: the other views re-read the controller library.
+    libraryChanged = Signal(str)
 
     def __init__(
         self,
@@ -285,6 +287,17 @@ class AtelierView(QWidget):
             self.status_label.setText(
                 self.tr("No sync set saved for this controller and scene yet: click a control to start one.")
             )
+
+    def refresh_library(self, controller: str) -> None:
+        """The controller's library changed elsewhere (guided check, LED
+        probe): its features carry the new LED data and checks. The scene and
+        its unsaved draft stay; the selected control is shown again."""
+        if controller != self.controller or self.scene is None:
+            return
+        feature_id = self.feature.id if self.feature is not None else None
+        self._refresh_state()
+        if feature_id is None or not self.select_feature(feature_id):
+            self.feature_card.refresh()
 
     def reload_saved(self) -> None:
         """Drops the unsaved changes of the controller and scene on screen."""
@@ -622,6 +635,7 @@ class AtelierView(QWidget):
             return None
         record = dialog.record()
         save_led_record(self.controller, record)
+        self.libraryChanged.emit(self.controller)
         feature_id = self.feature.id
         # Features now carry the verified LED; an unsaved draft keeps its
         # edits (it stores feature ids, compiled with the new data on save).

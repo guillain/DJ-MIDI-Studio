@@ -1041,6 +1041,14 @@ Belegt mit: {functions}</translation>
         <source>no LED</source>
         <translation>keine LED</translation>
     </message>
+    <message>
+        <source>never tested on the unit</source>
+        <translation>nie am Gerät getestet</translation>
+    </message>
+    <message>
+        <source>(the unit sent {message} ch {channel})</source>
+        <translation>(das Gerät sendete {message} Kanal {channel})</translation>
+    </message>
 </context>
 <context>
     <name>ControllerSetupView</name>
@@ -2315,6 +2323,10 @@ Trotzdem neu zuweisen? Beide lösen auf demselben Bedienelement aus.</translatio
     <message>
         <source>Actions</source>
         <translation>Aktionen</translation>
+    </message>
+    <message>
+        <source>On the unit</source>
+        <translation>Am Gerät</translation>
     </message>
     <message>
         <source>{control}: no feature (no raw MIDI trigger known for it).</source>

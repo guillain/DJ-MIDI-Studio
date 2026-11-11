@@ -9,8 +9,9 @@ from __future__ import annotations
 from PySide6.QtCore import QT_TRANSLATE_NOOP, Qt
 from PySide6.QtWidgets import QFormLayout, QGroupBox, QLabel, QVBoxLayout, QWidget
 
+from djmidi.atelier import library
 from djmidi.atelier.actions import VERB_LABELS, verbs_for
-from djmidi.atelier.features import NOTE, Feature
+from djmidi.atelier.features import NOTE, Feature, feature_by_id
 from djmidi.gui.translation import translator
 
 _KINDS = {
@@ -21,6 +22,7 @@ _KINDS = {
     "jog": QT_TRANSLATE_NOOP("FeatureCard", "Jog"),
 }
 _verb_translate = translator("FeatureActions")
+_library_translate = translator("ControllerLibrary")
 
 
 class FeatureCard(QGroupBox):
@@ -41,6 +43,7 @@ class FeatureCard(QGroupBox):
         self.sends_label = self._value_label(selectable=True)
         self.led_label = self._value_label(selectable=True)
         self.actions_label = self._value_label()
+        self.checked_label = self._value_label()
         form.addRow(self.tr("Id"), self.id_label)
         form.addRow(self.tr("Control"), self.control_label)
         form.addRow(self.tr("Kind"), self.kind_label)
@@ -48,6 +51,7 @@ class FeatureCard(QGroupBox):
         form.addRow(self.tr("Sends"), self.sends_label)
         form.addRow(self.tr("LED"), self.led_label)
         form.addRow(self.tr("Actions"), self.actions_label)
+        form.addRow(self.tr("On the unit"), self.checked_label)
         layout = QVBoxLayout(self)
         layout.addWidget(self._prompt)
         layout.addWidget(self._fields)
@@ -60,6 +64,11 @@ class FeatureCard(QGroupBox):
         if selectable:
             label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         return label
+
+    def refresh(self) -> None:
+        """Re-reads the feature on show (its LED data or checks changed)."""
+        if self.feature is not None:
+            self.set_feature(feature_by_id(self.feature.controller, self.feature.id) or self.feature)
 
     def set_feature(self, feature: Feature | None, *, unresolved: str | None = None) -> None:
         """`unresolved`: a control was clicked but matches no feature (the
@@ -116,6 +125,8 @@ class FeatureCard(QGroupBox):
         self.actions_label.setText(
             ", ".join(_verb_translate(VERB_LABELS.get(verb, verb)) for verb in verbs_for(feature))
         )
+        # What the guided check saw this control send (the controller library).
+        self.checked_label.setText(library.describe_knowledge(library.knowledge_of(feature), _library_translate))
 
 
 __all__ = ["FeatureCard"]

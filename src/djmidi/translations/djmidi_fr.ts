@@ -1041,6 +1041,14 @@ Mappé sur : {functions}</translation>
         <source>no LED</source>
         <translation>pas de LED</translation>
     </message>
+    <message>
+        <source>never tested on the unit</source>
+        <translation>jamais testé sur l’appareil</translation>
+    </message>
+    <message>
+        <source>(the unit sent {message} ch {channel})</source>
+        <translation>(l’appareil a envoyé {message} canal {channel})</translation>
+    </message>
 </context>
 <context>
     <name>ControllerSetupView</name>
@@ -2315,6 +2323,10 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
     <message>
         <source>Actions</source>
         <translation>Actions</translation>
+    </message>
+    <message>
+        <source>On the unit</source>
+        <translation>Sur l’appareil</translation>
     </message>
     <message>
         <source>{control}: no feature (no raw MIDI trigger known for it).</source>
