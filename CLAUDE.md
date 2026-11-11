@@ -249,7 +249,10 @@ per `Feature` (`knowledge_for`) and audits per physical control (`audit_controls
 check is `gui/profile_check.py` + `gui/profile_check_dialog.py` (tabs Check / Lights / Audit, photo frame via
 `gui/control_photo.py`): a held SHIFT is never the asked control, presses are judged over a short window
 (double / long press), MIDI-OUT sections are not asked, lights are asked one per address (plain layer, first
-pad bank, decks 1-2). LED data only counts as verified once seen lit. `catalog/profile.py` skips these sidecar
+pad bank, decks 1-2). LED data only counts as verified once seen lit. The Feature card shows `library.knowledge_of` (cached
+`knowledge_index`); `ProfileCheckDialog.libraryChanged` / `AtelierView.libraryChanged` →
+`MainWindow._on_controller_library_changed` refresh the Atelier (`refresh_library`, draft kept), emulator cards
+and the audit. `catalog/profile.py` skips these sidecar
 files (`is_sidecar_file`). Nothing here edits a profile.
 
 ### Music library (`library/`, `taxonomy/`, `gui/music_library_view.py`)

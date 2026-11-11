@@ -109,7 +109,9 @@ Everything stays in your workspace's `Controllers` folder, one file per
 controller: what each control sent, under which DJ software, on which day
 (`<controller>.captures.json`), and the lights you confirmed
 (`<controller>.leds.json`). Together with the profile they are the
-controller's library, which the other tools read. Nothing here ever
+controller's library, which the other tools read: the **Feature** card of
+the [Atelier](atelier.md) and of the Controller Emulator shows each
+control's verdict and verified LED as soon as you answer. Nothing here ever
 changes the profile itself.
 
 ## Share the report
