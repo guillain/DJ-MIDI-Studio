@@ -128,6 +128,62 @@ def knowledge_for(controller: str, store: captures_mod.CaptureStore | None = Non
     return knowledge
 
 
+_INDEX: dict[str, tuple[tuple, dict[str, ControlKnowledge]]] = {}
+
+
+def _mtime(path) -> float | None:
+    try:
+        return path.stat().st_mtime_ns
+    except OSError:
+        return None
+
+
+def knowledge_index(controller: str) -> dict[str, ControlKnowledge]:
+    """:func:`knowledge_for` by feature id, re-read only when the profile,
+    the captures or the LED data change: what the Atelier and the
+    Controller Emulator show for the control you click."""
+    from djmidi.atelier.led_data import led_file
+
+    stamp = (
+        catalog.get_definition(controller),
+        _mtime(captures_mod.captures_file(controller)),
+        _mtime(led_file(controller)),
+    )
+    cached = _INDEX.get(controller)
+    if cached is not None and cached[0][0] is stamp[0] and cached[0][1:] == stamp[1:]:
+        return cached[1]
+    index = {entry.feature.id: entry for entry in knowledge_for(controller)}
+    _INDEX[controller] = (stamp, index)
+    return index
+
+
+def knowledge_of(feature: Feature) -> ControlKnowledge | None:
+    if feature.controller not in catalog.CONTROLLER_NAMES:
+        return None
+    return knowledge_index(feature.controller).get(feature.id)
+
+
+def describe_knowledge(entry: ControlKnowledge | None, translate: Translate = untranslated) -> str:
+    """One line: the verdict, what a mismatch sent, and every software it
+    was checked under."""
+    if entry is None or entry.status == UNTESTED:
+        return translate(QT_TRANSLATE_NOOP("ControllerLibrary", "never tested on the unit"))
+    text = translate(STATUS_LABELS[entry.status])
+    if entry.got is not None:
+        channel, kind, data1 = entry.got
+        text += " " + translate(QT_TRANSLATE_NOOP("ControllerLibrary", "(the unit sent {message} ch {channel})")).format(
+            message=f"{'Note' if kind == 'NOTE' else 'CC'} {data1}", channel=channel
+        )
+    if entry.per_software:
+        text += " — " + " · ".join(
+            f"{translate(_software_label(software))}: {translate(STATUS_LABELS[verdict])}"
+            for software, verdict in entry.per_software
+        )
+    if entry.day:
+        text += f" ({entry.day})"
+    return text
+
+
 def _overall(by_software):
     """A mismatch with no software running is not a profile error when the
     control is verified under a DJ software (the profile describes how the
@@ -271,5 +327,8 @@ __all__ = [
     "audit_controls",
     "audit_counts",
     "audit_text",
+    "describe_knowledge",
     "knowledge_for",
+    "knowledge_index",
+    "knowledge_of",
 ]

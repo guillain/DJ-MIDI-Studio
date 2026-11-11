@@ -400,6 +400,7 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         self.atelier_view.sendRequested.connect(self._on_atelier_send_requested)
         self.atelier_view.sendAllRequested.connect(self._on_atelier_send_all_requested)
         self.atelier_view.macro_panel.macrosSaved.connect(self._on_atelier_macros_saved)
+        self.atelier_view.libraryChanged.connect(self._on_controller_library_changed)
         self.atelier_view.macro_panel.set_macros(self.macros)
         # Step 6: remaps go through the MIDI Routing tab's routes.
         self.atelier_view.route_labels_provider = self.midi_routing_view.route_labels
@@ -1926,9 +1927,23 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         )
         dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         dialog.finished.connect(self._on_profile_check_closed)
+        dialog.libraryChanged.connect(self._on_controller_library_changed)
         self._profile_check_dialog = dialog
         dialog.show()
         return dialog
+
+    def _on_controller_library_changed(self, controller: str) -> None:
+        """A capture or verified LED was recorded: every view showing that
+        controller's features re-reads them (issue #451)."""
+        if self.sender() is not self.atelier_view:
+            self.atelier_view.refresh_library(controller)
+        for view in self._emulator_views():
+            card = view.feature_card
+            if card.feature is not None and card.feature.controller == controller:
+                card.refresh()
+        dialog = self._profile_check_dialog
+        if dialog is not None and self.sender() is not dialog and dialog.controller == controller:
+            dialog.refresh_audit()
 
     def _on_profile_check_closed(self, _result: int = 0) -> None:
         self._profile_check_dialog = None
