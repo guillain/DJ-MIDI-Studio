@@ -155,8 +155,15 @@ def main() -> int:
     os.environ.setdefault("QT_LOGGING_RULES", "qt.qpa.fonts=false")
     qInstallMessageHandler(_filter_offscreen_platform_noise)
     app = QApplication.instance() or QApplication(sys.argv)
+    # As in the real app: an icon on every text button (gui/app.py).
+    from djmidi.gui import button_icons
+    from djmidi.gui.theme import colors as theme_colors
+
+    button_icons.install(app, "en", theme_colors()["accent2"])
     with (
         contextlib.ExitStack() as stack,
+        # No page fade: a capture must never catch a page half drawn.
+        patch("djmidi.gui.nav_tabs.NavTabs._fade_in", lambda self, widget: None),
         patch("djmidi.gui.live_monitor.list_input_ports", return_value=[]),
         patch("djmidi.gui.live_monitor.MidiMonitor", _OfflineMidiMonitor),
         patch("djmidi.gui.controller_setup.list_input_ports", return_value=[]),
@@ -760,6 +767,10 @@ def _capture_interface_language(app: QApplication) -> None:
     if install_translators(app, "fr") != "fr":
         raise RuntimeError("the French translation is not available")
     added = [translator for translator in app.findChildren(QTranslator) if translator not in before]
+    from djmidi.gui import button_icons
+
+    for decorator in button_icons._INSTALLED:
+        decorator.language = "fr"
     try:
         french = MainWindow()
         french.resize(1600, 1000)
@@ -799,6 +810,8 @@ def _capture_interface_language(app: QApplication) -> None:
     finally:
         for translator in added:
             app.removeTranslator(translator)
+        for decorator in button_icons._INSTALLED:
+            decorator.language = "en"
 
 
 def _demo_cover(path: Path) -> None:
