@@ -288,7 +288,24 @@ writing) and prefers, in this order:
 A copy holding Serato or Traktor data that the suggested one lacks is
 flagged ⚠: discarding it would lose those cue points. `Tick all but the
 suggested copies` ticks every other copy of every group, never a flagged
-one, so you can check the ticks before moving anything. Select a file and click `Reveal in Finder` (or double-click
+one, so you can check the ticks before moving anything.
+
+Before discarding, `Merge onto the kept copy…` gathers what the other
+copies know. Select a group (the suggested copy is kept) or the file to
+keep, and click it:
+
+- **Tags**: one row per tag another copy has a different value for. An
+  empty tag of the kept copy takes the value most copies share, ticked; a
+  tag the kept copy already has stays as it is unless you tick it and pick
+  another value. Only the ticked tags are written, as one step you can
+  undo (and revert later from the change history). Serato and Traktor data
+  in the file are never touched.
+- **Playlists**: this app's playlists and the set preparation list the
+  kept copy instead of the others, each track once. Serato, Traktor and
+  rekordbox playlists are not changed.
+
+Nothing is discarded by a merge: move the other copies to the Trash
+afterwards if you want. Select a file and click `Reveal in Finder` (or double-click
 it) to see it in your file manager.
 
 Other versions are listed for you to review only: they have no tick box,
