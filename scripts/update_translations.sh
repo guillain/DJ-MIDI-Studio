@@ -52,6 +52,7 @@ SOURCES=(
   src/djmidi/gui/smart_export_dialog.py
   src/djmidi/gui/audio_preview.py
   src/djmidi/midi_latency.py
+  src/djmidi/library/dj_playlists.py
   src/djmidi/library/keep_copy.py
   src/djmidi/library/rename.py
   src/djmidi/gui/duplicates_dialog.py
