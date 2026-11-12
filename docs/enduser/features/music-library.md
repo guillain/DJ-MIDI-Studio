@@ -305,7 +305,26 @@ keep, and click it:
   rekordbox playlists are not changed.
 
 Nothing is discarded by a merge: move the other copies to the Trash
-afterwards if you want. Select a file and click `Reveal in Finder` (or double-click
+afterwards if you want.
+
+Your DJ software's own playlists are only changed when you ask, one
+program at a time: select the group or the file to keep and click `DJ
+software playlists…`, then pick **Serato DJ Pro crates** (your
+`_Serato_/Subcrates` folder) or **Traktor Pro playlists** (your
+`collection.nml`):
+
+- Refused while that program is running: quit it first, or it would write
+  its own playlists back when it quits.
+- A preview lists every crate or playlist file that changes and how many
+  entries; a crate listing the kept copy already keeps it once.
+- Only the playlist entries change: every other part of a crate, and
+  Traktor's collection, cue points and analysis, stay exactly as they
+  were. In Traktor, an entry is only repointed when the kept copy is in
+  Traktor's collection (import it in Traktor first otherwise).
+- Every file is copied to the workspace's `Snapshots` folder first
+  (`serato-playlists-<date>` / `traktor-playlists-<date>`), and the change
+  is listed in the change history: to undo it, put the backed-up file
+  back. Select a file and click `Reveal in Finder` (or double-click
 it) to see it in your file manager.
 
 Other versions are listed for you to review only: they have no tick box,
