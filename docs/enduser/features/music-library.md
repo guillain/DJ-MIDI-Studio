@@ -97,7 +97,10 @@ are after a rescan or a tag edit.
 
 The **Camelot** column translates any key notation into the Camelot wheel
 used for harmonic mixing: `Am`, `F#m`, Open Key `7m` and `8A` are all
-understood.
+understood. Each key shows as a coloured badge: every number of the wheel
+has its own colour, neighbouring numbers (the keys that mix) have
+neighbouring colours, and the minor keys (A) are deeper than the major
+ones (B) — so a harmonic run reads at a glance.
 
 ## Listen to a track
 
