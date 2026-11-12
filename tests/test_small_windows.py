@@ -538,3 +538,17 @@ def test_main_window_tabs_are_usable_in_german(german):
         assert window.left_tabs.tabText(window._tab_indexes["library"]) == "Musik"
     finally:
         window.close()
+
+
+def test_action_sections_wrap_their_buttons_to_the_width():
+    """UX review: grouped compact buttons flow onto several lines instead of
+    widening the panel, and all share the chip look and an icon."""
+    from PySide6.QtWidgets import QPushButton
+
+    from djmidi.gui.action_groups import action_section
+
+    buttons = [QPushButton(f"Action number {index}…") for index in range(6)]
+    section = action_section("Tools", [(button, "edit") for button in buttons])
+    flow = section.layout().itemAt(1).layout()
+    assert flow.heightForWidth(200) > flow.heightForWidth(2000)
+    assert all(button.property("chip") and not button.icon().isNull() for button in buttons)

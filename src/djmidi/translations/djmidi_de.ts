@@ -7148,6 +7148,14 @@ Ausgewählte Zeilen in der Controller-Einrichtung: {selected}</translation>
         <translation>BPM und Tonart aus dem Audio schätzen für Tracks, deren Tags sie nicht enthalten. Ergebnisse werden nur als bernsteinfarbene Vorschläge angezeigt; nichts wird geschrieben, bevor Sie sie übernehmen.</translation>
     </message>
     <message>
+        <source>Folders</source>
+        <translation>Ordner</translation>
+    </message>
+    <message>
+        <source>Library tools</source>
+        <translation>Bibliothekswerkzeuge</translation>
+    </message>
+    <message>
         <source>Add a music folder, then scan it.</source>
         <translation>Fügen Sie einen Musikordner hinzu und scannen Sie ihn dann.</translation>
     </message>
@@ -7292,6 +7300,30 @@ Ausgewählte Zeilen in der Controller-Einrichtung: {selected}</translation>
         <translation>Listet übrig gebliebene Müll-Tags auf (ID3v1-Kommentarkopien, alte Player-Einstellungen, ReplayGain…) und entfernt sie erst nach Ihrer Bestätigung.</translation>
     </message>
     <message>
+        <source>Puts the fields back to the file&apos;s current tags.</source>
+        <translation>Setzt die Felder auf die aktuellen Tags der Datei zurück.</translation>
+    </message>
+    <message>
+        <source>Undoes the last tag write, rename or move.</source>
+        <translation>Macht das letzte Schreiben von Tags, Umbenennen oder Verschieben rückgängig.</translation>
+    </message>
+    <message>
+        <source>Redoes what Undo undid.</source>
+        <translation>Stellt wieder her, was Rückgängig zurückgenommen hat.</translation>
+    </message>
+    <message>
+        <source>This track</source>
+        <translation>Dieser Track</translation>
+    </message>
+    <message>
+        <source>Selected tracks</source>
+        <translation>Ausgewählte Tracks</translation>
+    </message>
+    <message>
+        <source>Files</source>
+        <translation>Dateien</translation>
+    </message>
+    <message>
         <source>Set cover…</source>
         <translation>Cover setzen…</translation>
     </message>
@@ -7404,36 +7436,12 @@ Ausgewählte Zeilen in der Controller-Einrichtung: {selected}</translation>
         <translation>Wertet jede intelligente Playlist neu aus und schreibt jede in einem Durchgang als Serato-Crate und/oder Traktor-Playlist in einen Ordner.</translation>
     </message>
     <message>
-        <source>Import Serato crate…</source>
-        <translation>Serato-Crate importieren…</translation>
-    </message>
-    <message>
-        <source>Import Traktor NML…</source>
-        <translation>Traktor-NML importieren…</translation>
-    </message>
-    <message>
-        <source>Import Rekordbox export…</source>
-        <translation>Rekordbox-Export importieren…</translation>
-    </message>
-    <message>
-        <source>Export as Serato crate…</source>
-        <translation>Als Serato-Crate exportieren…</translation>
-    </message>
-    <message>
         <source>Writes a new .crate file where you choose. Never overwrites a crate on its own.</source>
         <translation>Schreibt eine neue .crate-Datei an einen Ort Ihrer Wahl. Überschreibt nie von sich aus eine Crate.</translation>
     </message>
     <message>
-        <source>Export as Traktor playlist…</source>
-        <translation>Als Traktor-Playlist exportieren…</translation>
-    </message>
-    <message>
         <source>Writes a new single-playlist .nml where you choose, for Traktor&apos;s Import Playlist. Never touches collection.nml.</source>
         <translation>Schreibt eine neue .nml mit einer einzelnen Playlist an einen Ort Ihrer Wahl, für Traktors Import Playlist. Berührt nie collection.nml.</translation>
-    </message>
-    <message>
-        <source>Export as rekordbox XML…</source>
-        <translation>Als rekordbox-XML exportieren…</translation>
     </message>
     <message>
         <source>Writes a new rekordbox XML file where you choose, for rekordbox&apos;s Imported Library. Never touches rekordbox&apos;s own library.</source>
@@ -7462,6 +7470,38 @@ Ausgewählte Zeilen in der Controller-Einrichtung: {selected}</translation>
     <message>
         <source>Compares the selected playlist with a playlist of a rekordbox XML file or device export: tracks only on each side and order differences. Read-only.</source>
         <translation>Vergleicht die ausgewählte Playlist mit einer Playlist einer rekordbox-XML-Datei oder eines Geräte-Exports: Titel nur auf einer Seite und Unterschiede in der Reihenfolge. Nur lesend.</translation>
+    </message>
+    <message>
+        <source>Renames the selected playlist.</source>
+        <translation>Benennt die ausgewählte Playlist um.</translation>
+    </message>
+    <message>
+        <source>Deletes the selected playlist of this app (never a file, never a DJ software playlist).</source>
+        <translation>Löscht die ausgewählte Playlist dieser App (nie eine Datei, nie eine Playlist einer DJ-Software).</translation>
+    </message>
+    <message>
+        <source>Create</source>
+        <translation>Erstellen</translation>
+    </message>
+    <message>
+        <source>Smart playlists</source>
+        <translation>Smarte Playlists</translation>
+    </message>
+    <message>
+        <source>Import</source>
+        <translation>Importieren</translation>
+    </message>
+    <message>
+        <source>Export</source>
+        <translation>Exportieren</translation>
+    </message>
+    <message>
+        <source>Compare</source>
+        <translation>Vergleichen</translation>
+    </message>
+    <message>
+        <source>Playlist</source>
+        <translation>Playlist</translation>
     </message>
     <message>
         <source>Load DJ history</source>
@@ -8206,6 +8246,38 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     <message>
         <source>Traktor “{name}”</source>
         <translation>Traktor „{name}“</translation>
+    </message>
+    <message>
+        <source>Serato crate…</source>
+        <translation>Serato-Crate…</translation>
+    </message>
+    <message>
+        <source>Imports a Serato .crate as a playlist of this app. Read-only towards Serato.</source>
+        <translation>Importiert eine Serato-.crate als Playlist dieser App. Serato wird nur gelesen.</translation>
+    </message>
+    <message>
+        <source>Traktor NML…</source>
+        <translation>Traktor-NML…</translation>
+    </message>
+    <message>
+        <source>Imports the playlists of a Traktor .nml as playlists of this app. Read-only towards Traktor.</source>
+        <translation>Importiert die Playlists einer Traktor-.nml als Playlists dieser App. Traktor wird nur gelesen.</translation>
+    </message>
+    <message>
+        <source>rekordbox export…</source>
+        <translation>rekordbox-Export…</translation>
+    </message>
+    <message>
+        <source>Imports the playlists of a rekordbox XML file or device export. Read-only.</source>
+        <translation>Importiert die Playlists einer rekordbox-XML-Datei oder eines Geräte-Exports. Nur lesend.</translation>
+    </message>
+    <message>
+        <source>Traktor playlist…</source>
+        <translation>Traktor-Playlist…</translation>
+    </message>
+    <message>
+        <source>rekordbox XML…</source>
+        <translation>rekordbox-XML…</translation>
     </message>
     <message>
         <source>rekordbox XML or device export (*.xml export.pdb)</source>
@@ -9357,16 +9429,32 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
         <translation>Entfernen</translation>
     </message>
     <message>
+        <source>Removes the selected tracks from the set.</source>
+        <translation>Entfernt die ausgewählten Tracks aus dem Set.</translation>
+    </message>
+    <message>
         <source>Clear</source>
         <translation>Leeren</translation>
+    </message>
+    <message>
+        <source>Empties the set.</source>
+        <translation>Leert das Set.</translation>
     </message>
     <message>
         <source>Move up</source>
         <translation>Nach oben</translation>
     </message>
     <message>
+        <source>Moves the selected tracks one place earlier.</source>
+        <translation>Verschiebt die ausgewählten Tracks um eine Stelle nach vorn.</translation>
+    </message>
+    <message>
         <source>Move down</source>
         <translation>Nach unten</translation>
+    </message>
+    <message>
+        <source>Moves the selected tracks one place later.</source>
+        <translation>Verschiebt die ausgewählten Tracks um eine Stelle nach hinten.</translation>
     </message>
     <message>
         <source>Propose an order…</source>
@@ -9431,6 +9519,18 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     <message>
         <source>Writes a new rekordbox XML file where you choose, for rekordbox&apos;s Imported Library.</source>
         <translation>Schreibt eine neue rekordbox-XML-Datei an den gewählten Ort, für die importierte Bibliothek von rekordbox.</translation>
+    </message>
+    <message>
+        <source>Tracks</source>
+        <translation>Tracks</translation>
+    </message>
+    <message>
+        <source>Order</source>
+        <translation>Reihenfolge</translation>
+    </message>
+    <message>
+        <source>Save and export</source>
+        <translation>Speichern und exportieren</translation>
     </message>
     <message>
         <source>Select tracks in the table first.</source>

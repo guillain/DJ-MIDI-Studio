@@ -140,6 +140,22 @@ QPushButton[compact="true"]::menu-indicator {
     image: none;
     width: 0px;
 }
+/* Grouped action buttons (gui/action_groups.py): compact pills with an icon. */
+QPushButton[chip="true"] {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 500;
+}
+QWidget[actionArea="true"] {
+    background: transparent;
+}
+QLabel[sectionTitle="true"] {
+    background: transparent;
+    color: $title;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
 QPushButton:pressed {
     background: $accent;
     color: #ffffff;
