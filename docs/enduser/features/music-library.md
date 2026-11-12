@@ -275,7 +275,20 @@ suggestions:
 | Other versions of the same song | Suggestions, not duplicates: the same artist and the same title once a trailing version marker is ignored — `(Radio Edit)`, `(Extended Mix)`, `(Original Mix)`, `[Remastered 2011]`, `- Club Mix`, `(X Remix)`, `(VIP)`… Shown only when at least two *different* versions exist; each file shows its own title. `(Part 2)` and other non-version text are never stripped |
 
 Each file shows its path, format and size; expand a group to see each
-file's bitrate. Select a file and click `Reveal in Finder` (or double-click
+file's bitrate and, in the **Suggestion** column, which copy to keep (★)
+and why. The app reads each copy's header and tags (never the audio, never
+writing) and prefers, in this order:
+
+1. audio quality: a lossless file, else the higher bitrate, else the higher
+   sample rate;
+2. the copy holding Serato or Traktor data (cue points, loops, analysis);
+3. a copy inside your library folders rather than elsewhere (Downloads…);
+4. the copy with more tags filled.
+
+A copy holding Serato or Traktor data that the suggested one lacks is
+flagged ⚠: discarding it would lose those cue points. `Tick all but the
+suggested copies` ticks every other copy of every group, never a flagged
+one, so you can check the ticks before moving anything. Select a file and click `Reveal in Finder` (or double-click
 it) to see it in your file manager.
 
 Other versions are listed for you to review only: they have no tick box,
