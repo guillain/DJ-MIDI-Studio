@@ -348,6 +348,10 @@
         <translation>Wenn ein Track endet, den nächsten in der Tabelle abspielen.</translation>
     </message>
     <message>
+        <source>Select a track to preview it.</source>
+        <translation>Wählen Sie einen Track zum Vorhören.</translation>
+    </message>
+    <message>
         <source>This file could not be played.</source>
         <translation>Diese Datei konnte nicht abgespielt werden.</translation>
     </message>

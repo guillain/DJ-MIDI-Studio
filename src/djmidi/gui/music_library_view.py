@@ -1762,6 +1762,13 @@ class MusicLibraryView(QWidget):
         row = current.data(ROW_ROLE) if current.isValid() else None
         path = row.path if row is not None and not row.missing else None
         self.audio_preview.set_source(path)
+        meta = row.metadata if row is not None else None
+        self.audio_preview.set_now_playing(
+            meta.title if meta else (Path(row.path).stem if row is not None else None),
+            meta.artist if meta else None,
+            meta.bpm if meta else None,
+            row.camelot_key if row is not None else None,
+        )
         self._load_waveform_for(path)
 
     def _load_waveform_for(self, path: str | None) -> None:
@@ -2741,6 +2748,7 @@ class MusicLibraryView(QWidget):
             self.cover_label.setPixmap(QPixmap())
             self.cover_label.setText("" if row is None else (self.tr("Unreadable cover") if cover else self.tr("No cover")))
         self._has_cover = cover is not None
+        self.audio_preview.set_cover(pixmap if not pixmap.isNull() else None)
         editable = row is not None and not row.missing
         self.set_cover_button.setEnabled(editable)
         self.remove_cover_button.setEnabled(editable and self._has_cover)

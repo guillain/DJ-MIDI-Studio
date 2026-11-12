@@ -130,6 +130,9 @@ Playback stops when you leave the tab or close the app. If your system
 can't play audio through Qt, the bar stays greyed out with a tooltip
 explaining why; files are only read, never changed.
 
+The bar at the bottom shows what it previews: the cover, the title and
+artist, the BPM and the Camelot badge, above the waveform.
+
 ## Edit tags
 
 Select a track; the **Track** panel shows its title, artist, album, genre,

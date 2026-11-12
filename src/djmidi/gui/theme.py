@@ -155,6 +155,20 @@ QPushButton[chip="true"] {
     border-radius: 12px;
     font-weight: 500;
 }
+QLabel#nowCover {
+    background: $field_bg;
+    border-radius: 6px;
+    color: $accent2;
+    font-size: 18px;
+}
+QLabel#nowBadge {
+    background: transparent;
+    border: 1px solid $accent2;
+    color: $accent2;
+    border-radius: 10px;
+    padding: 2px 9px;
+    font-weight: 700;
+}
 QLabel#dashboardTitle {
     font-size: 24px;
     font-weight: 800;

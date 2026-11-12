@@ -16,31 +16,15 @@ from PySide6.QtWidgets import (
     QLabel,
     QLayout,
     QLayoutItem,
-    QStyle,
     QVBoxLayout,
     QWidget,
 )
 
-# Role -> the platform's standard icon, so every button of one kind looks alike.
-ICONS = {
-    "add": QStyle.StandardPixmap.SP_FileDialogNewFolder,
-    "auto": QStyle.StandardPixmap.SP_BrowserReload,
-    "smart": QStyle.StandardPixmap.SP_FileDialogContentsView,
-    "import": QStyle.StandardPixmap.SP_ArrowDown,
-    "export": QStyle.StandardPixmap.SP_ArrowUp,
-    "compare": QStyle.StandardPixmap.SP_FileDialogDetailedView,
-    "edit": QStyle.StandardPixmap.SP_FileDialogInfoView,
-    "save": QStyle.StandardPixmap.SP_DialogSaveButton,
-    "revert": QStyle.StandardPixmap.SP_DialogResetButton,
-    "undo": QStyle.StandardPixmap.SP_ArrowBack,
-    "redo": QStyle.StandardPixmap.SP_ArrowForward,
-    "confirm": QStyle.StandardPixmap.SP_DialogApplyButton,
-    "files": QStyle.StandardPixmap.SP_DirIcon,
-    "clean": QStyle.StandardPixmap.SP_DialogDiscardButton,
-    "delete": QStyle.StandardPixmap.SP_TrashIcon,
-    "up": QStyle.StandardPixmap.SP_ArrowUp,
-    "down": QStyle.StandardPixmap.SP_ArrowDown,
-}
+from djmidi.gui.icons import ROLES, line_icon
+from djmidi.gui.theme import colors as theme_colors
+
+# The roles a button can take; each has its own line icon (gui/icons.py).
+ICONS = ROLES
 
 
 class FlowLayout(QLayout):
@@ -106,8 +90,8 @@ def chip(button: QAbstractButton, role: str | None = None) -> QAbstractButton:
     """The shared compact look: the ``chip`` style and the role's icon."""
     button.setProperty("chip", True)
     if role in ICONS:
-        button.setIcon(button.style().standardIcon(ICONS[role]))
-        button.setIconSize(QSize(14, 14))
+        button.setIcon(line_icon(role, theme_colors()["accent2"]))
+        button.setIconSize(QSize(15, 15))
     button.setCursor(Qt.CursorShape.PointingHandCursor)
     return button
 

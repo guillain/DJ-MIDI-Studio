@@ -64,7 +64,9 @@ fixed file path; use `tmp_path`.
   and join `WINDOWS` in `tests/test_small_windows.py` (checked in EN/FR/DE, offscreen screen 800×800). Wide rows
   go in a `QScrollArea`. A `QSplitter` blocks height-for-width: avoid it around wrapped labels in dialogs.
 - **Buttons**: a panel with several actions groups them with `gui/action_groups.action_section(title, [(button, role)])`
-  (titled sections, a flow layout that wraps, the `chip` look and a role icon from `ICONS`, a tooltip on each).
+  (titled sections, a flow layout that wraps, the `chip` look and a role icon, a tooltip on each). Icons are the app's
+  own line icons (`gui/icons.line_icon(role, colour)`), never `QStyle.standardIcon`; every QPushButton has the pill look
+  (theme.py). Empty lists/tables get a `gui/empty_state.EmptyState`.
 - **Accessibility**: icon/glyph-only buttons get a tooltip (`gui/accessibility.name_icon_buttons` turns it into
   the accessible name); `tests/test_accessibility.py` checks names, Tab focus and contrast.
 - **Docs**: `docs/enduser/` (features for DJs; one `features/<feature>.md` per feature, listed in the feature

@@ -55,7 +55,6 @@ from PySide6.QtWidgets import (
     QPushButton,
     QScrollArea,
     QSizePolicy,
-    QStyle,
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
@@ -87,6 +86,7 @@ from djmidi.gui import help_texts
 from djmidi.gui.accessibility import name_icon_buttons
 from djmidi.gui.controller_submission_dialog import ControllerSubmissionDialog
 from djmidi.gui.help_button import help_button
+from djmidi.gui.icons import line_icon
 from djmidi.gui.port_list_utils import refresh_checked_port_list
 from djmidi.gui.scroll_utils import AutoSizeScrollArea
 from djmidi.gui.theme import colors as theme_colors
@@ -668,27 +668,15 @@ class ControllerSetupView(QWidget):
         self._learn_status.setStyleSheet(_STATUS_PILL_QSS.substitute(c))
 
     def _get_icon(self, icon_type: str) -> QIcon:
-        """Get a standard Qt icon by type name."""
-        style = self.style()
-        icon_map = {
-            "new": QStyle.StandardPixmap.SP_FileDialogNewFolder,
-            "open": QStyle.StandardPixmap.SP_DialogOpenButton,
-            "save": QStyle.StandardPixmap.SP_DialogSaveButton,
-            "delete": QStyle.StandardPixmap.SP_TrashIcon,
-            "add": QStyle.StandardPixmap.SP_FileIcon,
-            "refresh": QStyle.StandardPixmap.SP_BrowserReload,
-            "start": QStyle.StandardPixmap.SP_MediaPlay,
-            "stop": QStyle.StandardPixmap.SP_MediaStop,
-            "clear": QStyle.StandardPixmap.SP_DialogResetButton,
-            "apply": QStyle.StandardPixmap.SP_DialogApplyButton,
-            "export": QStyle.StandardPixmap.SP_DialogSaveButton,
-            "import": QStyle.StandardPixmap.SP_ArrowDown,
-            "help": QStyle.StandardPixmap.SP_MessageBoxQuestion,
-            "image": QStyle.StandardPixmap.SP_FileDialogContentsView,
-            "submit": QStyle.StandardPixmap.SP_ArrowUp,
-            "template": QStyle.StandardPixmap.SP_FileDialogDetailedView,
-        }
-        return style.standardIcon(icon_map.get(icon_type, QStyle.StandardPixmap.SP_FileIcon))
+        """The app's line icon for a button type (gui/icons.py): the same
+        look as every grouped action button."""
+        role = {
+            "new": "add", "open": "files", "save": "save", "delete": "delete", "add": "add",
+            "refresh": "auto", "start": "play", "stop": "stop", "clear": "clean", "apply": "confirm",
+            "export": "export", "import": "import", "help": "help", "image": "image", "submit": "export",
+            "template": "list",
+        }.get(icon_type, "list")
+        return line_icon(role, theme_colors()["accent2"])
 
     def _titled_panel(self, title: str, header_buttons: list[QPushButton]) -> tuple[QFrame, QVBoxLayout]:
         """A QGroupBox-styled panel with icon-only action buttons in its title

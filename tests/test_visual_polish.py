@@ -50,3 +50,21 @@ def test_the_dashboard_sums_up_the_music_library():
     assert "Open the Music tab" in view.library_summary_label.text()
     view.set_library_summary(1200, 14)
     assert view.library_summary_label.text() == "1200 track(s) · 14 playlist(s)"
+
+
+def test_every_role_has_a_line_icon_and_setup_uses_them():
+    from djmidi.gui.icons import ROLES, line_icon
+
+    assert all(not line_icon(role, "#00c2e8").isNull() for role in ROLES)
+    assert line_icon("nope", "#00c2e8").isNull()
+
+
+def test_the_player_bar_shows_what_it_previews():
+    from djmidi.gui.audio_preview import AudioPreviewBar
+
+    bar = AudioPreviewBar(player_factory=None)
+    bar.set_now_playing("Sunrise", "Kaya & Co", 124.0, "8A")
+    assert "Kaya &amp; Co" in bar.now_title.text() and bar.now_bpm.text() == "124 BPM"
+    assert not bar.now_camelot.isHidden() and bar.now_camelot.text() == "8A"
+    bar.set_now_playing(None)
+    assert bar.now_title.text() == "Select a track to preview it." and bar.now_camelot.isHidden()

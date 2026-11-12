@@ -348,6 +348,10 @@
         <translation>À la fin d&apos;un morceau, lit le suivant du tableau.</translation>
     </message>
     <message>
+        <source>Select a track to preview it.</source>
+        <translation>Sélectionnez un morceau pour l’écouter.</translation>
+    </message>
+    <message>
         <source>This file could not be played.</source>
         <translation>Ce fichier n&apos;a pas pu être lu.</translation>
     </message>
