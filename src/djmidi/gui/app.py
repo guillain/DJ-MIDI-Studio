@@ -106,7 +106,12 @@ def run(argv: list[str] | None = None) -> int:
     apply_theme(app, preferences.theme)
     timer.mark("Qt application")
     # Before any widget exists: tr() is resolved when a widget sets its text.
-    install_translators(app, preferences.language)
+    language = install_translators(app, preferences.language)
+    # An icon on every text button, from its English text (UX review).
+    from djmidi.gui import button_icons
+    from djmidi.gui.theme import colors as theme_colors
+
+    button_icons.install(app, language, theme_colors()["accent2"])
     window = MainWindow()
     timer.mark("main window built")
     if arguments.startup_screenshot:
