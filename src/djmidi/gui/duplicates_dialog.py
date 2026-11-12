@@ -106,6 +106,8 @@ def _file_size(path: str) -> int | None:
 class DuplicatesDialog(QDialog):
     discardRequested = Signal(list)
     """Ticked copies' paths, deduplicated, in tree order."""
+    mergeRequested = Signal(str, list)
+    """The copy to keep and the group's other copies (issue #458)."""
 
     def __init__(
         self,
@@ -166,6 +168,15 @@ class DuplicatesDialog(QDialog):
         )
         self.suggest_button.clicked.connect(self.tick_all_but_suggested)
         buttons.addButton(self.suggest_button, QDialogButtonBox.ButtonRole.ActionRole)
+        self.merge_button = QPushButton(self.tr("Merge onto the kept copy…"))
+        self.merge_button.setToolTip(
+            self.tr(
+                "Copy the tags the kept copy lacks from the other copies of the group and point this app's "
+                "playlists at it. The kept copy is the selected file, else the suggested one. Nothing is discarded."
+            )
+        )
+        self.merge_button.clicked.connect(self._on_merge_clicked)
+        buttons.addButton(self.merge_button, QDialogButtonBox.ButtonRole.ActionRole)
         self.trash_button = QPushButton(self.tr("Move ticked to Trash…"))
         self.trash_button.setToolTip(
             self.tr(
@@ -350,6 +361,29 @@ class DuplicatesDialog(QDialog):
             self._syncing = False
         self._update_buttons()
 
+    def merge_target(self) -> tuple[str, list[str]] | None:
+        """(kept, others) for the group of the selected row: the selected
+        file is kept, else the suggested copy. None on a versions group or
+        no group."""
+        item = self.tree.currentItem()
+        if item is None:
+            return None
+        group_item = item.parent() if item.data(0, PATH_ROLE) else item
+        if group_item is None or not self._group_children(group_item) or self._is_versions(group_item):
+            return None
+        paths = [child.data(0, PATH_ROLE) for child in self._group_children(group_item)]
+        if item.data(0, PATH_ROLE):
+            kept = item.data(0, PATH_ROLE)
+        else:
+            suggestion = self.suggest(group_item)
+            kept = suggestion.keep if suggestion else paths[0]
+        return kept, [path for path in paths if path != kept]
+
+    def _on_merge_clicked(self) -> None:
+        target = self.merge_target()
+        if target is not None:
+            self.mergeRequested.emit(*target)
+
     def _on_trash_clicked(self) -> None:
         paths = self.checked_paths()
         if paths:
@@ -376,6 +410,7 @@ class DuplicatesDialog(QDialog):
         item = self.tree.currentItem()
         self.reveal_button.setEnabled(item is not None and bool(item.data(0, PATH_ROLE)))
         self.trash_button.setEnabled(bool(self.checked_paths()))
+        self.merge_button.setEnabled(self.merge_target() is not None)
 
     def _reveal(self, item: QTreeWidgetItem | None) -> None:
         path = item.data(0, PATH_ROLE) if item is not None else None

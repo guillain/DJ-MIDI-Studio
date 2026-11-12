@@ -170,6 +170,17 @@ def _rename():
     return RenameFilesDialog(lambda template: RenamePlan(template, ()), "{artist} - {title}")
 
 
+def _merge_copies():
+    from djmidi.gui.merge_copies_dialog import MergeCopiesDialog
+    from djmidi.library.metadata import TrackMetadata
+    from djmidi.library.tag_merge import RepointPreview, propose_tag_merge
+
+    proposals = propose_tag_merge(
+        TrackMetadata(title="Alpha"), [TrackMetadata(title="Alpha (Original Mix)", genre="Techno", key="Am", bpm=128.0)]
+    )
+    return MergeCopiesDialog("/music/a.mp3", ["/dl/a.mp3"], proposals, RepointPreview({"Friday": 1}, 1))
+
+
 def _change_history():
     from djmidi.gui.change_history_dialog import ChangeHistoryDialog
     from djmidi.library.db import LibraryDB
@@ -320,6 +331,7 @@ WINDOWS = {
     "library statistics": _stats,
     "smart playlist": _smart_playlist,
     "rename files": _rename,
+    "merge duplicate copies": _merge_copies,
     "organize files": _organize_files,
     "change history": _change_history,
     "command palette": _palette,

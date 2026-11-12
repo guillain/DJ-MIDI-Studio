@@ -137,7 +137,7 @@ from djmidi.library import (
 from djmidi.library.analysis import analysis_available, to_camelot
 from djmidi.library.cover_art import load_cover_file, read_cover_art
 from djmidi.library.db import LibraryDB, TrackRecord, default_library_db_path
-from djmidi.library.metadata import TrackMetadata, clean_noise_frames
+from djmidi.library.metadata import TrackMetadata, clean_noise_frames, read_metadata
 from djmidi.library.playlist import is_camelot_compatible
 from djmidi.library.playlist_compare import PlaylistComparison, compare_playlists
 from djmidi.library.relink import RelinkCandidate, RelinkProposal
@@ -1913,7 +1913,45 @@ class MusicLibraryView(QWidget):
             self.duplicates_dialog.deleteLater()
         self.duplicates_dialog = DuplicatesDialog(groups, self, roots=[root.path for root in self.db.list_roots()])
         self.duplicates_dialog.discardRequested.connect(self.discard_duplicates)
+        self.duplicates_dialog.mergeRequested.connect(self.merge_duplicates)
         self.duplicates_dialog.show()
+
+    def merge_duplicates(self, kept: str, dropped: list[str], dialog_factory=None) -> bool:
+        """Merge a duplicate group onto `kept` (issue #458): the tags the DJ
+        ticks are written to it as one undo step (logged), and this app's
+        playlists and set draft list it instead of the other copies. No
+        file is discarded. Returns True when something changed."""
+        from djmidi.gui.merge_copies_dialog import MergeCopiesDialog
+        from djmidi.library import tag_merge
+
+        def read(path: str) -> TrackMetadata | None:
+            try:
+                return read_metadata(path)
+            except Exception:
+                _LOGGER.warning("Could not read the tags of %s", path, exc_info=True)
+                return None
+
+        proposals = tag_merge.propose_tag_merge(read(kept), [read(path) for path in dropped])
+        pairs = [(path, kept) for path in dropped]
+        preview = tag_merge.repoint_to_kept(self.db, pairs, apply=False)
+        parent = self.duplicates_dialog if self.duplicates_dialog is not None else self
+        dialog = (dialog_factory or MergeCopiesDialog)(kept, dropped, proposals, preview, parent)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return False
+        written = 0
+        changes = tag_merge.merge_changes(kept, proposals, dialog.choices())
+        if changes:
+            written = self._push_bulk_write(changes)
+        repointed = tag_merge.repoint_to_kept(self.db, pairs) if dialog.repoint else None
+        entries = (sum(repointed.playlists.values()) + repointed.set_draft) if repointed else 0
+        self.status_label.setText(
+            self.tr("Merged onto {name}: {fields} tag(s) written, {entries} playlist entry(ies) repointed.").format(
+                name=Path(kept).name, fields=len(changes[kept][1]) if written else 0, entries=entries
+            )
+        )
+        if entries:
+            self._reload_playlists()
+        return bool(written or entries)
 
     def discard_duplicates(self, paths: list[str]) -> None:
         """Move ticked duplicate copies to the Trash (issue #208).
