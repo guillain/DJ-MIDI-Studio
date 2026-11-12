@@ -66,7 +66,9 @@ fixed file path; use `tmp_path`.
 - **Buttons**: a panel with several actions groups them with `gui/action_groups.action_section(title, [(button, role)])`
   (titled sections, a flow layout that wraps, the `chip` look and a role icon, a tooltip on each). Icons are the app's
   own line icons (`gui/icons.line_icon(role, colour)`), never `QStyle.standardIcon`; every QPushButton has the pill look
-  (theme.py). Empty lists/tables get a `gui/empty_state.EmptyState`.
+  (theme.py). Empty lists/tables get a `gui/empty_state.EmptyState`. Every other text button gets
+  its icon automatically (`gui/button_icons`, installed in `gui/app.py`: role from the English source text through the
+  `.ts` catalogue, or the button box's standard button); extend `ROLE_KEYWORDS` rather than setting icons by hand.
 - **Accessibility**: icon/glyph-only buttons get a tooltip (`gui/accessibility.name_icon_buttons` turns it into
   the accessible name); `tests/test_accessibility.py` checks names, Tab focus and contrast.
 - **Docs**: `docs/enduser/` (features for DJs; one `features/<feature>.md` per feature, listed in the feature
