@@ -20,6 +20,7 @@ stream header, cheap per file but not across a whole 85k-track library.
 
 from __future__ import annotations
 
+from collections.abc import Callable, Sequence
 from dataclasses import replace
 from pathlib import Path
 
@@ -40,6 +41,7 @@ from PySide6.QtWidgets import (
 from djmidi.gui import help_texts
 from djmidi.gui.file_reveal import reveal_in_file_manager
 from djmidi.gui.help_button import help_button
+from djmidi.gui.translation import translator
 from djmidi.library.duplicates import (
     TIER_EXACT,
     TIER_METADATA,
@@ -47,16 +49,26 @@ from djmidi.library.duplicates import (
     DuplicateGroup,
     audio_bitrate,
 )
+from djmidi.library.keep_copy import (
+    CopyFacts,
+    KeepSuggestion,
+    read_copy_facts,
+    suggest_keep,
+)
 
 PATH_ROLE = Qt.ItemDataRole.UserRole + 1
 _BITRATE_PENDING = "…"
+_keep_translate = translator("KeepCopy")
 
 COLUMNS = (
     QT_TRANSLATE_NOOP("DuplicatesDialog", "Track / file"),
     QT_TRANSLATE_NOOP("DuplicatesDialog", "Format"),
     QT_TRANSLATE_NOOP("DuplicatesDialog", "Size"),
     QT_TRANSLATE_NOOP("DuplicatesDialog", "Bitrate"),
+    QT_TRANSLATE_NOOP("DuplicatesDialog", "Suggestion"),
 )
+SUGGESTION_COLUMN = 4
+KEEP_ROLE = Qt.ItemDataRole.UserRole + 2  # on a group item: the suggested path
 _TIER_TITLES = {
     TIER_EXACT: QT_TRANSLATE_NOOP("DuplicatesDialog", "Exact copies (identical files)"),
     TIER_METADATA: QT_TRANSLATE_NOOP("DuplicatesDialog", "Same artist + title"),
@@ -95,8 +107,16 @@ class DuplicatesDialog(QDialog):
     discardRequested = Signal(list)
     """Ticked copies' paths, deduplicated, in tree order."""
 
-    def __init__(self, groups: list[DuplicateGroup], parent: QWidget | None = None) -> None:
+    def __init__(
+        self,
+        groups: list[DuplicateGroup],
+        parent: QWidget | None = None,
+        roots: Sequence[str] = (),
+        facts_reader: Callable[[str, Sequence[str]], CopyFacts] = read_copy_facts,
+    ) -> None:
         super().__init__(parent)
+        self._roots = tuple(roots)
+        self._facts_reader = facts_reader
         self.setWindowTitle(self.tr("Duplicate tracks"))
         self.resize(820, 520)
         self.groups = list(groups)
@@ -137,6 +157,15 @@ class DuplicatesDialog(QDialog):
         self.reveal_button.setToolTip(self.tr("Show the selected file in your file manager."))
         self.reveal_button.clicked.connect(lambda: self._reveal(self.tree.currentItem()))
         buttons.addButton(self.reveal_button, QDialogButtonBox.ButtonRole.ActionRole)
+        self.suggest_button = QPushButton(self.tr("Tick all but the suggested copies"))
+        self.suggest_button.setToolTip(
+            self.tr(
+                "Suggest the copy to keep in every group (audio quality, DJ software data, location, tags) and tick "
+                "the others. A copy holding DJ software data the kept one lacks is never ticked."
+            )
+        )
+        self.suggest_button.clicked.connect(self.tick_all_but_suggested)
+        buttons.addButton(self.suggest_button, QDialogButtonBox.ButtonRole.ActionRole)
         self.trash_button = QPushButton(self.tr("Move ticked to Trash…"))
         self.trash_button.setToolTip(
             self.tr(
@@ -179,7 +208,7 @@ class DuplicatesDialog(QDialog):
                     )
                 else:
                     label = self.tr("{name} ({count} files)").format(name=group.label or group.key, count=len(group.paths))
-                group_item = QTreeWidgetItem([label, "", format_size(group.size), ""])
+                group_item = QTreeWidgetItem([label, "", format_size(group.size), "", ""])
                 tier_item.addChild(group_item)
                 for index, path in enumerate(group.paths):
                     size = group.size if group.size is not None else _file_size(path)
@@ -187,7 +216,7 @@ class DuplicatesDialog(QDialog):
                     if tier == TIER_VERSIONS and index < len(group.variants):
                         text = f"{group.variants[index]} — {path}"
                     child = QTreeWidgetItem(
-                        [text, Path(path).suffix.lstrip(".").upper(), format_size(size), _BITRATE_PENDING]
+                        [text, Path(path).suffix.lstrip(".").upper(), format_size(size), _BITRATE_PENDING, ""]
                     )
                     child.setData(0, PATH_ROLE, path)
                     if tier == TIER_VERSIONS:
@@ -201,12 +230,91 @@ class DuplicatesDialog(QDialog):
             tier_item.setExpanded(True)
 
     def _on_item_expanded(self, item: QTreeWidgetItem) -> None:
+        if self._group_children(item) and not self._is_versions(item):
+            self.suggest(item)
+            return
         for index in range(item.childCount()):
             child = item.child(index)
             path = child.data(0, PATH_ROLE)
             if path and child.text(3) == _BITRATE_PENDING:
                 bitrate = audio_bitrate(path)
                 child.setText(3, f"{round(bitrate / 1000)} kbps" if bitrate else "")
+
+    @staticmethod
+    def _group_children(item: QTreeWidgetItem) -> list[QTreeWidgetItem]:
+        children = [item.child(index) for index in range(item.childCount())]
+        return children if children and all(child.data(0, PATH_ROLE) for child in children) else []
+
+    @staticmethod
+    def _is_versions(group_item: QTreeWidgetItem) -> bool:
+        child = group_item.child(0)
+        return child is not None and not child.flags() & Qt.ItemFlag.ItemIsUserCheckable
+
+    def group_items(self) -> list[QTreeWidgetItem]:
+        """Group items whose copies can be discarded (not the versions tier)."""
+        result = []
+        for top in range(self.tree.topLevelItemCount()):
+            tier_item = self.tree.topLevelItem(top)
+            result.extend(
+                group
+                for group in (tier_item.child(index) for index in range(tier_item.childCount()))
+                if self._group_children(group) and not self._is_versions(group)
+            )
+        return result
+
+    def suggest(self, group_item: QTreeWidgetItem) -> KeepSuggestion | None:
+        """Reads the group's copies once and shows which one to keep and why
+        (issue #458); a copy whose DJ software data the kept one lacks is
+        flagged."""
+        children = self._group_children(group_item)
+        facts = [self._facts_reader(child.data(0, PATH_ROLE), self._roots) for child in children]
+        suggestion = suggest_keep(facts, _keep_translate)
+        self._syncing = True
+        try:
+            for child, fact in zip(children, facts, strict=True):
+                child.setText(3, f"{round(fact.bitrate / 1000)} kbps" if fact.bitrate else "")
+                path = fact.path
+                if suggestion is None:
+                    text = ""
+                elif path == suggestion.keep:
+                    text = self.tr("★ Keep: {reasons}").format(reasons=", ".join(suggestion.reasons))
+                elif path in suggestion.losses:
+                    text = self.tr("⚠ Holds {software} data the suggested copy lacks").format(
+                        software=" + ".join(suggestion.losses[path])
+                    )
+                else:
+                    text = ""
+                child.setText(SUGGESTION_COLUMN, text)
+                child.setToolTip(SUGGESTION_COLUMN, text)
+            group_item.setData(0, KEEP_ROLE, suggestion.keep if suggestion else None)
+        finally:
+            self._syncing = False
+        return suggestion
+
+    def tick_all_but_suggested(self) -> int:
+        """Ticks every copy but the suggested one in each group; returns how
+        many are ticked. Copies holding DJ software data the kept one lacks
+        stay unticked: the DJ decides."""
+        keep: set[str] = set()
+        drop: set[str] = set()
+        for group_item in self.group_items():
+            suggestion = self.suggest(group_item)
+            if suggestion is None:
+                continue
+            keep.add(suggestion.keep)
+            drop.update(
+                path
+                for path in (child.data(0, PATH_ROLE) for child in self._group_children(group_item))
+                if path != suggestion.keep and path not in suggestion.losses
+            )
+        self._syncing = True
+        try:
+            for path in drop - keep:  # a file kept in one group is never ticked in another
+                self.set_checked(path, True)
+        finally:
+            self._syncing = False
+        self._update_buttons()
+        return len(drop - keep)
 
     def file_items(self) -> list[QTreeWidgetItem]:
         items = []
