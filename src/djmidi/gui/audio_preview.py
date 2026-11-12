@@ -31,11 +31,12 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable
+from html import escape
 from pathlib import Path
 from typing import Any
 
 from PySide6.QtCore import QT_TRANSLATE_NOOP, QObject, QRectF, Qt, QUrl, Signal
-from PySide6.QtGui import QMouseEvent, QPainter, QPaintEvent, QPalette, QPen
+from PySide6.QtGui import QMouseEvent, QPainter, QPaintEvent, QPalette, QPen, QPixmap
 from PySide6.QtWidgets import (
     QCheckBox,
     QHBoxLayout,
@@ -243,6 +244,20 @@ class AudioPreviewBar(QWidget):
         box.addWidget(self.waveform)
         row = QHBoxLayout()
         box.addLayout(row)
+        # Now playing: cover, title / artist, BPM and Camelot badges (UX review).
+        self.now_cover = QLabel()
+        self.now_cover.setFixedSize(40, 40)
+        self.now_cover.setObjectName("nowCover")
+        self.now_title = QLabel()
+        self.now_title.setObjectName("nowTitle")
+        self.now_title.setMinimumWidth(80)
+        self.now_title.setMaximumWidth(260)
+        self.now_bpm = QLabel()
+        self.now_bpm.setObjectName("nowBadge")
+        self.now_camelot = QLabel()
+        for widget in (self.now_cover, self.now_title, self.now_bpm, self.now_camelot):
+            row.addWidget(widget, 0, Qt.AlignmentFlag.AlignVCenter)
+        self.set_now_playing(None)
         self.play_button = QPushButton(self.tr("▶ Play"))
         self.play_button.clicked.connect(self.toggle_play)
         self.stop_button = QPushButton(self.tr("■ Stop"))
@@ -338,6 +353,42 @@ class AudioPreviewBar(QWidget):
         if was_playing and new_path:
             self.play()
         self._update_controls()
+
+    def set_now_playing(
+        self,
+        title: str | None,
+        artist: str | None = None,
+        bpm: float | None = None,
+        camelot: str | None = None,
+    ) -> None:
+        """What the bar previews (None: nothing selected)."""
+        from djmidi.gui.badges import camelot_colour, text_colour_on
+
+        if not title and not artist:
+            self.now_title.setText(self.tr("Select a track to preview it."))
+        else:
+            artist_line = f"<br><span style='font-weight:400'>{escape(artist)}</span>" if artist else ""
+            self.now_title.setText(f"<b>{escape(title or '')}</b>{artist_line}")
+        self.now_bpm.setText(f"{bpm:g} BPM" if bpm else "")
+        self.now_bpm.setVisible(bool(bpm))
+        colour = camelot_colour(camelot or "")
+        self.now_camelot.setVisible(colour is not None)
+        if colour is not None:
+            self.now_camelot.setText(camelot or "")
+            self.now_camelot.setStyleSheet(
+                f"background: {colour.name()}; color: {text_colour_on(colour).name()}; border-radius: 10px;"
+                " padding: 2px 9px; font-weight: 700;"
+            )
+
+    def set_cover(self, pixmap: QPixmap | None) -> None:
+        if pixmap is None or pixmap.isNull():
+            self.now_cover.setPixmap(QPixmap())
+            self.now_cover.setText("♫")
+            self.now_cover.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            return
+        self.now_cover.setPixmap(
+            pixmap.scaled(40, 40, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+        )
 
     def set_waveform_peaks(self, peaks: list[float] | None) -> None:
         """The precomputed envelope of the track currently previewed

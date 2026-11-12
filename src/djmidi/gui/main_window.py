@@ -431,6 +431,7 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
             "controller", controller_pair, self.tr("By Controller"), by_tabs
         )
         self._tab_indexes["library"] = self.left_tabs.add_page("library", self.music_library_view, self.tr("Music"))
+        self.left_tabs.set_sections(["dashboard", "controller", "music"])
         self.left_tabs.setCurrentIndex(self._tab_indexes["intro"])
         self.edit_panel = EditPanel(
             self.undo_stack,
@@ -1843,8 +1844,18 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         self.statusBar().showMessage(self.tr("Stage mode off"))
 
     def _on_left_tab_changed(self, index: int) -> None:
-        """Show the edit / validation column only on the tree tabs."""
+        """Show the edit / validation column only on the tree tabs; the
+        Dashboard's music card is refreshed when it shows."""
         self._right_splitter.setVisible(index in self._editing_tab_indexes)
+        if index == self._tab_indexes.get("intro"):
+            self._refresh_dashboard_library()
+
+    def _refresh_dashboard_library(self) -> None:
+        library = self.music_library_view
+        if getattr(library, "_db", None) is None:
+            self.introduction_view.set_library_summary(None, None)
+            return
+        self.introduction_view.set_library_summary(library.table_model.rowCount(), library.playlist_list.count())
 
     def _on_show_all_controllers_toggled(self, checked: bool) -> None:
         self._show_all_controllers = checked

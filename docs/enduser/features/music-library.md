@@ -97,7 +97,10 @@ are after a rescan or a tag edit.
 
 The **Camelot** column translates any key notation into the Camelot wheel
 used for harmonic mixing: `Am`, `F#m`, Open Key `7m` and `8A` are all
-understood.
+understood. Each key shows as a coloured badge: every number of the wheel
+has its own colour, neighbouring numbers (the keys that mix) have
+neighbouring colours, and the minor keys (A) are deeper than the major
+ones (B) — so a harmonic run reads at a glance.
 
 ## Listen to a track
 
@@ -126,6 +129,9 @@ a category or a key by ear without opening your DJ software:
 Playback stops when you leave the tab or close the app. If your system
 can't play audio through Qt, the bar stays greyed out with a tooltip
 explaining why; files are only read, never changed.
+
+The bar at the bottom shows what it previews: the cover, the title and
+artist, the BPM and the Camelot badge, above the waveform.
 
 ## Edit tags
 

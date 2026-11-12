@@ -13,8 +13,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from PySide6.QtCore import Signal
-from PySide6.QtWidgets import QTabWidget, QVBoxLayout, QWidget
+from PySide6.QtCore import QEasingCurve, QPropertyAnimation, Signal
+from PySide6.QtWidgets import QGraphicsOpacityEffect, QTabWidget, QVBoxLayout, QWidget
 
 from djmidi.gui.window_size import keep_tab_titles_whole
 
@@ -39,6 +39,9 @@ class NavTabs(QWidget):
         layout.addWidget(self.top)
         self._pages: list[_Page] = []
         self._last = -1
+        self._sections: list[str] = []  # per top tab: its colour section (theme.py)
+        self.animate = True
+        self._fade: QPropertyAnimation | None = None
 
     def _tabs(self) -> QTabWidget:
         tabs = QTabWidget()
@@ -46,6 +49,36 @@ class NavTabs(QWidget):
         keep_tab_titles_whole(tabs)
         tabs.currentChanged.connect(self._on_changed)
         return tabs
+
+    def set_sections(self, sections: list[str]) -> None:
+        """One name per top tab, in display order: the selected top tab's
+        name goes on the ``section`` property, which colours it."""
+        self._sections = list(sections)
+        self._apply_section()
+
+    def _apply_section(self) -> None:
+        index = self.top.currentIndex()
+        section = self._sections[index] if 0 <= index < len(self._sections) else ""
+        if self.top.property("section") != section:
+            self.top.setProperty("section", section)
+            self.top.style().unpolish(self.top)
+            self.top.style().polish(self.top)
+
+    def _fade_in(self, widget: QWidget) -> None:
+        """A short fade on the page just shown; the effect is removed after
+        (an opacity effect makes every repaint offscreen)."""
+        if not self.animate or not widget.isVisible():
+            return
+        effect = QGraphicsOpacityEffect(widget)
+        widget.setGraphicsEffect(effect)
+        fade = QPropertyAnimation(effect, b"opacity", self)
+        fade.setDuration(160)
+        fade.setStartValue(0.35)
+        fade.setEndValue(1.0)
+        fade.setEasingCurve(QEasingCurve.Type.OutCubic)
+        fade.finished.connect(lambda: widget.setGraphicsEffect(None))
+        self._fade = fade
+        fade.start()
 
     def add_group(self, title: str, parent: QTabWidget | None = None) -> QTabWidget:
         """A tab holding its own tabs."""
@@ -108,8 +141,12 @@ class NavTabs(QWidget):
 
     def _on_changed(self, *_args) -> None:
         index = self.currentIndex()
+        self._apply_section()
         if index != self._last:
+            first = self._last < 0
             self._last = index
+            if not first and index >= 0:
+                self._fade_in(self._pages[index].widget)
             self.currentChanged.emit(index)
 
 

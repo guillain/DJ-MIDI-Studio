@@ -97,6 +97,7 @@ from djmidi import taxonomy, user_paths
 from djmidi.gui import help_texts
 from djmidi.gui.action_groups import action_section, chip
 from djmidi.gui.audio_preview import AudioPreviewBar
+from djmidi.gui.badges import CamelotBadgeDelegate
 from djmidi.gui.change_history_dialog import ChangeHistoryDialog
 from djmidi.gui.commands import (
     RenameFilesCommand,
@@ -105,6 +106,7 @@ from djmidi.gui.commands import (
     WriteTracksMetadataCommand,
 )
 from djmidi.gui.duplicates_dialog import DuplicatesDialog
+from djmidi.gui.empty_state import EmptyState
 from djmidi.gui.health_report_dialog import HealthReportDialog
 from djmidi.gui.help_button import help_button, help_row
 from djmidi.gui.library_stats_dialog import LibraryStatsDialog
@@ -1297,7 +1299,18 @@ class MusicLibraryView(QWidget):
         # never accepts drops.
         self.table.setDragEnabled(True)
         self.table.setDragDropMode(QAbstractItemView.DragDropMode.DragOnly)
+        # Camelot keys as coloured badges: harmonic neighbours look alike.
+        self._camelot_delegate = CamelotBadgeDelegate(self.table)
+        self.table.setItemDelegateForColumn(_COLUMN_INDEX["camelot"], self._camelot_delegate)
         box.addWidget(self.table, 1)
+        self.table_empty_state = EmptyState(
+            self.table,
+            "♫",
+            self.tr("Your music library is empty"),
+            self.tr("Add the folder that holds your music, then scan it: nothing in your files changes."),
+            (self.tr("Add folder…"), self._on_add_root_clicked),
+            is_empty=lambda: self.table_model.rowCount() == 0,
+        )
 
         self.filter_edit.textChanged.connect(self._on_filter_changed)
         self.category_filter.currentTextChanged.connect(self._on_category_filter_changed)
@@ -1577,6 +1590,12 @@ class MusicLibraryView(QWidget):
         self.playlist_list = QListWidget()
         self.playlist_list.currentItemChanged.connect(self._on_playlist_selected)
         box.addWidget(self.playlist_list, 1)
+        self.playlist_empty_state = EmptyState(
+            self.playlist_list,
+            "☰",
+            self.tr("No playlist yet"),
+            self.tr("Select tracks in the table, then Create → New from selection — or import one below."),
+        )
         self.playlist_tracks = QListWidget()
         box.addWidget(QLabel(self.tr("Tracks in playlist")))
         box.addWidget(self.playlist_tracks, 1)
@@ -1743,6 +1762,13 @@ class MusicLibraryView(QWidget):
         row = current.data(ROW_ROLE) if current.isValid() else None
         path = row.path if row is not None and not row.missing else None
         self.audio_preview.set_source(path)
+        meta = row.metadata if row is not None else None
+        self.audio_preview.set_now_playing(
+            meta.title if meta else (Path(row.path).stem if row is not None else None),
+            meta.artist if meta else None,
+            meta.bpm if meta else None,
+            row.camelot_key if row is not None else None,
+        )
         self._load_waveform_for(path)
 
     def _load_waveform_for(self, path: str | None) -> None:
@@ -2722,6 +2748,7 @@ class MusicLibraryView(QWidget):
             self.cover_label.setPixmap(QPixmap())
             self.cover_label.setText("" if row is None else (self.tr("Unreadable cover") if cover else self.tr("No cover")))
         self._has_cover = cover is not None
+        self.audio_preview.set_cover(pixmap if not pixmap.isNull() else None)
         editable = row is not None and not row.missing
         self.set_cover_button.setEnabled(editable)
         self.remove_cover_button.setEnabled(editable and self._has_cover)

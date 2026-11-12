@@ -348,6 +348,10 @@
         <translation>Wenn ein Track endet, den nächsten in der Tabelle abspielen.</translation>
     </message>
     <message>
+        <source>Select a track to preview it.</source>
+        <translation>Wählen Sie einen Track zum Vorhören.</translation>
+    </message>
+    <message>
         <source>This file could not be played.</source>
         <translation>Diese Datei konnte nicht abgespielt werden.</translation>
     </message>
@@ -3470,6 +3474,18 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
         <translation>Tipp: Ein Controller, den Sie aus der Controller-Einrichtung installieren, erscheint sofort in jeder Ansicht und bei jedem Start wieder.</translation>
     </message>
     <message>
+        <source>Music</source>
+        <translation>Musik</translation>
+    </message>
+    <message>
+        <source>Open the Music tab to load your library.</source>
+        <translation>Öffnen Sie den Tab Musik, um Ihre Bibliothek zu laden.</translation>
+    </message>
+    <message>
+        <source>Open Music</source>
+        <translation>Musik öffnen</translation>
+    </message>
+    <message>
         <source>{count} registered controller(s)</source>
         <translation>{count} registrierte(r) Controller</translation>
     </message>
@@ -3488,6 +3504,14 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
     <message>
         <source>MIDI: not detected</source>
         <translation>MIDI: nicht erkannt</translation>
+    </message>
+    <message>
+        <source>No track yet: add your music folder in the Music tab.</source>
+        <translation>Noch kein Track: Fügen Sie Ihren Musikordner im Tab Musik hinzu.</translation>
+    </message>
+    <message>
+        <source>{tracks} track(s) · {playlists} playlist(s)</source>
+        <translation>{tracks} Track(s) · {playlists} Playlist(s)</translation>
     </message>
     <message>
         <source>Visualize, edit, and validate your {software} MIDI mappings. Start here, then use the shortcuts below to drill down into the detailed views.</source>
@@ -7164,6 +7188,14 @@ Ausgewählte Zeilen in der Controller-Einrichtung: {selected}</translation>
         <translation>Nach Interpret, Titel, Genre, BPM, Tonart, Kommentar filtern…</translation>
     </message>
     <message>
+        <source>Your music library is empty</source>
+        <translation>Ihre Musikbibliothek ist leer</translation>
+    </message>
+    <message>
+        <source>Add the folder that holds your music, then scan it: nothing in your files changes.</source>
+        <translation>Fügen Sie den Ordner mit Ihrer Musik hinzu und scannen Sie ihn: An Ihren Dateien ändert sich nichts.</translation>
+    </message>
+    <message>
         <source>Only tracks with this genre tag</source>
         <translation>Nur Tracks mit diesem Genre-Tag</translation>
     </message>
@@ -7366,6 +7398,14 @@ Ausgewählte Zeilen in der Controller-Einrichtung: {selected}</translation>
     <message>
         <source>Delete</source>
         <translation>Löschen</translation>
+    </message>
+    <message>
+        <source>No playlist yet</source>
+        <translation>Noch keine Playlist</translation>
+    </message>
+    <message>
+        <source>Select tracks in the table, then Create → New from selection — or import one below.</source>
+        <translation>Wählen Sie Tracks in der Tabelle aus, dann Erstellen → Neu aus Auswahl — oder importieren Sie unten eine.</translation>
     </message>
     <message>
         <source>Tracks in playlist</source>

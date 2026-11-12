@@ -43,6 +43,16 @@ _SOFTWARE_BADGE_COLORS: dict[str, dict[str, str]] = {
 }
 
 
+def _status_pill(colour: str, filled: bool = False) -> str:
+    """A controller's MIDI status as a pill: filled when connected."""
+    background = colour if filled else "transparent"
+    text = "#ffffff" if filled else colour
+    return (
+        f"background: {background}; color: {text}; border: 1px solid {colour}; border-radius: 10px;"
+        " padding: 2px 10px; font-weight: 600;"
+    )
+
+
 class IntroductionView(QWidget):
     """Home tab presenting known controllers, app context, and quick navigation."""
 
@@ -64,7 +74,7 @@ class IntroductionView(QWidget):
         self._loaded_software_id: str | None = None
 
         title = QLabel("DJ MIDI Studio")
-        title.setStyleSheet("font-size: 18px; font-weight: 600;")
+        title.setObjectName("dashboardTitle")
 
         self._description_label = QLabel()
         self._description_label.setWordWrap(True)
@@ -139,11 +149,24 @@ class IntroductionView(QWidget):
 
         files_box = self._build_files_box()
 
+        # The music library at a glance, next to the controller cards.
+        music_box = QGroupBox(self.tr("Music"))
+        music_layout = QVBoxLayout(music_box)
+        self.library_summary_label = QLabel(self.tr("Open the Music tab to load your library."))
+        self.library_summary_label.setObjectName("dashboardFigure")
+        self.library_summary_label.setWordWrap(True)
+        music_layout.addWidget(self.library_summary_label)
+        music_button = QPushButton(self.tr("Open Music"))
+        music_button.clicked.connect(lambda: self.drillDownRequested.emit("library", self._controller_combo.currentText()))
+        music_layout.addWidget(music_button)
+        music_layout.addStretch(1)
+
         overview_header = QHBoxLayout()
         overview_header.setSpacing(10)
         overview_header.addWidget(files_box, 3)
         overview_header.addWidget(catalog_box, 3)
         overview_header.addWidget(tools_box, 1)
+        overview_header.addWidget(music_box, 1)
 
         # The Controller overview card (a controller photo + stats + drill-down
         # buttons) is tall enough that below ~750px window height the bottom
@@ -210,13 +233,23 @@ class IntroductionView(QWidget):
         for controller, label in self._availability_labels.items():
             if not port_names:
                 label.setText(self.tr("MIDI: not checked"))
-                label.setStyleSheet(f"color: {theme_colors()['disabled_text']}; font-weight: 600;")
+                label.setStyleSheet(_status_pill(theme_colors()["disabled_text"]))
             elif controller in detected:
                 label.setText(self.tr("MIDI: available"))
-                label.setStyleSheet("color: #16803c; font-weight: 600;")
+                label.setStyleSheet(_status_pill("#1fa64f", filled=True))
             else:
                 label.setText(self.tr("MIDI: not detected"))
-                label.setStyleSheet(f"color: {theme_colors()['disabled_text']}; font-weight: 600;")
+                label.setStyleSheet(_status_pill(theme_colors()["disabled_text"]))
+
+    def set_library_summary(self, tracks: int | None, playlists: int | None) -> None:
+        """None: the library isn't loaded yet in this session."""
+        if tracks is None:
+            text = self.tr("Open the Music tab to load your library.")
+        elif tracks == 0:
+            text = self.tr("No track yet: add your music folder in the Music tab.")
+        else:
+            text = self.tr("{tracks} track(s) · {playlists} playlist(s)").format(tracks=tracks, playlists=playlists or 0)
+        self.library_summary_label.setText(text)
 
     def set_controller(self, controller: str) -> bool:
         """Select a controller in the Dashboard without opening a drill-down."""
@@ -449,9 +482,9 @@ class IntroductionView(QWidget):
         details.addWidget(catalog_info, 1)
 
         availability = QLabel(self.tr("MIDI: not checked"))
-        availability.setStyleSheet(f"color: {theme_colors()['disabled_text']}; font-weight: 600;")
+        availability.setStyleSheet(_status_pill(theme_colors()["disabled_text"]))
         self._availability_labels[controller] = availability
-        details.addWidget(availability, 1)
+        details.addWidget(availability, 0, Qt.AlignmentFlag.AlignLeft)
 
         stats = QLabel()
         stats.setWordWrap(True)
