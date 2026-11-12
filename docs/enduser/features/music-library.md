@@ -582,17 +582,16 @@ saved when you leave the field): a reminder for the set, shown in
 [Stage Mode](stage-mode.md) when that track is playing or next. Notes stay
 in this app's index (they follow a relinked file) and are never written
 into the audio file. `Save as playlist…` stores it as an app playlist
-(shown with the source `set` in the Playlists panel); `Export as Serato
-crate…`, `Export as Traktor playlist…` and `Export as rekordbox XML…` write
+(shown with the source `set` in the Playlists panel); `Export as Serato crate…`, `Export as Traktor playlist…` and `Export as rekordbox XML…` write
 a new file where you choose, exactly like the Playlists panel's exports.
 
 ## Import and export with DJ software
 
 | Software | Import (read-only) | Export |
 | --- | --- | --- |
-| Serato | `Import Serato crate…` (`_Serato_/Subcrates/*.crate`) | `Export as Serato crate…` writes a new `.crate` where you choose; copy it into `_Serato_/Subcrates` yourself |
-| Traktor | `Import Traktor NML…` (playlists of `collection.nml`) | `Export as Traktor playlist…` writes a new `.nml`; in Traktor, right-click `Playlists` → `Import Playlist` |
-| Rekordbox | `Import Rekordbox export…`: a USB `PIONEER/rekordbox/export.pdb`, or a rekordbox XML file (*File → Export Collection in xml format* in rekordbox; playlists in folders are named `Folder / Playlist`) | `Export as rekordbox XML…` writes a new `.xml`; in rekordbox, pick it under *File → Preferences → Bridge → Imported Library*, then import the playlist from the Bridge view |
+| Serato | **Import** → `Serato crate…` (`_Serato_/Subcrates/*.crate`) | **Export** → `Serato crate…` writes a new `.crate` where you choose; copy it into `_Serato_/Subcrates` yourself |
+| Traktor | **Import** → `Traktor NML…` (playlists of `collection.nml`) | **Export** → `Traktor playlist…` writes a new `.nml`; in Traktor, right-click `Playlists` → `Import Playlist` |
+| Rekordbox | **Import** → `rekordbox export…`: a USB `PIONEER/rekordbox/export.pdb`, or a rekordbox XML file (*File → Export Collection in xml format* in rekordbox; playlists in folders are named `Folder / Playlist`) | **Export** → `rekordbox XML…` writes a new `.xml`; in rekordbox, pick it under *File → Preferences → Bridge → Imported Library*, then import the playlist from the Bridge view |
 
 Imported Serato crate names also help categorize tracks.
 
@@ -631,8 +630,7 @@ is listed through a different drive name, shows up on both sides. A track
 listed twice is matched copy by copy.
 
 Comparing is read-only: neither the app playlist nor the Serato or Traktor
-file is changed. To bring the other side in line, use `Export as Serato
-crate…` or `Export as Traktor playlist…`.
+file is changed. To bring the other side in line, use **Export** → `Serato crate…` or **Export** → `Traktor playlist…`.
 
 ## Play history
 
