@@ -66,6 +66,44 @@ QTabBar::tab:selected {
     color: #ffffff;
     border-color: $accent_soft;
 }
+/* Main window navigation (gui/nav_tabs.py): the main tabs are big and
+   underlined, the sub-tabs smaller and underlined, the By… views pills. */
+QTabWidget#navTop > QTabBar::tab {
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    padding: 9px 20px;
+    font-size: 15px;
+    font-weight: 700;
+    margin-right: 4px;
+}
+QTabWidget#navTop > QTabBar::tab:selected {
+    color: $text;
+    border-bottom-color: $accent;
+}
+QTabWidget#navTop > QTabBar::tab:hover:!selected {
+    border-bottom-color: $panel_border;
+}
+QTabWidget#navSub > QTabBar::tab {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 6px 14px;
+    font-weight: 600;
+}
+QTabWidget#navSub > QTabBar::tab:selected {
+    color: $text;
+    border-bottom-color: $accent2;
+}
+QTabWidget#navPills > QTabBar::tab {
+    border-radius: 11px;
+    padding: 3px 12px;
+    margin: 4px 4px 4px 0px;
+}
+QTabWidget#navTop::pane, QTabWidget#navSub::pane, QTabWidget#navPills::pane {
+    border: none;
+    border-top: 1px solid $panel_border;
+}
 QGroupBox {
     background: $panel_bg;
     border: 1px solid $panel_border;

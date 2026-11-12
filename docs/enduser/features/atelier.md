@@ -22,7 +22,7 @@
 A [controller sync set](controller-sync.md) is the list of messages the
 app sends a controller at launch, when it's plugged in, or when you click
 **⟳ Sync**. For its LEDs, what matters is the state those messages leave
-the controller in. The **Atelier** tab shows that state on the controller's
+the controller in. The **Controller → Studio** tab (the Atelier) shows that state on the controller's
 photo and lets you change it control by control.
 
 ## Design a scene

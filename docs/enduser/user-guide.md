@@ -9,6 +9,7 @@
 
 - [Install](#install)
 - [First launch](#first-launch)
+- [Find your way](#find-your-way)
 - [Supported files](#supported-files)
 - [Everyday workflow](#everyday-workflow)
 - [Controller detection](#controller-detection)
@@ -39,6 +40,16 @@ the `Help` menu works offline.
 
 Your window layout, tool settings and preferences are kept between
 launches. See [Workspace and preferences](features/workspace.md).
+
+## Find your way
+
+Three main tabs:
+
+| Tab | What's inside |
+| --- | --- |
+| **Dashboard** | Your controllers at a glance, shortcuts to everything else |
+| **Controller** | **Setup** (build or correct a profile), **Images** (the photo with live MIDI), **Studio** (the [Atelier](features/atelier.md): scenes, macros, remaps by clicking the controller), **By…** — **By Channel**, **By Deck**, **By Controller**: the loaded mapping, edited in the column on the right |
+| **Music** | Your [music library](features/music-library.md): tracks, playlists, set preparation |
 
 ## Supported files
 

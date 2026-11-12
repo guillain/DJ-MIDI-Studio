@@ -24,7 +24,7 @@ DASHBOARD_OVERVIEW: HelpEntry = (
         "Summarizes the loaded mapping and gives every registered controller a card: "
         "its picture, whether a connected MIDI port matches it (<i>MIDI: available</i>), "
         "and shortcuts into the <b>By Channel</b>, <b>By Controller</b> and "
-        "<b>Controller Images</b> views.<br><br>"
+        "<b>Controller → Images</b> views.<br><br>"
         "Open a Serato <tt>.xml</tt> or Traktor <tt>.tsi</tt> mapping with "
         "<b>File → Open Mapping…</b>.",
     ),
@@ -243,7 +243,7 @@ DASHBOARD_CONTROLLERS: HelpEntry = (
     QT_TRANSLATE_NOOP(
         "HelpTexts",
         "Every controller the app knows: the built-in profiles and the ones you installed from "
-        "<b>Controller Setup</b>. The <b>Active controller for drill-down</b> is the one the "
+        "<b>Controller → Setup</b>. The <b>Active controller for drill-down</b> is the one the "
         "<b>Channel</b>, <b>Controller</b> and <b>Images</b> shortcuts open. Hide controllers you "
         "don't own in ⚙ Preferences → Plugins.",
     ),
@@ -499,7 +499,7 @@ METRONOME: HelpEntry = (
     QT_TRANSLATE_NOOP("HelpTexts", "Metronome"),
     QT_TRANSLATE_NOOP(
         "HelpTexts",
-        "Plays the rows captured in <b>Controller Setup</b> to an output port: the selected "
+        "Plays the rows captured in <b>Controller → Setup</b> to an output port: the selected "
         "rows or all of them once, or on a loop at the chosen frequency and value. Handy "
         "to blink LEDs, test a mapping, or keep a device awake.",
     ),

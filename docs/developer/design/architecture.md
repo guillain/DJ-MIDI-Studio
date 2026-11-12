@@ -207,7 +207,7 @@ keys to Camelot and optionally estimates BPM/key with `librosa`;
 `playlist.py` sorts and matches harmonically; `serato_library.py`,
 `traktor_library.py` and `rekordbox_library.py` read (and, for crates and
 playlist `.nml`, write new) DJ-software library files; `workspace.py` holds
-every non-widget decision of the Music Library tab. `taxonomy/` resolves
+every non-widget decision of the `Music` tab. `taxonomy/` resolves
 genre categories from folder, crate and tag hints.
 
 ## MIDI API compatibility

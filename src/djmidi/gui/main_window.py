@@ -43,7 +43,6 @@ from PySide6.QtWidgets import (
     QSplitter,
     QStatusBar,
     QTableWidget,
-    QTabWidget,
     QTreeView,
     QVBoxLayout,
     QWidget,
@@ -146,6 +145,7 @@ from djmidi.gui.midi_latency_dialog import MidiLatencyDialog
 from djmidi.gui.midi_routing_view import MidiRoutingView
 from djmidi.gui.mixxx_export_dialog import MixxxExportDialog
 from djmidi.gui.music_library_view import MusicLibraryView
+from djmidi.gui.nav_tabs import NavTabs
 from djmidi.gui.preferences_dialog import PreferencesDialog
 from djmidi.gui.profile_check_dialog import ProfileCheckDialog
 from djmidi.gui.profile_library_dialog import ProfileLibraryDialog
@@ -158,7 +158,6 @@ from djmidi.gui.theme import apply_theme
 from djmidi.gui.theme import signals as theme_signals
 from djmidi.gui.update_notice import UpdateChecker
 from djmidi.gui.whats_new_dialog import WhatsNewDialog
-from djmidi.gui.window_size import keep_tab_titles_whole
 from djmidi.hardware_session import SESSION_FILE_NAME
 from djmidi.integration_detection import (
     detect_controller_ports,
@@ -409,20 +408,30 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         self.midi_routing_view.routesChanged.connect(self.atelier_view.refresh_routes)
         self.atelier_view.refresh_routes()
 
-        self.left_tabs = QTabWidget()
-        self._tab_indexes = {
-            "intro": self.left_tabs.addTab(self.introduction_view, self.tr("Dashboard")),
-            "setup": self.left_tabs.addTab(self.controller_setup_view, self.tr("Controller Setup")),
-            "images": self.left_tabs.addTab(self.controller_image_view, self.tr("Controller Images")),
-            "channel": self.left_tabs.addTab(channel_pair, self.tr("By Channel")),
-            "deck": self.left_tabs.addTab(deck_pair, self.tr("By Deck")),
-            "controller": self.left_tabs.addTab(controller_pair, self.tr("By Controller")),
-            "library": self.left_tabs.addTab(self.music_library_view, self.tr("Music Library")),
-            "atelier": self.left_tabs.addTab(self.atelier_view, self.tr("Atelier")),
-        }
-        # Whole titles and scroll arrows on a narrow window, rather than three
-        # indistinguishable "Pa…" tabs in French on macOS (issue #290).
-        keep_tab_titles_whole(self.left_tabs)
+        # Dashboard · Controller (Setup, Images, Studio, By…) · Music: the
+        # nested tabs keep the flat page indexes the window used before.
+        self.left_tabs = NavTabs()
+        controller_tabs = self.left_tabs.add_group(self.tr("Controller"))
+        self._tab_indexes = {"intro": self.left_tabs.add_page("intro", self.introduction_view, self.tr("Dashboard"))}
+        # The group sits second, after the Dashboard.
+        self.left_tabs.top.tabBar().moveTab(0, 1)
+        self._tab_indexes["setup"] = self.left_tabs.add_page(
+            "setup", self.controller_setup_view, self.tr("Setup"), controller_tabs
+        )
+        self._tab_indexes["images"] = self.left_tabs.add_page(
+            "images", self.controller_image_view, self.tr("Images"), controller_tabs
+        )
+        self._tab_indexes["atelier"] = self.left_tabs.add_page(
+            "atelier", self.atelier_view, self.tr("Studio"), controller_tabs
+        )
+        by_tabs = self.left_tabs.add_group(self.tr("By…"), controller_tabs)
+        self._tab_indexes["channel"] = self.left_tabs.add_page("channel", channel_pair, self.tr("By Channel"), by_tabs)
+        self._tab_indexes["deck"] = self.left_tabs.add_page("deck", deck_pair, self.tr("By Deck"), by_tabs)
+        self._tab_indexes["controller"] = self.left_tabs.add_page(
+            "controller", controller_pair, self.tr("By Controller"), by_tabs
+        )
+        self._tab_indexes["library"] = self.left_tabs.add_page("library", self.music_library_view, self.tr("Music"))
+        self.left_tabs.setCurrentIndex(self._tab_indexes["intro"])
         self.edit_panel = EditPanel(
             self.undo_stack,
             self._on_command_applied,

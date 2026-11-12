@@ -166,8 +166,10 @@ name tests monkeypatch on `djmidi.gui.main_window`** (`list_input_ports`, `list_
 `current_version`, dialog classes, …) stay in `main_window.py`, as do `__init__`, `_build_menu` and Qt event
 overrides.
 
-- `left_tabs`: Dashboard (`introduction_view`), Controller Setup, Controller Images, By Channel, By Deck, By
-  Controller, Music Library, Atelier. Tool docks: Live Monitor, MIDI Routing, MIDI Clock, Metronome, plus any
+- `left_tabs` is a `gui/nav_tabs.NavTabs`: Dashboard · Controller (Setup, Images, Studio = the Atelier, By… →
+  By Channel / By Deck / By Controller) · Music. It keeps a flat page API (`_tab_indexes[key]`,
+  `setCurrentIndex`, `currentChanged(int)`, `tabText`) over the nested tabs; levels are styled by object name
+  (`navTop` / `navSub` / `navPills`, theme.py). Tool docks: Live Monitor, MIDI Routing, MIDI Clock, Metronome, plus any
   number of Controller Emulator docks (`View → New Controller Emulator…`; only the set of open controllers
   survives a restart).
 - Editing goes through `edit_panel.py` + `commands.py` (`QUndoStack`); the Music Library has its own undo stack.

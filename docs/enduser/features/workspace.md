@@ -204,7 +204,7 @@ Startup: time to first window 740 ms -- imports 210 ms, preferences and logging 
 
 To start faster, the app only does some work when you first need it: the
 Dashboard loads each controller card's photo when you open that card, and
-the `By…` and `Controller Images` tabs list your MIDI output ports (for
+the `By…` and `Controller → Images` tabs list your MIDI output ports (for
 **Live send**) when you first open them. Include this line when you
 [report](report-a-problem.md) a slow start.
 

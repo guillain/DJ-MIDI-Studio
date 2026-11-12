@@ -16,7 +16,7 @@
 
 ## What it does
 
-The `Controller Images` tab shows the reference picture of the selected
+The `Controller → Images` tab shows the reference picture of the selected
 controller and opens its bundled manual or MIDI message list. Everything is
 stored with the app, so it works without an internet connection.
 

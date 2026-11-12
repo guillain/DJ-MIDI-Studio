@@ -40,7 +40,7 @@ mapping. To edit a mapping, use `File → Open Mapping…` and the
 
 ## Build a profile in five steps
 
-1. Plug in the controller and open the `Controller Setup` tab.
+1. Plug in the controller and open the `Controller → Setup` tab.
 2. Type the controller's name in the `Draft` toolbar.
 3. In `MIDI input`, tick the controller's port and click `Start learning`.
 4. Press every button and pad you care about. Each new trigger appears once
