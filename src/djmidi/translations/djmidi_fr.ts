@@ -1903,6 +1903,10 @@ Il reste une étape manuelle : ajoutez &apos;{slug}&apos; au bloc d&apos;imports
         <translation>Débit</translation>
     </message>
     <message>
+        <source>Suggestion</source>
+        <translation>Suggestion</translation>
+    </message>
+    <message>
         <source>Exact copies (identical files)</source>
         <translation>Copies exactes (fichiers identiques)</translation>
     </message>
@@ -1947,6 +1951,14 @@ Il reste une étape manuelle : ajoutez &apos;{slug}&apos; au bloc d&apos;imports
         <translation>Affiche le fichier sélectionné dans votre gestionnaire de fichiers.</translation>
     </message>
     <message>
+        <source>Tick all but the suggested copies</source>
+        <translation>Cocher tout sauf les copies suggérées</translation>
+    </message>
+    <message>
+        <source>Suggest the copy to keep in every group (audio quality, DJ software data, location, tags) and tick the others. A copy holding DJ software data the kept one lacks is never ticked.</source>
+        <translation>Suggère la copie à garder dans chaque groupe (qualité audio, données d’un logiciel DJ, emplacement, tags) et coche les autres. Une copie portant des données d’un logiciel DJ absentes de celle gardée n’est jamais cochée.</translation>
+    </message>
+    <message>
         <source>Move ticked to Trash…</source>
         <translation>Mettre les cochés à la corbeille…</translation>
     </message>
@@ -1969,6 +1981,14 @@ Il reste une étape manuelle : ajoutez &apos;{slug}&apos; au bloc d&apos;imports
     <message>
         <source>{name} ({count} files)</source>
         <translation>{name} ({count} fichiers)</translation>
+    </message>
+    <message>
+        <source>★ Keep: {reasons}</source>
+        <translation>★ À garder : {reasons}</translation>
+    </message>
+    <message>
+        <source>⚠ Holds {software} data the suggested copy lacks</source>
+        <translation>⚠ Porte des données {software} absentes de la copie suggérée</translation>
     </message>
 </context>
 <context>
@@ -3214,8 +3234,8 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
         <translation>Morceaux en double</translation>
     </message>
     <message>
-        <source>&lt;b&gt;Find duplicates…&lt;/b&gt; lists two kinds of groups from the scanned folders:&lt;ul&gt;&lt;li&gt;&lt;b&gt;Exact copies&lt;/b&gt;: byte-identical files. Only files of the same size are read and compared by content hash.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Same artist + title&lt;/b&gt;: tags that match once case, accents, punctuation, &lt;i&gt;feat.&lt;/i&gt; credits and &lt;i&gt;(Original Mix)&lt;/i&gt; are ignored. Other versions (&lt;i&gt;Extended Mix&lt;/i&gt;, &lt;i&gt;Radio Edit&lt;/i&gt;, remixes) stay distinct. A candidate, not proof: compare format, size and bitrate.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Other versions of the same song&lt;/b&gt; (suggestions): same artist and title once a trailing &lt;i&gt;(Radio Edit)&lt;/i&gt;, &lt;i&gt;(Extended Mix)&lt;/i&gt;, &lt;i&gt;[Remastered]&lt;/i&gt;, remix… is ignored. Listed for review only: never tickable, never sent to the Trash.&lt;/li&gt;&lt;/ul&gt;&lt;b&gt;Reveal in Finder&lt;/b&gt; (or double-click) shows a copy. Tick the copies you don&apos;t want and click &lt;b&gt;Move ticked to Trash…&lt;/b&gt;: after a confirmation they go to the Trash (never deleted outright) and show as missing. One copy of each group must stay. Playlists of this app listing a discarded copy can be pointed at the kept one.</source>
-        <translation>&lt;b&gt;Trouver les doublons…&lt;/b&gt; liste ces groupes dans les dossiers scannés :&lt;ul&gt;&lt;li&gt;&lt;b&gt;Copies exactes&lt;/b&gt; : des fichiers identiques octet pour octet. Seuls les fichiers de même taille sont lus et comparés par empreinte de contenu.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Même artiste + titre&lt;/b&gt; : des tags qui concordent une fois ignorés la casse, les accents, la ponctuation, les mentions &lt;i&gt;feat.&lt;/i&gt; et &lt;i&gt;(Original Mix)&lt;/i&gt;. Les autres versions (&lt;i&gt;Extended Mix&lt;/i&gt;, &lt;i&gt;Radio Edit&lt;/i&gt;, remixes) restent distinctes. Un candidat, pas une preuve : comparez format, taille et débit.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Autres versions du même morceau&lt;/b&gt; (suggestions) : même artiste et même titre une fois ignoré un &lt;i&gt;(Radio Edit)&lt;/i&gt;, &lt;i&gt;(Extended Mix)&lt;/i&gt;, &lt;i&gt;[Remastered]&lt;/i&gt;, remix… en fin de titre. Listées pour examen seulement : jamais cochables, jamais mises à la corbeille.&lt;/li&gt;&lt;/ul&gt;&lt;b&gt;Afficher dans le Finder&lt;/b&gt; (ou double-clic) montre une copie. Cochez les copies dont vous ne voulez pas et cliquez sur &lt;b&gt;Mettre les cochés à la corbeille…&lt;/b&gt; : après confirmation, elles vont à la corbeille (jamais supprimées directement) et apparaissent comme manquantes. Une copie de chaque groupe doit rester. Les playlists de l&apos;application qui listent une copie écartée peuvent être redirigées vers celle gardée.</translation>
+        <source>&lt;b&gt;Find duplicates…&lt;/b&gt; lists two kinds of groups from the scanned folders:&lt;ul&gt;&lt;li&gt;&lt;b&gt;Exact copies&lt;/b&gt;: byte-identical files. Only files of the same size are read and compared by content hash.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Same artist + title&lt;/b&gt;: tags that match once case, accents, punctuation, &lt;i&gt;feat.&lt;/i&gt; credits and &lt;i&gt;(Original Mix)&lt;/i&gt; are ignored. Other versions (&lt;i&gt;Extended Mix&lt;/i&gt;, &lt;i&gt;Radio Edit&lt;/i&gt;, remixes) stay distinct. A candidate, not proof: compare format, size and bitrate.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Other versions of the same song&lt;/b&gt; (suggestions): same artist and title once a trailing &lt;i&gt;(Radio Edit)&lt;/i&gt;, &lt;i&gt;(Extended Mix)&lt;/i&gt;, &lt;i&gt;[Remastered]&lt;/i&gt;, remix… is ignored. Listed for review only: never tickable, never sent to the Trash.&lt;/li&gt;&lt;/ul&gt;Open a group to see which copy to keep (★) and why: lossless or higher bitrate first, then DJ software data (cue points, analysis), inside your library folders, more tags. A copy holding Serato or Traktor data the kept one lacks is flagged ⚠. &lt;b&gt;Tick all but the suggested copies&lt;/b&gt; ticks the others everywhere, never a flagged one. &lt;b&gt;Reveal in Finder&lt;/b&gt; (or double-click) shows a copy. Tick the copies you don&apos;t want and click &lt;b&gt;Move ticked to Trash…&lt;/b&gt;: after a confirmation they go to the Trash (never deleted outright) and show as missing. One copy of each group must stay. Playlists of this app listing a discarded copy can be pointed at the kept one.</source>
+        <translation>&lt;b&gt;Trouver les doublons…&lt;/b&gt; liste ces groupes dans les dossiers scannés :&lt;ul&gt;&lt;li&gt;&lt;b&gt;Copies exactes&lt;/b&gt; : des fichiers identiques octet pour octet. Seuls les fichiers de même taille sont lus et comparés par empreinte de contenu.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Même artiste + titre&lt;/b&gt; : des tags qui concordent une fois ignorés la casse, les accents, la ponctuation, les mentions &lt;i&gt;feat.&lt;/i&gt; et &lt;i&gt;(Original Mix)&lt;/i&gt;. Les autres versions (&lt;i&gt;Extended Mix&lt;/i&gt;, &lt;i&gt;Radio Edit&lt;/i&gt;, remixes) restent distinctes. Un candidat, pas une preuve : comparez format, taille et débit.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Autres versions du même morceau&lt;/b&gt; (suggestions) : même artiste et même titre une fois ignoré un &lt;i&gt;(Radio Edit)&lt;/i&gt;, &lt;i&gt;(Extended Mix)&lt;/i&gt;, &lt;i&gt;[Remastered]&lt;/i&gt;, remix… en fin de titre. Listées pour examen seulement : jamais cochables, jamais mises à la corbeille.&lt;/li&gt;&lt;/ul&gt;Ouvrez un groupe pour voir quelle copie garder (★) et pourquoi : sans perte ou meilleur débit d&apos;abord, puis les données d&apos;un logiciel DJ (points cue, analyse), dans vos dossiers de bibliothèque, plus de tags. Une copie portant des données Serato ou Traktor absentes de celle gardée est signalée ⚠. &lt;b&gt;Cocher tout sauf les copies suggérées&lt;/b&gt; coche les autres partout, jamais une copie signalée. &lt;b&gt;Afficher dans le Finder&lt;/b&gt; (ou double-clic) montre une copie. Cochez les copies dont vous ne voulez pas et cliquez sur &lt;b&gt;Mettre les cochés à la corbeille…&lt;/b&gt; : après confirmation, elles vont à la corbeille (jamais supprimées directement) et apparaissent comme manquantes. Une copie de chaque groupe doit rester. Les playlists de l&apos;application qui listent une copie écartée peuvent être redirigées vers celle gardée.</translation>
     </message>
     <message>
         <source>Library health report</source>
@@ -3545,6 +3565,37 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
     <message>
         <source>Image unavailable</source>
         <translation>Image indisponible</translation>
+    </message>
+</context>
+<context>
+    <name>KeepCopy</name>
+    <message>
+        <source>lossless</source>
+        <translation>sans perte</translation>
+    </message>
+    <message>
+        <source>higher bitrate ({best} vs {other})</source>
+        <translation>meilleur débit ({best} contre {other})</translation>
+    </message>
+    <message>
+        <source>higher sample rate</source>
+        <translation>meilleure fréquence d’échantillonnage</translation>
+    </message>
+    <message>
+        <source>holds {software} data (cue points, analysis)</source>
+        <translation>porte des données {software} (points cue, analyse)</translation>
+    </message>
+    <message>
+        <source>inside your library folders</source>
+        <translation>dans vos dossiers de bibliothèque</translation>
+    </message>
+    <message>
+        <source>more tags filled ({count})</source>
+        <translation>plus de tags remplis ({count})</translation>
+    </message>
+    <message>
+        <source>the copies are equivalent: the first one</source>
+        <translation>les copies se valent : la première</translation>
     </message>
 </context>
 <context>

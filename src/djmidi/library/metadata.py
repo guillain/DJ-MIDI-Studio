@@ -297,6 +297,26 @@ def _is_noise_vorbis_key(key: str) -> bool:
     return lowered.startswith(_NOISE_KEY_PREFIXES) or lowered in _NOISE_KEYS
 
 
+def dj_software_data(audio: mutagen.FileType | None) -> tuple[str, ...]:
+    """Which DJ software stored its own data (cue points, loops, analysis)
+    in the file, from the frames this module protects: Serato GEOB /
+    ``serato_*`` keys, Traktor's PRIV:TRAKTOR4. Read-only."""
+    tags = getattr(audio, "tags", None)
+    found: set[str] = set()
+    if isinstance(tags, ID3):
+        for frame in tags.values():
+            frame_id = getattr(frame, "FrameID", "")
+            if frame_id == "GEOB" and frame.desc.startswith(_PROTECTED_GEOB_PREFIX):
+                found.add("Serato")
+            elif frame_id == "PRIV" and frame.owner == _PROTECTED_PRIV_OWNER:
+                found.add("Traktor")
+    elif _looks_like_vorbis(tags) and not isinstance(audio, MP4):
+        keys = tags.keys()  # a Vorbis comment iterates as (key, value) pairs
+        if any(_is_protected_vorbis_key(str(key)) for key in keys):
+            found.add("Serato")
+    return tuple(sorted(found))
+
+
 def _clean_noise_vorbis(tags: object) -> list[str]:
     removed = [key for key in list(tags.keys()) if _is_noise_vorbis_key(key)]
     for key in removed:

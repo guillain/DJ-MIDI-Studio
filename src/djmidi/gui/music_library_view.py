@@ -1911,7 +1911,7 @@ class MusicLibraryView(QWidget):
         if self.duplicates_dialog is not None:
             self.duplicates_dialog.close()
             self.duplicates_dialog.deleteLater()
-        self.duplicates_dialog = DuplicatesDialog(groups, self)
+        self.duplicates_dialog = DuplicatesDialog(groups, self, roots=[root.path for root in self.db.list_roots()])
         self.duplicates_dialog.discardRequested.connect(self.discard_duplicates)
         self.duplicates_dialog.show()
 
