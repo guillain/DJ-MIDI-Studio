@@ -27,3 +27,26 @@ def test_the_main_window_colours_its_section_and_fades_pages():
     delegate = library.table.itemDelegateForColumn(_COLUMN_INDEX["camelot"])
     assert type(delegate).__name__ == "CamelotBadgeDelegate"
     window.close()
+
+
+def test_empty_states_show_until_the_view_has_rows():
+    from djmidi.gui.music_library_view import MusicLibraryView
+
+    view = MusicLibraryView(db_path=":memory:")
+    view.show()
+    assert not view.table_empty_state.isHidden() and view.table_empty_state.button is not None
+    assert not view.playlist_empty_state.isHidden()
+    view.db.create_playlist("Friday", [])
+    view._reload_playlists()
+    assert view.playlist_empty_state.isHidden()
+    view.close_db()
+
+
+def test_the_dashboard_sums_up_the_music_library():
+    from djmidi.gui.introduction_view import IntroductionView
+
+    view = IntroductionView()
+    view.set_library_summary(None, None)
+    assert "Open the Music tab" in view.library_summary_label.text()
+    view.set_library_summary(1200, 14)
+    assert view.library_summary_label.text() == "1200 track(s) · 14 playlist(s)"

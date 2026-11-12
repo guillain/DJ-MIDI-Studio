@@ -3470,6 +3470,18 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
         <translation>Astuce : un contrôleur installé depuis Config. contrôleur apparaît tout de suite dans toutes les vues, et à chaque lancement.</translation>
     </message>
     <message>
+        <source>Music</source>
+        <translation>Musique</translation>
+    </message>
+    <message>
+        <source>Open the Music tab to load your library.</source>
+        <translation>Ouvrez l’onglet Musique pour charger votre bibliothèque.</translation>
+    </message>
+    <message>
+        <source>Open Music</source>
+        <translation>Ouvrir Musique</translation>
+    </message>
+    <message>
         <source>{count} registered controller(s)</source>
         <translation>{count} contrôleur(s) enregistré(s)</translation>
     </message>
@@ -3488,6 +3500,14 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
     <message>
         <source>MIDI: not detected</source>
         <translation>MIDI : non détecté</translation>
+    </message>
+    <message>
+        <source>No track yet: add your music folder in the Music tab.</source>
+        <translation>Aucun morceau : ajoutez votre dossier de musique dans l’onglet Musique.</translation>
+    </message>
+    <message>
+        <source>{tracks} track(s) · {playlists} playlist(s)</source>
+        <translation>{tracks} morceau(x) · {playlists} playlist(s)</translation>
     </message>
     <message>
         <source>Visualize, edit, and validate your {software} MIDI mappings. Start here, then use the shortcuts below to drill down into the detailed views.</source>
@@ -7164,6 +7184,14 @@ Lignes sélectionnées dans Configuration du contrôleur : {selected}</translati
         <translation>Filtrer par artiste, titre, genre, BPM, tonalité, commentaire…</translation>
     </message>
     <message>
+        <source>Your music library is empty</source>
+        <translation>Votre bibliothèque est vide</translation>
+    </message>
+    <message>
+        <source>Add the folder that holds your music, then scan it: nothing in your files changes.</source>
+        <translation>Ajoutez le dossier qui contient votre musique, puis scannez-le : rien ne change dans vos fichiers.</translation>
+    </message>
+    <message>
         <source>Only tracks with this genre tag</source>
         <translation>Seulement les morceaux avec ce tag de genre</translation>
     </message>
@@ -7366,6 +7394,14 @@ Lignes sélectionnées dans Configuration du contrôleur : {selected}</translati
     <message>
         <source>Delete</source>
         <translation>Supprimer</translation>
+    </message>
+    <message>
+        <source>No playlist yet</source>
+        <translation>Aucune playlist</translation>
+    </message>
+    <message>
+        <source>Select tracks in the table, then Create → New from selection — or import one below.</source>
+        <translation>Sélectionnez des morceaux dans le tableau, puis Créer → Nouvelle depuis la sélection — ou importez-en une ci-dessous.</translation>
     </message>
     <message>
         <source>Tracks in playlist</source>

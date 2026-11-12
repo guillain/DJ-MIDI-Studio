@@ -155,6 +155,31 @@ QPushButton[chip="true"] {
     border-radius: 12px;
     font-weight: 500;
 }
+QLabel#dashboardTitle {
+    font-size: 24px;
+    font-weight: 800;
+    color: $title;
+}
+QLabel#dashboardFigure {
+    background: transparent;
+    font-size: 15px;
+    font-weight: 600;
+}
+QWidget[emptyState="true"], QWidget[emptyState="true"] QLabel {
+    background: transparent;
+}
+QLabel#emptyGlyph {
+    font-size: 42px;
+    color: $accent2;
+}
+QLabel#emptyTitle {
+    font-size: 16px;
+    font-weight: 700;
+    color: $text;
+}
+QLabel#emptyHint {
+    color: $hint_text;
+}
 QWidget[actionArea="true"] {
     background: transparent;
 }

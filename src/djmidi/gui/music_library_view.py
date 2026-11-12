@@ -106,6 +106,7 @@ from djmidi.gui.commands import (
     WriteTracksMetadataCommand,
 )
 from djmidi.gui.duplicates_dialog import DuplicatesDialog
+from djmidi.gui.empty_state import EmptyState
 from djmidi.gui.health_report_dialog import HealthReportDialog
 from djmidi.gui.help_button import help_button, help_row
 from djmidi.gui.library_stats_dialog import LibraryStatsDialog
@@ -1302,6 +1303,14 @@ class MusicLibraryView(QWidget):
         self._camelot_delegate = CamelotBadgeDelegate(self.table)
         self.table.setItemDelegateForColumn(_COLUMN_INDEX["camelot"], self._camelot_delegate)
         box.addWidget(self.table, 1)
+        self.table_empty_state = EmptyState(
+            self.table,
+            "♫",
+            self.tr("Your music library is empty"),
+            self.tr("Add the folder that holds your music, then scan it: nothing in your files changes."),
+            (self.tr("Add folder…"), self._on_add_root_clicked),
+            is_empty=lambda: self.table_model.rowCount() == 0,
+        )
 
         self.filter_edit.textChanged.connect(self._on_filter_changed)
         self.category_filter.currentTextChanged.connect(self._on_category_filter_changed)
@@ -1581,6 +1590,12 @@ class MusicLibraryView(QWidget):
         self.playlist_list = QListWidget()
         self.playlist_list.currentItemChanged.connect(self._on_playlist_selected)
         box.addWidget(self.playlist_list, 1)
+        self.playlist_empty_state = EmptyState(
+            self.playlist_list,
+            "☰",
+            self.tr("No playlist yet"),
+            self.tr("Select tracks in the table, then Create → New from selection — or import one below."),
+        )
         self.playlist_tracks = QListWidget()
         box.addWidget(QLabel(self.tr("Tracks in playlist")))
         box.addWidget(self.playlist_tracks, 1)
