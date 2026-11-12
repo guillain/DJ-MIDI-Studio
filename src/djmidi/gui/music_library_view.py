@@ -136,7 +136,12 @@ from djmidi.library import (
 )
 from djmidi.library.analysis import analysis_available, to_camelot
 from djmidi.library.cover_art import load_cover_file, read_cover_art
-from djmidi.library.db import LibraryDB, TrackRecord, default_library_db_path
+from djmidi.library.db import (
+    ChangeItem,
+    LibraryDB,
+    TrackRecord,
+    default_library_db_path,
+)
 from djmidi.library.metadata import TrackMetadata, clean_noise_frames, read_metadata
 from djmidi.library.playlist import is_camelot_compatible
 from djmidi.library.playlist_compare import PlaylistComparison, compare_playlists
@@ -1914,6 +1919,7 @@ class MusicLibraryView(QWidget):
         self.duplicates_dialog = DuplicatesDialog(groups, self, roots=[root.path for root in self.db.list_roots()])
         self.duplicates_dialog.discardRequested.connect(self.discard_duplicates)
         self.duplicates_dialog.mergeRequested.connect(self.merge_duplicates)
+        self.duplicates_dialog.djPlaylistsRequested.connect(self.choose_dj_playlists)
         self.duplicates_dialog.show()
 
     def merge_duplicates(self, kept: str, dropped: list[str], dialog_factory=None) -> bool:
@@ -1952,6 +1958,118 @@ class MusicLibraryView(QWidget):
         if entries:
             self._reload_playlists()
         return bool(written or entries)
+
+    def choose_dj_playlists(self, kept: str, dropped: list[str]) -> None:
+        """Asks which DJ software and where its playlists are, then
+        `repoint_dj_playlists`."""
+        from djmidi.library import dj_playlists
+
+        parent = self.duplicates_dialog if self.duplicates_dialog is not None else self
+        choices = [self.tr("Serato DJ Pro crates"), self.tr("Traktor Pro playlists (collection.nml)")]
+        choice, ok = QInputDialog.getItem(
+            parent, self.tr("DJ software playlists"), self.tr("Which playlists?"), choices, 0, False
+        )
+        if not ok:
+            return
+        if choice == choices[0]:
+            software = dj_playlists.SERATO
+            default = Path.home() / "Music" / "_Serato_" / "Subcrates"
+            location = QFileDialog.getExistingDirectory(
+                parent, self.tr("Serato's Subcrates folder"), str(default if default.is_dir() else Path.home())
+            )
+        else:
+            software = dj_playlists.TRAKTOR
+            start = Path.home() / "Documents" / "Native Instruments"
+            location, _filter = QFileDialog.getOpenFileName(
+                parent,
+                self.tr("Traktor's collection.nml"),
+                str(start if start.is_dir() else Path.home()),
+                self.tr("Traktor collection (collection.nml)"),
+            )
+        if location:
+            self.repoint_dj_playlists(kept, dropped, software, location)
+
+    def repoint_dj_playlists(
+        self,
+        kept: str,
+        dropped: list[str],
+        software: str,
+        location: str,
+        processes=None,
+        backup_root: Path | None = None,
+    ) -> Path | None:
+        """Points `software`'s playlists at `kept` instead of `dropped`
+        (issue #458): refused while it runs, a preview to confirm, every
+        file backed up, logged. Returns the backup folder."""
+        from djmidi.library import dj_playlists
+
+        parent = self.duplicates_dialog if self.duplicates_dialog is not None else self
+        name = "Serato DJ Pro" if software == dj_playlists.SERATO else "Traktor Pro"
+        title = self.tr("DJ software playlists")
+        running = dj_playlists.is_running(software, processes or dj_playlists.running_processes)
+        if running:
+            QMessageBox.warning(
+                parent,
+                title,
+                self.tr("{software} is running: quit it first, or it would write its own playlists back over these.").format(
+                    software=name
+                ),
+            )
+            return None
+        pairs = [(path, kept) for path in dropped]
+        try:
+            plan = (
+                dj_playlists.plan_serato(location, pairs)
+                if software == dj_playlists.SERATO
+                else dj_playlists.plan_traktor(location, pairs)
+            )
+        except (OSError, ValueError) as error:
+            QMessageBox.warning(parent, title, self.tr("Could not read {path}: {error}").format(path=location, error=error))
+            return None
+        skipped = [
+            self.tr("{file}: left alone, {reason}").format(
+                file=Path(path).name, reason=QCoreApplication.translate("DjPlaylists", reason)
+            )
+            for path, reason in plan.skipped.items()
+        ]
+        if not plan.changes:
+            QMessageBox.information(
+                parent,
+                title,
+                "\n".join([self.tr("No {software} playlist lists the other copies.").format(software=name), *skipped]),
+            )
+            return None
+        lines = [
+            self.tr("{file}: {replaced} entry(ies) repointed, {removed} duplicate entry(ies) removed").format(
+                file=change.path.name, replaced=change.replaced, removed=change.removed
+            )
+            for change in plan.changes
+        ]
+        answer = QMessageBox.question(
+            parent,
+            title,
+            self.tr("Change these {software} files? Each one is backed up first.").format(software=name)
+            + "\n\n"
+            + _bullet_list([*lines, *skipped]),
+        )
+        if answer != QMessageBox.StandardButton.Yes:
+            return None
+        backup = dj_playlists.apply(plan, backup_root or user_paths.subfolder(user_paths.SNAPSHOTS))
+        change_log.record_change(
+            self.db,
+            "dj-playlists",
+            self.tr("{software} playlists now use {name}").format(software=name, name=Path(kept).name),
+            [
+                ChangeItem(str(change.path), {"backup": str(backup / change.path.name)}, {"entries": change.replaced})
+                for change in plan.changes
+            ],
+        )
+        self.status_label.setText(
+            self.tr("{software}: {count} file(s) changed, backup in {backup}.").format(
+                software=name, count=len(plan.changes), backup=backup
+            )
+        )
+        return backup
 
     def discard_duplicates(self, paths: list[str]) -> None:
         """Move ticked duplicate copies to the Trash (issue #208).

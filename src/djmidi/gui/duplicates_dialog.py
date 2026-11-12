@@ -108,6 +108,8 @@ class DuplicatesDialog(QDialog):
     """Ticked copies' paths, deduplicated, in tree order."""
     mergeRequested = Signal(str, list)
     """The copy to keep and the group's other copies (issue #458)."""
+    djPlaylistsRequested = Signal(str, list)
+    """Same, for Serato crates / Traktor playlists (issue #458)."""
 
     def __init__(
         self,
@@ -177,6 +179,15 @@ class DuplicatesDialog(QDialog):
         )
         self.merge_button.clicked.connect(self._on_merge_clicked)
         buttons.addButton(self.merge_button, QDialogButtonBox.ButtonRole.ActionRole)
+        self.dj_playlists_button = QPushButton(self.tr("DJ software playlists…"))
+        self.dj_playlists_button.setToolTip(
+            self.tr(
+                "Point Serato crates or Traktor playlists at the kept copy instead of the group's other copies: "
+                "a preview first, a backup of every file, refused while that software is running."
+            )
+        )
+        self.dj_playlists_button.clicked.connect(self._on_dj_playlists_clicked)
+        buttons.addButton(self.dj_playlists_button, QDialogButtonBox.ButtonRole.ActionRole)
         self.trash_button = QPushButton(self.tr("Move ticked to Trash…"))
         self.trash_button.setToolTip(
             self.tr(
@@ -384,6 +395,11 @@ class DuplicatesDialog(QDialog):
         if target is not None:
             self.mergeRequested.emit(*target)
 
+    def _on_dj_playlists_clicked(self) -> None:
+        target = self.merge_target()
+        if target is not None:
+            self.djPlaylistsRequested.emit(*target)
+
     def _on_trash_clicked(self) -> None:
         paths = self.checked_paths()
         if paths:
@@ -411,6 +427,7 @@ class DuplicatesDialog(QDialog):
         self.reveal_button.setEnabled(item is not None and bool(item.data(0, PATH_ROLE)))
         self.trash_button.setEnabled(bool(self.checked_paths()))
         self.merge_button.setEnabled(self.merge_target() is not None)
+        self.dj_playlists_button.setEnabled(self.merge_button.isEnabled())
 
     def _reveal(self, item: QTreeWidgetItem | None) -> None:
         path = item.data(0, PATH_ROLE) if item is not None else None
