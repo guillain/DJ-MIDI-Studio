@@ -95,6 +95,7 @@ from PySide6.QtWidgets import (
 
 from djmidi import taxonomy, user_paths
 from djmidi.gui import help_texts
+from djmidi.gui.action_groups import action_section, chip
 from djmidi.gui.audio_preview import AudioPreviewBar
 from djmidi.gui.change_history_dialog import ChangeHistoryDialog
 from djmidi.gui.commands import (
@@ -1225,25 +1226,30 @@ class MusicLibraryView(QWidget):
         else:
             self.analyse_button.setEnabled(False)
             self.analyse_button.setToolTip(self.tr(_ANALYSIS_UNAVAILABLE))
-        # Two button columns rather than one row: six buttons side by side
-        # need more width than the tab's minimum content width guarantees.
-        buttons = QGridLayout()
-        for index, button in enumerate(
-            (
-                self.add_root_button,
-                self.scan_button,
-                self.remove_root_button,
-                self.duplicates_button,
-                self.relink_button,
-                self.health_button,
-                self.stats_button,
-                self.analyse_button,
-                self.history_button,
+        # Grouped compact buttons that wrap to the width (UX review).
+        actions = QWidget()
+        actions.setProperty("actionArea", True)
+        actions_box = QVBoxLayout(actions)
+        actions_box.setContentsMargins(0, 0, 0, 0)
+        header = QHBoxLayout()
+        header.addStretch(1)
+        header.addWidget(help_button(self, *help_texts.LIBRARY_FOLDERS))
+        actions_box.addLayout(header)
+        actions_box.addWidget(
+            action_section(
+                self.tr("Folders"),
+                [(self.add_root_button, "add"), (self.remove_root_button, "delete"),
+                 (self.scan_button, "auto"), (self.relink_button, "files")],
             )
-        ):
-            buttons.addWidget(button, index // 2, index % 2)
-        buttons.addWidget(help_button(self, *help_texts.LIBRARY_FOLDERS), 0, 2, Qt.AlignmentFlag.AlignTop)
-        row.addLayout(buttons)
+        )
+        actions_box.addWidget(
+            action_section(
+                self.tr("Library tools"),
+                [(self.duplicates_button, "compare"), (self.health_button, "confirm"),
+                 (self.stats_button, "smart"), (self.analyse_button, "auto"), (self.history_button, "undo")],
+            )
+        )
+        row.addWidget(actions, 1)
         box.addLayout(row)
         status_row = QHBoxLayout()
         self.status_label = QLabel(self.tr("Add a music folder, then scan it."))
@@ -1342,7 +1348,7 @@ class MusicLibraryView(QWidget):
         for combo, length, everything in combos:
             combo.setMinimumContentsLength(max(length, len(self.tr(everything))))
             combo.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
-        self.reset_filters_button = QPushButton(self.tr("Reset filters"))
+        self.reset_filters_button = chip(QPushButton(self.tr("Reset filters")), "revert")
         self.reset_filters_button.clicked.connect(self.reset_filters)
         first.addWidget(self.genre_filter, 2)
         first.addWidget(self.key_filter, 1)
@@ -1409,7 +1415,6 @@ class MusicLibraryView(QWidget):
             )
         )
         self.accept_suggestion_button.clicked.connect(self.confirm_category_suggestion)
-        box.addWidget(self.accept_suggestion_button)
         self.accept_all_suggestions_button = QPushButton(self.tr("Confirm all suggestions"))
         self.accept_all_suggestions_button.setToolTip(
             self.tr(
@@ -1419,9 +1424,7 @@ class MusicLibraryView(QWidget):
             )
         )
         self.accept_all_suggestions_button.clicked.connect(self._on_confirm_all_suggestions_clicked)
-        box.addWidget(self.accept_all_suggestions_button)
 
-        buttons = QHBoxLayout()
         self.apply_button = QPushButton(self.tr("Write tags"))
         self.apply_button.setToolTip(
             self.tr("Writes only the changed fields into the file. Serato/Traktor data is preserved.")
@@ -1438,9 +1441,6 @@ class MusicLibraryView(QWidget):
         undo_button.setEnabled(False)
         redo_button.setEnabled(False)
         self.undo_button, self.redo_button = undo_button, redo_button
-        for button in (self.apply_button, self.revert_button, undo_button, redo_button):
-            buttons.addWidget(button)
-        box.addLayout(buttons)
 
         self.write_selection_button = QPushButton(self.tr("Write tags to selection…"))
         self.write_selection_button.setToolTip(
@@ -1450,7 +1450,6 @@ class MusicLibraryView(QWidget):
             )
         )
         self.write_selection_button.clicked.connect(self._on_write_selection_clicked)
-        box.addWidget(self.write_selection_button)
         self.apply_analysis_button = QPushButton(self.tr("Apply analysis suggestions…"))
         self.apply_analysis_button.setToolTip(
             self.tr(
@@ -1459,7 +1458,6 @@ class MusicLibraryView(QWidget):
             )
         )
         self.apply_analysis_button.clicked.connect(self._on_apply_analysis_clicked)
-        box.addWidget(self.apply_analysis_button)
         self.rename_files_button = QPushButton(self.tr("Rename files…"))
         self.rename_files_button.setToolTip(
             self.tr(
@@ -1468,7 +1466,6 @@ class MusicLibraryView(QWidget):
             )
         )
         self.rename_files_button.clicked.connect(self._on_rename_files_clicked)
-        box.addWidget(self.rename_files_button)
         self.organize_files_button = QPushButton(self.tr("Organize into folders…"))
         self.organize_files_button.setToolTip(
             self.tr(
@@ -1477,7 +1474,6 @@ class MusicLibraryView(QWidget):
             )
         )
         self.organize_files_button.clicked.connect(self._on_organize_files_clicked)
-        box.addWidget(self.organize_files_button)
         self.table.selectionModel().selectionChanged.connect(self._update_selection_actions)
 
         self.clean_button = QPushButton(self.tr("Clean noise frames…"))
@@ -1488,7 +1484,30 @@ class MusicLibraryView(QWidget):
             )
         )
         self.clean_button.clicked.connect(self._on_clean_clicked)
-        box.addWidget(self.clean_button)
+        self.revert_button.setToolTip(self.tr("Puts the fields back to the file's current tags."))
+        undo_button.setToolTip(self.tr("Undoes the last tag write, rename or move."))
+        redo_button.setToolTip(self.tr("Redoes what Undo undid."))
+        for title, buttons in (
+            (
+                self.tr("This track"),
+                [(self.apply_button, "save"), (self.revert_button, "revert"), (undo_button, "undo"),
+                 (redo_button, "redo")],
+            ),
+            (
+                self.tr("Category"),
+                [(self.accept_suggestion_button, "confirm"), (self.accept_all_suggestions_button, "confirm")],
+            ),
+            (
+                self.tr("Selected tracks"),
+                [(self.write_selection_button, "edit"), (self.apply_analysis_button, "auto")],
+            ),
+            (
+                self.tr("Files"),
+                [(self.rename_files_button, "files"), (self.organize_files_button, "files"),
+                 (self.clean_button, "clean")],
+            ),
+        ):
+            box.addWidget(action_section(title, buttons))
         box.addStretch(1)
         return panel
 
@@ -1501,7 +1520,7 @@ class MusicLibraryView(QWidget):
         self.cover_label.setWordWrap(True)
         row.addWidget(self.cover_label)
         buttons = QVBoxLayout()
-        self.set_cover_button = QPushButton(self.tr("Set cover…"))
+        self.set_cover_button = chip(QPushButton(self.tr("Set cover…")), "edit")
         self.set_cover_button.setToolTip(
             self.tr(
                 "Embeds a JPEG or PNG image as the track's front cover (undoable). Only the "
@@ -1509,7 +1528,7 @@ class MusicLibraryView(QWidget):
             )
         )
         self.set_cover_button.clicked.connect(self._on_set_cover_clicked)
-        self.remove_cover_button = QPushButton(self.tr("Remove cover"))
+        self.remove_cover_button = chip(QPushButton(self.tr("Remove cover")), "delete")
         self.remove_cover_button.setToolTip(self.tr("Removes the embedded front cover (undoable)."))
         self.remove_cover_button.clicked.connect(self.remove_cover)
         buttons.addWidget(self.set_cover_button)
@@ -1561,7 +1580,6 @@ class MusicLibraryView(QWidget):
         self.playlist_tracks = QListWidget()
         box.addWidget(QLabel(self.tr("Tracks in playlist")))
         box.addWidget(self.playlist_tracks, 1)
-        grid = QGridLayout()
         specs: list[tuple[str, str, Callable[[], None], str]] = [
             ("new_playlist_button", self.tr("New from selection"), self._on_new_playlist_clicked,
              self.tr("Creates a playlist from the rows selected in the table.")),
@@ -1583,15 +1601,18 @@ class MusicLibraryView(QWidget):
             ("export_smart_button", self.tr("Export all smart…"), self._on_export_smart_clicked,
              self.tr("Re-evaluates every smart playlist and writes each as a Serato crate and/or Traktor "
                      "playlist into one folder, in one go.")),
-            ("import_serato_button", self.tr("Import Serato crate…"), self._on_import_serato_clicked, ""),
-            ("import_traktor_button", self.tr("Import Traktor NML…"), self._on_import_traktor_clicked, ""),
-            ("import_rekordbox_button", self.tr("Import Rekordbox export…"), self._on_import_rekordbox_clicked, ""),
-            ("export_serato_button", self.tr("Export as Serato crate…"), self._on_export_serato_clicked,
+            ("import_serato_button", self.tr("Serato crate…"), self._on_import_serato_clicked,
+             self.tr("Imports a Serato .crate as a playlist of this app. Read-only towards Serato.")),
+            ("import_traktor_button", self.tr("Traktor NML…"), self._on_import_traktor_clicked,
+             self.tr("Imports the playlists of a Traktor .nml as playlists of this app. Read-only towards Traktor.")),
+            ("import_rekordbox_button", self.tr("rekordbox export…"), self._on_import_rekordbox_clicked,
+             self.tr("Imports the playlists of a rekordbox XML file or device export. Read-only.")),
+            ("export_serato_button", self.tr("Serato crate…"), self._on_export_serato_clicked,
              self.tr("Writes a new .crate file where you choose. Never overwrites a crate on its own.")),
-            ("export_traktor_button", self.tr("Export as Traktor playlist…"), self._on_export_traktor_clicked,
+            ("export_traktor_button", self.tr("Traktor playlist…"), self._on_export_traktor_clicked,
              self.tr("Writes a new single-playlist .nml where you choose, for Traktor's Import Playlist. "
                      "Never touches collection.nml.")),
-            ("export_rekordbox_button", self.tr("Export as rekordbox XML…"), self._on_export_rekordbox_clicked,
+            ("export_rekordbox_button", self.tr("rekordbox XML…"), self._on_export_rekordbox_clicked,
              self.tr("Writes a new rekordbox XML file where you choose, for rekordbox's Imported Library. "
                      "Never touches rekordbox's own library.")),
             ("compare_serato_button", self.tr("Compare with crate…"), self._on_compare_serato_clicked,
@@ -1603,19 +1624,32 @@ class MusicLibraryView(QWidget):
             ("compare_rekordbox_button", self.tr("Compare with rekordbox…"), self._on_compare_rekordbox_clicked,
              self.tr("Compares the selected playlist with a playlist of a rekordbox XML file or device "
                      "export: tracks only on each side and order differences. Read-only.")),
-            ("rename_playlist_button", self.tr("Rename…"), self._on_rename_playlist_clicked, ""),
-            ("delete_playlist_button", self.tr("Delete"), self._on_delete_playlist_clicked, ""),
+            ("rename_playlist_button", self.tr("Rename…"), self._on_rename_playlist_clicked,
+             self.tr("Renames the selected playlist.")),
+            ("delete_playlist_button", self.tr("Delete"), self._on_delete_playlist_clicked,
+             self.tr("Deletes the selected playlist of this app (never a file, never a DJ software playlist).")),
         ]
-        for index, (attr, label, handler, tip) in enumerate(specs):
+        for attr, label, handler, tip in specs:
             button = QPushButton(label)
             if tip:
                 button.setToolTip(tip)
             button.clicked.connect(handler)
             setattr(self, attr, button)
-            # Two columns: three made this panel ~690 px wide, wider than the
-            # side panel, so its third column sat off the right edge (issue #19).
-            grid.addWidget(button, index // 2, index % 2)
-        box.addLayout(grid)
+        sections = (
+            (self.tr("Create"), ("new_playlist_button", "add"), ("generate_button", "auto"),
+             ("match_button", "auto"), ("path_button", "auto")),
+            (self.tr("Smart playlists"), ("new_smart_button", "smart"), ("edit_smart_button", "edit"),
+             ("refresh_smart_button", "auto"), ("export_smart_button", "export")),
+            (self.tr("Import"), ("import_serato_button", "import"), ("import_traktor_button", "import"),
+             ("import_rekordbox_button", "import")),
+            (self.tr("Export"), ("export_serato_button", "export"), ("export_traktor_button", "export"),
+             ("export_rekordbox_button", "export")),
+            (self.tr("Compare"), ("compare_serato_button", "compare"), ("compare_traktor_button", "compare"),
+             ("compare_rekordbox_button", "compare")),
+            (self.tr("Playlist"), ("rename_playlist_button", "edit"), ("delete_playlist_button", "delete")),
+        )
+        for title, *entries in sections:
+            box.addWidget(action_section(title, [(getattr(self, attr), role) for attr, role in entries]))
         return panel
 
     def _build_history_panel(self) -> QWidget:

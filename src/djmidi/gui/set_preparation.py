@@ -26,7 +26,6 @@ from PySide6.QtWidgets import (
     QDialog,
     QDoubleSpinBox,
     QFileDialog,
-    QGridLayout,
     QHBoxLayout,
     QInputDialog,
     QLabel,
@@ -41,6 +40,7 @@ from PySide6.QtWidgets import (
 
 from djmidi import user_paths
 from djmidi.gui import help_texts
+from djmidi.gui.action_groups import action_section
 from djmidi.gui.generate_set_dialog import GenerateSetDialog
 from djmidi.gui.help_button import help_row
 from djmidi.gui.set_order_dialog import SetOrderDialog
@@ -290,14 +290,16 @@ class SetPreparationPanel(QWidget):
         tolerance_row.addStretch(1)
         box.addLayout(tolerance_row)
 
-        grid = QGridLayout()
         specs: list[tuple[str, str, Callable[[], None], str]] = [
             ("add_button", self.tr("Add selection"), self.add_selection,
              self.tr("Appends the tracks selected in the table (each track once).")),
-            ("remove_button", self.tr("Remove"), self.remove_selected, ""),
-            ("clear_button", self.tr("Clear"), self.clear, ""),
-            ("up_button", self.tr("Move up"), lambda: self.move_selected(-1), ""),
-            ("down_button", self.tr("Move down"), lambda: self.move_selected(1), ""),
+            ("remove_button", self.tr("Remove"), self.remove_selected,
+             self.tr("Removes the selected tracks from the set.")),
+            ("clear_button", self.tr("Clear"), self.clear, self.tr("Empties the set.")),
+            ("up_button", self.tr("Move up"), lambda: self.move_selected(-1),
+             self.tr("Moves the selected tracks one place earlier.")),
+            ("down_button", self.tr("Move down"), lambda: self.move_selected(1),
+             self.tr("Moves the selected tracks one place later.")),
             ("propose_button", self.tr("Propose an order…"), self.propose_order,
              self.tr("Suggests an order where every mix stays compatible; you compare before using it.")),
             ("undo_order_button", self.tr("Back to my order"), self.restore_previous_order,
@@ -316,15 +318,23 @@ class SetPreparationPanel(QWidget):
             ("export_rekordbox_button", self.tr("Export as rekordbox XML…"), self._on_export_rekordbox_clicked,
              self.tr("Writes a new rekordbox XML file where you choose, for rekordbox's Imported Library.")),
         ]
-        for index, (attr, label, handler, tip) in enumerate(specs):
+        for attr, label, handler, tip in specs:
             button = QPushButton(label)
             if tip:
                 button.setToolTip(tip)
             button.clicked.connect(handler)
             setattr(self, attr, button)
-            # Two columns: the export labels are long and the side panel narrow.
-            grid.addWidget(button, index // 2, index % 2)
-        box.addLayout(grid)
+        # Grouped compact buttons that wrap to the side panel's width.
+        for title, *entries in (
+            (self.tr("Tracks"), ("add_button", "add"), ("remove_button", "delete"), ("clear_button", "clean"),
+             ("up_button", "up"), ("down_button", "down")),
+            (self.tr("Order"), ("propose_button", "auto"), ("undo_order_button", "undo"),
+             ("generate_button", "smart")),
+            (self.tr("Save and export"), ("load_button", "files"), ("save_button", "save"),
+             ("export_serato_button", "export"), ("export_traktor_button", "export"),
+             ("export_rekordbox_button", "export")),
+        ):
+            box.addWidget(action_section(title, [(getattr(self, attr), role) for attr, role in entries]))
         self._refresh(save=False)
 
     # --- state --------------------------------------------------------

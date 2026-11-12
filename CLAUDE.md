@@ -63,6 +63,8 @@ fixed file path; use `tmp_path`.
   `gui/window_size.py` (`fit_to_screen`, `usable_minimum`, `keep_wrapped_text_visible`, `keep_tab_titles_whole`)
   and join `WINDOWS` in `tests/test_small_windows.py` (checked in EN/FR/DE, offscreen screen 800×800). Wide rows
   go in a `QScrollArea`. A `QSplitter` blocks height-for-width: avoid it around wrapped labels in dialogs.
+- **Buttons**: a panel with several actions groups them with `gui/action_groups.action_section(title, [(button, role)])`
+  (titled sections, a flow layout that wraps, the `chip` look and a role icon from `ICONS`, a tooltip on each).
 - **Accessibility**: icon/glyph-only buttons get a tooltip (`gui/accessibility.name_icon_buttons` turns it into
   the accessible name); `tests/test_accessibility.py` checks names, Tab focus and contrast.
 - **Docs**: `docs/enduser/` (features for DJs; one `features/<feature>.md` per feature, listed in the feature
