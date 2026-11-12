@@ -153,7 +153,7 @@ def test_compiled_catalogue_translates_menus():
     translator = QTranslator()
     assert translator.load(str(i18n.translation_file("fr")))
     assert translator.translate("MainWindow", "&File") == "&Fichier"
-    assert translator.translate("MainWindow", "Music Library") == "Bibliothèque"
+    assert translator.translate("MainWindow", "Music") == "Musique"
     assert translator.translate("PreferencesDialog", "Language:") == "Langue :"
 
 
@@ -161,7 +161,7 @@ def test_german_catalogue_translates_menus():
     translator = QTranslator()
     assert translator.load(str(i18n.translation_file("de")))
     assert translator.translate("MainWindow", "&File") == "&Datei"
-    assert translator.translate("MainWindow", "Music Library") == "Musikbibliothek"
+    assert translator.translate("MainWindow", "Music") == "Musik"
     assert translator.translate("PreferencesDialog", "Language:") == "Sprache:"
 
 
@@ -176,7 +176,7 @@ def test_main_window_is_english_without_a_translator():
     try:
         titles = [action.text() for action in window.menuBar().actions()]
         assert "&File" in titles
-        assert window.left_tabs.tabText(window._tab_indexes["library"]) == "Music Library"
+        assert window.left_tabs.tabText(window._tab_indexes["library"]) == "Music"
     finally:
         window.close()
         window.deleteLater()

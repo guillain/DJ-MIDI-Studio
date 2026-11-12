@@ -403,7 +403,7 @@ def test_main_window_has_music_library_tab():
 
     window = MainWindow()
     index = window._tab_indexes["library"]
-    assert window.left_tabs.tabText(index) == "Music Library"
+    assert window.left_tabs.tabText(index) == "Music"
     assert window.left_tabs.widget(index) is window.music_library_view
     window.left_tabs.setCurrentIndex(index)
     assert not window._right_splitter.isVisible()

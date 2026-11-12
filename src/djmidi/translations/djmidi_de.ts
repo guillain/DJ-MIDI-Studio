@@ -2989,10 +2989,6 @@ Trotzdem neu zuweisen? Beide lösen auf demselben Bedienelement aus.</translatio
         <translation>Übersicht</translation>
     </message>
     <message>
-        <source>Summarizes the loaded mapping and gives every registered controller a card: its picture, whether a connected MIDI port matches it (&lt;i&gt;MIDI: available&lt;/i&gt;), and shortcuts into the &lt;b&gt;By Channel&lt;/b&gt;, &lt;b&gt;By Controller&lt;/b&gt; and &lt;b&gt;Controller Images&lt;/b&gt; views.&lt;br&gt;&lt;br&gt;Open a Serato &lt;tt&gt;.xml&lt;/tt&gt; or Traktor &lt;tt&gt;.tsi&lt;/tt&gt; mapping with &lt;b&gt;File → Open Mapping…&lt;/b&gt;.</source>
-        <translation>Fasst das geladene Mapping zusammen und gibt jedem registrierten Controller eine Karte: sein Bild, ob ein angeschlossener MIDI-Port zu ihm passt (&lt;i&gt;MIDI: verfügbar&lt;/i&gt;), und Abkürzungen zu den Ansichten &lt;b&gt;Nach Kanal&lt;/b&gt;, &lt;b&gt;Nach Controller&lt;/b&gt; und &lt;b&gt;Controller-Bilder&lt;/b&gt;.&lt;br&gt;&lt;br&gt;Öffnen Sie ein Serato-&lt;tt&gt;.xml&lt;/tt&gt;- oder Traktor-&lt;tt&gt;.tsi&lt;/tt&gt;-Mapping mit &lt;b&gt;Datei → Mapping öffnen…&lt;/b&gt;.</translation>
-    </message>
-    <message>
         <source>Your files</source>
         <translation>Ihre Dateien</translation>
     </message>
@@ -3083,10 +3079,6 @@ Trotzdem neu zuweisen? Beide lösen auf demselben Bedienelement aus.</translatio
     <message>
         <source>Known controllers</source>
         <translation>Bekannte Controller</translation>
-    </message>
-    <message>
-        <source>Every controller the app knows: the built-in profiles and the ones you installed from &lt;b&gt;Controller Setup&lt;/b&gt;. The &lt;b&gt;Active controller for drill-down&lt;/b&gt; is the one the &lt;b&gt;Channel&lt;/b&gt;, &lt;b&gt;Controller&lt;/b&gt; and &lt;b&gt;Images&lt;/b&gt; shortcuts open. Hide controllers you don&apos;t own in ⚙ Preferences → Plugins.</source>
-        <translation>Jeder Controller, den die App kennt: die integrierten Profile und die, die Sie aus der &lt;b&gt;Controller-Einrichtung&lt;/b&gt; installiert haben. Der &lt;b&gt;Aktiver Controller für Detailansicht&lt;/b&gt; ist der, den die Abkürzungen &lt;b&gt;Kanal&lt;/b&gt;, &lt;b&gt;Controller&lt;/b&gt; und &lt;b&gt;Bilder&lt;/b&gt; öffnen. Blenden Sie Controller, die Sie nicht besitzen, unter ⚙ Einstellungen → Plugins aus.</translation>
     </message>
     <message>
         <source>MIDI tools</source>
@@ -3197,8 +3189,16 @@ Trotzdem neu zuweisen? Beide lösen auf demselben Bedienelement aus.</translatio
         <translation>Metronom</translation>
     </message>
     <message>
-        <source>Plays the rows captured in &lt;b&gt;Controller Setup&lt;/b&gt; to an output port: the selected rows or all of them once, or on a loop at the chosen frequency and value. Handy to blink LEDs, test a mapping, or keep a device awake.</source>
-        <translation>Spielt die in der &lt;b&gt;Controller-Einrichtung&lt;/b&gt; erfassten Zeilen an einen Ausgangsport: die ausgewählten Zeilen oder alle einmal, oder in einer Schleife mit gewählter Frequenz und gewähltem Wert. Praktisch, um LEDs blinken zu lassen, ein Mapping zu testen oder ein Gerät wach zu halten.</translation>
+        <source>Summarizes the loaded mapping and gives every registered controller a card: its picture, whether a connected MIDI port matches it (&lt;i&gt;MIDI: available&lt;/i&gt;), and shortcuts into the &lt;b&gt;By Channel&lt;/b&gt;, &lt;b&gt;By Controller&lt;/b&gt; and &lt;b&gt;Controller → Images&lt;/b&gt; views.&lt;br&gt;&lt;br&gt;Open a Serato &lt;tt&gt;.xml&lt;/tt&gt; or Traktor &lt;tt&gt;.tsi&lt;/tt&gt; mapping with &lt;b&gt;File → Open Mapping…&lt;/b&gt;.</source>
+        <translation>Fasst das geladene Mapping zusammen und gibt jedem registrierten Controller eine Karte: sein Bild, ob ein angeschlossener MIDI-Port zu ihm passt (&lt;i&gt;MIDI: verfügbar&lt;/i&gt;), und Abkürzungen zu den Ansichten &lt;b&gt;Nach Kanal&lt;/b&gt;, &lt;b&gt;Nach Controller&lt;/b&gt; und &lt;b&gt;Controller → Bilder&lt;/b&gt;.&lt;br&gt;&lt;br&gt;Öffnen Sie ein Serato-&lt;tt&gt;.xml&lt;/tt&gt;- oder Traktor-&lt;tt&gt;.tsi&lt;/tt&gt;-Mapping mit &lt;b&gt;Datei → Mapping öffnen…&lt;/b&gt;.</translation>
+    </message>
+    <message>
+        <source>Every controller the app knows: the built-in profiles and the ones you installed from &lt;b&gt;Controller → Setup&lt;/b&gt;. The &lt;b&gt;Active controller for drill-down&lt;/b&gt; is the one the &lt;b&gt;Channel&lt;/b&gt;, &lt;b&gt;Controller&lt;/b&gt; and &lt;b&gt;Images&lt;/b&gt; shortcuts open. Hide controllers you don&apos;t own in ⚙ Preferences → Plugins.</source>
+        <translation>Jeder Controller, den die App kennt: die integrierten Profile und die, die Sie aus der &lt;b&gt;Controller → Einrichtung&lt;/b&gt; installiert haben. Der &lt;b&gt;Aktiver Controller für Detailansicht&lt;/b&gt; ist der, den die Abkürzungen &lt;b&gt;Kanal&lt;/b&gt;, &lt;b&gt;Controller&lt;/b&gt; und &lt;b&gt;Bilder&lt;/b&gt; öffnen. Blenden Sie Controller, die Sie nicht besitzen, unter ⚙ Einstellungen → Plugins aus.</translation>
+    </message>
+    <message>
+        <source>Plays the rows captured in &lt;b&gt;Controller → Setup&lt;/b&gt; to an output port: the selected rows or all of them once, or on a loop at the chosen frequency and value. Handy to blink LEDs, test a mapping, or keep a device awake.</source>
+        <translation>Spielt die in der &lt;b&gt;Controller → Einrichtung&lt;/b&gt; erfassten Zeilen an einen Ausgangsport: die ausgewählten Zeilen oder alle einmal, oder in einer Schleife mit gewählter Frequenz und gewähltem Wert. Praktisch, um LEDs blinken zu lassen, ein Mapping zu testen oder ein Gerät wach zu halten.</translation>
     </message>
     <message>
         <source>Music folders</source>
@@ -4685,16 +4685,12 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
         <translation>Nach Kanal, Control, Ereignistyp, Funktion, Deck, Slot filtern...</translation>
     </message>
     <message>
+        <source>Controller</source>
+        <translation>Controller</translation>
+    </message>
+    <message>
         <source>Dashboard</source>
         <translation>Übersicht</translation>
-    </message>
-    <message>
-        <source>Controller Setup</source>
-        <translation>Controller-Einrichtung</translation>
-    </message>
-    <message>
-        <source>Controller Images</source>
-        <translation>Controller-Bilder</translation>
     </message>
     <message>
         <source>By Channel</source>
@@ -4709,12 +4705,24 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
         <translation>Nach Controller</translation>
     </message>
     <message>
-        <source>Music Library</source>
-        <translation>Musikbibliothek</translation>
+        <source>Setup</source>
+        <translation>Einrichtung</translation>
     </message>
     <message>
-        <source>Atelier</source>
-        <translation>Atelier</translation>
+        <source>Images</source>
+        <translation>Bilder</translation>
+    </message>
+    <message>
+        <source>Studio</source>
+        <translation>Studio</translation>
+    </message>
+    <message>
+        <source>By…</source>
+        <translation>Nach…</translation>
+    </message>
+    <message>
+        <source>Music</source>
+        <translation>Musik</translation>
     </message>
     <message>
         <source>Severity</source>

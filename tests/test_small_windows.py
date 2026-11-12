@@ -507,12 +507,12 @@ def test_tab_titles_are_never_elided(french):
             window.music_library_view.side_tabs,
         ]
         for tabs in tab_widgets:
-            assert tabs.elideMode() == Qt.TextElideMode.ElideNone
+            assert (tabs.top if hasattr(tabs, "top") else tabs).elideMode() == Qt.TextElideMode.ElideNone
         assert window.left_tabs.usesScrollButtons()
         assert window.introduction_view._controller_tabs.usesScrollButtons()
         # The side tabs grow instead (their panel is in a scroll area).
         assert not window.music_library_view.side_tabs.usesScrollButtons()
-        assert window.left_tabs.tabText(window._tab_indexes["library"]) == "Bibliothèque"
+        assert window.left_tabs.tabText(window._tab_indexes["library"]) == "Musique"
     finally:
         window.close()
 
@@ -535,6 +535,6 @@ def test_main_window_tabs_are_usable_in_german(german):
             if found:
                 problems[window.left_tabs.tabText(index)] = found[:6]
         assert problems == {}
-        assert window.left_tabs.tabText(window._tab_indexes["library"]) == "Musikbibliothek"
+        assert window.left_tabs.tabText(window._tab_indexes["library"]) == "Musik"
     finally:
         window.close()
