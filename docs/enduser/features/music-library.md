@@ -34,7 +34,7 @@
 
 ## What it does
 
-The `Music Library` tab manages your own tracks, independently of any MIDI
+The `Music` tab manages your own tracks, independently of any MIDI
 mapping. It is built for large collections (tens of thousands of files)
 and stays responsive while it works.
 

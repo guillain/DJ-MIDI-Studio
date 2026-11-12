@@ -88,7 +88,7 @@ sharing or exporting a profile for wider use.
 
 ## Fix tags on a whole album
 
-1. Open the `Music Library` tab and select the album's tracks (Shift-click).
+1. Open the `Music` tab and select the album's tracks (Shift-click).
 2. Type the album name and genre in the Track panel.
 3. Click `Write tags to selection…`; `Album` and `Genre` are already ticked.
 4. Click `Write to N track(s)`. One `Undo` reverts the whole batch.
