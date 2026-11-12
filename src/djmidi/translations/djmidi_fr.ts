@@ -1959,6 +1959,14 @@ Il reste une étape manuelle : ajoutez &apos;{slug}&apos; au bloc d&apos;imports
         <translation>Suggère la copie à garder dans chaque groupe (qualité audio, données d’un logiciel DJ, emplacement, tags) et coche les autres. Une copie portant des données d’un logiciel DJ absentes de celle gardée n’est jamais cochée.</translation>
     </message>
     <message>
+        <source>Merge onto the kept copy…</source>
+        <translation>Fusionner sur la copie gardée…</translation>
+    </message>
+    <message>
+        <source>Copy the tags the kept copy lacks from the other copies of the group and point this app&apos;s playlists at it. The kept copy is the selected file, else the suggested one. Nothing is discarded.</source>
+        <translation>Recopie depuis les autres copies du groupe les tags qui manquent à la copie gardée et redirige vers elle les playlists de l’application. La copie gardée est le fichier sélectionné, sinon celui suggéré. Rien n’est jeté.</translation>
+    </message>
+    <message>
         <source>Move ticked to Trash…</source>
         <translation>Mettre les cochés à la corbeille…</translation>
     </message>
@@ -3234,8 +3242,8 @@ Réaffecter quand même ? Les deux se déclencheront sur la même commande.</tra
         <translation>Morceaux en double</translation>
     </message>
     <message>
-        <source>&lt;b&gt;Find duplicates…&lt;/b&gt; lists two kinds of groups from the scanned folders:&lt;ul&gt;&lt;li&gt;&lt;b&gt;Exact copies&lt;/b&gt;: byte-identical files. Only files of the same size are read and compared by content hash.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Same artist + title&lt;/b&gt;: tags that match once case, accents, punctuation, &lt;i&gt;feat.&lt;/i&gt; credits and &lt;i&gt;(Original Mix)&lt;/i&gt; are ignored. Other versions (&lt;i&gt;Extended Mix&lt;/i&gt;, &lt;i&gt;Radio Edit&lt;/i&gt;, remixes) stay distinct. A candidate, not proof: compare format, size and bitrate.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Other versions of the same song&lt;/b&gt; (suggestions): same artist and title once a trailing &lt;i&gt;(Radio Edit)&lt;/i&gt;, &lt;i&gt;(Extended Mix)&lt;/i&gt;, &lt;i&gt;[Remastered]&lt;/i&gt;, remix… is ignored. Listed for review only: never tickable, never sent to the Trash.&lt;/li&gt;&lt;/ul&gt;Open a group to see which copy to keep (★) and why: lossless or higher bitrate first, then DJ software data (cue points, analysis), inside your library folders, more tags. A copy holding Serato or Traktor data the kept one lacks is flagged ⚠. &lt;b&gt;Tick all but the suggested copies&lt;/b&gt; ticks the others everywhere, never a flagged one. &lt;b&gt;Reveal in Finder&lt;/b&gt; (or double-click) shows a copy. Tick the copies you don&apos;t want and click &lt;b&gt;Move ticked to Trash…&lt;/b&gt;: after a confirmation they go to the Trash (never deleted outright) and show as missing. One copy of each group must stay. Playlists of this app listing a discarded copy can be pointed at the kept one.</source>
-        <translation>&lt;b&gt;Trouver les doublons…&lt;/b&gt; liste ces groupes dans les dossiers scannés :&lt;ul&gt;&lt;li&gt;&lt;b&gt;Copies exactes&lt;/b&gt; : des fichiers identiques octet pour octet. Seuls les fichiers de même taille sont lus et comparés par empreinte de contenu.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Même artiste + titre&lt;/b&gt; : des tags qui concordent une fois ignorés la casse, les accents, la ponctuation, les mentions &lt;i&gt;feat.&lt;/i&gt; et &lt;i&gt;(Original Mix)&lt;/i&gt;. Les autres versions (&lt;i&gt;Extended Mix&lt;/i&gt;, &lt;i&gt;Radio Edit&lt;/i&gt;, remixes) restent distinctes. Un candidat, pas une preuve : comparez format, taille et débit.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Autres versions du même morceau&lt;/b&gt; (suggestions) : même artiste et même titre une fois ignoré un &lt;i&gt;(Radio Edit)&lt;/i&gt;, &lt;i&gt;(Extended Mix)&lt;/i&gt;, &lt;i&gt;[Remastered]&lt;/i&gt;, remix… en fin de titre. Listées pour examen seulement : jamais cochables, jamais mises à la corbeille.&lt;/li&gt;&lt;/ul&gt;Ouvrez un groupe pour voir quelle copie garder (★) et pourquoi : sans perte ou meilleur débit d&apos;abord, puis les données d&apos;un logiciel DJ (points cue, analyse), dans vos dossiers de bibliothèque, plus de tags. Une copie portant des données Serato ou Traktor absentes de celle gardée est signalée ⚠. &lt;b&gt;Cocher tout sauf les copies suggérées&lt;/b&gt; coche les autres partout, jamais une copie signalée. &lt;b&gt;Afficher dans le Finder&lt;/b&gt; (ou double-clic) montre une copie. Cochez les copies dont vous ne voulez pas et cliquez sur &lt;b&gt;Mettre les cochés à la corbeille…&lt;/b&gt; : après confirmation, elles vont à la corbeille (jamais supprimées directement) et apparaissent comme manquantes. Une copie de chaque groupe doit rester. Les playlists de l&apos;application qui listent une copie écartée peuvent être redirigées vers celle gardée.</translation>
+        <source>&lt;b&gt;Find duplicates…&lt;/b&gt; lists two kinds of groups from the scanned folders:&lt;ul&gt;&lt;li&gt;&lt;b&gt;Exact copies&lt;/b&gt;: byte-identical files. Only files of the same size are read and compared by content hash.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Same artist + title&lt;/b&gt;: tags that match once case, accents, punctuation, &lt;i&gt;feat.&lt;/i&gt; credits and &lt;i&gt;(Original Mix)&lt;/i&gt; are ignored. Other versions (&lt;i&gt;Extended Mix&lt;/i&gt;, &lt;i&gt;Radio Edit&lt;/i&gt;, remixes) stay distinct. A candidate, not proof: compare format, size and bitrate.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Other versions of the same song&lt;/b&gt; (suggestions): same artist and title once a trailing &lt;i&gt;(Radio Edit)&lt;/i&gt;, &lt;i&gt;(Extended Mix)&lt;/i&gt;, &lt;i&gt;[Remastered]&lt;/i&gt;, remix… is ignored. Listed for review only: never tickable, never sent to the Trash.&lt;/li&gt;&lt;/ul&gt;Open a group to see which copy to keep (★) and why: lossless or higher bitrate first, then DJ software data (cue points, analysis), inside your library folders, more tags. A copy holding Serato or Traktor data the kept one lacks is flagged ⚠. &lt;b&gt;Tick all but the suggested copies&lt;/b&gt; ticks the others everywhere, never a flagged one. &lt;b&gt;Merge onto the kept copy…&lt;/b&gt; (the selected file, else the suggested one) copies the tags it lacks from the other copies, field by field, and points this app&apos;s playlists and set preparation at it, without discarding anything. &lt;b&gt;Reveal in Finder&lt;/b&gt; (or double-click) shows a copy. Tick the copies you don&apos;t want and click &lt;b&gt;Move ticked to Trash…&lt;/b&gt;: after a confirmation they go to the Trash (never deleted outright) and show as missing. One copy of each group must stay. Playlists of this app listing a discarded copy can be pointed at the kept one.</source>
+        <translation>&lt;b&gt;Trouver les doublons…&lt;/b&gt; liste ces groupes dans les dossiers scannés :&lt;ul&gt;&lt;li&gt;&lt;b&gt;Copies exactes&lt;/b&gt; : des fichiers identiques octet pour octet. Seuls les fichiers de même taille sont lus et comparés par empreinte de contenu.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Même artiste + titre&lt;/b&gt; : des tags qui concordent une fois ignorés la casse, les accents, la ponctuation, les mentions &lt;i&gt;feat.&lt;/i&gt; et &lt;i&gt;(Original Mix)&lt;/i&gt;. Les autres versions (&lt;i&gt;Extended Mix&lt;/i&gt;, &lt;i&gt;Radio Edit&lt;/i&gt;, remixes) restent distinctes. Un candidat, pas une preuve : comparez format, taille et débit.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Autres versions du même morceau&lt;/b&gt; (suggestions) : même artiste et même titre une fois ignoré un &lt;i&gt;(Radio Edit)&lt;/i&gt;, &lt;i&gt;(Extended Mix)&lt;/i&gt;, &lt;i&gt;[Remastered]&lt;/i&gt;, remix… en fin de titre. Listées pour examen seulement : jamais cochables, jamais mises à la corbeille.&lt;/li&gt;&lt;/ul&gt;Ouvrez un groupe pour voir quelle copie garder (★) et pourquoi : sans perte ou meilleur débit d&apos;abord, puis les données d&apos;un logiciel DJ (points cue, analyse), dans vos dossiers de bibliothèque, plus de tags. Une copie portant des données Serato ou Traktor absentes de celle gardée est signalée ⚠. &lt;b&gt;Cocher tout sauf les copies suggérées&lt;/b&gt; coche les autres partout, jamais une copie signalée. &lt;b&gt;Fusionner sur la copie gardée…&lt;/b&gt; (le fichier sélectionné, sinon celui suggéré) recopie, champ par champ, les tags qui lui manquent depuis les autres copies, et redirige vers elle les playlists et la préparation de set de l&apos;application, sans rien jeter. &lt;b&gt;Afficher dans le Finder&lt;/b&gt; (ou double-clic) montre une copie. Cochez les copies dont vous ne voulez pas et cliquez sur &lt;b&gt;Mettre les cochés à la corbeille…&lt;/b&gt; : après confirmation, elles vont à la corbeille (jamais supprimées directement) et apparaissent comme manquantes. Une copie de chaque groupe doit rester. Les playlists de l&apos;application qui listent une copie écartée peuvent être redirigées vers celle gardée.</translation>
     </message>
     <message>
         <source>Library health report</source>
@@ -5972,6 +5980,61 @@ Brut : {raw}</translation>
     </message>
 </context>
 <context>
+    <name>MergeCopiesDialog</name>
+    <message>
+        <source>Merge onto the kept copy</source>
+        <translation>Fusionner sur la copie gardée</translation>
+    </message>
+    <message>
+        <source>Keep {kept} and merge the other {count} copy(ies) onto it. Ticked tags are written to the kept copy (Undo and the change history can restore them); Serato and Traktor data in the file are never touched. No file is discarded here.</source>
+        <translation>Garder {kept} et y fusionner les {count} autre(s) copie(s). Les tags cochés sont écrits dans la copie gardée (Annuler et l’historique des modifications peuvent les restaurer) ; les données Serato et Traktor du fichier ne sont jamais touchées. Aucun fichier n’est jeté ici.</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Tag&lt;/b&gt;</source>
+        <translation>&lt;b&gt;Tag&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Kept copy now&lt;/b&gt;</source>
+        <translation>&lt;b&gt;Copie gardée actuellement&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Write&lt;/b&gt;</source>
+        <translation>&lt;b&gt;Écrire&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>(empty)</source>
+        <translation>(vide)</translation>
+    </message>
+    <message>
+        <source>The other copies have no tag the kept copy lacks.</source>
+        <translation>Les autres copies n’ont aucun tag qui manque à la copie gardée.</translation>
+    </message>
+    <message>
+        <source>Point this app&apos;s playlists at the kept copy</source>
+        <translation>Rediriger les playlists de l’application vers la copie gardée</translation>
+    </message>
+    <message>
+        <source>{name}: {count} entry(ies)</source>
+        <translation>{name} : {count} entrée(s)</translation>
+    </message>
+    <message>
+        <source>Set preparation: {count} entry(ies)</source>
+        <translation>Préparation de set : {count} entrée(s)</translation>
+    </message>
+    <message>
+        <source>No playlist of this app lists the other copies.</source>
+        <translation>Aucune playlist de l’application ne liste les autres copies.</translation>
+    </message>
+    <message>
+        <source>Serato, Traktor and rekordbox playlists are not changed.</source>
+        <translation>Les playlists Serato, Traktor et rekordbox ne sont pas modifiées.</translation>
+    </message>
+    <message>
+        <source>Merge</source>
+        <translation>Fusionner</translation>
+    </message>
+</context>
+<context>
     <name>MetronomeView</name>
     <message>
         <source>Refresh session summary</source>
@@ -7492,6 +7555,10 @@ Seul l&apos;index de cette application est vidé -- aucun fichier n&apos;est tou
     <message>
         <source>Duplicates: {exact} group(s) of identical files, {groups} group(s) sharing artist + title, {versions} song(s) with other versions.</source>
         <translation>Doublons : {exact} groupe(s) de fichiers identiques, {groups} groupe(s) de même artiste + titre, {versions} titre(s) avec d&apos;autres versions.</translation>
+    </message>
+    <message>
+        <source>Merged onto {name}: {fields} tag(s) written, {entries} playlist entry(ies) repointed.</source>
+        <translation>Fusionné sur {name} : {fields} tag(s) écrit(s), {entries} entrée(s) de playlist redirigée(s).</translation>
     </message>
     <message>
         <source>Move to Trash</source>

@@ -55,6 +55,7 @@ SOURCES=(
   src/djmidi/library/keep_copy.py
   src/djmidi/library/rename.py
   src/djmidi/gui/duplicates_dialog.py
+  src/djmidi/gui/merge_copies_dialog.py
   src/djmidi/gui/health_report_dialog.py
   src/djmidi/controller_sync.py
   src/djmidi/library/set_prep.py
