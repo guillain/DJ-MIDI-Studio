@@ -97,6 +97,7 @@ from djmidi import taxonomy, user_paths
 from djmidi.gui import help_texts
 from djmidi.gui.action_groups import action_section, chip
 from djmidi.gui.audio_preview import AudioPreviewBar
+from djmidi.gui.badges import CamelotBadgeDelegate
 from djmidi.gui.change_history_dialog import ChangeHistoryDialog
 from djmidi.gui.commands import (
     RenameFilesCommand,
@@ -1297,6 +1298,9 @@ class MusicLibraryView(QWidget):
         # never accepts drops.
         self.table.setDragEnabled(True)
         self.table.setDragDropMode(QAbstractItemView.DragDropMode.DragOnly)
+        # Camelot keys as coloured badges: harmonic neighbours look alike.
+        self._camelot_delegate = CamelotBadgeDelegate(self.table)
+        self.table.setItemDelegateForColumn(_COLUMN_INDEX["camelot"], self._camelot_delegate)
         box.addWidget(self.table, 1)
 
         self.filter_edit.textChanged.connect(self._on_filter_changed)

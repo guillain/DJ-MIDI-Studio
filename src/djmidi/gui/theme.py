@@ -81,6 +81,13 @@ QTabWidget#navTop > QTabBar::tab:selected {
     color: $text;
     border-bottom-color: $accent;
 }
+/* One colour per main section: Dashboard, Controller (the accent), Music. */
+QTabWidget#navTop[section="dashboard"] > QTabBar::tab:selected {
+    border-bottom-color: $title;
+}
+QTabWidget#navTop[section="music"] > QTabBar::tab:selected {
+    border-bottom-color: $accent2;
+}
 QTabWidget#navTop > QTabBar::tab:hover:!selected {
     border-bottom-color: $panel_border;
 }
@@ -93,7 +100,7 @@ QTabWidget#navSub > QTabBar::tab {
 }
 QTabWidget#navSub > QTabBar::tab:selected {
     color: $text;
-    border-bottom-color: $accent2;
+    border-bottom-color: $accent_soft;
 }
 QTabWidget#navPills > QTabBar::tab {
     border-radius: 11px;
@@ -118,13 +125,14 @@ QGroupBox::title {
     color: $title;
     background: $window_bg;
 }
+/* Every button has the pill look of the grouped actions (UX review). */
 QPushButton {
     background: $button_bg;
     color: $button_text;
     border: 1px solid $button_border;
-    border-radius: 6px;
-    padding: 7px 11px;
-    font-weight: 600;
+    border-radius: 12px;
+    padding: 4px 12px;
+    font-weight: 500;
 }
 QPushButton:hover {
     background: $button_hover_bg;
@@ -135,6 +143,7 @@ QPushButton:hover {
    off (issue #19, visible on macOS). */
 QPushButton[compact="true"] {
     padding: 0px;
+    border-radius: 12px;
 }
 QPushButton[compact="true"]::menu-indicator {
     image: none;

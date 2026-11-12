@@ -431,6 +431,7 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
             "controller", controller_pair, self.tr("By Controller"), by_tabs
         )
         self._tab_indexes["library"] = self.left_tabs.add_page("library", self.music_library_view, self.tr("Music"))
+        self.left_tabs.set_sections(["dashboard", "controller", "music"])
         self.left_tabs.setCurrentIndex(self._tab_indexes["intro"])
         self.edit_panel = EditPanel(
             self.undo_stack,

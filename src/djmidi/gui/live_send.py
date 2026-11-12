@@ -194,7 +194,7 @@ class LiveSendControl(QWidget):
             self._toggle_button.setStyleSheet(
                 "QPushButton {"
                 " background: #c0304a; color: #ffffff; font-weight: bold;"
-                " border: 2px solid #ff5577; border-radius: 5px; padding: 4px 10px;"
+                " border: 2px solid #ff5577; border-radius: 12px; padding: 4px 12px;"
                 " }"
             )
         else:
@@ -203,7 +203,7 @@ class LiveSendControl(QWidget):
             self._toggle_button.setStyleSheet(
                 "QPushButton {"
                 f" background: {c['header_bg']}; color: {c['hint_text']};"
-                f" border: 1px solid {c['field_border']}; border-radius: 5px; padding: 4px 10px;"
+                f" border: 1px solid {c['field_border']}; border-radius: 12px; padding: 4px 12px;"
                 " }"
             )
 
