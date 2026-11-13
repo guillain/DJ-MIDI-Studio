@@ -44,7 +44,11 @@ from djmidi.gui.action_groups import FlowLayout
 from djmidi.gui.file_reveal import reveal_in_file_manager
 from djmidi.gui.help_button import help_button
 from djmidi.gui.translation import translator
-from djmidi.gui.window_size import fit_to_screen, keep_wrapped_text_visible
+from djmidi.gui.window_size import (
+    fit_to_screen,
+    keep_wrapped_text_visible,
+    usable_minimum,
+)
 from djmidi.library.health import (
     ISSUE_KINDS,
     ISSUE_LABELS,
@@ -154,6 +158,7 @@ class HealthReportDialog(QDialog):
 
         self.model = HealthIssueModel(self)
         self.table = QTableView()
+        usable_minimum(self.table, 240, 120)  # a few rows even in the smallest window
         self.table.setModel(self.model)
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)

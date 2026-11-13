@@ -124,6 +124,7 @@ from djmidi.gui.window_size import (
     fit_to_screen,
     keep_tab_titles_whole,
     keep_wrapped_text_visible,
+    usable_minimum,
 )
 from djmidi.library import (
     change_log,
@@ -691,6 +692,7 @@ class RelinkDialog(QDialog):
         intro.setWordWrap(True)
         box.addWidget(intro)
         self.tree = QTreeWidget()
+        usable_minimum(self.tree, 240, 120)  # a few rows even in the smallest window
         self.tree.setHeaderLabels([self.tr("Missing track"), self.tr("Relink to"), self.tr("Match")])
         self.tree.setRootIsDecorated(False)
         self._combos: dict[int, QComboBox] = {}

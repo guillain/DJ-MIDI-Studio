@@ -43,7 +43,11 @@ from djmidi.gui.action_groups import FlowLayout
 from djmidi.gui.file_reveal import reveal_in_file_manager
 from djmidi.gui.help_button import help_button
 from djmidi.gui.translation import translator
-from djmidi.gui.window_size import fit_to_screen, keep_wrapped_text_visible
+from djmidi.gui.window_size import (
+    fit_to_screen,
+    keep_wrapped_text_visible,
+    usable_minimum,
+)
 from djmidi.library.duplicates import (
     TIER_EXACT,
     TIER_METADATA,
@@ -147,6 +151,7 @@ class DuplicatesDialog(QDialog):
         box.addLayout(header)
 
         self.tree = QTreeWidget()
+        usable_minimum(self.tree, 240, 120)  # a few rows even in the smallest window
         self.tree.setHeaderLabels([QCoreApplication.translate("DuplicatesDialog", column) for column in COLUMNS])
         self.tree.header().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         for column in range(1, len(COLUMNS)):

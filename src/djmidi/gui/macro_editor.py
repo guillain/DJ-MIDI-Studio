@@ -58,7 +58,7 @@ from djmidi.gui.help_button import help_button
 from djmidi.gui.help_texts import MIDI_MACROS
 from djmidi.gui.macro_player import MacroPlayer
 from djmidi.gui.translation import translator
-from djmidi.gui.window_size import keep_wrapped_text_visible
+from djmidi.gui.window_size import keep_wrapped_text_visible, usable_minimum
 from djmidi.i18n import QT_TRANSLATE_NOOP
 from djmidi.midi_learn import LEARN_TIMEOUT_MS
 from djmidi.midi_macros import (
@@ -144,6 +144,7 @@ class MacroManagerDialog(QDialog):
 
         # Left: the macro list.
         self.macro_list = QListWidget()
+        usable_minimum(self.macro_list, 170, 120)  # a few rows even in the smallest window
         self.macro_list.setMinimumWidth(170)
         self.macro_list.currentRowChanged.connect(self._on_macro_selected)
         self.new_button = QPushButton(self.tr("New"))
@@ -254,6 +255,7 @@ class MacroManagerDialog(QDialog):
         self._side = 0
 
         self.table = QTableWidget(0, len(_COLUMNS) + 1)
+        usable_minimum(self.table, 440, 90)  # a few rows; the dialog must still fit 900x600
         self.table.setHorizontalHeaderLabels([self.tr(column) for column in _COLUMNS] + [self.tr(_FEATURE_HEADER)])
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)

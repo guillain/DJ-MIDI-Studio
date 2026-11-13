@@ -25,7 +25,11 @@ from djmidi import catalog
 from djmidi.gui import help_texts
 from djmidi.gui.help_button import help_button
 from djmidi.gui.translation import translator
-from djmidi.gui.window_size import fit_to_screen, keep_wrapped_text_visible
+from djmidi.gui.window_size import (
+    fit_to_screen,
+    keep_wrapped_text_visible,
+    usable_minimum,
+)
 from djmidi.mapping_diff import KIND_COUNTS, KIND_LABELS, KINDS, DiffEntry, MappingDiff
 
 ENTRY_ROLE = Qt.ItemDataRole.UserRole + 1
@@ -74,6 +78,7 @@ class MappingDiffDialog(QDialog):
         header_row.addWidget(help_button(self, *help_texts.MAPPING_DIFF))
 
         self.tree = QTreeWidget()
+        usable_minimum(self.tree, 240, 120)  # a few rows even in the smallest window
         self.tree.setHeaderLabels([self.tr("Physical control"), self.tr("Trigger"), self.tr("Change")])
         self.tree.setRootIsDecorated(True)
         self.tree.setUniformRowHeights(True)
