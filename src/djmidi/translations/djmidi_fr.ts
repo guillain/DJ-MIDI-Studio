@@ -481,10 +481,6 @@ Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-m
         <translation>{count} laissé(s) tel(s) quel(s) :</translation>
     </message>
     <message>
-        <source>… and {count} more</source>
-        <translation>… et {count} de plus</translation>
-    </message>
-    <message>
         <source>Tags</source>
         <translation>Tags</translation>
     </message>
@@ -583,6 +579,10 @@ Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-m
     <message>
         <source>Not revertible</source>
         <translation>Non annulable</translation>
+    </message>
+    <message>
+        <source>Reason</source>
+        <translation>Raison</translation>
     </message>
     <message>
         <source>file not found</source>
@@ -1583,6 +1583,14 @@ Ouvrir aussi ce fichier comme mapping en lecture seule (Par canal / Par platine 
         <translation>Lignes au Data1 invalide (entier de 0 à 127 attendu) : {rows}</translation>
     </message>
     <message>
+        <source>{count} problem(s) to fix in this draft:</source>
+        <translation>{count} problème(s) à corriger dans ce brouillon :</translation>
+    </message>
+    <message>
+        <source>Problem</source>
+        <translation>Problème</translation>
+    </message>
+    <message>
         <source>Cannot submit yet</source>
         <translation>Impossible de proposer pour l&apos;instant</translation>
     </message>
@@ -2245,16 +2253,20 @@ Il reste une étape manuelle : ajoutez &apos;{slug}&apos; au bloc d&apos;imports
         <translation>Déclencheur déjà utilisé</translation>
     </message>
     <message>
-        <source>{trigger} is already bound to:
-
-{listing}
-
-Reassign anyway? Both will fire on the same control.</source>
-        <translation>{trigger} est déjà associé à :
-
-{listing}
-
-Réaffecter quand même ? Les deux se déclencheront sur la même commande.</translation>
+        <source>{trigger} is already bound to:</source>
+        <translation>{trigger} est déjà assigné à :</translation>
+    </message>
+    <message>
+        <source>Binding</source>
+        <translation>Assignation</translation>
+    </message>
+    <message>
+        <source>Reassign anyway? Both will fire on the same control.</source>
+        <translation>Réassigner quand même ? Les deux se déclencheront sur la même commande.</translation>
+    </message>
+    <message>
+        <source>Reassign</source>
+        <translation>Réassigner</translation>
     </message>
     <message>
         <source>MIDI Learn → {trigger}</source>
@@ -5615,14 +5627,6 @@ Il liste vos morceaux, catégories et playlists -- jamais les fichiers audio -- 
         <translation>{added} fichier(s) seront ajoutés, {overwritten} fichier(s) existant(s) remplacé(s).</translation>
     </message>
     <message>
-        <source>... and {count} more</source>
-        <translation>... et {count} de plus</translation>
-    </message>
-    <message>
-        <source>Overwritten:</source>
-        <translation>Remplacés :</translation>
-    </message>
-    <message>
         <source>Files that are not in the backup are kept.</source>
         <translation>Les fichiers absents de la sauvegarde sont conservés.</translation>
     </message>
@@ -5633,6 +5637,10 @@ Il liste vos morceaux, catégories et playlists -- jamais les fichiers audio -- 
     <message>
         <source>Restore this backup over your current files?</source>
         <translation>Restaurer cette sauvegarde par-dessus vos fichiers actuels ?</translation>
+    </message>
+    <message>
+        <source>Overwritten file</source>
+        <translation>Fichier remplacé</translation>
     </message>
     <message>
         <source>Also restore the music library index (replaces the current one)</source>

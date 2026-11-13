@@ -11,7 +11,6 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QLineEdit,
-    QMessageBox,
     QPushButton,
     QSizePolicy,
     QTableWidget,
@@ -33,6 +32,7 @@ from djmidi.gui.commands import (
     SetGroupAttrCommand,
 )
 from djmidi.gui.help_button import help_row
+from djmidi.gui.list_dialog import confirm_list
 from djmidi.gui.mapping_group import MappingGroup
 from djmidi.gui.translation import translator
 from djmidi.midi_io import MidiEvent
@@ -806,17 +806,15 @@ class EditPanel(QWidget):
         return True
 
     def _ask_conflict(self, trigger: LearnedTrigger, lines: list[str]) -> bool:
-        listing = "\n".join(f"• {line}" for line in lines)
-        answer = QMessageBox.warning(
+        return confirm_list(
             self,
             self.tr("Trigger already used"),
-            self.tr("{trigger} is already bound to:\n\n{listing}\n\nReassign anyway? Both will fire on the same control.").format(
-                trigger=trigger.label(), listing=listing
-            ),
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-            QMessageBox.StandardButton.No,
+            self.tr("{trigger} is already bound to:").format(trigger=trigger.label()),
+            [self.tr("Binding")],
+            lines,
+            note=self.tr("Reassign anyway? Both will fire on the same control."),
+            accept_text=self.tr("Reassign"),
         )
-        return answer == QMessageBox.StandardButton.Yes
 
     def _learn_into_controls(self, controls: list[Control], trigger: LearnedTrigger) -> None:
         """One undo step: a macro of the existing SetAttrCommand per changed field."""

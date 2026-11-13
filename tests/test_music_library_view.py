@@ -580,7 +580,11 @@ def test_change_history_logs_tag_writes_and_reverts_after_reopen(library, monkey
     write_metadata(b, genre="Edited elsewhere")
     monkeypatch.setattr(QMessageBox, "question", lambda *a, **k: QMessageBox.StandardButton.Yes)
     warnings: list[str] = []
-    monkeypatch.setattr(QMessageBox, "warning", lambda _p, _t, text, *a, **k: warnings.append(text))
+    import djmidi.gui.change_history_dialog as history_mod
+
+    monkeypatch.setattr(
+        history_mod, "show_list", lambda _p, _t, _m, _h, rows: warnings.extend(cells[1] for cells, _tips in rows)
+    )
     dialog = view.show_change_history()
     assert dialog.entries.topLevelItemCount() == 1
     assert dialog.items.topLevelItemCount() == 2
@@ -589,7 +593,7 @@ def test_change_history_logs_tag_writes_and_reverts_after_reopen(library, monkey
     dialog.revert_button.click()
     assert read_metadata(a).genre == "Techno"
     assert read_metadata(b).genre == "Edited elsewhere"
-    assert warnings and "genre changed since" in warnings[0]
+    assert warnings and "genre changed since" in warnings[0]  # every failure, with its reason
     assert {row.path: row.metadata.genre for row in view.table_model.rows()}[a] == "Techno"
     assert dialog.entries.topLevelItemCount() == 2  # the revert is logged too
     assert view.show_change_history() is dialog

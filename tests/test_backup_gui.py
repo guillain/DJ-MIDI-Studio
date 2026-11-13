@@ -2,9 +2,10 @@
 
 import zipfile
 
-from PySide6.QtWidgets import QFileDialog, QMessageBox
+from PySide6.QtWidgets import QFileDialog, QLabel, QMessageBox
 
 from djmidi import backup, user_paths
+from djmidi.gui.list_dialog import ListDialog
 from djmidi.gui.main_window import MainWindow
 from djmidi.gui.preferences_dialog import PreferencesDialog
 from djmidi.plugins import PluginPreferences
@@ -86,12 +87,14 @@ def test_confirm_restore_lists_overwrites_and_offers_the_library(tmp_path, monke
     )
     shown = {}
 
-    def fake_exec(box):
-        shown["text"] = box.informativeText()
-        shown["check"] = box.checkBox().text() if box.checkBox() else None
+    def fake_exec(dialog):
+        shown["text"] = dialog.findChildren(QLabel)[-1].text() + "\n" + "\n".join(
+            dialog.table.topLevelItem(i).text(0) for i in range(dialog.table.topLevelItemCount())
+        )
+        shown["check"] = dialog.check.text() if dialog.check else None
         return 0
 
-    monkeypatch.setattr(QMessageBox, "exec", fake_exec)
+    monkeypatch.setattr(ListDialog, "exec", fake_exec)
     window = MainWindow()
     try:
         assert window._confirm_restore(plan) is None  # no button clicked = cancelled

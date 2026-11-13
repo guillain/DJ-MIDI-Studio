@@ -14,6 +14,7 @@ from collections.abc import Sequence
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
+    QCheckBox,
     QDialog,
     QDialogButtonBox,
     QHeaderView,
@@ -30,8 +31,9 @@ from djmidi.gui.window_size import (
     usable_minimum,
 )
 
-# A row: the visible cells, or (cells, tooltips) to show full texts on hover.
-Row = Sequence[str] | tuple[Sequence[str], Sequence[str]]
+# A row: one text (single column), the visible cells, or (cells, tooltips)
+# to show full texts on hover.
+Row = str | Sequence[str] | tuple[Sequence[str], Sequence[str]]
 
 # The first columns are sized to their content up to this width; the last
 # one takes the rest.
@@ -48,6 +50,8 @@ class ListDialog(QDialog):
         note: str = "",
         accept_text: str | None = None,
         parent: QWidget | None = None,
+        check_text: str = "",
+        checked: bool = False,
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle(title)
@@ -67,6 +71,8 @@ class ListDialog(QDialog):
         self.table.setHeaderLabels(list(headers))
         self.table.setHeaderHidden(len(headers) == 1)
         for row in rows:
+            if isinstance(row, str):  # a single-column row
+                row = (row,)
             cells, tips = row if _has_tooltips(row) else (row, row)
             item = QTreeWidgetItem([str(cell) for cell in cells])
             for column, tip in enumerate(tips):
@@ -79,11 +85,20 @@ class ListDialog(QDialog):
             self.table.resizeColumnToContents(column)
             header.resizeSection(column, min(header.sectionSize(column) + 12, _MAX_COLUMN_WIDTH))
         box.addWidget(self.table, 1)
+        # Nothing to list: the message and note say it all.
+        self.table.setVisible(bool(rows))
 
         if note:
             note_label = QLabel(note)
             note_label.setWordWrap(True)
             box.addWidget(note_label)
+
+        # An option that goes with the action (e.g. also restore the library).
+        self.check = None
+        if check_text:
+            self.check = QCheckBox(check_text)
+            self.check.setChecked(checked)
+            box.addWidget(self.check)
 
         if accept_text is None:
             buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)

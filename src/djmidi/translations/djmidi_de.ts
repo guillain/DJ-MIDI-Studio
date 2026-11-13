@@ -581,8 +581,8 @@ Seitdem erneut geänderte Dateien bleiben unberührt. Das Zurücknehmen wird hie
         <translation>{count} unberührt gelassen:</translation>
     </message>
     <message>
-        <source>… and {count} more</source>
-        <translation>… und {count} weitere</translation>
+        <source>Reason</source>
+        <translation>Grund</translation>
     </message>
     <message>
         <source>file not found</source>
@@ -1583,6 +1583,14 @@ Dieselbe Datei auch als bearbeitbares Mapping öffnen (Nach Kanal / Nach Deck / 
         <translation>Zeilen mit ungültigem Data1 (muss eine Ganzzahl 0-127 sein): {rows}</translation>
     </message>
     <message>
+        <source>{count} problem(s) to fix in this draft:</source>
+        <translation>{count} Problem(e) in diesem Entwurf zu beheben:</translation>
+    </message>
+    <message>
+        <source>Problem</source>
+        <translation>Problem</translation>
+    </message>
+    <message>
         <source>Cannot submit yet</source>
         <translation>Senden noch nicht möglich</translation>
     </message>
@@ -2245,16 +2253,20 @@ Ein manueller Schritt bleibt: &apos;{slug}&apos; zum Import-Block in catalog/__i
         <translation>Trigger bereits verwendet</translation>
     </message>
     <message>
-        <source>{trigger} is already bound to:
-
-{listing}
-
-Reassign anyway? Both will fire on the same control.</source>
-        <translation>{trigger} ist bereits belegt mit:
-
-{listing}
-
-Trotzdem neu zuweisen? Beide lösen auf demselben Bedienelement aus.</translation>
+        <source>{trigger} is already bound to:</source>
+        <translation>{trigger} ist bereits belegt mit:</translation>
+    </message>
+    <message>
+        <source>Binding</source>
+        <translation>Belegung</translation>
+    </message>
+    <message>
+        <source>Reassign anyway? Both will fire on the same control.</source>
+        <translation>Trotzdem neu zuweisen? Beide werden auf demselben Bedienelement ausgelöst.</translation>
+    </message>
+    <message>
+        <source>Reassign</source>
+        <translation>Neu zuweisen</translation>
     </message>
     <message>
         <source>MIDI Learn → {trigger}</source>
@@ -5635,14 +5647,6 @@ Er listet Ihre Tracks, Kategorien und Playlists -- nie die Audiodateien --, kann
         <translation>{added} Datei(en) werden hinzugefügt, {overwritten} vorhandene Datei(en) überschrieben.</translation>
     </message>
     <message>
-        <source>... and {count} more</source>
-        <translation>... und {count} weitere</translation>
-    </message>
-    <message>
-        <source>Overwritten:</source>
-        <translation>Überschrieben:</translation>
-    </message>
-    <message>
         <source>Files that are not in the backup are kept.</source>
         <translation>Dateien, die nicht in der Sicherung sind, bleiben erhalten.</translation>
     </message>
@@ -5653,6 +5657,10 @@ Er listet Ihre Tracks, Kategorien und Playlists -- nie die Audiodateien --, kann
     <message>
         <source>Restore this backup over your current files?</source>
         <translation>Diese Sicherung über Ihre aktuellen Dateien wiederherstellen?</translation>
+    </message>
+    <message>
+        <source>Overwritten file</source>
+        <translation>Überschriebene Datei</translation>
     </message>
     <message>
         <source>Also restore the music library index (replaces the current one)</source>

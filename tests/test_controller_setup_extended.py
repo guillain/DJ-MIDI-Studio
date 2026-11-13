@@ -219,7 +219,7 @@ def test_on_check_conflicts_with_conflict(monkeypatch):
     view._devices = ["", ""]
 
     shown = {}
-    monkeypatch.setattr(mod.QMessageBox, "warning", lambda *a: shown.update(warned=True))
+    monkeypatch.setattr(mod, "show_list", lambda *a: shown.update(warned=True))
     view._on_check_conflicts_clicked()
     assert shown.get("warned")
 
