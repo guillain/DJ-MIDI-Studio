@@ -7712,12 +7712,20 @@ Seul l&apos;index de cette application est vidé -- aucun fichier n&apos;est tou
         <translation>Aucune playlist {software} ne liste les autres copies.</translation>
     </message>
     <message>
-        <source>{file}: {replaced} entry(ies) repointed, {removed} duplicate entry(ies) removed</source>
-        <translation>{file} : {replaced} entrée(s) redirigée(s), {removed} entrée(s) en double retirée(s)</translation>
-    </message>
-    <message>
         <source>Change these {software} files? Each one is backed up first.</source>
         <translation>Modifier ces fichiers {software} ? Chacun est d’abord sauvegardé.</translation>
+    </message>
+    <message>
+        <source>File</source>
+        <translation>Fichier</translation>
+    </message>
+    <message>
+        <source>Change</source>
+        <translation>Modification</translation>
+    </message>
+    <message>
+        <source>Change files</source>
+        <translation>Modifier les fichiers</translation>
     </message>
     <message>
         <source>{software} playlists now use {name}</source>
@@ -7734,6 +7742,10 @@ Seul l&apos;index de cette application est vidé -- aucun fichier n&apos;est tou
     <message>
         <source>Every copy of these groups is ticked -- untick at least one copy to keep in each:</source>
         <translation>Toutes les copies de ces groupes sont cochées -- décochez au moins une copie à garder dans chacun :</translation>
+    </message>
+    <message>
+        <source>Group</source>
+        <translation>Groupe</translation>
     </message>
     <message>
         <source>Moved {count} duplicate(s) to the Trash.</source>
@@ -7762,6 +7774,10 @@ Seul l&apos;index de cette application est vidé -- aucun fichier n&apos;est tou
     <message>
         <source>These files were left where they are:</source>
         <translation>Ces fichiers sont restés en place :</translation>
+    </message>
+    <message>
+        <source>Reason</source>
+        <translation>Raison</translation>
     </message>
     <message>
         <source>Change reverted on {count} file(s).</source>
@@ -7942,6 +7958,10 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>Write the estimated BPM/key into {count} track(s)? Only empty tags are filled; Undo writes them back empty.</source>
         <translation>Écrire le BPM/la tonalité estimés dans {count} morceau(x) ? Seuls les tags vides sont remplis ; Annuler les remet à vide.</translation>
+    </message>
+    <message>
+        <source>Tags written</source>
+        <translation>Tags écrits</translation>
     </message>
     <message>
         <source>Some files were not renamed</source>
@@ -8306,6 +8326,14 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>rekordbox XML…</source>
         <translation>XML rekordbox…</translation>
+    </message>
+    <message>
+        <source>{replaced} entry(ies) repointed, {removed} duplicate entry(ies) removed</source>
+        <translation>{replaced} entrée(s) redirigée(s), {removed} entrée(s) en double retirée(s)</translation>
+    </message>
+    <message>
+        <source>left alone, {reason}</source>
+        <translation>laissé tel quel, {reason}</translation>
     </message>
     <message>
         <source>rekordbox XML or device export (*.xml export.pdb)</source>

@@ -110,6 +110,7 @@ from djmidi.gui.empty_state import EmptyState
 from djmidi.gui.health_report_dialog import HealthReportDialog
 from djmidi.gui.help_button import help_button, help_row
 from djmidi.gui.library_stats_dialog import LibraryStatsDialog
+from djmidi.gui.list_dialog import confirm_list, show_list
 from djmidi.gui.organize_files_dialog import OrganizeFilesDialog
 from djmidi.gui.rename_files_dialog import RenameFilesDialog
 from djmidi.gui.set_preparation import (
@@ -163,9 +164,6 @@ _LOGGER = logging.getLogger(__name__)
 # The last "Rename files…" template, remembered in the library index.
 _RENAME_TEMPLATE_SETTING = "rename_template"
 
-# How many entries a confirmation lists before "… and N more".
-_LIST_LIMIT = 15
-
 
 def trash_file(path: str) -> bool | str:
     """Move `path` to the system Trash (issue #208); never deletes it.
@@ -178,12 +176,9 @@ def trash_file(path: str) -> bool | str:
     return file.fileName() or True
 
 
-def _bullet_list(lines) -> str:
-    items = list(lines)
-    text = "\n".join(f"• {line}" for line in items[:_LIST_LIMIT])
-    if len(items) > _LIST_LIMIT:
-        text += "\n" + QCoreApplication.translate("MusicLibraryView", "… and {count} more").format(count=len(items) - _LIST_LIMIT)
-    return text
+def _failure_rows(failures) -> list[tuple[tuple[str, str], tuple[str, str]]]:
+    """(path, reason) pairs as list-dialog rows: the file name, its full path on hover."""
+    return [((Path(path).name, str(reason)), (path, str(reason))) for path, reason in failures]
 
 
 def _group_name(group: duplicates.DuplicateGroup) -> str:
@@ -2111,20 +2106,33 @@ class MusicLibraryView(QWidget):
                 "\n".join([self.tr("No {software} playlist lists the other copies.").format(software=name), *skipped]),
             )
             return None
-        lines = [
-            self.tr("{file}: {replaced} entry(ies) repointed, {removed} duplicate entry(ies) removed").format(
-                file=change.path.name, replaced=change.replaced, removed=change.removed
+        rows = [
+            (
+                (
+                    change.path.name,
+                    self.tr("{replaced} entry(ies) repointed, {removed} duplicate entry(ies) removed").format(
+                        replaced=change.replaced, removed=change.removed
+                    ),
+                ),
+                (str(change.path), ""),
             )
             for change in plan.changes
         ]
-        answer = QMessageBox.question(
+        rows += [
+            (
+                (Path(path).name, self.tr("left alone, {reason}").format(reason=QCoreApplication.translate("DjPlaylists", reason))),
+                (path, ""),
+            )
+            for path, reason in plan.skipped.items()
+        ]
+        if not confirm_list(
             parent,
             title,
-            self.tr("Change these {software} files? Each one is backed up first.").format(software=name)
-            + "\n\n"
-            + _bullet_list([*lines, *skipped]),
-        )
-        if answer != QMessageBox.StandardButton.Yes:
+            self.tr("Change these {software} files? Each one is backed up first.").format(software=name),
+            [self.tr("File"), self.tr("Change")],
+            rows,
+            accept_text=self.tr("Change files"),
+        ):
             return None
         backup = dj_playlists.apply(plan, backup_root or user_paths.subfolder(user_paths.SNAPSHOTS))
         change_log.record_change(
@@ -2154,13 +2162,12 @@ class MusicLibraryView(QWidget):
         parent = dialog if dialog is not None else self
         plan = discard.plan_discard(dialog.groups if dialog is not None else [], paths)
         if plan.refused:
-            names = "\n".join(f"• {_group_name(group)}" for group in plan.refused[:_LIST_LIMIT])
-            QMessageBox.warning(
+            show_list(
                 parent,
                 self.tr("Move to Trash"),
-                self.tr("Every copy of these groups is ticked -- untick at least one copy to keep in each:")
-                + "\n\n"
-                + names,
+                self.tr("Every copy of these groups is ticked -- untick at least one copy to keep in each:"),
+                [self.tr("Group")],
+                [(_group_name(group),) for group in plan.refused],
             )
             return
         if not plan.discards:
@@ -2174,29 +2181,28 @@ class MusicLibraryView(QWidget):
         referenced = discard.playlists_referencing(self.db, result.moved)
         if referenced:
             names = sorted({name for playlist_names in referenced.values() for name in playlist_names})
-            answer = QMessageBox.question(
+            if confirm_list(
                 parent,
                 self.tr("Update playlists"),
-                self.tr("{count} discarded copy(ies) are in this app's playlists:").format(count=len(referenced))
-                + "\n\n"
-                + _bullet_list(names)
-                + "\n\n"
-                + self.tr(
+                self.tr("{count} discarded copy(ies) are in this app's playlists:").format(count=len(referenced)),
+                [self.tr("Playlist")],
+                [(name,) for name in names],
+                note=self.tr(
                     "Point those playlists at the kept copy instead? "
                     "(Serato, Traktor and Rekordbox files are not changed.)"
                 ),
-            )
-            if answer == QMessageBox.StandardButton.Yes:
+                accept_text=self.tr("Update playlists"),
+            ):
                 repointed = discard.repoint_playlists(self.db, result.moved)
                 message += self.tr(" Playlists now use the kept copy for {count} of them.").format(count=repointed)
         if result.failed:
             message += self.tr(" {count} could not be moved.").format(count=len(result.failed))
-            QMessageBox.warning(
+            show_list(
                 parent,
                 self.tr("Move to Trash"),
-                self.tr("These files were left where they are:")
-                + "\n\n"
-                + _bullet_list(f"{path}: {reason}" for path, reason in result.failed),
+                self.tr("These files were left where they are:"),
+                [self.tr("File"), self.tr("Reason")],
+                _failure_rows(result.failed),
             )
         if dialog is not None:
             dialog.remove_paths([path for path, _kept in result.moved])
@@ -2896,15 +2902,14 @@ class MusicLibraryView(QWidget):
             )
         if command.failures:
             _LOGGER.warning("Tag write failed for %d file(s): %s", len(command.failures), command.failures)
-            details = "\n".join(f"{Path(path).name}: {error}" for path, error in list(command.failures.items())[:20])
-            QMessageBox.warning(
+            show_list(
                 self,
                 self.tr("Some tags could not be written"),
                 self.tr("{written} track(s) written, {failed} failed:").format(
                     written=len(command.written), failed=len(command.failures)
-                )
-                + "\n\n"
-                + details,
+                ),
+                [self.tr("File"), self.tr("Reason")],
+                _failure_rows(command.failures.items()),
             )
         return len(command.written)
 
@@ -2912,21 +2917,24 @@ class MusicLibraryView(QWidget):
         changes = workspace.analysis_tag_changes(self._writable_selection())
         if not changes:
             return
-        lines = [
-            f"{Path(path).name}: " + ", ".join(f"{_field_label(name)} {_field_text(name, value)}" for name, value in new.items())
+        rows = [
+            (
+                (Path(path).name, ", ".join(f"{_field_label(name)} {_field_text(name, value)}" for name, value in new.items())),
+                (path, ""),
+            )
             for path, (_old, new) in changes.items()
         ]
-        answer = QMessageBox.question(
+        if confirm_list(
             self,
             self.tr("Apply analysis suggestions"),
             self.tr(
                 "Write the estimated BPM/key into {count} track(s)? Only empty tags are filled; "
                 "Undo writes them back empty."
-            ).format(count=len(changes))
-            + "\n\n"
-            + _bullet_list(lines),
-        )
-        if answer == QMessageBox.StandardButton.Yes:
+            ).format(count=len(changes)),
+            [self.tr("Track"), self.tr("Tags written")],
+            rows,
+            accept_text=self.tr("Write tags"),
+        ):
             self.apply_analysis_suggestions()
 
     def apply_analysis_suggestions(self) -> int:
@@ -2971,14 +2979,14 @@ class MusicLibraryView(QWidget):
         self.undo_stack.push(command)
         if command.failures:
             _LOGGER.warning("Rename failed for %d file(s): %s", len(command.failures), command.failures)
-            QMessageBox.warning(
+            show_list(
                 self,
                 self.tr("Some files were not renamed"),
                 self.tr("{renamed} file(s) renamed, {failed} left as they were:").format(
                     renamed=len(command.renamed), failed=len(command.failures)
-                )
-                + "\n\n"
-                + _bullet_list(f"{Path(path).name}: {reason}" for path, reason in command.failures),
+                ),
+                [self.tr("File"), self.tr("Reason")],
+                _failure_rows(command.failures),
             )
         return command.renamed
 
@@ -3055,14 +3063,14 @@ class MusicLibraryView(QWidget):
         self.undo_stack.push(command)
         if command.failures:
             _LOGGER.warning("Organize failed for %d file(s): %s", len(command.failures), command.failures)
-            QMessageBox.warning(
+            show_list(
                 self,
                 self.tr("Some files were not moved"),
                 self.tr("{moved} file(s) moved, {failed} left as they were:").format(
                     moved=len(command.renamed), failed=len(command.failures)
-                )
-                + "\n\n"
-                + _bullet_list(f"{Path(path).name}: {reason}" for path, reason in command.failures),
+                ),
+                [self.tr("File"), self.tr("Reason")],
+                _failure_rows(command.failures),
             )
         return command.renamed
 

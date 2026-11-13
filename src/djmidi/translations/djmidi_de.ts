@@ -7712,12 +7712,20 @@ Nur der Index dieser App wird geleert -- keine Datei wird angerührt.</translati
         <translation>Keine {software}-Playlist enthält die anderen Kopien.</translation>
     </message>
     <message>
-        <source>{file}: {replaced} entry(ies) repointed, {removed} duplicate entry(ies) removed</source>
-        <translation>{file}: {replaced} Eintrag/Einträge umgeleitet, {removed} doppelte(r) Eintrag/Einträge entfernt</translation>
-    </message>
-    <message>
         <source>Change these {software} files? Each one is backed up first.</source>
         <translation>Diese {software}-Dateien ändern? Jede wird zuerst gesichert.</translation>
+    </message>
+    <message>
+        <source>File</source>
+        <translation>Datei</translation>
+    </message>
+    <message>
+        <source>Change</source>
+        <translation>Änderung</translation>
+    </message>
+    <message>
+        <source>Change files</source>
+        <translation>Dateien ändern</translation>
     </message>
     <message>
         <source>{software} playlists now use {name}</source>
@@ -7734,6 +7742,10 @@ Nur der Index dieser App wird geleert -- keine Datei wird angerührt.</translati
     <message>
         <source>Every copy of these groups is ticked -- untick at least one copy to keep in each:</source>
         <translation>Jede Kopie dieser Gruppen ist angehakt -- nehmen Sie in jeder bei mindestens einer zu behaltenden Kopie den Haken heraus:</translation>
+    </message>
+    <message>
+        <source>Group</source>
+        <translation>Gruppe</translation>
     </message>
     <message>
         <source>Moved {count} duplicate(s) to the Trash.</source>
@@ -7762,6 +7774,10 @@ Nur der Index dieser App wird geleert -- keine Datei wird angerührt.</translati
     <message>
         <source>These files were left where they are:</source>
         <translation>Diese Dateien wurden an ihrem Platz gelassen:</translation>
+    </message>
+    <message>
+        <source>Reason</source>
+        <translation>Grund</translation>
     </message>
     <message>
         <source>Change reverted on {count} file(s).</source>
@@ -7942,6 +7958,10 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     <message>
         <source>Write the estimated BPM/key into {count} track(s)? Only empty tags are filled; Undo writes them back empty.</source>
         <translation>Die geschätzten BPM/Tonarten in {count} Track(s) schreiben? Nur leere Tags werden gefüllt; Rückgängig schreibt sie wieder leer.</translation>
+    </message>
+    <message>
+        <source>Tags written</source>
+        <translation>Geschriebene Tags</translation>
     </message>
     <message>
         <source>Some files were not renamed</source>
@@ -8306,6 +8326,14 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     <message>
         <source>rekordbox XML…</source>
         <translation>rekordbox-XML…</translation>
+    </message>
+    <message>
+        <source>{replaced} entry(ies) repointed, {removed} duplicate entry(ies) removed</source>
+        <translation>{replaced} Eintrag/Einträge umgeleitet, {removed} doppelte(r) Eintrag/Einträge entfernt</translation>
+    </message>
+    <message>
+        <source>left alone, {reason}</source>
+        <translation>unverändert, {reason}</translation>
     </message>
     <message>
         <source>rekordbox XML or device export (*.xml export.pdb)</source>

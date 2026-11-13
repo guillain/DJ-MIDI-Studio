@@ -112,10 +112,15 @@ def test_the_music_library_refuses_while_running_then_previews_backs_up_and_logs
     running = lambda: ["Serato DJ Pro"]
     assert view.repoint_dj_playlists(kept, [dropped], djp.SERATO, str(crates), processes=running) is None
     assert "Serato DJ Pro is running" in warnings[0] and not questions
+    import djmidi.gui.music_library_view as mlv
+
+    lists = []
+    monkeypatch.setattr(mlv, "confirm_list", lambda *args, **kwargs: lists.append(args) or True)
     backup = view.repoint_dj_playlists(
         kept, [dropped], djp.SERATO, str(crates), processes=list, backup_root=tmp_path / "b"
     )
-    assert "Friday.crate: 1 entry(ies) repointed" in questions[0]
+    [(cells, _tips)] = lists[0][4]
+    assert cells == ("Friday.crate", "1 entry(ies) repointed, 0 duplicate entry(ies) removed")
     assert (backup / "Friday.crate").exists()
     assert parse_crate(crates / "Friday.crate")[0].endswith("music/a.mp3")
     assert view.db.list_changes()[0].kind == "dj-playlists"
