@@ -423,6 +423,17 @@ def _sync_set_editor():
     return SyncSetEditorDialog(ControllerSyncSet("DDJ-XP2", "Out", (SyncMessage("Note On", 1, 11, 127),)))
 
 
+
+def _trash_confirm():
+    from djmidi.gui.trash_confirm_dialog import TrashConfirmDialog
+
+    folder = "/Users/someone/Music/Collection/Some Artist/A rather long album name (Deluxe Edition)"
+    return TrashConfirmDialog(
+        [(f"{folder}/{n:02} A long track title (Extended Mix) copy.mp3", f"{folder}/{n:02} A long track title (Extended Mix).mp3")
+         for n in range(69)]
+    )
+
+
 WINDOWS = {
     "first-run wizard": _wizard,
     "layer map": _layer_map,
@@ -462,6 +473,7 @@ WINDOWS = {
     "report a problem": _report_problem,
     "safe update": _safe_update,
     "sync set editor": _sync_set_editor,
+    "move to trash confirmation": _trash_confirm,
 }
 
 

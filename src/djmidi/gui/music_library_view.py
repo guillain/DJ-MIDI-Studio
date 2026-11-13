@@ -119,6 +119,7 @@ from djmidi.gui.set_preparation import (
 )
 from djmidi.gui.smart_export_dialog import SmartExportDialog
 from djmidi.gui.translation import translator
+from djmidi.gui.trash_confirm_dialog import confirm_trash
 from djmidi.gui.waveform_loader import WaveformLoader
 from djmidi.gui.window_size import (
     fit_to_screen,
@@ -2164,18 +2165,8 @@ class MusicLibraryView(QWidget):
             return
         if not plan.discards:
             return
-        answer = QMessageBox.question(
-            parent,
-            self.tr("Move to Trash"),
-            self.tr("Move {count} file(s) to the Trash?").format(count=len(plan.discards))
-            + "\n\n"
-            + _bullet_list(
-                path + "\n    " + self.tr("keeps {kept}").format(kept=kept) for path, kept in plan.discards
-            )
-            + "\n\n"
-            + self.tr("You can put them back from the Trash. They are flagged missing in this app's index."),
-        )
-        if answer != QMessageBox.StandardButton.Yes:
+        # Every copy with the copy kept, in a window that fits the screen.
+        if not confirm_trash(parent, plan.discards):
             return
         result = discard.move_to_trash(self.db, plan, trash_file)
         change_log.record_trash(self.db, result.moved, result.trash_paths)
