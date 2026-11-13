@@ -58,11 +58,11 @@ the selected provider (`gh` or `glab`); do not store tokens in the repository.
 
 For the GitHub release path, use `scripts/scm_release.sh prepare` on a
 dedicated branch. It bumps `pyproject.toml`, refreshes `uv.lock`, creates the
-release commit, pushes the branch, and opens a PR with generated notes. A
-`release/<version>` branch is supported; the generated `Prepare DJ MIDI Studio
-v<version>` PR title is also recognized for feature-branch workflows. Merging
-that PR automatically creates the version tag; the tag then starts the
-multi-OS build and draft release workflows.
+release commit, pushes the branch, and opens a PR with generated notes. Any
+branch works: merging any PR into `main` whose version has no tag yet creates
+the annotated tag `v<version>-<branch slug>` on the merge commit and builds and
+publishes the release. Do not push the tag yourself before the merge; a
+version that is already tagged (docs-only PR) releases nothing.
 
 ## Version and Changelog
 

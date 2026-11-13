@@ -12,19 +12,19 @@ permissions:
 jobs:
   tag-release:
     name: Tag merged release
+    # Every merged PR into main releases the version it brings: the tag
+    # `vX.Y.Z-<branch slug>` is created on the merge commit and the release is
+    # built from it. A merge that keeps an already released version (docs only,
+    # no bump) has nothing new to release and stops here.
     if: >-
       github.event.pull_request.merged == true &&
-      (
-        startsWith(github.event.pull_request.head.ref, 'release/') ||
-        startsWith(github.event.pull_request.title, 'Prepare DJ MIDI Studio v')
-      ) &&
       github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
       - name: Checkout merged main
         uses: actions/checkout@v5
         with:
-          ref: main
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
           fetch-depth: 0
 
       - name: Read and validate project version
@@ -43,25 +43,30 @@ jobs:
         id: tag
         env:
           VERSION: ${{ steps.version.outputs.version }}
-          TAG: ${{ steps.version.outputs.tag }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
         shell: bash
         run: |
-          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
-            echo "Tag $TAG already exists; nothing to do."
-          else
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git tag -a "$TAG" -m "Release $TAG"
-            git push origin "$TAG"
+          existing="$(git tag -l "v$VERSION" "v$VERSION-*" | head -n 1)"
+          if [[ -n "$existing" ]]; then
+            echo "Version $VERSION is already released as $existing; nothing to release."
+            echo "tag=" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
-          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          echo "Tag $TAG is ready for the reusable release workflow."
+          slug="$(printf '%s' "${HEAD_REF##*/}" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9-' '-' | sed -E 's/-+/-/g; s/^-//; s/-$//')"
+          tag="v$VERSION${slug:+-$slug}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$tag" -m "Release $tag"
+          git push origin "$tag"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "Tag $tag created on the merge commit."
     outputs:
       tag: ${{ steps.tag.outputs.tag }}
 
   build-and-publish:
     name: Build and publish release assets
     needs: tag-release
+    if: needs.tag-release.outputs.tag != ''
     uses: ./.github/workflows/draft-release.yml
     with:
       tag_name: ${{ needs.tag-release.outputs.tag }}
