@@ -68,6 +68,11 @@ QTabBar::tab:selected {
 }
 /* Main window navigation (gui/nav_tabs.py): the main tabs are big and
    underlined, the sub-tabs smaller and underlined, the By… views pills. */
+/* The bars themselves, on the window background (nav_tabs.py also turns off
+   the native base macOS paints as a grey band). */
+QTabWidget#navTop > QTabBar, QTabWidget#navSub > QTabBar, QTabWidget#navPills > QTabBar {
+    background: $window_bg;
+}
 QTabWidget#navTop > QTabBar::tab {
     background: transparent;
     border: none;

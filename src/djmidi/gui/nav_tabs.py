@@ -46,6 +46,9 @@ class NavTabs(QWidget):
     def _tabs(self) -> QTabWidget:
         tabs = QTabWidget()
         tabs.setDocumentMode(True)
+        # No native base: macOS paints a grey gradient band under document-mode
+        # tabs, out of place on the light theme (theme.py styles the bar).
+        tabs.tabBar().setDrawBase(False)
         keep_tab_titles_whole(tabs)
         tabs.currentChanged.connect(self._on_changed)
         return tabs
