@@ -217,7 +217,7 @@ It builds artifacts on a matrix:
 
 - `ubuntu-latest`
 - `macos-latest` (Apple Silicon, `…-macos.zip`)
-- `macos-15-intel` (Intel, `…-macos-intel.zip`; Qt 6.11 needs macOS 13+, so older Macs are not supported)
+- `macos-15-intel` (Intel, `…-macos-intel.zip`; Qt 6.11 needs macOS 13+, so older Macs are not supported; built without the `analysis` extra because llvmlite has no Intel macOS wheel for Python 3.14)
 - `windows-latest`
 
 and uploads:

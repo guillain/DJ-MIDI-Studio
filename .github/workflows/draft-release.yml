@@ -116,7 +116,9 @@ jobs:
 
       - name: Install dependencies
         # The 'analysis' extra (librosa): BPM/key estimation ships in the executables.
-        run: uv sync --group dev --extra analysis
+        # librosa's llvmlite has no Intel macOS wheel for Python 3.14: the
+        # Intel app ships without BPM/key estimation (optional extra).
+        run: uv sync --group dev ${{ matrix.os != 'macos-15-intel' && '--extra analysis' || '' }}
 
       # macOS signing/notarization (issue #262, docs/developer/cicd/macos-signing.md).
       # Every secret below is optional: with none configured, each step prints
@@ -149,7 +151,7 @@ jobs:
         shell: bash
         env:
           QT_QPA_PLATFORM: ${{ runner.os == 'Linux' && 'offscreen' || '' }}
-        run: uv run python scripts/smoke_test_executable.py --os "$(echo '${{ runner.os }}' | tr '[:upper:]' '[:lower:]' | sed 's/macos/macos/; s/windows/windows/; s/linux/linux/')" --require-analysis
+        run: uv run python scripts/smoke_test_executable.py --os "$(echo '${{ runner.os }}' | tr '[:upper:]' '[:lower:]' | sed 's/macos/macos/; s/windows/windows/; s/linux/linux/')" ${{ matrix.os != 'macos-15-intel' && '--require-analysis' || '' }}
 
       - name: Build wheel + sdist
         run: uv build
