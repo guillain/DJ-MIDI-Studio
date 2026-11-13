@@ -342,7 +342,9 @@ Trash…`:
 
 - At least one copy of every group must stay: if you tick every file of a
   group, nothing is moved and the window tells you which group to fix.
-- A confirmation lists each file to discard and the copy kept in its place.
+- A confirmation window lists **every** file to discard, the copy kept in its
+  place and its folder (hover a row for the full paths); resize it to see
+  more. Nothing moves unless you click `Move to Trash` (`Cancel` is the default).
 - Files go to the system **Trash** — never deleted outright — so you can put
   them back from there. They show as missing in the library afterwards.
 - If one of this app's playlists lists a discarded copy, you are asked
