@@ -83,7 +83,9 @@ fixed file path; use `tmp_path`.
   `## Table of Contents`, content, `## Related` / `## In this section`); `tests/test_docs.py` enforces it and every
   relative link. Screenshots come from `scripts/capture_docs_screenshots.py` (throwaway preferences/library).
 - **Delivery** (maintainer's workflow): branch → `feat:` (code + tests + translations) → `docs:` →
-  `release: prepare vX.Y.Z` (`uv version` + `uv lock`) → annotated tag `vX.Y.Z-<slug>` pushed on its own → PR.
+  `release: prepare vX.Y.Z` (`uv version` + `uv lock`) → PR. No tag by hand: on merge,
+  `tag-release-on-merge.yml` tags the merge commit `vX.Y.Z-<branch slug>` and builds/publishes the release (a version
+  already tagged — docs-only merge — releases nothing).
   Docs-only changes get no bump or tag. Merge only with the maintainer's OK.
 - **Verify in the app**, not only in tests, for anything visual: render the real `MainWindow`/dialog offscreen to
   a PNG and look at it.

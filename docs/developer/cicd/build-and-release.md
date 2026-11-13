@@ -204,8 +204,9 @@ execution.
 Additional release workflow: `.github/workflows/draft-release.yml` (tag-triggered published release with attached artifacts).
 
 Merge-to-release workflow: `.github/workflows/tag-release-on-merge.yml`
-(release PR merge → annotated tag → reusable artifact build → published
-release). The direct workflow call is intentional: tags pushed by
+(every merged PR into `main` → annotated tag `vX.Y.Z-<branch slug>` on the
+merge commit → reusable artifact build → published release). A merge whose
+version is already tagged (a docs-only PR, no bump) releases nothing. The direct workflow call is intentional: tags pushed by
 `GITHUB_TOKEN` do not recursively trigger another workflow.
 
 For recovery, run `Draft Release` manually with an existing tag such as
