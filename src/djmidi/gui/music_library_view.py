@@ -120,7 +120,11 @@ from djmidi.gui.set_preparation import (
 from djmidi.gui.smart_export_dialog import SmartExportDialog
 from djmidi.gui.translation import translator
 from djmidi.gui.waveform_loader import WaveformLoader
-from djmidi.gui.window_size import keep_tab_titles_whole, keep_wrapped_text_visible
+from djmidi.gui.window_size import (
+    fit_to_screen,
+    keep_tab_titles_whole,
+    keep_wrapped_text_visible,
+)
 from djmidi.library import (
     change_log,
     discard,
@@ -369,6 +373,7 @@ class BulkTagDialog(QDialog):
         self.buttons.rejected.connect(self.reject)
         box.addWidget(self.buttons)
         self._update_ok()
+        keep_wrapped_text_visible(self)
 
     def _update_ok(self, *_args: object) -> None:
         self.buttons.button(QDialogButtonBox.StandardButton.Ok).setEnabled(bool(self.checked_fields()))
@@ -440,6 +445,7 @@ class MixPathDialog(QDialog):
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
         box.addWidget(buttons)
+        keep_wrapped_text_visible(self)
 
     def options(self) -> workspace.MixPathOptions:
         length = self.length_spin.value()
@@ -595,7 +601,7 @@ class PlaylistCompareDialog(QDialog):
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle(self.tr("Compare playlists"))
-        self.resize(640, 460)
+        fit_to_screen(self, 640, 460)
         box = QVBoxLayout(self)
         shared = len(comparison.in_both)
         if comparison.identical:
@@ -618,6 +624,7 @@ class PlaylistCompareDialog(QDialog):
         self.summary_label.setWordWrap(True)
         box.addWidget(self.summary_label)
         self.tabs = QTabWidget()
+        keep_tab_titles_whole(self.tabs, scroll=False)
         self.only_app_list = self._add_tab(
             self.tr("Only in app ({count})").format(count=len(comparison.only_in_app)),
             [f"#{t.app_position}  {label_for(t.path)}" for t in comparison.only_in_app],
@@ -647,6 +654,7 @@ class PlaylistCompareDialog(QDialog):
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
         buttons.rejected.connect(self.reject)
         box.addWidget(buttons)
+        keep_wrapped_text_visible(self)
 
     def _add_tab(self, title: str, lines: list[str], tracks) -> QListWidget:
         widget = QListWidget()
@@ -670,7 +678,7 @@ class RelinkDialog(QDialog):
     def __init__(self, proposals: list[RelinkProposal], parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setWindowTitle(self.tr("Relink missing tracks"))
-        self.resize(900, 420)
+        fit_to_screen(self, 900, 420)
         self._proposals = proposals
         box = QVBoxLayout(self)
         intro = QLabel(
@@ -719,6 +727,7 @@ class RelinkDialog(QDialog):
         self.tree.itemChanged.connect(self._update_ok)
         box.addWidget(self.buttons)
         self._update_ok()
+        keep_wrapped_text_visible(self)
 
     def _update_ok(self, *_args: object) -> None:
         self.buttons.button(QDialogButtonBox.StandardButton.Ok).setEnabled(bool(self.choices()))

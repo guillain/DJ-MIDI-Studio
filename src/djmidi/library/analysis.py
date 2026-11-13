@@ -89,6 +89,38 @@ def analysis_available() -> bool:
     return librosa is not None
 
 
+def self_check() -> str | None:
+    """Run the whole analysis path once on a generated click track (write a
+    WAV, read it back, beat-track it, estimate its key): ``None`` when it
+    works, else what failed. The packaged app runs it with
+    ``--self-check-analysis`` (scripts/smoke_test_executable.py) to prove the
+    build really embeds librosa and its native parts (numba, libsndfile)."""
+    if librosa is None:
+        return "librosa is not installed"
+    import tempfile
+
+    import numpy as np
+    import soundfile
+
+    sr = 22050
+    t = np.arange(sr * 6) / sr
+    tone = 0.2 * np.sin(2 * np.pi * 440.0 * t)
+    clicks = np.zeros_like(t)
+    for start in range(0, len(t), sr // 2):  # 120 BPM
+        clicks[start : start + 200] = 0.8
+    with tempfile.TemporaryDirectory() as folder:
+        path = Path(folder) / "self-check.wav"
+        try:
+            soundfile.write(str(path), (tone + clicks).astype("float32"), sr)
+            bpm = estimate_bpm(path)
+            key = estimate_key(path)
+        except Exception as error:  # noqa: BLE001 - reported, not hidden
+            return f"{type(error).__name__}: {error}"
+    if not bpm or key is None:
+        return f"no estimate (bpm={bpm}, key={key})"
+    return None
+
+
 def estimate_bpm(path: str | Path) -> float | None:
     """Estimate BPM from audio via beat tracking. Requires the 'analysis' extra."""
     _require_librosa()

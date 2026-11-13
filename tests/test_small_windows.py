@@ -103,8 +103,8 @@ def _layout_problems(window: QWidget) -> list[str]:
             if widget.height() < needed - 2:
                 problems.append(f"clipped label {widget.text()[:40]!r}: {widget.height()} < {needed}")
         elif isinstance(widget, (QAbstractButton, QComboBox, QLineEdit, QAbstractSpinBox)):
-            if isinstance(widget, QLineEdit) and isinstance(widget.parentWidget(), QAbstractSpinBox):
-                continue  # a spin box's own editor; the spin box is checked
+            if isinstance(widget, QLineEdit) and isinstance(widget.parentWidget(), (QAbstractSpinBox, QComboBox)):
+                continue  # a spin box's or editable combo box's own editor; the box itself is checked
             hint = widget.minimumSizeHint()
             if widget.width() < hint.width() - 1 or widget.height() < hint.height() - 1:
                 name = widget.text() if hasattr(widget, "text") else widget.objectName()
@@ -323,6 +323,106 @@ def _smart_export():
     return SmartExportDialog(SmartExportOptions("/Users/dj/Music/Exports/Smart", True, True), 12)
 
 
+# --- dialogs added after the light-theme review (issue: Trash confirmation) --
+
+
+def _duplicates():
+    from djmidi.gui.duplicates_dialog import DuplicatesDialog
+    from djmidi.library.duplicates import TIER_EXACT, DuplicateGroup
+
+    groups = [DuplicateGroup(TIER_EXACT, f"k{n}", (f"/m/a{n}.mp3", f"/m/b{n}.mp3"), 10) for n in range(30)]
+    return DuplicatesDialog(groups, facts_reader=lambda path, roots: None)
+
+
+def _health():
+    from djmidi.gui.health_report_dialog import HealthReportDialog
+    from djmidi.library.health import ISSUE_EMPTY_TITLE, HealthIssue, HealthReport
+
+    return HealthReportDialog(HealthReport(40, tuple(HealthIssue(f"/m/{n}.mp3", ISSUE_EMPTY_TITLE) for n in range(40))))
+
+
+def _bulk_tags():
+    from djmidi.gui import music_library_view as mlv
+
+    return mlv.BulkTagDialog({"genre": "Tribe", "bpm": "140"}, 3)
+
+
+def _mix_path():
+    from djmidi.gui import music_library_view as mlv
+    from djmidi.library import workspace
+
+    return mlv.MixPathDialog(workspace.MixPathOptions(direction="down"), 3)
+
+
+def _playlist_compare():
+    from djmidi.gui import music_library_view as mlv
+    from djmidi.library.playlist_compare import compare_playlists
+
+    comparison = compare_playlists([f"/m/{n}.mp3" for n in range(20)], [f"/m/{n}.mp3" for n in range(10, 30)])
+    return mlv.PlaylistCompareDialog(comparison, "Warm-up", "Serato crate", lambda path: Path(path).name)
+
+
+def _relink():
+    from djmidi.gui import music_library_view as mlv
+    from djmidi.library.db import TrackRecord
+    from djmidi.library.relink import MATCH_EXACT, RelinkCandidate, RelinkProposal
+
+    return mlv.RelinkDialog(
+        [
+            RelinkProposal(TrackRecord(n, 1, f"/old/{n}.mp3", 1, 1.0, True),
+                           [RelinkCandidate(f"/new/{n}.mp3", 1, 1, 1.0, MATCH_EXACT)], True)
+            for n in range(20)
+        ]
+    )
+
+
+def _cheat_sheet():
+    from djmidi.gui.cheat_sheet_dialog import CheatSheetExportDialog
+
+    return CheatSheetExportDialog([("DDJ-XP2", 64), ("XDJ-XZ", 16)], {"DDJ-XP2"})
+
+
+def _submission():
+    from djmidi.gui.controller_submission_dialog import ControllerSubmissionDialog
+
+    return ControllerSubmissionDialog()
+
+
+def _macro_manager():
+    from djmidi.gui.macro_editor import MacroManagerDialog
+    from djmidi.midi_macros import MidiMacro
+
+    return MacroManagerDialog([MidiMacro("Lights", "IAC Driver Bus 1")], ["IAC Driver Bus 1", "DDJ-XP2"])
+
+
+def _mapping_diff():
+    from djmidi.gui.mapping_diff_dialog import MappingDiffDialog
+    from djmidi.mapping_diff import diff_configs
+    from djmidi.model import MidiConfig
+
+    return MappingDiffDialog(diff_configs(MidiConfig([]), MidiConfig([])), "a.xml", "b.xml")
+
+
+def _report_problem():
+    from djmidi.gui.report_problem_dialog import ReportProblemDialog
+    from djmidi.problem_report import ReportContext
+
+    return ReportProblemDialog(ReportContext(app_version="1.2.3"), open_url=lambda _url: True)
+
+
+def _safe_update():
+    from djmidi.gui.safe_update_dialog import SafeUpdateDialog
+
+    return SafeUpdateDialog("mapping.xml", "".join(f"-old {n}\n+new {n}\n" for n in range(200)))
+
+
+def _sync_set_editor():
+    from djmidi.controller_sync import ControllerSyncSet, SyncMessage
+    from djmidi.gui.sync_set_editor import SyncSetEditorDialog
+
+    return SyncSetEditorDialog(ControllerSyncSet("DDJ-XP2", "Out", (SyncMessage("Note On", 1, 11, 127),)))
+
+
 WINDOWS = {
     "first-run wizard": _wizard,
     "layer map": _layer_map,
@@ -349,6 +449,19 @@ WINDOWS = {
     "whats new": _whats_new,
     "macro steps from a controller": _feature_steps,
     "led probe": _led_probe,
+    "duplicates": _duplicates,
+    "health report": _health,
+    "bulk tags": _bulk_tags,
+    "mix path": _mix_path,
+    "playlist compare": _playlist_compare,
+    "relink": _relink,
+    "cheat sheet export": _cheat_sheet,
+    "controller submission": _submission,
+    "macro manager": _macro_manager,
+    "mapping diff": _mapping_diff,
+    "report a problem": _report_problem,
+    "safe update": _safe_update,
+    "sync set editor": _sync_set_editor,
 }
 
 

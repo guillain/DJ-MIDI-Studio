@@ -134,3 +134,26 @@ def test_run_logs_time_to_first_window_after_the_first_event_loop_turn(caplog):
     message = next(r.getMessage() for r in caplog.records if "time to first window" in r.getMessage())
     for phase in ("imports", "Qt application", "main window built", "window shown", "first window"):
         assert phase in message
+
+
+def test_self_check_analysis_reports_through_the_exit_status(monkeypatch, tmp_path):
+    """The build's smoke test runs ``--self-check-analysis`` in the packaged
+    app: 0 when BPM/key analysis works there, 3 otherwise; no window opens."""
+    from djmidi.gui import app as app_module
+    from djmidi.library import analysis
+
+    log = ["--log-file", str(tmp_path / "djmidi.log")]
+    monkeypatch.setattr(analysis, "self_check", lambda: None)
+    assert app_module.run(["--self-check-analysis", *log]) == 0
+    monkeypatch.setattr(analysis, "self_check", lambda: "librosa is not installed")
+    assert app_module.run(["--self-check-analysis", *log]) == 3
+
+
+def test_the_analysis_self_check_runs_end_to_end():
+    import pytest
+
+    from djmidi.library import analysis
+
+    if not analysis.analysis_available():
+        pytest.skip("the 'analysis' extra is not installed")
+    assert analysis.self_check() is None

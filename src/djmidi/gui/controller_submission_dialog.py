@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (
 )
 
 from djmidi.catalog.community import SubmissionMetadata
+from djmidi.gui.window_size import keep_wrapped_text_visible
 
 
 class ControllerSubmissionDialog(QDialog):
@@ -65,6 +66,7 @@ class ControllerSubmissionDialog(QDialog):
         layout.addWidget(intro)
         layout.addLayout(form)
         layout.addWidget(buttons)
+        keep_wrapped_text_visible(self)
 
     def metadata(self) -> SubmissionMetadata:
         return SubmissionMetadata(

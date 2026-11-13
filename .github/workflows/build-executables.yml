@@ -63,7 +63,8 @@ jobs:
         run: bash scripts/install_linux_gui_deps.sh
 
       - name: Install dependencies
-        run: uv sync --group dev
+        # The 'analysis' extra (librosa): BPM/key estimation ships in the executables.
+        run: uv sync --group dev --extra analysis
 
       - name: Build executable
         shell: bash
@@ -80,7 +81,7 @@ jobs:
         run: |
           os_name="$(echo '${{ runner.os }}' | tr '[:upper:]' '[:lower:]')"
           uv run python scripts/smoke_test_executable.py --os "$os_name" \
-            --screenshot "build/smoke-test-logs/startup-$os_name.png"
+            --screenshot "build/smoke-test-logs/startup-$os_name.png" --require-analysis
 
       - name: Upload startup screenshot
         if: always()
