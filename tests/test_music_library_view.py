@@ -613,6 +613,7 @@ def test_discard_is_logged_in_the_change_history(library, monkeypatch):
         return str(target)
 
     monkeypatch.setattr(mlv, "trash_file", fake_trash)
+    monkeypatch.setattr(mlv, "confirm_trash", lambda *a: True)
     monkeypatch.setattr(QMessageBox, "question", lambda *a, **k: QMessageBox.StandardButton.Yes)
     monkeypatch.setattr(QMessageBox, "information", lambda *a, **k: None)
     view.find_duplicates()
@@ -1011,6 +1012,8 @@ def test_discard_duplicates_moves_ticked_copies_to_trash(library, monkeypatch):
         QMessageBox, "question", lambda _p, _t, text, *a, **k: questions.append(text) or QMessageBox.StandardButton.Yes
     )
     monkeypatch.setattr(QMessageBox, "warning", lambda _p, _t, text, *a, **k: warnings.append(text))
+    confirmations: list[list[tuple[str, str]]] = []
+    monkeypatch.setattr(mlv, "confirm_trash", lambda _p, discards: confirmations.append(list(discards)) or True)
 
     view.find_duplicates()
     view.run_pending_job()
@@ -1023,14 +1026,14 @@ def test_discard_duplicates_moves_ticked_copies_to_trash(library, monkeypatch):
     assert dialog.trash_button.isEnabled()
     dialog.trash_button.click()
     assert warnings and "untick at least one" in warnings[0]
-    assert questions == []
+    assert questions == [] and confirmations == []
     assert original.is_file() and copy.is_file()
 
     dialog.set_checked(str(original), False)
     assert dialog.checked_paths() == [str(copy)]
     dialog.trash_button.click()
-    assert str(copy) in questions[0] and f"keeps {original}" in questions[0]
-    assert "Friday" in questions[1]
+    assert confirmations == [[(str(copy), str(original))]]
+    assert "Friday" in questions[0]
     assert not copy.exists() and (bin_dir / "a copy.mp3").is_file()
     assert original.is_file()
     assert view.db.playlist_paths(playlist) == [str(original), str(music / "misc" / "c.mp3")]
@@ -1049,15 +1052,16 @@ def test_discard_duplicates_cancelled_or_without_playlists(library, monkeypatch)
     view.run_pending_job()
     moved: list[str] = []
     monkeypatch.setattr(mlv, "trash_file", lambda path: moved.append(path) or Path(path).unlink() is None)
-    answers = [QMessageBox.StandardButton.No]
-    monkeypatch.setattr(QMessageBox, "question", lambda *a, **k: answers.pop(0))
+    answers = [False]
+    monkeypatch.setattr(mlv, "confirm_trash", lambda *a: answers.pop(0))
+    monkeypatch.setattr(QMessageBox, "question", lambda *a, **k: QMessageBox.StandardButton.No)
     view.find_duplicates()
     view.run_pending_job()
     view.duplicates_dialog.set_checked(str(copy), True)
     view.duplicates_dialog.trash_button.click()
     assert moved == [] and copy.is_file()
 
-    answers.append(QMessageBox.StandardButton.Yes)
+    answers.append(True)
     view.duplicates_dialog.trash_button.click()
     # No playlist lists the copy: no second question; the row stays, missing.
     assert moved == [str(copy)] and answers == []

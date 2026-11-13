@@ -7736,18 +7736,6 @@ Nur der Index dieser App wird geleert -- keine Datei wird angerührt.</translati
         <translation>Jede Kopie dieser Gruppen ist angehakt -- nehmen Sie in jeder bei mindestens einer zu behaltenden Kopie den Haken heraus:</translation>
     </message>
     <message>
-        <source>Move {count} file(s) to the Trash?</source>
-        <translation>{count} Datei(en) in den Papierkorb verschieben?</translation>
-    </message>
-    <message>
-        <source>keeps {kept}</source>
-        <translation>behält {kept}</translation>
-    </message>
-    <message>
-        <source>You can put them back from the Trash. They are flagged missing in this app&apos;s index.</source>
-        <translation>Sie können sie aus dem Papierkorb zurückholen. Im Index dieser App werden sie als fehlend markiert.</translation>
-    </message>
-    <message>
         <source>Moved {count} duplicate(s) to the Trash.</source>
         <translation>{count} Duplikat(e) in den Papierkorb verschoben.</translation>
     </message>
@@ -10101,6 +10089,33 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     <message>
         <source>Sent message {number} to {port}</source>
         <translation>Nachricht {number} an {port} gesendet</translation>
+    </message>
+</context>
+<context>
+    <name>TrashConfirmDialog</name>
+    <message>
+        <source>Move to Trash</source>
+        <translation>In den Papierkorb verschieben</translation>
+    </message>
+    <message>
+        <source>Move {count} file(s) to the Trash?</source>
+        <translation>{count} Datei(en) in den Papierkorb verschieben?</translation>
+    </message>
+    <message>
+        <source>File</source>
+        <translation>Datei</translation>
+    </message>
+    <message>
+        <source>Folder</source>
+        <translation>Ordner</translation>
+    </message>
+    <message>
+        <source>Copy kept instead</source>
+        <translation>Stattdessen behaltene Kopie</translation>
+    </message>
+    <message>
+        <source>You can put them back from the Trash. They are flagged missing in this app&apos;s index.</source>
+        <translation>Sie können sie aus dem Papierkorb zurückholen. Im Index dieser App werden sie als fehlend markiert.</translation>
     </message>
 </context>
 <context>

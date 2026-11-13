@@ -7736,18 +7736,6 @@ Seul l&apos;index de cette application est vidé -- aucun fichier n&apos;est tou
         <translation>Toutes les copies de ces groupes sont cochées -- décochez au moins une copie à garder dans chacun :</translation>
     </message>
     <message>
-        <source>Move {count} file(s) to the Trash?</source>
-        <translation>Mettre {count} fichier(s) à la corbeille ?</translation>
-    </message>
-    <message>
-        <source>keeps {kept}</source>
-        <translation>garde {kept}</translation>
-    </message>
-    <message>
-        <source>You can put them back from the Trash. They are flagged missing in this app&apos;s index.</source>
-        <translation>Vous pourrez les remettre depuis la corbeille. Ils sont marqués manquants dans l&apos;index de cette application.</translation>
-    </message>
-    <message>
         <source>Moved {count} duplicate(s) to the Trash.</source>
         <translation>{count} doublon(s) mis à la corbeille.</translation>
     </message>
@@ -10101,6 +10089,33 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>Sent message {number} to {port}</source>
         <translation>Message {number} envoyé vers {port}</translation>
+    </message>
+</context>
+<context>
+    <name>TrashConfirmDialog</name>
+    <message>
+        <source>Move to Trash</source>
+        <translation>Mettre à la corbeille</translation>
+    </message>
+    <message>
+        <source>Move {count} file(s) to the Trash?</source>
+        <translation>Mettre {count} fichier(s) à la corbeille ?</translation>
+    </message>
+    <message>
+        <source>File</source>
+        <translation>Fichier</translation>
+    </message>
+    <message>
+        <source>Folder</source>
+        <translation>Dossier</translation>
+    </message>
+    <message>
+        <source>Copy kept instead</source>
+        <translation>Copie conservée à la place</translation>
+    </message>
+    <message>
+        <source>You can put them back from the Trash. They are flagged missing in this app&apos;s index.</source>
+        <translation>Vous pourrez les remettre depuis la corbeille. Ils sont marqués manquants dans l&apos;index de cette application.</translation>
     </message>
 </context>
 <context>
