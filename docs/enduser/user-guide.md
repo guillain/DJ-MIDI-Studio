@@ -24,7 +24,9 @@
 2. Check it against the published `SHA-256` checksums.
 3. Unpack it and run `djmidi`. No Python or other install is needed.
 
-**macOS:** the app is not signed. On first launch, right-click it → `Open`
+**macOS:** take `…-macos.zip` on a Mac with an Apple chip (M1 or later) and
+`…-macos-intel.zip` on an Intel Mac (Apple menu → `About This Mac` shows which).
+Both need macOS 13 Ventura or later. The app is not signed. On first launch, right-click it → `Open`
 (or clear the quarantine flag) to get past Gatekeeper.
 
 The documentation and the controller manuals are bundled, so everything in

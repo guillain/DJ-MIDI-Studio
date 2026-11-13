@@ -89,6 +89,10 @@ fi
 
 if [[ -d "dist/executables/$OS_NAME" ]]; then
   ARCHIVE_BASE="djmidi-studio-${VERSION}-${OS_NAME}"
+  # Intel Macs get their own archive next to the Apple Silicon one.
+  if [[ "$OS_NAME" == "macos" && "$(uname -m)" == "x86_64" ]]; then
+    ARCHIVE_BASE="${ARCHIVE_BASE}-intel"
+  fi
   if [[ "$OS_NAME" == "macos" ]]; then
     APP_PATH="dist/executables/$OS_NAME/DJMidiStudio.app"
     if [[ ! -d "$APP_PATH" ]]; then
