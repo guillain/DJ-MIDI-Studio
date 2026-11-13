@@ -149,6 +149,7 @@ from djmidi.gui.output_state import (
     resolve_toggle_alias,
 )
 from djmidi.gui.pad_colour_panel import PadColourPanel
+from djmidi.gui.theme import signals as theme_signals
 from djmidi.model import MidiConfig
 
 _KEY_ROLE = layout_view._KEY_ROLE
@@ -312,11 +313,10 @@ class EmulatorLayoutView(DeferredRebuild, QWidget):
         self._show_layout = True
 
         self._scene = QGraphicsScene(self)
-        self._scene.setBackgroundBrush(layout_view._SCENE_BRUSH)
+        self._scene.setBackgroundBrush(layout_view.scene_colours()["background"])
         self._view = _ClickableEmulatorView(self._scene)
-        self._view.setStyleSheet(
-            "background: #0d1119; border: 1px solid #2b3b53; border-radius: 8px;"
-        )
+        self._view.setStyleSheet(layout_view.scene_view_stylesheet())
+        theme_signals.themeChanged.connect(self._restyle_canvas)
         self._view.value_provider = self._current_value
         self._view.controlPressed.connect(self._on_control_pressed)
         self._view.valueDragged.connect(self.set_value)
@@ -446,9 +446,13 @@ class EmulatorLayoutView(DeferredRebuild, QWidget):
         self.flash_key(key)
         self.controlPressed.emit(key)
 
+    def _restyle_canvas(self, *_args: object) -> None:
+        self._view.setStyleSheet(layout_view.scene_view_stylesheet())
+        self._rebuild()
+
     def _rebuild_scene(self) -> None:
         self._scene.clear()
-        self._scene.setBackgroundBrush(layout_view._SCENE_BRUSH)
+        self._scene.setBackgroundBrush(layout_view.scene_colours()["background"])
         if not self._controller:
             self._real_position_mode = False
             self._scene.setSceneRect(self._scene.itemsBoundingRect().adjusted(-10, -10, 10, 10))

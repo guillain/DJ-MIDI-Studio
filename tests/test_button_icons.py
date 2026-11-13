@@ -66,3 +66,23 @@ def test_line_icons_follow_a_theme_switch():
         assert _icon_colour(chipped) == colors("dark")["icon"]
     finally:
         apply_theme(app, "dark")
+
+
+def test_the_controller_canvas_is_light_on_the_light_theme():
+    from PySide6.QtWidgets import QApplication
+
+    from djmidi.gui.layout_view import ControllerLayoutView, scene_colours
+    from djmidi.gui.theme import apply_theme
+
+    app = QApplication.instance()
+    try:
+        apply_theme(app, "dark")
+        view = ControllerLayoutView()
+        assert view._scene.backgroundBrush().color().lightness() < 60
+        apply_theme(app, "light")
+        view._rebuild_scene()
+        assert view._scene.backgroundBrush().color() == scene_colours()["background"]
+        assert scene_colours()["background"].lightness() > 200
+        assert scene_colours()["background"].name() in view._view.styleSheet()
+    finally:
+        apply_theme(app, "dark")

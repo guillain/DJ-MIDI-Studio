@@ -26,6 +26,7 @@ from djmidi.gui import help_texts
 from djmidi.gui.controller_image_view import CONTROLLERS_DIR, image_for_controller
 from djmidi.gui.help_button import help_row
 from djmidi.gui.layout import CellKey
+from djmidi.gui.layout_view import scene_view_stylesheet
 from djmidi.gui.theme import colors as theme_colors
 from djmidi.gui.theme import current_mode as theme_current_mode
 from djmidi.gui.theme import signals as theme_signals
@@ -81,7 +82,6 @@ class IntroductionView(QWidget):
 
         self._loaded_file_label = QLabel(self.tr("Loaded file: none"))
         self._loaded_file_label.setWordWrap(True)
-        self._loaded_file_label.setFrameShape(QFrame.Shape.StyledPanel)
         # Bold, per-software-colored name (issue #121) -- a small always-
         # visible marker next to the loaded-file line, since the one-time
         # "which software?" dialog at File -> Open is otherwise the only
@@ -204,6 +204,9 @@ class IntroductionView(QWidget):
         theme_signals.themeChanged.connect(self._on_theme_changed)
 
     def _on_theme_changed(self, *_args: object) -> None:
+        for photo in self.findChildren(QLabel):
+            if photo.property("controllerPhoto"):
+                photo.setStyleSheet(scene_view_stylesheet())
         self.refresh_midi_availability(self._midi_port_names)
         if self._loaded_software_id is not None:
             self._restyle_software_badge()
@@ -467,7 +470,8 @@ class IntroductionView(QWidget):
         image.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         image_name = image_for_controller(controller)
         self._pending_card_images[image] = CONTROLLERS_DIR / image_name if image_name else None
-        image.setStyleSheet("background: #0a1019; border: 1px solid #30445f; border-radius: 8px;")
+        image.setProperty("controllerPhoto", True)
+        image.setStyleSheet(scene_view_stylesheet())
         layout.addWidget(image)
 
         details = QVBoxLayout()

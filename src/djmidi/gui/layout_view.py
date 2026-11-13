@@ -35,6 +35,7 @@ from djmidi.gui.layer_toggles import LayerToggles
 from djmidi.gui.layout import CellKey
 from djmidi.gui.live_send import LiveSendControl
 from djmidi.gui.theme import colors as theme_colors
+from djmidi.gui.theme import current_mode as current_theme_mode
 from djmidi.gui.theme import signals as theme_signals
 
 _KEY_ROLE = 0
@@ -353,10 +354,31 @@ Usage = dict[CellKey, dict[str, set[str]]]
 # (channel, event_type, control) trigger with it in the loaded config.
 LinkedCells = dict[CellKey, set[CellKey]]
 
-_SCENE_BRUSH = QBrush(QColor(13, 17, 25))
-_ZONE_FILL_BRUSH = QBrush(QColor(17, 23, 34))
-_ZONE_BORDER_PEN = QPen(QColor(44, 58, 80))
-_ZONE_TITLE_COLOR = QColor("#6fe7d0")
+_SCENE_BRUSH = QBrush(QColor(13, 17, 25))  # the dark theme's canvas (see scene_colours)
+
+
+def scene_colours() -> dict[str, QColor]:
+    """The canvas around the controller (background, section zones, plain
+    text) in the active theme: dark on dark, light on light. The cells and
+    the photo keep their own colours, as on the hardware."""
+    c = theme_colors()
+    if current_theme_mode() == "dark":
+        return {
+            "background": QColor(13, 17, 25), "zone_fill": QColor(17, 23, 34), "zone_border": QColor(44, 58, 80),
+            "zone_title": QColor("#6fe7d0"), "message": QColor("#c5d0df"), "frame": QColor(c["panel_border"]),
+        }
+    return {
+        "background": QColor("#e9eef5"), "zone_fill": QColor(c["panel_bg"]), "zone_border": QColor(c["panel_border"]),
+        "zone_title": QColor(c["title"]), "message": QColor(c["label_text"]), "frame": QColor(c["panel_border"]),
+    }
+
+
+def scene_view_stylesheet() -> str:
+    colours = scene_colours()
+    return (
+        f"background: {colours['background'].name()}; border: 1px solid {colours['frame'].name()};"
+        " border-radius: 8px;"
+    )
 _UNUSED_BRUSH = QBrush(QColor(29, 36, 49))
 _EMPTY_HALF_BRUSH = QBrush(QColor(20, 26, 37))
 _MULTI_DECK_BRUSH = QBrush(QColor(20, 91, 99))
@@ -693,11 +715,9 @@ class ControllerLayoutView(DeferredRebuild, QWidget):
         controls_layout.addWidget(help_button(self, *help_texts.MAPPING_VIEWS))
 
         self._scene = QGraphicsScene(self)
-        self._scene.setBackgroundBrush(_SCENE_BRUSH)
+        self._scene.setBackgroundBrush(scene_colours()["background"])
         self._view = _ClickableView(self._scene)
-        self._view.setStyleSheet(
-            "background: #0d1119; border: 1px solid #2b3b53; border-radius: 8px;"
-        )
+        self._view.setStyleSheet(scene_view_stylesheet())
         self._view.cellClicked.connect(self.cellActivated)
         self._view.cellClicked.connect(self._on_cell_clicked_for_detail)
         self._view.cellClicked.connect(self._on_cell_clicked_for_live_send)
@@ -781,9 +801,12 @@ class ControllerLayoutView(DeferredRebuild, QWidget):
         self._rebuild()
 
     def _restyle_selectors(self, *_args: object) -> None:
-        """The controller tabs and the deck filter, in the active theme's
-        colours (they used to keep the dark theme's on a light theme)."""
+        """The controller tabs, the deck filter and the canvas, in the active
+        theme's colours (they used to keep the dark theme's on a light theme)."""
         c = theme_colors()
+        if hasattr(self, "_view"):  # a theme switch, not the first build
+            self._view.setStyleSheet(scene_view_stylesheet())
+            self._rebuild()
         self._controller_tabs.setStyleSheet(
             f"""
             QTabBar::tab {{
@@ -1160,25 +1183,26 @@ class ControllerLayoutView(DeferredRebuild, QWidget):
             w = (max_c - min_c + 1) * col_step - m.margin + 2 * hpad
             h = (max_r - min_r + 1) * row_step - m.margin + self._ZONE_HEADER_H + vpad
             frame = QGraphicsRectItem(QRectF(x0, y0, w, h))
-            frame.setBrush(_ZONE_FILL_BRUSH)
-            frame.setPen(_ZONE_BORDER_PEN)
+            colours = scene_colours()
+            frame.setBrush(colours["zone_fill"])
+            frame.setPen(QPen(colours["zone_border"]))
             self._scene.addItem(frame)
             title = QGraphicsSimpleTextItem(section.replace("_", " ").upper())
             title.setFont(QFont("Helvetica Neue", 8, QFont.Weight.Bold))
-            title.setBrush(_ZONE_TITLE_COLOR)
+            title.setBrush(colours["zone_title"])
             title.setPos(x0 + 10, y0 + 4)
             self._scene.addItem(title)
 
     def _rebuild_scene(self) -> None:
         self._scene.clear()
         self._pad_center = None
-        self._scene.setBackgroundBrush(_SCENE_BRUSH)
+        self._scene.setBackgroundBrush(scene_colours()["background"])
         if not self._controller:
             self._detail_label.hide()
             message = QGraphicsSimpleTextItem(
                 self.tr("No controller catalog is available. Check the bundled controller data.")
             )
-            message.setBrush(QColor("#c5d0df"))
+            message.setBrush(scene_colours()["message"])
             message.setPos(16, 16)
             self._scene.addItem(message)
             self._scene.setSceneRect(self._scene.itemsBoundingRect().adjusted(-10, -10, 10, 10))
