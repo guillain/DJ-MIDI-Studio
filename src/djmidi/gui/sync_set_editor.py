@@ -33,6 +33,7 @@ from djmidi.controller_sync import (
     resolve_output_port,
 )
 from djmidi.gui.translation import translator
+from djmidi.gui.window_size import keep_wrapped_text_visible, usable_minimum
 
 _EVENT_TYPES = ("Note On", "Note Off", "Control Change")
 # Validation errors come from Qt-free controller_sync (issue #337).
@@ -64,6 +65,7 @@ class SyncSetEditorDialog(QDialog):
         hint.setWordWrap(True)
 
         self.table = QTableWidget(0, 4)
+        usable_minimum(self.table, 420, 120)  # a few rows even in the smallest window
         self.table.setHorizontalHeaderLabels([self.tr("Type"), self.tr("Channel"), self.tr("Data 1"), self.tr("Data 2")])
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
@@ -106,6 +108,7 @@ class SyncSetEditorDialog(QDialog):
         layout.addLayout(row_buttons)
         layout.addWidget(self.status)
         layout.addWidget(buttons)
+        keep_wrapped_text_visible(self)
 
     def _fill(self, messages: Sequence[SyncMessage]) -> None:
         self.table.setRowCount(0)
@@ -116,6 +119,8 @@ class SyncSetEditorDialog(QDialog):
             combo.addItems(_EVENT_TYPES)
             combo.setCurrentText(message.event_type)
             self.table.setCellWidget(row, 0, combo)
+            # Rows as tall as the event-type picker, which was squeezed in them.
+            self.table.setRowHeight(row, max(self.table.rowHeight(row), combo.sizeHint().height()))
             for column, value in ((1, message.channel), (2, message.data1), (3, message.data2)):
                 self.table.setItem(row, column, QTableWidgetItem(str(value)))
 

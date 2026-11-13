@@ -39,9 +39,15 @@ from PySide6.QtWidgets import (
 )
 
 from djmidi.gui import help_texts
+from djmidi.gui.action_groups import FlowLayout
 from djmidi.gui.file_reveal import reveal_in_file_manager
 from djmidi.gui.help_button import help_button
 from djmidi.gui.translation import translator
+from djmidi.gui.window_size import (
+    fit_to_screen,
+    keep_wrapped_text_visible,
+    usable_minimum,
+)
 from djmidi.library.duplicates import (
     TIER_EXACT,
     TIER_METADATA,
@@ -122,7 +128,7 @@ class DuplicatesDialog(QDialog):
         self._roots = tuple(roots)
         self._facts_reader = facts_reader
         self.setWindowTitle(self.tr("Duplicate tracks"))
-        self.resize(820, 520)
+        fit_to_screen(self, 820, 520)
         self.groups = list(groups)
         self._syncing = False
         box = QVBoxLayout(self)
@@ -145,6 +151,7 @@ class DuplicatesDialog(QDialog):
         box.addLayout(header)
 
         self.tree = QTreeWidget()
+        usable_minimum(self.tree, 240, 120)  # a few rows even in the smallest window
         self.tree.setHeaderLabels([QCoreApplication.translate("DuplicatesDialog", column) for column in COLUMNS])
         self.tree.header().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         for column in range(1, len(COLUMNS)):
@@ -156,11 +163,15 @@ class DuplicatesDialog(QDialog):
         box.addWidget(self.tree, 1)
         self._populate()
 
+        # The actions wrap onto more lines in a narrow window (a button box
+        # would make the dialog wider than a small screen).
+        actions = QWidget()
+        actions_flow = FlowLayout(actions)
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
         self.reveal_button = QPushButton(self.tr("Reveal in Finder"))
         self.reveal_button.setToolTip(self.tr("Show the selected file in your file manager."))
         self.reveal_button.clicked.connect(lambda: self._reveal(self.tree.currentItem()))
-        buttons.addButton(self.reveal_button, QDialogButtonBox.ButtonRole.ActionRole)
+        actions_flow.addWidget(self.reveal_button)
         self.suggest_button = QPushButton(self.tr("Tick all but the suggested copies"))
         self.suggest_button.setToolTip(
             self.tr(
@@ -169,7 +180,7 @@ class DuplicatesDialog(QDialog):
             )
         )
         self.suggest_button.clicked.connect(self.tick_all_but_suggested)
-        buttons.addButton(self.suggest_button, QDialogButtonBox.ButtonRole.ActionRole)
+        actions_flow.addWidget(self.suggest_button)
         self.merge_button = QPushButton(self.tr("Merge onto the kept copy…"))
         self.merge_button.setToolTip(
             self.tr(
@@ -178,7 +189,7 @@ class DuplicatesDialog(QDialog):
             )
         )
         self.merge_button.clicked.connect(self._on_merge_clicked)
-        buttons.addButton(self.merge_button, QDialogButtonBox.ButtonRole.ActionRole)
+        actions_flow.addWidget(self.merge_button)
         self.dj_playlists_button = QPushButton(self.tr("DJ software playlists…"))
         self.dj_playlists_button.setToolTip(
             self.tr(
@@ -187,7 +198,7 @@ class DuplicatesDialog(QDialog):
             )
         )
         self.dj_playlists_button.clicked.connect(self._on_dj_playlists_clicked)
-        buttons.addButton(self.dj_playlists_button, QDialogButtonBox.ButtonRole.ActionRole)
+        actions_flow.addWidget(self.dj_playlists_button)
         self.trash_button = QPushButton(self.tr("Move ticked to Trash…"))
         self.trash_button.setToolTip(
             self.tr(
@@ -195,10 +206,12 @@ class DuplicatesDialog(QDialog):
             )
         )
         self.trash_button.clicked.connect(self._on_trash_clicked)
-        buttons.addButton(self.trash_button, QDialogButtonBox.ButtonRole.ActionRole)
+        actions_flow.addWidget(self.trash_button)
         buttons.rejected.connect(self.reject)
+        box.addWidget(actions)
         box.addWidget(buttons)
         self._update_buttons()
+        keep_wrapped_text_visible(self)
 
     def _populate(self) -> None:
         self._syncing = True

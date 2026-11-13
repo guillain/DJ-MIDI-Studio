@@ -77,6 +77,18 @@ else
   PYINSTALLER_COMMAND=(uv run pyinstaller)
 fi
 
+# BPM/key analysis (the optional 'analysis' extra: librosa, with numba and
+# libsndfile underneath) ships in the executables when it is installed
+# (`uv sync --extra analysis`, as the CI build jobs do). librosa loads its
+# submodules lazily from .pyi stubs, so PyInstaller must collect it whole.
+ANALYSIS_ARGS=()
+if uv run python -c "import librosa" >/dev/null 2>&1; then
+  ANALYSIS_ARGS=(--collect-all librosa --collect-all lazy_loader --copy-metadata soundfile)
+  echo "==> BPM/key analysis (librosa) will be bundled"
+else
+  echo "WARNING: librosa is not installed: the executable will have no BPM/key analysis (uv sync --extra analysis)" >&2
+fi
+
 if [[ "$BUILD_PY_PACKAGE" -eq 1 ]]; then
   echo "==> Building Python package (wheel + sdist)"
   uv build
@@ -112,6 +124,7 @@ if [[ "$BUILD_EXECUTABLE" -eq 1 ]]; then
     --hidden-import rtmidi \
     --hidden-import aalink \
     --copy-metadata djmidi \
+    ${ANALYSIS_ARGS[@]+"${ANALYSIS_ARGS[@]}"} \
     --add-data "$NATIVE_ROOT_DIR/controllers${DATA_SEP}controllers" \
     --add-data "$NATIVE_ROOT_DIR/docs${DATA_SEP}docs" \
     --add-data "$NATIVE_ROOT_DIR/src/djmidi/translations${DATA_SEP}djmidi/translations" \

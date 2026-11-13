@@ -39,6 +39,11 @@ def build_argument_parser() -> argparse.ArgumentParser:
         help="save a PNG of the main window shortly after startup (CI smoke test)",
     )
     parser.add_argument(
+        "--self-check-analysis",
+        action="store_true",
+        help=argparse.SUPPRESS,  # CI: exit 0 when BPM/key analysis works in this build, else 3
+    )
+    parser.add_argument(
         "--startup-screenshot-delay-ms",
         type=int,
         default=STARTUP_SCREENSHOT_DELAY_MS,
@@ -94,6 +99,15 @@ def run(argv: list[str] | None = None) -> int:
     log_path = configure_logging(arguments.log_level, preferred_log_path)
     logger = logging.getLogger("djmidi.gui.app")
     logger.info("Starting DJ MIDI Studio")
+    if arguments.self_check_analysis:
+        from djmidi.library.analysis import self_check
+
+        problem = self_check()
+        if problem is None:
+            logger.info("Analysis self-check passed")
+            return 0
+        logger.error("Analysis self-check failed: %s", problem)
+        return 3
     # A native crash (Qt segfault) kills the process with no Python trace;
     # this keeps one beside the log, reported into it at the next start.
     crash_log = enable_crash_log(log_path)
@@ -111,6 +125,10 @@ def run(argv: list[str] | None = None) -> int:
     from djmidi.gui import button_icons
 
     button_icons.install(app, language)
+    # Long message boxes scroll instead of pushing their buttons off screen.
+    from djmidi.gui import message_box_fit
+
+    message_box_fit.install(app)
     window = MainWindow()
     timer.mark("main window built")
     if arguments.startup_screenshot:

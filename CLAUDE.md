@@ -62,7 +62,9 @@ fixed file path; use `tmp_path`.
 - **Small windows**: nothing clipped or squeezed at small sizes (issue #19). New dialogs use
   `gui/window_size.py` (`fit_to_screen`, `usable_minimum`, `keep_wrapped_text_visible`, `keep_tab_titles_whole`)
   and join `WINDOWS` in `tests/test_small_windows.py` (checked in EN/FR/DE, offscreen screen 800×800). Wide rows
-  go in a `QScrollArea`. A `QSplitter` blocks height-for-width: avoid it around wrapped labels in dialogs.
+  go in a `QScrollArea`. A `QSplitter` blocks height-for-width: avoid it around wrapped labels in dialogs. Action-button rows of more
+  than ~4 buttons go in an `action_groups.FlowLayout` (they wrap) rather than a `QDialogButtonBox`. Long
+  `QMessageBox` texts are made scrollable app-wide by `gui/message_box_fit` (installed in `gui/app.py`).
 - **Buttons**: a panel with several actions groups them with `gui/action_groups.action_section(title, [(button, role)])`
   (titled sections, a flow layout that wraps, the `chip` look and a role icon, a tooltip on each). Icons are the app's
   own line icons (`gui/icons.line_icon(role, theme.colors()["icon"])`, redrawn on a theme switch by
@@ -302,7 +304,7 @@ surgical and logged. Qt-free modules; the tab is a thin view over `library/works
   `catalog/community.py` (pre-filled GitHub issues, nothing sent by the app), `update_check.py` (silent offline,
   never downloads), `startup_timing.py`, `midi_export.py` (Live Monitor log as SMF).
 - Cheat sheet: `gui/cheat_sheet.py` (Qt-free) → PDF (`cheat_sheet_pdf.py`) or self-contained HTML.
-- Build: `scripts/build.sh` (PyInstaller; bundles `docs/` and `controllers/`), `scripts/macos_signing.sh`
+- Build: `scripts/build.sh` (PyInstaller; bundles `docs/`, `controllers/` and, when the `analysis` extra is installed as in CI, librosa — checked by `smoke_test_executable.py --require-analysis`), `scripts/macos_signing.sh`
   (skips cleanly without credentials), `scripts/smoke_test_executable.py --screenshot`.
 
 ## Known gaps waiting on hardware or the maintainer

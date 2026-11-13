@@ -52,11 +52,13 @@ from djmidi import catalog, user_paths
 from djmidi.atelier.actions import TO_CONTROLLER
 from djmidi.atelier.describe import describe_message, macro_target
 from djmidi.controller_sync import ControllerSyncSet, SyncMessage, move_message
+from djmidi.gui.action_groups import FlowLayout
 from djmidi.gui.feature_step_dialog import FeatureStepDialog
 from djmidi.gui.help_button import help_button
 from djmidi.gui.help_texts import MIDI_MACROS
 from djmidi.gui.macro_player import MacroPlayer
 from djmidi.gui.translation import translator
+from djmidi.gui.window_size import keep_wrapped_text_visible, usable_minimum
 from djmidi.i18n import QT_TRANSLATE_NOOP
 from djmidi.midi_learn import LEARN_TIMEOUT_MS
 from djmidi.midi_macros import (
@@ -142,6 +144,7 @@ class MacroManagerDialog(QDialog):
 
         # Left: the macro list.
         self.macro_list = QListWidget()
+        usable_minimum(self.macro_list, 170, 120)  # a few rows even in the smallest window
         self.macro_list.setMinimumWidth(170)
         self.macro_list.currentRowChanged.connect(self._on_macro_selected)
         self.new_button = QPushButton(self.tr("New"))
@@ -252,6 +255,7 @@ class MacroManagerDialog(QDialog):
         self._side = 0
 
         self.table = QTableWidget(0, len(_COLUMNS) + 1)
+        usable_minimum(self.table, 440, 90)  # a few rows; the dialog must still fit 900x600
         self.table.setHorizontalHeaderLabels([self.tr(column) for column in _COLUMNS] + [self.tr(_FEATURE_HEADER)])
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
@@ -295,10 +299,11 @@ class MacroManagerDialog(QDialog):
         self.test_button = QPushButton(self.tr("Test"))
         self.test_button.setToolTip(self.tr("Play this macro now, as edited"))
         self.test_button.clicked.connect(self._test_macro)
-        step_buttons = QHBoxLayout()
+        # Wraps onto more lines in a narrow window instead of widening it.
+        step_buttons_widget = QWidget()
+        step_buttons = FlowLayout(step_buttons_widget)
         for button in (self.add_step_button, self.delete_step_button, self.up_button, self.down_button):
             step_buttons.addWidget(button)
-        step_buttons.addStretch(1)
         step_buttons.addWidget(self.add_feature_button)
         step_buttons.addWidget(self.learn_steps_button)
         step_buttons.addWidget(self.from_sync_button)
@@ -319,7 +324,7 @@ class MacroManagerDialog(QDialog):
         right.addWidget(self.toggle_box)
         right.addWidget(self.side_tabs)
         right.addWidget(self.table, 1)
-        right.addLayout(step_buttons)
+        right.addWidget(step_buttons_widget)
 
         body = QHBoxLayout()
         body.addLayout(left)
@@ -345,6 +350,7 @@ class MacroManagerDialog(QDialog):
             self.macro_list.setCurrentRow(0)
         else:
             self._show(None)
+        keep_wrapped_text_visible(self)
 
     # --- editor <-> macro ---------------------------------------------------
 

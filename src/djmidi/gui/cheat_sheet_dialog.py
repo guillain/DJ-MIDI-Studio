@@ -21,6 +21,7 @@ from PySide6.QtWidgets import (
 )
 
 from djmidi.gui.geometry import CONTROL_GEOMETRY
+from djmidi.gui.window_size import fit_to_screen, keep_wrapped_text_visible
 
 
 class CheatSheetExportDialog(QDialog):
@@ -67,7 +68,8 @@ class CheatSheetExportDialog(QDialog):
         layout.addWidget(self._buttons)
         self._list.itemChanged.connect(self._update_ok)
         self._update_ok()
-        self.resize(460, 360)
+        fit_to_screen(self, 460, 360)
+        keep_wrapped_text_visible(self)
 
     def selected_controllers(self) -> list[str]:
         return [

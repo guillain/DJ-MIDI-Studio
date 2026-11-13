@@ -167,6 +167,9 @@ def main() -> int:
     docs_preferences.save(preferences_file)
     apply_theme(app, "light")
     button_icons.install(app, "en")
+    from djmidi.gui import message_box_fit
+
+    message_box_fit.install(app)
     with (
         contextlib.ExitStack() as stack,
         # No page fade: a capture must never catch a page half drawn.

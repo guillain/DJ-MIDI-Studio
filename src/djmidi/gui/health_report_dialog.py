@@ -40,9 +40,15 @@ from PySide6.QtWidgets import (
 
 from djmidi import user_paths
 from djmidi.gui import help_texts
+from djmidi.gui.action_groups import FlowLayout
 from djmidi.gui.file_reveal import reveal_in_file_manager
 from djmidi.gui.help_button import help_button
 from djmidi.gui.translation import translator
+from djmidi.gui.window_size import (
+    fit_to_screen,
+    keep_wrapped_text_visible,
+    usable_minimum,
+)
 from djmidi.library.health import (
     ISSUE_KINDS,
     ISSUE_LABELS,
@@ -115,7 +121,7 @@ class HealthReportDialog(QDialog):
     def __init__(self, report: HealthReport, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setWindowTitle(self.tr("Library health report"))
-        self.resize(900, 560)
+        fit_to_screen(self, 900, 560)
         self.report = report
         box = QVBoxLayout(self)
 
@@ -132,7 +138,8 @@ class HealthReportDialog(QDialog):
         box.addLayout(header)
 
         counts = report.counts()
-        kinds_row = QHBoxLayout()
+        kinds = QWidget()
+        kinds_row = FlowLayout(kinds)  # wraps in a narrow window
         self.kind_checkboxes: dict[str, QCheckBox] = {}
         for kind in ISSUE_KINDS:
             checkbox = QCheckBox(f"{_translate(ISSUE_LABELS[kind])} ({counts[kind]})")
@@ -141,8 +148,7 @@ class HealthReportDialog(QDialog):
             checkbox.toggled.connect(self._apply_filters)
             self.kind_checkboxes[kind] = checkbox
             kinds_row.addWidget(checkbox)
-        kinds_row.addStretch(1)
-        box.addLayout(kinds_row)
+        box.addWidget(kinds)
 
         self.filter_edit = QLineEdit()
         self.filter_edit.setPlaceholderText(self.tr("Filter by path or detail…"))
@@ -152,6 +158,7 @@ class HealthReportDialog(QDialog):
 
         self.model = HealthIssueModel(self)
         self.table = QTableView()
+        usable_minimum(self.table, 240, 120)  # a few rows even in the smallest window
         self.table.setModel(self.model)
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
@@ -187,6 +194,7 @@ class HealthReportDialog(QDialog):
 
         self.table.selectionModel().currentRowChanged.connect(self._update_buttons)
         self._apply_filters()
+        keep_wrapped_text_visible(self)
 
     def checked_kinds(self) -> list[str]:
         return [kind for kind, checkbox in self.kind_checkboxes.items() if checkbox.isChecked()]

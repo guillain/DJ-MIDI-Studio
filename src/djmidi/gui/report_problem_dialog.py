@@ -23,6 +23,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from djmidi.gui.window_size import fit_to_screen, keep_wrapped_text_visible
 from djmidi.problem_report import (
     DEFAULT_TITLE,
     ReportContext,
@@ -41,7 +42,7 @@ class ReportProblemDialog(QDialog):
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle(self.tr("Report a Problem"))
-        self.resize(720, 600)
+        fit_to_screen(self, 720, 600)
         self._open_url = open_url or (lambda url: QDesktopServices.openUrl(QUrl(url)))
         self.last_url: str | None = None
         self.last_inlined = True
@@ -81,6 +82,7 @@ class ReportProblemDialog(QDialog):
         layout.addWidget(buttons)
         self.title_edit.setFocus()
         self.title_edit.setCursorPosition(len(DEFAULT_TITLE))
+        keep_wrapped_text_visible(self)
 
     def report_text(self) -> str:
         return self.body_edit.toPlainText()
