@@ -147,3 +147,25 @@ def test_stage_window_has_a_help_button():
         assert any(button.property("help") for button in window.findChildren(QPushButton))
     finally:
         window.close()
+
+
+def test_stage_mode_follows_the_light_theme():
+    """High contrast in both themes: white on black, or black on white."""
+    from PySide6.QtWidgets import QApplication
+
+    from djmidi.gui.stage_window import STAGE_STYLESHEET, StageWindow, stage_stylesheet
+    from djmidi.gui.theme import apply_theme
+
+    app = QApplication.instance()
+    try:
+        apply_theme(app, "dark")
+        window = StageWindow(config_provider=lambda: None)
+        assert window.styleSheet() == STAGE_STYLESHEET
+        assert "background-color: #000000" in STAGE_STYLESHEET
+        apply_theme(app, "light")
+        assert window.styleSheet() == stage_stylesheet("light")
+        assert "background-color: #ffffff" in window.styleSheet()
+        assert "#ffd400" not in window.styleSheet()  # yellow is unreadable on white
+        window.close()
+    finally:
+        apply_theme(app, "dark")

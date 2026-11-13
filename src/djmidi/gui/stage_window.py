@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable, Sequence
+from string import Template
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QKeySequence, QShortcut
@@ -40,6 +41,8 @@ from djmidi import catalog
 from djmidi.gui import help_texts
 from djmidi.gui.controller_emulator import ControllerEmulatorView
 from djmidi.gui.help_button import help_button
+from djmidi.gui.theme import current_mode as current_theme_mode
+from djmidi.gui.theme import signals as theme_signals
 from djmidi.gui.translation import translator
 from djmidi.gui.window_size import keep_wrapped_text_visible
 from djmidi.library.set_prep import STATUS_INCOMPATIBLE, STATUS_OK, SetTrack, Transition
@@ -62,18 +65,19 @@ SuggestionProvider = Callable[[SetTrack, set[str]], Sequence[SetTrack]]
 # ON/OFF and the raw trigger come from Qt-free djmidi.stage (issue #337).
 _stage_translate = translator("Stage")
 
-# High contrast: pure black background, white text, one bright accent for
-# the newest event. Set on this window only, so it overrides the app theme
-# here without touching the main window. Font sizes are in points so they
-# scale with the screen's DPI like the rest of the UI.
-STAGE_STYLESHEET = """
+# High contrast, in the app's theme: pure black and white on the dark theme,
+# pure white and black on the light one, one bright accent for the newest
+# event. Set on this window only, so it overrides the app theme here without
+# touching the main window. Font sizes are in points so they scale with the
+# screen's DPI like the rest of the UI.
+_STAGE_QSS = Template("""
 QWidget#stageWindow, QWidget#stageWindow QWidget {
-    background-color: #000000;
-    color: #ffffff;
+    background-color: $bg;
+    color: $fg;
     font-size: 16pt;
 }
 QWidget#stageWindow QComboBox, QWidget#stageWindow QPushButton {
-    border: 2px solid #ffffff;
+    border: 2px solid $fg;
     padding: 6px 12px;
 }
 QWidget#stageWindow QPushButton[compact="true"] {
@@ -89,7 +93,7 @@ QWidget#stageWindow QLabel#stageTitle {
     font-weight: bold;
 }
 QWidget#stageWindow QLabel#stageLatest {
-    color: #ffd400;
+    color: $latest;
     font-size: 30pt;
     font-weight: bold;
 }
@@ -98,29 +102,44 @@ QWidget#stageWindow QLabel#stageCurrent {
     font-weight: bold;
 }
 QWidget#stageWindow QLabel#stageTransition[status="ok"] {
-    color: #3ee07a;
+    color: $ok;
 }
 QWidget#stageWindow QLabel#stageTransition[status="incompatible"] {
-    color: #ff5a4f;
+    color: $bad;
     font-weight: bold;
 }
 QWidget#stageWindow QLabel#stageTransition[status="unknown"] {
-    color: #bbbbbb;
+    color: $muted;
 }
 QWidget#stageWindow QLabel#stageNote {
-    color: #ffd400;
+    color: $latest;
     font-size: 20pt;
     font-weight: bold;
 }
 QWidget#stageWindow QLabel#stageSuggestions {
-    color: #bbbbbb;
+    color: $muted;
     font-size: 15pt;
 }
 QWidget#stageWindow QListWidget#stageLog {
-    border: 2px solid #ffffff;
+    border: 2px solid $fg;
     font-size: 20pt;
 }
-"""
+""")
+_STAGE_COLOURS = {
+    "dark": {"bg": "#000000", "fg": "#ffffff", "latest": "#ffd400", "ok": "#3ee07a", "bad": "#ff5a4f",
+             "muted": "#bbbbbb"},
+    # Darker accents: yellow and light green vanish on white (each >= 4.5:1).
+    "light": {"bg": "#ffffff", "fg": "#000000", "latest": "#8a5a00", "ok": "#1a7f37", "bad": "#c62828",
+              "muted": "#4a4a4a"},
+}
+
+
+def stage_stylesheet(mode: str | None = None) -> str:
+    """The Stage Mode style for ``mode`` ("light"/"dark", default: the active theme)."""
+    return _STAGE_QSS.substitute(_STAGE_COLOURS[mode or current_theme_mode()])
+
+
+STAGE_STYLESHEET = stage_stylesheet("dark")  # the dark one, kept for callers
 
 # The compact monitor column never gets narrower than this, so a long
 # control name wraps onto two lines rather than being cut to a few letters.
@@ -152,7 +171,8 @@ class StageWindow(QWidget):
         self.setObjectName("stageWindow")
         self.setWindowTitle(self.tr("DJ MIDI Studio — Stage Mode"))
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
-        self.setStyleSheet(STAGE_STYLESHEET)
+        self.setStyleSheet(stage_stylesheet())
+        theme_signals.themeChanged.connect(self._restyle)
         self._log = StageLog(max_lines)
 
         self.emulator_view = ControllerEmulatorView(
@@ -346,6 +366,9 @@ class StageWindow(QWidget):
 
     def log_lines(self) -> list[str]:
         return self._log.lines()
+
+    def _restyle(self, *_args: object) -> None:
+        self.setStyleSheet(stage_stylesheet())
 
     def closeEvent(self, event) -> None:
         super().closeEvent(event)
