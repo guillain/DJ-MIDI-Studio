@@ -111,6 +111,14 @@ module.  Mido selects its default backend by importing the backend name at
 runtime; without these hidden imports, the packaged application starts but
 crashes as soon as Live Monitor enumerates MIDI ports.
 
+BPM/key analysis (the optional `analysis` extra: librosa, with numba and
+libsndfile underneath) ships in the executables: the CI and release build jobs
+run `uv sync --group dev --extra analysis`, and `scripts/build.sh` adds
+`--collect-all librosa --collect-all lazy_loader` when librosa is installed
+(librosa loads its submodules lazily from `.pyi` stubs, which PyInstaller
+cannot infer). Without the extra the script warns and builds an executable
+without analysis.
+
 The headless smoke mode sets `DJMIDI_DISABLE_MIDI=1`. This avoids a
 platform-level RtMidi abort on public runners without CoreMIDI/ALSA while
 preserving normal hardware probing for user launches. The release build job
@@ -136,11 +144,17 @@ artifact uploads the PNG together with the run's log files and
 one OS can be diagnosed without rebuilding locally. The release workflow keeps
 the plain six-second check.
 
+Both workflows also pass `--require-analysis`: before the startup check the
+script runs the executable with `--self-check-analysis`, which writes a short
+generated WAV, reads it back and estimates its BPM and key inside the packaged
+app (`analysis.self_check`), then exits 0, or 3 with the reason in the log. The
+job fails when the build lacks working analysis.
+
 Run it locally against a built executable:
 
 ```bash
 uv run python scripts/smoke_test_executable.py --os macos \
-  --screenshot build/smoke-test-logs/startup-macos.png
+  --screenshot build/smoke-test-logs/startup-macos.png --require-analysis
 ```
 
 The application log path is also resilient to stale permissions: if the
