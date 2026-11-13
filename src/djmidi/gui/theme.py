@@ -324,6 +324,8 @@ _DARK = {
     # verbatim (as a hardcoded literal, before this token existed) across
     # several panels for secondary explanatory text under a heading.
     "hint_text": "#8fa7bd",
+    # The line icons on buttons (gui/icons.py).
+    "icon": "#00c2e8",
 }
 
 _LIGHT = {
@@ -362,6 +364,8 @@ _LIGHT = {
     "clock_accent": "#0a7fa0",
     "clock_accent_border": "#39b6d6",
     "hint_text": "#5b7086",
+    # Darker than accent2: a 15 px line icon on a light pill needs ~4:1.
+    "icon": "#0a7590",
 }
 
 DARK_THEME = _QSS.substitute(_DARK)
