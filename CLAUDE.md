@@ -63,8 +63,10 @@ fixed file path; use `tmp_path`.
   `gui/window_size.py` (`fit_to_screen`, `usable_minimum`, `keep_wrapped_text_visible`, `keep_tab_titles_whole`)
   and join `WINDOWS` in `tests/test_small_windows.py` (checked in EN/FR/DE, offscreen screen 800×800). Wide rows
   go in a `QScrollArea`. A `QSplitter` blocks height-for-width: avoid it around wrapped labels in dialogs. Action-button rows of more
-  than ~4 buttons go in an `action_groups.FlowLayout` (they wrap) rather than a `QDialogButtonBox`. Long
-  `QMessageBox` texts are made scrollable app-wide by `gui/message_box_fit` (installed in `gui/app.py`).
+  than ~4 buttons go in an `action_groups.FlowLayout` (they wrap) rather than a `QDialogButtonBox`. A question or report
+  over a list that can grow (files, tracks, playlists) uses `gui/list_dialog.confirm_list` / `show_list` (every
+  row in a table, Cancel default), never a `QMessageBox` with a joined list; any other long `QMessageBox` text is
+  made scrollable app-wide by `gui/message_box_fit` (installed in `gui/app.py`).
 - **Buttons**: a panel with several actions groups them with `gui/action_groups.action_section(title, [(button, role)])`
   (titled sections, a flow layout that wraps, the `chip` look and a role icon, a tooltip on each). Icons are the app's
   own line icons (`gui/icons.line_icon(role, theme.colors()["icon"])`, redrawn on a theme switch by

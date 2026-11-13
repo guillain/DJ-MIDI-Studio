@@ -614,6 +614,7 @@ def test_discard_is_logged_in_the_change_history(library, monkeypatch):
 
     monkeypatch.setattr(mlv, "trash_file", fake_trash)
     monkeypatch.setattr(mlv, "confirm_trash", lambda *a: True)
+    monkeypatch.setattr(mlv, "confirm_list", lambda *a, **k: True)
     monkeypatch.setattr(QMessageBox, "question", lambda *a, **k: QMessageBox.StandardButton.Yes)
     monkeypatch.setattr(QMessageBox, "information", lambda *a, **k: None)
     view.find_duplicates()
@@ -703,10 +704,10 @@ def test_write_tags_to_selection_skips_unchanged_and_reports_failures(library, m
     assert "already have" in view.status_label.text()
 
     Path(c).write_bytes(b"not audio")
-    warnings = []
-    monkeypatch.setattr(QMessageBox, "warning", lambda *args: warnings.append(args))
+    reports = []
+    monkeypatch.setattr(mlv, "show_list", lambda *args, **kwargs: reports.append(args))
     assert view.write_tags_to_selection({"bpm": 140.0}) == 1
-    assert warnings and "1 failed" in warnings[0][2]
+    assert reports and "1 failed" in reports[0][2] and reports[0][4][0][0][0] == Path(c).name
     assert read_metadata(a).bpm == 140.0
 
 
@@ -1014,6 +1015,10 @@ def test_discard_duplicates_moves_ticked_copies_to_trash(library, monkeypatch):
     monkeypatch.setattr(QMessageBox, "warning", lambda _p, _t, text, *a, **k: warnings.append(text))
     confirmations: list[list[tuple[str, str]]] = []
     monkeypatch.setattr(mlv, "confirm_trash", lambda _p, discards: confirmations.append(list(discards)) or True)
+    reports: list[tuple] = []
+    monkeypatch.setattr(mlv, "show_list", lambda *args, **kwargs: reports.append(args))
+    lists: list[tuple] = []
+    monkeypatch.setattr(mlv, "confirm_list", lambda *args, **kwargs: lists.append(args) or True)
 
     view.find_duplicates()
     view.run_pending_job()
@@ -1025,15 +1030,15 @@ def test_discard_duplicates_moves_ticked_copies_to_trash(library, monkeypatch):
     dialog.set_checked(str(copy), True)
     assert dialog.trash_button.isEnabled()
     dialog.trash_button.click()
-    assert warnings and "untick at least one" in warnings[0]
-    assert questions == [] and confirmations == []
+    assert reports and "untick at least one" in reports[0][2]
+    assert confirmations == [] and lists == []
     assert original.is_file() and copy.is_file()
 
     dialog.set_checked(str(original), False)
     assert dialog.checked_paths() == [str(copy)]
     dialog.trash_button.click()
     assert confirmations == [[(str(copy), str(original))]]
-    assert "Friday" in questions[0]
+    assert lists[0][1] == "Update playlists" and lists[0][4] == [("Friday",)]
     assert not copy.exists() and (bin_dir / "a copy.mp3").is_file()
     assert original.is_file()
     assert view.db.playlist_paths(playlist) == [str(original), str(music / "misc" / "c.mp3")]
@@ -1635,7 +1640,10 @@ def test_rename_files_flow_with_undo_and_csv(library, monkeypatch):
 def test_rename_files_reports_failures_and_skips_empty_batches(library, monkeypatch):
     view, music, _tmp = library
     warnings = []
-    monkeypatch.setattr(QMessageBox, "warning", lambda *a, **k: warnings.append(a[2]))
+    # The failures are listed in full (gui/list_dialog): message, then each row.
+    monkeypatch.setattr(
+        mlv, "show_list", lambda _p, _t, message, _h, rows, *a, **k: warnings.append(message + " " + str(rows))
+    )
     assert view.rename_files([]) == []
     gone = music / "misc" / "gone.mp3"
     assert view.rename_files([(str(gone), str(music / "misc" / "x.mp3"))]) == []

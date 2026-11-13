@@ -434,6 +434,15 @@ def _trash_confirm():
     )
 
 
+
+def _list_report():
+    from djmidi.gui.list_dialog import ListDialog
+
+    rows = [((f"{n:03} A long track title (Extended Mix).mp3", "Permission denied: the file is read-only"), ("/long/path", ""))
+            for n in range(200)]
+    return ListDialog("Some tags could not be written", "0 track(s) written, 200 failed:", ["File", "Reason"], rows)
+
+
 WINDOWS = {
     "first-run wizard": _wizard,
     "layer map": _layer_map,
@@ -474,6 +483,7 @@ WINDOWS = {
     "safe update": _safe_update,
     "sync set editor": _sync_set_editor,
     "move to trash confirmation": _trash_confirm,
+    "long list report": _list_report,
 }
 
 
