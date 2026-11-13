@@ -39,7 +39,7 @@ class PluginPreferences:
     trust_external_plugins: bool = False
     log_level: str = "INFO"
     log_path: str = ""
-    theme: ThemeMode = "system"
+    theme: ThemeMode = "light"  # the default since v0.48.226 (was "system")
     # Interface language (issue #263): English unless chosen, applied at launch.
     language: LanguagePreference = "en"
     auto_start_live_monitor: bool = True
@@ -149,7 +149,7 @@ class PluginPreferences:
             "CRITICAL",
         }:
             raise ValueError("log_level is not supported")
-        theme = raw.get("theme", "system")
+        theme = raw.get("theme", "light")
         if theme not in _THEME_MODES:
             raise ValueError("theme must be 'system', 'light', or 'dark'")
         language = raw.get("language", "en")

@@ -44,17 +44,17 @@ def test_plugin_preferences_from_json_defaults_missing_log_path_to_empty():
     assert restored.log_path == ""
 
 
-def test_plugin_preferences_theme_defaults_to_system_and_round_trips(tmp_path):
+def test_plugin_preferences_theme_defaults_to_light_and_round_trips(tmp_path):
     preferences = PluginPreferences()
-    assert preferences.theme == "system"
-    preferences.theme = "light"
+    assert preferences.theme == "light"
+    preferences.theme = "system"
     path = tmp_path / "theme.json"
     preferences.save(path)
-    assert PluginPreferences.load(path).theme == "light"
+    assert PluginPreferences.load(path).theme == "system"  # a saved choice is kept
 
 
-def test_plugin_preferences_from_json_defaults_missing_theme_to_system():
-    assert PluginPreferences.from_json('{"enabled": {}}').theme == "system"
+def test_plugin_preferences_from_json_defaults_missing_theme_to_light():
+    assert PluginPreferences.from_json('{"enabled": {}}').theme == "light"
 
 
 def test_plugin_preferences_from_json_rejects_unknown_theme():
