@@ -156,10 +156,17 @@ def main() -> int:
     qInstallMessageHandler(_filter_offscreen_platform_noise)
     app = QApplication.instance() or QApplication(sys.argv)
     # As in the real app: an icon on every text button (gui/app.py).
+    # The docs show the light theme (readable on a white page and in print):
+    # stored in the throwaway preferences, so every MainWindow applies it.
     from djmidi.gui import button_icons
-    from djmidi.gui.theme import colors as theme_colors
+    from djmidi.gui.theme import apply_theme
 
-    button_icons.install(app, "en", theme_colors()["accent2"])
+    preferences_file = Path(os.environ["DJMIDI_PREFERENCES_FILE"])
+    docs_preferences = PluginPreferences.load(preferences_file) if preferences_file.exists() else PluginPreferences()
+    docs_preferences.theme = "light"
+    docs_preferences.save(preferences_file)
+    apply_theme(app, "light")
+    button_icons.install(app, "en")
     with (
         contextlib.ExitStack() as stack,
         # No page fade: a capture must never catch a page half drawn.
