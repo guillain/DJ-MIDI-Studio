@@ -22,6 +22,7 @@ from PySide6.QtCore import QEvent, QObject, QSize
 from PySide6.QtWidgets import QApplication, QDialogButtonBox, QPushButton
 
 from djmidi.gui.icons import line_icon
+from djmidi.gui.theme import colors as theme_colors
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -118,10 +119,10 @@ def _sources(language: str) -> dict[str, str]:
 class ButtonIconDecorator(QObject):
     """Installed once on the application (``install``)."""
 
-    def __init__(self, language: str = "en", colour: str = "#00c2e8", parent: QObject | None = None) -> None:
+    def __init__(self, language: str = "en", colour: str | None = None, parent: QObject | None = None) -> None:
         super().__init__(parent)
         self.language = language
-        self.colour = colour
+        self.colour = colour  # None: the active theme's icon colour
 
     def eventFilter(self, watched: QObject, event: QEvent) -> bool:
         if event.type() == QEvent.Type.Polish and isinstance(watched, QPushButton):
@@ -146,7 +147,7 @@ class ButtonIconDecorator(QObject):
         role = self.role_for(button)
         if role is None:
             return False
-        button.setIcon(line_icon(role, self.colour))
+        button.setIcon(line_icon(role, self.colour or theme_colors()["icon"]))
         button.setIconSize(QSize(15, 15))
         return True
 
@@ -154,7 +155,7 @@ class ButtonIconDecorator(QObject):
 _INSTALLED: list[ButtonIconDecorator] = []  # kept alive for the app's lifetime
 
 
-def install(app: QApplication, language: str, colour: str) -> ButtonIconDecorator:
+def install(app: QApplication, language: str, colour: str | None = None) -> ButtonIconDecorator:
     decorator = ButtonIconDecorator(language, colour, app if isinstance(app, QObject) else None)
     app.installEventFilter(decorator)
     _INSTALLED.append(decorator)

@@ -109,9 +109,8 @@ def run(argv: list[str] | None = None) -> int:
     language = install_translators(app, preferences.language)
     # An icon on every text button, from its English text (UX review).
     from djmidi.gui import button_icons
-    from djmidi.gui.theme import colors as theme_colors
 
-    button_icons.install(app, language, theme_colors()["accent2"])
+    button_icons.install(app, language)
     window = MainWindow()
     timer.mark("main window built")
     if arguments.startup_screenshot:

@@ -676,7 +676,7 @@ class ControllerSetupView(QWidget):
             "export": "export", "import": "import", "help": "help", "image": "image", "submit": "export",
             "template": "list",
         }.get(icon_type, "list")
-        return line_icon(role, theme_colors()["accent2"])
+        return line_icon(role, theme_colors()["icon"])
 
     def _titled_panel(self, title: str, header_buttons: list[QPushButton]) -> tuple[QFrame, QVBoxLayout]:
         """A QGroupBox-styled panel with icon-only action buttons in its title

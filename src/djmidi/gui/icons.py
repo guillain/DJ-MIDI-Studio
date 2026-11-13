@@ -10,6 +10,9 @@ from collections.abc import Callable
 
 from PySide6.QtCore import QPointF, QRectF, Qt
 from PySide6.QtGui import QColor, QIcon, QPainter, QPainterPath, QPen, QPixmap
+from PySide6.QtWidgets import QAbstractButton, QApplication
+
+from djmidi.gui import theme
 
 SIZE = 32  # drawn at 32 px, shown at 14-16 px: crisp on Retina screens
 
@@ -89,8 +92,46 @@ _SHAPES: dict[str, Draw] = {
 ROLES = tuple(_SHAPES)
 
 
+# Icons drawn in a theme's icon colour, by QIcon.cacheKey() (shared by every
+# copy, so also by the one a button holds): `recolour_buttons` redraws them in
+# the new theme's colour, so no icon stays dark-theme cyan on a light theme.
+_THEMED: dict[int, str] = {}
+
+
+def _theme_icon_colours() -> set[str]:
+    return {theme.colors(mode)["icon"].lower() for mode in ("light", "dark")}
+
+
 def line_icon(role: str, colour: QColor | str) -> QIcon:
     """The role's icon, stroked in `colour` (an empty icon for an unknown role)."""
+    icon = _draw(role, colour)
+    if not icon.isNull() and QColor(colour).name().lower() in _theme_icon_colours():
+        _THEMED[icon.cacheKey()] = role
+    return icon
+
+
+def recolour_buttons(*_args: object) -> int:
+    """Redraw every themed line icon on a button in the current theme's icon
+    colour (connected to ``theme.signals.themeChanged``). Returns how many."""
+    app = QApplication.instance()
+    if app is None:
+        return 0
+    colour = theme.colors()["icon"]
+    count = 0
+    for widget in QApplication.allWidgets():
+        if not isinstance(widget, QAbstractButton):
+            continue
+        role = _THEMED.get(widget.icon().cacheKey())
+        if role is not None:
+            widget.setIcon(line_icon(role, colour))
+            count += 1
+    return count
+
+
+theme.signals.themeChanged.connect(recolour_buttons)
+
+
+def _draw(role: str, colour: QColor | str) -> QIcon:
     draw = _SHAPES.get(role)
     if draw is None:
         return QIcon()
@@ -106,4 +147,4 @@ def line_icon(role: str, colour: QColor | str) -> QIcon:
     return QIcon(pixmap)
 
 
-__all__ = ["ROLES", "line_icon"]
+__all__ = ["ROLES", "line_icon", "recolour_buttons"]

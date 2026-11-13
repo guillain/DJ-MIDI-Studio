@@ -34,6 +34,8 @@ from djmidi.gui.help_button import help_button
 from djmidi.gui.layer_toggles import LayerToggles
 from djmidi.gui.layout import CellKey
 from djmidi.gui.live_send import LiveSendControl
+from djmidi.gui.theme import colors as theme_colors
+from djmidi.gui.theme import signals as theme_signals
 
 _KEY_ROLE = 0
 # The VisualKind ("knob"/"fader"/"jog"/"button"/"pad") a glyph item was
@@ -642,28 +644,6 @@ class ControllerLayoutView(DeferredRebuild, QWidget):
         self._manual_zoom_factor = 1.0
 
         self._controller_tabs = QTabBar()
-        self._controller_tabs.setStyleSheet(
-            """
-            QTabBar::tab {
-                background: #182437;
-                color: #aebed1;
-                border: 1px solid #30445f;
-                border-bottom: 2px solid #30445f;
-                padding: 7px 14px;
-                margin-right: 3px;
-            }
-            QTabBar::tab:selected {
-                background: #d33c72;
-                color: #ffffff;
-                border-color: #f26395;
-                border-bottom-color: #f26395;
-            }
-            QTabBar::tab:hover:!selected {
-                background: #29415f;
-                color: #ffffff;
-            }
-            """
-        )
         self._controller_tabs.setExpanding(False)
         self._controller_tabs.setUsesScrollButtons(False)
         for name in catalog.CONTROLLER_NAMES:
@@ -685,29 +665,14 @@ class ControllerLayoutView(DeferredRebuild, QWidget):
         controls_layout.addWidget(self._controller_scroll, 1)
         if show_deck_filter:
             deck_combo = QComboBox()
-            deck_combo.setStyleSheet(
-                """
-                QComboBox {
-                    background: #182437;
-                    color: #e8eef7;
-                    border: 1px solid #3d5875;
-                    border-radius: 6px;
-                    padding: 6px 10px;
-                }
-                QComboBox QAbstractItemView {
-                    background: #0e1724;
-                    color: #e8eef7;
-                    selection-background-color: #d33c72;
-                    selection-color: #ffffff;
-                }
-                """
-            )
             # The deck id is the item data, so the filter never depends on
             # the translated "All decks" / "Deck N" labels.
             deck_combo.addItem(self.tr("All decks"), None)
             deck_combo.currentIndexChanged.connect(lambda _: self._rebuild())
             controls_layout.addWidget(deck_combo)
             self._deck_combo = deck_combo
+        self._restyle_selectors()
+        theme_signals.themeChanged.connect(self._restyle_selectors)
 
         # Off by default (see gui/live_send.py's docstring for why): this
         # tab is browsed constantly while just auditing a mapping, so a
@@ -814,6 +779,52 @@ class ControllerLayoutView(DeferredRebuild, QWidget):
         current_index = self._controller_tabs.currentIndex()
         self._controller = self._controller_tabs.tabText(current_index)
         self._rebuild()
+
+    def _restyle_selectors(self, *_args: object) -> None:
+        """The controller tabs and the deck filter, in the active theme's
+        colours (they used to keep the dark theme's on a light theme)."""
+        c = theme_colors()
+        self._controller_tabs.setStyleSheet(
+            f"""
+            QTabBar::tab {{
+                background: {c["tab_bg"]};
+                color: {c["tab_text"]};
+                border: 1px solid {c["panel_border"]};
+                border-bottom: 2px solid {c["panel_border"]};
+                padding: 7px 14px;
+                margin-right: 3px;
+            }}
+            QTabBar::tab:selected {{
+                background: {c["accent"]};
+                color: #ffffff;
+                border-color: {c["accent_soft"]};
+                border-bottom-color: {c["accent_soft"]};
+            }}
+            QTabBar::tab:hover:!selected {{
+                background: {c["tree_hover_bg"]};
+                color: {c["tree_hover_text"]};
+            }}
+            """
+        )
+        if self._deck_combo is not None:
+            self._deck_combo.setStyleSheet(
+                f"""
+                QComboBox {{
+                    background: {c["button_bg"]};
+                    color: {c["button_text"]};
+                    border: 1px solid {c["button_border"]};
+                    border-radius: 6px;
+                    padding: 6px 10px;
+                }}
+                QComboBox QAbstractItemView {{
+                    background: {c["field_bg"]};
+                    color: {c["text"]};
+                    selection-background-color: {c["accent"]};
+                    selection-color: #ffffff;
+                }}
+                """
+            )
+        self._resize_controller_selector()  # the tab height depends on the style
 
     def _resize_controller_selector(self) -> None:
         """Keep the tab strip wide while letting its container scroll.

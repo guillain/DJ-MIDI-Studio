@@ -65,7 +65,9 @@ fixed file path; use `tmp_path`.
   go in a `QScrollArea`. A `QSplitter` blocks height-for-width: avoid it around wrapped labels in dialogs.
 - **Buttons**: a panel with several actions groups them with `gui/action_groups.action_section(title, [(button, role)])`
   (titled sections, a flow layout that wraps, the `chip` look and a role icon, a tooltip on each). Icons are the app's
-  own line icons (`gui/icons.line_icon(role, colour)`), never `QStyle.standardIcon`; every QPushButton has the pill look
+  own line icons (`gui/icons.line_icon(role, theme.colors()["icon"])`, redrawn on a theme switch by
+  `icons.recolour_buttons`), never `QStyle.standardIcon`; build custom QSS from `theme.colors()` and restyle on
+  `theme.signals.themeChanged`, never hardcoded dark colours; every QPushButton has the pill look
   (theme.py). Empty lists/tables get a `gui/empty_state.EmptyState`. Every other text button gets
   its icon automatically (`gui/button_icons`, installed in `gui/app.py`: role from the English source text through the
   `.ts` catalogue, or the button box's standard button); extend `ROLE_KEYWORDS` rather than setting icons by hand.

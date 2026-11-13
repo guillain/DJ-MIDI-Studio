@@ -29,3 +29,40 @@ def test_a_translated_button_is_looked_up_on_its_english_source():
     french = next(translation for translation, source in sources.items() if source == "Save report…")
     decorator = ButtonIconDecorator("fr")
     assert decorator.role_for(QPushButton(french)) == "save"
+
+
+def _icon_colour(button: QPushButton) -> str:
+    """The colour of the icon's most opaque pixel."""
+    image = button.icon().pixmap(32, 32).toImage()
+    best = max(
+        (image.pixelColor(x, y) for x in range(image.width()) for y in range(image.height())),
+        key=lambda colour: colour.alpha(),
+    )
+    return best.name()
+
+
+def test_line_icons_follow_a_theme_switch():
+    """Light theme review: icons drawn in the dark theme's cyan used to stay
+    so after switching to light (pale on light pills)."""
+    from PySide6.QtWidgets import QApplication
+
+    from djmidi.gui.action_groups import chip
+    from djmidi.gui.layout_view import ControllerLayoutView
+    from djmidi.gui.theme import apply_theme, colors
+
+    app = QApplication.instance()
+    try:
+        apply_theme(app, "dark")
+        parent = QWidget()
+        decorated, chipped = QPushButton("Save report…", parent), chip(QPushButton("Add", parent), "add")
+        ButtonIconDecorator("en").decorate(decorated)
+        view = ControllerLayoutView(show_deck_filter=True)
+        assert _icon_colour(decorated) == colors("dark")["icon"]
+        apply_theme(app, "light")
+        assert _icon_colour(decorated) == colors("light")["icon"] == _icon_colour(chipped)
+        assert colors("light")["tab_bg"] in view._controller_tabs.styleSheet()
+        assert colors("light")["button_bg"] in view._deck_combo.styleSheet()
+        apply_theme(app, "dark")
+        assert _icon_colour(chipped) == colors("dark")["icon"]
+    finally:
+        apply_theme(app, "dark")

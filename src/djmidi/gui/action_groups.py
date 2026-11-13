@@ -90,7 +90,7 @@ def chip(button: QAbstractButton, role: str | None = None) -> QAbstractButton:
     """The shared compact look: the ``chip`` style and the role's icon."""
     button.setProperty("chip", True)
     if role in ICONS:
-        button.setIcon(line_icon(role, theme_colors()["accent2"]))
+        button.setIcon(line_icon(role, theme_colors()["icon"]))
         button.setIconSize(QSize(15, 15))
     button.setCursor(Qt.CursorShape.PointingHandCursor)
     return button
