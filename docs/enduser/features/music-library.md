@@ -647,8 +647,8 @@ software's own history:
 
 | Button | Result |
 | --- | --- |
-| `Load DJ history` | Reads Serato (`~/Music/_Serato_/History`) and Traktor (`~/Music/_Traktor/History`) when they exist |
-| `Load from folder…` | Reads another Serato `History`/`Sessions` folder or Traktor `History` folder (on an external drive, say) |
+| `Load DJ history` | Reads Serato (`~/Music/_Serato_/History`), Traktor (`~/Music/_Traktor/History`) and the rekordbox player history of an export in `~/Music/PIONEER` when they exist |
+| `Load from folder…` | Reads another Serato `History`/`Sessions` folder, Traktor `History` folder or rekordbox export (a USB stick prepared by rekordbox: choose the stick, its `PIONEER` folder or `PIONEER/rekordbox`) |
 | `Select never played` | Selects, in the table, every visible track no session played — ready for `New from selection` |
 
 Each session is listed newest first with its date and track count; open it
@@ -658,6 +658,10 @@ in the table. Grey rows were only loaded and not marked as played (Serato's
 headphones), or point at a file outside your indexed folders — for example
 a session recorded on another computer. Only played rows count: a track
 that was only ever loaded still counts as never played.
+
+rekordbox sessions (`HISTORY 001`, …) are the ones a CDJ/XDJ player recorded on
+the USB stick. rekordbox stores no play time or deck there, so those columns stay
+empty and such sessions are listed after the dated ones.
 
 The summary line gives the totals: sessions, plays, distinct tracks, and
 how many of your indexed tracks were never played. History files are only
