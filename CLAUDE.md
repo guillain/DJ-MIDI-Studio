@@ -62,7 +62,7 @@ fixed file path; use `tmp_path`.
 - **Small windows**: nothing clipped or squeezed at small sizes (issue #19). New dialogs use
   `gui/window_size.py` (`fit_to_screen`, `usable_minimum`, `keep_wrapped_text_visible`, `keep_tab_titles_whole`)
   and join `WINDOWS` in `tests/test_small_windows.py` (checked in EN/FR/DE, offscreen screen 800×800). Wide rows
-  go in a `QScrollArea`. A `QSplitter` blocks height-for-width: avoid it around wrapped labels in dialogs. Action-button rows of more
+  of panels use `window_size.ResponsiveRow` (stacks when narrow); other wide rows go in a `QScrollArea`. A `QSplitter` blocks height-for-width: avoid it around wrapped labels in dialogs. Action-button rows of more
   than ~4 buttons go in an `action_groups.FlowLayout` (they wrap) rather than a `QDialogButtonBox`. A question or report
   over a list that can grow (files, tracks, playlists) uses `gui/list_dialog.confirm_list` / `show_list` (every
   row in a table, Cancel default), never a `QMessageBox` with a joined list; any other long `QMessageBox` text is
