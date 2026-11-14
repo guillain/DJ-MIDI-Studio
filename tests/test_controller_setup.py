@@ -444,7 +444,7 @@ def test_on_apply_clicked_blocks_on_validation_errors(monkeypatch):
     view._maybe_add_row("1", "NOTE", "0", "manual")  # missing name/section
 
     shown = {}
-    monkeypatch.setattr(controller_setup_mod.QMessageBox, "warning", lambda *a: shown.setdefault("warned", True))
+    monkeypatch.setattr(controller_setup_mod, "show_list", lambda *a, **k: shown.setdefault("warned", True))
     view._on_apply_clicked()
     assert shown.get("warned") is True
     assert "__ApplySetupTest3__" not in catalog.CONTROLLER_NAMES
@@ -971,12 +971,13 @@ def test_submit_blocked_on_validation_errors(monkeypatch):
 
     shown = {}
     monkeypatch.setattr(
-        controller_setup_mod.QMessageBox, "warning", lambda parent, title, text: shown.update(title=title)
+        controller_setup_mod, "show_list", lambda parent, title, message, headers, rows: shown.update(title=title, rows=rows)
     )
     opened = []
     monkeypatch.setattr(controller_setup_mod.QDesktopServices, "openUrl", lambda url: opened.append(url) or True)
     view._on_submit_clicked()
     assert shown.get("title") == "Cannot submit yet"
+    assert shown["rows"]  # every problem, one per row
     assert opened == []
 
 

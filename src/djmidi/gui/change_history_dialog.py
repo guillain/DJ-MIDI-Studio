@@ -33,6 +33,7 @@ from PySide6.QtWidgets import (
 
 from djmidi.gui import help_texts
 from djmidi.gui.help_button import help_button
+from djmidi.gui.list_dialog import show_list
 from djmidi.gui.translation import translator
 from djmidi.gui.window_size import (
     fit_to_screen,
@@ -301,10 +302,13 @@ class ChangeHistoryDialog(QDialog):
             lines.append(self.tr("{count} already held their previous state.").format(count=len(result.already)))
         if result.failed:
             lines.append(self.tr("{count} left alone:").format(count=len(result.failed)))
-            lines += [f"• {Path(path).name}: {reason}" for path, reason in result.failed[:20]]
-            if len(result.failed) > 20:
-                lines.append(self.tr("… and {count} more").format(count=len(result.failed) - 20))
-            QMessageBox.warning(self, self.tr("Revert change"), "\n".join(lines))
+            show_list(
+                self,
+                self.tr("Revert change"),
+                "\n".join(lines),
+                [self.tr("File"), self.tr("Reason")],
+                [((Path(path).name, reason), (path, reason)) for path, reason in result.failed],
+            )
         else:
             QMessageBox.information(self, self.tr("Revert change"), "\n".join(lines))
         return result

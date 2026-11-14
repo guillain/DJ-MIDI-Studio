@@ -21,7 +21,6 @@ from PySide6.QtGui import (
 )
 from PySide6.QtWidgets import (
     QApplication,
-    QCheckBox,
     QDialog,
     QFileDialog,
     QInputDialog,
@@ -38,6 +37,7 @@ from djmidi.deck_copy import DeckCopyPlan
 from djmidi.gui.commands import ReplaceControlsCommand
 from djmidi.gui.deck_copy_dialog import DeckCopyDialog
 from djmidi.gui.file_reveal import reveal_in_file_manager
+from djmidi.gui.list_dialog import ListDialog
 from djmidi.gui.main_window_parts._shared import (
     _LAST_DIR_SETTINGS_KEY,
     _LAST_DRAFT_SETTINGS_KEY,
@@ -389,28 +389,30 @@ class MappingFilesMixin:
                 added=len(plan.creates), overwritten=len(overwrites)
             ),
         ]
-        if overwrites:
-            shown = [str(item.target) for item in overwrites[:8]]
-            if len(overwrites) > len(shown):
-                shown.append(QCoreApplication.translate("MainWindow", "... and {count} more").format(count=len(overwrites) - len(shown)))
-            lines.append(QCoreApplication.translate("MainWindow", "Overwritten:") + "\n" + "\n".join(shown))
         lines.append(QCoreApplication.translate("MainWindow", "Files that are not in the backup are kept."))
-        box = QMessageBox(self)
-        box.setIcon(QMessageBox.Icon.Warning)
-        box.setWindowTitle(QCoreApplication.translate("MainWindow", "Restore workspace"))
-        box.setText(QCoreApplication.translate("MainWindow", "Restore this backup over your current files?"))
-        box.setInformativeText("\n\n".join(lines))
-        library_check = None
-        if plan.manifest.has(backup.LIBRARY):
-            library_check = QCheckBox(QCoreApplication.translate("MainWindow", "Also restore the music library index (replaces the current one)"))
-            library_check.setChecked(backup.library_db_size() is None)
-            box.setCheckBox(library_check)
-        restore_button = box.addButton(QCoreApplication.translate("MainWindow", "Restore"), QMessageBox.ButtonRole.AcceptRole)
-        box.addButton(QMessageBox.StandardButton.Cancel)
-        box.exec()
-        if box.clickedButton() is not restore_button:
+        # Every overwritten file is listed (a message box showed only 8).
+        has_library = plan.manifest.has(backup.LIBRARY)
+        dialog = ListDialog(
+            QCoreApplication.translate("MainWindow", "Restore workspace"),
+            QCoreApplication.translate("MainWindow", "Restore this backup over your current files?"),
+            [QCoreApplication.translate("MainWindow", "Overwritten file")],
+            [str(item.target) for item in overwrites],
+            note="\n\n".join(lines),
+            accept_text=QCoreApplication.translate("MainWindow", "Restore"),
+            parent=self,
+            check_text=(
+                QCoreApplication.translate("MainWindow", "Also restore the music library index (replaces the current one)")
+                if has_library
+                else ""
+            ),
+            checked=has_library and backup.library_db_size() is None,
+        )
+        accepted = dialog.exec() == QDialog.DialogCode.Accepted
+        library = dialog.check is not None and dialog.check.isChecked()
+        dialog.deleteLater()
+        if not accepted:
             return None
-        return library_check is not None and library_check.isChecked()
+        return library
 
     def _on_restore_workspace(self) -> bool:
         """File → Restore Workspace (issue #187). The restored preferences,

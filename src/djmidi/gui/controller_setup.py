@@ -87,6 +87,7 @@ from djmidi.gui.accessibility import name_icon_buttons
 from djmidi.gui.controller_submission_dialog import ControllerSubmissionDialog
 from djmidi.gui.help_button import help_button
 from djmidi.gui.icons import line_icon
+from djmidi.gui.list_dialog import show_list
 from djmidi.gui.port_list_utils import refresh_checked_port_list
 from djmidi.gui.scroll_utils import AutoSizeScrollArea
 from djmidi.gui.theme import colors as theme_colors
@@ -1631,10 +1632,20 @@ class ControllerSetupView(QWidget):
         )
         Path(path).write_text(source)
 
+    def _show_errors(self, title: str, errors: list[str]) -> None:
+        """Every problem of the draft, one per row (a draft can have many)."""
+        show_list(
+            self,
+            title,
+            self.tr("{count} problem(s) to fix in this draft:").format(count=len(errors)),
+            [self.tr("Problem")],
+            errors,
+        )
+
     def _on_submit_clicked(self) -> None:
         errors = self._validate()
         if errors:
-            QMessageBox.warning(self, self.tr("Cannot submit yet"), "\n".join(errors))
+            self._show_errors(self.tr("Cannot submit yet"), errors)
             return
         dialog = ControllerSubmissionDialog(summarise_source(self._sources), self)
         if dialog.exec() != QDialog.DialogCode.Accepted:
@@ -1681,7 +1692,7 @@ class ControllerSetupView(QWidget):
         errors = self._validate()
         if errors:
             _LOGGER.warning("Controller Setup conflict check for %r found %d issue(s): %s", self._controller_name, len(errors), errors)
-            QMessageBox.warning(self, self.tr("Conflicts found"), "\n".join(errors))
+            self._show_errors(self.tr("Conflicts found"), errors)
         else:
             _LOGGER.info("Controller Setup conflict check for %r: no issues", self._controller_name)
             QMessageBox.information(self, self.tr("No conflicts"), self.tr("No missing fields or conflicting triggers found — draft looks stable."))
@@ -1713,7 +1724,7 @@ class ControllerSetupView(QWidget):
     def _on_apply_clicked(self) -> None:
         errors = self._validate()
         if errors:
-            QMessageBox.warning(self, self.tr("Cannot install yet"), "\n".join(errors))
+            self._show_errors(self.tr("Cannot install yet"), errors)
             return
         if (
             self._controller_name in catalog.CONTROLLER_NAMES
@@ -1769,7 +1780,7 @@ class ControllerSetupView(QWidget):
     def _on_export_clicked(self) -> None:
         errors = self._validate()
         if errors:
-            QMessageBox.warning(self, self.tr("Cannot export yet"), "\n".join(errors))
+            self._show_errors(self.tr("Cannot export yet"), errors)
             return
         if self._controller_name in catalog.CONTROLLER_NAMES and not self._confirm(
             self.tr("'{name}' is already a registered controller name. Export anyway?").format(

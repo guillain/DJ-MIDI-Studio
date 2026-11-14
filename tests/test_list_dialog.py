@@ -23,3 +23,13 @@ def test_a_report_only_closes_and_a_single_column_hides_its_header():
     assert dialog.findChild(QDialogButtonBox).button(QDialogButtonBox.StandardButton.Close) is not None
     assert dialog.table.isHeaderHidden()
     assert dialog.table.topLevelItem(1).text(0) == "Warm-up" and dialog.table.topLevelItem(1).toolTip(0) == "Warm-up"
+
+
+def test_a_plain_string_row_is_one_cell_and_the_check_box_is_offered():
+    from djmidi.gui.list_dialog import ListDialog
+
+    dialog = ListDialog("T", "M", ["Item"], ["/a/b.json"], accept_text="Go", check_text="Also", checked=True)
+    assert dialog.table.topLevelItem(0).text(0) == "/a/b.json"
+    assert dialog.check is not None and dialog.check.isChecked()
+    empty = ListDialog("T", "M", ["Item"], [], accept_text="Go")
+    assert empty.table.isHidden() and empty.check is None
