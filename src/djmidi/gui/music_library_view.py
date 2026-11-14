@@ -3797,19 +3797,19 @@ class MusicLibraryView(QWidget):
         dirs = history.default_history_dirs()
         if not dirs:
             self.history_summary.setText(
-                self.tr("No Serato or Traktor history folder found in ~/Music. Use “Load from folder…”.")
+                self.tr("No Serato, Traktor or rekordbox history found in ~/Music. Use “Load from folder…”.")
             )
             return
         self.load_history(dirs)
 
     def _on_history_folder_clicked(self) -> None:
-        folder = QFileDialog.getExistingDirectory(self, self.tr("Choose a Serato or Traktor history folder"))
+        folder = QFileDialog.getExistingDirectory(self, self.tr("Choose a Serato or Traktor history folder, or a rekordbox USB export"))
         if not folder:
             return
         source = history.detect_source(folder)
         if source is None:
             QMessageBox.information(
-                self, self.tr("History"), self.tr("This folder holds no Serato .session or Traktor history .nml file.")
+                self, self.tr("History"), self.tr("This folder holds no Serato .session file, Traktor history .nml file or rekordbox export (PIONEER/rekordbox/export.pdb).")
             )
             return
         self.load_history({source: folder})

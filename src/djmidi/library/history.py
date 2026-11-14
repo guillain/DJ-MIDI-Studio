@@ -1,4 +1,4 @@
-"""Played-tracks history (issue #227): read Serato and Traktor history, read-only.
+"""Played-tracks history (issue #227): read Serato, Traktor and rekordbox history, read-only.
 
 Two on-disk formats, both checked read-only against the maintainer's real
 folders before writing this (never written to):
@@ -24,6 +24,13 @@ folders before writing this (never written to):
   ``PLAYEDPUBLIC`` (1 = played to the audience, 0 = only pre-listened).
   Title/artist come from the file's own ``COLLECTION`` entries.
 
+- **rekordbox** (#455) device export ``PIONEER/rekordbox/export.pdb`` (a USB
+  stick, SD card or any folder rekordbox exported to): the sessions a player
+  recorded ("HISTORY 001", ...) with their tracks in play order
+  (`rekordbox_library.parse_history`). No play time and no deck are stored.
+  Track paths are relative to the export's root (``/Contents/...``), so they
+  are resolved against the folder holding ``PIONEER``.
+
 Times are returned as timezone-aware datetimes in the computer's local zone
 (Serato stores a Unix timestamp; Traktor stores local wall-clock time, read
 as the computer's local zone).
@@ -44,6 +51,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
+from . import rekordbox_library
 from .serato_library import iter_chunks
 from .workspace import traktor_key_to_path
 
@@ -51,6 +59,7 @@ _LOGGER = logging.getLogger(__name__)
 
 SOURCE_SERATO = "serato"
 SOURCE_TRAKTOR = "traktor"
+SOURCE_REKORDBOX = "rekordbox"
 
 # Serato session-row field ids (see the module docstring).
 _SERATO_PATH = 2
@@ -103,7 +112,24 @@ def default_history_dirs(music_dir: str | os.PathLike[str] | None = None) -> dic
         SOURCE_SERATO: base / "_Serato_" / "History" / "Sessions",
         SOURCE_TRAKTOR: base / "_Traktor" / "History",
     }
-    return {source: path for source, path in candidates.items() if path.is_dir()}
+    found: dict[str, Path] = {source: path for source, path in candidates.items() if path.is_dir()}
+    if rekordbox_export(base) is not None:
+        found[SOURCE_REKORDBOX] = base
+    return found
+
+
+def rekordbox_export(folder: str | os.PathLike[str]) -> Path | None:
+    """The rekordbox device export under `folder`: given the export's root,
+    its ``PIONEER`` folder or ``PIONEER/rekordbox`` itself."""
+    path = Path(folder)
+    for candidate in (
+        path / "PIONEER" / "rekordbox" / "export.pdb",
+        path / "rekordbox" / "export.pdb",
+        path / "export.pdb",
+    ):
+        if candidate.is_file() and candidate.parent.parent.name.upper() == "PIONEER":
+            return candidate
+    return None
 
 
 def detect_source(folder: str | os.PathLike[str]) -> str | None:
@@ -113,6 +139,8 @@ def detect_source(folder: str | os.PathLike[str]) -> str | None:
         return SOURCE_SERATO
     if any(p for p in path.glob("*.nml") if not p.name.startswith("._")):
         return SOURCE_TRAKTOR
+    if rekordbox_export(path) is not None:
+        return SOURCE_REKORDBOX
     return None
 
 
@@ -275,6 +303,44 @@ def read_traktor_history(history_dir: str | os.PathLike[str]) -> list[HistorySes
     return _read_all(sorted(Path(history_dir).glob("*.nml")), parse_traktor_history)
 
 
+# --- rekordbox ------------------------------------------------------------
+
+
+def read_rekordbox_history(folder: str | os.PathLike[str]) -> list[HistorySession]:
+    """The player history sessions of the rekordbox export under `folder`."""
+    pdb = rekordbox_export(folder)
+    if pdb is None:
+        return []
+    try:
+        tracks = {track.id: track for track in rekordbox_library.parse_export(pdb)}
+        sessions = rekordbox_library.parse_history(pdb)
+    except (OSError, ValueError, struct.error) as exc:
+        _LOGGER.warning("Skipping unreadable rekordbox export %s: %s", pdb, exc)
+        return []
+    root = pdb.parent.parent.parent  # the folder holding PIONEER
+    result = []
+    for session in sessions:
+        entries = []
+        for track_id in session.track_ids:
+            track = tracks.get(track_id)
+            if track is None:
+                continue
+            entries.append(
+                PlayedEntry(
+                    path=str(root / track.file_path.lstrip("/")),
+                    played_at=None,
+                    source=SOURCE_REKORDBOX,
+                    session=session.name,
+                    title=track.title or None,
+                    artist=track.artist or None,
+                    duration=float(track.duration_seconds) if track.duration_seconds else None,
+                )
+            )
+        if entries:
+            result.append(HistorySession(SOURCE_REKORDBOX, session.name, entries))
+    return result
+
+
 # --- combining ------------------------------------------------------------
 
 
@@ -297,7 +363,11 @@ def _read_all(paths, reader) -> list[HistorySession]:
 
 def read_history(dirs: dict[str, str | os.PathLike[str]]) -> list[HistorySession]:
     """Sessions from every ``{source: folder}`` pair, newest first."""
-    readers = {SOURCE_SERATO: read_serato_history, SOURCE_TRAKTOR: read_traktor_history}
+    readers = {
+        SOURCE_SERATO: read_serato_history,
+        SOURCE_TRAKTOR: read_traktor_history,
+        SOURCE_REKORDBOX: read_rekordbox_history,
+    }
     sessions: list[HistorySession] = []
     for source, folder in dirs.items():
         sessions.extend(readers[source](folder))
