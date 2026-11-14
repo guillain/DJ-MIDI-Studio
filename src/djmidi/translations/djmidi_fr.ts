@@ -3205,6 +3205,10 @@ Il reste une étape manuelle : ajoutez &apos;{slug}&apos; au bloc d&apos;imports
         <translation>Métronome</translation>
     </message>
     <message>
+        <source>&lt;b&gt;Load DJ history&lt;/b&gt; reads Serato&apos;s and Traktor&apos;s own history from &lt;i&gt;~/Music/_Serato_/History&lt;/i&gt; and &lt;i&gt;~/Music/_Traktor/History&lt;/i&gt;, and the rekordbox player history of an export in &lt;i&gt;~/Music/PIONEER&lt;/i&gt;; &lt;b&gt;Load from folder…&lt;/b&gt; takes another one (a rekordbox USB stick, say). Each session lists the tracks played, with the time and deck; double-click one to select it in the table. Grey rows were only loaded (or pre-listened in Traktor), or aren&apos;t in your indexed folders.&lt;br&gt;&lt;br&gt;&lt;b&gt;Select never played&lt;/b&gt; selects the visible tracks no session played, ready for a playlist. History files are only ever read, never changed.&lt;br&gt;&lt;br&gt;The &lt;b&gt;Gig journal&lt;/b&gt; below is yours to write in: a free-text note per gig, not tied to any track. &lt;b&gt;Add journal entry&lt;/b&gt; saves it; double-click an entry to edit it (the button becomes &lt;b&gt;Save changes&lt;/b&gt;); &lt;b&gt;Delete entry&lt;/b&gt; removes the selected one(s). Kept only in this app&apos;s own index.</source>
+        <translation>&lt;b&gt;Charger l&apos;historique DJ&lt;/b&gt; lit l&apos;historique de Serato et de Traktor depuis &lt;i&gt;~/Music/_Serato_/History&lt;/i&gt; et &lt;i&gt;~/Music/_Traktor/History&lt;/i&gt;, ainsi que l&apos;historique des lecteurs rekordbox d&apos;un export dans &lt;i&gt;~/Music/PIONEER&lt;/i&gt; ; &lt;b&gt;Charger depuis un dossier…&lt;/b&gt; en prend un autre (une clé USB rekordbox, par exemple). Chaque session liste les pistes jouées, avec l&apos;heure et la platine ; double-cliquez sur une pour la sélectionner dans le tableau. Les lignes grises n&apos;ont été que chargées (ou pré-écoutées dans Traktor), ou ne sont pas dans vos dossiers indexés.&lt;br&gt;&lt;br&gt;&lt;b&gt;Sélectionner les jamais joués&lt;/b&gt; sélectionne les pistes visibles qu&apos;aucune session n&apos;a jouées, prêtes pour une playlist. Les fichiers d&apos;historique ne sont jamais que lus, jamais modifiés.&lt;br&gt;&lt;br&gt;Le &lt;b&gt;Journal de soirées&lt;/b&gt; ci-dessous est à vous d&apos;écrire : une note libre par soirée, non liée à une piste. &lt;b&gt;Ajouter une entrée&lt;/b&gt; l&apos;enregistre ; double-cliquez sur une entrée pour la modifier (le bouton devient &lt;b&gt;Enregistrer les modifications&lt;/b&gt;) ; &lt;b&gt;Supprimer l&apos;entrée&lt;/b&gt; retire celle(s) sélectionnée(s). Conservé uniquement dans l&apos;index de cette application.</translation>
+    </message>
+    <message>
         <source>Summarizes the loaded mapping and gives every registered controller a card: its picture, whether a connected MIDI port matches it (&lt;i&gt;MIDI: available&lt;/i&gt;), and shortcuts into the &lt;b&gt;By Channel&lt;/b&gt;, &lt;b&gt;By Controller&lt;/b&gt; and &lt;b&gt;Controller → Images&lt;/b&gt; views.&lt;br&gt;&lt;br&gt;Open a Serato &lt;tt&gt;.xml&lt;/tt&gt; or Traktor &lt;tt&gt;.tsi&lt;/tt&gt; mapping with &lt;b&gt;File → Open Mapping…&lt;/b&gt;.</source>
         <translation>Résume le mapping chargé et donne une carte à chaque contrôleur enregistré : son image, si un port MIDI branché lui correspond (&lt;i&gt;MIDI : disponible&lt;/i&gt;), et des raccourcis vers les vues &lt;b&gt;Par canal&lt;/b&gt;, &lt;b&gt;Par contrôleur&lt;/b&gt; et &lt;b&gt;Contrôleur → Images&lt;/b&gt;.&lt;br&gt;&lt;br&gt;Ouvrez un mapping Serato &lt;tt&gt;.xml&lt;/tt&gt; ou Traktor &lt;tt&gt;.tsi&lt;/tt&gt; avec &lt;b&gt;Fichier → Ouvrir un mapping…&lt;/b&gt;.</translation>
     </message>
@@ -3315,10 +3319,6 @@ Il reste une étape manuelle : ajoutez &apos;{slug}&apos; au bloc d&apos;imports
     <message>
         <source>Play history</source>
         <translation>Historique de lecture</translation>
-    </message>
-    <message>
-        <source>&lt;b&gt;Load DJ history&lt;/b&gt; reads Serato&apos;s and Traktor&apos;s own history from &lt;i&gt;~/Music/_Serato_/History&lt;/i&gt; and &lt;i&gt;~/Music/_Traktor/History&lt;/i&gt;; &lt;b&gt;Load from folder…&lt;/b&gt; takes another one. Each session lists the tracks played, with the time and deck; double-click one to select it in the table. Grey rows were only loaded (or pre-listened in Traktor), or aren&apos;t in your indexed folders.&lt;br&gt;&lt;br&gt;&lt;b&gt;Select never played&lt;/b&gt; selects the visible tracks no session played, ready for a playlist. History files are only ever read, never changed.&lt;br&gt;&lt;br&gt;The &lt;b&gt;Gig journal&lt;/b&gt; below is yours to write in: a free-text note per gig, not tied to any track. &lt;b&gt;Add journal entry&lt;/b&gt; saves it; double-click an entry to edit it (the button becomes &lt;b&gt;Save changes&lt;/b&gt;); &lt;b&gt;Delete entry&lt;/b&gt; removes the selected one(s). Kept only in this app&apos;s own index.</source>
-        <translation>&lt;b&gt;Charger l&apos;historique DJ&lt;/b&gt; lit l&apos;historique de Serato et de Traktor depuis &lt;i&gt;~/Music/_Serato_/History&lt;/i&gt; et &lt;i&gt;~/Music/_Traktor/History&lt;/i&gt; ; &lt;b&gt;Charger depuis un dossier…&lt;/b&gt; en prend un autre. Chaque session liste les pistes jouées, avec l&apos;heure et la platine ; double-cliquez sur une pour la sélectionner dans le tableau. Les lignes grises n&apos;ont été que chargées (ou pré-écoutées dans Traktor), ou ne sont pas dans vos dossiers indexés.&lt;br&gt;&lt;br&gt;&lt;b&gt;Sélectionner les jamais joués&lt;/b&gt; sélectionne les pistes visibles qu&apos;aucune session n&apos;a jouées, prêtes pour une playlist. Les fichiers d&apos;historique ne sont jamais que lus, jamais modifiés.&lt;br&gt;&lt;br&gt;Le &lt;b&gt;Journal de soirées&lt;/b&gt; ci-dessous est à vous d&apos;écrire : une note libre par soirée, non liée à une piste. &lt;b&gt;Ajouter une entrée&lt;/b&gt; l&apos;enregistre ; double-cliquez sur une entrée pour la modifier (le bouton devient &lt;b&gt;Enregistrer les modifications&lt;/b&gt;) ; &lt;b&gt;Supprimer l&apos;entrée&lt;/b&gt; retire celle(s) sélectionnée(s). Conservé uniquement dans l&apos;index de cette application.</translation>
     </message>
     <message>
         <source>Set preparation</source>
@@ -8292,6 +8292,18 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <translation>Ce fichier ne contient aucune playlist.</translation>
     </message>
     <message>
+        <source>No Serato, Traktor or rekordbox history found in ~/Music. Use “Load from folder…”.</source>
+        <translation>Aucun historique Serato, Traktor ou rekordbox trouvé dans ~/Music. Utilisez « Charger depuis un dossier… ».</translation>
+    </message>
+    <message>
+        <source>Choose a Serato or Traktor history folder, or a rekordbox USB export</source>
+        <translation>Choisissez un dossier d&apos;historique Serato ou Traktor, ou un export USB rekordbox</translation>
+    </message>
+    <message>
+        <source>This folder holds no Serato .session file, Traktor history .nml file or rekordbox export (PIONEER/rekordbox/export.pdb).</source>
+        <translation>Ce dossier ne contient ni fichier .session Serato, ni historique .nml Traktor, ni export rekordbox (PIONEER/rekordbox/export.pdb).</translation>
+    </message>
+    <message>
         <source>Traktor playlist</source>
         <translation>Playlist Traktor</translation>
     </message>
@@ -8406,18 +8418,6 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>Could not read the history.</source>
         <translation>Impossible de lire l&apos;historique.</translation>
-    </message>
-    <message>
-        <source>No Serato or Traktor history folder found in ~/Music. Use “Load from folder…”.</source>
-        <translation>Aucun dossier d&apos;historique Serato ou Traktor dans ~/Music. Utilisez « Charger depuis un dossier… ».</translation>
-    </message>
-    <message>
-        <source>Choose a Serato or Traktor history folder</source>
-        <translation>Choisir un dossier d&apos;historique Serato ou Traktor</translation>
-    </message>
-    <message>
-        <source>This folder holds no Serato .session or Traktor history .nml file.</source>
-        <translation>Ce dossier ne contient aucun fichier .session de Serato ni .nml d&apos;historique Traktor.</translation>
     </message>
     <message>
         <source>Loaded but not marked as played.</source>

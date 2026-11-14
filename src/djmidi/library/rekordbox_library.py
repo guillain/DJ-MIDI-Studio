@@ -38,6 +38,8 @@ _PAGE_TYPE_LABELS = 4
 _PAGE_TYPE_KEYS = 5
 _PAGE_TYPE_PLAYLIST_TREE = 7
 _PAGE_TYPE_PLAYLIST_ENTRIES = 8
+_PAGE_TYPE_HISTORY_PLAYLISTS = 11
+_PAGE_TYPE_HISTORY_ENTRIES = 12
 
 _HEADER_TABLES_START = 0x1C
 _TABLE_ENTRY_SIZE = 16
@@ -336,3 +338,29 @@ def parse_playlists(pdb_path: str | Path) -> list[RekordboxPlaylist]:
         if playlist is not None:
             playlist.track_ids.append(track_id)
     return list(playlists.values())
+
+
+def parse_history(pdb_path: str | Path) -> list[RekordboxPlaylist]:
+    """The play-history sessions a player recorded on the device
+    ("HISTORY 001", ...), each with its track IDs in play order.
+
+    crate-digger: a history playlist row is ``id`` (u32) then its name
+    (DeviceSQL string); a history entry row is ``track_id``, ``playlist_id``,
+    ``entry_index`` (u32 each). No play time is stored. Checked on the
+    maintainer's real export.pdb (one session of 4 tracks).
+    """
+    data, header = _load(pdb_path)
+    sessions: dict[int, RekordboxPlaylist] = {}
+    for row_start in _iter_row_starts(data, header, _PAGE_TYPE_HISTORY_PLAYLISTS):
+        (session_id,) = struct.unpack_from("<I", data, row_start)
+        name = decode_device_sql_string(data, row_start + 4)
+        sessions[session_id] = RekordboxPlaylist(id=session_id, name=name, parent_id=0, is_folder=False)
+    entries = [
+        struct.unpack_from("<III", data, row_start)
+        for row_start in _iter_row_starts(data, header, _PAGE_TYPE_HISTORY_ENTRIES)
+    ]
+    for track_id, session_id, _entry_index in sorted(entries, key=lambda e: (e[1], e[2])):
+        session = sessions.get(session_id)
+        if session is not None:
+            session.track_ids.append(track_id)
+    return sorted(sessions.values(), key=lambda session: session.id)

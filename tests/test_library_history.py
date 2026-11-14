@@ -180,3 +180,30 @@ def test_read_history_sorts_newest_first_and_summarizes(tmp_path):
     assert a.last_played == _local(2025, 11, 7, 20, 17, 45)
     library = ["/Music/Tek/a.mp3", "/Music/Tek/b.mp3", "/Music/c.mp3"]
     assert history.never_played(library, sessions) == ["/Music/Tek/b.mp3", "/Music/c.mp3"]
+
+
+def test_rekordbox_device_export_history(tmp_path):
+    """A rekordbox export (USB stick or any folder): the player's sessions,
+    tracks resolved against the folder holding PIONEER, found from the root,
+    PIONEER or PIONEER/rekordbox, and by `default_history_dirs`."""
+    from test_rekordbox_library import _synthetic_pdb_path
+
+    folder = tmp_path / "PIONEER" / "rekordbox"
+    folder.mkdir(parents=True)
+    _synthetic_pdb_path(folder)
+    for chosen in (tmp_path, tmp_path / "PIONEER", folder):
+        assert history.detect_source(chosen) == history.SOURCE_REKORDBOX
+    assert history.default_history_dirs(tmp_path) == {history.SOURCE_REKORDBOX: tmp_path}
+    [session] = history.read_history({history.SOURCE_REKORDBOX: tmp_path / "PIONEER"})
+    assert session.name == "HISTORY 001" and session.source == history.SOURCE_REKORDBOX
+    first, second = session.entries
+    assert first.title == "No Metadata"
+    assert second.path == str(tmp_path / "Contents" / "Amon Tobin" / "track.mp3")
+    assert second.artist == "Amon Tobin" and second.played_at is None
+    assert history.summarize_plays([session])[second.path].play_count == 1
+
+
+def test_rekordbox_export_outside_a_pioneer_folder_is_not_history(tmp_path):
+    (tmp_path / "export.pdb").write_bytes(b"not a pdb")
+    assert history.detect_source(tmp_path) is None
+    assert history.read_rekordbox_history(tmp_path) == []
