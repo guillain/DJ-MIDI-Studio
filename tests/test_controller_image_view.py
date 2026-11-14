@@ -1,5 +1,6 @@
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QPainter, QTransform
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QWidget
 
 from djmidi import catalog
 from djmidi.catalog._registry import ControllerDefinition, register
@@ -649,18 +650,16 @@ def test_toolbar_row_scrolls_instead_of_clipping_at_a_narrow_width():
     not just the narrow ones being fixed)."""
     view = ControllerImageView()
     view.show()
+    view.resize(1600, 600)
     QApplication.processEvents()
-    view.resize(800, 600)
-    QApplication.processEvents()
-    wide_height = view._controls_scroll.height()
+    one_line = view._controls_container.height()
 
-    view.resize(200, 600)
+    view.resize(640, 600)
     QApplication.processEvents()
-    # Narrowing the window must not squeeze the row shorter (the pre-fix
-    # clipping failure mode) or taller (the gap-above regression hit while
-    # building this fix) -- its height is fixed, independent of width.
-    assert view._controls_scroll.height() == wide_height
-    # The row's real content is wider than 200px, so it must be scrollable
-    # rather than compressed to fit.
-    assert view._controls_scroll.horizontalScrollBar().maximum() > 0
+    # Since the toolbar wraps: taller, and every control fully visible.
+    container = view._controls_container
+    assert container.height() > one_line
+    for child in container.findChildren(QWidget, options=Qt.FindChildOption.FindDirectChildrenOnly):
+        if child.isVisible():
+            assert child.geometry().right() <= container.width(), child
     view.close()

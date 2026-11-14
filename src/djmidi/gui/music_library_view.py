@@ -1240,10 +1240,6 @@ class MusicLibraryView(QWidget):
         actions.setProperty("actionArea", True)
         actions_box = QVBoxLayout(actions)
         actions_box.setContentsMargins(0, 0, 0, 0)
-        header = QHBoxLayout()
-        header.addStretch(1)
-        header.addWidget(help_button(self, *help_texts.LIBRARY_FOLDERS))
-        actions_box.addLayout(header)
         actions_box.addWidget(
             action_section(
                 self.tr("Folders"),
@@ -1267,6 +1263,9 @@ class MusicLibraryView(QWidget):
         self.progress_bar.setVisible(False)
         status_row.addWidget(self.status_label, 1)
         status_row.addWidget(self.progress_bar, 1)
+        # The help sits on the status line: a row of its own above the
+        # buttons left an empty band at the top of the box.
+        status_row.addWidget(help_button(self, *help_texts.LIBRARY_FOLDERS))
         box.addLayout(status_row)
         return group
 

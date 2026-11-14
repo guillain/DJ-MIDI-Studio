@@ -21,7 +21,6 @@ from PySide6.QtGui import QBrush, QColor, QDesktopServices, QPainter, QPen, QPix
 from PySide6.QtWidgets import (
     QAbstractGraphicsShapeItem,
     QComboBox,
-    QFrame,
     QGraphicsEllipseItem,
     QGraphicsLineItem,
     QGraphicsPixmapItem,
@@ -29,10 +28,8 @@ from PySide6.QtWidgets import (
     QGraphicsScene,
     QGraphicsTextItem,
     QGraphicsView,
-    QHBoxLayout,
     QLabel,
     QPushButton,
-    QScrollArea,
     QVBoxLayout,
     QWidget,
 )
@@ -41,6 +38,7 @@ from djmidi import catalog
 from djmidi.catalog.profile import USER_PLUGIN_PREFIX
 from djmidi.gui import help_texts
 from djmidi.gui import layout as layout_mod
+from djmidi.gui.action_groups import FlowLayout
 from djmidi.gui.geometry import CONTROL_GEOMETRY
 from djmidi.gui.help_button import help_button
 from djmidi.gui.jog import DEGREES_PER_TICK as _JOG_DEGREES_PER_TICK
@@ -231,7 +229,10 @@ class ControllerImageView(QWidget):
         # Starts on a hidden tab: scan ports when first shown (issue #264).
         self._live_send = LiveSendControl(defer_port_scan=True)
 
-        controls = QHBoxLayout()
+        # The toolbar wraps onto more lines when the window is narrow (or the
+        # labels long, in French or German) instead of hiding its end behind
+        # a horizontal scroll bar (issue #19).
+        controls = FlowLayout()
         controls.addWidget(self._combo)
         controls.addWidget(reset_button)
         controls.addWidget(self._documentation_button)
@@ -239,32 +240,8 @@ class ControllerImageView(QWidget):
         controls.addWidget(self._layers)
         controls.addWidget(self._live_send)
         controls.addWidget(help_button(self, *help_texts.CONTROLLER_IMAGES))
-        controls.addStretch(1)
-
-        # This toolbar row (controller picker, zoom/docs buttons, both
-        # checkboxes, the live-send port picker) has no room to shrink
-        # below its natural width -- at a docked/narrow window it silently
-        # truncated every label (issue #19; a proactive audit at 700x500
-        # down to 320x240 found this tab's own toolbar had never been
-        # covered by that chantier's earlier passes, unlike Controller
-        # Setup/Dashboard/MIDI Routing). Wrap it in a scroll area so it
-        # scrolls horizontally instead. Unlike Live Monitor's top_row (whose
-        # AutoSizeScrollArea tracks a *variable* content height shared with
-        # a stretch>0 sibling), this row's content never changes height, so
-        # a fixed height read once from the unwrapped layout's own
-        # sizeHint() is simpler and avoids a real regression AutoSizeScrollArea
-        # caused here: its sizeHint() over-reported this row's height enough
-        # to open a visible gap above it at every window size, not just the
-        # narrow ones this fix targets.
         self._controls_container = QWidget()
         self._controls_container.setLayout(controls)
-        controls_row_height = self._controls_container.sizeHint().height()
-        self._controls_scroll = QScrollArea()
-        self._controls_scroll.setWidgetResizable(True)
-        self._controls_scroll.setFrameShape(QFrame.Shape.NoFrame)
-        self._controls_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self._controls_scroll.setFixedHeight(controls_row_height)
-        self._controls_scroll.setWidget(self._controls_container)
 
         self._scene = QGraphicsScene(self)
         self._view = _ZoomableView(self._scene)
@@ -294,7 +271,7 @@ class ControllerImageView(QWidget):
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(self._controls_scroll, 0)
+        layout.addWidget(self._controls_container, 0)
         layout.addWidget(self._view)
         layout.addWidget(self._live_send_status)
 
