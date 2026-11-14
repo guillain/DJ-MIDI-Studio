@@ -43,7 +43,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest, macos-15-intel, windows-latest]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -64,7 +64,9 @@ jobs:
 
       - name: Install dependencies
         # The 'analysis' extra (librosa): BPM/key estimation ships in the executables.
-        run: uv sync --group dev --extra analysis
+        # librosa's llvmlite has no Intel macOS wheel for Python 3.14: the
+        # Intel app ships without BPM/key estimation (optional extra).
+        run: uv sync --group dev ${{ matrix.os != 'macos-15-intel' && '--extra analysis' || '' }}
 
       - name: Build executable
         shell: bash
@@ -81,7 +83,7 @@ jobs:
         run: |
           os_name="$(echo '${{ runner.os }}' | tr '[:upper:]' '[:lower:]')"
           uv run python scripts/smoke_test_executable.py --os "$os_name" \
-            --screenshot "build/smoke-test-logs/startup-$os_name.png" --require-analysis
+            --screenshot "build/smoke-test-logs/startup-$os_name.png" ${{ matrix.os != 'macos-15-intel' && '--require-analysis' || '' }}
 
       - name: Upload startup screenshot
         if: always()
