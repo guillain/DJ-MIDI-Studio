@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QPushButton
 
 from djmidi import catalog
 from djmidi.catalog._registry import ControlInfo
@@ -1217,16 +1217,13 @@ def test_midi_input_and_output_row_is_wrapped_in_a_scroll_area():
     shrinking. A QScrollArea around that row enforces its real minimum size
     and shows a scrollbar instead.
 
-    Two QScrollArea instances exist on this view (findChildren matches the
-    AutoSizeScrollArea subclass too): header_scroll (this test's target)
-    and row_buttons_scroll (v0.47.92's row_buttons fix, same issue) -- find
-    the one that actually contains the MIDI input/Output content rather
-    than assuming there is only one."""
+    header_scroll is the only QScrollArea on this view (the row buttons now
+    wrap instead of scrolling)."""
     from PySide6.QtWidgets import QGroupBox, QLabel, QScrollArea
 
     view = _view_with_name()
     scroll_areas = view.findChildren(QScrollArea)
-    assert len(scroll_areas) == 2
+    assert len(scroll_areas) == 1
     scroll_area = next(sa for sa in scroll_areas if sa.findChildren(QGroupBox))
     assert scroll_area.widgetResizable() is True
     labels = {lbl.text() for lbl in scroll_area.findChildren(QLabel)}
@@ -1235,26 +1232,40 @@ def test_midi_input_and_output_row_is_wrapped_in_a_scroll_area():
     assert "MIDI Output" in group_titles
 
 
-def test_row_buttons_row_scrolls_instead_of_clipping_at_a_narrow_width():
-    """Regression test for issue #19 (v0.47.92): row_buttons (Delete
-    selected row(s) / Add row / Set section for selected rows… / Set name
-    for selected rows…) had no scroll protection of its own, unlike
-    header_scroll above it. At a narrow enough width its four buttons'
-    labels squeezed below legible, overlapping each other entirely at
-    320x240. row_buttons_scroll must stay at exactly the row's natural
-    height regardless of the view's own width, and scroll horizontally
-    rather than compress once the content doesn't fit."""
+def test_row_buttons_wrap_instead_of_scrolling_at_a_narrow_width():
+    """Issue #19: the four row buttons (Delete selected row(s) / Add row /
+    Set section… / Set name…) wrap onto more lines in a narrow window
+    instead of squeezing or scrolling sideways."""
     view = _view_with_name()
     view.show()
     QApplication.processEvents()
-    view.resize(900, 600)
+    view.resize(1400, 600)
     QApplication.processEvents()
-    wide_height = view._row_buttons_scroll.height()
+    wide_height = view._row_buttons_container.height()
 
-    view.resize(220, 600)
+    view.resize(500, 600)
     QApplication.processEvents()
-    assert view._row_buttons_scroll.height() == wide_height
-    assert view._row_buttons_scroll.horizontalScrollBar().maximum() > 0
+    assert view._row_buttons_container.height() > wide_height
+    for button in view._row_buttons_container.findChildren(QPushButton):
+        assert button.geometry().right() <= view._row_buttons_container.width()
+    view.close()
+
+
+def test_midi_input_and_output_stack_in_a_narrow_window():
+    """German Controller Setup at 1024 px needed 1171 px for MIDI input and
+    MIDI Output side by side: they stack instead of scrolling sideways."""
+    view = _view_with_name()
+    view.show()
+    view.resize(1600, 800)
+    QApplication.processEvents()
+    assert not view._io_row.is_stacked()
+    view.resize(900, 800)
+    QApplication.processEvents()
+    assert view._io_row.is_stacked()
+    assert view._io_row.minimumSizeHint().width() < view._io_row.side_by_side_width()
+    view.resize(1600, 800)
+    QApplication.processEvents()
+    assert not view._io_row.is_stacked()
     view.close()
 
 

@@ -25,15 +25,20 @@ the v0.48.90–v0.48.103 batch:
   the French labels made it common (issue #290). `keep_tab_titles_whole`
   keeps the titles whole and scrolls the tab bar instead.
 
+* A row of wide panels side by side forces the whole tab to scroll
+  sideways in a narrow window or a longer language (German Controller
+  Setup at 1024 px). `ResponsiveRow` keeps them side by side when they fit
+  and stacks them otherwise.
+
 `fit_size` is the Qt-free arithmetic, kept separate so it is testable on
 plain numbers.
 """
 
 from __future__ import annotations
 
-from PySide6.QtCore import QEvent, QObject, Qt
-from PySide6.QtGui import QGuiApplication
-from PySide6.QtWidgets import QTabWidget, QWidget
+from PySide6.QtCore import QEvent, QObject, QSize, Qt
+from PySide6.QtGui import QGuiApplication, QResizeEvent
+from PySide6.QtWidgets import QBoxLayout, QTabWidget, QWidget
 
 # Share of the available screen a window may take by default, the same
 # margins `MainWindow._default_window_size` keeps for its title bar/edges.
@@ -147,3 +152,50 @@ __all__ = [
     "usable_minimum",
     "wrapped_minimum",
 ]
+
+
+class ResponsiveRow(QWidget):
+    """Widgets side by side when they fit, one under the other otherwise.
+
+    Its minimum width is the widest child's, not their sum, so a scroll
+    area around it never scrolls sideways for want of a row.
+    """
+
+    # Extra room needed before going back to side by side, so a scroll bar
+    # appearing or vanishing at the threshold can't flip it back and forth.
+    HYSTERESIS = 24
+
+    def __init__(self, widgets: list[tuple[QWidget, int]], spacing: int = 12, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        self._stretches = [stretch for _widget, stretch in widgets]
+        self._row = QBoxLayout(QBoxLayout.Direction.LeftToRight, self)
+        self._row.setContentsMargins(0, 0, 0, 0)
+        self._row.setSpacing(spacing)
+        for widget, stretch in widgets:
+            self._row.addWidget(widget, stretch)
+
+    def is_stacked(self) -> bool:
+        return self._row.direction() == QBoxLayout.Direction.TopToBottom
+
+    def side_by_side_width(self) -> int:
+        widths = [self._row.itemAt(i).minimumSize().width() for i in range(self._row.count())]
+        return sum(widths) + self._row.spacing() * max(0, len(widths) - 1)
+
+    def minimumSizeHint(self) -> QSize:
+        widest = max((self._row.itemAt(i).minimumSize().width() for i in range(self._row.count())), default=0)
+        return QSize(widest, super().minimumSizeHint().height())
+
+    def resizeEvent(self, event: QResizeEvent) -> None:
+        super().resizeEvent(event)
+        need = self.side_by_side_width()
+        stacked = self.is_stacked()
+        if not stacked and event.size().width() < need:
+            self._set_stacked(True)
+        elif stacked and event.size().width() >= need + self.HYSTERESIS:
+            self._set_stacked(False)
+
+    def _set_stacked(self, stacked: bool) -> None:
+        self._row.setDirection(QBoxLayout.Direction.TopToBottom if stacked else QBoxLayout.Direction.LeftToRight)
+        for index, stretch in enumerate(self._stretches):
+            self._row.setStretch(index, 0 if stacked else stretch)
+        self.updateGeometry()

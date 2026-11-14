@@ -67,6 +67,19 @@ def test_db_opens_lazily():
     view.close_db()
 
 
+def test_audio_preview_stays_visible_below_the_scrolled_content():
+    """At 1280x800 the player sat below the fold: it is pinned under the
+    tab's scroll area, never inside it."""
+    view = MusicLibraryView(db_path=":memory:")
+    view.resize(1200, 500)
+    view.show()
+    QApplication.processEvents()
+    assert not view._scroll.widget().isAncestorOf(view.audio_preview)
+    assert view.audio_preview.geometry().bottom() <= view.height()
+    assert view._scroll.geometry().bottom() < view.audio_preview.geometry().top()
+    view.close_db()
+
+
 def test_scan_fills_consolidated_table(library):
     view, _music, _ = library
     assert view.is_busy() is False

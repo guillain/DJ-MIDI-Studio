@@ -1150,9 +1150,13 @@ class MusicLibraryView(QWidget):
         # table is what needs the room.
         body.setSizes([680, 320])
         layout.addWidget(body, 1)
-        # Issue #192: play the current track (gui/audio_preview.py).
+        # Issue #192: play the current track (gui/audio_preview.py). It sits
+        # outside the scroll area, pinned under it, so the transport stays
+        # visible when the tab is taller than the window (1280x800 put it
+        # below the fold).
         self.audio_preview = AudioPreviewBar(self)
-        layout.addWidget(self.audio_preview)
+        self.audio_preview.setContentsMargins(9, 0, 9, 6)
+        outer.addWidget(self.audio_preview)
         self.table.selectionModel().currentRowChanged.connect(self._preview_current_row)
         # Issue #210: Space / Left / Right in the table drive the preview,
         # and auto-advance moves to the next row when a track ends.

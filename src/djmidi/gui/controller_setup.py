@@ -53,7 +53,6 @@ from PySide6.QtWidgets import (
     QListWidget,
     QMessageBox,
     QPushButton,
-    QScrollArea,
     QSizePolicy,
     QTableWidget,
     QTableWidgetItem,
@@ -84,6 +83,7 @@ from djmidi.catalog.profile import USER_PLUGIN_PREFIX, save_controller_profile
 from djmidi.controller_sync import ControllerSyncSet, sync_set_from_events
 from djmidi.gui import help_texts
 from djmidi.gui.accessibility import name_icon_buttons
+from djmidi.gui.action_groups import FlowLayout
 from djmidi.gui.controller_submission_dialog import ControllerSubmissionDialog
 from djmidi.gui.help_button import help_button
 from djmidi.gui.icons import line_icon
@@ -93,6 +93,7 @@ from djmidi.gui.scroll_utils import AutoSizeScrollArea
 from djmidi.gui.theme import colors as theme_colors
 from djmidi.gui.theme import signals as theme_signals
 from djmidi.gui.translation import translator
+from djmidi.gui.window_size import ResponsiveRow
 from djmidi.i18n import QT_TRANSLATE_NOOP
 from djmidi.midi_io import (
     MidiEvent,
@@ -499,20 +500,11 @@ class ControllerSetupView(QWidget):
         # inside each grows to fill via its own stretch factor above), so
         # the two panels read as one matched-height toolbar instead of the
         # (taller) self.tr("MIDI Output") panel dwarfing a short "MIDI input" one.
-        io_row = QHBoxLayout()
-        io_row.setSpacing(12)
-        io_row.addWidget(capture_box, 1)
-        io_row.addWidget(output_box, 3)
-
-        # The self.tr("MIDI Output") panel's three side-by-side columns (Send message /
-        # Playback / Pad modes) plus "MIDI input" need more width than the
-        # app's default/minimum window size guarantees (issue #19: verified by
-        # screenshotting this tab at 1100x700, where the columns compressed
-        # below their contents' minimum size and overlapped). A QScrollArea
-        # enforces the row's real minimum size hint and shows a scrollbar
-        # instead of letting that happen again.
-        io_container = QWidget()
-        io_container.setLayout(io_row)
+        # Side by side when they fit; stacked (MIDI input above MIDI Output)
+        # in a narrow window or a longer language instead of scrolling the
+        # whole tab sideways (German at 1024 px needed 1171 px).
+        io_container = ResponsiveRow([(capture_box, 1), (output_box, 3)], spacing=12)
+        self._io_row = io_container
 
         self._table = QTableWidget(0, 7)
         self._table.setHorizontalHeaderLabels(
@@ -548,33 +540,15 @@ class ControllerSetupView(QWidget):
         bulk_name_button.setMinimumHeight(28)
         bulk_name_button.setToolTip(self.tr("Assign a Name to every selected row, optionally auto-numbered (PAD 1, PAD 2, …)"))
         bulk_name_button.clicked.connect(self._on_bulk_set_name_clicked)
-        row_buttons = QHBoxLayout()
-        row_buttons.setSpacing(8)
+        # The four buttons wrap onto a second line when the window is too
+        # narrow for them (issue #19); they used to scroll sideways.
+        row_buttons = FlowLayout(spacing=8)
         row_buttons.addWidget(delete_button)
         row_buttons.addWidget(add_button)
         row_buttons.addWidget(bulk_section_button)
         row_buttons.addWidget(bulk_name_button)
-        row_buttons.addStretch(1)
-
-        # row_buttons itself had no scroll protection -- at a narrow enough
-        # width its four buttons' labels (self.tr("Set section for selected rows…")
-        # is the longest) squeezed below legible, overlapping each other
-        # entirely at 320x240 (issue #19, found by the same proactive audit
-        # that caught Controller Images' toolbar and By Channel/Deck/
-        # Controller's controls_layout, v0.47.91/.92). Same fix: a
-        # QScrollArea with a height fixed to the row's own sizeHint (not
-        # AutoSizeScrollArea -- this row's content never changes height,
-        # unlike header_scroll above, whose content does), so it scrolls
-        # horizontally as a unit instead of squeezing.
         self._row_buttons_container = QWidget()
         self._row_buttons_container.setLayout(row_buttons)
-        row_buttons_height = self._row_buttons_container.sizeHint().height()
-        self._row_buttons_scroll = QScrollArea()
-        self._row_buttons_scroll.setWidgetResizable(True)
-        self._row_buttons_scroll.setFrameShape(QFrame.Shape.NoFrame)
-        self._row_buttons_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self._row_buttons_scroll.setFixedHeight(row_buttons_height)
-        self._row_buttons_scroll.setWidget(self._row_buttons_container)
 
         # The name row, "Draft" panel (hint text + Session/Import/Apply
         # toolbar), and "MIDI input"/self.tr("MIDI Output") (io_scroll) previously sat
@@ -638,7 +612,7 @@ class ControllerSetupView(QWidget):
         layout.setContentsMargins(10, 10, 10, 10)
         layout.addWidget(header_scroll, 0)
         layout.addWidget(self._table, 1)
-        layout.addWidget(self._row_buttons_scroll, 0)
+        layout.addWidget(self._row_buttons_container, 0)
 
         self._timer = QTimer(self)
         self._timer.setInterval(_POLL_INTERVAL_MS)
