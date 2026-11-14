@@ -204,7 +204,11 @@ class AtelierView(QWidget):
         side_scroll.setWidgetResizable(True)
         side_scroll.setFrameShape(QFrame.Shape.NoFrame)
         side_scroll.setWidget(side)
-        side_scroll.setMinimumWidth(300)
+        # Room for the panel's own minimum plus a vertical scroll bar, or the
+        # bar eats into the panel and its right edge (LED value box) is cut
+        # behind a horizontal scroll bar (seen in French at 1280x800).
+        scrollbar = side_scroll.verticalScrollBar().sizeHint().width()
+        side_scroll.setMinimumWidth(max(300, side.minimumSizeHint().width() + scrollbar))
 
         splitter = QSplitter(Qt.Orientation.Horizontal)
         splitter.addWidget(self._photo_scroll)

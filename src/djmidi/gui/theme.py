@@ -242,6 +242,16 @@ QComboBox QAbstractItemView, QListView {
 QCheckBox, QLabel, QRadioButton {
     color: $label_text;
 }
+/* An empty box must show its outline: Fusion draws it from the window colour,
+   invisible on the dark theme. Only the unchecked state is styled, so the
+   checked one keeps the native check mark. */
+QCheckBox::indicator:unchecked, QAbstractItemView::indicator:unchecked {
+    width: 13px;
+    height: 13px;
+    background: $field_bg;
+    border: 1px solid $field_border;
+    border-radius: 3px;
+}
 QTableWidget, QTableView, QTreeView {
     background: $field_bg;
     alternate-background-color: $table_alt;
