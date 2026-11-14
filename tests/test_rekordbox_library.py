@@ -9,6 +9,7 @@ from djmidi.library.rekordbox_library import (
     RekordboxTrack,
     decode_device_sql_string,
     parse_export,
+    parse_history,
     parse_playlists,
 )
 
@@ -29,6 +30,8 @@ _PAGE_TYPE_LABELS = 4
 _PAGE_TYPE_KEYS = 5
 _PAGE_TYPE_PLAYLIST_TREE = 7
 _PAGE_TYPE_PLAYLIST_ENTRIES = 8
+_PAGE_TYPE_HISTORY_PLAYLISTS = 11
+_PAGE_TYPE_HISTORY_ENTRIES = 12
 
 
 def _short_ascii_string(text: str) -> bytes:
@@ -207,6 +210,10 @@ def _synthetic_pdb_path(tmp_path) -> str:
                 _playlist_entry_row(1, 2, 101),
                 _playlist_entry_row(0, 1, 101),
             ],
+            # History rows are (track_id, playlist_id, entry_index), unlike
+            # playlist entries; the real export.pdb holds "HISTORY 001".
+            _PAGE_TYPE_HISTORY_PLAYLISTS: [struct.pack("<I", 1) + _short_ascii_string("HISTORY 001")],
+            _PAGE_TYPE_HISTORY_ENTRIES: [struct.pack("<III", 1, 1, 2), struct.pack("<III", 2, 1, 1)],
         }
     )
     path = tmp_path / "export.pdb"
@@ -300,3 +307,9 @@ def test_rekordbox_track_and_playlist_are_plain_dataclasses():
 
     playlist = RekordboxPlaylist(id=1, name="n", parent_id=0, is_folder=False)
     assert playlist.track_ids == []
+
+
+def test_parse_history_reads_sessions_in_play_order(tmp_path):
+    [session] = parse_history(_synthetic_pdb_path(tmp_path))
+    assert session.name == "HISTORY 001"
+    assert session.track_ids == [2, 1]

@@ -748,8 +748,9 @@ LIBRARY_HISTORY: HelpEntry = (
     QT_TRANSLATE_NOOP(
         "HelpTexts",
         "<b>Load DJ history</b> reads Serato's and Traktor's own history from "
-        "<i>~/Music/_Serato_/History</i> and <i>~/Music/_Traktor/History</i>; "
-        "<b>Load from folder…</b> takes another one. Each session lists the tracks "
+        "<i>~/Music/_Serato_/History</i> and <i>~/Music/_Traktor/History</i>, and the "
+        "rekordbox player history of an export in <i>~/Music/PIONEER</i>; "
+        "<b>Load from folder…</b> takes another one (a rekordbox USB stick, say). Each session lists the tracks "
         "played, with the time and deck; double-click one to select it in the table. "
         "Grey rows were only loaded (or pre-listened in Traktor), or aren't in your "
         "indexed folders.<br><br>"
