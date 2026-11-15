@@ -73,4 +73,48 @@ def test_gaps_and_encoders_do_not_resolve():
         assert _lc1(str(note)) == []
     assert _lc1("16", "Control Change") == []
     assert _lc1("16") != []
-    assert [h for h in catalog.lookup("1", "Note On", "16") if h.controller == CONTROLLER] == []
+    assert [h for h in catalog.lookup("2", "Note On", "16") if h.controller == CONTROLLER] == []
+
+
+TRAKTOR = Path(__file__).resolve().parents[1] / "data" / "traktor" / "traktor-settings-4.4.1.tsi.zip"
+
+
+def _traktor_lc1_device():
+    from djmidi.software import _tsi
+
+    with zipfile.ZipFile(TRAKTOR) as archive:
+        text = archive.read("Traktor Settings.tsi").decode("utf-8")
+    return next(d for d in _tsi.parse_tsi(text).devices if d.comment == "CMD LC-1-CH1")
+
+
+def test_real_traktor_settings_bind_the_same_notes_on_channel_1():
+    """The maintainer's real Traktor 4.4.1 settings map the unit on MIDI
+    channel 1: every button note it binds resolves to a CMD LC-1 control."""
+    device = _traktor_lc1_device()
+    notes = {m.trigger for m in device.mappings if m.direction == "in" and m.trigger and m.trigger.kind == "Note"}
+    assert {t.channel for t in notes} == {1}
+    assert len(notes) == 52
+    for trigger in notes:
+        hits = [h for h in catalog.lookup("1", "Note On", str(trigger.number)) if h.controller == CONTROLLER]
+        assert len(hits) == 1, trigger
+
+
+def test_channel_1_and_channel_8_name_the_same_control():
+    for note in ("16", "32", "63", "75"):
+        on_1 = [h.name for h in catalog.lookup("1", "Note On", note) if h.controller == CONTROLLER]
+        assert on_1 == _lc1(note)
+
+
+def test_supports_serato_and_traktor():
+    from djmidi.catalog._registry import get_definition
+
+    definition = get_definition(CONTROLLER)
+    assert definition.supported_software == ("serato", "traktor")
+
+
+def test_the_alternate_channel_adds_no_atelier_feature():
+    from djmidi.atelier.features import features_for
+
+    features = features_for(CONTROLLER)
+    assert {f.input.channel for f in features} == {8}
+    assert all(f.deck is None for f in features)

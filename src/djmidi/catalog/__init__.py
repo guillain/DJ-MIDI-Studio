@@ -140,7 +140,9 @@ def lookup(channel: str | None, event_type: str | None, data1: str | None) -> li
         results.extend(
             entry
             for entry in definition.static_entries
-            if entry.note_or_cc == kind and channel in entry.channels and entry.data1 == data1
+            if entry.note_or_cc == kind
+            and (channel in entry.channels or channel in definition.alternate_channels)
+            and entry.data1 == data1
         )
         if definition.pad_lookup is not None:
             found = definition.pad_lookup(channel, kind, data1)

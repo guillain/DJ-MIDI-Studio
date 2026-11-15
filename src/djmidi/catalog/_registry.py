@@ -43,6 +43,10 @@ class ControllerDefinition:
     # Names the OS gives the device's MIDI port when they don't contain
     # `name` (e.g. "CMD LC-1" for "Behringer CMD LC-1"); matched like `name`.
     port_names: tuple[str, ...] = ()
+    # Other MIDI channels the unit itself can be set to (a device setting,
+    # not decks): a message on one of them resolves to the same control as
+    # on the entry's own channel. The Atelier and the layouts ignore them.
+    alternate_channels: tuple[str, ...] = ()
     reference_image: str | None = None
     display_order: int = 100
     static_entries: list[ControlInfo] = field(default_factory=list)

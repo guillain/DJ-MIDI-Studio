@@ -5,6 +5,11 @@ value here was captured from the maintainer's own unit with Controller Setup's
 live learning (factory settings, MIDI channel 8) and cross-checked against
 their real Serato export (data/serato/cmd-lc1.xml.zip, notes 32-63).
 
+The unit's MIDI channel can be changed. The maintainer's real Traktor 4.4.1
+settings (data/traktor/traktor-settings-4.4.1.tsi.zip, device "CMD LC-1-CH1")
+bind exactly the same notes and encoder CCs on channel 1: channel 1 is an
+alternate channel (a unit setting, not a second deck).
+
 Below the encoders, the face is 13 rows of 4 buttons, numbered by row from the
 top with notes running left to right:
 
@@ -50,8 +55,9 @@ register(
         plugin_id="behringer.cmd-lc-1",
         manufacturer="Behringer",
         port_names=("CMD LC-1",),
+        alternate_channels=("1",),
         reference_image="hardware/behringer/CMD-LC-1/reference.png",
-        supported_software=("serato",),
+        supported_software=("serato", "traktor"),
         static_entries=_STATIC,
         section_order=("NUMBER", "GRID", "MUTE", "SOLO", "RECORD"),
         display_order=70,
