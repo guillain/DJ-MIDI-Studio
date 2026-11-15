@@ -28,8 +28,8 @@ def test_mapping_start_dir_prefers_last_dir_then_the_software_folder_then_home(t
     home = tmp_path / "home"
     serato = home / "Music" / "_Serato_" / "MIDI" / "Xml"
     serato.mkdir(parents=True)
-    traktor = home / "Documents" / "Native Instruments" / "Traktor 4.0.0" / "Settings"
-    traktor.mkdir(parents=True)
+    traktor = home / "Documents" / "Native Instruments" / "Traktor 4.0.0"
+    (traktor / "Settings").mkdir(parents=True)
     last = tmp_path / "last"
     last.mkdir()
     assert file_locations.mapping_start_dir("serato", last, home) == last
@@ -37,3 +37,11 @@ def test_mapping_start_dir_prefers_last_dir_then_the_software_folder_then_home(t
     assert file_locations.mapping_start_dir("traktor", tmp_path / "missing", home) == traktor
     assert file_locations.mapping_start_dir(None, None, home) == serato
     assert file_locations.mapping_start_dir(None, None, tmp_path / "empty") == tmp_path / "empty"
+
+
+def test_traktor_folders_newest_version_first(tmp_path):
+    native = tmp_path / "Documents" / "Native Instruments"
+    for name in ("Traktor 4.9.1", "Traktor 4.10.0", "Traktor 3.11.1"):
+        (native / name).mkdir(parents=True)
+    dirs = file_locations.software_mapping_dirs("traktor", tmp_path)
+    assert [d.name for d in dirs] == ["Traktor 4.10.0", "Traktor 4.9.1", "Traktor 3.11.1", "Native Instruments"]

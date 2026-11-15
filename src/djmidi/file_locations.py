@@ -7,6 +7,7 @@ with it, where to open a dialog, and where a mapping's previous version is.
 
 from __future__ import annotations
 
+import re
 from collections.abc import Iterable
 from pathlib import Path
 
@@ -31,15 +32,24 @@ def backup_path(mapping_path: str | Path) -> Path:
     return path.with_name(f"{path.name}.bak")
 
 
+def _version_key(folder: Path) -> tuple[int, ...]:
+    """"Traktor 4.10.0" sorts after "Traktor 4.9.1" (a plain string sort
+    put it first)."""
+    return tuple(int(part) for part in re.findall(r"\d+", folder.name))
+
+
 def software_mapping_dirs(software_id: str | None, home: Path | None = None) -> list[Path]:
     """Where each DJ software keeps its MIDI mappings, most specific first."""
     home = home or Path.home()
     if software_id == "serato":
         return [home / "Music" / "_Serato_" / "MIDI" / "Xml", home / "Music" / "_Serato_"]
     if software_id == "traktor":
+        # Traktor keeps "Traktor Settings.tsi" (and the user's exported
+        # .tsi files) in the version folder itself, e.g. "Traktor 4.4.1";
+        # its "Settings" subfolder only holds "Default Settings".
         native = home / "Documents" / "Native Instruments"
-        versions = sorted(native.glob("Traktor*"), reverse=True) if native.is_dir() else []
-        return [*(version / "Settings" for version in versions), native]
+        versions = sorted(native.glob("Traktor*"), key=_version_key, reverse=True) if native.is_dir() else []
+        return [*versions, native]
     return []
 
 
