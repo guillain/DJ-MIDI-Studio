@@ -1114,6 +1114,74 @@ CONTROL_GEOMETRY: dict[str, dict[str, ControlGeometry]] = {
         "Pad 8 (R)": ControlGeometry(0.8700, 0.8639, 0.0355, 0.0615, "rect", "#e0708f"),
     },
     # ---- end DDJ-FLX4 -----------------------------------------------------
+    # ---- DDJ-S1 ----------------------------------------------------------
+    "DDJ-S1": {
+        # Measured against controllers/hardware/pioneer/DDJ-S1/reference.png
+        # (2000x945, flat top-down photo, after process_controller_images):
+        # the lit buttons (HOT CUE, REC MODE, LOOP IN/OUT, RELOOP/EXIT, REV,
+        # SLIP, VINYL, MASTER TEMPO, SYNC, FX ON/OFF, CRATES/FILES/BROWSE/
+        # PREPARE) as connected components of saturated pixels; the dark
+        # and silver ones (LOOP SELECT, AUTO LOOP, TEMPO RANGE, LOAD, BACK,
+        # LOAD PREPARE, AREA MOVE, the BROWSE knob, TAP, CUE, PLAY/PAUSE)
+        # from 4x crops, each box overlay-checked. Identity: the printed
+        # panel labels and the manual's callouts. Deck B entries carry
+        # " (R)", FX2 too (channel 4); jog wheels are display markers.
+        "HOT CUE 1": ControlGeometry(0.0430, 0.1937, 0.0195, 0.0254, "rect", "#e0954a"),
+        "HOT CUE 2": ControlGeometry(0.0435, 0.2550, 0.0190, 0.0254, "rect", "#e0954a"),
+        "HOT CUE 3": ControlGeometry(0.0435, 0.3153, 0.0190, 0.0254, "rect", "#e0954a"),
+        "HOT CUE 4": ControlGeometry(0.0435, 0.3767, 0.0195, 0.0254, "rect", "#e0954a"),
+        "HOT CUE 5": ControlGeometry(0.0435, 0.4370, 0.0195, 0.0254, "rect", "#e0954a"),
+        "REC MODE": ControlGeometry(0.0475, 0.4995, 0.0115, 0.0233, "rect", "#e0954a"),
+        "LOOP IN": ControlGeometry(0.1050, 0.3386, 0.0200, 0.0402, "circle", "#e0954a"),
+        "LOOP OUT": ControlGeometry(0.1370, 0.3386, 0.0200, 0.0402, "circle", "#e0954a"),
+        "RELOOP/EXIT": ControlGeometry(0.1780, 0.3481, 0.0170, 0.0212, "rect", "#e0954a"),
+        "LOOP SELECT": ControlGeometry(0.2120, 0.3460, 0.0110, 0.0233, "rect", "#7a8aa0"),
+        "AUTO LOOP": ControlGeometry(0.2450, 0.3333, 0.0250, 0.0487, "circle", "#7a8aa0"),
+        "CENSOR": ControlGeometry(0.0800, 0.4063, 0.0195, 0.0265, "rect", "#d9534f"),
+        "SLIP": ControlGeometry(0.2750, 0.4074, 0.0180, 0.0243, "rect", "#d9534f"),
+        "VINYL": ControlGeometry(0.3090, 0.2984, 0.0195, 0.0265, "rect", "#4a90d9"),
+        "TEMPO RANGE": ControlGeometry(0.3130, 0.3767, 0.0110, 0.0233, "rect", "#7a8aa0"),
+        "MASTER TEMPO": ControlGeometry(0.3125, 0.4370, 0.0125, 0.0254, "rect", "#d9534f"),
+        "LOAD": ControlGeometry(0.3095, 0.0487, 0.0180, 0.0275, "rect", "#4a90d9"),
+        "CUE": ControlGeometry(0.0335, 0.6889, 0.0380, 0.0804, "circle", "#e0954a"),
+        "PLAY/PAUSE": ControlGeometry(0.0335, 0.8095, 0.0380, 0.0804, "circle", "#3ea86b"),
+        "SYNC": ControlGeometry(0.2670, 0.8497, 0.0190, 0.0265, "rect", "#e0954a"),
+        "Jog wheel": ControlGeometry(0.0785, 0.4127, 0.2100, 0.4444, "circle", "#586b82"),
+        "HOT CUE 1 (R)": ControlGeometry(0.6335, 0.1937, 0.0190, 0.0254, "rect", "#e0954a"),
+        "HOT CUE 2 (R)": ControlGeometry(0.6335, 0.2540, 0.0190, 0.0265, "rect", "#e0954a"),
+        "HOT CUE 3 (R)": ControlGeometry(0.6335, 0.3153, 0.0190, 0.0254, "rect", "#e0954a"),
+        "HOT CUE 4 (R)": ControlGeometry(0.6335, 0.3767, 0.0190, 0.0243, "rect", "#e0954a"),
+        "HOT CUE 5 (R)": ControlGeometry(0.6335, 0.4370, 0.0190, 0.0243, "rect", "#e0954a"),
+        "REC MODE (R)": ControlGeometry(0.6370, 0.4984, 0.0115, 0.0243, "rect", "#e0954a"),
+        "LOOP IN (R)": ControlGeometry(0.6940, 0.3386, 0.0200, 0.0402, "circle", "#e0954a"),
+        "LOOP OUT (R)": ControlGeometry(0.7260, 0.3376, 0.0200, 0.0413, "circle", "#e0954a"),
+        "RELOOP/EXIT (R)": ControlGeometry(0.7675, 0.3481, 0.0170, 0.0212, "rect", "#e0954a"),
+        "LOOP SELECT (R)": ControlGeometry(0.8020, 0.3460, 0.0110, 0.0233, "rect", "#7a8aa0"),
+        "AUTO LOOP (R)": ControlGeometry(0.8360, 0.3333, 0.0250, 0.0487, "circle", "#7a8aa0"),
+        "CENSOR (R)": ControlGeometry(0.6690, 0.4063, 0.0195, 0.0254, "rect", "#d9534f"),
+        "SLIP (R)": ControlGeometry(0.8635, 0.4063, 0.0190, 0.0254, "rect", "#d9534f"),
+        "VINYL (R)": ControlGeometry(0.9005, 0.2974, 0.0195, 0.0265, "rect", "#4a90d9"),
+        "TEMPO RANGE (R)": ControlGeometry(0.9045, 0.3767, 0.0110, 0.0233, "rect", "#7a8aa0"),
+        "MASTER TEMPO (R)": ControlGeometry(0.9035, 0.4370, 0.0120, 0.0254, "rect", "#d9534f"),
+        "LOAD (R)": ControlGeometry(0.6345, 0.0487, 0.0180, 0.0275, "rect", "#4a90d9"),
+        "CUE (R)": ControlGeometry(0.6240, 0.6868, 0.0380, 0.0804, "circle", "#e0954a"),
+        "PLAY/PAUSE (R)": ControlGeometry(0.6240, 0.8074, 0.0380, 0.0804, "circle", "#3ea86b"),
+        "SYNC (R)": ControlGeometry(0.8570, 0.8519, 0.0195, 0.0254, "rect", "#e0954a"),
+        "Jog wheel (R)": ControlGeometry(0.6685, 0.4106, 0.2100, 0.4444, "circle", "#586b82"),
+        "FX ON/OFF": ControlGeometry(0.3665, 0.4593, 0.0195, 0.0413, "circle", "#e0954a"),
+        "TAP": ControlGeometry(0.3675, 0.5323, 0.0180, 0.0381, "circle", "#7a8aa0"),
+        "FX ON/OFF (R)": ControlGeometry(0.5755, 0.4593, 0.0195, 0.0413, "circle", "#e0954a"),
+        "TAP (R)": ControlGeometry(0.5765, 0.5323, 0.0180, 0.0381, "circle", "#7a8aa0"),
+        "CRATES": ControlGeometry(0.3555, 0.0508, 0.0120, 0.0254, "rect", "#e0954a"),
+        "FILES": ControlGeometry(0.3845, 0.0508, 0.0120, 0.0254, "rect", "#e0954a"),
+        "BACK": ControlGeometry(0.4250, 0.0508, 0.0180, 0.0233, "rect", "#7a8aa0"),
+        "BROWSE (push)": ControlGeometry(0.4680, 0.0190, 0.0320, 0.0677, "circle", "#7a8aa0"),
+        "AREA MOVE": ControlGeometry(0.4715, 0.1365, 0.0180, 0.0233, "rect", "#7a8aa0"),
+        "LOAD PREPARE": ControlGeometry(0.5175, 0.0508, 0.0180, 0.0233, "rect", "#7a8aa0"),
+        "BROWSE": ControlGeometry(0.5660, 0.0508, 0.0120, 0.0254, "rect", "#e0954a"),
+        "PREPARE": ControlGeometry(0.5950, 0.0508, 0.0120, 0.0254, "rect", "#e0954a"),
+    },
+    # ---- end DDJ-S1 -------------------------------------------------------
     # ---- DDJ-800 (issue #338) ----------------------------------------------
     "DDJ-800": {
         # Measured against controllers/hardware/pioneer/DDJ-800/reference.png

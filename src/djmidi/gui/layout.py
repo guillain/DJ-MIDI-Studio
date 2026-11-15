@@ -432,6 +432,12 @@ _RIGHT_SIDE_CHANNELS: dict[str, dict[str, frozenset[str]]] = {
         "DECK": frozenset({"2"}),
         "MIXER": frozenset({"2"}),
     },
+    # Deck buttons and hot cues on channel 1/2, FX1/FX2 on channel 3/4.
+    "DDJ-S1": {
+        "DECK": frozenset({"2"}),
+        "HOT CUE": frozenset({"2"}),
+        "EFFECT": frozenset({"4"}),
+    },
     "DDJ-800": {
         "DECK": frozenset({"2", "4"}),
         "MIXER": frozenset({"2", "4"}),

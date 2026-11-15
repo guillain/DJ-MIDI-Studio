@@ -38,6 +38,7 @@ def test_bundled_controller_documents_exist():
         "DDJ-REV1",
         "DDJ-FLX10",
         "DDJ-FLX4",
+        "DDJ-S1",
         "Numark Mixtrack Pro FX",
         "Hercules DJControl Inpulse 500",
     }
