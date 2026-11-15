@@ -140,7 +140,8 @@ Registry of DJ programs (`SoftwareDefinition`: parser, exporter, extensions, opt
 
 - `_registry.py`: `ControllerDefinition`/`ControlInfo`, `register(definition, replace=False)`; one module per
   controller registers itself; `catalog/__init__.py` imports them. `CONTROLLER_NAMES`/`PAD_COUNTS` are computed
-  live. `lookup()` checks every registered controller and can return several matches (the user's real setup mixes
+  live. `lookup()` checks every registered controller (and a definition's `alternate_channels`, a unit's
+  channel setting — not decks, ignored by the Atelier) and can return several matches (the user's real setup mixes
   DDJ-XP2 and XDJ-XZ). `detect_controller(port)` matches port names (score 100 = exact `name`/`port_names`).
 - Scope: discrete press/toggle controls (buttons, pad grids). Continuous controls (faders, knobs, jogs) are out of
   catalog scope; jogs are handled by `gui/jog.py` tables.

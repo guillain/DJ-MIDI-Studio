@@ -35,7 +35,7 @@
 | Pioneer DDJ-FLX4 | Official MIDI Message List E1 | ✅ | ✅ | Not yet |
 | Numark Mixtrack Pro FX | Mixxx's maintained mapping (Numark publishes no MIDI list); user guide for the layout | ✅ | — | Not yet |
 | Hercules DJControl Inpulse 500 | Official MIDI Commands sheet (2022) | ✅ | ✅ | Not yet |
-| Behringer CMD LC-1 | Captured from a real unit with Controller Setup (no vendor list exists), checked against a real Serato export | ✅ | — | ✅ |
+| Behringer CMD LC-1 | Captured from a real unit with Controller Setup (no vendor list exists), checked against a real Serato export and real Traktor settings | ✅ | — | ✅ |
 | Behringer CMD Micro | Captured from a real unit (no vendor list exists), checked against a real Traktor export | ✅ | — | ✅ |
 | Behringer CMD Studio 4a | Captured from a real unit in all 4 deck layers (no vendor list exists), checked against a real Traktor export | ✅ | — | ✅ |
 | Korg nanoPAD2 | Captured from a real unit in all 4 scenes (Korg publishes no note table) | ✅ | — | ✅ |
@@ -62,7 +62,8 @@ still draw them and the Live Monitor shows their raw values.
 
 The first profile built from a hardware capture rather than a manual, since
 Behringer publishes no MIDI message list. With factory settings it uses MIDI
-channel 8. Under the eight encoders, the face is 13 rows of 4 buttons, notes
+channel 8; set to channel 1, as in a real Traktor 4.4.1 setup, it sends the
+same notes and is recognised the same way. Under the eight encoders, the face is 13 rows of 4 buttons, notes
 left to right: the buttons printed 1–8 (notes 16–23), an unlabelled 4×8 grid
 (32–63), then MUTE (64–67), SOLO (68–71) and RECORD (72–75); notes 24–31 are
 unused. The encoders are endless rotaries without a push switch (CC from 16)
