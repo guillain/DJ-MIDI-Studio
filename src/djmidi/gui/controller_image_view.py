@@ -72,6 +72,7 @@ DOCUMENTS = {
     "DDJ-REV1": "hardware/pioneer/DDJ-REV1/ddj-rev1-midi-message-list-e1.pdf",
     "DDJ-FLX10": "hardware/pioneer/DDJ-FLX10/ddj-flx10-midi-message-list-e1.pdf",
     "DDJ-FLX4": "hardware/pioneer/DDJ-FLX4/ddj-flx4-midi-message-list-e1.pdf",
+    "DDJ-S1": "hardware/pioneer/DDJ-S1/DDJ-S1_DRI1137A_manual.pdf",
     "Numark Mixtrack Pro FX": "hardware/numark/Mixtrack-Pro-FX/numark-mixtrack-pro-fx-user-guide-v1.2.pdf",
     "Hercules DJControl Inpulse 500": (
         "hardware/hercules/DJControl-Inpulse-500/hercules-djcontrol-inpulse-500-product-sheet-fr.pdf"

@@ -9,6 +9,7 @@
 
 - [Built-in controllers](#built-in-controllers)
 - [What a profile covers](#what-a-profile-covers)
+- [Pioneer DDJ-S1](#pioneer-ddj-s1)
 - [Behringer CMD LC-1](#behringer-cmd-lc-1)
 - [Behringer CMD Micro](#behringer-cmd-micro)
 - [Behringer CMD Studio 4a](#behringer-cmd-studio-4a)
@@ -33,6 +34,7 @@
 | Pioneer DDJ-REV5 | Official MIDI Message List E1 | ✅ | ✅ | Not yet |
 | Pioneer DDJ-800 | Official MIDI Message List E3 | ✅ | ✅ | Not yet |
 | Pioneer DDJ-FLX4 | Official MIDI Message List E1 | ✅ | ✅ | Not yet |
+| Pioneer DDJ-S1 | Captured from a real unit with Controller Setup (Pioneer's MIDI list is no longer published); owner's manual for the names | ✅ | — | ✅ |
 | Numark Mixtrack Pro FX | Mixxx's maintained mapping (Numark publishes no MIDI list); user guide for the layout | ✅ | — | Not yet |
 | Hercules DJControl Inpulse 500 | Official MIDI Commands sheet (2022) | ✅ | ✅ | Not yet |
 | Behringer CMD LC-1 | Captured from a real unit with Controller Setup (no vendor list exists), checked against a real Serato export and real Traktor settings | ✅ | — | ✅ |
@@ -132,6 +134,20 @@ Profiles before v0.48.140 used community values (`PLAY/PAUSE` on note 0,
 pads on channels 6 and 7, and KEYLOCK/SLIP/REVERSE/QUANTIZE buttons the
 FLX4 doesn't have) that don't match the official list.
 
+
+## Pioneer DDJ-S1
+
+The Serato DJ Edition controller from 2013. Pioneer's "List of MIDI
+Messages" for it is no longer online, so the profile comes from a real unit
+captured with Controller Setup; names follow the printed panel and the
+owner's manual (`Help → Controller References`). Deck buttons send on MIDI
+channel 1 (deck A) and 2 (deck B) with the same notes, e.g. `PLAY/PAUSE` is
+note 11 and `CUE` note 12; `HOT CUE 1`–`5` are notes 42–46 and `REC MODE`
+47. FX1 sends on channel 3 and FX2 on channel 4 (`FX ON/OFF` 64, `TAP` 65);
+the browser buttons (`CRATES`, `FILES`, `BACK`, the `BROWSE` knob's push,
+`AREA MOVE`, `LOAD PREPARE`, `BROWSE`, `PREPARE`) send on channel 5. Not
+captured yet: `SHIFT` and its layers, and the two headphone `CUE` buttons.
+The jog wheels are shown but don't turn on screen yet.
 ## Hercules DJControl Inpulse 500
 
 Transcribed from the official Hercules "MIDI Commands" sheet bundled with

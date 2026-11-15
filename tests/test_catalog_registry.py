@@ -25,6 +25,7 @@ def test_builtin_controllers_are_registered_at_import():
         "XDJ-XZ": 8,
         "DDJ-1000": 8,
         "DDJ-FLX4": 8,
+        "DDJ-S1": 0,
         "DDJ-REV1": 8,
         "DDJ-FLX10": 8,
         "Numark Mixtrack Pro FX": 8,
