@@ -94,7 +94,7 @@ Open several, one per controller.
 | 🐞 | [Report a Problem](features/report-a-problem.md) | An editable bug report, opened as a pre-filled GitHub issue |
 
 Supported out of the box: Serato DJ Pro and Traktor mappings, Mixxx mappings, rekordbox mappings (read-only); DDJ-XP2,
-XDJ-XZ, DDJ-1000, DDJ-FLX4, DDJ-FLX10, DDJ-REV1, DDJ-REV5, DDJ-800, Numark
+XDJ-XZ, DDJ-1000, DDJ-FLX4, DDJ-S1, DDJ-FLX10, DDJ-REV1, DDJ-REV5, DDJ-800, Numark
 Mixtrack Pro FX, Hercules DJControl Inpulse 500, Behringer CMD LC-1, CMD Micro and CMD Studio 4a, and Korg nanoPAD2 — and any other
 controller through Controller Setup — plus 46 Pioneer DJ / AlphaTheta profiles
 from rekordbox's mappings and 115 other-brand profiles from Mixxx's, installed on demand from the

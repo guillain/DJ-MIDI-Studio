@@ -51,7 +51,7 @@ photo only, layout only, photo + layout, or the MIDI picture alone. Here the
 layout starts off; in the other views it starts on, over the photo.
 
 Every built-in controller has a measured layout: DDJ-XP2, XDJ-XZ, DDJ-1000,
-DDJ-FLX10, DDJ-FLX4, DDJ-REV1, DDJ-REV5, DDJ-800, Numark Mixtrack Pro FX,
+DDJ-FLX10, DDJ-FLX4, DDJ-S1, DDJ-REV1, DDJ-REV5, DDJ-800, Numark Mixtrack Pro FX,
 Hercules DJControl Inpulse 500, Behringer CMD LC-1, CMD Micro and CMD
 Studio 4a, and Korg nanoPAD2, with both decks where the controller has two.
 A controller profile you build yourself shows its photo here, and a grid in
