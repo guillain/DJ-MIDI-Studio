@@ -8,7 +8,12 @@ are kept, in place: a scene never drops what it doesn't understand.
 
 Reading collapses repeats: when a set lights the same LED twice, the scene
 keeps the first message's position and the last one's value, which is the
-state the controller ends up in. Qt-free.
+state the controller ends up in.
+
+A scene can also be played *to the DJ software* (`software_taps`): a lit LED
+then stands for "this function on", sent as a tap of its button through a
+virtual port the DJ software has learned, so the software changes state and
+lights its own LEDs. Qt-free.
 """
 
 from __future__ import annotations
@@ -20,12 +25,13 @@ from djmidi.atelier.actions import (
     LED_OFF,
     LED_ON,
     LED_VALUE,
+    TAP,
     TO_CONTROLLER,
     FeatureAction,
     compile_action,
     decompile,
 )
-from djmidi.atelier.features import Feature, feature_by_id
+from djmidi.atelier.features import NOTE, Feature, feature_by_id
 from djmidi.controller_sync import ControllerSyncSet, SyncMessage, normalize_scene
 
 _LED_VERBS = {LED_ON, LED_OFF, LED_VALUE}
@@ -95,6 +101,30 @@ class Scene:
                 continue
             result.extend(compile_action(self.controller, _action(feature, self.values[item])))
         return tuple(result)
+
+    def software_taps(self) -> tuple[SyncMessage, ...]:
+        """The scene as button taps for the DJ software: one tap (press then
+        release) of each button whose LED the scene lights, in scene order.
+        An LED set off, a knob or fader (CC), a feature the profile lost and
+        the raw messages are left out. A tap toggles: the software must be in
+        the state the scene starts from."""
+        result: list[SyncMessage] = []
+        for feature_id, value in self.lit.items():
+            feature = feature_by_id(self.controller, feature_id)
+            if feature is None or feature.input.kind != NOTE:
+                continue
+            off = feature.led.off_value if feature.led is not None else 0
+            if value == off:
+                continue
+            result.extend(compile_action(self.controller, FeatureAction(feature_id, TAP)))
+        return tuple(result)
+
+    def software_sync_set(self, output_port: str, scene: str | None = None) -> ControllerSyncSet:
+        """The taps as a set aimed at ``output_port`` (the DJ software's
+        virtual port); never stored."""
+        return ControllerSyncSet(
+            self.controller, output_port=output_port, messages=self.software_taps(), scene=normalize_scene(scene)
+        )
 
     def to_sync_set(self, existing: ControllerSyncSet | None, scene: str | None = None) -> ControllerSyncSet:
         """The sync set to store: ``existing``'s port and scene kept (a new

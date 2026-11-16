@@ -398,6 +398,7 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         self.atelier_view.saveRequested.connect(self._on_atelier_save_requested)
         self.atelier_view.sendRequested.connect(self._on_atelier_send_requested)
         self.atelier_view.sendAllRequested.connect(self._on_atelier_send_all_requested)
+        self.atelier_view.softwareSendRequested.connect(self._on_atelier_software_send_requested)
         self.atelier_view.macro_panel.macrosSaved.connect(self._on_atelier_macros_saved)
         self.atelier_view.libraryChanged.connect(self._on_controller_library_changed)
         self.atelier_view.macro_panel.set_macros(self.macros)
@@ -1666,6 +1667,18 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
             return []
         ports = list_output_ports()
         results = run_sync(self._aim_sync_sets(sets, ports), ports)
+        self.statusBar().showMessage(summarize_results(results, _sync_translate), 10_000)
+        return results
+
+    def _on_atelier_software_send_requested(self, sync_set: ControllerSyncSet | None) -> list[SyncResult]:
+        """Sends the Atelier scene's taps to the DJ software's port, and only
+        there: a port that went away must not fall back to the controller
+        (run_sync's name matching), which would toggle nothing in the software."""
+        ports = list_output_ports()
+        if sync_set is None or sync_set.output_port not in ports:
+            self.statusBar().showMessage(self.tr("That MIDI port is no longer connected."), 10_000)
+            return []
+        results = run_sync([sync_set], [sync_set.output_port])
         self.statusBar().showMessage(summarize_results(results, _sync_translate), 10_000)
         return results
 

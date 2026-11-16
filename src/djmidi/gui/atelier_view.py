@@ -38,7 +38,7 @@ from PySide6.QtWidgets import (
 
 from djmidi import catalog
 from djmidi.atelier.actions import LED_OFF, LED_ON, LED_VALUE, FeatureAction
-from djmidi.atelier.describe import describe_action
+from djmidi.atelier.describe import controller_for_port, describe_action
 from djmidi.atelier.features import Feature, feature_by_id
 from djmidi.atelier.led_data import LedRecord, save_led_record
 from djmidi.atelier.remap import describe_remap, remap_rule, with_remap, without_remap
@@ -77,6 +77,8 @@ class AtelierView(QWidget):
     routeTransformChanged = Signal(int, object)
     # An LED was probed here: the other views re-read the controller library.
     libraryChanged = Signal(str)
+    # The scene as button taps for the DJ software, aimed at a virtual port.
+    softwareSendRequested = Signal(object)
 
     def __init__(
         self,
@@ -178,6 +180,26 @@ class AtelierView(QWidget):
         buttons.addStretch(1)
         buttons.addWidget(self.save_all_button)
         buttons.addWidget(self.send_all_button)
+        # Playing the scene to the DJ software: its lit buttons tapped through
+        # a virtual port (IAC bus) the software has learned, so the software
+        # itself changes state and lights the controller.
+        self.software_port_combo = QComboBox()
+        self.software_port_combo.setToolTip(
+            self.tr("A virtual MIDI port the DJ software listens to (an IAC bus); controllers aren't listed.")
+        )
+        self.software_send_button = QPushButton(self.tr("Send to DJ software"))
+        self.software_send_button.setToolTip(
+            self.tr(
+                "Taps the button of every LED this scene lights, through the chosen port, as if you pressed "
+                "them: the DJ software changes state and lights its own LEDs. Learn those buttons on that "
+                "port in the DJ software first."
+            )
+        )
+        self.software_send_button.clicked.connect(self.send_to_software)
+        software_row = QHBoxLayout()
+        software_row.addWidget(QLabel(self.tr("DJ software port")))
+        software_row.addWidget(self.software_port_combo, 1)
+        software_row.addWidget(self.software_send_button)
         self.status_label = QLabel()
         self.status_label.setWordWrap(True)
 
@@ -221,7 +243,9 @@ class AtelierView(QWidget):
         layout.addWidget(self.coverage_label)
         layout.addWidget(splitter, 1)
         layout.addLayout(buttons)
+        layout.addLayout(software_row)
         layout.addWidget(self.status_label)
+        self.refresh_software_ports()
         self.refresh_controllers()
         self.refresh_scenes()
 
@@ -668,6 +692,38 @@ class AtelierView(QWidget):
             draft = self._drafts.get((entry.controller, self.scene_name))
             result.append(draft.to_sync_set(stored, self.scene_name) if draft is not None else stored)
         return result
+
+    def refresh_software_ports(self) -> None:
+        """Lists the outputs that aren't a known controller, keeping the
+        choice when it is still there."""
+        current = self.software_port_combo.currentText()
+        ports = [port for port in self.ports_provider() if controller_for_port(port) is None]
+        self.software_port_combo.blockSignals(True)
+        self.software_port_combo.clear()
+        self.software_port_combo.addItems(ports)
+        if current in ports:
+            self.software_port_combo.setCurrentText(current)
+        self.software_port_combo.blockSignals(False)
+        self.software_send_button.setEnabled(bool(ports))
+
+    def showEvent(self, event) -> None:
+        super().showEvent(event)
+        self.refresh_software_ports()
+
+    def send_to_software(self) -> ControllerSyncSet | None:
+        """Emits the scene's taps for the chosen DJ-software port."""
+        port = self.software_port_combo.currentText()
+        if self.scene is None or not port:
+            return None
+        sync_set = self.scene.software_sync_set(port, self.scene_name)
+        if not sync_set.messages:
+            self.status_label.setText(self.tr("This scene lights no button: nothing to send to the DJ software."))
+            return None
+        self.softwareSendRequested.emit(sync_set)
+        self.status_label.setText(
+            self.tr("Sent {count} button tap(s) to {port}.").format(count=len(sync_set.messages) // 2, port=port)
+        )
+        return sync_set
 
     def send_all(self) -> list[ControllerSyncSet]:
         sets = self.scene_sync_sets()
