@@ -163,6 +163,22 @@
         <translation>Sendet diese Szene in einem Zug an jeden Controller, den sie abdeckt, gespeichert oder nicht.</translation>
     </message>
     <message>
+        <source>A virtual MIDI port the DJ software listens to (an IAC bus); controllers aren&apos;t listed.</source>
+        <translation>Ein virtueller MIDI-Port, den die DJ-Software abhört (ein IAC-Bus); Controller werden nicht aufgeführt.</translation>
+    </message>
+    <message>
+        <source>Send to DJ software</source>
+        <translation>An DJ-Software senden</translation>
+    </message>
+    <message>
+        <source>Taps the button of every LED this scene lights, through the chosen port, as if you pressed them: the DJ software changes state and lights its own LEDs. Learn those buttons on that port in the DJ software first.</source>
+        <translation>Drückt über den gewählten Port die Taste jeder LED, die diese Szene einschaltet, als hätten Sie sie gedrückt: Die DJ-Software ändert ihren Zustand und schaltet ihre LEDs selbst. Lassen Sie diese Tasten zuerst in der DJ-Software auf diesem Port lernen.</translation>
+    </message>
+    <message>
+        <source>DJ software port</source>
+        <translation>Port der DJ-Software</translation>
+    </message>
+    <message>
         <source>Scene state</source>
         <translation>Zustand der Szene</translation>
     </message>
@@ -281,6 +297,14 @@
     <message>
         <source>LED recorded as verified for {control}.</source>
         <translation>LED für {control} als geprüft gespeichert.</translation>
+    </message>
+    <message>
+        <source>This scene lights no button: nothing to send to the DJ software.</source>
+        <translation>Diese Szene schaltet keine Taste ein: Nichts an die DJ-Software zu senden.</translation>
+    </message>
+    <message>
+        <source>Sent {count} button tap(s) to {port}.</source>
+        <translation>{count} Tastendruck/-drücke an {port} gesendet.</translation>
     </message>
     <message>
         <source>Saved the {scene} scene for {count} controller(s).</source>
@@ -5405,6 +5429,10 @@ Die Release-Seite zum Herunterladen öffnen?</translation>
     <message>
         <source>Atelier scene saved in the sync set for {name} ({count} message(s))</source>
         <translation>Atelier-Szene im Sync-Set von {name} gespeichert ({count} Meldung(en))</translation>
+    </message>
+    <message>
+        <source>That MIDI port is no longer connected.</source>
+        <translation>Dieser MIDI-Port ist nicht mehr verbunden.</translation>
     </message>
     <message>
         <source>New scene…</source>

@@ -163,6 +163,22 @@
         <translation>Envoie cette scène d&apos;un coup à chaque contrôleur qu&apos;elle couvre, enregistrée ou non.</translation>
     </message>
     <message>
+        <source>A virtual MIDI port the DJ software listens to (an IAC bus); controllers aren&apos;t listed.</source>
+        <translation>Un port MIDI virtuel qu&apos;écoute le logiciel DJ (un bus IAC) ; les contrôleurs n&apos;apparaissent pas.</translation>
+    </message>
+    <message>
+        <source>Send to DJ software</source>
+        <translation>Envoyer au logiciel DJ</translation>
+    </message>
+    <message>
+        <source>Taps the button of every LED this scene lights, through the chosen port, as if you pressed them: the DJ software changes state and lights its own LEDs. Learn those buttons on that port in the DJ software first.</source>
+        <translation>Appuie sur le bouton de chaque LED que cette scène allume, via le port choisi, comme si vous les pressiez : le logiciel DJ change d&apos;état et allume lui-même ses LED. Faites d&apos;abord apprendre ces boutons sur ce port au logiciel DJ.</translation>
+    </message>
+    <message>
+        <source>DJ software port</source>
+        <translation>Port du logiciel DJ</translation>
+    </message>
+    <message>
         <source>Scene state</source>
         <translation>État de la scène</translation>
     </message>
@@ -281,6 +297,14 @@
     <message>
         <source>LED recorded as verified for {control}.</source>
         <translation>LED enregistrée comme vérifiée pour {control}.</translation>
+    </message>
+    <message>
+        <source>This scene lights no button: nothing to send to the DJ software.</source>
+        <translation>Cette scène n&apos;allume aucun bouton : rien à envoyer au logiciel DJ.</translation>
+    </message>
+    <message>
+        <source>Sent {count} button tap(s) to {port}.</source>
+        <translation>{count} appui(s) de bouton envoyé(s) à {port}.</translation>
     </message>
     <message>
         <source>Saved the {scene} scene for {count} controller(s).</source>
@@ -5131,6 +5155,10 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
     <message>
         <source>Atelier scene saved in the sync set for {name} ({count} message(s))</source>
         <translation>Scène de l’Atelier enregistrée dans le jeu de synchro de {name} ({count} message(s))</translation>
+    </message>
+    <message>
+        <source>That MIDI port is no longer connected.</source>
+        <translation>Ce port MIDI n&apos;est plus connecté.</translation>
     </message>
     <message>
         <source>New scene…</source>
