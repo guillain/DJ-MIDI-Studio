@@ -10,6 +10,7 @@
 - [What it does](#what-it-does)
 - [Design a scene](#design-a-scene)
 - [Save, send and reload](#save-send-and-reload)
+- [Play a scene to the DJ software](#play-a-scene-to-the-dj-software)
 - [Several controllers in one scene](#several-controllers-in-one-scene)
 - [What is kept](#what-is-kept)
 - [LED addresses](#led-addresses)
@@ -53,6 +54,30 @@ scene sets; click a line to select that control again.
 | **Reload saved** | Drops this controller's changes and reads its saved sync set again |
 | **Save all** | Saves the scene's changes for every controller you edited |
 | **Send all** | Sends the scene to every controller it covers at once, saved or not |
+
+## Play a scene to the DJ software
+
+A scene sent to a controller only lights its LEDs: the DJ software (Serato)
+doesn't hear about it, its decks and effects stay as they were, and it may
+soon relight the LEDs its own way. To change the software itself, play the
+scene to it instead:
+
+1. Give the software a virtual MIDI port. On a Mac: open **Audio MIDI
+   Setup**, **Window → Show MIDI Studio**, double-click **IAC Driver** and
+   tick **Device is online**. In Serato, enable that port in
+   **Setup → MIDI**.
+2. In Serato, MIDI-learn on that port each function the scene should turn
+   on. The app sends the same notes as your controller's buttons, so press
+   **Send to DJ software** with a one-button scene while Serato is
+   learning.
+3. Pick the port under **DJ software port** (controllers aren't listed) and
+   click **Send to DJ software**.
+
+Every button whose LED the scene lights is *tapped* (pressed then
+released) on that port, as if you pressed it; Serato changes state and
+lights the controller itself. LEDs set off, knobs and faders, and messages
+the scene keeps as is aren't sent. A tap toggles: start from the state the
+scene assumes (effects off, for instance), or the tap turns them off.
 
 ## Several controllers in one scene
 
