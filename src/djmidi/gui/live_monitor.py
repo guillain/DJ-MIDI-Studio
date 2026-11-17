@@ -41,12 +41,14 @@ from djmidi.gui.jog import jog_cell_keys_for_event
 from djmidi.gui.mapping_group import build_mapping_groups
 from djmidi.gui.port_list_utils import refresh_checked_port_list
 from djmidi.gui.scroll_utils import AutoSizeScrollArea
+from djmidi.gui.set_analysis_dialog import SetAnalysisDialog
 from djmidi.gui.translation import translator
 from djmidi.live_filter import BEND, CC, NOTES, LogFilter
 from djmidi.midi_export import write_midi_file
 from djmidi.midi_io import MidiEvent, MidiMonitor, list_input_ports
 from djmidi.model import MidiConfig
 from djmidi.session_recorder import SessionRecorder
+from djmidi.set_analysis import analyse, load_set
 from djmidi.validator import DeckConflict, TriggerKey, find_deck_conflicts
 
 _MAX_ROWS = 500
@@ -180,6 +182,11 @@ class LiveMonitorView(QWidget):
             )
         )
         self._record_button.clicked.connect(self._toggle_recording)
+        self._analyse_button = QPushButton(self.tr("Analyse a set…"))
+        self._analyse_button.setToolTip(
+            self.tr("Opens a recorded live set and shows which controls you used, how often and in which order.")
+        )
+        self._analyse_button.clicked.connect(self._choose_set_to_analyse)
         self._recording_label = QLabel()
         self._recording_label.setWordWrap(True)
         self._recording_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
@@ -204,6 +211,7 @@ class LiveMonitorView(QWidget):
         controls_layout.addWidget(save_button)
         controls_layout.addWidget(self._record_button)
         controls_layout.addWidget(self._recording_label)
+        controls_layout.addWidget(self._analyse_button)
         controls_layout.addWidget(self._sync_button)
         controls_layout.addStretch(1)
 
@@ -579,6 +587,29 @@ class LiveMonitorView(QWidget):
             self.tr("Recorded {count} event(s) to {file}").format(count=recorder.count, file=str(path))
         )
         return path
+
+    def _choose_set_to_analyse(self) -> None:
+        logs = user_paths.subfolder(user_paths.LOGS)
+        path_str, _filter = QFileDialog.getOpenFileName(
+            self, self.tr("Analyse a live set"), str(logs), self.tr("Live set recordings (*.jsonl)")
+        )
+        if path_str:
+            self.analyse_set(Path(path_str))
+
+    def analyse_set(self, path: Path) -> SetAnalysisDialog | None:
+        """Opens the analysis of the recording at ``path`` (non-modal)."""
+        try:
+            analysis = analyse(load_set(path))
+        except OSError as exc:
+            self._recording_label.setText(self.tr("Couldn't read {file}: {error}").format(file=path.name, error=exc))
+            return None
+        if not analysis.events:
+            self._recording_label.setText(self.tr("{file} holds no MIDI event to analyse.").format(file=path.name))
+            return None
+        dialog = SetAnalysisDialog(analysis, path, parent=self)
+        dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        dialog.show()
+        return dialog
 
     def _update_recording_label(self) -> None:
         recorder = self._recorder
