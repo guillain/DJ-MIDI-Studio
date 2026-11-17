@@ -14,6 +14,7 @@
 - [Spot conflicts live](#spot-conflicts-live)
 - [The whole app lights up](#the-whole-app-lights-up)
 - [See what Serato sends back (LED feedback)](#see-what-serato-sends-back-led-feedback)
+- [Record a whole live set](#record-a-whole-live-set)
 - [Limits](#limits)
 - [Related](#related)
 
@@ -123,6 +124,23 @@ doesn't let a third app see that traffic directly, so add the app's virtual
 port **`DJMidiStudio Monitor`** as an *extra* MIDI output in Serato's MIDI
 settings. LED messages then appear as `out` events and latch the same amber
 highlight on screen until Serato switches the LED off.
+
+## Record a whole live set
+
+The event log keeps the last 500 events, and **Save log…** saves those. A
+live set produces far more: a 2.5-hour set sent over 200,000 events, most of
+them jog wheel ticks. To keep all of it, click **Record live set** before
+you play. Monitoring starts on every MIDI input if it isn't running yet
+(plug every controller in first), and every event from then on is written
+straight to a file, with no limit: the count shows under the button. Click
+**Stop recording** at the end; stopping monitoring or quitting the app
+stops it too.
+
+The file lands in `Documents/DJ MIDI Studio/Logs`, named after the start
+time (`live-20261116-183915.jsonl`), one event per line: its time, port,
+direction, channel, type and values. It's written as you play, so a crash
+loses about a second at most. Keep it to look back at what you actually
+used during a set: which buttons, how often, which ones follow each other.
 
 ## Limits
 

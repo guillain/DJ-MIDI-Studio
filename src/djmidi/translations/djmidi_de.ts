@@ -4031,6 +4031,14 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
         <translation>Protokoll speichern…</translation>
     </message>
     <message>
+        <source>Record live set</source>
+        <translation>Live-Set aufnehmen</translation>
+    </message>
+    <message>
+        <source>Records every MIDI event from now on, with no limit, to a file in the Logs folder (the log above keeps the last 500 only). Starts monitoring every MIDI input if it isn&apos;t running.</source>
+        <translation>Nimmt ab jetzt jedes MIDI-Ereignis ohne Begrenzung in einer Datei im Ordner Logs auf (das Protokoll oben behält nur die letzten 500). Startet die Überwachung aller MIDI-Eingänge, falls sie nicht läuft.</translation>
+    </message>
+    <message>
         <source>Sync controllers</source>
         <translation>Controller synchronisieren</translation>
     </message>
@@ -4157,6 +4165,26 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
     <message>
         <source>Conflicts: {hits} live hit(s) on {triggers} trigger(s) ({conflicts} conflicting trigger(s) in the mapping)</source>
         <translation>Konflikte: {hits} Live-Treffer auf {triggers} Trigger(n) ({conflicts} kollidierende(r) Trigger im Mapping)</translation>
+    </message>
+    <message>
+        <source>No MIDI input to record: plug in a controller first.</source>
+        <translation>Kein MIDI-Eingang zum Aufnehmen: Schließen Sie zuerst einen Controller an.</translation>
+    </message>
+    <message>
+        <source>Couldn&apos;t start recording: {error}</source>
+        <translation>Aufnahme konnte nicht starten: {error}</translation>
+    </message>
+    <message>
+        <source>Stop recording</source>
+        <translation>Aufnahme stoppen</translation>
+    </message>
+    <message>
+        <source>Recorded {count} event(s) to {file}</source>
+        <translation>{count} Ereignis(se) in {file} aufgenommen</translation>
+    </message>
+    <message>
+        <source>● Recording: {count} event(s) to {file}</source>
+        <translation>● Aufnahme: {count} Ereignis(se) in {file}</translation>
     </message>
     <message>
         <source>No MIDI events to save.</source>

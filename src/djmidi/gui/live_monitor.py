@@ -46,6 +46,7 @@ from djmidi.live_filter import BEND, CC, NOTES, LogFilter
 from djmidi.midi_export import write_midi_file
 from djmidi.midi_io import MidiEvent, MidiMonitor, list_input_ports
 from djmidi.model import MidiConfig
+from djmidi.session_recorder import SessionRecorder
 from djmidi.validator import DeckConflict, TriggerKey, find_deck_conflicts
 
 _MAX_ROWS = 500
@@ -123,6 +124,9 @@ class LiveMonitorView(QWidget):
         self._conflict_triggers: set[TriggerKey] = set()
         self._events: list[MidiEvent] = []
         self._running = False
+        # Unlimited recording of a live set, streamed to Logs/ (the log above
+        # keeps the last _MAX_ROWS events only).
+        self._recorder: SessionRecorder | None = None
         # Set while the menu bar's ● Rec records (issue #307): Start/Stop and
         # the port choice are frozen, and an auto-start is deferred to unlock.
         self._lock_reason: str | None = None
@@ -168,6 +172,17 @@ class LiveMonitorView(QWidget):
         clear_button.clicked.connect(self._clear_log)
         save_button = QPushButton(self.tr("Save log…"))
         save_button.clicked.connect(self._save_log)
+        self._record_button = QPushButton(self.tr("Record live set"))
+        self._record_button.setToolTip(
+            self.tr(
+                "Records every MIDI event from now on, with no limit, to a file in the Logs folder "
+                "(the log above keeps the last 500 only). Starts monitoring every MIDI input if it isn't running."
+            )
+        )
+        self._record_button.clicked.connect(self._toggle_recording)
+        self._recording_label = QLabel()
+        self._recording_label.setWordWrap(True)
+        self._recording_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         self._sync_button = QPushButton(self.tr("Sync controllers"))
         self._sync_button.setToolTip(
             self.tr(
@@ -187,6 +202,8 @@ class LiveMonitorView(QWidget):
         controls_layout.addWidget(self._conflict_label)
         controls_layout.addWidget(clear_button)
         controls_layout.addWidget(save_button)
+        controls_layout.addWidget(self._record_button)
+        controls_layout.addWidget(self._recording_label)
         controls_layout.addWidget(self._sync_button)
         controls_layout.addStretch(1)
 
@@ -317,6 +334,7 @@ class LiveMonitorView(QWidget):
         self._timer.start()
 
     def _stop(self) -> None:
+        self.stop_recording()
         self._timer.stop()
         self._monitor.close_all()
         self._running = False
@@ -336,6 +354,8 @@ class LiveMonitorView(QWidget):
         try:
             for event in events:
                 self._events.append(event)
+                if self._recorder is not None:
+                    self._recorder.record(event)
                 while len(self._events) > _MAX_ROWS:
                     self._events.pop(0)
                 self._append_event(event)
@@ -343,6 +363,8 @@ class LiveMonitorView(QWidget):
         finally:
             self._in_batch = False
             self._log.scrollToBottom()
+            if self.is_recording:
+                self._update_recording_label()
             self._update_filter_count()
             self.batchFinished.emit()
         elapsed_ms = (time.monotonic() - started) * 1000
@@ -510,6 +532,60 @@ class LiveMonitorView(QWidget):
         last Clear log or mapping load."""
         return self._conflict_hits, len(self._conflict_triggers)
 
+    # -- live set recording ---------------------------------------------
+
+    @property
+    def is_recording(self) -> bool:
+        return self._recorder is not None and self._recorder.is_recording
+
+    def _toggle_recording(self) -> None:
+        if self.is_recording:
+            self.stop_recording()
+        else:
+            self.start_recording()
+
+    def start_recording(self) -> Path | None:
+        """Starts monitoring every source if needed, then records every event to a new
+        file in Logs/; None when monitoring or the file can't start."""
+        if self.is_recording:
+            return self._recorder.path
+        if not self._running:
+            if self._lock_reason is not None:
+                return None
+            self.ensure_monitoring_started()
+            if not self._running:
+                self._recording_label.setText(self.tr("No MIDI input to record: plug in a controller first."))
+                return None
+        recorder = SessionRecorder(user_paths.subfolder(user_paths.LOGS))
+        try:
+            path = recorder.start()
+        except OSError as exc:
+            _LOGGER.exception("Failed to start the live set recording")
+            self._recording_label.setText(self.tr("Couldn't start recording: {error}").format(error=exc))
+            return None
+        self._recorder = recorder
+        self._record_button.setText(self.tr("Stop recording"))
+        self._update_recording_label()
+        return path
+
+    def stop_recording(self) -> Path | None:
+        if not self.is_recording:
+            return None
+        recorder = self._recorder
+        path = recorder.stop()
+        self._recorder = None
+        self._record_button.setText(self.tr("Record live set"))
+        self._recording_label.setText(
+            self.tr("Recorded {count} event(s) to {file}").format(count=recorder.count, file=str(path))
+        )
+        return path
+
+    def _update_recording_label(self) -> None:
+        recorder = self._recorder
+        self._recording_label.setText(
+            self.tr("● Recording: {count} event(s) to {file}").format(count=recorder.count, file=recorder.path.name)
+        )
+
     def _clear_log(self) -> None:
         self._events.clear()
         self._log.setRowCount(0)
@@ -636,6 +712,7 @@ class LiveMonitorView(QWidget):
 
     def shutdown(self) -> None:
         """Releases MIDI ports; call when the app is closing."""
+        self.stop_recording()
         if self._running:
             self._stop()
 

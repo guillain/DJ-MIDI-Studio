@@ -226,6 +226,8 @@ overrides.
   (`begin_batch`/`end_batch`), hidden views redraw on show, one shared flash-expiry timer. Never redraw a whole
   scene per event. `gui/freeze_watchdog.py` logs the GUI thread's stack after 5 s without response;
   `logging_config.enable_crash_log` + `gui/click_trail.py` leave traces of native crashes.
+- **Record live set** (`session_recorder.SessionRecorder`): every polled event streamed to `Logs/live-*.jsonl`, no
+  cap (the log keeps `_MAX_ROWS` = 500); starts monitoring every input if needed, stops with monitoring.
 - Live Monitor log filters (#447, Qt-free `live_filter.LogFilter`): port / direction / kind / hide jogs, applied
   with `setRowHidden` (the event is stored on each row's first item); display only, nothing else is filtered.
 - MIDI Learn (`midi_learn.py`): opens no port, rides the Live Monitor via `_ensure_learn_listening`.
