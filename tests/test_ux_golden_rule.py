@@ -152,3 +152,43 @@ def test_tools_have_their_own_menu_and_view_only_changes_the_look(monkeypatch):
     assert window._tool_docks["monitor"].toggleViewAction() in tools
     assert window._helpful_notes_action in menus["&Help"].actions()
     assert window._sync_scene_label.text() == "Scene:"
+
+
+def test_an_untagged_track_shows_its_file_name():
+    from djmidi.gui.music_library_view import LibraryTableModel
+
+    class Row:
+        path = "/music/07 Anoa - Echoes.mp3"
+        metadata = None
+        category = None
+        category_suggestion = None
+        missing = False
+        bpm = None
+        camelot_key = None
+
+    assert LibraryTableModel._display(Row(), "title") == "07 Anoa - Echoes"
+    assert LibraryTableModel._display(Row(), "artist") == ""
+
+
+def test_folders_fold_into_one_line_once_the_library_has_tracks(monkeypatch):
+    from djmidi.gui.music_library_view import MusicLibraryView
+
+    view = MusicLibraryView()
+    view._update_first_steps()
+    assert view._folders_summary_row.isHidden() and not view._folders_body.isHidden()
+    monkeypatch.setattr(view.table_model, "rowCount", lambda *_a: 12)
+    view.roots_list.addItem("/music")
+    view._update_first_steps()
+    assert not view._folders_summary_row.isHidden() and view._folders_body.isHidden()
+    assert "12 track(s) in 1 folder(s)" in view.folders_summary.text()
+    assert view.status_label.text() == ""
+    view.folders_toggle.setChecked(True)
+    assert not view._folders_body.isHidden()
+
+
+def test_an_empty_set_says_how_to_fill_it():
+    from djmidi.gui.music_library_view import MusicLibraryView
+    from djmidi.gui.set_preparation import SetPreparationPanel
+
+    panel = MusicLibraryView().findChild(SetPreparationPanel)
+    assert panel.list_empty_state.title_label.text() == "Your set is empty"

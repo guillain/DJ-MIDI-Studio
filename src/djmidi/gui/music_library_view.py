@@ -37,7 +37,7 @@ import time
 from collections.abc import Callable, Generator, Iterator
 from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import replace
-from pathlib import Path
+from pathlib import Path, PurePath
 
 from PySide6.QtCore import (
     QT_TRANSLATE_NOOP,
@@ -951,6 +951,10 @@ class LibraryTableModel(QAbstractTableModel):
         if key == "bpm":
             return _format_bpm(row.bpm)
         value = getattr(row.metadata, key, None) if row.metadata else None
+        if key == "title" and not value:
+            # Golden rule: an untagged (or not yet read) track still shows
+            # something to recognise -- its file name, never a blank row.
+            return PurePath(row.path).stem
         return "" if value is None else str(value)
 
 
@@ -1174,6 +1178,24 @@ class MusicLibraryView(QWidget):
         group = QGroupBox(self.tr("Music folders"))
         group.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
         box = QVBoxLayout(group)
+        # Golden rule: once the library has tracks, the folders and tools fold
+        # into one summary line, and the tracks get the room.
+        summary_row = QHBoxLayout()
+        self.folders_summary = QLabel()
+        self.folders_summary.setWordWrap(True)
+        summary_row.addWidget(self.folders_summary, 1)
+        self.folders_toggle = QPushButton(self.tr("Folders and tools"))
+        self.folders_toggle.setCheckable(True)
+        self.folders_toggle.setToolTip(self.tr("Add or rescan folders, find duplicates, check the library's health…"))
+        self.folders_toggle.toggled.connect(lambda _on: self._update_first_steps())
+        summary_row.addWidget(self.folders_toggle)
+        self._folders_summary_row = QWidget()
+        self._folders_summary_row.setLayout(summary_row)
+        box.addWidget(self._folders_summary_row)
+        self._folders_body = QWidget()
+        body = QVBoxLayout(self._folders_body)
+        body.setContentsMargins(0, 0, 0, 0)
+        box.addWidget(self._folders_body)
         row = QHBoxLayout()
         self.roots_list = QListWidget()
         self.roots_list.setMaximumHeight(96)
@@ -1259,9 +1281,10 @@ class MusicLibraryView(QWidget):
         actions_box.addWidget(self._library_tools_section)
         self._update_first_steps()
         row.addWidget(actions, 1)
-        box.addLayout(row)
+        body.addLayout(row)
         status_row = QHBoxLayout()
         self.status_label = QLabel(self.tr("Add a music folder, then scan it."))
+        self._initial_status = self.status_label.text()  # replaced once tracks exist
         self.status_label.setWordWrap(True)
         self.progress_bar = QProgressBar()
         self.progress_bar.setVisible(False)
@@ -2612,6 +2635,18 @@ class MusicLibraryView(QWidget):
         self.scan_button.setVisible(has_roots)
         self.relink_button.setVisible(has_tracks)
         self._library_tools_section.setVisible(has_tracks)
+        if not hasattr(self, "_folders_body"):
+            return
+        self._folders_summary_row.setVisible(has_tracks)
+        self._folders_body.setVisible(not has_tracks or self.folders_toggle.isChecked())
+        if has_tracks and self.status_label.text() == self._initial_status:
+            self.status_label.setText("")
+        if has_tracks:
+            self.folders_summary.setText(
+                self.tr("{tracks} track(s) in {folders} folder(s). Your files are only read.").format(
+                    tracks=model.rowCount(), folders=self.roots_list.count()
+                )
+            )
 
     def _update_count_label(self, *_args: object) -> None:
         self.count_label.setText(

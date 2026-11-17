@@ -7404,6 +7404,14 @@ Lignes sélectionnées dans Configuration du contrôleur : {selected}</translati
         <translation>Dossiers musicaux</translation>
     </message>
     <message>
+        <source>Folders and tools</source>
+        <translation>Dossiers et outils</translation>
+    </message>
+    <message>
+        <source>Add or rescan folders, find duplicates, check the library&apos;s health…</source>
+        <translation>Ajouter ou rescanner des dossiers, trouver les doublons, vérifier la santé de la bibliothèque…</translation>
+    </message>
+    <message>
         <source>Folders this app indexes. Scanning never modifies your files.</source>
         <translation>Dossiers indexés par cette application. Le scan ne modifie jamais vos fichiers.</translation>
     </message>
@@ -8150,6 +8158,10 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source> Skipped {count} whose file is gone or outside the music folders.</source>
         <translation> {count} ignoré(s) : fichier disparu ou hors des dossiers musicaux.</translation>
+    </message>
+    <message>
+        <source>{tracks} track(s) in {folders} folder(s). Your files are only read.</source>
+        <translation>{tracks} morceau(x) dans {folders} dossier(s). Vos fichiers sont seulement lus.</translation>
     </message>
     <message>
         <source>{shown} / {total} tracks</source>
@@ -9854,6 +9866,14 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>Drag tracks here from the table; drag inside the list to reorder.</source>
         <translation>Glissez des morceaux ici depuis le tableau ; glissez dans la liste pour les réordonner.</translation>
+    </message>
+    <message>
+        <source>Your set is empty</source>
+        <translation>Votre set est vide</translation>
+    </message>
+    <message>
+        <source>Drag tracks here from the table, then drag them inside the list to order the set.</source>
+        <translation>Glissez des morceaux ici depuis le tableau, puis déplacez-les dans la liste pour ordonner le set.</translation>
     </message>
     <message>
         <source>BPM tolerance ±</source>
