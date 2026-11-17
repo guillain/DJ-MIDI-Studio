@@ -140,3 +140,15 @@ def test_the_metronome_says_what_it_does():
     from djmidi.gui.metronome_view import MetronomeView
 
     assert "Controller Setup session" in MetronomeView().purpose_label.text()
+
+
+def test_tools_have_their_own_menu_and_view_only_changes_the_look(monkeypatch):
+    _mw, window = _window(monkeypatch)
+    menus = {a.text(): a.menu() for a in window.menuBar().actions() if a.menu()}
+    assert list(menus)[:5] == ["&File", "&Edit", "&View", "&Tools", "&Macros"]
+    tools = menus["&Tools"].actions()
+    for action in (window._new_emulator_action, window._latency_action, window._layer_map_action):
+        assert action in tools and action not in menus["&View"].actions()
+    assert window._tool_docks["monitor"].toggleViewAction() in tools
+    assert window._helpful_notes_action in menus["&Help"].actions()
+    assert window._sync_scene_label.text() == "Scene:"

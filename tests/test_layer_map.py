@@ -171,11 +171,11 @@ def test_free_only_filter_and_refresh_follow_the_mapping():
         dialog.close()
 
 
-def test_view_menu_opens_the_layer_map():
+def test_tools_menu_opens_the_layer_map():
     window = MainWindow()
     try:
-        view_menu = next(a.menu() for a in window.menuBar().actions() if a.text() == "&View")
-        assert window._layer_map_action in view_menu.actions()
+        tools_menu = next(a.menu() for a in window.menuBar().actions() if a.text() == "&Tools")
+        assert window._layer_map_action in tools_menu.actions()
         assert not window._layer_map_action.isEnabled()
         window.config = parse_file(FIXTURE)
         window._refresh_file_actions()

@@ -417,7 +417,7 @@ CONTROLLER_EMULATOR: HelpEntry = (
         "<li><b>Pad colours</b> (only for controllers whose documentation lists them, "
         "e.g. Hercules DJControl Inpulse 500): pick a colour, switch <b>Paint</b> on, "
         "click pads, then <b>Save to sync set</b>.</li></ul>"
-        "Open more emulators with <b>View → New Controller Emulator…</b>.",
+        "Open more emulators with <b>Tools → New Controller Emulator…</b>.",
     ),
     "controller-emulator.md",
 )

@@ -900,6 +900,9 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         edit_menu.addAction(live_ready_action)
 
         view_menu = self.menuBar().addMenu(self.tr("&View"))
+        # Golden rule: the windows you open live in their own menu; View keeps
+        # what changes how the app looks.
+        tools_menu = self.menuBar().addMenu(self.tr("&Tools"))
         # Issue #222: one keyboard search over everything below. Ctrl maps to
         # Cmd on macOS; application-wide so it also works from a floating dock.
         self._command_palette_action = QAction(self.tr("Command Palette..."), self)
@@ -909,13 +912,11 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         self._command_palette_action.triggered.connect(lambda _checked=False: self.open_command_palette())
         view_menu.addAction(self._command_palette_action)
         view_menu.addSeparator()
-        helpful_notes_action = QAction(self.tr("Helpful Notes..."), self)
-        helpful_notes_action.triggered.connect(self._show_helpful_notes)
-        view_menu.addAction(helpful_notes_action)
-        view_menu.addSeparator()
+        self._helpful_notes_action = QAction(self.tr("Helpful Notes..."), self)
+        self._helpful_notes_action.triggered.connect(self._show_helpful_notes)
         for key in ("monitor", "routing", "clock", "metronome"):
             dock = self._tool_docks[key]
-            view_menu.addAction(dock.toggleViewAction())
+            tools_menu.addAction(dock.toggleViewAction())
         self._new_emulator_action = QAction(self.tr("New Controller Emulator…"), self)
         self._new_emulator_action.setToolTip(
             self.tr(
@@ -924,13 +925,14 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
             )
         )
         self._new_emulator_action.triggered.connect(lambda: self._create_emulator_instance())
-        view_menu.addAction(self._new_emulator_action)
+        tools_menu.addAction(self._new_emulator_action)
+        tools_menu.addSeparator()
         self._latency_action = QAction(self.tr("MIDI Latency Test…"), self)
         self._latency_action.setToolTip(
             self.tr("Measure MIDI round-trip latency through a port or device that echoes what it receives")
         )
         self._latency_action.triggered.connect(self._on_midi_latency_test)
-        view_menu.addAction(self._latency_action)
+        tools_menu.addAction(self._latency_action)
         self._layer_map_action = QAction(self.tr("Layer Map…"), self)
         self._layer_map_action.setToolTip(
             self.tr(
@@ -940,8 +942,7 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         )
         self._layer_map_action.setEnabled(False)
         self._layer_map_action.triggered.connect(lambda _checked=False: self._on_show_layer_map())
-        view_menu.addAction(self._layer_map_action)
-        view_menu.addSeparator()
+        tools_menu.addAction(self._layer_map_action)
         self._show_all_controllers_action = QAction(self.tr("Show all controllers"), self, checkable=True)
         self._show_all_controllers_action.setChecked(self._show_all_controllers)
         self._show_all_controllers_action.setToolTip(
@@ -1042,12 +1043,16 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         corner_layout.setContentsMargins(0, 0, 0, 0)
         corner_layout.setSpacing(4)
         corner_layout.addWidget(self._record_button)
+        self._sync_scene_label = QLabel(self.tr("Scene:"))
+        self._sync_scene_label.setToolTip(self._sync_scene_combo.toolTip())
+        corner_layout.addWidget(self._sync_scene_label)
         corner_layout.addWidget(self._sync_scene_combo)
         corner_layout.addWidget(self._sync_button)
         corner_layout.addWidget(self._preferences_button)
         self.menuBar().setCornerWidget(self._menu_corner, Qt.Corner.TopRightCorner)
 
         help_menu = self.menuBar().addMenu(self.tr("&Help"))
+        help_menu.addAction(self._helpful_notes_action)
         documentation_menu = help_menu.addMenu(self.tr("Project Documentation"))
         for title, relative_path in _LOCAL_HELP_DOCUMENTS:
             action = QAction(self.tr(title), self)

@@ -1,4 +1,4 @@
-"""View → MIDI Latency Test… (issue #255): the GUI around ``djmidi.midi_latency``.
+"""Tools → MIDI Latency Test… (issue #255): the GUI around ``djmidi.midi_latency``.
 
 Pick an output and an input port, send N pings and read min / median / max /
 jitter. The timing loop runs on a worker thread (a Qt timer would add its own
