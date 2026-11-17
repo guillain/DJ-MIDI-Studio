@@ -29,6 +29,7 @@ from djmidi.startup_check import (
     LEARN,
     LEDS,
     MACROS,
+    MOVE_TRIGGER,
     OK,
     SCENE,
     TODO,
@@ -168,7 +169,11 @@ class StartupCheckDialog(QDialog):
             text.setWordWrap(True)
             row.addWidget(text, 1)
             if item.action is not None:
-                button = QPushButton(self._action_labels[item.action])
+                if item.action == MOVE_TRIGGER:
+                    label = self.tr("Move to {pad}").format(pad=dict(item.params)["pad"])
+                else:
+                    label = self._action_labels[item.action]
+                button = QPushButton(label)
                 button.setProperty("chip", True)
                 button.clicked.connect(lambda _checked=False, it=item: self.actionRequested.emit(it))
                 row.addWidget(button, 0, Qt.AlignmentFlag.AlignTop)

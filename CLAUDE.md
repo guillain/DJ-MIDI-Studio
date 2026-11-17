@@ -319,6 +319,9 @@ surgical and logged. Qt-free modules; the tab is a thin view over `library/works
   sets, macro ports; statuses ok/todo/blocking, one action per item, stable ids) → `gui/startup_check_dialog.py`
   (cards per device). Opens at startup instead of Helpful Notes when a non-dismissed item needs the DJ
   (`ui/startup_check_dismissed`, `ui/startup_check_show`); `MainWindow._on_startup_action` opens the matching tool.
+  Macro triggers bound in the controller's Serato XML (files named after it, `serato_files_for`, read-only) get
+  **Move to <free pad>** (same pad mode, `free_pad`; `MainWindow.move_macro_trigger`). `watch_plugged_devices` (3 s,
+  real app) re-checks when an input appears and opens only for items not shown yet.
 - `user_paths.py`: the workspace (`~/Documents/DJ MIDI Studio`, `DJMIDI_WORKSPACE`) with `Controllers`, `Sync`,
   `Macros`, `Drafts`, `Logs`, `Exports`, `Snapshots`. `backup.py`: workspace backup/restore (validated, atomic).
 - `file_locations.py`, `snapshots.py`, `mapping_diff.py` (semantic diff counting copies), `deck_copy.py`,

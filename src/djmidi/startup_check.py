@@ -12,13 +12,17 @@ Each item has a stable ``id`` so the DJ can hide it for good.
 
 from __future__ import annotations
 
+import logging
 import re
 from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass, field
+from pathlib import Path
 
 from djmidi import catalog
 from djmidi.atelier.describe import controller_for_port
 from djmidi.i18n import QT_TRANSLATE_NOOP, Translate, untranslated
+
+_LOGGER = logging.getLogger(__name__)
 
 OK, TODO, BLOCKING = "ok", "todo", "blocking"
 # Actions the window offers; MainWindow opens the matching tool.
@@ -30,6 +34,7 @@ LEARN, CHECK, LEDS, SCENE, MACROS, IAC = (
     "macros",
     "iac",
 )
+MOVE_TRIGGER = "move_trigger"  # params: macro, channel, note, port, pad
 
 # The app's own virtual ports and loopback buses are not devices to check.
 _OWN_OR_LOOPBACK = re.compile(r"^(DJMidiStudio|DJ MIDI Studio|IAC\b)", re.IGNORECASE)
@@ -65,6 +70,16 @@ _TEXTS = {
     ),
     "controller_unplugged": QT_TRANSLATE_NOOP(
         "StartupCheck", "Not plugged in: plug it in to use {count} macro(s) ({macros})."
+    ),
+    "trigger_in_serato": QT_TRANSLATE_NOOP(
+        "StartupCheck",
+        "{trigger} fires the macro {macro}, but your Serato mapping {file} uses it too: "
+        "one press would do both.",
+    ),
+    "trigger_in_serato_no_free": QT_TRANSLATE_NOOP(
+        "StartupCheck",
+        "{trigger} fires the macro {macro}, but your Serato mapping {file} uses it too, "
+        "and no pad of that mode is free: pick another trigger.",
     ),
     "nothing_plugged": QT_TRANSLATE_NOOP(
         "StartupCheck", "No controller is plugged in. Plug one in, then check again."
@@ -135,9 +150,13 @@ def check_startup(
     sync_controllers: Iterable[str] = (),
     has_captures: Callable[[str], bool] = lambda _controller: False,
     has_leds: Callable[[str], bool] = lambda _controller: False,
+    serato_files: Sequence[Path] = (),
 ) -> StartupReport:
-    """`macros` are `midi_macros.MidiMacro`s (only `name` and `output_port`
-    are read); `sync_controllers` the controllers with a stored sync set."""
+    """`macros` are `midi_macros.MidiMacro`s (`name`, `output_port` and
+    `triggers` are read); `sync_controllers` the controllers with a stored
+    sync set; `serato_files` the DJ's Serato MIDI mapping files (only those
+    whose name names a trigger's controller are read)."""
+    macros = list(macros)
     report = StartupReport()
     with_scene = set(sync_controllers)
     seen: dict[str, list[str]] = {}
@@ -237,9 +256,184 @@ def check_startup(
                     params=params,
                 )
             )
+    if serato_files:
+        report.items.extend(_trigger_conflicts(macros, serato_files))
     order = {BLOCKING: 0, TODO: 1, OK: 2}
     report.items.sort(key=lambda item: order[item.status])
     return report
+
+
+def serato_bound_notes(files: Iterable[Path]) -> dict[tuple[int, int], str]:
+    """Every Note (channel, number) a Serato mapping file binds to a function,
+    with the first file (by name) binding it. Read-only; an unreadable file
+    is skipped."""
+    from djmidi.model import iter_bindings
+    from djmidi.parser import parse_file
+
+    bound: dict[tuple[int, int], str] = {}
+    for path in sorted(files, key=lambda p: p.name.lower()):
+        try:
+            config = parse_file(str(path))
+        except Exception:
+            _LOGGER.warning(
+                "Startup check: skipped unreadable Serato mapping %s",
+                path,
+                exc_info=True,
+            )
+            continue
+        for control in config.controls:
+            if "note" not in str(control.event_type).lower():
+                continue
+            try:
+                key = (int(control.channel), int(control.control))
+            except TypeError, ValueError:
+                continue
+            if key not in bound and any(
+                userio.mappings for userio, _case in iter_bindings(control)
+            ):
+                bound[key] = path.name
+    return bound
+
+
+_PAD_MODE = re.compile(r"\(([^)]*)\)\s*$")
+
+
+def _mode_of(label: str) -> str | None:
+    match = _PAD_MODE.search(label)
+    return match.group(1) if match else None
+
+
+def free_pad(
+    controller: str, channel: int, note: int, taken: set[tuple[int, int]]
+) -> tuple[str, int, int] | None:
+    """A pad of the same controller, deck channel and pad mode as
+    (channel, note) that's in `taken` neither (Serato bindings, other
+    triggers): (label, channel, note), lowest note first, or None."""
+    from djmidi.atelier.features import NOTE, features_for
+
+    features = [
+        f
+        for f in features_for(controller)
+        if f.input.kind == NOTE and f.section == "PAD"
+    ]
+    current = next(
+        (f for f in features if (f.input.channel, f.input.number) == (channel, note)),
+        None,
+    )
+    if current is None:
+        return None
+    mode = _mode_of(current.label)
+    same_bank = sorted(
+        (
+            f
+            for f in features
+            if f.input.channel == channel
+            and _mode_of(f.label) == mode
+            and (f.input.channel, f.input.number) not in taken
+        ),
+        key=lambda f: f.input.number,
+    )
+    return (
+        (same_bank[0].label, channel, same_bank[0].input.number) if same_bank else None
+    )
+
+
+def _trigger_label(controller: str | None, channel: int, note: int) -> str:
+    if controller is not None:
+        from djmidi.atelier.features import NOTE, features_for
+
+        for feature in features_for(controller):
+            if feature.input.kind == NOTE and (
+                feature.input.channel,
+                feature.input.number,
+            ) == (channel, note):
+                return feature.label
+    return f"Note {note} · ch {channel}"
+
+
+def serato_files_for(controller: str, files: Sequence[Path]) -> list[Path]:
+    """The Serato mapping files whose name names `controller` ("xdj-xz
+    ddj-xp2 - 4 decks.xml" for the DDJ-XP2): Serato keeps one file per
+    device, and another device's file reuses the same channels and notes."""
+    wanted = _squash(controller)
+    return [path for path in files if wanted and wanted in _squash(path.stem)]
+
+
+def _trigger_conflicts(macros: list, serato_files: Sequence[Path]) -> list[StartupItem]:
+    """Macro triggers on a controller's notes that its Serato mapping binds
+    too, each with a free pad of the same mode to move to."""
+    bound_by_controller: dict[str, dict[tuple[int, int], str]] = {}
+
+    def bound_for(controller: str | None) -> dict[tuple[int, int], str]:
+        if controller is None:
+            return {}
+        if controller not in bound_by_controller:
+            bound_by_controller[controller] = serato_bound_notes(
+                serato_files_for(controller, serato_files)
+            )
+        return bound_by_controller[controller]
+
+    triggers = [
+        (macro, trigger, controller_of_port(trigger.port) if trigger.port else None)
+        for macro in macros
+        for trigger in getattr(macro, "triggers", ())
+        if "note" in str(trigger.event_type).lower()
+    ]
+    items = []
+    for macro, trigger, controller in triggers:
+        serato_bound = bound_for(controller)
+        key = (int(trigger.channel), int(trigger.data1))
+        if key not in serato_bound:
+            continue
+        taken = set(serato_bound) | {
+            (int(t.channel), int(t.data1)) for _m, t, c in triggers if c == controller
+        }
+        taken |= {
+            (int(dict(i.params)["channel"]), int(dict(i.params)["note"]))
+            for i in items
+            if i.action == MOVE_TRIGGER
+        }
+        params = [
+            ("trigger", _trigger_label(controller, *key)),
+            ("macro", macro.name),
+            ("file", serato_bound[key]),
+        ]
+        target = free_pad(controller, *key, taken)
+        item_id = f"serato:{macro.name}:{key[0]}:{key[1]}"
+        if target is None:
+            items.append(
+                StartupItem(
+                    item_id,
+                    controller,
+                    BLOCKING,
+                    "trigger_in_serato_no_free",
+                    MACROS,
+                    controller,
+                    tuple(params),
+                )
+            )
+            continue
+        pad, channel, note = target
+        params += [
+            ("pad", pad),
+            ("channel", str(channel)),
+            ("note", str(note)),
+            ("old_channel", str(key[0])),
+            ("old_note", str(key[1])),
+            ("port", trigger.port),
+        ]
+        items.append(
+            StartupItem(
+                item_id,
+                controller,
+                BLOCKING,
+                "trigger_in_serato",
+                MOVE_TRIGGER,
+                controller,
+                tuple(params),
+            )
+        )
+    return items
 
 
 __all__ = [
@@ -249,6 +443,7 @@ __all__ = [
     "LEARN",
     "LEDS",
     "MACROS",
+    "MOVE_TRIGGER",
     "OK",
     "SCENE",
     "TODO",
@@ -256,5 +451,8 @@ __all__ = [
     "StartupReport",
     "check_startup",
     "controller_of_port",
+    "free_pad",
     "is_own_or_loopback",
+    "serato_bound_notes",
+    "serato_files_for",
 ]

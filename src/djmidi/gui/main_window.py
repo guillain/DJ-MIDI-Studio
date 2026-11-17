@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import dataclasses
 import logging
 import sys
 from datetime import UTC, datetime
@@ -81,6 +82,7 @@ from djmidi.controller_sync import (
     scene_names,
     summarize_results,
 )
+from djmidi.file_locations import software_mapping_dirs
 from djmidi.first_run import FirstRunChoices
 from djmidi.gui import jog as jog_mod  # noqa: F401
 from djmidi.gui import layout as layout_mod
@@ -245,6 +247,12 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         self._profile_check_dialog: ProfileCheckDialog | None = None
         self._startup_check_dialog: StartupCheckDialog | None = None
         self._startup_dismissed_fallback: set[str] = set()  # tests: no QSettings
+        # Step 3: a device plugged in later gets the same check (real app only).
+        self._startup_seen_ports: set[str] | None = None
+        self._startup_shown_ids: set[str] = set()
+        self._startup_watch_timer = QTimer(self)
+        self._startup_watch_timer.setInterval(3000)
+        self._startup_watch_timer.timeout.connect(self.watch_plugged_devices)
         self._hardware_session_dialog: HardwareSessionDialog | None = None
         # Library profiles declined this session, when there are no QSettings (tests).
         self._session_dismissed_profiles: set[str] = set()
@@ -1102,6 +1110,7 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
             self._on_first_run_wizard()
         elif not self._show_startup_check_if_needed():
             self._show_helpful_notes_if_enabled()
+        self._startup_watch_timer.start()
 
     def _should_show_first_run_wizard(self) -> bool:
         """Real app only (tests and doc captures have no settings), and only
@@ -1152,7 +1161,16 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
             {sync_set.controller for sync_set in self.preferences.controller_sync_sets},
             has_captures=lambda controller: captures_file(controller, controllers_dir).exists(),
             has_leds=lambda controller: led_file(controller, controllers_dir).exists(),
+            serato_files=self._serato_mapping_files(),
         )
+
+    def _serato_mapping_files(self) -> list[Path]:
+        """The DJ's Serato MIDI mapping files (read-only); none in tests,
+        which must never read the real home folder."""
+        if self._layout_settings() is None:
+            return []
+        folder = software_mapping_dirs("serato")[0]
+        return sorted(folder.glob("*.xml")) if folder.is_dir() else []
 
     def _startup_check_dismissed(self) -> set[str]:
         settings = self._layout_settings()
@@ -1174,10 +1192,41 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         if settings is None or not settings.value(self._STARTUP_CHECK_SHOW_KEY, True, type=bool):
             return False
         report = self.run_startup_check()
-        if not report.needing_attention(self._startup_check_dismissed()):
+        needing = report.needing_attention(self._startup_check_dismissed())
+        if not needing:
             return False
+        self._startup_shown_ids |= {item.id for item in needing}
         self.open_startup_check(report)
         return True
+
+    def watch_plugged_devices(self) -> StartupCheckDialog | None:
+        """Polled every few seconds: when an input port appears, checks again
+        and opens (or refreshes) the window if that brought something new
+        that needs the DJ. The first poll only learns the current ports."""
+        ports = set(list_input_ports())
+        if self._startup_seen_ports is None:
+            self._startup_seen_ports = ports
+            return None
+        appeared = ports - self._startup_seen_ports
+        self._startup_seen_ports = ports
+        if not appeared:
+            return None
+        report = self.run_startup_check()
+        if self._startup_check_dialog is not None:
+            self._startup_check_dialog.set_report(report)
+            return self._startup_check_dialog
+        settings = self._layout_settings()
+        if settings is not None and not settings.value(self._STARTUP_CHECK_SHOW_KEY, True, type=bool):
+            return None
+        fresh = [
+            item
+            for item in report.needing_attention(self._startup_check_dismissed())
+            if item.id not in self._startup_shown_ids
+        ]
+        if not fresh:
+            return None
+        self._startup_shown_ids |= {item.id for item in fresh}
+        return self.open_startup_check(report)
 
     def open_startup_check(self, report: StartupReport | None = None) -> StartupCheckDialog:
         if self._startup_check_dialog is not None:
@@ -1213,10 +1262,40 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
             self.left_tabs.setCurrentIndex(self._tab_indexes["atelier"])
         elif item.action == startup_check.MACROS:
             self._on_manage_macros()
+        elif item.action == startup_check.MOVE_TRIGGER:
+            self.move_macro_trigger(item)
+            if self._startup_check_dialog is not None:
+                self._startup_check_dialog.set_report(self.run_startup_check())
+            return
         elif item.action == startup_check.IAC:
             QDesktopServices.openUrl(QUrl.fromLocalFile("/System/Applications/Utilities/Audio MIDI Setup.app"))
         self.raise_()
         self.activateWindow()
+
+    def move_macro_trigger(self, item: StartupItem) -> bool:
+        """Moves one macro trigger to the free pad the startup check found,
+        saves the macros, and says so. False when the macro or trigger is gone."""
+        params = dict(item.params)
+        old = (int(params["old_channel"]), int(params["old_note"]))
+        for index, macro in enumerate(self.macros):
+            if macro.name != params["macro"]:
+                continue
+            triggers = list(macro.triggers)
+            for position, trigger in enumerate(triggers):
+                if (trigger.channel, trigger.data1) != old:
+                    continue
+                triggers[position] = midi_macros.MacroTrigger.create(
+                    trigger.event_type, int(params["channel"]), int(params["note"]), trigger.port
+                )
+                self.macros[index] = dataclasses.replace(macro, triggers=tuple(triggers))
+                midi_macros.save_macros(user_paths.macros_dir(), self.macros)
+                self._rebuild_macro_menu()
+                self._ensure_macro_triggers_listening()
+                self.statusBar().showMessage(
+                    self.tr("{macro} now plays from {pad}.").format(macro=macro.name, pad=params["pad"]), 8000
+                )
+                return True
+        return False
 
     def _show_helpful_notes_if_enabled(self) -> None:
         settings = self._layout_settings()
