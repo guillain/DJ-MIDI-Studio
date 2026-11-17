@@ -15,6 +15,7 @@
 - [The whole app lights up](#the-whole-app-lights-up)
 - [See what Serato sends back (LED feedback)](#see-what-serato-sends-back-led-feedback)
 - [Record a whole live set](#record-a-whole-live-set)
+- [Analyse a recorded set](#analyse-a-recorded-set)
 - [Limits](#limits)
 - [Related](#related)
 
@@ -141,6 +142,22 @@ time (`live-20261116-183915.jsonl`), one event per line: its time, port,
 direction, channel, type and values. It's written as you play, so a crash
 loses about a second at most. Keep it to look back at what you actually
 used during a set: which buttons, how often, which ones follow each other.
+
+## Analyse a recorded set
+
+**Analyse a set…** opens a recording from the `Logs` folder and shows what
+it says about how you play. Nothing is changed.
+
+| Tab | What it shows |
+|---|---|
+| **Buttons** | Every press per physical control (deck told apart by its channel), most used first |
+| **Jogs, knobs and faders** | The continuous controls that moved, by number of messages |
+| **Sequences** | Two different buttons pressed within 1.5 s of each other, and how often: a CUE then PLAY you repeat is a macro waiting to be made |
+| **Activity** | Presses per 10 minutes: where the set was busy, where you paused |
+
+Controls are named by your controllers' profiles; one no profile knows
+keeps its note or CC number and channel. Recordings made by the earlier
+standalone recorder script open too.
 
 ## Limits
 
