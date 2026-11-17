@@ -145,7 +145,7 @@ The **⚙** button at the top right of the menu bar opens Preferences (the
 
 | Tab | Settings |
 | --- | --- |
-| General | Theme (`Follow system`, `Light` — the default, `Dark`), [Language](interface-language.md) (`System`, `English`, `Français`, applied at the next launch), integration detection (`Ask before enabling` or `Suggest detected integration`), log level and log file, `Enable MIDI routing policies`, `Trust external plugins`, `Auto-start Live Monitor when a mapping is loaded`, `Reopen my last mapping and Controller Setup draft at launch`, `Sync controllers at launch`, `Sync a controller when it is plugged in`, `Sync when switching scene`, `Check for a new version at launch`, `Controller Setup default file`, your files folder (`Open folder`, `Back up...`, `Restore...`) |
+| General | **Look**: theme (`Follow system`, `Light` — the default, `Dark`) and [language](interface-language.md) (applied at the next launch). **When the app starts**: reopen your last mapping and Controller Setup draft, sync controllers, start the Live Monitor when a mapping loads, check for a new version, integration detection. **Controller sync**: on plug-in, on scene change. **Your files**: the folder (`Open folder`, `Back up...`, `Restore...`). **Show advanced settings** reveals **Advanced**: `Enable MIDI routing policies`, `Trust external plugins`, log level and file, `Controller Setup default file` |
 | Plugins | Enable or disable each controller and software plugin; `Enable all controllers` / `Disable all controllers` |
 | Controller sync | Your [sync sets](controller-sync.md#manage-sync-sets) |
 

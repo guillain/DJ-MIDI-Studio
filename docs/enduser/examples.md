@@ -59,7 +59,7 @@ the device name is intentionally kept in its dedicated column.
 
 ## Route MIDI between devices
 
-1. Enable `Enable MIDI routing policies` in Preferences.
+1. In the MIDI Routing window, click `Turn routing on` (or tick `Enable MIDI routing policies` in Preferences → Show advanced settings).
 2. Open `MIDI Routing`, select a source and destination, then click `Add route`.
 3. Open the independent `MIDI Clock` tool from the `View` menu.
 4. Optionally enable the Clock policy and add one or more source/destination lines.
