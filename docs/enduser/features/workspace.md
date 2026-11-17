@@ -157,7 +157,7 @@ it from every selector; it stays listed here to enable again. See
 ## Helpful Notes and Help
 
 **Helpful Notes** opens at startup with quick tips; reopen it with
-`View → Helpful Notes...`. When you close it you can choose not to see it
+`Help → Helpful Notes...`. When you close it you can choose not to see it
 at startup again.
 
 The **Help** menu opens this documentation, the bundled controller manuals

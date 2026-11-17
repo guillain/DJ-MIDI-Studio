@@ -194,7 +194,7 @@ overrides.
   By Channel / By Deck / By Controller) · Music. It keeps a flat page API (`_tab_indexes[key]`,
   `setCurrentIndex`, `currentChanged(int)`, `tabText`) over the nested tabs; levels are styled by object name
   (`navTop` / `navSub` / `navPills`, theme.py). Tool docks: Live Monitor, MIDI Routing, MIDI Clock, Metronome, plus any
-  number of Controller Emulator docks (`View → New Controller Emulator…`; only the set of open controllers
+  number of Controller Emulator docks (`Tools → New Controller Emulator…`; only the set of open controllers
   survives a restart).
 - Editing goes through `edit_panel.py` + `commands.py` (`QUndoStack`); the Music Library has its own undo stack.
 - Selecting anything highlights matching cells in all three `ControllerLayoutView`s (`_update_layout_selection`);
