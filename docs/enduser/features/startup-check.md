@@ -39,11 +39,21 @@ devices again after you plug one in.
 | An IAC bus is offline while macros send to it | **Open Audio MIDI Setup**, to turn the bus on (Window → Show MIDI Studio, IAC Driver, *Device is online*) |
 | A macro's port isn't connected | **Edit the macros** |
 | A macro's controller is unplugged | Nothing to fix: plug it in |
+| A macro's trigger pad is also used by your Serato mapping for that controller (one press would do both) | **Move to …**: moves the trigger to the first free pad of the same mode, in one click |
 
-It only reads port names and the app's own files: no MIDI is sent, your DJ
-software's files are not opened.
+Serato keeps one mapping file per device in `Music/_Serato_/MIDI/Xml`; only
+the files whose name names the controller (`ddj-xp2-custom.xml` for the
+DDJ-XP2) are read, never written.
+
+It only reads port names, the app's own files and your Serato mapping files:
+no MIDI is sent and nothing outside the app's workspace is written. Only
+**Move to …** changes something: that macro's trigger, in the app's own
+`Macros` folder.
 
 ## When it opens
+
+Plug a device in while the app runs and the check looks again: it opens on
+its own when that brings something new.
 
 At startup, when at least one line you haven't hidden needs you — instead
 of the Helpful Notes. Untick **Show at startup when something needs you** to

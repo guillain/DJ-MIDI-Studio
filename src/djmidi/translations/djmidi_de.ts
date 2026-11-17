@@ -5259,6 +5259,10 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
         <translation>Einen Fehlerbericht mit Ihrer App-Version, Ihrem System und den letzten Protokollzeilen ansehen und dann als vorausgefülltes GitHub-Issue öffnen.</translation>
     </message>
     <message>
+        <source>{macro} now plays from {pad}.</source>
+        <translation>{macro} startet jetzt über {pad}.</translation>
+    </message>
+    <message>
         <source>Live Monitor</source>
         <translation>Live Monitor</translation>
     </message>
@@ -10274,6 +10278,14 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
         <translation>Nicht angeschlossen: Schließen Sie es an, um {count} Makro(s) zu nutzen ({macros}).</translation>
     </message>
     <message>
+        <source>{trigger} fires the macro {macro}, but your Serato mapping {file} uses it too: one press would do both.</source>
+        <translation>{trigger} startet das Makro {macro}, aber Ihr Serato-Mapping {file} nutzt es auch: Ein Druck würde beides auslösen.</translation>
+    </message>
+    <message>
+        <source>{trigger} fires the macro {macro}, but your Serato mapping {file} uses it too, and no pad of that mode is free: pick another trigger.</source>
+        <translation>{trigger} startet das Makro {macro}, aber Ihr Serato-Mapping {file} nutzt es auch, und kein Pad dieses Modus ist frei: Wählen Sie einen anderen Auslöser.</translation>
+    </message>
+    <message>
         <source>No controller is plugged in. Plug one in, then check again.</source>
         <translation>Kein Controller angeschlossen. Schließen Sie einen an und prüfen Sie erneut.</translation>
     </message>
@@ -10343,6 +10355,10 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     <message>
         <source>No MIDI device plugged in.</source>
         <translation>Kein MIDI-Gerät angeschlossen.</translation>
+    </message>
+    <message>
+        <source>Move to {pad}</source>
+        <translation>Nach {pad} verschieben</translation>
     </message>
     <message>
         <source>Dismiss: don&apos;t show this again</source>

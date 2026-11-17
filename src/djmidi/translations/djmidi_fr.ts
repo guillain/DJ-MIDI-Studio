@@ -5121,6 +5121,10 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
         <translation>&amp;Signaler un problème...</translation>
     </message>
     <message>
+        <source>{macro} now plays from {pad}.</source>
+        <translation>{macro} se lance maintenant depuis {pad}.</translation>
+    </message>
+    <message>
         <source>No initialization set is recorded for the scene &quot;{scene}&quot; and no controller has a Default set.</source>
         <translation>Aucun jeu d&apos;initialisation n&apos;est enregistré pour la scène « {scene} » et aucun contrôleur n&apos;a de jeu Default.</translation>
     </message>
@@ -10274,6 +10278,14 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <translation>Pas branché : branchez-le pour utiliser {count} macro(s) ({macros}).</translation>
     </message>
     <message>
+        <source>{trigger} fires the macro {macro}, but your Serato mapping {file} uses it too: one press would do both.</source>
+        <translation>{trigger} lance la macro {macro}, mais votre mapping Serato {file} l&apos;utilise aussi : un seul appui ferait les deux.</translation>
+    </message>
+    <message>
+        <source>{trigger} fires the macro {macro}, but your Serato mapping {file} uses it too, and no pad of that mode is free: pick another trigger.</source>
+        <translation>{trigger} lance la macro {macro}, mais votre mapping Serato {file} l&apos;utilise aussi, et aucun pad de ce mode n&apos;est libre : choisissez un autre déclencheur.</translation>
+    </message>
+    <message>
         <source>No controller is plugged in. Plug one in, then check again.</source>
         <translation>Aucun contrôleur n&apos;est branché. Branchez-en un, puis vérifiez à nouveau.</translation>
     </message>
@@ -10343,6 +10355,10 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>No MIDI device plugged in.</source>
         <translation>Aucun appareil MIDI branché.</translation>
+    </message>
+    <message>
+        <source>Move to {pad}</source>
+        <translation>Déplacer vers {pad}</translation>
     </message>
     <message>
         <source>Dismiss: don&apos;t show this again</source>
