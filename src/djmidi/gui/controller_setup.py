@@ -85,6 +85,7 @@ from djmidi.gui import help_texts
 from djmidi.gui.accessibility import name_icon_buttons
 from djmidi.gui.action_groups import FlowLayout
 from djmidi.gui.controller_submission_dialog import ControllerSubmissionDialog
+from djmidi.gui.empty_state import EmptyState
 from djmidi.gui.help_button import help_button
 from djmidi.gui.icons import line_icon
 from djmidi.gui.list_dialog import show_list
@@ -297,7 +298,8 @@ class ControllerSetupView(QWidget):
         refresh_button = QPushButton(self._get_icon("refresh"), "")
         refresh_button.setToolTip(self.tr("Refresh ports"))
         refresh_button.clicked.connect(self._refresh_ports)
-        self._learn_button = QPushButton(self._get_icon("start"), "")
+        # Text, not just an icon: learning is this tab's first step.
+        self._learn_button = QPushButton(self._get_icon("start"), self.tr("Learn"))
         self._learn_button.setToolTip(self.tr("Start learning"))
         self._learn_button.clicked.connect(self._toggle_learning)
         self._learn_status = QLabel(self.tr("Stopped"))
@@ -525,6 +527,17 @@ class ControllerSetupView(QWidget):
         self._table.horizontalHeader().setStretchLastSection(True)
         self._table.setAlternatingRowColors(True)
         self._table.cellChanged.connect(self._on_cell_changed)
+        self.table_empty_state = EmptyState(
+            self._table,
+            "",  # no big glyph: the table can be short in a small window
+            self.tr("Nothing learned yet"),
+            self.tr(
+                "Start learning, then press each button on your controller once: every press becomes a row "
+                "here, ready to name."
+            ),
+            (self.tr("Start learning"), self.start_learning_from_hint),
+            is_empty=lambda: self._table.rowCount() == 0,
+        )
 
         delete_button = QPushButton(self._get_icon("delete"), self.tr("Delete selected row(s)"))
         delete_button.setMinimumHeight(28)
@@ -1274,6 +1287,15 @@ class ControllerSetupView(QWidget):
     def _is_checked(self, row: int) -> bool:
         return self._port_list.item(row).checkState() == Qt.CheckState.Checked
 
+    def start_learning_from_hint(self) -> None:
+        """The empty table's button: listens to every input when none is
+        ticked yet, then starts learning."""
+        if not any(self._is_checked(i) for i in range(self._port_list.count())):
+            for i in range(self._port_list.count()):
+                self._port_list.item(i).setCheckState(Qt.CheckState.Checked)
+        if not self._learning:
+            self._start_learning()
+
     def _toggle_learning(self) -> None:
         if self._learning:
             self._stop_learning()
@@ -1289,11 +1311,13 @@ class ControllerSetupView(QWidget):
             self._monitor.close_all()
             self._learn_status.setText(self.tr("Stopped"))
             self._learn_button.setIcon(self._get_icon("start"))
+            self._learn_button.setText(self.tr("Learn"))
             self._learn_button.setToolTip(self.tr("Start learning"))
             QMessageBox.warning(self, self.tr("Cannot start MIDI learning"), str(exc))
             return
         self._learning = True
         self._learn_button.setIcon(self._get_icon("stop"))
+        self._learn_button.setText(self.tr("Stop"))
         self._learn_button.setToolTip(self.tr("Stop learning"))
         self._learn_status.setText(self.tr("Listening ({count} input(s))").format(count=len(selected)))
         _LOGGER.info("Controller Setup learning started: inputs=%s", selected)
@@ -1304,6 +1328,7 @@ class ControllerSetupView(QWidget):
         self._monitor.close_all()
         self._learning = False
         self._learn_button.setIcon(self._get_icon("start"))
+        self._learn_button.setText(self.tr("Learn"))
         self._learn_button.setToolTip(self.tr("Start learning"))
         self._learn_status.setText(self.tr("Stopped"))
         _LOGGER.info("Controller Setup learning stopped (%d row(s) captured)", len(self._rows))

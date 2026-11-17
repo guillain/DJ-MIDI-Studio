@@ -190,7 +190,7 @@ name tests monkeypatch on `djmidi.gui.main_window`** (`list_input_ports`, `list_
 `current_version`, dialog classes, …) stay in `main_window.py`, as do `__init__`, `_build_menu` and Qt event
 overrides.
 
-- `left_tabs` is a `gui/nav_tabs.NavTabs`: Dashboard · Controller (Setup, Images, Studio = the Atelier, By… →
+- `left_tabs` is a `gui/nav_tabs.NavTabs`: Dashboard · Controller (Setup, Images, Studio = the Atelier, Mapping →
   By Channel / By Deck / By Controller) · Music. It keeps a flat page API (`_tab_indexes[key]`,
   `setCurrentIndex`, `currentChanged(int)`, `tabText`) over the nested tabs; levels are styled by object name
   (`navTop` / `navSub` / `navPills`, theme.py). Tool docks: Live Monitor, MIDI Routing, MIDI Clock, Metronome, plus any
@@ -211,7 +211,7 @@ overrides.
 - `gui/layout.py` (Qt-free): `build_layout`, cell keys, `reverse_lookup(controller)` (every `ControlInfo` variant
   per cell, pad lookups brute-forced over their bounded domain), `pick_default_variant` / `resolve_side_aware_variant`
   (pad mode token, SHIFT), `PAD_BANK_RE`, `is_shift_variant` (a `KEY SHIFT` pad mode isn't SHIFT).
-- `gui/layout_view.py`: `ControllerLayoutView` (By… tabs: card grid, or real-position mode on the photo when the
+- `gui/layout_view.py`: `ControllerLayoutView` (Mapping tabs: card grid, or real-position mode on the photo when the
   controller has geometry), `draw_control_glyph`, `draw_reference_photo`. `gui/layer_toggles.py`: Controller /
   MIDI / Layout display layers (one photo at a time; Layout greyed on the MIDI picture, whose crop differs).
 - `gui/controller_emulator.py`: `ControllerEmulatorView` / `EmulatorLayoutView` — click to dry-run resolve what the

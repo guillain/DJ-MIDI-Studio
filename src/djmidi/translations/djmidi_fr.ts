@@ -1305,6 +1305,14 @@ Mappé sur : {functions}</translation>
         <translation>Appareil</translation>
     </message>
     <message>
+        <source>Nothing learned yet</source>
+        <translation>Rien d&apos;appris pour l&apos;instant</translation>
+    </message>
+    <message>
+        <source>Start learning, then press each button on your controller once: every press becomes a row here, ready to name.</source>
+        <translation>Lancez l&apos;apprentissage, puis appuyez une fois sur chaque bouton de votre contrôleur : chaque appui devient une ligne ici, prête à être nommée.</translation>
+    </message>
+    <message>
         <source>Delete selected row(s)</source>
         <translation>Supprimer les lignes sélectionnées</translation>
     </message>
@@ -1479,6 +1487,10 @@ Mappé sur : {functions}</translation>
     <message>
         <source>Cannot start MIDI learning</source>
         <translation>Impossible de démarrer l&apos;apprentissage MIDI</translation>
+    </message>
+    <message>
+        <source>Stop</source>
+        <translation>Arrêter</translation>
     </message>
     <message>
         <source>Stop learning</source>
@@ -3646,6 +3658,42 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
         <translation>Fichier chargé : {name} ({count} commande(s))</translation>
     </message>
     <message>
+        <source>Your setup</source>
+        <translation>Votre installation</translation>
+    </message>
+    <message>
+        <source>Checking what&apos;s plugged in…</source>
+        <translation>Vérification de ce qui est branché…</translation>
+    </message>
+    <message>
+        <source>See what&apos;s missing</source>
+        <translation>Voir ce qui manque</translation>
+    </message>
+    <message>
+        <source>Every plugged-in device, what&apos;s missing, and the button that fixes it.</source>
+        <translation>Chaque appareil branché, ce qui manque, et le bouton qui le règle.</translation>
+    </message>
+    <message>
+        <source>Set up a controller</source>
+        <translation>Configurer un contrôleur</translation>
+    </message>
+    <message>
+        <source>Teach the app a controller by pressing its buttons.</source>
+        <translation>Apprenez un contrôleur à l&apos;app en appuyant sur ses boutons.</translation>
+    </message>
+    <message>
+        <source>Prepare a set</source>
+        <translation>Préparer un set</translation>
+    </message>
+    <message>
+        <source>Your music: tags, keys, playlists and the set you&apos;ll play.</source>
+        <translation>Votre musique : tags, tonalités, playlists et le set que vous allez jouer.</translation>
+    </message>
+    <message>
+        <source>See my setup</source>
+        <translation>Voir mon installation</translation>
+    </message>
+    <message>
         <source>Catalog: {entries} static entry(ies), {pads} pad(s)</source>
         <translation>Catalogue : {entries} entrée(s) fixe(s), {pads} pad(s)</translation>
     </message>
@@ -4769,6 +4817,10 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
         <translation>Tableau de bord</translation>
     </message>
     <message>
+        <source>Mapping</source>
+        <translation>Mapping</translation>
+    </message>
+    <message>
         <source>By Channel</source>
         <translation>Par canal</translation>
     </message>
@@ -5119,6 +5171,38 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
     <message>
         <source>&amp;Report a Problem...</source>
         <translation>&amp;Signaler un problème...</translation>
+    </message>
+    <message>
+        <source>No mapping open yet</source>
+        <translation>Aucun mapping ouvert</translation>
+    </message>
+    <message>
+        <source>Open your Serato (or Traktor) mapping to see every button, what it does, and where it sits on your controller. Nothing changes in the file until you save.</source>
+        <translation>Ouvrez votre mapping Serato (ou Traktor) pour voir chaque bouton, ce qu&apos;il fait et où il se trouve sur votre contrôleur. Rien ne change dans le fichier tant que vous n&apos;enregistrez pas.</translation>
+    </message>
+    <message>
+        <source>Open a mapping…</source>
+        <translation>Ouvrir un mapping…</translation>
+    </message>
+    <message>
+        <source>{count} thing(s) won&apos;t work right now</source>
+        <translation>{count} point(s) ne marchent pas maintenant</translation>
+    </message>
+    <message>
+        <source>Almost ready: {count} thing(s) to finish</source>
+        <translation>Presque prêt : {count} point(s) à finir</translation>
+    </message>
+    <message>
+        <source>All set: everything plugged in is ready</source>
+        <translation>Tout est prêt : tout ce qui est branché est prêt</translation>
+    </message>
+    <message>
+        <source>Plugged in: {devices}</source>
+        <translation>Branché : {devices}</translation>
+    </message>
+    <message>
+        <source>No controller plugged in: plug one in and the app takes it from there.</source>
+        <translation>Aucun contrôleur branché : branchez-en un et l&apos;app s&apos;occupe du reste.</translation>
     </message>
     <message>
         <source>{macro} now plays from {pad}.</source>
@@ -5891,10 +5975,6 @@ Quitter maintenant ?</translation>
     <message>
         <source>Studio</source>
         <translation>Studio</translation>
-    </message>
-    <message>
-        <source>By…</source>
-        <translation>Par…</translation>
     </message>
     <message>
         <source>Music</source>

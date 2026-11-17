@@ -50,8 +50,8 @@ Three main tabs:
 
 | Tab | What's inside |
 | --- | --- |
-| **Dashboard** | Your controllers at a glance, shortcuts to everything else |
-| **Controller** | **Setup** (build or correct a profile), **Images** (the photo with live MIDI), **Studio** (the [Atelier](features/atelier.md): scenes, macros, remaps by clicking the controller), **By…** — **By Channel**, **By Deck**, **By Controller**: the loaded mapping, edited in the column on the right |
+| **Dashboard** | **Your setup** first: what's plugged in, what's missing (one click opens the [Startup check](features/startup-check.md)), and where to start — set up a controller or prepare a set. Then your controllers at a glance and shortcuts to everything else |
+| **Controller** | **Setup** (build or correct a profile), **Images** (the photo with live MIDI), **Studio** (the [Atelier](features/atelier.md): scenes, macros, remaps by clicking the controller), **Mapping** — **By Channel**, **By Deck**, **By Controller**: the loaded mapping, edited in the column on the right |
 | **Music** | Your [music library](features/music-library.md): tracks, playlists, set preparation |
 
 ## Supported files

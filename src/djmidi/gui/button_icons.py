@@ -28,6 +28,7 @@ _LOGGER = logging.getLogger(__name__)
 
 # First match wins: English source text (lower case, no "&", no "…") → role.
 ROLE_KEYWORDS: tuple[tuple[str, str], ...] = (
+    (r"\bset up\b", "add"),
     (r"\bmove up\b", "up"),
     (r"\bmove down\b", "down"),
     (r"\b(delete|remove|discard|trash|forget|uninstall)\b", "delete"),

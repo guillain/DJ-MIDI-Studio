@@ -61,6 +61,8 @@ class IntroductionView(QWidget):
     toolRequested = Signal(str)  # independent tool dock key
     # "open" / "reveal" / "restore" / "sync" / "recent:<path>" (issue #175)
     fileActionRequested = Signal(str)
+    # The "Your setup" card's main button: open the startup check.
+    startupCheckRequested = Signal()
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -178,6 +180,7 @@ class IntroductionView(QWidget):
         layout.addWidget(title)
         layout.addWidget(self._description_label)
         layout.addLayout(loaded_file_row)
+        layout.addWidget(self._build_setup_card())
         layout.addLayout(overview_header)
         layout.addWidget(cards_box)
         layout.addWidget(info)
@@ -204,6 +207,7 @@ class IntroductionView(QWidget):
         theme_signals.themeChanged.connect(self._on_theme_changed)
 
     def _on_theme_changed(self, *_args: object) -> None:
+        self._restyle_setup_card()
         for photo in self.findChildren(QLabel):
             if photo.property("controllerPhoto"):
                 photo.setStyleSheet(scene_view_stylesheet())
@@ -414,6 +418,64 @@ class IntroductionView(QWidget):
             self._software_badge_label.show()
         else:
             self._software_badge_label.hide()
+
+    # -- "Your setup" (golden rule: the next step is always visible) ---------
+
+    def _build_setup_card(self) -> QFrame:
+        card = QFrame()
+        card.setObjectName("setupCard")
+        layout = QHBoxLayout(card)
+        layout.setContentsMargins(16, 12, 16, 12)
+        text = QVBoxLayout()
+        self.setup_headline = QLabel(self.tr("Your setup"))
+        self.setup_headline.setObjectName("setupHeadline")
+        self.setup_headline.setWordWrap(True)
+        self.setup_devices = QLabel(self.tr("Checking what's plugged in…"))
+        self.setup_devices.setObjectName("setupDevices")
+        self.setup_devices.setWordWrap(True)
+        text.addWidget(self.setup_headline)
+        text.addWidget(self.setup_devices)
+        layout.addLayout(text, 1)
+        self.setup_check_button = QPushButton(self.tr("See what's missing"))
+        self.setup_check_button.setToolTip(self.tr("Every plugged-in device, what's missing, and the button that fixes it."))
+        self.setup_check_button.setDefault(True)
+        self.setup_check_button.clicked.connect(self.startupCheckRequested)
+        controller_button = QPushButton(self.tr("Set up a controller"))
+        controller_button.setToolTip(self.tr("Teach the app a controller by pressing its buttons."))
+        controller_button.clicked.connect(lambda: self.drillDownRequested.emit("setup", self._controller_combo.currentText()))
+        set_button = QPushButton(self.tr("Prepare a set"))
+        set_button.setToolTip(self.tr("Your music: tags, keys, playlists and the set you'll play."))
+        set_button.clicked.connect(lambda: self.drillDownRequested.emit("library", self._controller_combo.currentText()))
+        buttons = QVBoxLayout()
+        for button in (self.setup_check_button, controller_button, set_button):
+            buttons.addWidget(button)
+        layout.addLayout(buttons)
+        self._setup_card = card
+        self._restyle_setup_card()
+        return card
+
+    def set_setup_summary(self, headline: str, devices: str, status: str) -> None:
+        """Shows the startup check's verdict: `status` is ok / todo / blocking."""
+        self.setup_headline.setText(headline)
+        self.setup_devices.setText(devices)
+        self._setup_card.setProperty("status", status)
+        self.setup_check_button.setText(self.tr("See my setup") if status == "ok" else self.tr("See what's missing"))
+        self._restyle_setup_card()
+
+    def _restyle_setup_card(self) -> None:
+        c = theme_colors()
+        edge = {"blocking": "#e5484d", "todo": "#f5a524", "ok": "#30a46c"}.get(
+            str(self._setup_card.property("status") or ""), c["accent"]
+        )
+        self._setup_card.setStyleSheet(
+            f"""
+            QFrame#setupCard {{ background: {c["panel_bg"]}; border: 1px solid {c["panel_border"]};
+                                border-left: 5px solid {edge}; border-radius: 10px; }}
+            QFrame#setupCard QLabel {{ background: transparent; border: none; }}
+            QLabel#setupHeadline {{ font-size: 16px; font-weight: 600; color: {c["title"]}; }}
+            QLabel#setupDevices {{ color: {c["hint_text"]}; }}
+            """
+        )
 
     def _restyle_software_badge(self) -> None:
         """Re-picks the badge's light/dark color for the current theme mode
