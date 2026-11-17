@@ -99,3 +99,44 @@ def test_the_images_tab_says_what_it_is_for():
 
     view = ControllerImageView()
     assert "Press a button on your controller" in view.usage_hint.text()
+
+
+def test_preferences_group_what_a_dj_changes_and_hide_the_advanced():
+    from PySide6.QtWidgets import QGroupBox
+
+    from djmidi.gui.preferences_dialog import PreferencesDialog
+    from djmidi.plugins.preferences import PluginPreferences
+
+    dialog = PreferencesDialog(PluginPreferences())
+    titles = [box.title() for box in dialog.findChildren(QGroupBox)]
+    for title in ("Look", "When the app starts", "Controller sync", "Your files", "Advanced"):
+        assert title in titles
+    assert dialog.advanced_box.isHidden()
+    dialog.show_advanced.setChecked(True)
+    assert not dialog.advanced_box.isHidden()
+
+
+def test_routing_off_offers_the_switch_in_its_own_window(monkeypatch):
+    _mw, window = _window(monkeypatch)
+    window.preferences.routing_enabled = False
+    window.midi_routing_view.set_routing_enabled(False)
+    assert not window.midi_routing_view.routing_off_banner.isHidden()
+    saved = []
+    monkeypatch.setattr(window, "_save_preferences", lambda: saved.append(True))
+    window.midi_routing_view.enable_routing_button.click()
+    assert window.preferences.routing_enabled and saved
+    assert window.midi_routing_view.routing_off_banner.isHidden()
+
+
+def test_the_live_monitor_log_says_how_to_start():
+    from djmidi.gui.live_monitor import LiveMonitorView
+
+    view = LiveMonitorView()
+    assert view.log_empty_state.title_label.text() == "Nothing received yet"
+    assert view._recording_label.isHidden()
+
+
+def test_the_metronome_says_what_it_does():
+    from djmidi.gui.metronome_view import MetronomeView
+
+    assert "Controller Setup session" in MetronomeView().purpose_label.text()
