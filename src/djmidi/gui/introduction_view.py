@@ -109,6 +109,9 @@ class IntroductionView(QWidget):
         self._known_count_label = QLabel()
         self._known_list_label = QLabel()
         self._known_list_label.setWordWrap(True)
+        # Golden rule: the full list of supported models is reference, not a
+        # next step -- one click away (tooltip), not a wall of names.
+        self._known_list_label.hide()
         catalog_layout.addWidget(self._known_count_label)
         catalog_layout.addWidget(self._known_list_label)
 
@@ -225,8 +228,9 @@ class IntroductionView(QWidget):
         self._controller_combo.blockSignals(False)
 
         names = list(catalog.CONTROLLER_NAMES)
-        self._known_count_label.setText(self.tr("{count} registered controller(s)").format(count=len(names)))
+        self._known_count_label.setText(self.tr("{count} controller model(s) supported").format(count=len(names)))
         self._known_list_label.setText(", ".join(names) if names else self.tr("(no registered controllers)"))
+        self._known_count_label.setToolTip(", ".join(names))
         self._rebuild_controller_cards(names)
 
     def refresh_midi_availability(self, port_names: list[str]) -> None:
@@ -247,6 +251,10 @@ class IntroductionView(QWidget):
             else:
                 label.setText(self.tr("MIDI: not detected"))
                 label.setStyleSheet(_status_pill(theme_colors()["disabled_text"]))
+        # What's plugged in comes first: show the first connected controller.
+        plugged = [name for name in catalog.CONTROLLER_NAMES if name in detected]
+        if plugged and self._controller_combo.currentText() not in plugged:
+            self.set_controller(plugged[0])
 
     def set_library_summary(self, tracks: int | None, playlists: int | None) -> None:
         """None: the library isn't loaded yet in this session."""
@@ -272,17 +280,15 @@ class IntroductionView(QWidget):
         if software_name:
             self._description_label.setText(
                 self.tr(
-                    "Visualize, edit, and validate your {software} MIDI mappings. "
-                    "Start here, then use the shortcuts below to drill down into "
-                    "the detailed views."
+                    "Your DJ setup in one place: controllers, your {software} mapping, and your music. "
+                    "Start with the card below: it says what's ready and what's next."
                 ).format(software=software_name)
             )
         else:
             self._description_label.setText(
                 self.tr(
-                    "Visualize, edit, and validate your Serato DJ or Traktor MIDI "
-                    "mappings. Start here, then use the shortcuts below to drill "
-                    "down into the detailed views."
+                    "Your DJ setup in one place: controllers, Serato or Traktor mappings, and your music. "
+                    "Start with the card below: it says what's ready and what's next."
                 )
             )
 

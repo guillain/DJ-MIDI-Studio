@@ -1251,13 +1251,13 @@ class MusicLibraryView(QWidget):
                  (self.scan_button, "auto"), (self.relink_button, "files")],
             )
         )
-        actions_box.addWidget(
-            action_section(
-                self.tr("Library tools"),
-                [(self.duplicates_button, "compare"), (self.health_button, "confirm"),
-                 (self.stats_button, "smart"), (self.analyse_button, "auto"), (self.history_button, "undo")],
-            )
+        self._library_tools_section = action_section(
+            self.tr("Library tools"),
+            [(self.duplicates_button, "compare"), (self.health_button, "confirm"),
+             (self.stats_button, "smart"), (self.analyse_button, "auto"), (self.history_button, "undo")],
         )
+        actions_box.addWidget(self._library_tools_section)
+        self._update_first_steps()
         row.addWidget(actions, 1)
         box.addLayout(row)
         status_row = QHBoxLayout()
@@ -1851,6 +1851,7 @@ class MusicLibraryView(QWidget):
         self._reload_rows()
         self._reload_playlists()
         self._reload_journal()
+        self._update_first_steps()
 
     def _reload_rows(self) -> None:
         current = self._current_path
@@ -2601,10 +2602,22 @@ class MusicLibraryView(QWidget):
         self.proxy.set_camelot_filter(None)
         self._update_count_label()
 
+    def _update_first_steps(self) -> None:
+        """Golden rule: only what can work now is on screen. No folder yet:
+        just Add folder. A folder but no track: scan it. Tracks: every tool."""
+        model = getattr(self, "table_model", None)  # not built yet on the first call
+        has_roots = self.roots_list.count() > 0
+        has_tracks = model is not None and model.rowCount() > 0
+        self.remove_root_button.setVisible(has_roots)
+        self.scan_button.setVisible(has_roots)
+        self.relink_button.setVisible(has_tracks)
+        self._library_tools_section.setVisible(has_tracks)
+
     def _update_count_label(self, *_args: object) -> None:
         self.count_label.setText(
             self.tr("{shown} / {total} tracks").format(shown=self.proxy.rowCount(), total=self.table_model.rowCount())
         )
+        self._update_first_steps()
         self._update_all_suggestions_button()
 
     def pending_suggestions(self) -> dict[str, str]:

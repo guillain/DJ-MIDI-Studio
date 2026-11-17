@@ -1,6 +1,8 @@
 """Contextual "?" help: every tab and tool window carries at least one, each
 one opens its own text, and every guide it links to is really bundled."""
 
+from pathlib import Path
+
 from PySide6.QtWidgets import QApplication, QPushButton, QWidget
 
 from djmidi.gui import help_button as help_module
@@ -43,7 +45,12 @@ def test_every_tab_and_tool_window_has_a_help_button():
             window.left_tabs.setCurrentIndex(index)
             QApplication.processEvents()
             assert _help_buttons(window.left_tabs.widget(index)), key
+        from djmidi.parser import parse_file
+
+        # The edit column shows once a mapping is open (golden rule pass).
+        window.config = parse_file(str(Path(__file__).parent.parent / "data" / "xdj_xz-ddj_xp2-4decks.xml"))
         window.left_tabs.setCurrentIndex(window._tab_indexes["channel"])
+        window._on_left_tab_changed(window.left_tabs.currentIndex())
         QApplication.processEvents()
         assert _help_buttons(window.edit_panel), "edit panel"
         for key, dock in window._tool_docks.items():

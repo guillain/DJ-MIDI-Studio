@@ -1145,6 +1145,10 @@ Belegt mit: {functions}</translation>
         <translation>Sitzung speichern…</translation>
     </message>
     <message>
+        <source>From a known controller…</source>
+        <translation>Von einem bekannten Controller…</translation>
+    </message>
+    <message>
         <source>Start from controller…</source>
         <translation>Von Controller ausgehen…</translation>
     </message>
@@ -1169,8 +1173,16 @@ Belegt mit: {functions}</translation>
         <translation>MIDI-Eingang</translation>
     </message>
     <message>
+        <source>From a mapping…</source>
+        <translation>Aus einem Mapping…</translation>
+    </message>
+    <message>
         <source>Learn triggers from a mapping (Serato XML or Traktor TSI)…</source>
         <translation>Trigger aus einem Mapping lernen (Serato XML oder Traktor TSI)…</translation>
+    </message>
+    <message>
+        <source>Add a photo…</source>
+        <translation>Foto hinzufügen…</translation>
     </message>
     <message>
         <source>Attach reference image…</source>
@@ -1249,8 +1261,16 @@ Belegt mit: {functions}</translation>
         <translation>Modus-Schaltflächen</translation>
     </message>
     <message>
+        <source>Check</source>
+        <translation>Prüfen</translation>
+    </message>
+    <message>
         <source>Check for conflicts</source>
         <translation>Auf Konflikte prüfen</translation>
+    </message>
+    <message>
+        <source>Install</source>
+        <translation>Installieren</translation>
     </message>
     <message>
         <source>Install this profile: saved in your Controllers folder and loaded at every launch</source>
@@ -1265,14 +1285,6 @@ Belegt mit: {functions}</translation>
         <translation>An den Community-Katalog senden…</translation>
     </message>
     <message>
-        <source>Draft</source>
-        <translation>Entwurf</translation>
-    </message>
-    <message>
-        <source>Build a controller profile — import or learn its MIDI triggers, name each row, then Apply / Export. This does not open a Serato mapping for editing (that is File → Open).</source>
-        <translation>Ein Controller-Profil erstellen — seine MIDI-Trigger importieren oder lernen, jede Zeile benennen, dann Anwenden / Exportieren. Dies öffnet kein Serato-Mapping zum Bearbeiten (das ist Datei → Öffnen).</translation>
-    </message>
-    <message>
         <source>Session</source>
         <translation>Sitzung</translation>
     </message>
@@ -1281,8 +1293,32 @@ Belegt mit: {functions}</translation>
         <translation>Lernen</translation>
     </message>
     <message>
-        <source>Apply / Export</source>
-        <translation>Anwenden / Exportieren</translation>
+        <source>Your controller profile</source>
+        <translation>Ihr Controller-Profil</translation>
+    </message>
+    <message>
+        <source>Three steps: learn the controller&apos;s buttons (press them, or read them from a mapping), name each row in the table below, then install the profile. Your Serato mapping isn&apos;t touched (to edit it: File → Open).</source>
+        <translation>Drei Schritte: Lernen Sie die Tasten des Controllers an (durch Drücken oder aus einem Mapping), benennen Sie jede Zeile der Tabelle unten, dann installieren Sie das Profil. Ihr Serato-Mapping bleibt unverändert (zum Bearbeiten: Datei → Öffnen).</translation>
+    </message>
+    <message>
+        <source>By pressing its buttons</source>
+        <translation>Durch Drücken seiner Tasten</translation>
+    </message>
+    <message>
+        <source>Listens to every input, then press each button once.</source>
+        <translation>Hört alle Eingänge ab: Drücken Sie dann jede Taste einmal.</translation>
+    </message>
+    <message>
+        <source>1 · Learn</source>
+        <translation>1 · Anlernen</translation>
+    </message>
+    <message>
+        <source>2 · Name the rows</source>
+        <translation>2 · Zeilen benennen</translation>
+    </message>
+    <message>
+        <source>3 · Use it</source>
+        <translation>3 · Verwenden</translation>
     </message>
     <message>
         <source>Section</source>
@@ -3550,10 +3586,6 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
         <translation>Musik öffnen</translation>
     </message>
     <message>
-        <source>{count} registered controller(s)</source>
-        <translation>{count} registrierte(r) Controller</translation>
-    </message>
-    <message>
         <source>(no registered controllers)</source>
         <translation>(keine registrierten Controller)</translation>
     </message>
@@ -3578,12 +3610,16 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
         <translation>{tracks} Track(s) · {playlists} Playlist(s)</translation>
     </message>
     <message>
-        <source>Visualize, edit, and validate your {software} MIDI mappings. Start here, then use the shortcuts below to drill down into the detailed views.</source>
-        <translation>Visualisieren, bearbeiten und prüfen Sie Ihre {software}-MIDI-Mappings. Beginnen Sie hier und nutzen Sie dann die Abkürzungen unten für die Detailansichten.</translation>
+        <source>{count} controller model(s) supported</source>
+        <translation>{count} unterstützte(s) Controller-Modell(e)</translation>
     </message>
     <message>
-        <source>Visualize, edit, and validate your Serato DJ or Traktor MIDI mappings. Start here, then use the shortcuts below to drill down into the detailed views.</source>
-        <translation>Visualisieren, bearbeiten und prüfen Sie Ihre MIDI-Mappings für Serato DJ oder Traktor. Beginnen Sie hier und nutzen Sie dann die Abkürzungen unten für die Detailansichten.</translation>
+        <source>Your DJ setup in one place: controllers, your {software} mapping, and your music. Start with the card below: it says what&apos;s ready and what&apos;s next.</source>
+        <translation>Ihr ganzes DJ-Setup an einem Ort: Controller, Ihr {software}-Mapping und Ihre Musik. Beginnen Sie mit der Karte unten: Sie zeigt, was bereit ist und was als Nächstes kommt.</translation>
+    </message>
+    <message>
+        <source>Your DJ setup in one place: controllers, Serato or Traktor mappings, and your music. Start with the card below: it says what&apos;s ready and what&apos;s next.</source>
+        <translation>Ihr ganzes DJ-Setup an einem Ort: Controller, Serato- oder Traktor-Mappings und Ihre Musik. Beginnen Sie mit der Karte unten: Sie zeigt, was bereit ist und was als Nächstes kommt.</translation>
     </message>
     <message>
         <source>Your files</source>

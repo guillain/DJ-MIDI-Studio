@@ -148,13 +148,13 @@ def test_badge_hidden_and_description_neutral_when_nothing_loaded():
     view.set_loaded_config_info(None)
     assert view._loaded_file_label.text() == "Loaded file: none"
     assert view._software_badge_label.isHidden()
-    assert "Serato DJ or Traktor" in view._description_label.text()
+    assert "Serato or Traktor" in view._description_label.text()
 
 
 def test_description_names_the_loaded_software():
     view = IntroductionView()
     view.set_loaded_config_info("x.nml", 2, software_id="traktor", software_name="Native Instruments Traktor")
-    assert "Native Instruments Traktor MIDI mappings" in view._description_label.text()
+    assert "your Native Instruments Traktor mapping" in view._description_label.text()
     assert view._software_badge_label.text() == "Native Instruments Traktor"
 
 

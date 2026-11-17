@@ -747,7 +747,7 @@ def test_mapping_tabs_and_controller_views_show_french(french):
         # Dashboard cards.
         assert dashboard._loaded_file_label.text() == "Fichier chargé : aucun"
         assert dashboard._files_buttons["open"].text() == "Ouvrir un mapping…"
-        assert dashboard._known_count_label.text().endswith("contrôleur(s) enregistré(s)")
+        assert dashboard._known_count_label.text().endswith("modèle(s) de contrôleur pris en charge")
     finally:
         for widget in (layout, images, setup, submission, panel, search, dashboard):
             widget.close()

@@ -2079,7 +2079,9 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
     def _on_left_tab_changed(self, index: int) -> None:
         """Show the edit / validation column only on the tree tabs; the
         Dashboard's music card is refreshed when it shows."""
-        self._right_splitter.setVisible(index in self._editing_tab_indexes)
+        # Golden rule: no search / edit / validation column before there's a
+        # mapping to search, edit or validate -- the no-mapping hint gets the room.
+        self._right_splitter.setVisible(index in self._editing_tab_indexes and self.config is not None)
         if index == self._tab_indexes.get("intro"):
             self._refresh_dashboard_library()
 

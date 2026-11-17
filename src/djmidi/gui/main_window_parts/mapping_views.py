@@ -53,6 +53,7 @@ from djmidi.validator import ValidationIssue, severity_label, validate
 
 class MappingViewsMixin:
     def _load_tree(self) -> None:
+        self._on_left_tab_changed(self.left_tabs.currentIndex())  # the edit column appears with the mapping
         assert self.config is not None
         definition = software.get_definition(self.software_id)
         self.introduction_view.set_loaded_config_info(
