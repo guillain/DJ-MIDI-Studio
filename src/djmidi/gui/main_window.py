@@ -159,6 +159,7 @@ from djmidi.gui.scroll_utils import AutoSizeScrollArea
 from djmidi.gui.snapshots_dialog import SnapshotsDialog
 from djmidi.gui.splitter_utils import scrollable_columns
 from djmidi.gui.stage_window import StageWindow
+from djmidi.gui.start_hint import StartHint
 from djmidi.gui.startup_check_dialog import StartupCheckDialog
 from djmidi.gui.theme import apply_theme
 from djmidi.gui.theme import signals as theme_signals
@@ -302,6 +303,7 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         channel_layout.setContentsMargins(0, 0, 0, 0)
         channel_layout.addWidget(self.search_box)
         self.channel_splitter = QSplitter(Qt.Orientation.Horizontal)
+        self.channel_splitter.addWidget(self._no_mapping_hint())
         self._channel_columns_scroll = scrollable_columns(self.channel_splitter)
         channel_layout.addWidget(self._channel_columns_scroll)
 
@@ -312,6 +314,7 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         deck_columns_layout = QVBoxLayout(self.deck_columns_container)
         deck_columns_layout.setContentsMargins(0, 0, 0, 0)
         self.deck_splitter = QSplitter(Qt.Orientation.Horizontal)
+        self.deck_splitter.addWidget(self._no_mapping_hint())
         self._deck_columns_scroll = scrollable_columns(self.deck_splitter)
         deck_columns_layout.addWidget(self._deck_columns_scroll)
 
@@ -322,6 +325,7 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         controller_columns_layout = QVBoxLayout(self.controller_columns_container)
         controller_columns_layout.setContentsMargins(0, 0, 0, 0)
         self.controller_splitter = QSplitter(Qt.Orientation.Horizontal)
+        self.controller_splitter.addWidget(self._no_mapping_hint())
         self._controller_columns_scroll = scrollable_columns(self.controller_splitter)
         controller_columns_layout.addWidget(self._controller_columns_scroll)
 
@@ -396,6 +400,7 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         )
         self.introduction_view.drillDownRequested.connect(self._on_intro_drilldown_requested)
         self.introduction_view.toolRequested.connect(self._show_tool_dock)
+        self.introduction_view.startupCheckRequested.connect(lambda: self.open_startup_check())
 
         # Music Library (issue #133/#132): a separate domain from mappings --
         # the DJ's own collection. Opens its index lazily on first show.
@@ -440,7 +445,7 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         self._tab_indexes["atelier"] = self.left_tabs.add_page(
             "atelier", self.atelier_view, self.tr("Studio"), controller_tabs
         )
-        by_tabs = self.left_tabs.add_group(self.tr("By…"), controller_tabs)
+        by_tabs = self.left_tabs.add_group(self.tr("Mapping"), controller_tabs)
         self._tab_indexes["channel"] = self.left_tabs.add_page("channel", channel_pair, self.tr("By Channel"), by_tabs)
         self._tab_indexes["deck"] = self.left_tabs.add_page("deck", deck_pair, self.tr("By Deck"), by_tabs)
         self._tab_indexes["controller"] = self.left_tabs.add_page(
@@ -1152,6 +1157,19 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
     _STARTUP_CHECK_DISMISSED_KEY = "ui/startup_check_dismissed"
     _STARTUP_CHECK_SHOW_KEY = "ui/startup_check_show"
 
+    def _no_mapping_hint(self) -> StartHint:
+        """What the mapping views show before a mapping is open: what they are
+        for, and the one button that fills them. Replaced on the first load."""
+        return StartHint(
+            "◉",
+            self.tr("No mapping open yet"),
+            self.tr(
+                "Open your Serato (or Traktor) mapping to see every button, what it does, and where it sits on "
+                "your controller. Nothing changes in the file until you save."
+            ),
+            (self.tr("Open a mapping…"), lambda: self._on_open()),
+        )
+
     def run_startup_check(self) -> StartupReport:
         controllers_dir = user_paths.controllers_dir()
         return check_startup(
@@ -1189,15 +1207,41 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         """Real app only: opens the check when something not dismissed needs
         the DJ and the DJ didn't turn it off. True when it opened."""
         settings = self._layout_settings()
-        if settings is None or not settings.value(self._STARTUP_CHECK_SHOW_KEY, True, type=bool):
+        if settings is None:
             return False
-        report = self.run_startup_check()
+        report = self.update_setup_summary()  # the Dashboard card, even when the window stays shut
+        if not settings.value(self._STARTUP_CHECK_SHOW_KEY, True, type=bool):
+            return False
         needing = report.needing_attention(self._startup_check_dismissed())
         if not needing:
             return False
         self._startup_shown_ids |= {item.id for item in needing}
         self.open_startup_check(report)
         return True
+
+    def update_setup_summary(self, report: StartupReport | None = None) -> StartupReport:
+        """The Dashboard's "Your setup" card: the startup check's verdict in
+        one line, what's plugged in in another."""
+        report = report or self.run_startup_check()
+        needing = report.needing_attention(self._startup_check_dismissed())
+        blocking = sum(1 for item in needing if item.status == startup_check.BLOCKING)
+        todo = len(needing) - blocking
+        if blocking:
+            headline = self.tr("{count} thing(s) won't work right now").format(count=blocking)
+            status = startup_check.BLOCKING
+        elif todo:
+            headline = self.tr("Almost ready: {count} thing(s) to finish").format(count=todo)
+            status = startup_check.TODO
+        else:
+            headline = self.tr("All set: everything plugged in is ready")
+            status = startup_check.OK
+        devices = (
+            self.tr("Plugged in: {devices}").format(devices=", ".join(report.devices))
+            if report.devices
+            else self.tr("No controller plugged in: plug one in and the app takes it from there.")
+        )
+        self.introduction_view.set_setup_summary(headline, devices, status)
+        return report
 
     def watch_plugged_devices(self) -> StartupCheckDialog | None:
         """Polled every few seconds: when an input port appears, checks again
@@ -1208,10 +1252,13 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
             self._startup_seen_ports = ports
             return None
         appeared = ports - self._startup_seen_ports
+        changed = ports != self._startup_seen_ports
         self._startup_seen_ports = ports
+        if changed:
+            report = self.run_startup_check()
+            self.update_setup_summary(report)
         if not appeared:
             return None
-        report = self.run_startup_check()
         if self._startup_check_dialog is not None:
             self._startup_check_dialog.set_report(report)
             return self._startup_check_dialog
@@ -1241,6 +1288,7 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         )
         dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         dialog.dismissed.connect(self._remember_startup_dismissed)
+        dialog.dismissed.connect(lambda *_args: self.update_setup_summary())
         dialog.recheckRequested.connect(lambda: dialog.set_report(self.run_startup_check()))
         dialog.actionRequested.connect(self._on_startup_action)
         if settings is not None:

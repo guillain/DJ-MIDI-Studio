@@ -1305,6 +1305,14 @@ Belegt mit: {functions}</translation>
         <translation>Gerät</translation>
     </message>
     <message>
+        <source>Nothing learned yet</source>
+        <translation>Noch nichts angelernt</translation>
+    </message>
+    <message>
+        <source>Start learning, then press each button on your controller once: every press becomes a row here, ready to name.</source>
+        <translation>Starten Sie das Anlernen und drücken Sie dann jede Taste Ihres Controllers einmal: Jeder Druck wird hier zu einer Zeile, bereit zum Benennen.</translation>
+    </message>
+    <message>
         <source>Delete selected row(s)</source>
         <translation>Ausgewählte Zeile(n) löschen</translation>
     </message>
@@ -1479,6 +1487,10 @@ Belegt mit: {functions}</translation>
     <message>
         <source>Cannot start MIDI learning</source>
         <translation>MIDI-Lernen kann nicht gestartet werden</translation>
+    </message>
+    <message>
+        <source>Stop</source>
+        <translation>Stopp</translation>
     </message>
     <message>
         <source>Stop learning</source>
@@ -3646,6 +3658,42 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
         <translation>Geladene Datei: {name} ({count} Control(s))</translation>
     </message>
     <message>
+        <source>Your setup</source>
+        <translation>Ihr Setup</translation>
+    </message>
+    <message>
+        <source>Checking what&apos;s plugged in…</source>
+        <translation>Prüfe, was angeschlossen ist…</translation>
+    </message>
+    <message>
+        <source>See what&apos;s missing</source>
+        <translation>Sehen, was fehlt</translation>
+    </message>
+    <message>
+        <source>Every plugged-in device, what&apos;s missing, and the button that fixes it.</source>
+        <translation>Jedes angeschlossene Gerät, was fehlt, und die Taste, die es behebt.</translation>
+    </message>
+    <message>
+        <source>Set up a controller</source>
+        <translation>Controller einrichten</translation>
+    </message>
+    <message>
+        <source>Teach the app a controller by pressing its buttons.</source>
+        <translation>Bringen Sie der App einen Controller bei, indem Sie seine Tasten drücken.</translation>
+    </message>
+    <message>
+        <source>Prepare a set</source>
+        <translation>Set vorbereiten</translation>
+    </message>
+    <message>
+        <source>Your music: tags, keys, playlists and the set you&apos;ll play.</source>
+        <translation>Ihre Musik: Tags, Tonarten, Playlists und das Set, das Sie spielen.</translation>
+    </message>
+    <message>
+        <source>See my setup</source>
+        <translation>Mein Setup ansehen</translation>
+    </message>
+    <message>
         <source>Catalog: {entries} static entry(ies), {pads} pad(s)</source>
         <translation>Katalog: {entries} statische(r) Eintrag/Einträge, {pads} Pad(s)</translation>
     </message>
@@ -4821,6 +4869,10 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
         <translation>Übersicht</translation>
     </message>
     <message>
+        <source>Mapping</source>
+        <translation>Mapping</translation>
+    </message>
+    <message>
         <source>By Channel</source>
         <translation>Nach Kanal</translation>
     </message>
@@ -4843,10 +4895,6 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
     <message>
         <source>Studio</source>
         <translation>Studio</translation>
-    </message>
-    <message>
-        <source>By…</source>
-        <translation>Nach…</translation>
     </message>
     <message>
         <source>Music</source>
@@ -5257,6 +5305,38 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
     <message>
         <source>Preview a bug report with your app version, system and recent log lines, then open it as a pre-filled GitHub issue.</source>
         <translation>Einen Fehlerbericht mit Ihrer App-Version, Ihrem System und den letzten Protokollzeilen ansehen und dann als vorausgefülltes GitHub-Issue öffnen.</translation>
+    </message>
+    <message>
+        <source>No mapping open yet</source>
+        <translation>Noch kein Mapping geöffnet</translation>
+    </message>
+    <message>
+        <source>Open your Serato (or Traktor) mapping to see every button, what it does, and where it sits on your controller. Nothing changes in the file until you save.</source>
+        <translation>Öffnen Sie Ihr Serato- (oder Traktor-)Mapping, um jede Taste zu sehen, was sie tut und wo sie auf Ihrem Controller sitzt. In der Datei ändert sich nichts, bis Sie speichern.</translation>
+    </message>
+    <message>
+        <source>Open a mapping…</source>
+        <translation>Mapping öffnen…</translation>
+    </message>
+    <message>
+        <source>{count} thing(s) won&apos;t work right now</source>
+        <translation>{count} Punkt(e) funktionieren gerade nicht</translation>
+    </message>
+    <message>
+        <source>Almost ready: {count} thing(s) to finish</source>
+        <translation>Fast bereit: {count} Punkt(e) zu erledigen</translation>
+    </message>
+    <message>
+        <source>All set: everything plugged in is ready</source>
+        <translation>Alles bereit: Alles Angeschlossene ist bereit</translation>
+    </message>
+    <message>
+        <source>Plugged in: {devices}</source>
+        <translation>Angeschlossen: {devices}</translation>
+    </message>
+    <message>
+        <source>No controller plugged in: plug one in and the app takes it from there.</source>
+        <translation>Kein Controller angeschlossen: Schließen Sie einen an, den Rest übernimmt die App.</translation>
     </message>
     <message>
         <source>{macro} now plays from {pad}.</source>
