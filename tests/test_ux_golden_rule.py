@@ -64,3 +64,38 @@ def test_controller_setup_offers_learning_on_its_empty_table(monkeypatch):
     view._port_list.item(view._port_list.count() - 1).setCheckState(Qt.CheckState.Unchecked)
     view.start_learning_from_hint()
     assert started and view._is_checked(view._port_list.count() - 1)
+
+
+def test_the_studio_modes_are_chosen_at_the_top():
+    from djmidi.gui.atelier_view import AtelierView
+
+    view = AtelierView()
+    labels = [b.text() for b in view.mode_group.buttons()]
+    assert labels == ["Light scenes", "Remap", "Macros"]
+    assert view.lower_tabs.tabBar().isHidden()
+    assert view.mode_group.checkedId() == 0 and "lights up" in view.mode_hint.text()
+    view.mode_group.button(2).click()
+    assert view.editing_macros and view.mode_group.checkedId() == 2
+    assert view.scene_actions.isHidden()  # save / send belong to scenes
+    view.lower_tabs.setCurrentIndex(1)  # programmatic switches follow too
+    assert view.mode_group.checkedId() == 1 and "act as another" in view.mode_hint.text()
+    view.mode_group.button(0).click()
+    assert not view.scene_actions.isHidden()
+
+
+def test_an_empty_scene_says_how_to_start():
+    from djmidi.gui.atelier_view import AtelierView
+
+    view = AtelierView()
+    view.resize(1000, 700)
+    view.show()
+    assert view.state_list.count() == 0
+    assert view.state_empty.isVisible() and view.state_empty.title_label.text() == "No light in this scene yet"
+    view.close()
+
+
+def test_the_images_tab_says_what_it_is_for():
+    from djmidi.gui.controller_image_view import ControllerImageView
+
+    view = ControllerImageView()
+    assert "Press a button on your controller" in view.usage_hint.text()

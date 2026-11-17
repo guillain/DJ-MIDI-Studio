@@ -205,6 +205,7 @@ class ControllerImageView(QWidget):
         self._combo.currentTextChanged.connect(self._load)
 
         reset_button = QPushButton(self.tr("Reset zoom"))
+        reset_button.setToolTip(self.tr("Back to the whole controller (the wheel zooms, dragging pans)."))
         reset_button.clicked.connect(lambda: self._load(self._combo.currentText()))
         self._documentation_button = QPushButton(self.tr("Open documentation"))
         self._documentation_button.clicked.connect(self._open_documentation)
@@ -273,6 +274,16 @@ class ControllerImageView(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self._controls_container, 0)
+        # Golden rule: say what this tab is for, in one line.
+        self.usage_hint = QLabel(
+            self.tr(
+                "Press a button on your controller: it lights up here. Tick Layout and click a control "
+                "to see its MIDI; the mouse wheel zooms."
+            )
+        )
+        self.usage_hint.setObjectName("imagesUsageHint")
+        self.usage_hint.setWordWrap(True)
+        layout.addWidget(self.usage_hint, 0)
         layout.addWidget(self._view)
         layout.addWidget(self._live_send_status)
 
