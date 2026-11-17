@@ -463,6 +463,22 @@ LIVE_MONITOR: HelpEntry = (
     "live-monitor.md",
 )
 
+STARTUP_CHECK: HelpEntry = (
+    QT_TRANSLATE_NOOP("HelpTexts", "Startup check"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
+        "What's plugged in, compared with what the app knows: one card per device, each thing to "
+        "finish with the button that finishes it. Nothing is changed until you click.<ul>"
+        "<li>Red: something you set up can't work right now (a macro whose port is gone).</li>"
+        "<li>Amber: it works, but a step is missing (a check never run, lights never probed, no scene).</li>"
+        "<li>Green: ready.</li></ul>"
+        "✕ hides an item for good. <b>Check again</b> after plugging a device in. "
+        "It opens on its own at startup when something new needs you, unless you untick "
+        "<b>Show at startup when something needs you</b>; it's always in Help.",
+    ),
+    "startup-check.md",
+)
+
 SET_ANALYSIS: HelpEntry = (
     QT_TRANSLATE_NOOP("HelpTexts", "Set analysis"),
     QT_TRANSLATE_NOOP(
