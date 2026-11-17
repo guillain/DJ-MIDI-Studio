@@ -85,6 +85,8 @@ SOURCES=(
   src/djmidi/gui/introduction_view.py
   src/djmidi/gui/live_monitor.py
   src/djmidi/gui/set_analysis_dialog.py
+  src/djmidi/gui/startup_check_dialog.py
+  src/djmidi/startup_check.py
   src/djmidi/gui/midi_routing_view.py
   src/djmidi/gui/midi_route_transform_dialog.py
   src/djmidi/gui/metronome_view.py

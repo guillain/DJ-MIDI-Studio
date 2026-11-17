@@ -126,6 +126,16 @@ def _layer_map():
     return LayerMapDialog(lambda: config, [("DDJ-XP2", 64), ("XDJ-XZ", 16)], "DDJ-XP2")
 
 
+def _startup_check():
+    from types import SimpleNamespace
+
+    from djmidi.gui.startup_check_dialog import StartupCheckDialog
+    from djmidi.startup_check import check_startup
+
+    macros = [SimpleNamespace(name="CUE → PLAY deck 1", output_port="IAC Driver Bus 1")]
+    return StartupCheckDialog(check_startup(["DDJ-XP2", "XDJ-XZ (1)", "MIDI4x4 Midi In 1"], [], macros))
+
+
 def _set_analysis():
     from djmidi.gui.set_analysis_dialog import SetAnalysisDialog
     from djmidi.set_analysis import SetEvent, analyse
@@ -452,6 +462,7 @@ def _list_report():
 
 
 WINDOWS = {
+    "startup check": _startup_check,
     "set analysis": _set_analysis,
     "first-run wizard": _wizard,
     "layer map": _layer_map,

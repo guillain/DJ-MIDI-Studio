@@ -54,9 +54,12 @@ from djmidi import (
     midi_macros,
     pad_colours,
     software,
+    startup_check,
     sync_store,
     user_paths,
 )
+from djmidi.atelier.captures import captures_file
+from djmidi.atelier.led_data import led_file
 from djmidi.catalog.library import (
     connected_library_profiles,
     install_library_profile,
@@ -154,6 +157,7 @@ from djmidi.gui.scroll_utils import AutoSizeScrollArea
 from djmidi.gui.snapshots_dialog import SnapshotsDialog
 from djmidi.gui.splitter_utils import scrollable_columns
 from djmidi.gui.stage_window import StageWindow
+from djmidi.gui.startup_check_dialog import StartupCheckDialog
 from djmidi.gui.theme import apply_theme
 from djmidi.gui.theme import signals as theme_signals
 from djmidi.gui.update_notice import UpdateChecker
@@ -174,6 +178,7 @@ from djmidi.model import MidiConfig
 from djmidi.plugins import PluginPreferences, default_preferences_path
 from djmidi.problem_report import ReportContext, collect_context
 from djmidi.stage import suggest_next_tracks
+from djmidi.startup_check import StartupItem, StartupReport, check_startup
 from djmidi.update_check import ReleaseInfo, current_version, is_check_due, is_newer
 
 _LOGGER = logging.getLogger("djmidi.gui.main_window")
@@ -238,6 +243,8 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         self._stage_candidates_key: tuple[int, int] | None = None
         # The open "Verify Profile" window (issue #364), fed every live event.
         self._profile_check_dialog: ProfileCheckDialog | None = None
+        self._startup_check_dialog: StartupCheckDialog | None = None
+        self._startup_dismissed_fallback: set[str] = set()  # tests: no QSettings
         self._hardware_session_dialog: HardwareSessionDialog | None = None
         # Library profiles declined this session, when there are no QSettings (tests).
         self._session_dismissed_profiles: set[str] = set()
@@ -1052,6 +1059,12 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
             online_menu.addAction(action)
 
         help_menu.addSeparator()
+        self._startup_check_action = QAction(self.tr("Startup &Check..."), self)
+        self._startup_check_action.setToolTip(
+            self.tr("What's plugged in, what's missing, and the button that fixes each thing.")
+        )
+        self._startup_check_action.triggered.connect(lambda: self.open_startup_check())
+        help_menu.addAction(self._startup_check_action)
         self._first_run_action = QAction(self.tr("First-Run &Setup..."), self)
         self._first_run_action.setToolTip(
             self.tr("Detect your controllers, open your Serato mapping and record a controller sync set.")
@@ -1087,7 +1100,7 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         """The first-run wizard on a genuine first launch, else Helpful Notes."""
         if self._should_show_first_run_wizard():
             self._on_first_run_wizard()
-        else:
+        elif not self._show_startup_check_if_needed():
             self._show_helpful_notes_if_enabled()
 
     def _should_show_first_run_wizard(self) -> bool:
@@ -1124,6 +1137,86 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
             self._load_mapping_from_path(choices.mapping, software_id="serato")
         if choices.record_sync_set and not self._record_button.isChecked():
             self._record_button.setChecked(True)
+
+    # -- startup check (golden rule: the app comes to the DJ) ----------------
+
+    _STARTUP_CHECK_DISMISSED_KEY = "ui/startup_check_dismissed"
+    _STARTUP_CHECK_SHOW_KEY = "ui/startup_check_show"
+
+    def run_startup_check(self) -> StartupReport:
+        controllers_dir = user_paths.controllers_dir()
+        return check_startup(
+            list(dict.fromkeys(list_input_ports())),
+            list(dict.fromkeys(list_output_ports())),
+            self.macros,
+            {sync_set.controller for sync_set in self.preferences.controller_sync_sets},
+            has_captures=lambda controller: captures_file(controller, controllers_dir).exists(),
+            has_leds=lambda controller: led_file(controller, controllers_dir).exists(),
+        )
+
+    def _startup_check_dismissed(self) -> set[str]:
+        settings = self._layout_settings()
+        if settings is None:
+            return set(self._startup_dismissed_fallback)
+        value = settings.value(self._STARTUP_CHECK_DISMISSED_KEY, [])
+        return {str(item) for item in (value if isinstance(value, list) else [value] if value else [])}
+
+    def _remember_startup_dismissed(self, item_id: str) -> None:
+        self._startup_dismissed_fallback.add(item_id)
+        settings = self._layout_settings()
+        if settings is not None:
+            settings.setValue(self._STARTUP_CHECK_DISMISSED_KEY, sorted(self._startup_check_dismissed() | {item_id}))
+
+    def _show_startup_check_if_needed(self) -> bool:
+        """Real app only: opens the check when something not dismissed needs
+        the DJ and the DJ didn't turn it off. True when it opened."""
+        settings = self._layout_settings()
+        if settings is None or not settings.value(self._STARTUP_CHECK_SHOW_KEY, True, type=bool):
+            return False
+        report = self.run_startup_check()
+        if not report.needing_attention(self._startup_check_dismissed()):
+            return False
+        self.open_startup_check(report)
+        return True
+
+    def open_startup_check(self, report: StartupReport | None = None) -> StartupCheckDialog:
+        if self._startup_check_dialog is not None:
+            self._startup_check_dialog.set_report(report or self.run_startup_check())
+            self._startup_check_dialog.raise_()
+            self._startup_check_dialog.activateWindow()
+            return self._startup_check_dialog
+        settings = self._layout_settings()
+        show = settings.value(self._STARTUP_CHECK_SHOW_KEY, True, type=bool) if settings is not None else True
+        dialog = StartupCheckDialog(
+            report or self.run_startup_check(), self._startup_check_dismissed(), show, parent=self
+        )
+        dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        dialog.dismissed.connect(self._remember_startup_dismissed)
+        dialog.recheckRequested.connect(lambda: dialog.set_report(self.run_startup_check()))
+        dialog.actionRequested.connect(self._on_startup_action)
+        if settings is not None:
+            dialog.show_at_startup.toggled.connect(lambda on: settings.setValue(self._STARTUP_CHECK_SHOW_KEY, on))
+        dialog.destroyed.connect(lambda *_args: setattr(self, "_startup_check_dialog", None))
+        self._startup_check_dialog = dialog
+        dialog.show()
+        return dialog
+
+    def _on_startup_action(self, item: StartupItem) -> None:
+        """Opens the tool that finishes `item`."""
+        if item.action == startup_check.LEARN:
+            self.left_tabs.setCurrentIndex(self._tab_indexes["setup"])
+        elif item.action == startup_check.CHECK:
+            self.open_profile_check(item.controller)
+        elif item.action in (startup_check.LEDS, startup_check.SCENE):
+            if item.controller:
+                self.atelier_view.controller_combo.setCurrentText(item.controller)
+            self.left_tabs.setCurrentIndex(self._tab_indexes["atelier"])
+        elif item.action == startup_check.MACROS:
+            self._on_manage_macros()
+        elif item.action == startup_check.IAC:
+            QDesktopServices.openUrl(QUrl.fromLocalFile("/System/Applications/Utilities/Audio MIDI Setup.app"))
+        self.raise_()
+        self.activateWindow()
 
     def _show_helpful_notes_if_enabled(self) -> None:
         settings = self._layout_settings()

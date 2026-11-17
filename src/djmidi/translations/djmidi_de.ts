@@ -3209,6 +3209,14 @@ Ein manueller Schritt bleibt: &apos;{slug}&apos; zum Import-Block in catalog/__i
         <translation>Protokolliert jedes MIDI-Ereignis der angehakten Eingänge, mit dem physischen Bedienelement und der Funktion, die das geladene Mapping ihm gibt, und lässt jedes Layout, die Überlagerung der Controller-Bilder und die Emulatoren auf die echte Hardware reagieren.&lt;br&gt;&lt;br&gt;Er startet von selbst, wenn ein Mapping geladen wird (⚙ Einstellungen). Um Ports selbst zu wählen: &lt;b&gt;Ports aktualisieren&lt;/b&gt;, Eingänge anhaken, &lt;b&gt;Überwachung starten&lt;/b&gt;.&lt;br&gt;&lt;br&gt;Um die LED-Nachrichten zu sehen, die Serato zurücksendet, haken Sie &lt;b&gt;Virtuelles Monitor-Ziel erstellen&lt;/b&gt; an und fügen Sie &lt;i&gt;DJMidiStudio Monitor&lt;/i&gt; als zusätzlichen MIDI-Ausgang in Serato hinzu.&lt;br&gt;&lt;br&gt;Ein Tastendruck, der auf demselben Deck zwei oder mehr verschiedene Funktionen auslöst, wird bernsteinfarben als &lt;b&gt;KONFLIKT&lt;/b&gt; angezeigt und gezählt; Seratos identische wiederholte Trigger sind keine Konflikte.&lt;br&gt;&lt;br&gt;Während &lt;b&gt;● Rec&lt;/b&gt; aufzeichnet, sind Start/Stopp und die Eingänge bis &lt;b&gt;■ Stopp&lt;/b&gt; gesperrt.</translation>
     </message>
     <message>
+        <source>Startup check</source>
+        <translation>Startprüfung</translation>
+    </message>
+    <message>
+        <source>What&apos;s plugged in, compared with what the app knows: one card per device, each thing to finish with the button that finishes it. Nothing is changed until you click.&lt;ul&gt;&lt;li&gt;Red: something you set up can&apos;t work right now (a macro whose port is gone).&lt;/li&gt;&lt;li&gt;Amber: it works, but a step is missing (a check never run, lights never probed, no scene).&lt;/li&gt;&lt;li&gt;Green: ready.&lt;/li&gt;&lt;/ul&gt;✕ hides an item for good. &lt;b&gt;Check again&lt;/b&gt; after plugging a device in. It opens on its own at startup when something new needs you, unless you untick &lt;b&gt;Show at startup when something needs you&lt;/b&gt;; it&apos;s always in Help.</source>
+        <translation>Was angeschlossen ist, verglichen mit dem, was die App weiß: eine Karte pro Gerät, jeder offene Punkt mit der Taste, die ihn erledigt. Nichts wird geändert, bevor Sie klicken.&lt;ul&gt;&lt;li&gt;Rot: Etwas, das Sie eingerichtet haben, funktioniert gerade nicht (ein Makro, dessen Port fehlt).&lt;/li&gt;&lt;li&gt;Gelb: Es funktioniert, aber ein Schritt fehlt (nie geprüft, Lichter nie getestet, keine Szene).&lt;/li&gt;&lt;li&gt;Grün: bereit.&lt;/li&gt;&lt;/ul&gt;✕ blendet einen Punkt dauerhaft aus. &lt;b&gt;Erneut prüfen&lt;/b&gt; nach dem Anschließen eines Geräts. Sie öffnet sich beim Start von selbst, wenn etwas Neues Sie braucht, außer Sie deaktivieren &lt;b&gt;Beim Start zeigen, wenn etwas zu tun ist&lt;/b&gt;; sie ist immer im Hilfe-Menü.</translation>
+    </message>
+    <message>
         <source>Set analysis</source>
         <translation>Set-Analyse</translation>
     </message>
@@ -5209,6 +5217,14 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
     <message>
         <source>Official and External References</source>
         <translation>Offizielle und externe Referenzen</translation>
+    </message>
+    <message>
+        <source>Startup &amp;Check...</source>
+        <translation>Start&amp;prüfung...</translation>
+    </message>
+    <message>
+        <source>What&apos;s plugged in, what&apos;s missing, and the button that fixes each thing.</source>
+        <translation>Was angeschlossen ist, was fehlt, und die Taste, die jeden Punkt behebt.</translation>
     </message>
     <message>
         <source>First-Run &amp;Setup...</source>
@@ -10221,6 +10237,116 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     <message>
         <source>Off the plan, these mix well:</source>
         <translation>Abseits des Plans passen diese gut:</translation>
+    </message>
+</context>
+<context>
+    <name>StartupCheck</name>
+    <message>
+        <source>The app doesn&apos;t know this device yet: teach it the controls in a few presses.</source>
+        <translation>Die App kennt dieses Gerät noch nicht: Bringen Sie ihr die Bedienelemente mit ein paar Tastendrücken bei.</translation>
+    </message>
+    <message>
+        <source>Never checked on your unit: a guided check confirms every button in a few minutes.</source>
+        <translation>Nie an Ihrem Gerät geprüft: Eine geführte Prüfung bestätigt jede Taste in wenigen Minuten.</translation>
+    </message>
+    <message>
+        <source>Its lights were never probed: the app is guessing which note lights what.</source>
+        <translation>Seine Lichter wurden nie getestet: Die App rät, welche Note was beleuchtet.</translation>
+    </message>
+    <message>
+        <source>No light scene yet: design how it should light up when the set starts.</source>
+        <translation>Noch keine Lichtszene: Legen Sie fest, wie es zu Beginn des Sets leuchten soll.</translation>
+    </message>
+    <message>
+        <source>Ready: checked, lights probed and a scene saved.</source>
+        <translation>Bereit: geprüft, Lichter getestet und eine Szene gespeichert.</translation>
+    </message>
+    <message>
+        <source>{port} is offline, so {count} macro(s) can&apos;t reach your DJ software: {macros}.</source>
+        <translation>{port} ist offline, daher erreichen {count} Makro(s) Ihre DJ-Software nicht: {macros}.</translation>
+    </message>
+    <message>
+        <source>{port} isn&apos;t connected, so {count} macro(s) can&apos;t play: {macros}.</source>
+        <translation>{port} ist nicht verbunden, daher können {count} Makro(s) nicht abspielen: {macros}.</translation>
+    </message>
+    <message>
+        <source>Not plugged in: plug it in to use {count} macro(s) ({macros}).</source>
+        <translation>Nicht angeschlossen: Schließen Sie es an, um {count} Makro(s) zu nutzen ({macros}).</translation>
+    </message>
+    <message>
+        <source>No controller is plugged in. Plug one in, then check again.</source>
+        <translation>Kein Controller angeschlossen. Schließen Sie einen an und prüfen Sie erneut.</translation>
+    </message>
+</context>
+<context>
+    <name>StartupCheckDialog</name>
+    <message>
+        <source>Startup check</source>
+        <translation>Startprüfung</translation>
+    </message>
+    <message>
+        <source>Teach it</source>
+        <translation>Anlernen</translation>
+    </message>
+    <message>
+        <source>Check it</source>
+        <translation>Prüfen</translation>
+    </message>
+    <message>
+        <source>Probe its lights</source>
+        <translation>Lichter testen</translation>
+    </message>
+    <message>
+        <source>Create a scene</source>
+        <translation>Szene erstellen</translation>
+    </message>
+    <message>
+        <source>Edit the macros</source>
+        <translation>Makros bearbeiten</translation>
+    </message>
+    <message>
+        <source>Open Audio MIDI Setup</source>
+        <translation>Audio-MIDI-Setup öffnen</translation>
+    </message>
+    <message>
+        <source>Show at startup when something needs you</source>
+        <translation>Beim Start zeigen, wenn etwas zu tun ist</translation>
+    </message>
+    <message>
+        <source>Check again</source>
+        <translation>Erneut prüfen</translation>
+    </message>
+    <message>
+        <source>Look at the connected devices again, after plugging one in.</source>
+        <translation>Prüft die angeschlossenen Geräte erneut, nachdem Sie eines angeschlossen haben.</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Schließen</translation>
+    </message>
+    <message>
+        <source>{blocking} thing(s) won&apos;t work right now, {todo} to finish</source>
+        <translation>{blocking} Punkt(e) funktionieren gerade nicht, {todo} zu erledigen</translation>
+    </message>
+    <message>
+        <source>Almost ready: {todo} thing(s) to finish</source>
+        <translation>Fast bereit: {todo} Punkt(e) zu erledigen</translation>
+    </message>
+    <message>
+        <source>All set: everything plugged in is ready</source>
+        <translation>Alles bereit: Alles Angeschlossene ist bereit</translation>
+    </message>
+    <message>
+        <source>Plugged in: {devices}</source>
+        <translation>Angeschlossen: {devices}</translation>
+    </message>
+    <message>
+        <source>No MIDI device plugged in.</source>
+        <translation>Kein MIDI-Gerät angeschlossen.</translation>
+    </message>
+    <message>
+        <source>Dismiss: don&apos;t show this again</source>
+        <translation>Ausblenden: nicht mehr zeigen</translation>
     </message>
 </context>
 <context>
