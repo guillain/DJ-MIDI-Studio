@@ -18,7 +18,7 @@
 ## Open the Layer Map
 
 1. Open a mapping (`File → Open Mapping...`).
-2. Choose `View → Layer Map…`.
+2. Choose `Tools → Layer Map…`.
 3. Pick the controller at the top. The controllers that recognize your
    mapping come first, with how many of its triggers they recognize; every
    other known controller follows, so you can also look for room on one

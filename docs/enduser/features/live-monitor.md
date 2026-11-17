@@ -38,7 +38,7 @@ app listens on every available MIDI input (⚙ Preferences → `Auto-start Live
 Monitor when a mapping is loaded`, on by default). A port that is busy is
 skipped quietly.
 
-To choose ports yourself, open `View → Live Monitor`, then:
+To choose ports yourself, open `Tools → Live Monitor`, then:
 
 1. `Refresh ports`, then tick the inputs to watch (or `Select all sources`).
 2. Click `Start monitoring`.

@@ -32,7 +32,7 @@ software from the screen.
 
 ## Open an emulator
 
-`View → New Controller Emulator…`, then pick a controller. Open as many as
+`Tools → New Controller Emulator…`, then pick a controller. Open as many as
 you like, each on its own controller (for example a DDJ-XP2 next to an
 XDJ-XZ). Each one is a window you can dock, float, maximize or snap to a
 side. The set of open emulators is restored at the next launch.
