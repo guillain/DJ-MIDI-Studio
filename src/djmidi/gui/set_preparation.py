@@ -41,6 +41,7 @@ from PySide6.QtWidgets import (
 from djmidi import user_paths
 from djmidi.gui import help_texts
 from djmidi.gui.action_groups import action_section
+from djmidi.gui.empty_state import EmptyState
 from djmidi.gui.generate_set_dialog import GenerateSetDialog
 from djmidi.gui.help_button import help_row
 from djmidi.gui.set_order_dialog import SetOrderDialog
@@ -277,6 +278,14 @@ class SetPreparationPanel(QWidget):
         self.list.pathsDropped.connect(self.insert_paths)
         self.list.orderChanged.connect(self._sync_from_list)
         box.addWidget(self.list, 1)
+        # Golden rule: an empty set says the two ways to fill it.
+        self.list_empty_state = EmptyState(
+            self.list,
+            "",
+            self.tr("Your set is empty"),
+            self.tr("Drag tracks here from the table, then drag them inside the list to order the set."),
+            is_empty=lambda: self.list.count() == 0,
+        )
 
         tolerance_row = QHBoxLayout()
         tolerance_row.addWidget(QLabel(self.tr("BPM tolerance ±")))

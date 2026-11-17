@@ -7404,6 +7404,14 @@ Ausgewählte Zeilen in der Controller-Einrichtung: {selected}</translation>
         <translation>Musikordner</translation>
     </message>
     <message>
+        <source>Folders and tools</source>
+        <translation>Ordner und Werkzeuge</translation>
+    </message>
+    <message>
+        <source>Add or rescan folders, find duplicates, check the library&apos;s health…</source>
+        <translation>Ordner hinzufügen oder neu scannen, Duplikate finden, den Zustand der Bibliothek prüfen…</translation>
+    </message>
+    <message>
         <source>Folders this app indexes. Scanning never modifies your files.</source>
         <translation>Ordner, die diese App indiziert. Scannen ändert Ihre Dateien nie.</translation>
     </message>
@@ -8150,6 +8158,10 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     <message>
         <source> Skipped {count} whose file is gone or outside the music folders.</source>
         <translation> {count} übersprungen, deren Datei fehlt oder außerhalb der Musikordner liegt.</translation>
+    </message>
+    <message>
+        <source>{tracks} track(s) in {folders} folder(s). Your files are only read.</source>
+        <translation>{tracks} Titel in {folders} Ordner(n). Ihre Dateien werden nur gelesen.</translation>
     </message>
     <message>
         <source>{shown} / {total} tracks</source>
@@ -9854,6 +9866,14 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     <message>
         <source>Drag tracks here from the table; drag inside the list to reorder.</source>
         <translation>Ziehen Sie Tracks aus der Tabelle hierher; ziehen Sie innerhalb der Liste, um umzusortieren.</translation>
+    </message>
+    <message>
+        <source>Your set is empty</source>
+        <translation>Ihr Set ist leer</translation>
+    </message>
+    <message>
+        <source>Drag tracks here from the table, then drag them inside the list to order the set.</source>
+        <translation>Ziehen Sie Titel aus der Tabelle hierher und ordnen Sie das Set dann durch Ziehen in der Liste.</translation>
     </message>
     <message>
         <source>BPM tolerance ±</source>
