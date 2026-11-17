@@ -48,10 +48,13 @@ from djmidi.gui import help_texts
 from djmidi.gui import layout as layout_mod
 from djmidi.gui.atelier_macro_panel import AtelierMacroPanel
 from djmidi.gui.controller_emulator import EmulatorLayoutView
+from djmidi.gui.empty_state import EmptyState
 from djmidi.gui.feature_card import FeatureCard
 from djmidi.gui.help_button import help_button
 from djmidi.gui.led_probe_dialog import LedProbeDialog
 from djmidi.gui.photo_picker import FEATURE, PAD_MODE, SHIFT, PhotoPicker
+from djmidi.gui.theme import colors as theme_colors
+from djmidi.gui.theme import signals as theme_signals
 from djmidi.gui.translation import translator
 from djmidi.midi_io import list_output_ports
 from djmidi.midi_router import MidiValueTransform, RemapRule
@@ -161,7 +164,7 @@ class AtelierView(QWidget):
         self.load_button.clicked.connect(self.reload_saved)
         self.clear_button = QPushButton(self.tr("Clear LEDs"))
         self.clear_button.clicked.connect(self.clear_leds)
-        self.save_button = QPushButton(self.tr("Save to sync set"))
+        self.save_button = QPushButton(self.tr("Save the scene"))
         self.save_button.clicked.connect(self.save)
         self.send_button = QPushButton(self.tr("Send to controller"))
         self.send_button.setToolTip(self.tr("Sends this scene's messages to the controller now, without saving."))
@@ -221,6 +224,16 @@ class AtelierView(QWidget):
         # macro's step list needs their room.
         self.lower_tabs.currentChanged.connect(lambda _index: self.led_box.setVisible(not self.editing_macros))
         self.lower_tabs.setMinimumHeight(200)
+        # Golden rule: the Studio's three jobs are chosen at the top (mode
+        # bar), not from tabs hidden at the bottom right.
+        self.lower_tabs.tabBar().hide()
+        self.state_empty = EmptyState(
+            self.state_list,
+            "",
+            self.tr("No light in this scene yet"),
+            self.tr("Click a control on the photo, then choose its light: on, off or a value."),
+            is_empty=lambda: self.state_list.count() == 0,
+        )
         side_layout.addWidget(self.lower_tabs, 1)
         side_scroll = QScrollArea()
         side_scroll.setWidgetResizable(True)
@@ -240,14 +253,69 @@ class AtelierView(QWidget):
 
         layout = QVBoxLayout(self)
         layout.addLayout(top)
+        layout.addLayout(self._build_mode_bar())
         layout.addWidget(self.coverage_label)
         layout.addWidget(splitter, 1)
-        layout.addLayout(buttons)
-        layout.addLayout(software_row)
+        # The scene's save / send actions only belong to the scene mode.
+        self.scene_actions = QWidget()
+        scene_actions_layout = QVBoxLayout(self.scene_actions)
+        scene_actions_layout.setContentsMargins(0, 0, 0, 0)
+        scene_actions_layout.addLayout(buttons)
+        scene_actions_layout.addLayout(software_row)
+        layout.addWidget(self.scene_actions)
         layout.addWidget(self.status_label)
         self.refresh_software_ports()
         self.refresh_controllers()
         self.refresh_scenes()
+
+    # -- modes ------------------------------------------------------------
+
+    def _build_mode_bar(self) -> QHBoxLayout:
+        """Light scenes · Remap · Macros, as pills over a one-line hint of
+        what the selected mode does; drives `lower_tabs` (same order)."""
+        self._mode_hints = [
+            self.tr("Design how the controller lights up: click a control, choose its light, then send or save."),
+            self.tr("Make one control act as another: click the control to change, then the one it should become."),
+            self.tr("Build a macro by clicking the photo: every click adds a step."),
+        ]
+        self.mode_group = QButtonGroup(self)
+        self.mode_group.setExclusive(True)
+        row = QHBoxLayout()
+        for index, label in enumerate((self.tr("Light scenes"), self.tr("Remap"), self.tr("Macros"))):
+            pill = QPushButton(label)
+            pill.setCheckable(True)
+            pill.setObjectName("studioMode")
+            self.mode_group.addButton(pill, index)
+            row.addWidget(pill)
+        self.mode_hint = QLabel()
+        self.mode_hint.setObjectName("studioModeHint")
+        self.mode_hint.setWordWrap(True)
+        row.addWidget(self.mode_hint, 1)
+        self.mode_group.idClicked.connect(self.lower_tabs.setCurrentIndex)
+        self.lower_tabs.currentChanged.connect(self._sync_mode_bar)
+        self._sync_mode_bar(self.lower_tabs.currentIndex())
+        self._restyle_modes()
+        theme_signals.themeChanged.connect(self._restyle_modes)
+        return row
+
+    def _restyle_modes(self, *_args: object) -> None:
+        c = theme_colors()
+        for button in self.mode_group.buttons():
+            button.setStyleSheet(
+                f"""
+                QPushButton:checked {{ background: {c["accent"]}; color: {c["window_bg"]};
+                                       border-color: {c["accent"]}; font-weight: 600; }}
+                """
+            )
+        self.mode_hint.setStyleSheet(f"color: {c['hint_text']};")
+
+    def _sync_mode_bar(self, index: int) -> None:
+        button = self.mode_group.button(index)
+        if button is not None:
+            button.setChecked(True)
+        self.mode_hint.setText(self._mode_hints[index] if 0 <= index < len(self._mode_hints) else "")
+        if hasattr(self, "scene_actions"):
+            self.scene_actions.setVisible(index == 0)
 
     # -- lists ------------------------------------------------------------
 
@@ -301,7 +369,7 @@ class AtelierView(QWidget):
         self._refresh_coverage()
         if draft is not None:
             self.status_label.setText(
-                self.tr("Unsaved changes kept for {controller}: click Save to sync set to keep them.").format(
+                self.tr("Unsaved changes kept for {controller}: click Save the scene to keep them.").format(
                     controller=controller
                 )
             )
@@ -313,7 +381,7 @@ class AtelierView(QWidget):
             )
         else:
             self.status_label.setText(
-                self.tr("No sync set saved for this controller and scene yet: click a control to start one.")
+                self.tr("Nothing saved for this controller in this scene yet: click a control on the photo to light it.")
             )
 
     def refresh_library(self, controller: str) -> None:
@@ -588,7 +656,7 @@ class AtelierView(QWidget):
         self.scene.set_led(feature.id, value)
         self._mark_dirty()
         self._refresh_state()
-        self.status_label.setText(self.tr("Not saved yet: click Save to sync set to keep it."))
+        self.status_label.setText(self.tr("Not saved yet: click Save the scene to keep it."))
 
     def clear_leds(self) -> None:
         if self.scene is None:

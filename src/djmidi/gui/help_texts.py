@@ -386,7 +386,7 @@ ATELIER: HelpEntry = (
         "choose the pads' bank and <b>SHIFT</b> stays held, as in the emulator.</li>"
         "<li>Choose what its LED does: <b>Off</b>, <b>On</b>, a <b>Value</b> (a colour on "
         "controllers that have them), or leave it as it is.</li>"
-        "<li><b>Save to sync set</b> stores the scene: the next Sync puts the controller in "
+        "<li><b>Save the scene</b> stores the scene: the next Sync puts the controller in "
         "that state. <b>Send to controller</b> tries it now without saving.</li>"
         "<li>Edits of each controller are kept while you switch: the line under the controller names the controllers the scene covers. <b>Save all</b> saves every controller's changes for the scene, <b>Send all</b> sends the scene to all of them at once.</li>"
         "<li>Messages the Atelier doesn't recognise are kept as they were.</li>"
