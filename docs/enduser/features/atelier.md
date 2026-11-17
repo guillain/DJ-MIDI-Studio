@@ -48,7 +48,7 @@ scene sets; click a line to select that control again.
 
 | Button | What it does |
 | --- | --- |
-| **Save to sync set** | Stores the scene as the controller's sync set for that scene: the next Sync puts the controller in this state |
+| **Save the scene** | Stores the scene as the controller's sync set for that scene: the next Sync puts the controller in this state |
 | **Send to controller** | Sends the scene to the controller now, without saving, to try it |
 | **Clear LEDs** | Removes every LED from the scene (other messages stay) |
 | **Reload saved** | Drops this controller's changes and reads its saved sync set again |
