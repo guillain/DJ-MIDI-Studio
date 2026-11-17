@@ -463,6 +463,21 @@ LIVE_MONITOR: HelpEntry = (
     "live-monitor.md",
 )
 
+SET_ANALYSIS: HelpEntry = (
+    QT_TRANSLATE_NOOP("HelpTexts", "Set analysis"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
+        "What a live set recorded with <b>Record live set</b> says about how you play. Read-only.<ul>"
+        "<li><b>Buttons</b>: every press per physical control, most used first.</li>"
+        "<li><b>Jogs, knobs and faders</b>: the continuous controls that moved, by message count.</li>"
+        "<li><b>Sequences</b>: two different buttons pressed within 1.5 s, and how often: "
+        "candidates for a macro.</li>"
+        "<li><b>Activity</b>: presses per 10 minutes.</li></ul>"
+        "A control no profile knows keeps its raw note or CC number and channel.",
+    ),
+    "live-monitor.md",
+)
+
 MIDI_ROUTING: HelpEntry = (
     QT_TRANSLATE_NOOP("HelpTexts", "MIDI Routing"),
     QT_TRANSLATE_NOOP(

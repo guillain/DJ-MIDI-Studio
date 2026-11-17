@@ -84,6 +84,7 @@ SOURCES=(
   src/djmidi/catalog/codegen.py
   src/djmidi/gui/introduction_view.py
   src/djmidi/gui/live_monitor.py
+  src/djmidi/gui/set_analysis_dialog.py
   src/djmidi/gui/midi_routing_view.py
   src/djmidi/gui/midi_route_transform_dialog.py
   src/djmidi/gui/metronome_view.py

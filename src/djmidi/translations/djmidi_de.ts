@@ -3209,6 +3209,14 @@ Ein manueller Schritt bleibt: &apos;{slug}&apos; zum Import-Block in catalog/__i
         <translation>Protokolliert jedes MIDI-Ereignis der angehakten Eingänge, mit dem physischen Bedienelement und der Funktion, die das geladene Mapping ihm gibt, und lässt jedes Layout, die Überlagerung der Controller-Bilder und die Emulatoren auf die echte Hardware reagieren.&lt;br&gt;&lt;br&gt;Er startet von selbst, wenn ein Mapping geladen wird (⚙ Einstellungen). Um Ports selbst zu wählen: &lt;b&gt;Ports aktualisieren&lt;/b&gt;, Eingänge anhaken, &lt;b&gt;Überwachung starten&lt;/b&gt;.&lt;br&gt;&lt;br&gt;Um die LED-Nachrichten zu sehen, die Serato zurücksendet, haken Sie &lt;b&gt;Virtuelles Monitor-Ziel erstellen&lt;/b&gt; an und fügen Sie &lt;i&gt;DJMidiStudio Monitor&lt;/i&gt; als zusätzlichen MIDI-Ausgang in Serato hinzu.&lt;br&gt;&lt;br&gt;Ein Tastendruck, der auf demselben Deck zwei oder mehr verschiedene Funktionen auslöst, wird bernsteinfarben als &lt;b&gt;KONFLIKT&lt;/b&gt; angezeigt und gezählt; Seratos identische wiederholte Trigger sind keine Konflikte.&lt;br&gt;&lt;br&gt;Während &lt;b&gt;● Rec&lt;/b&gt; aufzeichnet, sind Start/Stopp und die Eingänge bis &lt;b&gt;■ Stopp&lt;/b&gt; gesperrt.</translation>
     </message>
     <message>
+        <source>Set analysis</source>
+        <translation>Set-Analyse</translation>
+    </message>
+    <message>
+        <source>What a live set recorded with &lt;b&gt;Record live set&lt;/b&gt; says about how you play. Read-only.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Buttons&lt;/b&gt;: every press per physical control, most used first.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Jogs, knobs and faders&lt;/b&gt;: the continuous controls that moved, by message count.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Sequences&lt;/b&gt;: two different buttons pressed within 1.5 s, and how often: candidates for a macro.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Activity&lt;/b&gt;: presses per 10 minutes.&lt;/li&gt;&lt;/ul&gt;A control no profile knows keeps its raw note or CC number and channel.</source>
+        <translation>Was ein mit &lt;b&gt;Live-Set aufnehmen&lt;/b&gt; aufgenommenes Set über Ihre Spielweise verrät. Nur lesend.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Tasten&lt;/b&gt;: jeder Druck pro physischem Bedienelement, die meistgenutzten zuerst.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Jogs, Regler und Fader&lt;/b&gt;: die bewegten kontinuierlichen Bedienelemente, nach Anzahl der Nachrichten.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Abfolgen&lt;/b&gt;: zwei verschiedene Tasten innerhalb von 1,5 s gedrückt, und wie oft: Kandidaten für ein Makro.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Aktivität&lt;/b&gt;: Tastendrücke pro 10 Minuten.&lt;/li&gt;&lt;/ul&gt;Ein Bedienelement, das kein Profil kennt, behält seine Noten- oder CC-Nummer und seinen Kanal.</translation>
+    </message>
+    <message>
         <source>MIDI Routing</source>
         <translation>MIDI-Routing</translation>
     </message>
@@ -4039,6 +4047,14 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
         <translation>Nimmt ab jetzt jedes MIDI-Ereignis ohne Begrenzung in einer Datei im Ordner Logs auf (das Protokoll oben behält nur die letzten 500). Startet die Überwachung aller MIDI-Eingänge, falls sie nicht läuft.</translation>
     </message>
     <message>
+        <source>Analyse a set…</source>
+        <translation>Set analysieren…</translation>
+    </message>
+    <message>
+        <source>Opens a recorded live set and shows which controls you used, how often and in which order.</source>
+        <translation>Öffnet ein aufgenommenes Live-Set und zeigt, welche Bedienelemente Sie wie oft und in welcher Reihenfolge benutzt haben.</translation>
+    </message>
+    <message>
         <source>Sync controllers</source>
         <translation>Controller synchronisieren</translation>
     </message>
@@ -4181,6 +4197,22 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
     <message>
         <source>Recorded {count} event(s) to {file}</source>
         <translation>{count} Ereignis(se) in {file} aufgenommen</translation>
+    </message>
+    <message>
+        <source>Analyse a live set</source>
+        <translation>Live-Set analysieren</translation>
+    </message>
+    <message>
+        <source>Live set recordings (*.jsonl)</source>
+        <translation>Live-Set-Aufnahmen (*.jsonl)</translation>
+    </message>
+    <message>
+        <source>Couldn&apos;t read {file}: {error}</source>
+        <translation>{file} konnte nicht gelesen werden: {error}</translation>
+    </message>
+    <message>
+        <source>{file} holds no MIDI event to analyse.</source>
+        <translation>{file} enthält kein MIDI-Ereignis zum Analysieren.</translation>
     </message>
     <message>
         <source>● Recording: {count} event(s) to {file}</source>
@@ -9458,6 +9490,73 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     <message>
         <source>{field} must be in [{low}, {high}]</source>
         <translation>{field} muss in [{low}, {high}] liegen</translation>
+    </message>
+</context>
+<context>
+    <name>SetAnalysisDialog</name>
+    <message>
+        <source>Set analysis</source>
+        <translation>Set-Analyse</translation>
+    </message>
+    <message>
+        <source>{minutes} min · {events} MIDI event(s) · {presses} button press(es), {unnamed} of them on no known control</source>
+        <translation>{minutes} min · {events} MIDI-Ereignis(se) · {presses} Tastendruck/-drücke, davon {unnamed} auf keinem bekannten Bedienelement</translation>
+    </message>
+    <message>
+        <source>Ports: {ports}</source>
+        <translation>Ports: {ports}</translation>
+    </message>
+    <message>
+        <source>Control</source>
+        <translation>Bedienelement</translation>
+    </message>
+    <message>
+        <source>Port</source>
+        <translation>Port</translation>
+    </message>
+    <message>
+        <source>Presses</source>
+        <translation>Drücke</translation>
+    </message>
+    <message>
+        <source>Buttons</source>
+        <translation>Tasten</translation>
+    </message>
+    <message>
+        <source>Messages</source>
+        <translation>Nachrichten</translation>
+    </message>
+    <message>
+        <source>Jogs, knobs and faders</source>
+        <translation>Jogs, Regler und Fader</translation>
+    </message>
+    <message>
+        <source>First</source>
+        <translation>Zuerst</translation>
+    </message>
+    <message>
+        <source>Then</source>
+        <translation>Dann</translation>
+    </message>
+    <message>
+        <source>Times</source>
+        <translation>Mal</translation>
+    </message>
+    <message>
+        <source>Two different buttons pressed within {seconds} s of each other.</source>
+        <translation>Zwei verschiedene Tasten innerhalb von {seconds} s gedrückt.</translation>
+    </message>
+    <message>
+        <source>Sequences</source>
+        <translation>Abfolgen</translation>
+    </message>
+    <message>
+        <source>From (min)</source>
+        <translation>Ab (min)</translation>
+    </message>
+    <message>
+        <source>Activity</source>
+        <translation>Aktivität</translation>
     </message>
 </context>
 <context>

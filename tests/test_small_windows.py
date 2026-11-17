@@ -126,6 +126,14 @@ def _layer_map():
     return LayerMapDialog(lambda: config, [("DDJ-XP2", 64), ("XDJ-XZ", 16)], "DDJ-XP2")
 
 
+def _set_analysis():
+    from djmidi.gui.set_analysis_dialog import SetAnalysisDialog
+    from djmidi.set_analysis import SetEvent, analyse
+
+    events = [SetEvent(60.0 * n, "DDJ-XP2", "note", 1 + n % 2, 88, 127) for n in range(40)]
+    return SetAnalysisDialog(analyse(events))
+
+
 def _live_ready():
     from djmidi.gui.live_ready_dialog import LiveReadyDialog
     from djmidi.live_ready import check_live_ready
@@ -444,6 +452,7 @@ def _list_report():
 
 
 WINDOWS = {
+    "set analysis": _set_analysis,
     "first-run wizard": _wizard,
     "layer map": _layer_map,
     "ready for live": _live_ready,
