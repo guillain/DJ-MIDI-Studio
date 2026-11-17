@@ -4191,6 +4191,14 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
         <translation>Surveillance</translation>
     </message>
     <message>
+        <source>Nothing received yet</source>
+        <translation>Rien de reçu pour l&apos;instant</translation>
+    </message>
+    <message>
+        <source>Start monitoring, then press a button on a ticked controller: every message shows here, named.</source>
+        <translation>Démarrez la surveillance, puis appuyez sur un bouton d&apos;un contrôleur coché : chaque message s&apos;affiche ici, nommé.</translation>
+    </message>
+    <message>
         <source>Time</source>
         <translation>Heure</translation>
     </message>
@@ -5275,6 +5283,10 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
     <message>
         <source>{macro} now plays from {pad}.</source>
         <translation>{macro} se lance maintenant depuis {pad}.</translation>
+    </message>
+    <message>
+        <source>MIDI routing is on.</source>
+        <translation>Le routage MIDI est activé.</translation>
     </message>
     <message>
         <source>No initialization set is recorded for the scene &quot;{scene}&quot; and no controller has a Default set.</source>
@@ -6404,6 +6416,10 @@ Brut : {raw}</translation>
         <translation>Fréquence de la boucle (Hz)</translation>
     </message>
     <message>
+        <source>Plays the rows of your Controller Setup session to an output, once or in a loop: a quick way to test LEDs or a mapping without touching the controller.</source>
+        <translation>Joue les lignes de votre session de Configuration contrôleur vers une sortie, une fois ou en boucle : un moyen rapide de tester des LED ou un mapping sans toucher au contrôleur.</translation>
+    </message>
+    <message>
         <source>(unnamed setup session)</source>
         <translation>(session de configuration sans nom)</translation>
     </message>
@@ -6896,8 +6912,16 @@ Lignes sélectionnées dans Configuration du contrôleur : {selected}</translati
         <translation>Créez une route d&apos;horloge, puis démarrez le routage pour envoyer le transport et les tops à 24 PPQN.</translation>
     </message>
     <message>
-        <source>Routes are configured here but remain inactive until MIDI routing is enabled in Preferences. Clock synchronization is intentionally opt-in and must be validated per software/version. Serato DJ Pro does not emit standard MIDI Clock directly. Enable Ableton Link in Serato and choose &apos;{link}&apos; to follow Link and generate MIDI Clock here.</source>
-        <translation>Les routes se configurent ici mais restent inactives tant que le routage MIDI n&apos;est pas activé dans les Préférences. La synchronisation d&apos;horloge est volontairement à activer soi-même et doit être validée pour chaque logiciel et version. Serato DJ Pro n&apos;émet pas directement d&apos;horloge MIDI standard. Activez Ableton Link dans Serato et choisissez « {link} » pour suivre Link et générer ici l&apos;horloge MIDI.</translation>
+        <source>Clock synchronization is intentionally opt-in and must be validated per software/version. Serato DJ Pro does not emit standard MIDI Clock directly. Enable Ableton Link in Serato and choose &apos;{link}&apos; to follow Link and generate MIDI Clock here.</source>
+        <translation>La synchronisation d&apos;horloge est volontairement à activer soi-même et doit être validée pour chaque logiciel et version. Serato DJ Pro n&apos;émet pas directement d&apos;horloge MIDI standard. Activez Ableton Link dans Serato et choisissez « {link} » pour suivre Link et générer ici l&apos;horloge MIDI.</translation>
+    </message>
+    <message>
+        <source>Routing is off: the routes below are kept but don&apos;t play yet.</source>
+        <translation>Le routage est désactivé : les routes ci-dessous sont gardées mais ne jouent pas encore.</translation>
+    </message>
+    <message>
+        <source>Turn routing on</source>
+        <translation>Activer le routage</translation>
     </message>
     <message>
         <source>Enable MIDI routing in Preferences first</source>
@@ -8976,6 +9000,10 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <translation>Session JSON, XML Serato ou TSI Traktor chargé dans Configuration du contrôleur à la première ouverture de cet onglet, quand son brouillon est encore vide.</translation>
     </message>
     <message>
+        <source>Look</source>
+        <translation>Apparence</translation>
+    </message>
+    <message>
         <source>Theme:</source>
         <translation>Thème :</translation>
     </message>
@@ -8984,8 +9012,20 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <translation>Langue :</translation>
     </message>
     <message>
+        <source>When the app starts</source>
+        <translation>Au lancement de l&apos;app</translation>
+    </message>
+    <message>
         <source>Detection:</source>
         <translation>Détection :</translation>
+    </message>
+    <message>
+        <source>Your files</source>
+        <translation>Vos fichiers</translation>
+    </message>
+    <message>
+        <source>Advanced</source>
+        <translation>Avancé</translation>
     </message>
     <message>
         <source>Log level:</source>
@@ -9026,6 +9066,14 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>Controller sync</source>
         <translation>Synchro des contrôleurs</translation>
+    </message>
+    <message>
+        <source>Show advanced settings</source>
+        <translation>Afficher les réglages avancés</translation>
+    </message>
+    <message>
+        <source>MIDI routing policies, external plugins, logs: for troubleshooting.</source>
+        <translation>Règles de routage MIDI, plugins externes, journaux : pour le dépannage.</translation>
     </message>
     <message>
         <source>Initialization sets sent by the Sync button (menu bar and Live Monitor), one per controller and scene. ⟳ Sync sends each controller its set for the scene chosen beside it in the menu bar, or its Default set when it has none for that scene. Record one with ● Rec (into the active scene), or in Controller Setup: name the controller, start learning, press the controls, then &quot;Save as controller sync set&quot;.</source>

@@ -378,6 +378,7 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         self.midi_routing_view = MidiRoutingView()
         self.midi_routing_view.ensure_listening = self._ensure_learn_listening
         self.midi_routing_view.set_routing_enabled(self.preferences.routing_enabled)
+        self.midi_routing_view.enableRoutingRequested.connect(self._turn_routing_on)
         self.midi_clock_view = MidiClockView(self.midi_routing_view.take_clock_panel())
         self.metronome_view = MetronomeView(
             all_rows_provider=self.controller_setup_view.session_rows,
@@ -1382,6 +1383,14 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
             application = QApplication.instance()
             if application is not None:
                 apply_theme(application, "system")
+
+    def _turn_routing_on(self) -> None:
+        """The MIDI Routing window's banner: the same switch as Preferences →
+        Advanced → Enable MIDI routing policies, saved."""
+        self.preferences.routing_enabled = True
+        self._save_preferences()
+        self.midi_routing_view.set_routing_enabled(True)
+        self.statusBar().showMessage(self.tr("MIDI routing is on."), 5000)
 
     def _on_preferences(self, tab: str | None = None) -> None:
         dialog = PreferencesDialog(self.preferences, self)

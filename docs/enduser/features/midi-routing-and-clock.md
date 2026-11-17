@@ -30,8 +30,9 @@ Their routes, ports and settings are restored at the next launch.
 
 ## Turn routing on
 
-Routing touches real hardware, so it is **off by default**. Enable
-`Enable MIDI routing policies` in ⚙ Preferences first. Only the ports used
+Routing touches real hardware, so it is **off by default**. While it's off,
+the window says so with a `Turn routing on` button (the same switch as
+`Enable MIDI routing policies` in ⚙ Preferences → Show advanced settings). Only the ports used
 by your routes are opened when you click `Start routing`, and
 `Stop routing` closes them again. A port error stops the session safely.
 

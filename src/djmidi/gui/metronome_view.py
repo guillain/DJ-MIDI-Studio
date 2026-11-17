@@ -131,6 +131,15 @@ class MetronomeView(QWidget):
         scroll.setWidget(content)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
+        # Golden rule: say what this window does before its controls.
+        self.purpose_label = QLabel(
+            self.tr(
+                "Plays the rows of your Controller Setup session to an output, once or in a loop: "
+                "a quick way to test LEDs or a mapping without touching the controller."
+            )
+        )
+        self.purpose_label.setWordWrap(True)
+        layout.addWidget(self.purpose_label)
         layout.addWidget(scroll)
 
         self._loop_timer = QTimer(self)

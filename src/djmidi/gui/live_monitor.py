@@ -36,6 +36,7 @@ from PySide6.QtWidgets import (
 
 from djmidi import catalog, user_paths
 from djmidi.gui import help_texts
+from djmidi.gui.empty_state import EmptyState
 from djmidi.gui.help_button import help_row
 from djmidi.gui.jog import jog_cell_keys_for_event
 from djmidi.gui.mapping_group import build_mapping_groups
@@ -160,6 +161,8 @@ class LiveMonitorView(QWidget):
         virtual_help.setWordWrap(True)
         self._start_button = QPushButton(self.tr("Start monitoring"))
         self._start_button.clicked.connect(self._toggle_running)
+        self._start_button.setDefault(True)
+        self._start_button.setObjectName("primaryAction")
         self._status_label = QLabel(self.tr("Stopped"))
         self._conflict_label = QLabel()
         self._conflict_label.setWordWrap(True)
@@ -189,6 +192,7 @@ class LiveMonitorView(QWidget):
         self._analyse_button.clicked.connect(self._choose_set_to_analyse)
         self._recording_label = QLabel()
         self._recording_label.setWordWrap(True)
+        self._recording_label.hide()  # shown once there's something to say
         self._recording_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         self._sync_button = QPushButton(self.tr("Sync controllers"))
         self._sync_button.setToolTip(
@@ -203,7 +207,11 @@ class LiveMonitorView(QWidget):
         controls_layout = QVBoxLayout(controls_box)
         controls_layout.addLayout(help_row(self, *help_texts.LIVE_MONITOR))
         controls_layout.addLayout(virtual_row)
-        controls_layout.addWidget(virtual_help)
+        # Golden rule: the CoreMIDI explanation is reference, not a step --
+        # it moves to the tooltip of the option it explains.
+        virtual_help.hide()
+        self._virtual_checkbox.setToolTip(virtual_help.text())
+        self._virtual_label.setToolTip(virtual_help.text())
         controls_layout.addWidget(self._start_button)
         controls_layout.addWidget(self._status_label)
         controls_layout.addWidget(self._conflict_label)
@@ -220,6 +228,14 @@ class LiveMonitorView(QWidget):
         top_row.addWidget(controls_box, 1)
 
         self._log = QTableWidget(0, 8)
+        self.log_empty_state = EmptyState(
+            self._log,
+            "",
+            self.tr("Nothing received yet"),
+            self.tr("Start monitoring, then press a button on a ticked controller: every message shows here, named."),
+            (self.tr("Start monitoring"), self.ensure_monitoring_started),
+            is_empty=lambda: self._log.rowCount() == 0,
+        )
         self._log.setHorizontalHeaderLabels(
             [
                 self.tr("Time"),
@@ -562,14 +578,14 @@ class LiveMonitorView(QWidget):
                 return None
             self.ensure_monitoring_started()
             if not self._running:
-                self._recording_label.setText(self.tr("No MIDI input to record: plug in a controller first."))
+                self._show_recording_text(self.tr("No MIDI input to record: plug in a controller first."))
                 return None
         recorder = SessionRecorder(user_paths.subfolder(user_paths.LOGS))
         try:
             path = recorder.start()
         except OSError as exc:
             _LOGGER.exception("Failed to start the live set recording")
-            self._recording_label.setText(self.tr("Couldn't start recording: {error}").format(error=exc))
+            self._show_recording_text(self.tr("Couldn't start recording: {error}").format(error=exc))
             return None
         self._recorder = recorder
         self._record_button.setText(self.tr("Stop recording"))
@@ -583,7 +599,7 @@ class LiveMonitorView(QWidget):
         path = recorder.stop()
         self._recorder = None
         self._record_button.setText(self.tr("Record live set"))
-        self._recording_label.setText(
+        self._show_recording_text(
             self.tr("Recorded {count} event(s) to {file}").format(count=recorder.count, file=str(path))
         )
         return path
@@ -601,19 +617,23 @@ class LiveMonitorView(QWidget):
         try:
             analysis = analyse(load_set(path))
         except OSError as exc:
-            self._recording_label.setText(self.tr("Couldn't read {file}: {error}").format(file=path.name, error=exc))
+            self._show_recording_text(self.tr("Couldn't read {file}: {error}").format(file=path.name, error=exc))
             return None
         if not analysis.events:
-            self._recording_label.setText(self.tr("{file} holds no MIDI event to analyse.").format(file=path.name))
+            self._show_recording_text(self.tr("{file} holds no MIDI event to analyse.").format(file=path.name))
             return None
         dialog = SetAnalysisDialog(analysis, path, parent=self)
         dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         dialog.show()
         return dialog
 
+    def _show_recording_text(self, text: str) -> None:
+        self._recording_label.setText(text)
+        self._recording_label.setVisible(bool(text))
+
     def _update_recording_label(self) -> None:
         recorder = self._recorder
-        self._recording_label.setText(
+        self._show_recording_text(
             self.tr("● Recording: {count} event(s) to {file}").format(count=recorder.count, file=recorder.path.name)
         )
 

@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (
     QFrame,
     QGridLayout,
     QGroupBox,
+    QHBoxLayout,
     QHeaderView,
     QLabel,
     QMessageBox,
@@ -120,6 +121,8 @@ class MidiRoutingView(QWidget):
     """Safe configuration surface for the MIDI router and Clock mirror."""
 
     routesChanged = Signal()
+    # The "Routing is off" banner's button: MainWindow turns the preference on.
+    enableRoutingRequested = Signal()
 
     def __init__(
         self,
@@ -247,13 +250,28 @@ class MidiRoutingView(QWidget):
 
         help_label = QLabel(
             self.tr(
-                "Routes are configured here but remain inactive until MIDI routing is enabled in Preferences. "
                 "Clock synchronization is intentionally opt-in and must be validated per software/version. "
                 "Serato DJ Pro does not emit standard MIDI Clock directly. Enable Ableton Link in Serato "
                 "and choose '{link}' to follow Link and generate MIDI Clock here."
             ).format(link=ABLETON_LINK_CLOCK_SOURCE_NAME)
         )
         help_label.setWordWrap(True)
+        # Golden rule: the switch that makes routes play is here, not only in
+        # Preferences.
+        self.routing_off_banner = QFrame()
+        self.routing_off_banner.setObjectName("routingOffBanner")
+        banner_row = QHBoxLayout(self.routing_off_banner)
+        banner_row.setContentsMargins(10, 6, 10, 6)
+        banner_text = QLabel(self.tr("Routing is off: the routes below are kept but don't play yet."))
+        banner_text.setWordWrap(True)
+        banner_row.addWidget(banner_text, 1)
+        self.enable_routing_button = QPushButton(self.tr("Turn routing on"))
+        self.enable_routing_button.clicked.connect(self.enableRoutingRequested)
+        banner_row.addWidget(self.enable_routing_button)
+        self.routing_off_banner.setStyleSheet(
+            "QFrame#routingOffBanner { border: 1px solid #f5a524; border-radius: 8px; }"
+            " QFrame#routingOffBanner QLabel { background: transparent; border: none; }"
+        )
 
         # The route-controls row puts 5 buttons side by side; when this
         # view is *docked* (rather than floated) at a narrow width the last
@@ -265,6 +283,7 @@ class MidiRoutingView(QWidget):
         content = QWidget()
         content.setObjectName("midiToolsSurface")  # keep the scoped theme
         layout = QVBoxLayout(content)
+        layout.addWidget(self.routing_off_banner)
         layout.addWidget(help_label)
         layout.addWidget(routes_box)
         layout.addStretch(1)
@@ -319,6 +338,7 @@ class MidiRoutingView(QWidget):
     def set_routing_enabled(self, enabled: bool) -> None:
         """Apply the Preferences safety gate for physical route execution."""
         self._routing_enabled = enabled
+        self.routing_off_banner.setVisible(not enabled)
         if not enabled:
             self._stop_routing()
         self._routing_button.setEnabled(enabled)

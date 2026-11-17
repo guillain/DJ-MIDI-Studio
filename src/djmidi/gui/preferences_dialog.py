@@ -11,6 +11,8 @@ from PySide6.QtWidgets import (
     QDialogButtonBox,
     QFileDialog,
     QFormLayout,
+    QFrame,
+    QGroupBox,
     QHBoxLayout,
     QHeaderView,
     QLabel,
@@ -199,23 +201,54 @@ class PreferencesDialog(QDialog):
         setup_file_row.addWidget(setup_file, 1)
         setup_file_row.addWidget(setup_browse)
 
-        general_tab = QWidget()
-        policy_layout = QFormLayout(general_tab)
-        policy_layout.addRow(self.tr("Theme:"), theme)
-        policy_layout.addRow(self.tr("Language:"), language)
-        policy_layout.addRow(self.tr("Detection:"), detection)
-        policy_layout.addRow(self.tr("Log level:"), log_level)
-        policy_layout.addRow(self.tr("Log file path:"), log_path_row)
-        policy_layout.addRow(self.tr("Controller Setup default file:"), setup_file_row)
-        policy_layout.addRow(routing)
-        policy_layout.addRow(trust)
-        policy_layout.addRow(auto_start_live_monitor)
-        policy_layout.addRow(reopen_last_files)
-        policy_layout.addRow(auto_sync_on_startup)
-        policy_layout.addRow(auto_sync_on_plug_in)
-        policy_layout.addRow(sync_on_scene_switch)
-        policy_layout.addRow(check_for_updates)
-        policy_layout.addRow(self.tr("Your files folder:"), workspace_row)
+        # Golden rule: what a DJ changes, grouped by when it matters; the
+        # troubleshooting settings wait behind "Show advanced settings".
+        general_content = QWidget()
+        general_layout = QVBoxLayout(general_content)
+
+        look_box = QGroupBox(self.tr("Look"))
+        look_layout = QFormLayout(look_box)
+        look_layout.addRow(self.tr("Theme:"), theme)
+        look_layout.addRow(self.tr("Language:"), language)
+
+        launch_box = QGroupBox(self.tr("When the app starts"))
+        launch_layout = QFormLayout(launch_box)
+        launch_layout.addRow(reopen_last_files)
+        launch_layout.addRow(auto_sync_on_startup)
+        launch_layout.addRow(auto_start_live_monitor)
+        launch_layout.addRow(check_for_updates)
+        launch_layout.addRow(self.tr("Detection:"), detection)
+
+        sync_box = QGroupBox(self.tr("Controller sync"))
+        sync_layout = QFormLayout(sync_box)
+        sync_layout.addRow(auto_sync_on_plug_in)
+        sync_layout.addRow(sync_on_scene_switch)
+
+        files_box = QGroupBox(self.tr("Your files"))
+        files_layout = QFormLayout(files_box)
+        files_layout.addRow(self.tr("Your files folder:"), workspace_row)
+
+        self.advanced_box = QGroupBox(self.tr("Advanced"))
+        advanced_layout = QFormLayout(self.advanced_box)
+        advanced_layout.addRow(routing)
+        advanced_layout.addRow(trust)
+        advanced_layout.addRow(self.tr("Log level:"), log_level)
+        advanced_layout.addRow(self.tr("Log file path:"), log_path_row)
+        advanced_layout.addRow(self.tr("Controller Setup default file:"), setup_file_row)
+        self.show_advanced = QCheckBox(self.tr("Show advanced settings"))
+        self.show_advanced.setToolTip(self.tr("MIDI routing policies, external plugins, logs: for troubleshooting."))
+        self.show_advanced.toggled.connect(self.advanced_box.setVisible)
+        self.advanced_box.setVisible(False)
+
+        for box in (look_box, launch_box, sync_box, files_box):
+            general_layout.addWidget(box)
+        general_layout.addWidget(self.show_advanced)
+        general_layout.addWidget(self.advanced_box)
+        general_layout.addStretch(1)
+        general_tab = QScrollArea()
+        general_tab.setWidgetResizable(True)
+        general_tab.setFrameShape(QFrame.Shape.NoFrame)
+        general_tab.setWidget(general_content)
 
         controller_ids = {
             definition.plugin_id or definition.name

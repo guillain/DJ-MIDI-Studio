@@ -4191,6 +4191,14 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
         <translation>Monitor</translation>
     </message>
     <message>
+        <source>Nothing received yet</source>
+        <translation>Noch nichts empfangen</translation>
+    </message>
+    <message>
+        <source>Start monitoring, then press a button on a ticked controller: every message shows here, named.</source>
+        <translation>Starten Sie die Überwachung und drücken Sie eine Taste an einem angehakten Controller: Jede Nachricht erscheint hier, benannt.</translation>
+    </message>
+    <message>
         <source>Time</source>
         <translation>Zeit</translation>
     </message>
@@ -5491,6 +5499,10 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
         <translation>Dokumentation nicht verfügbar</translation>
     </message>
     <message>
+        <source>MIDI routing is on.</source>
+        <translation>MIDI-Routing ist aktiviert.</translation>
+    </message>
+    <message>
         <source>Preferences saved</source>
         <translation>Einstellungen gespeichert</translation>
     </message>
@@ -6404,6 +6416,10 @@ Roh: {raw}</translation>
         <translation>Schleifenfrequenz (Hz)</translation>
     </message>
     <message>
+        <source>Plays the rows of your Controller Setup session to an output, once or in a loop: a quick way to test LEDs or a mapping without touching the controller.</source>
+        <translation>Spielt die Zeilen Ihrer Controller-Einrichtungs-Sitzung an einen Ausgang, einmal oder in Schleife: ein schneller Weg, LEDs oder ein Mapping zu testen, ohne den Controller anzufassen.</translation>
+    </message>
+    <message>
         <source>(unnamed setup session)</source>
         <translation>(unbenannte Einrichtungssitzung)</translation>
     </message>
@@ -6896,8 +6912,16 @@ Ausgewählte Zeilen in der Controller-Einrichtung: {selected}</translation>
         <translation>Erstellen Sie eine Clock-Route und starten Sie dann das Routing, um Transport und 24-PPQN-Ticks zu senden.</translation>
     </message>
     <message>
-        <source>Routes are configured here but remain inactive until MIDI routing is enabled in Preferences. Clock synchronization is intentionally opt-in and must be validated per software/version. Serato DJ Pro does not emit standard MIDI Clock directly. Enable Ableton Link in Serato and choose &apos;{link}&apos; to follow Link and generate MIDI Clock here.</source>
-        <translation>Routen werden hier konfiguriert, bleiben aber inaktiv, bis das MIDI-Routing in den Einstellungen aktiviert ist. Die Clock-Synchronisation ist bewusst optional und muss pro Software/Version geprüft werden. Serato DJ Pro sendet keine Standard-MIDI-Clock direkt. Aktivieren Sie Ableton Link in Serato und wählen Sie &apos;{link}&apos;, um Link zu folgen und hier MIDI-Clock zu erzeugen.</translation>
+        <source>Clock synchronization is intentionally opt-in and must be validated per software/version. Serato DJ Pro does not emit standard MIDI Clock directly. Enable Ableton Link in Serato and choose &apos;{link}&apos; to follow Link and generate MIDI Clock here.</source>
+        <translation>Die Clock-Synchronisation ist bewusst optional und muss pro Software/Version geprüft werden. Serato DJ Pro sendet keine Standard-MIDI-Clock direkt. Aktivieren Sie Ableton Link in Serato und wählen Sie &apos;{link}&apos;, um Link zu folgen und hier MIDI-Clock zu erzeugen.</translation>
+    </message>
+    <message>
+        <source>Routing is off: the routes below are kept but don&apos;t play yet.</source>
+        <translation>Routing ist aus: Die Routen unten bleiben erhalten, spielen aber noch nicht.</translation>
+    </message>
+    <message>
+        <source>Turn routing on</source>
+        <translation>Routing einschalten</translation>
     </message>
     <message>
         <source>Enable MIDI routing in Preferences first</source>
@@ -8976,6 +9000,10 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
         <translation>Sitzungs-JSON, Serato-XML oder Traktor-TSI, das beim ersten Anzeigen dieses Tabs in die Controller-Einrichtung geladen wird, solange ihr Entwurf noch leer ist.</translation>
     </message>
     <message>
+        <source>Look</source>
+        <translation>Aussehen</translation>
+    </message>
+    <message>
         <source>Theme:</source>
         <translation>Design:</translation>
     </message>
@@ -8984,8 +9012,20 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
         <translation>Sprache:</translation>
     </message>
     <message>
+        <source>When the app starts</source>
+        <translation>Beim Start der App</translation>
+    </message>
+    <message>
         <source>Detection:</source>
         <translation>Erkennung:</translation>
+    </message>
+    <message>
+        <source>Your files</source>
+        <translation>Ihre Dateien</translation>
+    </message>
+    <message>
+        <source>Advanced</source>
+        <translation>Erweitert</translation>
     </message>
     <message>
         <source>Log level:</source>
@@ -9026,6 +9066,14 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     <message>
         <source>Controller sync</source>
         <translation>Controller-Sync</translation>
+    </message>
+    <message>
+        <source>Show advanced settings</source>
+        <translation>Erweiterte Einstellungen anzeigen</translation>
+    </message>
+    <message>
+        <source>MIDI routing policies, external plugins, logs: for troubleshooting.</source>
+        <translation>MIDI-Routing-Regeln, externe Plugins, Protokolle: zur Fehlersuche.</translation>
     </message>
     <message>
         <source>Initialization sets sent by the Sync button (menu bar and Live Monitor), one per controller and scene. ⟳ Sync sends each controller its set for the scene chosen beside it in the menu bar, or its Default set when it has none for that scene. Record one with ● Rec (into the active scene), or in Controller Setup: name the controller, start learning, press the controls, then &quot;Save as controller sync set&quot;.</source>
