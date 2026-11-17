@@ -6,6 +6,15 @@ added what, measurement stories, per-PR detail — lives in `TODO.md` ("Recent e
 and in git, not here. Keep this file a map: when a feature lands, add or adjust its few lines here and put the
 story in TODO.md.
 
+## Golden rule
+
+> **Il faut que nos features deviennent des évidences.** — Our features must become obvious.
+
+DJs love the features but get lost in how many there are. Every change is judged on whether a DJ finds and uses it
+without reading docs: playful, easy-to-pick-up interfaces, workflows and integrations; the next step always visible
+(one clear primary action, plain words, status at a glance); the app comes to the DJ (it notices what's missing and
+offers the fix) rather than waiting to be explored. A feature that works but isn't obvious isn't done.
+
 ## What this project is
 
 DJ MIDI Studio (`djmidi`): a PySide6 desktop app for DJs. It started as an editor for Serato DJ Pro MIDI mapping
@@ -306,6 +315,10 @@ surgical and logged. Qt-free modules; the tab is a thin view over `library/works
 
 ### Other services
 
+- **Startup check** (golden rule): Qt-free `startup_check.check_startup` (ports vs catalog, captures, LED data, sync
+  sets, macro ports; statuses ok/todo/blocking, one action per item, stable ids) → `gui/startup_check_dialog.py`
+  (cards per device). Opens at startup instead of Helpful Notes when a non-dismissed item needs the DJ
+  (`ui/startup_check_dismissed`, `ui/startup_check_show`); `MainWindow._on_startup_action` opens the matching tool.
 - `user_paths.py`: the workspace (`~/Documents/DJ MIDI Studio`, `DJMIDI_WORKSPACE`) with `Controllers`, `Sync`,
   `Macros`, `Drafts`, `Logs`, `Exports`, `Snapshots`. `backup.py`: workspace backup/restore (validated, atomic).
 - `file_locations.py`, `snapshots.py`, `mapping_diff.py` (semantic diff counting copies), `deck_copy.py`,
