@@ -1204,7 +1204,7 @@ def test_setup_has_one_draft_panel_and_renamed_midi_input():
 
     view = _view_with_name()
     titles = {lbl.text() for lbl in view.findChildren(QLabel)}
-    assert "Draft" in titles           # the merged panel
+    assert "Your controller profile" in titles  # the merged panel
     assert "MIDI input" in titles      # renamed from "Capture (learn from controller)"
     assert "Session" in titles         # now a toolbar group caption, not a panel
     assert "Capture (learn from controller)" not in titles

@@ -41,16 +41,19 @@ mapping. To edit a mapping, use `File → Open Mapping…` and the
 ## Build a profile in five steps
 
 1. Plug in the controller and open the `Controller → Setup` tab.
-2. Type the controller's name in the `Draft` toolbar.
-3. In `MIDI input`, tick the controller's port and click `Start learning`.
+2. Type the controller's name at the top.
+3. In **Your controller profile**, step **1 · Learn**: click
+   `By pressing its buttons` (or `Start learning` on the empty table). Every
+   input is listened to when none is ticked yet.
 4. Press every button and pad you care about. Each new trigger appears once
    in the table, even if you press it again.
-5. Fill in each row's **Section** and **Name**, then `Install` to use the
-   profile right away and keep it for every launch.
+5. Step **2 · Name the rows**: fill in each row's **Section** and **Name**.
+   Step **3 · Use it**: `Install` uses the profile right away and keeps it
+   for every launch.
 
 ## Start from a controller the app already knows
 
-`Start from controller…` (in the `Session` group) replaces the draft with
+`From a known controller…` (step **1 · Learn**) replaces the draft with
 every control of a controller already in the catalog — sections, names, and
 the pads of every pad mode — under the name `<controller> (copy)`. Rename,
 delete or add rows, then apply or export. The copy keeps its own name, so

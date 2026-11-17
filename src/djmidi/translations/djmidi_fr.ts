@@ -1265,24 +1265,12 @@ Mappé sur : {functions}</translation>
         <translation>Proposer au catalogue communautaire…</translation>
     </message>
     <message>
-        <source>Draft</source>
-        <translation>Brouillon</translation>
-    </message>
-    <message>
-        <source>Build a controller profile — import or learn its MIDI triggers, name each row, then Apply / Export. This does not open a Serato mapping for editing (that is File → Open).</source>
-        <translation>Créez un profil de contrôleur : importez ou apprenez ses déclencheurs MIDI, nommez chaque ligne, puis Appliquer / Exporter. Cela n&apos;ouvre pas de mapping Serato à modifier (c&apos;est Fichier → Ouvrir).</translation>
-    </message>
-    <message>
         <source>Session</source>
         <translation>Session</translation>
     </message>
     <message>
         <source>Learn</source>
         <translation>Apprendre</translation>
-    </message>
-    <message>
-        <source>Apply / Export</source>
-        <translation>Appliquer / Exporter</translation>
     </message>
     <message>
         <source>Section</source>
@@ -1529,6 +1517,54 @@ Open this same file as an editable mapping too (By Channel / By Deck / By Contro
         <translation>{count} nouvelle(s) ligne(s) de déclencheur ajoutée(s) au profil (doublons ignorés).
 
 Ouvrir aussi ce fichier comme mapping modifiable (Par canal / Par platine / Par contrôleur) ?</translation>
+    </message>
+    <message>
+        <source>From a known controller…</source>
+        <translation>Depuis un contrôleur connu…</translation>
+    </message>
+    <message>
+        <source>From a mapping…</source>
+        <translation>Depuis un mapping…</translation>
+    </message>
+    <message>
+        <source>Add a photo…</source>
+        <translation>Ajouter une photo…</translation>
+    </message>
+    <message>
+        <source>Check</source>
+        <translation>Vérifier</translation>
+    </message>
+    <message>
+        <source>Install</source>
+        <translation>Installer</translation>
+    </message>
+    <message>
+        <source>Your controller profile</source>
+        <translation>Votre profil de contrôleur</translation>
+    </message>
+    <message>
+        <source>Three steps: learn the controller&apos;s buttons (press them, or read them from a mapping), name each row in the table below, then install the profile. Your Serato mapping isn&apos;t touched (to edit it: File → Open).</source>
+        <translation>Trois étapes : apprenez les boutons du contrôleur (en appuyant dessus, ou depuis un mapping), nommez chaque ligne du tableau ci-dessous, puis installez le profil. Votre mapping Serato n&apos;est pas modifié (pour le modifier : Fichier → Ouvrir).</translation>
+    </message>
+    <message>
+        <source>By pressing its buttons</source>
+        <translation>En appuyant sur ses boutons</translation>
+    </message>
+    <message>
+        <source>Listens to every input, then press each button once.</source>
+        <translation>Écoute toutes les entrées : appuyez ensuite une fois sur chaque bouton.</translation>
+    </message>
+    <message>
+        <source>1 · Learn</source>
+        <translation>1 · Apprendre</translation>
+    </message>
+    <message>
+        <source>2 · Name the rows</source>
+        <translation>2 · Nommer les lignes</translation>
+    </message>
+    <message>
+        <source>3 · Use it</source>
+        <translation>3 · L&apos;utiliser</translation>
     </message>
     <message>
         <source>MIDI mappings (*.xml *.tsi *.csv);;Serato XML (*.xml);;Mixxx (*.midi.xml);;Traktor TSI (*.tsi);;rekordbox CSV (*.csv)</source>
@@ -3550,10 +3586,6 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
         <translation>Ouvrir Musique</translation>
     </message>
     <message>
-        <source>{count} registered controller(s)</source>
-        <translation>{count} contrôleur(s) enregistré(s)</translation>
-    </message>
-    <message>
         <source>(no registered controllers)</source>
         <translation>(aucun contrôleur enregistré)</translation>
     </message>
@@ -3578,12 +3610,16 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
         <translation>{tracks} morceau(x) · {playlists} playlist(s)</translation>
     </message>
     <message>
-        <source>Visualize, edit, and validate your {software} MIDI mappings. Start here, then use the shortcuts below to drill down into the detailed views.</source>
-        <translation>Visualisez, modifiez et validez vos mappings MIDI {software}. Commencez ici, puis utilisez les raccourcis ci-dessous pour ouvrir les vues détaillées.</translation>
+        <source>{count} controller model(s) supported</source>
+        <translation>{count} modèle(s) de contrôleur pris en charge</translation>
     </message>
     <message>
-        <source>Visualize, edit, and validate your Serato DJ or Traktor MIDI mappings. Start here, then use the shortcuts below to drill down into the detailed views.</source>
-        <translation>Visualisez, modifiez et validez vos mappings MIDI Serato DJ ou Traktor. Commencez ici, puis utilisez les raccourcis ci-dessous pour ouvrir les vues détaillées.</translation>
+        <source>Your DJ setup in one place: controllers, your {software} mapping, and your music. Start with the card below: it says what&apos;s ready and what&apos;s next.</source>
+        <translation>Toute votre installation DJ au même endroit : contrôleurs, votre mapping {software} et votre musique. Commencez par la carte ci-dessous : elle dit ce qui est prêt et la suite.</translation>
+    </message>
+    <message>
+        <source>Your DJ setup in one place: controllers, Serato or Traktor mappings, and your music. Start with the card below: it says what&apos;s ready and what&apos;s next.</source>
+        <translation>Toute votre installation DJ au même endroit : contrôleurs, mappings Serato ou Traktor et votre musique. Commencez par la carte ci-dessous : elle dit ce qui est prêt et la suite.</translation>
     </message>
     <message>
         <source>Your files</source>

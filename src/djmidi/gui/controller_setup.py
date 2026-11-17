@@ -281,7 +281,7 @@ class ControllerSetupView(QWidget):
         save_button = QPushButton(self._get_icon("save"), "")
         save_button.setToolTip(self.tr("Save session…"))
         save_button.clicked.connect(self._on_save_session_clicked)
-        start_from_button = QPushButton(self._get_icon("template"), "")
+        start_from_button = QPushButton(self._get_icon("template"), self.tr("From a known controller…"))
         start_from_button.setToolTip(self.tr("Start from controller…"))
         start_from_button.clicked.connect(self._on_start_from_controller_clicked)
         clear_button = QPushButton(self._get_icon("clear"), "")
@@ -311,10 +311,10 @@ class ControllerSetupView(QWidget):
         capture_layout.addSpacing(6)
         capture_layout.addWidget(self._learn_status)
 
-        import_button = QPushButton(self._get_icon("import"), "")
+        import_button = QPushButton(self._get_icon("import"), self.tr("From a mapping…"))
         import_button.setToolTip(self.tr("Learn triggers from a mapping (Serato XML or Traktor TSI)…"))
         import_button.clicked.connect(self._on_import_xml_clicked)
-        self._attach_image_button = QPushButton(self._get_icon("image"), "")
+        self._attach_image_button = QPushButton(self._get_icon("image"), self.tr("Add a photo…"))
         self._attach_image_button.setToolTip(self.tr("Attach reference image…"))
         self._attach_image_button.clicked.connect(self._on_attach_image_clicked)
         import_help_button = help_button(self, *help_texts.CONTROLLER_SETUP_IMPORT)
@@ -453,10 +453,10 @@ class ControllerSetupView(QWidget):
         output_controls.addWidget(self._send_status)
         output_layout.addLayout(output_controls, 2)
 
-        check_button = QPushButton(self._get_icon("refresh"), "")
+        check_button = QPushButton(self._get_icon("refresh"), self.tr("Check"))
         check_button.setToolTip(self.tr("Check for conflicts"))
         check_button.clicked.connect(self._on_check_conflicts_clicked)
-        self._apply_button = QPushButton(self._get_icon("apply"), "")
+        self._apply_button = QPushButton(self._get_icon("apply"), self.tr("Install"))
         self._apply_button.setToolTip(
             self.tr("Install this profile: saved in your Controllers folder and loaded at every launch")
         )
@@ -472,26 +472,36 @@ class ControllerSetupView(QWidget):
         # Session, Import and Apply/Export are merged into one "Draft" panel: a
         # single horizontal toolbar of icon actions with a caption per group.
         tab_help_button = help_button(self, *help_texts.CONTROLLER_SETUP_TAB)
-        draft_box, draft_layout = self._titled_panel(self.tr("Draft"), [tab_help_button])
+        draft_box, draft_layout = self._titled_panel(self.tr("Your controller profile"), [tab_help_button])
         draft_hint = QLabel(
             self.tr(
-                "Build a controller profile — import or learn its MIDI triggers, name each "
-                "row, then Apply / Export. This does not open a Serato mapping for editing "
-                "(that is File → Open)."
+                "Three steps: learn the controller's buttons (press them, or read them from a mapping), "
+                "name each row in the table below, then install the profile. Your Serato mapping isn't "
+                "touched (to edit it: File → Open)."
             )
         )
         draft_hint.setWordWrap(True)
         self._hint_labels.append(draft_hint)
         draft_layout.addWidget(draft_hint)
-        draft_layout.addLayout(
-            self._toolbar_row(
+        # Golden rule: the work reads as numbered steps with worded buttons;
+        # the session file actions stay compact icons at the end.
+        learn_by_pressing = QPushButton(self._get_icon("start"), self.tr("By pressing its buttons"))
+        learn_by_pressing.setToolTip(self.tr("Listens to every input, then press each button once."))
+        learn_by_pressing.clicked.connect(self.start_learning_from_hint)
+        self._apply_button.setDefault(True)
+        draft_layout.addWidget(
+            self._steps_row(
                 [
-                    (self.tr("Session"), [new_button, start_from_button, load_button, save_button, clear_button]),
-                    (self.tr("Learn"), [import_button, self._attach_image_button, import_help_button]),
                     (
-                        self.tr("Apply / Export"),
-                        [check_button, self._apply_button, export_button, submit_button, apply_help_button],
+                        self.tr("1 · Learn"),
+                        [learn_by_pressing, import_button, start_from_button, import_help_button],
                     ),
+                    (self.tr("2 · Name the rows"), [self._attach_image_button]),
+                    (
+                        self.tr("3 · Use it"),
+                        [self._apply_button, check_button, export_button, submit_button, apply_help_button],
+                    ),
+                    (self.tr("Session"), [new_button, load_button, save_button, clear_button]),
                 ]
             )
         )
@@ -684,7 +694,10 @@ class ControllerSetupView(QWidget):
         header.addWidget(title_label)
         header.addStretch(1)
         for button in header_buttons:
-            button.setFixedSize(28, 28)
+            if button.text():  # a worded button (Learn) keeps its width
+                button.setFixedHeight(28)
+            else:
+                button.setFixedSize(28, 28)
             header.addWidget(button)
         outer.addLayout(header)
 
@@ -721,6 +734,27 @@ class ControllerSetupView(QWidget):
             for button in buttons:
                 button.setFixedSize(28, 28)
                 row.addWidget(button)
+        return row
+
+    def _steps_row(self, groups: list[tuple[str, list[QPushButton]]]) -> QWidget:
+        """The profile's steps, each a caption and its buttons, wrapping as
+        whole groups when the window is narrow. Worded buttons keep their
+        width; icon-only ones stay 28x28."""
+        row = QWidget()
+        flow = FlowLayout(row, spacing=14)
+        for caption, buttons in groups:
+            group = QWidget()
+            line = QHBoxLayout(group)
+            line.setContentsMargins(0, 0, 0, 0)
+            line.setSpacing(6)
+            label = self._column_label(caption)
+            label.setObjectName("setupStep")
+            line.addWidget(label)
+            for button in buttons:
+                if not button.text():
+                    button.setFixedSize(28, 28)
+                line.addWidget(button)
+            flow.addWidget(group)
         return row
 
     def _column_label(self, text: str) -> QLabel:

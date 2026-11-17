@@ -930,6 +930,12 @@ def test_edit_column_hidden_on_non_tree_tabs():
         for key in ("intro", "setup", "images"):
             window.left_tabs.setCurrentIndex(window._tab_indexes[key])
             assert not window._right_splitter.isVisibleTo(window), key
+        for key in ("channel", "deck", "controller"):  # no mapping yet: the hint gets the room
+            window.left_tabs.setCurrentIndex(window._tab_indexes[key])
+            assert not window._right_splitter.isVisibleTo(window), key
+        from djmidi.parser import parse_file
+
+        window.config = parse_file(str(FIXTURE))
         for key in ("channel", "deck", "controller"):
             window.left_tabs.setCurrentIndex(window._tab_indexes[key])
             assert window._right_splitter.isVisibleTo(window), key
@@ -1455,7 +1461,7 @@ def test_draft_panel_never_shrinks_below_its_minimum_size_in_main_window():
     draft_frame = next(
         frame
         for frame in setup_view._panel_frames
-        if any(lbl.text() == "Draft" for lbl in frame.findChildren(QLabel))
+        if any(lbl.text() == "Your controller profile" for lbl in frame.findChildren(QLabel))
     )
     assert draft_frame.height() >= draft_frame.minimumSizeHint().height()
     window.close()
