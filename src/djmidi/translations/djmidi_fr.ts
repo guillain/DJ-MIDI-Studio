@@ -3281,6 +3281,10 @@ Il reste une étape manuelle : ajoutez &apos;{slug}&apos; au bloc d&apos;imports
         <translation>Journalise chaque événement MIDI des entrées cochées, avec la commande physique et la fonction que lui donne le mapping chargé, et fait réagir au vrai matériel chaque disposition, la surcouche d&apos;Images contrôleur et les émulateurs.&lt;br&gt;&lt;br&gt;Il démarre tout seul au chargement d&apos;un mapping (⚙ Préférences). Pour choisir les ports vous-même : &lt;b&gt;Actualiser les ports&lt;/b&gt;, cochez les entrées, &lt;b&gt;Démarrer la surveillance&lt;/b&gt;.&lt;br&gt;&lt;br&gt;Pour voir les messages de LED que Serato renvoie, cochez &lt;b&gt;Créer une destination virtuelle&lt;/b&gt; et ajoutez &lt;i&gt;DJMidiStudio Monitor&lt;/i&gt; comme sortie MIDI supplémentaire dans Serato.&lt;br&gt;&lt;br&gt;Un appui qui déclenche au moins deux fonctions différentes sur la même platine est affiché en ambre comme &lt;b&gt;CONFLIT&lt;/b&gt; et compté ; les déclencheurs identiques que Serato répète ne sont pas des conflits.&lt;br&gt;&lt;br&gt;Pendant que &lt;b&gt;● Enr&lt;/b&gt; enregistre, Démarrer/Arrêter et les entrées sont verrouillés jusqu&apos;à &lt;b&gt;■ Arrêt&lt;/b&gt;.</translation>
     </message>
     <message>
+        <source>Measures the line between two DJs before you mix together from two places. Both of you open this window: one ticks &lt;b&gt;I host&lt;/b&gt; and gives one of &lt;b&gt;Your addresses&lt;/b&gt; (the ZeroTier one when you use ZeroTier), the other ticks &lt;b&gt;I join&lt;/b&gt; and types it. Then &lt;b&gt;Start the test&lt;/b&gt; on both sides.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Network&lt;/b&gt;: round trip and lost packets. Green under 150 ms and 1 %.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Stability&lt;/b&gt;: jitter, how much the round trip moves. Green under 20 ms: this is what matters most, a steady delay can be hidden, a moving one can&apos;t.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Tempo and phase&lt;/b&gt;: with Link on in both DJ programs, whether both sides share one tempo and one beat. Two tempos means Link doesn&apos;t reach across.&lt;/li&gt;&lt;/ul&gt;Once connected, with Link on both sides, one DJ leads: &lt;b&gt;Keep our tempos together&lt;/b&gt; makes the other side&apos;s Link copy the leader&apos;s tempo and beat, and Serato or Traktor follow it like any Link app. &lt;b&gt;Take the lead&lt;/b&gt; hands the tempo over, as in a back-to-back; both windows count the bars to the next phrase.&lt;br&gt;&lt;br&gt;&lt;b&gt;Hear each other on the grid&lt;/b&gt;: pick where your sound comes from (your master: a sound-card input or a virtual device) and where theirs plays, then &lt;b&gt;Start the sound&lt;/b&gt;. Their sound plays one bar after its beat, so it lands on your grid; &lt;b&gt;Fine-tune&lt;/b&gt; moves it a few ms if your sound cards add delay. &lt;b&gt;Program mix to&lt;/b&gt; sends both DJs through the crossfader to an output of your choice, for a recorder or a stream.&lt;br&gt;&lt;br&gt;&lt;b&gt;Save the report&lt;/b&gt; (in your Logs folder) and send it to the other DJ. Nothing is sent to anyone else; only this window&apos;s own small packets travel.</source>
+        <translation>Mesure la ligne entre deux DJ avant de mixer ensemble depuis deux endroits. Vous ouvrez tous les deux cette fenêtre : l&apos;un coche &lt;b&gt;J&apos;héberge&lt;/b&gt; et donne une de &lt;b&gt;Vos adresses&lt;/b&gt; (celle de ZeroTier si vous utilisez ZeroTier), l&apos;autre coche &lt;b&gt;Je rejoins&lt;/b&gt; et la saisit. Puis &lt;b&gt;Lancer le test&lt;/b&gt; des deux côtés.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Réseau&lt;/b&gt; : aller-retour et paquets perdus. Vert sous 150 ms et 1 %.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Stabilité&lt;/b&gt; : la gigue, de combien l&apos;aller-retour varie. Vert sous 20 ms : c&apos;est le plus important, un retard stable se cache, un retard qui bouge non.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Tempo et phase&lt;/b&gt; : avec Link activé dans les deux logiciels DJ, si les deux côtés partagent un même tempo et un même temps. Deux tempos : Link ne passe pas d&apos;un côté à l&apos;autre.&lt;/li&gt;&lt;/ul&gt;Une fois connectés, avec Link des deux côtés, un DJ mène : &lt;b&gt;Garder nos tempos ensemble&lt;/b&gt; fait copier au Link de l&apos;autre côté le tempo et le temps du meneur, et Serato ou Traktor le suivent comme n&apos;importe quelle appli Link. &lt;b&gt;Je prends la main&lt;/b&gt; passe le tempo à l&apos;autre, comme en B2B ; les deux fenêtres comptent les mesures jusqu&apos;à la prochaine phrase.&lt;br&gt;&lt;br&gt;&lt;b&gt;S&apos;entendre sur la grille&lt;/b&gt; : choisissez d&apos;où vient votre son (votre master : une entrée de carte son ou un périphérique virtuel) et où joue le sien, puis &lt;b&gt;Lancer le son&lt;/b&gt;. Son son joue une mesure après son temps, il tombe donc sur votre grille ; &lt;b&gt;Réglage fin&lt;/b&gt; le décale de quelques ms si vos cartes son ajoutent du retard. &lt;b&gt;Mix diffusé vers&lt;/b&gt; envoie les deux DJ, à travers le crossfader, vers la sortie de votre choix, pour un enregistreur ou un stream.&lt;br&gt;&lt;br&gt;&lt;b&gt;Enregistrer le rapport&lt;/b&gt; (dans votre dossier Logs) et envoyez-le à l&apos;autre DJ. Rien n&apos;est envoyé à personne d&apos;autre ; seuls les petits paquets de cette fenêtre circulent.</translation>
+    </message>
+    <message>
         <source>Startup check</source>
         <translation>Bilan de démarrage</translation>
     </message>
@@ -3339,10 +3343,6 @@ Il reste une étape manuelle : ajoutez &apos;{slug}&apos; au bloc d&apos;imports
     <message>
         <source>Mix Together</source>
         <translation>Mixer ensemble</translation>
-    </message>
-    <message>
-        <source>Measures the line between two DJs before you mix together from two places. Both of you open this window: one ticks &lt;b&gt;I host&lt;/b&gt; and gives one of &lt;b&gt;Your addresses&lt;/b&gt; (the ZeroTier one when you use ZeroTier), the other ticks &lt;b&gt;I join&lt;/b&gt; and types it. Then &lt;b&gt;Start the test&lt;/b&gt; on both sides.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Network&lt;/b&gt;: round trip and lost packets. Green under 150 ms and 1 %.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Stability&lt;/b&gt;: jitter, how much the round trip moves. Green under 20 ms: this is what matters most, a steady delay can be hidden, a moving one can&apos;t.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Tempo and phase&lt;/b&gt;: with Link on in both DJ programs, whether both sides share one tempo and one beat. Two tempos means Link doesn&apos;t reach across.&lt;/li&gt;&lt;/ul&gt;Once connected, with Link on both sides, one DJ leads: &lt;b&gt;Keep our tempos together&lt;/b&gt; makes the other side&apos;s Link copy the leader&apos;s tempo and beat, and Serato or Traktor follow it like any Link app. &lt;b&gt;Take the lead&lt;/b&gt; hands the tempo over, as in a back-to-back; both windows count the bars to the next phrase.&lt;br&gt;&lt;br&gt;&lt;b&gt;Save the report&lt;/b&gt; (in your Logs folder) and send it to the other DJ. Nothing is sent to anyone else; only this window&apos;s own small packets travel.</source>
-        <translation>Mesure la ligne entre deux DJ avant de mixer ensemble depuis deux endroits. Vous ouvrez tous les deux cette fenêtre : l&apos;un coche &lt;b&gt;J&apos;héberge&lt;/b&gt; et donne une de &lt;b&gt;Vos adresses&lt;/b&gt; (celle de ZeroTier si vous utilisez ZeroTier), l&apos;autre coche &lt;b&gt;Je rejoins&lt;/b&gt; et la saisit. Puis &lt;b&gt;Lancer le test&lt;/b&gt; des deux côtés.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Réseau&lt;/b&gt; : aller-retour et paquets perdus. Vert sous 150 ms et 1 %.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Stabilité&lt;/b&gt; : la gigue, de combien l&apos;aller-retour varie. Vert sous 20 ms : c&apos;est le plus important, un retard stable se cache, un retard qui bouge non.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Tempo et phase&lt;/b&gt; : avec Link activé dans les deux logiciels DJ, si les deux côtés partagent un même tempo et un même temps. Deux tempos : Link ne passe pas d&apos;un côté à l&apos;autre.&lt;/li&gt;&lt;/ul&gt;Une fois connectés, avec Link des deux côtés, un DJ mène : &lt;b&gt;Garder nos tempos ensemble&lt;/b&gt; fait copier au Link de l&apos;autre côté le tempo et le temps du meneur, et Serato ou Traktor le suivent comme n&apos;importe quelle appli Link. &lt;b&gt;Je prends la main&lt;/b&gt; passe le tempo à l&apos;autre, comme en B2B ; les deux fenêtres comptent les mesures jusqu&apos;à la prochaine phrase.&lt;br&gt;&lt;br&gt;&lt;b&gt;Enregistrer le rapport&lt;/b&gt; (dans votre dossier Logs) et envoyez-le à l&apos;autre DJ. Rien n&apos;est envoyé à personne d&apos;autre ; seuls les petits paquets de cette fenêtre circulent.</translation>
     </message>
     <message>
         <source>Plays the rows captured in &lt;b&gt;Controller → Setup&lt;/b&gt; to an output port: the selected rows or all of them once, or on a loop at the chosen frequency and value. Handy to blink LEDs, test a mapping, or keep a device awake.</source>
@@ -9630,6 +9630,117 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>Relink checked…</source>
         <translation>Relocaliser les cochés…</translation>
+    </message>
+</context>
+<context>
+    <name>RemoteAudioPanel</name>
+    <message>
+        <source>Hear each other on the grid</source>
+        <translation>S&apos;entendre sur la grille</translation>
+    </message>
+    <message>
+        <source>The other DJ&apos;s sound plays one bar after its beat, so it lands on your grid. Your own sound stays in your room as usual.</source>
+        <translation>Le son de l&apos;autre DJ joue une mesure après son temps : il tombe sur votre grille. Votre propre son reste dans votre pièce, comme d&apos;habitude.</translation>
+    </message>
+    <message>
+        <source>Nowhere</source>
+        <translation>Nulle part</translation>
+    </message>
+    <message>
+        <source>Don&apos;t send my sound</source>
+        <translation>Ne pas envoyer mon son</translation>
+    </message>
+    <message>
+        <source>Full, 48 kHz (about 1.5 Mb/s)</source>
+        <translation>Complète, 48 kHz (environ 1,5 Mb/s)</translation>
+    </message>
+    <message>
+        <source>Light, 24 kHz (about 0.8 Mb/s)</source>
+        <translation>Légère, 24 kHz (environ 0,8 Mb/s)</translation>
+    </message>
+    <message>
+        <source> ms</source>
+        <translation> ms</translation>
+    </message>
+    <message>
+        <source>Move their sound earlier (−) or later (+) if it still sounds off the beat: sound cards add their own delay</source>
+        <translation>Avancer (−) ou retarder (+) son son s&apos;il sonne encore à côté du temps : les cartes son ajoutent leur propre retard</translation>
+    </message>
+    <message>
+        <source>Send my sound from:</source>
+        <translation>Envoyer mon son depuis :</translation>
+    </message>
+    <message>
+        <source>Play their sound on:</source>
+        <translation>Jouer son son sur :</translation>
+    </message>
+    <message>
+        <source>Program mix to:</source>
+        <translation>Mix diffusé vers :</translation>
+    </message>
+    <message>
+        <source>Quality:</source>
+        <translation>Qualité :</translation>
+    </message>
+    <message>
+        <source>Fine-tune:</source>
+        <translation>Réglage fin :</translation>
+    </message>
+    <message>
+        <source>Start the sound</source>
+        <translation>Lancer le son</translation>
+    </message>
+    <message>
+        <source>Sound off.</source>
+        <translation>Son coupé.</translation>
+    </message>
+    <message>
+        <source>Program mix: you on the left, the other DJ on the right</source>
+        <translation>Mix diffusé : vous à gauche, l&apos;autre DJ à droite</translation>
+    </message>
+    <message>
+        <source>Me</source>
+        <translation>Moi</translation>
+    </message>
+    <message>
+        <source>Them</source>
+        <translation>L&apos;autre</translation>
+    </message>
+    <message>
+        <source>Crossfader</source>
+        <translation>Crossfader</translation>
+    </message>
+    <message>
+        <source>Volume</source>
+        <translation>Volume</translation>
+    </message>
+    <message>
+        <source>Connect first, with Link on in both DJ programs.</source>
+        <translation>Connectez-vous d&apos;abord, avec Link activé dans les deux logiciels DJ.</translation>
+    </message>
+    <message>
+        <source>Could not open the sound port: {error}</source>
+        <translation>Impossible d&apos;ouvrir le port du son : {error}</translation>
+    </message>
+    <message>
+        <source>Sound device problem: {error}</source>
+        <translation>Problème de périphérique audio : {error}</translation>
+    </message>
+    <message>
+        <source>Stop the sound</source>
+        <translation>Arrêter le son</translation>
+    </message>
+    <message>
+        <source>Network error: {error}</source>
+        <translation>Erreur réseau : {error}</translation>
+    </message>
+    <message>
+        <source>Sound on. Nothing from the other DJ yet.</source>
+        <translation>Son lancé. Rien de l&apos;autre DJ pour l&apos;instant.</translation>
+    </message>
+    <message>
+        <source>Their sound lands one bar late, on your grid. Gaps: {gaps:.1f} %</source>
+        <translation>Son son arrive une mesure plus tard, sur votre grille. Trous : {gaps:.1f} %</translation>
     </message>
 </context>
 <context>

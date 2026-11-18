@@ -480,6 +480,11 @@ REMOTE_MIX: HelpEntry = (
         "the other side's Link copy the leader's tempo and beat, and Serato or Traktor follow it like "
         "any Link app. <b>Take the lead</b> hands the tempo over, as in a back-to-back; both windows count "
         "the bars to the next phrase.<br><br>"
+        "<b>Hear each other on the grid</b>: pick where your sound comes from (your master: a sound-card "
+        "input or a virtual device) and where theirs plays, then <b>Start the sound</b>. Their sound plays "
+        "one bar after its beat, so it lands on your grid; <b>Fine-tune</b> moves it a few ms if your sound "
+        "cards add delay. <b>Program mix to</b> sends both DJs through the crossfader to an output of your "
+        "choice, for a recorder or a stream.<br><br>"
         "<b>Save the report</b> (in your Logs folder) and send it to the other DJ. Nothing is sent to "
         "anyone else; only this window's own small packets travel.",
     ),

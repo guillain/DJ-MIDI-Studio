@@ -29,6 +29,7 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QPushButton,
     QRadioButton,
+    QScrollArea,
     QSpinBox,
     QVBoxLayout,
     QWidget,
@@ -37,9 +38,10 @@ from PySide6.QtWidgets import (
 from djmidi import user_paths
 from djmidi.gui import help_texts, theme
 from djmidi.gui.help_button import help_button
+from djmidi.gui.remote_mix_audio import AudioBackend, RemoteAudioPanel
 from djmidi.gui.translation import translator
 from djmidi.gui.window_size import fit_to_screen, keep_wrapped_text_visible
-from djmidi.remote_mix import bridge, probe
+from djmidi.remote_mix import audio, bridge, probe
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -86,6 +88,8 @@ class RemoteMixDialog(QDialog):
         addresses: Callable[[], list[str]] = local_addresses,
         report_dir: Callable[[], Path] = lambda: user_paths.subfolder(user_paths.LOGS),
         now: Callable[[], datetime] = datetime.now,
+        audio_backend: AudioBackend | None = None,
+        audio_link_factory: Callable[..., audio.AudioLink] = audio.AudioLink,
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle(self.tr("Mix Together"))
@@ -178,7 +182,9 @@ class RemoteMixDialog(QDialog):
             self.lights[key] = (dot, detail)
         grid.setColumnStretch(2, 1)
 
-        layout = QVBoxLayout(self)
+        body = QWidget()
+        body.setObjectName("remoteBody")
+        layout = QVBoxLayout(body)
         layout.addLayout(header)
         layout.addWidget(intro)
         layout.addLayout(role_row)
@@ -188,7 +194,20 @@ class RemoteMixDialog(QDialog):
         layout.addWidget(self.status_label)
         layout.addWidget(lights)
         layout.addWidget(self._build_together())
+        self.sound_panel = RemoteAudioPanel(
+            self._audio_context, self, backend=audio_backend, link_factory=audio_link_factory
+        )
+        self.sound_panel.hide()
+        layout.addWidget(self.sound_panel)
         layout.addStretch(1)
+        # The sound panel makes the window tall: everything scrolls on a small screen.
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setWidget(body)
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        outer.addWidget(scroll)
 
         self._timer = QTimer(self)
         self._timer.setInterval(250)
@@ -227,6 +246,12 @@ class RemoteMixDialog(QDialog):
         frame.hide()
         return frame
 
+    def _audio_context(self):
+        session = self.session
+        if session is None or session.peer is None or self._link is None:
+            return None
+        return session.peer[0], self.port_spin.value() + audio.AUDIO_PORT_OFFSET, self._link
+
     def take_lead(self) -> None:
         if self.session is not None:
             self.session.take_lead()
@@ -240,9 +265,11 @@ class RemoteMixDialog(QDialog):
     def _show_together(self, session: probe.ProbeSession, stats: probe.ProbeStats | None) -> None:
         connected = stats is not None and self._link is not None
         self.together_frame.setVisible(connected)
+        self.sound_panel.setVisible(connected or self.sound_panel.running)
         if not connected:
             return
         peer = session.peer[0] if session.peer else "?"
+        self.sound_panel.set_peer_name(peer)
         if session.leading:
             text = self.tr("You lead the tempo: {host} follows.").format(host=peer)
         elif not self.follow_checkbox.isChecked():
@@ -324,6 +351,8 @@ class RemoteMixDialog(QDialog):
             self._last_stats = self.session.stats()
             self._last_peer = self.session.peer
             self._last_role = "host" if self.host_radio.isChecked() else "join"
+        self.sound_panel.stop()
+        self.sound_panel.hide()
         self.session = None
         self._close_link()
         self.together_frame.hide()
@@ -426,6 +455,10 @@ class RemoteMixDialog(QDialog):
                                      border-radius: 10px; }}
             QFrame#remoteTogether QLabel {{ background: transparent; border: none; color: {c["text"]}; }}
             QLabel#remotePhrase {{ font-size: 18px; font-weight: 600; }}
+            QFrame#remoteSound {{ background: {c["panel_bg"]}; border: 1px solid {c["panel_border"]};
+                                  border-radius: 10px; }}
+            QFrame#remoteSound QLabel {{ background: transparent; border: none; color: {c["text"]}; }}
+            QLabel#remoteSoundTitle {{ font-weight: 600; font-size: 14px; }}
             """
         )
 

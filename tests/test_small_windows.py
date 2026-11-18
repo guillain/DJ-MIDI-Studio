@@ -172,7 +172,16 @@ def _remote_mix():
 
     from djmidi.gui.remote_mix_dialog import RemoteMixDialog
 
-    return RemoteMixDialog(addresses=lambda: ["192.168.1.20", "10.147.17.5"], report_dir=lambda: Path("."))
+    class Backend:
+        def inputs(self):
+            return ["Built-in Microphone"]
+
+        def outputs(self):
+            return ["MacBook Pro Speakers", "BlackHole 2ch"]
+
+    return RemoteMixDialog(
+        addresses=lambda: ["192.168.1.20", "10.147.17.5"], report_dir=lambda: Path("."), audio_backend=Backend()
+    )
 
 
 def _stats():
