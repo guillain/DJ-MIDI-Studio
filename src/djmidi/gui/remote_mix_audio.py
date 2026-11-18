@@ -12,7 +12,8 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable
-from typing import Protocol
+from pathlib import Path
+from typing import TYPE_CHECKING, Protocol
 
 import numpy as np
 from PySide6.QtCore import Qt, QTimer
@@ -31,8 +32,12 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from djmidi.remote_mix import audio
+from djmidi import user_paths
+from djmidi.remote_mix import audio, controls
 from djmidi.remote_mix.probe import LinkSnapshot, local_beat_at
+
+if TYPE_CHECKING:
+    from djmidi.midi_io import MidiEvent
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -172,9 +177,15 @@ class RemoteAudioPanel(QFrame):
         *,
         backend: AudioBackend | None = None,
         link_factory: LinkFactory = audio.AudioLink,
+        ensure_listening: Callable[[], bool] | None = None,
+        controls_path: Path | None = None,
     ) -> None:
         super().__init__(parent)
         self.setObjectName("remoteSound")
+        self._ensure_listening = ensure_listening
+        self._controls_path = controls_path or user_paths.workspace_dir() / controls.FILE_NAME
+        self.controls = controls.MixerControls.load(self._controls_path)
+        self.learning: str | None = None
         self._context = context
         self._backend = backend if backend is not None else QtAudioBackend()
         self._link_factory = link_factory
@@ -251,6 +262,28 @@ class RemoteAudioPanel(QFrame):
         mixer.addWidget(QLabel(self.tr("Crossfader")), 2, 0)
         mixer.addWidget(self.crossfader, 2, 1, 1, 2)
         mixer.setColumnStretch(1, 1)
+        self._sliders = {controls.ME: self.me_volume, controls.THEM: self.them_volume, controls.CROSSFADER: self.crossfader}
+        self.learn_buttons: dict[str, QPushButton] = {}
+        self.forget_buttons: dict[str, QPushButton] = {}
+        for row, target in enumerate(controls.TARGETS):
+            learn = QPushButton()
+            learn.setObjectName("chip")
+            learn.clicked.connect(lambda _checked=False, t=target: self.toggle_learn(t))
+            forget = QPushButton("✕")
+            forget.setObjectName("chip")
+            forget.setToolTip(self.tr("Forget this controller assignment"))
+            forget.setAccessibleName(self.tr("Forget this controller assignment"))
+            forget.setMaximumWidth(40)
+            forget.clicked.connect(lambda _checked=False, t=target: self.forget(t))
+            mixer.addWidget(learn, row, 3)
+            mixer.addWidget(forget, row, 4)
+            self.learn_buttons[target] = learn
+            self.forget_buttons[target] = forget
+        self.controls_hint = QLabel(
+            self.tr("Learn: move a fader or knob on your controller and it drives this mixer control.")
+        )
+        self.controls_hint.setWordWrap(True)
+        self._show_controls()
 
         buttons = QHBoxLayout()
         buttons.addWidget(self.start_button)
@@ -262,6 +295,7 @@ class RemoteAudioPanel(QFrame):
         layout.addLayout(buttons)
         layout.addWidget(self.status_label)
         layout.addLayout(mixer)
+        layout.addWidget(self.controls_hint)
 
         self._timer = QTimer(self)
         self._timer.setInterval(5)
@@ -293,6 +327,69 @@ class RemoteAudioPanel(QFrame):
         meter.setFixedWidth(80)
         meter.setFixedHeight(10)
         return meter
+
+    def _show_controls(self) -> None:
+        for target in controls.TARGETS:
+            trigger = self.controls.bindings.get(target)
+            button = self.learn_buttons[target]
+            if self.learning == target:
+                button.setText(self.tr("Move it now…"))
+                button.setToolTip(self.tr("Move a fader or knob on your controller, or click again to cancel"))
+            elif trigger is None:
+                button.setText(self.tr("Learn"))
+                button.setToolTip(self.tr("Drive this mixer control from a fader or knob of your controller"))
+            else:
+                button.setText(trigger.label())
+                button.setToolTip(self.tr("Driven by your controller. Click to learn another control"))
+            self.forget_buttons[target].setEnabled(trigger is not None)
+
+    def toggle_learn(self, target: str) -> None:
+        if self.learning == target:
+            self.learning = None
+        else:
+            self.learning = target
+            if self._ensure_listening is not None and not self._ensure_listening():
+                self.learning = None
+                self.controls_hint.setText(
+                    self.tr("No controller is plugged in: plug one in, then press Learn again.")
+                )
+        self._show_controls()
+
+    def forget(self, target: str) -> None:
+        self.controls.forget(target)
+        self._save_controls()
+        self._show_controls()
+
+    def _save_controls(self) -> None:
+        try:
+            self.controls.save(self._controls_path)
+        except OSError as exc:
+            _LOGGER.warning("Mix Together controls not saved: %s", exc)
+
+    def listen_to_controller(self) -> None:
+        """Make sure assigned controls reach the mixer (the Live Monitor listens)."""
+        if self.controls.bindings and self._ensure_listening is not None:
+            self._ensure_listening()
+
+    def feed_midi_event(self, event: MidiEvent) -> bool:
+        """A live MIDI event: learn it, or move the mixer. True when it was used."""
+        if self.learning is not None:
+            trigger = controls.trigger_from_event(event)
+            if trigger is None:
+                return False
+            target, self.learning = self.learning, None
+            self.controls.bind(target, trigger)
+            self._save_controls()
+            self.controls_hint.setText(
+                self.tr("{control} now drives this mixer control.").format(control=trigger.label())
+            )
+            self._show_controls()
+        moves = self.controls.moves(event)
+        for target, value in moves:
+            slider = self._sliders[target]
+            top = 100 if target != controls.CROSSFADER else slider.maximum()
+            slider.setValue(round(value * top))
+        return bool(moves)
 
     @property
     def running(self) -> bool:
@@ -346,6 +443,7 @@ class RemoteAudioPanel(QFrame):
         self._timer.start()
         self._status_timer.start()
         self._show_status()
+        self.listen_to_controller()
         return True
 
     def stop(self) -> None:

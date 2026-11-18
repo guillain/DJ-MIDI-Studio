@@ -90,6 +90,8 @@ class RemoteMixDialog(QDialog):
         now: Callable[[], datetime] = datetime.now,
         audio_backend: AudioBackend | None = None,
         audio_link_factory: Callable[..., audio.AudioLink] = audio.AudioLink,
+        ensure_listening: Callable[[], bool] | None = None,
+        controls_path: Path | None = None,
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle(self.tr("Mix Together"))
@@ -195,7 +197,12 @@ class RemoteMixDialog(QDialog):
         layout.addWidget(lights)
         layout.addWidget(self._build_together())
         self.sound_panel = RemoteAudioPanel(
-            self._audio_context, self, backend=audio_backend, link_factory=audio_link_factory
+            self._audio_context,
+            self,
+            backend=audio_backend,
+            link_factory=audio_link_factory,
+            ensure_listening=ensure_listening,
+            controls_path=controls_path,
         )
         self.sound_panel.hide()
         layout.addWidget(self.sound_panel)
@@ -245,6 +252,10 @@ class RemoteMixDialog(QDialog):
         box.addWidget(self.phrase_label)
         frame.hide()
         return frame
+
+    def feed_midi_event(self, event) -> bool:
+        """A live MIDI event for the mixer (Learn, or a fader that drives it)."""
+        return self.sound_panel.feed_midi_event(event)
 
     def _audio_context(self):
         session = self.session

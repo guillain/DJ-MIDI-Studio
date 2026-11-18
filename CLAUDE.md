@@ -332,7 +332,10 @@ surgical and logged. Qt-free modules; the tab is a thin view over `library/works
   port + 1) stamped with the sender's Link beat; `BarAlignedPlayer.read(n, beat)` plays them at beat + one bar
   (cursor resyncs only beyond 8 ms); `program_mix` (constant-power crossfader) → `gui/remote_mix_audio.py`
   `RemoteAudioPanel` (injectable `AudioBackend`, real one QtMultimedia; a 5 ms timer pumps, never an audio callback).
-  Plan and checklist: `docs/enduser/features/remote-mix.md`. Next: controllers on the mixer, Opus, EQ/filter.
+  Phase 3 = Qt-free `remote_mix/controls.py` (`MixerControls`: Learn binds a CC or pitch bend to me / them /
+  crossfader, kept in the workspace's `mix-together-controls.json`); `MainWindow._on_live_midi_event` feeds
+  `RemoteMixDialog.feed_midi_event` (consumes only bound or learned events).
+  Plan and checklist: `docs/enduser/features/remote-mix.md`. Next: Opus, EQ/filter.
 - `user_paths.py`: the workspace (`~/Documents/DJ MIDI Studio`, `DJMIDI_WORKSPACE`) with `Controllers`, `Sync`,
   `Macros`, `Drafts`, `Logs`, `Exports`, `Snapshots`. `backup.py`: workspace backup/restore (validated, atomic).
 - `file_locations.py`, `snapshots.py`, `mapping_diff.py` (semantic diff counting copies), `deck_copy.py`,

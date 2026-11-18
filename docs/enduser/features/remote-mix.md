@@ -28,7 +28,7 @@ internet always arrives late (30 to 120 ms between two cities). The plan:
    bridge in **Mix Together**, works without one carrying Link);
 2. delay the other DJ's sound by exactly one bar minus the line's latency,
    so it lands on your grid (phase 2), with a shared mixer driven from your
-   controllers;
+   controllers (phase 3);
 3. later: back-to-back signals, a shared tracklist, more than two DJs.
 
 ## Phase 0 checklist
@@ -163,8 +163,15 @@ is you and them through the crossfader. **Gaps** in the status line count
 the sound that didn't arrive in time (played as silence): above a few %,
 try **Light** or a cable instead of Wi-Fi.
 
-Not there yet: sound compression (Opus), an EQ and filter per DJ, and
-driving the mixer from your controllers.
+**Your controller on the mixer.** Press **Learn** next to **Me**, **Them**
+or **Crossfader**, then move a fader or knob on your controller: it drives
+that mixer control from then on (the button shows it, for example
+`ch7 CC 31`). Faders and knobs only (Control Change or pitch bend), never a
+pad. **✕** forgets it. The assignments are kept in your workspace, and the
+mixer only listens: your DJ software still gets every move. Pick a control
+your DJ software doesn't use, or one you're happy to move in both places.
+
+Not there yet: sound compression (Opus) and an EQ and filter per DJ.
 
 ## What travels
 

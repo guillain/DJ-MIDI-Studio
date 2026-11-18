@@ -484,7 +484,8 @@ REMOTE_MIX: HelpEntry = (
         "input or a virtual device) and where theirs plays, then <b>Start the sound</b>. Their sound plays "
         "one bar after its beat, so it lands on your grid; <b>Fine-tune</b> moves it a few ms if your sound "
         "cards add delay. <b>Program mix to</b> sends both DJs through the crossfader to an output of your "
-        "choice, for a recorder or a stream.<br><br>"
+        "choice, for a recorder or a stream. <b>Learn</b> next to a volume or the crossfader, then move a "
+        "fader or knob on your controller: it drives that mixer control from then on.<br><br>"
         "<b>Save the report</b> (in your Logs folder) and send it to the other DJ. Nothing is sent to "
         "anyone else; only this window's own small packets travel.",
     ),
