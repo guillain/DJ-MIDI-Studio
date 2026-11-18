@@ -328,8 +328,11 @@ surgical and logged. Qt-free modules; the tab is a thin view over `library/works
   `gui/remote_mix_dialog.py` (Tools → Mix Together…). Link via `link_reader_from(AalinkStateProvider)`.
   Phase 1 = `remote_mix/bridge.py`: `LinkFollower` (offset from the fastest recent round trip, tempo copy, beat
   jump ≥ 3 ms at most every 2 s, `AalinkStateProvider.set_tempo`/`force_beat`), one leader (host first, `take`
-  message hands over), `phrase_position`. Plan and checklist: `docs/enduser/features/remote-mix.md`. Next: phase 2
-  audio (one-bar delay) + shared mixer.
+  message hands over), `phrase_position`. Phase 2 = Qt-free `remote_mix/audio.py`: 5 ms PCM16 packets (48 or 24 kHz,
+  port + 1) stamped with the sender's Link beat; `BarAlignedPlayer.read(n, beat)` plays them at beat + one bar
+  (cursor resyncs only beyond 8 ms); `program_mix` (constant-power crossfader) → `gui/remote_mix_audio.py`
+  `RemoteAudioPanel` (injectable `AudioBackend`, real one QtMultimedia; a 5 ms timer pumps, never an audio callback).
+  Plan and checklist: `docs/enduser/features/remote-mix.md`. Next: controllers on the mixer, Opus, EQ/filter.
 - `user_paths.py`: the workspace (`~/Documents/DJ MIDI Studio`, `DJMIDI_WORKSPACE`) with `Controllers`, `Sync`,
   `Macros`, `Drafts`, `Logs`, `Exports`, `Snapshots`. `backup.py`: workspace backup/restore (validated, atomic).
 - `file_locations.py`, `snapshots.py`, `mapping_diff.py` (semantic diff counting copies), `deck_copy.py`,
