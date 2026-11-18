@@ -361,12 +361,13 @@ wheels = [
 
 [[package]]
 name = "djmidi"
-version = "0.48.250"
+version = "0.48.251"
 source = { editable = "." }
 dependencies = [
     { name = "aalink" },
     { name = "mido" },
     { name = "mutagen" },
+    { name = "numpy" },
     { name = "pyside6" },
     { name = "python-rtmidi" },
     { name = "rapidfuzz" },
@@ -395,6 +396,7 @@ requires-dist = [
     { name = "librosa", marker = "extra == 'analysis'", specifier = ">=0.10" },
     { name = "mido", specifier = ">=1.3" },
     { name = "mutagen", specifier = ">=1.48.1" },
+    { name = "numpy", specifier = ">=2.0" },
     { name = "pyside6", specifier = ">=6.7" },
     { name = "python-rtmidi", specifier = ">=1.5" },
     { name = "rapidfuzz", specifier = ">=3.14.6" },

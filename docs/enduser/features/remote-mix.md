@@ -14,6 +14,7 @@
 - [The connection test](#the-connection-test)
 - [Reading the lights](#reading-the-lights)
 - [One tempo for two homes](#one-tempo-for-two-homes)
+- [Hear each other on the grid](#hear-each-other-on-the-grid)
 - [What travels](#what-travels)
 - [Related](#related)
 
@@ -132,16 +133,45 @@ every two seconds, using the steadiest round trips of the last few seconds,
 so a jittery line doesn't make the beat wobble. The **Tempo and phase**
 light shows what's left of the gap.
 
-This bridge carries tempo and beat only. Each of you still hears only your
-own sound: the other DJ's sound through SonoBus (checklist step 4) arrives
-late by the line's latency. Phase 2 will delay it by exactly one bar so it
-lands on your grid, with a shared mixer.
+This bridge carries tempo and beat only; the sound comes next.
+
+## Hear each other on the grid
+
+Under the tempo panel, **Hear each other on the grid** sends your master to
+the other DJ and plays theirs:
+
+| Setting | What to pick |
+|---|---|
+| **Send my sound from** | The input that hears your master: a sound-card input fed by your mixer's record or booth output, or a virtual device your DJ software plays into |
+| **Play their sound on** | Your speakers or headphones |
+| **Program mix to** | Optional: an output for a recorder or a stream (a virtual device such as BlackHole or VB-Cable, read by OBS) |
+| **Quality** | **Full, 48 kHz** (about 1.5 Mb/s each way) or **Light, 24 kHz** (about 0.8 Mb/s) for a slow upload |
+| **Fine-tune** | Moves their sound a few ms earlier (−) or later (+) if it still sounds off the beat |
+
+Then **Start the sound**, on both sides.
+
+**How it lands on your grid.** Every 5 ms packet carries the sender's Link
+beat. The receiver plays it when its own Link beat is one bar further on.
+With the two Link sessions on one beat (above), the other DJ is heard exactly
+one bar late, whatever the latency of the line, as long as it stays under a
+bar (about 1.9 s at 124 BPM). You hear their mix one bar after they play it,
+on your grid; they hear yours the same way.
+
+**The mixer.** Volume for you and for them, a level meter each, and a
+crossfader. The volume of **Them** sets what you hear; the **Program mix**
+is you and them through the crossfader. **Gaps** in the status line count
+the sound that didn't arrive in time (played as silence): above a few %,
+try **Light** or a cable instead of Wi-Fi.
+
+Not there yet: sound compression (Opus), an EQ and filter per DJ, and
+driving the mixer from your controllers.
 
 ## What travels
 
-Only this window's own small packets, between your two computers, on the
-port you chose: clock readings and, with Link, tempo, beat, the number of
-Link apps and who leads. No audio, no tracks, no files. Nothing is sent to anyone else.
+Only this window's own packets, between your two computers: on the port you
+chose, clock readings and, with Link, tempo, beat, the number of Link apps
+and who leads; once you start the sound, on the next port (47801 by
+default), your master as you chose it. Nothing goes anywhere else. No audio, no tracks, no files. Nothing is sent to anyone else.
 
 ## Related
 

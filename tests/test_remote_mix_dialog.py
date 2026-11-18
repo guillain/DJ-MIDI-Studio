@@ -136,3 +136,144 @@ def test_tools_menu_opens_the_connection_test(monkeypatch):
         dialog.close()
     finally:
         window.close()
+
+
+class FakeInput:
+    def __init__(self):
+        self.blocks = []
+        self.closed = False
+
+    def read(self):
+        import numpy as np
+
+        return self.blocks.pop(0) if self.blocks else np.zeros((0, 2), dtype=np.float32)
+
+    def close(self):
+        self.closed = True
+
+
+class FakeOutput:
+    def __init__(self):
+        self.written = []
+        self.closed = False
+
+    def free_frames(self):
+        return 960
+
+    def queued_frames(self):
+        return 0
+
+    def write(self, samples):
+        self.written.append(samples)
+
+    def close(self):
+        self.closed = True
+
+
+class FakeBackend:
+    def __init__(self):
+        self.devices = {}
+
+    def inputs(self):
+        return ["Master In"]
+
+    def outputs(self):
+        return ["Speakers", "Virtual Out"]
+
+    def open_input(self, name):
+        self.devices[name] = FakeInput()
+        return self.devices[name]
+
+    def open_output(self, name):
+        self.devices[name] = FakeOutput()
+        return self.devices[name]
+
+
+class FakeAudioLink:
+    def __init__(self, *, port, peer, player):
+        self.port, self.peer, self.player = port, peer, player
+        self.packets, self.error, self.closed = [], None, False
+
+    def send(self, packets):
+        self.packets += packets
+
+    def close(self):
+        self.closed = True
+
+
+def test_the_sound_panel_sends_my_master_and_plays_theirs_one_bar_late(tmp_path):
+    import numpy as np
+
+    from djmidi.remote_mix import audio
+
+    def link():
+        reader = lambda: probe.LinkSnapshot(tempo=120.0, beat=8.0, at=0.0)
+        reader.control = None
+        return reader
+
+    sessions, links = [], []
+    backend = FakeBackend()
+
+    def audio_link(**kwargs):
+        links.append(FakeAudioLink(**kwargs))
+        return links[-1]
+
+    def factory(**kwargs):
+        sessions.append(FakeSession(**kwargs))
+        return sessions[-1]
+
+    dialog = RemoteMixDialog(
+        session_factory=factory, link_factory=link, addresses=list, report_dir=lambda: tmp_path,
+        audio_backend=backend, audio_link_factory=audio_link,
+    )
+    try:
+        panel = dialog.sound_panel
+        assert not panel.start()  # not connected yet
+        dialog.join_radio.setChecked(True)
+        dialog.address_edit.setText("10.147.17.5")
+        dialog.start_button.click()
+        sessions[0].samples = [probe.Sample(t=0.0, rtt_ms=40.0, offset_ms=0.0)]
+        dialog.refresh()
+        assert not panel.isHidden()
+        panel.input_combo.setCurrentIndex(1)
+        panel.program_combo.setCurrentIndex(2)
+        assert panel.start()
+        assert links[0].peer == ("10.147.17.5", probe.DEFAULT_PORT + 1)
+
+        tone = np.full((480, 2), 0.25, dtype=np.float32)
+        backend.devices["Master In"].blocks.append(tone)
+        # The other DJ's sound stamped one bar before our beat 8.0 arrives.
+        panel.player.push(audio.AudioPacket(position=0, beat=4.0, tempo=120.0, samples=np.full((960, 2), 0.5, np.float32)))
+        panel.pump()
+        sent = links[0].packets
+        assert len(sent) == 2 and sent[0].beat == 8.0 - 480 / audio.RATE * 2
+        heard = backend.devices["Speakers"].written[0]
+        assert heard.shape == (960, 2) and np.allclose(heard, 0.5)
+        program = backend.devices["Virtual Out"].written[0]
+        assert program.shape == (960, 2) and program[0, 0] > 0.25  # both DJs in the program mix
+        assert panel.them_meter.value() == 50
+
+        dialog.start_button.click()  # stopping the test stops the sound
+        assert not panel.running and links[0].closed and backend.devices["Speakers"].closed
+    finally:
+        dialog.close()
+
+
+def test_without_system_audio_the_panel_says_so(tmp_path):
+    from djmidi.gui.remote_mix_audio import RemoteAudioPanel
+
+    class Missing:
+        unavailable = "libpulse.so.0: cannot open shared object file"
+
+        def inputs(self):
+            return []
+
+        def outputs(self):
+            return []
+
+    panel = RemoteAudioPanel(lambda: None, backend=Missing())
+    try:
+        assert not panel.start_button.isEnabled()
+        assert "No sound on this computer" in panel.status_label.text()
+    finally:
+        panel.close()
