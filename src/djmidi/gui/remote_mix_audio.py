@@ -19,6 +19,7 @@ import numpy as np
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import (
     QComboBox,
+    QDial,
     QFormLayout,
     QFrame,
     QGridLayout,
@@ -33,7 +34,7 @@ from PySide6.QtWidgets import (
 )
 
 from djmidi import user_paths
-from djmidi.remote_mix import audio, controls, opus
+from djmidi.remote_mix import audio, controls, eq, opus
 from djmidi.remote_mix.probe import LinkSnapshot, local_beat_at
 
 if TYPE_CHECKING:
@@ -268,20 +269,55 @@ class RemoteAudioPanel(QFrame):
         self._sliders = {controls.ME: self.me_volume, controls.THEM: self.them_volume, controls.CROSSFADER: self.crossfader}
         self.learn_buttons: dict[str, QPushButton] = {}
         self.forget_buttons: dict[str, QPushButton] = {}
-        for row, target in enumerate(controls.TARGETS):
-            learn = QPushButton()
-            learn.setObjectName("chip")
-            learn.clicked.connect(lambda _checked=False, t=target: self.toggle_learn(t))
-            forget = QPushButton("✕")
-            forget.setObjectName("chip")
-            forget.setToolTip(self.tr("Forget this controller assignment"))
-            forget.setAccessibleName(self.tr("Forget this controller assignment"))
-            forget.setMaximumWidth(40)
-            forget.clicked.connect(lambda _checked=False, t=target: self.forget(t))
+        for row, target in enumerate((controls.ME, controls.THEM, controls.CROSSFADER)):
+            learn, forget = self._learn_pair(target)
             mixer.addWidget(learn, row, 3)
             mixer.addWidget(forget, row, 4)
-            self.learn_buttons[target] = learn
-            self.forget_buttons[target] = forget
+
+        # Each DJ's channel: Low / Mid / High / Filter, flat (or off) at noon.
+        self.me_strip = eq.ChannelStrip()
+        self.them_strip = eq.ChannelStrip()
+        self.dials: dict[str, QDial] = {}
+        eq_grid = QGridLayout()
+        captions = (self.tr("Low"), self.tr("Mid"), self.tr("High"), self.tr("Filter"))
+        for column, caption in enumerate(captions, start=1):
+            eq_grid.addWidget(QLabel(caption), 0, column, Qt.AlignmentFlag.AlignHCenter)
+        self.them_eq_name = QLabel(self.tr("Them"))
+        self.flat_buttons: dict[str, QPushButton] = {}
+        for row, (side, name, strip) in enumerate(
+            ((controls.ME, QLabel(self.tr("Me")), self.me_strip), (controls.THEM, self.them_eq_name, self.them_strip)),
+            start=1,
+        ):
+            eq_grid.addWidget(name, row, 0)
+            for column, knob in enumerate(controls.KNOBS, start=1):
+                target = f"{side}_{knob}"
+                dial = QDial()
+                dial.setRange(0, 100)
+                dial.setValue(eq.CENTRE)
+                dial.setNotchesVisible(True)
+                dial.setFixedSize(44, 44)
+                dial.setToolTip(
+                    self.tr("Filter: low-pass to the left, high-pass to the right, off at noon")
+                    if knob == "filter"
+                    else self.tr("Full cut to the left, +6 dB to the right, flat at noon")
+                )
+                dial.valueChanged.connect(lambda value, s=strip, k=knob: setattr(s, k, float(value)))
+                self.dials[target] = dial
+                learn, forget = self._learn_pair(target)
+                pair = QHBoxLayout()
+                pair.setSpacing(2)
+                pair.addWidget(learn)
+                pair.addWidget(forget)
+                cell = QVBoxLayout()
+                cell.addWidget(dial, 0, Qt.AlignmentFlag.AlignHCenter)
+                cell.addLayout(pair)
+                eq_grid.addLayout(cell, row, column)
+            flat = QPushButton(self.tr("Flat"))
+            flat.setToolTip(self.tr("Back to noon: EQ flat, filter off"))
+            flat.clicked.connect(lambda _checked=False, s=side: self.flatten(s))
+            eq_grid.addWidget(flat, row, len(controls.KNOBS) + 1)
+            self.flat_buttons[side] = flat
+        self._sliders.update(self.dials)
         self.controls_hint = QLabel(
             self.tr("Learn: move a fader or knob on your controller and it drives this mixer control.")
         )
@@ -298,6 +334,7 @@ class RemoteAudioPanel(QFrame):
         layout.addLayout(buttons)
         layout.addWidget(self.status_label)
         layout.addLayout(mixer)
+        layout.addLayout(eq_grid)
         layout.addWidget(self.controls_hint)
 
         self._timer = QTimer(self)
@@ -330,6 +367,24 @@ class RemoteAudioPanel(QFrame):
         meter.setFixedWidth(80)
         meter.setFixedHeight(10)
         return meter
+
+    def _learn_pair(self, target: str) -> tuple[QPushButton, QPushButton]:
+        learn = QPushButton()
+        learn.setObjectName("chip")
+        learn.clicked.connect(lambda _checked=False, t=target: self.toggle_learn(t))
+        forget = QPushButton("✕")
+        forget.setObjectName("chip")
+        forget.setToolTip(self.tr("Forget this controller assignment"))
+        forget.setAccessibleName(self.tr("Forget this controller assignment"))
+        forget.setMaximumWidth(40)
+        forget.clicked.connect(lambda _checked=False, t=target: self.forget(t))
+        self.learn_buttons[target] = learn
+        self.forget_buttons[target] = forget
+        return learn, forget
+
+    def flatten(self, side: str) -> None:
+        for knob in controls.KNOBS:
+            self.dials[f"{side}_{knob}"].setValue(eq.CENTRE)
 
     def _show_controls(self) -> None:
         for target in controls.TARGETS:
@@ -400,6 +455,7 @@ class RemoteAudioPanel(QFrame):
 
     def set_peer_name(self, name: str) -> None:
         self.them_name.setText(name)
+        self.them_eq_name.setText(name)
 
     def toggle(self) -> None:
         if self.running:
@@ -495,7 +551,7 @@ class RemoteAudioPanel(QFrame):
         if n < audio.PACKET_FRAMES:
             return
         delay_frames = driver.queued_frames() + self.nudge_spin.value() * audio.RATE // 1000
-        them = self.player.read(n, now_beat + delay_frames * beats_per_frame)
+        them = self.them_strip.process(self.player.read(n, now_beat + delay_frames * beats_per_frame))
         self.them_meter.setValue(int(self.player.last_peak * 100))
         if self._monitor is not None:
             self._monitor.write(them * (self.them_volume.value() / 100.0))
@@ -504,6 +560,7 @@ class RemoteAudioPanel(QFrame):
             self._me_fifo = self._me_fifo[n:]
             if len(me) < n:
                 me = np.concatenate([me, np.zeros((n - len(me), audio.CHANNELS), dtype=np.float32)])
+            me = self.me_strip.process(me)
             mix = audio.program_mix(
                 me,
                 them,

@@ -9715,6 +9715,38 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <translation>Crossfader</translation>
     </message>
     <message>
+        <source>Low</source>
+        <translation>Graves</translation>
+    </message>
+    <message>
+        <source>Mid</source>
+        <translation>Médiums</translation>
+    </message>
+    <message>
+        <source>High</source>
+        <translation>Aigus</translation>
+    </message>
+    <message>
+        <source>Filter</source>
+        <translation>Filtre</translation>
+    </message>
+    <message>
+        <source>Filter: low-pass to the left, high-pass to the right, off at noon</source>
+        <translation>Filtre : passe-bas à gauche, passe-haut à droite, coupé à midi</translation>
+    </message>
+    <message>
+        <source>Full cut to the left, +6 dB to the right, flat at noon</source>
+        <translation>Coupure totale à gauche, +6 dB à droite, neutre à midi</translation>
+    </message>
+    <message>
+        <source>Flat</source>
+        <translation>À plat</translation>
+    </message>
+    <message>
+        <source>Back to noon: EQ flat, filter off</source>
+        <translation>Retour à midi : EQ à plat, filtre coupé</translation>
+    </message>
+    <message>
         <source>Forget this controller assignment</source>
         <translation>Oublier cette assignation du contrôleur</translation>
     </message>

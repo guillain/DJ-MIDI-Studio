@@ -46,7 +46,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--self-check-opus",
         action="store_true",
-        help=argparse.SUPPRESS,  # CI: exit 0 when Mix Together's Opus compression works in this build, else 3
+        help=argparse.SUPPRESS,  # CI: exit 0 when Mix Together's Opus and EQ work in this build, else 3
     )
     parser.add_argument(
         "--startup-screenshot-delay-ms",
@@ -105,9 +105,10 @@ def run(argv: list[str] | None = None) -> int:
     logger = logging.getLogger("djmidi.gui.app")
     logger.info("Starting DJ MIDI Studio")
     if arguments.self_check_opus:
+        from djmidi.remote_mix.eq import self_check as eq_self_check
         from djmidi.remote_mix.opus import self_check as opus_self_check
 
-        problem = opus_self_check()
+        problem = opus_self_check() or eq_self_check()
         if problem is None:
             logger.info("Opus self-check passed")
             return 0

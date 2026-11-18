@@ -9715,6 +9715,38 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
         <translation>Crossfader</translation>
     </message>
     <message>
+        <source>Low</source>
+        <translation>Bässe</translation>
+    </message>
+    <message>
+        <source>Mid</source>
+        <translation>Mitten</translation>
+    </message>
+    <message>
+        <source>High</source>
+        <translation>Höhen</translation>
+    </message>
+    <message>
+        <source>Filter</source>
+        <translation>Filter</translation>
+    </message>
+    <message>
+        <source>Filter: low-pass to the left, high-pass to the right, off at noon</source>
+        <translation>Filter: links Tiefpass, rechts Hochpass, in der Mitte aus</translation>
+    </message>
+    <message>
+        <source>Full cut to the left, +6 dB to the right, flat at noon</source>
+        <translation>Links ganz weg, rechts +6 dB, in der Mitte neutral</translation>
+    </message>
+    <message>
+        <source>Flat</source>
+        <translation>Neutral</translation>
+    </message>
+    <message>
+        <source>Back to noon: EQ flat, filter off</source>
+        <translation>Zurück zur Mitte: EQ neutral, Filter aus</translation>
+    </message>
+    <message>
         <source>Forget this controller assignment</source>
         <translation>Diese Controller-Zuweisung vergessen</translation>
     </message>
