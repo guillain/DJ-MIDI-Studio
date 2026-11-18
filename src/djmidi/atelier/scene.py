@@ -48,11 +48,15 @@ class Scene:
     @classmethod
     def from_messages(cls, controller: str, messages: Iterable[SyncMessage]) -> Scene:
         scene = cls(controller)
-        for item in decompile(controller, list(messages), TO_CONTROLLER):
+        messages = list(messages)
+        # Towards the controller, decompile reads one item per message. Only LED
+        # actions become scene lights; anything else (a Control Change that
+        # matches one of the controller's knobs, say) stays the raw message.
+        for item, message in zip(decompile(controller, messages, TO_CONTROLLER), messages, strict=True):
             if isinstance(item, FeatureAction) and item.verb in _LED_VERBS:
                 scene.set_led(item.feature_id, _value(controller, item))
             else:
-                scene.items.append(item)
+                scene.items.append(message)
         return scene
 
     @classmethod

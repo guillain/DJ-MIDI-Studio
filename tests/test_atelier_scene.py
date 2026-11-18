@@ -63,3 +63,13 @@ def test_writing_back_keeps_the_existing_set_port_and_scene():
 
 def test_no_sync_set_is_an_empty_scene():
     assert Scene.from_sync_set(None, "DDJ-XP2").messages() == ()
+
+
+def test_a_control_change_matching_a_knob_stays_a_raw_message():
+    """A sync set sending the CC of one of the controller's own controls (XDJ-XZ
+    BEAT ◀ is CC 76 on channel 5) used to come back as a knob action and crash
+    the Atelier at startup."""
+    knob = SyncMessage("Control Change", 5, 76, 64)
+    scene = Scene.from_messages("XDJ-XZ", [knob])
+    assert scene.raw_messages == [knob]
+    assert scene.messages() == (knob,)
