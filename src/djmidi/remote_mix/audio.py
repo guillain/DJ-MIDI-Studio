@@ -125,6 +125,9 @@ def decode_packet(data: bytes, decoder: opus.OpusDecoder | None = None) -> Audio
     return AudioPacket(position=position, beat=beat, tempo=tempo, samples=samples, codec=codec, source=source)
 
 
+TALK_FLAG = 0x80  # in the source byte: a DJ's voice (talkback), not their music
+
+
 def packet_source(data: bytes) -> int | None:
     return data[_SOURCE_BYTE] if len(data) > _SOURCE_BYTE else None
 
@@ -335,6 +338,8 @@ class AudioLink:
         self.relayed = 0
         self.error: str | None = None
         self._encoder: opus.OpusEncoder | None = None
+        self._talk_encoder: opus.OpusEncoder | None = None
+        self.talk_sink: Callable[[int, AudioPacket], None] | None = None  # who talks, their voice packet
         self._decoders: dict[int, opus.OpusDecoder] = {}
         self._thread = threading.Thread(target=self._run, name="djmidi-remote-audio", daemon=True)
         self._thread.start()
@@ -349,15 +354,30 @@ class AudioLink:
         return [self._peer]
 
     def send(self, packets: list[AudioPacket]) -> None:
+        self._send(packets, talk=False)
+
+    def send_talk(self, packets: list[AudioPacket]) -> None:
+        """This DJ's voice (talkback): played at once by the others, never in the mix."""
+        self._send(packets, talk=True)
+
+    def _send(self, packets: list[AudioPacket], *, talk: bool) -> None:
         source = (self._me() if self._me is not None else 0) or 0
+        if talk:
+            source |= TALK_FLAG
         targets = self._targets()
         for packet in packets:
             packet = AudioPacket(packet.position, packet.beat, packet.tempo, packet.samples, packet.codec, source)
             try:
                 if packet.codec == CODEC_OPUS:
-                    if self._encoder is None:
-                        self._encoder = opus.OpusEncoder()
-                    datagrams = encode_opus(packet, self._encoder)
+                    if talk:
+                        if self._talk_encoder is None:
+                            self._talk_encoder = opus.OpusEncoder()
+                        encoder = self._talk_encoder
+                    else:
+                        if self._encoder is None:
+                            self._encoder = opus.OpusEncoder()
+                        encoder = self._encoder
+                    datagrams = encode_opus(packet, encoder)
                 else:
                     datagrams = [encode_packet(packet)]
                 for datagram in datagrams:
@@ -382,11 +402,13 @@ class AudioLink:
 
     def _source_of(self, data: bytes, ip: str) -> int | None:
         """Which DJ a datagram is from, or None when it isn't from someone we mix with."""
+        talk = (packet_source(data) or 0) & TALK_FLAG
         if self._hub and self._peer_ids is not None:
-            return self._peer_ids().get(ip)
+            dj = self._peer_ids().get(ip)
+            return None if dj is None else dj | talk
         if ip != self._peer[0]:
             return None
-        return packet_source(data) if self._players is not None else 0
+        return packet_source(data) if self._players is not None else talk
 
     def _run(self) -> None:
         while not self._stop.is_set():
@@ -414,6 +436,11 @@ class AudioLink:
             packet = decode_packet(data, self._decoder(source))
             if packet is None:
                 self.rejected += 1
+                continue
+            if source & TALK_FLAG:
+                sink = self.talk_sink
+                if sink is not None:
+                    sink(source & ~TALK_FLAG, packet)
                 continue
             player = self._players.get(source) if self._players is not None else self._player
             if player is not None:

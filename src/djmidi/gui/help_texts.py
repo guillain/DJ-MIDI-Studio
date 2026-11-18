@@ -494,7 +494,7 @@ REMOTE_MIX: HelpEntry = (
         "and types the control room's address to hear the official mix and see the tracklist. Up to four DJs can join the host: "
         "one strip each, with its crossfader side (A, B or Thru). <b>Signals</b> show big on the other DJs' "
         "screens (the next track, a drop on the next phrase, your turn); <b>Learn a pad</b> to send one "
-        "from your controller. The <b>Tracklist</b> lists every DJ's tracks, read from their Serato or "
+        "from your controller. <b>Hold to talk</b> sends your microphone to the other DJs' headphones, never into the mix. The <b>Tracklist</b> lists every DJ's tracks, read from their Serato or "
         "Traktor history (never changed) or typed by hand: <b>Copy the tracklist</b> or <b>Save the tracklist</b> "
         "at the end. The banner at the top always shows the next step, with the button that does it.<br><br>"
         "<b>Save the report</b> (in your Logs folder) and send it to the other DJ. Nothing is sent to "
