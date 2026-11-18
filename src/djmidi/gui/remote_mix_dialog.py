@@ -41,13 +41,14 @@ from djmidi.gui import help_texts, theme
 from djmidi.gui.help_button import help_button
 from djmidi.gui.remote_mix_audio import AudioBackend, RemoteAudioPanel
 from djmidi.gui.remote_mix_listen import ListenerPanel
+from djmidi.gui.remote_mix_signals import SignalsPanel
 from djmidi.gui.translation import translator
 from djmidi.gui.window_size import (
     ResponsiveRow,
     fit_to_screen,
     keep_wrapped_text_visible,
 )
-from djmidi.remote_mix import audio, bridge, listen, probe
+from djmidi.remote_mix import audio, bridge, listen, probe, signals
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -225,6 +226,15 @@ class RemoteMixDialog(QDialog):
         self._lights_frame = lights
         left.addWidget(lights)
         left.addWidget(self._build_together())
+        # Signals between DJs (phase 10): shown with the tempo panel, once connected.
+        self.signals_panel = SignalsPanel(
+            self,
+            pads_path=None if controls_path is None else controls_path.parent / signals.FILE_NAME,
+            name_of=self.sound_panel._dj_name,
+            beats_to_phrase=self._beats_to_phrase,
+        )
+        self.signals_panel.hide()
+        left.addWidget(self.signals_panel)
         left.addStretch(1)
         sound_column = self._sound_column = QWidget()
         right = QVBoxLayout(sound_column)
@@ -295,7 +305,11 @@ class RemoteMixDialog(QDialog):
 
     def feed_midi_event(self, event) -> bool:
         """A live MIDI event for the mixer (Learn, or a fader that drives it)."""
-        return self.sound_panel.feed_midi_event(event)
+        return self.sound_panel.feed_midi_event(event) or self.signals_panel.feed_midi_event(event)
+
+    def _beats_to_phrase(self) -> int | None:
+        snapshot = self._link() if self._link is not None else None
+        return None if snapshot is None else bridge.phrase_position(snapshot.beat).beats_to_phrase
 
     def _audio_context(self):
         session = self.session
@@ -317,6 +331,7 @@ class RemoteMixDialog(QDialog):
     def _show_together(self, session: probe.ProbeSession, stats: probe.ProbeStats | None) -> None:
         connected = stats is not None and self._link is not None
         self.together_frame.setVisible(connected)
+        self.signals_panel.setVisible(connected)
         self.sound_panel.setVisible(connected or self.sound_panel.running)
         if not connected:
             return
@@ -427,6 +442,8 @@ class RemoteMixDialog(QDialog):
         self.session = None
         self._close_link()
         self.together_frame.hide()
+        self.signals_panel.detach()
+        self.signals_panel.hide()
         for widget in (self.host_radio, self.join_radio, self.address_edit, self.port_spin, self.link_checkbox, self.name_edit):
             widget.setEnabled(True)
         self.start_button.setText(self.tr("Start the test"))
@@ -443,6 +460,7 @@ class RemoteMixDialog(QDialog):
         if me is not None and callable(send):
             if self.sound_panel.table is None or self.sound_panel.table.me != me:
                 self.sound_panel.attach_table(me, send)
+            self.signals_panel.attach(me, send)
             self.sound_panel.set_roster(me, dict(getattr(self.session, "roster", {}) or {}))
         inbox = getattr(self.session, "inbox", None)
         while inbox is not None:
@@ -450,7 +468,10 @@ class RemoteMixDialog(QDialog):
                 message = inbox.get_nowait()
             except queue.Empty:
                 break
-            self.sound_panel.apply_remote(message)
+            if message.get("k") == signals.MESSAGE_KIND:
+                self.signals_panel.receive(message)
+            else:
+                self.sound_panel.apply_remote(message)
         self._mix_ticks = getattr(self, "_mix_ticks", 0) + 1
         if self._mix_ticks % 4 == 0:
             self.sound_panel.send_snapshot()
@@ -550,6 +571,11 @@ class RemoteMixDialog(QDialog):
                                      border-radius: 10px; }}
             QFrame#remoteTogether QLabel {{ background: transparent; border: none; color: {c["text"]}; }}
             QLabel#remotePhrase {{ font-size: 18px; font-weight: 600; }}
+            QFrame#remoteSignals {{ background: {c["panel_bg"]}; border: 1px solid {c["panel_border"]};
+                                    border-radius: 10px; }}
+            QFrame#remoteSignals QLabel {{ background: transparent; border: none; color: {c["text"]}; }}
+            QFrame#remoteSignals QLabel#remoteSignal {{ font-size: 22px; font-weight: 700; color: {c["title"]};
+                                    border: 2px solid {c["accent"]}; border-radius: 10px; padding: 10px; }}
             QFrame#remoteSound {{ background: {c["panel_bg"]}; border: 1px solid {c["panel_border"]};
                                   border-radius: 10px; }}
             QFrame#remoteSound QLabel {{ background: transparent; border: none; color: {c["text"]}; }}

@@ -357,6 +357,9 @@ surgical and logged. Qt-free modules; the tab is a thin view over `library/works
   audio header's source byte says which DJ (`AudioLink(hub=True)` stamps and relays, `PlayerBank` per DJ);
   `SharedTable(me)` names controls by DJ (`dj1_low`, `dj2_xf`, absolute crossfader, per-strip A/Thru/B assign);
   the panel maps slots me/them/x1/x2 onto DJ ids (`set_roster`, `_wire`/`_local`).
+  Phase 10 = signals between DJs: Qt-free `remote_mix/signals.py` (`SignalBoard`: `{"k": "sig"}` sent 3 times,
+  shown once per sender + serial; `SignalPads`: Note On pads, `mix-together-signals.json`; keys travel, never
+  text) → `gui/remote_mix_signals.SignalsPanel` (banner, phrase countdown for `drop`); the hub relays "sig" like "mix".
   Plan and checklist: `docs/enduser/features/remote-mix.md`.
 - `user_paths.py`: the workspace (`~/Documents/DJ MIDI Studio`, `DJMIDI_WORKSPACE`) with `Controllers`, `Sync`,
   `Macros`, `Drafts`, `Logs`, `Exports`, `Snapshots`. `backup.py`: workspace backup/restore (validated, atomic).

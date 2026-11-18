@@ -15,6 +15,7 @@
 - [Reading the lights](#reading-the-lights)
 - [One tempo for two homes](#one-tempo-for-two-homes)
 - [Hear each other on the grid](#hear-each-other-on-the-grid)
+- [Signals between DJs](#signals-between-djs)
 - [What travels](#what-travels)
 - [Related](#related)
 
@@ -235,11 +236,26 @@ mixer: **A** (left), **B** (right) or **Thru** (not crossfaded); the host
 starts on A, the first guest on B, the others on Thru. Each DJ needs their
 own address on the private network (ZeroTier gives one to each).
 
+## Signals between DJs
+
+In a club a B2B is a glance and a nod. From two places, once connected, the
+**Signals** box under the tempo panel sends one instead: **I'm starting the
+next track**, **Drop on the next phrase!**, **Your turn**, **Hold on, not
+yet**, **Love it!**. It shows big on every other DJ's screen for a few
+seconds, with the sender's name; a drop also counts the beats to the next
+phrase, on the phrase counter you both see.
+
+Next to each signal, **Learn a pad**, then press a pad of your controller:
+that pad sends the signal from now on (✕ forgets it). Only a pad press
+binds, so a fader moved by mistake can't. Your DJ software still gets the
+pad too: pick one it doesn't use. The pads are kept in your workspace
+(`mix-together-signals.json`).
+
 ## What travels
 
 Only this window's own packets, between your two computers: on the port you
 chose, clock readings and, with Link, tempo, beat, the number of Link apps
-and who leads; once you start the sound, on the next port (47801 by
+and who leads, the mixer's moves and the signals; once you start the sound, on the next port (47801 by
 default), your master as you chose it; and from the control room, on the
 port after (47802), the official mix to the listeners who asked for it. No
 tracks, no files. Nothing is sent to anyone else.
