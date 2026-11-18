@@ -36,7 +36,17 @@ from PySide6.QtWidgets import (
 )
 
 from djmidi import user_paths
-from djmidi.remote_mix import audio, controls, eq, listen, opus, recording, table
+from djmidi.gui.remote_mix_talk import TalkPanel
+from djmidi.remote_mix import (
+    audio,
+    controls,
+    eq,
+    listen,
+    opus,
+    recording,
+    table,
+    talkback,
+)
 from djmidi.remote_mix.probe import LinkSnapshot, local_beat_at
 
 if TYPE_CHECKING:
@@ -414,6 +424,13 @@ class RemoteAudioPanel(QFrame):
         layout.addLayout(form)
         layout.addLayout(buttons)
         layout.addWidget(self.status_label)
+        # Talkback (phase 14): voices in the headphones, never in the mix.
+        self.talk = TalkPanel(
+            self._backend, self,
+            pad_path=None if controls_path is None else controls_path.parent / talkback.FILE_NAME,
+            name_of=lambda dj: self._dj_name(dj),
+        )
+        layout.addWidget(self.talk)
         layout.addWidget(self.table_widget)  # the Mix Together tab moves it to its centre
 
         self._timer = QTimer(self)
@@ -512,6 +529,8 @@ class RemoteAudioPanel(QFrame):
 
     def feed_midi_event(self, event: MidiEvent) -> bool:
         """A live MIDI event: learn it, or move the mixer. True when it was used."""
+        if self.talk.feed_midi_event(event):
+            return True
         if self.learning is not None:
             trigger = controls.trigger_from_event(event)
             if trigger is None:
@@ -833,6 +852,9 @@ class RemoteAudioPanel(QFrame):
             self.status_label.setText(self.tr("Sound device problem: {error}").format(error=exc))
             return False
         self.link, self._reader = link, reader
+        mic_error = self.talk.open(link)
+        if mic_error:
+            _LOGGER.warning("Mix Together: no microphone for talkback: %s", mic_error)
         try:  # listeners hear the official mix on the test port + 2 (phase 8)
             self.listen_server = self._listen_server_factory(port=port - audio.AUDIO_PORT_OFFSET + listen.LISTEN_PORT_OFFSET)
         except OSError as exc:
@@ -863,6 +885,7 @@ class RemoteAudioPanel(QFrame):
             self.listen_server.close()
             self.listen_server = None
         self._input = self._monitor = self._program = None
+        self.talk.close_session()
         self.link = self._reader = None
         for widget in (self.input_combo, self.monitor_combo, self.program_combo, self.quality_combo):
             widget.setEnabled(True)
@@ -894,6 +917,7 @@ class RemoteAudioPanel(QFrame):
                     self.link.send(packets)
                 if self._mixing():
                     self._me_fifo = np.concatenate([self._me_fifo, block])[-audio.RATE :]
+        self.talk.send_mic()
         driver = self._monitor or self._program
         if driver is None:
             return
@@ -915,6 +939,7 @@ class RemoteAudioPanel(QFrame):
             monitor = np.zeros((n, audio.CHANNELS), dtype=np.float32)
             for side, samples in others:
                 monitor += samples * (self.faders[side].value() / 100.0)
+            monitor += self.talk.voices(n)  # the other DJs' voices: headphones only
             self._monitor.write(np.clip(monitor, -1.0, 1.0))
         if self._mixing() and self.makes_the_mix:
             me = self._me_fifo[:n]
