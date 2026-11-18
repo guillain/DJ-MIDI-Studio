@@ -364,6 +364,8 @@ surgical and logged. Qt-free modules; the tab is a thin view over `library/works
   Serato/Traktor history file when its mtime changes, plays since the session start, via `library.history`, read-only;
   `SharedTracklist` rows `{"k": "trk"}` resent every 5 s) → `gui/remote_mix_tracklist.TracklistPanel` (typed rows,
   copy, save to Exports). Tests pass `history_dirs` so the real `~/Music` is never read.
+  Next-step banner (golden rule): Qt-free `remote_mix/next_step.next_step(State)` → step key, number of 4, one action;
+  `RemoteMixDialog._show_next_step` / `_do_next_step`.
   Plan and checklist: `docs/enduser/features/remote-mix.md`.
 - `user_paths.py`: the workspace (`~/Documents/DJ MIDI Studio`, `DJMIDI_WORKSPACE`) with `Controllers`, `Sync`,
   `Macros`, `Drafts`, `Logs`, `Exports`, `Snapshots`. `backup.py`: workspace backup/restore (validated, atomic).
