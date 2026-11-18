@@ -346,6 +346,9 @@ surgical and logged. Qt-free modules; the tab is a thin view over `library/works
   moves without echo and a learned controller picks up softly (`PICKUP_STEPS`). Mix Together is a top-level tab
   after Music (`MainWindow._ensure_remote_mix`, built on first visit; Tools → Mix Together… opens it), laid out
   as a `ResponsiveRow`: connection | `RemoteAudioPanel.table_widget` (vertical strips, the mixer) | sound settings.
+  Phase 7 = the régie (control room): `SharedTable.claim_regie` / `regie_is_mine` (a stamped "regie" entry, host by
+  default); only the régie writes the program output and records it (`remote_mix/recording.ProgramRecorder`, WAV in
+  `Exports/`); `RemoteAudioPanel.makes_the_mix`.
   Plan and checklist: `docs/enduser/features/remote-mix.md`.
 - `user_paths.py`: the workspace (`~/Documents/DJ MIDI Studio`, `DJMIDI_WORKSPACE`) with `Controllers`, `Sync`,
   `Macros`, `Drafts`, `Logs`, `Exports`, `Snapshots`. `backup.py`: workspace backup/restore (validated, atomic).
