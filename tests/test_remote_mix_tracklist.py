@@ -94,3 +94,27 @@ def test_a_folder_without_history_is_refused(tmp_path):
         assert panel.watcher is None and "type your tracks" in panel.source_label.text()
     finally:
         panel.close()
+
+
+def test_the_dialog_sends_the_tracklist_to_listeners_from_the_control_room(tmp_path):
+    from djmidi.gui.remote_mix_dialog import RemoteMixDialog
+
+    sent = []
+
+    class Server:
+        def send_message(self, message):
+            sent.append(message)
+
+    dialog = RemoteMixDialog(link_factory=lambda: None, addresses=list, controls_path=tmp_path / "c.json",
+                             history_dirs=dict, exports_dir=tmp_path)
+    try:
+        dialog._tracklist_to_listeners()  # nobody listening, no list: nothing
+        dialog.tracklist_panel.attach(0, lambda message: None)
+        dialog.tracklist_panel.track_edit.setText("Track A")
+        dialog.tracklist_panel.add_typed()
+        dialog.sound_panel.listen_server = Server()
+        dialog._tracklist_to_listeners()
+        assert [(m["t"], m["who"]) for m in sent] == [("Track A", "DJ 1")]
+    finally:
+        dialog.sound_panel.listen_server = None
+        dialog.close()

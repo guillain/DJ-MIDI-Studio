@@ -4,7 +4,9 @@ official mix from the control room, on the speakers or headphones of your choice
 
 from __future__ import annotations
 
+import queue
 from collections.abc import Callable
+from datetime import datetime
 
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import (
@@ -14,6 +16,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QLineEdit,
+    QListWidget,
     QProgressBar,
     QPushButton,
     QSlider,
@@ -22,6 +25,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from djmidi.gui.empty_state import EmptyState
 from djmidi.gui.remote_mix_audio import (
     MAX_BLOCK,
     AudioBackend,
@@ -29,7 +33,7 @@ from djmidi.gui.remote_mix_audio import (
     AudioOutput,
     QtAudioBackend,
 )
-from djmidi.remote_mix import audio, listen, probe
+from djmidi.remote_mix import audio, listen, probe, tracklist
 
 ClientFactory = Callable[..., listen.ListenerClient]
 
@@ -94,7 +98,19 @@ class ListenerPanel(QFrame):
         layout.addLayout(form)
         layout.addLayout(buttons)
         layout.addWidget(self.status_label)
-        layout.addStretch(1)
+        # The tracklist the control room sends along (phase 12).
+        tracks_title = QLabel(self.tr("Tracklist"))
+        tracks_title.setObjectName("remoteSoundTitle")
+        self.tracks_view = QListWidget()
+        self.tracks_view.setMinimumHeight(120)
+        self.tracks_empty = EmptyState(
+            self.tracks_view, "♪", self.tr("No track yet"),
+            self.tr("The tracks the DJs play show here, sent by the control room."),
+        )
+        self.tracks = tracklist.SharedTracklist(-1)
+        self._who: dict[int, str] = {}
+        layout.addWidget(tracks_title)
+        layout.addWidget(self.tracks_view, 1)
 
         self._timer = QTimer(self)
         self._timer.setInterval(5)
@@ -144,6 +160,9 @@ class ListenerPanel(QFrame):
             self.status_label.setText(self.tr("Could not start: {error}").format(error=exc))
             return False
         self._output, self.player, self.client = output, player, client
+        self.tracks, self._who = tracklist.SharedTracklist(-1), {}
+        self.tracks_view.clear()
+        self.tracks_empty.refresh()
         for widget in (self.address_edit, self.port_spin, self.output_combo):
             widget.setEnabled(False)
         self.start_button.setText(self.tr("Stop listening"))
@@ -176,9 +195,37 @@ class ListenerPanel(QFrame):
         self.meter.setValue(int(self.player.last_peak * 100))
         self._output.write(block * (self.volume.value() / 100.0))
 
+    def _read_tracks(self) -> None:
+        inbox = getattr(self.client, "inbox", None)
+        changed = False
+        while inbox is not None:
+            try:
+                message = inbox.get_nowait()
+            except queue.Empty:
+                break
+            row = self.tracks.receive(message)
+            who = tracklist.listener_name(message)
+            if who and isinstance(message.get("from"), int):
+                changed |= self._who.get(message["from"]) != who
+                self._who[message["from"]] = who
+            changed |= row is not None
+        if changed:
+            self.tracks_view.clear()
+            for row in self.tracks.rows:
+                self.tracks_view.addItem(
+                    self.tr("{time}  {name} — {track}").format(
+                        time=f"{datetime.fromtimestamp(row.at):%H:%M}",  # noqa: DTZ006
+                        name=self._who.get(row.dj) or self.tr("DJ {number}").format(number=row.dj + 1),
+                        track=row.label(),
+                    )
+                )
+            self.tracks_view.scrollToBottom()
+            self.tracks_empty.refresh()
+
     def _show_status(self) -> None:
         if self.player is None or self.client is None:
             return
+        self._read_tracks()
         if self.client.error:
             self.status_label.setText(self.tr("Network error: {error}").format(error=self.client.error))
         elif self.player.received == 0:

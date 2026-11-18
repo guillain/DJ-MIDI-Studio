@@ -66,3 +66,59 @@ def test_old_listeners_are_forgotten():
         assert server.listeners() == []
     finally:
         server.close()
+
+
+def test_the_control_room_sends_the_tracklist_to_its_listeners_over_localhost():
+    from djmidi.remote_mix import tracklist
+
+    server = listen.ListenerServer(port=0, bind_host="127.0.0.1")
+    client = listen.ListenerClient(
+        server=("127.0.0.1", server.port), player=listen.StreamPlayer(), bind_host="127.0.0.1"
+    )
+    try:
+        deadline = time.monotonic() + 3
+        while not server.listeners() and time.monotonic() < deadline:
+            time.sleep(0.01)
+        shared = tracklist.SharedTracklist(1)
+        shared.add("Shades of Jae", "Moodymann", 1795000000)
+        for message in tracklist.for_listeners(shared.rows, lambda dj: "Alex"):
+            server.send_message(message)
+        while client.inbox.empty() and time.monotonic() < deadline:
+            time.sleep(0.01)
+    finally:
+        client.close()
+        server.close()
+    message = client.inbox.get_nowait()
+    assert message["t"] == "Shades of Jae" and tracklist.listener_name(message) == "Alex"
+    assert client.rejected == 0
+
+
+def test_the_listener_panel_shows_the_tracklist(tmp_path):
+    import queue
+
+    from test_remote_mix_dialog import FakeBackend
+
+    from djmidi.gui.remote_mix_listen import ListenerPanel
+    from djmidi.remote_mix import tracklist
+
+    class FakeClient:
+        def __init__(self, *, server, player):
+            self.error, self.inbox = None, queue.Queue()
+
+        def close(self):
+            pass
+
+    panel = ListenerPanel(backend=FakeBackend(), client_factory=FakeClient)
+    try:
+        panel.address_edit.setText("10.0.0.7")
+        assert panel.start()
+        shared = tracklist.SharedTracklist(0)
+        shared.add("Track B", "", 1795000300)
+        shared.add("Track A", "X", 1795000000)
+        for message in tracklist.for_listeners(shared.rows, lambda dj: "Host") * 2:  # resent every 5 s
+            panel.client.inbox.put(message)
+        panel._show_status()
+        texts = [panel.tracks_view.item(i).text().split("  ", 1)[1] for i in range(panel.tracks_view.count())]
+        assert texts == ["Host — X – Track A", "Host — Track B"]
+    finally:
+        panel.close()
