@@ -369,6 +369,8 @@ surgical and logged. Qt-free modules; the tab is a thin view over `library/works
   Phase 12 = the tracklist for listeners: `ListenerServer.send_message` (JSON on the listening port) of
   `tracklist.for_listeners` rows (+ `who`) every 5 s from `RemoteMixDialog._tracklist_to_listeners`; `ListenerClient.inbox`
   → `ListenerPanel` list.
+  Phase 13 = one track per DJ: `recording.StemsRecorder` (a WAV per DJ id, raw = before EQ/fader, padded with silence
+  onto the mix timeline), written from `RemoteAudioPanel.pump` when `stems_checkbox` is ticked at record start.
   Plan and checklist: `docs/enduser/features/remote-mix.md`.
 - `user_paths.py`: the workspace (`~/Documents/DJ MIDI Studio`, `DJMIDI_WORKSPACE`) with `Controllers`, `Sync`,
   `Macros`, `Drafts`, `Logs`, `Exports`, `Snapshots`. `backup.py`: workspace backup/restore (validated, atomic).
