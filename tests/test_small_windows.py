@@ -167,6 +167,14 @@ def _latency():
     )
 
 
+def _remote_mix():
+    from pathlib import Path
+
+    from djmidi.gui.remote_mix_dialog import RemoteMixDialog
+
+    return RemoteMixDialog(addresses=lambda: ["192.168.1.20", "10.147.17.5"], report_dir=lambda: Path("."))
+
+
 def _stats():
     from djmidi.gui.library_stats_dialog import LibraryStatsDialog
     from djmidi.library.stats import compute_library_stats
@@ -468,6 +476,7 @@ WINDOWS = {
     "layer map": _layer_map,
     "ready for live": _live_ready,
     "midi latency": _latency,
+    "remote mix test": _remote_mix,
     "library statistics": _stats,
     "smart playlist": _smart_playlist,
     "rename files": _rename,

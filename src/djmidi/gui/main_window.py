@@ -154,6 +154,7 @@ from djmidi.gui.nav_tabs import NavTabs
 from djmidi.gui.preferences_dialog import PreferencesDialog
 from djmidi.gui.profile_check_dialog import ProfileCheckDialog
 from djmidi.gui.profile_library_dialog import ProfileLibraryDialog
+from djmidi.gui.remote_mix_dialog import RemoteMixDialog
 from djmidi.gui.report_problem_dialog import ReportProblemDialog
 from djmidi.gui.scroll_utils import AutoSizeScrollArea
 from djmidi.gui.snapshots_dialog import SnapshotsDialog
@@ -933,6 +934,12 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         )
         self._latency_action.triggered.connect(self._on_midi_latency_test)
         tools_menu.addAction(self._latency_action)
+        self._remote_mix_action = QAction(self.tr("Mix Together: Connection Test…"), self)
+        self._remote_mix_action.setToolTip(
+            self.tr("Measure the line to another DJ before mixing together from two places")
+        )
+        self._remote_mix_action.triggered.connect(self._on_remote_mix_test)
+        tools_menu.addAction(self._remote_mix_action)
         self._layer_map_action = QAction(self.tr("Layer Map…"), self)
         self._layer_map_action.setToolTip(
             self.tr(
@@ -1552,6 +1559,16 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         dialog.show()
         dialog.raise_()
         dialog.activateWindow()
+
+    def _on_remote_mix_test(self) -> RemoteMixDialog:
+        # Non-modal and kept alive, like the MIDI latency test: the test runs for minutes.
+        dialog = getattr(self, "_remote_mix_dialog", None)
+        if dialog is None:
+            dialog = self._remote_mix_dialog = RemoteMixDialog(self)
+        dialog.show()
+        dialog.raise_()
+        dialog.activateWindow()
+        return dialog
 
     def _on_report_problem(self) -> None:
         dialog = ReportProblemDialog(self._problem_report_context(), self)

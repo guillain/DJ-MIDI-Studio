@@ -136,6 +136,14 @@ class AalinkStateProvider:
             raise LinkBackendUnavailable("aalink does not expose beat-at-time")
         return LinkState(tempo=tempo, beat=float(beat_at_time(now, 4.0)), playing=playing)
 
+    def num_peers(self) -> int:
+        """How many other Link apps share this session (0 when unknown)."""
+        value = getattr(self._link, "num_peers", None)
+        try:
+            return int(value() if callable(value) else value or 0)
+        except (TypeError, ValueError):
+            return 0
+
     def publish_transport(self, is_playing: bool) -> None:
         """Publish a locally-observed transport state onto this Link session.
 
