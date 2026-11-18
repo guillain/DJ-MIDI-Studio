@@ -202,8 +202,8 @@ window the three columns stack.
 move of a volume, an EQ knob, the filter or the crossfader shows up on the
 other DJ's screen and in their sound, about as fast as the line (only the
 settings travel; each computer already has both sounds). Your own channel
-is **Me** on your screen and carries your name on theirs; the crossfader has
-each of you on your own left. If you both move the same control, the last
+is **Me** on your screen and carries your name on theirs; the crossfader sends each strip's
+side (A left, B right). If you both move the same control, the last
 gesture wins, and the line under the mixer says what the other DJ just
 moved. A controller assigned with **Learn** waits until you bring it to
 where the other DJ left the control before it takes over, so the sound
@@ -224,6 +224,16 @@ presses **Listen**: it hears the official mix, Opus-compressed (about
 the control room shows how many are listening. The control room needs one
 more port open: 47802 (UDP) by default. If the other DJ becomes the control
 room, listeners type that DJ's address instead.
+
+**More than two DJs.** Up to four DJs mix together, in a star around the
+host: everyone else joins the host's address. The host passes each DJ's
+sound and mixer moves on to the others (its upload grows with each DJ:
+about 0.25 Mb/s per stream with Opus), and keeps the lead of the tempo. The
+mixer gets one strip per DJ, named after **Your DJ name**, in the same
+order on every computer. Each strip has a crossfader side, as on a club
+mixer: **A** (left), **B** (right) or **Thru** (not crossfaded); the host
+starts on A, the first guest on B, the others on Thru. Each DJ needs their
+own address on the private network (ZeroTier gives one to each).
 
 ## What travels
 

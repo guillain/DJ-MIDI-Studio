@@ -352,6 +352,11 @@ surgical and logged. Qt-free modules; the tab is a thin view over `library/works
   Phase 8 = listeners: `remote_mix/listen.py` (`ListenerServer` at the régie on port + 2: `listen` hellos, ≤ 16,
   5 s timeout, Opus program mix via `SendBuffer`/`encode_opus`; `ListenerClient` + `StreamPlayer`, 300 ms buffer) →
   `gui/remote_mix_listen.ListenerPanel`, shown by the dialog's **I listen** role instead of the three columns.
+  Phase 9 = up to `probe.MAX_DJS` (4) DJs in a star: the host's `ProbeSession(max_peers=3)` admits guests, gives
+  DJ ids (host 0) and a roster (`my_id`, `roster`, `peer_ids`), relays "mix" messages and keeps the lead; the
+  audio header's source byte says which DJ (`AudioLink(hub=True)` stamps and relays, `PlayerBank` per DJ);
+  `SharedTable(me)` names controls by DJ (`dj1_low`, `dj2_xf`, absolute crossfader, per-strip A/Thru/B assign);
+  the panel maps slots me/them/x1/x2 onto DJ ids (`set_roster`, `_wire`/`_local`).
   Plan and checklist: `docs/enduser/features/remote-mix.md`.
 - `user_paths.py`: the workspace (`~/Documents/DJ MIDI Studio`, `DJMIDI_WORKSPACE`) with `Controllers`, `Sync`,
   `Macros`, `Drafts`, `Logs`, `Exports`, `Snapshots`. `backup.py`: workspace backup/restore (validated, atomic).

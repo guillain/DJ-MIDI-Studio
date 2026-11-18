@@ -23,6 +23,7 @@ import math
 import socket
 import struct
 import threading
+from collections.abc import Callable
 from dataclasses import dataclass
 
 import numpy as np
@@ -44,7 +45,8 @@ AUDIO_PORT_OFFSET = 1  # audio uses the test port + 1
 
 _MAGIC = b"DJMA"
 _VERSION = 2  # 2: signed positions (Opus look-ahead), Opus codec
-_HEADER = struct.Struct(">4sBBBBqdfH")  # magic, version, codec, channels, pad, position, beat, tempo, frames
+_HEADER = struct.Struct(">4sBBBBqdfH")  # magic, version, codec, channels, source, position, beat, tempo, frames
+_SOURCE_BYTE = 7  # which DJ the sound is from (phase 9): the hub stamps it when it relays
 MAX_PACKET = _HEADER.size + max(PACKET_FRAMES * CHANNELS * 2, _OPUS_MAX)
 
 
@@ -55,6 +57,7 @@ class AudioPacket:
     tempo: float
     samples: np.ndarray  # float32 (frames at 48 kHz, CHANNELS), -1..1
     codec: int = CODEC_PCM48
+    source: int = 0  # DJ id: 0 the host, 1-3 the guests
 
 
 def _to_pcm(samples: np.ndarray) -> bytes:
@@ -63,7 +66,7 @@ def _to_pcm(samples: np.ndarray) -> bytes:
 
 def _header(packet: AudioPacket, frames: int) -> bytes:
     return _HEADER.pack(
-        _MAGIC, _VERSION, packet.codec, CHANNELS, 0, packet.position, packet.beat, packet.tempo, frames
+        _MAGIC, _VERSION, packet.codec, CHANNELS, packet.source, packet.position, packet.beat, packet.tempo, frames
     )
 
 
@@ -79,6 +82,7 @@ def encode_opus(packet: AudioPacket, encoder: opus.OpusEncoder) -> list[bytes]:
             tempo=packet.tempo,
             samples=packet.samples,
             codec=CODEC_OPUS,
+            source=packet.source,
         )
         datagrams.append(_header(shifted, PACKET_FRAMES) + payload)
     return datagrams
@@ -100,7 +104,7 @@ def decode_packet(data: bytes, decoder: opus.OpusDecoder | None = None) -> Audio
     Opus packet needs the link's ``decoder``)."""
     if len(data) < _HEADER.size or len(data) > MAX_PACKET:
         return None
-    magic, version, codec, channels, _pad, position, beat, tempo, frames = _HEADER.unpack_from(data)
+    magic, version, codec, channels, source, position, beat, tempo, frames = _HEADER.unpack_from(data)
     if magic != _MAGIC or version != _VERSION or codec not in CODECS or channels != CHANNELS:
         return None
     if not math.isfinite(beat) or not tempo > 0:
@@ -111,14 +115,23 @@ def decode_packet(data: bytes, decoder: opus.OpusDecoder | None = None) -> Audio
         samples = decoder.decode(data[_HEADER.size :])
         if samples is None or len(samples) != frames:
             return None
-        return AudioPacket(position=position, beat=beat, tempo=tempo, samples=samples, codec=codec)
+        return AudioPacket(position=position, beat=beat, tempo=tempo, samples=samples, codec=codec, source=source)
     if len(data) != _HEADER.size + frames * channels * 2:
         return None
     pcm = np.frombuffer(data, dtype=">i2", offset=_HEADER.size).astype(np.float32) / 32767.0
     samples = pcm.reshape(frames, channels)
     if codec == CODEC_PCM24:
         samples = np.repeat(samples, 2, axis=0)
-    return AudioPacket(position=position, beat=beat, tempo=tempo, samples=samples, codec=codec)
+    return AudioPacket(position=position, beat=beat, tempo=tempo, samples=samples, codec=codec, source=source)
+
+
+def packet_source(data: bytes) -> int | None:
+    return data[_SOURCE_BYTE] if len(data) > _SOURCE_BYTE else None
+
+
+def with_source(data: bytes, source: int) -> bytes:
+    """The same datagram, stamped as coming from DJ ``source`` (the hub does it when relaying)."""
+    return data[:_SOURCE_BYTE] + bytes([source]) + data[_SOURCE_BYTE + 1 :]
 
 
 def packetize(samples: np.ndarray, position: int, beat: float, tempo: float, codec: int) -> list[AudioPacket]:
@@ -249,16 +262,69 @@ def program_mix(me: np.ndarray, them: np.ndarray, me_volume: float, them_volume:
     return np.clip(me[:n] * (me_volume * a) + them[:n] * (them_volume * b), -1.0, 1.0)
 
 
-class AudioLink:
-    """The UDP socket the sound travels on (one per side, test port + 1).
+def strip_gain(assign: int, crossfader: float) -> float:
+    """A strip's crossfader gain: side A (0), through (1) or side B (2)."""
+    a, b = crossfade_gains(crossfader)
+    return a if assign == 0 else b if assign == 2 else 1.0
 
-    Packets are taken only from ``peer_host``; received packets go straight
-    into ``player`` from a worker thread.
+
+def mix_strips(strips: list[tuple[np.ndarray, float, int]], crossfader: float, frames: int) -> np.ndarray:
+    """The program mix of several DJs: (samples, volume, crossfader assign) each."""
+    out = np.zeros((frames, CHANNELS), dtype=np.float32)
+    for samples, volume, assign in strips:
+        n = min(frames, len(samples))
+        out[:n] += samples[:n] * (volume * strip_gain(assign, crossfader))
+    return np.clip(out, -1.0, 1.0)
+
+
+class PlayerBank:
+    """One bar-aligned player per other DJ, made when their sound first arrives."""
+
+    def __init__(self) -> None:
+        self._players: dict[int, BarAlignedPlayer] = {}
+        self._lock = threading.Lock()
+
+    def get(self, dj: int) -> BarAlignedPlayer:
+        with self._lock:
+            if dj not in self._players:
+                self._players[dj] = BarAlignedPlayer()
+            return self._players[dj]
+
+    def items(self) -> list[tuple[int, BarAlignedPlayer]]:
+        with self._lock:
+            return sorted(self._players.items())
+
+
+class AudioLink:
+    """The UDP socket the sound travels on (one per computer, test port + 1).
+
+    Two DJs: each side sends to the other. Several DJs (phase 9): a star around
+    the host. A guest sends to the host and hears everyone from it; the host
+    (``hub``) sends its own sound to every guest, and relays each guest's
+    packets to the other guests, stamped with that guest's DJ id. Received
+    packets go straight into the ``players`` bank (one per DJ) from a worker
+    thread; ``player`` alone serves the two-DJ case.
     """
 
-    def __init__(self, *, port: int, peer: tuple[str, int], player: BarAlignedPlayer, bind_host: str = "0.0.0.0") -> None:
+    def __init__(
+        self,
+        *,
+        port: int,
+        peer: tuple[str, int],
+        player: BarAlignedPlayer | None = None,
+        bind_host: str = "0.0.0.0",
+        players: PlayerBank | None = None,
+        peer_ids: Callable[[], dict[str, int]] | None = None,
+        hub: bool = False,
+        me: Callable[[], int | None] | None = None,
+    ) -> None:
         self._peer = peer
         self._player = player
+        self._players = players
+        self._peer_ids = peer_ids
+        self._hub = hub
+        self._me = me
+        self._port = port
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 1 << 20)
         self._socket.bind((bind_host, port))
@@ -266,9 +332,10 @@ class AudioLink:
         self._stop = threading.Event()
         self.sent = 0
         self.rejected = 0
+        self.relayed = 0
         self.error: str | None = None
         self._encoder: opus.OpusEncoder | None = None
-        self._decoder: opus.OpusDecoder | None = None if opus.unavailable() else opus.OpusDecoder()
+        self._decoders: dict[int, opus.OpusDecoder] = {}
         self._thread = threading.Thread(target=self._run, name="djmidi-remote-audio", daemon=True)
         self._thread.start()
 
@@ -276,8 +343,16 @@ class AudioLink:
     def port(self) -> int:
         return self._socket.getsockname()[1]
 
+    def _targets(self) -> list[tuple[str, int]]:
+        if self._hub and self._peer_ids is not None:
+            return [(ip, self._peer[1]) for ip in self._peer_ids()]
+        return [self._peer]
+
     def send(self, packets: list[AudioPacket]) -> None:
+        source = (self._me() if self._me is not None else 0) or 0
+        targets = self._targets()
         for packet in packets:
+            packet = AudioPacket(packet.position, packet.beat, packet.tempo, packet.samples, packet.codec, source)
             try:
                 if packet.codec == CODEC_OPUS:
                     if self._encoder is None:
@@ -286,8 +361,9 @@ class AudioLink:
                 else:
                     datagrams = [encode_packet(packet)]
                 for datagram in datagrams:
-                    self._socket.sendto(datagram, self._peer)
-                    self.sent += 1
+                    for target in targets:
+                        self._socket.sendto(datagram, target)
+                        self.sent += 1
             except OSError as exc:
                 self.error = str(exc)
                 return
@@ -296,6 +372,21 @@ class AudioLink:
         self._stop.set()
         self._thread.join(timeout=1.0)
         self._socket.close()
+
+    def _decoder(self, source: int) -> opus.OpusDecoder | None:
+        if opus.unavailable():
+            return None
+        if source not in self._decoders:
+            self._decoders[source] = opus.OpusDecoder()  # Opus streams keep state: one decoder per DJ
+        return self._decoders[source]
+
+    def _source_of(self, data: bytes, ip: str) -> int | None:
+        """Which DJ a datagram is from, or None when it isn't from someone we mix with."""
+        if self._hub and self._peer_ids is not None:
+            return self._peer_ids().get(ip)
+        if ip != self._peer[0]:
+            return None
+        return packet_source(data) if self._players is not None else 0
 
     def _run(self) -> None:
         while not self._stop.is_set():
@@ -307,8 +398,23 @@ class AudioLink:
                 if not self._stop.is_set():
                     self.error = str(exc)
                 continue
-            packet = decode_packet(data, self._decoder) if address[0] == self._peer[0] else None
+            source = self._source_of(data, address[0])
+            if source is None:
+                self.rejected += 1
+                continue
+            if self._hub:
+                data = with_source(data, source)
+                for target in self._targets():
+                    if target[0] != address[0]:
+                        try:
+                            self._socket.sendto(data, target)  # the hub relays to the other guests
+                            self.relayed += 1
+                        except OSError as exc:
+                            self.error = str(exc)
+            packet = decode_packet(data, self._decoder(source))
             if packet is None:
                 self.rejected += 1
                 continue
-            self._player.push(packet)
+            player = self._players.get(source) if self._players is not None else self._player
+            if player is not None:
+                player.push(packet)

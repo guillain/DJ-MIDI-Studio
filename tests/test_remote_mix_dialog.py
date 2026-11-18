@@ -8,7 +8,7 @@ from djmidi.remote_mix import probe
 
 
 class FakeSession:
-    def __init__(self, *, port, peer, link_reader, link_control=None, follow=False):
+    def __init__(self, *, port, peer, link_reader, link_control=None, follow=False, max_peers=1, name=""):
         self.port, self.peer, self.link_reader = port, peer, link_reader
         self.link_control, self.follow = link_control, follow
         self.leading = peer is None
@@ -368,35 +368,36 @@ def test_eq_knobs_shape_their_sound_and_follow_the_controller(tmp_path):
 def test_two_panels_share_one_mixer_and_a_controller_picks_up_softly(tmp_path):
     from djmidi.gui.remote_mix_audio import RemoteAudioPanel
     from djmidi.midi_io import MidiEvent
-    from djmidi.remote_mix import controls, table
+    from djmidi.remote_mix import controls
 
     host = RemoteAudioPanel(lambda: None, backend=FakeBackend(), controls_path=tmp_path / "a.json")
     guest = RemoteAudioPanel(lambda: None, backend=FakeBackend(), controls_path=tmp_path / "b.json")
     to_guest, to_host = [], []
-    host.attach_table(table.HOST, to_guest.append)
-    guest.attach_table(table.GUEST, to_host.append)
-    guest.set_peer_name("Host DJ")
+    host.attach_table(0, to_guest.append)
+    guest.attach_table(1, to_host.append)
+    guest.set_roster(1, {0: "Host DJ", 1: "Guest DJ"})
     try:
         host.dials["me_low"].setValue(5)
         host.crossfader.setValue(20)
         for message in to_guest:
             guest.apply_remote(message)
         assert guest.dials["them_low"].value() == 5
-        assert guest.crossfader.value() == 80
-        assert "Host DJ" in guest.remote_label.text()
+        assert guest.crossfader.value() == 20  # one mixer for everyone: the host is on side A
+        assert guest.assigns["them"].currentData() == 0 and guest.assigns["me"].currentData() == 2
+        assert "Crossfader" in guest.remote_label.text()
         assert to_host == []  # applying their move doesn't echo it back
 
         # The guest's crossfader is on a controller, far from where the host left it.
         guest.controls.bind(controls.CROSSFADER, controls.MixerTrigger("1", "Control Change", "31"))
-        assert guest.feed_midi_event(MidiEvent("in", "1", "Control Change", "31", "0", 0.0))
-        assert guest.crossfader.value() == 80  # not picked up yet: no jump
-        guest.feed_midi_event(MidiEvent("in", "1", "Control Change", "31", "127", 0.0))  # sweeps past 80
-        assert guest.crossfader.value() == 100
-        assert to_host and host.apply_remote(to_host[-1]) is None and host.crossfader.value() == 0
+        assert guest.feed_midi_event(MidiEvent("in", "1", "Control Change", "31", "127", 0.0))
+        assert guest.crossfader.value() == 20  # not picked up yet: no jump
+        guest.feed_midi_event(MidiEvent("in", "1", "Control Change", "31", "0", 0.0))  # sweeps past 20
+        assert guest.crossfader.value() == 0
+        host.apply_remote(to_host[-1])
+        assert host.crossfader.value() == 0
     finally:
         host.close()
         guest.close()
-
 
 def test_mix_together_has_its_own_tab_after_music():
     window = MainWindow()
@@ -414,7 +415,6 @@ def test_mix_together_has_its_own_tab_after_music():
 
 def test_the_regie_makes_and_records_the_official_mix(tmp_path):
     from djmidi.gui.remote_mix_audio import RemoteAudioPanel
-    from djmidi.remote_mix import table
 
     links = []
     panel = RemoteAudioPanel(
@@ -425,7 +425,7 @@ def test_the_regie_makes_and_records_the_official_mix(tmp_path):
         recordings_dir=tmp_path / "Exports",
     )
     to_host = []
-    panel.attach_table(table.GUEST, to_host.append)
+    panel.attach_table(1, to_host.append)
     try:
         assert not panel.makes_the_mix and "made at" in panel.regie_label.text()
         assert panel.start()
@@ -525,5 +525,29 @@ def test_the_control_room_sends_its_mix_to_listeners(tmp_path):
         assert panel.listeners_label.text() == "1 listening"
         panel.stop()
         assert servers[0].closed
+    finally:
+        panel.close()
+
+
+def test_a_third_dj_gets_a_strip_and_the_mixer_follows_them(tmp_path):
+    from djmidi.gui.remote_mix_audio import RemoteAudioPanel
+    from djmidi.remote_mix import table
+
+    panel = RemoteAudioPanel(lambda: None, backend=FakeBackend(), controls_path=tmp_path / "c.json")
+    other = table.SharedTable(2)
+    sent = []
+    panel.attach_table(0, sent.append)
+    panel.show()
+    try:
+        panel.set_roster(0, {0: "Host", 1: "Alex", 2: "Sam"})
+        assert panel.slot_frames["x1"].isVisible() and not panel.slot_frames["x2"].isVisible()
+        assert [panel.names[s].text() for s in ("them", "x1")] == ["Alex", "Sam"]
+        assert panel.assigns["x1"].currentData() == table.XF_THRU
+        panel.apply_remote(other.local_change("dj2_low", 0))
+        assert panel.dials["x1_low"].value() == 0 and "Sam" in panel.remote_label.text()
+        panel.faders["x1"].setValue(40)
+        assert sent[-1]["c"]["dj2_volume"][0] == 40
+        panel.set_roster(0, {0: "Host", 1: "Alex"})  # Sam left
+        assert not panel.slot_frames["x1"].isVisible()
     finally:
         panel.close()

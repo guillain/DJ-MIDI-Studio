@@ -30,8 +30,10 @@ ME = "me"
 THEM = "them"
 CROSSFADER = "crossfader"
 KNOBS = ("low", "mid", "high", "filter")
-EQ_TARGETS = tuple(f"{side}_{knob}" for side in (ME, THEM) for knob in KNOBS)  # "me_low", ...
-TARGETS = (ME, THEM, CROSSFADER, *EQ_TARGETS)
+# Mixer strips: yours, the first other DJ's, and two more when more DJs join (phase 9).
+SIDES = (ME, THEM, "x1", "x2")
+EQ_TARGETS = tuple(f"{side}_{knob}" for side in SIDES for knob in KNOBS)  # "me_low", ...
+TARGETS = (*SIDES, CROSSFADER, *EQ_TARGETS)
 FILE_NAME = "mix-together-controls.json"
 FORMAT = "djmidi-mix-controls/1"
 _PITCH_MAX = 16383

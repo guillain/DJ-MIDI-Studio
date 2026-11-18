@@ -197,7 +197,10 @@ class RemoteAudioPanel(QFrame):
         self._context = context
         self._backend = backend if backend is not None else QtAudioBackend()
         self._link_factory = link_factory
-        self.player: audio.BarAlignedPlayer | None = None
+        self.players = audio.PlayerBank()
+        self._roster: dict[int, str] = {}
+        self.table: table.SharedTable | None = None
+        self._applying_remote = False
         self.link: audio.AudioLink | None = None
         self._input: AudioInput | None = None
         self._monitor: AudioOutput | None = None
@@ -256,31 +259,33 @@ class RemoteAudioPanel(QFrame):
 
         # The mixer table (shown at the centre of the Mix Together tab): one vertical
         # channel strip per DJ, like a club mixer, and the crossfader underneath.
-        self.me_volume = self._fader()
-        self.them_volume = self._fader()
-        self.me_meter = self._meter()
-        self.them_meter = self._meter()
         self.crossfader = QSlider(Qt.Orientation.Horizontal)
         self.crossfader.setRange(0, 100)
         self.crossfader.setValue(50)
-        self.crossfader.setToolTip(self.tr("Program mix: you on the left, the other DJ on the right"))
-        self.them_name = QLabel(self.tr("Them"))
-        self.them_eq_name = self.them_name  # one name per strip
-        self._sliders = {controls.ME: self.me_volume, controls.THEM: self.them_volume, controls.CROSSFADER: self.crossfader}
+        self.crossfader.setToolTip(self.tr("Program mix: strips on A to the left, on B to the right"))
         self.learn_buttons: dict[str, QPushButton] = {}
         self.forget_buttons: dict[str, QPushButton] = {}
-        self.me_strip = eq.ChannelStrip()
-        self.them_strip = eq.ChannelStrip()
         self.dials: dict[str, QDial] = {}
         self.flat_buttons: dict[str, QPushButton] = {}
+        self.faders: dict[str, QSlider] = {}
+        self.meters: dict[str, QProgressBar] = {}
+        self.eqs: dict[str, eq.ChannelStrip] = {}
+        self.names: dict[str, QLabel] = {}
+        self.assigns: dict[str, QComboBox] = {}
+        self.slot_frames: dict[str, QFrame] = {}
+        # Slot → DJ id shown in it: me, the first other DJ, then up to two more (phase 9).
+        self.slot_dj: dict[str, int | None] = {controls.ME: 0, controls.THEM: 1, "x1": None, "x2": None}
+        self._sliders: dict[str, QWidget] = {controls.CROSSFADER: self.crossfader}
         captions = {"high": self.tr("High"), "mid": self.tr("Mid"), "low": self.tr("Low"), "filter": self.tr("Filter")}
         strips = QHBoxLayout()
         strips.setSpacing(18)
-        for side, name, strip, fader, meter in (
-            (controls.ME, QLabel(self.tr("Me")), self.me_strip, self.me_volume, self.me_meter),
-            (controls.THEM, self.them_name, self.them_strip, self.them_volume, self.them_meter),
-        ):
-            column = QFrame()
+        for side in controls.SIDES:
+            strip = self.eqs[side] = eq.ChannelStrip()
+            fader, meter = self._fader(), self._meter()
+            self.faders[side], self.meters[side] = fader, meter
+            self._sliders[side] = fader
+            name = self.names[side] = QLabel(self.tr("Me") if side == controls.ME else self.tr("Them"))
+            column = self.slot_frames[side] = QFrame()
             column.setObjectName("mixStrip")
             box = QVBoxLayout(column)
             name.setObjectName("mixStripName")
@@ -319,12 +324,20 @@ class RemoteAudioPanel(QFrame):
             level.addWidget(fader)
             level.addStretch(1)
             box.addLayout(level, 1)
+            assign = self.assigns[side] = QComboBox()
+            for label, value in ((self.tr("A"), table.XF_A), (self.tr("Thru"), table.XF_THRU), (self.tr("B"), table.XF_B)):
+                assign.addItem(label, value)
+            assign.setToolTip(self.tr("Crossfader side for this strip: A (left), B (right) or Thru (not crossfaded)"))
+            assign.currentIndexChanged.connect(lambda index, s=side: self._on_assign_changed(s, index))
+            box.addWidget(assign)
             learn, forget = self._learn_pair(side)
             pair = QHBoxLayout()
             pair.addWidget(learn, 1)
             pair.addWidget(forget)
             box.addLayout(pair)
             strips.addWidget(column, 1)
+            column.setVisible(side in (controls.ME, controls.THEM))
+        self._set_default_assigns()
         cross = QHBoxLayout()
         cross.addWidget(QLabel(self.tr("Crossfader")))
         cross.addWidget(self.crossfader, 1)
@@ -521,10 +534,12 @@ class RemoteAudioPanel(QFrame):
 
     # -- the shared mixer (phase 6) ---------------------------------------
 
-    def attach_table(self, role: str, send: Callable[[dict], None]) -> None:
-        """Share this mixer with the other DJ: moves go out through ``send``."""
-        self.table = table.SharedTable(role)
+    def attach_table(self, me: int, send: Callable[[dict], None]) -> None:
+        """Share this mixer with the other DJs (``me`` is this computer's DJ id)."""
+        self.table = table.SharedTable(me)
         self._send_mix = send
+        if self.slot_dj[controls.ME] != me:
+            self.set_roster(me, {})
         self._show_regie()
 
     def detach_table(self) -> None:
@@ -534,10 +549,90 @@ class RemoteAudioPanel(QFrame):
         self.remote_label.setText("")
         self._show_regie()
 
+    # -- slots ↔ DJs (phase 9) ----------------------------------------------
+
+    def _wire(self, target: str) -> str | None:
+        """A local control ('them_low', 'x1', 'me_xf') → its name on the shared mixer ('dj2_low')."""
+        if target == controls.CROSSFADER:
+            return table.CROSSFADER
+        side, _, control = target.partition("_")
+        dj = self.slot_dj.get(side)
+        return None if dj is None else table.strip_control(dj, control or "volume")
+
+    def _local(self, wire: str) -> str | None:
+        if wire == table.CROSSFADER:
+            return controls.CROSSFADER
+        head, _, control = wire.partition("_")
+        for side, dj in self.slot_dj.items():
+            if dj is not None and head == f"dj{dj}":
+                return side if control == "volume" else f"{side}_{control}"
+        return None
+
+    def _widget_value(self, target: str) -> int:
+        if target.endswith("_xf"):
+            return self.assigns[target[:-3]].currentData()
+        return self._sliders[target].value()
+
+    def _set_widget(self, target: str, value: int) -> None:
+        if target.endswith("_xf"):
+            combo = self.assigns[target[:-3]]
+            index = combo.findData(value)
+            if index >= 0:
+                combo.setCurrentIndex(index)
+        elif target in self._sliders:
+            self._sliders[target].setValue(value)
+
+    def _set_default_assigns(self) -> None:
+        self._applying_remote = True
+        try:
+            for side, dj in self.slot_dj.items():
+                if dj is not None:
+                    known = self.table.values.get(table.strip_control(dj, "xf")) if self.table is not None else None
+                    self._set_widget(f"{side}_xf", table.default_assign(dj) if known is None else known)
+        finally:
+            self._applying_remote = False
+
+    def set_roster(self, me: int, roster: dict[int, str]) -> None:
+        """Who is in the room: your strip, then the others by DJ id (up to three)."""
+        others = sorted(dj for dj in roster if dj != me) or [dj for dj in (1, 0) if dj != me][:1]
+        slots = {controls.ME: me}
+        for side, dj in zip((controls.THEM, "x1", "x2"), [*others, None, None, None], strict=False):
+            slots[side] = dj
+        if slots == self.slot_dj and all(self.names[s].text() == self._dj_name(d, roster) for s, d in slots.items() if d is not None):
+            return
+        self.slot_dj = slots
+        self._roster = dict(roster)
+        self._applying_remote = True
+        try:
+            for side, dj in slots.items():
+                self.slot_frames[side].setVisible(dj is not None and (side in (controls.ME, controls.THEM) or bool(roster)))
+                if dj is None:
+                    continue
+                self.names[side].setText(self._dj_name(dj, roster) if side != controls.ME else self.tr("Me"))
+                if self.table is not None:  # what the room already set for this DJ
+                    for control in ("volume", *controls.KNOBS):
+                        value = self.table.values.get(table.strip_control(dj, control))
+                        if value is not None:
+                            self._set_widget(side if control == "volume" else f"{side}_{control}", value)
+        finally:
+            self._applying_remote = False
+        self._set_default_assigns()
+        self._show_regie()
+
+    def _dj_name(self, dj: int, roster: dict[int, str] | None = None) -> str:
+        roster = self._roster if roster is None else roster
+        name = (roster or {}).get(dj) or ""
+        return name or self.tr("DJ {number}").format(number=dj + 1)
+
+    def _on_assign_changed(self, side: str, _index: int) -> None:
+        self._on_local_move(f"{side}_xf", self.assigns[side].currentData())
+
     def _on_local_move(self, target: str, value: int) -> None:
         if self._applying_remote or self.table is None or self._send_mix is None:
             return
-        self._send_mix(self.table.local_change(target, value))
+        wire = self._wire(target)
+        if wire is not None:
+            self._send_mix(self.table.local_change(wire, value))
 
     def send_snapshot(self) -> None:
         if self.table is not None and self._send_mix is not None:
@@ -546,24 +641,25 @@ class RemoteAudioPanel(QFrame):
                 self._send_mix(message)
 
     def apply_remote(self, message: dict) -> None:
-        """The other DJ moved the shared mixer: show it here."""
+        """Another DJ moved the shared mixer: show it here."""
         if self.table is None:
             return
         changes = self.table.receive(message)
         self._show_regie()
+        shown = []
         self._applying_remote = True
         try:
-            for target, value in changes:
-                self._sliders[target].setValue(value)
+            for wire, value in changes:
+                target = self._local(wire)
+                if target is None:
+                    continue
+                self._set_widget(target, value)
                 self._needs_pickup.add(target)
+                shown.append(wire)
         finally:
             self._applying_remote = False
-        if changes:
-            self.remote_label.setText(
-                self.tr("{name} moved: {control}").format(
-                    name=self.them_name.text(), control=self._caption(changes[-1][0])
-                )
-            )
+        if shown:
+            self.remote_label.setText(self.tr("Moved: {control}").format(control=self._caption(shown[-1])))
 
     # -- the régie (phase 7) ----------------------------------------------
 
@@ -585,7 +681,7 @@ class RemoteAudioPanel(QFrame):
             self.regie_label.setText(self.tr("Control room: the official mix is made here."))
         else:
             self.regie_label.setText(
-                self.tr("Control room: the official mix is made at {name}'s.").format(name=self.them_name.text())
+                self.tr("Control room: the official mix is made at {name}'s.").format(name=self._dj_name(self.table.regie))
             )
         self.regie_button.setVisible(self.table is not None and not mine)
         if not mine:
@@ -615,21 +711,66 @@ class RemoteAudioPanel(QFrame):
         if hasattr(self, "record_button"):
             self.record_button.setText(self.tr("Record the mix"))
 
-    def _caption(self, target: str) -> str:
-        owner = self.tr("Me") if target.startswith(controls.ME) else self.them_name.text()
-        if target == controls.CROSSFADER:
+    def _caption(self, wire: str) -> str:
+        if wire == table.CROSSFADER:
             return self.tr("Crossfader")
-        knob = target.partition("_")[2]
-        names = {"low": self.tr("Low"), "mid": self.tr("Mid"), "high": self.tr("High"), "filter": self.tr("Filter")}
-        return "{owner} · {control}".format(owner=owner, control=names.get(knob, self.tr("Volume")))
+        head, _, control = wire.partition("_")
+        dj = int(head[2:]) if head[2:].isdigit() else None
+        owner = self.tr("Me") if self.table is not None and dj == self.table.me else self._dj_name(dj or 0)
+        names = {
+            "low": self.tr("Low"),
+            "mid": self.tr("Mid"),
+            "high": self.tr("High"),
+            "filter": self.tr("Filter"),
+            "xf": self.tr("Crossfader side"),
+        }
+        return "{owner} · {control}".format(owner=owner, control=names.get(control, self.tr("Volume")))
+
+    # -- compatibility names for the first two strips ----------------------
+
+    @property
+    def me_volume(self) -> QSlider:
+        return self.faders[controls.ME]
+
+    @property
+    def them_volume(self) -> QSlider:
+        return self.faders[controls.THEM]
+
+    @property
+    def me_meter(self) -> QProgressBar:
+        return self.meters[controls.ME]
+
+    @property
+    def them_meter(self) -> QProgressBar:
+        return self.meters[controls.THEM]
+
+    @property
+    def me_strip(self) -> eq.ChannelStrip:
+        return self.eqs[controls.ME]
+
+    @property
+    def them_strip(self) -> eq.ChannelStrip:
+        return self.eqs[controls.THEM]
+
+    @property
+    def them_name(self) -> QLabel:
+        return self.names[controls.THEM]
+
+    @property
+    def player(self) -> audio.BarAlignedPlayer | None:
+        """The first other DJ's player, while the sound runs."""
+        dj = self.slot_dj[controls.THEM]
+        return None if self._reader is None or dj is None else self.players.get(dj)
 
     @property
     def running(self) -> bool:
-        return self.player is not None
+        return self._reader is not None
 
     def set_peer_name(self, name: str) -> None:
         self.them_name.setText(name)
-        self.them_eq_name.setText(name)
+        dj = self.slot_dj[controls.THEM]
+        if dj is not None:
+            self._roster = {**self._roster, dj: name}
         self._show_regie()
 
     def toggle(self) -> None:
@@ -643,10 +784,21 @@ class RemoteAudioPanel(QFrame):
         if context is None:
             self.status_label.setText(self.tr("Connect first, with Link on in both DJ programs."))
             return False
-        host, port, reader = context
-        player = audio.BarAlignedPlayer()
+        host, port, reader, *rest = context
+        session = rest[0] if rest else None
+        self.players = audio.PlayerBank()
         try:
-            link = self._link_factory(port=port, peer=(host, port), player=player)
+            if session is None:  # two DJs, the plain way
+                link = self._link_factory(port=port, peer=(host, port), player=self.players.get(self.slot_dj[controls.THEM] or 1))
+            else:  # a star around the host (phase 9)
+                link = self._link_factory(
+                    port=port,
+                    peer=(host, port),
+                    players=self.players,
+                    peer_ids=session.peer_ids,
+                    hub=session.peer_ids is not None and session.my_id == table.HOST,
+                    me=lambda: session.my_id,
+                )
         except OSError as exc:
             self.status_label.setText(self.tr("Could not open the sound port: {error}").format(error=exc))
             return False
@@ -668,7 +820,7 @@ class RemoteAudioPanel(QFrame):
             self._input = self._monitor = self._program = None
             self.status_label.setText(self.tr("Sound device problem: {error}").format(error=exc))
             return False
-        self.player, self.link, self._reader = player, link, reader
+        self.link, self._reader = link, reader
         try:  # listeners hear the official mix on the test port + 2 (phase 8)
             self.listen_server = self._listen_server_factory(port=port - audio.AUDIO_PORT_OFFSET + listen.LISTEN_PORT_OFFSET)
         except OSError as exc:
@@ -699,18 +851,18 @@ class RemoteAudioPanel(QFrame):
             self.listen_server.close()
             self.listen_server = None
         self._input = self._monitor = self._program = None
-        self.player = self.link = self._reader = None
+        self.link = self._reader = None
         for widget in (self.input_combo, self.monitor_combo, self.program_combo, self.quality_combo):
             widget.setEnabled(True)
         self.start_button.setText(self.tr("Start the sound"))
         self.stop_recording()
         self._show_regie()
         self.status_label.setText(self.tr("Sound off."))
-        self.me_meter.setValue(0)
-        self.them_meter.setValue(0)
+        for meter in self.meters.values():
+            meter.setValue(0)
 
     def pump(self) -> None:
-        if self.player is None or self._reader is None:
+        if self._reader is None:
             return
         snapshot = self._reader()
         if snapshot is None or snapshot.tempo <= 0:
@@ -737,23 +889,27 @@ class RemoteAudioPanel(QFrame):
         if n < audio.PACKET_FRAMES:
             return
         delay_frames = driver.queued_frames() + self.nudge_spin.value() * audio.RATE // 1000
-        them = self.them_strip.process(self.player.read(n, now_beat + delay_frames * beats_per_frame))
-        self.them_meter.setValue(int(self.player.last_peak * 100))
+        heard_beat = now_beat + delay_frames * beats_per_frame
+        others: list[tuple[str, np.ndarray]] = []  # each other DJ, one bar late, through their strip's EQ
+        for side, dj in self.slot_dj.items():
+            if side == controls.ME or dj is None:
+                continue
+            player = self.players.get(dj)
+            others.append((side, self.eqs[side].process(player.read(n, heard_beat))))
+            self.meters[side].setValue(int(player.last_peak * 100))
         if self._monitor is not None:
-            self._monitor.write(them * (self.them_volume.value() / 100.0))
+            monitor = np.zeros((n, audio.CHANNELS), dtype=np.float32)
+            for side, samples in others:
+                monitor += samples * (self.faders[side].value() / 100.0)
+            self._monitor.write(np.clip(monitor, -1.0, 1.0))
         if self._mixing() and self.makes_the_mix:
             me = self._me_fifo[:n]
             self._me_fifo = self._me_fifo[n:]
             if len(me) < n:
                 me = np.concatenate([me, np.zeros((n - len(me), audio.CHANNELS), dtype=np.float32)])
-            me = self.me_strip.process(me)
-            mix = audio.program_mix(
-                me,
-                them,
-                self.me_volume.value() / 100.0,
-                self.them_volume.value() / 100.0,
-                self.crossfader.value() / 100.0,
-            )
+            strips = [(self.me_strip.process(me), self.me_volume.value() / 100.0, self.assigns[controls.ME].currentData())]
+            strips += [(samples, self.faders[side].value() / 100.0, self.assigns[side].currentData()) for side, samples in others]
+            mix = audio.mix_strips(strips, self.crossfader.value() / 100.0, n)
             if self._program is not None and self._program.free_frames() >= len(mix):
                 self._program.write(mix)
             if self.recorder is not None:
@@ -767,21 +923,24 @@ class RemoteAudioPanel(QFrame):
         return self._program is not None or self.recorder is not None or listeners
 
     def _show_status(self) -> None:
-        player = self.player
-        if player is None:
+        if self._reader is None:
             return
         count = len(self.listen_server.listeners()) if self.listen_server is not None else 0
         self.listeners_label.setText(
             self.tr("{count} listening").format(count=count) if count and self.makes_the_mix else ""
         )
+        players = [player for _dj, player in self.players.items()]
+        received = sum(player.received for player in players)
+        played = sum(player.played for player in players)
+        missing = sum(player.missing for player in players)
         if self.link is not None and self.link.error:
             self.status_label.setText(self.tr("Network error: {error}").format(error=self.link.error))
-        elif player.received == 0:
+        elif received == 0:
             self.status_label.setText(self.tr("Sound on. Nothing from the other DJ yet."))
         else:
             self.status_label.setText(
                 self.tr("Their sound lands one bar late, on your grid. Gaps: {gaps:.1f} %").format(
-                    gaps=player.gap_ratio() * 100
+                    gaps=(missing / played * 100) if played else 0.0
                 )
             )
 
