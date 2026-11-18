@@ -167,7 +167,7 @@ try **Light** or a cable instead of Wi-Fi.
 or **Crossfader**, then move a fader or knob on your controller: it drives
 that mixer control from then on (the button shows it, for example
 `ch7 CC 31`). Faders and knobs only (Control Change or pitch bend), never a
-pad. **✕** forgets it. The assignments are kept in your workspace, and the
+pad. **✕** forgets it. The EQ and filter knobs below learn the same way. The assignments are kept in your workspace, and the
 mixer only listens: your DJ software still gets every move. Pick a control
 your DJ software doesn't use, or one you're happy to move in both places.
 
@@ -177,7 +177,14 @@ upload. Both of you need this version (v0.48.253 or later): older versions
 don't understand the new sound packets. Pick **Full, 48 kHz** for a
 local network or a recording where every bit counts.
 
-Not there yet: an EQ and filter per DJ.
+**EQ and filter.** Under the mixer, each of you has the knobs of a club
+mixer channel: **Low**, **Mid** and **High** (full cut to the left, +6 dB to
+the right, flat at noon) and a **Filter** (low-pass to the left, high-pass to
+the right, off at noon). The other DJ's knobs shape what you hear and the
+program mix; yours shape the program mix (your room hears your own mixer as
+usual). **Flat** puts a channel back to noon. Every knob has its own
+**Learn**, like the faders: your controller's EQ knobs send 64 at their
+centre detent, which is noon here too.
 
 ## What travels
 
