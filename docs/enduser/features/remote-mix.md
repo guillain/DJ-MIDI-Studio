@@ -16,6 +16,7 @@
 - [One tempo for two homes](#one-tempo-for-two-homes)
 - [Hear each other on the grid](#hear-each-other-on-the-grid)
 - [Signals between DJs](#signals-between-djs)
+- [The shared tracklist](#the-shared-tracklist)
 - [What travels](#what-travels)
 - [Related](#related)
 
@@ -251,11 +252,26 @@ binds, so a fader moved by mistake can't. Your DJ software still gets the
 pad too: pick one it doesn't use. The pads are kept in your workspace
 (`mix-together-signals.json`).
 
+## The shared tracklist
+
+Once connected, the **Tracklist** box (right of the mixer) lists every DJ's
+tracks, with the time and who played it, the same on every computer. Each
+computer reads its own DJ software's history, Serato's or Traktor's, in the
+usual folder under your Music folder, or the one you pick with **Choose the
+history folder…**. It only reads it, and only the tracks played since the
+session started; nothing is ever written there.
+
+If your DJ software doesn't write its history during the set, or you play
+from somewhere else, type the track (`Artist – Title`) and **Add**. At the
+end, **Copy the tracklist** (for a post or a description) or **Save the
+tracklist** (a text file in your Exports folder). The list stays on screen
+after you stop.
+
 ## What travels
 
 Only this window's own packets, between your two computers: on the port you
 chose, clock readings and, with Link, tempo, beat, the number of Link apps
-and who leads, the mixer's moves and the signals; once you start the sound, on the next port (47801 by
+and who leads, the mixer's moves, the signals and the tracklist (titles and artists only); once you start the sound, on the next port (47801 by
 default), your master as you chose it; and from the control room, on the
 port after (47802), the official mix to the listeners who asked for it. No
 tracks, no files. Nothing is sent to anyone else.

@@ -95,7 +95,7 @@ def test_the_dialog_routes_signals_and_the_hub_relays_them(tmp_path):
     dialog = RemoteMixDialog(
         session_factory=Session, link_factory=lambda: None, addresses=list, report_dir=lambda: tmp_path,
         now=lambda: datetime(2026, 11, 21, 21, 0),  # noqa: DTZ001
-        controls_path=tmp_path / "c.json",
+        controls_path=tmp_path / "c.json", history_dirs=dict, exports_dir=tmp_path,
     )
     try:
         dialog.start_button.click()

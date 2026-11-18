@@ -42,13 +42,15 @@ from djmidi.gui.help_button import help_button
 from djmidi.gui.remote_mix_audio import AudioBackend, RemoteAudioPanel
 from djmidi.gui.remote_mix_listen import ListenerPanel
 from djmidi.gui.remote_mix_signals import SignalsPanel
+from djmidi.gui.remote_mix_tracklist import TracklistPanel
 from djmidi.gui.translation import translator
 from djmidi.gui.window_size import (
     ResponsiveRow,
     fit_to_screen,
     keep_wrapped_text_visible,
 )
-from djmidi.remote_mix import audio, bridge, listen, probe, signals
+from djmidi.library import history
+from djmidi.remote_mix import audio, bridge, listen, probe, signals, tracklist
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -100,6 +102,8 @@ class RemoteMixDialog(QDialog):
         listener_factory: Callable[..., listen.ListenerClient] = listen.ListenerClient,
         ensure_listening: Callable[[], bool] | None = None,
         controls_path: Path | None = None,
+        history_dirs: Callable[[], dict[str, Path]] = history.default_history_dirs,
+        exports_dir: Path | None = None,
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle(self.tr("Mix Together"))
@@ -240,6 +244,12 @@ class RemoteMixDialog(QDialog):
         right = QVBoxLayout(sound_column)
         right.setContentsMargins(0, 0, 0, 0)
         right.addWidget(self.sound_panel)
+        # The shared tracklist (phase 11): shown once in a session, kept after it to copy or save.
+        self.tracklist_panel = TracklistPanel(
+            self, name_of=self.sound_panel._dj_name, history_dirs=history_dirs, exports_dir=exports_dir
+        )
+        self.tracklist_panel.hide()
+        right.addWidget(self.tracklist_panel)
         right.addStretch(1)
         self.columns = ResponsiveRow(
             [(connect_column, 3), (self.sound_panel.table_widget, 4), (sound_column, 3)], spacing=16
@@ -420,6 +430,7 @@ class RemoteMixDialog(QDialog):
             return
         self.session = session
         self._mix_ticks = 0
+        self.tracklist_panel.reset()
         self._started = self._now()
         self.last_report = None
         for widget in (self.host_radio, self.join_radio, self.address_edit, self.port_spin, self.link_checkbox, self.name_edit):
@@ -444,6 +455,8 @@ class RemoteMixDialog(QDialog):
         self.together_frame.hide()
         self.signals_panel.detach()
         self.signals_panel.hide()
+        self.tracklist_panel.detach()
+        self.tracklist_panel.setVisible(self.tracklist_panel.copy_button.isEnabled())
         for widget in (self.host_radio, self.join_radio, self.address_edit, self.port_spin, self.link_checkbox, self.name_edit):
             widget.setEnabled(True)
         self.start_button.setText(self.tr("Start the test"))
@@ -461,6 +474,8 @@ class RemoteMixDialog(QDialog):
             if self.sound_panel.table is None or self.sound_panel.table.me != me:
                 self.sound_panel.attach_table(me, send)
             self.signals_panel.attach(me, send)
+            self.tracklist_panel.attach(me, send)
+            self.tracklist_panel.show()
             self.sound_panel.set_roster(me, dict(getattr(self.session, "roster", {}) or {}))
         inbox = getattr(self.session, "inbox", None)
         while inbox is not None:
@@ -470,11 +485,15 @@ class RemoteMixDialog(QDialog):
                 break
             if message.get("k") == signals.MESSAGE_KIND:
                 self.signals_panel.receive(message)
+            elif message.get("k") == tracklist.MESSAGE_KIND:
+                self.tracklist_panel.receive(message)
             else:
                 self.sound_panel.apply_remote(message)
         self._mix_ticks = getattr(self, "_mix_ticks", 0) + 1
         if self._mix_ticks % 4 == 0:
             self.sound_panel.send_snapshot()
+        if self._mix_ticks % tracklist.RESEND_EVERY == 0:
+            self.tracklist_panel.resend()
 
     def refresh(self) -> None:
         if self.session is not None:
@@ -571,6 +590,9 @@ class RemoteMixDialog(QDialog):
                                      border-radius: 10px; }}
             QFrame#remoteTogether QLabel {{ background: transparent; border: none; color: {c["text"]}; }}
             QLabel#remotePhrase {{ font-size: 18px; font-weight: 600; }}
+            QFrame#remoteTracklist {{ background: {c["panel_bg"]}; border: 1px solid {c["panel_border"]};
+                                      border-radius: 10px; }}
+            QFrame#remoteTracklist > QLabel {{ background: transparent; border: none; color: {c["text"]}; }}
             QFrame#remoteSignals {{ background: {c["panel_bg"]}; border: 1px solid {c["panel_border"]};
                                     border-radius: 10px; }}
             QFrame#remoteSignals QLabel {{ background: transparent; border: none; color: {c["text"]}; }}
