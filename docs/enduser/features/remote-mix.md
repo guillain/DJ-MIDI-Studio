@@ -1,7 +1,7 @@
 # 🌍 Mix together from two places
 
 > Two DJs, two homes, two DJ programs (say Serato on a Mac and Traktor Pro 4
-> on Windows), one shared tempo. **Tools → Mix Together…** tests the line
+> on Windows), one shared tempo. The **Mix Together** tab tests the line
 > between you, then keeps your two Ableton Link sessions on one tempo and
 > one beat: one DJ leads, the other follows, and you hand the lead over.
 
@@ -71,7 +71,7 @@ Do it together, on the phone, each with a cable (not Wi-Fi) to the box.
 
 **3. The connection test (this app, both sides)**
 
-- Both open **Tools → Mix Together…** — see below.
+- Both open the **Mix Together** tab (also **Tools → Mix Together…**) — see below.
 - Run it 10 minutes with Link on and a deck playing on each side.
 
 **4. Sound, with an existing tool — SonoBus**
@@ -90,7 +90,7 @@ way: a red result tells what to fix first.
 
 ## The connection test
 
-**Tools → Mix Together…**, on both computers:
+In the **Mix Together** tab (also **Tools → Mix Together…**), on both computers:
 
 | Step | Host | The other DJ |
 |---|---|---|
@@ -192,6 +192,17 @@ program mix; yours shape the program mix (your room hears your own mixer as
 usual). **Flat** puts a channel back to noon. Every knob has its own
 **Learn**, like the faders: your controller's EQ knobs send 64 at their
 centre detent, which is noon here too.
+
+**One mixer for both of you.** Once connected, the mixer is shared: every
+move of a volume, an EQ knob, the filter or the crossfader shows up on the
+other DJ's screen and in their sound, about as fast as the line (only the
+settings travel; each computer already has both sounds). Your own channel
+is **Me** on your screen and carries your name on theirs; the crossfader has
+each of you on your own left. If you both move the same control, the last
+gesture wins, and the line under the mixer says what the other DJ just
+moved. A controller assigned with **Learn** waits until you bring it to
+where the other DJ left the control before it takes over, so the sound
+never jumps.
 
 ## What travels
 
