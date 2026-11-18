@@ -117,7 +117,9 @@ def test_slow_and_large_batches_are_logged(monkeypatch, caplog):
     view._monitor = _FakeMonitor([_jog(i) for i in range(250)])
     with caplog.at_level(logging.INFO, logger=live_monitor_mod.__name__):
         view._poll()
-    assert "Live MIDI burst: 250 event(s)" in caplog.text
+    # A slow CI runner may cross the slow-batch threshold too: then the batch is
+    # logged as slow ("took … ms") rather than as a burst. Either way it's logged.
+    assert "Live MIDI burst: 250 event(s)" in caplog.text or "Live MIDI: 250 event(s) took" in caplog.text
     assert "XDJ-XZ (1) Control Change ch1 #34 ×250" in caplog.text
     monkeypatch.setattr(live_monitor_mod, "SLOW_BATCH_MS", 0)
     view._monitor = _FakeMonitor([_jog(1)])

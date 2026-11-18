@@ -217,12 +217,22 @@ Only the control room sends the program mix to **Program mix to** and can
 the official mix is made, so you never end up with two different
 recordings. Both of you still hear each other and move the same mixer.
 
+**Listen without decks.** A third computer (a friend, the next DJ, a laptop
+feeding a stream) ticks **I listen**, types the control room's address and
+presses **Listen**: it hears the official mix, Opus-compressed (about
+0.25 Mb/s per listener), after a short 300 ms buffer. Up to 16 listeners;
+the control room shows how many are listening. The control room needs one
+more port open: 47802 (UDP) by default. If the other DJ becomes the control
+room, listeners type that DJ's address instead.
+
 ## What travels
 
 Only this window's own packets, between your two computers: on the port you
 chose, clock readings and, with Link, tempo, beat, the number of Link apps
 and who leads; once you start the sound, on the next port (47801 by
-default), your master as you chose it. No tracks, no files. Nothing is sent to anyone else.
+default), your master as you chose it; and from the control room, on the
+port after (47802), the official mix to the listeners who asked for it. No
+tracks, no files. Nothing is sent to anyone else.
 
 ## Related
 

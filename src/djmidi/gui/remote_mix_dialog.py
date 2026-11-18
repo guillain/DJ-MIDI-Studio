@@ -40,13 +40,14 @@ from djmidi import user_paths
 from djmidi.gui import help_texts, theme
 from djmidi.gui.help_button import help_button
 from djmidi.gui.remote_mix_audio import AudioBackend, RemoteAudioPanel
+from djmidi.gui.remote_mix_listen import ListenerPanel
 from djmidi.gui.translation import translator
 from djmidi.gui.window_size import (
     ResponsiveRow,
     fit_to_screen,
     keep_wrapped_text_visible,
 )
-from djmidi.remote_mix import audio, bridge, probe, table
+from djmidi.remote_mix import audio, bridge, listen, probe, table
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -95,6 +96,7 @@ class RemoteMixDialog(QDialog):
         now: Callable[[], datetime] = datetime.now,
         audio_backend: AudioBackend | None = None,
         audio_link_factory: Callable[..., audio.AudioLink] = audio.AudioLink,
+        listener_factory: Callable[..., listen.ListenerClient] = listen.ListenerClient,
         ensure_listening: Callable[[], bool] | None = None,
         controls_path: Path | None = None,
     ) -> None:
@@ -130,9 +132,13 @@ class RemoteMixDialog(QDialog):
         roles = QButtonGroup(self)
         roles.addButton(self.host_radio)
         roles.addButton(self.join_radio)
+        self.listen_radio = QRadioButton(self.tr("I listen"))
+        self.listen_radio.setToolTip(self.tr("No decks: hear the official mix from the control room"))
+        roles.addButton(self.listen_radio)
         role_row = QHBoxLayout()
         role_row.addWidget(self.host_radio)
         role_row.addWidget(self.join_radio)
+        role_row.addWidget(self.listen_radio)
         role_row.addStretch(1)
 
         found = addresses()
@@ -205,14 +211,18 @@ class RemoteMixDialog(QDialog):
         left = QVBoxLayout(connect_column)
         left.setContentsMargins(0, 0, 0, 0)
         left.addLayout(role_row)
-        left.addLayout(form)
+        self._form_widget = QWidget()
+        form.setContentsMargins(0, 0, 0, 0)
+        self._form_widget.setLayout(form)
+        left.addWidget(self._form_widget)
         left.addWidget(self.link_checkbox)
         left.addLayout(buttons)
         left.addWidget(self.status_label)
+        self._lights_frame = lights
         left.addWidget(lights)
         left.addWidget(self._build_together())
         left.addStretch(1)
-        sound_column = QWidget()
+        sound_column = self._sound_column = QWidget()
         right = QVBoxLayout(sound_column)
         right.setContentsMargins(0, 0, 0, 0)
         right.addWidget(self.sound_panel)
@@ -227,6 +237,10 @@ class RemoteMixDialog(QDialog):
         layout.addLayout(header)
         layout.addWidget(intro)
         layout.addWidget(self.columns, 1)
+        # A listener (phase 8) has no decks: its own panel instead of the three columns.
+        self.listener_panel = ListenerPanel(self, backend=audio_backend, client_factory=listener_factory)
+        self.listener_panel.hide()
+        layout.addWidget(self.listener_panel, 1)
         layout.addStretch(1)
         # The sound panel makes the window tall: everything scrolls on a small screen.
         scroll = QScrollArea()
@@ -241,6 +255,7 @@ class RemoteMixDialog(QDialog):
         self._timer.setInterval(250)
         self._timer.timeout.connect(self.refresh)
         self.host_radio.toggled.connect(self._sync_role)
+        self.listen_radio.toggled.connect(self._sync_role)
         self._sync_role()
         self._show_lights(None)
         self._restyle()
@@ -333,6 +348,18 @@ class RemoteMixDialog(QDialog):
         return self.session is not None
 
     def _sync_role(self) -> None:
+        listening = self.listen_radio.isChecked()
+        if listening and self.running:
+            self.stop()
+        if not listening and self.listener_panel.running:
+            self.listener_panel.stop()
+        self.listener_panel.setVisible(listening)
+        for widget in (self._form_widget, self.link_checkbox, self.start_button, self.save_button,
+                       self.status_label, self._lights_frame, self.sound_panel.table_widget, self._sound_column):
+            widget.setVisible(not listening)
+        if listening:
+            self.together_frame.hide()
+            self.sound_panel.hide()
         hosting = self.host_radio.isChecked()
         self._form.setRowVisible(self.addresses_label, hosting)
         self._form.setRowVisible(self.address_edit, not hosting)
@@ -491,6 +518,7 @@ class RemoteMixDialog(QDialog):
 
     def closeEvent(self, event) -> None:
         self.stop()
+        self.listener_panel.stop()
         super().closeEvent(event)
 
     def _restyle(self) -> None:

@@ -349,6 +349,9 @@ surgical and logged. Qt-free modules; the tab is a thin view over `library/works
   Phase 7 = the régie (control room): `SharedTable.claim_regie` / `regie_is_mine` (a stamped "regie" entry, host by
   default); only the régie writes the program output and records it (`remote_mix/recording.ProgramRecorder`, WAV in
   `Exports/`); `RemoteAudioPanel.makes_the_mix`.
+  Phase 8 = listeners: `remote_mix/listen.py` (`ListenerServer` at the régie on port + 2: `listen` hellos, ≤ 16,
+  5 s timeout, Opus program mix via `SendBuffer`/`encode_opus`; `ListenerClient` + `StreamPlayer`, 300 ms buffer) →
+  `gui/remote_mix_listen.ListenerPanel`, shown by the dialog's **I listen** role instead of the three columns.
   Plan and checklist: `docs/enduser/features/remote-mix.md`.
 - `user_paths.py`: the workspace (`~/Documents/DJ MIDI Studio`, `DJMIDI_WORKSPACE`) with `Controllers`, `Sync`,
   `Macros`, `Drafts`, `Logs`, `Exports`, `Snapshots`. `backup.py`: workspace backup/restore (validated, atomic).
