@@ -342,3 +342,24 @@ def test_live_midi_reaches_the_mix_together_mixer(monkeypatch):
         dialog.close()
     finally:
         window.close()
+
+
+def test_eq_knobs_shape_their_sound_and_follow_the_controller(tmp_path):
+    from djmidi.gui.remote_mix_audio import RemoteAudioPanel
+    from djmidi.midi_io import MidiEvent
+    from djmidi.remote_mix import controls
+
+    panel = RemoteAudioPanel(
+        lambda: None, backend=FakeBackend(), ensure_listening=lambda: True, controls_path=tmp_path / "c.json"
+    )
+    try:
+        panel.dials["them_low"].setValue(0)
+        assert panel.them_strip.low == 0 and panel.me_strip.low == 50
+        panel.learn_buttons["me_filter"].click()
+        assert panel.feed_midi_event(MidiEvent("in", "1", "Control Change", "23", "127", 0.0))
+        assert panel.dials["me_filter"].value() == 100 and panel.me_strip.filter == 100
+        assert panel.controls.bindings["me_filter"] == controls.MixerTrigger("1", "Control Change", "23")
+        panel.flat_buttons[controls.THEM].click()
+        assert panel.them_strip.flat
+    finally:
+        panel.close()

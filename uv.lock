@@ -387,7 +387,7 @@ wheels = [
 
 [[package]]
 name = "djmidi"
-version = "0.48.253"
+version = "0.48.254"
 source = { editable = "." }
 dependencies = [
     { name = "aalink" },
@@ -398,6 +398,7 @@ dependencies = [
     { name = "pyside6" },
     { name = "python-rtmidi" },
     { name = "rapidfuzz" },
+    { name = "scipy" },
 ]
 
 [package.optional-dependencies]
@@ -428,6 +429,7 @@ requires-dist = [
     { name = "pyside6", specifier = ">=6.7" },
     { name = "python-rtmidi", specifier = ">=1.5" },
     { name = "rapidfuzz", specifier = ">=3.14.6" },
+    { name = "scipy", specifier = ">=1.14" },
 ]
 provides-extras = ["analysis"]
 

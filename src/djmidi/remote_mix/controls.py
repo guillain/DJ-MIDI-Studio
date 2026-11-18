@@ -1,7 +1,7 @@
 """Your controller on the Mix Together mixer (remote mix, phase 3), Qt-free.
 
-The two volumes and the crossfader of the program mix can follow faders or
-knobs of a real controller: press Learn, move the control, done. Only
+The two volumes, the crossfader and each DJ's EQ and filter knobs (phase 5)
+can follow faders or knobs of a real controller: press Learn, move the control, done. Only
 continuous controls are learned (a Control Change, or a pitch bend for a
 controller whose faders send one); a pad press is ignored, so a stray hit
 while learning can't bind a button to a fader.
@@ -29,7 +29,9 @@ _LOGGER = logging.getLogger(__name__)
 ME = "me"
 THEM = "them"
 CROSSFADER = "crossfader"
-TARGETS = (ME, THEM, CROSSFADER)
+KNOBS = ("low", "mid", "high", "filter")
+EQ_TARGETS = tuple(f"{side}_{knob}" for side in (ME, THEM) for knob in KNOBS)  # "me_low", ...
+TARGETS = (ME, THEM, CROSSFADER, *EQ_TARGETS)
 FILE_NAME = "mix-together-controls.json"
 FORMAT = "djmidi-mix-controls/1"
 _PITCH_MAX = 16383
