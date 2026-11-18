@@ -26,6 +26,7 @@ from djmidi.remote_mix import controls
 HOST = "host"
 GUEST = "guest"
 MESSAGE_KIND = "mix"
+REGIE = "regie"  # which computer makes the official mix (phase 7): the host until someone claims it
 CROSSFADER_TOP = 100
 _RANK = {GUEST: 0, HOST: 1}
 
@@ -73,6 +74,24 @@ class SharedTable:
         self._counter = 0
         self.values: dict[str, int] = {}
         self._stamps: dict[str, Stamp] = {}
+        self._regie_rank = _RANK[HOST]
+        self._regie_stamp: Stamp | None = None
+
+    @property
+    def regie_is_mine(self) -> bool:
+        """Whether this computer makes the official program mix (the régie)."""
+        return self._regie_rank == _RANK[self.role]
+
+    def claim_regie(self) -> dict:
+        """This computer becomes the régie; the message tells the other side."""
+        self._counter += 1
+        self._regie_rank = _RANK[self.role]
+        self._regie_stamp = Stamp(self._counter, _RANK[self.role])
+        return {"k": MESSAGE_KIND, "c": {REGIE: self._regie_entry()}}
+
+    def _regie_entry(self) -> list[int]:
+        assert self._regie_stamp is not None
+        return [self._regie_rank, self._regie_stamp.counter, self._regie_stamp.rank]
 
     def _wire_value(self, local: str, value: int) -> int:
         if local == controls.CROSSFADER and self.role == GUEST:
@@ -95,9 +114,10 @@ class SharedTable:
 
     def snapshot(self) -> dict | None:
         """Every control this side has a value for (sent regularly to repair lost packets)."""
-        if not self.values:
-            return None
-        return {"k": MESSAGE_KIND, "c": {_wire_name(local, self.role): self._entry(local) for local in self.values}}
+        entries = {_wire_name(local, self.role): self._entry(local) for local in self.values}
+        if self._regie_stamp is not None:
+            entries[REGIE] = self._regie_entry()
+        return {"k": MESSAGE_KIND, "c": entries} if entries else None
 
     def receive(self, message: dict) -> list[tuple[str, int]]:
         """The other side's message → the (local control, value) changes to apply here."""
@@ -105,7 +125,11 @@ class SharedTable:
         entries = message.get("c")
         if message.get("k") != MESSAGE_KIND or not isinstance(entries, dict):
             return changes
+
         for wire, raw in entries.items():
+            if wire == REGIE:
+                self._receive_regie(raw)
+                continue
             local = _local_name(str(wire), self.role)
             if local is None or not isinstance(raw, list) or len(raw) != 3:
                 continue
@@ -122,3 +146,14 @@ class SharedTable:
                 self.values[local] = value
                 changes.append((local, value))
         return changes
+
+    def _receive_regie(self, raw: object) -> None:
+        if not isinstance(raw, list) or len(raw) != 3:
+            return
+        if not all(isinstance(part, int) and not isinstance(part, bool) for part in raw):
+            return
+        owner, counter, rank = raw
+        stamp = Stamp(counter, rank)
+        self._counter = max(self._counter, counter)
+        if owner in _RANK.values() and stamp.newer_than(self._regie_stamp):
+            self._regie_rank, self._regie_stamp = owner, stamp

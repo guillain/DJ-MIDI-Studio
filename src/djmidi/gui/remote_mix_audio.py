@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable
+from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Protocol
 
@@ -34,7 +35,7 @@ from PySide6.QtWidgets import (
 )
 
 from djmidi import user_paths
-from djmidi.remote_mix import audio, controls, eq, opus, table
+from djmidi.remote_mix import audio, controls, eq, opus, recording, table
 from djmidi.remote_mix.probe import LinkSnapshot, local_beat_at
 
 if TYPE_CHECKING:
@@ -181,8 +182,10 @@ class RemoteAudioPanel(QFrame):
         link_factory: LinkFactory = audio.AudioLink,
         ensure_listening: Callable[[], bool] | None = None,
         controls_path: Path | None = None,
+        recordings_dir: Path | None = None,
     ) -> None:
         super().__init__(parent)
+        self._recordings_dir = recordings_dir
         self.setObjectName("remoteSound")
         self._ensure_listening = ensure_listening
         self._controls_path = controls_path or user_paths.workspace_dir() / controls.FILE_NAME
@@ -348,6 +351,29 @@ class RemoteAudioPanel(QFrame):
         table_title = QLabel(self.tr("The mixer"))
         table_title.setObjectName("remoteSoundTitle")
         table_box.addWidget(table_title)
+        # The régie (phase 7): the one computer that makes the official mix.
+        self.recorder: recording.ProgramRecorder | None = None
+        self.regie_label = QLabel()
+        self.regie_label.setObjectName("regieLabel")
+        self.regie_label.setWordWrap(True)
+        self.regie_button = QPushButton(self.tr("Make this computer the control room"))
+        self.regie_button.setToolTip(
+            self.tr("The official mix (program output and recording) is then made here, not at the other DJ's")
+        )
+        self.regie_button.clicked.connect(self.claim_regie)
+        self.record_button = QPushButton(self.tr("Record the mix"))
+        self.record_button.setToolTip(self.tr("Records the official mix to a WAV file in your Exports folder"))
+        self.record_button.clicked.connect(self.toggle_recording)
+        self.record_label = QLabel()
+        self.record_label.setWordWrap(True)
+        self.record_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        regie_row = QHBoxLayout()
+        regie_row.addWidget(self.regie_label, 1)
+        regie_row.addWidget(self.regie_button)
+        regie_row.addWidget(self.record_button)
+        table_box.addLayout(regie_row)
+        table_box.addWidget(self.record_label)
+        self._show_regie()
         table_box.addLayout(strips, 1)
         table_box.addLayout(cross)
         table_box.addWidget(self.remote_label)
@@ -493,12 +519,14 @@ class RemoteAudioPanel(QFrame):
         """Share this mixer with the other DJ: moves go out through ``send``."""
         self.table = table.SharedTable(role)
         self._send_mix = send
+        self._show_regie()
 
     def detach_table(self) -> None:
         self.table = None
         self._send_mix = None
         self._needs_pickup.clear()
         self.remote_label.setText("")
+        self._show_regie()
 
     def _on_local_move(self, target: str, value: int) -> None:
         if self._applying_remote or self.table is None or self._send_mix is None:
@@ -516,6 +544,7 @@ class RemoteAudioPanel(QFrame):
         if self.table is None:
             return
         changes = self.table.receive(message)
+        self._show_regie()
         self._applying_remote = True
         try:
             for target, value in changes:
@@ -529,6 +558,56 @@ class RemoteAudioPanel(QFrame):
                     name=self.them_name.text(), control=self._caption(changes[-1][0])
                 )
             )
+
+    # -- the régie (phase 7) ----------------------------------------------
+
+    @property
+    def makes_the_mix(self) -> bool:
+        """This computer makes the official mix: alone, or as the régie."""
+        return self.table is None or self.table.regie_is_mine
+
+    def claim_regie(self) -> None:
+        if self.table is not None and self._send_mix is not None:
+            self._send_mix(self.table.claim_regie())
+        self._show_regie()
+
+    def _show_regie(self) -> None:
+        mine = self.makes_the_mix
+        if self.table is None:
+            self.regie_label.setText(self.tr("The official mix is made on this computer."))
+        elif mine:
+            self.regie_label.setText(self.tr("Control room: the official mix is made here."))
+        else:
+            self.regie_label.setText(
+                self.tr("Control room: the official mix is made at {name}'s.").format(name=self.them_name.text())
+            )
+        self.regie_button.setVisible(self.table is not None and not mine)
+        if not mine:
+            self.stop_recording()
+        self.record_button.setEnabled(mine and self.running)
+        self.program_combo.setEnabled(mine and not self.running)
+        self.record_button.setText(self.tr("Stop recording") if self.recorder is not None else self.tr("Record the mix"))
+
+    def toggle_recording(self) -> None:
+        if self.recorder is not None:
+            self.stop_recording()
+        elif self.running and self.makes_the_mix:
+            folder = self._recordings_dir or user_paths.subfolder(user_paths.EXPORTS)
+            started = datetime.now()  # noqa: DTZ005 - a local file name
+            self.recorder = recording.ProgramRecorder(folder / recording.recording_name(started))
+            self.record_label.setText(self.tr("Recording to {path}").format(path=self.recorder.path))
+        self._show_regie()
+
+    def stop_recording(self) -> None:
+        if self.recorder is None:
+            return
+        recorder, self.recorder = self.recorder, None
+        recorder.close()
+        self.record_label.setText(
+            self.tr("Recorded {minutes} min: {path}").format(minutes=round(recorder.seconds / 60, 1), path=recorder.path)
+        )
+        if hasattr(self, "record_button"):
+            self.record_button.setText(self.tr("Record the mix"))
 
     def _caption(self, target: str) -> str:
         owner = self.tr("Me") if target.startswith(controls.ME) else self.them_name.text()
@@ -545,6 +624,7 @@ class RemoteAudioPanel(QFrame):
     def set_peer_name(self, name: str) -> None:
         self.them_name.setText(name)
         self.them_eq_name.setText(name)
+        self._show_regie()
 
     def toggle(self) -> None:
         if self.running:
@@ -593,6 +673,7 @@ class RemoteAudioPanel(QFrame):
         self._status_timer.start()
         self._show_status()
         self.listen_to_controller()
+        self._show_regie()
         return True
 
     def stop(self) -> None:
@@ -608,6 +689,8 @@ class RemoteAudioPanel(QFrame):
         for widget in (self.input_combo, self.monitor_combo, self.program_combo, self.quality_combo):
             widget.setEnabled(True)
         self.start_button.setText(self.tr("Start the sound"))
+        self.stop_recording()
+        self._show_regie()
         self.status_label.setText(self.tr("Sound off."))
         self.me_meter.setValue(0)
         self.them_meter.setValue(0)
@@ -631,7 +714,7 @@ class RemoteAudioPanel(QFrame):
                 self._position += len(block)
                 if self.link is not None:
                     self.link.send(packets)
-                if self._program is not None:
+                if self._program is not None or self.recorder is not None:
                     self._me_fifo = np.concatenate([self._me_fifo, block])[-audio.RATE :]
         driver = self._monitor or self._program
         if driver is None:
@@ -644,7 +727,7 @@ class RemoteAudioPanel(QFrame):
         self.them_meter.setValue(int(self.player.last_peak * 100))
         if self._monitor is not None:
             self._monitor.write(them * (self.them_volume.value() / 100.0))
-        if self._program is not None:
+        if (self._program is not None or self.recorder is not None) and self.makes_the_mix:
             me = self._me_fifo[:n]
             self._me_fifo = self._me_fifo[n:]
             if len(me) < n:
@@ -657,8 +740,10 @@ class RemoteAudioPanel(QFrame):
                 self.them_volume.value() / 100.0,
                 self.crossfader.value() / 100.0,
             )
-            if self._program.free_frames() >= len(mix):
+            if self._program is not None and self._program.free_frames() >= len(mix):
                 self._program.write(mix)
+            if self.recorder is not None:
+                self.recorder.write(mix)
 
     def _show_status(self) -> None:
         player = self.player

@@ -209,6 +209,14 @@ moved. A controller assigned with **Learn** waits until you bring it to
 where the other DJ left the control before it takes over, so the sound
 never jumps.
 
+**The control room (régie).** One computer makes the official mix: the
+host, until the other DJ presses **Make this computer the control room**.
+Only the control room sends the program mix to **Program mix to** and can
+**Record the mix**: a WAV file (48 kHz, stereo) in your workspace's
+`Exports` folder, written as you play. The line above the mixer says where
+the official mix is made, so you never end up with two different
+recordings. Both of you still hear each other and move the same mixer.
+
 ## What travels
 
 Only this window's own packets, between your two computers: on the port you

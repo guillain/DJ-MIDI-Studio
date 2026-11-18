@@ -410,3 +410,36 @@ def test_mix_together_has_its_own_tab_after_music():
         assert window.left_tabs.currentIndex() == index
     finally:
         window.close()
+
+
+def test_the_regie_makes_and_records_the_official_mix(tmp_path):
+    from djmidi.gui.remote_mix_audio import RemoteAudioPanel
+    from djmidi.remote_mix import table
+
+    links = []
+    panel = RemoteAudioPanel(
+        lambda: ("127.0.0.1", 9, lambda: probe.LinkSnapshot(tempo=120.0, beat=8.0, at=0.0, peers=1)),
+        backend=FakeBackend(),
+        link_factory=lambda **kw: links.append(FakeAudioLink(**kw)) or links[-1],
+        controls_path=tmp_path / "c.json",
+        recordings_dir=tmp_path / "Exports",
+    )
+    to_host = []
+    panel.attach_table(table.GUEST, to_host.append)
+    try:
+        assert not panel.makes_the_mix and "made at" in panel.regie_label.text()
+        assert panel.start()
+        assert not panel.record_button.isEnabled()  # the host is the régie
+        panel.regie_button.click()
+        assert panel.makes_the_mix and to_host and "here" in panel.regie_label.text()
+        assert panel.record_button.isEnabled()
+        panel.record_button.click()
+        assert panel.recorder is not None
+        for _ in range(5):
+            panel.pump()
+        panel.record_button.click()
+        files = list((tmp_path / "Exports").glob("mix-together-*.wav"))
+        assert len(files) == 1 and "Recorded" in panel.record_label.text()
+    finally:
+        panel.stop()
+        panel.close()

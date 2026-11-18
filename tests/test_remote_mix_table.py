@@ -38,3 +38,15 @@ def test_a_snapshot_repairs_a_lost_packet_and_bad_messages_are_ignored():
     assert SharedTable(GUEST).snapshot() is None
     assert guest.receive({"k": "mix", "c": {"host_nope": [1, 99, 1], "guest_low": ["x", 1, 0]}}) == []
     assert guest.receive({"k": "ping"}) == []
+
+
+def test_the_host_is_the_regie_until_the_guest_claims_it():
+    host, guest = SharedTable(HOST), SharedTable(GUEST)
+    assert host.regie_is_mine and not guest.regie_is_mine
+    host.receive(guest.claim_regie())
+    assert guest.regie_is_mine and not host.regie_is_mine
+    later = SharedTable(HOST)
+    later.receive(guest.snapshot())  # a lost claim comes back with the snapshot
+    assert not later.regie_is_mine
+    guest.receive(host.claim_regie())
+    assert host.regie_is_mine and not guest.regie_is_mine

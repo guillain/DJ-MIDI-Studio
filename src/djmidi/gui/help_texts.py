@@ -488,7 +488,9 @@ REMOTE_MIX: HelpEntry = (
         "fader or knob on your controller: it drives that mixer control from then on. Each DJ also has "
         "<b>Low</b>, <b>Mid</b>, <b>High</b> and <b>Filter</b> knobs, flat at noon; <b>Flat</b> resets them. "
         "Once connected the mixer is shared: what one of you moves, the other sees and hears; the last "
-        "gesture wins.<br><br>"
+        "gesture wins. One computer is the control room (the host, until the other presses "
+        "<b>Make this computer the control room</b>): only it sends the program mix and can "
+        "<b>Record the mix</b> to a WAV file in Exports.<br><br>"
         "<b>Save the report</b> (in your Logs folder) and send it to the other DJ. Nothing is sent to "
         "anyone else; only this window's own small packets travel.",
     ),
