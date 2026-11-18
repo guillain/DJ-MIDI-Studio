@@ -28,8 +28,15 @@ internet always arrives late (30 to 120 ms between two cities). The plan:
    bridge in **Mix Together**, works without one carrying Link);
 2. delay the other DJ's sound by exactly one bar minus the line's latency,
    so it lands on your grid (phase 2), with a shared mixer driven from your
-   controllers (phase 3);
+   controllers (phase 3), compressed with Opus (phase 4), with an EQ and
+   a filter per DJ (phase 5);
 3. later: back-to-back signals, a shared tracklist, more than two DJs.
+
+**The plan as a page to share** (in French, with the phase 0 checklist to
+tick on both sides, the lights and what's ready):
+[Mixer ensemble à 500 km](https://claude.ai/artifact/TbJpiDdRP2T56wZKjzAhSC).
+It is private: the maintainer shares it with the other DJ from its Share
+menu.
 
 ## Phase 0 checklist
 
