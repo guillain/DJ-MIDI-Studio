@@ -19,6 +19,7 @@ from typing import TYPE_CHECKING, Protocol
 import numpy as np
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import (
+    QCheckBox,
     QComboBox,
     QDial,
     QFormLayout,
@@ -369,6 +370,7 @@ class RemoteAudioPanel(QFrame):
         table_box.addWidget(table_title)
         # The régie (phase 7): the one computer that makes the official mix.
         self.recorder: recording.ProgramRecorder | None = None
+        self.stems: recording.StemsRecorder | None = None
         self.regie_label = QLabel()
         self.regie_label.setObjectName("regieLabel")
         self.regie_label.setWordWrap(True)
@@ -380,6 +382,10 @@ class RemoteAudioPanel(QFrame):
         self.record_button = QPushButton(self.tr("Record the mix"))
         self.record_button.setToolTip(self.tr("Records the official mix to a WAV file in your Exports folder"))
         self.record_button.clicked.connect(self.toggle_recording)
+        self.stems_checkbox = QCheckBox(self.tr("One track per DJ too"))
+        self.stems_checkbox.setToolTip(
+            self.tr("Also records each DJ's own sound (before EQ and fader) to its own WAV, to re-edit the set")
+        )
         self.record_label = QLabel()
         self.record_label.setWordWrap(True)
         self.record_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
@@ -387,6 +393,7 @@ class RemoteAudioPanel(QFrame):
         regie_row.addWidget(self.regie_label, 1)
         regie_row.addWidget(self.regie_button)
         regie_row.addWidget(self.record_button)
+        regie_row.addWidget(self.stems_checkbox)
         self.listeners_label = QLabel()
         self.listeners_label.setObjectName("listenersLabel")
         regie_row.addWidget(self.listeners_label)
@@ -697,6 +704,8 @@ class RemoteAudioPanel(QFrame):
             folder = self._recordings_dir or user_paths.subfolder(user_paths.EXPORTS)
             started = datetime.now()  # noqa: DTZ005 - a local file name
             self.recorder = recording.ProgramRecorder(folder / recording.recording_name(started))
+            if self.stems_checkbox.isChecked():
+                self.stems = recording.StemsRecorder(folder, started)
             self.record_label.setText(self.tr("Recording to {path}").format(path=self.recorder.path))
         self._show_regie()
 
@@ -705,9 +714,12 @@ class RemoteAudioPanel(QFrame):
             return
         recorder, self.recorder = self.recorder, None
         recorder.close()
-        self.record_label.setText(
-            self.tr("Recorded {minutes} min: {path}").format(minutes=round(recorder.seconds / 60, 1), path=recorder.path)
-        )
+        text = self.tr("Recorded {minutes} min: {path}").format(minutes=round(recorder.seconds / 60, 1), path=recorder.path)
+        if self.stems is not None:
+            stems, self.stems = self.stems, None
+            stems.close()
+            text += " " + self.tr("(+ {count} track(s), one per DJ)").format(count=len(stems.paths))
+        self.record_label.setText(text)
         if hasattr(self, "record_button"):
             self.record_button.setText(self.tr("Record the mix"))
 
@@ -891,11 +903,13 @@ class RemoteAudioPanel(QFrame):
         delay_frames = driver.queued_frames() + self.nudge_spin.value() * audio.RATE // 1000
         heard_beat = now_beat + delay_frames * beats_per_frame
         others: list[tuple[str, np.ndarray]] = []  # each other DJ, one bar late, through their strip's EQ
+        raw: dict[int, np.ndarray] = {}  # each DJ's own sound, for separate tracks
         for side, dj in self.slot_dj.items():
             if side == controls.ME or dj is None:
                 continue
             player = self.players.get(dj)
-            others.append((side, self.eqs[side].process(player.read(n, heard_beat))))
+            raw[dj] = player.read(n, heard_beat)
+            others.append((side, self.eqs[side].process(raw[dj])))
             self.meters[side].setValue(int(player.last_peak * 100))
         if self._monitor is not None:
             monitor = np.zeros((n, audio.CHANNELS), dtype=np.float32)
@@ -914,6 +928,9 @@ class RemoteAudioPanel(QFrame):
                 self._program.write(mix)
             if self.recorder is not None:
                 self.recorder.write(mix)
+            if self.stems is not None:
+                raw[self.slot_dj[controls.ME]] = me
+                self.stems.write(raw, self._roster or {})
             if self.listen_server is not None:
                 self.listen_server.send_mix(mix)
 

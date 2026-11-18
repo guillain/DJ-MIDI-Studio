@@ -222,6 +222,10 @@ Only the control room sends the program mix to **Program mix to** and can
 `Exports` folder, written as you play. The line above the mixer says where
 the official mix is made, so you never end up with two different
 recordings. Both of you still hear each other and move the same mixer.
+Tick **One track per DJ too** before recording to also get each DJ's own
+sound, before their EQ and fader, in its own WAV next to the mix
+(`…-dj2-Alex.wav`), all on the same timeline: line them up in any audio
+editor to re-edit the set.
 
 **Listen without decks.** A third computer (a friend, the next DJ, a laptop
 feeding a stream) ticks **I listen**, types the control room's address and
