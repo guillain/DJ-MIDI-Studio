@@ -491,7 +491,8 @@ REMOTE_MIX: HelpEntry = (
         "gesture wins. One computer is the control room (the host, until the other presses "
         "<b>Make this computer the control room</b>): only it sends the program mix and can "
         "<b>Record the mix</b> to a WAV file in Exports. A computer without decks ticks <b>I listen</b> "
-        "and types the control room's address to hear the official mix.<br><br>"
+        "and types the control room's address to hear the official mix. Up to four DJs can join the host: "
+        "one strip each, with its crossfader side (A, B or Thru).<br><br>"
         "<b>Save the report</b> (in your Logs folder) and send it to the other DJ. Nothing is sent to "
         "anyone else; only this window's own small packets travel.",
     ),

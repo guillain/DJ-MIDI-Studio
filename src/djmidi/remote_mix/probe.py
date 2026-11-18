@@ -33,6 +33,8 @@ _LOGGER = logging.getLogger(__name__)
 PROTOCOL = "djmidi-mix/1"
 DEFAULT_PORT = 47800
 MAX_PACKET = 1024
+MAX_DJS = 4  # the host and up to three guests (phase 9)
+GUEST_TIMEOUT_S = 10.0
 PING_INTERVAL_S = 0.1
 QUANTUM = 4.0
 MAX_SAMPLES = 36_000  # one hour at ten pings a second
@@ -293,6 +295,8 @@ class ProbeSession:
         bind_host: str = "0.0.0.0",
         link_control=None,
         follow: bool = False,
+        max_peers: int = 1,
+        name: str = "",
     ) -> None:
         from djmidi.remote_mix.bridge import LinkFollower  # bridge imports this module
 
@@ -317,6 +321,13 @@ class ProbeSession:
         self._socket: socket.socket | None = None
         self._join_target = peer
         self.error: str | None = None
+        # Several DJs (phase 9): the host is the hub of a star of up to `max_peers` guests.
+        self.max_peers = max(1, max_peers)
+        self.name = name
+        self._guests: dict[tuple[str, int], int] = {}  # guest address → DJ id (host side)
+        self._seen: dict[tuple[str, int], float] = {}
+        self.my_id: int | None = 0 if peer is None else None  # the host is DJ 0; a guest learns its id
+        self.roster: dict[int, str] = {0: name} if peer is None else {}
         # Shared-mixer messages from the other DJ (phase 6), drained by the GUI.
         self.inbox: queue.SimpleQueue[dict] = queue.SimpleQueue()
 
@@ -331,6 +342,32 @@ class ProbeSession:
     @property
     def peer(self) -> tuple[str, int] | None:
         return self._peer
+
+    def peer_ids(self) -> dict[str, int]:
+        """Each other DJ's IP → DJ id (the host knows every guest; a guest only the host)."""
+        if self._join_target is not None:
+            return {self._join_target[0]: 0}
+        with self._lock:
+            return {address[0]: dj for address, dj in self._guests.items()}
+
+    def _targets(self) -> list[tuple[str, int]]:
+        if self._join_target is not None:
+            return [self._join_target]
+        with self._lock:
+            return list(self._guests)
+
+    def _forget_silent_guests(self, now: float) -> None:
+        with self._lock:
+            for address in [a for a, seen in self._seen.items() if now - seen > GUEST_TIMEOUT_S]:
+                dj = self._guests.pop(address, None)
+                self._seen.pop(address, None)
+                self.roster.pop(dj, None)
+                if self._peer == address:
+                    self._peer = min(self._guests, key=self._guests.get) if self._guests else None
+
+    def _roster_message(self, address: tuple[str, int]) -> dict:
+        with self._lock:
+            return {"you": self._guests.get(address), "roster": [[dj, name] for dj, name in sorted(self.roster.items())]}
 
     def start(self) -> None:
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -372,13 +409,19 @@ class ProbeSession:
         while not self._stop.is_set():
             now = self._clock()
             if self._peer is not None and now >= next_ping:
-                seq += 1
-                self._send(sock, {"k": "ping", "s": seq, "t0": now, "lead": self.leading})
-                with self._lock:
-                    self._sent += 1
-                    self._pending[seq] = now
-                    if len(self._pending) > 100:
-                        self._pending.pop(min(self._pending))
+                if self._join_target is None:
+                    self._forget_silent_guests(now)
+                for address in self._targets():
+                    seq += 1
+                    ping = {"k": "ping", "s": seq, "t0": now, "lead": self.leading, "name": self.name}
+                    if self._join_target is None:
+                        ping.update(self._roster_message(address))
+                    self._send_to(sock, ping, address)
+                    with self._lock:
+                        self._sent += 1
+                        self._pending[seq] = now
+                        if len(self._pending) > 100 * self.max_peers:
+                            self._pending.pop(min(self._pending))
                 next_ping = now + self._interval
             try:
                 data, address = sock.recvfrom(MAX_PACKET + 1)
@@ -392,7 +435,7 @@ class ProbeSession:
             self._handle(sock, data, address, self._clock())
 
     def send(self, message: dict) -> None:
-        """Send one message to the other DJ (the shared mixer's moves); nothing before a peer."""
+        """Send one message to the other DJs (the shared mixer's moves); nothing before a peer."""
         if self._socket is not None:
             self._send(self._socket, message)
 
@@ -419,11 +462,15 @@ class ProbeSession:
             self.follow_error = str(exc)
             _LOGGER.warning("Remote mix: Link correction failed: %s", exc)
 
-    def _send(self, sock: socket.socket, message: dict) -> None:
-        if self._peer is None:
-            return
+    def _send(self, sock: socket.socket, message: dict, *, skip: tuple[str, int] | None = None) -> None:
+        """To the host (guest), or to every guest (host) but ``skip``."""
+        for address in self._targets():
+            if address != skip:
+                self._send_to(sock, message, address)
+
+    def _send_to(self, sock: socket.socket, message: dict, address: tuple[str, int]) -> None:
         try:
-            sock.sendto(encode(message), self._peer)
+            sock.sendto(encode(message), address)
         except OSError as exc:
             self.error = str(exc)
 
@@ -431,17 +478,25 @@ class ProbeSession:
         message = decode(data)
         if message is None:
             return
-        if self._peer is None and self._join_target is None:
-            self._peer = (address[0], address[1])  # hosting: lock onto the first DJ that pings
-        if (address[0], address[1]) != self._peer:
+        address = (address[0], address[1])
+        if self._join_target is None:
+            if not self._admit(address, message):
+                return  # hosting: the room is full
+        elif address != self._peer:
             return
+        else:
+            self._learn_roster(message)
         kind = message.get("k")
         if isinstance(message.get("lead"), bool):
             self.remote_leading = message["lead"]
         if kind == "mix":
             self.inbox.put(message)
+            if self._join_target is None:
+                self._send(sock, message, skip=address)  # the hub passes it on to the other guests
             return
         if kind == "take":
+            if self._join_target is None and len(self._guests) > 1:
+                return  # with several DJs the host keeps the lead
             self.leading = False
             self.remote_leading = True
             self.follower.reset()
@@ -452,12 +507,46 @@ class ProbeSession:
                 return
             link = self._link()
             sent = self._clock()
-            reply = {"k": "pong", "s": seq, "t0": t0, "t1": received, "t2": sent, "lead": self.leading}
+            reply = {"k": "pong", "s": seq, "t0": t0, "t1": received, "t2": sent, "lead": self.leading, "name": self.name}
+            if self._join_target is None:
+                reply.update(self._roster_message(address))
             if link is not None:
                 reply.update(tempo=link.tempo, beat=local_beat_at(link, sent), peers=link.peers)
-            self._send(sock, reply)
+            self._send_to(sock, reply, address)
         elif kind == "pong":
             self._on_pong(message, received)
+
+    def _admit(self, address: tuple[str, int], message: dict) -> bool:
+        """Host: a known guest, or a new one while there is room (ids 1, 2, 3 …)."""
+        name = message.get("name")
+        with self._lock:
+            if address not in self._guests:
+                if len(self._guests) >= self.max_peers:
+                    return False
+                taken = set(self._guests.values())
+                self._guests[address] = next(dj for dj in range(1, self.max_peers + 1) if dj not in taken)
+                if self._peer is None:
+                    self._peer = address
+            self._seen[address] = self._clock()
+            dj = self._guests[address]
+            if isinstance(name, str):
+                self.roster[dj] = name[:40]
+            else:
+                self.roster.setdefault(dj, "")
+        return True
+
+    def _learn_roster(self, message: dict) -> None:
+        """Guest: its own id and who is in the room, from the host's messages."""
+        you, roster = message.get("you"), message.get("roster")
+        if isinstance(you, int) and not isinstance(you, bool):
+            self.my_id = you
+        if isinstance(roster, list):
+            known = {}
+            for entry in roster:
+                if isinstance(entry, list) and len(entry) == 2 and isinstance(entry[0], int) and isinstance(entry[1], str):
+                    known[entry[0]] = entry[1][:40]
+            if known:
+                self.roster = known
 
     def _on_pong(self, message: dict, t3: float) -> None:
         t0, t1, t2 = (_number(message, key) for key in ("t0", "t1", "t2"))

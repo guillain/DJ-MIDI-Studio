@@ -47,7 +47,7 @@ from djmidi.gui.window_size import (
     fit_to_screen,
     keep_wrapped_text_visible,
 )
-from djmidi.remote_mix import audio, bridge, listen, probe, table
+from djmidi.remote_mix import audio, bridge, listen, probe
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -150,12 +150,16 @@ class RemoteMixDialog(QDialog):
         self.port_spin = QSpinBox()
         self.port_spin.setRange(1024, 65535)
         self.port_spin.setValue(probe.DEFAULT_PORT)
+        self.name_edit = QLineEdit()
+        self.name_edit.setMaxLength(40)
+        self.name_edit.setPlaceholderText(self.tr("shown on everyone's mixer"))
         self.link_checkbox = QCheckBox(self.tr("Measure Ableton Link too"))
         self.link_checkbox.setChecked(True)
         form = QFormLayout()
         form.addRow(self.tr("Your addresses (give one to the other DJ):"), self.addresses_label)
         form.addRow(self.tr("Host's address:"), self.address_edit)
         form.addRow(self.tr("Port:"), self.port_spin)
+        form.addRow(self.tr("Your DJ name:"), self.name_edit)
         self._form = form
 
         self.start_button = QPushButton(self.tr("Start the test"))
@@ -297,7 +301,8 @@ class RemoteMixDialog(QDialog):
         session = self.session
         if session is None or session.peer is None or self._link is None:
             return None
-        return session.peer[0], self.port_spin.value() + audio.AUDIO_PORT_OFFSET, self._link
+        context = (session.peer[0], self.port_spin.value() + audio.AUDIO_PORT_OFFSET, self._link)
+        return (*context, session) if hasattr(session, "peer_ids") else context
 
     def take_lead(self) -> None:
         if self.session is not None:
@@ -316,7 +321,8 @@ class RemoteMixDialog(QDialog):
         if not connected:
             return
         peer = session.peer[0] if session.peer else "?"
-        self.sound_panel.set_peer_name(peer)
+        if not getattr(session, "roster", None):
+            self.sound_panel.set_peer_name(peer)
         if session.leading:
             text = self.tr("You lead the tempo: {host} follows.").format(host=peer)
         elif not self.follow_checkbox.isChecked():
@@ -328,6 +334,8 @@ class RemoteMixDialog(QDialog):
         if session.follow_error:
             text += " " + self.tr("Link refused a change: {error}").format(error=session.follow_error)
         self.lead_label.setText(text)
+        # With three DJs or more the host keeps the lead (phase 9): no hand-over.
+        self.lead_button.setVisible(len(getattr(session, "roster", {}) or {}) <= 2)
         self.lead_button.setEnabled(not session.leading)
         snapshot = self._link() if self._link is not None else None
         if snapshot is None:
@@ -387,6 +395,8 @@ class RemoteMixDialog(QDialog):
                 link_reader=self._link,
                 link_control=getattr(self._link, "control", None),
                 follow=self.follow_checkbox.isChecked(),
+                max_peers=probe.MAX_DJS - 1 if peer is None else 1,
+                name=self.name_edit.text().strip()[:40],
             )
             session.start()
         except OSError as exc:
@@ -394,13 +404,10 @@ class RemoteMixDialog(QDialog):
             self.status_label.setText(self.tr("Could not start: {error}").format(error=exc))
             return
         self.session = session
-        send = getattr(session, "send", None)
-        if callable(send):
-            self.sound_panel.attach_table(table.HOST if peer is None else table.GUEST, send)
         self._mix_ticks = 0
         self._started = self._now()
         self.last_report = None
-        for widget in (self.host_radio, self.join_radio, self.address_edit, self.port_spin, self.link_checkbox):
+        for widget in (self.host_radio, self.join_radio, self.address_edit, self.port_spin, self.link_checkbox, self.name_edit):
             widget.setEnabled(False)
         self.start_button.setText(self.tr("Stop the test"))
         self._timer.start()
@@ -420,7 +427,7 @@ class RemoteMixDialog(QDialog):
         self.session = None
         self._close_link()
         self.together_frame.hide()
-        for widget in (self.host_radio, self.join_radio, self.address_edit, self.port_spin, self.link_checkbox):
+        for widget in (self.host_radio, self.join_radio, self.address_edit, self.port_spin, self.link_checkbox, self.name_edit):
             widget.setEnabled(True)
         self.start_button.setText(self.tr("Start the test"))
 
@@ -431,7 +438,12 @@ class RemoteMixDialog(QDialog):
         self._link = None
 
     def _share_mixer(self) -> None:
-        """Apply the other DJ's mixer moves; resend ours every second (lost packets)."""
+        """Who is in the room, the other DJs' mixer moves; ours again every second (lost packets)."""
+        me, send = getattr(self.session, "my_id", None), getattr(self.session, "send", None)
+        if me is not None and callable(send):
+            if self.sound_panel.table is None or self.sound_panel.table.me != me:
+                self.sound_panel.attach_table(me, send)
+            self.sound_panel.set_roster(me, dict(getattr(self.session, "roster", {}) or {}))
         inbox = getattr(self.session, "inbox", None)
         while inbox is not None:
             try:
