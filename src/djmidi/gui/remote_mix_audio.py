@@ -248,7 +248,8 @@ class RemoteAudioPanel(QFrame):
         self.status_label = QLabel(self.tr("Sound off."))
         self.status_label.setWordWrap(True)
 
-        mixer = QGridLayout()
+        # The mixer table (shown at the centre of the Mix Together tab): one vertical
+        # channel strip per DJ, like a club mixer, and the crossfader underneath.
         self.me_volume = self._fader()
         self.them_volume = self._fader()
         self.me_meter = self._meter()
@@ -257,46 +258,37 @@ class RemoteAudioPanel(QFrame):
         self.crossfader.setRange(0, 100)
         self.crossfader.setValue(50)
         self.crossfader.setToolTip(self.tr("Program mix: you on the left, the other DJ on the right"))
-        mixer.addWidget(QLabel(self.tr("Me")), 0, 0)
-        mixer.addWidget(self.me_volume, 0, 1)
-        mixer.addWidget(self.me_meter, 0, 2)
         self.them_name = QLabel(self.tr("Them"))
-        mixer.addWidget(self.them_name, 1, 0)
-        mixer.addWidget(self.them_volume, 1, 1)
-        mixer.addWidget(self.them_meter, 1, 2)
-        mixer.addWidget(QLabel(self.tr("Crossfader")), 2, 0)
-        mixer.addWidget(self.crossfader, 2, 1, 1, 2)
-        mixer.setColumnStretch(1, 1)
+        self.them_eq_name = self.them_name  # one name per strip
         self._sliders = {controls.ME: self.me_volume, controls.THEM: self.them_volume, controls.CROSSFADER: self.crossfader}
         self.learn_buttons: dict[str, QPushButton] = {}
         self.forget_buttons: dict[str, QPushButton] = {}
-        for row, target in enumerate((controls.ME, controls.THEM, controls.CROSSFADER)):
-            learn, forget = self._learn_pair(target)
-            mixer.addWidget(learn, row, 3)
-            mixer.addWidget(forget, row, 4)
-
-        # Each DJ's channel: Low / Mid / High / Filter, flat (or off) at noon.
         self.me_strip = eq.ChannelStrip()
         self.them_strip = eq.ChannelStrip()
         self.dials: dict[str, QDial] = {}
-        eq_grid = QGridLayout()
-        captions = (self.tr("Low"), self.tr("Mid"), self.tr("High"), self.tr("Filter"))
-        for column, caption in enumerate(captions, start=1):
-            eq_grid.addWidget(QLabel(caption), 0, column, Qt.AlignmentFlag.AlignHCenter)
-        self.them_eq_name = QLabel(self.tr("Them"))
         self.flat_buttons: dict[str, QPushButton] = {}
-        for row, (side, name, strip) in enumerate(
-            ((controls.ME, QLabel(self.tr("Me")), self.me_strip), (controls.THEM, self.them_eq_name, self.them_strip)),
-            start=1,
+        captions = {"high": self.tr("High"), "mid": self.tr("Mid"), "low": self.tr("Low"), "filter": self.tr("Filter")}
+        strips = QHBoxLayout()
+        strips.setSpacing(18)
+        for side, name, strip, fader, meter in (
+            (controls.ME, QLabel(self.tr("Me")), self.me_strip, self.me_volume, self.me_meter),
+            (controls.THEM, self.them_name, self.them_strip, self.them_volume, self.them_meter),
         ):
-            eq_grid.addWidget(name, row, 0)
-            for column, knob in enumerate(controls.KNOBS, start=1):
+            column = QFrame()
+            column.setObjectName("mixStrip")
+            box = QVBoxLayout(column)
+            name.setObjectName("mixStripName")
+            name.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+            box.addWidget(name)
+            knobs = QGridLayout()
+            knobs.setHorizontalSpacing(4)
+            for row, knob in enumerate(("high", "mid", "low", "filter")):  # top to bottom, as on a mixer
                 target = f"{side}_{knob}"
                 dial = QDial()
                 dial.setRange(0, 100)
                 dial.setValue(eq.CENTRE)
                 dial.setNotchesVisible(True)
-                dial.setFixedSize(44, 44)
+                dial.setFixedSize(46, 46)
                 dial.setToolTip(
                     self.tr("Filter: low-pass to the left, high-pass to the right, off at noon")
                     if knob == "filter"
@@ -305,19 +297,34 @@ class RemoteAudioPanel(QFrame):
                 dial.valueChanged.connect(lambda value, s=strip, k=knob: setattr(s, k, float(value)))
                 self.dials[target] = dial
                 learn, forget = self._learn_pair(target)
-                pair = QHBoxLayout()
-                pair.setSpacing(2)
-                pair.addWidget(learn)
-                pair.addWidget(forget)
-                cell = QVBoxLayout()
-                cell.addWidget(dial, 0, Qt.AlignmentFlag.AlignHCenter)
-                cell.addLayout(pair)
-                eq_grid.addLayout(cell, row, column)
+                knobs.addWidget(QLabel(captions[knob]), row, 0)
+                knobs.addWidget(dial, row, 1)
+                knobs.addWidget(learn, row, 2)
+                knobs.addWidget(forget, row, 3)
+            box.addLayout(knobs)
             flat = QPushButton(self.tr("Flat"))
             flat.setToolTip(self.tr("Back to noon: EQ flat, filter off"))
             flat.clicked.connect(lambda _checked=False, s=side: self.flatten(s))
-            eq_grid.addWidget(flat, row, len(controls.KNOBS) + 1)
             self.flat_buttons[side] = flat
+            box.addWidget(flat)
+            level = QHBoxLayout()
+            level.addStretch(1)
+            level.addWidget(meter)
+            level.addWidget(fader)
+            level.addStretch(1)
+            box.addLayout(level, 1)
+            learn, forget = self._learn_pair(side)
+            pair = QHBoxLayout()
+            pair.addWidget(learn, 1)
+            pair.addWidget(forget)
+            box.addLayout(pair)
+            strips.addWidget(column, 1)
+        cross = QHBoxLayout()
+        cross.addWidget(QLabel(self.tr("Crossfader")))
+        cross.addWidget(self.crossfader, 1)
+        learn, forget = self._learn_pair(controls.CROSSFADER)
+        cross.addWidget(learn)
+        cross.addWidget(forget)
         self._sliders.update(self.dials)
         # The shared mixer (phase 6): every move here goes to the other DJ.
         self.table: table.SharedTable | None = None
@@ -329,11 +336,22 @@ class RemoteAudioPanel(QFrame):
             widget.valueChanged.connect(lambda value, t=target: self._on_local_move(t, value))
         self.remote_label = QLabel()
         self.remote_label.setObjectName("remoteMove")
+        self.remote_label.setWordWrap(True)
         self.controls_hint = QLabel(
             self.tr("Learn: move a fader or knob on your controller and it drives this mixer control.")
         )
         self.controls_hint.setWordWrap(True)
         self._show_controls()
+        self.table_widget = QFrame()
+        self.table_widget.setObjectName("mixTable")
+        table_box = QVBoxLayout(self.table_widget)
+        table_title = QLabel(self.tr("The mixer"))
+        table_title.setObjectName("remoteSoundTitle")
+        table_box.addWidget(table_title)
+        table_box.addLayout(strips, 1)
+        table_box.addLayout(cross)
+        table_box.addWidget(self.remote_label)
+        table_box.addWidget(self.controls_hint)
 
         buttons = QHBoxLayout()
         buttons.addWidget(self.start_button)
@@ -344,10 +362,7 @@ class RemoteAudioPanel(QFrame):
         layout.addLayout(form)
         layout.addLayout(buttons)
         layout.addWidget(self.status_label)
-        layout.addLayout(mixer)
-        layout.addLayout(eq_grid)
-        layout.addWidget(self.remote_label)
-        layout.addWidget(self.controls_hint)
+        layout.addWidget(self.table_widget)  # the Mix Together tab moves it to its centre
 
         self._timer = QTimer(self)
         self._timer.setInterval(5)
@@ -365,7 +380,8 @@ class RemoteAudioPanel(QFrame):
             )
 
     def _fader(self) -> QSlider:
-        slider = QSlider(Qt.Orientation.Horizontal)
+        slider = QSlider(Qt.Orientation.Vertical)
+        slider.setMinimumHeight(140)
         slider.setRange(0, 150)
         slider.setValue(100)
         slider.setToolTip(self.tr("Volume"))
@@ -376,8 +392,9 @@ class RemoteAudioPanel(QFrame):
         meter = QProgressBar()
         meter.setRange(0, 100)
         meter.setTextVisible(False)
-        meter.setFixedWidth(80)
-        meter.setFixedHeight(10)
+        meter.setOrientation(Qt.Orientation.Vertical)
+        meter.setFixedWidth(10)
+        meter.setMinimumHeight(140)
         return meter
 
     def _learn_pair(self, target: str) -> tuple[QPushButton, QPushButton]:

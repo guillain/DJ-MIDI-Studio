@@ -9759,6 +9759,10 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
         <translation>Lernen: Bewege einen Fader oder Regler an deinem Controller, dann steuert er diesen Mixer-Regler.</translation>
     </message>
     <message>
+        <source>The mixer</source>
+        <translation>Der Mixer</translation>
+    </message>
+    <message>
         <source>No sound on this computer: the system audio library is missing ({error}).</source>
         <translation>Kein Sound auf diesem Computer: die Audio-Bibliothek des Systems fehlt ({error}).</translation>
     </message>

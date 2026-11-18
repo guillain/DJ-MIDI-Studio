@@ -9759,6 +9759,10 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <translation>Apprendre : bouge un fader ou un potard de ton contrôleur et il pilote ce réglage de la table.</translation>
     </message>
     <message>
+        <source>The mixer</source>
+        <translation>La table de mix</translation>
+    </message>
+    <message>
         <source>No sound on this computer: the system audio library is missing ({error}).</source>
         <translation>Pas de son sur cet ordinateur : la bibliothèque audio du système manque ({error}).</translation>
     </message>

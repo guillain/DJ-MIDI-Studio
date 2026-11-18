@@ -41,7 +41,11 @@ from djmidi.gui import help_texts, theme
 from djmidi.gui.help_button import help_button
 from djmidi.gui.remote_mix_audio import AudioBackend, RemoteAudioPanel
 from djmidi.gui.translation import translator
-from djmidi.gui.window_size import fit_to_screen, keep_wrapped_text_visible
+from djmidi.gui.window_size import (
+    ResponsiveRow,
+    fit_to_screen,
+    keep_wrapped_text_visible,
+)
 from djmidi.remote_mix import audio, bridge, probe, table
 
 _LOGGER = logging.getLogger(__name__)
@@ -185,18 +189,6 @@ class RemoteMixDialog(QDialog):
             self.lights[key] = (dot, detail)
         grid.setColumnStretch(2, 1)
 
-        body = QWidget()
-        body.setObjectName("remoteBody")
-        layout = QVBoxLayout(body)
-        layout.addLayout(header)
-        layout.addWidget(intro)
-        layout.addLayout(role_row)
-        layout.addLayout(form)
-        layout.addWidget(self.link_checkbox)
-        layout.addLayout(buttons)
-        layout.addWidget(self.status_label)
-        layout.addWidget(lights)
-        layout.addWidget(self._build_together())
         self.sound_panel = RemoteAudioPanel(
             self._audio_context,
             self,
@@ -206,7 +198,35 @@ class RemoteMixDialog(QDialog):
             controls_path=controls_path,
         )
         self.sound_panel.hide()
-        layout.addWidget(self.sound_panel)
+
+        # Three columns: connecting on the left, the mixer at the centre, the sound
+        # on the right (shown once connected); one under the other when narrow.
+        connect_column = QWidget()
+        left = QVBoxLayout(connect_column)
+        left.setContentsMargins(0, 0, 0, 0)
+        left.addLayout(role_row)
+        left.addLayout(form)
+        left.addWidget(self.link_checkbox)
+        left.addLayout(buttons)
+        left.addWidget(self.status_label)
+        left.addWidget(lights)
+        left.addWidget(self._build_together())
+        left.addStretch(1)
+        sound_column = QWidget()
+        right = QVBoxLayout(sound_column)
+        right.setContentsMargins(0, 0, 0, 0)
+        right.addWidget(self.sound_panel)
+        right.addStretch(1)
+        self.columns = ResponsiveRow(
+            [(connect_column, 3), (self.sound_panel.table_widget, 4), (sound_column, 3)], spacing=16
+        )
+
+        body = QWidget()
+        body.setObjectName("remoteBody")
+        layout = QVBoxLayout(body)
+        layout.addLayout(header)
+        layout.addWidget(intro)
+        layout.addWidget(self.columns, 1)
         layout.addStretch(1)
         # The sound panel makes the window tall: everything scrolls on a small screen.
         scroll = QScrollArea()
@@ -479,6 +499,9 @@ class RemoteMixDialog(QDialog):
             f"""
             QLabel#remoteHeadline {{ font-size: 17px; font-weight: 600; color: {c["title"]}; }}
             QLabel#remoteStatus {{ color: {c["hint_text"]}; }}
+            QFrame#mixStrip {{ border: 1px solid {c["panel_border"]}; border-radius: 10px; background: {c["panel_bg"]}; }}
+            QFrame#mixStrip QLabel {{ background: transparent; border: none; }}
+            QLabel#mixStripName {{ font-size: 15px; font-weight: 600; color: {c["title"]}; }}
             QFrame#remoteLights {{ background: {c["panel_bg"]}; border: 1px solid {c["panel_border"]};
                                    border-radius: 10px; }}
             QFrame#remoteLights QLabel {{ background: transparent; border: none; color: {c["text"]}; }}
