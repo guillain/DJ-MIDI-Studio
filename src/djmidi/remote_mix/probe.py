@@ -489,7 +489,7 @@ class ProbeSession:
         kind = message.get("k")
         if isinstance(message.get("lead"), bool):
             self.remote_leading = message["lead"]
-        if kind == "mix":
+        if kind in ("mix", "sig"):  # the shared mixer's moves, signals between DJs
             self.inbox.put(message)
             if self._join_target is None:
                 self._send(sock, message, skip=address)  # the hub passes it on to the other guests
