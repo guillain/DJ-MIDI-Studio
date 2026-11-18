@@ -359,7 +359,7 @@ surgical and logged. Qt-free modules; the tab is a thin view over `library/works
   the panel maps slots me/them/x1/x2 onto DJ ids (`set_roster`, `_wire`/`_local`).
   Phase 10 = signals between DJs: Qt-free `remote_mix/signals.py` (`SignalBoard`: `{"k": "sig"}` sent 3 times,
   shown once per sender + serial; `SignalPads`: Note On pads, `mix-together-signals.json`; keys travel, never
-  text) → `gui/remote_mix_signals.SignalsPanel` (banner, phrase countdown for `drop`); the hub relays "sig" like "mix".
+  text) → `gui/remote_mix_signals.SignalsPanel` (banner, phrase countdown for `drop`); `SignalToast` = frameless always-on-top tool window shown when the app is not in front; the hub relays "sig" like "mix".
   Phase 11 = shared tracklist: Qt-free `remote_mix/tracklist.py` (`HistoryWatcher` re-reads only the newest
   Serato/Traktor history file when its mtime changes, plays since the session start, via `library.history`, read-only;
   `SharedTracklist` rows `{"k": "trk"}` resent every 5 s) → `gui/remote_mix_tracklist.TracklistPanel` (typed rows,

@@ -10878,6 +10878,14 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <translation>Oublier ce pad</translation>
     </message>
     <message>
+        <source>Show signals over other apps</source>
+        <translation>Afficher les signaux par-dessus les autres applis</translation>
+    </message>
+    <message>
+        <source>While you look at your DJ software, a signal shows at the top of the screen for a few seconds</source>
+        <translation>Pendant que tu regardes ton logiciel DJ, un signal s&apos;affiche en haut de l&apos;écran quelques secondes</translation>
+    </message>
+    <message>
         <source>Sent: {signal}</source>
         <translation>Envoyé : {signal}</translation>
     </message>

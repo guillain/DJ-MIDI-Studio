@@ -250,6 +250,12 @@ yet**, **Love it!**. It shows big on every other DJ's screen for a few
 seconds, with the sender's name; a drop also counts the beats to the next
 phrase, on the phrase counter you both see.
 
+You'll be looking at your DJ software, not at this tab: while it is in
+front, a signal also shows in a small window at the top of the screen, over
+the other apps, for a few seconds (it never takes the focus). Untick **Show
+signals over other apps** to keep them in the tab only. Over a DJ program in
+macOS full screen (its own Space) it may not show: keep Serato in a window.
+
 Next to each signal, **Learn a pad**, then press a pad of your controller:
 that pad sends the signal from now on (✕ forgets it). Only a pad press
 binds, so a fader moved by mistake can't. Your DJ software still gets the

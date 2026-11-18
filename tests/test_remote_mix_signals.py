@@ -108,3 +108,21 @@ def test_the_dialog_routes_signals_and_the_hub_relays_them(tmp_path):
         assert "Alex: Your turn" == dialog.signals_panel.banner.text()
     finally:
         dialog.close()
+
+
+def test_a_signal_shows_over_other_apps_when_the_dj_looks_elsewhere(tmp_path):
+    panel = SignalsPanel(pads_path=tmp_path / "s.json", name_of=lambda dj: "Alex")
+    try:
+        panel.attach(0, lambda message: None)
+        assert panel.over_apps.isChecked()
+        alex = signals.SignalBoard(1)
+        panel.receive(alex.send("your_turn"))  # the panel isn't in front: a toast
+        assert panel.toast is not None and panel.toast.isVisible()
+        assert panel.toast.label.text() == "Alex: Your turn"
+        panel._hide_banner()
+        assert not panel.toast.isVisible()
+        panel.over_apps.setChecked(False)
+        panel.receive(alex.send("love"))
+        assert not panel.toast.isVisible() and not panel.banner.isHidden()
+    finally:
+        panel.close()

@@ -10878,6 +10878,14 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
         <translation>Dieses Pad vergessen</translation>
     </message>
     <message>
+        <source>Show signals over other apps</source>
+        <translation>Signale über anderen Apps zeigen</translation>
+    </message>
+    <message>
+        <source>While you look at your DJ software, a signal shows at the top of the screen for a few seconds</source>
+        <translation>Während du auf deine DJ-Software schaust, erscheint ein Signal einige Sekunden oben am Bildschirm</translation>
+    </message>
+    <message>
         <source>Sent: {signal}</source>
         <translation>Gesendet: {signal}</translation>
     </message>

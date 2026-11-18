@@ -17,12 +17,16 @@ def test_the_host_admits_guests_gives_them_ids_and_relays_the_mixer():
     host.start()
     guests = []
     try:
-        for name in ("Alex", "Sam", "Late"):
+        def join(name):
             guest = probe.ProbeSession(port=0, peer=("127.0.0.1", host.port), bind_host="127.0.0.1", interval=0.02, name=name)
             guest.start()
             guests.append(guest)
-        alex, sam, late = guests
-        assert _wait(lambda: alex.my_id is not None and sam.my_id is not None and len(alex.roster) == 3)
+            return guest
+
+        alex, sam = join("Alex"), join("Sam")
+        assert _wait(lambda: alex.my_id is not None and sam.my_id is not None and len(alex.roster) == 3, 10.0)
+        late = join("Late")  # only once the room is full: started together, it could take Sam's place
+        time.sleep(0.2)
         assert {alex.my_id, sam.my_id} == {1, 2}
         assert alex.roster[0] == "Host" and set(alex.roster.values()) == {"Host", "Alex", "Sam"}
         assert late.my_id is None  # the room is full
