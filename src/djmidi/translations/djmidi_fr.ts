@@ -10252,6 +10252,10 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <source>Report saved: {path}</source>
         <translation>Rapport enregistré : {path}</translation>
     </message>
+    <message>
+        <source>Settings not saved: {error}</source>
+        <translation>Réglages non enregistrés : {error}</translation>
+    </message>
 </context>
 <context>
     <name>RemoteMixReport</name>
