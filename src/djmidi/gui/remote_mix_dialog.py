@@ -1,8 +1,10 @@
-"""Tools → Mix Together: Connection Test… (remote mix, phase 0).
+"""Tools → Mix Together… (remote mix, phases 0 and 1).
 
-A thin window over ``djmidi.remote_mix.probe``: host or join, one button,
-three lights (network, stability, tempo and phase) and a report to save and
-send to the other DJ. The session, the Link reader, the address list and the
+A thin window over ``djmidi.remote_mix.probe`` and ``bridge``: host or join,
+one button, three lights (network, stability, tempo and phase), a report to
+save and send to the other DJ and, once connected, the tempo bridge: one DJ
+leads, the other's Link follows, **Take the lead** hands it over, and both
+see the same bar count to the next phrase. The session, the Link reader, the address list and the
 report folder are injectable for tests.
 """
 
@@ -37,7 +39,7 @@ from djmidi.gui import help_texts, theme
 from djmidi.gui.help_button import help_button
 from djmidi.gui.translation import translator
 from djmidi.gui.window_size import fit_to_screen, keep_wrapped_text_visible
-from djmidi.remote_mix import probe
+from djmidi.remote_mix import bridge, probe
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -70,6 +72,7 @@ def _default_link() -> probe.LinkReader | None:
         return None
     reader = probe.link_reader_from(provider)
     reader.close = provider.close  # type: ignore[attr-defined]
+    reader.control = provider  # type: ignore[attr-defined]
     return reader
 
 
@@ -85,7 +88,7 @@ class RemoteMixDialog(QDialog):
         now: Callable[[], datetime] = datetime.now,
     ) -> None:
         super().__init__(parent)
-        self.setWindowTitle(self.tr("Mix Together: Connection Test"))
+        self.setWindowTitle(self.tr("Mix Together"))
         fit_to_screen(self, 560, 470)
         self._session_factory = session_factory
         self._link_factory = link_factory
@@ -96,16 +99,16 @@ class RemoteMixDialog(QDialog):
         self._started: datetime | None = None
         self.last_report: Path | None = None
 
-        headline = QLabel(self.tr("Test the line with the other DJ"))
+        headline = QLabel(self.tr("Mix together from two places"))
         headline.setObjectName("remoteHeadline")
         header = QHBoxLayout()
         header.addWidget(headline, 1)
         header.addWidget(help_button(self, *help_texts.REMOTE_MIX), 0, Qt.AlignmentFlag.AlignTop)
         intro = QLabel(
             self.tr(
-                "Do this once before mixing together. One of you hosts, the other joins with the host's "
-                "address. Turn Link on in both DJ programs, leave the test running a few minutes, then "
-                "save the report and send it over."
+                "One of you hosts, the other joins with the host's address. Turn Link on in both DJ "
+                "programs and start: the lights test the line, then the host's tempo and beat lead and the "
+                "other side's Link follows. Save the report to send the measures over."
             )
         )
         intro.setWordWrap(True)
@@ -184,6 +187,7 @@ class RemoteMixDialog(QDialog):
         layout.addLayout(buttons)
         layout.addWidget(self.status_label)
         layout.addWidget(lights)
+        layout.addWidget(self._build_together())
         layout.addStretch(1)
 
         self._timer = QTimer(self)
@@ -195,6 +199,73 @@ class RemoteMixDialog(QDialog):
         self._restyle()
         theme.signals.themeChanged.connect(self._restyle)
         keep_wrapped_text_visible(self)
+
+    def _build_together(self) -> QFrame:
+        frame = QFrame()
+        frame.setObjectName("remoteTogether")
+        self.together_frame = frame
+        self.follow_checkbox = QCheckBox(self.tr("Keep our tempos together"))
+        self.follow_checkbox.setChecked(True)
+        self.follow_checkbox.setToolTip(
+            self.tr("The DJ who leads sets tempo and beat; the other side's Link follows, and so does its DJ software")
+        )
+        self.follow_checkbox.toggled.connect(self._on_follow_toggled)
+        self.lead_label = QLabel()
+        self.lead_label.setWordWrap(True)
+        self.lead_button = QPushButton(self.tr("Take the lead"))
+        self.lead_button.setToolTip(self.tr("From now on your tempo and beat lead; the other DJ follows"))
+        self.lead_button.clicked.connect(self.take_lead)
+        self.phrase_label = QLabel()
+        self.phrase_label.setObjectName("remotePhrase")
+        row = QHBoxLayout()
+        row.addWidget(self.lead_label, 1)
+        row.addWidget(self.lead_button)
+        box = QVBoxLayout(frame)
+        box.addWidget(self.follow_checkbox)
+        box.addLayout(row)
+        box.addWidget(self.phrase_label)
+        frame.hide()
+        return frame
+
+    def take_lead(self) -> None:
+        if self.session is not None:
+            self.session.take_lead()
+            self.refresh()
+
+    def _on_follow_toggled(self, on: bool) -> None:
+        if self.session is not None:
+            self.session.follow = on
+            self.refresh()
+
+    def _show_together(self, session: probe.ProbeSession, stats: probe.ProbeStats | None) -> None:
+        connected = stats is not None and self._link is not None
+        self.together_frame.setVisible(connected)
+        if not connected:
+            return
+        peer = session.peer[0] if session.peer else "?"
+        if session.leading:
+            text = self.tr("You lead the tempo: {host} follows.").format(host=peer)
+        elif not self.follow_checkbox.isChecked():
+            text = self.tr("{host} leads, but you're not following: tick the box to lock on.").format(host=peer)
+        elif session.remote_leading:
+            text = self.tr("{host} leads the tempo: your Link follows.").format(host=peer)
+        else:
+            text = self.tr("Nobody leads: one of you clicks Take the lead.")
+        if session.follow_error:
+            text += " " + self.tr("Link refused a change: {error}").format(error=session.follow_error)
+        self.lead_label.setText(text)
+        self.lead_button.setEnabled(not session.leading)
+        snapshot = self._link() if self._link is not None else None
+        if snapshot is None:
+            self.phrase_label.clear()
+            return
+        position = bridge.phrase_position(snapshot.beat)
+        if position.beats_to_phrase == 0:
+            self.phrase_label.setText(self.tr("Bar {bar} · beat {beat} — new phrase!").format(
+                bar=position.bar, beat=position.beat))
+        else:
+            self.phrase_label.setText(self.tr("Bar {bar} · beat {beat} — next phrase in {count}").format(
+                bar=position.bar, beat=position.beat, count=position.beats_to_phrase))
 
     # -- state -------------------------------------------------------------
 
@@ -224,7 +295,13 @@ class RemoteMixDialog(QDialog):
             peer = (host, self.port_spin.value())
         self._link = self._link_factory() if self.link_checkbox.isChecked() else None
         try:
-            session = self._session_factory(port=self.port_spin.value(), peer=peer, link_reader=self._link)
+            session = self._session_factory(
+                port=self.port_spin.value(),
+                peer=peer,
+                link_reader=self._link,
+                link_control=getattr(self._link, "control", None),
+                follow=self.follow_checkbox.isChecked(),
+            )
             session.start()
         except OSError as exc:
             self._close_link()
@@ -249,6 +326,7 @@ class RemoteMixDialog(QDialog):
             self._last_role = "host" if self.host_radio.isChecked() else "join"
         self.session = None
         self._close_link()
+        self.together_frame.hide()
         for widget in (self.host_radio, self.join_radio, self.address_edit, self.port_spin, self.link_checkbox):
             widget.setEnabled(True)
         self.start_button.setText(self.tr("Start the test"))
@@ -280,6 +358,7 @@ class RemoteMixDialog(QDialog):
                 )
             )
         self._show_lights(stats)
+        self._show_together(session, stats)
         self.save_button.setEnabled(stats is not None)
 
     def _show_lights(self, stats: probe.ProbeStats | None) -> None:
@@ -343,6 +422,10 @@ class RemoteMixDialog(QDialog):
                                    border-radius: 10px; }}
             QFrame#remoteLights QLabel {{ background: transparent; border: none; color: {c["text"]}; }}
             QFrame#remoteLights QLabel#remoteLightTitle {{ font-weight: 600; color: {c["title"]}; }}
+            QFrame#remoteTogether {{ background: {c["panel_bg"]}; border: 1px solid {c["panel_border"]};
+                                     border-radius: 10px; }}
+            QFrame#remoteTogether QLabel {{ background: transparent; border: none; color: {c["text"]}; }}
+            QLabel#remotePhrase {{ font-size: 18px; font-weight: 600; }}
             """
         )
 

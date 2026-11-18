@@ -136,6 +136,21 @@ class AalinkStateProvider:
             raise LinkBackendUnavailable("aalink does not expose beat-at-time")
         return LinkState(tempo=tempo, beat=float(beat_at_time(now, 4.0)), playing=playing)
 
+    def set_tempo(self, tempo: float) -> None:
+        """Propose a tempo to the Link session (the remote-mix bridge)."""
+        link = self._link
+        if link is None:
+            raise LinkBackendUnavailable("aalink Link session is not initialized")
+        link.tempo = float(tempo)
+
+    def force_beat(self, beat: float) -> None:
+        """Move the session's beat to ``beat`` now, for every peer -- only the
+        remote-mix bridge does this, to put two homes on one beat."""
+        link = self._link
+        if link is None:
+            raise LinkBackendUnavailable("aalink Link session is not initialized")
+        link.force_beat(float(beat))
+
     def num_peers(self) -> int:
         """How many other Link apps share this session (0 when unknown)."""
         value = getattr(self._link, "num_peers", None)

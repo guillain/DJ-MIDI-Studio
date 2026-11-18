@@ -934,9 +934,9 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         )
         self._latency_action.triggered.connect(self._on_midi_latency_test)
         tools_menu.addAction(self._latency_action)
-        self._remote_mix_action = QAction(self.tr("Mix Together: Connection Test…"), self)
+        self._remote_mix_action = QAction(self.tr("Mix Together…"), self)
         self._remote_mix_action.setToolTip(
-            self.tr("Measure the line to another DJ before mixing together from two places")
+            self.tr("Mix with a DJ in another place: test the line, then share one tempo through Ableton Link")
         )
         self._remote_mix_action.triggered.connect(self._on_remote_mix_test)
         tools_menu.addAction(self._remote_mix_action)

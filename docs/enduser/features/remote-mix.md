@@ -1,9 +1,9 @@
 # 🌍 Mix together from two places
 
 > Two DJs, two homes, two DJ programs (say Serato on a Mac and Traktor Pro 4
-> on Windows), one shared tempo. This page is phase 0: check the line and
-> Ableton Link between you with tools that already exist, and measure it
-> with the app's connection test, before anything else is built.
+> on Windows), one shared tempo. **Tools → Mix Together…** tests the line
+> between you, then keeps your two Ableton Link sessions on one tempo and
+> one beat: one DJ leads, the other follows, and you hand the lead over.
 
 📍 [Docs](../../README.md) › [End user](../README.md) › [Features](README.md) › Mix together
 
@@ -13,6 +13,7 @@
 - [Phase 0 checklist](#phase-0-checklist)
 - [The connection test](#the-connection-test)
 - [Reading the lights](#reading-the-lights)
+- [One tempo for two homes](#one-tempo-for-two-homes)
 - [What travels](#what-travels)
 - [Related](#related)
 
@@ -22,8 +23,8 @@ Serato DJ Pro and Traktor Pro both speak **Ableton Link**: same tempo, same
 beat. Link is made for one local network, though, and sound over the
 internet always arrives late (30 to 120 ms between two cities). The plan:
 
-1. carry Link between the two homes (phase 0 tries a VPN, phase 1 builds a
-   bridge into the app);
+1. carry Link between the two homes (phase 0 tries a VPN; phase 1, the
+   bridge in **Mix Together**, works without one carrying Link);
 2. delay the other DJ's sound by exactly one bar minus the line's latency,
    so it lands on your grid (phase 2), with a shared mixer driven from your
    controllers;
@@ -62,7 +63,7 @@ Do it together, on the phone, each with a cable (not Wi-Fi) to the box.
 
 **3. The connection test (this app, both sides)**
 
-- Both open **Tools → Mix Together: Connection Test…** — see below.
+- Both open **Tools → Mix Together…** — see below.
 - Run it 10 minutes with Link on and a deck playing on each side.
 
 **4. Sound, with an existing tool — SonoBus**
@@ -81,7 +82,7 @@ way: a red result tells what to fix first.
 
 ## The connection test
 
-**Tools → Mix Together: Connection Test…**, on both computers:
+**Tools → Mix Together…**, on both computers:
 
 | Step | Host | The other DJ |
 |---|---|---|
@@ -111,11 +112,36 @@ drifts per minute.
   with two different tempos (two separate Link sessions: the VPN doesn't
   carry it, phase 1's bridge will). Grey until Link runs on both sides.
 
+## One tempo for two homes
+
+Once the lights answer and Link is on in both DJ programs, a panel appears
+under them:
+
+- **Keep our tempos together** (ticked): the DJ who leads sets tempo and
+  beat; on the other side the app moves its own Link session onto them, and
+  Serato or Traktor follow it like any Link app. The host leads first.
+- **Take the lead**: your tempo and beat lead from now on and the other
+  side follows — the hand-over of a back-to-back. Change the tempo only on
+  the side that leads; the follower's changes are put back.
+- **Bar 2 · beat 3 — next phrase in 7**: both windows show the same count
+  (phrases of 4 bars of 4 beats), handy to start a track together on the
+  first beat of a phrase.
+
+The follower corrects its beat only when it is 3 ms or more off, at most
+every two seconds, using the steadiest round trips of the last few seconds,
+so a jittery line doesn't make the beat wobble. The **Tempo and phase**
+light shows what's left of the gap.
+
+This bridge carries tempo and beat only. Each of you still hears only your
+own sound: the other DJ's sound through SonoBus (checklist step 4) arrives
+late by the line's latency. Phase 2 will delay it by exactly one bar so it
+lands on your grid, with a shared mixer.
+
 ## What travels
 
-Only the test's own small packets, between your two computers, on the port
-you chose: clock readings and, with Link, tempo, beat and the number of Link
-apps. No audio, no tracks, no files. Nothing is sent to anyone else.
+Only this window's own small packets, between your two computers, on the
+port you chose: clock readings and, with Link, tempo, beat, the number of
+Link apps and who leads. No audio, no tracks, no files. Nothing is sent to anyone else.
 
 ## Related
 
