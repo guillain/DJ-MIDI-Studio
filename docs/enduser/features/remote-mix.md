@@ -145,7 +145,7 @@ the other DJ and plays theirs:
 | **Send my sound from** | The input that hears your master: a sound-card input fed by your mixer's record or booth output, or a virtual device your DJ software plays into |
 | **Play their sound on** | Your speakers or headphones |
 | **Program mix to** | Optional: an output for a recorder or a stream (a virtual device such as BlackHole or VB-Cable, read by OBS) |
-| **Quality** | **Full, 48 kHz** (about 1.5 Mb/s each way) or **Light, 24 kHz** (about 0.8 Mb/s) for a slow upload |
+| **Quality** | **Compressed, Opus** (about 0.25 Mb/s each way, the default), **Full, 48 kHz** (about 1.5 Mb/s, uncompressed) or **Light, 24 kHz** (about 0.8 Mb/s) |
 | **Fine-tune** | Moves their sound a few ms earlier (−) or later (+) if it still sounds off the beat |
 
 Then **Start the sound**, on both sides.
@@ -171,14 +171,20 @@ pad. **✕** forgets it. The assignments are kept in your workspace, and the
 mixer only listens: your DJ software still gets every move. Pick a control
 your DJ software doesn't use, or one you're happy to move in both places.
 
-Not there yet: sound compression (Opus) and an EQ and filter per DJ.
+**Compression.** **Compressed, Opus** sends your master at 128 kb/s with
+5 ms frames: it sounds like the original for a DJ mix and fits almost any
+upload. Both of you need this version (v0.48.253 or later): older versions
+don't understand the new sound packets. Pick **Full, 48 kHz** for a
+local network or a recording where every bit counts.
+
+Not there yet: an EQ and filter per DJ.
 
 ## What travels
 
 Only this window's own packets, between your two computers: on the port you
 chose, clock readings and, with Link, tempo, beat, the number of Link apps
 and who leads; once you start the sound, on the next port (47801 by
-default), your master as you chose it. Nothing goes anywhere else. No audio, no tracks, no files. Nothing is sent to anyone else.
+default), your master as you chose it. No tracks, no files. Nothing is sent to anyone else.
 
 ## Related
 
