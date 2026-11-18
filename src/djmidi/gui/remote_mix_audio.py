@@ -821,8 +821,9 @@ class RemoteAudioPanel(QFrame):
         try:
             if session is None:  # two DJs, the plain way
                 link = self._link_factory(port=port, peer=(host, port), player=self.players.get(self.slot_dj[controls.THEM] or 1))
-            else:  # a star around the host (phase 9)
-                link = self._link_factory(
+            else:  # a star around the host (phase 9); the demo brings its own pretend line
+                factory = getattr(session, "audio_link", None) or self._link_factory
+                link = factory(
                     port=port,
                     peer=(host, port),
                     players=self.players,
