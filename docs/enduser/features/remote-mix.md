@@ -96,6 +96,11 @@ A banner at the top of the tab always shows the next step, out of four
 (connect, Link, sound, mix), with the button that does it: **Start**, **Copy my
 address** for the host, **Start the sound** once your tempos are together.
 
+The tab remembers your choices for next time: your role, DJ name, the
+host's address, the port, your sound cards and quality (kept in your
+workspace, `mix-together-settings.json`). A sound card that isn't plugged in
+any more is simply not chosen.
+
 In the **Mix Together** tab (also **Tools → Mix Together…**), on both computers:
 
 | Step | Host | The other DJ |
