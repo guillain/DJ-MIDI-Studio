@@ -325,7 +325,7 @@ surgical and logged. Qt-free modules; the tab is a thin view over `library/works
 - **Mix together from two places** (`remote_mix/`): phase 0 = Qt-free `remote_mix/probe.py` (`ProbeSession`, UDP
   `djmidi-mix/1` JSON ping/pong on port 47800, NTP-style round trip/offset, remote Link beat moved onto the local
   clock → phase gap; `summarise`/`verdicts`/`report_markdown`; host answers only its first peer) →
-  `gui/remote_mix_dialog.py` (Tools → Mix Together…). Link via `link_reader_from(AalinkStateProvider)`.
+  `gui/remote_mix_dialog.py` (the Mix Together tab). Link via `link_reader_from(AalinkStateProvider)`.
   Phase 1 = `remote_mix/bridge.py`: `LinkFollower` (offset from the fastest recent round trip, tempo copy, beat
   jump ≥ 3 ms at most every 2 s, `AalinkStateProvider.set_tempo`/`force_beat`), one leader (host first, `take`
   message hands over), `phrase_position`. Phase 2 = Qt-free `remote_mix/audio.py`: 5 ms PCM16 packets (48 or 24 kHz,
@@ -340,6 +340,11 @@ surgical and logged. Qt-free modules; the tab is a thin view over `library/works
   packet format v2 = signed positions). Bundled with `--collect-all av`, checked by `--self-check-opus`.
   Phase 5 = `remote_mix/eq.py` `ChannelStrip` (LR4 isolator 250 Hz / 4 kHz, knob 0..100 flat at 50, RBJ filter
   knob; SciPy `sosfilt` with carried state; bypass when flat) per DJ, knobs learnable (`controls.EQ_TARGETS`).
+  Phase 6 = `remote_mix/table.py` `SharedTable`: the mixer's *settings* are shared over the control line
+  (`ProbeSession.send` / `.inbox`, message `{"k": "mix"}`), wire names by owner (`host_*` / `guest_*`, crossfader
+  0 = host), Lamport stamps (last gesture wins, host wins ties), a snapshot every second; the panel applies remote
+  moves without echo and a learned controller picks up softly (`PICKUP_STEPS`). Mix Together is a top-level tab
+  after Music (`MainWindow._ensure_remote_mix`, built on first visit; Tools → Mix Together… opens it).
   Plan and checklist: `docs/enduser/features/remote-mix.md`.
 - `user_paths.py`: the workspace (`~/Documents/DJ MIDI Studio`, `DJMIDI_WORKSPACE`) with `Controllers`, `Sync`,
   `Macros`, `Drafts`, `Logs`, `Exports`, `Snapshots`. `backup.py`: workspace backup/restore (validated, atomic).
