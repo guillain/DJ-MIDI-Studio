@@ -257,3 +257,23 @@ def test_the_sound_panel_sends_my_master_and_plays_theirs_one_bar_late(tmp_path)
         assert not panel.running and links[0].closed and backend.devices["Speakers"].closed
     finally:
         dialog.close()
+
+
+def test_without_system_audio_the_panel_says_so(tmp_path):
+    from djmidi.gui.remote_mix_audio import RemoteAudioPanel
+
+    class Missing:
+        unavailable = "libpulse.so.0: cannot open shared object file"
+
+        def inputs(self):
+            return []
+
+        def outputs(self):
+            return []
+
+    panel = RemoteAudioPanel(lambda: None, backend=Missing())
+    try:
+        assert not panel.start_button.isEnabled()
+        assert "No sound on this computer" in panel.status_label.text()
+    finally:
+        panel.close()

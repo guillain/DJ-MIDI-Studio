@@ -9711,6 +9711,10 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <translation>Crossfader</translation>
     </message>
     <message>
+        <source>No sound on this computer: the system audio library is missing ({error}).</source>
+        <translation>Pas de son sur cet ordinateur : la bibliothèque audio du système manque ({error}).</translation>
+    </message>
+    <message>
         <source>Volume</source>
         <translation>Volume</translation>
     </message>

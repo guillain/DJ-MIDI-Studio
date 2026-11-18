@@ -9711,6 +9711,10 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
         <translation>Crossfader</translation>
     </message>
     <message>
+        <source>No sound on this computer: the system audio library is missing ({error}).</source>
+        <translation>Kein Sound auf diesem Computer: die Audio-Bibliothek des Systems fehlt ({error}).</translation>
+    </message>
+    <message>
         <source>Volume</source>
         <translation>Lautstärke</translation>
     </message>

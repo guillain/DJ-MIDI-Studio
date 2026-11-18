@@ -74,8 +74,13 @@ class QtAudioBackend:
     """QtMultimedia devices at 48 kHz, stereo, 16-bit."""
 
     def __init__(self) -> None:
-        from PySide6.QtMultimedia import QAudioFormat
-
+        self.unavailable: str | None = None
+        try:
+            from PySide6.QtMultimedia import QAudioFormat
+        except ImportError as exc:  # e.g. Linux without PulseAudio
+            _LOGGER.warning("Qt Multimedia unavailable, no sound for Mix Together: %s", exc)
+            self.unavailable = str(exc)
+            return
         self._format = QAudioFormat()
         self._format.setSampleRate(audio.RATE)
         self._format.setChannelCount(audio.CHANNELS)
@@ -88,10 +93,10 @@ class QtAudioBackend:
         return QMediaDevices.audioInputs() if kind == "in" else QMediaDevices.audioOutputs()
 
     def inputs(self) -> list[str]:
-        return [d.description() for d in self._devices("in")]
+        return [] if self.unavailable else [d.description() for d in self._devices("in")]
 
     def outputs(self) -> list[str]:
-        return [d.description() for d in self._devices("out")]
+        return [] if self.unavailable else [d.description() for d in self._devices("out")]
 
     def _device(self, kind: str, name: str):
         for device in self._devices(kind):
@@ -264,6 +269,14 @@ class RemoteAudioPanel(QFrame):
         self._status_timer = QTimer(self)
         self._status_timer.setInterval(500)
         self._status_timer.timeout.connect(self._show_status)
+        unavailable = getattr(self._backend, "unavailable", None)
+        if unavailable:
+            self.start_button.setEnabled(False)
+            self.status_label.setText(
+                self.tr("No sound on this computer: the system audio library is missing ({error}).").format(
+                    error=unavailable
+                )
+            )
 
     def _fader(self) -> QSlider:
         slider = QSlider(Qt.Orientation.Horizontal)
