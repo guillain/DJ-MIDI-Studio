@@ -16,6 +16,7 @@
 - [One tempo for two homes](#one-tempo-for-two-homes)
 - [Hear each other on the grid](#hear-each-other-on-the-grid)
 - [Signals between DJs](#signals-between-djs)
+- [Talkback](#talkback)
 - [The shared tracklist](#the-shared-tracklist)
 - [What travels](#what-travels)
 - [Related](#related)
@@ -270,6 +271,15 @@ that pad sends the signal from now on (✕ forgets it). Only a pad press
 binds, so a fader moved by mistake can't. Your DJ software still gets the
 pad too: pick one it doesn't use. The pads are kept in your workspace
 (`mix-together-signals.json`).
+
+## Talkback
+
+To talk to the other DJs without a phone: under the sound settings, pick
+your microphone in **Talk with** before **Start the sound**, then hold
+**Hold to talk** (or a pad: **Learn a pad**, then hold it). Your voice goes
+straight to the other DJs' headphones, without waiting a bar like the music,
+and never into the official mix, its recording or what listeners hear. When
+someone talks, the box says who.
 
 ## The shared tracklist
 

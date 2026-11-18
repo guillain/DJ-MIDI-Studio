@@ -373,6 +373,10 @@ surgical and logged. Qt-free modules; the tab is a thin view over `library/works
   onto the mix timeline), written from `RemoteAudioPanel.pump` when `stems_checkbox` is ticked at record start.
   Remembered choices: Qt-free `remote_mix/settings.py` (`mix-together-settings.json`, plain values) ↔
   `RemoteMixDialog._remembered_widgets` (saved on every change and at start; `settings_path` injectable).
+  Phase 14 = talkback: `audio.TALK_FLAG` (0x80) in the source byte, `AudioLink.send_talk` / `talk_sink` (own Opus
+  encoder and decoder per flagged source; the hub keeps the flag), Qt-free `remote_mix/talkback.py` (`TalkReceiver`:
+  a 60 ms `StreamPlayer` per DJ, who talks; held pad = `pad_event` press/release) → `gui/remote_mix_talk.TalkPanel`
+  inside `RemoteAudioPanel` (mic read in `pump`, voices added to the monitor output only).
   Plan and checklist: `docs/enduser/features/remote-mix.md`.
 - `user_paths.py`: the workspace (`~/Documents/DJ MIDI Studio`, `DJMIDI_WORKSPACE`) with `Controllers`, `Sync`,
   `Macros`, `Drafts`, `Logs`, `Exports`, `Snapshots`. `backup.py`: workspace backup/restore (validated, atomic).
