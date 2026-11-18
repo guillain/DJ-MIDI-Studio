@@ -64,6 +64,10 @@ class LiveMidiMixin:
             and self.midi_routing_view.active_transform_dialog.feed_learn_event(event)
         ):
             pass  # a remap Learn (issue #368)
+        elif (remote_mix := getattr(self, "_remote_mix_dialog", None)) is not None and remote_mix.feed_midi_event(
+            event
+        ):
+            pass  # Mix Together's mixer: a Learn, or a fader assigned to it
         elif self._macro_dialog is not None:
             self._macro_dialog.feed_learn_event(event)
         elif not self.edit_panel.feed_learn_event(event):

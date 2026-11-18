@@ -9711,12 +9711,48 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
         <translation>Crossfader</translation>
     </message>
     <message>
+        <source>Forget this controller assignment</source>
+        <translation>Diese Controller-Zuweisung vergessen</translation>
+    </message>
+    <message>
+        <source>Learn: move a fader or knob on your controller and it drives this mixer control.</source>
+        <translation>Lernen: Bewege einen Fader oder Regler an deinem Controller, dann steuert er diesen Mixer-Regler.</translation>
+    </message>
+    <message>
         <source>No sound on this computer: the system audio library is missing ({error}).</source>
         <translation>Kein Sound auf diesem Computer: die Audio-Bibliothek des Systems fehlt ({error}).</translation>
     </message>
     <message>
         <source>Volume</source>
         <translation>Lautstärke</translation>
+    </message>
+    <message>
+        <source>Move it now…</source>
+        <translation>Jetzt bewegen…</translation>
+    </message>
+    <message>
+        <source>Move a fader or knob on your controller, or click again to cancel</source>
+        <translation>Bewege einen Fader oder Regler an deinem Controller, oder klicke erneut zum Abbrechen</translation>
+    </message>
+    <message>
+        <source>Learn</source>
+        <translation>Lernen</translation>
+    </message>
+    <message>
+        <source>Drive this mixer control from a fader or knob of your controller</source>
+        <translation>Diesen Mixer-Regler mit einem Fader oder Regler deines Controllers steuern</translation>
+    </message>
+    <message>
+        <source>Driven by your controller. Click to learn another control</source>
+        <translation>Von deinem Controller gesteuert. Klicken, um einen anderen zu lernen</translation>
+    </message>
+    <message>
+        <source>No controller is plugged in: plug one in, then press Learn again.</source>
+        <translation>Kein Controller angeschlossen: Schließe einen an und drücke dann erneut auf Lernen.</translation>
+    </message>
+    <message>
+        <source>{control} now drives this mixer control.</source>
+        <translation>{control} steuert jetzt diesen Mixer-Regler.</translation>
     </message>
     <message>
         <source>Connect first, with Link on in both DJ programs.</source>

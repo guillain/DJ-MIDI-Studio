@@ -277,3 +277,68 @@ def test_without_system_audio_the_panel_says_so(tmp_path):
         assert "No sound on this computer" in panel.status_label.text()
     finally:
         panel.close()
+
+
+def test_learn_drives_the_mixer_from_a_controller_fader(tmp_path):
+    from djmidi.gui.remote_mix_audio import RemoteAudioPanel
+    from djmidi.midi_io import MidiEvent
+    from djmidi.remote_mix import controls
+
+    listening = []
+    path = tmp_path / "controls.json"
+    panel = RemoteAudioPanel(
+        lambda: None, backend=FakeBackend(), ensure_listening=lambda: listening.append(1) or True, controls_path=path
+    )
+    try:
+        assert panel.learn_buttons[controls.CROSSFADER].text() == "Learn"
+        panel.learn_buttons[controls.CROSSFADER].click()
+        assert listening and panel.learning == controls.CROSSFADER
+        assert not panel.feed_midi_event(MidiEvent("in", "1", "Note On", "11", "127", 0.0))  # a pad isn't learned
+        assert panel.feed_midi_event(MidiEvent("in", "7", "Control Change", "31", "0", 0.0))
+        assert panel.learning is None and panel.crossfader.value() == 0
+        assert panel.learn_buttons[controls.CROSSFADER].text() == "ch7 CC 31"
+        assert panel.feed_midi_event(MidiEvent("in", "7", "Control Change", "31", "127", 0.0))
+        assert panel.crossfader.value() == 100
+        assert not panel.feed_midi_event(MidiEvent("in", "7", "Control Change", "32", "127", 0.0))
+    finally:
+        panel.close()
+
+    again = RemoteAudioPanel(lambda: None, backend=FakeBackend(), controls_path=path)
+    try:
+        assert again.controls.bindings[controls.CROSSFADER].control == "31"
+        again.forget_buttons[controls.CROSSFADER].click()
+        assert not again.forget_buttons[controls.CROSSFADER].isEnabled()
+        assert controls.MixerControls.load(path).bindings == {}
+    finally:
+        again.close()
+
+
+def test_learning_without_a_controller_says_so(tmp_path):
+    from djmidi.gui.remote_mix_audio import RemoteAudioPanel
+    from djmidi.remote_mix import controls
+
+    panel = RemoteAudioPanel(
+        lambda: None, backend=FakeBackend(), ensure_listening=lambda: False, controls_path=tmp_path / "c.json"
+    )
+    try:
+        panel.learn_buttons[controls.ME].click()
+        assert panel.learning is None
+        assert "No controller is plugged in" in panel.controls_hint.text()
+    finally:
+        panel.close()
+
+
+def test_live_midi_reaches_the_mix_together_mixer(monkeypatch):
+    from djmidi.midi_io import MidiEvent
+    from djmidi.remote_mix import controls
+
+    window = MainWindow()
+    try:
+        dialog = window._on_remote_mix_test()
+        panel = dialog.sound_panel
+        panel.controls.bind(controls.THEM, controls.MixerTrigger("2", "Control Change", "19"))
+        window._on_live_midi_event(MidiEvent("in", "2", "Control Change", "19", "0", 0.0))
+        assert panel.them_volume.value() == 0
+        dialog.close()
+    finally:
+        window.close()

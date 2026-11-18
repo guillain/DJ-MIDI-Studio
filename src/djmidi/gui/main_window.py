@@ -1564,10 +1564,11 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         # Non-modal and kept alive, like the MIDI latency test: the test runs for minutes.
         dialog = getattr(self, "_remote_mix_dialog", None)
         if dialog is None:
-            dialog = self._remote_mix_dialog = RemoteMixDialog(self)
+            dialog = self._remote_mix_dialog = RemoteMixDialog(self, ensure_listening=self._ensure_learn_listening)
         dialog.show()
         dialog.raise_()
         dialog.activateWindow()
+        dialog.sound_panel.listen_to_controller()
         return dialog
 
     def _on_report_problem(self) -> None:

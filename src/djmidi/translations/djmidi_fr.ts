@@ -9711,12 +9711,48 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <translation>Crossfader</translation>
     </message>
     <message>
+        <source>Forget this controller assignment</source>
+        <translation>Oublier cette assignation du contrôleur</translation>
+    </message>
+    <message>
+        <source>Learn: move a fader or knob on your controller and it drives this mixer control.</source>
+        <translation>Apprendre : bouge un fader ou un potard de ton contrôleur et il pilote ce réglage de la table.</translation>
+    </message>
+    <message>
         <source>No sound on this computer: the system audio library is missing ({error}).</source>
         <translation>Pas de son sur cet ordinateur : la bibliothèque audio du système manque ({error}).</translation>
     </message>
     <message>
         <source>Volume</source>
         <translation>Volume</translation>
+    </message>
+    <message>
+        <source>Move it now…</source>
+        <translation>Bouge-le…</translation>
+    </message>
+    <message>
+        <source>Move a fader or knob on your controller, or click again to cancel</source>
+        <translation>Bouge un fader ou un potard de ton contrôleur, ou clique à nouveau pour annuler</translation>
+    </message>
+    <message>
+        <source>Learn</source>
+        <translation>Apprendre</translation>
+    </message>
+    <message>
+        <source>Drive this mixer control from a fader or knob of your controller</source>
+        <translation>Piloter ce réglage de la table avec un fader ou un potard de ton contrôleur</translation>
+    </message>
+    <message>
+        <source>Driven by your controller. Click to learn another control</source>
+        <translation>Piloté par ton contrôleur. Clique pour en apprendre un autre</translation>
+    </message>
+    <message>
+        <source>No controller is plugged in: plug one in, then press Learn again.</source>
+        <translation>Aucun contrôleur branché : branche-le, puis appuie à nouveau sur Apprendre.</translation>
+    </message>
+    <message>
+        <source>{control} now drives this mixer control.</source>
+        <translation>{control} pilote maintenant ce réglage de la table.</translation>
     </message>
     <message>
         <source>Connect first, with Link on in both DJ programs.</source>
