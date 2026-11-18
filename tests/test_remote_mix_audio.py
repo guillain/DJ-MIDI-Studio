@@ -34,7 +34,7 @@ def test_decode_refuses_foreign_or_broken_packets():
     assert a.decode_packet(b"x" * 40) is None
     assert a.decode_packet(good[:-2]) is None
     assert a.decode_packet(good + b"\0\0\0\0") is None
-    assert a.decode_packet(b"DJMA" + good[4:5].replace(b"\x01", b"\x09") + good[5:]) is None
+    assert a.decode_packet(b"DJMA" + b"\x09" + good[5:]) is None
 
 
 def test_packetize_stamps_each_packet_with_its_own_beat():
@@ -104,3 +104,57 @@ def test_two_links_carry_the_sound_over_localhost():
         link_a.close()
         link_b.close()
     assert player_b.received == 10 and link_a.sent == 10
+
+
+def test_send_buffer_only_sends_whole_packets_and_keeps_the_beat():
+    buffer = a.SendBuffer()
+    beats_per_frame = TEMPO / 60.0 / a.RATE
+    first = buffer.add(_tone(300), position=0, beat=4.0, tempo=TEMPO, codec=a.CODEC_PCM48)
+    assert [p.position for p in first] == [0]
+    second = buffer.add(_tone(200, 300), position=300, beat=4.0 + 300 * beats_per_frame, tempo=TEMPO, codec=a.CODEC_PCM48)
+    assert [p.position for p in second] == [240]
+    assert second[0].beat == pytest.approx(4.0 + 240 * beats_per_frame)
+    assert np.allclose(second[0].samples, _tone(240, 240))
+    assert all(len(p.samples) == a.PACKET_FRAMES for p in first + second)
+
+
+opus_missing = pytest.mark.skipif(a.opus.unavailable() is not None, reason="PyAV not installed")
+
+
+@opus_missing
+def test_opus_lands_the_sound_on_the_same_sample_and_is_small():
+    encoder, decoder = a.opus.OpusEncoder(), a.opus.OpusDecoder()
+    n = a.PACKET_FRAMES * 40
+    samples = np.zeros((n, 2), dtype=np.float32)
+    samples[2400] = 0.8  # a click
+    player = a.BarAlignedPlayer()
+    sizes = []
+    for packet in a.packetize(samples, 0, 0.0, TEMPO, a.CODEC_OPUS):
+        for datagram in a.encode_opus(packet, encoder):
+            sizes.append(len(datagram))
+            decoded = a.decode_packet(datagram, decoder)
+            assert decoded is not None and len(decoded.samples) == a.PACKET_FRAMES
+            player.push(decoded)
+    assert a.decode_packet(datagram) is None  # no decoder, no sound
+    # Read the whole thing back one bar later: the click is where it was sent.
+    bar = 4 * a.RATE * 60 // int(TEMPO)
+    heard = player.read(n, beat=4.0 + 0 * bar)
+    assert abs(int(np.argmax(np.abs(heard[:, 0]))) - 2400) <= 2
+    # 5 ms of stereo in well under a fifth of the PCM size.
+    assert max(sizes[5:]) < a.PACKET_FRAMES * 4 / 3
+
+
+@opus_missing
+def test_two_links_carry_opus_over_localhost():
+    player_b = a.BarAlignedPlayer()
+    link_b = a.AudioLink(port=0, peer=("127.0.0.1", 9), player=player_b, bind_host="127.0.0.1")
+    link_a = a.AudioLink(port=0, peer=("127.0.0.1", link_b.port), player=a.BarAlignedPlayer(), bind_host="127.0.0.1")
+    try:
+        link_a.send(a.packetize(_tone(a.PACKET_FRAMES * 10), 0, 0.0, TEMPO, a.CODEC_OPUS))
+        deadline = time.monotonic() + 3
+        while player_b.received < 10 and time.monotonic() < deadline:
+            time.sleep(0.01)
+    finally:
+        link_a.close()
+        link_b.close()
+    assert player_b.received == 10 and link_b.rejected == 0

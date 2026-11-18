@@ -10,9 +10,10 @@ always lands exactly one bar late, on your grid, whatever the line's latency
 Qt-free: packets, the bar-aligned player, the UDP link and the mixer maths.
 The GUI feeds it from QtMultimedia devices.
 
-Sound is sent as 16-bit PCM, either at 48 kHz (about 1.5 Mb/s per direction)
-or at 24 kHz ("light", about 0.8 Mb/s). Packets hold 5 ms so they fit a
-standard 1500-byte internet packet.
+Sound is sent compressed with Opus (about 0.25 Mb/s per direction, see
+``opus.py``) or as 16-bit PCM, at 48 kHz (about 1.5 Mb/s) or 24 kHz ("light",
+about 0.8 Mb/s). Packets hold 5 ms so they fit a standard 1500-byte internet
+packet.
 """
 
 from __future__ import annotations
@@ -26,6 +27,8 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from djmidi.remote_mix import opus
+
 _LOGGER = logging.getLogger(__name__)
 
 RATE = 48_000
@@ -33,14 +36,16 @@ CHANNELS = 2
 PACKET_FRAMES = 240  # 5 ms at 48 kHz
 CODEC_PCM48 = 0
 CODEC_PCM24 = 1
-CODECS = (CODEC_PCM48, CODEC_PCM24)
+CODEC_OPUS = 2
+CODECS = (CODEC_PCM48, CODEC_PCM24, CODEC_OPUS)
+_OPUS_MAX = 1275  # the largest Opus frame
 QUANTUM = 4.0
 AUDIO_PORT_OFFSET = 1  # audio uses the test port + 1
 
 _MAGIC = b"DJMA"
-_VERSION = 1
-_HEADER = struct.Struct(">4sBBBBQdfH")  # magic, version, codec, channels, pad, position, beat, tempo, frames
-MAX_PACKET = _HEADER.size + PACKET_FRAMES * CHANNELS * 2
+_VERSION = 2  # 2: signed positions (Opus look-ahead), Opus codec
+_HEADER = struct.Struct(">4sBBBBqdfH")  # magic, version, codec, channels, pad, position, beat, tempo, frames
+MAX_PACKET = _HEADER.size + max(PACKET_FRAMES * CHANNELS * 2, _OPUS_MAX)
 
 
 @dataclass(frozen=True)
@@ -56,25 +61,58 @@ def _to_pcm(samples: np.ndarray) -> bytes:
     return (np.clip(samples, -1.0, 1.0) * 32767.0).astype(">i2").tobytes()
 
 
+def _header(packet: AudioPacket, frames: int) -> bytes:
+    return _HEADER.pack(
+        _MAGIC, _VERSION, packet.codec, CHANNELS, 0, packet.position, packet.beat, packet.tempo, frames
+    )
+
+
+def encode_opus(packet: AudioPacket, encoder: opus.OpusEncoder) -> list[bytes]:
+    """A full 5 ms packet through Opus. The encoder's look-ahead shifts the
+    sound, so each datagram is stamped with the input sample it really starts at."""
+    datagrams = []
+    beats_per_frame = packet.tempo / 60.0 / RATE
+    for start, payload in encoder.encode(packet.samples, packet.position):
+        shifted = AudioPacket(
+            position=start,
+            beat=packet.beat + (start - packet.position) * beats_per_frame,
+            tempo=packet.tempo,
+            samples=packet.samples,
+            codec=CODEC_OPUS,
+        )
+        datagrams.append(_header(shifted, PACKET_FRAMES) + payload)
+    return datagrams
+
+
 def encode_packet(packet: AudioPacket) -> bytes:
+    """A PCM packet (Opus goes through ``encode_opus``, which keeps state)."""
+    if packet.codec == CODEC_OPUS:
+        raise ValueError("Opus packets need an encoder: use encode_opus")
     samples = packet.samples
     if packet.codec == CODEC_PCM24:
         even = samples[: len(samples) // 2 * 2]
         samples = (even[0::2] + even[1::2]) * 0.5
-    header = _HEADER.pack(
-        _MAGIC, _VERSION, packet.codec, CHANNELS, 0, packet.position, packet.beat, packet.tempo, len(samples)
-    )
-    return header + _to_pcm(samples)
+    return _header(packet, len(samples)) + _to_pcm(samples)
 
 
-def decode_packet(data: bytes) -> AudioPacket | None:
-    """A packet from another DJ MIDI Studio, or None for anything else."""
+def decode_packet(data: bytes, decoder: opus.OpusDecoder | None = None) -> AudioPacket | None:
+    """A packet from another DJ MIDI Studio, or None for anything else (an
+    Opus packet needs the link's ``decoder``)."""
     if len(data) < _HEADER.size or len(data) > MAX_PACKET:
         return None
     magic, version, codec, channels, _pad, position, beat, tempo, frames = _HEADER.unpack_from(data)
     if magic != _MAGIC or version != _VERSION or codec not in CODECS or channels != CHANNELS:
         return None
-    if len(data) != _HEADER.size + frames * channels * 2 or not math.isfinite(beat) or not tempo > 0:
+    if not math.isfinite(beat) or not tempo > 0:
+        return None
+    if codec == CODEC_OPUS:
+        if decoder is None or frames != PACKET_FRAMES:
+            return None
+        samples = decoder.decode(data[_HEADER.size :])
+        if samples is None or len(samples) != frames:
+            return None
+        return AudioPacket(position=position, beat=beat, tempo=tempo, samples=samples, codec=codec)
+    if len(data) != _HEADER.size + frames * channels * 2:
         return None
     pcm = np.frombuffer(data, dtype=">i2", offset=_HEADER.size).astype(np.float32) / 32767.0
     samples = pcm.reshape(frames, channels)
@@ -98,6 +136,32 @@ def packetize(samples: np.ndarray, position: int, beat: float, tempo: float, cod
             )
         )
     return packets
+
+
+class SendBuffer:
+    """Turns captured blocks of any size into whole 5 ms packets (Opus only
+    takes whole frames); the remainder waits for the next block."""
+
+    def __init__(self) -> None:
+        self._pending = np.zeros((0, CHANNELS), dtype=np.float32)
+        self._position = 0
+        self._beat = 0.0
+
+    def add(self, block: np.ndarray, position: int, beat: float, tempo: float, codec: int) -> list[AudioPacket]:
+        """``block`` starts at sample ``position`` and Link beat ``beat``."""
+        held = len(self._pending)
+        if held == 0 or self._position + held != position:
+            self._pending = np.zeros((0, CHANNELS), dtype=np.float32)
+            self._position, self._beat = position, beat
+        else:
+            self._beat = beat - held / RATE * tempo / 60.0
+        self._pending = np.concatenate([self._pending, block.astype(np.float32, copy=False)])
+        whole = len(self._pending) // PACKET_FRAMES * PACKET_FRAMES
+        packets = packetize(self._pending[:whole], self._position, self._beat, tempo, codec)
+        self._pending = self._pending[whole:]
+        self._position += whole
+        self._beat += whole / RATE * tempo / 60.0
+        return packets
 
 
 class BarAlignedPlayer:
@@ -203,6 +267,8 @@ class AudioLink:
         self.sent = 0
         self.rejected = 0
         self.error: str | None = None
+        self._encoder: opus.OpusEncoder | None = None
+        self._decoder: opus.OpusDecoder | None = None if opus.unavailable() else opus.OpusDecoder()
         self._thread = threading.Thread(target=self._run, name="djmidi-remote-audio", daemon=True)
         self._thread.start()
 
@@ -213,8 +279,15 @@ class AudioLink:
     def send(self, packets: list[AudioPacket]) -> None:
         for packet in packets:
             try:
-                self._socket.sendto(encode_packet(packet), self._peer)
-                self.sent += 1
+                if packet.codec == CODEC_OPUS:
+                    if self._encoder is None:
+                        self._encoder = opus.OpusEncoder()
+                    datagrams = encode_opus(packet, self._encoder)
+                else:
+                    datagrams = [encode_packet(packet)]
+                for datagram in datagrams:
+                    self._socket.sendto(datagram, self._peer)
+                    self.sent += 1
             except OSError as exc:
                 self.error = str(exc)
                 return
@@ -234,7 +307,7 @@ class AudioLink:
                 if not self._stop.is_set():
                     self.error = str(exc)
                 continue
-            packet = decode_packet(data) if address[0] == self._peer[0] else None
+            packet = decode_packet(data, self._decoder) if address[0] == self._peer[0] else None
             if packet is None:
                 self.rejected += 1
                 continue

@@ -89,6 +89,11 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="also run the app's BPM/key analysis self-check and fail if the build lacks it",
     )
+    parser.add_argument(
+        "--require-opus",
+        action="store_true",
+        help="also check that Mix Together's Opus compression (PyAV) works in the build",
+    )
     parser.add_argument("--executable", type=Path, default=None, help=argparse.SUPPRESS)
     args = parser.parse_args(argv)
 
@@ -109,8 +114,12 @@ def main(argv: list[str] | None = None) -> int:
     output_path = Path(environment["DJMIDI_LOG_DIR"]) / "startup-output.txt"
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
+    if args.require_opus:
+        status = _self_check(executable, root, environment, "--self-check-opus", "Opus")
+        if status != 0:
+            return status
     if args.require_analysis:
-        status = _analysis_self_check(executable, root, environment)
+        status = _self_check(executable, root, environment, "--self-check-analysis", "Analysis")
         if status != 0:
             return status
 
@@ -150,13 +159,13 @@ def main(argv: list[str] | None = None) -> int:
 _ANALYSIS_TIMEOUT_SECONDS = 300
 
 
-def _analysis_self_check(executable: Path, root: Path, environment: dict[str, str]) -> int:
-    """Run ``--self-check-analysis`` (write, read and analyse a WAV inside the
-    packaged app): 0 when BPM/key analysis works in this build."""
-    print("Running the packaged app's analysis self-check…")
+def _self_check(executable: Path, root: Path, environment: dict[str, str], flag: str, name: str) -> int:
+    """Run a packaged-app self-check (``--self-check-analysis``: write, read and
+    analyse a WAV; ``--self-check-opus``: encode and decode a tone): 0 when it works."""
+    print(f"Running the packaged app's {name} self-check…")
     try:
         result = subprocess.run(
-            [str(executable), "--self-check-analysis"],
+            [str(executable), flag],
             cwd=root,
             env=environment,
             capture_output=True,
@@ -165,17 +174,17 @@ def _analysis_self_check(executable: Path, root: Path, environment: dict[str, st
             check=False,
         )
     except subprocess.TimeoutExpired:
-        print(f"Analysis self-check did not finish in {_ANALYSIS_TIMEOUT_SECONDS}s.", file=sys.stderr)
+        print(f"{name} self-check did not finish in {_ANALYSIS_TIMEOUT_SECONDS}s.", file=sys.stderr)
         return 1
     if result.returncode != 0:
-        print(f"Analysis self-check failed (status {result.returncode}).", file=sys.stderr)
+        print(f"{name} self-check failed (status {result.returncode}).", file=sys.stderr)
         print(result.stdout[-4000:], result.stderr[-4000:], sep="\n", file=sys.stderr)
         log_dir = Path(environment["DJMIDI_LOG_DIR"])
         for log in sorted(log_dir.glob("*.log")):
             print(f"--- {log.name} (end)", file=sys.stderr)
             print(log.read_text(errors="replace")[-4000:], file=sys.stderr)
         return 1
-    print("Analysis self-check passed: BPM/key analysis is in this build.")
+    print(f"{name} self-check passed.")
     return 0
 
 

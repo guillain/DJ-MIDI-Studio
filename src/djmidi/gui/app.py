@@ -44,6 +44,11 @@ def build_argument_parser() -> argparse.ArgumentParser:
         help=argparse.SUPPRESS,  # CI: exit 0 when BPM/key analysis works in this build, else 3
     )
     parser.add_argument(
+        "--self-check-opus",
+        action="store_true",
+        help=argparse.SUPPRESS,  # CI: exit 0 when Mix Together's Opus compression works in this build, else 3
+    )
+    parser.add_argument(
         "--startup-screenshot-delay-ms",
         type=int,
         default=STARTUP_SCREENSHOT_DELAY_MS,
@@ -99,6 +104,15 @@ def run(argv: list[str] | None = None) -> int:
     log_path = configure_logging(arguments.log_level, preferred_log_path)
     logger = logging.getLogger("djmidi.gui.app")
     logger.info("Starting DJ MIDI Studio")
+    if arguments.self_check_opus:
+        from djmidi.remote_mix.opus import self_check as opus_self_check
+
+        problem = opus_self_check()
+        if problem is None:
+            logger.info("Opus self-check passed")
+            return 0
+        logger.error("Opus self-check failed: %s", problem)
+        return 3
     if arguments.self_check_analysis:
         from djmidi.library.analysis import self_check
 

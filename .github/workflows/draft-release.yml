@@ -151,7 +151,7 @@ jobs:
         shell: bash
         env:
           QT_QPA_PLATFORM: ${{ runner.os == 'Linux' && 'offscreen' || '' }}
-        run: uv run python scripts/smoke_test_executable.py --os "$(echo '${{ runner.os }}' | tr '[:upper:]' '[:lower:]' | sed 's/macos/macos/; s/windows/windows/; s/linux/linux/')" ${{ matrix.os != 'macos-15-intel' && '--require-analysis' || '' }}
+        run: uv run python scripts/smoke_test_executable.py --os "$(echo '${{ runner.os }}' | tr '[:upper:]' '[:lower:]' | sed 's/macos/macos/; s/windows/windows/; s/linux/linux/')" --require-opus ${{ matrix.os != 'macos-15-intel' && '--require-analysis' || '' }}
 
       - name: Build wheel + sdist
         run: uv build
