@@ -8,8 +8,10 @@ import time
 from collections.abc import Callable
 from pathlib import Path
 
-from PySide6.QtCore import QCoreApplication, QTimer
+from PySide6.QtCore import QCoreApplication, Qt, QTimer
+from PySide6.QtGui import QGuiApplication
 from PySide6.QtWidgets import (
+    QCheckBox,
     QFrame,
     QGridLayout,
     QLabel,
@@ -24,6 +26,39 @@ from djmidi.remote_mix import signals
 
 def signal_text(key: str) -> str:
     return QCoreApplication.translate("RemoteSignals", signals.SIGNALS[key])
+
+
+class SignalToast(QFrame):
+    """A signal over every other app (Serato, Traktor in full screen): a small window at
+    the top of the screen that never takes the focus, gone after a few seconds."""
+
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__(
+            parent,
+            Qt.WindowType.Tool
+            | Qt.WindowType.FramelessWindowHint
+            | Qt.WindowType.WindowStaysOnTopHint
+            | Qt.WindowType.WindowDoesNotAcceptFocus,
+        )
+        self.setObjectName("remoteSignalToast")
+        self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
+        self.setAttribute(Qt.WidgetAttribute.WA_MacAlwaysShowToolWindow)  # macOS hides tool windows of a background app
+        self.label = QLabel()
+        self.label.setObjectName("remoteSignal")
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(4, 4, 4, 4)
+        layout.addWidget(self.label)
+
+    def show_text(self, text: str, style: str) -> None:
+        self.setStyleSheet(style)
+        self.label.setText(text)
+        self.adjustSize()
+        screen = QGuiApplication.primaryScreen()
+        if screen is not None:
+            area = screen.availableGeometry()
+            self.move(area.center().x() - self.width() // 2, area.top() + 24)
+        self.show()
+        self.raise_()
 
 
 class SignalsPanel(QFrame):
@@ -83,6 +118,13 @@ class SignalsPanel(QFrame):
         layout.addWidget(self.banner)
         layout.addWidget(hint)
         layout.addLayout(grid)
+        self.over_apps = QCheckBox(self.tr("Show signals over other apps"))
+        self.over_apps.setToolTip(
+            self.tr("While you look at your DJ software, a signal shows at the top of the screen for a few seconds")
+        )
+        self.over_apps.setChecked(True)
+        layout.addWidget(self.over_apps)
+        self.toast: SignalToast | None = None
         layout.addWidget(self.status_label)
         self._timer = QTimer(self)
         self._timer.setInterval(250)
@@ -136,11 +178,42 @@ class SignalsPanel(QFrame):
             text += " " + self.tr("(in {count} beats)").format(count=beats)
         self.banner.setText(text)
         self.banner.show()
+        if self.over_apps.isChecked() and not self._in_view():
+            if self.toast is None:
+                self.toast = SignalToast(self)
+            self.toast.show_text(text, self._toast_style())
+        elif self.toast is not None:
+            self.toast.hide()
+
+    def _in_view(self) -> bool:
+        """The DJ already sees the banner: this window is in front and the tab is open."""
+        window = self.window()
+        return self.isVisible() and window is not None and window.isActiveWindow()
+
+    def _toast_style(self) -> str:
+        from djmidi.gui import theme
+
+        c = theme.colors()
+        return (
+            f"QFrame#remoteSignalToast {{ background: {c['panel_bg']}; border: 2px solid {c['accent']}; "
+            f"border-radius: 12px; }}"
+            f"QLabel#remoteSignal {{ font-size: 26px; font-weight: 700; color: {c['title']}; padding: 12px 20px; "
+            f"background: transparent; border: none; }}"
+        )
 
     def _hide_banner(self) -> None:
         self._timer.stop()
         self.shown = None
         self.banner.hide()
+        if self.toast is not None:
+            self.toast.hide()
+
+    def closeEvent(self, event) -> None:
+        if self.toast is not None:
+            self.toast.close()
+            self.toast.deleteLater()
+            self.toast = None
+        super().closeEvent(event)
 
     def _tick(self) -> None:
         if self._clock() >= self._shown_until:
