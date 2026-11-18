@@ -22,6 +22,7 @@ from PySide6.QtNetwork import QAbstractSocket, QNetworkInterface
 from PySide6.QtWidgets import (
     QButtonGroup,
     QCheckBox,
+    QComboBox,
     QDialog,
     QFormLayout,
     QFrame,
@@ -60,6 +61,7 @@ from djmidi.remote_mix import (
     signals,
     tracklist,
 )
+from djmidi.remote_mix import settings as remembered
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -113,6 +115,7 @@ class RemoteMixDialog(QDialog):
         controls_path: Path | None = None,
         history_dirs: Callable[[], dict[str, Path]] = history.default_history_dirs,
         exports_dir: Path | None = None,
+        settings_path: Path | None = None,
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle(self.tr("Mix Together"))
@@ -291,6 +294,9 @@ class RemoteMixDialog(QDialog):
         self.host_radio.toggled.connect(self._sync_role)
         self.listen_radio.toggled.connect(self._sync_role)
         self.address_edit.textChanged.connect(self._show_next_step)
+        self._settings_path = settings_path or user_paths.workspace_dir() / remembered.FILE_NAME
+        self._loading_settings = False
+        self._load_settings()
         self._sync_role()
         self._show_lights(None)
         self._restyle()
@@ -515,6 +521,7 @@ class RemoteMixDialog(QDialog):
             self._close_link()
             self.status_label.setText(self.tr("Could not start: {error}").format(error=exc))
             return
+        self.save_settings()  # what this DJ typed, kept for the next time
         self.session = session
         self._mix_ticks = 0
         self.tracklist_panel.reset()
@@ -666,6 +673,56 @@ class RemoteMixDialog(QDialog):
         self.status_label.setText(self.tr("Report saved: {path}").format(path=path))
         return path
 
+    # -- remembered between sessions ---------------------------------------
+
+    def _remembered_widgets(self) -> dict[str, QWidget]:
+        sound, listener = self.sound_panel, self.listener_panel
+        return {
+            "name": self.name_edit,
+            "address": self.address_edit,
+            "port": self.port_spin,
+            "link": self.link_checkbox,
+            "follow": self.follow_checkbox,
+            "input": sound.input_combo,
+            "monitor": sound.monitor_combo,
+            "program": sound.program_combo,
+            "quality": sound.quality_combo,
+            "nudge": sound.nudge_spin,
+            "stems": sound.stems_checkbox,
+            "signals_over_apps": self.signals_panel.over_apps,
+            "listen_address": listener.address_edit,
+            "listen_port": listener.port_spin,
+            "listen_output": listener.output_combo,
+        }
+
+    def _load_settings(self) -> None:
+        values = remembered.load(self._settings_path)
+        self._loading_settings = True
+        try:
+            radio = {"host": self.host_radio, "join": self.join_radio, "listen": self.listen_radio}.get(values.get("role"))
+            if radio is not None:
+                radio.setChecked(True)
+            for key, widget in self._remembered_widgets().items():
+                if key in values:
+                    _set_value(widget, values[key])
+        finally:
+            self._loading_settings = False
+        for widget in self._remembered_widgets().values():
+            _on_change(widget, self.save_settings)
+        for radio in (self.host_radio, self.join_radio, self.listen_radio):
+            radio.toggled.connect(self.save_settings)
+
+    def save_settings(self, *_args) -> None:
+        if self._loading_settings:
+            return
+        role = "listen" if self.listen_radio.isChecked() else "host" if self.host_radio.isChecked() else "join"
+        values: dict[str, remembered.Value] = {"role": role}
+        values.update({key: _value_of(widget) for key, widget in self._remembered_widgets().items()})
+        try:
+            remembered.save(self._settings_path, values)
+        except OSError as exc:
+            self.status_label.setText(self.tr("Settings not saved: {error}").format(error=exc))
+
     def closeEvent(self, event) -> None:
         self.stop()
         self.listener_panel.stop()
@@ -705,6 +762,43 @@ class RemoteMixDialog(QDialog):
             QLabel#remoteSoundTitle {{ font-weight: 600; font-size: 14px; }}
             """
         )
+
+
+def _value_of(widget: QWidget) -> remembered.Value:
+    if isinstance(widget, QLineEdit):
+        return widget.text()
+    if isinstance(widget, QSpinBox):
+        return widget.value()
+    if isinstance(widget, QCheckBox):
+        return widget.isChecked()
+    data = widget.currentData()  # a QComboBox: device names, codec numbers; None ("nowhere") as ""
+    return "" if data is None else data
+
+
+def _set_value(widget: QWidget, value: remembered.Value) -> None:
+    if isinstance(widget, QLineEdit) and isinstance(value, str):
+        widget.setText(value)
+    elif isinstance(widget, QSpinBox) and isinstance(value, int) and not isinstance(value, bool):
+        widget.setValue(value)
+    elif isinstance(widget, QCheckBox) and isinstance(value, bool):
+        widget.setChecked(value)
+    elif isinstance(widget, QComboBox):
+        for index in range(widget.count()):
+            data = widget.itemData(index)
+            if ("" if data is None else data) == value:
+                widget.setCurrentIndex(index)  # a device that is gone is simply not chosen
+                return
+
+
+def _on_change(widget: QWidget, slot) -> None:
+    if isinstance(widget, QLineEdit):
+        widget.editingFinished.connect(slot)
+    elif isinstance(widget, QSpinBox):
+        widget.valueChanged.connect(slot)
+    elif isinstance(widget, QCheckBox):
+        widget.toggled.connect(slot)
+    elif isinstance(widget, QComboBox):
+        widget.currentIndexChanged.connect(slot)
 
 
 __all__ = ["RemoteMixDialog", "local_addresses"]

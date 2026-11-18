@@ -10252,6 +10252,10 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
         <source>Report saved: {path}</source>
         <translation>Bericht gespeichert: {path}</translation>
     </message>
+    <message>
+        <source>Settings not saved: {error}</source>
+        <translation>Einstellungen nicht gespeichert: {error}</translation>
+    </message>
 </context>
 <context>
     <name>RemoteMixReport</name>
