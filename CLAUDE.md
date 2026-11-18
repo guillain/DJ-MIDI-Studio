@@ -377,6 +377,9 @@ surgical and logged. Qt-free modules; the tab is a thin view over `library/works
   encoder and decoder per flagged source; the hub keeps the flag), Qt-free `remote_mix/talkback.py` (`TalkReceiver`:
   a 60 ms `StreamPlayer` per DJ, who talks; held pad = `pad_event` press/release) → `gui/remote_mix_talk.TalkPanel`
   inside `RemoteAudioPanel` (mic read in `pump`, voices added to the monitor output only).
+  Demo mode (Try alone): Qt-free `remote_mix/demo.py` (`DemoSession` stands for a hosting `ProbeSession` with
+  "Demo DJ" as guest, `audio_link` → `DemoAudioLink` echoing your packets/voice as DJ 1, `DemoClock` without Link);
+  the sound panel uses `session.audio_link` when present. `RemoteMixDialog.start_demo` / `.demo`.
   Plan and checklist: `docs/enduser/features/remote-mix.md`.
 - `user_paths.py`: the workspace (`~/Documents/DJ MIDI Studio`, `DJMIDI_WORKSPACE`) with `Controllers`, `Sync`,
   `Macros`, `Drafts`, `Logs`, `Exports`, `Snapshots`. `backup.py`: workspace backup/restore (validated, atomic).
