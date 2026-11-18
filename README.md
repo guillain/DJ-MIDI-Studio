@@ -90,6 +90,7 @@ what the mapping does, switch pad modes, latch SHIFT, and turn on
 | ⏱️ | [MIDI Latency Test](docs/enduser/features/midi-latency.md) | Round-trip min / median / max and jitter through a port or device that echoes |
 | 🧭 | [First-run setup](docs/enduser/features/first-run-wizard.md) | Detect your controllers, open your Serato mapping, record a sync set — on first launch or from Help |
 | 🩺 | [Startup check](docs/enduser/features/startup-check.md) | What's plugged in, what's missing, and the button that fixes each thing — on its own at startup |
+| 🌍 | [Mix together](docs/enduser/features/remote-mix.md) | Two DJs in two places, one tempo: phase 0 checklist and the connection test (round trip, jitter, Link phase) |
 | 🪟 | [Workspace and preferences](docs/enduser/features/workspace.md) | Dockable tools, Performance Mode, light/dark theme |
 | 🎤 | [Stage Mode](docs/enduser/features/stage-mode.md) | Full-screen, high-contrast Controller Emulator and live MIDI for playing on stage — Esc to exit |
 | 🌐 | [Interface language](docs/enduser/features/interface-language.md) | French or German interface (Preferences → Language), or follow the system language |

@@ -463,6 +463,25 @@ LIVE_MONITOR: HelpEntry = (
     "live-monitor.md",
 )
 
+REMOTE_MIX: HelpEntry = (
+    QT_TRANSLATE_NOOP("HelpTexts", "Mix Together: Connection Test"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
+        "Measures the line between two DJs before you mix together from two places. Both of you "
+        "open this window: one ticks <b>I host</b> and gives one of <b>Your addresses</b> (the "
+        "ZeroTier one when you use ZeroTier), the other ticks <b>I join</b> and types it. Then "
+        "<b>Start the test</b> on both sides.<ul>"
+        "<li><b>Network</b>: round trip and lost packets. Green under 150 ms and 1 %.</li>"
+        "<li><b>Stability</b>: jitter, how much the round trip moves. Green under 20 ms: "
+        "this is what matters most, a steady delay can be hidden, a moving one can't.</li>"
+        "<li><b>Tempo and phase</b>: with Link on in both DJ programs, whether both sides share "
+        "one tempo and one beat. Two tempos means Link doesn't reach across.</li></ul>"
+        "Leave it running a few minutes, then <b>Save the report</b> (in your Logs folder) and send it "
+        "to the other DJ. Nothing is sent to anyone else; only this test's own packets travel.",
+    ),
+    "remote-mix.md",
+)
+
 STARTUP_CHECK: HelpEntry = (
     QT_TRANSLATE_NOOP("HelpTexts", "Startup check"),
     QT_TRANSLATE_NOOP(

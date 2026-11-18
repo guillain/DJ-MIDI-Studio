@@ -3281,6 +3281,14 @@ Ein manueller Schritt bleibt: &apos;{slug}&apos; zum Import-Block in catalog/__i
         <translation>Protokolliert jedes MIDI-Ereignis der angehakten Eingänge, mit dem physischen Bedienelement und der Funktion, die das geladene Mapping ihm gibt, und lässt jedes Layout, die Überlagerung der Controller-Bilder und die Emulatoren auf die echte Hardware reagieren.&lt;br&gt;&lt;br&gt;Er startet von selbst, wenn ein Mapping geladen wird (⚙ Einstellungen). Um Ports selbst zu wählen: &lt;b&gt;Ports aktualisieren&lt;/b&gt;, Eingänge anhaken, &lt;b&gt;Überwachung starten&lt;/b&gt;.&lt;br&gt;&lt;br&gt;Um die LED-Nachrichten zu sehen, die Serato zurücksendet, haken Sie &lt;b&gt;Virtuelles Monitor-Ziel erstellen&lt;/b&gt; an und fügen Sie &lt;i&gt;DJMidiStudio Monitor&lt;/i&gt; als zusätzlichen MIDI-Ausgang in Serato hinzu.&lt;br&gt;&lt;br&gt;Ein Tastendruck, der auf demselben Deck zwei oder mehr verschiedene Funktionen auslöst, wird bernsteinfarben als &lt;b&gt;KONFLIKT&lt;/b&gt; angezeigt und gezählt; Seratos identische wiederholte Trigger sind keine Konflikte.&lt;br&gt;&lt;br&gt;Während &lt;b&gt;● Rec&lt;/b&gt; aufzeichnet, sind Start/Stopp und die Eingänge bis &lt;b&gt;■ Stopp&lt;/b&gt; gesperrt.</translation>
     </message>
     <message>
+        <source>Mix Together: Connection Test</source>
+        <translation>Gemeinsam mixen: Verbindungstest</translation>
+    </message>
+    <message>
+        <source>Measures the line between two DJs before you mix together from two places. Both of you open this window: one ticks &lt;b&gt;I host&lt;/b&gt; and gives one of &lt;b&gt;Your addresses&lt;/b&gt; (the ZeroTier one when you use ZeroTier), the other ticks &lt;b&gt;I join&lt;/b&gt; and types it. Then &lt;b&gt;Start the test&lt;/b&gt; on both sides.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Network&lt;/b&gt;: round trip and lost packets. Green under 150 ms and 1 %.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Stability&lt;/b&gt;: jitter, how much the round trip moves. Green under 20 ms: this is what matters most, a steady delay can be hidden, a moving one can&apos;t.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Tempo and phase&lt;/b&gt;: with Link on in both DJ programs, whether both sides share one tempo and one beat. Two tempos means Link doesn&apos;t reach across.&lt;/li&gt;&lt;/ul&gt;Leave it running a few minutes, then &lt;b&gt;Save the report&lt;/b&gt; (in your Logs folder) and send it to the other DJ. Nothing is sent to anyone else; only this test&apos;s own packets travel.</source>
+        <translation>Misst die Leitung zwischen zwei DJs, bevor ihr von zwei Orten aus gemeinsam mixt. Ihr öffnet beide dieses Fenster: einer wählt &lt;b&gt;Ich hoste&lt;/b&gt; und nennt eine von &lt;b&gt;Deine Adressen&lt;/b&gt; (die ZeroTier-Adresse, wenn ihr ZeroTier nutzt), der andere wählt &lt;b&gt;Ich trete bei&lt;/b&gt; und gibt sie ein. Dann auf beiden Seiten &lt;b&gt;Test starten&lt;/b&gt;.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Netzwerk&lt;/b&gt;: Umlaufzeit und verlorene Pakete. Grün unter 150 ms und 1 %.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Stabilität&lt;/b&gt;: Jitter, wie stark die Umlaufzeit schwankt. Grün unter 20 ms: das zählt am meisten, eine gleichbleibende Verzögerung lässt sich verstecken, eine schwankende nicht.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Tempo und Phase&lt;/b&gt;: mit Link in beiden DJ-Programmen, ob beide Seiten ein Tempo und einen Beat teilen. Zwei Tempi heißt: Link kommt nicht hinüber.&lt;/li&gt;&lt;/ul&gt;Ein paar Minuten laufen lassen, dann &lt;b&gt;Bericht speichern&lt;/b&gt; (in deinem Logs-Ordner) und an den anderen DJ schicken. Nichts geht an jemand anderen; nur die Pakete dieses Tests werden übertragen.</translation>
+    </message>
+    <message>
         <source>Startup check</source>
         <translation>Startprüfung</translation>
     </message>
@@ -5269,6 +5277,14 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
     <message>
         <source>Measure MIDI round-trip latency through a port or device that echoes what it receives</source>
         <translation>Die MIDI-Umlauflatenz über einen Port oder ein Gerät messen, das zurückschickt, was es empfängt</translation>
+    </message>
+    <message>
+        <source>Mix Together: Connection Test…</source>
+        <translation>Gemeinsam mixen: Verbindungstest…</translation>
+    </message>
+    <message>
+        <source>Measure the line to another DJ before mixing together from two places</source>
+        <translation>Die Leitung zu einem anderen DJ messen, bevor ihr von zwei Orten aus gemeinsam mixt</translation>
     </message>
     <message>
         <source>Layer Map…</source>
@@ -9614,6 +9630,228 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     <message>
         <source>Relink checked…</source>
         <translation>Angehakte neu verknüpfen…</translation>
+    </message>
+</context>
+<context>
+    <name>RemoteMixDialog</name>
+    <message>
+        <source>Mix Together: Connection Test</source>
+        <translation>Gemeinsam mixen: Verbindungstest</translation>
+    </message>
+    <message>
+        <source>Test the line with the other DJ</source>
+        <translation>Die Leitung zum anderen DJ testen</translation>
+    </message>
+    <message>
+        <source>Do this once before mixing together. One of you hosts, the other joins with the host&apos;s address. Turn Link on in both DJ programs, leave the test running a few minutes, then save the report and send it over.</source>
+        <translation>Einmal vor dem gemeinsamen Mixen machen. Einer hostet, der andere tritt mit der Adresse des Hosts bei. Link in beiden DJ-Programmen einschalten, den Test ein paar Minuten laufen lassen, dann den Bericht speichern und schicken.</translation>
+    </message>
+    <message>
+        <source>I host</source>
+        <translation>Ich hoste</translation>
+    </message>
+    <message>
+        <source>I join</source>
+        <translation>Ich trete bei</translation>
+    </message>
+    <message>
+        <source>No network address found</source>
+        <translation>Keine Netzwerkadresse gefunden</translation>
+    </message>
+    <message>
+        <source>e.g. 10.147.17.5</source>
+        <translation>z. B. 10.147.17.5</translation>
+    </message>
+    <message>
+        <source>Measure Ableton Link too</source>
+        <translation>Auch Ableton Link messen</translation>
+    </message>
+    <message>
+        <source>Your addresses (give one to the other DJ):</source>
+        <translation>Deine Adressen (nenne eine dem anderen DJ):</translation>
+    </message>
+    <message>
+        <source>Host&apos;s address:</source>
+        <translation>Adresse des Hosts:</translation>
+    </message>
+    <message>
+        <source>Port:</source>
+        <translation>Port:</translation>
+    </message>
+    <message>
+        <source>Start the test</source>
+        <translation>Test starten</translation>
+    </message>
+    <message>
+        <source>Save the report</source>
+        <translation>Bericht speichern</translation>
+    </message>
+    <message>
+        <source>Not started.</source>
+        <translation>Nicht gestartet.</translation>
+    </message>
+    <message>
+        <source>Network</source>
+        <translation>Netzwerk</translation>
+    </message>
+    <message>
+        <source>Stability</source>
+        <translation>Stabilität</translation>
+    </message>
+    <message>
+        <source>Tempo and phase</source>
+        <translation>Tempo und Phase</translation>
+    </message>
+    <message>
+        <source>not measured yet</source>
+        <translation>noch nicht gemessen</translation>
+    </message>
+    <message>
+        <source>Type the host&apos;s address first.</source>
+        <translation>Gib zuerst die Adresse des Hosts ein.</translation>
+    </message>
+    <message>
+        <source>Could not start: {error}</source>
+        <translation>Start nicht möglich: {error}</translation>
+    </message>
+    <message>
+        <source>Stop the test</source>
+        <translation>Test stoppen</translation>
+    </message>
+    <message>
+        <source>Network error: {error}</source>
+        <translation>Netzwerkfehler: {error}</translation>
+    </message>
+    <message>
+        <source>Waiting for the other DJ to join on port {port}…</source>
+        <translation>Warte auf den anderen DJ an Port {port}…</translation>
+    </message>
+    <message>
+        <source>Calling {host}… no answer yet.</source>
+        <translation>Rufe {host}… noch keine Antwort.</translation>
+    </message>
+    <message>
+        <source>Connected to {host} for {seconds} s.</source>
+        <translation>Seit {seconds} s mit {host} verbunden.</translation>
+    </message>
+    <message>
+        <source>round trip {rtt:.0f} ms, {loss:.1f} % lost</source>
+        <translation>Umlaufzeit {rtt:.0f} ms, {loss:.1f} % verloren</translation>
+    </message>
+    <message>
+        <source>jitter {jitter:.1f} ms</source>
+        <translation>Jitter {jitter:.1f} ms</translation>
+    </message>
+    <message>
+        <source>turn Link on in both DJ programs (and leave this box ticked)</source>
+        <translation>Link in beiden DJ-Programmen einschalten (und dieses Kästchen angehakt lassen)</translation>
+    </message>
+    <message>
+        <source>two tempos ({here:.2f} / {there:.2f} BPM): Link doesn&apos;t reach across</source>
+        <translation>zwei Tempi ({here:.2f} / {there:.2f} BPM): Link kommt nicht hinüber</translation>
+    </message>
+    <message>
+        <source>{tempo:.2f} BPM both sides, phase gap {gap:.1f} ms</source>
+        <translation>{tempo:.2f} BPM auf beiden Seiten, Phasenabstand {gap:.1f} ms</translation>
+    </message>
+    <message>
+        <source>Report saved: {path}</source>
+        <translation>Bericht gespeichert: {path}</translation>
+    </message>
+</context>
+<context>
+    <name>RemoteMixReport</name>
+    <message>
+        <source>Started</source>
+        <translation>Beginn</translation>
+    </message>
+    <message>
+        <source>This side</source>
+        <translation>Diese Seite</translation>
+    </message>
+    <message>
+        <source>Other DJ</source>
+        <translation>Anderer DJ</translation>
+    </message>
+    <message>
+        <source>Protocol</source>
+        <translation>Protokoll</translation>
+    </message>
+    <message>
+        <source>Measure</source>
+        <translation>Messwert</translation>
+    </message>
+    <message>
+        <source>Network</source>
+        <translation>Netzwerk</translation>
+    </message>
+    <message>
+        <source>Stability</source>
+        <translation>Stabilität</translation>
+    </message>
+    <message>
+        <source>Tempo and phase</source>
+        <translation>Tempo und Phase</translation>
+    </message>
+    <message>
+        <source>green</source>
+        <translation>grün</translation>
+    </message>
+    <message>
+        <source>orange</source>
+        <translation>orange</translation>
+    </message>
+    <message>
+        <source>red</source>
+        <translation>rot</translation>
+    </message>
+    <message>
+        <source>not measured</source>
+        <translation>nicht gemessen</translation>
+    </message>
+    <message>
+        <source>Mix together: connection test</source>
+        <translation>Gemeinsam mixen: Verbindungstest</translation>
+    </message>
+    <message>
+        <source>No answer from the other DJ.</source>
+        <translation>Keine Antwort vom anderen DJ.</translation>
+    </message>
+    <message>
+        <source>Duration</source>
+        <translation>Dauer</translation>
+    </message>
+    <message>
+        <source>Pings sent / answered</source>
+        <translation>Pings gesendet / beantwortet</translation>
+    </message>
+    <message>
+        <source>Lost</source>
+        <translation>Verloren</translation>
+    </message>
+    <message>
+        <source>Round trip min / median / 95 %</source>
+        <translation>Umlaufzeit min / Median / 95 %</translation>
+    </message>
+    <message>
+        <source>Jitter</source>
+        <translation>Jitter</translation>
+    </message>
+    <message>
+        <source>Clock offset spread</source>
+        <translation>Streuung des Uhrenversatzes</translation>
+    </message>
+    <message>
+        <source>Link tempo here / there</source>
+        <translation>Link-Tempo hier / dort</translation>
+    </message>
+    <message>
+        <source>Link phase gap</source>
+        <translation>Link-Phasenabstand</translation>
+    </message>
+    <message>
+        <source>Link phase drift</source>
+        <translation>Link-Phasendrift</translation>
     </message>
 </context>
 <context>

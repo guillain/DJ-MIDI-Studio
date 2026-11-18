@@ -46,6 +46,7 @@
 | ⏱️ | [MIDI Latency Test](midi-latency.md) | Round-trip latency and jitter through a port or device that echoes |
 | 🧭 | [First-run setup](first-run-wizard.md) | A skippable first-launch wizard: your controllers, your Serato mapping, a sync set |
 | 🩺 | [Startup check](startup-check.md) | Connected devices vs what the app knows, each gap with its fix button |
+| 🌍 | [Mix together](remote-mix.md) | Two DJs in two places: Link across, connection test, report |
 | 🪟 | [Workspace and preferences](workspace.md) | Tool windows, Performance Mode, Preferences |
 | 🎤 | [Stage Mode](stage-mode.md) | Full-screen, high-contrast emulator and live MIDI for playing on stage |
 | 🌐 | [Interface language](interface-language.md) | French or German interface, or follow the system language |
@@ -81,6 +82,7 @@
 | [midi-latency.md](midi-latency.md) | Measuring round-trip latency, what needs an echo, reading the results |
 | [first-run-wizard.md](first-run-wizard.md) | When the first-run wizard appears, its steps, what it never does |
 | [startup-check.md](startup-check.md) | What the startup check looks at, its buttons, when it opens |
+| [remote-mix.md](remote-mix.md) | Mixing together from two places: phase 0 checklist, connection test, lights |
 | [workspace.md](workspace.md) | Tabs and docks, window controls, Performance Mode, Preferences |
 | [stage-mode.md](stage-mode.md) | Full-screen emulator and compact monitor, Esc to exit |
 | [interface-language.md](interface-language.md) | Choosing English, French, German or the system language, what is translated |

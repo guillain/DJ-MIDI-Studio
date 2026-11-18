@@ -322,6 +322,11 @@ surgical and logged. Qt-free modules; the tab is a thin view over `library/works
   Macro triggers bound in the controller's Serato XML (files named after it, `serato_files_for`, read-only) get
   **Move to <free pad>** (same pad mode, `free_pad`; `MainWindow.move_macro_trigger`). `watch_plugged_devices` (3 s,
   real app) re-checks when an input appears and opens only for items not shown yet.
+- **Mix together from two places** (`remote_mix/`): phase 0 = Qt-free `remote_mix/probe.py` (`ProbeSession`, UDP
+  `djmidi-mix/1` JSON ping/pong on port 47800, NTP-style round trip/offset, remote Link beat moved onto the local
+  clock → phase gap; `summarise`/`verdicts`/`report_markdown`; host answers only its first peer) →
+  `gui/remote_mix_dialog.py` (Tools → Mix Together: Connection Test…). Link via `link_reader_from(AalinkStateProvider)`.
+  Plan and checklist: `docs/enduser/features/remote-mix.md`. Next: phase 1 WAN Link bridge, phase 2 audio + mixer.
 - `user_paths.py`: the workspace (`~/Documents/DJ MIDI Studio`, `DJMIDI_WORKSPACE`) with `Controllers`, `Sync`,
   `Macros`, `Drafts`, `Logs`, `Exports`, `Snapshots`. `backup.py`: workspace backup/restore (validated, atomic).
 - `file_locations.py`, `snapshots.py`, `mapping_diff.py` (semantic diff counting copies), `deck_copy.py`,
