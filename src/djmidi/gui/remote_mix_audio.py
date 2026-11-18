@@ -33,7 +33,7 @@ from PySide6.QtWidgets import (
 )
 
 from djmidi import user_paths
-from djmidi.remote_mix import audio, controls
+from djmidi.remote_mix import audio, controls, opus
 from djmidi.remote_mix.probe import LinkSnapshot, local_beat_at
 
 if TYPE_CHECKING:
@@ -196,6 +196,7 @@ class RemoteAudioPanel(QFrame):
         self._program: AudioOutput | None = None
         self._reader: Callable[[], LinkSnapshot | None] | None = None
         self._position = 0
+        self._send_buffer = audio.SendBuffer()
         self._me_fifo = np.zeros((0, audio.CHANNELS), dtype=np.float32)
 
         title = QLabel(self.tr("Hear each other on the grid"))
@@ -223,6 +224,8 @@ class RemoteAudioPanel(QFrame):
         if self.monitor_combo.count() > 1:
             self.monitor_combo.setCurrentIndex(1)
         self.quality_combo = QComboBox()
+        if opus.unavailable() is None:
+            self.quality_combo.addItem(self.tr("Compressed, Opus (about 0.25 Mb/s)"), audio.CODEC_OPUS)
         self.quality_combo.addItem(self.tr("Full, 48 kHz (about 1.5 Mb/s)"), audio.CODEC_PCM48)
         self.quality_combo.addItem(self.tr("Light, 24 kHz (about 0.8 Mb/s)"), audio.CODEC_PCM24)
         self.nudge_spin = QSpinBox()
@@ -436,6 +439,7 @@ class RemoteAudioPanel(QFrame):
             return False
         self.player, self.link, self._reader = player, link, reader
         self._position = 0
+        self._send_buffer = audio.SendBuffer()
         self._me_fifo = np.zeros((0, audio.CHANNELS), dtype=np.float32)
         for widget in (self.input_combo, self.monitor_combo, self.program_combo, self.quality_combo):
             widget.setEnabled(False)
@@ -476,7 +480,7 @@ class RemoteAudioPanel(QFrame):
             if len(block):
                 self.me_meter.setValue(int(audio.peak(block) * 100))
                 start_beat = now_beat - len(block) * beats_per_frame
-                packets = audio.packetize(
+                packets = self._send_buffer.add(
                     block, self._position, start_beat, snapshot.tempo, self.quality_combo.currentData()
                 )
                 self._position += len(block)

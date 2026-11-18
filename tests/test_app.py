@@ -157,3 +157,14 @@ def test_the_analysis_self_check_runs_end_to_end():
     if not analysis.analysis_available():
         pytest.skip("the 'analysis' extra is not installed")
     assert analysis.self_check() is None
+
+
+def test_the_opus_self_check_flag(monkeypatch, tmp_path):
+    """``--self-check-opus`` proves the packaged app carries Mix Together's Opus."""
+    from djmidi.gui import app as app_module
+    from djmidi.remote_mix import opus
+
+    log = ["--log-file", str(tmp_path / "djmidi.log")]
+    assert app_module.run(["--self-check-opus", *log]) == (0 if opus.unavailable() is None else 3)
+    monkeypatch.setattr(opus, "self_check", lambda: "PyAV is not installed")
+    assert app_module.run(["--self-check-opus", *log]) == 3

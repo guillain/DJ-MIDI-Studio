@@ -9651,6 +9651,10 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
         <translation>Meinen Sound nicht senden</translation>
     </message>
     <message>
+        <source>Compressed, Opus (about 0.25 Mb/s)</source>
+        <translation>Komprimiert, Opus (etwa 0,25 Mb/s)</translation>
+    </message>
+    <message>
         <source>Full, 48 kHz (about 1.5 Mb/s)</source>
         <translation>Voll, 48 kHz (etwa 1,5 Mb/s)</translation>
     </message>

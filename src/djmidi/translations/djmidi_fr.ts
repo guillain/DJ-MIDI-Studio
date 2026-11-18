@@ -9651,6 +9651,10 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <translation>Ne pas envoyer mon son</translation>
     </message>
     <message>
+        <source>Compressed, Opus (about 0.25 Mb/s)</source>
+        <translation>Compressée, Opus (environ 0,25 Mb/s)</translation>
+    </message>
+    <message>
         <source>Full, 48 kHz (about 1.5 Mb/s)</source>
         <translation>Complète, 48 kHz (environ 1,5 Mb/s)</translation>
     </message>

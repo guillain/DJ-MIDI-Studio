@@ -121,6 +121,7 @@ if [[ "$BUILD_EXECUTABLE" -eq 1 ]]; then
     --collect-submodules djmidi.software \
     --collect-submodules mido.backends \
     --collect-all aalink \
+    --collect-all av \
     --hidden-import rtmidi \
     --hidden-import aalink \
     --copy-metadata djmidi \
