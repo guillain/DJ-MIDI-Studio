@@ -17,6 +17,7 @@ from datetime import datetime
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QTimer
+from PySide6.QtGui import QGuiApplication
 from PySide6.QtNetwork import QAbstractSocket, QNetworkInterface
 from PySide6.QtWidgets import (
     QButtonGroup,
@@ -50,7 +51,15 @@ from djmidi.gui.window_size import (
     keep_wrapped_text_visible,
 )
 from djmidi.library import history
-from djmidi.remote_mix import audio, bridge, listen, probe, signals, tracklist
+from djmidi.remote_mix import (
+    audio,
+    bridge,
+    listen,
+    next_step,
+    probe,
+    signals,
+    tracklist,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -260,6 +269,7 @@ class RemoteMixDialog(QDialog):
         layout = QVBoxLayout(body)
         layout.addLayout(header)
         layout.addWidget(intro)
+        layout.addWidget(self._build_next_step())
         layout.addWidget(self.columns, 1)
         # A listener (phase 8) has no decks: its own panel instead of the three columns.
         self.listener_panel = ListenerPanel(self, backend=audio_backend, client_factory=listener_factory)
@@ -280,11 +290,87 @@ class RemoteMixDialog(QDialog):
         self._timer.timeout.connect(self.refresh)
         self.host_radio.toggled.connect(self._sync_role)
         self.listen_radio.toggled.connect(self._sync_role)
+        self.address_edit.textChanged.connect(self._show_next_step)
         self._sync_role()
         self._show_lights(None)
         self._restyle()
         theme.signals.themeChanged.connect(self._restyle)
         keep_wrapped_text_visible(self)
+
+    def _build_next_step(self) -> QFrame:
+        """The golden rule: what to do now, always in view, with the one button that does it."""
+        frame = QFrame()
+        frame.setObjectName("remoteNextStep")
+        self.next_step_frame = frame
+        self.next_step_number = QLabel()
+        self.next_step_number.setObjectName("remoteStepNumber")
+        self.next_step_label = QLabel()
+        self.next_step_label.setWordWrap(True)
+        self.next_step_button = QPushButton()
+        self.next_step_button.clicked.connect(self._do_next_step)
+        self.next_step: next_step.Step | None = None
+        row = QHBoxLayout(frame)
+        row.addWidget(self.next_step_number)
+        row.addWidget(self.next_step_label, 1)
+        row.addWidget(self.next_step_button)
+        return frame
+
+    def _state(self) -> next_step.State:
+        role = next_step.LISTEN if self.listen_radio.isChecked() else (
+            next_step.HOST if self.host_radio.isChecked() else next_step.JOIN
+        )
+        session = self.session
+        connected = session is not None and session.stats() is not None
+        link = connected and self._link is not None and self._link() is not None
+        return next_step.State(
+            role=role,
+            running=session is not None,
+            has_address=bool(self.address_edit.text().strip()),
+            connected=connected,
+            link=link,
+            sound=self.sound_panel.running,
+        )
+
+    def _show_next_step(self) -> None:
+        step = self.next_step = next_step.next_step(self._state())
+        self.next_step_frame.setVisible(step is not None)
+        if step is None:
+            return
+        texts = {
+            next_step.TYPE_ADDRESS: self.tr("Type the host's address (the other DJ sees theirs in this window), then start."),
+            next_step.START: self.tr("Start: the lights test the line between you."),
+            next_step.GIVE_ADDRESS: self.tr("Give one of your addresses to the other DJ; they join with it."),
+            next_step.WAIT_HOST: self.tr("Calling the host… they must have started too."),
+            next_step.LINK: self.tr("Connected. Turn Link on in your DJ software (and tick Measure Ableton Link too)."),
+            next_step.SOUND: self.tr("Same tempo. Pick where your master comes from, then start the sound."),
+            next_step.MIXING: self.tr("You're mixing together: the mixer, the signals and the tracklist are shared."),
+        }
+        buttons = {
+            "focus_address": self.tr("Type the address"),
+            "start": self.tr("Start"),
+            "copy_address": self.tr("Copy my address"),
+            "start_sound": self.tr("Start the sound"),
+        }
+        self.next_step_number.setText(self.tr("Step {number} of {total}").format(number=step.number, total=next_step.STEPS))
+        self.next_step_label.setText(texts[step.key])
+        action = step.action
+        self.next_step_button.setVisible(action is not None)
+        if action is not None:
+            self.next_step_button.setText(buttons[action])
+
+    def _do_next_step(self) -> None:
+        action = self.next_step.action if self.next_step is not None else None
+        if action == "focus_address":
+            self.address_edit.setFocus()
+        elif action == "start":
+            self.start()
+        elif action == "copy_address":
+            first = self.addresses_label.text().split(",")[0].strip()
+            QGuiApplication.clipboard().setText(first)
+            self.next_step_label.setText(self.tr("{address} copied: send it to the other DJ.").format(address=first))
+        elif action == "start_sound":
+            self.sound_panel.start_button.click()
+            self._show_next_step()
 
     def _build_together(self) -> QFrame:
         frame = QFrame()
@@ -396,6 +482,7 @@ class RemoteMixDialog(QDialog):
         hosting = self.host_radio.isChecked()
         self._form.setRowVisible(self.addresses_label, hosting)
         self._form.setRowVisible(self.address_edit, not hosting)
+        self._show_next_step()
 
     def toggle(self) -> None:
         if self.running:
@@ -460,6 +547,7 @@ class RemoteMixDialog(QDialog):
         for widget in (self.host_radio, self.join_radio, self.address_edit, self.port_spin, self.link_checkbox, self.name_edit):
             widget.setEnabled(True)
         self.start_button.setText(self.tr("Start the test"))
+        self._show_next_step()
 
     def _close_link(self) -> None:
         close = getattr(self._link, "close", None)
@@ -520,6 +608,7 @@ class RemoteMixDialog(QDialog):
         self._show_lights(stats)
         self._show_together(session, stats)
         self.save_button.setEnabled(stats is not None)
+        self._show_next_step()
 
     def _show_lights(self, stats: probe.ProbeStats | None) -> None:
         verdicts = probe.verdicts(stats)
@@ -593,6 +682,9 @@ class RemoteMixDialog(QDialog):
             QFrame#remoteTracklist {{ background: {c["panel_bg"]}; border: 1px solid {c["panel_border"]};
                                       border-radius: 10px; }}
             QFrame#remoteTracklist > QLabel {{ background: transparent; border: none; color: {c["text"]}; }}
+            QFrame#remoteNextStep {{ background: {c["panel_bg"]}; border: 2px solid {c["accent"]}; border-radius: 10px; }}
+            QFrame#remoteNextStep QLabel {{ background: transparent; border: none; color: {c["text"]}; font-size: 14px; }}
+            QFrame#remoteNextStep QLabel#remoteStepNumber {{ font-weight: 700; color: {c["title"]}; }}
             QFrame#remoteSignals {{ background: {c["panel_bg"]}; border: 1px solid {c["panel_border"]};
                                     border-radius: 10px; }}
             QFrame#remoteSignals QLabel {{ background: transparent; border: none; color: {c["text"]}; }}
