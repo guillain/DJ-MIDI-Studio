@@ -193,6 +193,11 @@ usual). **Flat** puts a channel back to noon. Every knob has its own
 **Learn**, like the faders: your controller's EQ knobs send 64 at their
 centre detent, which is noon here too.
 
+**The tab.** Connecting sits on the left (role, addresses, lights, tempo),
+**the mixer** at the centre (one channel strip each, crossfader underneath)
+and the sound settings on the right once you're connected. On a small
+window the three columns stack.
+
 **One mixer for both of you.** Once connected, the mixer is shared: every
 move of a volume, an EQ knob, the filter or the crossfader shows up on the
 other DJ's screen and in their sound, about as fast as the line (only the
