@@ -490,7 +490,8 @@ REMOTE_MIX: HelpEntry = (
         "Once connected the mixer is shared: what one of you moves, the other sees and hears; the last "
         "gesture wins. One computer is the control room (the host, until the other presses "
         "<b>Make this computer the control room</b>): only it sends the program mix and can "
-        "<b>Record the mix</b> to a WAV file in Exports.<br><br>"
+        "<b>Record the mix</b> to a WAV file in Exports. A computer without decks ticks <b>I listen</b> "
+        "and types the control room's address to hear the official mix.<br><br>"
         "<b>Save the report</b> (in your Logs folder) and send it to the other DJ. Nothing is sent to "
         "anyone else; only this window's own small packets travel.",
     ),

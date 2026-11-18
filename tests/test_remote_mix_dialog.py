@@ -443,3 +443,87 @@ def test_the_regie_makes_and_records_the_official_mix(tmp_path):
     finally:
         panel.stop()
         panel.close()
+
+
+def test_i_listen_shows_only_the_listener_panel_and_plays_the_mix(tmp_path):
+    import numpy as np
+
+    from djmidi.remote_mix import audio
+
+    clients = []
+
+    class FakeClient:
+        def __init__(self, *, server, player):
+            self.server, self.player, self.error, self.closed = server, player, None, False
+            clients.append(self)
+
+        def close(self):
+            self.closed = True
+
+    backend = FakeBackend()
+    dialog = RemoteMixDialog(
+        session_factory=lambda **kw: FakeSession(**kw),
+        link_factory=lambda: None,
+        addresses=lambda: ["192.168.1.20"],
+        report_dir=lambda: tmp_path,
+        audio_backend=backend,
+        listener_factory=FakeClient,
+    )
+    dialog.show()
+    try:
+        dialog.listen_radio.setChecked(True)
+        panel = dialog.listener_panel
+        assert panel.isVisible() and not dialog.start_button.isVisible()
+        assert not dialog.sound_panel.table_widget.isVisible()
+        assert not panel.start()  # no address yet
+        panel.address_edit.setText("10.0.0.7")
+        assert panel.start()
+        assert clients[0].server == ("10.0.0.7", 47802)
+        clients[0].player.push(audio.AudioPacket(0, 0.0, 120.0, np.full((2400, 2), 0.5, np.float32)))
+        panel.pump()
+        assert backend.devices["Speakers"].written  # the mix reaches the speakers
+        dialog.host_radio.setChecked(True)  # back to DJ: listening stops
+        assert not panel.running and clients[0].closed and dialog.start_button.isVisible()
+    finally:
+        dialog.close()
+
+
+def test_the_control_room_sends_its_mix_to_listeners(tmp_path):
+    from djmidi.gui.remote_mix_audio import RemoteAudioPanel
+
+    servers = []
+
+    class FakeServer:
+        def __init__(self, *, port):
+            self.port, self.mixes, self.closed = port, [], False
+            servers.append(self)
+
+        def listeners(self):
+            return [("10.0.0.9", 5000)]
+
+        def send_mix(self, samples):
+            self.mixes.append(len(samples))
+
+        def close(self):
+            self.closed = True
+
+    backend = FakeBackend()
+    panel = RemoteAudioPanel(
+        lambda: ("127.0.0.1", 47801, lambda: probe.LinkSnapshot(tempo=120.0, beat=8.0, at=0.0, peers=1)),
+        backend=backend,
+        link_factory=lambda **kw: FakeAudioLink(**kw),
+        controls_path=tmp_path / "c.json",
+        listen_server_factory=FakeServer,
+    )
+    try:
+        assert panel.start()
+        assert servers[0].port == 47802
+        for _ in range(3):
+            panel.pump()
+        assert servers[0].mixes  # no program output, no recording: the listeners alone get the mix
+        panel._show_status()
+        assert panel.listeners_label.text() == "1 listening"
+        panel.stop()
+        assert servers[0].closed
+    finally:
+        panel.close()

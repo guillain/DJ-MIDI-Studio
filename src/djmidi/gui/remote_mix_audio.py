@@ -35,7 +35,7 @@ from PySide6.QtWidgets import (
 )
 
 from djmidi import user_paths
-from djmidi.remote_mix import audio, controls, eq, opus, recording, table
+from djmidi.remote_mix import audio, controls, eq, listen, opus, recording, table
 from djmidi.remote_mix.probe import LinkSnapshot, local_beat_at
 
 if TYPE_CHECKING:
@@ -183,9 +183,12 @@ class RemoteAudioPanel(QFrame):
         ensure_listening: Callable[[], bool] | None = None,
         controls_path: Path | None = None,
         recordings_dir: Path | None = None,
+        listen_server_factory: Callable[..., listen.ListenerServer] = listen.ListenerServer,
     ) -> None:
         super().__init__(parent)
         self._recordings_dir = recordings_dir
+        self._listen_server_factory = listen_server_factory
+        self.listen_server: listen.ListenerServer | None = None
         self.setObjectName("remoteSound")
         self._ensure_listening = ensure_listening
         self._controls_path = controls_path or user_paths.workspace_dir() / controls.FILE_NAME
@@ -371,6 +374,9 @@ class RemoteAudioPanel(QFrame):
         regie_row.addWidget(self.regie_label, 1)
         regie_row.addWidget(self.regie_button)
         regie_row.addWidget(self.record_button)
+        self.listeners_label = QLabel()
+        self.listeners_label.setObjectName("listenersLabel")
+        regie_row.addWidget(self.listeners_label)
         table_box.addLayout(regie_row)
         table_box.addWidget(self.record_label)
         self._show_regie()
@@ -663,6 +669,11 @@ class RemoteAudioPanel(QFrame):
             self.status_label.setText(self.tr("Sound device problem: {error}").format(error=exc))
             return False
         self.player, self.link, self._reader = player, link, reader
+        try:  # listeners hear the official mix on the test port + 2 (phase 8)
+            self.listen_server = self._listen_server_factory(port=port - audio.AUDIO_PORT_OFFSET + listen.LISTEN_PORT_OFFSET)
+        except OSError as exc:
+            _LOGGER.warning("Mix Together: no listener port: %s", exc)
+            self.listen_server = None
         self._position = 0
         self._send_buffer = audio.SendBuffer()
         self._me_fifo = np.zeros((0, audio.CHANNELS), dtype=np.float32)
@@ -684,6 +695,9 @@ class RemoteAudioPanel(QFrame):
                 device.close()
         if self.link is not None:
             self.link.close()
+        if self.listen_server is not None:
+            self.listen_server.close()
+            self.listen_server = None
         self._input = self._monitor = self._program = None
         self.player = self.link = self._reader = None
         for widget in (self.input_combo, self.monitor_combo, self.program_combo, self.quality_combo):
@@ -714,7 +728,7 @@ class RemoteAudioPanel(QFrame):
                 self._position += len(block)
                 if self.link is not None:
                     self.link.send(packets)
-                if self._program is not None or self.recorder is not None:
+                if self._mixing():
                     self._me_fifo = np.concatenate([self._me_fifo, block])[-audio.RATE :]
         driver = self._monitor or self._program
         if driver is None:
@@ -727,7 +741,7 @@ class RemoteAudioPanel(QFrame):
         self.them_meter.setValue(int(self.player.last_peak * 100))
         if self._monitor is not None:
             self._monitor.write(them * (self.them_volume.value() / 100.0))
-        if (self._program is not None or self.recorder is not None) and self.makes_the_mix:
+        if self._mixing() and self.makes_the_mix:
             me = self._me_fifo[:n]
             self._me_fifo = self._me_fifo[n:]
             if len(me) < n:
@@ -744,11 +758,22 @@ class RemoteAudioPanel(QFrame):
                 self._program.write(mix)
             if self.recorder is not None:
                 self.recorder.write(mix)
+            if self.listen_server is not None:
+                self.listen_server.send_mix(mix)
+
+    def _mixing(self) -> bool:
+        """Whether the official mix is needed: an output, a recording or listeners."""
+        listeners = self.listen_server is not None and bool(self.listen_server.listeners())
+        return self._program is not None or self.recorder is not None or listeners
 
     def _show_status(self) -> None:
         player = self.player
         if player is None:
             return
+        count = len(self.listen_server.listeners()) if self.listen_server is not None else 0
+        self.listeners_label.setText(
+            self.tr("{count} listening").format(count=count) if count and self.makes_the_mix else ""
+        )
         if self.link is not None and self.link.error:
             self.status_label.setText(self.tr("Network error: {error}").format(error=self.link.error))
         elif player.received == 0:
