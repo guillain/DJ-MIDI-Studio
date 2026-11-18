@@ -89,6 +89,7 @@ Open several, one per controller.
 | ⏱️ | [MIDI Latency Test](features/midi-latency.md) | Round-trip latency and jitter through a port or device that echoes |
 | 🧭 | [First-run setup](features/first-run-wizard.md) | Detect your controllers, open your Serato mapping, record a sync set |
 | 🩺 | [Startup check](features/startup-check.md) | What's plugged in, what's missing, and the button that fixes each thing |
+| 🌍 | [Mix together](features/remote-mix.md) | Two DJs in two places, one tempo: checklist and connection test |
 | 🪟 | [Workspace and preferences](features/workspace.md) | Dockable tools, Performance Mode, Preferences |
 | 🎤 | [Stage Mode](features/stage-mode.md) | Full-screen, high-contrast emulator and live MIDI, Esc to exit |
 | 🌐 | [Interface language](features/interface-language.md) | French or German interface, or follow the system language |
