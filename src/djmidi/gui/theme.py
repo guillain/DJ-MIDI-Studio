@@ -86,12 +86,15 @@ QTabWidget#navTop > QTabBar::tab:selected {
     color: $text;
     border-bottom-color: $accent;
 }
-/* One colour per main section: Dashboard, Controller (the accent), Music. */
+/* One colour per main section: Dashboard, Controller (the accent), Music, Mix Together. */
 QTabWidget#navTop[section="dashboard"] > QTabBar::tab:selected {
     border-bottom-color: $title;
 }
 QTabWidget#navTop[section="music"] > QTabBar::tab:selected {
     border-bottom-color: $accent2;
+}
+QTabWidget#navTop[section="mix"] > QTabBar::tab:selected {
+    border-bottom-color: $clock_accent;
 }
 QTabWidget#navTop > QTabBar::tab:hover:!selected {
     border-bottom-color: $panel_border;

@@ -363,3 +363,50 @@ def test_eq_knobs_shape_their_sound_and_follow_the_controller(tmp_path):
         assert panel.them_strip.flat
     finally:
         panel.close()
+
+
+def test_two_panels_share_one_mixer_and_a_controller_picks_up_softly(tmp_path):
+    from djmidi.gui.remote_mix_audio import RemoteAudioPanel
+    from djmidi.midi_io import MidiEvent
+    from djmidi.remote_mix import controls, table
+
+    host = RemoteAudioPanel(lambda: None, backend=FakeBackend(), controls_path=tmp_path / "a.json")
+    guest = RemoteAudioPanel(lambda: None, backend=FakeBackend(), controls_path=tmp_path / "b.json")
+    to_guest, to_host = [], []
+    host.attach_table(table.HOST, to_guest.append)
+    guest.attach_table(table.GUEST, to_host.append)
+    guest.set_peer_name("Host DJ")
+    try:
+        host.dials["me_low"].setValue(5)
+        host.crossfader.setValue(20)
+        for message in to_guest:
+            guest.apply_remote(message)
+        assert guest.dials["them_low"].value() == 5
+        assert guest.crossfader.value() == 80
+        assert "Host DJ" in guest.remote_label.text()
+        assert to_host == []  # applying their move doesn't echo it back
+
+        # The guest's crossfader is on a controller, far from where the host left it.
+        guest.controls.bind(controls.CROSSFADER, controls.MixerTrigger("1", "Control Change", "31"))
+        assert guest.feed_midi_event(MidiEvent("in", "1", "Control Change", "31", "0", 0.0))
+        assert guest.crossfader.value() == 80  # not picked up yet: no jump
+        guest.feed_midi_event(MidiEvent("in", "1", "Control Change", "31", "127", 0.0))  # sweeps past 80
+        assert guest.crossfader.value() == 100
+        assert to_host and host.apply_remote(to_host[-1]) is None and host.crossfader.value() == 0
+    finally:
+        host.close()
+        guest.close()
+
+
+def test_mix_together_has_its_own_tab_after_music():
+    window = MainWindow()
+    try:
+        index = window._tab_indexes["mix"]
+        assert window._tab_indexes["library"] < index
+        assert getattr(window, "_remote_mix_dialog", None) is None  # built on first visit only
+        window.left_tabs.setCurrentIndex(index)
+        dialog = window._remote_mix_dialog
+        assert dialog is not None and window._on_remote_mix_test() is dialog
+        assert window.left_tabs.currentIndex() == index
+    finally:
+        window.close()

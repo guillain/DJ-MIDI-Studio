@@ -486,7 +486,9 @@ REMOTE_MIX: HelpEntry = (
         "cards add delay. <b>Program mix to</b> sends both DJs through the crossfader to an output of your "
         "choice, for a recorder or a stream. <b>Learn</b> next to a volume or the crossfader, then move a "
         "fader or knob on your controller: it drives that mixer control from then on. Each DJ also has "
-        "<b>Low</b>, <b>Mid</b>, <b>High</b> and <b>Filter</b> knobs, flat at noon; <b>Flat</b> resets them.<br><br>"
+        "<b>Low</b>, <b>Mid</b>, <b>High</b> and <b>Filter</b> knobs, flat at noon; <b>Flat</b> resets them. "
+        "Once connected the mixer is shared: what one of you moves, the other sees and hears; the last "
+        "gesture wins.<br><br>"
         "<b>Save the report</b> (in your Logs folder) and send it to the other DJ. Nothing is sent to "
         "anyone else; only this window's own small packets travel.",
     ),

@@ -34,7 +34,7 @@ from PySide6.QtWidgets import (
 )
 
 from djmidi import user_paths
-from djmidi.remote_mix import audio, controls, eq, opus
+from djmidi.remote_mix import audio, controls, eq, opus, table
 from djmidi.remote_mix.probe import LinkSnapshot, local_beat_at
 
 if TYPE_CHECKING:
@@ -42,6 +42,7 @@ if TYPE_CHECKING:
 
 _LOGGER = logging.getLogger(__name__)
 
+PICKUP_STEPS = 3  # a controller picks a control up within this many steps of it
 MAX_BLOCK = 1920  # never write more than 40 ms at once
 OUTPUT_BUFFER_FRAMES = 2880  # 60 ms of device buffer
 
@@ -318,6 +319,16 @@ class RemoteAudioPanel(QFrame):
             eq_grid.addWidget(flat, row, len(controls.KNOBS) + 1)
             self.flat_buttons[side] = flat
         self._sliders.update(self.dials)
+        # The shared mixer (phase 6): every move here goes to the other DJ.
+        self.table: table.SharedTable | None = None
+        self._send_mix: Callable[[dict], None] | None = None
+        self._applying_remote = False
+        self._needs_pickup: set[str] = set()
+        self._hardware_last: dict[str, int] = {}
+        for target, widget in self._sliders.items():
+            widget.valueChanged.connect(lambda value, t=target: self._on_local_move(t, value))
+        self.remote_label = QLabel()
+        self.remote_label.setObjectName("remoteMove")
         self.controls_hint = QLabel(
             self.tr("Learn: move a fader or knob on your controller and it drives this mixer control.")
         )
@@ -335,6 +346,7 @@ class RemoteAudioPanel(QFrame):
         layout.addWidget(self.status_label)
         layout.addLayout(mixer)
         layout.addLayout(eq_grid)
+        layout.addWidget(self.remote_label)
         layout.addWidget(self.controls_hint)
 
         self._timer = QTimer(self)
@@ -446,8 +458,68 @@ class RemoteAudioPanel(QFrame):
         for target, value in moves:
             slider = self._sliders[target]
             top = 100 if target != controls.CROSSFADER else slider.maximum()
-            slider.setValue(round(value * top))
+            wanted = round(value * top)
+            last, self._hardware_last[target] = self._hardware_last.get(target), wanted
+            if target in self._needs_pickup:
+                # The other DJ moved it: wait until your control reaches it, so the sound doesn't jump.
+                current = slider.value()
+                crossed = last is not None and (last - current) * (wanted - current) <= 0
+                if abs(wanted - current) > PICKUP_STEPS and not crossed:
+                    continue
+                self._needs_pickup.discard(target)
+            slider.setValue(wanted)
         return bool(moves)
+
+    # -- the shared mixer (phase 6) ---------------------------------------
+
+    def attach_table(self, role: str, send: Callable[[dict], None]) -> None:
+        """Share this mixer with the other DJ: moves go out through ``send``."""
+        self.table = table.SharedTable(role)
+        self._send_mix = send
+
+    def detach_table(self) -> None:
+        self.table = None
+        self._send_mix = None
+        self._needs_pickup.clear()
+        self.remote_label.setText("")
+
+    def _on_local_move(self, target: str, value: int) -> None:
+        if self._applying_remote or self.table is None or self._send_mix is None:
+            return
+        self._send_mix(self.table.local_change(target, value))
+
+    def send_snapshot(self) -> None:
+        if self.table is not None and self._send_mix is not None:
+            message = self.table.snapshot()
+            if message is not None:
+                self._send_mix(message)
+
+    def apply_remote(self, message: dict) -> None:
+        """The other DJ moved the shared mixer: show it here."""
+        if self.table is None:
+            return
+        changes = self.table.receive(message)
+        self._applying_remote = True
+        try:
+            for target, value in changes:
+                self._sliders[target].setValue(value)
+                self._needs_pickup.add(target)
+        finally:
+            self._applying_remote = False
+        if changes:
+            self.remote_label.setText(
+                self.tr("{name} moved: {control}").format(
+                    name=self.them_name.text(), control=self._caption(changes[-1][0])
+                )
+            )
+
+    def _caption(self, target: str) -> str:
+        owner = self.tr("Me") if target.startswith(controls.ME) else self.them_name.text()
+        if target == controls.CROSSFADER:
+            return self.tr("Crossfader")
+        knob = target.partition("_")[2]
+        names = {"low": self.tr("Low"), "mid": self.tr("Mid"), "high": self.tr("High"), "filter": self.tr("Filter")}
+        return "{owner} · {control}".format(owner=owner, control=names.get(knob, self.tr("Volume")))
 
     @property
     def running(self) -> bool:

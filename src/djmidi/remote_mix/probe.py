@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import logging
+import queue
 import socket
 import statistics
 import threading
@@ -316,6 +317,8 @@ class ProbeSession:
         self._socket: socket.socket | None = None
         self._join_target = peer
         self.error: str | None = None
+        # Shared-mixer messages from the other DJ (phase 6), drained by the GUI.
+        self.inbox: queue.SimpleQueue[dict] = queue.SimpleQueue()
 
     @property
     def hosting(self) -> bool:
@@ -388,6 +391,11 @@ class ProbeSession:
                 continue
             self._handle(sock, data, address, self._clock())
 
+    def send(self, message: dict) -> None:
+        """Send one message to the other DJ (the shared mixer's moves); nothing before a peer."""
+        if self._socket is not None:
+            self._send(self._socket, message)
+
     def take_lead(self) -> None:
         """This side leads from now on; the other side follows (sent three
         times: a lost packet must not leave two leaders)."""
@@ -430,6 +438,9 @@ class ProbeSession:
         kind = message.get("k")
         if isinstance(message.get("lead"), bool):
             self.remote_leading = message["lead"]
+        if kind == "mix":
+            self.inbox.put(message)
+            return
         if kind == "take":
             self.leading = False
             self.remote_leading = True

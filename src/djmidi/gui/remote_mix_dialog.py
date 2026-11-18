@@ -11,6 +11,7 @@ report folder are injectable for tests.
 from __future__ import annotations
 
 import logging
+import queue
 from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
@@ -41,7 +42,7 @@ from djmidi.gui.help_button import help_button
 from djmidi.gui.remote_mix_audio import AudioBackend, RemoteAudioPanel
 from djmidi.gui.translation import translator
 from djmidi.gui.window_size import fit_to_screen, keep_wrapped_text_visible
-from djmidi.remote_mix import audio, bridge, probe
+from djmidi.remote_mix import audio, bridge, probe, table
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -346,6 +347,10 @@ class RemoteMixDialog(QDialog):
             self.status_label.setText(self.tr("Could not start: {error}").format(error=exc))
             return
         self.session = session
+        send = getattr(session, "send", None)
+        if callable(send):
+            self.sound_panel.attach_table(table.HOST if peer is None else table.GUEST, send)
+        self._mix_ticks = 0
         self._started = self._now()
         self.last_report = None
         for widget in (self.host_radio, self.join_radio, self.address_edit, self.port_spin, self.link_checkbox):
@@ -363,6 +368,7 @@ class RemoteMixDialog(QDialog):
             self._last_peer = self.session.peer
             self._last_role = "host" if self.host_radio.isChecked() else "join"
         self.sound_panel.stop()
+        self.sound_panel.detach_table()
         self.sound_panel.hide()
         self.session = None
         self._close_link()
@@ -377,7 +383,22 @@ class RemoteMixDialog(QDialog):
             close()
         self._link = None
 
+    def _share_mixer(self) -> None:
+        """Apply the other DJ's mixer moves; resend ours every second (lost packets)."""
+        inbox = getattr(self.session, "inbox", None)
+        while inbox is not None:
+            try:
+                message = inbox.get_nowait()
+            except queue.Empty:
+                break
+            self.sound_panel.apply_remote(message)
+        self._mix_ticks = getattr(self, "_mix_ticks", 0) + 1
+        if self._mix_ticks % 4 == 0:
+            self.sound_panel.send_snapshot()
+
     def refresh(self) -> None:
+        if self.session is not None:
+            self._share_mixer()
         session = self.session
         if session is None:
             return

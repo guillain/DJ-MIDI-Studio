@@ -454,7 +454,12 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
             "controller", controller_pair, self.tr("By Controller"), by_tabs
         )
         self._tab_indexes["library"] = self.left_tabs.add_page("library", self.music_library_view, self.tr("Music"))
-        self.left_tabs.set_sections(["dashboard", "controller", "music"])
+        # Mix Together gets its own tab; its content (sound devices, sockets) is built on first visit.
+        self._remote_mix_page = QWidget()
+        QVBoxLayout(self._remote_mix_page).setContentsMargins(0, 0, 0, 0)
+        self._tab_indexes["mix"] = self.left_tabs.add_page("mix", self._remote_mix_page, self.tr("Mix Together"))
+        self.left_tabs.currentChanged.connect(self._on_tab_for_remote_mix)
+        self.left_tabs.set_sections(["dashboard", "controller", "music", "mix"])
         self.left_tabs.setCurrentIndex(self._tab_indexes["intro"])
         self.edit_panel = EditPanel(
             self.undo_stack,
@@ -1560,16 +1565,26 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         dialog.raise_()
         dialog.activateWindow()
 
-    def _on_remote_mix_test(self) -> RemoteMixDialog:
-        # Non-modal and kept alive, like the MIDI latency test: the test runs for minutes.
+    def _ensure_remote_mix(self) -> RemoteMixDialog:
+        """The Mix Together content, built inside its tab on first use and kept alive."""
         dialog = getattr(self, "_remote_mix_dialog", None)
         if dialog is None:
-            dialog = self._remote_mix_dialog = RemoteMixDialog(self, ensure_listening=self._ensure_learn_listening)
-        dialog.show()
-        dialog.raise_()
-        dialog.activateWindow()
-        dialog.sound_panel.listen_to_controller()
+            dialog = RemoteMixDialog(self._remote_mix_page, ensure_listening=self._ensure_learn_listening)
+            dialog.setWindowFlags(Qt.WindowType.Widget)
+            self._remote_mix_page.layout().addWidget(dialog)
+            dialog.show()
+            self._remote_mix_dialog = dialog
+            dialog.sound_panel.listen_to_controller()
         return dialog
+
+    def _on_tab_for_remote_mix(self, index: int) -> None:
+        if index == self._tab_indexes.get("mix"):
+            self._ensure_remote_mix()
+
+    def _on_remote_mix_test(self) -> RemoteMixDialog:
+        """Tools → Mix Together…: the Mix Together tab."""
+        self.left_tabs.setCurrentIndex(self._tab_indexes["mix"])
+        return self._ensure_remote_mix()
 
     def _on_report_problem(self) -> None:
         dialog = ReportProblemDialog(self._problem_report_context(), self)
