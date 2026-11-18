@@ -8,8 +8,12 @@ from djmidi.remote_mix import probe
 
 
 class FakeSession:
-    def __init__(self, *, port, peer, link_reader):
+    def __init__(self, *, port, peer, link_reader, link_control=None, follow=False):
         self.port, self.peer, self.link_reader = port, peer, link_reader
+        self.link_control, self.follow = link_control, follow
+        self.leading = peer is None
+        self.remote_leading = None
+        self.follow_error = None
         self.error = None
         self.samples = []
         self.started = self.stopped = False
@@ -20,18 +24,21 @@ class FakeSession:
     def stop(self):
         self.stopped = True
 
+    def take_lead(self):
+        self.leading, self.remote_leading = True, False
+
     def stats(self):
         return probe.summarise(self.samples, len(self.samples))
 
 
-def _dialog(tmp_path, sessions):
+def _dialog(tmp_path, sessions, link_factory=lambda: None):
     def factory(**kwargs):
         sessions.append(FakeSession(**kwargs))
         return sessions[-1]
 
     return RemoteMixDialog(
         session_factory=factory,
-        link_factory=lambda: None,
+        link_factory=link_factory,
         addresses=lambda: ["10.147.17.5"],
         report_dir=lambda: tmp_path,
         now=lambda: datetime(2026, 11, 21, 21, 0),  # noqa: DTZ001
@@ -82,6 +89,41 @@ def test_joining_needs_the_host_address(tmp_path):
     finally:
         dialog.close()
     assert sessions[0].stopped  # closing the window ends the test
+
+
+def test_joining_with_link_follows_the_host_then_takes_the_lead(tmp_path):
+    controls = []
+
+    def link():
+        reader = lambda: probe.LinkSnapshot(tempo=124.0, beat=13.5, at=0.0)
+        reader.control = object()
+        controls.append(reader.control)
+        return reader
+
+    sessions = []
+    dialog = _dialog(tmp_path, sessions, link)
+    try:
+        dialog.join_radio.setChecked(True)
+        dialog.address_edit.setText("10.147.17.5")
+        dialog.start_button.click()
+        session = sessions[0]
+        assert session.link_control is controls[0] and session.follow
+        assert dialog.together_frame.isHidden()  # nothing to share before the first answer
+
+        session.remote_leading = True
+        session.samples = [probe.Sample(t=0.0, rtt_ms=40.0, offset_ms=0.0)]
+        dialog.refresh()
+        assert not dialog.together_frame.isHidden()
+        assert "10.147.17.5 leads the tempo" in dialog.lead_label.text()
+        assert "Bar 4 · beat 2 — next phrase in 3" == dialog.phrase_label.text()
+
+        dialog.follow_checkbox.setChecked(False)
+        assert session.follow is False and "not following" in dialog.lead_label.text()
+        dialog.lead_button.click()
+        assert session.leading and "You lead the tempo" in dialog.lead_label.text()
+        assert not dialog.lead_button.isEnabled()
+    finally:
+        dialog.close()
 
 
 def test_tools_menu_opens_the_connection_test(monkeypatch):

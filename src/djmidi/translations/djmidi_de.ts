@@ -3281,14 +3281,6 @@ Ein manueller Schritt bleibt: &apos;{slug}&apos; zum Import-Block in catalog/__i
         <translation>Protokolliert jedes MIDI-Ereignis der angehakten Eingänge, mit dem physischen Bedienelement und der Funktion, die das geladene Mapping ihm gibt, und lässt jedes Layout, die Überlagerung der Controller-Bilder und die Emulatoren auf die echte Hardware reagieren.&lt;br&gt;&lt;br&gt;Er startet von selbst, wenn ein Mapping geladen wird (⚙ Einstellungen). Um Ports selbst zu wählen: &lt;b&gt;Ports aktualisieren&lt;/b&gt;, Eingänge anhaken, &lt;b&gt;Überwachung starten&lt;/b&gt;.&lt;br&gt;&lt;br&gt;Um die LED-Nachrichten zu sehen, die Serato zurücksendet, haken Sie &lt;b&gt;Virtuelles Monitor-Ziel erstellen&lt;/b&gt; an und fügen Sie &lt;i&gt;DJMidiStudio Monitor&lt;/i&gt; als zusätzlichen MIDI-Ausgang in Serato hinzu.&lt;br&gt;&lt;br&gt;Ein Tastendruck, der auf demselben Deck zwei oder mehr verschiedene Funktionen auslöst, wird bernsteinfarben als &lt;b&gt;KONFLIKT&lt;/b&gt; angezeigt und gezählt; Seratos identische wiederholte Trigger sind keine Konflikte.&lt;br&gt;&lt;br&gt;Während &lt;b&gt;● Rec&lt;/b&gt; aufzeichnet, sind Start/Stopp und die Eingänge bis &lt;b&gt;■ Stopp&lt;/b&gt; gesperrt.</translation>
     </message>
     <message>
-        <source>Mix Together: Connection Test</source>
-        <translation>Gemeinsam mixen: Verbindungstest</translation>
-    </message>
-    <message>
-        <source>Measures the line between two DJs before you mix together from two places. Both of you open this window: one ticks &lt;b&gt;I host&lt;/b&gt; and gives one of &lt;b&gt;Your addresses&lt;/b&gt; (the ZeroTier one when you use ZeroTier), the other ticks &lt;b&gt;I join&lt;/b&gt; and types it. Then &lt;b&gt;Start the test&lt;/b&gt; on both sides.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Network&lt;/b&gt;: round trip and lost packets. Green under 150 ms and 1 %.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Stability&lt;/b&gt;: jitter, how much the round trip moves. Green under 20 ms: this is what matters most, a steady delay can be hidden, a moving one can&apos;t.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Tempo and phase&lt;/b&gt;: with Link on in both DJ programs, whether both sides share one tempo and one beat. Two tempos means Link doesn&apos;t reach across.&lt;/li&gt;&lt;/ul&gt;Leave it running a few minutes, then &lt;b&gt;Save the report&lt;/b&gt; (in your Logs folder) and send it to the other DJ. Nothing is sent to anyone else; only this test&apos;s own packets travel.</source>
-        <translation>Misst die Leitung zwischen zwei DJs, bevor ihr von zwei Orten aus gemeinsam mixt. Ihr öffnet beide dieses Fenster: einer wählt &lt;b&gt;Ich hoste&lt;/b&gt; und nennt eine von &lt;b&gt;Deine Adressen&lt;/b&gt; (die ZeroTier-Adresse, wenn ihr ZeroTier nutzt), der andere wählt &lt;b&gt;Ich trete bei&lt;/b&gt; und gibt sie ein. Dann auf beiden Seiten &lt;b&gt;Test starten&lt;/b&gt;.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Netzwerk&lt;/b&gt;: Umlaufzeit und verlorene Pakete. Grün unter 150 ms und 1 %.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Stabilität&lt;/b&gt;: Jitter, wie stark die Umlaufzeit schwankt. Grün unter 20 ms: das zählt am meisten, eine gleichbleibende Verzögerung lässt sich verstecken, eine schwankende nicht.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Tempo und Phase&lt;/b&gt;: mit Link in beiden DJ-Programmen, ob beide Seiten ein Tempo und einen Beat teilen. Zwei Tempi heißt: Link kommt nicht hinüber.&lt;/li&gt;&lt;/ul&gt;Ein paar Minuten laufen lassen, dann &lt;b&gt;Bericht speichern&lt;/b&gt; (in deinem Logs-Ordner) und an den anderen DJ schicken. Nichts geht an jemand anderen; nur die Pakete dieses Tests werden übertragen.</translation>
-    </message>
-    <message>
         <source>Startup check</source>
         <translation>Startprüfung</translation>
     </message>
@@ -3343,6 +3335,14 @@ Ein manueller Schritt bleibt: &apos;{slug}&apos; zum Import-Block in catalog/__i
     <message>
         <source>Play one controller with the mouse. Click a pad or button: it flashes and the status line shows what the loaded mapping binds it to. Nothing is sent unless &lt;b&gt;Live send&lt;/b&gt; is on.&lt;ul&gt;&lt;li&gt;Mode buttons (pad modes) and &lt;b&gt;SHIFT&lt;/b&gt; are remembered like on the hardware.&lt;/li&gt;&lt;li&gt;Drag knobs, faders and jog wheels vertically to move them (visual only).&lt;/li&gt;&lt;li&gt;Layers: &lt;b&gt;Controller&lt;/b&gt; photo, &lt;b&gt;MIDI&lt;/b&gt; picture (alone) and &lt;b&gt;Layout&lt;/b&gt; (the clickable controls).&lt;/li&gt;&lt;li&gt;The emulator also follows the real controller when the Live Monitor is running.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Pad colours&lt;/b&gt; (only for controllers whose documentation lists them, e.g. Hercules DJControl Inpulse 500): pick a colour, switch &lt;b&gt;Paint&lt;/b&gt; on, click pads, then &lt;b&gt;Save to sync set&lt;/b&gt;.&lt;/li&gt;&lt;/ul&gt;Open more emulators with &lt;b&gt;Tools → New Controller Emulator…&lt;/b&gt;.</source>
         <translation>Einen Controller mit der Maus spielen. Klicken Sie auf ein Pad oder eine Taste: Es blinkt, und die Statuszeile zeigt, womit das geladene Mapping es belegt. Nichts wird gesendet, außer &lt;b&gt;Live-Senden&lt;/b&gt; ist eingeschaltet.&lt;ul&gt;&lt;li&gt;Modus-Tasten (Pad-Modi) und &lt;b&gt;SHIFT&lt;/b&gt; werden wie auf der Hardware gemerkt.&lt;/li&gt;&lt;li&gt;Ziehen Sie Drehregler, Fader und Jog-Wheels senkrecht, um sie zu bewegen (nur optisch).&lt;/li&gt;&lt;li&gt;Ebenen: &lt;b&gt;Controller&lt;/b&gt;-Foto, &lt;b&gt;MIDI&lt;/b&gt;-Bild (allein) und &lt;b&gt;Layout&lt;/b&gt; (die anklickbaren Bedienelemente).&lt;/li&gt;&lt;li&gt;Der Emulator folgt auch dem echten Controller, wenn der Live Monitor läuft.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Pad-Farben&lt;/b&gt; (nur bei Controllern, deren Dokumentation sie auflistet, z. B. Hercules DJControl Inpulse 500): eine Farbe wählen, &lt;b&gt;Malen&lt;/b&gt; einschalten, Pads anklicken, dann &lt;b&gt;Im Sync-Set speichern&lt;/b&gt;.&lt;/li&gt;&lt;/ul&gt;Weitere Emulatoren öffnen Sie mit &lt;b&gt;Werkzeuge → Neuer Controller-Emulator…&lt;/b&gt;.</translation>
+    </message>
+    <message>
+        <source>Mix Together</source>
+        <translation>Gemeinsam mixen</translation>
+    </message>
+    <message>
+        <source>Measures the line between two DJs before you mix together from two places. Both of you open this window: one ticks &lt;b&gt;I host&lt;/b&gt; and gives one of &lt;b&gt;Your addresses&lt;/b&gt; (the ZeroTier one when you use ZeroTier), the other ticks &lt;b&gt;I join&lt;/b&gt; and types it. Then &lt;b&gt;Start the test&lt;/b&gt; on both sides.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Network&lt;/b&gt;: round trip and lost packets. Green under 150 ms and 1 %.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Stability&lt;/b&gt;: jitter, how much the round trip moves. Green under 20 ms: this is what matters most, a steady delay can be hidden, a moving one can&apos;t.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Tempo and phase&lt;/b&gt;: with Link on in both DJ programs, whether both sides share one tempo and one beat. Two tempos means Link doesn&apos;t reach across.&lt;/li&gt;&lt;/ul&gt;Once connected, with Link on both sides, one DJ leads: &lt;b&gt;Keep our tempos together&lt;/b&gt; makes the other side&apos;s Link copy the leader&apos;s tempo and beat, and Serato or Traktor follow it like any Link app. &lt;b&gt;Take the lead&lt;/b&gt; hands the tempo over, as in a back-to-back; both windows count the bars to the next phrase.&lt;br&gt;&lt;br&gt;&lt;b&gt;Save the report&lt;/b&gt; (in your Logs folder) and send it to the other DJ. Nothing is sent to anyone else; only this window&apos;s own small packets travel.</source>
+        <translation>Misst die Leitung zwischen zwei DJs, bevor ihr von zwei Orten aus gemeinsam mixt. Ihr öffnet beide dieses Fenster: einer wählt &lt;b&gt;Ich hoste&lt;/b&gt; und nennt eine von &lt;b&gt;Deine Adressen&lt;/b&gt; (die ZeroTier-Adresse, wenn ihr ZeroTier nutzt), der andere wählt &lt;b&gt;Ich trete bei&lt;/b&gt; und gibt sie ein. Dann auf beiden Seiten &lt;b&gt;Test starten&lt;/b&gt;.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Netzwerk&lt;/b&gt;: Umlaufzeit und verlorene Pakete. Grün unter 150 ms und 1 %.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Stabilität&lt;/b&gt;: Jitter, wie stark die Umlaufzeit schwankt. Grün unter 20 ms: das zählt am meisten, eine gleichbleibende Verzögerung lässt sich verstecken, eine schwankende nicht.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Tempo und Phase&lt;/b&gt;: mit Link in beiden DJ-Programmen, ob beide Seiten ein Tempo und einen Beat teilen. Zwei Tempi heißt: Link kommt nicht hinüber.&lt;/li&gt;&lt;/ul&gt;Sobald ihr verbunden seid, mit Link auf beiden Seiten, führt ein DJ: &lt;b&gt;Unsere Tempi zusammenhalten&lt;/b&gt; lässt das Link der anderen Seite Tempo und Beat des Führenden übernehmen, und Serato oder Traktor folgen wie jeder Link-App. &lt;b&gt;Führung übernehmen&lt;/b&gt; gibt das Tempo weiter, wie bei einem Back-to-back; beide Fenster zählen die Takte bis zur nächsten Phrase.&lt;br&gt;&lt;br&gt;&lt;b&gt;Bericht speichern&lt;/b&gt; (in deinem Logs-Ordner) und an den anderen DJ schicken. Nichts geht an jemand anderen; nur die kleinen Pakete dieses Fensters werden übertragen.</translation>
     </message>
     <message>
         <source>Plays the rows captured in &lt;b&gt;Controller → Setup&lt;/b&gt; to an output port: the selected rows or all of them once, or on a loop at the chosen frequency and value. Handy to blink LEDs, test a mapping, or keep a device awake.</source>
@@ -5279,12 +5279,12 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
         <translation>Die MIDI-Umlauflatenz über einen Port oder ein Gerät messen, das zurückschickt, was es empfängt</translation>
     </message>
     <message>
-        <source>Mix Together: Connection Test…</source>
-        <translation>Gemeinsam mixen: Verbindungstest…</translation>
+        <source>Mix Together…</source>
+        <translation>Gemeinsam mixen…</translation>
     </message>
     <message>
-        <source>Measure the line to another DJ before mixing together from two places</source>
-        <translation>Die Leitung zu einem anderen DJ messen, bevor ihr von zwei Orten aus gemeinsam mixt</translation>
+        <source>Mix with a DJ in another place: test the line, then share one tempo through Ableton Link</source>
+        <translation>Mit einem DJ an einem anderen Ort mixen: die Leitung testen, dann ein Tempo über Ableton Link teilen</translation>
     </message>
     <message>
         <source>Layer Map…</source>
@@ -9635,16 +9635,16 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
 <context>
     <name>RemoteMixDialog</name>
     <message>
-        <source>Mix Together: Connection Test</source>
-        <translation>Gemeinsam mixen: Verbindungstest</translation>
+        <source>Mix Together</source>
+        <translation>Gemeinsam mixen</translation>
     </message>
     <message>
-        <source>Test the line with the other DJ</source>
-        <translation>Die Leitung zum anderen DJ testen</translation>
+        <source>Mix together from two places</source>
+        <translation>Von zwei Orten aus gemeinsam mixen</translation>
     </message>
     <message>
-        <source>Do this once before mixing together. One of you hosts, the other joins with the host&apos;s address. Turn Link on in both DJ programs, leave the test running a few minutes, then save the report and send it over.</source>
-        <translation>Einmal vor dem gemeinsamen Mixen machen. Einer hostet, der andere tritt mit der Adresse des Hosts bei. Link in beiden DJ-Programmen einschalten, den Test ein paar Minuten laufen lassen, dann den Bericht speichern und schicken.</translation>
+        <source>One of you hosts, the other joins with the host&apos;s address. Turn Link on in both DJ programs and start: the lights test the line, then the host&apos;s tempo and beat lead and the other side&apos;s Link follows. Save the report to send the measures over.</source>
+        <translation>Einer hostet, der andere tritt mit der Adresse des Hosts bei. Link in beiden DJ-Programmen einschalten und starten: die Lampen testen die Leitung, dann führen Tempo und Beat des Hosts und das Link der anderen Seite folgt. Speichere den Bericht, um die Messwerte zu schicken.</translation>
     </message>
     <message>
         <source>I host</source>
@@ -9705,6 +9705,50 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     <message>
         <source>not measured yet</source>
         <translation>noch nicht gemessen</translation>
+    </message>
+    <message>
+        <source>Keep our tempos together</source>
+        <translation>Unsere Tempi zusammenhalten</translation>
+    </message>
+    <message>
+        <source>The DJ who leads sets tempo and beat; the other side&apos;s Link follows, and so does its DJ software</source>
+        <translation>Der führende DJ bestimmt Tempo und Beat; das Link der anderen Seite folgt, und ihr DJ-Programm auch</translation>
+    </message>
+    <message>
+        <source>Take the lead</source>
+        <translation>Führung übernehmen</translation>
+    </message>
+    <message>
+        <source>From now on your tempo and beat lead; the other DJ follows</source>
+        <translation>Ab jetzt führen dein Tempo und Beat; der andere DJ folgt</translation>
+    </message>
+    <message>
+        <source>You lead the tempo: {host} follows.</source>
+        <translation>Du führst das Tempo: {host} folgt.</translation>
+    </message>
+    <message>
+        <source>{host} leads, but you&apos;re not following: tick the box to lock on.</source>
+        <translation>{host} führt, aber du folgst nicht: Kästchen anhaken, um einzurasten.</translation>
+    </message>
+    <message>
+        <source>{host} leads the tempo: your Link follows.</source>
+        <translation>{host} führt das Tempo: dein Link folgt.</translation>
+    </message>
+    <message>
+        <source>Nobody leads: one of you clicks Take the lead.</source>
+        <translation>Niemand führt: einer von euch klickt auf Führung übernehmen.</translation>
+    </message>
+    <message>
+        <source>Link refused a change: {error}</source>
+        <translation>Link hat eine Änderung abgelehnt: {error}</translation>
+    </message>
+    <message>
+        <source>Bar {bar} · beat {beat} — new phrase!</source>
+        <translation>Takt {bar} · Schlag {beat} — neue Phrase!</translation>
+    </message>
+    <message>
+        <source>Bar {bar} · beat {beat} — next phrase in {count}</source>
+        <translation>Takt {bar} · Schlag {beat} — nächste Phrase in {count}</translation>
     </message>
     <message>
         <source>Type the host&apos;s address first.</source>

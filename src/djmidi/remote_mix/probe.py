@@ -290,7 +290,17 @@ class ProbeSession:
         clock: Callable[[], float] = time.monotonic,
         interval: float = PING_INTERVAL_S,
         bind_host: str = "0.0.0.0",
+        link_control=None,
+        follow: bool = False,
     ) -> None:
+        from djmidi.remote_mix.bridge import LinkFollower  # bridge imports this module
+
+        self._link_control = link_control
+        self.follow = follow
+        self.follower = LinkFollower()
+        self.leading = peer is None  # the host leads first
+        self.remote_leading: bool | None = None
+        self.follow_error: str | None = None
         self._port = port
         self._peer = peer
         self._link_reader = link_reader
@@ -360,7 +370,7 @@ class ProbeSession:
             now = self._clock()
             if self._peer is not None and now >= next_ping:
                 seq += 1
-                self._send(sock, {"k": "ping", "s": seq, "t0": now})
+                self._send(sock, {"k": "ping", "s": seq, "t0": now, "lead": self.leading})
                 with self._lock:
                     self._sent += 1
                     self._pending[seq] = now
@@ -377,6 +387,29 @@ class ProbeSession:
                     _LOGGER.warning("Remote mix probe socket error: %s", exc)
                 continue
             self._handle(sock, data, address, self._clock())
+
+    def take_lead(self) -> None:
+        """This side leads from now on; the other side follows (sent three
+        times: a lost packet must not leave two leaders)."""
+        self.leading = True
+        self.remote_leading = False
+        sock = self._socket
+        if sock is not None:
+            for _ in range(3):
+                self._send(sock, {"k": "take"})
+
+    def _follow(self, tempo: float, beat: float, sent: float, rtt: float, offset: float, link: LinkSnapshot) -> None:
+        from djmidi.remote_mix import bridge
+
+        correction = self.follower.update(bridge.RemoteBeat(tempo, beat, sent, rtt, offset), link, self._clock())
+        if correction is None:
+            return
+        try:
+            bridge.apply(correction, self._link_control)
+            self.follow_error = None
+        except Exception as exc:  # noqa: BLE001 - keep measuring when Link refuses
+            self.follow_error = str(exc)
+            _LOGGER.warning("Remote mix: Link correction failed: %s", exc)
 
     def _send(self, sock: socket.socket, message: dict) -> None:
         if self._peer is None:
@@ -395,13 +428,20 @@ class ProbeSession:
         if (address[0], address[1]) != self._peer:
             return
         kind = message.get("k")
+        if isinstance(message.get("lead"), bool):
+            self.remote_leading = message["lead"]
+        if kind == "take":
+            self.leading = False
+            self.remote_leading = True
+            self.follower.reset()
+            return
         if kind == "ping":
             t0, seq = _number(message, "t0"), message.get("s")
             if t0 is None or not isinstance(seq, int):
                 return
             link = self._link()
             sent = self._clock()
-            reply = {"k": "pong", "s": seq, "t0": t0, "t1": received, "t2": sent}
+            reply = {"k": "pong", "s": seq, "t0": t0, "t1": received, "t2": sent, "lead": self.leading}
             if link is not None:
                 reply.update(tempo=link.tempo, beat=local_beat_at(link, sent), peers=link.peers)
             self._send(sock, reply)
@@ -423,6 +463,16 @@ class ProbeSession:
         phase = None
         if link is not None and remote_tempo and remote_beat is not None and link.tempo > 0:
             phase = phase_gap_ms(local_beat_at(link, t2 - offset), remote_beat, link.tempo)
+        if (
+            self.follow
+            and not self.leading
+            and self.remote_leading
+            and link is not None
+            and self._link_control is not None
+            and remote_tempo
+            and remote_beat is not None
+        ):
+            self._follow(remote_tempo, remote_beat, t2, rtt, offset, link)
         sample = Sample(
             t=t3,
             rtt_ms=rtt * 1000.0,
