@@ -93,6 +93,13 @@ way: a red result tells what to fix first.
 
 ## The connection test
 
+**No partner yet? Try alone.** **Try alone** starts a pretend second DJ,
+"Demo DJ", on this computer; nothing leaves it. It is connected at once,
+follows your tempo, plays your own sound back a bar late (as a real
+partner's sound would land), repeats what you say on the talkback and
+answers your signals: everything in the tab works, so you can find your
+way before the real session.
+
 A banner at the top of the tab always shows the next step, out of four
 (connect, Link, sound, mix), with the button that does it: **Start**, **Copy my
 address** for the host, **Start the sound** once your tempos are together.

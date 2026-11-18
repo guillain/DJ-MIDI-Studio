@@ -496,7 +496,8 @@ REMOTE_MIX: HelpEntry = (
         "screens (the next track, a drop on the next phrase, your turn); <b>Learn a pad</b> to send one "
         "from your controller. <b>Hold to talk</b> sends your microphone to the other DJs' headphones, never into the mix. The <b>Tracklist</b> lists every DJ's tracks, read from their Serato or "
         "Traktor history (never changed) or typed by hand: <b>Copy the tracklist</b> or <b>Save the tracklist</b> "
-        "at the end. The banner at the top always shows the next step, with the button that does it.<br><br>"
+        "at the end. The banner at the top always shows the next step, with the button that does it. No partner "
+        "yet? <b>Try alone</b>: a pretend DJ plays your own sound back a bar late and repeats your talkback.<br><br>"
         "<b>Save the report</b> (in your Logs folder) and send it to the other DJ. Nothing is sent to "
         "anyone else; only this window's own small packets travel.",
     ),

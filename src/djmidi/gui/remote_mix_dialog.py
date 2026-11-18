@@ -61,6 +61,7 @@ from djmidi.remote_mix import (
     signals,
     tracklist,
 )
+from djmidi.remote_mix import demo as demo_mode
 from djmidi.remote_mix import settings as remembered
 
 _LOGGER = logging.getLogger(__name__)
@@ -182,11 +183,17 @@ class RemoteMixDialog(QDialog):
         self.start_button = QPushButton(self.tr("Start the test"))
         self.start_button.setDefault(True)
         self.start_button.clicked.connect(self.toggle)
+        self.demo_button = QPushButton(self.tr("Try alone"))
+        self.demo_button.setToolTip(
+            self.tr("A pretend second DJ on this computer: find everything before the real session")
+        )
+        self.demo_button.clicked.connect(self.start_demo)
         self.save_button = QPushButton(self.tr("Save the report"))
         self.save_button.setEnabled(False)
         self.save_button.clicked.connect(self.save_report)
         buttons = QHBoxLayout()
         buttons.addWidget(self.start_button)
+        buttons.addWidget(self.demo_button)
         buttons.addWidget(self.save_button)
         buttons.addStretch(1)
 
@@ -472,6 +479,10 @@ class RemoteMixDialog(QDialog):
     def running(self) -> bool:
         return self.session is not None
 
+    @property
+    def demo(self) -> bool:
+        return isinstance(self.session, demo_mode.DemoSession)
+
     def _sync_role(self) -> None:
         listening = self.listen_radio.isChecked()
         if listening and self.running:
@@ -479,7 +490,7 @@ class RemoteMixDialog(QDialog):
         if not listening and self.listener_panel.running:
             self.listener_panel.stop()
         self.listener_panel.setVisible(listening)
-        for widget in (self._form_widget, self.link_checkbox, self.start_button, self.save_button,
+        for widget in (self._form_widget, self.link_checkbox, self.start_button, self.demo_button, self.save_button,
                        self.status_label, self._lights_frame, self.sound_panel.table_widget, self._sound_column):
             widget.setVisible(not listening)
         if listening:
@@ -496,8 +507,21 @@ class RemoteMixDialog(QDialog):
         else:
             self.start()
 
-    def start(self) -> None:
+    def start_demo(self) -> None:
+        """Try alone: a pretend second DJ on this computer (nothing leaves it)."""
+        self.host_radio.setChecked(True)
+        self.start(demo=True)
+
+    def start(self, demo: bool = False) -> None:
         peer = None
+        if demo:
+            self._link = (self._link_factory() if self.link_checkbox.isChecked() else None) or demo_mode.DemoClock()
+            session = demo_mode.DemoSession(
+                port=self.port_spin.value(), name=self.name_edit.text().strip()[:40], link_reader=self._link
+            )
+            session.start()
+            self._started_session(session)
+            return
         if self.join_radio.isChecked():
             host = self.address_edit.text().strip()
             if not host:
@@ -521,6 +545,9 @@ class RemoteMixDialog(QDialog):
             self._close_link()
             self.status_label.setText(self.tr("Could not start: {error}").format(error=exc))
             return
+        self._started_session(session)
+
+    def _started_session(self, session) -> None:
         self.save_settings()  # what this DJ typed, kept for the next time
         self.session = session
         self._mix_ticks = 0
@@ -529,6 +556,7 @@ class RemoteMixDialog(QDialog):
         self.last_report = None
         for widget in (self.host_radio, self.join_radio, self.address_edit, self.port_spin, self.link_checkbox, self.name_edit):
             widget.setEnabled(False)
+        self.demo_button.setEnabled(False)
         self.start_button.setText(self.tr("Stop the test"))
         self._timer.start()
         self.refresh()
@@ -554,6 +582,7 @@ class RemoteMixDialog(QDialog):
         for widget in (self.host_radio, self.join_radio, self.address_edit, self.port_spin, self.link_checkbox, self.name_edit):
             widget.setEnabled(True)
         self.start_button.setText(self.tr("Start the test"))
+        self.demo_button.setEnabled(True)
         self._show_next_step()
 
     def _close_link(self) -> None:
@@ -615,6 +644,10 @@ class RemoteMixDialog(QDialog):
                 )
             else:
                 self.status_label.setText(self.tr("Calling {host}… no answer yet.").format(host=session.peer[0]))
+        elif self.demo:
+            self.status_label.setText(
+                self.tr("Demo: the Demo DJ plays your own sound back a bar late and repeats your talkback. Nothing leaves this computer.")
+            )
         else:
             self.status_label.setText(
                 self.tr("Connected to {host} for {seconds} s.").format(
