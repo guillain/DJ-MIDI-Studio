@@ -433,13 +433,15 @@ def test_the_regie_makes_and_records_the_official_mix(tmp_path):
         panel.regie_button.click()
         assert panel.makes_the_mix and to_host and "here" in panel.regie_label.text()
         assert panel.record_button.isEnabled()
+        panel.stems_checkbox.setChecked(True)
         panel.record_button.click()
-        assert panel.recorder is not None
+        assert panel.recorder is not None and panel.stems is not None
         for _ in range(5):
             panel.pump()
         panel.record_button.click()
-        files = list((tmp_path / "Exports").glob("mix-together-*.wav"))
-        assert len(files) == 1 and "Recorded" in panel.record_label.text()
+        files = sorted(p.name for p in (tmp_path / "Exports").glob("mix-together-*.wav"))
+        assert len(files) == 3 and "Recorded" in panel.record_label.text()  # the mix + one track per DJ
+        assert "2 track(s)" in panel.record_label.text() and panel.stems is None
     finally:
         panel.stop()
         panel.close()
