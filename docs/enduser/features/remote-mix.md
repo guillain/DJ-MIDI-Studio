@@ -92,6 +92,10 @@ way: a red result tells what to fix first.
 
 ## The connection test
 
+A banner at the top of the tab always shows the next step, out of four
+(connect, Link, sound, mix), with the button that does it: **Start**, **Copy my
+address** for the host, **Start the sound** once your tempos are together.
+
 In the **Mix Together** tab (also **Tools → Mix Together…**), on both computers:
 
 | Step | Host | The other DJ |
