@@ -8,12 +8,15 @@ listener), on the test port + 2:
 - the listener sends a small ``listen`` hello every second; the control room
   keeps everyone heard from in the last few seconds and sends them the mix;
 - the listener plays the packets after a short buffer (300 ms by default):
-  it has no grid of its own, so it only needs the sound to flow evenly.
+  it has no grid of its own, so it only needs the sound to flow evenly;
+- the control room also sends the shared tracklist (phase 12), a small JSON
+  message per track every few seconds, with the DJ's name (``who``).
 """
 
 from __future__ import annotations
 
 import logging
+import queue
 import socket
 import threading
 import time
@@ -21,7 +24,7 @@ from collections.abc import Callable
 
 import numpy as np
 
-from djmidi.remote_mix import audio, opus, probe
+from djmidi.remote_mix import audio, opus, probe, tracklist
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -82,6 +85,15 @@ class ListenerServer:
                         self.sent += 1
                     except OSError as exc:
                         self.error = str(exc)
+
+    def send_message(self, message: dict) -> None:
+        """A small control message (a tracklist row) to every listener."""
+        data = probe.encode(message)
+        for address in self.listeners():
+            try:
+                self._socket.sendto(data, address)
+            except OSError as exc:
+                self.error = str(exc)
 
     def close(self) -> None:
         self._stop.set()
@@ -184,6 +196,7 @@ class ListenerClient:
         self._stop = threading.Event()
         self.error: str | None = None
         self.rejected = 0
+        self.inbox: queue.Queue[dict] = queue.Queue()  # control messages (tracklist rows)
         self._thread = threading.Thread(target=self._run, name="djmidi-remote-listener", daemon=True)
         self._thread.start()
 
@@ -212,8 +225,15 @@ class ListenerClient:
                 if not self._stop.is_set():
                     self.error = str(exc)
                 continue
-            packet = audio.decode_packet(data, self._decoder) if address[0] == self._server[0] else None
-            if packet is None:
+            if address[0] != self._server[0]:
                 self.rejected += 1
                 continue
-            self._player.push(packet)
+            packet = audio.decode_packet(data, self._decoder)
+            if packet is not None:
+                self._player.push(packet)
+                continue
+            message = probe.decode(data)
+            if message is not None and message.get("k") == tracklist.MESSAGE_KIND:
+                self.inbox.put(message)
+            else:
+                self.rejected += 1

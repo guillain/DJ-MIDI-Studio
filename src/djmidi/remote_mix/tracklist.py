@@ -97,6 +97,15 @@ def _message(row: TrackRow) -> dict:
     return {"k": MESSAGE_KIND, "from": row.dj, "n": row.serial, "t": row.title, "a": row.artist, "at": row.at}
 
 
+def for_listeners(rows: list[TrackRow], name_of) -> list[dict]:
+    """Every row with its DJ's name (``who``), for listeners who don't know the room."""
+    return [{**_message(row), "who": name_of(row.dj)} for row in rows]
+
+
+def listener_name(message: dict) -> str:
+    return _clean(message.get("who"))
+
+
 def text_export(rows: list[TrackRow], name_of, started: datetime | None = None) -> str:
     """The tracklist as plain text, one line per track (for a post or a description)."""
     lines = []

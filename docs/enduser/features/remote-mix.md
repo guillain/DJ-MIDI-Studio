@@ -271,6 +271,9 @@ end, **Copy the tracklist** (for a post or a description) or **Save the
 tracklist** (a text file in your Exports folder). The list stays on screen
 after you stop.
 
+Listeners see it too: the control room sends the whole tracklist, with
+each DJ's name, to everyone who ticked **I listen**.
+
 ## What travels
 
 Only this window's own packets, between your two computers: on the port you

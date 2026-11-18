@@ -582,6 +582,15 @@ class RemoteMixDialog(QDialog):
             self.sound_panel.send_snapshot()
         if self._mix_ticks % tracklist.RESEND_EVERY == 0:
             self.tracklist_panel.resend()
+            self._tracklist_to_listeners()
+
+    def _tracklist_to_listeners(self) -> None:
+        """The control room sends the whole tracklist to its listeners (phase 12)."""
+        server, shared = self.sound_panel.listen_server, self.tracklist_panel.list
+        if server is None or shared is None:
+            return
+        for message in tracklist.for_listeners(shared.rows, self.sound_panel._dj_name):
+            server.send_message(message)
 
     def refresh(self) -> None:
         if self.session is not None:
