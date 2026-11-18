@@ -123,6 +123,7 @@ from djmidi.gui.translation import translator
 from djmidi.gui.trash_confirm_dialog import confirm_trash
 from djmidi.gui.waveform_loader import WaveformLoader
 from djmidi.gui.window_size import (
+    ResponsiveRow,
     fit_to_screen,
     keep_tab_titles_whole,
     keep_wrapped_text_visible,
@@ -207,6 +208,8 @@ COLUMNS: tuple[tuple[str, str], ...] = (
 )
 _COLUMN_INDEX = {key: index for index, (_header, key) in enumerate(COLUMNS)}
 _EDIT_FIELDS = ("title", "artist", "album", "genre", "bpm", "key", "comment", "rating", "energy")
+# The Track panel's right-hand column: how the track plays (the rest is what it is).
+_PLAY_FIELDS = ("bpm", "key", "rating", "energy")
 # Side of the Track panel's cover-art preview, in pixels (issue #256).
 _COVER_SIZE = 140
 
@@ -1429,15 +1432,25 @@ class MusicLibraryView(QWidget):
         self.track_path_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         box.addWidget(self.track_path_label)
         box.addLayout(self._build_cover_row())
-        form = QFormLayout()
+        # Two columns (what the track is | how it plays), one under the other when narrow.
+        identity_form, play_form = QFormLayout(), QFormLayout()
         self.field_edits: dict[str, QLineEdit] = {}
         for name in _EDIT_FIELDS:
             edit = QLineEdit()
             edit.returnPressed.connect(self.apply_track_edits)
             self.field_edits[name] = edit
-            form.addRow(_field_label(name), edit)
+            (play_form if name in _PLAY_FIELDS else identity_form).addRow(_field_label(name), edit)
         self.camelot_label = QLabel()
-        form.addRow(self.tr("Camelot"), self.camelot_label)
+        play_form.addRow(self.tr("Camelot"), self.camelot_label)
+        columns = []
+        for column_form, stretch in ((identity_form, 3), (play_form, 2)):  # titles need the room
+            column = QWidget()
+            column_form.setContentsMargins(0, 0, 0, 0)
+            column.setLayout(column_form)
+            columns.append((column, stretch))
+        self.track_columns = ResponsiveRow(columns, spacing=16)
+        box.addWidget(self.track_columns)
+        form = QFormLayout()
         self.category_value_label = QLabel()
         self.category_value_label.setWordWrap(True)
         form.addRow(self.tr("Category"), self.category_value_label)
