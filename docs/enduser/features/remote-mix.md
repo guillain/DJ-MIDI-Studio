@@ -258,6 +258,12 @@ mixer: **A** (left), **B** (right) or **Thru** (not crossfaded); the host
 starts on A, the first guest on B, the others on Thru. Each DJ needs their
 own address on the private network (ZeroTier gives one to each).
 
+**Cue and Mute.** Each strip has **Cue**: you hear that DJ in your
+headphones, before their fader, to check them before bringing them in; only
+you hear it, never the mix. Choose the output in **Headphones (cue,
+talkback)** (the talkback goes there too). The host also has **Mute** on
+every strip: it cuts that DJ out of the set for everyone.
+
 ## Signals between DJs
 
 In a club a B2B is a glance and a nod. From two places, once connected, the
