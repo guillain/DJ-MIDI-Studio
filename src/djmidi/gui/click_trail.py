@@ -7,14 +7,19 @@ while it was being clicked) kills the process inside Qt's own
 the macOS crash report nor faulthandler's Python stack names the widget.
 Log writes are synchronous, so the last "click:" line before such a crash
 does. Only item views are logged, and only when DEBUG is on.
+
+Keyboard shortcuts (a key with Ctrl, Cmd, Alt, or Escape) are logged too, on
+the widget that has the focus: when the app closes or a dialog vanishes, the
+last "key:" line says whether a shortcut did it.
 """
 
 from __future__ import annotations
 
 import logging
 
-from PySide6.QtCore import QEvent, QObject
-from PySide6.QtWidgets import QAbstractItemView, QWidget
+from PySide6.QtCore import QEvent, QObject, Qt
+from PySide6.QtGui import QKeySequence
+from PySide6.QtWidgets import QAbstractItemView, QApplication, QWidget
 
 _LOGGER = logging.getLogger(__name__)
 _EVENTS = {
@@ -50,10 +55,37 @@ def describe_click(view: QAbstractItemView, kind: str, position) -> str:
     return f"click: {kind} on {widget_path(view)} at {where}"
 
 
+_SHORTCUT_MODIFIERS = (
+    Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.MetaModifier | Qt.KeyboardModifier.AltModifier
+)
+
+
+def describe_key(widget: QWidget, event) -> str | None:
+    """``key: Ctrl+W on QListWidget < MacroManagerDialog`` for a shortcut-like key, else None."""
+    if event.isAutoRepeat():
+        return None
+    key = event.key()
+    if key in (Qt.Key.Key_Control, Qt.Key.Key_Meta, Qt.Key.Key_Alt, Qt.Key.Key_Shift):
+        return None
+    if not (event.modifiers() & _SHORTCUT_MODIFIERS) and key != Qt.Key.Key_Escape:
+        return None  # ordinary typing is never logged
+    combination = QKeySequence(event.keyCombination()).toString(QKeySequence.SequenceFormat.PortableText)
+    return f"key: {combination} on {widget_path(widget)}"
+
+
 class ClickTrail(QObject):
     """Application-wide event filter; install with `install_click_trail`."""
 
     def eventFilter(self, watched: QObject, event: QEvent) -> bool:
+        if event.type() == QEvent.Type.KeyPress and _LOGGER.isEnabledFor(logging.DEBUG):
+            if isinstance(watched, QWidget) and watched is (QApplication.focusWidget() or watched.window()):
+                try:
+                    line = describe_key(watched, event)
+                    if line:
+                        _LOGGER.debug(line)
+                except Exception:  # never let diagnostics break typing
+                    _LOGGER.debug("key: (not describable)", exc_info=True)
+            return False
         kind = _EVENTS.get(event.type())
         if kind is not None and _LOGGER.isEnabledFor(logging.DEBUG):
             view = watched.parent() if isinstance(watched, QWidget) else None
@@ -73,4 +105,4 @@ def install_click_trail(app) -> ClickTrail:
     return trail
 
 
-__all__ = ["ClickTrail", "describe_click", "install_click_trail", "widget_path"]
+__all__ = ["ClickTrail", "describe_click", "describe_key", "install_click_trail", "widget_path"]

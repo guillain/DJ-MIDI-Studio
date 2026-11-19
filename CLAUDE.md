@@ -234,7 +234,7 @@ overrides.
 - **Bursts**: views redraw through `gui/deferred_rebuild.DeferredRebuild` — batch per poll
   (`begin_batch`/`end_batch`), hidden views redraw on show, one shared flash-expiry timer. Never redraw a whole
   scene per event. `gui/freeze_watchdog.py` logs the GUI thread's stack after 5 s without response;
-  `logging_config.enable_crash_log` + `gui/click_trail.py` leave traces of native crashes.
+  `logging_config.enable_crash_log` + `gui/click_trail.py` (clicks on item views and shortcut keys, at DEBUG) leave traces of native crashes; `MainWindow.closeEvent` logs who closes the window (window system or code, with the Python stack) and `app.aboutToQuit` is logged.
 - **Record live set** (`session_recorder.SessionRecorder`): every polled event streamed to `Logs/live-*.jsonl`, no
   cap (the log keeps `_MAX_ROWS` = 500); starts monitoring every input if needed, stops with monitoring.
   **Analyse a set…**: Qt-free `set_analysis` (presses per control, jogs via `gui/jog.py` tables, sequences ≤1.5 s,

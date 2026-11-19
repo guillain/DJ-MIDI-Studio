@@ -72,3 +72,31 @@ def test_nothing_is_logged_below_debug():
         logger.removeHandler(handler)
         logger.setLevel(previous)
         box.close()
+
+
+def test_shortcut_keys_are_logged_and_typing_is_not():
+    from PySide6.QtCore import QEvent, Qt
+    from PySide6.QtGui import QKeyEvent
+    from PySide6.QtWidgets import QLineEdit
+
+    from djmidi.gui.click_trail import describe_key
+
+    edit = QLineEdit()
+    shortcut = QKeyEvent(QEvent.Type.KeyPress, Qt.Key.Key_W, Qt.KeyboardModifier.ControlModifier)
+    typing = QKeyEvent(QEvent.Type.KeyPress, Qt.Key.Key_A, Qt.KeyboardModifier.NoModifier, "a")
+    escape = QKeyEvent(QEvent.Type.KeyPress, Qt.Key.Key_Escape, Qt.KeyboardModifier.NoModifier)
+    assert describe_key(edit, shortcut) == "key: Ctrl+W on QLineEdit"
+    assert describe_key(edit, typing) is None
+    assert describe_key(edit, escape) == "key: Esc on QLineEdit"
+
+
+def test_the_main_window_says_who_closes_it(caplog):
+    import logging
+
+    from PySide6.QtGui import QCloseEvent
+
+    from djmidi.gui.main_window import _log_close_request
+
+    caplog.set_level(logging.INFO, logger="djmidi.gui.main_window")
+    _log_close_request(QCloseEvent())
+    assert "asked by the app's code" in caplog.text and "test_click_trail.py" in caplog.text
