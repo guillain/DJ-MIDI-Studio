@@ -184,6 +184,16 @@ def _remote_mix():
     )
 
 
+def _mix_mapping():
+    from djmidi.gui.remote_mix_mapping import MappingDialog
+    from djmidi.remote_mix import controls
+
+    mapping = controls.MixerControls()
+    mapping.bind("them_cue", controls.MixerTrigger("1", "Note On", "60", "DDJ-XP2"))
+    mapping.bind("crossfader", controls.MixerTrigger("1", "Control Change", "8", "XDJ-XZ"))
+    return MappingDialog(mapping, lambda target: target, lambda target: None)
+
+
 def _stats():
     from djmidi.gui.library_stats_dialog import LibraryStatsDialog
     from djmidi.library.stats import compute_library_stats
@@ -486,6 +496,7 @@ WINDOWS = {
     "ready for live": _live_ready,
     "midi latency": _latency,
     "remote mix test": _remote_mix,
+    "mix together mapping": _mix_mapping,
     "library statistics": _stats,
     "smart playlist": _smart_playlist,
     "rename files": _rename,

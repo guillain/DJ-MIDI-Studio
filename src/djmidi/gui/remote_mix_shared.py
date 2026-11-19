@@ -238,6 +238,7 @@ class SharedMixerMixin:
             "filter": QCoreApplication.translate("RemoteAudioPanel", "Filter"),
             "xf": QCoreApplication.translate("RemoteAudioPanel", "Crossfader side"),
             "mute": QCoreApplication.translate("RemoteAudioPanel", "Mute"),
+            "cue": QCoreApplication.translate("RemoteAudioPanel", "Cue"),
             "gain": QCoreApplication.translate("RemoteAudioPanel", "Gain"),
         }
         return "{owner} · {control}".format(owner=owner, control=names.get(control, QCoreApplication.translate("RemoteAudioPanel", "Volume")))

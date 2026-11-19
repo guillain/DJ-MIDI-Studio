@@ -39,6 +39,7 @@ from djmidi import user_paths
 from djmidi.gui.action_groups import FlowLayout
 from djmidi.gui.led_meter import LedMeter
 from djmidi.gui.remote_mix_console import MASTER_UNITY, ConsoleMixin
+from djmidi.gui.remote_mix_mapping import MappingDialog
 from djmidi.gui.remote_mix_shared import SharedMixerMixin
 from djmidi.gui.remote_mix_talk import TalkPanel
 from djmidi.remote_mix import (
@@ -478,7 +479,11 @@ class RemoteAudioPanel(ConsoleMixin, SharedMixerMixin, QFrame):
         self.import_button = QPushButton(self.tr("Import a mapping…"))
         self.import_button.setToolTip(self.tr("Use a console mapping saved by you or another DJ"))
         self.import_button.clicked.connect(self.import_mapping)
+        self.mapping_button = QPushButton(self.tr("My mapping…"))
+        self.mapping_button.setToolTip(self.tr("Every console control your controller drives, to check or forget one"))
+        self.mapping_button.clicked.connect(self.show_mapping)
         mapping_row = FlowLayout()
+        mapping_row.addWidget(self.mapping_button)
         mapping_row.addWidget(self.export_button)
         mapping_row.addWidget(self.import_button)
         table_box.addLayout(mapping_row)
@@ -627,6 +632,11 @@ class RemoteAudioPanel(ConsoleMixin, SharedMixerMixin, QFrame):
         for target in presses:
             self.press(target)
         return bool(moves or presses)
+
+    def show_mapping(self) -> MappingDialog:
+        dialog = MappingDialog(self.controls, self._target_name, self.forget, self)
+        dialog.show()
+        return dialog
 
     def export_mapping(self, path: Path | None = None) -> Path | None:
         if path is None:

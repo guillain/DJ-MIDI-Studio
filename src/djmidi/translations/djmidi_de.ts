@@ -6221,6 +6221,41 @@ Jetzt beenden?</translation>
     </message>
 </context>
 <context>
+    <name>MappingDialog</name>
+    <message>
+        <source>My mapping</source>
+        <translation>Mein Mapping</translation>
+    </message>
+    <message>
+        <source>What your controller drives on the console. Teach more in MIDI mode; forget one here.</source>
+        <translation>Was dein Controller auf der Konsole steuert. Lerne mehr im MIDI-Modus; vergiss hier eines.</translation>
+    </message>
+    <message>
+        <source>Console</source>
+        <translation>Konsole</translation>
+    </message>
+    <message>
+        <source>Your controller</source>
+        <translation>Dein Controller</translation>
+    </message>
+    <message>
+        <source>Nothing assigned yet</source>
+        <translation>Noch nichts zugewiesen</translation>
+    </message>
+    <message>
+        <source>Press MIDI on the console, click a knob or button, then move or press your controller.</source>
+        <translation>Drück MIDI auf der Konsole, klick einen Regler oder Knopf an und bewege oder drück dann deinen Controller.</translation>
+    </message>
+    <message>
+        <source>Forget</source>
+        <translation>Vergessen</translation>
+    </message>
+    <message>
+        <source>Your controller stops driving this console control</source>
+        <translation>Dein Controller steuert dieses Konsolen-Element nicht mehr</translation>
+    </message>
+</context>
+<context>
     <name>MappingDiff</name>
     <message>
         <source>Re-assigned</source>
@@ -9988,6 +10023,14 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     <message>
         <source>Use a console mapping saved by you or another DJ</source>
         <translation>Ein von dir oder einem anderen DJ gespeichertes Konsolen-Mapping verwenden</translation>
+    </message>
+    <message>
+        <source>My mapping…</source>
+        <translation>Mein Mapping…</translation>
+    </message>
+    <message>
+        <source>Every console control your controller drives, to check or forget one</source>
+        <translation>Alle Konsolen-Elemente, die dein Controller steuert, zum Prüfen oder Vergessen</translation>
     </message>
     <message>
         <source>No sound on this computer: the system audio library is missing ({error}).</source>

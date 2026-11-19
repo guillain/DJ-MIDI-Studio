@@ -26,6 +26,7 @@ SOURCES=(
   src/djmidi/gui/remote_mix_audio.py
   src/djmidi/gui/remote_mix_console.py
   src/djmidi/gui/remote_mix_shared.py
+  src/djmidi/gui/remote_mix_mapping.py
   src/djmidi/gui/remote_mix_listen.py
   src/djmidi/gui/remote_mix_signals.py
   src/djmidi/gui/remote_mix_tracklist.py

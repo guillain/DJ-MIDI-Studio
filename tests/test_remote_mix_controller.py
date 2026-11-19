@@ -72,3 +72,21 @@ def test_export_then_import_a_mapping(tmp_path):
     finally:
         first.close()
         second.close()
+
+
+def test_my_mapping_lists_every_assignment_and_forgets_one(tmp_path):
+    panel = RemoteAudioPanel(lambda: None, backend=FakeBackend(), controls_path=tmp_path / "c.json")
+    try:
+        panel.controls.bind("them_cue", controls.MixerTrigger("1", "Note On", "60", "DDJ-XP2"))
+        panel.controls.bind("fx_reverb", controls.MixerTrigger("1", "Control Change", "21", "DDJ-XP2"))
+        dialog = panel.show_mapping()
+        texts = [(dialog.table.item(r, 0).text(), dialog.table.item(r, 1).text()) for r in range(dialog.table.rowCount())]
+        assert ("Reverb", "DDJ-XP2 · ch1 CC 21") in texts
+        assert any(name.endswith("Cue") for name, _ in texts)
+        row = next(r for r, (name, _) in enumerate(texts) if name == "Reverb")
+        dialog.table.cellWidget(row, 2).click()
+        assert "fx_reverb" not in panel.controls.bindings and dialog.table.rowCount() == 1
+        assert "fx_reverb" not in controls.MixerControls.load(tmp_path / "c.json").bindings
+        dialog.close()
+    finally:
+        panel.close()

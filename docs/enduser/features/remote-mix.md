@@ -288,6 +288,9 @@ The mixer is a console every DJ sees and moves, as on a club mixer:
 - With several controllers plugged in (say an XDJ-XZ and a DDJ-XP2), each
   assignment remembers which controller it came from, so the same knob
   message on both never gets mixed up.
+- **My mapping…** lists every console control your controller drives and
+  the control that drives it; **Forget** one there (the knobs and buttons
+  taught in MIDI mode have no Learn button of their own).
 - **Export my mapping…** saves which controls of your controller drive the
   console; the other DJ, or you on another computer, **Import a mapping…**.
 
