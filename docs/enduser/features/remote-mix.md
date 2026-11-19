@@ -267,6 +267,8 @@ every strip: it cuts that DJ out of the set for everyone.
 
 ## The console
 
+![The Mix Together tab trying alone: connected to the Demo DJ, the console in the middle, a signal from the Demo DJ](../../images/layout/mix-together.png)
+
 The mixer is a console every DJ sees and moves, as on a club mixer:
 
 - each strip: **Gain** (-12 to +12 dB, 0 dB at noon), High / Mid / Low,

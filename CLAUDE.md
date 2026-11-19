@@ -387,6 +387,10 @@ surgical and logged. Qt-free modules; the tab is a thin view over `library/works
   master, fx_delay, fx_beats, fx_reverb), Qt-free `remote_mix/fx.py` (`BeatDelay`, Schroeder `Reverb`, chunks ≤ line
   delay) on the régie's mix; MIDI mode = `RemoteAudioPanel.eventFilter` picks a `_sliders` widget to learn.
   `tracklist.search_urls` (Find this track); `recording.FlacRecorder` / `open_recorder` / `self_check` (FLAC via PyAV).
+  `RemoteAudioPanel` = `ConsoleMixin` (`gui/remote_mix_console.py`: master, FX, gain, mute, MIDI mode) +
+  `SharedMixerMixin` (`gui/remote_mix_shared.py`: shared table, roster, régie, recording) + the sound engine; mixins
+  use `QCoreApplication.translate("RemoteAudioPanel", …)` and are listed in `update_translations.sh`.
+  Tab layout: `window_size.FoldingColumns` (3 columns, then right folds under left, then stacked).
   Plan and checklist: `docs/enduser/features/remote-mix.md`.
 - `user_paths.py`: the workspace (`~/Documents/DJ MIDI Studio`, `DJMIDI_WORKSPACE`) with `Controllers`, `Sync`,
   `Macros`, `Drafts`, `Logs`, `Exports`, `Snapshots`. `backup.py`: workspace backup/restore (validated, atomic).
