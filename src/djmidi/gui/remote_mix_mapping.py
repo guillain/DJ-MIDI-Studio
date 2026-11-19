@@ -44,6 +44,7 @@ class MappingDialog(QDialog):
         self.table = QTableWidget(0, 3)
         self.table.setHorizontalHeaderLabels([self.tr("Console"), self.tr("Your controller"), ""])
         self.table.verticalHeader().setVisible(False)
+        self.table.setMinimumHeight(140)  # a few rows stay readable in the smallest window
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
