@@ -164,6 +164,7 @@ def run(argv: list[str] | None = None) -> int:
     # At DEBUG, names the list/tree a click lands on: the last such line
     # before a native crash says which widget it happened in.
     click_trail = install_click_trail(app)  # noqa: F841 -- kept alive with run()
+    app.aboutToQuit.connect(lambda: logger.info("Qt is quitting: the last window closed or a quit was asked"))
     result = app.exec()
     watchdog.stop()
     logger.info("DJ MIDI Studio stopped with exit code %s; log file: %s", result, log_path)

@@ -2397,6 +2397,7 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         return installed
 
     def closeEvent(self, event) -> None:
+        _log_close_request(event)
         if self._record_button.isChecked():
             reply = QMessageBox.question(
                 self,
@@ -2517,4 +2518,20 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         return chosen or set(candidates[:1])
 
     # --- command palette (issue #222) -----------------------------------------
+
+
+def _log_close_request(event) -> None:
+    """Say who closes the main window: the window system (the red button, Cmd+W, Cmd+Q,
+    a logout) or the app's own code, with where in the code; the dialog still open, if any."""
+    import traceback
+
+    from PySide6.QtWidgets import QApplication as _App
+
+    modal = _App.activeModalWidget()
+    open_dialog = type(modal).__name__ if modal is not None else "none"
+    if event.spontaneous():
+        _LOGGER.info("Main window closing: asked by the window system (red button, Cmd+W/Cmd+Q, logout); modal dialog: %s", open_dialog)
+    else:
+        where = "".join(traceback.format_stack(limit=8)[:-1]).strip().replace("\n", " | ")
+        _LOGGER.info("Main window closing: asked by the app's code; modal dialog: %s; from: %s", open_dialog, where)
 

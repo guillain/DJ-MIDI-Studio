@@ -1,7 +1,17 @@
+import pytest
 from PySide6.QtWidgets import QApplication, QLabel, QPushButton, QSizePolicy
 
 from djmidi.gui import theme
 from djmidi.gui.introduction_view import IntroductionView
+
+
+@pytest.fixture(autouse=True)
+def _dark_theme():
+    """These tests read the dark theme's colours: start from it whatever an earlier
+    test on this xdist worker left on (the order changes as tests are added)."""
+    theme.apply_theme(QApplication.instance(), "dark")
+    yield
+    theme.apply_theme(QApplication.instance(), "dark")
 
 
 def test_refresh_controllers_populates_known_names():
@@ -166,8 +176,6 @@ def test_unknown_software_id_falls_back_to_a_neutral_badge_color():
 
 
 def test_theme_change_restyles_a_visible_badge():
-    # Start from dark whatever an earlier test on this worker left (the order changes under xdist).
-    theme.apply_theme(QApplication.instance(), "dark")
     view = IntroductionView()
     view.set_loaded_config_info("x.xml", 1, software_id="traktor", software_name="Native Instruments Traktor")
     dark_style = view._software_badge_label.styleSheet()
