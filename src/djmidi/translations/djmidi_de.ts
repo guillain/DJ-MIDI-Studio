@@ -9974,8 +9974,44 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
         <translation>Kopfhörerpegel</translation>
     </message>
     <message>
+        <source>Delay: echoes on the beat, at the session&apos;s tempo</source>
+        <translation>Delay: Echos auf dem Beat, im Tempo der Session</translation>
+    </message>
+    <message>
+        <source>Reverb: a room around the official mix</source>
+        <translation>Reverb: ein Raum um den offiziellen Mix</translation>
+    </message>
+    <message>
+        <source>1/2 beat</source>
+        <translation>1/2 Schlag</translation>
+    </message>
+    <message>
+        <source>3/4 beat</source>
+        <translation>3/4 Schlag</translation>
+    </message>
+    <message>
+        <source>1 beat</source>
+        <translation>1 Schlag</translation>
+    </message>
+    <message>
+        <source>2 beats</source>
+        <translation>2 Schläge</translation>
+    </message>
+    <message>
+        <source>Delay time, in beats</source>
+        <translation>Delay-Zeit, in Schlägen</translation>
+    </message>
+    <message>
         <source>Master</source>
         <translation>Master</translation>
+    </message>
+    <message>
+        <source>Delay</source>
+        <translation>Delay</translation>
+    </message>
+    <message>
+        <source>Reverb</source>
+        <translation>Reverb</translation>
     </message>
     <message>
         <source>Cue / mix</source>
@@ -10032,6 +10068,10 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     <message>
         <source>(+ {count} track(s), one per DJ)</source>
         <translation>(+ {count} Spur(en), eine pro DJ)</translation>
+    </message>
+    <message>
+        <source>Delay time</source>
+        <translation>Delay-Zeit</translation>
     </message>
     <message>
         <source>Crossfader side</source>

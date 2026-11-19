@@ -42,6 +42,7 @@ from djmidi.remote_mix import (
     audio,
     controls,
     eq,
+    fx,
     listen,
     opus,
     recording,
@@ -509,10 +510,26 @@ class RemoteAudioPanel(QFrame):
         self.phones_mix = self._knob(0, self.tr("Headphones: the cue to the left, the room's sound to the right"))
         self.phones_level = self._knob(MASTER_UNITY, self.tr("Headphones level"))
         learn, forget = self._learn_pair(controls.MASTER)
+        # Beat-synced effects on the official mix (shared, applied by the régie).
+        self.delay_dial = self._knob(0, self.tr("Delay: echoes on the beat, at the session's tempo"))
+        self.reverb_dial = self._knob(0, self.tr("Reverb: a room around the official mix"))
+        self.beats_combo = QComboBox()
+        for label, beats in zip((self.tr("1/2 beat"), self.tr("3/4 beat"), self.tr("1 beat"), self.tr("2 beats")), fx.DELAY_BEATS, strict=True):
+            self.beats_combo.addItem(label, beats)
+        self.beats_combo.setCurrentIndex(1)
+        self.beats_combo.setToolTip(self.tr("Delay time, in beats"))
+        self.beats_combo.currentIndexChanged.connect(lambda index: self._on_local_move(table.FX_BEATS, index))
+        for target, dial in ((controls.FX_DELAY, self.delay_dial), (controls.FX_REVERB, self.reverb_dial)):
+            self._sliders[target] = dial
+            dial.valueChanged.connect(lambda value, t=target: self._on_local_move(t, value))
+        self.fx = fx.MasterFx()
         row = QHBoxLayout()
         for caption, widget in (
             (self.tr("Master"), self.master_dial),
             (None, self.master_meter),
+            (self.tr("Delay"), self.delay_dial),
+            (None, self.beats_combo),
+            (self.tr("Reverb"), self.reverb_dial),
             (self.tr("Cue / mix"), self.phones_mix),
             (self.tr("Phones"), self.phones_level),
         ):
@@ -652,14 +669,14 @@ class RemoteAudioPanel(QFrame):
 
     def _wire(self, target: str) -> str | None:
         """A local control ('them_low', 'x1', 'me_xf') → its name on the shared mixer ('dj2_low')."""
-        if target in (controls.CROSSFADER, controls.MASTER):
+        if target in table.GLOBALS:
             return target  # the same name on every computer
         side, _, control = target.partition("_")
         dj = self.slot_dj.get(side)
         return None if dj is None else table.strip_control(dj, control or "volume")
 
     def _local(self, wire: str) -> str | None:
-        if wire in (table.CROSSFADER, table.MASTER):
+        if wire in table.GLOBALS:
             return wire
         head, _, control = wire.partition("_")
         for side, dj in self.slot_dj.items():
@@ -673,7 +690,10 @@ class RemoteAudioPanel(QFrame):
         return self._sliders[target].value()
 
     def _set_widget(self, target: str, value: int) -> None:
-        if target.endswith("_mute"):
+        if target == table.FX_BEATS:
+            if 0 <= value < self.beats_combo.count():
+                self.beats_combo.setCurrentIndex(value)
+        elif target.endswith("_mute"):
             button = self.mute_buttons[target[:-5]]
             button.blockSignals(True)
             button.setChecked(bool(value))
@@ -827,8 +847,14 @@ class RemoteAudioPanel(QFrame):
     def _caption(self, wire: str) -> str:
         if wire == table.CROSSFADER:
             return self.tr("Crossfader")
-        if wire == table.MASTER:
-            return self.tr("Master")
+        globals_ = {
+            table.MASTER: self.tr("Master"),
+            "fx_delay": self.tr("Delay"),
+            table.FX_BEATS: self.tr("Delay time"),
+            "fx_reverb": self.tr("Reverb"),
+        }
+        if wire in globals_:
+            return globals_[wire]
         head, _, control = wire.partition("_")
         dj = int(head[2:]) if head[2:].isdigit() else None
         owner = self.tr("Me") if self.table is not None and dj == self.table.me else self._dj_name(dj or 0)
@@ -1054,6 +1080,13 @@ class RemoteAudioPanel(QFrame):
             strips = [(self.me_strip.process(me * self._trim(controls.ME)), self._gain(controls.ME), self.assigns[controls.ME].currentData())]
             strips += [(samples, self._gain(side), self.assigns[side].currentData()) for side, samples in others]
             mix = audio.mix_strips(strips, self.crossfader.value() / 100.0, n)
+            mix = self.fx.process(
+                mix,
+                delay=self.delay_dial.value() / 100.0,
+                beats=self.beats_combo.currentData(),
+                reverb=self.reverb_dial.value() / 100.0,
+                tempo=snapshot.tempo,
+            )
             mix = np.clip(mix * (self.master_dial.value() / MASTER_UNITY), -1.0, 1.0)
             self.master_meter.setValue(int(audio.peak(mix) * 100))
             if self._program is not None and self._program.free_frames() >= len(mix):
