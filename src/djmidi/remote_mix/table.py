@@ -130,6 +130,8 @@ class SharedTable:
                 continue
             if not _valid_name(name) or not stamp.newer_than(self._stamps.get(name)):
                 continue
+            if name.rpartition("_")[2] in HOST_ONLY and rank != _rank(HOST):
+                continue
             self._stamps[name] = stamp
             if self.values.get(name) != value:
                 self.values[name] = value
@@ -137,7 +139,8 @@ class SharedTable:
         return changes
 
 
-_STRIP_CONTROLS = ("volume", "low", "mid", "high", "filter", "xf")
+_STRIP_CONTROLS = ("volume", "low", "mid", "high", "filter", "xf", "mute")
+HOST_ONLY = ("mute",)  # only the host cuts a DJ out of the set
 
 
 def _valid_name(name: str) -> bool:

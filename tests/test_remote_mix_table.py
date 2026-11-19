@@ -52,3 +52,11 @@ def test_the_host_is_the_regie_until_someone_claims_it():
     later = SharedTable(0)
     later.receive(third.snapshot())  # a lost claim comes back with the snapshot
     assert not later.regie_is_mine and later.regie == 2
+
+
+def test_only_the_host_mutes_a_dj():
+    from djmidi.remote_mix import table as t
+
+    host, guest, other = t.SharedTable(0), t.SharedTable(1), t.SharedTable(2)
+    assert other.receive(host.local_change("dj1_mute", 1)) == [("dj1_mute", 1)]
+    assert other.receive(guest.local_change("dj2_mute", 1)) == []  # a guest can't cut anyone
