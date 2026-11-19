@@ -9954,6 +9954,14 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <translation>Enregistre aussi le son de chaque DJ (avant EQ et fader) dans son propre WAV, pour retoucher le set</translation>
     </message>
     <message>
+        <source>MIDI</source>
+        <translation>MIDI</translation>
+    </message>
+    <message>
+        <source>MIDI mode: click a knob or fader of the console, then move a control of your controller</source>
+        <translation>Mode MIDI : clique un potard ou un fader de la console, puis bouge une commande de ton contrôleur</translation>
+    </message>
+    <message>
         <source>No sound on this computer: the system audio library is missing ({error}).</source>
         <translation>Pas de son sur cet ordinateur : la bibliothèque audio du système manque ({error}).</translation>
     </message>
@@ -10040,6 +10048,14 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>Driven by your controller. Click to learn another control</source>
         <translation>Piloté par ton contrôleur. Clique pour en apprendre un autre</translation>
+    </message>
+    <message>
+        <source>MIDI mode: click the knob or fader to drive from your controller.</source>
+        <translation>Mode MIDI : clique le potard ou le fader à piloter depuis ton contrôleur.</translation>
+    </message>
+    <message>
+        <source>Now move a fader or knob of your controller for: {control}</source>
+        <translation>Bouge maintenant un fader ou un potard de ton contrôleur pour : {control}</translation>
     </message>
     <message>
         <source>No controller is plugged in: plug one in, then press Learn again.</source>

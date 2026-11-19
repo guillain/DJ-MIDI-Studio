@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Protocol
 
 import numpy as np
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import QEvent, QObject, Qt, QTimer
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -441,6 +441,20 @@ class RemoteAudioPanel(QFrame):
         table_box.addLayout(strips, 1)
         table_box.addLayout(cross)
         table_box.addWidget(self._build_master())
+        # MIDI mode: click any knob or fader of the console, then move a control of your controller.
+        self.midi_button = QPushButton(self.tr("MIDI"))
+        self.midi_button.setCheckable(True)
+        self.midi_button.setToolTip(
+            self.tr("MIDI mode: click a knob or fader of the console, then move a control of your controller")
+        )
+        self.midi_button.toggled.connect(self._on_midi_mode)
+        midi_row = QHBoxLayout()
+        midi_row.addWidget(self.midi_button)
+        midi_row.addStretch(1)
+        table_box.insertLayout(1, midi_row)
+        self._midi_targets = {widget: target for target, widget in self._sliders.items()}
+        for widget in self._midi_targets:
+            widget.installEventFilter(self)
         self._show_controls()
         table_box.addWidget(self.remote_label)
         table_box.addWidget(self.controls_hint)
@@ -588,6 +602,34 @@ class RemoteAudioPanel(QFrame):
                 button.setText(trigger.label())
                 button.setToolTip(self.tr("Driven by your controller. Click to learn another control"))
             self.forget_buttons[target].setEnabled(trigger is not None)
+
+    def _on_midi_mode(self, on: bool) -> None:
+        if on:
+            self.controls_hint.setText(self.tr("MIDI mode: click the knob or fader to drive from your controller."))
+        else:
+            self.learning = None
+            self.controls_hint.setText(self.tr("Learn: move a fader or knob on your controller and it drives this mixer control."))
+            self._show_controls()
+
+    def eventFilter(self, watched: QObject, event: QEvent) -> bool:
+        target = self._midi_targets.get(watched) if hasattr(self, "_midi_targets") else None
+        if target is None or not self.midi_button.isChecked():
+            return super().eventFilter(watched, event)
+        if event.type() in (QEvent.Type.MouseButtonRelease, QEvent.Type.MouseMove, QEvent.Type.MouseButtonDblClick):
+            return True  # the whole click picks the control, it never moves it
+        if event.type() != QEvent.Type.MouseButtonPress:
+            return super().eventFilter(watched, event)
+        self.learning = None
+        self.toggle_learn(target)
+        if self.learning == target:
+            self.controls_hint.setText(
+                self.tr("Now move a fader or knob of your controller for: {control}").format(control=self._target_name(target))
+            )
+        return True  # the click picks the control, it doesn't move it
+
+    def _target_name(self, target: str) -> str:
+        wire = self._wire(target)
+        return self._caption(wire) if wire is not None else target
 
     def toggle_learn(self, target: str) -> None:
         if self.learning == target:

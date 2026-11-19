@@ -9954,6 +9954,14 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
         <translation>Nimmt auch den Sound jedes DJs (vor EQ und Fader) in einer eigenen WAV auf, um das Set nachzubearbeiten</translation>
     </message>
     <message>
+        <source>MIDI</source>
+        <translation>MIDI</translation>
+    </message>
+    <message>
+        <source>MIDI mode: click a knob or fader of the console, then move a control of your controller</source>
+        <translation>MIDI-Modus: Klick einen Regler oder Fader der Konsole an und bewege dann ein Bedienelement deines Controllers</translation>
+    </message>
+    <message>
         <source>No sound on this computer: the system audio library is missing ({error}).</source>
         <translation>Kein Sound auf diesem Computer: die Audio-Bibliothek des Systems fehlt ({error}).</translation>
     </message>
@@ -10040,6 +10048,14 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     <message>
         <source>Driven by your controller. Click to learn another control</source>
         <translation>Von deinem Controller gesteuert. Klicken, um einen anderen zu lernen</translation>
+    </message>
+    <message>
+        <source>MIDI mode: click the knob or fader to drive from your controller.</source>
+        <translation>MIDI-Modus: Klick den Regler oder Fader an, den du vom Controller steuern willst.</translation>
+    </message>
+    <message>
+        <source>Now move a fader or knob of your controller for: {control}</source>
+        <translation>Bewege jetzt einen Fader oder Regler deines Controllers für: {control}</translation>
     </message>
     <message>
         <source>No controller is plugged in: plug one in, then press Learn again.</source>
