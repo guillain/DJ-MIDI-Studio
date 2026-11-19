@@ -66,3 +66,9 @@ def test_a_flac_recording_holds_every_frame(tmp_path):
     with av.open(str(path)) as container:
         stream = container.streams.audio[0]
         assert stream.rate == 48_000 and sum(frame.samples for frame in container.decode(stream)) == 4800
+
+
+def test_the_flac_self_check_passes_here():
+    from djmidi.remote_mix import recording
+
+    assert recording.self_check() is None

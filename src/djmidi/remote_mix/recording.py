@@ -93,6 +93,26 @@ class FlacRecorder:
         self._container.close()
 
 
+def self_check() -> str | None:
+    """Write and read back a short FLAC file: None when this build can record FLAC."""
+    import tempfile
+
+    try:
+        import av
+
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "check.flac"
+            recorder = FlacRecorder(path)
+            recorder.write(np.zeros((960, CHANNELS), dtype=np.float32))
+            recorder.close()
+            with av.open(str(path)) as container:
+                stream = container.streams.audio[0]
+                frames = sum(frame.samples for frame in container.decode(stream))
+        return None if frames == 960 else f"FLAC read back {frames} frames, not 960"
+    except Exception as exc:  # noqa: BLE001 - reported, not raised
+        return f"FLAC: {exc}"
+
+
 def open_recorder(path: Path) -> ProgramRecorder | FlacRecorder:
     """A recorder for ``path``, by its extension."""
     return FlacRecorder(path) if path.suffix == f".{FLAC}" else ProgramRecorder(path)

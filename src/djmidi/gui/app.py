@@ -107,8 +107,9 @@ def run(argv: list[str] | None = None) -> int:
     if arguments.self_check_opus:
         from djmidi.remote_mix.eq import self_check as eq_self_check
         from djmidi.remote_mix.opus import self_check as opus_self_check
+        from djmidi.remote_mix.recording import self_check as flac_self_check
 
-        problem = opus_self_check() or eq_self_check()
+        problem = opus_self_check() or eq_self_check() or flac_self_check()
         if problem is None:
             logger.info("Opus self-check passed")
             return 0
