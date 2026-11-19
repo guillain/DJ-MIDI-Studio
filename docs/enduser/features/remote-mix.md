@@ -281,6 +281,15 @@ The mixer is a console every DJ sees and moves, as on a club mixer:
   the room's sound to the right) and **Phones** level;
 - **MIDI** mode: press it, click any knob or fader (the click only picks
   it), then move a control of your controller; it stays on for the next one.
+  Buttons too: click **Cue**, **Mute** or a strip's crossfader side, or the
+  delay's time, then press a pad of your controller: each press toggles it
+  (Cue, Mute) or steps it (A → Thru → B, the next delay time). The press that
+  teaches the pad doesn't press the button.
+- With several controllers plugged in (say an XDJ-XZ and a DDJ-XP2), each
+  assignment remembers which controller it came from, so the same knob
+  message on both never gets mixed up.
+- **Export my mapping…** saves which controls of your controller drive the
+  console; the other DJ, or you on another computer, **Import a mapping…**.
 
 The control room can also record in **FLAC** (lossless and smaller) instead
 of WAV.
