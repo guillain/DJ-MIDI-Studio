@@ -9989,6 +9989,10 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
         <translation>FLAC (kleiner, verlustfrei)</translation>
     </message>
     <message>
+        <source>MP3 320 kb/s (for mix sites)</source>
+        <translation>MP3 320 kb/s (für Mix-Plattformen)</translation>
+    </message>
+    <message>
         <source>The recording&apos;s file format</source>
         <translation>Das Dateiformat der Aufnahme</translation>
     </message>

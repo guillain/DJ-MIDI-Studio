@@ -23,8 +23,9 @@ RATE = 48_000
 CHANNELS = 2
 
 
-WAV, FLAC = "wav", "flac"
-FORMATS = (WAV, FLAC)
+WAV, FLAC, MP3 = "wav", "flac", "mp3"
+FORMATS = (WAV, FLAC, MP3)
+MP3_BITRATE = 320_000
 
 
 def recording_name(started: datetime, extension: str = WAV) -> str:
@@ -101,21 +102,76 @@ def self_check() -> str | None:
         import av
 
         with tempfile.TemporaryDirectory() as folder:
-            path = Path(folder) / "check.flac"
-            recorder = FlacRecorder(path)
-            recorder.write(np.zeros((960, CHANNELS), dtype=np.float32))
-            recorder.close()
-            with av.open(str(path)) as container:
-                stream = container.streams.audio[0]
-                frames = sum(frame.samples for frame in container.decode(stream))
-        return None if frames == 960 else f"FLAC read back {frames} frames, not 960"
+            for extension in (FLAC, MP3):
+                path = Path(folder) / f"check.{extension}"
+                recorder = open_recorder(path)
+                for _ in range(5):
+                    recorder.write(np.zeros((960, CHANNELS), dtype=np.float32))
+                recorder.close()
+                with av.open(str(path)) as container:
+                    stream = container.streams.audio[0]
+                    frames = sum(frame.samples for frame in container.decode(stream))
+                if frames < 4800:  # MP3 pads its last frame: at least every frame written
+                    return f"{extension.upper()} read back {frames} frames, not 4800"
+        return None
     except Exception as exc:  # noqa: BLE001 - reported, not raised
-        return f"FLAC: {exc}"
+        return f"FLAC/MP3: {exc}"
 
 
-def open_recorder(path: Path) -> ProgramRecorder | FlacRecorder:
+class Mp3Recorder:
+    """The mix as an MP3 at 320 kb/s (LAME, through PyAV): what mix sites ask for.
+    LAME takes whole frames of 1152 samples, so blocks wait in a FIFO."""
+
+    def __init__(self, path: Path) -> None:
+        import av
+
+        path.parent.mkdir(parents=True, exist_ok=True)
+        self.path = path
+        self._container = av.open(str(path), "w", format="mp3")
+        self._stream = self._container.add_stream("libmp3lame", rate=RATE)
+        self._stream.codec_context.layout = "stereo"
+        self._stream.bit_rate = MP3_BITRATE
+        self._fifo = av.AudioFifo()
+        self.frames = 0
+
+    @property
+    def seconds(self) -> float:
+        return self.frames / RATE
+
+    def write(self, samples: np.ndarray) -> None:
+        import av
+
+        data = np.ascontiguousarray(np.clip(samples, -1.0, 1.0), dtype=np.float32).reshape(1, -1)
+        frame = av.AudioFrame.from_ndarray(data, format="flt", layout="stereo")
+        frame.sample_rate = RATE
+        frame.pts = None
+        self._fifo.write(frame)
+        while self._fifo.samples >= 1152:
+            self._encode(self._fifo.read(1152))
+        self.frames += len(samples)
+
+    def _encode(self, frame) -> None:
+        for packet in self._stream.encode(frame):
+            self._container.mux(packet)
+
+    def close(self) -> None:
+        rest = self._fifo.read()
+        if rest is not None:
+            self._encode(rest)
+        self._encode(None)
+        self._container.close()
+
+
+Recorder = ProgramRecorder | FlacRecorder | Mp3Recorder
+
+
+def open_recorder(path: Path) -> Recorder:
     """A recorder for ``path``, by its extension."""
-    return FlacRecorder(path) if path.suffix == f".{FLAC}" else ProgramRecorder(path)
+    if path.suffix == f".{FLAC}":
+        return FlacRecorder(path)
+    if path.suffix == f".{MP3}":
+        return Mp3Recorder(path)
+    return ProgramRecorder(path)
 
 
 class StemsRecorder:
@@ -126,7 +182,7 @@ class StemsRecorder:
         self.started = started
         self.extension = extension
         self.frames = frames_before  # where the mix is on its timeline
-        self.stems: dict[int, ProgramRecorder | FlacRecorder] = {}
+        self.stems: dict[int, Recorder] = {}
 
     def write(self, blocks: dict[int, np.ndarray], names: dict[int, str]) -> None:
         """One block per DJ for the same stretch of time; a DJ missing here gets silence."""
