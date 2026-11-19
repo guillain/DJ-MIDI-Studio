@@ -15,6 +15,7 @@
 - [Reading the lights](#reading-the-lights)
 - [One tempo for two homes](#one-tempo-for-two-homes)
 - [Hear each other on the grid](#hear-each-other-on-the-grid)
+- [The console](#the-console)
 - [Signals between DJs](#signals-between-djs)
 - [Talkback](#talkback)
 - [The shared tracklist](#the-shared-tracklist)
@@ -264,6 +265,24 @@ you hear it, never the mix. Choose the output in **Headphones (cue,
 talkback)** (the talkback goes there too). The host also has **Mute** on
 every strip: it cuts that DJ out of the set for everyone.
 
+## The console
+
+The mixer is a console every DJ sees and moves, as on a club mixer:
+
+- each strip: **Gain** (-12 to +12 dB, 0 dB at noon), High / Mid / Low,
+  Filter, **Cue**, **Mute** (host), its fader and an LED meter (green, amber,
+  red, with a peak that holds);
+- the master section: **Master** level and its LED meter, a **Delay** that
+  echoes on the beat at the session's tempo (1/2, 3/4, 1 or 2 beats) and a
+  **Reverb**, both on the official mix (its recording and listeners too, never
+  your monitor); then your headphones: **Cue / mix** (the cue to the left,
+  the room's sound to the right) and **Phones** level;
+- **MIDI** mode: press it, click any knob or fader (the click only picks
+  it), then move a control of your controller; it stays on for the next one.
+
+The control room can also record in **FLAC** (lossless and smaller) instead
+of WAV.
+
 ## Signals between DJs
 
 In a club a B2B is a glance and a nod. From two places, once connected, the
@@ -308,6 +327,10 @@ from somewhere else, type the track (`Artist – Title`) and **Add**. At the
 end, **Copy the tracklist** (for a post or a description) or **Save the
 tracklist** (a text file in your Exports folder). The list stays on screen
 after you stop.
+
+Select a row and **Find this track** to look it up on Beatport, Bandcamp,
+Discogs or YouTube: it opens that site's search in your browser, with the
+artist and title, only when you click.
 
 Listeners see it too: the control room sends the whole tracklist, with
 each DJ's name, to everyone who ticked **I listen**.
