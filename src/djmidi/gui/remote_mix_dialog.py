@@ -47,7 +47,7 @@ from djmidi.gui.remote_mix_signals import SignalsPanel
 from djmidi.gui.remote_mix_tracklist import TracklistPanel
 from djmidi.gui.translation import translator
 from djmidi.gui.window_size import (
-    ResponsiveRow,
+    FoldingColumns,
     fit_to_screen,
     keep_wrapped_text_visible,
 )
@@ -270,9 +270,8 @@ class RemoteMixDialog(QDialog):
         self.tracklist_panel.hide()
         right.addWidget(self.tracklist_panel)
         right.addStretch(1)
-        self.columns = ResponsiveRow(
-            [(connect_column, 3), (self.sound_panel.table_widget, 4), (sound_column, 3)], spacing=16
-        )
+        # On a laptop the sound settings fold under the connection, the console keeps its column.
+        self.columns = FoldingColumns(connect_column, self.sound_panel.table_widget, sound_column, (3, 4, 3))
 
         body = QWidget()
         body.setObjectName("remoteBody")
@@ -722,6 +721,7 @@ class RemoteMixDialog(QDialog):
             "quality": sound.quality_combo,
             "nudge": sound.nudge_spin,
             "stems": sound.stems_checkbox,
+            "record_format": sound.format_combo,
             "signals_over_apps": self.signals_panel.over_apps,
             "listen_address": listener.address_edit,
             "listen_port": listener.port_spin,
@@ -768,7 +768,8 @@ class RemoteMixDialog(QDialog):
             QLabel#remoteHeadline {{ font-size: 17px; font-weight: 600; color: {c["title"]}; }}
             QLabel#remoteStatus {{ color: {c["hint_text"]}; }}
             QFrame#mixStrip {{ border: 1px solid {c["panel_border"]}; border-radius: 10px; background: {c["panel_bg"]}; }}
-            QFrame#mixStrip QLabel {{ background: transparent; border: none; }}
+            QFrame#mixStrip QLabel {{ background: transparent; border: none; color: {c["text"]}; }}
+            QFrame#mixStrip QPushButton:checked {{ background: {c["accent"]}; color: white; border-color: {c["accent"]}; }}
             QLabel#mixStripName {{ font-size: 15px; font-weight: 600; color: {c["title"]}; }}
             QFrame#remoteLights {{ background: {c["panel_bg"]}; border: 1px solid {c["panel_border"]};
                                    border-radius: 10px; }}

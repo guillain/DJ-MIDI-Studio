@@ -97,6 +97,23 @@ def _message(row: TrackRow) -> dict:
     return {"k": MESSAGE_KIND, "from": row.dj, "n": row.serial, "t": row.title, "a": row.artist, "at": row.at}
 
 
+# Where a DJ looks a track up: each site's public search page, opened only when the DJ clicks.
+SEARCH_SITES = (
+    ("Beatport", "https://www.beatport.com/search?q={q}"),
+    ("Bandcamp", "https://bandcamp.com/search?q={q}"),
+    ("Discogs", "https://www.discogs.com/search/?q={q}&type=all"),
+    ("YouTube", "https://www.youtube.com/results?search_query={q}"),
+)
+
+
+def search_urls(row: TrackRow) -> list[tuple[str, str]]:
+    """(site, search URL) for a track: its artist and title, nothing else."""
+    from urllib.parse import quote_plus
+
+    query = quote_plus(f"{row.artist} {row.title}".strip())
+    return [(site, url.format(q=query)) for site, url in SEARCH_SITES]
+
+
 def for_listeners(rows: list[TrackRow], name_of) -> list[dict]:
     """Every row with its DJ's name (``who``), for listeners who don't know the room."""
     return [{**_message(row), "who": name_of(row.dj)} for row in rows]

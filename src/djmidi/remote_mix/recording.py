@@ -23,8 +23,12 @@ RATE = 48_000
 CHANNELS = 2
 
 
-def recording_name(started: datetime) -> str:
-    return f"mix-together-{started:%Y%m%d-%H%M%S}.wav"
+WAV, FLAC = "wav", "flac"
+FORMATS = (WAV, FLAC)
+
+
+def recording_name(started: datetime, extension: str = WAV) -> str:
+    return f"mix-together-{started:%Y%m%d-%H%M%S}.{extension}"
 
 
 class ProgramRecorder:
@@ -50,26 +54,86 @@ class ProgramRecorder:
         self._file.close()
 
 
-def stem_name(started: datetime, dj: int, name: str) -> str:
+def stem_name(started: datetime, dj: int, name: str, extension: str = WAV) -> str:
     slug = re.sub(r"[^A-Za-z0-9]+", "-", name).strip("-")[:30]
-    return f"mix-together-{started:%Y%m%d-%H%M%S}-dj{dj + 1}" + (f"-{slug}" if slug else "") + ".wav"
+    return f"mix-together-{started:%Y%m%d-%H%M%S}-dj{dj + 1}" + (f"-{slug}" if slug else "") + f".{extension}"
+
+
+class FlacRecorder:
+    """The same as `ProgramRecorder`, losslessly compressed (FLAC, through PyAV)."""
+
+    def __init__(self, path: Path) -> None:
+        import av
+
+        path.parent.mkdir(parents=True, exist_ok=True)
+        self.path = path
+        self._container = av.open(str(path), "w", format="flac")
+        self._stream = self._container.add_stream("flac", rate=RATE)
+        self._stream.codec_context.layout = "stereo"
+        self._stream.codec_context.format = "s16"
+        self.frames = 0
+
+    @property
+    def seconds(self) -> float:
+        return self.frames / RATE
+
+    def write(self, samples: np.ndarray) -> None:
+        import av
+
+        pcm = (np.clip(samples, -1.0, 1.0) * 32767.0).astype("<i2")
+        frame = av.AudioFrame.from_ndarray(pcm.reshape(1, -1), format="s16", layout="stereo")
+        frame.sample_rate = RATE
+        for packet in self._stream.encode(frame):
+            self._container.mux(packet)
+        self.frames += len(samples)
+
+    def close(self) -> None:
+        for packet in self._stream.encode(None):
+            self._container.mux(packet)
+        self._container.close()
+
+
+def self_check() -> str | None:
+    """Write and read back a short FLAC file: None when this build can record FLAC."""
+    import tempfile
+
+    try:
+        import av
+
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "check.flac"
+            recorder = FlacRecorder(path)
+            recorder.write(np.zeros((960, CHANNELS), dtype=np.float32))
+            recorder.close()
+            with av.open(str(path)) as container:
+                stream = container.streams.audio[0]
+                frames = sum(frame.samples for frame in container.decode(stream))
+        return None if frames == 960 else f"FLAC read back {frames} frames, not 960"
+    except Exception as exc:  # noqa: BLE001 - reported, not raised
+        return f"FLAC: {exc}"
+
+
+def open_recorder(path: Path) -> ProgramRecorder | FlacRecorder:
+    """A recorder for ``path``, by its extension."""
+    return FlacRecorder(path) if path.suffix == f".{FLAC}" else ProgramRecorder(path)
 
 
 class StemsRecorder:
     """One WAV per DJ, on the mix's timeline."""
 
-    def __init__(self, folder: Path, started: datetime, frames_before: int = 0) -> None:
+    def __init__(self, folder: Path, started: datetime, frames_before: int = 0, extension: str = WAV) -> None:
         self.folder = folder
         self.started = started
+        self.extension = extension
         self.frames = frames_before  # where the mix is on its timeline
-        self.stems: dict[int, ProgramRecorder] = {}
+        self.stems: dict[int, ProgramRecorder | FlacRecorder] = {}
 
     def write(self, blocks: dict[int, np.ndarray], names: dict[int, str]) -> None:
         """One block per DJ for the same stretch of time; a DJ missing here gets silence."""
         n = max((len(block) for block in blocks.values()), default=0)
         for dj, block in blocks.items():
             if dj not in self.stems:
-                stem = ProgramRecorder(self.folder / stem_name(self.started, dj, names.get(dj, "")))
+                stem = open_recorder(self.folder / stem_name(self.started, dj, names.get(dj, ""), self.extension))
                 if self.frames:
                     stem.write(np.zeros((self.frames, CHANNELS), dtype=np.float32))
                 self.stems[dj] = stem

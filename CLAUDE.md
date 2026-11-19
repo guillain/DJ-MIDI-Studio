@@ -383,6 +383,10 @@ surgical and logged. Qt-free modules; the tab is a thin view over `library/works
   Cue / Mute: `RemoteAudioPanel.cue_buttons` (local, pre-fader to `phones_combo` output, else the monitor) and
   `mute_buttons` (shared `dj{n}_mute`, `table.HOST_ONLY`: receive ignores a mute not stamped with the host's rank;
   `_gain(side)` = 0 when muted).
+  Console: per-strip `gain` (shared `dj{n}_gain`, `_trim`), `gui/led_meter.LedMeter` meters, `table.GLOBALS` (crossfader,
+  master, fx_delay, fx_beats, fx_reverb), Qt-free `remote_mix/fx.py` (`BeatDelay`, Schroeder `Reverb`, chunks ≤ line
+  delay) on the régie's mix; MIDI mode = `RemoteAudioPanel.eventFilter` picks a `_sliders` widget to learn.
+  `tracklist.search_urls` (Find this track); `recording.FlacRecorder` / `open_recorder` / `self_check` (FLAC via PyAV).
   Plan and checklist: `docs/enduser/features/remote-mix.md`.
 - `user_paths.py`: the workspace (`~/Documents/DJ MIDI Studio`, `DJMIDI_WORKSPACE`) with `Controllers`, `Sync`,
   `Macros`, `Drafts`, `Logs`, `Exports`, `Snapshots`. `backup.py`: workspace backup/restore (validated, atomic).

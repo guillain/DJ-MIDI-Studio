@@ -9,8 +9,8 @@ from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
 
-from PySide6.QtCore import QTimer
-from PySide6.QtGui import QGuiApplication
+from PySide6.QtCore import QTimer, QUrl
+from PySide6.QtGui import QDesktopServices, QGuiApplication
 from PySide6.QtWidgets import (
     QFileDialog,
     QFrame,
@@ -18,6 +18,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QLineEdit,
     QListWidget,
+    QMenu,
     QPushButton,
     QVBoxLayout,
     QWidget,
@@ -78,12 +79,19 @@ class TracklistPanel(QFrame):
         typed = QHBoxLayout()
         typed.addWidget(self.track_edit, 1)
         typed.addWidget(self.add_button)
+        self.find_button = QPushButton(self.tr("Find this track"))
+        self.find_button.setToolTip(self.tr("Look the selected track up (opens your browser)"))
+        self.find_menu = QMenu(self)
+        self.find_button.setMenu(self.find_menu)
+        self.find_button.setEnabled(False)
+        self.view.currentRowChanged.connect(self._on_row)
         self.copy_button = QPushButton(self.tr("Copy the tracklist"))
         self.copy_button.clicked.connect(self.copy)
         self.save_button = QPushButton(self.tr("Save the tracklist"))
         self.save_button.setToolTip(self.tr("A text file in your Exports folder"))
         self.save_button.clicked.connect(self.save)
         actions = QHBoxLayout()
+        actions.addWidget(self.find_button)
         actions.addWidget(self.copy_button)
         actions.addWidget(self.save_button)
         actions.addStretch(1)
@@ -235,6 +243,20 @@ class TracklistPanel(QFrame):
             self.view.scrollToBottom()
         self.empty.refresh()
         self._enable()
+
+    def _on_row(self, index: int) -> None:
+        rows = self.list.rows if self.list is not None else []
+        row = rows[index] if 0 <= index < len(rows) else None
+        self.find_menu.clear()
+        self.find_button.setEnabled(row is not None)
+        if row is None:
+            return
+        for site, url in tracklist.search_urls(row):
+            action = self.find_menu.addAction(self.tr("On {site}").format(site=site))
+            action.triggered.connect(lambda _checked=False, u=url: self._open(u))
+
+    def _open(self, url: str) -> None:
+        QDesktopServices.openUrl(QUrl(url))
 
     def text(self) -> str:
         return tracklist.text_export(self.list.rows if self.list else [], self._name_of, self._started)

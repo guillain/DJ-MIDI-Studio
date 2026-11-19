@@ -139,12 +139,15 @@ class SharedTable:
         return changes
 
 
-_STRIP_CONTROLS = ("volume", "low", "mid", "high", "filter", "xf", "mute")
+_STRIP_CONTROLS = ("volume", "gain", "low", "mid", "high", "filter", "xf", "mute")
+MASTER = "master"
+FX_BEATS = "fx_beats"
+GLOBALS = (CROSSFADER, MASTER, "fx_delay", FX_BEATS, "fx_reverb")  # the console's controls nobody owns
 HOST_ONLY = ("mute",)  # only the host cuts a DJ out of the set
 
 
 def _valid_name(name: str) -> bool:
-    if name == CROSSFADER:
+    if name in GLOBALS:
         return True
     head, _, control = name.partition("_")
     return head.startswith("dj") and head[2:].isdigit() and control in _STRIP_CONTROLS
