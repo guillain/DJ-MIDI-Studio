@@ -36,6 +36,7 @@ from PySide6.QtWidgets import (
 )
 
 from djmidi import user_paths
+from djmidi.gui.led_meter import LedMeter
 from djmidi.gui.remote_mix_talk import TalkPanel
 from djmidi.remote_mix import (
     audio,
@@ -53,6 +54,8 @@ if TYPE_CHECKING:
     from djmidi.midi_io import MidiEvent
 
 _LOGGER = logging.getLogger(__name__)
+
+MASTER_UNITY = 80  # master and headphones knobs: 0 dB at 80, a little headroom above
 
 PICKUP_STEPS = 3  # a controller picks a control up within this many steps of it
 MAX_BLOCK = 1920  # never write more than 40 ms at once
@@ -294,7 +297,9 @@ class RemoteAudioPanel(QFrame):
         # Slot → DJ id shown in it: me, the first other DJ, then up to two more (phase 9).
         self.slot_dj: dict[str, int | None] = {controls.ME: 0, controls.THEM: 1, "x1": None, "x2": None}
         self._sliders: dict[str, QWidget] = {controls.CROSSFADER: self.crossfader}
-        captions = {"high": self.tr("High"), "mid": self.tr("Mid"), "low": self.tr("Low"), "filter": self.tr("Filter")}
+        captions = {
+            "gain": self.tr("Gain"), "high": self.tr("High"), "mid": self.tr("Mid"), "low": self.tr("Low"), "filter": self.tr("Filter"),
+        }
         strips = QHBoxLayout()
         strips.setSpacing(18)
         for side in controls.SIDES:
@@ -311,19 +316,22 @@ class RemoteAudioPanel(QFrame):
             box.addWidget(name)
             knobs = QGridLayout()
             knobs.setHorizontalSpacing(4)
-            for row, knob in enumerate(("high", "mid", "low", "filter")):  # top to bottom, as on a mixer
+            for row, knob in enumerate(("gain", "high", "mid", "low", "filter")):  # top to bottom, as on a mixer
                 target = f"{side}_{knob}"
                 dial = QDial()
                 dial.setRange(0, 100)
                 dial.setValue(eq.CENTRE)
                 dial.setNotchesVisible(True)
                 dial.setFixedSize(46, 46)
-                dial.setToolTip(
-                    self.tr("Filter: low-pass to the left, high-pass to the right, off at noon")
-                    if knob == "filter"
-                    else self.tr("Full cut to the left, +6 dB to the right, flat at noon")
-                )
-                dial.valueChanged.connect(lambda value, s=strip, k=knob: setattr(s, k, float(value)))
+                if knob == "gain":
+                    dial.setToolTip(self.tr("Gain: from -12 dB to the left to +12 dB to the right, 0 dB at noon"))
+                else:
+                    dial.setToolTip(
+                        self.tr("Filter: low-pass to the left, high-pass to the right, off at noon")
+                        if knob == "filter"
+                        else self.tr("Full cut to the left, +6 dB to the right, flat at noon")
+                    )
+                    dial.valueChanged.connect(lambda value, s=strip, k=knob: setattr(s, k, float(value)))
                 self.dials[target] = dial
                 learn, forget = self._learn_pair(target)
                 knobs.addWidget(QLabel(captions[knob]), row, 0)
@@ -431,6 +439,8 @@ class RemoteAudioPanel(QFrame):
         self._show_regie()
         table_box.addLayout(strips, 1)
         table_box.addLayout(cross)
+        table_box.addWidget(self._build_master())
+        self._show_controls()
         table_box.addWidget(self.remote_label)
         table_box.addWidget(self.controls_hint)
 
@@ -476,14 +486,56 @@ class RemoteAudioPanel(QFrame):
         return slider
 
     @staticmethod
-    def _meter() -> QProgressBar:
-        meter = QProgressBar()
-        meter.setRange(0, 100)
-        meter.setTextVisible(False)
-        meter.setOrientation(Qt.Orientation.Vertical)
-        meter.setFixedWidth(10)
-        meter.setMinimumHeight(140)
-        return meter
+    def _meter() -> LedMeter:
+        return LedMeter()
+
+    def _knob(self, value: int, tooltip: str) -> QDial:
+        dial = QDial()
+        dial.setRange(0, 100)
+        dial.setValue(value)
+        dial.setNotchesVisible(True)
+        dial.setFixedSize(46, 46)
+        dial.setToolTip(tooltip)
+        return dial
+
+    def _build_master(self) -> QFrame:
+        """The console's master section: the program level and meter; your headphones."""
+        self.master_dial = self._knob(MASTER_UNITY, self.tr("Level of the official mix (the régie applies it)"))
+        self._sliders[controls.MASTER] = self.master_dial
+        self.master_dial.valueChanged.connect(lambda value: self._on_local_move(controls.MASTER, value))
+        self.master_meter = LedMeter()
+        self.master_meter.setMinimumHeight(70)
+        self.master_meter.setFixedHeight(70)
+        self.phones_mix = self._knob(0, self.tr("Headphones: the cue to the left, the room's sound to the right"))
+        self.phones_level = self._knob(MASTER_UNITY, self.tr("Headphones level"))
+        learn, forget = self._learn_pair(controls.MASTER)
+        row = QHBoxLayout()
+        for caption, widget in (
+            (self.tr("Master"), self.master_dial),
+            (None, self.master_meter),
+            (self.tr("Cue / mix"), self.phones_mix),
+            (self.tr("Phones"), self.phones_level),
+        ):
+            column = QVBoxLayout()
+            column.addWidget(widget, 0, Qt.AlignmentFlag.AlignHCenter)
+            if caption:
+                label = QLabel(caption)
+                label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+                column.addWidget(label)
+            row.addLayout(column)
+        pair = QVBoxLayout()
+        pair.addWidget(learn)
+        pair.addWidget(forget)
+        row.addLayout(pair)
+        row.addStretch(1)
+        frame = QFrame()
+        frame.setObjectName("mixStrip")  # the console's look
+        frame.setLayout(row)
+        return frame
+
+    def _trim(self, side: str) -> float:
+        """A strip's gain knob: -12 dB to +12 dB, 0 dB at noon."""
+        return float(10 ** ((self.dials[f"{side}_gain"].value() - eq.CENTRE) / eq.CENTRE * 12 / 20))
 
     def _learn_pair(self, target: str) -> tuple[QPushButton, QPushButton]:
         learn = QPushButton()
@@ -506,7 +558,9 @@ class RemoteAudioPanel(QFrame):
     def _show_controls(self) -> None:
         for target in controls.TARGETS:
             trigger = self.controls.bindings.get(target)
-            button = self.learn_buttons[target]
+            button = self.learn_buttons.get(target)
+            if button is None:  # still being built
+                continue
             if self.learning == target:
                 button.setText(self.tr("Move it now…"))
                 button.setToolTip(self.tr("Move a fader or knob on your controller, or click again to cancel"))
@@ -598,15 +652,15 @@ class RemoteAudioPanel(QFrame):
 
     def _wire(self, target: str) -> str | None:
         """A local control ('them_low', 'x1', 'me_xf') → its name on the shared mixer ('dj2_low')."""
-        if target == controls.CROSSFADER:
-            return table.CROSSFADER
+        if target in (controls.CROSSFADER, controls.MASTER):
+            return target  # the same name on every computer
         side, _, control = target.partition("_")
         dj = self.slot_dj.get(side)
         return None if dj is None else table.strip_control(dj, control or "volume")
 
     def _local(self, wire: str) -> str | None:
-        if wire == table.CROSSFADER:
-            return controls.CROSSFADER
+        if wire in (table.CROSSFADER, table.MASTER):
+            return wire
         head, _, control = wire.partition("_")
         for side, dj in self.slot_dj.items():
             if dj is not None and head == f"dj{dj}":
@@ -660,7 +714,7 @@ class RemoteAudioPanel(QFrame):
                     continue
                 self.names[side].setText(self._dj_name(dj, roster) if side != controls.ME else self.tr("Me"))
                 if self.table is not None:  # what the room already set for this DJ
-                    for control in ("volume", *controls.KNOBS, "mute"):
+                    for control in ("volume", controls.GAIN, *controls.KNOBS, "mute"):
                         value = self.table.values.get(table.strip_control(dj, control))
                         if value is not None:
                             self._set_widget(side if control == "volume" else f"{side}_{control}", value)
@@ -773,6 +827,8 @@ class RemoteAudioPanel(QFrame):
     def _caption(self, wire: str) -> str:
         if wire == table.CROSSFADER:
             return self.tr("Crossfader")
+        if wire == table.MASTER:
+            return self.tr("Master")
         head, _, control = wire.partition("_")
         dj = int(head[2:]) if head[2:].isdigit() else None
         owner = self.tr("Me") if self.table is not None and dj == self.table.me else self._dj_name(dj or 0)
@@ -783,6 +839,7 @@ class RemoteAudioPanel(QFrame):
             "filter": self.tr("Filter"),
             "xf": self.tr("Crossfader side"),
             "mute": self.tr("Mute"),
+            "gain": self.tr("Gain"),
         }
         return "{owner} · {control}".format(owner=owner, control=names.get(control, self.tr("Volume")))
 
@@ -966,15 +1023,19 @@ class RemoteAudioPanel(QFrame):
                 continue
             player = self.players.get(dj)
             raw[dj] = player.read(n, heard_beat)
-            others.append((side, self.eqs[side].process(raw[dj])))
+            others.append((side, self.eqs[side].process(raw[dj] * self._trim(side))))
             self.meters[side].setValue(int(player.last_peak * 100))
         voices = self.talk.voices(n)  # the other DJs' voices: never in the mix
         if self._phones is not None and self._phones.free_frames() >= n:
-            cue = voices.copy()
+            cue = np.zeros((n, audio.CHANNELS), dtype=np.float32)
+            room = np.zeros((n, audio.CHANNELS), dtype=np.float32)
             for side, samples in others:
+                room += samples * self._gain(side)
                 if self.cue_buttons[side].isChecked():
                     cue += samples  # before the fader: hear them before bringing them in
-            self._phones.write(np.clip(cue, -1.0, 1.0))
+            blend = self.phones_mix.value() / 100.0
+            phones = (cue * (1.0 - blend) + room * blend) * (self.phones_level.value() / MASTER_UNITY) + voices
+            self._phones.write(np.clip(phones, -1.0, 1.0))
         if self._monitor is not None:
             monitor = np.zeros((n, audio.CHANNELS), dtype=np.float32)
             for side, samples in others:
@@ -990,9 +1051,11 @@ class RemoteAudioPanel(QFrame):
             self._me_fifo = self._me_fifo[n:]
             if len(me) < n:
                 me = np.concatenate([me, np.zeros((n - len(me), audio.CHANNELS), dtype=np.float32)])
-            strips = [(self.me_strip.process(me), self._gain(controls.ME), self.assigns[controls.ME].currentData())]
+            strips = [(self.me_strip.process(me * self._trim(controls.ME)), self._gain(controls.ME), self.assigns[controls.ME].currentData())]
             strips += [(samples, self._gain(side), self.assigns[side].currentData()) for side, samples in others]
             mix = audio.mix_strips(strips, self.crossfader.value() / 100.0, n)
+            mix = np.clip(mix * (self.master_dial.value() / MASTER_UNITY), -1.0, 1.0)
+            self.master_meter.setValue(int(audio.peak(mix) * 100))
             if self._program is not None and self._program.free_frames() >= len(mix):
                 self._program.write(mix)
             if self.recorder is not None:

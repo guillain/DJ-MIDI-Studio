@@ -9890,6 +9890,14 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <translation>Mix diffusé : les tranches sur A à gauche, sur B à droite</translation>
     </message>
     <message>
+        <source>Gain</source>
+        <translation>Gain</translation>
+    </message>
+    <message>
+        <source>Gain: from -12 dB to the left to +12 dB to the right, 0 dB at noon</source>
+        <translation>Gain : de -12 dB à gauche à +12 dB à droite, 0 dB à midi</translation>
+    </message>
+    <message>
         <source>Cue</source>
         <translation>Cue</translation>
     </message>
@@ -9952,6 +9960,30 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>Volume</source>
         <translation>Volume</translation>
+    </message>
+    <message>
+        <source>Level of the official mix (the régie applies it)</source>
+        <translation>Niveau du mix officiel (appliqué par la régie)</translation>
+    </message>
+    <message>
+        <source>Headphones: the cue to the left, the room&apos;s sound to the right</source>
+        <translation>Casque : le cue à gauche, le son de la salle à droite</translation>
+    </message>
+    <message>
+        <source>Headphones level</source>
+        <translation>Volume du casque</translation>
+    </message>
+    <message>
+        <source>Master</source>
+        <translation>Master</translation>
+    </message>
+    <message>
+        <source>Cue / mix</source>
+        <translation>Cue / mix</translation>
+    </message>
+    <message>
+        <source>Phones</source>
+        <translation>Casque</translation>
     </message>
     <message>
         <source>Move it now…</source>

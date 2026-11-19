@@ -9890,6 +9890,14 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
         <translation>Programm-Mix: Kanäle auf A links, auf B rechts</translation>
     </message>
     <message>
+        <source>Gain</source>
+        <translation>Gain</translation>
+    </message>
+    <message>
+        <source>Gain: from -12 dB to the left to +12 dB to the right, 0 dB at noon</source>
+        <translation>Gain: von -12 dB links bis +12 dB rechts, 0 dB in der Mitte</translation>
+    </message>
+    <message>
         <source>Cue</source>
         <translation>Cue</translation>
     </message>
@@ -9952,6 +9960,30 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     <message>
         <source>Volume</source>
         <translation>Lautstärke</translation>
+    </message>
+    <message>
+        <source>Level of the official mix (the régie applies it)</source>
+        <translation>Pegel des offiziellen Mix (von der Regie angewendet)</translation>
+    </message>
+    <message>
+        <source>Headphones: the cue to the left, the room&apos;s sound to the right</source>
+        <translation>Kopfhörer: links der Cue, rechts der Raumsound</translation>
+    </message>
+    <message>
+        <source>Headphones level</source>
+        <translation>Kopfhörerpegel</translation>
+    </message>
+    <message>
+        <source>Master</source>
+        <translation>Master</translation>
+    </message>
+    <message>
+        <source>Cue / mix</source>
+        <translation>Cue / Mix</translation>
+    </message>
+    <message>
+        <source>Phones</source>
+        <translation>Kopfhörer</translation>
     </message>
     <message>
         <source>Move it now…</source>

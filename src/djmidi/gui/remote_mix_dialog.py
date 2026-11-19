@@ -768,7 +768,8 @@ class RemoteMixDialog(QDialog):
             QLabel#remoteHeadline {{ font-size: 17px; font-weight: 600; color: {c["title"]}; }}
             QLabel#remoteStatus {{ color: {c["hint_text"]}; }}
             QFrame#mixStrip {{ border: 1px solid {c["panel_border"]}; border-radius: 10px; background: {c["panel_bg"]}; }}
-            QFrame#mixStrip QLabel {{ background: transparent; border: none; }}
+            QFrame#mixStrip QLabel {{ background: transparent; border: none; color: {c["text"]}; }}
+            QFrame#mixStrip QPushButton:checked {{ background: {c["accent"]}; color: white; border-color: {c["accent"]}; }}
             QLabel#mixStripName {{ font-size: 15px; font-weight: 600; color: {c["title"]}; }}
             QFrame#remoteLights {{ background: {c["panel_bg"]}; border: 1px solid {c["panel_border"]};
                                    border-radius: 10px; }}
