@@ -47,7 +47,7 @@ from djmidi.gui.remote_mix_signals import SignalsPanel
 from djmidi.gui.remote_mix_tracklist import TracklistPanel
 from djmidi.gui.translation import translator
 from djmidi.gui.window_size import (
-    ResponsiveRow,
+    FoldingColumns,
     fit_to_screen,
     keep_wrapped_text_visible,
 )
@@ -270,9 +270,8 @@ class RemoteMixDialog(QDialog):
         self.tracklist_panel.hide()
         right.addWidget(self.tracklist_panel)
         right.addStretch(1)
-        self.columns = ResponsiveRow(
-            [(connect_column, 3), (self.sound_panel.table_widget, 4), (sound_column, 3)], spacing=16
-        )
+        # On a laptop the sound settings fold under the connection, the console keeps its column.
+        self.columns = FoldingColumns(connect_column, self.sound_panel.table_widget, sound_column, (3, 4, 3))
 
         body = QWidget()
         body.setObjectName("remoteBody")

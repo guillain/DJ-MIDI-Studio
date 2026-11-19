@@ -38,7 +38,7 @@ from __future__ import annotations
 
 from PySide6.QtCore import QEvent, QObject, QSize, Qt
 from PySide6.QtGui import QGuiApplication, QResizeEvent
-from PySide6.QtWidgets import QBoxLayout, QTabWidget, QWidget
+from PySide6.QtWidgets import QBoxLayout, QGridLayout, QLayout, QTabWidget, QWidget
 
 # Share of the available screen a window may take by default, the same
 # margins `MainWindow._default_window_size` keeps for its title bar/edges.
@@ -144,6 +144,7 @@ def keep_tab_titles_whole(tabs: QTabWidget, *, scroll: bool = True) -> None:
 
 
 __all__ = [
+    "FoldingColumns",
     "available_size",
     "fit_size",
     "fit_to_screen",
@@ -198,4 +199,93 @@ class ResponsiveRow(QWidget):
         self._row.setDirection(QBoxLayout.Direction.TopToBottom if stacked else QBoxLayout.Direction.LeftToRight)
         for index, stretch in enumerate(self._stretches):
             self._row.setStretch(index, 0 if stacked else stretch)
+        self.updateGeometry()
+
+
+class FoldingColumns(QWidget):
+    """Three columns that fold before they stack (issue #19's rule for wide rows).
+
+    Wide enough: left | centre | right. A laptop: the right column goes under
+    the left one, the centre keeps its own column (the thing you use most
+    stays big and in view). Narrow: one under the other, left, centre, right.
+    """
+
+    THREE, TWO, ONE = 3, 2, 1
+    HYSTERESIS = ResponsiveRow.HYSTERESIS
+
+    def __init__(
+        self,
+        left: QWidget,
+        centre: QWidget,
+        right: QWidget,
+        stretches: tuple[int, int, int] = (3, 4, 3),
+        spacing: int = 16,
+        parent: QWidget | None = None,
+    ) -> None:
+        super().__init__(parent)
+        self._left, self._centre, self._right = left, centre, right
+        self._stretches = stretches
+        self._grid = QGridLayout(self)
+        self._grid.setContentsMargins(0, 0, 0, 0)
+        self._grid.setSpacing(spacing)
+        # The grid must not force its three-column width on us: we decide when to fold.
+        self._grid.setSizeConstraint(QLayout.SizeConstraint.SetNoConstraint)
+        self._mode = 0
+        self._arrange(self.THREE)
+
+    @property
+    def mode(self) -> int:
+        return self._mode
+
+    def _min(self, widget: QWidget) -> int:
+        return max(widget.minimumSizeHint().width(), widget.minimumWidth())
+
+    def width_for(self, mode: int) -> int:
+        left, centre, right = (self._min(w) for w in (self._left, self._centre, self._right))
+        spacing = self._grid.spacing()
+        if mode == self.THREE:
+            return left + centre + right + 2 * spacing
+        if mode == self.TWO:
+            return max(left, right) + centre + spacing
+        return max(left, centre, right)
+
+    def minimumSizeHint(self) -> QSize:
+        return QSize(self.width_for(self.ONE), super().minimumSizeHint().height())
+
+    def resizeEvent(self, event: QResizeEvent) -> None:
+        super().resizeEvent(event)
+        width = event.size().width()
+        for mode in (self.THREE, self.TWO):
+            need = self.width_for(mode) + (self.HYSTERESIS if mode > self._mode else 0)
+            if width >= need:
+                self._arrange(mode)
+                return
+        self._arrange(self.ONE)
+
+    def _arrange(self, mode: int) -> None:
+        if mode == self._mode:
+            return
+        self._mode = mode
+        for widget in (self._left, self._centre, self._right):
+            self._grid.removeWidget(widget)
+        for column in range(3):
+            self._grid.setColumnStretch(column, 0)
+        for row in range(3):
+            self._grid.setRowStretch(row, 0)
+        top = Qt.AlignmentFlag.AlignTop
+        if mode == self.THREE:
+            for column, widget in enumerate((self._left, self._centre, self._right)):
+                self._grid.addWidget(widget, 0, column, top)
+                self._grid.setColumnStretch(column, self._stretches[column])
+        elif mode == self.TWO:
+            self._grid.addWidget(self._left, 0, 0, top)
+            self._grid.addWidget(self._right, 1, 0, top)
+            self._grid.addWidget(self._centre, 0, 1, 2, 1, top)
+            self._grid.setColumnStretch(0, self._stretches[0])
+            self._grid.setColumnStretch(1, self._stretches[1])
+            self._grid.setRowStretch(1, 1)
+        else:
+            for row, widget in enumerate((self._left, self._centre, self._right)):
+                self._grid.addWidget(widget, row, 0)
+        self._grid.activate()
         self.updateGeometry()
