@@ -36,6 +36,7 @@ from PySide6.QtWidgets import (
 )
 
 from djmidi import user_paths
+from djmidi.gui.action_groups import FlowLayout
 from djmidi.gui.led_meter import LedMeter
 from djmidi.gui.remote_mix_talk import TalkPanel
 from djmidi.remote_mix import (
@@ -432,16 +433,17 @@ class RemoteAudioPanel(QFrame):
         self.record_label = QLabel()
         self.record_label.setWordWrap(True)
         self.record_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        # Who makes the official mix on its own line; the régie's buttons under it, wrapping on a laptop.
         regie_row = QHBoxLayout()
         regie_row.addWidget(self.regie_label, 1)
-        regie_row.addWidget(self.regie_button)
-        regie_row.addWidget(self.record_button)
-        regie_row.addWidget(self.format_combo)
-        regie_row.addWidget(self.stems_checkbox)
         self.listeners_label = QLabel()
         self.listeners_label.setObjectName("listenersLabel")
         regie_row.addWidget(self.listeners_label)
         table_box.addLayout(regie_row)
+        record_row = FlowLayout()
+        for widget in (self.regie_button, self.record_button, self.format_combo, self.stems_checkbox):
+            record_row.addWidget(widget)
+        table_box.addLayout(record_row)
         table_box.addWidget(self.record_label)
         self._show_regie()
         table_box.addLayout(strips, 1)

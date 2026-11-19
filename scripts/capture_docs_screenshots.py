@@ -319,6 +319,7 @@ def main() -> int:
         _capture_layer_map(app, window)
         _capture_live_ready(app, window)
         _capture_command_palette(app, window)
+        _capture_mix_together(app, window)
         _capture_first_run_wizard(app, window)
         _capture_midi_latency(app, window)
         window.statusBar().clearMessage()
@@ -676,6 +677,57 @@ def _capture_live_ready(app: QApplication, window: MainWindow) -> None:
     app.processEvents()
     _save(dialog, "live-ready.png")
     dialog.close()
+
+
+def _capture_mix_together(app: QApplication, window: MainWindow) -> None:
+    """The Mix Together tab in its demo (Try alone): connected, the console, the
+    signals; nothing leaves the computer and no sound device is opened."""
+    from djmidi.gui.remote_mix_dialog import RemoteMixDialog
+    from djmidi.remote_mix import signals
+
+    class _DemoDevices:  # made-up device names: never the capturing computer's own
+        unavailable = None
+
+        def inputs(self) -> list[str]:
+            return ["Mixer record out"]
+
+        def outputs(self) -> list[str]:
+            return ["Speakers", "Headphones"]
+
+    window.resize(1500, 1000)
+    folder = Path(tempfile.mkdtemp(prefix="djmidi-docs-mix-"))
+    # Built here, as MainWindow would, but with a made-up address, no history and no settings.
+    dialog = RemoteMixDialog(
+        window._remote_mix_page,
+        addresses=lambda: ["10.147.17.5"],
+        audio_backend=_DemoDevices(),
+        history_dirs=dict,
+        controls_path=folder / "controls.json",
+        settings_path=folder / "settings.json",
+        exports_dir=folder,
+    )
+    dialog.setWindowFlags(Qt.WindowType.Widget)
+    window._remote_mix_page.layout().addWidget(dialog)
+    dialog.show()
+    window._remote_mix_dialog = dialog
+    window.left_tabs.setCurrentIndex(window._tab_indexes["mix"])
+    dialog.name_edit.setText("Alex")
+    dialog.demo_button.click()
+    for _ in range(3):
+        dialog.refresh()
+        app.processEvents()
+    sound = dialog.sound_panel
+    sound.meters["me"].setValue(72)
+    sound.meters["them"].setValue(88)
+    sound.master_meter.setValue(80)
+    sound.cue_buttons["them"].setChecked(True)
+    dialog.signals_panel.over_apps.setChecked(False)  # the banner in the tab, no window over the others
+    dialog.signals_panel.receive(signals.SignalBoard(1).send("drop"))
+    app.processEvents()
+    _save(window, "mix-together.png")
+    dialog.signals_panel._hide_banner()
+    dialog.stop()
+    app.processEvents()
 
 
 def _capture_command_palette(app: QApplication, window: MainWindow) -> None:
