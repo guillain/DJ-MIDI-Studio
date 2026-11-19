@@ -118,3 +118,22 @@ def test_the_dialog_sends_the_tracklist_to_listeners_from_the_control_room(tmp_p
     finally:
         dialog.sound_panel.listen_server = None
         dialog.close()
+
+
+def test_find_this_track_offers_searches_for_the_selected_row(tmp_path, monkeypatch):
+    opened = []
+    panel = TracklistPanel(history_dirs=dict, exports_dir=tmp_path)
+    monkeypatch.setattr(panel, "_open", opened.append)
+    try:
+        panel.attach(0, lambda message: None)
+        assert not panel.find_button.isEnabled()
+        panel.track_edit.setText("Moodymann - Shades of Jae")
+        panel.add_typed()
+        panel.view.setCurrentRow(0)
+        assert panel.find_button.isEnabled()
+        actions = panel.find_menu.actions()
+        assert [a.text() for a in actions] == ["On Beatport", "On Bandcamp", "On Discogs", "On YouTube"]
+        actions[0].trigger()
+        assert opened == ["https://www.beatport.com/search?q=Moodymann+Shades+of+Jae"]
+    finally:
+        panel.close()

@@ -9946,6 +9946,18 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
         <translation>Nimmt den offiziellen Mix als WAV-Datei in deinem Exports-Ordner auf</translation>
     </message>
     <message>
+        <source>WAV</source>
+        <translation>WAV</translation>
+    </message>
+    <message>
+        <source>FLAC (smaller, lossless)</source>
+        <translation>FLAC (kleiner, verlustfrei)</translation>
+    </message>
+    <message>
+        <source>The recording&apos;s file format</source>
+        <translation>Das Dateiformat der Aufnahme</translation>
+    </message>
+    <message>
         <source>One track per DJ too</source>
         <translation>Auch eine Spur pro DJ</translation>
     </message>
@@ -10072,6 +10084,10 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     <message>
         <source>Stop recording</source>
         <translation>Aufnahme stoppen</translation>
+    </message>
+    <message>
+        <source>Recording not started: {error}</source>
+        <translation>Aufnahme nicht gestartet: {error}</translation>
     </message>
     <message>
         <source>Recording to {path}</source>
@@ -11688,6 +11704,14 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
         <translation>Einen Track von Hand hinzufügen, wenn deine DJ-Software ihre History nicht live schreibt</translation>
     </message>
     <message>
+        <source>Find this track</source>
+        <translation>Diesen Track finden</translation>
+    </message>
+    <message>
+        <source>Look the selected track up (opens your browser)</source>
+        <translation>Den gewählten Track nachschlagen (öffnet deinen Browser)</translation>
+    </message>
+    <message>
         <source>Copy the tracklist</source>
         <translation>Tracklist kopieren</translation>
     </message>
@@ -11730,6 +11754,10 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     <message>
         <source>{time}  {name} — {track}</source>
         <translation>{time}  {name} — {track}</translation>
+    </message>
+    <message>
+        <source>On {site}</source>
+        <translation>Auf {site}</translation>
     </message>
     <message>
         <source>Tracklist copied: paste it in a post or a description.</source>

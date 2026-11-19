@@ -722,6 +722,7 @@ class RemoteMixDialog(QDialog):
             "quality": sound.quality_combo,
             "nudge": sound.nudge_spin,
             "stems": sound.stems_checkbox,
+            "record_format": sound.format_combo,
             "signals_over_apps": self.signals_panel.over_apps,
             "listen_address": listener.address_edit,
             "listen_port": listener.port_spin,

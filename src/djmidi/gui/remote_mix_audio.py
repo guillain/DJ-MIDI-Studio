@@ -420,6 +420,11 @@ class RemoteAudioPanel(QFrame):
         self.record_button = QPushButton(self.tr("Record the mix"))
         self.record_button.setToolTip(self.tr("Records the official mix to a WAV file in your Exports folder"))
         self.record_button.clicked.connect(self.toggle_recording)
+        self.format_combo = QComboBox()
+        self.format_combo.addItem(self.tr("WAV"), recording.WAV)
+        if opus.unavailable() is None:  # PyAV is there: FLAC too
+            self.format_combo.addItem(self.tr("FLAC (smaller, lossless)"), recording.FLAC)
+        self.format_combo.setToolTip(self.tr("The recording's file format"))
         self.stems_checkbox = QCheckBox(self.tr("One track per DJ too"))
         self.stems_checkbox.setToolTip(
             self.tr("Also records each DJ's own sound (before EQ and fader) to its own WAV, to re-edit the set")
@@ -431,6 +436,7 @@ class RemoteAudioPanel(QFrame):
         regie_row.addWidget(self.regie_label, 1)
         regie_row.addWidget(self.regie_button)
         regie_row.addWidget(self.record_button)
+        regie_row.addWidget(self.format_combo)
         regie_row.addWidget(self.stems_checkbox)
         self.listeners_label = QLabel()
         self.listeners_label.setObjectName("listenersLabel")
@@ -866,9 +872,15 @@ class RemoteAudioPanel(QFrame):
         elif self.running and self.makes_the_mix:
             folder = self._recordings_dir or user_paths.subfolder(user_paths.EXPORTS)
             started = datetime.now()  # noqa: DTZ005 - a local file name
-            self.recorder = recording.ProgramRecorder(folder / recording.recording_name(started))
+            extension = self.format_combo.currentData()
+            try:
+                self.recorder = recording.open_recorder(folder / recording.recording_name(started, extension))
+            except Exception as exc:  # noqa: BLE001 - a codec or disk problem must not stop the sound
+                self.record_label.setText(self.tr("Recording not started: {error}").format(error=exc))
+                self._show_regie()
+                return
             if self.stems_checkbox.isChecked():
-                self.stems = recording.StemsRecorder(folder, started)
+                self.stems = recording.StemsRecorder(folder, started, extension=extension)
             self.record_label.setText(self.tr("Recording to {path}").format(path=self.recorder.path))
         self._show_regie()
 

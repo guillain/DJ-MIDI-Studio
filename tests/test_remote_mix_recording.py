@@ -46,3 +46,23 @@ def test_each_dj_gets_a_track_on_the_mix_timeline(tmp_path):
     with wav.open(str(stems.paths[1])) as f:
         frames = np.frombuffer(f.readframes(960), dtype="<i2")
     assert not frames[:960].any() and frames[960:].all()  # silence until Sam joined
+
+
+def test_a_flac_recording_holds_every_frame(tmp_path):
+    from datetime import datetime
+
+    import av
+    import numpy as np
+
+    from djmidi.remote_mix import recording
+
+    path = tmp_path / recording.recording_name(datetime(2026, 11, 21, 21, 0), recording.FLAC)  # noqa: DTZ001
+    recorder = recording.open_recorder(path)
+    assert isinstance(recorder, recording.FlacRecorder)
+    for _ in range(5):
+        recorder.write(np.full((960, 2), 0.25, np.float32))
+    recorder.close()
+    assert path.name == "mix-together-20261121-210000.flac" and recorder.seconds == 0.1
+    with av.open(str(path)) as container:
+        stream = container.streams.audio[0]
+        assert stream.rate == 48_000 and sum(frame.samples for frame in container.decode(stream)) == 4800
