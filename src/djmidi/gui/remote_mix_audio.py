@@ -21,6 +21,7 @@ from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
     QDial,
+    QFileDialog,
     QFormLayout,
     QFrame,
     QGridLayout,
@@ -38,6 +39,7 @@ from djmidi import user_paths
 from djmidi.gui.action_groups import FlowLayout
 from djmidi.gui.led_meter import LedMeter
 from djmidi.gui.remote_mix_console import MASTER_UNITY, ConsoleMixin
+from djmidi.gui.remote_mix_mapping import MappingDialog
 from djmidi.gui.remote_mix_shared import SharedMixerMixin
 from djmidi.gui.remote_mix_talk import TalkPanel
 from djmidi.remote_mix import (
@@ -460,11 +462,31 @@ class RemoteAudioPanel(ConsoleMixin, SharedMixerMixin, QFrame):
         midi_row.addStretch(1)
         table_box.insertLayout(1, midi_row)
         self._midi_targets = {widget: target for target, widget in self._sliders.items()}
+        for side in controls.SIDES:  # the console's buttons answer a pad (MIDI mode: click them)
+            self._midi_targets[self.cue_buttons[side]] = f"{side}_cue"
+            self._midi_targets[self.mute_buttons[side]] = f"{side}_mute"
+            self._midi_targets[self.assigns[side]] = f"{side}_xf"
+        self._midi_targets[self.beats_combo] = "fx_beats"
         for widget in self._midi_targets:
             widget.installEventFilter(self)
         self._show_controls()
         table_box.addWidget(self.remote_label)
         table_box.addWidget(self.controls_hint)
+        # Share a console mapping with the other DJ (or keep one per controller).
+        self.export_button = QPushButton(self.tr("Export my mapping…"))
+        self.export_button.setToolTip(self.tr("Save which controls of your controller drive the console, to share it"))
+        self.export_button.clicked.connect(self.export_mapping)
+        self.import_button = QPushButton(self.tr("Import a mapping…"))
+        self.import_button.setToolTip(self.tr("Use a console mapping saved by you or another DJ"))
+        self.import_button.clicked.connect(self.import_mapping)
+        self.mapping_button = QPushButton(self.tr("My mapping…"))
+        self.mapping_button.setToolTip(self.tr("Every console control your controller drives, to check or forget one"))
+        self.mapping_button.clicked.connect(self.show_mapping)
+        mapping_row = FlowLayout()
+        mapping_row.addWidget(self.mapping_button)
+        mapping_row.addWidget(self.export_button)
+        mapping_row.addWidget(self.import_button)
+        table_box.addLayout(mapping_row)
 
         buttons = QHBoxLayout()
         buttons.addWidget(self.start_button)
@@ -579,7 +601,8 @@ class RemoteAudioPanel(ConsoleMixin, SharedMixerMixin, QFrame):
         if self.talk.feed_midi_event(event):
             return True
         if self.learning is not None:
-            trigger = controls.trigger_from_event(event)
+            pad = self.learning in controls.BUTTON_TARGETS
+            trigger = controls.button_from_event(event) if pad else controls.trigger_from_event(event)
             if trigger is None:
                 return False
             target, self.learning = self.learning, None
@@ -589,6 +612,8 @@ class RemoteAudioPanel(ConsoleMixin, SharedMixerMixin, QFrame):
                 self.tr("{control} now drives this mixer control.").format(control=trigger.label())
             )
             self._show_controls()
+            if pad:
+                return True  # the press that taught the pad doesn't press the button
         moves = self.controls.moves(event)
         for target, value in moves:
             slider = self._sliders[target]
@@ -603,7 +628,64 @@ class RemoteAudioPanel(ConsoleMixin, SharedMixerMixin, QFrame):
                     continue
                 self._needs_pickup.discard(target)
             slider.setValue(wanted)
-        return bool(moves)
+        presses = self.controls.presses(event)
+        for target in presses:
+            self.press(target)
+        return bool(moves or presses)
+
+    def show_mapping(self) -> MappingDialog:
+        dialog = MappingDialog(self.controls, self._target_name, self.forget, self)
+        dialog.show()
+        return dialog
+
+    def export_mapping(self, path: Path | None = None) -> Path | None:
+        if path is None:
+            chosen, _ = QFileDialog.getSaveFileName(
+                self, self.tr("Export my mapping"), str(Path.home() / "mix-together-mapping.json"), self.tr("Console mapping (*.json)")
+            )
+            path = Path(chosen) if chosen else None
+        if path is None:
+            return None
+        try:
+            self.controls.save(path)
+        except OSError as exc:
+            self.controls_hint.setText(self.tr("Mapping not saved: {error}").format(error=exc))
+            return None
+        self.controls_hint.setText(self.tr("Mapping saved: {path}").format(path=path))
+        return path
+
+    def import_mapping(self, path: Path | None = None) -> bool:
+        if path is None:
+            chosen, _ = QFileDialog.getOpenFileName(self, self.tr("Import a mapping"), str(Path.home()), self.tr("Console mapping (*.json)"))
+            path = Path(chosen) if chosen else None
+        if path is None:
+            return False
+        try:
+            imported = controls.MixerControls.from_json(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            self.controls_hint.setText(self.tr("Not a console mapping: {error}").format(error=exc))
+            return False
+        self.controls = imported
+        self._save_controls()
+        self._show_controls()
+        self.controls_hint.setText(
+            self.tr("{count} controls now drive the console.").format(count=len(imported.bindings))
+        )
+        return True
+
+    def press(self, target: str) -> None:
+        """A console button pressed from a pad: toggle cue or mute, step the crossfader side or the delay time."""
+        if target == "fx_beats":
+            self.beats_combo.setCurrentIndex((self.beats_combo.currentIndex() + 1) % self.beats_combo.count())
+            return
+        side, _, what = target.rpartition("_")
+        if what == "xf":
+            combo = self.assigns[side]
+            combo.setCurrentIndex((combo.currentIndex() + 1) % combo.count())
+        elif what in ("cue", "mute"):
+            button = (self.cue_buttons if what == "cue" else self.mute_buttons)[side]
+            if button.isEnabled():  # a guest's mute stays the host's
+                button.toggle()
 
 
 

@@ -391,6 +391,9 @@ surgical and logged. Qt-free modules; the tab is a thin view over `library/works
   `SharedMixerMixin` (`gui/remote_mix_shared.py`: shared table, roster, régie, recording) + the sound engine; mixins
   use `QCoreApplication.translate("RemoteAudioPanel", …)` and are listed in `update_translations.sh`.
   Tab layout: `window_size.FoldingColumns` (3 columns, then right folds under left, then stacked).
+  Controller on the console: `MixerTrigger.port` (+ `fits`: "" = any port, old files), `controls.BUTTON_TARGETS`
+  (`{side}_cue/_mute/_xf`, `fx_beats`) bound by `button_from_event` (Note On), `MixerControls.presses` →
+  `RemoteAudioPanel.press`; MIDI mode also picks those buttons; `export_mapping` / `import_mapping`.
   Plan and checklist: `docs/enduser/features/remote-mix.md`.
 - `user_paths.py`: the workspace (`~/Documents/DJ MIDI Studio`, `DJMIDI_WORKSPACE`) with `Controllers`, `Sync`,
   `Macros`, `Drafts`, `Logs`, `Exports`, `Snapshots`. `backup.py`: workspace backup/restore (validated, atomic).
