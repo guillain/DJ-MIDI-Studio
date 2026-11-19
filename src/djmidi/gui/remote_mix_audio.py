@@ -426,6 +426,7 @@ class RemoteAudioPanel(ConsoleMixin, SharedMixerMixin, QFrame):
         self.format_combo.addItem(self.tr("WAV"), recording.WAV)
         if opus.unavailable() is None:  # PyAV is there: FLAC too
             self.format_combo.addItem(self.tr("FLAC (smaller, lossless)"), recording.FLAC)
+            self.format_combo.addItem(self.tr("MP3 320 kb/s (for mix sites)"), recording.MP3)
         self.format_combo.setToolTip(self.tr("The recording's file format"))
         self.stems_checkbox = QCheckBox(self.tr("One track per DJ too"))
         self.stems_checkbox.setToolTip(

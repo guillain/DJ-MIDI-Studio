@@ -386,7 +386,7 @@ surgical and logged. Qt-free modules; the tab is a thin view over `library/works
   Console: per-strip `gain` (shared `dj{n}_gain`, `_trim`), `gui/led_meter.LedMeter` meters, `table.GLOBALS` (crossfader,
   master, fx_delay, fx_beats, fx_reverb), Qt-free `remote_mix/fx.py` (`BeatDelay`, Schroeder `Reverb`, chunks ≤ line
   delay) on the régie's mix; MIDI mode = `RemoteAudioPanel.eventFilter` picks a `_sliders` widget to learn.
-  `tracklist.search_urls` (Find this track); `recording.FlacRecorder` / `open_recorder` / `self_check` (FLAC via PyAV).
+  `tracklist.search_urls` (Find this track); `recording.FlacRecorder` / `Mp3Recorder` (LAME 320 kb/s, FIFO of 1152-sample frames) / `open_recorder` / `self_check` (FLAC and MP3 via PyAV, run by `--self-check-opus` in the packaged app).
   `RemoteAudioPanel` = `ConsoleMixin` (`gui/remote_mix_console.py`: master, FX, gain, mute, MIDI mode) +
   `SharedMixerMixin` (`gui/remote_mix_shared.py`: shared table, roster, régie, recording) + the sound engine; mixins
   use `QCoreApplication.translate("RemoteAudioPanel", …)` and are listed in `update_translations.sh`.

@@ -294,8 +294,9 @@ The mixer is a console every DJ sees and moves, as on a club mixer:
 - **Export my mapping…** saves which controls of your controller drive the
   console; the other DJ, or you on another computer, **Import a mapping…**.
 
-The control room can also record in **FLAC** (lossless and smaller) instead
-of WAV.
+The control room can also record in **FLAC** (lossless and smaller) or in
+**MP3 320 kb/s** (what mix sites ask for) instead of WAV; the tracks per DJ
+follow the same format.
 
 ## Signals between DJs
 

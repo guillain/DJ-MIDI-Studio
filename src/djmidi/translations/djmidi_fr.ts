@@ -9989,6 +9989,10 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <translation>FLAC (plus léger, sans perte)</translation>
     </message>
     <message>
+        <source>MP3 320 kb/s (for mix sites)</source>
+        <translation>MP3 320 kb/s (pour les sites de mixes)</translation>
+    </message>
+    <message>
         <source>The recording&apos;s file format</source>
         <translation>Le format du fichier enregistré</translation>
     </message>

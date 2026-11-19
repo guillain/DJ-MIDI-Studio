@@ -72,3 +72,27 @@ def test_the_flac_self_check_passes_here():
     from djmidi.remote_mix import recording
 
     assert recording.self_check() is None
+
+
+def test_an_mp3_recording_holds_every_frame_and_its_tracks_too(tmp_path):
+    from datetime import datetime
+
+    import av
+    import numpy as np
+
+    from djmidi.remote_mix import recording
+
+    started = datetime(2026, 11, 21, 21, 0)  # noqa: DTZ001
+    path = tmp_path / recording.recording_name(started, recording.MP3)
+    recorder = recording.open_recorder(path)
+    assert isinstance(recorder, recording.Mp3Recorder)
+    for _ in range(25):  # blocks that are no multiple of an MP3 frame
+        recorder.write(np.full((960, 2), 0.25, np.float32))
+    recorder.close()
+    with av.open(str(path)) as container:
+        stream = container.streams.audio[0]
+        assert stream.rate == 48_000 and sum(f.samples for f in container.decode(stream)) >= 24_000
+    stems = recording.StemsRecorder(tmp_path, started, extension=recording.MP3)
+    stems.write({0: np.zeros((960, 2), np.float32)}, {0: "Host"})
+    stems.close()
+    assert stems.paths[0].name == "mix-together-20261121-210000-dj1-Host.mp3"
