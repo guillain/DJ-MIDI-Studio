@@ -271,6 +271,7 @@ class MacroManagerDialog(QDialog):
         header.setSectionResizeMode(_FEATURE_COLUMN, QHeaderView.ResizeMode.ResizeToContents)
         self.table.setMinimumWidth(440)
         self.table.itemChanged.connect(self._on_step_item_changed)
+        simple_mode.on_change(self._show_raw_columns)
 
         self.add_step_button = QPushButton(self.tr("Add step"))
         self.add_step_button.clicked.connect(self._add_step)
@@ -494,6 +495,16 @@ class MacroManagerDialog(QDialog):
     def _refresh_feature_column(self) -> None:
         for row in range(self.table.rowCount()):
             self._refresh_feature_row(row)
+        self._show_raw_columns()
+
+    def _show_raw_columns(self, expert: bool | None = None) -> None:
+        """Simple mode: when the steps read as a controller's features ("Pad 1:
+        press"), the raw channel and data columns step aside. Expert mode, or
+        a macro sent to a port the app can't name, keeps them."""
+        expert = simple_mode.is_expert() if expert is None else expert
+        raw = expert or self.target() is None
+        for column in (1, 2, 3):  # Channel, Data 1, Data 2
+            self.table.setColumnHidden(column, not raw)
 
     def feature_text(self, row: int) -> str:
         item = self.table.item(row, _FEATURE_COLUMN)
