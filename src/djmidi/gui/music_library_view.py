@@ -94,7 +94,7 @@ from PySide6.QtWidgets import (
 )
 
 from djmidi import taxonomy, user_paths
-from djmidi.gui import help_texts
+from djmidi.gui import help_texts, simple_mode
 from djmidi.gui.action_groups import action_section, chip
 from djmidi.gui.audio_preview import AudioPreviewBar
 from djmidi.gui.badges import CamelotBadgeDelegate
@@ -1134,7 +1134,9 @@ class MusicLibraryView(QWidget):
         body.addWidget(self._build_table_panel())
         self.side_tabs = QTabWidget()
         self.side_tabs.addTab(_scrolled(self._build_track_panel()), self.tr("Track"))
-        self.side_tabs.addTab(_scrolled(self._build_categories_panel()), self.tr("Categories"))
+        categories = self.side_tabs.addTab(_scrolled(self._build_categories_panel()), self.tr("Categories"))
+        # Editing the genre families: expert (the Category filter stays).
+        simple_mode.on_change(lambda expert, i=categories: self.side_tabs.setTabVisible(i, expert))
         self.side_tabs.addTab(_scrolled(self._build_playlists_panel()), self.tr("Playlists"))
         self._history_tab = self.side_tabs.addTab(_scrolled(self._build_history_panel()), self.tr("History"))
         self.set_panel = SetPreparationPanel(
@@ -1276,6 +1278,9 @@ class MusicLibraryView(QWidget):
                  (self.scan_button, "auto"), (self.relink_button, "files")],
             )
         )
+        # Simple mode keeps Analyse BPM/key; the reports are expert tools.
+        for button in (self.duplicates_button, self.health_button, self.stats_button, self.history_button):
+            simple_mode.expert_only(button)
         self._library_tools_section = action_section(
             self.tr("Library tools"),
             [(self.duplicates_button, "compare"), (self.health_button, "confirm"),
@@ -1566,7 +1571,10 @@ class MusicLibraryView(QWidget):
                  (self.clean_button, "clean")],
             ),
         ):
-            box.addWidget(action_section(title, buttons))
+            section = action_section(title, buttons)
+            if buttons[0][0] is self.rename_files_button:
+                simple_mode.expert_only(section)  # renaming and moving files: expert
+            box.addWidget(section)
         box.addStretch(1)
         return panel
 
@@ -1714,7 +1722,10 @@ class MusicLibraryView(QWidget):
             (self.tr("Playlist"), ("rename_playlist_button", "edit"), ("delete_playlist_button", "delete")),
         )
         for title, *entries in sections:
-            box.addWidget(action_section(title, [(getattr(self, attr), role) for attr, role in entries]))
+            section = action_section(title, [(getattr(self, attr), role) for attr, role in entries])
+            if entries[0][0] == "compare_serato_button":
+                simple_mode.expert_only(section)  # comparing playlists: expert
+            box.addWidget(section)
         return panel
 
     def _build_history_panel(self) -> QWidget:

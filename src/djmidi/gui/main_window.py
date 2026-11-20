@@ -86,6 +86,7 @@ from djmidi.file_locations import software_mapping_dirs
 from djmidi.first_run import FirstRunChoices
 from djmidi.gui import jog as jog_mod  # noqa: F401
 from djmidi.gui import layout as layout_mod
+from djmidi.gui import simple_mode
 from djmidi.gui.accessibility import name_icon_buttons
 from djmidi.gui.atelier_view import AtelierView
 from djmidi.gui.controller_emulator import ControllerEmulatorView
@@ -552,6 +553,12 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         self.introduction_view.fileActionRequested.connect(self._on_dashboard_file_action)
         self.introduction_view.expertModeRequested.connect(self.set_expert_mode)
         self.introduction_view.setupActionRequested.connect(self._on_startup_action)
+        self.introduction_view.mappingOpenRequested.connect(
+            lambda path, software_id: (
+                self._load_mapping_from_path(Path(path), software_id=software_id),
+                self.update_setup_summary(),
+            )
+        )
         self._refresh_file_actions()
         self._layer_map_dialog: LayerMapDialog | None = None
         self.helpful_notes_dialog = HelpfulNotesDialog(self)
@@ -1287,7 +1294,30 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         )
         self.introduction_view.set_setup_summary(headline, devices, status)
         self.introduction_view.set_setup_steps(needing, self._find_dj_software())
+        open_path = Path(self.current_path).resolve() if getattr(self, "current_path", None) else None
+        self.introduction_view.set_mapping_suggestions(
+            [
+                (controller, software_id, path)
+                for controller, software_id, path in startup_check.mapping_suggestions(
+                    [device for device in report.devices if device in catalog.CONTROLLER_NAMES],
+                    self._mapping_files_by_software(),
+                )
+                if path.resolve() != open_path
+            ]
+        )
         return report
+
+    def _mapping_files_by_software(self) -> dict[str, list[Path]]:
+        """The DJ's own mapping files per DJ software (read-only); none in
+        tests, which must never read the real home folder."""
+        if self._layout_settings() is None:
+            return {}
+        files: dict[str, list[Path]] = {}
+        for software_id, pattern in (("serato", "*.xml"), ("traktor", "*.tsi")):
+            folders = software_mapping_dirs(software_id)
+            if folders and folders[0].is_dir():
+                files[software_id] = sorted(folders[0].glob(pattern))
+        return files
 
     def _find_dj_software(self) -> list:
         """The DJ programs on this computer; none in tests (the real disk and
@@ -1466,6 +1496,7 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         pages and menu commands. Nothing is removed, a page a button asks
         for still opens."""
         expert = self.preferences.expert_mode
+        simple_mode.apply(expert)  # every view's expert-only widgets
         for key in self._EXPERT_PAGES:
             self.left_tabs.set_page_visible(key, expert)
         for item in self._expert_items:

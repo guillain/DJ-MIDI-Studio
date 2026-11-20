@@ -96,8 +96,8 @@ def test_controller_cards_use_compact_drilldown_labels():
 def test_refresh_midi_availability_marks_matching_controller():
     view = IntroductionView()
     view.refresh_midi_availability(["USB DDJ-XP2 MIDI 1"])
-    assert view._availability_labels["DDJ-XP2"].text() == "MIDI: available"
-    assert view._availability_labels["XDJ-XZ"].text() == "MIDI: not detected"
+    assert view._availability_labels["DDJ-XP2"].text() == "Plugged in"
+    assert view._availability_labels["XDJ-XZ"].text() == "Not plugged in"
 
 
 def test_availability_labels_restyle_live_on_a_theme_switch():
@@ -199,3 +199,16 @@ def test_controller_card_photos_load_only_when_their_card_is_shown():
     assert not any(second.isAncestorOf(label) for label in view._pending_card_images)
     image = next(label for label in second.findChildren(QLabel) if label.minimumWidth() == 320)
     assert not image.pixmap().isNull() or image.text() == "Image unavailable"
+
+
+def test_simple_mode_shows_only_the_plugged_in_controllers_cards():
+    view = IntroductionView()
+    view.refresh_midi_availability(["DDJ-XP2"])
+    tabs = view._controller_tabs
+    shown = [tabs.tabText(i) for i in range(tabs.count()) if tabs.isTabVisible(i)]
+    assert shown == ["DDJ-XP2"]
+    view.set_expert_mode(True)
+    assert all(tabs.isTabVisible(i) for i in range(tabs.count()))
+    view.set_expert_mode(False)
+    view.refresh_controllers()  # cards rebuilt: no stale widget is touched
+    view.set_expert_mode(True)

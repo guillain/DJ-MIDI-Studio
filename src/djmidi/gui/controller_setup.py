@@ -81,7 +81,7 @@ from djmidi.catalog.community import (
 )
 from djmidi.catalog.profile import USER_PLUGIN_PREFIX, save_controller_profile
 from djmidi.controller_sync import ControllerSyncSet, sync_set_from_events
-from djmidi.gui import help_texts
+from djmidi.gui import help_texts, simple_mode
 from djmidi.gui.accessibility import name_icon_buttons
 from djmidi.gui.action_groups import FlowLayout
 from djmidi.gui.controller_submission_dialog import ControllerSubmissionDialog
@@ -515,6 +515,8 @@ class ControllerSetupView(QWidget):
         # Side by side when they fit; stacked (MIDI input above MIDI Output)
         # in a narrow window or a longer language instead of scrolling the
         # whole tab sideways (German at 1024 px needed 1171 px).
+        # Sending raw MIDI by hand: an expert tool (simple mode hides it).
+        simple_mode.expert_only(output_box)
         io_container = ResponsiveRow([(capture_box, 1), (output_box, 3)], spacing=12)
         self._io_row = io_container
 

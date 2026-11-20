@@ -44,6 +44,17 @@ def _qapp():
 
 
 @pytest.fixture(autouse=True)
+def _simple_mode_back_to_default():
+    """Every test starts in simple mode with nothing registered (a test
+    that turns Expert mode on must not leak it)."""
+    from djmidi.gui import simple_mode
+
+    simple_mode.reset()
+    yield
+    simple_mode.reset()
+
+
+@pytest.fixture(autouse=True)
 def _delete_leftover_windows():
     """Destroy every top-level widget a test leaves behind. A closed window
     is only hidden, not deleted: with hundreds of tests building a

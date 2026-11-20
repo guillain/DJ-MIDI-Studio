@@ -56,7 +56,10 @@ In **simple mode** (the default) nothing pops up: the Dashboard's **Your
 setup** card lists the first three things that need you, each with its
 button (**Check it**, **Probe its lights**, **Create a scene**…), and names the
 DJ software found on this computer (Serato DJ, Traktor, rekordbox, Mixxx;
-"(open)" when it runs). **See what's missing** opens the full window.
+"(open)" when it runs). When your Serato (or Traktor) mapping folder holds a
+file named after a plugged-in controller, **Open my Serato mapping for the
+DDJ-XP2** opens the newest one, without asking which software it's for.
+**See what's missing** opens the full window.
 
 In **Expert mode** the window opens on its own, as before: at startup when a
 line you haven't hidden needs you (instead of the Helpful Notes), and when a

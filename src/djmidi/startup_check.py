@@ -351,6 +351,22 @@ def _trigger_label(controller: str | None, channel: int, note: int) -> str:
     return f"Note {note} · ch {channel}"
 
 
+def mapping_suggestions(
+    controllers: Sequence[str], files_by_software: dict[str, Sequence[Path]]
+) -> list[tuple[str, str, Path]]:
+    """(controller, software id, file) for each mapping file named after a
+    plugged controller, newest first per software: the Dashboard offers to
+    open it, so the DJ never hunts for the file nor says which software."""
+    found: list[tuple[str, str, Path]] = []
+    for software_id, files in files_by_software.items():
+        for controller in controllers:
+            matches = serato_files_for(controller, files)
+            matches.sort(key=lambda path: path.stat().st_mtime if path.exists() else 0, reverse=True)
+            if matches and not any(path == matches[0] for _c, _s, path in found):
+                found.append((controller, software_id, matches[0]))
+    return found
+
+
 def serato_files_for(controller: str, files: Sequence[Path]) -> list[Path]:
     """The Serato mapping files whose name names `controller` ("xdj-xz
     ddj-xp2 - 4 decks.xml" for the DDJ-XP2): Serato keeps one file per

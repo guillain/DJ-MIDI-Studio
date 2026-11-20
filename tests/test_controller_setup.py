@@ -1254,6 +1254,9 @@ def test_row_buttons_wrap_instead_of_scrolling_at_a_narrow_width():
 def test_midi_input_and_output_stack_in_a_narrow_window():
     """German Controller Setup at 1024 px needed 1171 px for MIDI input and
     MIDI Output side by side: they stack instead of scrolling sideways."""
+    from djmidi.gui import simple_mode
+
+    simple_mode.apply(True)  # MIDI Output is an expert box
     view = _view_with_name()
     view.show()
     view.resize(1600, 800)

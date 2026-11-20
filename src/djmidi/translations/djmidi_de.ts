@@ -3634,18 +3634,6 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
         <translation>(keine registrierten Controller)</translation>
     </message>
     <message>
-        <source>MIDI: not checked</source>
-        <translation>MIDI: nicht geprüft</translation>
-    </message>
-    <message>
-        <source>MIDI: available</source>
-        <translation>MIDI: verfügbar</translation>
-    </message>
-    <message>
-        <source>MIDI: not detected</source>
-        <translation>MIDI: nicht erkannt</translation>
-    </message>
-    <message>
         <source>No track yet: add your music folder in the Music tab.</source>
         <translation>Noch kein Track: Fügen Sie Ihren Musikordner im Tab Musik hinzu.</translation>
     </message>
@@ -3672,6 +3660,18 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
     <message>
         <source>Expert mode: the mapping lists by channel and by deck, the Studio, the MIDI tools, every menu command</source>
         <translation>Expertenmodus: die Mapping-Listen nach Kanal und nach Deck, das Studio, die MIDI-Werkzeuge, alle Menübefehle</translation>
+    </message>
+    <message>
+        <source>Not checked yet</source>
+        <translation>Noch nicht geprüft</translation>
+    </message>
+    <message>
+        <source>Plugged in</source>
+        <translation>Angeschlossen</translation>
+    </message>
+    <message>
+        <source>Not plugged in</source>
+        <translation>Nicht angeschlossen</translation>
     </message>
     <message>
         <source>Your DJ setup in one place: controllers, your {software} mapping, and your music. Start with the card below: it says what&apos;s ready and what&apos;s next.</source>
@@ -3804,6 +3804,10 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
     <message>
         <source>No DJ software found. The app works with Serato DJ, Traktor, rekordbox and Mixxx.</source>
         <translation>Keine DJ-Software gefunden. Die App arbeitet mit Serato DJ, Traktor, rekordbox und Mixxx.</translation>
+    </message>
+    <message>
+        <source>Open my {software} mapping for the {controller}</source>
+        <translation>Mein {software}-Mapping für den {controller} öffnen</translation>
     </message>
     <message>
         <source>See my setup</source>

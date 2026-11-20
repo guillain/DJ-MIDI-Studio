@@ -64,3 +64,54 @@ def test_the_dashboard_lists_what_needs_the_dj_with_its_button(monkeypatch):
     first.click()
     assert opened == ["DDJ-XP2"]
     assert sc.CHECK  # the action came from the startup check
+
+
+def test_mapping_suggestions_pick_the_newest_file_named_after_each_controller(tmp_path):
+    import os
+
+    from djmidi.startup_check import mapping_suggestions
+
+    old, new = tmp_path / "ddj-xp2 old.xml", tmp_path / "XDJ-XZ DDJ-XP2 - 4 decks.xml"
+    for path in (old, new):
+        path.write_text("<midi/>")
+    os.utime(old, (1, 1))
+    other = tmp_path / "flx4.xml"
+    other.write_text("<midi/>")
+    got = mapping_suggestions(["DDJ-XP2", "DDJ-1000"], {"serato": [old, new, other]})
+    assert got == [("DDJ-XP2", "serato", new)]
+
+
+def test_the_dashboard_opens_my_mapping_in_one_click(monkeypatch, tmp_path):
+    from djmidi.gui import main_window as mw
+
+    fixture = tmp_path / "XDJ-XZ DDJ-XP2.xml"
+    fixture.write_bytes((__import__("pathlib").Path(__file__).parent.parent / "data" / "xdj_xz-ddj_xp2-4decks.xml").read_bytes())
+    monkeypatch.setattr(mw, "list_input_ports", lambda: ["DDJ-XP2"])
+    monkeypatch.setattr(mw, "list_output_ports", list)
+    window = mw.MainWindow()
+    monkeypatch.setattr(window, "_mapping_files_by_software", lambda: {"serato": [fixture]})
+    window.update_setup_summary()
+    intro = window.introduction_view
+    button = intro.setup_mappings.itemAt(0).widget()
+    assert button.text() == "Open my Serato mapping for the DDJ-XP2"
+    button.click()
+    assert window.current_path is not None and window.software_id == "serato"
+    assert intro.setup_mappings.count() == 0  # that file is open now
+
+
+def test_heavy_screens_keep_the_essentials_in_simple_mode():
+    from djmidi.gui import simple_mode
+    from djmidi.gui.controller_setup import ControllerSetupView
+    from djmidi.gui.music_library_view import MusicLibraryView
+
+    music = MusicLibraryView()
+    setup = ControllerSetupView()
+    hidden = [music.duplicates_button, music.health_button, music.stats_button, music.history_button]
+    assert all(button.isHidden() for button in hidden)
+    assert not music.analyse_button.isHidden() and not music.add_root_button.isHidden()
+    categories = next(i for i in range(music.side_tabs.count()) if music.side_tabs.tabText(i) == "Categories")
+    assert not music.side_tabs.isTabVisible(categories)
+    simple_mode.apply(True)
+    assert not any(button.isHidden() for button in hidden)
+    assert music.side_tabs.isTabVisible(categories)
+    assert setup  # built with its MIDI Output box registered

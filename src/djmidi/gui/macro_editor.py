@@ -52,6 +52,7 @@ from djmidi import catalog, user_paths
 from djmidi.atelier.actions import TO_CONTROLLER
 from djmidi.atelier.describe import describe_message, macro_target
 from djmidi.controller_sync import ControllerSyncSet, SyncMessage, move_message
+from djmidi.gui import simple_mode
 from djmidi.gui.action_groups import FlowLayout
 from djmidi.gui.feature_step_dialog import FeatureStepDialog
 from djmidi.gui.help_button import help_button
@@ -244,6 +245,10 @@ class MacroManagerDialog(QDialog):
             )
         )
         form.addRow(self.tr("Only in scenes"), self.scenes_edit)
+        # Sequence timing and scenes: expert rows (simple mode hides them).
+        simple_mode.on_change(
+            lambda expert, f=form: [f.setRowVisible(w, expert) for w in (self.gap_spin, self.scenes_edit)]
+        )
         # A toggle (issue #367): two step lists, played in turn.
         self.toggle_box = QCheckBox(self.tr("Toggle: alternate between two step lists"))
         self.toggle_box.toggled.connect(self._on_toggle_changed)
@@ -296,6 +301,7 @@ class MacroManagerDialog(QDialog):
         self.from_sync_button.setToolTip(self.tr("Append the messages of a recorded controller sync set"))
         self.from_sync_button.setEnabled(bool(self._sync_sets))
         self.from_sync_button.clicked.connect(self._add_from_sync_set)
+        simple_mode.expert_only(self.from_sync_button)
         self.test_button = QPushButton(self.tr("Test"))
         self.test_button.setToolTip(self.tr("Play this macro now, as edited"))
         self.test_button.clicked.connect(self._test_macro)
