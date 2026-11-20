@@ -518,13 +518,11 @@ def test_set_active_tints_and_restores_an_overlay_marker():
 
     view.set_active("Pad 1", True)
     assert "Pad 1" in view._active_labels
-    lit = view._overlay_items_by_label["Pad 1"].brush().color()
-    assert (lit.red(), lit.green(), lit.blue()) == (
-        QColor(_ACTIVE_COLOR).red(),
-        QColor(_ACTIVE_COLOR).green(),
-        QColor(_ACTIVE_COLOR).blue(),
-    )
-    assert view._overlay_items_by_label["Pad 1"].pen().color() == QColor(_ACTIVE_COLOR)
+    # Pressed = a thick amber outline; the fill stays: the pad's light is the
+    # DJ software's, not the press's.
+    assert view._overlay_items_by_label["Pad 1"].brush().color() == resting
+    pen = view._overlay_items_by_label["Pad 1"].pen()
+    assert pen.color() == QColor(_ACTIVE_COLOR) and pen.width() == 4
 
     view.set_active("Pad 1", False)
     assert "Pad 1" not in view._active_labels
@@ -542,13 +540,27 @@ def test_flash_clear_falls_back_to_the_held_tint_not_the_resting_colour():
     view.flash_key("Pad 1")  # white pulse on top of the held state
     assert view._overlay_items_by_label["Pad 1"].brush().color() == QColor(255, 255, 255, 200)
     view._clear_flash("DDJ-XP2", "Pad 1")
-    # still held -> amber, not the marker's resting colour
+    # still held -> the amber outline, not the white flash
+    assert view._overlay_items_by_label["Pad 1"].pen().color() == QColor(_ACTIVE_COLOR)
+    assert view._overlay_items_by_label["Pad 1"].pen().width() == 4
+    assert view._overlay_items_by_label["Pad 1"].brush().color() != QColor(255, 255, 255, 200)
+
+
+def test_a_light_seen_from_the_software_fills_the_marker():
+    from PySide6.QtGui import QColor
+
+    from djmidi.gui.controller_image_view import _ACTIVE_COLOR
+
+    view = ControllerImageView()
+    _overlay_geometry_controller(view)
+    view.set_led("Pad 1", True)
     got = view._overlay_items_by_label["Pad 1"].brush().color()
     assert (got.red(), got.green(), got.blue()) == (
-        QColor(_ACTIVE_COLOR).red(),
-        QColor(_ACTIVE_COLOR).green(),
-        QColor(_ACTIVE_COLOR).blue(),
+        QColor(_ACTIVE_COLOR).red(), QColor(_ACTIVE_COLOR).green(), QColor(_ACTIVE_COLOR).blue()
     )
+    view.set_active("Pad 1", True)
+    view.set_active("Pad 1", False)  # releasing the pad doesn't put the light out
+    assert view._overlay_items_by_label["Pad 1"].brush().color() == got
 
 
 def test_active_labels_cleared_on_controller_switch():

@@ -406,6 +406,10 @@ _FLASH_DURATION_MS = 220
 # amber border, evoking a lit hardware LED, that stays until the tracked
 # state flips off again.
 _ACTIVE_BORDER_PEN = QPen(QColor(255, 196, 60))
+# Pressed on the controller: a thick amber outline only. The fill is kept for
+# a light we've actually seen the DJ software send: a pad's light belongs to
+# the software (Serato lights the DDJ-XP2's pads itself), not to the press.
+_PRESSED_PEN = QPen(QColor(255, 196, 60), 3)
 _ACTIVE_BORDER_PEN.setWidth(3)
 _ACTIVE_FILL_ALPHA = 200
 _MIDI_MAX = 127
@@ -924,6 +928,19 @@ class ControllerLayoutView(DeferredRebuild, QWidget):
         self._values[key] = value
         self._rebuild()
 
+    def _pressed_or_lit(self, item, key: CellKey, pen: QPen) -> QPen:
+        """Amber fill when the software lit it (seen on the monitor port),
+        amber outline while pressed; a selection pen still wins the border."""
+        if key in self._led_keys:
+            amber = QColor(_ACTIVE_BORDER_PEN.color())
+            amber.setAlpha(_ACTIVE_FILL_ALPHA)
+            item.setBrush(QBrush(amber))
+            if pen in (_BORDER_PEN, _HISTORY_PEN):
+                pen = _ACTIVE_BORDER_PEN
+        if key in self._active_keys and pen in (_BORDER_PEN, _HISTORY_PEN, _ACTIVE_BORDER_PEN):
+            pen = _PRESSED_PEN
+        return pen
+
     def set_active(self, key: CellKey, active: bool) -> None:
         """Persistent "held down" highlight for a pad/button, from a live
         Note On (active=True) / Note Off (active=False) -- see the
@@ -1103,13 +1120,8 @@ class ControllerLayoutView(DeferredRebuild, QWidget):
         rect.setPos(x, y)
         rect.setBrush(_brush_for_decks(decks) if (decks or tags) else _EMPTY_HALF_BRUSH)
         pen = self._selection_pen(clickable_key)
-        is_amber = clickable_key in self._active_keys or clickable_key in self._led_keys
-        if is_amber and clickable_key not in self._flash_keys:
-            amber = QColor(_ACTIVE_BORDER_PEN.color())
-            amber.setAlpha(_ACTIVE_FILL_ALPHA)
-            rect.setBrush(QBrush(amber))
-            if pen in (_BORDER_PEN, _HISTORY_PEN):
-                pen = _ACTIVE_BORDER_PEN
+        if clickable_key not in self._flash_keys:
+            pen = self._pressed_or_lit(rect, clickable_key, pen)
         rect.setPen(pen)
         rect.setData(_KEY_ROLE, clickable_key)
         deck_text, tag_text = self._usage_texts(decks, tags)
@@ -1374,14 +1386,8 @@ class ControllerLayoutView(DeferredRebuild, QWidget):
             # Held-down state: steady amber fill + border, but a live
             # selection (red) still wins the border so cross-tab navigation
             # stays legible; the amber fill keeps "lit" visible underneath.
-            if (
-                key in self._active_keys or key in self._led_keys
-            ) and key not in self._flash_keys:
-                amber = QColor(_ACTIVE_BORDER_PEN.color())
-                amber.setAlpha(_ACTIVE_FILL_ALPHA)
-                bg_item.setBrush(QBrush(amber))
-                if pen in (_BORDER_PEN, _HISTORY_PEN):
-                    pen = _ACTIVE_BORDER_PEN
+            if key not in self._flash_keys:
+                pen = self._pressed_or_lit(bg_item, key, pen)
             bg_item.setPen(pen)
             bg_item.setData(_KEY_ROLE, key)
             deck_text, tag_text = self._usage_texts(decks, tags)

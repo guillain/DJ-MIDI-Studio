@@ -897,6 +897,10 @@ Seitdem erneut geänderte Dateien bleiben unberührt. Das Zurücknehmen wird hie
         <translation>Klicken Sie auf ein Bedienelement, um zu sehen, worauf es verweist.</translation>
     </message>
     <message>
+        <source>Outline: pressed on your controller. Fill: a light your DJ software sent to the monitor port. When Serato drives the controller itself, its pad lights don&apos;t reach the app.</source>
+        <translation>Umriss: auf Ihrem Controller gedrückt. Füllung: ein Licht, das Ihre DJ-Software an den Monitor-Port gesendet hat. Wenn Serato den Controller selbst steuert, erreichen seine Pad-Lichter die App nicht.</translation>
+    </message>
+    <message>
         <source>{pad}: no such pad on this controller.</source>
         <translation>{pad}: Dieses Pad gibt es auf diesem Controller nicht.</translation>
     </message>
