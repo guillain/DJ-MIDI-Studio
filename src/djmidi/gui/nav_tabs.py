@@ -114,6 +114,10 @@ class NavTabs(QWidget):
             group, parent = page.path[depth], page.path[depth - 1]
             any_shown = any(group.isTabVisible(i) for i in range(group.count()))
             parent.setTabVisible(parent.indexOf(group), any_shown)
+        for group in page.path[1:]:
+            # A group left with one page needs no tab row of its own.
+            shown = sum(group.isTabVisible(i) for i in range(group.count()))
+            group.tabBar().setVisible(shown > 1)
 
     def is_page_visible(self, key: str) -> bool:
         page = self._pages[self.page_index(key)]
