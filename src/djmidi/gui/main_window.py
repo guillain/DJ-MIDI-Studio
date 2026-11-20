@@ -1089,6 +1089,10 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         corner_layout.addWidget(self._sync_scene_combo)
         corner_layout.addWidget(self._sync_button)
         corner_layout.addWidget(self._preferences_button)
+        # Recording and switching the controllers' light set-ups: expert tools.
+        # The sets recorded still play at launch and on plug-in.
+        for widget in (self._record_button, self._sync_scene_label, self._sync_scene_combo, self._sync_button):
+            simple_mode.expert_only(widget)
         self.menuBar().setCornerWidget(self._menu_corner, Qt.Corner.TopRightCorner)
 
         help_menu = self.menuBar().addMenu(self.tr("&Help"))

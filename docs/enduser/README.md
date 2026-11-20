@@ -134,7 +134,11 @@ Simple mode also lightens the busiest screens:
 - **Controller Setup**: the MIDI Output box (sending raw messages by hand) is
   an expert tool.
 - **Macros**: the Max gap and Only in scenes rows and Add sync set… are expert
-  options.
+  options; when the steps read as your controller's features ("Pad 1:
+  press"), the raw Channel / Data columns step aside.
+- **Top bar**: ● Rec, Scene and ⟳ Sync (recording and switching the
+  controllers' light set-ups) are expert tools; the sets you recorded still
+  play at launch and when you plug a controller in.
 
 ## In this section
 
