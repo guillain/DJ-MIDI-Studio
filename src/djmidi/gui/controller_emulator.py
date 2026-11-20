@@ -679,6 +679,16 @@ class ControllerEmulatorView(QWidget):
 
         self._status_label = QLabel(self.tr("Click a control to see what it resolves to."))
         self._status_label.setWordWrap(True)
+        # A pad's light belongs to the DJ software, not to the press (Serato
+        # keeps a hot cue pad lit): say which is which.
+        self.legend_label = QLabel(
+            self.tr(
+                "Outline: pressed on your controller. Fill: a light your DJ software sent to the "
+                "monitor port. When Serato drives the controller itself, its pad lights don't reach the app."
+            )
+        )
+        self.legend_label.setWordWrap(True)
+        self.legend_label.setObjectName("emulatorLegend")
         # The Atelier's inspector (issue #413, step 2): the clicked control
         # as a feature object, raw MIDI underneath.
         self.feature_card = FeatureCard()
@@ -721,6 +731,7 @@ class ControllerEmulatorView(QWidget):
         content_layout.addWidget(self._pad_colours)
         content_layout.addWidget(self._emulator, 1)
         content_layout.addWidget(self._status_label)
+        content_layout.addWidget(self.legend_label)
         content_layout.addWidget(self.feature_card)
 
         scroll = QScrollArea()

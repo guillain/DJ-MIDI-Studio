@@ -58,8 +58,14 @@ A controller profile you build yourself shows its photo here, and a grid in
 the other views.
 
 With the [Live Monitor](live-monitor.md) running, a marker flashes when you
-hit that control on the hardware, a jog marker turns with the platter, and
-LED messages from Serato light it amber.
+hit that control on the hardware, a jog marker turns with the platter, a held
+control gets a thick amber outline, and LED messages from Serato fill it amber.
+
+A pad's light belongs to the DJ software, not to the press: Serato keeps a hot
+cue pad lit whether you press it or not. When Serato drives a controller itself
+(the DDJ-XP2 and other Serato-ready controllers), it sends those lights straight
+to the hardware and the app can't see them; only lights sent to the monitor
+port show here.
 
 ## Place the controls of your own profile
 

@@ -897,6 +897,10 @@ Les fichiers modifiés depuis ne sont pas touchés. L&apos;annulation est elle-m
         <translation>Cliquez sur une commande pour voir à quoi elle correspond.</translation>
     </message>
     <message>
+        <source>Outline: pressed on your controller. Fill: a light your DJ software sent to the monitor port. When Serato drives the controller itself, its pad lights don&apos;t reach the app.</source>
+        <translation>Contour : appuyé sur votre contrôleur. Remplissage : une lumière envoyée par votre logiciel DJ au port de suivi. Quand Serato pilote lui-même le contrôleur, les lumières de ses pads n&apos;arrivent pas jusqu&apos;à l&apos;app.</translation>
+    </message>
+    <message>
         <source>{pad}: no such pad on this controller.</source>
         <translation>{pad} : ce pad n&apos;existe pas sur ce contrôleur.</translation>
     </message>

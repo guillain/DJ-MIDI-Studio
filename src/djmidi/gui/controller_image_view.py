@@ -419,15 +419,7 @@ class ControllerImageView(QWidget):
                 geom.w * image_w,
                 geom.h * image_h,
             )
-            if label in self._active_labels or label in self._led_labels:
-                fill = QColor(_ACTIVE_COLOR)
-                fill.setAlpha(_ACTIVE_FILL_ALPHA)
-                pen = QPen(QColor(_ACTIVE_COLOR))
-            else:
-                fill = QColor(geom.color)
-                fill.setAlpha(110)
-                pen = QPen(QColor(geom.color))
-            pen.setWidth(3)
+            fill, pen = self._marker_look(label, geom)
             shape_item: QAbstractGraphicsShapeItem = (
                 QGraphicsEllipseItem(rect) if geom.shape == "circle" else QGraphicsRectItem(rect)
             )
@@ -492,13 +484,9 @@ class ControllerImageView(QWidget):
             return
         # Fall back to the amber tint, not the resting colour, if the control
         # is still held or its LED still lit when the flash pulse expires.
-        if label in self._active_labels or label in self._led_labels:
-            fill = QColor(_ACTIVE_COLOR)
-            fill.setAlpha(_ACTIVE_FILL_ALPHA)
-        else:
-            fill = QColor(geom.color)
-            fill.setAlpha(110)
+        fill, pen = self._marker_look(label, geom)
         item.setBrush(QBrush(fill))
+        item.setPen(pen)
 
     def _restyle_label(self, label: str) -> None:
         """Repaint one overlay marker to match its current amber/resting
@@ -507,19 +495,27 @@ class ControllerImageView(QWidget):
         if item is None:
             return
         geom = CONTROL_GEOMETRY.get(self._combo.currentText(), {}).get(label)
-        if label in self._active_labels or label in self._led_labels:
-            fill = QColor(_ACTIVE_COLOR)
-            fill.setAlpha(_ACTIVE_FILL_ALPHA)
-            pen = QPen(QColor(_ACTIVE_COLOR))
-        elif geom is not None:
-            fill = QColor(geom.color)
-            fill.setAlpha(110)
-            pen = QPen(QColor(geom.color))
-        else:
+        if geom is None:
             return
-        pen.setWidth(3)
+        fill, pen = self._marker_look(label, geom)
         item.setBrush(QBrush(fill))
         item.setPen(pen)
+
+    def _marker_look(self, label: str, geom) -> tuple[QColor, QPen]:
+        """Fill = a light seen from the DJ software; a thick amber outline =
+        pressed on the controller (the pad's own light belongs to Serato)."""
+        if label in self._led_labels:
+            fill = QColor(_ACTIVE_COLOR)
+            fill.setAlpha(_ACTIVE_FILL_ALPHA)
+        else:
+            fill = QColor(geom.color)
+            fill.setAlpha(110)
+        if label in self._active_labels:
+            pen = QPen(QColor(_ACTIVE_COLOR), 4)
+            pen.setCosmetic(True)  # 4 screen pixels whatever the zoom
+        else:
+            pen = QPen(QColor(_ACTIVE_COLOR) if label in self._led_labels else QColor(geom.color), 3)
+        return fill, pen
 
     def set_active(self, label: str, active: bool) -> None:
         """Persistent "held down" highlight for a modeled control -- called
