@@ -5,7 +5,7 @@ an item for good (`dismissed`)."""
 
 from __future__ import annotations
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import QCoreApplication, Qt, Signal
 from PySide6.QtWidgets import (
     QCheckBox,
     QDialog,
@@ -38,6 +38,20 @@ from djmidi.startup_check import (
 )
 
 _GLYPHS = {BLOCKING: "●", TODO: "●", OK: "✓"}
+
+
+def action_label(item: StartupItem) -> str:
+    """The one button that finishes ``item`` (also on the Dashboard)."""
+    if item.action == MOVE_TRIGGER:
+        return QCoreApplication.translate("StartupCheckDialog", "Move to {pad}").format(pad=dict(item.params)["pad"])
+    return {
+        LEARN: QCoreApplication.translate("StartupCheckDialog", "Teach it"),
+        CHECK: QCoreApplication.translate("StartupCheckDialog", "Check it"),
+        LEDS: QCoreApplication.translate("StartupCheckDialog", "Probe its lights"),
+        SCENE: QCoreApplication.translate("StartupCheckDialog", "Create a scene"),
+        MACROS: QCoreApplication.translate("StartupCheckDialog", "Edit the macros"),
+        IAC: QCoreApplication.translate("StartupCheckDialog", "Open Audio MIDI Setup"),
+    }[item.action]
 
 
 class StartupCheckDialog(QDialog):

@@ -3786,6 +3786,26 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
         <translation>Ihre Musik: Tags, Tonarten, Playlists und das Set, das Sie spielen.</translation>
     </message>
     <message>
+        <source>&lt;b&gt;{device}&lt;/b&gt;: {what}</source>
+        <translation>&lt;b&gt;{device}&lt;/b&gt;: {what}</translation>
+    </message>
+    <message>
+        <source>…and {count} more: See what&apos;s missing.</source>
+        <translation>…und {count} weitere: Sehen, was fehlt.</translation>
+    </message>
+    <message>
+        <source>{name} (open)</source>
+        <translation>{name} (geöffnet)</translation>
+    </message>
+    <message>
+        <source>DJ software on this computer: {names}</source>
+        <translation>DJ-Software auf diesem Computer: {names}</translation>
+    </message>
+    <message>
+        <source>No DJ software found. The app works with Serato DJ, Traktor, rekordbox and Mixxx.</source>
+        <translation>Keine DJ-Software gefunden. Die App arbeitet mit Serato DJ, Traktor, rekordbox und Mixxx.</translation>
+    </message>
+    <message>
         <source>See my setup</source>
         <translation>Mein Setup ansehen</translation>
     </message>
