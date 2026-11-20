@@ -3658,6 +3658,22 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
         <translation>{count} unterstützte(s) Controller-Modell(e)</translation>
     </message>
     <message>
+        <source>Back to simple mode</source>
+        <translation>Zurück zum einfachen Modus</translation>
+    </message>
+    <message>
+        <source>Hide the expert tools: the essentials only</source>
+        <translation>Expertenwerkzeuge ausblenden: nur das Wesentliche</translation>
+    </message>
+    <message>
+        <source>Show every tool</source>
+        <translation>Alle Werkzeuge anzeigen</translation>
+    </message>
+    <message>
+        <source>Expert mode: the mapping lists by channel and by deck, the Studio, the MIDI tools, every menu command</source>
+        <translation>Expertenmodus: die Mapping-Listen nach Kanal und nach Deck, das Studio, die MIDI-Werkzeuge, alle Menübefehle</translation>
+    </message>
+    <message>
         <source>Your DJ setup in one place: controllers, your {software} mapping, and your music. Start with the card below: it says what&apos;s ready and what&apos;s next.</source>
         <translation>Ihr ganzes DJ-Setup an einem Ort: Controller, Ihr {software}-Mapping und Ihre Musik. Beginnen Sie mit der Karte unten: Sie zeigt, was bereit ist und was als Nächstes kommt.</translation>
     </message>
@@ -5640,6 +5656,14 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
     <message>
         <source>MIDI routing is on.</source>
         <translation>MIDI-Routing ist aktiviert.</translation>
+    </message>
+    <message>
+        <source>Expert mode on: every tool is shown.</source>
+        <translation>Expertenmodus an: Alle Werkzeuge werden angezeigt.</translation>
+    </message>
+    <message>
+        <source>Simple mode: the essentials only.</source>
+        <translation>Einfacher Modus: nur das Wesentliche.</translation>
     </message>
     <message>
         <source>Preferences saved</source>
@@ -9212,6 +9236,14 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     <message>
         <source>Language:</source>
         <translation>Sprache:</translation>
+    </message>
+    <message>
+        <source>Expert mode: show every tool</source>
+        <translation>Expertenmodus: alle Werkzeuge anzeigen</translation>
+    </message>
+    <message>
+        <source>Adds the mapping lists by channel and by deck, the Studio, the MIDI tools and every menu command. Off, the app shows what most DJs need.</source>
+        <translation>Fügt die Mapping-Listen nach Kanal und nach Deck, das Studio, die MIDI-Werkzeuge und alle Menübefehle hinzu. Aus zeigt die App, was die meisten DJs brauchen.</translation>
     </message>
     <message>
         <source>When the app starts</source>

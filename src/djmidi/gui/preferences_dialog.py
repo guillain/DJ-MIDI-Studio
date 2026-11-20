@@ -210,6 +210,15 @@ class PreferencesDialog(QDialog):
         look_layout = QFormLayout(look_box)
         look_layout.addRow(self.tr("Theme:"), theme)
         look_layout.addRow(self.tr("Language:"), language)
+        self.expert_mode = QCheckBox(self.tr("Expert mode: show every tool"))
+        self.expert_mode.setChecked(preferences.expert_mode)
+        self.expert_mode.setToolTip(
+            self.tr(
+                "Adds the mapping lists by channel and by deck, the Studio, the MIDI tools and every "
+                "menu command. Off, the app shows what most DJs need."
+            )
+        )
+        look_layout.addRow(self.expert_mode)
 
         launch_box = QGroupBox(self.tr("When the app starts"))
         launch_layout = QFormLayout(launch_box)
@@ -460,6 +469,7 @@ class PreferencesDialog(QDialog):
         self._preferences.auto_sync_on_plug_in = self._auto_sync_on_plug_in.isChecked()
         self._preferences.sync_on_scene_switch = self._sync_on_scene_switch.isChecked()
         self._preferences.check_for_updates = self._check_for_updates.isChecked()
+        self._preferences.expert_mode = self.expert_mode.isChecked()
         self._preferences.log_level = self._log_level.currentText()
         self._preferences.log_path = self._log_path.text().strip()
         self._preferences.controller_setup_default_file = self._setup_file.text().strip()

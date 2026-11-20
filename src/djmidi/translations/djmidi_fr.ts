@@ -3658,6 +3658,22 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
         <translation>{count} modèle(s) de contrôleur pris en charge</translation>
     </message>
     <message>
+        <source>Back to simple mode</source>
+        <translation>Revenir au mode simple</translation>
+    </message>
+    <message>
+        <source>Hide the expert tools: the essentials only</source>
+        <translation>Cacher les outils experts : l&apos;essentiel seulement</translation>
+    </message>
+    <message>
+        <source>Show every tool</source>
+        <translation>Afficher tous les outils</translation>
+    </message>
+    <message>
+        <source>Expert mode: the mapping lists by channel and by deck, the Studio, the MIDI tools, every menu command</source>
+        <translation>Mode expert : les listes du mapping par canal et par platine, le Studio, les outils MIDI, toutes les commandes des menus</translation>
+    </message>
+    <message>
         <source>Your DJ setup in one place: controllers, your {software} mapping, and your music. Start with the card below: it says what&apos;s ready and what&apos;s next.</source>
         <translation>Toute votre installation DJ au même endroit : contrôleurs, votre mapping {software} et votre musique. Commencez par la carte ci-dessous : elle dit ce qui est prêt et la suite.</translation>
     </message>
@@ -5418,6 +5434,14 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
     <message>
         <source>MIDI routing is on.</source>
         <translation>Le routage MIDI est activé.</translation>
+    </message>
+    <message>
+        <source>Expert mode on: every tool is shown.</source>
+        <translation>Mode expert activé : tous les outils sont affichés.</translation>
+    </message>
+    <message>
+        <source>Simple mode: the essentials only.</source>
+        <translation>Mode simple : l&apos;essentiel seulement.</translation>
     </message>
     <message>
         <source>No initialization set is recorded for the scene &quot;{scene}&quot; and no controller has a Default set.</source>
@@ -9212,6 +9236,14 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>Language:</source>
         <translation>Langue :</translation>
+    </message>
+    <message>
+        <source>Expert mode: show every tool</source>
+        <translation>Mode expert : afficher tous les outils</translation>
+    </message>
+    <message>
+        <source>Adds the mapping lists by channel and by deck, the Studio, the MIDI tools and every menu command. Off, the app shows what most DJs need.</source>
+        <translation>Ajoute les listes du mapping par canal et par platine, le Studio, les outils MIDI et toutes les commandes des menus. Décoché, l&apos;app montre ce dont la plupart des DJ ont besoin.</translation>
     </message>
     <message>
         <source>When the app starts</source>

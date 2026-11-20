@@ -104,6 +104,26 @@ class NavTabs(QWidget):
         self._pages.append(_Page(key, widget, title, tuple(path)))
         return len(self._pages) - 1
 
+    def set_page_visible(self, key: str, visible: bool) -> None:
+        """Shows or hides a page's tab (simple mode); a group whose pages are
+        all hidden hides too. Selecting a hidden page shows it again."""
+        page = self._pages[self.page_index(key)]
+        holder = page.path[-1]
+        holder.setTabVisible(holder.indexOf(page.widget), visible)
+        for depth in range(len(page.path) - 1, 0, -1):
+            group, parent = page.path[depth], page.path[depth - 1]
+            any_shown = any(group.isTabVisible(i) for i in range(group.count()))
+            parent.setTabVisible(parent.indexOf(group), any_shown)
+
+    def is_page_visible(self, key: str) -> bool:
+        page = self._pages[self.page_index(key)]
+        child: QWidget = page.widget
+        for tabs in reversed(page.path):
+            if not tabs.isTabVisible(tabs.indexOf(child)):
+                return False
+            child = tabs
+        return True
+
     # -- the flat API ---------------------------------------------------------
 
     def page_index(self, key: str) -> int:
@@ -134,6 +154,8 @@ class NavTabs(QWidget):
         if not 0 <= index < len(self._pages):
             return
         page = self._pages[index]
+        if not self.is_page_visible(page.key):
+            self.set_page_visible(page.key, True)  # asked for by a button: show it
         child: QWidget = page.widget
         for tabs in reversed(page.path):
             tabs.blockSignals(True)

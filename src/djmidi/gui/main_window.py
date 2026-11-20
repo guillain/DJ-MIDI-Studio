@@ -548,7 +548,9 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
             else []
         )
         self._build_menu()
+        self.apply_expert_mode()
         self.introduction_view.fileActionRequested.connect(self._on_dashboard_file_action)
+        self.introduction_view.expertModeRequested.connect(self.set_expert_mode)
         self._refresh_file_actions()
         self._layer_map_dialog: LayerMapDialog | None = None
         self.helpful_notes_dialog = HelpfulNotesDialog(self)
@@ -748,6 +750,9 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         # then the controller profile being built, then imports/exports that
         # used to live only behind buttons in their tabs.
         file_menu = self.menuBar().addMenu(self.tr("&File"))
+        # Simple mode (the default) hides these; Expert mode shows them. Kept
+        # as QAction references, never matched on their (translated) text.
+        self._expert_items: list[QAction] = []
 
         open_action = QAction(self.tr("&Open Mapping..."), self)
         open_action.setShortcut(QKeySequence.StandardKey.Open)
@@ -772,22 +777,26 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
 
         # Issue #189: what changed, trigger by trigger, instead of a raw XML diff.
         self._compare_action = QAction(self.tr("Co&mpare Mapping With..."), self)
+        self._expert_items.append(self._compare_action)
         self._compare_action.setToolTip(self.tr("List what another mapping file does differently from the one open."))
         self._compare_action.setEnabled(False)
         self._compare_action.triggered.connect(self._on_compare_with_file)
         file_menu.addAction(self._compare_action)
         self._compare_backup_action = QAction(self.tr("Compare With Previous &Version"), self)
+        self._expert_items.append(self._compare_backup_action)
         self._compare_backup_action.setToolTip(self.tr("List what changed since the version saved before the last save."))
         self._compare_backup_action.setEnabled(False)
         self._compare_backup_action.triggered.connect(self._on_compare_with_backup)
         file_menu.addAction(self._compare_backup_action)
 
         self._save_snapshot_action = QAction(self.tr("Save S&napshot..."), self)
+        self._expert_items.append(self._save_snapshot_action)
         self._save_snapshot_action.setToolTip(self.tr("Keep the mapping as it is now under a name, to compare or restore later."))
         self._save_snapshot_action.setEnabled(False)
         self._save_snapshot_action.triggered.connect(lambda _checked=False: self.save_snapshot())
         file_menu.addAction(self._save_snapshot_action)
         self._snapshots_action = QAction(self.tr("Snapshots..."), self)
+        self._expert_items.append(self._snapshots_action)
         self._snapshots_action.setToolTip(self.tr("Compare, restore or delete this mapping's snapshots."))
         self._snapshots_action.setEnabled(False)
         self._snapshots_action.triggered.connect(lambda _checked=False: self.open_snapshots())
@@ -814,16 +823,20 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
             action = QAction(label, self)
             action.triggered.connect(lambda _checked=False, h=handler: self._run_in_tab("setup", h))
             profile_menu.addAction(action)
+            self._expert_items.append(action)  # drafts: building a profile by hand
         check_action = QAction(self.tr("Verify Profile with the Controller..."), self)
         check_action.triggered.connect(lambda: self.open_profile_check())
         profile_menu.addAction(check_action)
         place_action = QAction(self.tr("Place Controls on a Picture..."), self)
+        self._expert_items.append(place_action)
         place_action.triggered.connect(lambda: self.open_geometry_editor())
         profile_menu.addAction(place_action)
         library_action = QAction(self.tr("Install from Library..."), self)
+        self._expert_items.append(library_action)
         library_action.triggered.connect(lambda: self.open_profile_library())
         profile_menu.addAction(library_action)
         installed_action = QAction(self.tr("Show Installed Profiles"), self)
+        self._expert_items.append(installed_action)
         installed_action.triggered.connect(self._on_reveal_installed_profiles)
         profile_menu.addAction(installed_action)
 
@@ -846,6 +859,7 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
             action.triggered.connect(lambda _checked=False, h=handler: self._run_in_tab("library", h))
             export_menu.addAction(action)
         log_action = QAction(self.tr("Live Monitor Log..."), self)
+        self._expert_items.append(log_action)
         log_action.triggered.connect(self.live_monitor_view._save_log)
         export_menu.addAction(log_action)
         export_menu.addSeparator()
@@ -864,6 +878,7 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         self._cheat_sheet_web_action.triggered.connect(lambda _checked=False: self._on_export_cheat_sheet(web=True))
         export_menu.addAction(self._cheat_sheet_web_action)
         mixxx_export_action = QAction(self.tr("Mixxx Mapping from Profile..."), self)
+        self._expert_items.append(mixxx_export_action)
         mixxx_export_action.setToolTip(self.tr("Write a Mixxx mapping for a controller profile, a function per button"))
         mixxx_export_action.triggered.connect(lambda _checked=False: self.open_mixxx_export())
         export_menu.addAction(mixxx_export_action)
@@ -896,6 +911,7 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         edit_menu.addAction(validate_action)
 
         self._deck_copy_action = QAction(self.tr("Copy &Deck Mappings…"), self)
+        self._expert_items.append(self._deck_copy_action)
         self._deck_copy_action.setStatusTip(self.tr("Copy one deck's mappings onto another deck."))
         self._deck_copy_action.triggered.connect(lambda _checked=False: self.open_deck_copy())
         edit_menu.addAction(self._deck_copy_action)
@@ -909,9 +925,11 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         # Golden rule: the windows you open live in their own menu; View keeps
         # what changes how the app looks.
         tools_menu = self.menuBar().addMenu(self.tr("&Tools"))
+        self._expert_items.append(tools_menu.menuAction())
         # Issue #222: one keyboard search over everything below. Ctrl maps to
         # Cmd on macOS; application-wide so it also works from a floating dock.
         self._command_palette_action = QAction(self.tr("Command Palette..."), self)
+        self._expert_items.append(self._command_palette_action)
         self._command_palette_action.setShortcut(QKeySequence("Ctrl+K"))
         self._command_palette_action.setShortcutContext(Qt.ShortcutContext.ApplicationShortcut)
         self._command_palette_action.setToolTip(self.tr("Search every action, tab, mapping function and library track"))
@@ -956,6 +974,7 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         self._layer_map_action.triggered.connect(lambda _checked=False: self._on_show_layer_map())
         tools_menu.addAction(self._layer_map_action)
         self._show_all_controllers_action = QAction(self.tr("Show all controllers"), self, checkable=True)
+        self._expert_items.append(self._show_all_controllers_action)
         self._show_all_controllers_action.setChecked(self._show_all_controllers)
         self._show_all_controllers_action.setToolTip(
             self.tr("Ignore the per-controller Preferences enablement and list every registered controller")
@@ -965,6 +984,7 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
 
         view_menu.addSeparator()
         self._performance_mode_action = QAction(self.tr("Performance Mode"), self, checkable=True)
+        self._expert_items.append(self._performance_mode_action)
         self._performance_mode_action.setToolTip(
             self.tr(
                 "Hide the mapping tree and enlarge the schematic layout for on-stage use "
@@ -1103,6 +1123,7 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         self._first_run_action.triggered.connect(lambda: self._on_first_run_wizard())
         help_menu.addAction(self._first_run_action)
         self._hardware_session_action = QAction(self.tr("&Hardware Session..."), self)
+        self._expert_items.append(self._hardware_session_action)
         self._hardware_session_action.setToolTip(
             self.tr("The checks still waiting for real controllers and DJ software, with a report to share.")
         )
@@ -1418,6 +1439,30 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         self.midi_routing_view.set_routing_enabled(True)
         self.statusBar().showMessage(self.tr("MIDI routing is on."), 5000)
 
+    # Pages only Expert mode shows (the mapping lists by channel and by deck,
+    # the Studio); "By Controller" stays: it's the controller's own picture.
+    _EXPERT_PAGES = ("atelier", "channel", "deck")
+
+    def apply_expert_mode(self) -> None:
+        """Simple mode (default) or Expert mode: shows or hides the expert
+        pages and menu commands. Nothing is removed, a page a button asks
+        for still opens."""
+        expert = self.preferences.expert_mode
+        for key in self._EXPERT_PAGES:
+            self.left_tabs.set_page_visible(key, expert)
+        for item in self._expert_items:
+            item.setVisible(expert)
+        self.introduction_view.set_expert_mode(expert)
+
+    def set_expert_mode(self, on: bool) -> None:
+        self.preferences.expert_mode = on
+        self._save_preferences()
+        self.apply_expert_mode()
+        self.statusBar().showMessage(
+            self.tr("Expert mode on: every tool is shown.") if on else self.tr("Simple mode: the essentials only."),
+            6000,
+        )
+
     def _on_preferences(self, tab: str | None = None) -> None:
         dialog = PreferencesDialog(self.preferences, self)
         dialog.backupRequested.connect(self._on_backup_workspace)
@@ -1435,6 +1480,7 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
             if application is not None:
                 apply_theme(application, self.preferences.theme)
             self._apply_plugin_preferences()
+            self.apply_expert_mode()
             self._on_controller_applied(self.introduction_view._controller_combo.currentText())
             self.midi_routing_view.set_routing_enabled(self.preferences.routing_enabled)
             self.controller_setup_view.set_default_file(self.preferences.controller_setup_default_file)

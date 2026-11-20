@@ -103,6 +103,7 @@ def test_ctrl_k_action_is_in_the_view_menu():
 
 def test_palette_switches_tabs_and_runs_menu_actions():
     window = _window()
+    window.set_expert_mode(True)  # Performance Mode is an expert command
     dialog = window.open_command_palette("by deck")
     first = dialog.current_entry()
     assert first.kind == KIND_TAB

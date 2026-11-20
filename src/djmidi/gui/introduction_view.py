@@ -63,11 +63,14 @@ class IntroductionView(QWidget):
     fileActionRequested = Signal(str)
     # The "Your setup" card's main button: open the startup check.
     startupCheckRequested = Signal()
+    expertModeRequested = Signal(bool)  # Simple mode ↔ Expert mode
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self._usage_summary: dict[str, tuple[int, int, int]] = {}
         self._card_stats: dict[str, QLabel] = {}
+        self._expert = False
+        self._expert_widgets: list[QWidget] = []
         self._availability_labels: dict[str, QLabel] = {}
         # Card photo label -> image path, until that card is first shown
         # (issue #264): loading and smooth-scaling every 2000 px reference
@@ -128,6 +131,7 @@ class IntroductionView(QWidget):
         cards_box_layout.addWidget(self._controller_tabs)
 
         tools_box = QGroupBox(self.tr("MIDI tools"))
+        self.tools_box = tools_box  # expert only
         tools_layout = QVBoxLayout(tools_box)
         tools_layout.addLayout(help_row(self, *help_texts.DASHBOARD_TOOLS))
         monitor_button = QPushButton(self.tr("Open Live Monitor"))
@@ -180,7 +184,15 @@ class IntroductionView(QWidget):
         # tab in a scroll area, same fix as Controller Setup's io_row.
         content = QWidget()
         layout = QVBoxLayout(content)
-        layout.addWidget(title)
+        # Simple mode hides the expert tools; this says so and brings them back.
+        self.expert_button = QPushButton()
+        self.expert_button.setObjectName("expertToggle")
+        self.expert_button.clicked.connect(lambda: self.expertModeRequested.emit(not self._expert))
+        title_row = QHBoxLayout()
+        title_row.addWidget(title, 1)
+        title_row.addWidget(self.expert_button, 0, Qt.AlignmentFlag.AlignTop)
+        self.set_expert_mode(False)
+        layout.addLayout(title_row)
         layout.addWidget(self._description_label)
         layout.addLayout(loaded_file_row)
         layout.addWidget(self._build_setup_card())
@@ -208,6 +220,19 @@ class IntroductionView(QWidget):
         # persistent singleton for the app's session, so a plain
         # bound-method connection is enough -- no stale-QObject risk.
         theme_signals.themeChanged.connect(self._on_theme_changed)
+
+    def set_expert_mode(self, expert: bool) -> None:
+        self._expert = expert
+        for widget in (self.tools_box, *self._expert_widgets):
+            widget.setVisible(expert)
+        if expert:
+            self.expert_button.setText(self.tr("Back to simple mode"))
+            self.expert_button.setToolTip(self.tr("Hide the expert tools: the essentials only"))
+        else:
+            self.expert_button.setText(self.tr("Show every tool"))
+            self.expert_button.setToolTip(
+                self.tr("Expert mode: the mapping lists by channel and by deck, the Studio, the MIDI tools, every menu command")
+            )
 
     def _on_theme_changed(self, *_args: object) -> None:
         self._restyle_setup_card()
@@ -577,6 +602,9 @@ class IntroductionView(QWidget):
             btn = QPushButton(label)
             btn.clicked.connect(lambda _checked=False, t=target, c=controller: self._drilldown_controller(t, c))
             buttons.addWidget(btn)
+            if target == "channel":
+                self._expert_widgets.append(btn)  # the raw mapping list
+                btn.setVisible(self._expert)
         details.addLayout(buttons)
         layout.addLayout(details, 0)
         return card

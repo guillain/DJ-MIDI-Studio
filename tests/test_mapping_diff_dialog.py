@@ -57,6 +57,7 @@ def test_dialog_groups_entries_by_kind_with_physical_names():
 
 def test_compare_actions_follow_the_backup(tmp_path):
     window, mapping = _window_with_backup(tmp_path)
+    window.set_expert_mode(True)  # comparing files is an expert command
     try:
         assert window._compare_action.isEnabled()
         assert not window._compare_backup_action.isEnabled()
