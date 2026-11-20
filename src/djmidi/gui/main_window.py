@@ -1335,6 +1335,15 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
             return
         elif item.action == startup_check.IAC:
             QDesktopServices.openUrl(QUrl.fromLocalFile("/System/Applications/Utilities/Audio MIDI Setup.app"))
+        if item.action != startup_check.IAC and self._startup_check_dialog is not None:
+            # The check window stays above the main window (a dialog over its
+            # parent): left open, it hid the tab its button had just opened,
+            # so the button seemed to do nothing. Step aside; the Dashboard's
+            # "See what's missing" brings it back.
+            self._startup_check_dialog.close()
+            self.statusBar().showMessage(
+                self.tr("The setup check is one click away: Dashboard → See what's missing."), 10000
+            )
         self.raise_()
         self.activateWindow()
 

@@ -120,6 +120,10 @@ def test_main_window_routes_actions_to_the_tools(monkeypatch):
     assert dialog.card_titles() == ["DDJ-XP2"]
     scene = next(i for i in dialog.report.items if i.action == sc.SCENE)
     dialog.actionRequested.emit(scene)
+    # The check steps aside: left above the main window, it hid the tool its
+    # button had just opened (the DJ saw "nothing happens").
+    assert not dialog.isVisible()
+    assert "See what's missing" in window.statusBar().currentMessage()
     assert window.left_tabs.currentIndex() == window._tab_indexes["atelier"]
     assert window.atelier_view.controller_combo.currentText() == "DDJ-XP2"
     learn = sc.StartupItem("unknown:X", "X", sc.TODO, "unknown", sc.LEARN)

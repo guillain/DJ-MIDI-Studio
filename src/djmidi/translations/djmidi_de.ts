@@ -5550,6 +5550,10 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
         <translation>Kein Controller angeschlossen: Schließen Sie einen an, den Rest übernimmt die App.</translation>
     </message>
     <message>
+        <source>The setup check is one click away: Dashboard → See what&apos;s missing.</source>
+        <translation>Die Prüfung Ihres Setups ist einen Klick entfernt: Übersicht → Sehen, was fehlt.</translation>
+    </message>
+    <message>
         <source>{macro} now plays from {pad}.</source>
         <translation>{macro} startet jetzt über {pad}.</translation>
     </message>

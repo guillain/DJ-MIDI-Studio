@@ -5408,6 +5408,10 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
         <translation>Aucun contrôleur branché : branchez-en un et l&apos;app s&apos;occupe du reste.</translation>
     </message>
     <message>
+        <source>The setup check is one click away: Dashboard → See what&apos;s missing.</source>
+        <translation>La vérification de votre installation est à un clic : Tableau de bord → Voir ce qui manque.</translation>
+    </message>
+    <message>
         <source>{macro} now plays from {pad}.</source>
         <translation>{macro} se lance maintenant depuis {pad}.</translation>
     </message>
