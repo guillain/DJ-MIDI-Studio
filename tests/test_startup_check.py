@@ -251,6 +251,7 @@ def test_a_device_plugged_in_later_opens_the_check_once(monkeypatch):
     monkeypatch.setattr(mw, "list_input_ports", lambda: list(ports))
     monkeypatch.setattr(mw, "list_output_ports", list)
     window = mw.MainWindow()
+    window.preferences.expert_mode = True  # simple mode lists it on the Dashboard instead
     assert window.watch_plugged_devices() is None  # learns the current ports
     ports.append("DDJ-XP2")
     dialog = window.watch_plugged_devices()
@@ -267,3 +268,16 @@ def _process_events():
     from PySide6.QtWidgets import QApplication
 
     QApplication.processEvents()
+
+
+def test_simple_mode_never_pops_the_check_up_on_plug_in(monkeypatch):
+    from djmidi.gui import main_window as mw
+
+    ports = []
+    monkeypatch.setattr(mw, "list_input_ports", lambda: list(ports))
+    monkeypatch.setattr(mw, "list_output_ports", list)
+    window = mw.MainWindow()
+    window.watch_plugged_devices()
+    ports.append("DDJ-XP2")
+    assert window.watch_plugged_devices() is None
+    assert "DDJ-XP2" in window.introduction_view.setup_devices.text()

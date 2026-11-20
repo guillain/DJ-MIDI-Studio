@@ -64,6 +64,7 @@ class IntroductionView(QWidget):
     # The "Your setup" card's main button: open the startup check.
     startupCheckRequested = Signal()
     expertModeRequested = Signal(bool)  # Simple mode ↔ Expert mode
+    setupActionRequested = Signal(object)  # a startup_check.StartupItem to finish
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -466,6 +467,14 @@ class IntroductionView(QWidget):
         self.setup_devices.setWordWrap(True)
         text.addWidget(self.setup_headline)
         text.addWidget(self.setup_devices)
+        # What needs the DJ, right here with its button (no popup to open).
+        self.setup_steps = QVBoxLayout()
+        self.setup_steps.setSpacing(4)
+        text.addLayout(self.setup_steps)
+        self.setup_software = QLabel()
+        self.setup_software.setObjectName("setupSoftware")
+        self.setup_software.setWordWrap(True)
+        text.addWidget(self.setup_software)
         layout.addLayout(text, 1)
         self.setup_check_button = QPushButton(self.tr("See what's missing"))
         self.setup_check_button.setToolTip(self.tr("Every plugged-in device, what's missing, and the button that fixes it."))
@@ -484,6 +493,46 @@ class IntroductionView(QWidget):
         self._setup_card = card
         self._restyle_setup_card()
         return card
+
+    MAX_STEPS = 3
+
+    def set_setup_steps(self, items: list, software: list) -> None:
+        """The first things that need the DJ, each with its button, and the
+        DJ software found on this computer (dj_software.FoundSoftware)."""
+        from djmidi.gui.startup_check_dialog import action_label
+        from djmidi.gui.translation import translator
+
+        while self.setup_steps.count():
+            row = self.setup_steps.takeAt(0)
+            widget = row.widget()
+            if widget is not None:
+                widget.deleteLater()
+        translate = translator("StartupCheck")
+        shown = [item for item in items if item.action is not None][: self.MAX_STEPS]
+        for item in shown:
+            row = QWidget()
+            row_layout = QHBoxLayout(row)
+            row_layout.setContentsMargins(0, 0, 0, 0)
+            text = QLabel(self.tr("<b>{device}</b>: {what}").format(device=item.device, what=item.text(translate)))
+            text.setWordWrap(True)
+            row_layout.addWidget(text, 1)
+            button = QPushButton(action_label(item))
+            button.setProperty("chip", True)
+            button.clicked.connect(lambda _checked=False, it=item: self.setupActionRequested.emit(it))
+            row_layout.addWidget(button, 0, Qt.AlignmentFlag.AlignTop)
+            self.setup_steps.addWidget(row)
+        more = len([item for item in items if item.action is not None]) - len(shown)
+        if more > 0:
+            self.setup_steps.addWidget(QLabel(self.tr("…and {count} more: See what's missing.").format(count=more)))
+        if software:
+            names = [
+                self.tr("{name} (open)").format(name=found.name) if found.running else found.name for found in software
+            ]
+            self.setup_software.setText(self.tr("DJ software on this computer: {names}").format(names=", ".join(names)))
+        else:
+            self.setup_software.setText(
+                self.tr("No DJ software found. The app works with Serato DJ, Traktor, rekordbox and Mixxx.")
+            )
 
     def set_setup_summary(self, headline: str, devices: str, status: str) -> None:
         """Shows the startup check's verdict: `status` is ok / todo / blocking."""

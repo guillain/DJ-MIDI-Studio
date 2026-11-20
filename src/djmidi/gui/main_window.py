@@ -551,6 +551,7 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         self.apply_expert_mode()
         self.introduction_view.fileActionRequested.connect(self._on_dashboard_file_action)
         self.introduction_view.expertModeRequested.connect(self.set_expert_mode)
+        self.introduction_view.setupActionRequested.connect(self._on_startup_action)
         self._refresh_file_actions()
         self._layer_map_dialog: LayerMapDialog | None = None
         self.helpful_notes_dialog = HelpfulNotesDialog(self)
@@ -1254,6 +1255,11 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         needing = report.needing_attention(self._startup_check_dismissed())
         if not needing:
             return False
+        if not self.preferences.expert_mode:
+            # Simple mode: the Dashboard shows the steps with their buttons;
+            # no window pops up over the app.
+            self.left_tabs.setCurrentIndex(self._tab_indexes["intro"])
+            return True
         self._startup_shown_ids |= {item.id for item in needing}
         self.open_startup_check(report)
         return True
@@ -1280,7 +1286,17 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
             else self.tr("No controller plugged in: plug one in and the app takes it from there.")
         )
         self.introduction_view.set_setup_summary(headline, devices, status)
+        self.introduction_view.set_setup_steps(needing, self._find_dj_software())
         return report
+
+    def _find_dj_software(self) -> list:
+        """The DJ programs on this computer; none in tests (the real disk and
+        processes are never looked at there)."""
+        if self._layout_settings() is None:
+            return []
+        from djmidi.dj_software import find_dj_software
+
+        return find_dj_software()
 
     def watch_plugged_devices(self) -> StartupCheckDialog | None:
         """Polled every few seconds: when an input port appears, checks again
@@ -1312,6 +1328,8 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         if not fresh:
             return None
         self._startup_shown_ids |= {item.id for item in fresh}
+        if not self.preferences.expert_mode:
+            return None  # simple mode: the Dashboard already lists them
         return self.open_startup_check(report)
 
     def open_startup_check(self, report: StartupReport | None = None) -> StartupCheckDialog:
