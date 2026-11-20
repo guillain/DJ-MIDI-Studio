@@ -166,6 +166,8 @@ def test_routing_view_reports_clock_inactive_after_session_starts_without_ticks(
 
 def test_routing_view_reports_link_clock_configuration_when_link_is_selected():
     class FakeLinkFollower:
+        started_here = False
+        waiting_for_bar = False
         source_port_id = ABLETON_LINK_CLOCK_SOURCE_NAME
         destination_port_ids = ("MIDI4x4 Midi Out 1",)
 
@@ -193,6 +195,8 @@ def test_routing_view_diagnoses_serato_and_link_routes_independently():
     beats", hiding that Serato's virtual Clock port was never opened)."""
 
     class FakeLinkFollower:
+        started_here = False
+        waiting_for_bar = False
         source_port_id = ABLETON_LINK_CLOCK_SOURCE_NAME
         destination_port_ids = ("MIDI4x4 Midi Out 1",)
 
@@ -370,6 +374,8 @@ def test_save_state_and_restore_state_round_trip_link_followers(tmp_path):
     view.save_state(settings)
 
     class FakeFollower:
+        started_here = False
+        waiting_for_bar = False
         def __init__(self, destinations, _provider):
             self.destination_port_ids = tuple(destinations)
             self.source_port_id = ABLETON_LINK_CLOCK_SOURCE_NAME
@@ -493,3 +499,41 @@ def test_unconfigured_clock_status_background_restyles_live_on_a_theme_switch():
         assert theme.colors("dark")["header_bg"] not in view._clock_status.styleSheet()
     finally:
         theme.apply_theme(QApplication.instance(), "dark")
+
+
+def test_clock_start_button_starts_and_stops_a_link_clock_on_the_next_bar():
+    from djmidi.ableton_link import LinkClockFollower, LinkState
+
+    class SeratoLink:
+        def __init__(self):
+            self.published = []
+
+        def state_at(self, now):
+            return LinkState(tempo=120.0, beat=1.0, playing=False)
+
+        def publish_transport(self, is_playing):
+            self.published.append(is_playing)
+
+        def close(self):
+            pass
+
+    view = MidiRoutingView()
+    view._clock_enabled.blockSignals(True)
+    view._clock_enabled.setChecked(True)
+    view._clock_enabled.blockSignals(False)
+    view.set_routing_enabled(True)
+    follower = LinkClockFollower(["MIDI4x4 Midi Out 1"], SeratoLink())
+    view._link_followers = [follower]
+    view._refresh_clock_status()
+    assert not view.clock_start_button.isEnabled()  # routing not started
+    view._routing_session.running = True
+    view._refresh_clock_status()
+    assert view.clock_start_button.isEnabled()
+    view.clock_start_button.click()
+    assert follower.waiting_for_bar
+    assert "starting on the next bar" in view._clock_status.text()
+    assert view.clock_start_button.text() == "Stop the clock"
+    view.clock_start_button.click()
+    assert not follower.started_here
+    assert view.clock_start_button.text() == "Start the clock on the next bar"
+    view._routing_session.running = False

@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from unittest.mock import patch
 
+import pytest
+
 from djmidi.ableton_link import AalinkStateProvider, LinkClockFollower, LinkState
 
 
@@ -122,3 +124,64 @@ def test_aalink_provider_publish_transport_calls_the_backend_setter():
             assert provider._link.calls == [(True, "link-time-sentinel", 2.5)]
         finally:
             provider.close()
+
+
+class _RunningLink:
+    """Serato's Link: tempo and a moving beat, never a playing transport."""
+
+    def __init__(self, tempo=120.0, beat0=0.0):
+        self.tempo, self.beat0, self.published = tempo, beat0, []
+
+    def state_at(self, now):
+        return LinkState(tempo=self.tempo, beat=self.beat0 + now * self.tempo / 60.0, playing=False)
+
+    def close(self):
+        pass
+
+    def publish_transport(self, is_playing):
+        self.published.append(is_playing)
+
+
+def _run(follower, start, end, step=0.005):
+    sent = []
+    now = start
+    while now <= end + 1e-9:
+        follower.poll(lambda destination, message, n=now: sent.append((n, message.data)), now=now)
+        now += step
+    return sent
+
+
+def test_start_here_waits_for_the_next_bar_then_ticks_on_the_downbeat():
+    provider = _RunningLink(beat0=1.5)  # mid-bar; next bar = beat 4, 1.25 s away
+    follower = LinkClockFollower(["out"], provider)
+    follower.start_on_next_bar(now=0.0)
+    assert follower.waiting_for_bar and provider.published == [True]
+    assert _run(follower, 0.0, 1.2) == []
+    sent = _run(follower, 1.205, 1.4)
+    starts = [t for t, data in sent if data == b"\xfa"]
+    ticks = [t for t, data in sent if data == b"\xf8"]
+    assert len(starts) == 1 and 1.2 <= starts[0] <= 1.25
+    assert not follower.waiting_for_bar
+    # First tick on the downbeat (one poll step of jitter), then 24 per beat.
+    assert abs(ticks[0] - 1.25) <= 0.005
+    assert len(ticks) == pytest.approx((1.4 - 1.25) / (0.5 / 24), abs=2)
+
+
+def test_stop_here_sends_stop_and_tells_link():
+    provider = _RunningLink(beat0=3.99)
+    follower = LinkClockFollower(["out"], provider)
+    follower.start_on_next_bar(now=0.0)
+    _run(follower, 0.0, 0.1)
+    follower.stop_here()
+    sent = _run(follower, 0.105, 0.2)
+    assert sent == [(pytest.approx(0.105), b"\xfc")]
+    assert provider.published == [True, False]
+    assert not follower.started_here
+
+
+def test_reset_forgets_a_start_given_here():
+    follower = LinkClockFollower(["out"], _RunningLink())
+    follower.start_on_next_bar(now=0.0)
+    follower.reset()
+    assert not follower.started_here and not follower.waiting_for_bar
+    assert _run(follower, 0.0, 2.5) == []

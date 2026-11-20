@@ -83,10 +83,14 @@ drum machines, synths or effects:
 3. Choose `Ableton Link (DJ MIDI Studio)` as the source and your
    hardware's MIDI output as the destination, then `Add Clock route`.
 4. `Start routing`.
+5. Press `Start the clock on the next bar`: Serato shares its tempo and
+   phase over Link but never Start/Stop, so DJ MIDI Studio gives the Start
+   itself, on Serato's next downbeat (your gear counts bar 1 there). The
+   button becomes `Stop the clock`. No Ableton Live is needed.
 
-DJ MIDI Studio follows Link's tempo and phase and never changes it. For
-Start/Stop to follow too, another Link app with *Start Stop Sync* enabled
-(for example Ableton Live) must be in the session: Serato shares tempo only.
+DJ MIDI Studio follows Link's tempo and phase and never changes it. Another
+Link app with *Start Stop Sync* (for example Ableton Live) can still start
+and stop the clock instead; the button's Start/Stop reaches it too.
 
 You can also forward an existing Clock, for example Traktor's MIDI Clock
 output, by choosing that MIDI input as the source.

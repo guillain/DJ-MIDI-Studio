@@ -12,7 +12,7 @@ import logging
 import threading
 import time
 from dataclasses import dataclass
-from math import ceil
+from math import ceil, floor
 from typing import Protocol
 
 from djmidi.midi_api import MidiMessage
@@ -22,6 +22,7 @@ _LOGGER = logging.getLogger(__name__)
 
 ABLETON_LINK_CLOCK_SOURCE_NAME = "Ableton Link (DJ MIDI Studio)"
 PPQN = 24
+BEATS_PER_BAR = 4
 
 
 @dataclass(frozen=True)
@@ -217,6 +218,45 @@ class LinkClockFollower:
         self._last_playing = False
         self._next_tick: float | None = None
         self._last_tick: float | None = None
+        # Our own Start/Stop (the "Start the clock" button): Serato's Link only
+        # shares tempo and phase, so without this no Start ever comes unless
+        # another Link app (Ableton Live) gives it.
+        self._started_here = False
+        self._start_at_beat: float | None = None
+
+    @property
+    def started_here(self) -> bool:
+        return self._started_here
+
+    @property
+    def waiting_for_bar(self) -> bool:
+        """Started here, Start not sent yet: waiting for the next downbeat."""
+        return self._start_at_beat is not None
+
+    def start_on_next_bar(self, *, now: float | None = None) -> None:
+        """Start the clock ourselves, on the session's next bar line, so the
+        gear we drive counts its bar 1 on the DJ software's downbeat."""
+        now = self.clock_fn() if now is None else now
+        state = self.provider.state_at(now)
+        self._started_here = True
+        self._start_at_beat = (floor(state.beat / BEATS_PER_BAR + 1e-9) + 1) * BEATS_PER_BAR
+        _LOGGER.info("Clock started here: Start on beat %.0f (now %.3f)", self._start_at_beat, state.beat)
+        self._publish_quietly(True)
+
+    def stop_here(self) -> None:
+        """Stop the clock started with :meth:`start_on_next_bar`."""
+        self._started_here = False
+        self._start_at_beat = None
+        _LOGGER.info("Clock stopped here")
+        self._publish_quietly(False)
+
+    def _publish_quietly(self, is_playing: bool) -> None:
+        # Other Link peers with Start Stop Sync follow too; our own clock never
+        # depends on it (Serato ignores transport).
+        try:
+            self.provider.publish_transport(is_playing)
+        except Exception:  # the local clock works without it
+            _LOGGER.debug("Link transport publish failed (playing=%s)", is_playing, exc_info=True)
 
     def poll(self, send, *, now: float | None = None) -> int:
         now = self.clock_fn() if now is None else now
@@ -224,6 +264,19 @@ class LinkClockFollower:
         if state.tempo <= 0:
             raise ValueError("Ableton Link tempo must be positive")
         count = 0
+        playing = state.playing or self._started_here
+        if self._start_at_beat is not None:
+            to_bar = (self._start_at_beat - state.beat) * 60.0 / state.tempo
+            if to_bar > 60.0 / state.tempo / PPQN:
+                playing = False  # not yet: Start goes out just before the bar
+            else:
+                self._start_at_beat = None
+                if not self._last_playing:
+                    count += self._emit(0xFA, now, send)
+                    self.running = True
+                    self._next_tick = now + max(0.0, to_bar)
+                    self._last_playing = True
+        state = LinkState(tempo=state.tempo, beat=state.beat, playing=playing)
         if state.playing and not self._last_playing:
             status = 0xFA if self._next_tick is None else 0xFB
             _LOGGER.debug(
@@ -292,10 +345,13 @@ class LinkClockFollower:
         self.running = False
         self._last_playing = False
         self._next_tick = None
+        self._started_here = False
+        self._start_at_beat = None
 
 
 __all__ = [
     "ABLETON_LINK_CLOCK_SOURCE_NAME",
+    "BEATS_PER_BAR",
     "AalinkStateProvider",
     "LinkBackendUnavailable",
     "LinkClockFollower",

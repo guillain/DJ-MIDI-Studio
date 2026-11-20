@@ -215,6 +215,17 @@ class MidiRoutingView(QWidget):
         self._clock_routing_button = QPushButton(self.tr("Start routing"))
         self._clock_routing_button.clicked.connect(self._toggle_routing)
         self._clock_routing_button.setEnabled(False)
+        # Serato's Link shares tempo and phase only, never Start/Stop: this
+        # gives the Start ourselves, on its next bar (no Ableton Live needed).
+        self.clock_start_button = QPushButton(self.tr("Start the clock on the next bar"))
+        self.clock_start_button.setToolTip(
+            self.tr(
+                "Serato shares only its tempo over Link. This starts the MIDI Clock "
+                "on its next bar, so your gear counts bar 1 on Serato's downbeat."
+            )
+        )
+        self.clock_start_button.clicked.connect(self._toggle_clock_start)
+        self.clock_start_button.setEnabled(False)
         clock_controls = QGridLayout()
         clock_controls.addWidget(QLabel(self.tr("Clock source")), 0, 0)
         clock_controls.addWidget(self._clock_source, 0, 1)
@@ -226,6 +237,7 @@ class MidiRoutingView(QWidget):
         clock_controls.addWidget(remove_clock_button, 4, 1)
         clock_controls.addWidget(self._clock_refresh_button, 5, 0)
         clock_controls.addWidget(self._clock_routing_button, 5, 1)
+        clock_controls.addWidget(self.clock_start_button, 6, 0, 1, 2)
         clock_controls.setColumnStretch(1, 1)
         self._clock_panel = QGroupBox(self.tr("MIDI Clock"))
         self._clock_panel.setObjectName("clockCard")
@@ -375,6 +387,28 @@ class MidiRoutingView(QWidget):
         self._routing_button.setText(self.tr("Start routing"))
         self._clock_routing_button.setText(self.tr("Start routing"))
         self._refresh_clock_status()
+
+    def _toggle_clock_start(self) -> None:
+        if not self._routing_session.running or not self._link_followers:
+            return
+        if any(follower.started_here for follower in self._link_followers):
+            for follower in self._link_followers:
+                follower.stop_here()
+        else:
+            for follower in self._link_followers:
+                try:
+                    follower.start_on_next_bar()
+                except Exception:
+                    _LOGGER.exception("Cannot start the clock on %s", follower.destination_port_ids)
+        self._refresh_clock_status()
+
+    def _refresh_clock_start_button(self) -> None:
+        usable = bool(self._link_followers) and self._routing_session.running
+        self.clock_start_button.setEnabled(usable)
+        started = usable and any(follower.started_here for follower in self._link_followers)
+        text = self.tr("Stop the clock") if started else self.tr("Start the clock on the next bar")
+        if self.clock_start_button.text() != text:
+            self.clock_start_button.setText(text)
 
     def _poll_routing(self) -> None:
         try:
@@ -742,6 +776,7 @@ class MidiRoutingView(QWidget):
         waiting-to-start) would otherwise only catch up on the next
         explicit clock action, not immediately on a live theme switch."""
         self._clock_status.setToolTip("")
+        self._refresh_clock_start_button()
         category = "disabled"
         if not self._clock_enabled.isChecked():
             text, color = self.tr("Clock mirror disabled"), theme_colors()["disabled_text"]
@@ -800,6 +835,11 @@ class MidiRoutingView(QWidget):
                                 )
                             )
                     for follower in inactive_links:
+                        if follower.waiting_for_bar:
+                            clauses.append(
+                                self.tr("{source}: starting on the next bar").format(source=follower.source_port_id)
+                            )
+                            continue
                         clauses.append(self.tr("{source}: no Link beats received").format(source=follower.source_port_id))
                         if any(clock.source_port_id == SERATO_CLOCK_INPUT_NAME for clock in self._clocks):
                             tooltip_parts.append(
@@ -814,9 +854,8 @@ class MidiRoutingView(QWidget):
                                 self.tr(
                                     "Ableton Link is connected but no playing Link transport was detected. "
                                     "Serato's own Link integration only publishes tempo, never transport: "
-                                    "either add a Serato Clock source above (this app bridges its Start/Stop "
-                                    "onto Link automatically), or use another Link peer that supports Start "
-                                    "Stop Sync (e.g. Ableton Live) and start playback there."
+                                    "press 'Start the clock on the next bar', or start "
+                                    "playback in another Link app with Start Stop Sync."
                                 )
                             )
                     text = self.tr("CLOCK INACTIVE — {details}").format(details="; ".join(clauses))
