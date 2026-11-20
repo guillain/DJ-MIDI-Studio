@@ -180,6 +180,9 @@ class SendBuffer:
         return packets
 
 
+PLAY_MARGIN_S = 0.1  # least time a packet waits before it plays
+
+
 class BarAlignedPlayer:
     """Holds the other DJ's sound and gives it back one bar after its beat.
 
@@ -199,6 +202,8 @@ class BarAlignedPlayer:
         self._lock = threading.Lock()
         self._anchor: tuple[int, float, float] | None = None  # (position, beat, tempo) of the newest packet
         self._cursor: int | None = None
+        self._bars = 0.0  # whole bars added to the sender's beat numbers
+        self.rebars = 0
         self.received = 0
         self.played = 0
         self.missing = 0
@@ -222,7 +227,17 @@ class BarAlignedPlayer:
         if anchor is None:
             return None
         position, anchor_beat, tempo = anchor
-        return position + (beat - self._quantum - anchor_beat) * 60.0 / tempo * RATE
+        # Two homes never count beats from the same zero (two Link sessions, or
+        # our listening clock): only the phase within the bar is shared. Play
+        # whole bars behind the newest packet, at least a margin late; keep
+        # that choice while it holds so the sound never jumps a bar.
+        lag = anchor_beat + self._quantum - beat + self._bars  # beats behind the newest packet
+        margin = PLAY_MARGIN_S * tempo / 60.0
+        if not 0.0 <= lag <= 2 * self._quantum + margin:
+            self._bars = self._quantum * math.floor((beat - anchor_beat - self._quantum + margin) / self._quantum + 1)
+            lag = anchor_beat + self._quantum - beat + self._bars
+            self.rebars += 1
+        return position - lag * 60.0 / tempo * RATE
 
     def read(self, n: int, beat: float) -> np.ndarray:
         out = np.zeros((n, CHANNELS), dtype=np.float32)

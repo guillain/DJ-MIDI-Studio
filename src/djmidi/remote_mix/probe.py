@@ -58,6 +58,9 @@ class LinkSnapshot:
     beat: float
     at: float
     peers: int = 0
+    # Beats that make one shared cycle: a bar for Link; 1 for the listening
+    # clock (beat_clock), which hears the beat but not which one is "one".
+    quantum: float = QUANTUM
 
 
 LinkReader = Callable[[], LinkSnapshot | None]
@@ -512,6 +515,8 @@ class ProbeSession:
                 reply.update(self._roster_message(address))
             if link is not None:
                 reply.update(tempo=link.tempo, beat=local_beat_at(link, sent), peers=link.peers)
+                if link.quantum != QUANTUM:
+                    reply["q"] = link.quantum
             self._send_to(sock, reply, address)
         elif kind == "pong":
             self._on_pong(message, received)
@@ -562,7 +567,8 @@ class ProbeSession:
         link = self._link()
         phase = None
         if link is not None and remote_tempo and remote_beat is not None and link.tempo > 0:
-            phase = phase_gap_ms(local_beat_at(link, t2 - offset), remote_beat, link.tempo)
+            quantum = min(link.quantum, _number(message, "q") or QUANTUM)
+            phase = phase_gap_ms(local_beat_at(link, t2 - offset), remote_beat, link.tempo, quantum)
         if (
             self.follow
             and not self.leading

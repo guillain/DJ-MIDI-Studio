@@ -158,3 +158,22 @@ def test_two_links_carry_opus_over_localhost():
         link_a.close()
         link_b.close()
     assert player_b.received == 10 and link_b.rejected == 0
+
+
+@pytest.mark.parametrize("count_gap", [1000.0, -36.0, 4.0])
+def test_two_homes_counting_beats_differently_still_hear_each_other_on_the_bar(count_gap):
+    """Two Link sessions (or listening clocks) never share the beat numbers,
+    only the phase: the sound must play whole bars late, not into silence."""
+    player = a.BarAlignedPlayer()
+    sent = _feed(player, 3.0)  # sender's beats 0 .. 6
+    # Here the counter reads count_gap more beats; same phase within the bar.
+    beat = 4.5 + count_gap
+    target = player.target_position(beat)
+    sender_beat = target / a.RATE * TEMPO / 60.0
+    assert (beat - sender_beat) % 4 == pytest.approx(0.0, abs=1e-6)  # on the bar grid
+    newest = len(sent) - a.PACKET_FRAMES  # the newest packet's first sample
+    assert 0 < newest - target <= (4 * 60 / TEMPO + a.PLAY_MARGIN_S) * a.RATE + 1
+    out = player.read(480, beat=beat)
+    assert np.allclose(out, sent[round(target) : round(target) + 480], atol=1e-4)
+    player.read(480, beat=beat + 480 / a.RATE * 2)
+    assert player.rebars <= 1 and player.resyncs == 0
