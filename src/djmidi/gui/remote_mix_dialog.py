@@ -54,6 +54,7 @@ from djmidi.gui.window_size import (
 from djmidi.library import history
 from djmidi.remote_mix import (
     audio,
+    beat_clock,
     bridge,
     listen,
     next_step,
@@ -68,6 +69,7 @@ _LOGGER = logging.getLogger(__name__)
 
 SessionFactory = Callable[..., probe.ProbeSession]
 LinkFactory = Callable[[], probe.LinkReader | None]
+BEAT_LINK, BEAT_LISTEN = "link", "listen"  # where the beat comes from
 
 _COLOURS = {probe.GREEN: "#30a46c", probe.ORANGE: "#f5a524", probe.RED: "#e5484d", probe.UNKNOWN: "#8b8d98"}
 
@@ -173,11 +175,26 @@ class RemoteMixDialog(QDialog):
         self.name_edit.setPlaceholderText(self.tr("shown on everyone's mixer"))
         self.link_checkbox = QCheckBox(self.tr("Measure Ableton Link too"))
         self.link_checkbox.setChecked(True)
+        # Our own clock: the app hears the beat in the sound you send, no Link.
+        self.beat_combo = QComboBox()
+        self.beat_combo.addItem(self.tr("Ableton Link"), BEAT_LINK)
+        self.beat_combo.addItem(self.tr("Listening to my sound (no Link)"), BEAT_LISTEN)
+        self.beat_combo.setToolTip(
+            self.tr(
+                "Listening: the app finds the tempo and the beats in the sound you send, whatever your "
+                "DJ software. It can't move your tempo: match the other DJ's BPM with your pitch fader."
+            )
+        )
+        self.beat_combo.currentIndexChanged.connect(self._on_beat_source)
+        # Its longest item must not widen the column (the tab folds to 2 columns).
+        self.beat_combo.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+        self.beat_combo.setMinimumContentsLength(12)
         form = QFormLayout()
         form.addRow(self.tr("Your addresses (give one to the other DJ):"), self.addresses_label)
         form.addRow(self.tr("Host's address:"), self.address_edit)
         form.addRow(self.tr("Port:"), self.port_spin)
         form.addRow(self.tr("Your DJ name:"), self.name_edit)
+        form.addRow(self.tr("Beat from:"), self.beat_combo)
         self._form = form
 
         self.start_button = QPushButton(self.tr("Start the test"))
@@ -341,6 +358,7 @@ class RemoteMixDialog(QDialog):
             connected=connected,
             link=link,
             sound=self.sound_panel.running,
+            listening=self.listening,
         )
 
     def _show_next_step(self) -> None:
@@ -354,6 +372,8 @@ class RemoteMixDialog(QDialog):
             next_step.GIVE_ADDRESS: self.tr("Give one of your addresses to the other DJ; they join with it."),
             next_step.WAIT_HOST: self.tr("Calling the host… they must have started too."),
             next_step.LINK: self.tr("Connected. Turn Link on in your DJ software (and tick Measure Ableton Link too)."),
+            next_step.HEAR: self.tr("Connected. Pick where your master comes from and start the sound: the app listens for your beat."),
+            next_step.HEARING: self.tr("Listening for your beat… play a track with a clear kick."),
             next_step.SOUND: self.tr("Same tempo. Pick where your master comes from, then start the sound."),
             next_step.MIXING: self.tr("You're mixing together: the mixer, the signals and the tracklist are shared."),
         }
@@ -456,9 +476,18 @@ class RemoteMixDialog(QDialog):
             text = self.tr("Nobody leads: one of you clicks Take the lead.")
         if session.follow_error:
             text += " " + self.tr("Link refused a change: {error}").format(error=session.follow_error)
+        heard = self._link() if self.listening and self._link is not None else None
+        if self.listening:
+            text = (
+                self.tr("Your beat, heard: {tempo:.1f} BPM. Match the other DJ's BPM with your pitch: "
+                        "their sound lands on your beats.").format(tempo=heard.tempo)
+                if heard is not None
+                else self.tr("Listening for your beat in the sound you send…")
+            )
         self.lead_label.setText(text)
+        self.follow_checkbox.setVisible(not self.listening)
         # With three DJs or more the host keeps the lead (phase 9): no hand-over.
-        self.lead_button.setVisible(len(getattr(session, "roster", {}) or {}) <= 2)
+        self.lead_button.setVisible(not self.listening and len(getattr(session, "roster", {}) or {}) <= 2)
         self.lead_button.setEnabled(not session.leading)
         snapshot = self._link() if self._link is not None else None
         if snapshot is None:
@@ -514,7 +543,9 @@ class RemoteMixDialog(QDialog):
     def start(self, demo: bool = False) -> None:
         peer = None
         if demo:
-            self._link = (self._link_factory() if self.link_checkbox.isChecked() else None) or demo_mode.DemoClock()
+            self._link = self._listening_reader() or (
+                (self._link_factory() if self.link_checkbox.isChecked() else None) or demo_mode.DemoClock()
+            )
             session = demo_mode.DemoSession(
                 port=self.port_spin.value(), name=self.name_edit.text().strip()[:40], link_reader=self._link
             )
@@ -528,7 +559,7 @@ class RemoteMixDialog(QDialog):
                 self.address_edit.setFocus()
                 return
             peer = (host, self.port_spin.value())
-        self._link = self._link_factory() if self.link_checkbox.isChecked() else None
+        self._link = self._listening_reader() or (self._link_factory() if self.link_checkbox.isChecked() else None)
         try:
             session = self._session_factory(
                 port=self.port_spin.value(),
@@ -553,7 +584,8 @@ class RemoteMixDialog(QDialog):
         self.tracklist_panel.reset()
         self._started = self._now()
         self.last_report = None
-        for widget in (self.host_radio, self.join_radio, self.address_edit, self.port_spin, self.link_checkbox, self.name_edit):
+        for widget in (self.host_radio, self.join_radio, self.address_edit, self.port_spin, self.link_checkbox, self.name_edit,
+                       self.beat_combo):
             widget.setEnabled(False)
         self.demo_button.setEnabled(False)
         self.start_button.setText(self.tr("Stop the test"))
@@ -578,8 +610,10 @@ class RemoteMixDialog(QDialog):
         self.signals_panel.hide()
         self.tracklist_panel.detach()
         self.tracklist_panel.setVisible(self.tracklist_panel.copy_button.isEnabled())
-        for widget in (self.host_radio, self.join_radio, self.address_edit, self.port_spin, self.link_checkbox, self.name_edit):
+        for widget in (self.host_radio, self.join_radio, self.address_edit, self.port_spin, self.link_checkbox, self.name_edit,
+                       self.beat_combo):
             widget.setEnabled(True)
+        self._on_beat_source()
         self.start_button.setText(self.tr("Start the test"))
         self.demo_button.setEnabled(True)
         self._show_next_step()
@@ -589,6 +623,24 @@ class RemoteMixDialog(QDialog):
         if callable(close):
             close()
         self._link = None
+        self.sound_panel.listening_clock = None
+
+    @property
+    def listening(self) -> bool:
+        return self.beat_combo.currentData() == BEAT_LISTEN
+
+    def _listening_reader(self) -> probe.LinkReader | None:
+        """Our listening clock when chosen (fed by the sound panel), else None."""
+        if not self.listening:
+            self.sound_panel.listening_clock = None
+            return None
+        clock = beat_clock.ListeningClock(audio.RATE)
+        self.sound_panel.listening_clock = clock
+        return clock.reader
+
+    def _on_beat_source(self, *_args) -> None:
+        self.link_checkbox.setEnabled(not self.listening and not self.running)
+        self._show_next_step()
 
     def _share_mixer(self) -> None:
         """Who is in the room, the other DJs' mixer moves; ours again every second (lost packets)."""
@@ -666,7 +718,9 @@ class RemoteMixDialog(QDialog):
                 rtt=stats.rtt_median, loss=stats.loss_pct
             )
             details["stability"] = self.tr("jitter {jitter:.1f} ms").format(jitter=stats.jitter_ms)
-            if not stats.local_tempo or not stats.remote_tempo:
+            if not stats.local_tempo and self.listening:
+                details["link"] = self.tr("listening for your beat: send your sound and play a track")
+            elif not stats.local_tempo or not stats.remote_tempo:
                 details["link"] = self.tr("turn Link on in both DJ programs (and leave this box ticked)")
             elif verdicts["link"] == probe.RED and abs(stats.local_tempo - stats.remote_tempo) > probe.TEMPO_TOLERANCE:
                 details["link"] = self.tr("two tempos ({here:.2f} / {there:.2f} BPM): Link doesn't reach across").format(
@@ -714,6 +768,7 @@ class RemoteMixDialog(QDialog):
             "address": self.address_edit,
             "port": self.port_spin,
             "link": self.link_checkbox,
+            "beat": self.beat_combo,
             "follow": self.follow_checkbox,
             "input": sound.input_combo,
             "monitor": sound.monitor_combo,

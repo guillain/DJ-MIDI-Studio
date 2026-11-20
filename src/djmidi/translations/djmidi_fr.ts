@@ -10296,6 +10296,18 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <translation>Mesurer aussi Ableton Link</translation>
     </message>
     <message>
+        <source>Ableton Link</source>
+        <translation>Ableton Link</translation>
+    </message>
+    <message>
+        <source>Listening to my sound (no Link)</source>
+        <translation>En écoutant mon son (sans Link)</translation>
+    </message>
+    <message>
+        <source>Listening: the app finds the tempo and the beats in the sound you send, whatever your DJ software. It can&apos;t move your tempo: match the other DJ&apos;s BPM with your pitch fader.</source>
+        <translation>À l&apos;écoute : l&apos;app trouve le tempo et les temps dans le son que vous envoyez, quel que soit votre logiciel DJ. Elle ne peut pas changer votre tempo : calez le BPM de l&apos;autre DJ avec votre pitch.</translation>
+    </message>
+    <message>
         <source>Your addresses (give one to the other DJ):</source>
         <translation>Vos adresses (donnez-en une à l&apos;autre DJ) :</translation>
     </message>
@@ -10310,6 +10322,10 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>Your DJ name:</source>
         <translation>Ton nom de DJ :</translation>
+    </message>
+    <message>
+        <source>Beat from:</source>
+        <translation>Le temps vient de :</translation>
     </message>
     <message>
         <source>Start the test</source>
@@ -10366,6 +10382,14 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>Connected. Turn Link on in your DJ software (and tick Measure Ableton Link too).</source>
         <translation>Connecté. Active Link dans ton logiciel DJ (et coche Mesurer aussi Ableton Link).</translation>
+    </message>
+    <message>
+        <source>Connected. Pick where your master comes from and start the sound: the app listens for your beat.</source>
+        <translation>Connectés. Choisissez d&apos;où vient votre master et lancez le son : l&apos;app écoute votre temps.</translation>
+    </message>
+    <message>
+        <source>Listening for your beat… play a track with a clear kick.</source>
+        <translation>À l&apos;écoute de votre temps… passez un morceau avec un kick bien net.</translation>
     </message>
     <message>
         <source>Same tempo. Pick where your master comes from, then start the sound.</source>
@@ -10436,6 +10460,14 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <translation>Link a refusé un changement : {error}</translation>
     </message>
     <message>
+        <source>Your beat, heard: {tempo:.1f} BPM. Match the other DJ&apos;s BPM with your pitch: their sound lands on your beats.</source>
+        <translation>Votre temps, entendu : {tempo:.1f} BPM. Calez le BPM de l&apos;autre DJ avec votre pitch : son son tombe sur vos temps.</translation>
+    </message>
+    <message>
+        <source>Listening for your beat in the sound you send…</source>
+        <translation>À l&apos;écoute de votre temps dans le son que vous envoyez…</translation>
+    </message>
+    <message>
         <source>Bar {bar} · beat {beat} — new phrase!</source>
         <translation>Mesure {bar} · temps {beat} — nouvelle phrase !</translation>
     </message>
@@ -10482,6 +10514,10 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>jitter {jitter:.1f} ms</source>
         <translation>gigue {jitter:.1f} ms</translation>
+    </message>
+    <message>
+        <source>listening for your beat: send your sound and play a track</source>
+        <translation>à l&apos;écoute de votre temps : envoyez votre son et passez un morceau</translation>
     </message>
     <message>
         <source>turn Link on in both DJ programs (and leave this box ticked)</source>

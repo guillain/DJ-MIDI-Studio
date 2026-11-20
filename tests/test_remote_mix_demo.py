@@ -65,3 +65,44 @@ def test_try_alone_walks_the_whole_tab_without_a_partner(tmp_path):
         assert not dialog.running and dialog.demo_button.isEnabled()
     finally:
         dialog.close()
+
+
+def test_try_alone_with_our_listening_clock_instead_of_link(tmp_path):
+    """No Link at all: the app hears the beat in the sound it sends."""
+    from test_remote_mix_beat_clock import club_loop
+
+    dialog = RemoteMixDialog(
+        link_factory=lambda: (_ for _ in ()).throw(AssertionError("Link must not open")),
+        addresses=list, report_dir=lambda: tmp_path,
+        now=lambda: datetime(2026, 11, 21, 21, 0),  # noqa: DTZ001
+        audio_backend=FakeBackend(), controls_path=tmp_path / "c.json", history_dirs=dict,
+        exports_dir=tmp_path, settings_path=tmp_path / "s.json",
+    )
+    try:
+        dialog.beat_combo.setCurrentIndex(dialog.beat_combo.findData("listen"))
+        assert not dialog.link_checkbox.isEnabled()
+        dialog.demo_button.click()
+        clock = dialog.sound_panel.listening_clock
+        assert clock is not None and not clock.locked
+        dialog.refresh()
+        assert dialog.next_step.key == "hear"
+        sound = dialog.sound_panel
+        sound.input_combo.setCurrentIndex(sound.input_combo.findText("Master In"))
+        assert sound.start()
+        dialog.refresh()
+        assert dialog.next_step.key == "hearing"
+        # Feed 10 s of a 125 BPM loop through the "Send my sound from" input.
+        pcm, _ = club_loop(125.0, 10.0)
+        stereo = np.repeat((pcm / 32768.0).astype(np.float32)[:, None], 2, axis=1)
+        for start in range(0, len(stereo), 4800):
+            sound._input.blocks.append(stereo[start : start + 4800])
+            sound.pump()
+        # Real time is not audio time in a test: anchor the reading on "now".
+        assert clock.reading is not None and abs(clock.reading.tempo - 125.0) < 0.6
+        dialog.refresh()
+        assert dialog.next_step.key in ("sound", "mixing")
+        assert "125" in dialog.lead_label.text() and not dialog.follow_checkbox.isVisible()
+        dialog.start_button.click()  # stop
+        assert dialog.sound_panel.listening_clock is None and dialog.beat_combo.isEnabled()
+    finally:
+        dialog.close()

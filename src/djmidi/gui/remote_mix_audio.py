@@ -224,6 +224,8 @@ class RemoteAudioPanel(ConsoleMixin, SharedMixerMixin, QFrame):
         self._program: AudioOutput | None = None
         self._phones: AudioOutput | None = None  # the cue (headphones), when chosen
         self._reader: Callable[[], LinkSnapshot | None] | None = None
+        # Our own beat clock (beat_clock.ListeningClock) hears the sound we send.
+        self.listening_clock = None
         self._position = 0
         self._send_buffer = audio.SendBuffer()
         self._me_fifo = np.zeros((0, audio.CHANNELS), dtype=np.float32)
@@ -859,11 +861,18 @@ class RemoteAudioPanel(ConsoleMixin, SharedMixerMixin, QFrame):
             return
         snapshot = self._reader()
         if snapshot is None or snapshot.tempo <= 0:
+            if self.listening_clock is not None and self._input is not None:
+                block = self._input.read()  # nothing to stamp yet: only listen for the beat
+                if len(block):
+                    self.me_meter.setValue(int(audio.peak(block) * 100))
+                    self.listening_clock.feed(block)
             return
         now_beat = local_beat_at(snapshot, snapshot.at)
         beats_per_frame = snapshot.tempo / 60.0 / audio.RATE
         if self._input is not None:
             block = self._input.read()
+            if len(block) and self.listening_clock is not None:
+                self.listening_clock.feed(block)
             if len(block):
                 self.me_meter.setValue(int(audio.peak(block) * 100))
                 start_beat = now_beat - len(block) * beats_per_frame

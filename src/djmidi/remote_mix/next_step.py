@@ -19,6 +19,8 @@ START = "start"  # connect
 GIVE_ADDRESS = "give_address"  # host: waiting for the other DJ
 WAIT_HOST = "wait_host"  # join: calling the host
 LINK = "link"  # connected, but no Link to follow
+HEAR = "hear"  # listening clock: send your sound so the app hears your beat
+HEARING = "hearing"  # listening clock: sound on, no clear beat yet
 SOUND = "sound"  # connected with Link: start the sound
 MIXING = "mixing"  # all set
 
@@ -27,6 +29,7 @@ ACTIONS = {
     START: "start",
     GIVE_ADDRESS: "copy_address",
     SOUND: "start_sound",
+    HEAR: "start_sound",
 }
 
 
@@ -38,6 +41,7 @@ class State:
     connected: bool = False
     link: bool = False
     sound: bool = False
+    listening: bool = False  # the beat comes from our listening clock, not Link
 
 
 @dataclass(frozen=True)
@@ -61,6 +65,8 @@ def next_step(state: State) -> Step | None:
     if not state.connected:
         return Step(GIVE_ADDRESS if state.role == HOST else WAIT_HOST, 1)
     if not state.link:
+        if state.listening:
+            return Step(HEARING if state.sound else HEAR, 2)
         return Step(LINK, 2)
     if not state.sound:
         return Step(SOUND, 3)

@@ -14,6 +14,7 @@
 - [The connection test](#the-connection-test)
 - [Reading the lights](#reading-the-lights)
 - [One tempo for two homes](#one-tempo-for-two-homes)
+- [Without Link: the app listens for your beat](#without-link-the-app-listens-for-your-beat)
 - [Hear each other on the grid](#hear-each-other-on-the-grid)
 - [The console](#the-console)
 - [Signals between DJs](#signals-between-djs)
@@ -161,6 +162,29 @@ so a jittery line doesn't make the beat wobble. The **Tempo and phase**
 light shows what's left of the gap.
 
 This bridge carries tempo and beat only; the sound comes next.
+
+## Without Link: the app listens for your beat
+
+Set **Beat from** to *Listening to my sound (no Link)* before you start:
+the app then finds your tempo and beats in the sound you send (**Send my
+sound from**), whatever your DJ software, with Link off. Start the sound and
+play a track with a clear kick; after a few seconds the panel reads *Your
+beat, heard: 124.0 BPM*.
+
+- The other DJ's sound lands on **your beats**, whole bars late, as with
+  Link. Which beat is "one" of the bar isn't known by ear: line up the
+  bars by ear, as you would on a single mixer.
+- The app can't move your tempo: match the other DJ's BPM with your pitch
+  fader. The **Tempo and phase** light shows both tempos and how far apart
+  the beats are (within one beat).
+- Tried on real tracks against their Serato beatgrids: the tempo was right
+  on house (124.0) and drum & bass (176.2); a dancehall track with a
+  3-3-2 kick was read at 140 instead of 105. The beat holds steady
+  (±5 ms) with a constant offset of a few tens of milliseconds that
+  depends on the track: correct it with **Fine-tune** if needed.
+
+Each side chooses its own source: one DJ on Link and the other listening
+works too.
 
 ## Hear each other on the grid
 
