@@ -565,7 +565,9 @@ MIDI_CLOCK: HelpEntry = (
         "Serato doesn't send MIDI Clock but shares its tempo over Ableton Link: tick "
         "<b>Enable Clock mirror policy</b>, choose <i>Ableton Link (DJ MIDI Studio)</i> as "
         "the source and your hardware's MIDI output as the destination, <b>Add Clock "
-        "route</b>, then <b>Start routing</b>. The status line shows "
+        "route</b>, then <b>Start routing</b>. Serato never sends Start over Link: press "
+        "<b>Start the clock on the next bar</b> and your gear starts on Serato's next "
+        "downbeat, no Ableton Live needed. The status line shows "
         "<i>CLOCK ACTIVE</i> while ticks flow.",
     ),
     "midi-routing-and-clock.md",
