@@ -124,6 +124,18 @@ MIDI tools (Live Monitor, MIDI Routing, MIDI Clock, Metronome) and every menu
 command. Nothing is removed in simple mode: a button that needs an expert page
 still opens it.
 
+Simple mode also lightens the busiest screens:
+
+- **Dashboard**: only the controllers plugged in, the steps that need you
+  with their buttons, and your own mapping one click away.
+- **Music**: Analyse BPM/key stays; the reports (duplicates, health,
+  statistics, change history), the file renaming and moving, the playlist
+  comparisons and the Categories tab are expert tools.
+- **Controller Setup**: the MIDI Output box (sending raw messages by hand) is
+  an expert tool.
+- **Macros**: the Max gap and Only in scenes rows and Add sync set… are expert
+  options.
+
 ## In this section
 
 | Page | What it covers |

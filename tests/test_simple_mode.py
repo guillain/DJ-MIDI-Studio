@@ -97,3 +97,21 @@ def test_the_dashboard_opens_my_mapping_in_one_click(monkeypatch, tmp_path):
     button.click()
     assert window.current_path is not None and window.software_id == "serato"
     assert intro.setup_mappings.count() == 0  # that file is open now
+
+
+def test_heavy_screens_keep_the_essentials_in_simple_mode():
+    from djmidi.gui import simple_mode
+    from djmidi.gui.controller_setup import ControllerSetupView
+    from djmidi.gui.music_library_view import MusicLibraryView
+
+    music = MusicLibraryView()
+    setup = ControllerSetupView()
+    hidden = [music.duplicates_button, music.health_button, music.stats_button, music.history_button]
+    assert all(button.isHidden() for button in hidden)
+    assert not music.analyse_button.isHidden() and not music.add_root_button.isHidden()
+    categories = next(i for i in range(music.side_tabs.count()) if music.side_tabs.tabText(i) == "Categories")
+    assert not music.side_tabs.isTabVisible(categories)
+    simple_mode.apply(True)
+    assert not any(button.isHidden() for button in hidden)
+    assert music.side_tabs.isTabVisible(categories)
+    assert setup  # built with its MIDI Output box registered

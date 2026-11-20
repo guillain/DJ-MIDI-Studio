@@ -86,6 +86,7 @@ from djmidi.file_locations import software_mapping_dirs
 from djmidi.first_run import FirstRunChoices
 from djmidi.gui import jog as jog_mod  # noqa: F401
 from djmidi.gui import layout as layout_mod
+from djmidi.gui import simple_mode
 from djmidi.gui.accessibility import name_icon_buttons
 from djmidi.gui.atelier_view import AtelierView
 from djmidi.gui.controller_emulator import ControllerEmulatorView
@@ -1495,6 +1496,7 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         pages and menu commands. Nothing is removed, a page a button asks
         for still opens."""
         expert = self.preferences.expert_mode
+        simple_mode.apply(expert)  # every view's expert-only widgets
         for key in self._EXPERT_PAGES:
             self.left_tabs.set_page_visible(key, expert)
         for item in self._expert_items:
