@@ -4,6 +4,7 @@ import html
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import ClassVar
 
 from PySide6.QtCore import QCoreApplication, Qt, Signal
 from PySide6.QtGui import QPixmap
@@ -65,6 +66,7 @@ class IntroductionView(QWidget):
     startupCheckRequested = Signal()
     expertModeRequested = Signal(bool)  # Simple mode ↔ Expert mode
     setupActionRequested = Signal(object)  # a startup_check.StartupItem to finish
+    mappingOpenRequested = Signal(str, str)  # path, software id
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -471,6 +473,10 @@ class IntroductionView(QWidget):
         self.setup_steps = QVBoxLayout()
         self.setup_steps.setSpacing(4)
         text.addLayout(self.setup_steps)
+        # "Open my Serato mapping for the DDJ-XP2": the file found for you.
+        self.setup_mappings = QVBoxLayout()
+        self.setup_mappings.setSpacing(4)
+        text.addLayout(self.setup_mappings)
         self.setup_software = QLabel()
         self.setup_software.setObjectName("setupSoftware")
         self.setup_software.setWordWrap(True)
@@ -533,6 +539,27 @@ class IntroductionView(QWidget):
             self.setup_software.setText(
                 self.tr("No DJ software found. The app works with Serato DJ, Traktor, rekordbox and Mixxx.")
             )
+
+    _SOFTWARE_NAMES: ClassVar[dict[str, str]] = {"serato": "Serato", "traktor": "Traktor"}
+
+    def set_mapping_suggestions(self, suggestions: list) -> None:
+        """(controller, software id, path): one button each to open the DJ's
+        own mapping for a plugged controller."""
+        while self.setup_mappings.count():
+            widget = self.setup_mappings.takeAt(0).widget()
+            if widget is not None:
+                widget.deleteLater()
+        for controller, software_id, path in suggestions:
+            button = QPushButton(
+                self.tr("Open my {software} mapping for the {controller}").format(
+                    software=self._SOFTWARE_NAMES.get(software_id, software_id), controller=controller
+                )
+            )
+            button.setToolTip(str(path))
+            button.clicked.connect(
+                lambda _checked=False, p=str(path), s=software_id: self.mappingOpenRequested.emit(p, s)
+            )
+            self.setup_mappings.addWidget(button, 0, Qt.AlignmentFlag.AlignLeft)
 
     def set_setup_summary(self, headline: str, devices: str, status: str) -> None:
         """Shows the startup check's verdict: `status` is ok / todo / blocking."""

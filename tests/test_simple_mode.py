@@ -64,3 +64,36 @@ def test_the_dashboard_lists_what_needs_the_dj_with_its_button(monkeypatch):
     first.click()
     assert opened == ["DDJ-XP2"]
     assert sc.CHECK  # the action came from the startup check
+
+
+def test_mapping_suggestions_pick_the_newest_file_named_after_each_controller(tmp_path):
+    import os
+
+    from djmidi.startup_check import mapping_suggestions
+
+    old, new = tmp_path / "ddj-xp2 old.xml", tmp_path / "XDJ-XZ DDJ-XP2 - 4 decks.xml"
+    for path in (old, new):
+        path.write_text("<midi/>")
+    os.utime(old, (1, 1))
+    other = tmp_path / "flx4.xml"
+    other.write_text("<midi/>")
+    got = mapping_suggestions(["DDJ-XP2", "DDJ-1000"], {"serato": [old, new, other]})
+    assert got == [("DDJ-XP2", "serato", new)]
+
+
+def test_the_dashboard_opens_my_mapping_in_one_click(monkeypatch, tmp_path):
+    from djmidi.gui import main_window as mw
+
+    fixture = tmp_path / "XDJ-XZ DDJ-XP2.xml"
+    fixture.write_bytes((__import__("pathlib").Path(__file__).parent.parent / "data" / "xdj_xz-ddj_xp2-4decks.xml").read_bytes())
+    monkeypatch.setattr(mw, "list_input_ports", lambda: ["DDJ-XP2"])
+    monkeypatch.setattr(mw, "list_output_ports", list)
+    window = mw.MainWindow()
+    monkeypatch.setattr(window, "_mapping_files_by_software", lambda: {"serato": [fixture]})
+    window.update_setup_summary()
+    intro = window.introduction_view
+    button = intro.setup_mappings.itemAt(0).widget()
+    assert button.text() == "Open my Serato mapping for the DDJ-XP2"
+    button.click()
+    assert window.current_path is not None and window.software_id == "serato"
+    assert intro.setup_mappings.count() == 0  # that file is open now

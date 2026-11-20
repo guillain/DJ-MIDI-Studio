@@ -552,6 +552,12 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         self.introduction_view.fileActionRequested.connect(self._on_dashboard_file_action)
         self.introduction_view.expertModeRequested.connect(self.set_expert_mode)
         self.introduction_view.setupActionRequested.connect(self._on_startup_action)
+        self.introduction_view.mappingOpenRequested.connect(
+            lambda path, software_id: (
+                self._load_mapping_from_path(Path(path), software_id=software_id),
+                self.update_setup_summary(),
+            )
+        )
         self._refresh_file_actions()
         self._layer_map_dialog: LayerMapDialog | None = None
         self.helpful_notes_dialog = HelpfulNotesDialog(self)
@@ -1287,7 +1293,30 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         )
         self.introduction_view.set_setup_summary(headline, devices, status)
         self.introduction_view.set_setup_steps(needing, self._find_dj_software())
+        open_path = Path(self.current_path).resolve() if getattr(self, "current_path", None) else None
+        self.introduction_view.set_mapping_suggestions(
+            [
+                (controller, software_id, path)
+                for controller, software_id, path in startup_check.mapping_suggestions(
+                    [device for device in report.devices if device in catalog.CONTROLLER_NAMES],
+                    self._mapping_files_by_software(),
+                )
+                if path.resolve() != open_path
+            ]
+        )
         return report
+
+    def _mapping_files_by_software(self) -> dict[str, list[Path]]:
+        """The DJ's own mapping files per DJ software (read-only); none in
+        tests, which must never read the real home folder."""
+        if self._layout_settings() is None:
+            return {}
+        files: dict[str, list[Path]] = {}
+        for software_id, pattern in (("serato", "*.xml"), ("traktor", "*.tsi")):
+            folders = software_mapping_dirs(software_id)
+            if folders and folders[0].is_dir():
+                files[software_id] = sorted(folders[0].glob(pattern))
+        return files
 
     def _find_dj_software(self) -> list:
         """The DJ programs on this computer; none in tests (the real disk and

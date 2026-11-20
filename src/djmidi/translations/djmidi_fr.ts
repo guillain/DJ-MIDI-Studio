@@ -3806,6 +3806,10 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
         <translation>Aucun logiciel DJ trouvé. L&apos;app fonctionne avec Serato DJ, Traktor, rekordbox et Mixxx.</translation>
     </message>
     <message>
+        <source>Open my {software} mapping for the {controller}</source>
+        <translation>Ouvrir mon mapping {software} de la {controller}</translation>
+    </message>
+    <message>
         <source>See my setup</source>
         <translation>Voir mon installation</translation>
     </message>
