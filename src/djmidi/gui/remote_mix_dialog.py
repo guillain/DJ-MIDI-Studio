@@ -186,6 +186,9 @@ class RemoteMixDialog(QDialog):
             )
         )
         self.beat_combo.currentIndexChanged.connect(self._on_beat_source)
+        # Its longest item must not widen the column (the tab folds to 2 columns).
+        self.beat_combo.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+        self.beat_combo.setMinimumContentsLength(12)
         form = QFormLayout()
         form.addRow(self.tr("Your addresses (give one to the other DJ):"), self.addresses_label)
         form.addRow(self.tr("Host's address:"), self.address_edit)
