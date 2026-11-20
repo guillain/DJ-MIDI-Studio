@@ -105,9 +105,13 @@ is off by default.
 ## Live feedback from the hardware
 
 Each emulator also follows the real controller, for the controller it shows:
-a hardware hit flashes the matching control, a held button stays amber until
-released, and LED messages sent by Serato latch the amber highlight (see
-[Live Monitor](live-monitor.md#see-what-serato-sends-back-led-feedback)).
+a hardware hit flashes the matching control, a held button gets a thick amber
+outline until released, and LED messages sent by Serato fill it amber until
+Serato puts the light out (see
+[Live Monitor](live-monitor.md#see-what-serato-sends-back-led-feedback)). The
+outline is your finger, the fill is the light: a pad Serato keeps lit stays
+filled after you release it. A controller Serato drives itself (DDJ-XP2) gets
+its pad lights straight from Serato, out of the app's sight.
 
 ## Pad colours
 
