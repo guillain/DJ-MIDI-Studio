@@ -52,12 +52,17 @@ no MIDI is sent and nothing outside the app's workspace is written. Only
 
 ## When it opens
 
-Plug a device in while the app runs and the check looks again: it opens on
-its own when that brings something new.
+In **simple mode** (the default) nothing pops up: the Dashboard's **Your
+setup** card lists the first three things that need you, each with its
+button (**Check it**, **Probe its lights**, **Create a scene**…), and names the
+DJ software found on this computer (Serato DJ, Traktor, rekordbox, Mixxx;
+"(open)" when it runs). **See what's missing** opens the full window.
 
-At startup, when at least one line you haven't hidden needs you — instead
-of the Helpful Notes. Untick **Show at startup when something needs you** to
-stop that; it's always in **Help → Startup Check…**.
+In **Expert mode** the window opens on its own, as before: at startup when a
+line you haven't hidden needs you (instead of the Helpful Notes), and when a
+device you plug in brings something new. Untick **Show at startup when
+something needs you** to stop that; it's always in **Help → Startup
+Check…**.
 
 ## Related
 
