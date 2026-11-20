@@ -74,6 +74,7 @@ class IntroductionView(QWidget):
         self._card_stats: dict[str, QLabel] = {}
         self._expert = False
         self._expert_widgets: list[QWidget] = []
+        self._card_expert_widgets: list[QWidget] = []
         self._availability_labels: dict[str, QLabel] = {}
         # Card photo label -> image path, until that card is first shown
         # (issue #264): loading and smooth-scaling every 2000 px reference
@@ -108,6 +109,7 @@ class IntroductionView(QWidget):
         self._controller_combo.addItems(catalog.CONTROLLER_NAMES)
 
         catalog_box = QGroupBox(self.tr("Known controllers"))
+        self._expert_widgets.append(catalog_box)  # the drill-down picker: expert
         catalog_layout = QVBoxLayout(catalog_box)
         catalog_layout.addLayout(help_row(self, *help_texts.DASHBOARD_CONTROLLERS))
         catalog_layout.addWidget(QLabel(self.tr("Active controller for drill-down:")))
@@ -224,10 +226,21 @@ class IntroductionView(QWidget):
         # bound-method connection is enough -- no stale-QObject risk.
         theme_signals.themeChanged.connect(self._on_theme_changed)
 
+    def _show_plugged_cards(self) -> None:
+        """Simple mode: only the plugged-in controllers' cards (all of them
+        when none is plugged in); Expert mode: every supported model."""
+        plugged = set(getattr(self, "_plugged", []))
+        tabs = getattr(self, "_controller_tabs", None)
+        if tabs is None:
+            return
+        for index in range(tabs.count()):
+            tabs.setTabVisible(index, self._expert or not plugged or tabs.tabText(index) in plugged)
+
     def set_expert_mode(self, expert: bool) -> None:
         self._expert = expert
-        for widget in (self.tools_box, *self._expert_widgets):
+        for widget in (self.tools_box, *self._expert_widgets, *self._card_expert_widgets):
             widget.setVisible(expert)
+        self._show_plugged_cards()
         if expert:
             self.expert_button.setText(self.tr("Back to simple mode"))
             self.expert_button.setToolTip(self.tr("Hide the expert tools: the essentials only"))
@@ -271,16 +284,18 @@ class IntroductionView(QWidget):
         }
         for controller, label in self._availability_labels.items():
             if not port_names:
-                label.setText(self.tr("MIDI: not checked"))
+                label.setText(self.tr("Not checked yet"))
                 label.setStyleSheet(_status_pill(theme_colors()["disabled_text"]))
             elif controller in detected:
-                label.setText(self.tr("MIDI: available"))
+                label.setText(self.tr("Plugged in"))
                 label.setStyleSheet(_status_pill("#1fa64f", filled=True))
             else:
-                label.setText(self.tr("MIDI: not detected"))
+                label.setText(self.tr("Not plugged in"))
                 label.setStyleSheet(_status_pill(theme_colors()["disabled_text"]))
         # What's plugged in comes first: show the first connected controller.
         plugged = [name for name in catalog.CONTROLLER_NAMES if name in detected]
+        self._plugged = plugged
+        self._show_plugged_cards()
         if plugged and self._controller_combo.currentText() not in plugged:
             self.set_controller(plugged[0])
 
@@ -375,6 +390,13 @@ class IntroductionView(QWidget):
                 buttons.addStretch(1)
             buttons.addWidget(button)
             self._files_buttons[action] = button
+        # The previous version and the sync sets: expert rows.
+        self._expert_widgets += [
+            self._files_backup_label,
+            self._files_sync_label,
+            self._files_buttons["restore"],
+            self._files_buttons["sync"],
+        ]
         self._files_buttons["restore"].setToolTip(self.tr("Restore the version saved before the last save"))
         self._files_buttons["sync"].setToolTip(self.tr("Manage the controller sync sets (Preferences)"))
         row = QHBoxLayout()
@@ -610,6 +632,7 @@ class IntroductionView(QWidget):
         self._refresh_card_stats()
 
     def _rebuild_controller_cards(self, names: list[str]) -> None:
+        self._card_expert_widgets = []  # the cards (and their widgets) are rebuilt
         self._controller_tabs.clear()
         self._card_stats = {}
         self._availability_labels = {}
@@ -654,7 +677,7 @@ class IntroductionView(QWidget):
         catalog_info.setWordWrap(True)
         details.addWidget(catalog_info, 1)
 
-        availability = QLabel(self.tr("MIDI: not checked"))
+        availability = QLabel(self.tr("Not checked yet"))
         availability.setStyleSheet(_status_pill(theme_colors()["disabled_text"]))
         self._availability_labels[controller] = availability
         details.addWidget(availability, 0, Qt.AlignmentFlag.AlignLeft)
@@ -669,6 +692,11 @@ class IntroductionView(QWidget):
         for label in (catalog_info, availability, stats):
             label.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
             label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        # The pill keeps its own height (it stretched alone in simple mode).
+        availability.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Fixed)
+        for label in (catalog_info, stats):  # catalog and file counts: expert detail
+            self._card_expert_widgets.append(label)
+            label.setVisible(self._expert)
         buttons = QVBoxLayout()
         for target, label in (
             ("channel", self.tr("Channel")),
@@ -679,7 +707,7 @@ class IntroductionView(QWidget):
             btn.clicked.connect(lambda _checked=False, t=target, c=controller: self._drilldown_controller(t, c))
             buttons.addWidget(btn)
             if target == "channel":
-                self._expert_widgets.append(btn)  # the raw mapping list
+                self._card_expert_widgets.append(btn)  # the raw mapping list
                 btn.setVisible(self._expert)
         details.addLayout(buttons)
         layout.addLayout(details, 0)

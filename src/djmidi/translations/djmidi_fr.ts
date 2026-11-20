@@ -3634,18 +3634,6 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
         <translation>(aucun contrôleur enregistré)</translation>
     </message>
     <message>
-        <source>MIDI: not checked</source>
-        <translation>MIDI : non vérifié</translation>
-    </message>
-    <message>
-        <source>MIDI: available</source>
-        <translation>MIDI : disponible</translation>
-    </message>
-    <message>
-        <source>MIDI: not detected</source>
-        <translation>MIDI : non détecté</translation>
-    </message>
-    <message>
         <source>No track yet: add your music folder in the Music tab.</source>
         <translation>Aucun morceau : ajoutez votre dossier de musique dans l’onglet Musique.</translation>
     </message>
@@ -3672,6 +3660,18 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
     <message>
         <source>Expert mode: the mapping lists by channel and by deck, the Studio, the MIDI tools, every menu command</source>
         <translation>Mode expert : les listes du mapping par canal et par platine, le Studio, les outils MIDI, toutes les commandes des menus</translation>
+    </message>
+    <message>
+        <source>Not checked yet</source>
+        <translation>Pas encore vérifié</translation>
+    </message>
+    <message>
+        <source>Plugged in</source>
+        <translation>Branché</translation>
+    </message>
+    <message>
+        <source>Not plugged in</source>
+        <translation>Pas branché</translation>
     </message>
     <message>
         <source>Your DJ setup in one place: controllers, your {software} mapping, and your music. Start with the card below: it says what&apos;s ready and what&apos;s next.</source>
