@@ -61,6 +61,7 @@ def test_main_window_saves_compares_and_restores(tmp_path):
     mapping = tmp_path / "mapping.xml"
     mapping.write_bytes(FIXTURE.read_bytes())
     window = MainWindow()
+    window.set_expert_mode(True)  # snapshots are expert commands
     try:
         window._load_mapping_from_path(mapping, software_id="serato")
         assert window._save_snapshot_action.isEnabled()

@@ -42,6 +42,9 @@ class PluginPreferences:
     theme: ThemeMode = "light"  # the default since v0.48.226 (was "system")
     # Interface language (issue #263): English unless chosen, applied at launch.
     language: LanguagePreference = "en"
+    # Expert mode: every tool shown (mapping trees, Studio, MIDI tools, every
+    # menu command). Off = the simple app testers asked for (2026-11-20).
+    expert_mode: bool = False
     auto_start_live_monitor: bool = True
     # Reopen the last mapping and Controller Setup draft at launch (issue #175).
     reopen_last_files: bool = True
@@ -112,6 +115,7 @@ class PluginPreferences:
                 "log_path": self.log_path,
                 "theme": self.theme,
                 "language": self.language,
+                "expert_mode": self.expert_mode,
                 "auto_start_live_monitor": self.auto_start_live_monitor,
                 "reopen_last_files": self.reopen_last_files,
                 "auto_sync_on_startup": self.auto_sync_on_startup,
@@ -174,6 +178,7 @@ class PluginPreferences:
             log_path=str(raw.get("log_path", "")),
             theme=theme,
             language=language,
+            expert_mode=bool(raw.get("expert_mode", False)),
             auto_start_live_monitor=bool(raw.get("auto_start_live_monitor", True)),
             reopen_last_files=bool(raw.get("reopen_last_files", True)),
             auto_sync_on_startup=bool(raw.get("auto_sync_on_startup", True)),

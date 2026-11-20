@@ -13,6 +13,7 @@
 - [Highlights](#highlights)
 - [Also in the box](#also-in-the-box)
 - [Get started](#get-started)
+- [Simple mode and Expert mode](#simple-mode-and-expert-mode)
 - [In this section](#in-this-section)
 
 ## Highlights
@@ -112,6 +113,16 @@ from rekordbox's mappings and 115 other-brand profiles from Mixxx's, installed o
    and the everyday workflow.
 3. Pick a feature above, or try a ready-made recipe in
    [End-to-end examples](examples.md).
+
+## Simple mode and Expert mode
+
+The app opens in **simple mode**: the Dashboard, your controllers (Setup,
+Images, By Controller), Music and Mix Together, with the menu commands most
+DJs need. **Show every tool** (top right of the Dashboard) or **Expert mode**
+in Preferences adds the mapping lists by channel and by deck, the Studio, the
+MIDI tools (Live Monitor, MIDI Routing, MIDI Clock, Metronome) and every menu
+command. Nothing is removed in simple mode: a button that needs an expert page
+still opens it.
 
 ## In this section
 
