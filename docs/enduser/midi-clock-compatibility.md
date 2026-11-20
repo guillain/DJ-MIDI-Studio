@@ -85,16 +85,16 @@ missing, the UI reports the dependency instead of silently creating a dead
 route.
 For a Link source, `CLOCK INACTIVE` means that no playing Link transport has
 been seen yet; it does not mean that a physical MIDI input port is missing.
-Start Ableton Live playback after joining the same Link session, and make
-sure Live's own "Start Stop Sync" is enabled in its Link/Tempo preferences —
-it is a separate opt-in from plain Link and off by default. DJ MIDI Studio's
-own session enables the matching opt-in (`start_stop_sync_enabled`)
-automatically; without it, no peer's real Start/Stop could ever reach the
-follower, which is what made this path look broken on real hardware before
-it was fixed (2026-09-04, see TODO.md). Serato's own Ableton Link integration
-publishes tempo only, never transport, regardless of this setting, so Serato
-alone can never drive this path — some other genuinely Start-Stop-Sync-
-capable Link peer (Ableton Live here) is required.
+Serato's own Ableton Link integration publishes tempo only, never transport,
+so press `Start the clock on the next bar` once routing runs: DJ MIDI Studio
+sends Start just before Serato's next bar line, then 24 ticks per beat locked
+to Link's phase, and publishes the Start/Stop on its Link session (other
+peers with *Start Stop Sync* follow). The status reads "starting on the next
+bar" meanwhile. Ableton Live is no longer required; if it is in the session
+with its own "Start Stop Sync" enabled (a separate opt-in, off by default),
+its Play still starts the clock as before. DJ MIDI Studio's own session
+enables the matching opt-in (`start_stop_sync_enabled`) automatically.
+
 The XDJ-XZ and DDJ-XP2 remain control surfaces; this project does not claim
 either one as a verified Serato MIDI Clock generator.
 
