@@ -199,13 +199,17 @@ class MappingViewsMixin:
         self.deck_layout_view.set_usage(usage, linked_cells)
         self.controller_layout_view.set_usage(usage, linked_cells)
         self.introduction_view.set_usage_summary(usage)
+        self._last_usage = usage
         self._refresh_controller_columns(usage)
 
     def _refresh_controller_columns(self, usage: dict[layout_mod.CellKey, dict[str, set[str]]]) -> None:
         self.controller_splitter = replace_splitter(self._controller_columns_scroll, self.controller_splitter)
         self._controller_tree_views = []
 
+        mine = self._my_controllers()
         for _controller, model, expand_flags in build_controller_columns(usage):
+            if mine and _controller not in mine:
+                continue  # simple mode: only the DJ's own controllers
             view = QTreeView()
             view.setMinimumWidth(MAPPING_COLUMN_MIN_WIDTH)
             self._style_mapping_tree(view)

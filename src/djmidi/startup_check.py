@@ -134,6 +134,14 @@ def _squash(text: str) -> str:
     return re.sub(r"[^a-z0-9]", "", text.lower())
 
 
+def controllers_named_in(text: str, controllers: Sequence[str]) -> list[str]:
+    """The controllers whose name appears in ``text`` (a mapping's file name,
+    "xdj_xz-ddj_xp2-4decks" → XDJ-XZ and DDJ-XP2), ignoring case and
+    punctuation."""
+    squashed = _squash(text)
+    return [name for name in controllers if _squash(name) and _squash(name) in squashed]
+
+
 def _port_connected(port: str, outputs: Sequence[str]) -> bool:
     if port in outputs:
         return True

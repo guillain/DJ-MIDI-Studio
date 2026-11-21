@@ -1,8 +1,12 @@
 """Simple mode (default) vs Expert mode: testers found the app too
 complicated (2026-11-20); expert tools are hidden, never removed."""
 
+from pathlib import Path
+
 from djmidi.gui.main_window import MainWindow
 from djmidi.plugins.preferences import PluginPreferences
+
+FIXTURE = Path(__file__).resolve().parent.parent / "data" / "xdj_xz-ddj_xp2-4decks.xml"
 
 
 def test_simple_mode_is_the_default_and_hides_the_expert_tools():
@@ -143,3 +147,17 @@ def test_simple_mode_opens_no_window_at_launch(monkeypatch):
     window._show_startup_dialog()
     assert opened == ["wizard"]
     window._startup_watch_timer.stop()
+
+
+def test_by_controller_shows_only_my_controllers_in_simple_mode(monkeypatch):
+    from djmidi.gui import main_window as mw
+    from djmidi.startup_check import controllers_named_in
+
+    assert controllers_named_in("xdj_xz-ddj_xp2-4decks", ["XDJ-XZ", "DDJ-XP2", "DDJ-REV1"]) == ["XDJ-XZ", "DDJ-XP2"]
+    monkeypatch.setattr(mw, "list_input_ports", list)
+    window = mw.MainWindow()
+    window._load_mapping_from_path(FIXTURE, software_id="serato")
+    titles = {v.model().horizontalHeaderItem(0).text() for v in window._controller_tree_views}
+    assert titles == {"XDJ-XZ", "DDJ-XP2"}
+    window.set_expert_mode(True)
+    assert len(window._controller_tree_views) > 2  # every model the notes match
