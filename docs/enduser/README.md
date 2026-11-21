@@ -128,9 +128,10 @@ Simple mode also lightens the busiest screens:
 
 - **Dashboard**: only the controllers plugged in, the steps that need you
   with their buttons, and your own mapping one click away.
-- **By Controller**: one column per controller you own (plugged in, or named
-  in the mapping's file name, like `xdj_xz-ddj_xp2-4decks.xml`), not one per
-  model whose notes happen to match.
+- **By Controller**, **Images** and the controller tabs under the mapping
+  views: only the controllers you own (plugged in, or named in the mapping's
+  file name, like `xdj_xz-ddj_xp2-4decks.xml`), not every model whose notes
+  happen to match; they follow when you plug a controller in.
 - **Music**: Analyse BPM/key stays; the reports (duplicates, health,
   statistics, change history), the file renaming and moving, the playlist
   comparisons and the Categories tab are expert tools.

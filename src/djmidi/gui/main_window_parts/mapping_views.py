@@ -206,9 +206,7 @@ class MappingViewsMixin:
         self.controller_splitter = replace_splitter(self._controller_columns_scroll, self.controller_splitter)
         self._controller_tree_views = []
 
-        mine = self._my_controllers()
-        for layout_view in (self.layout_view, self.deck_layout_view, self.controller_layout_view):
-            layout_view.show_only(mine)
+        mine = self._apply_my_controllers()
         for _controller, model, expand_flags in build_controller_columns(usage):
             if mine and _controller not in mine:
                 continue  # simple mode: only the DJ's own controllers

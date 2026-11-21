@@ -303,6 +303,17 @@ class ControllerImageView(QWidget):
         self._combo.blockSignals(False)
         self._load(self._combo.currentText())
 
+    def show_only(self, names: set[str]) -> None:
+        """Simple mode: only these controllers in the picker (empty = all);
+        a hidden current controller gives way to the first one kept."""
+        view = self._combo.view()
+        for index in range(self._combo.count()):
+            view.setRowHidden(index, bool(names) and self._combo.itemText(index) not in names)
+        if names and self._combo.currentText() not in names:
+            first = next((i for i in range(self._combo.count()) if self._combo.itemText(i) in names), None)
+            if first is not None:
+                self._combo.setCurrentIndex(first)
+
     def set_controller(self, name: str) -> bool:
         """Selects a controller by name; returns False if not present."""
         index = self._combo.findText(name)
