@@ -8022,6 +8022,14 @@ Ausgewählte Zeilen in der Controller-Einrichtung: {selected}</translation>
         <translation>Schreibt eine neue rekordbox-XML-Datei an den gewählten Ort, für die importierte Bibliothek von rekordbox. Rührt die rekordbox-Bibliothek selbst nie an.</translation>
     </message>
     <message>
+        <source>Repair Serato and Traktor playlists…</source>
+        <translation>Serato- und Traktor-Playlists reparieren…</translation>
+    </message>
+    <message>
+        <source>Finds the tracks missing from your Serato crates and Traktor playlists (moved, renamed, or a duplicate you discarded) and points them at the file that replaced it, after you check the list. Serato and Traktor must be closed; a .bak copy of every file changed is kept.</source>
+        <translation>Findet die fehlenden Tracks Ihrer Serato-Crates und Traktor-Playlists (verschoben, umbenannt oder ein verworfenes Duplikat) und verweist sie auf die Datei, die sie ersetzt, nachdem Sie die Liste geprüft haben. Serato und Traktor müssen geschlossen sein; von jeder geänderten Datei bleibt eine .bak-Kopie.</translation>
+    </message>
+    <message>
         <source>Compare with crate…</source>
         <translation>Mit Crate vergleichen…</translation>
     </message>
@@ -8068,6 +8076,10 @@ Ausgewählte Zeilen in der Controller-Einrichtung: {selected}</translation>
     <message>
         <source>Export</source>
         <translation>Exportieren</translation>
+    </message>
+    <message>
+        <source>Your DJ software</source>
+        <translation>Ihre DJ-Software</translation>
     </message>
     <message>
         <source>Compare</source>
@@ -8286,20 +8298,12 @@ Nur der Index dieser App wird geleert -- keine Datei wird angerührt.</translati
         <translation>{count} Duplikat(e) in den Papierkorb verschoben.</translation>
     </message>
     <message>
-        <source>Update playlists</source>
-        <translation>Playlists aktualisieren</translation>
-    </message>
-    <message>
-        <source>{count} discarded copy(ies) are in this app&apos;s playlists:</source>
-        <translation>{count} verworfene Kopie(n) sind in Playlists dieser App:</translation>
-    </message>
-    <message>
-        <source>Point those playlists at the kept copy instead? (Serato, Traktor and Rekordbox files are not changed.)</source>
-        <translation>Diese Playlists stattdessen auf die behaltene Kopie zeigen lassen? (Dateien von Serato, Traktor und Rekordbox werden nicht geändert.)</translation>
-    </message>
-    <message>
         <source> Playlists now use the kept copy for {count} of them.</source>
         <translation> Die Playlists verwenden jetzt für {count} davon die behaltene Kopie.</translation>
+    </message>
+    <message>
+        <source> {count} Serato/Traktor entry(ies) now use the kept copy.</source>
+        <translation> {count} Serato/Traktor-Einträge verwenden jetzt die behaltene Kopie.</translation>
     </message>
     <message>
         <source> {count} could not be moved.</source>
@@ -8312,6 +8316,58 @@ Nur der Index dieser App wird geleert -- keine Datei wird angerührt.</translati
     <message>
         <source>Reason</source>
         <translation>Grund</translation>
+    </message>
+    <message>
+        <source>Your Serato crates and Traktor playlists have no missing track.</source>
+        <translation>Ihren Serato-Crates und Traktor-Playlists fehlt kein Track.</translation>
+    </message>
+    <message>
+        <source>replaced in this app</source>
+        <translation>in dieser App ersetzt</translation>
+    </message>
+    <message>
+        <source>same file name</source>
+        <translation>gleicher Dateiname</translation>
+    </message>
+    <message>
+        <source>same title and artist</source>
+        <translation>gleicher Titel und Künstler</translation>
+    </message>
+    <message>
+        <source>Repair DJ playlists</source>
+        <translation>DJ-Playlists reparieren</translation>
+    </message>
+    <message>
+        <source>{count} track(s) are missing from your playlists, none found again for sure:</source>
+        <translation>{count} Track(s) fehlen in Ihren Playlists, keiner sicher wiedergefunden:</translation>
+    </message>
+    <message>
+        <source>Software</source>
+        <translation>Software</translation>
+    </message>
+    <message>
+        <source>Missing file</source>
+        <translation>Fehlende Datei</translation>
+    </message>
+    <message>
+        <source>{count} other missing track(s) stay as they are: no file fits for sure.</source>
+        <translation>{count} weitere fehlende Track(s) bleiben, wie sie sind: keine Datei passt sicher.</translation>
+    </message>
+    <message>
+        <source>{count} missing track(s) found again in your library:</source>
+        <translation>{count} fehlende Track(s) in Ihrer Bibliothek wiedergefunden:</translation>
+    </message>
+    <message>
+        <source>Found</source>
+        <translation>Gefunden</translation>
+    </message>
+    <message>
+        <source>How</source>
+        <translation>Wie</translation>
+    </message>
+    <message>
+        <source>Repair {count}</source>
+        <translation>{count} reparieren</translation>
     </message>
     <message>
         <source>Change reverted on {count} file(s).</source>
@@ -8884,6 +8940,22 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     <message>
         <source>left alone, {reason}</source>
         <translation>unverändert, {reason}</translation>
+    </message>
+    <message>
+        <source>Serato and Traktor must be closed. Every file changed is backed up first; only these entries change.</source>
+        <translation>Serato und Traktor müssen geschlossen sein. Jede geänderte Datei wird zuerst gesichert; nur diese Einträge ändern sich.</translation>
+    </message>
+    <message>
+        <source>{software}: {count} missing track(s) found again</source>
+        <translation>{software}: {count} fehlende Track(s) wiedergefunden</translation>
+    </message>
+    <message>
+        <source>Repaired {count} playlist entry(ies); the files changed are backed up in Snapshots.</source>
+        <translation>{count} Playlist-Einträge repariert; die geänderten Dateien sind in Snapshots gesichert.</translation>
+    </message>
+    <message>
+        <source>Left alone: {list}</source>
+        <translation>Unverändert gelassen: {list}</translation>
     </message>
     <message>
         <source>rekordbox XML or device export (*.xml export.pdb)</source>

@@ -1055,7 +1055,7 @@ def test_discard_duplicates_moves_ticked_copies_to_trash(library, monkeypatch):
     assert dialog.checked_paths() == [str(copy)]
     dialog.trash_button.click()
     assert confirmations == [[(str(copy), str(original))]]
-    assert lists[0][1] == "Update playlists" and lists[0][4] == [("Friday",)]
+    assert lists == []  # this app's playlists follow the kept copy without a question
     assert not copy.exists() and (bin_dir / "a copy.mp3").is_file()
     assert original.is_file()
     assert view.db.playlist_paths(playlist) == [str(original), str(music / "misc" / "c.mp3")]
@@ -1953,3 +1953,30 @@ def test_a_note_follows_a_relinked_track(tmp_path):
     db.relink_tracks([(old.id, str(tmp_path / "new.mp3"), root.id, 10, 2.0)])
     assert db.track_notes() == {new.id: "keep me"}
     db.close()
+
+
+def test_repair_dj_playlists_points_a_serato_crate_at_the_moved_file(library, monkeypatch, tmp_path):
+    from djmidi.library import serato_library
+
+    view, music, _ = library
+    crates = tmp_path / "dj" / "Music" / "_Serato_" / "Subcrates"
+    crates.mkdir(parents=True)
+    crate = crates / "Friday.crate"
+    root = Path(crate.resolve().anchor)
+    moved = (music / "Tek" / "Tribe" / "b.mp3").resolve()
+    gone = (tmp_path / "old place" / "b.mp3").resolve()
+    serato_library.write_crate_file(crate, [str(gone.relative_to(root))])
+    view.dj_home = tmp_path / "dj"
+    lists: list[tuple] = []
+    monkeypatch.setattr(mlv, "confirm_list", lambda *args, **kwargs: lists.append(args) or True)
+    infos: list[str] = []
+    monkeypatch.setattr(QMessageBox, "information", lambda _p, _t, text, *a, **k: infos.append(text))
+    view.dj_running = lambda: ["Serato DJ Pro"]
+    assert view.repair_dj_playlists(backup_root=tmp_path / "snap") == 0 and "is running" in infos[0]
+    assert serato_library.parse_crate(crate) == [str(gone.relative_to(root))]  # untouched while Serato runs
+    view.dj_running = list
+    assert view.repair_dj_playlists(backup_root=tmp_path / "snap") == 1
+    assert lists[-1][4][0][:2] == ("Serato", "Friday")
+    assert serato_library.parse_crate(crate) == [str(moved.relative_to(root))]
+    assert list((tmp_path / "snap").glob("serato-playlists-*/Friday.crate"))
+    assert "Repaired 1 playlist entry(ies)" in view.status_label.text()

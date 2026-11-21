@@ -307,6 +307,10 @@ surgical and logged. Qt-free modules; the tab is a thin view over `library/works
   `taxonomy/` (genre families, aliases, fuzzy suggestions never auto-applied), `smart_playlist.py`,
   `set_prep.py` (hand-ordered set, transitions, order proposal, generate from library, stage notes),
   `relink.py`, `duplicates.py` + `discard.py` (Trash only, via injectable trash function; never a hard delete),
+  `dj_playlists.py` (repoint Serato crates / Traktor playlists after a preview, refused while the software
+  runs, backed up in Snapshots) + `dj_playlist_repair.py` (finds dangling crate/playlist entries and their one
+  replacement: change history, unique file name, unique title+artist; `DJMIDI_DJ_HOME` keeps tests off the
+  real home),
   `health.py`, `stats.py`, `rename.py` / `organize.py` (inside library roots, never in protected DJ folders),
   `change_log.py` (every file write logged and revertible), `playlist_compare.py`, `gig_journal.py`.
 - Performance at ~85k tracks matters: the table model sorts itself, the proxy only filters, no-op filter changes
