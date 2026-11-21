@@ -1,8 +1,8 @@
 # 🧭 First-run setup
 
-> On the very first launch, a short wizard finds your controllers, offers to
-> open your Serato MIDI mapping and to record a controller sync set. Every
-> step is optional, and you can run it again from the Help menu.
+> In Expert mode, a short wizard finds your controllers, offers to open your
+> Serato MIDI mapping and to record a controller sync set. In simple mode (the
+> default) the Dashboard does the same without a window.
 
 📍 [Docs](../../README.md) › [End user](../README.md) › [Features](README.md) › First-run setup
 
@@ -17,10 +17,14 @@
 
 ## When it appears
 
-The wizard opens by itself once, the first time DJ MIDI Studio starts on a
-computer where it has no preferences yet. Click **Skip** at any step to
-close it; finished or skipped, it won't open by itself again. Run it any
-time later from `Help → First-Run Setup…`.
+In **simple mode** (the default) no window opens at launch: the Dashboard's
+**Your setup** card names your controllers and DJ software, lists what's left
+with its button and offers **Open my Serato mapping for the …**.
+
+In **Expert mode** the wizard opens by itself once, the first time DJ MIDI
+Studio starts on a computer where it has no preferences yet. Click **Skip** at
+any step to close it; finished or skipped, it won't open by itself again. Run
+it any time later from `Help → First-Run Setup…`.
 
 ## Your controllers
 
