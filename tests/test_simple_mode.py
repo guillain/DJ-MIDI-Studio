@@ -161,6 +161,25 @@ def test_by_controller_shows_only_my_controllers_in_simple_mode(monkeypatch):
     assert titles == {"XDJ-XZ", "DDJ-XP2"}
     tabs = window.controller_layout_view._controller_tabs
     assert {tabs.tabText(i) for i in range(tabs.count()) if tabs.isTabVisible(i)} == {"XDJ-XZ", "DDJ-XP2"}
+    combo = window.controller_image_view._combo
+    kept = {combo.itemText(i) for i in range(combo.count()) if not combo.view().isRowHidden(i)}
+    assert kept == {"XDJ-XZ", "DDJ-XP2"} and combo.currentText() in kept
     window.set_expert_mode(True)
     assert all(tabs.isTabVisible(i) for i in range(tabs.count()))
     assert len(window._controller_tree_views) > 2  # every model the notes match
+
+
+def test_plugging_a_controller_narrows_the_pickers_without_a_mapping(monkeypatch):
+    from djmidi.gui import main_window as mw
+
+    ports = []
+    monkeypatch.setattr(mw, "list_input_ports", lambda: list(ports))
+    monkeypatch.setattr(mw, "list_output_ports", list)
+    window = mw.MainWindow()
+    combo = window.controller_image_view._combo
+    shown = lambda: {combo.itemText(i) for i in range(combo.count()) if not combo.view().isRowHidden(i)}
+    window.update_setup_summary()
+    assert len(shown()) > 2  # nothing to go by: every model
+    ports.append("DDJ-XP2")
+    window.update_setup_summary()
+    assert shown() == {"DDJ-XP2"} and combo.currentText() == "DDJ-XP2"

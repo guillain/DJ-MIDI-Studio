@@ -1309,6 +1309,7 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         )
         self.introduction_view.set_setup_summary(headline, devices, status)
         self.introduction_view.set_setup_steps(needing, self._find_dj_software())
+        self._apply_my_controllers()  # a controller plugged in or out
         open_path = Path(self.current_path).resolve() if getattr(self, "current_path", None) else None
         self.introduction_view.set_mapping_suggestions(
             [
@@ -1519,6 +1520,8 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         self.introduction_view.set_expert_mode(expert)
         if getattr(self, "_last_usage", None) is not None:
             self._refresh_controller_columns(self._last_usage)
+        else:
+            self._apply_my_controllers()
 
     def _my_controllers(self) -> set[str]:
         """Simple mode: the controllers plugged in and those the open mapping
@@ -1531,6 +1534,14 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         mine = {match.controller.name for port in list_input_ports() for match in catalog.detect_controller(port)}
         if getattr(self, "current_path", None):
             mine |= set(startup_check.controllers_named_in(Path(self.current_path).stem, names))
+        return mine
+
+    def _apply_my_controllers(self) -> set[str]:
+        """Narrows every controller picker to the DJ's own controllers in
+        simple mode (all of them in Expert mode); returns that set."""
+        mine = self._my_controllers()
+        for view in (self.layout_view, self.deck_layout_view, self.controller_layout_view, self.controller_image_view):
+            view.show_only(mine)
         return mine
 
     def set_expert_mode(self, on: bool) -> None:
