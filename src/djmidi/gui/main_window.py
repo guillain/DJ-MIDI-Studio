@@ -1129,6 +1129,7 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         self._startup_check_action.triggered.connect(lambda: self.open_startup_check())
         help_menu.addAction(self._startup_check_action)
         self._first_run_action = QAction(self.tr("First-Run &Setup..."), self)
+        self._expert_items.append(self._first_run_action)  # the Dashboard does it in simple mode
         self._first_run_action.setToolTip(
             self.tr("Detect your controllers, open your Serato mapping and record a controller sync set.")
         )
@@ -1161,7 +1162,17 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         self.helpful_notes_dialog.activateWindow()
 
     def _show_startup_dialog(self) -> None:
-        """The first-run wizard on a genuine first launch, else Helpful Notes."""
+        """Simple mode: no window over the app, the Dashboard says what's next
+        (it detects the controllers and the DJ software and offers the
+        mapping, what the first-run wizard asked one page at a time).
+        Expert mode: the first-run wizard on a genuine first launch, else the
+        startup check or Helpful Notes."""
+        if not self.preferences.expert_mode:
+            if self._layout_settings() is not None:  # the real app, not tests or doc captures
+                self.update_setup_summary()
+                self.left_tabs.setCurrentIndex(self._tab_indexes["intro"])
+            self._startup_watch_timer.start()
+            return
         if self._should_show_first_run_wizard():
             self._on_first_run_wizard()
         elif not self._show_startup_check_if_needed():

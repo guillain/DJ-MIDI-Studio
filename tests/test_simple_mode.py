@@ -123,3 +123,23 @@ def test_a_group_left_with_one_page_hides_its_tab_row():
     assert mapping_group.tabBar().isHidden()  # only By Controller in simple mode
     window.set_expert_mode(True)
     assert not mapping_group.tabBar().isHidden()
+
+
+def test_simple_mode_opens_no_window_at_launch(monkeypatch):
+    window = MainWindow()
+    opened = []
+    monkeypatch.setattr(window, "_layout_settings", lambda: object())  # as in the real app
+    monkeypatch.setattr(window, "update_setup_summary", lambda *a: None)
+    monkeypatch.setattr(window, "_should_show_first_run_wizard", lambda: True)
+    monkeypatch.setattr(window, "_on_first_run_wizard", lambda *a: opened.append("wizard"))
+    monkeypatch.setattr(window, "_show_helpful_notes_if_enabled", lambda: opened.append("notes"))
+    monkeypatch.setattr(window, "open_startup_check", lambda *a: opened.append("check"))
+    window.left_tabs.setCurrentIndex(window._tab_indexes["library"])
+    window._show_startup_dialog()
+    assert opened == []
+    assert window.left_tabs.currentIndex() == window._tab_indexes["intro"]
+    window._startup_watch_timer.stop()
+    window.preferences.expert_mode = True
+    window._show_startup_dialog()
+    assert opened == ["wizard"]
+    window._startup_watch_timer.stop()

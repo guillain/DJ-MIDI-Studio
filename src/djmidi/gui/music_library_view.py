@@ -1196,6 +1196,7 @@ class MusicLibraryView(QWidget):
         summary_row.addWidget(self.folders_toggle)
         self._folders_summary_row = QWidget()
         self._folders_summary_row.setLayout(summary_row)
+
         box.addWidget(self._folders_summary_row)
         self._folders_body = QWidget()
         body = QVBoxLayout(self._folders_body)
@@ -2663,6 +2664,9 @@ class MusicLibraryView(QWidget):
             return
         self._folders_summary_row.setVisible(has_tracks)
         self._folders_body.setVisible(not has_tracks or self.folders_toggle.isChecked())
+        # Folding the body must shrink the box: without this it kept the
+        # unfolded height (an empty band above the tracks).
+        self._folders_body.parentWidget().updateGeometry()
         if has_tracks and self.status_label.text() == self._initial_status:
             self.status_label.setText("")
         if has_tracks:
