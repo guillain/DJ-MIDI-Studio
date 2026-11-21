@@ -159,5 +159,8 @@ def test_by_controller_shows_only_my_controllers_in_simple_mode(monkeypatch):
     window._load_mapping_from_path(FIXTURE, software_id="serato")
     titles = {v.model().horizontalHeaderItem(0).text() for v in window._controller_tree_views}
     assert titles == {"XDJ-XZ", "DDJ-XP2"}
+    tabs = window.controller_layout_view._controller_tabs
+    assert {tabs.tabText(i) for i in range(tabs.count()) if tabs.isTabVisible(i)} == {"XDJ-XZ", "DDJ-XP2"}
     window.set_expert_mode(True)
+    assert all(tabs.isTabVisible(i) for i in range(tabs.count()))
     assert len(window._controller_tree_views) > 2  # every model the notes match

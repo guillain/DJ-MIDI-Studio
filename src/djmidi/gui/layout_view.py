@@ -783,6 +783,18 @@ class ControllerLayoutView(DeferredRebuild, QWidget):
         self._controller = self._controller_tabs.tabText(index)
         self._rebuild()
 
+    def show_only(self, names: set[str]) -> None:
+        """Simple mode: only these controllers' tabs (empty = all of them);
+        the shown controller moves to the first one kept if it was hidden."""
+        tabs = self._controller_tabs
+        for index in range(tabs.count()):
+            tabs.setTabVisible(index, not names or tabs.tabText(index) in names)
+        if names and self._controller not in names:
+            first = next((i for i in range(tabs.count()) if tabs.isTabVisible(i)), None)
+            if first is not None:
+                tabs.setCurrentIndex(first)
+        self._resize_controller_selector()
+
     def refresh_controllers(self) -> None:
         """Repopulates the controller tabs from the live registry — call after
         a controller is registered mid-session (see gui/controller_setup.py's

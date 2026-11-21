@@ -207,6 +207,8 @@ class MappingViewsMixin:
         self._controller_tree_views = []
 
         mine = self._my_controllers()
+        for layout_view in (self.layout_view, self.deck_layout_view, self.controller_layout_view):
+            layout_view.show_only(mine)
         for _controller, model, expand_flags in build_controller_columns(usage):
             if mine and _controller not in mine:
                 continue  # simple mode: only the DJ's own controllers
