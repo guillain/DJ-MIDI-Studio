@@ -78,6 +78,10 @@ _SUMMARY_PATTERNS: tuple[tuple[re.Pattern[str], str], ...] = (
         re.compile(r"Move (?P<count>\d+) duplicate\(s\) to the Trash"),
         QT_TRANSLATE_NOOP("ChangeHistoryDialog", "Move {count} duplicate(s) to the Trash"),
     ),
+    (
+        re.compile(r"(?P<software>Serato DJ Pro|Traktor Pro): (?P<count>\d+) missing track\(s\) found again"),
+        QT_TRANSLATE_NOOP("ChangeHistoryDialog", "{software}: {count} missing track(s) found again"),
+    ),
 )
 
 

@@ -621,17 +621,25 @@ the file that replaces it, surest first:
 
 1. **replaced in this app**: a duplicate you moved to the Trash (its kept
    copy) or a file this app renamed or moved, from the change history;
-2. **same file name**: exactly one file of that name in your library;
+2. **same file name**: exactly one file of that name in your library, not
+   tagged as another song than the missing one;
 3. **same title and artist**: exactly one file with the tags the library
    still remembers for the missing one.
 
 Two candidates, or none, and the entry stays as it is: nothing is guessed.
-A window lists each fix (software, playlist, missing file, file found, how)
-before anything is written; the files are then changed the same careful
-way as for duplicates: refused while Serato or Traktor runs, every file
-backed up in the workspace's `Snapshots` folder first, only playlist
-entries changed, a Traktor entry repointed only to a track in Traktor's
-collection.
+The file found must still be on disk (rescan the library if a moved folder
+still shows as present), and two different missing tracks never get the
+same file by name or tags (two albums' `01 Intro.mp3`).
+
+If Serato or Traktor is running, you are told first: quit it, then repair.
+A window then lists each fix (software, playlist, missing file, file found,
+how) before anything is written, including the entries that will be left
+alone (a file Traktor's collection doesn't know) and the entries removed
+because the crate would list the same track twice. The files are changed
+the same careful way as for duplicates: every file backed up in the
+workspace's `Snapshots` folder first, only playlist entries changed, a
+Traktor entry repointed only to a track in Traktor's collection. The
+Change history lists each repair with the backup of every file.
 
 ## Compare with a Serato crate, Traktor or rekordbox playlist
 

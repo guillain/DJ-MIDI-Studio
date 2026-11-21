@@ -1972,11 +1972,109 @@ def test_repair_dj_playlists_points_a_serato_crate_at_the_moved_file(library, mo
     infos: list[str] = []
     monkeypatch.setattr(QMessageBox, "information", lambda _p, _t, text, *a, **k: infos.append(text))
     view.dj_running = lambda: ["Serato DJ Pro"]
+    status = view.status_label.text()
     assert view.repair_dj_playlists(backup_root=tmp_path / "snap") == 0 and "is running" in infos[0]
+    assert lists == []  # said before the list, not after the DJ confirmed it
+    assert view.status_label.text() == status  # nothing claimed as repaired or backed up
     assert serato_library.parse_crate(crate) == [str(gone.relative_to(root))]  # untouched while Serato runs
     view.dj_running = list
     assert view.repair_dj_playlists(backup_root=tmp_path / "snap") == 1
     assert lists[-1][4][0][:2] == ("Serato", "Friday")
     assert serato_library.parse_crate(crate) == [str(moved.relative_to(root))]
-    assert list((tmp_path / "snap").glob("serato-playlists-*/Friday.crate"))
+    backups = list((tmp_path / "snap").glob("serato-playlists-*/Friday.crate"))
+    assert backups
     assert "Repaired 1 playlist entry(ies)" in view.status_label.text()
+    change = view.db.get_change(view.db.list_changes()[0].id)
+    assert change.summary == "Serato DJ Pro: 1 missing track(s) found again"  # English, translated when shown
+    assert [(item.before, item.after) for item in change.items] == [({"backup": str(backups[0])}, {"entries": 1})]
+
+
+def _dj_crate(tmp_path, paths):
+    from djmidi.library import serato_library
+
+    crates = tmp_path / "dj" / "Music" / "_Serato_" / "Subcrates"
+    crates.mkdir(parents=True)
+    crate = crates / "Friday.crate"
+    root = Path(crate.resolve().anchor)
+    serato_library.write_crate_file(crate, [str(Path(path).resolve().relative_to(root)) for path in paths])
+    return crate
+
+
+def test_discarding_a_copy_repairs_the_serato_crate_listing_it(library, monkeypatch):
+    """The trashed copy's crate entry follows the kept copy (from the change
+    history), asked in the Duplicate tracks window the DJ works in."""
+    from djmidi.library import serato_library
+
+    view, music, tmp_path = library
+    original = music / "Tek" / "Tribe" / "a.mp3"
+    copy = music / "copies" / "a copy.mp3"
+    copy.parent.mkdir()
+    copy.write_bytes(original.read_bytes())
+    view.start_scan()
+    view.run_pending_job()
+    crate = _dj_crate(tmp_path, [copy])
+    view.dj_home = tmp_path / "dj"
+    view.dj_running = list
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    monkeypatch.setattr(mlv, "trash_file", lambda path: Path(path).rename(bin_dir / Path(path).name))
+    monkeypatch.setattr(mlv, "confirm_trash", lambda *_args: True)
+    lists: list[tuple] = []
+    monkeypatch.setattr(mlv, "confirm_list", lambda *args, **kwargs: lists.append(args) or True)
+    view.find_duplicates()
+    view.run_pending_job()
+    view.duplicates_dialog.set_checked(str(copy), True)
+    view.duplicates_dialog.trash_button.click()
+    assert lists[0][0] is view.duplicates_dialog
+    assert lists[0][4] == [("Serato", "Friday", str(copy), str(original), "replaced in this app")]
+    assert serato_library.parse_crate(crate) == [str(original.relative_to(Path(crate.resolve().anchor)))]
+    assert "1 Serato/Traktor entry(ies) now use the kept copy." in view.status_label.text()
+
+
+def test_the_repair_button_opens_the_repair(library, monkeypatch, tmp_path):
+    """clicked(checked) used to land in only_paths: a TypeError, or nothing."""
+    view, _music, _ = library
+    _dj_crate(tmp_path, [tmp_path / "old place" / "b.mp3"])
+    view.dj_home = tmp_path / "dj"
+    view.dj_running = list
+    lists: list[tuple] = []
+    monkeypatch.setattr(mlv, "confirm_list", lambda *args, **kwargs: lists.append(args) or False)
+    view.repair_dj_button.click()
+    assert [row[:2] for row in lists[0][4]] == [("Serato", "Friday")]
+
+
+def test_repair_dj_playlists_says_when_traktors_collection_cannot_be_read(library, monkeypatch, tmp_path):
+    view, _music, _ = library
+    native = tmp_path / "dj" / "Documents" / "Native Instruments" / "Traktor 4.0.1"
+    native.mkdir(parents=True)
+    (native / "collection.nml").write_text("<NML><COLLECTION><ENTRY", encoding="utf-8")  # Traktor mid-save
+    view.dj_home = tmp_path / "dj"
+    warnings: list[str] = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda _p, _t, text, *a, **k: warnings.append(text))
+    assert view.repair_dj_playlists() == 0
+    assert len(warnings) == 1 and "Could not read" in warnings[0]
+
+
+def test_repair_dj_playlists_lists_what_the_writer_leaves_alone(library, monkeypatch, tmp_path):
+    """A file found for a Traktor entry but missing from Traktor's collection
+    is left alone by the writer: the window says so before anything happens."""
+    view, _music, _ = library
+    native = tmp_path / "dj" / "Documents" / "Native Instruments" / "Traktor 4.0.1"
+    native.mkdir(parents=True)
+    gone = (tmp_path / "old place" / "b.mp3").resolve()
+    volume, directory, filename = workspace.traktor_location(str(gone))
+    (native / "collection.nml").write_text(
+        '<?xml version="1.0" encoding="UTF-8" standalone="no" ?>\n<NML VERSION="19"><COLLECTION ENTRIES="0">'
+        '</COLLECTION><PLAYLISTS><NODE TYPE="FOLDER" NAME="$ROOT"><SUBNODES COUNT="1"><NODE TYPE="PLAYLIST" '
+        'NAME="Friday"><PLAYLIST ENTRIES="1" TYPE="LIST" UUID="u"><ENTRY><PRIMARYKEY TYPE="TRACK" '
+        f'KEY="{volume}{directory}{filename}"/></ENTRY></PLAYLIST></NODE></SUBNODES></NODE></PLAYLISTS></NML>',
+        encoding="utf-8",
+    )
+    view.dj_home = tmp_path / "dj"
+    view.dj_running = list
+    reports: list[tuple] = []
+    monkeypatch.setattr(mlv, "show_list", lambda *args, **kwargs: reports.append(args))
+    monkeypatch.setattr(mlv, "confirm_list", lambda *args, **kwargs: pytest.fail("nothing can be written"))
+    assert view.repair_dj_playlists(backup_root=tmp_path / "snap") == 0
+    (row,) = reports[0][4]
+    assert row[:3] == ("Traktor", "Friday", str(gone)) and "not in Traktor's collection" in row[4]
