@@ -1517,6 +1517,21 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         for item in self._expert_items:
             item.setVisible(expert)
         self.introduction_view.set_expert_mode(expert)
+        if getattr(self, "_last_usage", None) is not None:
+            self._refresh_controller_columns(self._last_usage)
+
+    def _my_controllers(self) -> set[str]:
+        """Simple mode: the controllers plugged in and those the open mapping
+        is named after; By Controller shows only those (a mapping's notes
+        also match models the DJ doesn't own). Empty = show every model
+        (Expert mode, or nothing to go by)."""
+        if self.preferences.expert_mode:
+            return set()
+        names = list(catalog.CONTROLLER_NAMES)
+        mine = {match.controller.name for port in list_input_ports() for match in catalog.detect_controller(port)}
+        if getattr(self, "current_path", None):
+            mine |= set(startup_check.controllers_named_in(Path(self.current_path).stem, names))
+        return mine
 
     def set_expert_mode(self, on: bool) -> None:
         self.preferences.expert_mode = on
