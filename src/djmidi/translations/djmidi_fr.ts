@@ -8022,6 +8022,14 @@ Lignes sélectionnées dans Configuration du contrôleur : {selected}</translati
         <translation>Écrit un nouveau fichier XML rekordbox à l&apos;endroit choisi, pour la bibliothèque importée de rekordbox. Ne touche jamais à la bibliothèque de rekordbox.</translation>
     </message>
     <message>
+        <source>Repair Serato and Traktor playlists…</source>
+        <translation>Réparer les playlists Serato et Traktor…</translation>
+    </message>
+    <message>
+        <source>Finds the tracks missing from your Serato crates and Traktor playlists (moved, renamed, or a duplicate you discarded) and points them at the file that replaced it, after you check the list. Serato and Traktor must be closed; a .bak copy of every file changed is kept.</source>
+        <translation>Retrouve les morceaux manquants de vos crates Serato et playlists Traktor (déplacés, renommés, ou un doublon que vous avez supprimé) et les fait pointer vers le fichier qui les remplace, après que vous avez vérifié la liste. Serato et Traktor doivent être fermés ; une copie .bak de chaque fichier modifié est gardée.</translation>
+    </message>
+    <message>
         <source>Compare with crate…</source>
         <translation>Comparer à une crate…</translation>
     </message>
@@ -8068,6 +8076,10 @@ Lignes sélectionnées dans Configuration du contrôleur : {selected}</translati
     <message>
         <source>Export</source>
         <translation>Exporter</translation>
+    </message>
+    <message>
+        <source>Your DJ software</source>
+        <translation>Votre logiciel DJ</translation>
     </message>
     <message>
         <source>Compare</source>
@@ -8286,20 +8298,12 @@ Seul l&apos;index de cette application est vidé -- aucun fichier n&apos;est tou
         <translation>{count} doublon(s) mis à la corbeille.</translation>
     </message>
     <message>
-        <source>Update playlists</source>
-        <translation>Mettre à jour les playlists</translation>
-    </message>
-    <message>
-        <source>{count} discarded copy(ies) are in this app&apos;s playlists:</source>
-        <translation>{count} copie(s) écartée(s) figure(nt) dans les playlists de cette application :</translation>
-    </message>
-    <message>
-        <source>Point those playlists at the kept copy instead? (Serato, Traktor and Rekordbox files are not changed.)</source>
-        <translation>Faire pointer ces playlists vers la copie gardée ? (Les fichiers Serato, Traktor et Rekordbox ne sont pas modifiés.)</translation>
-    </message>
-    <message>
         <source> Playlists now use the kept copy for {count} of them.</source>
         <translation> Les playlists utilisent maintenant la copie gardée pour {count} d&apos;entre eux.</translation>
+    </message>
+    <message>
+        <source> {count} Serato/Traktor entry(ies) now use the kept copy.</source>
+        <translation> {count} entrée(s) Serato/Traktor utilisent maintenant la copie gardée.</translation>
     </message>
     <message>
         <source> {count} could not be moved.</source>
@@ -8312,6 +8316,58 @@ Seul l&apos;index de cette application est vidé -- aucun fichier n&apos;est tou
     <message>
         <source>Reason</source>
         <translation>Raison</translation>
+    </message>
+    <message>
+        <source>Your Serato crates and Traktor playlists have no missing track.</source>
+        <translation>Vos crates Serato et playlists Traktor n&apos;ont aucun morceau manquant.</translation>
+    </message>
+    <message>
+        <source>replaced in this app</source>
+        <translation>remplacé dans l&apos;app</translation>
+    </message>
+    <message>
+        <source>same file name</source>
+        <translation>même nom de fichier</translation>
+    </message>
+    <message>
+        <source>same title and artist</source>
+        <translation>même titre et même artiste</translation>
+    </message>
+    <message>
+        <source>Repair DJ playlists</source>
+        <translation>Réparer les playlists DJ</translation>
+    </message>
+    <message>
+        <source>{count} track(s) are missing from your playlists, none found again for sure:</source>
+        <translation>{count} morceau(x) manquent dans vos playlists, aucun retrouvé avec certitude :</translation>
+    </message>
+    <message>
+        <source>Software</source>
+        <translation>Logiciel</translation>
+    </message>
+    <message>
+        <source>Missing file</source>
+        <translation>Fichier manquant</translation>
+    </message>
+    <message>
+        <source>{count} other missing track(s) stay as they are: no file fits for sure.</source>
+        <translation>{count} autre(s) morceau(x) manquant(s) restent tels quels : aucun fichier ne correspond avec certitude.</translation>
+    </message>
+    <message>
+        <source>{count} missing track(s) found again in your library:</source>
+        <translation>{count} morceau(x) manquant(s) retrouvé(s) dans votre bibliothèque :</translation>
+    </message>
+    <message>
+        <source>Found</source>
+        <translation>Retrouvé</translation>
+    </message>
+    <message>
+        <source>How</source>
+        <translation>Comment</translation>
+    </message>
+    <message>
+        <source>Repair {count}</source>
+        <translation>Réparer {count}</translation>
     </message>
     <message>
         <source>Change reverted on {count} file(s).</source>
@@ -8884,6 +8940,22 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>left alone, {reason}</source>
         <translation>laissé tel quel, {reason}</translation>
+    </message>
+    <message>
+        <source>Serato and Traktor must be closed. Every file changed is backed up first; only these entries change.</source>
+        <translation>Serato et Traktor doivent être fermés. Chaque fichier modifié est d&apos;abord sauvegardé ; seules ces entrées changent.</translation>
+    </message>
+    <message>
+        <source>{software}: {count} missing track(s) found again</source>
+        <translation>{software} : {count} morceau(x) manquant(s) retrouvé(s)</translation>
+    </message>
+    <message>
+        <source>Repaired {count} playlist entry(ies); the files changed are backed up in Snapshots.</source>
+        <translation>{count} entrée(s) de playlist réparée(s) ; les fichiers modifiés sont sauvegardés dans Snapshots.</translation>
+    </message>
+    <message>
+        <source>Left alone: {list}</source>
+        <translation>Laissé tel quel : {list}</translation>
     </message>
     <message>
         <source>rekordbox XML or device export (*.xml export.pdb)</source>

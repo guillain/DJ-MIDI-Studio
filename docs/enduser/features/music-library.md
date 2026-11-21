@@ -27,6 +27,7 @@
 - [Smart playlists](#smart-playlists)
 - [Prepare a set](#prepare-a-set)
 - [Import and export with DJ software](#import-and-export-with-dj-software)
+- [Repair Serato and Traktor playlists](#repair-serato-and-traktor-playlists)
 - [Compare with a Serato crate, Traktor or rekordbox playlist](#compare-with-a-serato-crate-traktor-or-rekordbox-playlist)
 - [Play history](#play-history)
 - [Safety: what is never touched](#safety-what-is-never-touched)
@@ -347,9 +348,9 @@ Trash…`:
   more. Nothing moves unless you click `Move to Trash` (`Cancel` is the default).
 - Files go to the system **Trash** — never deleted outright — so you can put
   them back from there. They show as missing in the library afterwards.
-- If one of this app's playlists lists a discarded copy, you are asked
-  whether to point it at the kept copy instead. Serato, Traktor and
-  Rekordbox playlists are not changed: update those in your DJ software.
+- This app's playlists that list a discarded copy follow the kept copy
+  right away. When a Serato crate or a Traktor playlist lists one too, the
+  repair window below opens for those entries.
 
 Track lengths are not compared yet.
 
@@ -611,6 +612,27 @@ written. rekordbox refuses two playlists with the same name in the same
 folder, so rename one first if needed. This export hasn't been tried in a
 running rekordbox yet.
 
+## Repair Serato and Traktor playlists
+
+`Playlists` → **Your DJ software** → `Repair Serato and Traktor playlists…`
+finds every entry of your Serato crates (`Music/_Serato_/Subcrates`) and
+your Traktor playlists (the newest `collection.nml`) whose file is gone, and
+the file that replaces it, surest first:
+
+1. **replaced in this app**: a duplicate you moved to the Trash (its kept
+   copy) or a file this app renamed or moved, from the change history;
+2. **same file name**: exactly one file of that name in your library;
+3. **same title and artist**: exactly one file with the tags the library
+   still remembers for the missing one.
+
+Two candidates, or none, and the entry stays as it is: nothing is guessed.
+A window lists each fix (software, playlist, missing file, file found, how)
+before anything is written; the files are then changed the same careful
+way as for duplicates: refused while Serato or Traktor runs, every file
+backed up in the workspace's `Snapshots` folder first, only playlist
+entries changed, a Traktor entry repointed only to a track in Traktor's
+collection.
+
 ## Compare with a Serato crate, Traktor or rekordbox playlist
 
 Select one of the app's playlists, then:
@@ -683,8 +705,10 @@ written into Serato, Traktor, or any audio file.
 - Tag writes change only the fields you edit. Serato and Traktor data stored
   inside your audio files (cue points, beat grids, analysis) is preserved.
 - Serato, Traktor and Rekordbox library and history files are only ever read
-  (imports and comparisons alike). Exports
-  always create a new file at the location you choose.
+  (imports and comparisons alike), except the playlist entries you confirm
+  in `DJ software playlists…` and `Repair Serato and Traktor playlists…`
+  (backed up first, refused while the software runs). Exports always create
+  a new file at the location you choose.
 - Undo writes the old values back through the same careful path.
 - `Set cover…` / `Remove cover` change only the front-cover picture.
 - `Find duplicates…` only reads files. Copies you tick go to the Trash after

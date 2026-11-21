@@ -132,6 +132,7 @@ from djmidi.gui.window_size import (
 from djmidi.library import (
     change_log,
     discard,
+    dj_playlist_repair,
     duplicates,
     gig_journal,
     health,
@@ -153,6 +154,7 @@ from djmidi.library.db import (
     TrackRecord,
     default_library_db_path,
 )
+from djmidi.library.dj_playlists import running_processes as dj_playlists_running
 from djmidi.library.metadata import TrackMetadata, clean_noise_frames, read_metadata
 from djmidi.library.playlist import is_camelot_compatible
 from djmidi.library.playlist_compare import PlaylistComparison, compare_playlists
@@ -1098,6 +1100,10 @@ class LibraryFilterProxy(QSortFilterProxyModel):
 class MusicLibraryView(QWidget):
     def __init__(self, db_path: str | Path | None = None, parent: QWidget | None = None) -> None:
         super().__init__(parent)
+        # Where Serato's crates and Traktor's collection.nml are, and which
+        # programs run (repair_dj_playlists); tests point them elsewhere.
+        self.dj_home: Path = dj_playlist_repair.dj_home()
+        self.dj_running: Callable[[], list[str]] = dj_playlists_running
         self._db_path = db_path
         self._executor: ThreadPoolExecutor | None = None
         self.smart_export_dialog_factory = SmartExportDialog
@@ -1689,6 +1695,10 @@ class MusicLibraryView(QWidget):
             ("export_rekordbox_button", self.tr("rekordbox XML…"), self._on_export_rekordbox_clicked,
              self.tr("Writes a new rekordbox XML file where you choose, for rekordbox's Imported Library. "
                      "Never touches rekordbox's own library.")),
+            ("repair_dj_button", self.tr("Repair Serato and Traktor playlists…"), self.repair_dj_playlists,
+             self.tr("Finds the tracks missing from your Serato crates and Traktor playlists (moved, renamed, or a "
+                     "duplicate you discarded) and points them at the file that replaced it, after you check the "
+                     "list. Serato and Traktor must be closed; a .bak copy of every file changed is kept.")),
             ("compare_serato_button", self.tr("Compare with crate…"), self._on_compare_serato_clicked,
              self.tr("Compares the selected playlist with a Serato crate: tracks only on each side and "
                      "order differences. Read-only.")),
@@ -1718,6 +1728,7 @@ class MusicLibraryView(QWidget):
              ("import_rekordbox_button", "import")),
             (self.tr("Export"), ("export_serato_button", "export"), ("export_traktor_button", "export"),
              ("export_rekordbox_button", "export")),
+            (self.tr("Your DJ software"), ("repair_dj_button", "files")),
             (self.tr("Compare"), ("compare_serato_button", "compare"), ("compare_traktor_button", "compare"),
              ("compare_rekordbox_button", "compare")),
             (self.tr("Playlist"), ("rename_playlist_button", "edit"), ("delete_playlist_button", "delete")),
@@ -2230,23 +2241,15 @@ class MusicLibraryView(QWidget):
         result = discard.move_to_trash(self.db, plan, trash_file)
         change_log.record_trash(self.db, result.moved, result.trash_paths)
         message = self.tr("Moved {count} duplicate(s) to the Trash.").format(count=len(result.moved))
-        referenced = discard.playlists_referencing(self.db, result.moved)
-        if referenced:
-            names = sorted({name for playlist_names in referenced.values() for name in playlist_names})
-            if confirm_list(
-                parent,
-                self.tr("Update playlists"),
-                self.tr("{count} discarded copy(ies) are in this app's playlists:").format(count=len(referenced)),
-                [self.tr("Playlist")],
-                [(name,) for name in names],
-                note=self.tr(
-                    "Point those playlists at the kept copy instead? "
-                    "(Serato, Traktor and Rekordbox files are not changed.)"
-                ),
-                accept_text=self.tr("Update playlists"),
-            ):
-                repointed = discard.repoint_playlists(self.db, result.moved)
-                message += self.tr(" Playlists now use the kept copy for {count} of them.").format(count=repointed)
+        if discard.playlists_referencing(self.db, result.moved):
+            # This app's playlists follow the kept copy right away.
+            repointed = discard.repoint_playlists(self.db, result.moved)
+            message += self.tr(" Playlists now use the kept copy for {count} of them.").format(count=repointed)
+        if result.moved:
+            # Serato's crates and Traktor's playlists too, after a look.
+            fixed = self.repair_dj_playlists(only_paths={path for path, _kept in result.moved})
+            if fixed:
+                message += self.tr(" {count} Serato/Traktor entry(ies) now use the kept copy.").format(count=fixed)
         if result.failed:
             message += self.tr(" {count} could not be moved.").format(count=len(result.failed))
             show_list(
@@ -2261,6 +2264,113 @@ class MusicLibraryView(QWidget):
         self.status_label.setText(message)
         self._reload_rows()
         self._reload_playlists()
+
+    # --- Serato crates and Traktor playlists (user request 2026-11-21) -----
+
+    def repair_dj_playlists(self, only_paths: set[str] | None = None, backup_root: Path | None = None) -> int:
+        """Finds the entries of Serato's crates and Traktor's playlists whose
+        file is gone, shows what replaces each, and has `dj_playlists`
+        (issue #458) write them after the DJ confirms: refused while the
+        software runs, every file backed up in Snapshots. ``only_paths``:
+        just those missing files (after a duplicate discard). Returns how
+        many entries were repointed."""
+        from djmidi.library import dj_playlists
+
+        parent = self.window()
+        title = self.tr("Repair DJ playlists")
+        crates = dj_playlist_repair.serato_crates(self.dj_home)
+        collection = dj_playlist_repair.traktor_collection(self.dj_home)
+        dangling = dj_playlist_repair.find_dangling(crates, collection)
+        if only_paths is not None:
+            dangling = [entry for entry in dangling if entry.path in only_paths]
+        if not dangling:
+            if only_paths is None:
+                self.status_label.setText(self.tr("Your Serato crates and Traktor playlists have no missing track."))
+            return 0
+        library = [
+            dj_playlist_repair.LibraryTrack(record.path, meta.title if meta else None, meta.artist if meta else None,
+                                            record.missing)
+            for record, meta in self.db.list_tracks_with_metadata()
+        ]
+        plan = dj_playlist_repair.find_fixes(dangling, library, dj_playlist_repair.replaced_files(self.db))
+        software = {dj_playlist_repair.SERATO: "Serato", dj_playlist_repair.TRAKTOR: "Traktor"}
+        how = {
+            dj_playlist_repair.HOW_KEPT: self.tr("replaced in this app"),
+            dj_playlist_repair.HOW_NAME: self.tr("same file name"),
+            dj_playlist_repair.HOW_TAGS: self.tr("same title and artist"),
+        }
+        if not plan.fixes:
+            show_list(
+                parent,
+                title,
+                self.tr("{count} track(s) are missing from your playlists, none found again for sure:").format(
+                    count=len(plan.unresolved)
+                ),
+                [self.tr("Software"), self.tr("Playlist"), self.tr("Missing file")],
+                [(software[e.software], e.playlist, e.path) for e, _why in plan.unresolved],
+            )
+            return 0
+        note = self.tr(
+            "Serato and Traktor must be closed. Every file changed is backed up first; only these entries change."
+        )
+        if plan.unresolved:
+            note = self.tr("{count} other missing track(s) stay as they are: no file fits for sure.").format(
+                count=len(plan.unresolved)
+            ) + " " + note
+        if not confirm_list(
+            parent,
+            title,
+            self.tr("{count} missing track(s) found again in your library:").format(count=len(plan.fixes)),
+            [self.tr("Software"), self.tr("Playlist"), self.tr("Missing file"), self.tr("Found"), self.tr("How")],
+            [(software[f.entry.software], f.entry.playlist, f.entry.path, f.new_path, how[f.how]) for f in plan.fixes],
+            note=note,
+            accept_text=self.tr("Repair {count}").format(count=len(plan.fixes)),
+        ):
+            return 0
+        repaired, left = 0, []
+        for name, kind in (("Serato DJ Pro", dj_playlists.SERATO), ("Traktor Pro", dj_playlists.TRAKTOR)):
+            pairs = list(dict.fromkeys((f.entry.path, f.new_path) for f in plan.fixes if f.entry.software == kind))
+            if not pairs:
+                continue
+            if dj_playlists.is_running(kind, self.dj_running):
+                QMessageBox.information(
+                    parent,
+                    title,
+                    self.tr("{software} is running: quit it first, or it would write its own playlists back over these.").format(
+                        software=name
+                    ),
+                )
+                continue
+            try:
+                write = (
+                    dj_playlists.plan_serato(crates[0].parent, pairs)
+                    if kind == dj_playlists.SERATO
+                    else dj_playlists.plan_traktor(collection, pairs)
+                )
+                dj_playlists.apply(write, backup_root or user_paths.subfolder(user_paths.SNAPSHOTS))
+            except (OSError, ValueError) as error:
+                QMessageBox.warning(parent, title, str(error))
+                continue
+            repaired += sum(change.replaced for change in write.changes)
+            left += [
+                f"{Path(path).name}: {QCoreApplication.translate('DjPlaylists', reason)}"
+                for path, reason in write.skipped.items()
+            ]
+            if write.changes:
+                change_log.record_change(
+                    self.db,
+                    "dj-playlists",
+                    self.tr("{software}: {count} missing track(s) found again").format(software=name, count=len(pairs)),
+                    [ChangeItem(str(change.path), {"path": str(change.path)}, {"replaced": change.replaced})
+                     for change in write.changes],
+                )
+        message = self.tr("Repaired {count} playlist entry(ies); the files changed are backed up in Snapshots.").format(
+            count=repaired
+        )
+        if left:
+            message += " " + self.tr("Left alone: {list}").format(list="; ".join(left))
+        self.status_label.setText(message)
+        return repaired
 
     # --- change history (issue #261) ---------------------------------------
 

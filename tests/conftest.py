@@ -86,6 +86,9 @@ def _fresh_workspace(tmp_path, monkeypatch):
     # Same for preferences (sync sets, the active scene, ...): a window saving
     # them must not change what the next test's window loads (issue #429).
     monkeypatch.setenv("DJMIDI_PREFERENCES_FILE", str(tmp_path / "preferences.json"))
+    # Where Serato's crates and Traktor's collection.nml are looked for: never
+    # the real home folder in a test.
+    monkeypatch.setenv("DJMIDI_DJ_HOME", str(tmp_path / "dj-home"))
 
 
 @pytest.fixture(autouse=True)
