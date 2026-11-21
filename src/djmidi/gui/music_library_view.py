@@ -38,6 +38,7 @@ from collections.abc import Callable, Generator, Iterator
 from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import replace
 from pathlib import Path, PurePath
+from xml.etree.ElementTree import ParseError
 
 from PySide6.QtCore import (
     QT_TRANSLATE_NOOP,
@@ -133,6 +134,7 @@ from djmidi.library import (
     change_log,
     discard,
     dj_playlist_repair,
+    dj_playlists,
     duplicates,
     gig_journal,
     health,
@@ -154,7 +156,6 @@ from djmidi.library.db import (
     TrackRecord,
     default_library_db_path,
 )
-from djmidi.library.dj_playlists import running_processes as dj_playlists_running
 from djmidi.library.metadata import TrackMetadata, clean_noise_frames, read_metadata
 from djmidi.library.playlist import is_camelot_compatible
 from djmidi.library.playlist_compare import PlaylistComparison, compare_playlists
@@ -1103,7 +1104,7 @@ class MusicLibraryView(QWidget):
         # Where Serato's crates and Traktor's collection.nml are, and which
         # programs run (repair_dj_playlists); tests point them elsewhere.
         self.dj_home: Path = dj_playlist_repair.dj_home()
-        self.dj_running: Callable[[], list[str]] = dj_playlists_running
+        self.dj_running: Callable[[], list[str]] = dj_playlists.running_processes
         self._db_path = db_path
         self._executor: ThreadPoolExecutor | None = None
         self.smart_export_dialog_factory = SmartExportDialog
@@ -1698,7 +1699,7 @@ class MusicLibraryView(QWidget):
             ("repair_dj_button", self.tr("Repair Serato and Traktor playlists…"), self.repair_dj_playlists,
              self.tr("Finds the tracks missing from your Serato crates and Traktor playlists (moved, renamed, or a "
                      "duplicate you discarded) and points them at the file that replaced it, after you check the "
-                     "list. Serato and Traktor must be closed; a .bak copy of every file changed is kept.")),
+                     "list. Serato and Traktor must be closed; every file changed is first copied to Snapshots.")),
             ("compare_serato_button", self.tr("Compare with crate…"), self._on_compare_serato_clicked,
              self.tr("Compares the selected playlist with a Serato crate: tracks only on each side and "
                      "order differences. Read-only.")),
@@ -2092,8 +2093,6 @@ class MusicLibraryView(QWidget):
     def choose_dj_playlists(self, kept: str, dropped: list[str]) -> None:
         """Asks which DJ software and where its playlists are, then
         `repoint_dj_playlists`."""
-        from djmidi.library import dj_playlists
-
         parent = self.duplicates_dialog if self.duplicates_dialog is not None else self
         choices = [self.tr("Serato DJ Pro crates"), self.tr("Traktor Pro playlists (collection.nml)")]
         choice, ok = QInputDialog.getItem(
@@ -2131,8 +2130,6 @@ class MusicLibraryView(QWidget):
         """Points `software`'s playlists at `kept` instead of `dropped`
         (issue #458): refused while it runs, a preview to confirm, every
         file backed up, logged. Returns the backup folder."""
-        from djmidi.library import dj_playlists
-
         parent = self.duplicates_dialog if self.duplicates_dialog is not None else self
         name = "Serato DJ Pro" if software == dj_playlists.SERATO else "Traktor Pro"
         title = self.tr("DJ software playlists")
@@ -2220,7 +2217,9 @@ class MusicLibraryView(QWidget):
         Refuses outright when a group would keep no copy; otherwise confirms
         with the full list, moves each copy with `trash_file`
         (`QFile.moveToTrash`, never a hard delete), flags it missing in the
-        index, then offers to point this app's playlists at the kept copy."""
+        index, points this app's playlists at the kept copy, then offers the
+        same for the Serato crates and Traktor playlists listing a moved copy
+        (`repair_dj_playlists`)."""
         dialog = self.duplicates_dialog
         parent = dialog if dialog is not None else self
         plan = discard.plan_discard(dialog.groups if dialog is not None else [], paths)
@@ -2247,7 +2246,7 @@ class MusicLibraryView(QWidget):
             message += self.tr(" Playlists now use the kept copy for {count} of them.").format(count=repointed)
         if result.moved:
             # Serato's crates and Traktor's playlists too, after a look.
-            fixed = self.repair_dj_playlists(only_paths={path for path, _kept in result.moved})
+            fixed = self.repair_dj_playlists(only_paths={path for path, _kept in result.moved}, parent=parent)
             if fixed:
                 message += self.tr(" {count} Serato/Traktor entry(ies) now use the kept copy.").format(count=fixed)
         if result.failed:
@@ -2267,22 +2266,30 @@ class MusicLibraryView(QWidget):
 
     # --- Serato crates and Traktor playlists (user request 2026-11-21) -----
 
-    def repair_dj_playlists(self, only_paths: set[str] | None = None, backup_root: Path | None = None) -> int:
+    def repair_dj_playlists(
+        self,
+        *,
+        only_paths: set[str] | None = None,
+        backup_root: Path | None = None,
+        parent: QWidget | None = None,
+    ) -> int:
         """Finds the entries of Serato's crates and Traktor's playlists whose
         file is gone, shows what replaces each, and has `dj_playlists`
         (issue #458) write them after the DJ confirms: refused while the
-        software runs, every file backed up in Snapshots. ``only_paths``:
-        just those missing files (after a duplicate discard). Returns how
-        many entries were repointed."""
-        from djmidi.library import dj_playlists
-
-        parent = self.window()
+        software runs (said before the list), the list shows what the writer
+        will really do, every file backed up in Snapshots. ``only_paths``:
+        just those missing files (after a duplicate discard). Keyword-only, so
+        a button's ``clicked(checked)`` never lands in ``only_paths``. Returns
+        how many entries were repointed."""
+        parent = parent or self.window()
         title = self.tr("Repair DJ playlists")
         crates = dj_playlist_repair.serato_crates(self.dj_home)
         collection = dj_playlist_repair.traktor_collection(self.dj_home)
-        dangling = dj_playlist_repair.find_dangling(crates, collection)
-        if only_paths is not None:
-            dangling = [entry for entry in dangling if entry.path in only_paths]
+        try:
+            dangling = dj_playlist_repair.find_dangling(crates, collection, only_paths=only_paths)
+        except (OSError, ParseError) as error:  # a collection.nml Traktor is still writing, say
+            QMessageBox.warning(parent, title, self.tr("Could not read {path}: {error}").format(path=collection, error=error))
+            return 0
         if not dangling:
             if only_paths is None:
                 self.status_label.setText(self.tr("Your Serato crates and Traktor playlists have no missing track."))
@@ -2292,85 +2299,155 @@ class MusicLibraryView(QWidget):
                                             record.missing)
             for record, meta in self.db.list_tracks_with_metadata()
         ]
-        plan = dj_playlist_repair.find_fixes(dangling, library, dj_playlist_repair.replaced_files(self.db))
+        found = dj_playlist_repair.find_fixes(dangling, library, dj_playlist_repair.replaced_files(self.db))
         software = {dj_playlist_repair.SERATO: "Serato", dj_playlist_repair.TRAKTOR: "Traktor"}
         how = {
             dj_playlist_repair.HOW_KEPT: self.tr("replaced in this app"),
             dj_playlist_repair.HOW_NAME: self.tr("same file name"),
             dj_playlist_repair.HOW_TAGS: self.tr("same title and artist"),
         }
-        if not plan.fixes:
+        if not found.fixes:
             show_list(
                 parent,
                 title,
                 self.tr("{count} track(s) are missing from your playlists, none found again for sure:").format(
-                    count=len(plan.unresolved)
+                    count=len(found.unresolved)
                 ),
                 [self.tr("Software"), self.tr("Playlist"), self.tr("Missing file")],
-                [(software[e.software], e.playlist, e.path) for e, _why in plan.unresolved],
+                [(software[e.software], e.playlist, e.path) for e, _why in found.unresolved],
             )
+            return 0
+        programs = (("Serato DJ Pro", dj_playlists.SERATO), ("Traktor Pro", dj_playlists.TRAKTOR))
+        fixes: list[dj_playlist_repair.Fix] = []
+        for name, kind in programs:
+            mine = [fix for fix in found.fixes if fix.entry.software == kind]
+            if mine and not self._dj_software_running(parent, title, name, kind):
+                fixes += mine
+        # What the writer will really do, before anything is written: an
+        # entry it leaves alone (a file Traktor's collection lacks...), an
+        # entry dropped because the crate would list that track twice.
+        plans = self._plan_dj_repair(parent, title, fixes, crates, collection)
+        skipped = {path: reason for plan in plans.values() for path, reason in plan.skipped.items()}
+        rows = [
+            (
+                software[f.entry.software],
+                f.entry.playlist,
+                f.entry.path,
+                f.new_path,
+                self.tr("left alone, {reason}").format(
+                    reason=QCoreApplication.translate("DjPlaylists", skipped[f.entry.path])
+                )
+                if f.entry.path in skipped
+                else how[f.how],
+            )
+            for f in fixes
+            if f.entry.software in plans
+        ]
+        headers = [self.tr("Software"), self.tr("Playlist"), self.tr("Missing file"), self.tr("Found"), self.tr("How")]
+        if not any(plan.changes for plan in plans.values()):
+            if rows:
+                show_list(parent, title, self.tr("Nothing can be repaired:"), headers, rows)
             return 0
         note = self.tr(
             "Serato and Traktor must be closed. Every file changed is backed up first; only these entries change."
         )
-        if plan.unresolved:
+        removed = sum(change.removed for plan in plans.values() for change in plan.changes)
+        if removed:
+            note = self.tr(
+                "{count} entry(ies) would then list a track their crate already lists: they are removed (each "
+                "track once)."
+            ).format(count=removed) + " " + note
+        if found.unresolved:
             note = self.tr("{count} other missing track(s) stay as they are: no file fits for sure.").format(
-                count=len(plan.unresolved)
+                count=len(found.unresolved)
             ) + " " + note
+        to_write = [f for f in fixes if f.entry.software in plans and f.entry.path not in skipped]
         if not confirm_list(
             parent,
             title,
-            self.tr("{count} missing track(s) found again in your library:").format(count=len(plan.fixes)),
-            [self.tr("Software"), self.tr("Playlist"), self.tr("Missing file"), self.tr("Found"), self.tr("How")],
-            [(software[f.entry.software], f.entry.playlist, f.entry.path, f.new_path, how[f.how]) for f in plan.fixes],
+            self.tr("{count} missing track(s) found again in your library:").format(count=len(rows)),
+            headers,
+            rows,
             note=note,
-            accept_text=self.tr("Repair {count}").format(count=len(plan.fixes)),
+            accept_text=self.tr("Repair {count}").format(count=len(to_write)),
         ):
             return 0
-        repaired, left = 0, []
-        for name, kind in (("Serato DJ Pro", dj_playlists.SERATO), ("Traktor Pro", dj_playlists.TRAKTOR)):
-            pairs = list(dict.fromkeys((f.entry.path, f.new_path) for f in plan.fixes if f.entry.software == kind))
-            if not pairs:
+        repaired = 0
+        for name, kind in programs:
+            if not plans.get(kind) or not plans[kind].changes or self._dj_software_running(parent, title, name, kind):
                 continue
-            if dj_playlists.is_running(kind, self.dj_running):
-                QMessageBox.information(
-                    parent,
-                    title,
-                    self.tr("{software} is running: quit it first, or it would write its own playlists back over these.").format(
-                        software=name
-                    ),
-                )
+            # Planned again on the files as they are now (the software may
+            # have saved them while the list was open).
+            plan = self._plan_dj_repair(parent, title, [f for f in to_write if f.entry.software == kind], crates,
+                                        collection).get(kind)
+            if plan is None or not plan.changes:
                 continue
             try:
-                write = (
-                    dj_playlists.plan_serato(crates[0].parent, pairs)
-                    if kind == dj_playlists.SERATO
-                    else dj_playlists.plan_traktor(collection, pairs)
+                backup = dj_playlists.apply(plan, backup_root or user_paths.subfolder(user_paths.SNAPSHOTS))
+            except OSError as error:
+                QMessageBox.warning(
+                    parent, title, self.tr("Could not change the {software} files: {error}").format(software=name, error=error)
                 )
-                dj_playlists.apply(write, backup_root or user_paths.subfolder(user_paths.SNAPSHOTS))
-            except (OSError, ValueError) as error:
-                QMessageBox.warning(parent, title, str(error))
                 continue
-            repaired += sum(change.replaced for change in write.changes)
-            left += [
-                f"{Path(path).name}: {QCoreApplication.translate('DjPlaylists', reason)}"
-                for path, reason in write.skipped.items()
-            ]
-            if write.changes:
-                change_log.record_change(
-                    self.db,
-                    "dj-playlists",
-                    self.tr("{software}: {count} missing track(s) found again").format(software=name, count=len(pairs)),
-                    [ChangeItem(str(change.path), {"path": str(change.path)}, {"replaced": change.replaced})
-                     for change in write.changes],
+            if backup is None:
+                continue
+            repaired += plan.entries
+            change_log.record_change(
+                self.db,
+                "dj-playlists",
+                f"{name}: {plan.entries} missing track(s) found again",  # English, shown translated (issue #319)
+                [
+                    ChangeItem(str(change.path), {"backup": str(backup / change.path.name)}, {"entries": change.replaced})
+                    for change in plan.changes
+                ],
+            )
+        if repaired:
+            self.status_label.setText(
+                self.tr("Repaired {count} playlist entry(ies); the files changed are backed up in Snapshots.").format(
+                    count=repaired
                 )
-        message = self.tr("Repaired {count} playlist entry(ies); the files changed are backed up in Snapshots.").format(
-            count=repaired
-        )
-        if left:
-            message += " " + self.tr("Left alone: {list}").format(list="; ".join(left))
-        self.status_label.setText(message)
+            )
         return repaired
+
+    def _dj_software_running(self, parent: QWidget, title: str, name: str, kind: str) -> bool:
+        """True (and the DJ is told) when that DJ software runs: it would
+        write its own playlists back over the repaired ones when it quits."""
+        if not dj_playlists.is_running(kind, self.dj_running):
+            return False
+        QMessageBox.information(
+            parent,
+            title,
+            self.tr("{software} is running: quit it first, or it would write its own playlists back over these.").format(
+                software=name
+            ),
+        )
+        return True
+
+    def _plan_dj_repair(
+        self,
+        parent: QWidget,
+        title: str,
+        fixes: list[dj_playlist_repair.Fix],
+        crates: list[Path],
+        collection: Path | None,
+    ) -> dict[str, dj_playlists.Plan]:
+        """`dj_playlists`' write plan per software for `fixes` (nothing is
+        written); a software whose files can't be read is left out, said."""
+        plans: dict[str, dj_playlists.Plan] = {}
+        for kind in (dj_playlists.SERATO, dj_playlists.TRAKTOR):
+            pairs = list(dict.fromkeys((f.entry.path, f.new_path) for f in fixes if f.entry.software == kind))
+            if not pairs:
+                continue
+            where = crates[0].parent if kind == dj_playlists.SERATO else collection
+            try:
+                plans[kind] = (
+                    dj_playlists.plan_serato(where, pairs)
+                    if kind == dj_playlists.SERATO
+                    else dj_playlists.plan_traktor(where, pairs)
+                )
+            except (OSError, ValueError, ParseError) as error:
+                QMessageBox.warning(parent, title, self.tr("Could not read {path}: {error}").format(path=where, error=error))
+        return plans
 
     # --- change history (issue #261) ---------------------------------------
 

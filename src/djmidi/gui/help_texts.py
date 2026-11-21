@@ -597,7 +597,8 @@ LIBRARY_FOLDERS: HelpEntry = (
         "them (needs the optional analysis component); the estimates are amber "
         "suggestions until you apply them from the Track panel.<br><br>"
         "The index stores paths, sizes, dates and a cache of the tags, never the audio. "
-        "Serato, Traktor and Rekordbox library files are only ever read.",
+        "Serato, Traktor and Rekordbox library files are only ever read, except the Serato crate "
+        "and Traktor playlist entries you confirm in a repair (each file backed up first).",
     ),
     "music-library.md",
 )
@@ -730,7 +731,8 @@ LIBRARY_DUPLICATES: HelpEntry = (
         "<b>Reveal in Finder</b> (or double-click) shows a copy. Tick the copies you don't want "
         "and click <b>Move ticked to Trash…</b>: after a confirmation they go to the Trash "
         "(never deleted outright) and show as missing. One copy of each group must stay. "
-        "Playlists of this app listing a discarded copy can be pointed at the kept one.",
+        "Playlists of this app listing a discarded copy follow the kept one; when a Serato crate "
+        "or a Traktor playlist lists it too, the repair window opens for those entries.",
     ),
     "music-library.md",
 )
@@ -815,6 +817,9 @@ LIBRARY_PLAYLISTS: HelpEntry = (
         "<b>Edit smart rules…</b> changes the selected one.</li></ul>"
         "Import Serato crates, Traktor playlists or a Rekordbox USB export (read only); "
         "export to a new Serato crate or Traktor playlist file where you choose. "
+        "<b>Repair Serato and Traktor playlists…</b> finds the entries of your Serato crates and "
+        "Traktor playlists whose file is gone and, after you check the list, points them at the "
+        "file that replaced it (refused while that software runs, every file backed up first). "
         "<b>Compare with crate…</b> / <b>Compare with Traktor…</b> / <b>Compare with rekordbox…</b> list the tracks only on each "
         "side and the tracks in a different order, without changing either side.",
     ),

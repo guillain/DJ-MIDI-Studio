@@ -30,7 +30,9 @@ from typing import cast
 
 from PySide6.QtCore import (
     QCoreApplication,
+    QEvent,
     QItemSelectionModel,
+    QObject,
     Qt,
     QTimer,
     QUrl,
@@ -292,11 +294,11 @@ class ControllerSetupView(QWidget):
         self._port_list.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
         # QListWidget.sizeHint() ignores setMinimumHeight (it returns a fixed
         # ~192px regardless); a floor keeps it from collapsing, and it grows
-        # to fill "MIDI input"'s panel height via the stretch factor below
-        # (matching self.tr("MIDI Output")'s panel, see the io_row comment).
+        # to fill "MIDI input"'s panel height via the stretch factor below.
         self._port_list.setMinimumHeight(70)
         # Beside "Your controller profile" it takes that panel's height
-        # instead of its own ~192 px default (which overflowed the row).
+        # instead of its own ~192 px default (which overflowed the row);
+        # stacked under it, _fit_port_list gives it room for its ports.
         self._port_list.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Ignored)
         refresh_button = QPushButton(self._get_icon("refresh"), "")
         refresh_button.setToolTip(self.tr("Refresh ports"))
@@ -510,21 +512,14 @@ class ControllerSetupView(QWidget):
         )
         draft_layout.addWidget(self._image_label)
 
-        # "MIDI input" (learn) sits at the start of the same row as "MIDI
-        # Output"; both stretch to the row's shared height (the port list
-        # inside each grows to fill via its own stretch factor above), so
-        # the two panels read as one matched-height toolbar instead of the
-        # (taller) self.tr("MIDI Output") panel dwarfing a short "MIDI input" one.
-        # Side by side when they fit; stacked (MIDI input above MIDI Output)
-        # in a narrow window or a longer language instead of scrolling the
-        # whole tab sideways (German at 1024 px needed 1171 px).
         # Sending raw MIDI by hand: an expert tool (simple mode hides it).
         simple_mode.expert_only(output_box)
         # "Your controller profile" and "MIDI input" share one row, two
-        # columns (stacked when too narrow); MIDI Output (expert) below.
+        # columns of matched height (the port list fills "MIDI input"); they
+        # stack in a narrow window or a longer language instead of scrolling
+        # the whole tab sideways. MIDI Output (expert) sits below.
         self._profile_row = ResponsiveRow([(draft_box, 3), (capture_box, 2)], spacing=12)
-        io_container = output_box
-        self._io_row = self._profile_row  # the row that stacks when narrow
+        self._profile_row.installEventFilter(self)  # re-fits the port list when the row stacks
 
         self._table = QTableWidget(0, 7)
         self._table.setHorizontalHeaderLabels(
@@ -621,8 +616,8 @@ class ControllerSetupView(QWidget):
         # made the outer one request far less height than the inner one
         # actually wanted, forcing an avoidable scrollbar at sizes (e.g.
         # 1280x820) that fit before with room to spare. Fixed by flattening
-        # to one scroll level: io_row's plain container (io_container) joins
-        # name_row and draft_box directly inside header_content, and
+        # to one scroll level: the profile/input row and MIDI Output join
+        # name_row directly inside header_content, and
         # header_scroll is the *only* QScrollArea in this region -- no more
         # nested scroll areas to trip the same sizeHint gap over again.
         header_content = QWidget()
@@ -631,7 +626,7 @@ class ControllerSetupView(QWidget):
         header_layout.setSpacing(12)
         header_layout.addLayout(name_row)
         header_layout.addWidget(self._profile_row, 0)
-        header_layout.addWidget(io_container, 0)
+        header_layout.addWidget(output_box, 0)
 
         header_scroll = AutoSizeScrollArea()
         header_scroll.setWidgetResizable(True)
@@ -1085,6 +1080,23 @@ class ControllerSetupView(QWidget):
 
     def _refresh_ports(self) -> None:
         refresh_checked_port_list(self._port_list, list_input_ports)
+        self._fit_port_list()
+
+    def _fit_port_list(self) -> None:
+        """Side by side, the port list fills "MIDI input"'s share of the row
+        (its 70 px floor only stops a collapse); stacked, nothing lends it a
+        height any more, so it asks for up to six ports' rows."""
+        ports = self._port_list
+        if not self._profile_row.is_stacked():
+            ports.setMinimumHeight(70)
+            return
+        row = ports.sizeHintForRow(0) if ports.count() else ports.fontMetrics().height() + 6
+        ports.setMinimumHeight(max(70, min(max(ports.count(), 3), 6) * row + 2 * ports.frameWidth()))
+
+    def eventFilter(self, watched: QObject, event: QEvent) -> bool:
+        if watched is self._profile_row and event.type() == QEvent.Type.LayoutRequest:
+            self._fit_port_list()
+        return super().eventFilter(watched, event)
 
     def _refresh_output_ports(self) -> None:
         refresh_checked_port_list(self._output_port_list, list_output_ports)

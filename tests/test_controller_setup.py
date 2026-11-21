@@ -1258,14 +1258,33 @@ def test_profile_and_midi_input_stack_in_a_narrow_window():
     view.show()
     view.resize(1600, 800)
     QApplication.processEvents()
-    assert not view._io_row.is_stacked()
+    assert not view._profile_row.is_stacked()
     view.resize(900, 800)
     QApplication.processEvents()
-    assert view._io_row.is_stacked()
-    assert view._io_row.minimumSizeHint().width() < view._io_row.side_by_side_width()
+    assert view._profile_row.is_stacked()
+    assert view._profile_row.minimumSizeHint().width() < view._profile_row.side_by_side_width()
     view.resize(1600, 800)
     QApplication.processEvents()
-    assert not view._io_row.is_stacked()
+    assert not view._profile_row.is_stacked()
+    view.close()
+
+
+def test_stacked_midi_input_still_shows_its_ports(monkeypatch):
+    """Beside the profile the port list borrows that panel's height; stacked
+    under it, it used to fall to its 70 px floor (3 of 6 ports visible)."""
+    from djmidi.gui import controller_setup
+
+    monkeypatch.setattr(controller_setup, "list_input_ports", lambda: [f"Port {i}" for i in range(6)])
+    view = _view_with_name()
+    view.show()
+    view.resize(900, 800)
+    QApplication.processEvents()
+    assert view._profile_row.is_stacked()
+    ports = view._port_list
+    assert ports.viewport().height() >= 6 * ports.sizeHintForRow(0)
+    view.resize(1600, 800)
+    QApplication.processEvents()
+    assert not view._profile_row.is_stacked() and ports.minimumHeight() == 70
     view.close()
 
 

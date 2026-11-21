@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import uuid
 import xml.etree.ElementTree as ET
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Iterator, Sequence
 from dataclasses import dataclass
 from os import PathLike
 from pathlib import Path
@@ -94,7 +94,7 @@ def parse_collection(path: str | PathLike[str]) -> list[NmlTrack]:
     return tracks
 
 
-def _collect_playlists(playlists_elem: ET.Element, out: dict[str, list[str]]) -> None:
+def _iter_playlist_nodes(playlists_elem: ET.Element) -> Iterator[tuple[str, list[str]]]:
     for node in playlists_elem.iter("NODE"):
         if node.get("TYPE") != "PLAYLIST":
             continue
@@ -110,20 +110,27 @@ def _collect_playlists(playlists_elem: ET.Element, out: dict[str, list[str]]) ->
             key = primary_key.get("KEY")
             if key is not None:
                 keys.append(key)
-        out[name] = keys
+        yield name, keys
 
 
-def parse_playlists(path: str | PathLike[str]) -> dict[str, list[str]]:
-    playlists: dict[str, list[str]] = {}
+def iter_playlists(path: str | PathLike[str]) -> list[tuple[str, list[str]]]:
+    """Every playlist as ``(name, keys)``, in file order -- two playlists of
+    the same name in different folders both come back (`parse_playlists`
+    keeps the last one under each name)."""
+    playlists: list[tuple[str, list[str]]] = []
     for _event, elem in ET.iterparse(path, events=("end",)):
         if _is_collection_entry(elem):
             # Not needed here, but pass over the (potentially huge)
             # COLLECTION section without retaining every entry's content.
             elem.clear()
         elif elem.tag == "PLAYLISTS":
-            _collect_playlists(elem, playlists)
+            playlists.extend(_iter_playlist_nodes(elem))
             elem.clear()
     return playlists
+
+
+def parse_playlists(path: str | PathLike[str]) -> dict[str, list[str]]:
+    return dict(iter_playlists(path))
 
 
 # -- writing a standalone playlist .nml --------------------------------------
