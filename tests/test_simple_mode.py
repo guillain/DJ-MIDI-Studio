@@ -115,3 +115,11 @@ def test_heavy_screens_keep_the_essentials_in_simple_mode():
     assert not any(button.isHidden() for button in hidden)
     assert music.side_tabs.isTabVisible(categories)
     assert setup  # built with its MIDI Output box registered
+
+
+def test_a_group_left_with_one_page_hides_its_tab_row():
+    window = MainWindow()
+    mapping_group = window.left_tabs._pages[window._tab_indexes["controller"]].path[-1]
+    assert mapping_group.tabBar().isHidden()  # only By Controller in simple mode
+    window.set_expert_mode(True)
+    assert not mapping_group.tabBar().isHidden()

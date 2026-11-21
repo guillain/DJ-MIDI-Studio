@@ -50,3 +50,17 @@ def test_the_feature_column_is_not_part_of_the_saved_steps():
     [row] = dialog._rows()
     assert row == ("Note On", "1", "88", "127", "120")
     assert not dialog.table.item(0, 5).flags() & dialog.table.item(0, 5).flags().ItemIsEditable
+
+
+def test_simple_mode_hides_the_raw_columns_when_the_steps_read_as_features():
+    from djmidi.gui import simple_mode
+
+    dialog = _dialog("DDJ-XP2", MacroStep(SYNC_LED))
+    raw = (1, 2, 3)
+    assert all(dialog.table.isColumnHidden(c) for c in raw)
+    assert not dialog.table.isColumnHidden(5)  # the feature column says it in words
+    dialog.port_combo.setCurrentText("IAC Driver Bus 1")  # a port the app can't name
+    assert not any(dialog.table.isColumnHidden(c) for c in raw)
+    dialog.port_combo.setCurrentText("DDJ-XP2")
+    simple_mode.apply(True)
+    assert not any(dialog.table.isColumnHidden(c) for c in raw)

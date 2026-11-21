@@ -342,6 +342,7 @@ def test_record_and_controller_setup_save_into_the_active_scene(tmp_path, monkey
 
 def test_menu_corner_fits_at_1100_px(tmp_path):
     window = _window(tmp_path)
+    window.set_expert_mode(True)  # Rec, Scene and Sync are expert tools
     window.preferences.set_sync_set(ControllerSyncSet("DDJ-XP2", "", (), scene="A rather long scene name"))
     window.preferences.active_sync_scene = "A rather long scene name"
     window._refresh_sync_scene_combo()
@@ -803,3 +804,11 @@ def test_live_monitor_without_pending_auto_start_stays_stopped_after_recording(t
     window._record_button.click()
     window._record_button.click()
     assert not window.live_monitor_view.is_running
+
+
+def test_simple_mode_keeps_only_preferences_in_the_menu_corner(tmp_path):
+    window = _window(tmp_path)
+    window.show()
+    assert window._preferences_button.isVisible()
+    assert not any(w.isVisible() for w in (window._record_button, window._sync_scene_combo, window._sync_button))
+    window.close()
