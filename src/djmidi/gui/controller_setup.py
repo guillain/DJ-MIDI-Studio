@@ -295,6 +295,9 @@ class ControllerSetupView(QWidget):
         # to fill "MIDI input"'s panel height via the stretch factor below
         # (matching self.tr("MIDI Output")'s panel, see the io_row comment).
         self._port_list.setMinimumHeight(70)
+        # Beside "Your controller profile" it takes that panel's height
+        # instead of its own ~192 px default (which overflowed the row).
+        self._port_list.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Ignored)
         refresh_button = QPushButton(self._get_icon("refresh"), "")
         refresh_button.setToolTip(self.tr("Refresh ports"))
         refresh_button.clicked.connect(self._refresh_ports)
@@ -517,8 +520,11 @@ class ControllerSetupView(QWidget):
         # whole tab sideways (German at 1024 px needed 1171 px).
         # Sending raw MIDI by hand: an expert tool (simple mode hides it).
         simple_mode.expert_only(output_box)
-        io_container = ResponsiveRow([(capture_box, 1), (output_box, 3)], spacing=12)
-        self._io_row = io_container
+        # "Your controller profile" and "MIDI input" share one row, two
+        # columns (stacked when too narrow); MIDI Output (expert) below.
+        self._profile_row = ResponsiveRow([(draft_box, 3), (capture_box, 2)], spacing=12)
+        io_container = output_box
+        self._io_row = self._profile_row  # the row that stacks when narrow
 
         self._table = QTableWidget(0, 7)
         self._table.setHorizontalHeaderLabels(
@@ -624,7 +630,7 @@ class ControllerSetupView(QWidget):
         header_layout.setContentsMargins(0, 0, 0, 0)
         header_layout.setSpacing(12)
         header_layout.addLayout(name_row)
-        header_layout.addWidget(draft_box, 0)
+        header_layout.addWidget(self._profile_row, 0)
         header_layout.addWidget(io_container, 0)
 
         header_scroll = AutoSizeScrollArea()
