@@ -111,7 +111,7 @@ from djmidi.gui.empty_state import EmptyState
 from djmidi.gui.health_report_dialog import HealthReportDialog
 from djmidi.gui.help_button import help_button, help_row
 from djmidi.gui.library_stats_dialog import LibraryStatsDialog
-from djmidi.gui.list_dialog import confirm_list, show_list
+from djmidi.gui.list_dialog import confirm_list, pick_rows, show_list
 from djmidi.gui.organize_files_dialog import OrganizeFilesDialog
 from djmidi.gui.rename_files_dialog import RenameFilesDialog
 from djmidi.gui.set_preparation import (
@@ -2328,6 +2328,7 @@ class MusicLibraryView(QWidget):
         # entry dropped because the crate would list that track twice.
         plans = self._plan_dj_repair(parent, title, fixes, crates, collection)
         skipped = {path: reason for plan in plans.values() for path, reason in plan.skipped.items()}
+        listed = [f for f in fixes if f.entry.software in plans]
         rows = [
             (
                 software[f.entry.software],
@@ -2340,8 +2341,7 @@ class MusicLibraryView(QWidget):
                 if f.entry.path in skipped
                 else how[f.how],
             )
-            for f in fixes
-            if f.entry.software in plans
+            for f in listed
         ]
         headers = [self.tr("Software"), self.tr("Playlist"), self.tr("Missing file"), self.tr("Found"), self.tr("How")]
         if not any(plan.changes for plan in plans.values()):
@@ -2361,17 +2361,21 @@ class MusicLibraryView(QWidget):
             note = self.tr("{count} other missing track(s) stay as they are: no file fits for sure.").format(
                 count=len(found.unresolved)
             ) + " " + note
-        to_write = [f for f in fixes if f.entry.software in plans and f.entry.path not in skipped]
-        if not confirm_list(
+        # Each fix has its tick box: a find that looks wrong can be left out.
+        checkable = [f.entry.path not in skipped for f in listed]
+        ticked = pick_rows(
             parent,
             title,
             self.tr("{count} missing track(s) found again in your library:").format(count=len(rows)),
             headers,
             rows,
-            note=note,
-            accept_text=self.tr("Repair {count}").format(count=len(to_write)),
-        ):
+            checkable,
+            note=self.tr("Untick a line to leave that entry as it is.") + " " + note,
+            accept_text=self.tr("Repair the ticked entries"),
+        )
+        if not ticked:
             return 0
+        to_write = [listed[index] for index in ticked]
         repaired = 0
         for name, kind in programs:
             if not plans.get(kind) or not plans[kind].changes or self._dj_software_running(parent, title, name, kind):

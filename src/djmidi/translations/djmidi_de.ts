@@ -8378,10 +8378,6 @@ Nur der Index dieser App wird geleert -- keine Datei wird angerührt.</translati
         <translation>{count} Eintrag/Einträge würden dann einen Track nennen, den ihre Crate schon enthält: Sie werden entfernt (jeder Track einmal).</translation>
     </message>
     <message>
-        <source>Repair {count}</source>
-        <translation>{count} reparieren</translation>
-    </message>
-    <message>
         <source>Could not change the {software} files: {error}</source>
         <translation>Die Dateien von {software} konnten nicht geändert werden: {error}</translation>
     </message>
@@ -8960,6 +8956,14 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     <message>
         <source>Serato and Traktor must be closed. Every file changed is backed up first; only these entries change.</source>
         <translation>Serato und Traktor müssen geschlossen sein. Jede geänderte Datei wird zuerst gesichert; nur diese Einträge ändern sich.</translation>
+    </message>
+    <message>
+        <source>Untick a line to leave that entry as it is.</source>
+        <translation>Entfernen Sie das Häkchen einer Zeile, um diesen Eintrag unverändert zu lassen.</translation>
+    </message>
+    <message>
+        <source>Repair the ticked entries</source>
+        <translation>Die angehakten Einträge reparieren</translation>
     </message>
     <message>
         <source>Repaired {count} playlist entry(ies); the files changed are backed up in Snapshots.</source>

@@ -33,3 +33,18 @@ def test_a_plain_string_row_is_one_cell_and_the_check_box_is_offered():
     assert dialog.check is not None and dialog.check.isChecked()
     empty = ListDialog("T", "M", ["Item"], [], accept_text="Go")
     assert empty.table.isHidden() and empty.check is None
+
+
+def test_rows_can_be_unticked_one_by_one():
+    from PySide6.QtCore import Qt
+
+    from djmidi.gui.list_dialog import ListDialog
+
+    dialog = ListDialog("T", "Pick", ["A", "B"], [("1", "x"), ("2", "y"), ("3", "z")], accept_text="Do",
+                        checkable=[True, False, True])
+    assert dialog.ticked_rows() == [0, 2]  # all ticked to start; row 1 has no box
+    assert not dialog.table.topLevelItem(1).flags() & Qt.ItemFlag.ItemIsUserCheckable
+    dialog.table.topLevelItem(0).setCheckState(0, Qt.CheckState.Unchecked)
+    assert dialog.ticked_rows() == [2] and dialog.accept_button.isEnabled()
+    dialog.table.topLevelItem(2).setCheckState(0, Qt.CheckState.Unchecked)
+    assert not dialog.accept_button.isEnabled()  # nothing ticked, nothing to do
