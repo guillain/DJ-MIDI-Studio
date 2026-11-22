@@ -717,7 +717,7 @@ def test_mapping_tabs_and_controller_views_show_french(french):
         assert channel_model.horizontalHeaderItem(0).text().startswith("Canal ")
         _deck, deck_model = build_deck_columns(config)[0]
         assert deck_model.horizontalHeaderItem(0).text() == "Platine 0"
-        layout.set_usage({("DDJ-XP2", "PAD", "Pad 1"): {"0": {"codfather_st"}, "2": {"play"}}})
+        layout.set_usage({("DDJ-XP2", "PAD", "Pad 1"): {"0": {"codfather_st"}, "2": {"censor"}}})
         combo = layout._deck_combo
         assert [combo.itemText(i) for i in range(combo.count())] == ["Toutes les platines", "Platine 0", "Platine 2"]
         # The deck filter goes by item data, not by the translated label.
@@ -1115,7 +1115,7 @@ def _diff_fixture():
         for userio in control.userios:
             for element in userio.mappings:
                 if (control.channel, control.control, userio.event) == ("14", "65", "click"):
-                    element.tag = "play"
+                    element.tag = "censor"
                 if (control.channel, control.control, userio.event) == ("14", "72", "output"):
                     for translation in element.translations:
                         for alias in translation.aliases:
@@ -1132,7 +1132,7 @@ def test_cheat_sheet_and_mapping_diff_stay_english_and_are_scanned(geometry_free
     titles = [sheet.title for sheet in cheat_sheet.build_sheets(parse_file(_SAMPLE_MAPPING), [geometry_free_controller])]
     assert titles == [f"{geometry_free_controller} — mapped controls", "Function names"]
     diff = diff_configs(*_diff_fixture())
-    assert diff.by_kind("reassigned")[0].summary().endswith("-> play (deck 3, slot 1)")
+    assert diff.by_kind("reassigned")[0].summary().endswith("-> censor (deck 3, slot 1)")
     assert diff.by_kind("changed")[0].summary().endswith(": alias on: 127 -> 100")
     sources = {path.name for path in _script_sources()}
     assert {
@@ -1203,7 +1203,7 @@ def test_mapping_diff_report_shows_french(french):
     report = translator("MappingDiff")
     diff = diff_configs(*_diff_fixture(), report)
     reassigned = diff.by_kind("reassigned")[0]
-    assert reassigned.new_functions == ("play (platine 3, slot 1)",)
+    assert reassigned.new_functions == ("censor (platine 3, slot 1)",)
     changed = diff.by_kind("changed")[0]
     assert changed.details == ("alias on : 127 -> 100",)
     assert changed.summary(report).endswith(" : alias on : 127 -> 100")
@@ -1218,7 +1218,7 @@ def test_mapping_diff_report_shows_french(french):
         labels = " ".join(label.text() for label in dialog.findChildren(QLabel))
         assert "1 réaffecté(s), 1 aux valeurs modifiées" in labels
         assert "De <b>a.xml</b> à <b>b.xml</b> : " in labels
-        assert "Brut : codfather_st (platine 3, slot 1) -> play (platine 3, slot 1)" in dialog.entry_items()[0].toolTip(2)
+        assert "Brut : codfather_st (platine 3, slot 1) -> censor (platine 3, slot 1)" in dialog.entry_items()[0].toolTip(2)
     finally:
         dialog.deleteLater()
 

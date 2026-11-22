@@ -53,10 +53,10 @@ def test_known_names(tag, name):
 
 
 def test_unknown_tags_fall_back_to_the_raw_tag():
-    assert not is_known("play")
-    assert function_name("play") == "play"
+    assert not is_known("censor")  # no real file carries it yet
+    assert function_name("censor") == "censor"
     assert function_name("Play/Pause") == "Play/Pause"  # a Traktor command name
-    assert label_with_raw("play", "1") == "play · slot 1"
+    assert label_with_raw("censor", "1") == "censor · slot 1"
 
 
 def test_slot_is_shown_as_a_slot_number_never_a_length():
@@ -68,3 +68,21 @@ def test_slot_is_shown_as_a_slot_number_never_a_length():
 
 def test_label_with_raw_keeps_the_tag_visible():
     assert label_with_raw("codfather_fx", "2") == "Codfather FX · slot 2 (codfather_fx)"
+
+
+def test_play_sync_and_hot_cues_learned_in_serato():
+    """MIDI Learn over the IAC bus in Serato DJ Pro 5.1 (2026-11-22): PLAY,
+    SYNC and HOT CUE n are `play`, `sync`, `cue_point` slot n-1."""
+    with zipfile.ZipFile(DATA / "serato" / "serato-5.1-iac-learn.xml.zip") as zf:
+        config = parse_string(zf.read("serato-5.1-iac-learn.xml").decode("utf-8"))
+    learned = {
+        (ctl.channel, ctl.control): (m.tag, m.deck_id, m.slot_id)
+        for ctl in config.controls for u in ctl.userios if u.event == "click" for m in u.mappings
+    }
+    assert learned[("1", "0")] == ("play", "0", "0")  # deck 1 PLAY: note 0, channel 1
+    assert learned[("2", "2")] == ("sync", "1", "0")  # deck 2 SYNC: note 2, channel 2
+    assert learned[("1", "10")] == ("cue_point", "0", "0")  # HOT CUE 1: note 10
+    assert learned[("1", "17")] == ("cue_point", "0", "7")  # HOT CUE 8: note 17
+    assert function_label("cue_point", "0") == "Hot cue 1"
+    assert function_label("cue_point", "7") == "Hot cue 8"
+    assert function_label("play") == "Play" and function_label("sync") == "Sync"

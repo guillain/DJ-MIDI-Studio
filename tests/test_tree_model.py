@@ -77,8 +77,8 @@ def test_mapping_rows_show_readable_names_with_the_raw_tag_in_the_tooltip():
     mapping = MappingElement("auto_loop_roll_specific_length", deck_id="2", slot_id="3")
     assert mapping_label(mapping) == "Loop roll  (deck 2, slot 3)"
     assert "auto_loop_roll_specific_length" in mapping_tooltip(mapping)
-    unknown = MappingElement("play", deck_id="1", slot_id="0")
-    assert mapping_label(unknown) == "play  (deck 1, slot 0)"
+    unknown = MappingElement("censor", deck_id="1", slot_id="0")
+    assert mapping_label(unknown) == "censor  (deck 1, slot 0)"
 
 
 def test_channel_filter_still_matches_the_raw_tag():
