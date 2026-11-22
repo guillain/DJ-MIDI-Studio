@@ -633,7 +633,8 @@ same file by name or tags (two albums' `01 Intro.mp3`).
 
 If Serato or Traktor is running, you are told first: quit it, then repair.
 A window then lists each fix (software, playlist, missing file, file found,
-how) before anything is written, including the entries that will be left
+how) before anything is written, each with a tick box: untick a find that
+looks wrong and that entry stays as it is, including the entries that will be left
 alone (a file Traktor's collection doesn't know) and the entries removed
 because the crate would list the same track twice. The files are changed
 the same careful way as for duplicates: every file backed up in the

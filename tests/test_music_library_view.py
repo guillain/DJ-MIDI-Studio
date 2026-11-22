@@ -632,6 +632,7 @@ def test_discard_is_logged_in_the_change_history(library, monkeypatch):
     monkeypatch.setattr(mlv, "trash_file", fake_trash)
     monkeypatch.setattr(mlv, "confirm_trash", lambda *a: True)
     monkeypatch.setattr(mlv, "confirm_list", lambda *a, **k: True)
+    monkeypatch.setattr(mlv, "pick_rows", lambda *args, **kwargs: [i for i, c in enumerate(args[5]) if c])
     monkeypatch.setattr(QMessageBox, "question", lambda *a, **k: QMessageBox.StandardButton.Yes)
     monkeypatch.setattr(QMessageBox, "information", lambda *a, **k: None)
     view.find_duplicates()
@@ -1036,6 +1037,9 @@ def test_discard_duplicates_moves_ticked_copies_to_trash(library, monkeypatch):
     monkeypatch.setattr(mlv, "show_list", lambda *args, **kwargs: reports.append(args))
     lists: list[tuple] = []
     monkeypatch.setattr(mlv, "confirm_list", lambda *args, **kwargs: lists.append(args) or True)
+    monkeypatch.setattr(
+        mlv, "pick_rows", lambda *args, **kwargs: lists.append(args) or [i for i, c in enumerate(args[5]) if c]
+    )
 
     view.find_duplicates()
     view.run_pending_job()
@@ -1969,6 +1973,9 @@ def test_repair_dj_playlists_points_a_serato_crate_at_the_moved_file(library, mo
     view.dj_home = tmp_path / "dj"
     lists: list[tuple] = []
     monkeypatch.setattr(mlv, "confirm_list", lambda *args, **kwargs: lists.append(args) or True)
+    monkeypatch.setattr(
+        mlv, "pick_rows", lambda *args, **kwargs: lists.append(args) or [i for i, c in enumerate(args[5]) if c]
+    )
     infos: list[str] = []
     monkeypatch.setattr(QMessageBox, "information", lambda _p, _t, text, *a, **k: infos.append(text))
     view.dj_running = lambda: ["Serato DJ Pro"]
@@ -2021,6 +2028,9 @@ def test_discarding_a_copy_repairs_the_serato_crate_listing_it(library, monkeypa
     monkeypatch.setattr(mlv, "confirm_trash", lambda *_args: True)
     lists: list[tuple] = []
     monkeypatch.setattr(mlv, "confirm_list", lambda *args, **kwargs: lists.append(args) or True)
+    monkeypatch.setattr(
+        mlv, "pick_rows", lambda *args, **kwargs: lists.append(args) or [i for i, c in enumerate(args[5]) if c]
+    )
     view.find_duplicates()
     view.run_pending_job()
     view.duplicates_dialog.set_checked(str(copy), True)
@@ -2039,6 +2049,7 @@ def test_the_repair_button_opens_the_repair(library, monkeypatch, tmp_path):
     view.dj_running = list
     lists: list[tuple] = []
     monkeypatch.setattr(mlv, "confirm_list", lambda *args, **kwargs: lists.append(args) or False)
+    monkeypatch.setattr(mlv, "pick_rows", lambda *args, **kwargs: lists.append(args) and None)
     view.repair_dj_button.click()
     assert [row[:2] for row in lists[0][4]] == [("Serato", "Friday")]
 
@@ -2075,6 +2086,7 @@ def test_repair_dj_playlists_lists_what_the_writer_leaves_alone(library, monkeyp
     reports: list[tuple] = []
     monkeypatch.setattr(mlv, "show_list", lambda *args, **kwargs: reports.append(args))
     monkeypatch.setattr(mlv, "confirm_list", lambda *args, **kwargs: pytest.fail("nothing can be written"))
+    monkeypatch.setattr(mlv, "pick_rows", lambda *args, **kwargs: pytest.fail("nothing can be written"))
     assert view.repair_dj_playlists(backup_root=tmp_path / "snap") == 0
     (row,) = reports[0][4]
     assert row[:3] == ("Traktor", "Friday", str(gone)) and "not in Traktor's collection" in row[4]

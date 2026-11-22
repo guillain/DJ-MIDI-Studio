@@ -52,6 +52,7 @@ class ListDialog(QDialog):
         parent: QWidget | None = None,
         check_text: str = "",
         checked: bool = False,
+        checkable: Sequence[bool] | None = None,
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle(title)
@@ -70,13 +71,20 @@ class ListDialog(QDialog):
         self.table.setTextElideMode(Qt.TextElideMode.ElideMiddle)
         self.table.setHeaderLabels(list(headers))
         self.table.setHeaderHidden(len(headers) == 1)
-        for row in rows:
+        # Rows the DJ can untick one by one (pick_rows): ticked to start with.
+        self._checkable = list(checkable) if checkable is not None else [False] * len(rows)
+        for index, row in enumerate(rows):
             if isinstance(row, str):  # a single-column row
                 row = (row,)
             cells, tips = row if _has_tooltips(row) else (row, row)
             item = QTreeWidgetItem([str(cell) for cell in cells])
             for column, tip in enumerate(tips):
                 item.setToolTip(column, str(tip))
+            if self._checkable[index]:
+                item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+                item.setCheckState(0, Qt.CheckState.Checked)
+            else:
+                item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsUserCheckable)
             self.table.addTopLevelItem(item)
         header = self.table.header()
         header.setStretchLastSection(True)
@@ -112,9 +120,25 @@ class ListDialog(QDialog):
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
         box.addWidget(buttons)
+        if any(self._checkable):
+            # Nothing ticked, nothing to do: the action waits for a tick.
+            self.table.itemChanged.connect(lambda *_: self._update_accept())
 
         fit_to_screen(self, 1200, 640)
         keep_wrapped_text_visible(self)
+
+
+    def ticked_rows(self) -> list[int]:
+        """Indexes of the rows left ticked (pick_rows)."""
+        return [
+            index
+            for index in range(self.table.topLevelItemCount())
+            if self._checkable[index] and self.table.topLevelItem(index).checkState(0) == Qt.CheckState.Checked
+        ]
+
+    def _update_accept(self) -> None:
+        if self.accept_button is not None:
+            self.accept_button.setEnabled(bool(self.ticked_rows()))
 
 
 def _has_tooltips(row: Row) -> bool:
@@ -142,6 +166,25 @@ def confirm_list(
     return accepted
 
 
+def pick_rows(
+    parent: QWidget | None,
+    title: str,
+    message: str,
+    headers: Sequence[str],
+    rows: Sequence[Row],
+    checkable: Sequence[bool],
+    note: str = "",
+    accept_text: str = "OK",
+) -> list[int] | None:
+    """Like `confirm_list`, with a tick box on each `checkable` row (all
+    ticked to start): the indexes left ticked, or None when cancelled."""
+    dialog = ListDialog(title, message, headers, rows, note, accept_text, parent, checkable=checkable)
+    accepted = dialog.exec() == QDialog.DialogCode.Accepted
+    ticked = dialog.ticked_rows()
+    dialog.deleteLater()
+    return ticked if accepted else None
+
+
 def show_list(
     parent: QWidget | None,
     title: str,
@@ -156,4 +199,4 @@ def show_list(
     dialog.deleteLater()
 
 
-__all__ = ["ListDialog", "confirm_list", "show_list"]
+__all__ = ["ListDialog", "confirm_list", "pick_rows", "show_list"]

@@ -8378,10 +8378,6 @@ Seul l&apos;index de cette application est vidé -- aucun fichier n&apos;est tou
         <translation>{count} entrée(s) listeraient alors un morceau que leur crate liste déjà : elles sont retirées (chaque morceau une fois).</translation>
     </message>
     <message>
-        <source>Repair {count}</source>
-        <translation>Réparer {count}</translation>
-    </message>
-    <message>
         <source>Could not change the {software} files: {error}</source>
         <translation>Impossible de modifier les fichiers de {software} : {error}</translation>
     </message>
@@ -8960,6 +8956,14 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>Serato and Traktor must be closed. Every file changed is backed up first; only these entries change.</source>
         <translation>Serato et Traktor doivent être fermés. Chaque fichier modifié est d&apos;abord sauvegardé ; seules ces entrées changent.</translation>
+    </message>
+    <message>
+        <source>Untick a line to leave that entry as it is.</source>
+        <translation>Décochez une ligne pour laisser cette entrée telle quelle.</translation>
+    </message>
+    <message>
+        <source>Repair the ticked entries</source>
+        <translation>Réparer les entrées cochées</translation>
     </message>
     <message>
         <source>Repaired {count} playlist entry(ies); the files changed are backed up in Snapshots.</source>
