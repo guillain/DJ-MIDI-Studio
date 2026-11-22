@@ -324,7 +324,11 @@ software playlists…`, then pick **Serato DJ Pro crates** (your
 - Refused while that program is running: quit it first, or it would write
   its own playlists back when it quits.
 - A preview lists every crate or playlist file that changes and how many
-  entries; a crate listing the kept copy already keeps it once.
+  entries, each with a tick box (untick a file to leave it as it is); a
+  crate listing the kept copy already keeps it once.
+- If writing stops part way (a full disk), you're told how many files were
+  changed before it stopped; those are listed in the change history and
+  every original is in the backup folder.
 - Only the playlist entries change: every other part of a crate, and
   Traktor's collection, cue points and analysis, stay exactly as they
   were. In Traktor, an entry is only repointed when the kept copy is in

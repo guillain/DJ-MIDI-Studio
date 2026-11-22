@@ -115,7 +115,7 @@ def test_the_music_library_refuses_while_running_then_previews_backs_up_and_logs
     import djmidi.gui.music_library_view as mlv
 
     lists = []
-    monkeypatch.setattr(mlv, "confirm_list", lambda *args, **kwargs: lists.append(args) or True)
+    monkeypatch.setattr(mlv, "pick_rows", lambda *args, **kwargs: lists.append(args) or [0])
     backup = view.repoint_dj_playlists(
         kept, [dropped], djp.SERATO, str(crates), processes=list, backup_root=tmp_path / "b"
     )
@@ -124,4 +124,39 @@ def test_the_music_library_refuses_while_running_then_previews_backs_up_and_logs
     assert (backup / "Friday.crate").exists()
     assert parse_crate(crates / "Friday.crate")[0].endswith("music/a.mp3")
     assert view.db.list_changes()[0].kind == "dj-playlists"
+    assert lists[0][5] == [True]  # one tick box per file to change
+    # Unticking every file changes nothing.
+    _crate(crates / "Friday.crate", [dropped])
+    monkeypatch.setattr(mlv, "pick_rows", lambda *args, **kwargs: [])
+    assert view.repoint_dj_playlists(kept, [dropped], djp.SERATO, str(crates), processes=list,
+                                     backup_root=tmp_path / "b2") is None
+    assert parse_crate(crates / "Friday.crate")[0].endswith("music/dl/a.mp3")  # left as it was
     view.close_db()
+
+
+def test_a_failure_part_way_says_which_files_were_written(tmp_path, monkeypatch):
+    from pathlib import Path
+
+    from djmidi.library import dj_playlists as dp
+
+    first, second = tmp_path / "a.crate", tmp_path / "b.crate"
+    first.write_bytes(b"old a")
+    second.write_bytes(b"old b")
+    plan = dp.Plan(dp.SERATO, [dp.FileChange(first, 1, 0, b"new a"), dp.FileChange(second, 2, 0, b"new b")])
+    real_replace = Path.replace
+
+    def full_disk(self, target):
+        if Path(target) == second:
+            raise OSError("No space left on device")
+        return real_replace(self, target)
+
+    monkeypatch.setattr(Path, "replace", full_disk)
+    try:
+        dp.apply(plan, tmp_path / "snap")
+    except dp.PartialApply as partial:
+        assert [c.path for c in partial.done] == [first]
+        assert (partial.backup / "b.crate").read_bytes() == b"old b"
+    else:
+        raise AssertionError("PartialApply expected")
+    assert first.read_bytes() == b"new a" and second.read_bytes() == b"old b"
+    assert not (tmp_path / "b.crate.part").exists()

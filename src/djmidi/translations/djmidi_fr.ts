@@ -8278,10 +8278,6 @@ Seul l&apos;index de cette application est vidé -- aucun fichier n&apos;est tou
         <translation>Modification</translation>
     </message>
     <message>
-        <source>Change files</source>
-        <translation>Modifier les fichiers</translation>
-    </message>
-    <message>
         <source>{software} playlists now use {name}</source>
         <translation>Les playlists {software} utilisent désormais {name}</translation>
     </message>
@@ -8388,6 +8384,18 @@ Seul l&apos;index de cette application est vidé -- aucun fichier n&apos;est tou
     <message>
         <source>Could not change the {software} files: {error}</source>
         <translation>Impossible de modifier les fichiers de {software} : {error}</translation>
+    </message>
+    <message>
+        <source>Untick a file to leave it as it is.</source>
+        <translation>Décochez un fichier pour le laisser tel quel.</translation>
+    </message>
+    <message>
+        <source>Change the ticked files</source>
+        <translation>Modifier les fichiers cochés</translation>
+    </message>
+    <message>
+        <source>{software}: stopped after {done} of {total} file(s): {error}. The originals are in {backup}.</source>
+        <translation>{software} : arrêté après {done} fichier(s) sur {total} : {error}. Les originaux sont dans {backup}.</translation>
     </message>
     <message>
         <source>Change reverted on {count} file(s).</source>

@@ -199,9 +199,22 @@ def plan_traktor(
 # --- applying ---------------------------------------------------------------
 
 
+class PartialApply(OSError):
+    """Writing stopped part way (a full disk…): ``done`` are the changes
+    already written, ``backup`` the folder holding every original."""
+
+    def __init__(self, error: OSError, done: list[FileChange], backup: Path) -> None:
+        super().__init__(str(error))
+        self.done = done
+        self.backup = backup
+
+
 def apply(plan: Plan, backup_root: str | os.PathLike[str], now: datetime | None = None) -> Path | None:
     """Backs every file up under ``backup_root/<software>-<stamp>/`` then
-    replaces it. Returns the backup folder (None when nothing changed)."""
+    replaces it. Returns the backup folder (None when nothing changed).
+
+    A failure while backing up changes nothing (plain OSError); a failure
+    after some files were replaced raises `PartialApply` saying which."""
     if not plan.changes:
         return None
     stamp = (now or datetime.now().astimezone()).strftime("%Y%m%d-%H%M%S")
@@ -209,10 +222,18 @@ def apply(plan: Plan, backup_root: str | os.PathLike[str], now: datetime | None 
     backup.mkdir(parents=True, exist_ok=True)
     for change in plan.changes:
         shutil.copy2(change.path, backup / change.path.name)
+    done: list[FileChange] = []
     for change in plan.changes:
         part = change.path.with_name(change.path.name + ".part")
-        part.write_bytes(change.data)
-        part.replace(change.path)
+        try:
+            part.write_bytes(change.data)
+            part.replace(change.path)
+        except OSError as error:
+            part.unlink(missing_ok=True)
+            if done:
+                raise PartialApply(error, done, backup) from error
+            raise
+        done.append(change)
     return backup
 
 
@@ -221,6 +242,7 @@ __all__ = [
     "SERATO",
     "TRAKTOR",
     "FileChange",
+    "PartialApply",
     "Plan",
     "apply",
     "is_running",
