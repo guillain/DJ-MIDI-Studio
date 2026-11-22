@@ -2090,3 +2090,26 @@ def test_repair_dj_playlists_lists_what_the_writer_leaves_alone(library, monkeyp
     assert view.repair_dj_playlists(backup_root=tmp_path / "snap") == 0
     (row,) = reports[0][4]
     assert row[:3] == ("Traktor", "Friday", str(gone)) and "not in Traktor's collection" in row[4]
+
+
+def test_export_a_playlist_to_a_drive_copies_the_music_and_a_traktor_playlist(library, monkeypatch, tmp_path):
+    from djmidi.library import traktor_library
+
+    view, music, _ = library
+    a, c = music / "Tek" / "Tribe" / "a.mp3", music / "misc" / "c.mp3"
+    playlist = view.db.create_playlist("Friday", [str(a), str(c), str(music / "gone.mp3")])
+    drive = tmp_path / "USB"
+    drive.mkdir()
+    lists: list[tuple] = []
+    monkeypatch.setattr(mlv, "confirm_list", lambda *args, **kwargs: lists.append((args, kwargs)) or True)
+    assert view.export_playlist_to_drive(playlist, str(drive), "Friday") == 2
+    folder = drive / "DJ MIDI Studio" / "Friday"
+    assert (folder / "a.mp3").read_bytes() == a.read_bytes() and a.is_file()  # copied, not moved
+    statuses = [row[0][1] for row in lists[0][0][4]]
+    assert statuses == ["to copy", "to copy", "missing, not copied"]
+    keys = traktor_library.parse_playlists(folder / "Friday.nml")["Friday"]
+    assert [k.rsplit("/:", 1)[-1] for k in keys] == ["a.mp3", "c.mp3"]
+    assert "Copied 2 file(s)" in view.status_label.text()
+    # Again: everything already there, nothing copied twice.
+    assert view.export_playlist_to_drive(playlist, str(drive), "Friday") == 0
+    assert [row[0][1] for row in lists[1][0][4]][:2] == ["already on the drive"] * 2

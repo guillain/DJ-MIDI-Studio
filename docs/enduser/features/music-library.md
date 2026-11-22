@@ -27,6 +27,7 @@
 - [Smart playlists](#smart-playlists)
 - [Prepare a set](#prepare-a-set)
 - [Import and export with DJ software](#import-and-export-with-dj-software)
+- [Copy a playlist to a drive](#copy-a-playlist-to-a-drive)
 - [Repair Serato and Traktor playlists](#repair-serato-and-traktor-playlists)
 - [Compare with a Serato crate, Traktor or rekordbox playlist](#compare-with-a-serato-crate-traktor-or-rekordbox-playlist)
 - [Play history](#play-history)
@@ -611,6 +612,25 @@ are left for rekordbox to analyse. rekordbox's own library is never
 written. rekordbox refuses two playlists with the same name in the same
 folder, so rename one first if needed. This export hasn't been tried in a
 running rekordbox yet.
+
+## Copy a playlist to a drive
+
+`Playlists` → **Export** → `To a drive, with the music…` takes a playlist to
+a USB stick or a removable disk for another computer: pick the drive, check
+the list, click `Copy`.
+
+- The music files are **copied**, never moved: your collection stays as it
+  is. They go into `DJ MIDI Studio/<playlist>/` on the drive.
+- Names are made safe for any drive (FAT32, exFAT): characters such as
+  `: ? "` become `_`; two tracks with the same name become `name (2).mp3`.
+- A file already on the drive with the same size is skipped: stop a copy
+  and start it again to finish it. A file of 4 GB or more can't go on a
+  FAT32 drive and is listed, not copied; missing files are listed too.
+- The space needed is checked first. Each file is copied to a `.part` file,
+  then renamed, so a half-copied file never looks complete.
+- A Traktor playlist of the copies (`<playlist>.nml`) is written next to
+  them: on the other computer, Traktor's **Import Playlist** finds the
+  tracks on the drive. Serato and rekordbox drive layouts aren't written yet.
 
 ## Repair Serato and Traktor playlists
 
