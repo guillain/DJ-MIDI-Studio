@@ -21,6 +21,7 @@ WAIT_HOST = "wait_host"  # join: calling the host
 LINK = "link"  # connected, but no Link to follow
 HEAR = "hear"  # listening clock: send your sound so the app hears your beat
 HEARING = "hearing"  # listening clock: sound on, no clear beat yet
+CLOCK = "clock"  # MIDI Clock chosen: waiting for the DJ software's ticks
 SOUND = "sound"  # connected with Link: start the sound
 MIXING = "mixing"  # all set
 
@@ -42,6 +43,7 @@ class State:
     link: bool = False
     sound: bool = False
     listening: bool = False  # the beat comes from our listening clock, not Link
+    midi_clock: bool = False  # the beat comes from the DJ software's MIDI Clock
 
 
 @dataclass(frozen=True)
@@ -65,6 +67,8 @@ def next_step(state: State) -> Step | None:
     if not state.connected:
         return Step(GIVE_ADDRESS if state.role == HOST else WAIT_HOST, 1)
     if not state.link:
+        if state.midi_clock:
+            return Step(CLOCK, 2)
         if state.listening:
             return Step(HEARING if state.sound else HEAR, 2)
         return Step(LINK, 2)

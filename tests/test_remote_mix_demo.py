@@ -106,3 +106,53 @@ def test_try_alone_with_our_listening_clock_instead_of_link(tmp_path):
         assert dialog.sound_panel.listening_clock is None and dialog.beat_combo.isEnabled()
     finally:
         dialog.close()
+
+
+def test_try_alone_with_traktors_midi_clock(tmp_path):
+    """Beat from the DJ software's MIDI Clock: a port is opened, its ticks
+    give the tempo, no Link and no sound needed."""
+    import mido
+
+    class FakePort:
+        def __init__(self):
+            self.pending, self.closed = [], False
+
+        def iter_pending(self):
+            out, self.pending = self.pending, []
+            return out
+
+        def close(self):
+            self.closed = True
+
+    port = FakePort()
+    opened = []
+    dialog = RemoteMixDialog(
+        link_factory=lambda: (_ for _ in ()).throw(AssertionError("Link must not open")),
+        addresses=list, report_dir=lambda: tmp_path,
+        now=lambda: datetime(2026, 11, 22, 21, 0),  # noqa: DTZ001
+        audio_backend=FakeBackend(), controls_path=tmp_path / "c.json", history_dirs=dict,
+        exports_dir=tmp_path, settings_path=tmp_path / "s.json",
+        clock_ports=lambda: ["IAC Driver Bus 1"], clock_opener=lambda name: opened.append(name) or port,
+    )
+    try:
+        dialog.beat_combo.setCurrentIndex(dialog.beat_combo.findData("midi-clock"))
+        assert dialog.clock_port_combo.currentText() == "IAC Driver Bus 1"
+        dialog.demo_button.click()
+        assert opened == ["IAC Driver Bus 1"]
+        dialog.refresh()
+        assert dialog.next_step.key == "clock"
+        clock = dialog._link.clock
+        import time as _time
+        now = _time.monotonic()
+        clock.feed(0xFA, now - 2.0)
+        for i in range(96):  # 2 beats a second: 120 BPM
+            clock.feed(0xF8, now - 2.0 + i * (0.5 / 24))
+        port.pending.append(mido.Message("clock"))
+        dialog._clock_timer.timeout.emit()  # a poll reads the port
+        assert dialog._link() is not None and abs(dialog._link().tempo - 120.0) < 0.5
+        dialog.refresh()
+        assert "MIDI Clock: 120.0 BPM" in dialog.lead_label.text()
+        dialog.start_button.click()  # stop
+        assert port.closed
+    finally:
+        dialog.close()

@@ -186,6 +186,15 @@ beat, heard: 124.0 BPM*.
 Each side chooses its own source: one DJ on Link and the other listening
 works too.
 
+**My DJ software's MIDI Clock (Traktor)** is a third source, more precise
+than listening: in Traktor, `Preferences → MIDI Clock → Send MIDI Clock` to a
+MIDI port this computer can read (on a Mac, an IAC bus), pick that port in
+**Clock from**, and press Play in Traktor's Master Clock. The app reads the
+24 ticks per beat (polled every 2 ms and smoothed over the last four beats):
+the tempo and the beats, without Link and without listening. As with
+listening, the bar's first beat isn't sent, and the app can't move
+Traktor's tempo. Serato sends no MIDI Clock.
+
 ## Hear each other on the grid
 
 Under the tempo panel, **Hear each other on the grid** sends your master to

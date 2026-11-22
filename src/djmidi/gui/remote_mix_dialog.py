@@ -16,6 +16,7 @@ from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
 
+import mido
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtNetwork import QAbstractSocket, QNetworkInterface
@@ -52,10 +53,12 @@ from djmidi.gui.window_size import (
     keep_wrapped_text_visible,
 )
 from djmidi.library import history
+from djmidi.midi_io import list_input_ports
 from djmidi.remote_mix import (
     audio,
     beat_clock,
     bridge,
+    clock_beat,
     listen,
     next_step,
     probe,
@@ -69,7 +72,7 @@ _LOGGER = logging.getLogger(__name__)
 
 SessionFactory = Callable[..., probe.ProbeSession]
 LinkFactory = Callable[[], probe.LinkReader | None]
-BEAT_LINK, BEAT_LISTEN = "link", "listen"  # where the beat comes from
+BEAT_LINK, BEAT_LISTEN, BEAT_CLOCK = "link", "listen", "midi-clock"  # where the beat comes from
 
 _COLOURS = {probe.GREEN: "#30a46c", probe.ORANGE: "#f5a524", probe.RED: "#e5484d", probe.UNKNOWN: "#8b8d98"}
 
@@ -119,6 +122,8 @@ class RemoteMixDialog(QDialog):
         history_dirs: Callable[[], dict[str, Path]] = history.default_history_dirs,
         exports_dir: Path | None = None,
         settings_path: Path | None = None,
+        clock_ports: Callable[[], list[str]] = list_input_ports,
+        clock_opener: Callable[[str], object] = mido.open_input,
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle(self.tr("Mix Together"))
@@ -179,6 +184,20 @@ class RemoteMixDialog(QDialog):
         self.beat_combo = QComboBox()
         self.beat_combo.addItem(self.tr("Ableton Link"), BEAT_LINK)
         self.beat_combo.addItem(self.tr("Listening to my sound (no Link)"), BEAT_LISTEN)
+        self.beat_combo.addItem(self.tr("My DJ software's MIDI Clock (Traktor)"), BEAT_CLOCK)
+        # The MIDI input the DJ software sends its clock to.
+        self.clock_port_combo = QComboBox()
+        self.clock_port_combo.setToolTip(
+            self.tr("In Traktor: Preferences → MIDI Clock → Send MIDI Clock, to a MIDI port this computer "
+                    "can read (on a Mac, an IAC bus).")
+        )
+        self.clock_port_combo.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+        self.clock_port_combo.setMinimumContentsLength(12)
+        self._clock_ports = clock_ports
+        self._clock_opener = clock_opener
+        self._clock_input = None
+        self._clock_timer = QTimer(self)
+        self._clock_timer.setInterval(2)
         self.beat_combo.setToolTip(
             self.tr(
                 "Listening: the app finds the tempo and the beats in the sound you send, whatever your "
@@ -195,6 +214,9 @@ class RemoteMixDialog(QDialog):
         form.addRow(self.tr("Port:"), self.port_spin)
         form.addRow(self.tr("Your DJ name:"), self.name_edit)
         form.addRow(self.tr("Beat from:"), self.beat_combo)
+        form.addRow(self.tr("Clock from:"), self.clock_port_combo)
+        self._beat_form = form
+        form.setRowVisible(self.clock_port_combo, False)  # shown with "MIDI Clock"
         self._form = form
 
         self.start_button = QPushButton(self.tr("Start the test"))
@@ -358,7 +380,8 @@ class RemoteMixDialog(QDialog):
             connected=connected,
             link=link,
             sound=self.sound_panel.running,
-            listening=self.listening,
+            listening=self.listening and not self.midi_clock,
+            midi_clock=self.midi_clock,
         )
 
     def _show_next_step(self) -> None:
@@ -374,6 +397,8 @@ class RemoteMixDialog(QDialog):
             next_step.LINK: self.tr("Connected. Turn Link on in your DJ software (and tick Measure Ableton Link too)."),
             next_step.HEAR: self.tr("Connected. Pick where your master comes from and start the sound: the app listens for your beat."),
             next_step.HEARING: self.tr("Listening for your beat… play a track with a clear kick."),
+            next_step.CLOCK: self.tr("Waiting for your DJ software's MIDI Clock: in Traktor, Preferences → MIDI Clock → "
+                                     "Send MIDI Clock, then press Play in its Master Clock."),
             next_step.SOUND: self.tr("Same tempo. Pick where your master comes from, then start the sound."),
             next_step.MIXING: self.tr("You're mixing together: the mixer, the signals and the tracklist are shared."),
         }
@@ -477,7 +502,14 @@ class RemoteMixDialog(QDialog):
         if session.follow_error:
             text += " " + self.tr("Link refused a change: {error}").format(error=session.follow_error)
         heard = self._link() if self.listening and self._link is not None else None
-        if self.listening:
+        if self.midi_clock:
+            text = (
+                self.tr("Your beat, from the MIDI Clock: {tempo:.1f} BPM. Match the other DJ's BPM with your pitch: "
+                        "their sound lands on your beats.").format(tempo=heard.tempo)
+                if heard is not None
+                else self.tr("Waiting for your DJ software's MIDI Clock…")
+            )
+        elif self.listening:
             text = (
                 self.tr("Your beat, heard: {tempo:.1f} BPM. Match the other DJ's BPM with your pitch: "
                         "their sound lands on your beats.").format(tempo=heard.tempo)
@@ -627,19 +659,73 @@ class RemoteMixDialog(QDialog):
 
     @property
     def listening(self) -> bool:
-        return self.beat_combo.currentData() == BEAT_LISTEN
+        """The beat isn't Link's: our listening clock or the DJ software's
+        MIDI Clock (no tempo to lead, the bar's first beat unknown)."""
+        return self.beat_combo.currentData() in (BEAT_LISTEN, BEAT_CLOCK)
+
+    @property
+    def midi_clock(self) -> bool:
+        return self.beat_combo.currentData() == BEAT_CLOCK
 
     def _listening_reader(self) -> probe.LinkReader | None:
-        """Our listening clock when chosen (fed by the sound panel), else None."""
+        """Our listening clock (fed by the sound panel) or the MIDI Clock
+        reader when chosen, else None."""
+        self.sound_panel.listening_clock = None
+        if self.midi_clock:
+            return self._clock_reader()
         if not self.listening:
-            self.sound_panel.listening_clock = None
             return None
         clock = beat_clock.ListeningClock(audio.RATE)
         self.sound_panel.listening_clock = clock
         return clock.reader
 
+    def _clock_reader(self) -> probe.LinkReader | None:
+        """Opens the chosen MIDI input and reads its clock (polled every 2 ms:
+        never an rtmidi callback)."""
+        name = self.clock_port_combo.currentText()
+        if not name:
+            return None
+        try:
+            port = self._clock_opener(name)
+        except (OSError, ValueError) as exc:
+            self.status_label.setText(self.tr("Could not open {port}: {error}").format(port=name, error=exc))
+            return None
+        beat = clock_beat.MidiClockBeat()
+        self._clock_input = port
+
+        def poll() -> None:
+            for message in port.iter_pending():
+                data = message.bytes()
+                if data and data[0] >= 0xF8:
+                    beat.feed(data[0])
+
+        try:
+            self._clock_timer.timeout.disconnect()
+        except (RuntimeError, TypeError):
+            pass
+        self._clock_timer.timeout.connect(poll)
+        self._clock_timer.start()
+
+        def reader():
+            return beat.snapshot()
+
+        def close() -> None:
+            self._clock_timer.stop()
+            try:
+                port.close()
+            except Exception:
+                _LOGGER.debug("MIDI Clock port already closed", exc_info=True)
+            self._clock_input = None
+
+        reader.close = close  # type: ignore[attr-defined]
+        reader.clock = beat  # type: ignore[attr-defined]
+        return reader
+
     def _on_beat_source(self, *_args) -> None:
         self.link_checkbox.setEnabled(not self.listening and not self.running)
+        if self.midi_clock and not self.clock_port_combo.count():
+            self.clock_port_combo.addItems(self._clock_ports())
+        self._beat_form.setRowVisible(self.clock_port_combo, self.midi_clock)
         self._show_next_step()
 
     def _share_mixer(self) -> None:
