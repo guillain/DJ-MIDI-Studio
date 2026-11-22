@@ -2189,28 +2189,50 @@ class MusicLibraryView(QWidget):
             )
             for path, reason in plan.skipped.items()
         ]
-        if not confirm_list(
+        # One tick box per file to change: a crate can be left as it is.
+        checkable = [True] * len(plan.changes) + [False] * len(plan.skipped)
+        ticked = pick_rows(
             parent,
             title,
             self.tr("Change these {software} files? Each one is backed up first.").format(software=name),
             [self.tr("File"), self.tr("Change")],
             rows,
-            accept_text=self.tr("Change files"),
-        ):
+            checkable,
+            note=self.tr("Untick a file to leave it as it is."),
+            accept_text=self.tr("Change the ticked files"),
+        )
+        if not ticked:
             return None
-        backup = dj_playlists.apply(plan, backup_root or user_paths.subfolder(user_paths.SNAPSHOTS))
+        plan.changes = [plan.changes[index] for index in ticked]
+        written = plan.changes
+        try:
+            backup = dj_playlists.apply(plan, backup_root or user_paths.subfolder(user_paths.SNAPSHOTS))
+        except dj_playlists.PartialApply as partial:
+            written, backup = partial.done, partial.backup
+            QMessageBox.warning(
+                parent,
+                title,
+                self.tr("{software}: stopped after {done} of {total} file(s): {error}. The originals are in {backup}.").format(
+                    software=name, done=len(written), total=len(plan.changes), error=partial, backup=backup
+                ),
+            )
+        except OSError as error:
+            QMessageBox.warning(
+                parent, title, self.tr("Could not change the {software} files: {error}").format(software=name, error=error)
+            )
+            return None
         change_log.record_change(
             self.db,
             "dj-playlists",
             self.tr("{software} playlists now use {name}").format(software=name, name=Path(kept).name),
             [
                 ChangeItem(str(change.path), {"backup": str(backup / change.path.name)}, {"entries": change.replaced})
-                for change in plan.changes
+                for change in written
             ],
         )
         self.status_label.setText(
             self.tr("{software}: {count} file(s) changed, backup in {backup}.").format(
-                software=name, count=len(plan.changes), backup=backup
+                software=name, count=len(written), backup=backup
             )
         )
         return backup
@@ -2390,8 +2412,19 @@ class MusicLibraryView(QWidget):
                                         collection).get(kind)
             if plan is None or not plan.changes:
                 continue
+            written = plan.changes
             try:
                 backup = dj_playlists.apply(plan, backup_root or user_paths.subfolder(user_paths.SNAPSHOTS))
+            except dj_playlists.PartialApply as partial:
+                # Some files were written before the failure: count and log them.
+                written, backup = partial.done, partial.backup
+                QMessageBox.warning(
+                    parent,
+                    title,
+                    self.tr("{software}: stopped after {done} of {total} file(s): {error}. The originals are in {backup}.").format(
+                        software=name, done=len(written), total=len(plan.changes), error=partial, backup=backup
+                    ),
+                )
             except OSError as error:
                 QMessageBox.warning(
                     parent, title, self.tr("Could not change the {software} files: {error}").format(software=name, error=error)
@@ -2399,14 +2432,15 @@ class MusicLibraryView(QWidget):
                 continue
             if backup is None:
                 continue
-            repaired += plan.entries
+            entries = sum(change.replaced for change in written)
+            repaired += entries
             change_log.record_change(
                 self.db,
                 "dj-playlists",
-                f"{name}: {plan.entries} missing track(s) found again",  # English, shown translated (issue #319)
+                f"{name}: {entries} missing track(s) found again",  # English, shown translated (issue #319)
                 [
                     ChangeItem(str(change.path), {"backup": str(backup / change.path.name)}, {"entries": change.replaced})
-                    for change in plan.changes
+                    for change in written
                 ],
             )
         if repaired:

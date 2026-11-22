@@ -8278,10 +8278,6 @@ Nur der Index dieser App wird geleert -- keine Datei wird angerührt.</translati
         <translation>Änderung</translation>
     </message>
     <message>
-        <source>Change files</source>
-        <translation>Dateien ändern</translation>
-    </message>
-    <message>
         <source>{software} playlists now use {name}</source>
         <translation>{software}-Playlists verwenden jetzt {name}</translation>
     </message>
@@ -8388,6 +8384,18 @@ Nur der Index dieser App wird geleert -- keine Datei wird angerührt.</translati
     <message>
         <source>Could not change the {software} files: {error}</source>
         <translation>Die Dateien von {software} konnten nicht geändert werden: {error}</translation>
+    </message>
+    <message>
+        <source>Untick a file to leave it as it is.</source>
+        <translation>Entfernen Sie das Häkchen einer Datei, um sie unverändert zu lassen.</translation>
+    </message>
+    <message>
+        <source>Change the ticked files</source>
+        <translation>Die angehakten Dateien ändern</translation>
+    </message>
+    <message>
+        <source>{software}: stopped after {done} of {total} file(s): {error}. The originals are in {backup}.</source>
+        <translation>{software}: nach {done} von {total} Datei(en) angehalten: {error}. Die Originale liegen in {backup}.</translation>
     </message>
     <message>
         <source>Change reverted on {count} file(s).</source>
