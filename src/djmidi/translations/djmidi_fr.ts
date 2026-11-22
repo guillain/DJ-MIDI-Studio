@@ -10536,6 +10536,14 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <translation>En écoutant mon son (sans Link)</translation>
     </message>
     <message>
+        <source>My DJ software&apos;s MIDI Clock (Traktor)</source>
+        <translation>L&apos;horloge MIDI de mon logiciel DJ (Traktor)</translation>
+    </message>
+    <message>
+        <source>In Traktor: Preferences → MIDI Clock → Send MIDI Clock, to a MIDI port this computer can read (on a Mac, an IAC bus).</source>
+        <translation>Dans Traktor : Preferences → MIDI Clock → Send MIDI Clock, vers un port MIDI que cet ordinateur peut lire (sur Mac, un bus IAC).</translation>
+    </message>
+    <message>
         <source>Listening: the app finds the tempo and the beats in the sound you send, whatever your DJ software. It can&apos;t move your tempo: match the other DJ&apos;s BPM with your pitch fader.</source>
         <translation>À l&apos;écoute : l&apos;app trouve le tempo et les temps dans le son que vous envoyez, quel que soit votre logiciel DJ. Elle ne peut pas changer votre tempo : calez le BPM de l&apos;autre DJ avec votre pitch.</translation>
     </message>
@@ -10558,6 +10566,10 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>Beat from:</source>
         <translation>Le temps vient de :</translation>
+    </message>
+    <message>
+        <source>Clock from:</source>
+        <translation>Horloge depuis :</translation>
     </message>
     <message>
         <source>Start the test</source>
@@ -10622,6 +10634,10 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>Listening for your beat… play a track with a clear kick.</source>
         <translation>À l&apos;écoute de votre temps… passez un morceau avec un kick bien net.</translation>
+    </message>
+    <message>
+        <source>Waiting for your DJ software&apos;s MIDI Clock: in Traktor, Preferences → MIDI Clock → Send MIDI Clock, then press Play in its Master Clock.</source>
+        <translation>En attente de l&apos;horloge MIDI de votre logiciel DJ : dans Traktor, Preferences → MIDI Clock → Send MIDI Clock, puis Play dans son Master Clock.</translation>
     </message>
     <message>
         <source>Same tempo. Pick where your master comes from, then start the sound.</source>
@@ -10692,6 +10708,14 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <translation>Link a refusé un changement : {error}</translation>
     </message>
     <message>
+        <source>Your beat, from the MIDI Clock: {tempo:.1f} BPM. Match the other DJ&apos;s BPM with your pitch: their sound lands on your beats.</source>
+        <translation>Votre temps, depuis l&apos;horloge MIDI : {tempo:.1f} BPM. Calez le BPM de l&apos;autre DJ avec votre pitch : son son tombe sur vos temps.</translation>
+    </message>
+    <message>
+        <source>Waiting for your DJ software&apos;s MIDI Clock…</source>
+        <translation>En attente de l&apos;horloge MIDI de votre logiciel DJ…</translation>
+    </message>
+    <message>
         <source>Your beat, heard: {tempo:.1f} BPM. Match the other DJ&apos;s BPM with your pitch: their sound lands on your beats.</source>
         <translation>Votre temps, entendu : {tempo:.1f} BPM. Calez le BPM de l&apos;autre DJ avec votre pitch : son son tombe sur vos temps.</translation>
     </message>
@@ -10718,6 +10742,10 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>Stop the test</source>
         <translation>Arrêter le test</translation>
+    </message>
+    <message>
+        <source>Could not open {port}: {error}</source>
+        <translation>Impossible d&apos;ouvrir {port} : {error}</translation>
     </message>
     <message>
         <source>Network error: {error}</source>

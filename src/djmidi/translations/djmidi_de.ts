@@ -10536,6 +10536,14 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
         <translation>Durch Hören meines Sounds (ohne Link)</translation>
     </message>
     <message>
+        <source>My DJ software&apos;s MIDI Clock (Traktor)</source>
+        <translation>Die MIDI-Clock meiner DJ-Software (Traktor)</translation>
+    </message>
+    <message>
+        <source>In Traktor: Preferences → MIDI Clock → Send MIDI Clock, to a MIDI port this computer can read (on a Mac, an IAC bus).</source>
+        <translation>In Traktor: Preferences → MIDI Clock → Send MIDI Clock, an einen MIDI-Port, den dieser Computer lesen kann (auf dem Mac ein IAC-Bus).</translation>
+    </message>
+    <message>
         <source>Listening: the app finds the tempo and the beats in the sound you send, whatever your DJ software. It can&apos;t move your tempo: match the other DJ&apos;s BPM with your pitch fader.</source>
         <translation>Hören: Die App findet Tempo und Schläge im Sound, den Sie senden, egal mit welcher DJ-Software. Sie kann Ihr Tempo nicht ändern: Gleichen Sie die BPM des anderen DJs mit Ihrem Pitch-Fader an.</translation>
     </message>
@@ -10558,6 +10566,10 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     <message>
         <source>Beat from:</source>
         <translation>Takt von:</translation>
+    </message>
+    <message>
+        <source>Clock from:</source>
+        <translation>Clock von:</translation>
     </message>
     <message>
         <source>Start the test</source>
@@ -10622,6 +10634,10 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     <message>
         <source>Listening for your beat… play a track with a clear kick.</source>
         <translation>Hört auf Ihren Beat… spielen Sie einen Track mit deutlicher Kick.</translation>
+    </message>
+    <message>
+        <source>Waiting for your DJ software&apos;s MIDI Clock: in Traktor, Preferences → MIDI Clock → Send MIDI Clock, then press Play in its Master Clock.</source>
+        <translation>Warte auf die MIDI-Clock Ihrer DJ-Software: in Traktor Preferences → MIDI Clock → Send MIDI Clock, dann Play in der Master Clock.</translation>
     </message>
     <message>
         <source>Same tempo. Pick where your master comes from, then start the sound.</source>
@@ -10692,6 +10708,14 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
         <translation>Link hat eine Änderung abgelehnt: {error}</translation>
     </message>
     <message>
+        <source>Your beat, from the MIDI Clock: {tempo:.1f} BPM. Match the other DJ&apos;s BPM with your pitch: their sound lands on your beats.</source>
+        <translation>Ihr Beat, aus der MIDI-Clock: {tempo:.1f} BPM. Gleichen Sie die BPM des anderen DJs mit Ihrem Pitch an: Sein Sound landet auf Ihren Schlägen.</translation>
+    </message>
+    <message>
+        <source>Waiting for your DJ software&apos;s MIDI Clock…</source>
+        <translation>Warte auf die MIDI-Clock Ihrer DJ-Software…</translation>
+    </message>
+    <message>
         <source>Your beat, heard: {tempo:.1f} BPM. Match the other DJ&apos;s BPM with your pitch: their sound lands on your beats.</source>
         <translation>Ihr Beat, gehört: {tempo:.1f} BPM. Gleichen Sie die BPM des anderen DJs mit Ihrem Pitch an: Sein Sound landet auf Ihren Schlägen.</translation>
     </message>
@@ -10718,6 +10742,10 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     <message>
         <source>Stop the test</source>
         <translation>Test stoppen</translation>
+    </message>
+    <message>
+        <source>Could not open {port}: {error}</source>
+        <translation>{port} konnte nicht geöffnet werden: {error}</translation>
     </message>
     <message>
         <source>Network error: {error}</source>
