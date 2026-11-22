@@ -311,6 +311,8 @@ surgical and logged. Qt-free modules; the tab is a thin view over `library/works
   runs, backed up in Snapshots) + `dj_playlist_repair.py` (finds dangling crate/playlist entries and their one
   replacement: change history, unique file name, unique title+artist; `DJMIDI_DJ_HOME` keeps tests off the
   real home),
+  `drive_export.py` (#454: copy a playlist's files to a drive, never moving them, FAT-safe names, resume,
+  space check, then a Traktor `.nml` of the copies; Serato/rekordbox drive layouts not written until documented),
   `health.py`, `stats.py`, `rename.py` / `organize.py` (inside library roots, never in protected DJ folders),
   `change_log.py` (every file write logged and revertible), `playlist_compare.py`, `gig_journal.py`.
 - Performance at ~85k tracks matters: the table model sorts itself, the proxy only filters, no-op filter changes
@@ -381,6 +383,9 @@ surgical and logged. Qt-free modules; the tab is a thin view over `library/works
   encoder and decoder per flagged source; the hub keeps the flag), Qt-free `remote_mix/talkback.py` (`TalkReceiver`:
   a 60 ms `StreamPlayer` per DJ, who talks; held pad = `pad_event` press/release) → `gui/remote_mix_talk.TalkPanel`
   inside `RemoteAudioPanel` (mic read in `pump`, voices added to the monitor output only).
+  Beat without Link: Qt-free `remote_mix/beat_clock.ListeningClock` (tempo/phase heard in the sound sent) or
+  `remote_mix/clock_beat.MidiClockBeat` (the DJ software's MIDI Clock, polled every 2 ms, least squares over
+  four beats); both give `LinkSnapshot(quantum=1.0)`; `BarAlignedPlayer` keeps only the phase of beat numbers.
   Demo mode (Try alone): Qt-free `remote_mix/demo.py` (`DemoSession` stands for a hosting `ProbeSession` with
   "Demo DJ" as guest, `audio_link` → `DemoAudioLink` echoing your packets/voice as DJ 1, `DemoClock` without Link);
   the sound panel uses `session.audio_link` when present. `RemoteMixDialog.start_demo` / `.demo`.
