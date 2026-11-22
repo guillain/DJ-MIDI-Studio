@@ -135,6 +135,7 @@ from djmidi.library import (
     discard,
     dj_playlist_repair,
     dj_playlists,
+    drive_export,
     duplicates,
     gig_journal,
     health,
@@ -1693,6 +1694,9 @@ class MusicLibraryView(QWidget):
             ("export_traktor_button", self.tr("Traktor playlist…"), self._on_export_traktor_clicked,
              self.tr("Writes a new single-playlist .nml where you choose, for Traktor's Import Playlist. "
                      "Never touches collection.nml.")),
+            ("export_drive_button", self.tr("To a drive, with the music…"), self._on_export_drive_clicked,
+             self.tr("Copies the playlist's music files to a USB stick or a disk you choose (never moving them) "
+                     "and writes a Traktor playlist next to them that points at the copies.")),
             ("export_rekordbox_button", self.tr("rekordbox XML…"), self._on_export_rekordbox_clicked,
              self.tr("Writes a new rekordbox XML file where you choose, for rekordbox's Imported Library. "
                      "Never touches rekordbox's own library.")),
@@ -1728,7 +1732,7 @@ class MusicLibraryView(QWidget):
             (self.tr("Import"), ("import_serato_button", "import"), ("import_traktor_button", "import"),
              ("import_rekordbox_button", "import")),
             (self.tr("Export"), ("export_serato_button", "export"), ("export_traktor_button", "export"),
-             ("export_rekordbox_button", "export")),
+             ("export_rekordbox_button", "export"), ("export_drive_button", "export")),
             (self.tr("Your DJ software"), ("repair_dj_button", "files")),
             (self.tr("Compare"), ("compare_serato_button", "compare"), ("compare_traktor_button", "compare"),
              ("compare_rekordbox_button", "compare")),
@@ -3818,6 +3822,95 @@ class MusicLibraryView(QWidget):
                 self.export_playlist_as_nml(playlist_id, path, name)
             except OSError as exc:
                 QMessageBox.warning(self, self.tr("Export failed"), f"{path}\n\n{exc}")
+
+    def _on_export_drive_clicked(self) -> None:
+        playlist_id = self.selected_playlist_id()
+        if playlist_id is None:
+            return
+        name = self.playlist_list.currentItem().text().split("  (", 1)[0]
+        start = "/Volumes" if Path("/Volumes").is_dir() else str(Path.home())
+        drive = QFileDialog.getExistingDirectory(self, self.tr("The drive to copy the playlist to"), start)
+        if drive:
+            self.export_playlist_to_drive(playlist_id, drive, name)
+
+    def export_playlist_to_drive(self, playlist_id: int, drive: str, name: str) -> int:
+        """Copies a playlist's music to ``drive`` (issue #454) after a preview,
+        then writes a Traktor playlist of the copies. Returns files copied."""
+        parent = self.window()
+        title = self.tr("Copy to a drive")
+        drive_plan = drive_export.plan(drive, name, self.db.playlist_paths(playlist_id))
+        rows = [
+            ((Path(item.source).name, self.tr("already on the drive") if item.present else self.tr("to copy")),
+             (item.source, str(item.target)))
+            for item in drive_plan.items
+        ]
+        rows += [((Path(path).name, self.tr("missing, not copied")), (path, "")) for path in drive_plan.missing]
+        rows += [((Path(path).name, self.tr("4 GB or more, too big for a FAT32 drive")), (path, ""))
+                 for path in drive_plan.too_big]
+        if not drive_plan.items:
+            show_list(parent, title, self.tr("Nothing to copy from this playlist:"), [self.tr("File"), self.tr("Status")],
+                      rows)
+            return 0
+        mb = 1024 * 1024
+        if not drive_plan.fits:
+            QMessageBox.warning(
+                parent,
+                title,
+                self.tr("Not enough room on the drive: {needed} MB needed, {free} MB free.").format(
+                    needed=drive_plan.needed // mb + 1, free=(drive_plan.free or 0) // mb
+                ),
+            )
+            return 0
+        note = self.tr(
+            "Into {folder}: {count} file(s) to copy ({needed} MB), {free} MB free. Your files are copied, never "
+            "moved; a Traktor playlist of the copies is written there (Traktor: Import Playlist)."
+        ).format(
+            folder=drive_plan.folder,
+            count=len(drive_plan.to_copy),
+            needed=drive_plan.needed // mb + 1,
+            free=(drive_plan.free or 0) // mb,
+        )
+        if not confirm_list(
+            parent,
+            title,
+            self.tr("Copy {name} to the drive?").format(name=name),
+            [self.tr("File"), self.tr("Status")],
+            rows,
+            note=note,
+            accept_text=self.tr("Copy"),
+        ):
+            return 0
+        progress = QProgressDialog(self.tr("Copying the music…"), self.tr("Stop"), 0, len(drive_plan.to_copy), parent)
+        progress.setWindowTitle(title)
+        progress.setMinimumDuration(300)
+        copied, stopped = 0, False
+        steps = drive_export.copy(drive_plan)
+        failed: list[tuple[str, str]] = []
+        while True:
+            try:
+                next(steps)
+            except StopIteration as done:
+                failed = done.value or []
+                break
+            copied += 1
+            progress.setValue(copied)
+            QApplication.processEvents()
+            if progress.wasCanceled():
+                stopped = True
+                steps.close()
+                break
+        progress.close()
+        paths = drive_export.copied_paths(drive_plan)
+        if paths:
+            workspace.export_traktor_playlist(drive_plan.playlist_file, name, paths, db=self.db)
+        message = self.tr("Copied {count} file(s) to {folder}.").format(count=copied, folder=drive_plan.folder)
+        if stopped:
+            message += " " + self.tr("Stopped: copy again to finish, the files already there are skipped.")
+        if failed:
+            show_list(parent, title, self.tr("These files could not be copied:"), [self.tr("File"), self.tr("Reason")],
+                      [(Path(path).name, reason) for path, reason in failed])
+        self.status_label.setText(message)
+        return copied
 
     def export_playlist_as_rekordbox_xml(self, playlist_id: int, xml_path: str, name: str) -> None:
         workspace.export_rekordbox_xml(

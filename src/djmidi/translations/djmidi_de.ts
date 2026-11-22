@@ -8022,6 +8022,14 @@ Ausgewählte Zeilen in der Controller-Einrichtung: {selected}</translation>
         <translation>Schreibt eine neue .nml mit einer einzelnen Playlist an einen Ort Ihrer Wahl, für Traktors Import Playlist. Berührt nie collection.nml.</translation>
     </message>
     <message>
+        <source>To a drive, with the music…</source>
+        <translation>Auf ein Laufwerk, mit der Musik…</translation>
+    </message>
+    <message>
+        <source>Copies the playlist&apos;s music files to a USB stick or a disk you choose (never moving them) and writes a Traktor playlist next to them that points at the copies.</source>
+        <translation>Kopiert die Musikdateien der Playlist auf einen USB-Stick oder ein Laufwerk Ihrer Wahl (ohne sie zu verschieben) und schreibt daneben eine Traktor-Playlist, die auf die Kopien verweist.</translation>
+    </message>
+    <message>
         <source>Writes a new rekordbox XML file where you choose, for rekordbox&apos;s Imported Library. Never touches rekordbox&apos;s own library.</source>
         <translation>Schreibt eine neue rekordbox-XML-Datei an den gewählten Ort, für die importierte Bibliothek von rekordbox. Rührt die rekordbox-Bibliothek selbst nie an.</translation>
     </message>
@@ -8840,6 +8848,74 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
     <message>
         <source>Traktor playlists (*.nml)</source>
         <translation>Traktor-Playlists (*.nml)</translation>
+    </message>
+    <message>
+        <source>The drive to copy the playlist to</source>
+        <translation>Das Laufwerk, auf das die Playlist kopiert wird</translation>
+    </message>
+    <message>
+        <source>Copy to a drive</source>
+        <translation>Auf ein Laufwerk kopieren</translation>
+    </message>
+    <message>
+        <source>already on the drive</source>
+        <translation>schon auf dem Laufwerk</translation>
+    </message>
+    <message>
+        <source>to copy</source>
+        <translation>zu kopieren</translation>
+    </message>
+    <message>
+        <source>missing, not copied</source>
+        <translation>fehlt, nicht kopiert</translation>
+    </message>
+    <message>
+        <source>4 GB or more, too big for a FAT32 drive</source>
+        <translation>4 GB oder mehr, zu groß für ein FAT32-Laufwerk</translation>
+    </message>
+    <message>
+        <source>Nothing to copy from this playlist:</source>
+        <translation>Nichts aus dieser Playlist zu kopieren:</translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation>Status</translation>
+    </message>
+    <message>
+        <source>Not enough room on the drive: {needed} MB needed, {free} MB free.</source>
+        <translation>Nicht genug Platz auf dem Laufwerk: {needed} MB nötig, {free} MB frei.</translation>
+    </message>
+    <message>
+        <source>Into {folder}: {count} file(s) to copy ({needed} MB), {free} MB free. Your files are copied, never moved; a Traktor playlist of the copies is written there (Traktor: Import Playlist).</source>
+        <translation>Nach {folder}: {count} Datei(en) zu kopieren ({needed} MB), {free} MB frei. Ihre Dateien werden kopiert, nie verschoben; eine Traktor-Playlist der Kopien wird dort geschrieben (Traktor: Import Playlist).</translation>
+    </message>
+    <message>
+        <source>Copy {name} to the drive?</source>
+        <translation>{name} auf das Laufwerk kopieren?</translation>
+    </message>
+    <message>
+        <source>Copy</source>
+        <translation>Kopieren</translation>
+    </message>
+    <message>
+        <source>Copying the music…</source>
+        <translation>Musik wird kopiert…</translation>
+    </message>
+    <message>
+        <source>Stop</source>
+        <translation>Anhalten</translation>
+    </message>
+    <message>
+        <source>Copied {count} file(s) to {folder}.</source>
+        <translation>{count} Datei(en) nach {folder} kopiert.</translation>
+    </message>
+    <message>
+        <source>Stopped: copy again to finish, the files already there are skipped.</source>
+        <translation>Angehalten: Erneut kopieren, um fertigzustellen; vorhandene Dateien werden übersprungen.</translation>
+    </message>
+    <message>
+        <source>These files could not be copied:</source>
+        <translation>Diese Dateien konnten nicht kopiert werden:</translation>
     </message>
     <message>
         <source>Export as rekordbox XML</source>
