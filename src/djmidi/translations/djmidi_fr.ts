@@ -2649,6 +2649,11 @@ Il reste une étape manuelle : ajoutez &apos;{slug}&apos; au bloc d&apos;imports
         <extracomment>The slot suffix of a label, translated by the GUI (issue #326).</extracomment>
         <translation>{name} · slot {slot}</translation>
     </message>
+    <message>
+        <source>Hot cue {number}</source>
+        <extracomment>A hot cue by its number: Serato&apos;s ``cue_point`` slots count from 0 (HOT CUE 1 learned as slot 0, HOT CUE 8 as slot 7, in the same capture).</extracomment>
+        <translation>Hot cue {number}</translation>
+    </message>
 </context>
 <context>
     <name>FunctionSearchView</name>

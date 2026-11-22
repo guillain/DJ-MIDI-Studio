@@ -8,7 +8,7 @@ function search, the mapping diff and the tree tabs.
 The table only covers the tags found in the repository's real Serato exports
 (`data/xdj_xz-ddj_xp2-4decks.xml`, `data/serato/*.xml.zip`; the inventory is
 also recorded in `software/traktor/README.md`): those four tags are the only
-ones any real file uses. Each label is derived from nothing but the tag's own
+ones any real file uses, plus Play, Sync and hot cues learned in Serato 5.1. Each label is derived from nothing but the tag's own
 words -- this project has never confirmed what a slot number stands for (which
 loop length an `auto_loop_specific_length` slot is, see CLAUDE.md) nor what
 Serato's `codfather_*` functions do, so a slot stays a slot number ("Loop roll
@@ -38,12 +38,21 @@ FUNCTION_NAMES: dict[str, str] = {
     # Meaning unconfirmed: re-cased only, nothing inferred.
     "codfather_st": "Codfather ST",
     "codfather_fx": "Codfather FX",
+    # Learned in Serato DJ Pro 5.1 on the maintainer's computer (2026-11-22,
+    # MIDI Learn over the IAC bus, `data/serato/serato-5.1-iac-learn.xml.zip`):
+    # clicking PLAY, SYNC and HOT CUE n of a deck gave these tags.
+    "play": "Play",
+    "sync": "Sync",
+    "cue_point": "Hot cue",
 }
 
 _NO_SLOT = ("", "(none)")
 
 #: The slot suffix of a label, translated by the GUI (issue #326).
 SLOT_SUFFIX = QT_TRANSLATE_NOOP("FunctionNames", "{name} · slot {slot}")
+#: A hot cue by its number: Serato's ``cue_point`` slots count from 0 (HOT CUE 1
+#: learned as slot 0, HOT CUE 8 as slot 7, in the same capture).
+HOT_CUE = QT_TRANSLATE_NOOP("FunctionNames", "Hot cue {number}")
 
 
 def is_known(tag: str) -> bool:
@@ -63,6 +72,8 @@ def function_label(tag: str, slot_id: str | None = None, translate: Translate = 
     name = function_name(tag)
     if slot_id is None or slot_id in _NO_SLOT:
         return name
+    if tag == "cue_point" and slot_id.isdigit():
+        return translate(HOT_CUE).format(number=int(slot_id) + 1)
     return translate(SLOT_SUFFIX).format(name=name, slot=slot_id)
 
 
@@ -75,6 +86,7 @@ def label_with_raw(tag: str, slot_id: str | None = None, translate: Translate = 
 
 __all__ = [
     "FUNCTION_NAMES",
+    "HOT_CUE",
     "SLOT_SUFFIX",
     "function_label",
     "function_name",

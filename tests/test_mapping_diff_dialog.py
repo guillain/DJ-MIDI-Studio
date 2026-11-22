@@ -41,7 +41,7 @@ def _window_with_backup(tmp_path) -> tuple[MainWindow, Path]:
 
 def test_dialog_groups_entries_by_kind_with_physical_names():
     old = parse_file(FIXTURE)
-    diff = diff_configs(old, _retag(old, "14", "65", "play"))
+    diff = diff_configs(old, _retag(old, "14", "65", "censor"))
     dialog = MappingDiffDialog(diff, "a.xml", "b.xml")
     try:
         assert dialog.tree.topLevelItemCount() == 1
@@ -71,7 +71,7 @@ def test_compare_actions_follow_the_backup(tmp_path):
 def test_compare_with_previous_version_lists_and_highlights(tmp_path):
     window, mapping = _window_with_backup(tmp_path)
     try:
-        write_file(_retag(window.config, "14", "65", "play"), file_locations.backup_path(mapping))
+        write_file(_retag(window.config, "14", "65", "censor"), file_locations.backup_path(mapping))
         window._refresh_file_actions()
         window._on_compare_with_backup()
         dialog = window._diff_dialog
@@ -79,7 +79,7 @@ def test_compare_with_previous_version_lists_and_highlights(tmp_path):
         items = dialog.entry_items()
         entries = [item.data(0, ENTRY_ROLE) for item in items]
         assert {(entry.kind, entry.trigger) for entry in entries} == {("reassigned", ("14", "Note On", "65"))}
-        assert all(entry.old_functions[0].startswith("play") for entry in entries)
+        assert all(entry.old_functions[0].startswith("censor") for entry in entries)
         dialog.tree.setCurrentItem(items[0])
         QApplication.processEvents()
         assert window.layout_view._selected_keys
