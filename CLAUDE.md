@@ -238,7 +238,7 @@ overrides.
 - **Record live set** (`session_recorder.SessionRecorder`): every polled event streamed to `Logs/live-*.jsonl`, no
   cap (the log keeps `_MAX_ROWS` = 500); starts monitoring every input if needed, stops with monitoring.
   **Analyse a set…**: Qt-free `set_analysis` (presses per control, jogs via `gui/jog.py` tables, sequences ≤1.5 s,
-  activity per 10 min; reads the standalone `bytes` format too) → `gui/set_analysis_dialog.py`.
+  activity per 10 min; reads the standalone `bytes`/`b` formats too; faders/knobs named by Qt-free `continuous_controls.py`, official MIDI lists only) → `gui/set_analysis_dialog.py`.
 - Live Monitor log filters (#447, Qt-free `live_filter.LogFilter`): port / direction / kind / hide jogs, applied
   with `setRowHidden` (the event is stored on each row's first item); display only, nothing else is filtered.
 - MIDI Learn (`midi_learn.py`): opens no port, rides the Live Monitor via `_ensure_learn_listening`.
