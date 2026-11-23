@@ -18,6 +18,7 @@ from pathlib import Path
 
 from djmidi import catalog
 from djmidi.atelier.describe import controller_for_port
+from djmidi.continuous_controls import continuous_name
 from djmidi.gui.jog import jog_cell_keys_for_event  # Qt-free tables
 from djmidi.session_recorder import read_recording
 
@@ -62,9 +63,10 @@ def _event_from_row(row: dict) -> SetEvent | None:
     not analysed, or a malformed row."""
     try:
         t = float(row["t"])
-        port = str(row.get("port", ""))
-        if "bytes" in row:  # standalone recorder: raw MIDI bytes
-            status, number, value = (list(row["bytes"]) + [0, 0])[:3]
+        port = str(row.get("port", row.get("p", "")))
+        raw = row.get("bytes", row.get("b"))  # standalone recorders: raw MIDI bytes
+        if raw is not None:
+            status, number, value = (list(raw) + [0, 0])[:3]
             high, channel = status & 0xF0, (status & 0x0F) + 1
             kind = {0x90: NOTE, 0xB0: CC, 0xE0: BEND}.get(high)
             if kind == BEND:
@@ -116,6 +118,9 @@ class _Namer:
                     if controller is None or cell[0] == controller]
             if jogs:
                 return f"{jogs[0][1]} · {jogs[0][2]} · ch {key.channel}"
+            named = continuous_name(controller, key.channel, key.number)
+            if named is not None:
+                return f"{named[0]} · {named[1]} · ch {key.channel}"
         hits = catalog.lookup(str(key.channel), event_type, str(key.number))
         if controller is not None:
             hits = [hit for hit in hits if hit.controller == controller]

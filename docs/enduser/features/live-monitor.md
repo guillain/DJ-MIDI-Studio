@@ -151,7 +151,7 @@ it says about how you play. Nothing is changed.
 | Tab | What it shows |
 |---|---|
 | **Buttons** | Every press per physical control (deck told apart by its channel), most used first |
-| **Jogs, knobs and faders** | The continuous controls that moved, by number of messages |
+| **Jogs, knobs and faders** | The continuous controls that moved, by number of messages; named from the maker's MIDI list where we have it (XDJ-XZ mixer, EQ, COLOR, tempo; DDJ-XP2 touch strip and browse), else shown as `CC n · ch c` |
 | **Sequences** | Two different buttons pressed within 1.5 s of each other, and how often: a CUE then PLAY you repeat is a macro waiting to be made |
 | **Activity** | Presses per 10 minutes: where the set was busy, where you paused |
 

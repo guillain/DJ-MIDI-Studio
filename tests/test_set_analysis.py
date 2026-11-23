@@ -74,3 +74,30 @@ def test_the_live_monitor_opens_the_dialog(tmp_path):
     assert view.analyse_set(_write(tmp_path / "empty.jsonl", [])) is None
     assert "no MIDI event" in view._recording_label.text()
     assert live_monitor_mod.SetAnalysisDialog is SetAnalysisDialog
+
+
+def test_documented_faders_and_knobs_are_named():
+    # Pioneer's MIDI Message Lists: XDJ-XZ mixer on channel 5, DDJ-XP2 touch strip / browse.
+    events = [
+        SetEvent(1.0, "XDJ-XZ (2)", CC, 5, 4, 30),
+        SetEvent(2.0, "XDJ-XZ (2)", CC, 5, 11, 64),
+        SetEvent(3.0, "XDJ-XZ (1)", CC, 1, 0, 64),
+        SetEvent(4.0, "DDJ-XP2", CC, 5, 2, 10),
+        SetEvent(5.0, "DDJ-XP2", CC, 7, 64, 1),
+        SetEvent(6.0, "XDJ-XZ (1)", CC, 2, 28, 1),  # ambiguous in the document: left unnamed
+    ]
+    names = {name for _key, name, _count in analyse(events).continuous}
+    assert names == {
+        "MIXER · EQ LOW · Deck 1 · ch 5",
+        "MIXER · CROSSFADER · ch 5",
+        "DECK · TEMPO · ch 1",
+        "EFFECT · TOUCH STRIP · ch 5",
+        "BROWSE · BROWSE rotate · ch 7",
+        "CC 28 · ch 2",
+    }
+
+
+def test_short_key_capture_rows_load(tmp_path):
+    rows = [{"t": 1.0, "p": "XDJ-XZ (1)", "b": [0x90, 1, 127]}, {"t": 0.0, "event": "port+", "port": "x"}]
+    events = load_set(_write(tmp_path / "c.jsonl", rows))
+    assert [(e.port, e.kind, e.number) for e in events] == [("XDJ-XZ (1)", NOTE, 1)]
