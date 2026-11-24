@@ -22,9 +22,22 @@ sources). Verified against the maintainer's real exports in
   never rewritten, since one trigger can't express both halves;
 - re-encoding an unmodified tree (and its Base64) is byte-identical.
 
-Editing is deliberately narrow: only a binding's *label* (its MIDI trigger)
-is rewritten; every other byte -- command settings, LED ranges, modifiers,
-unknown fields, the rest of the settings XML -- is carried over verbatim.
+Editing is deliberately narrow: a binding's *label* (its MIDI trigger) is
+rewritten, and (issue #233) a command can be *added* the way Traktor's
+Controller Manager adds one, reproduced byte for byte from the maintainer's
+exports (`traktor-vide` → `-play` → `-play-learn` → `-fader`, 2026-11-23):
+
+- every edit bumps the device's edit counter (the last u32 of ``DDIV``);
+- *Add In…* appends a ``CMAI`` (prefix: binding id, 0 = in, command id) whose
+  ``CMAD`` settings are Traktor's defaults for that command, copied from the
+  export (only commands with a captured default can be added:
+  ``NEW_COMMAND_SETTINGS``), and bumps ``CMAS``'s count; the binding id is
+  the new counter value, and never below the largest id in use + 1 (real
+  devices with history have ids far above their counter);
+- *Learn* appends a ``DCBM`` (binding id + UTF-16 label) and bumps its count.
+
+Every other byte -- command settings, LED ranges, modifiers, unknown fields,
+the other devices, the rest of the settings XML -- is carried over verbatim.
 """
 
 from __future__ import annotations
@@ -76,7 +89,23 @@ INTERACTION_MODES = {
 }
 # Only IDs cross-checked against a real export (see the module docstring);
 # everything else is surfaced as its raw number rather than guessed.
-COMMAND_NAMES = {100: "Play/Pause", 125: "Sync On", 206: "Cue"}
+COMMAND_NAMES = {100: "Play/Pause", 102: "Volume Adjust", 125: "Sync On", 206: "Cue"}
+
+# The CMAD settings Traktor 4.4.1 writes for a command just added with
+# Controller Manager's Add In… (deck A, defaults untouched), from the
+# maintainer's exports: never written for a command not captured here.
+NEW_COMMAND_SETTINGS = {
+    100: bytes.fromhex(  # Play/Pause: Button, Toggle
+        "0000000400000000000000020000000000000000000000000000000040a00000000000000000000000000001"
+        "000000000000000000000000000000000000000000000000000000000000000000000001000000000000000100"
+        "000001000000000000007f0000000000000000000000010000000100000000"
+    ),
+    102: bytes.fromhex(  # Volume Adjust: Fader/Knob, Direct
+        "0000000400000001000000030000000000000000000000000000000040a000000000000000000000000000023f"
+        "800000000000000000000000000000000000000000000000000000000000000000000200000000000000023f80"
+        "0000000000000000007f0000000000000001000000023d80000000000000"
+    ),
+}
 
 _NOTE_NAMES = ("C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B")
 _LABEL_RE = re.compile(r"^Ch(\d{2})\.(Note|CC|PitchBend)(?:\.(.+))?$")
@@ -194,6 +223,74 @@ class TsiDocument:
             ) + utf16_string_bytes(label)
         value = base64.b64encode(encode(tree)).decode("ascii")
         return _ENTRY_RE.sub(lambda match: match.group(1) + value + match.group(3), self.text, count=1)
+
+
+@dataclass(frozen=True)
+class NewCommand:
+    """One command to add to a device, MIDI-learned on `label` when given."""
+
+    device_index: int
+    command_id: int
+    label: str = ""
+
+
+def add_commands(document: TsiDocument, commands: list[NewCommand]) -> str:
+    """The `.tsi` text with `commands` added in order, each as Traktor's
+    Controller Manager does it (Add In…, then Learn when a label is given).
+    `document` is left untouched; TsiError when a command has no captured
+    default settings or a device lacks the binding containers."""
+    tree = copy.deepcopy(document.tree)
+    for command in commands:
+        settings = NEW_COMMAND_SETTINGS.get(command.command_id)
+        if settings is None:
+            raise TsiError(f"no captured Traktor defaults for command {command.command_id}")
+        if command.label:
+            format_label(parse_label(command.label))  # validate (channel, number) before touching anything
+        data, cmas, dcbm = _binding_containers(tree, command.device_index)
+        used = [struct.unpack(">i", cmai.prefix[:4])[0] for cmai in cmas.find_all("CMAI")]
+        binding_id = max(_bump_counter(data), max(used, default=0) + 1)
+        _set_count(cmas, +1)
+        cmas.children.append(
+            ChunkNode(
+                "CMAI",
+                prefix=struct.pack(">iii", binding_id, 0, command.command_id),
+                children=[ChunkNode("CMAD", payload=settings)],
+            )
+        )
+        if command.label:
+            _bump_counter(data)
+            _set_count(dcbm, +1)
+            dcbm.children.append(
+                ChunkNode("DCBM", payload=struct.pack(">i", binding_id) + utf16_string_bytes(command.label))
+            )
+    value = base64.b64encode(encode(tree)).decode("ascii")
+    return _ENTRY_RE.sub(lambda match: match.group(1) + value + match.group(3), document.text, count=1)
+
+
+def _binding_containers(tree: list[ChunkNode], device_index: int) -> tuple[ChunkNode, ChunkNode, ChunkNode]:
+    devices = _device_nodes(tree)
+    if not 0 <= device_index < len(devices):
+        raise TsiError(f"no device #{device_index} in this .tsi")
+    data = devices[device_index].find("DDAT")
+    ddcb = data.find("DDCB") if data is not None else None
+    cmas = ddcb.find("CMAS") if ddcb is not None else None
+    dcbm = ddcb.find("DCBM") if ddcb is not None else None
+    if data is None or data.find("DDIV") is None or cmas is None or dcbm is None:
+        raise TsiError(f"device #{device_index} has no binding lists to add to")
+    return data, cmas, dcbm
+
+
+def _bump_counter(data: ChunkNode) -> int:
+    """Bumps the device's edit counter (DDIV's last u32); its new value."""
+    ddiv = data.find("DDIV")
+    (counter,) = struct.unpack(">I", ddiv.payload[-4:])
+    ddiv.payload = ddiv.payload[:-4] + struct.pack(">I", counter + 1)
+    return counter + 1
+
+
+def _set_count(container: ChunkNode, delta: int) -> None:
+    (count,) = struct.unpack(">I", container.prefix[:4])
+    container.prefix = struct.pack(">I", count + delta) + container.prefix[4:]
 
 
 def describe_changes(old_text: str, new_text: str) -> str:
