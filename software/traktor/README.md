@@ -132,10 +132,11 @@ Checked on all four real exports (2026-09-30):
 
 ## What's deliberately not done
 
-- Writing is limited to re-labelling existing bindings. Creating a `.tsi`
-  from scratch, or adding/removing bindings, would mean synthesizing
-  `CMAD` payloads whose unknown fields aren't understood — refused instead.
-- Only command IDs 100/125/206 are named (the three cross-checked above);
+- Writing re-labels existing bindings and (issue #233) adds a command the
+  way Controller Manager does — see [Adding a command](#adding-a-command-issue-233).
+  Creating a `.tsi` from scratch, removing bindings, or adding a command
+  whose default `CMAD` wasn't captured is refused.
+- Only command IDs 100/102/125/206 are named (the three cross-checked above);
   every other command shows as `Command <id>` rather than a name copied
   from the community list without verification.
 - `DDCI`/`DDCO` (the device's full MIDI in/out definitions) and `DVST` are
@@ -259,6 +260,33 @@ understood, though:
 So *creating* a binding (needed whenever the template lacks a command)
 would still mean copying a `CMAD` from another mapping of the same command
 and hoping its unknown fields mean the same thing — not done.
+
+### Adding a command (issue #233)
+
+Four exports of one empty Generic MIDI device in Traktor Pro 4.4.1
+(2026-11-23): empty → *Add In…* Play/Pause → *Learn* (`Ch01.CC.079`) →
+*Add In…* Volume Adjust. Each step changes only that device (the other six
+devices and the rest of the settings XML are byte-identical):
+
+| Step | What changes |
+| --- | --- |
+| any edit | the last `u32` of `DDIV` (an edit counter) + 1 |
+| Add In… | `CMAS` count + 1; a new `CMAI` with prefix (binding id, `0` = in, command id) and Traktor's default `CMAD` for that command; binding id = the new counter value |
+| Learn | `DCBM` count + 1; a new `DCBM` leaf (binding id, UTF-16 label) |
+
+`_tsi.add_commands(document, [NewCommand(device, command, label)])`
+replays these steps and reproduces the three exports byte for byte (the
+whole 5.6 MB file too, checked once locally; the test keeps a 2.8 KB extract,
+`data/traktor/traktor-add-command-steps.json`). The default `CMAD`s are
+copied from the exports (`NEW_COMMAND_SETTINGS`: 100 Play/Pause = Button /
+Toggle, 102 Volume Adjust = Fader / Direct); no other command can be added
+until its default is captured.
+
+One part is a safeguard, not an observation: devices with history have
+binding ids far above their counter (counter 25, ids up to 462), so a new id
+is never below the largest id in use + 1. It is unverified whether Traktor
+opens such a file — the hardware scenario *Traktor: learn Sync and
+Hotcue 1* (Tests menu) brings the next defaults and is the place to check.
 
 ### What would unblock a converter
 
