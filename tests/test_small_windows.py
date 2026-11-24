@@ -269,6 +269,12 @@ def _hardware_session():
     return dialog
 
 
+def _serato_learn():
+    from djmidi.gui.serato_learn_dialog import SeratoLearnDialog
+
+    return SeratoLearnDialog(["IAC Driver Bus 1"], send=lambda **_kw: None)
+
+
 def _profile_check():
     from djmidi.gui.profile_check_dialog import ProfileCheckDialog
 
@@ -508,6 +514,7 @@ WINDOWS = {
     "geometry editor": _geometry_editor,
     "profile check": _profile_check,
     "hardware session": _hardware_session,
+    "serato learn": _serato_learn,
     "route transform": _route_transform,
     "deck copy": _deck_copy,
     "snapshots": _snapshots,

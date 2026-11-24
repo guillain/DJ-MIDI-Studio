@@ -11,7 +11,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from pathlib import Path
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtWidgets import (
     QDialog,
@@ -40,6 +40,7 @@ from djmidi.hardware_session import (
     SKIP,
     STATUS_LABELS,
     TODO,
+    TOOLS,
     HardwareSession,
     captured_from_event,
     load_session,
@@ -54,6 +55,9 @@ _MARKS = {TODO: "○", PASS: "✓", FAIL: "✗", SKIP: "–"}
 
 
 class HardwareSessionDialog(QDialog):
+    # (tool, controller): a check's "open the tool" button (hardware_session.TOOLS)
+    toolRequested = Signal(str, str)
+
     def __init__(
         self,
         session_path: str | Path,
@@ -90,6 +94,13 @@ class HardwareSessionDialog(QDialog):
         self.title.setWordWrap(True)
         self.steps = QLabel("")
         self.steps.setWordWrap(True)
+        self.tool_button = QPushButton(self.tr("Open the tool"))
+        self.tool_button.setToolTip(self.tr("Opens the app's tool this check is done in"))
+        self.tool_button.setAutoDefault(False)
+        self.tool_button.clicked.connect(self.open_tool)
+        tool_row = QHBoxLayout()
+        tool_row.addWidget(self.tool_button)
+        tool_row.addStretch(1)
 
         self.capture_button = QPushButton(self.tr("Start capture"))
         self.capture_button.clicked.connect(self.toggle_capture)
@@ -138,6 +149,7 @@ class HardwareSessionDialog(QDialog):
         detail_layout.setContentsMargins(0, 0, 0, 0)
         detail_layout.addWidget(self.title)
         detail_layout.addWidget(self.steps)
+        detail_layout.addLayout(tool_row)
         detail_layout.addLayout(capture_row)
         detail_layout.addWidget(self.captured, 1)
         detail_layout.addWidget(self.verdict)
@@ -199,6 +211,9 @@ class HardwareSessionDialog(QDialog):
         self.steps.setText(_translate(check.steps))
         for widget in self._capture_widgets:
             widget.setVisible(check.capture)
+        self.tool_button.setVisible(bool(check.tool))
+        if check.tool:
+            self.tool_button.setText(_translate(TOOLS[check.tool]))
         self._loading = True
         self.note.setPlainText(result.note)
         self._loading = False
@@ -245,6 +260,11 @@ class HardwareSessionDialog(QDialog):
             self.tr("Result: {status}").format(status=_translate(STATUS_LABELS[result.status]))
         )
         self.reset_button.setEnabled(result.status != TODO)
+
+    def open_tool(self) -> None:
+        check = self.current_check
+        if check is not None and check.tool:
+            self.toolRequested.emit(check.tool, check.controller)
 
     # --- capture ----------------------------------------------------------------
 

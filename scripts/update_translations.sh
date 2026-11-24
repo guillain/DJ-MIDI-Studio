@@ -115,6 +115,8 @@ SOURCES=(
   src/djmidi/hardware_session.py
   src/djmidi/case_edit.py
   src/djmidi/gui/hardware_session_dialog.py
+  src/djmidi/serato_learn.py
+  src/djmidi/gui/serato_learn_dialog.py
   src/djmidi/gui/pad_colour_panel.py
   src/djmidi/gui/profile_library_dialog.py
   src/djmidi/gui/geometry_editor.py

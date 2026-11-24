@@ -158,6 +158,7 @@ from djmidi.gui.profile_library_dialog import ProfileLibraryDialog
 from djmidi.gui.remote_mix_dialog import RemoteMixDialog
 from djmidi.gui.report_problem_dialog import ReportProblemDialog
 from djmidi.gui.scroll_utils import AutoSizeScrollArea
+from djmidi.gui.serato_learn_dialog import SeratoLearnDialog
 from djmidi.gui.snapshots_dialog import SnapshotsDialog
 from djmidi.gui.splitter_utils import scrollable_columns
 from djmidi.gui.stage_window import StageWindow
@@ -167,7 +168,16 @@ from djmidi.gui.theme import apply_theme
 from djmidi.gui.theme import signals as theme_signals
 from djmidi.gui.update_notice import UpdateChecker
 from djmidi.gui.whats_new_dialog import WhatsNewDialog
-from djmidi.hardware_session import SESSION_FILE_NAME
+from djmidi.hardware_session import (
+    SESSION_FILE_NAME,
+    TOOL_ANALYSE_SET,
+    TOOL_ATELIER,
+    TOOL_MACROS,
+    TOOL_PROFILE_CHECK,
+    TOOL_RECORD_SET,
+    TOOL_SERATO_LEARN,
+    TOOL_STARTUP_CHECK,
+)
 from djmidi.integration_detection import (
     detect_controller_ports,
 )
@@ -959,12 +969,6 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         self._new_emulator_action.triggered.connect(lambda: self._create_emulator_instance())
         tools_menu.addAction(self._new_emulator_action)
         tools_menu.addSeparator()
-        self._latency_action = QAction(self.tr("MIDI Latency Test…"), self)
-        self._latency_action.setToolTip(
-            self.tr("Measure MIDI round-trip latency through a port or device that echoes what it receives")
-        )
-        self._latency_action.triggered.connect(self._on_midi_latency_test)
-        tools_menu.addAction(self._latency_action)
         self._remote_mix_action = QAction(self.tr("Mix Together…"), self)
         self._remote_mix_action.setToolTip(
             self.tr("Mix with a DJ in another place: test the line, then share one tempo through Ableton Link")
@@ -1017,6 +1021,7 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         self._macro_menu = self.menuBar().addMenu(self.tr("&Macros"))
         self._macro_actions: list[QAction] = []
         self._rebuild_macro_menu()
+        self._build_tests_menu()
 
         # Preferences moved out of the menu bar (issue #137) into an
         # always-visible corner icon instead of a menu someone has to open
@@ -1135,13 +1140,6 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         )
         self._first_run_action.triggered.connect(lambda: self._on_first_run_wizard())
         help_menu.addAction(self._first_run_action)
-        self._hardware_session_action = QAction(self.tr("&Hardware Session..."), self)
-        self._expert_items.append(self._hardware_session_action)
-        self._hardware_session_action.setToolTip(
-            self.tr("The checks still waiting for real controllers and DJ software, with a report to share.")
-        )
-        self._hardware_session_action.triggered.connect(lambda: self.open_hardware_session())
-        help_menu.addAction(self._hardware_session_action)
         self._check_updates_action = QAction(self.tr("Check for &Updates..."), self)
         self._check_updates_action.setToolTip(self.tr("Ask GitHub whether a newer DJ MIDI Studio release exists."))
         self._check_updates_action.triggered.connect(self._on_check_for_updates)
@@ -1155,6 +1153,78 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         )
         self._report_problem_action.triggered.connect(self._on_report_problem)
         help_menu.addAction(self._report_problem_action)
+
+    def _build_tests_menu(self) -> None:
+        """Tests (between Macros and Help): every functional test and hardware
+        validation in one place -- the scenarios first, then the tools they use."""
+        menu = self._tests_menu = self.menuBar().addMenu(self.tr("&Tests"))
+        entries = (
+            ("_hardware_session_action", self.tr("&Hardware Scenarios..."),
+             self.tr("Step-by-step checks on real controllers and DJ software, with a report to share."),
+             lambda: self.open_hardware_session()),
+            ("_tests_profile_check_action", self.tr("Check a &Controller..."),
+             self.tr("Press each control and answer for each light, to verify a controller's profile."),
+             lambda: self.open_profile_check()),
+            ("_serato_learn_action", self.tr("&Serato MIDI Learn..."),
+             self.tr("Teach Serato the notes this app's macros send on the IAC bus, one function at a time."),
+             lambda: self.open_serato_learn()),
+            None,
+            ("_tests_record_action", self.tr("&Record a Live Set"),
+             self.tr("Record every MIDI message from now on, to analyse the set afterwards."),
+             lambda: self.open_test_tool(TOOL_RECORD_SET)),
+            ("_tests_analyse_action", self.tr("&Analyse a Set..."),
+             self.tr("Which controls a recorded set used, how often and in which order."),
+             lambda: self.open_test_tool(TOOL_ANALYSE_SET)),
+            ("_latency_action", self.tr("MIDI Latency Test…"),
+             self.tr("Measure MIDI round-trip latency through a port or device that echoes what it receives"),
+             self._on_midi_latency_test),
+        )
+        for entry in entries:
+            if entry is None:
+                menu.addSeparator()
+                continue
+            name, text, tip, slot = entry
+            action = QAction(text, self)
+            action.setToolTip(tip)
+            action.triggered.connect(lambda _checked=False, run=slot: run())
+            menu.addAction(action)
+            setattr(self, name, action)
+
+    def open_serato_learn(self) -> SeratoLearnDialog:
+        """Tests → Serato MIDI Learn…: one non-modal window."""
+        dialog = getattr(self, "_serato_learn_dialog", None)
+        if dialog is not None:
+            dialog.raise_()
+            dialog.activateWindow()
+            return dialog
+        dialog = SeratoLearnDialog(list_output_ports(), self, ensure_listening=self._ensure_learn_listening)
+        dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        dialog.finished.connect(lambda _result=0: setattr(self, "_serato_learn_dialog", None))
+        self._serato_learn_dialog = dialog
+        dialog.show()
+        return dialog
+
+    def open_test_tool(self, tool: str, controller: str = "") -> None:
+        """Opens the tool a hardware scenario is done in (hardware_session.TOOLS)."""
+        if tool == TOOL_PROFILE_CHECK:
+            self.open_profile_check(controller or None)
+        elif tool == TOOL_SERATO_LEARN:
+            self.open_serato_learn()
+        elif tool == TOOL_RECORD_SET:
+            self._tool_docks["monitor"].show()
+            self._tool_docks["monitor"].raise_()
+            if not self.live_monitor_view.is_recording:
+                self.live_monitor_view.start_recording()
+        elif tool == TOOL_ANALYSE_SET:
+            self.live_monitor_view.choose_set_to_analyse()
+        elif tool == TOOL_ATELIER:
+            if controller:
+                self.atelier_view.controller_combo.setCurrentText(controller)
+            self.left_tabs.setCurrentIndex(self._tab_indexes["atelier"])
+        elif tool == TOOL_MACROS:
+            self._on_manage_macros()
+        elif tool == TOOL_STARTUP_CHECK:
+            self.open_startup_check()
 
     def _show_helpful_notes(self) -> None:
         self.helpful_notes_dialog.show()
@@ -2396,7 +2466,7 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         self._profile_check_dialog = None
 
     def open_hardware_session(self) -> HardwareSessionDialog:
-        """Help → Hardware Session… (issue #426): one non-modal window, its
+        """Tests → Hardware Scenarios… (issue #426): one non-modal window, its
         session saved in the workspace's Exports folder."""
         if self._hardware_session_dialog is not None:
             self._hardware_session_dialog.raise_()
@@ -2409,6 +2479,7 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         )
         dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         dialog.finished.connect(self._on_hardware_session_closed)
+        dialog.toolRequested.connect(self.open_test_tool)
         self._hardware_session_dialog = dialog
         dialog.show()
         return dialog

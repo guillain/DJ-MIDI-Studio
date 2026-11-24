@@ -59,6 +59,28 @@ class Check:
     controller: str = ""
     capture: bool = False
     compare: Mapping[str, tuple[int, ...]] = field(default_factory=dict)
+    # The app's tool this check is done in (one of TOOLS), "" for none: the
+    # window offers a button that opens it.
+    tool: str = ""
+
+
+# Tools a check can open (MainWindow.open_test_tool), with their button text.
+TOOL_PROFILE_CHECK = "profile-check"
+TOOL_SERATO_LEARN = "serato-learn"
+TOOL_RECORD_SET = "record-set"
+TOOL_ANALYSE_SET = "analyse-set"
+TOOL_ATELIER = "atelier"
+TOOL_MACROS = "macros"
+TOOL_STARTUP_CHECK = "startup-check"
+TOOLS = {
+    TOOL_PROFILE_CHECK: QT_TRANSLATE_NOOP("HardwareSession", "Open Check a Controller"),
+    TOOL_SERATO_LEARN: QT_TRANSLATE_NOOP("HardwareSession", "Open Serato MIDI Learn"),
+    TOOL_RECORD_SET: QT_TRANSLATE_NOOP("HardwareSession", "Record a live set"),
+    TOOL_ANALYSE_SET: QT_TRANSLATE_NOOP("HardwareSession", "Analyse a set"),
+    TOOL_ATELIER: QT_TRANSLATE_NOOP("HardwareSession", "Open the Studio tab"),
+    TOOL_MACROS: QT_TRANSLATE_NOOP("HardwareSession", "Open the macros"),
+    TOOL_STARTUP_CHECK: QT_TRANSLATE_NOOP("HardwareSession", "Open the Startup Check"),
+}
 
 
 CHECKS: tuple[Check, ...] = (
@@ -117,6 +139,7 @@ CHECKS: tuple[Check, ...] = (
             "watch the button. Save what lights up. Note any button whose LED doesn't answer on its own note.",
         ),
         "#413",
+        tool=TOOL_ATELIER,
     ),
     Check(
         "pioneer-colours",
@@ -128,6 +151,7 @@ CHECKS: tuple[Check, ...] = (
             "has no official source yet.",
         ),
         "#413",
+        tool=TOOL_ATELIER,
     ),
     Check(
         "live-bursts",
@@ -139,18 +163,19 @@ CHECKS: tuple[Check, ...] = (
             "Problem…): it now names the port that sends large MIDI bursts.",
         ),
         "#356",
+        tool=TOOL_RECORD_SET,
     ),
     Check(
         "serato-learn",
-        QT_TRANSLATE_NOOP("HardwareSession", "Serato: MIDI-learn Play, Cue and Sync"),
+        QT_TRANSLATE_NOOP("HardwareSession", "Serato: MIDI-learn the CUE button"),
         QT_TRANSLATE_NOOP(
             "HardwareSession",
-            "Run scripts/serato_learn_iac.py, then in Serato's MIDI mode learn Play, Cue and Sync on decks 1 "
-            "and 2 from the IAC bus, and export the mapping. Attach the XML to the issue: it gives Serato's "
-            "own function names, which the Serato ↔ Traktor converter and the Atelier's function "
-            "assignment wait for.",
+            "Play, Sync and the hot cues already have Serato's names (learned over the IAC bus). Cue is still "
+            "missing: open Serato MIDI Learn, pick the Deck 1 · CUE step, click Send, then find and click the "
+            "deck's CUE in Serato before the countdown ends. Save the MIDI preset and attach it to the issue.",
         ),
         "#194",
+        tool=TOOL_SERATO_LEARN,
     ),
     Check(
         "traktor-import",
@@ -165,14 +190,89 @@ CHECKS: tuple[Check, ...] = (
         "#356",
     ),
     Check(
-        "traktor-exports",
-        QT_TRANSLATE_NOOP("HardwareSession", "Traktor: Controller Manager exports"),
+        "traktor-learn-sync-hotcue",
+        QT_TRANSLATE_NOOP("HardwareSession", "Traktor: learn Sync and Hotcue 1"),
         QT_TRANSLATE_NOOP(
             "HardwareSession",
-            "In Traktor's Controller Manager, export an empty Generic MIDI device, then add one button command "
-            "and export again, then change one setting and export a third time. Attach the three .tsi files.",
+            "As for the Play one: in Traktor's Controller Manager, start from the empty Generic MIDI device, "
+            "add one In command for Sync on deck A, learn it from the controller's SYNC and export. Then do "
+            "the same for Hotcue 1. Attach the two .tsi files: they give Traktor's command numbers the "
+            ".tsi writer needs.",
         ),
         "#233",
+    ),
+    Check(
+        "xp2-pad-lights",
+        QT_TRANSLATE_NOOP("HardwareSession", "DDJ-XP2: pad lights with Serato"),
+        QT_TRANSLATE_NOOP(
+            "HardwareSession",
+            "Serato open, a track on deck 1, pads in HOT CUE mode; watch the pad, not the screen. a) Press an "
+            "empty pad (it sets a hot cue). b) Press it again. c) Hold SHIFT and press it (it deletes the hot "
+            "cue). d) Close Serato and press two or three pads. Write what the light did each time.",
+        ),
+        "#451",
+        controller="DDJ-XP2",
+    ),
+    Check(
+        "xp2-serato-spy",
+        QT_TRANSLATE_NOOP("HardwareSession", "DDJ-XP2: what Serato sends to the lights"),
+        QT_TRANSLATE_NOOP(
+            "HardwareSession",
+            "Serato sends the pad lights straight to the controller, so this app can't see them; MIDI Monitor "
+            "can. Open Serato, then MIDI Monitor, tick the spy on output to DDJ-XP2, Clear, and go through "
+            "each PAD MODE of deck 1 with and without SHIFT; set two hot cues and delete them; start and stop "
+            "a sample. Copy the list as plain text into Exports/serato-to-xp2.txt.",
+        ),
+        "#451",
+        controller="DDJ-XP2",
+    ),
+    Check(
+        "xp2-lights-tab",
+        QT_TRANSLATE_NOOP("HardwareSession", "DDJ-XP2: the app lights each pad"),
+        QT_TRANSLATE_NOOP(
+            "HardwareSession",
+            "Close Serato first, or it repaints the pads. Open Check a Controller, pick DDJ-XP2 and its Lights "
+            "tab: the app lights one pad at a time. Answer for each one, at least the first pad mode of both "
+            "decks, and note the colours you see.",
+        ),
+        "#451",
+        controller="DDJ-XP2",
+        tool=TOOL_PROFILE_CHECK,
+    ),
+    Check(
+        "startup-buttons",
+        QT_TRANSLATE_NOOP("HardwareSession", "Startup Check: each button opens its tool"),
+        QT_TRANSLATE_NOOP(
+            "HardwareSession",
+            "With the controllers plugged in, open the Startup Check and click a few of its buttons (probe "
+            "the lights, make a scene…). Each should close the window and open the matching tool.",
+        ),
+        "#451",
+        tool=TOOL_STARTUP_CHECK,
+    ),
+    Check(
+        "macros-in-serato",
+        QT_TRANSLATE_NOOP("HardwareSession", "Macros: each one does what its name says"),
+        QT_TRANSLATE_NOOP(
+            "HardwareSession",
+            "With Serato open and the controllers plugged in, press the pad of each macro (the macro list "
+            "shows them) and watch Serato. Note any macro that does nothing or the wrong thing; a macro sent "
+            "to the IAC bus needs Serato MIDI Learn first.",
+        ),
+        "#486",
+        tool=TOOL_MACROS,
+    ),
+    Check(
+        "record-and-analyse",
+        QT_TRANSLATE_NOOP("HardwareSession", "Record a set and analyse it"),
+        QT_TRANSLATE_NOOP(
+            "HardwareSession",
+            "Click Record a live set, mix as usual (at least twenty minutes), then stop it in the Live Monitor "
+            "and Analyse a set. Check the controls carry names, not CC numbers, and note the repeated gestures "
+            "it finds: they make good macros.",
+        ),
+        "#488",
+        tool=TOOL_RECORD_SET,
     ),
 )
 

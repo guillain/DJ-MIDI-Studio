@@ -59,6 +59,8 @@ class LiveMidiMixin:
             pass  # a press being verified (issue #364) is neither a macro nor a Learn
         elif self._hardware_session_dialog is not None and self._hardware_session_dialog.feed_event(event):
             pass  # captured for a hardware session check (issue #426)
+        elif (learn := getattr(self, "_serato_learn_dialog", None)) is not None and learn.feed_event(event):
+            pass  # a Serato MIDI Learn note coming back on the bus
         elif (
             self.midi_routing_view.active_transform_dialog is not None
             and self.midi_routing_view.active_transform_dialog.feed_learn_event(event)
