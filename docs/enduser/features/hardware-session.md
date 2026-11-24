@@ -1,19 +1,33 @@
-# 🧪 Hardware session
+# 🧪 Tests menu and hardware scenarios
 
-> 🧪 One checklist of everything the project still needs to try on real
-> controllers and DJ software. Capture what the controller sends, mark each
-> check, and paste the report into the issue it names.
+> 🧪 Every functional test and hardware check in one menu, **`Tests`**
+> (between `Macros` and `Help`): step-by-step scenarios on real controllers
+> and DJ software, Serato MIDI Learn, set recording and analysis, and the
+> MIDI latency test.
 
-📍 [Docs](../../README.md) › [End user](../README.md) › [Features](README.md) › Hardware session
+📍 [Docs](../../README.md) › [End user](../README.md) › [Features](README.md) › Tests menu
 
 ## Table of Contents
 
+- [The Tests menu](#the-tests-menu)
 - [Why](#why)
 - [Open it](#open-it)
 - [Run a check](#run-a-check)
 - [The checks](#the-checks)
 - [Share the report](#share-the-report)
+- [Serato MIDI Learn](#serato-midi-learn)
 - [Related](#related)
+
+## The Tests menu
+
+| Entry | What it does |
+| --- | --- |
+| **Hardware Scenarios…** | The checklist below: each scenario's steps, a capture, pass / fail and a report |
+| **Check a Controller…** | [Verify a controller profile](profile-check.md), control by control and light by light |
+| **Serato MIDI Learn…** | Teach Serato the notes the app sends on the IAC bus ([below](#serato-midi-learn)) |
+| **Record a Live Set** | Starts the [Live Monitor](live-monitor.md)'s set recording |
+| **Analyse a Set…** | Which controls a recorded set used, how often, in which order |
+| **MIDI Latency Test…** | [Round-trip latency](midi-latency.md) through a port that echoes |
 
 ## Why
 
@@ -24,7 +38,7 @@ open questions, in one place, for whoever has the hardware.
 
 ## Open it
 
-**`Help` → `Hardware Session…`**. The window can stay open beside the app.
+**`Tests` → `Hardware Scenarios…`**. The window can stay open beside the app.
 What you do is saved as you go (`Exports/hardware-session.json` in the
 workspace), so a session can be continued another day.
 
@@ -36,7 +50,10 @@ workspace), so a session can be continued another day.
    received is listed. The line under the list says what the capture means.
    For the DDJ-XP2 loop buttons, it says which source the notes you pressed
    agree with. **`Clear capture`** starts again.
-3. Mark the check **`Pass`**, **`Fail`** or **`Skip`**, and write what you saw
+3. A check done in another tool has a button that opens it (Check a
+   Controller, Serato MIDI Learn, Record a live set, the Studio tab, the
+   macros, the Startup Check).
+4. Mark the check **`Pass`**, **`Fail`** or **`Skip`**, and write what you saw
    in the note. **`Reset`** brings it back to *to do*.
 
 The app listens through the [Live Monitor](live-monitor.md), which is started
@@ -54,9 +71,15 @@ value from 0 to 16383 (8192 is the centre).
 | Atelier: probe the LEDs | Real LED addresses, via [the Atelier](atelier.md)'s LED probe | #413 |
 | Pioneer pad colours | Which value shows which colour | #413 |
 | No freeze during a live session | The freeze fix, and which port sends MIDI bursts | #356 |
-| Serato: MIDI-learn Play, Cue and Sync | Serato's own function names | #194 |
+| Serato: MIDI-learn the CUE button | Serato's name for Cue (Play, Sync and hot cues are known) | #194 |
 | Traktor: import a playlist | Whether Traktor accepts this app's `.nml` | #356 |
-| Traktor: Controller Manager exports | How Traktor writes a new binding | #233 |
+| Traktor: learn Sync and Hotcue 1 | Traktor's command numbers for the `.tsi` writer | #233 |
+| DDJ-XP2: pad lights with Serato | What a pad's light does when a hot cue is set, pressed, deleted, and with Serato closed | #451 |
+| DDJ-XP2: what Serato sends to the lights | Serato's LED messages, spied with MIDI Monitor | #451 |
+| DDJ-XP2: the app lights each pad | The pad LEDs, from the Lights tab with Serato closed | #451 |
+| Startup Check: each button opens its tool | The Startup Check's buttons | #451 |
+| Macros: each one does what its name says | Macros played into Serato | #486 |
+| Record a set and analyse it | Named controls and repeated gestures in a real set | #488 |
 
 ## Share the report
 
@@ -64,6 +87,22 @@ value from 0 to 16383 (8192 is the centre).
 in English. It contains the results, your notes and the captured messages.
 Paste it into the issue each check names. The app never sends anything
 itself.
+
+## Serato MIDI Learn
+
+Macros and scenes sent to the IAC bus only reach Serato's functions once
+Serato has learned their notes. **`Tests` → `Serato MIDI Learn…`** walks
+through them: deck 1 and 2 Play, Cue and Sync, then deck 1's eight hot cues.
+
+1. In Serato, enable the bus in Setup → MIDI and switch MIDI mode on.
+2. Click **`Send`**: a 5-second countdown starts. Click the function in
+   Serato before it ends and stay there.
+3. The note leaves on its own. The step turns ✓ when the note comes back on
+   the bus, and the next step is selected. **`Back`** and **`Next`** move
+   between steps.
+4. At the end, save the MIDI preset in Serato.
+
+The app writes nothing in Serato's files.
 
 ## Related
 
