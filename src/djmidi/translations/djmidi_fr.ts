@@ -2800,6 +2800,30 @@ Il reste une étape manuelle : ajoutez &apos;{slug}&apos; au bloc d&apos;imports
         <translation>ignoré</translation>
     </message>
     <message>
+        <source>Open Check a Controller</source>
+        <translation>Ouvrir Vérifier un contrôleur</translation>
+    </message>
+    <message>
+        <source>Open Serato MIDI Learn</source>
+        <translation>Ouvrir MIDI Learn Serato</translation>
+    </message>
+    <message>
+        <source>Record a live set</source>
+        <translation>Enregistrer un set</translation>
+    </message>
+    <message>
+        <source>Analyse a set</source>
+        <translation>Analyser un set</translation>
+    </message>
+    <message>
+        <source>Open the macros</source>
+        <translation>Ouvrir les macros</translation>
+    </message>
+    <message>
+        <source>Open the Startup Check</source>
+        <translation>Ouvrir le bilan de démarrage</translation>
+    </message>
+    <message>
         <source>DDJ-XP2: 1/2X and 2X notes</source>
         <translation>DDJ-XP2 : notes 1/2X et 2X</translation>
     </message>
@@ -2856,28 +2880,80 @@ Il reste une étape manuelle : ajoutez &apos;{slug}&apos; au bloc d&apos;imports
         <translation>Avec Serato ou Traktor lancé et le Live Monitor ouvert, jouez dix minutes : jogs, pads, faders. Notez si la fenêtre a cessé de répondre. Envoyez ensuite le journal (Aide → Signaler un problème…) : il nomme désormais le port qui envoie de grosses rafales MIDI.</translation>
     </message>
     <message>
-        <source>Serato: MIDI-learn Play, Cue and Sync</source>
-        <translation>Serato : MIDI Learn de Play, Cue et Sync</translation>
+        <source>Serato: MIDI-learn the CUE button</source>
+        <translation>Serato : MIDI Learn du bouton CUE</translation>
     </message>
     <message>
-        <source>Run scripts/serato_learn_iac.py, then in Serato&apos;s MIDI mode learn Play, Cue and Sync on decks 1 and 2 from the IAC bus, and export the mapping. Attach the XML to the issue: it gives Serato&apos;s own function names, which the Serato ↔ Traktor converter and the Atelier&apos;s function assignment wait for.</source>
-        <translation>Lancez scripts/serato_learn_iac.py, puis, dans le mode MIDI de Serato, apprenez Play, Cue et Sync sur les platines 1 et 2 depuis le bus IAC, et exportez le mapping. Joignez le XML à l&apos;issue : il donne les noms de fonctions propres à Serato, qu&apos;attendent le convertisseur Serato ↔ Traktor et l&apos;attribution de fonctions de l&apos;Atelier.</translation>
+        <source>Play, Sync and the hot cues already have Serato&apos;s names (learned over the IAC bus). Cue is still missing: open Serato MIDI Learn, pick the Deck 1 · CUE step, click Send, then find and click the deck&apos;s CUE in Serato before the countdown ends. Save the MIDI preset and attach it to the issue.</source>
+        <translation>Play, Sync et les hot cues ont déjà leurs noms Serato (appris sur le bus IAC). Il manque Cue : ouvrez MIDI Learn Serato, choisissez l&apos;étape Deck 1 · CUE, cliquez Envoyer, puis trouvez et cliquez le CUE du deck dans Serato avant la fin du compte à rebours. Enregistrez le preset MIDI et joignez-le à l&apos;issue.</translation>
+    </message>
+    <message>
+        <source>Traktor: learn Sync and Hotcue 1</source>
+        <translation>Traktor : apprendre Sync et Hotcue 1</translation>
+    </message>
+    <message>
+        <source>As for the Play one: in Traktor&apos;s Controller Manager, start from the empty Generic MIDI device, add one In command for Sync on deck A, learn it from the controller&apos;s SYNC and export. Then do the same for Hotcue 1. Attach the two .tsi files: they give Traktor&apos;s command numbers the .tsi writer needs.</source>
+        <translation>Comme pour Play : dans le Controller Manager de Traktor, partez du périphérique Generic MIDI vide, ajoutez une commande In pour Sync sur le deck A, apprenez-la depuis le SYNC du contrôleur et exportez. Faites de même pour Hotcue 1. Joignez les deux fichiers .tsi : ils donnent les numéros de commande Traktor dont l&apos;écriture des .tsi a besoin.</translation>
+    </message>
+    <message>
+        <source>DDJ-XP2: pad lights with Serato</source>
+        <translation>DDJ-XP2 : lumières des pads avec Serato</translation>
+    </message>
+    <message>
+        <source>Serato open, a track on deck 1, pads in HOT CUE mode; watch the pad, not the screen. a) Press an empty pad (it sets a hot cue). b) Press it again. c) Hold SHIFT and press it (it deletes the hot cue). d) Close Serato and press two or three pads. Write what the light did each time.</source>
+        <translation>Serato ouvert, un morceau sur le deck 1, pads en mode HOT CUE ; regardez le pad, pas l&apos;écran. a) Appuyez sur un pad vide (ça pose un hot cue). b) Appuyez encore dessus. c) Maintenez SHIFT et appuyez dessus (ça efface le hot cue). d) Fermez Serato et appuyez sur deux ou trois pads. Notez ce que la lumière a fait à chaque fois.</translation>
+    </message>
+    <message>
+        <source>DDJ-XP2: what Serato sends to the lights</source>
+        <translation>DDJ-XP2 : ce que Serato envoie aux lumières</translation>
+    </message>
+    <message>
+        <source>Serato sends the pad lights straight to the controller, so this app can&apos;t see them; MIDI Monitor can. Open Serato, then MIDI Monitor, tick the spy on output to DDJ-XP2, Clear, and go through each PAD MODE of deck 1 with and without SHIFT; set two hot cues and delete them; start and stop a sample. Copy the list as plain text into Exports/serato-to-xp2.txt.</source>
+        <translation>Serato envoie les lumières des pads directement au contrôleur : cette app ne les voit pas, MIDI Monitor si. Ouvrez Serato, puis MIDI Monitor, cochez l&apos;espion sur la sortie vers DDJ-XP2, Clear, et passez par chaque PAD MODE du deck 1 avec et sans SHIFT ; posez deux hot cues et effacez-les ; lancez un sample puis arrêtez-le. Copiez la liste en texte brut dans Exports/serato-to-xp2.txt.</translation>
+    </message>
+    <message>
+        <source>DDJ-XP2: the app lights each pad</source>
+        <translation>DDJ-XP2 : l&apos;app allume chaque pad</translation>
+    </message>
+    <message>
+        <source>Close Serato first, or it repaints the pads. Open Check a Controller, pick DDJ-XP2 and its Lights tab: the app lights one pad at a time. Answer for each one, at least the first pad mode of both decks, and note the colours you see.</source>
+        <translation>Fermez d&apos;abord Serato, sinon il repeint les pads. Ouvrez Vérifier un contrôleur, choisissez DDJ-XP2 et son onglet Lumières : l&apos;app allume un pad à la fois. Répondez pour chacun, au moins le premier mode de pads des deux decks, et notez les couleurs vues.</translation>
+    </message>
+    <message>
+        <source>Startup Check: each button opens its tool</source>
+        <translation>Bilan de démarrage : chaque bouton ouvre son outil</translation>
+    </message>
+    <message>
+        <source>With the controllers plugged in, open the Startup Check and click a few of its buttons (probe the lights, make a scene…). Each should close the window and open the matching tool.</source>
+        <translation>Contrôleurs branchés, ouvrez le bilan de démarrage et cliquez quelques-uns de ses boutons (sonder les lumières, créer une scène…). Chacun doit fermer la fenêtre et ouvrir l&apos;outil correspondant.</translation>
+    </message>
+    <message>
+        <source>Macros: each one does what its name says</source>
+        <translation>Macros : chacune fait ce que dit son nom</translation>
+    </message>
+    <message>
+        <source>With Serato open and the controllers plugged in, press the pad of each macro (the macro list shows them) and watch Serato. Note any macro that does nothing or the wrong thing; a macro sent to the IAC bus needs Serato MIDI Learn first.</source>
+        <translation>Serato ouvert et contrôleurs branchés, appuyez sur le pad de chaque macro (la liste des macros les montre) et regardez Serato. Notez toute macro qui ne fait rien ou pas la bonne chose ; une macro envoyée sur le bus IAC demande d&apos;abord MIDI Learn Serato.</translation>
+    </message>
+    <message>
+        <source>Record a set and analyse it</source>
+        <translation>Enregistrer un set et l&apos;analyser</translation>
+    </message>
+    <message>
+        <source>Click Record a live set, mix as usual (at least twenty minutes), then stop it in the Live Monitor and Analyse a set. Check the controls carry names, not CC numbers, and note the repeated gestures it finds: they make good macros.</source>
+        <translation>Cliquez Enregistrer un set, mixez comme d&apos;habitude (au moins vingt minutes), arrêtez dans le Live Monitor puis Analyser un set. Vérifiez que les contrôles ont des noms et pas des numéros de CC, et notez les gestes répétés trouvés : ils font de bonnes macros.</translation>
     </message>
     <message>
         <source>Traktor: import a playlist exported by this app</source>
         <translation>Traktor : importer une playlist exportée par l&apos;application</translation>
     </message>
     <message>
+        <source>Open the Studio tab</source>
+        <translation>Ouvrir l&apos;onglet Studio</translation>
+    </message>
+    <message>
         <source>In Traktor, import Exports/djmidi-import-test.nml from the app&apos;s workspace (Import Playlist). Note whether the playlist DJMIDI import test appears with its five tracks.</source>
         <translation>Dans Traktor, importez Exports/djmidi-import-test.nml depuis l&apos;espace de travail de l&apos;application (Import Playlist). Notez si la playlist DJMIDI import test apparaît avec ses cinq morceaux.</translation>
-    </message>
-    <message>
-        <source>Traktor: Controller Manager exports</source>
-        <translation>Traktor : exports du Controller Manager</translation>
-    </message>
-    <message>
-        <source>In Traktor&apos;s Controller Manager, export an empty Generic MIDI device, then add one button command and export again, then change one setting and export a third time. Attach the three .tsi files.</source>
-        <translation>Dans le Controller Manager de Traktor, exportez un appareil Generic MIDI vide, ajoutez une commande de bouton et exportez de nouveau, puis changez un réglage et exportez une troisième fois. Joignez les trois fichiers .tsi.</translation>
     </message>
     <message>
         <source>Nothing captured yet.</source>
@@ -2909,6 +2985,14 @@ Il reste une étape manuelle : ajoutez &apos;{slug}&apos; au bloc d&apos;imports
     <message>
         <source>What the project still needs checked on real controllers and DJ software. Pick a check, follow its steps, then mark it. Everything is saved as you go; share the report in the issue each check names.</source>
         <translation>Ce que le projet doit encore vérifier sur de vrais contrôleurs et logiciels DJ. Choisissez une vérification, suivez ses étapes, puis notez le résultat. Tout est enregistré au fur et à mesure ; partagez le rapport dans l&apos;issue que nomme chaque vérification.</translation>
+    </message>
+    <message>
+        <source>Open the tool</source>
+        <translation>Ouvrir l&apos;outil</translation>
+    </message>
+    <message>
+        <source>Opens the app&apos;s tool this check is done in</source>
+        <translation>Ouvre l&apos;outil de l&apos;app où ce test se fait</translation>
     </message>
     <message>
         <source>Start capture</source>
@@ -3160,6 +3244,14 @@ Il reste une étape manuelle : ajoutez &apos;{slug}&apos; au bloc d&apos;imports
     <message>
         <source>The checks the project still needs on real controllers and DJ software, in one list. Pick a check and follow its steps.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Start capture&lt;/b&gt; records what the controller sends while you press or turn what the check asks; the line under the capture says which source it agrees with.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Pass&lt;/b&gt;, &lt;b&gt;Fail&lt;/b&gt; or &lt;b&gt;Skip&lt;/b&gt; marks the check; the note keeps what you saw.&lt;/li&gt;&lt;/ul&gt;Everything is saved as you go in the workspace&apos;s Exports folder. &lt;b&gt;Copy report&lt;/b&gt; or &lt;b&gt;Save report…&lt;/b&gt; gives the results as Markdown for the issue each check names; nothing is sent anywhere by the app.</source>
         <translation>Les vérifications dont le projet a encore besoin sur de vrais contrôleurs et logiciels DJ, en une seule liste. Choisissez une vérification et suivez ses étapes.&lt;ul&gt;&lt;li&gt;&lt;b&gt;Démarrer la capture&lt;/b&gt; enregistre ce qu&apos;envoie le contrôleur pendant que vous appuyez ou tournez ce que demande la vérification ; la ligne sous la capture indique la source avec laquelle elle concorde.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Réussi&lt;/b&gt;, &lt;b&gt;Échec&lt;/b&gt; ou &lt;b&gt;Passer&lt;/b&gt; note la vérification ; la note garde ce que vous avez vu.&lt;/li&gt;&lt;/ul&gt;Tout est enregistré au fur et à mesure dans le dossier Exports de l&apos;espace de travail. &lt;b&gt;Copier le rapport&lt;/b&gt; ou &lt;b&gt;Enregistrer le rapport…&lt;/b&gt; donne les résultats en Markdown pour l&apos;issue que nomme chaque vérification ; l&apos;application n&apos;envoie rien.</translation>
+    </message>
+    <message>
+        <source>Serato MIDI Learn</source>
+        <translation>MIDI Learn Serato</translation>
+    </message>
+    <message>
+        <source>Teaches Serato the notes this app sends on a virtual bus (the IAC bus on macOS), so macros and scenes sent to that bus play Serato&apos;s functions.&lt;ul&gt;&lt;li&gt;In Serato, enable the bus in Setup → MIDI and switch MIDI mode on.&lt;/li&gt;&lt;li&gt;Here, &lt;b&gt;Send&lt;/b&gt; starts a countdown: click the function in Serato before it ends and stay there. The note leaves on its own and the step turns ✓ when it comes back on the bus.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Back&lt;/b&gt; and &lt;b&gt;Next&lt;/b&gt; move between steps; a step can be sent again.&lt;/li&gt;&lt;/ul&gt;Save the MIDI preset in Serato at the end. Nothing in Serato&apos;s files is written by the app.</source>
+        <translation>Apprend à Serato les notes que cette app envoie sur un bus virtuel (le bus IAC sur macOS), pour que les macros et scènes envoyées sur ce bus jouent les fonctions de Serato.&lt;ul&gt;&lt;li&gt;Dans Serato, activez le bus dans Setup → MIDI et passez en mode MIDI.&lt;/li&gt;&lt;li&gt;Ici, &lt;b&gt;Envoyer&lt;/b&gt; lance un compte à rebours : cliquez la fonction dans Serato avant la fin et restez-y. La note part toute seule et l&apos;étape passe à ✓ quand elle revient sur le bus.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Retour&lt;/b&gt; et &lt;b&gt;Suivant&lt;/b&gt; passent d&apos;une étape à l&apos;autre ; une étape peut être renvoyée.&lt;/li&gt;&lt;/ul&gt;Enregistrez le preset MIDI dans Serato à la fin. L&apos;app n&apos;écrit rien dans les fichiers de Serato.</translation>
     </message>
     <message>
         <source>Controller Profile Library</source>
@@ -5405,14 +5497,6 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
         <translation>Détecte vos contrôleurs, ouvre votre mapping Serato et enregistre un jeu de synchronisation.</translation>
     </message>
     <message>
-        <source>&amp;Hardware Session...</source>
-        <translation>Session &amp;matériel...</translation>
-    </message>
-    <message>
-        <source>The checks still waiting for real controllers and DJ software, with a report to share.</source>
-        <translation>Les vérifications qui attendent encore de vrais contrôleurs et logiciels DJ, avec un rapport à partager.</translation>
-    </message>
-    <message>
         <source>Check for &amp;Updates...</source>
         <translation>Rechercher des &amp;mises à jour...</translation>
     </message>
@@ -5423,6 +5507,50 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
     <message>
         <source>&amp;Report a Problem...</source>
         <translation>&amp;Signaler un problème...</translation>
+    </message>
+    <message>
+        <source>&amp;Tests</source>
+        <translation>&amp;Tests</translation>
+    </message>
+    <message>
+        <source>&amp;Hardware Scenarios...</source>
+        <translation>Scénarios &amp;matériel...</translation>
+    </message>
+    <message>
+        <source>Step-by-step checks on real controllers and DJ software, with a report to share.</source>
+        <translation>Des tests pas à pas sur les vrais contrôleurs et logiciels DJ, avec un rapport à partager.</translation>
+    </message>
+    <message>
+        <source>Check a &amp;Controller...</source>
+        <translation>Vérifier un &amp;contrôleur...</translation>
+    </message>
+    <message>
+        <source>Press each control and answer for each light, to verify a controller&apos;s profile.</source>
+        <translation>Appuyez sur chaque contrôle et répondez pour chaque lumière, pour vérifier le profil d&apos;un contrôleur.</translation>
+    </message>
+    <message>
+        <source>&amp;Serato MIDI Learn...</source>
+        <translation>MIDI Learn &amp;Serato...</translation>
+    </message>
+    <message>
+        <source>Teach Serato the notes this app&apos;s macros send on the IAC bus, one function at a time.</source>
+        <translation>Apprendre à Serato les notes que les macros de l&apos;app envoient sur le bus IAC, une fonction à la fois.</translation>
+    </message>
+    <message>
+        <source>&amp;Record a Live Set</source>
+        <translation>&amp;Enregistrer un set</translation>
+    </message>
+    <message>
+        <source>Record every MIDI message from now on, to analyse the set afterwards.</source>
+        <translation>Enregistre chaque message MIDI à partir de maintenant, pour analyser le set ensuite.</translation>
+    </message>
+    <message>
+        <source>&amp;Analyse a Set...</source>
+        <translation>&amp;Analyser un set...</translation>
+    </message>
+    <message>
+        <source>Which controls a recorded set used, how often and in which order.</source>
+        <translation>Quels contrôles un set enregistré a utilisés, combien de fois et dans quel ordre.</translation>
     </message>
     <message>
         <source>No mapping open yet</source>
@@ -11022,6 +11150,100 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>(No textual changes)</source>
         <translation>(Aucune modification du texte)</translation>
+    </message>
+</context>
+<context>
+    <name>SeratoLearn</name>
+    <message>
+        <source>Deck {deck} · {function}</source>
+        <translation>Deck {deck} · {function}</translation>
+    </message>
+    <message>
+        <source>PLAY</source>
+        <translation>PLAY</translation>
+    </message>
+    <message>
+        <source>CUE</source>
+        <translation>CUE</translation>
+    </message>
+    <message>
+        <source>SYNC</source>
+        <translation>SYNC</translation>
+    </message>
+    <message>
+        <source>HOT CUE {number}</source>
+        <translation>HOT CUE {number}</translation>
+    </message>
+</context>
+<context>
+    <name>SeratoLearnDialog</name>
+    <message>
+        <source>Serato MIDI Learn</source>
+        <translation>MIDI Learn Serato</translation>
+    </message>
+    <message>
+        <source>Macros that drive Serato through a virtual bus only work once Serato knows their notes. In Serato: enable the bus in Setup → MIDI, then switch MIDI mode on (the MIDI button at the top). Here, click Send, then click the function in Serato before the countdown ends and stay in Serato. When every step is done, save the MIDI preset in Serato.</source>
+        <translation>Les macros qui pilotent Serato par un bus virtuel ne marchent qu&apos;une fois que Serato connaît leurs notes. Dans Serato : activez le bus dans Setup → MIDI, puis passez en mode MIDI (le bouton MIDI en haut). Ici, cliquez Envoyer, puis cliquez la fonction dans Serato avant la fin du compte à rebours et restez dans Serato. Quand toutes les étapes sont faites, enregistrez le preset MIDI dans Serato.</translation>
+    </message>
+    <message>
+        <source>Bus:</source>
+        <translation>Bus :</translation>
+    </message>
+    <message>
+        <source>Send</source>
+        <translation>Envoyer</translation>
+    </message>
+    <message>
+        <source>Starts the countdown, then sends this step&apos;s note to the bus</source>
+        <translation>Lance le compte à rebours, puis envoie la note de cette étape sur le bus</translation>
+    </message>
+    <message>
+        <source>Back</source>
+        <translation>Retour</translation>
+    </message>
+    <message>
+        <source>Next</source>
+        <translation>Suivant</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Fermer</translation>
+    </message>
+    <message>
+        <source>Step {number} of {count}: {name}</source>
+        <translation>Étape {number} sur {count} : {name}</translation>
+    </message>
+    <message>
+        <source>Click Send, then within {seconds} seconds click {name} in Serato and stay there. The note (channel {channel}, note {note}) leaves on its own.</source>
+        <translation>Cliquez Envoyer, puis dans les {seconds} secondes cliquez {name} dans Serato et restez-y. La note (canal {channel}, note {note}) part toute seule.</translation>
+    </message>
+    <message>
+        <source>No MIDI output: turn the IAC bus on in Audio MIDI Setup, then reopen.</source>
+        <translation>Aucune sortie MIDI : activez le bus IAC dans Configuration audio et MIDI, puis rouvrez.</translation>
+    </message>
+    <message>
+        <source>Click {name} in Serato now: the note leaves in {seconds} s</source>
+        <translation>Cliquez {name} dans Serato maintenant : la note part dans {seconds} s</translation>
+    </message>
+    <message>
+        <source>Could not send to {port}: {error}</source>
+        <translation>Envoi impossible vers {port} : {error}</translation>
+    </message>
+    <message>
+        <source>Sent: channel {channel}, note {note}. Listening for it on the bus…</source>
+        <translation>Envoyée : canal {channel}, note {note}. Attente de son retour sur le bus…</translation>
+    </message>
+    <message>
+        <source>Received on the bus ✓ — Serato got it too if it was in MIDI mode.</source>
+        <translation>Reçue sur le bus ✓ — Serato l&apos;a reçue aussi s&apos;il était en mode MIDI.</translation>
+    </message>
+    <message>
+        <source>All steps sent: save the MIDI preset in Serato.</source>
+        <translation>Toutes les étapes sont envoyées : enregistrez le preset MIDI dans Serato.</translation>
+    </message>
+    <message>
+        <source>Sent, but not seen coming back on the bus. Check the bus is on in Audio MIDI Setup and that the Live Monitor listens to it; Serato may still have learned it.</source>
+        <translation>Envoyée, mais pas vue revenir sur le bus. Vérifiez que le bus est actif dans Configuration audio et MIDI et que le Live Monitor l&apos;écoute ; Serato l&apos;a peut-être apprise quand même.</translation>
     </message>
 </context>
 <context>

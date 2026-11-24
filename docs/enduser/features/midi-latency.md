@@ -33,7 +33,7 @@ never assumes a controller echoes.
 
 ## Run a test
 
-Open **`View` → `MIDI Latency Test…`**:
+Open **`Tests` → `MIDI Latency Test…`**:
 
 1. Pick the **output** to send to and the **input** to listen on. When a
    port has the same name on both sides (an IAC bus, a virtual cable), the

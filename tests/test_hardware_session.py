@@ -196,7 +196,7 @@ def test_dialog_refuses_capture_without_input(tmp_path):
 
 
 def test_dialog_saves_the_report(dialog, tmp_path):
-    dialog.select_check("traktor-exports")
+    dialog.select_check("traktor-learn-sync-hotcue")
     dialog.mark(FAIL)
     path = tmp_path / "report.md"
     dialog.save_report(str(path))

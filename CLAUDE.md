@@ -411,6 +411,10 @@ surgical and logged. Qt-free modules; the tab is a thin view over `library/works
   `first_run.py`, `hardware_session.py` (checklist of hardware-only checks, Help menu), `problem_report.py` and
   `catalog/community.py` (pre-filled GitHub issues, nothing sent by the app), `update_check.py` (silent offline,
   never downloads), `startup_timing.py`, `midi_export.py` (Live Monitor log as SMF).
+- **Tests menu** (between Macros and Help, `MainWindow._build_tests_menu`): Hardware Scenarios (`hardware_session.CHECKS`, each
+  `Check.tool` → a button → `MainWindow.open_test_tool`), Check a Controller, Serato MIDI Learn (Qt-free `serato_learn.STEPS`
+  → `gui/serato_learn_dialog.py`: countdown, one note on the IAC bus, its echo via the Live Monitor), Record / Analyse a
+  set, MIDI Latency Test. New hardware checks go in `CHECKS`, not in a separate script.
 - Cheat sheet: `gui/cheat_sheet.py` (Qt-free) → PDF (`cheat_sheet_pdf.py`) or self-contained HTML.
 - Build: `scripts/build.sh` (PyInstaller; bundles `docs/`, `controllers/` and, when the `analysis` extra is installed as in CI, librosa — checked by `smoke_test_executable.py --require-analysis`), `scripts/macos_signing.sh`
   (skips cleanly without credentials), `scripts/smoke_test_executable.py --screenshot`.

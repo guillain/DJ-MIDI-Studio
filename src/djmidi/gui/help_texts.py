@@ -138,6 +138,21 @@ HARDWARE_SESSION: HelpEntry = (
     "hardware-session.md",
 )
 
+SERATO_LEARN: HelpEntry = (
+    QT_TRANSLATE_NOOP("HelpTexts", "Serato MIDI Learn"),
+    QT_TRANSLATE_NOOP(
+        "HelpTexts",
+        "Teaches Serato the notes this app sends on a virtual bus (the IAC bus on macOS), so macros and "
+        "scenes sent to that bus play Serato's functions.<ul>"
+        "<li>In Serato, enable the bus in Setup → MIDI and switch MIDI mode on.</li>"
+        "<li>Here, <b>Send</b> starts a countdown: click the function in Serato before it ends and stay "
+        "there. The note leaves on its own and the step turns ✓ when it comes back on the bus.</li>"
+        "<li><b>Back</b> and <b>Next</b> move between steps; a step can be sent again.</li></ul>"
+        "Save the MIDI preset in Serato at the end. Nothing in Serato's files is written by the app.",
+    ),
+    "hardware-session.md",
+)
+
 PROFILE_LIBRARY: HelpEntry = (
     QT_TRANSLATE_NOOP("HelpTexts", "Controller Profile Library"),
     QT_TRANSLATE_NOOP(

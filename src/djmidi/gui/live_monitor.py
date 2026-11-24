@@ -189,7 +189,7 @@ class LiveMonitorView(QWidget):
         self._analyse_button.setToolTip(
             self.tr("Opens a recorded live set and shows which controls you used, how often and in which order.")
         )
-        self._analyse_button.clicked.connect(self._choose_set_to_analyse)
+        self._analyse_button.clicked.connect(self.choose_set_to_analyse)
         self._recording_label = QLabel()
         self._recording_label.setWordWrap(True)
         self._recording_label.hide()  # shown once there's something to say
@@ -604,7 +604,7 @@ class LiveMonitorView(QWidget):
         )
         return path
 
-    def _choose_set_to_analyse(self) -> None:
+    def choose_set_to_analyse(self) -> None:
         logs = user_paths.subfolder(user_paths.LOGS)
         path_str, _filter = QFileDialog.getOpenFileName(
             self, self.tr("Analyse a live set"), str(logs), self.tr("Live set recordings (*.jsonl)")
