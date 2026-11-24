@@ -135,7 +135,9 @@ Registry of DJ programs (`SoftwareDefinition`: parser, exporter, extensions, opt
 - `serato.py` — the XML above.
 - `traktor.py` + `_tsi.py` + `binary_chunks.py` — real Traktor `.tsi` (`<NIXML>` holding a Base64 blob of nested
   "4-char tag + u32 BE size" chunks; `binary_chunks` is a generic codec for that framing). Export only re-labels
-  changed bindings on a deep copy; adding/removing bindings raises `TsiError`. Unedited export is byte-identical.
+  changed bindings on a deep copy; adding/removing bindings raises `TsiError`. `_tsi.add_commands` adds a command
+  as Controller Manager does (edit counter, CMAI + captured default CMAD, DCBM on learn; byte-exact on real exports, #233),
+  only for commands in `NEW_COMMAND_SETTINGS`. Unedited export is byte-identical.
   Format notes and verification: `software/traktor/README.md`. Serato ↔ Traktor conversion is research-only until
   Serato's tag names exist.
 - `rekordbox.py` — rekordbox `.midi.csv` mappings, read-only (`software/rekordbox/README.md`).
@@ -424,5 +426,5 @@ surgical and logged. Qt-free modules; the tab is a thin view over `library/works
 Tracked in `TODO.md` (Phase 9 / "Waiting on hardware") and in the Hardware Session window: DDJ-XP2 1/2X / 2X
 notes, CMD Micro / Studio 4a jogs (the Studio 4a's Traktor export binds one pitch bend per deck as an absolute
 FaderOrKnob / Direct control, so probably its pitch fader, not its jog — #442), real LED probing and Pioneer colours, Serato
-Play/Cue/Sync tag names (#194), Traktor Controller Manager exports (#233), a Traktor import of the `.nml` export,
+Play/Cue/Sync tag names (#194), Traktor default settings for more commands (#233), a Traktor import of the `.nml` export,
 macOS notarization (Apple Developer account).
