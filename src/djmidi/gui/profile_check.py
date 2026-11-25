@@ -20,6 +20,11 @@ checked yet, or only the mismatches); a SHIFT press is never taken for the
 control being asked unless SHIFT itself is asked; the dialog judges every
 press of a short window (:meth:`ProfileCheck.judge`), so a control that
 sends two messages, or answers a long press, is judged on all of them.
+Some controllers send other messages, or have controls at all, only while
+their DJ software drives them (the DDJ-XP2's PAD MODE 5-8: on its own, a
+second click resends PAD MODE 1-4). :func:`software_hint` says so before a
+check run with no software, and a mismatch that repeats an already asked
+control says why (:attr:`CheckResult.needs`).
 Verdicts are kept per controller by `atelier.captures`.
 
 :func:`report_text` turns the results into a Markdown report, and
@@ -35,6 +40,7 @@ from datetime import UTC, datetime
 from urllib.parse import quote
 
 from djmidi import catalog
+from djmidi.atelier import captures as captures_mod
 from djmidi.catalog.community import COMMUNITY_REPO
 from djmidi.gui import layout as layout_mod
 from djmidi.i18n import QT_TRANSLATE_NOOP, Translate, untranslated
@@ -51,6 +57,15 @@ _PROMPT_PLAIN = QT_TRANSLATE_NOOP("ProfileCheck", "Press {control}")
 _PROMPT_SHIFT = QT_TRANSLATE_NOOP("ProfileCheck", "Hold SHIFT and press {control}")
 _OTHER_CONTROL = QT_TRANSLATE_NOOP("ProfileCheck", "got {trigger}, which the profile gives to {other}")
 _UNKNOWN = QT_TRANSLATE_NOOP("ProfileCheck", "got {trigger}, which isn't in the profile")
+_REPEAT = QT_TRANSLATE_NOOP(
+    "ProfileCheck",
+    "got {trigger} again, the message of {other}: this control may exist only while {software} drives the controller",
+)
+_NEEDS_SOFTWARE = QT_TRANSLATE_NOOP(
+    "ProfileCheck",
+    "The {controller} is made for {software}: some controls (extra pad modes, pad notes) answer differently, "
+    "or not at all, while it isn't running. Start {software} and pick it in \u201cDJ software running\u201d.",
+)
 _PASTE = "_(The report was copied to your clipboard: paste it here.)_"
 
 
@@ -89,10 +104,13 @@ class CheckResult:
     status: str
     got: Trigger | None = None
     other: str = ""  # the item the profile gives `got` to, when it isn't this one
+    needs: str = ""  # the DJ software this control may need: `got` repeats an asked control
 
     def detail(self, translate: Translate = untranslated) -> str:
         if self.status != MISMATCH or self.got is None:
             return ""
+        if self.other and self.needs:
+            return translate(_REPEAT).format(trigger=trigger_text(self.got), other=self.other, software=self.needs)
         if self.other:
             return translate(_OTHER_CONTROL).format(trigger=trigger_text(self.got), other=self.other)
         return translate(_UNKNOWN).format(trigger=trigger_text(self.got))
@@ -141,6 +159,24 @@ def check_sections(controller: str) -> list[str]:
     )
 
 
+def made_for(controller: str) -> str:
+    """The DJ software the controller is made for ("Serato DJ Pro"), "" when
+    the profile doesn't say."""
+    definition = catalog.get_definition(controller)
+    labels = dict(captures_mod.SOFTWARE_CHOICES)
+    keys = getattr(definition, "supported_software", ()) or ()
+    return " / ".join(labels.get(key, key) for key in keys)
+
+
+def software_hint(controller: str, software: str, translate: Translate = untranslated) -> str:
+    """A warning before a check run with no DJ software on a controller made
+    for one; "" otherwise."""
+    needs = made_for(controller)
+    if software != captures_mod.NO_SOFTWARE or not needs:
+        return ""
+    return translate(_NEEDS_SOFTWARE).format(controller=controller, software=needs)
+
+
 def modifier_triggers(controller: str) -> frozenset[Trigger]:
     """What the controller's SHIFT button(s) send: held for a SHIFT item,
     they must never be judged as the control asked."""
@@ -158,6 +194,7 @@ class ProfileCheck:
     index: int = 0
 
     modifiers: frozenset[Trigger] = frozenset()
+    software: str = captures_mod.NO_SOFTWARE
 
     @classmethod
     def start(
@@ -165,13 +202,14 @@ class ProfileCheck:
         controller: str,
         sections: set[str] | None = None,
         only: set[str] | None = None,
+        software: str = captures_mod.NO_SOFTWARE,
     ) -> ProfileCheck:
         """``only``: item keys to ask (a resumed or redone check); every
-        item of the sections when None."""
+        item of the sections when None. ``software``: the DJ software running."""
         items = check_items(controller, sections)
         if only is not None:
             items = [item for item in items if item.key in only]
-        return cls(controller, items, modifiers=modifier_triggers(controller))
+        return cls(controller, items, modifiers=modifier_triggers(controller), software=software)
 
     @property
     def done(self) -> bool:
@@ -201,10 +239,20 @@ class ProfileCheck:
         if hit is not None:
             result = CheckResult(OK, hit)
         else:
-            result = CheckResult(MISMATCH, counted[0], self._owner(counted[0]))
+            got = counted[0]
+            result = CheckResult(MISMATCH, got, self._owner(got), self._needs(got))
         self.results[self.index] = result
         self.index += 1
         return result
+
+    def _needs(self, got: Trigger) -> str:
+        """The software to start when ``got`` repeats a control already asked
+        and none drives a controller made for one."""
+        if self.software != captures_mod.NO_SOFTWARE:
+            return ""
+        if not any(got in item.triggers for item in self.items[: self.index]):
+            return ""
+        return made_for(self.controller)
 
     def press(self, trigger: Trigger) -> CheckResult | None:
         """Judges a single press (see :meth:`judge`)."""

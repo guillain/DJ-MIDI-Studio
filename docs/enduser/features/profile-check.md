@@ -54,8 +54,14 @@ Good to know:
   prompt says what the app heard (deck, pad mode, control).
 - Holding SHIFT is never taken for the control asked; the app waits for the
   control itself.
-- The app listens a moment after each press, so a control that sends two
-  messages, a double press or a long press is judged on all of them.
+- The app listens a moment after each press (counted from the last one),
+  so a control that sends two messages, a double press or a long press is
+  judged on all of them.
+- Some controls exist only while the DJ software drives the controller. On
+  a DDJ-XP2 with no DJ software running, a second click on PAD MODE 1-4
+  sends PAD MODE 1-4 again, never PAD MODE 5-8. The check warns at the start
+  when the controller is made for a DJ software that isn't chosen, and a
+  mismatch that repeats a control already asked says to start it.
 - A control without a marker on the photo is not framed: the prompt names
   it.
 

@@ -68,6 +68,7 @@ from djmidi.gui.profile_check import (
     press_from_event,
     report_issue_url,
     report_text,
+    software_hint,
     trigger_text,
 )
 from djmidi.gui.translation import translator
@@ -414,9 +415,10 @@ class ProfileCheckDialog(QDialog):
                 only = {key for key in _all_keys(controller) if key not in checked}
             else:
                 only = {key for key, status in checked.items() if status in (MISMATCH, ODD)}
-        self.check = ProfileCheck.start(controller, self.selected_sections(), only)
+        self.check = ProfileCheck.start(controller, self.selected_sections(), only, self.software)
         self._pending = []
-        self.status.setText("" if self.check.items else self.tr("Nothing to ask: every control here is done."))
+        hint = software_hint(controller, self.software, _translate)
+        self.status.setText(hint if self.check.items else self.tr("Nothing to ask: every control here is done."))
         self._refresh()
         return True
 
@@ -437,7 +439,9 @@ class ProfileCheckDialog(QDialog):
         self._pending.append(trigger)
         if self._judge_delay_ms <= 0:
             self._judge_pending()
-        elif not self._judge_timer.isActive():
+        else:
+            # Counted from the last press: both clicks of a double press
+            # belong to the same attempt.
             item = self.check.current
             self._judge_timer.start(LONG_PRESS_MS if item is not None and item.long_press else self._judge_delay_ms)
         return True

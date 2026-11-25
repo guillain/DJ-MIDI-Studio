@@ -9717,6 +9717,14 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <source>got {trigger}, which isn&apos;t in the profile</source>
         <translation>reçu {trigger}, absent du profil</translation>
     </message>
+    <message>
+        <source>got {trigger} again, the message of {other}: this control may exist only while {software} drives the controller</source>
+        <translation>reçu {trigger} à nouveau, le message de {other} : cette commande n&apos;existe peut-être que quand {software} pilote le contrôleur</translation>
+    </message>
+    <message>
+        <source>The {controller} is made for {software}: some controls (extra pad modes, pad notes) answer differently, or not at all, while it isn&apos;t running. Start {software} and pick it in “DJ software running”.</source>
+        <translation>Le {controller} est fait pour {software} : certaines commandes (modes de pads en plus, notes des pads) répondent autrement, ou pas du tout, quand il n&apos;est pas ouvert. Ouvrez {software} et choisissez-le dans « Logiciel DJ ouvert ».</translation>
+    </message>
 </context>
 <context>
     <name>ProfileCheckDialog</name>

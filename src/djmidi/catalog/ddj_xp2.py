@@ -54,7 +54,9 @@ _STATIC: list[ControlInfo] = [
     ControlInfo("DDJ-XP2", "PAD MODE", "PAD MODE 4", "NOTE", _DECK_CH, "34"),
     ControlInfo("DDJ-XP2", "PAD MODE", "PAD MODE 4 (+SHIFT)", "NOTE", _DECK_CH, "111"),
     # The second physical click is emitted as a distinct NOTE (27->28,
-    # 30->31, 32->33, 34->35), not as a repeated first click.
+    # 30->31, 32->33, 34->35), not as a repeated first click -- only while
+    # Serato drives the XP2: with no DJ software running, a second click
+    # resends the first note (guided check, 2026-11-25).
     ControlInfo("DDJ-XP2", "PAD MODE", "PAD MODE 5", "NOTE", _DECK_CH, "28"),
     ControlInfo("DDJ-XP2", "PAD MODE", "PAD MODE 5 (+SHIFT)", "NOTE", _DECK_CH, "106"),
     ControlInfo("DDJ-XP2", "PAD MODE", "PAD MODE 6", "NOTE", _DECK_CH, "31"),

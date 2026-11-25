@@ -9717,6 +9717,14 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
         <source>got {trigger}, which isn&apos;t in the profile</source>
         <translation>{trigger} erhalten, der nicht im Profil ist</translation>
     </message>
+    <message>
+        <source>got {trigger} again, the message of {other}: this control may exist only while {software} drives the controller</source>
+        <translation>{trigger} erneut erhalten, die Nachricht von {other}: Dieses Bedienelement gibt es vielleicht nur, während {software} den Controller steuert</translation>
+    </message>
+    <message>
+        <source>The {controller} is made for {software}: some controls (extra pad modes, pad notes) answer differently, or not at all, while it isn&apos;t running. Start {software} and pick it in “DJ software running”.</source>
+        <translation>Der {controller} ist für {software} gemacht: Einige Bedienelemente (weitere Pad-Modi, Pad-Noten) reagieren anders oder gar nicht, solange es nicht läuft. Starten Sie {software} und wählen Sie es unter „Laufende DJ-Software“.</translation>
+    </message>
 </context>
 <context>
     <name>ProfileCheckDialog</name>
