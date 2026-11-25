@@ -130,6 +130,10 @@ def run(argv: list[str] | None = None) -> int:
     if crash_log is not None:
         logger.info("Native crash traces go to %s", crash_log)
     timer.mark("preferences and logging")
+    # Qt Multimedia's harmless "unrecognized channel" lines stay out of the terminal.
+    from djmidi.gui import qt_messages
+
+    qt_messages.install()
     app = QApplication(sys.argv if argv is None else [sys.argv[0], *argv])
     app.setOrganizationName("DJ MIDI Studio")
     app.setApplicationName("DJ MIDI Studio")
