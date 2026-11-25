@@ -142,3 +142,47 @@ def test_main_window_routes_presses_to_the_check_not_to_macros(tmp_path, monkeyp
         assert len(played) == 1
     finally:
         window.close()
+
+
+def _answer_up_to(check, label):
+    """Presses the right message for every item before ``label`` (plain)."""
+    while check.current.title != label:
+        check.press(min(check.current.triggers))
+
+
+def test_a_repeated_message_without_the_software_says_to_start_it():
+    from djmidi.gui.profile_check import software_hint
+
+    # Real DDJ-XP2 capture (2026-11-25, no DJ software): PAD MODE 1 clicked
+    # twice sends note 27 twice, never PAD MODE 5's note 28.
+    check = ProfileCheck.start("DDJ-XP2", {"PAD MODE"})
+    _answer_up_to(check, "PAD MODE 5")
+    result = check.judge([("1", "NOTE", "27"), ("1", "NOTE", "27")])
+    assert result.status == "mismatch"
+    assert result.needs == "Serato DJ Pro"
+    assert "again" in result.detail() and "Serato DJ Pro" in result.detail()
+    assert "Serato DJ Pro" in software_hint("DDJ-XP2", "none")
+    assert software_hint("DDJ-XP2", "serato") == ""
+
+
+def test_with_the_software_running_a_mismatch_stays_plain():
+    check = ProfileCheck.start("DDJ-XP2", {"PAD MODE"}, software="serato")
+    _answer_up_to(check, "PAD MODE 5")
+    result = check.press(("1", "NOTE", "27"))
+    assert result.needs == "" and "again" not in result.detail()
+
+
+def test_both_clicks_of_a_slow_double_press_make_one_attempt(tmp_path):
+    from djmidi.gui.profile_check_dialog import ProfileCheckDialog
+
+    dialog = ProfileCheckDialog(["DDJ-XP2"], ["XP2"], ensure_listening=lambda: True, initial="DDJ-XP2",
+                                reports_dir=tmp_path, judge_delay_ms=800)
+    assert dialog.start()
+    assert "Serato DJ Pro" in dialog.status.text()  # no DJ software chosen
+    event = _event(27, port="XP2")
+    dialog.feed_event(event)
+    dialog._judge_timer.stop()
+    dialog._judge_timer.start(100)  # the first click's window has almost run out
+    dialog.feed_event(event)
+    assert dialog._judge_timer.remainingTime() > 700
+    assert len(dialog._pending) == 2
