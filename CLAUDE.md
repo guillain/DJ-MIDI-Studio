@@ -143,6 +143,9 @@ Registry of DJ programs (`SoftwareDefinition`: parser, exporter, extensions, opt
   Format notes and verification: `software/traktor/README.md`. Serato ↔ Traktor conversion is research-only until
   Serato's tag names exist.
 - `rekordbox.py` — rekordbox `.midi.csv` mappings, read-only (`software/rekordbox/README.md`).
+  `_rekordbox_commands.py` reads rekordbox's embedded `<MIDI_COMMAND_DATA>` table from the DJ's install at runtime
+  (`load()` when a rekordbox mapping opens, real app only) → `function_names.function_name` shows rekordbox's labels;
+  never shipped or copied.
 - `mixxx.py` — Mixxx `.midi.xml`, read + in-place patch export (unedited export byte-identical on all 142 Mixxx
   2.5 mappings, read in place, never copied — GPL). `mixxx_export.py` builds a new Mixxx mapping from a profile.
 - `_contract.py` / `check_software_plugin` + `scripts/check_software_plugin.py` + `examples/software-plugin/`:

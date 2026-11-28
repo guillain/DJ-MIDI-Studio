@@ -80,6 +80,17 @@ buttons) on notes 18/19 (`9012`/`9013`), while the official PDF and
 Serato mapping uses either pair, so pressing the buttons with the Live
 Monitor open decides; the catalog stays on the PDF until then.
 
+## rekordbox's embedded command table (2026-11-28)
+
+The executable holds the table the MIDI Settings window is built from:
+`<MIDI_COMMAND_DATA>` blocks per tab (DECK, PAD, FX, SAMPLER, MIXER, BROWSE,
+OTHER, VIDEO, LIGHTING, MIXPOINTLINK) of `<COMMAND displayname csvname type
+category deck/>`, once per architecture slice (671 csvnames with a label in
+7.2.19). `djmidi.software._rekordbox_commands` reads it at runtime from the
+DJ's install (maintainer's decision, 2026-11-28), only to show `displayname`
+for a `.midi.csv` command; nothing of it is stored in the repository. The
+`type` codes are not interpreted.
+
 ## Community description (2026-09, superseded where it disagrees)
 
 rekordbox's custom MIDI mappings are **plain CSV files** (not XML) —
