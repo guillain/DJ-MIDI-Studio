@@ -33,6 +33,7 @@ from __future__ import annotations
 
 from djmidi.i18n import QT_TRANSLATE_NOOP, Translate, untranslated
 from djmidi.serato_public_tags import PUBLIC_TAGS
+from djmidi.software import _rekordbox_commands as rekordbox_commands
 
 # Raw Serato tag -> short label. Only tags seen in real exports belong here.
 FUNCTION_NAMES: dict[str, str] = {
@@ -74,12 +75,14 @@ HOT_CUE = QT_TRANSLATE_NOOP("FunctionNames", "Hot cue {number}")
 
 def is_known(tag: str) -> bool:
     """Whether `tag` has a readable name (otherwise it is shown raw)."""
-    return tag in FUNCTION_NAMES
+    return tag in FUNCTION_NAMES or bool(rekordbox_commands.display_name(tag))
 
 
 def function_name(tag: str) -> str:
-    """The short label for `tag`, or `tag` itself when it has none."""
-    return FUNCTION_NAMES.get(tag, tag)
+    """The short label for `tag`, or `tag` itself when it has none. A
+    rekordbox `.midi.csv` command gets rekordbox's own label once the DJ's
+    rekordbox table was read (`software._rekordbox_commands.load`)."""
+    return FUNCTION_NAMES.get(tag) or rekordbox_commands.display_name(tag) or tag
 
 
 def function_label(tag: str, slot_id: str | None = None, translate: Translate = untranslated) -> str:

@@ -137,6 +137,12 @@ class MappingFilesMixin:
             return
         self.current_path = path
         self.software_id = selected.plugin_id
+        if selected.plugin_id == "rekordbox" and self._layout_settings() is not None:
+            # rekordbox's own labels for the commands, read from the DJ's
+            # installed rekordbox (read-only, once; real app only).
+            from djmidi.software import _rekordbox_commands
+
+            _rekordbox_commands.load()
         self.undo_stack.clear()
         self._load_tree()
         self.issues_table.setRowCount(0)
