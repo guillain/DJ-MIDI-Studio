@@ -40,6 +40,12 @@ Each mapping row becomes one control per deck it applies to:
   physical control name (`Sync+Shift` is the SHIFT layer), the control type
   (Button, Pad, Rotary…), rekordbox's options and comment.
 
+When rekordbox is installed on the computer, each command is shown with
+the name rekordbox's own MIDI settings give it (`TrackNext` reads
+"TrackSearch Next", `PAD1_HotCue` "HotCue1"), and the raw command stays in
+the tooltip. The app reads that list from your rekordbox when you open a
+mapping, read-only; nothing of rekordbox is copied or shipped with the app.
+
 Disabled rows (starting with `#`) and rekordbox's internal parameters are
 not shown. Validation and **Ready for live** work as for any other mapping.
 
