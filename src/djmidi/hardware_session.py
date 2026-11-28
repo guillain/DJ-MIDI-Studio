@@ -263,6 +263,21 @@ CHECKS: tuple[Check, ...] = (
         tool=TOOL_MACROS,
     ),
     Check(
+        "deck-switch-together",
+        QT_TRANSLATE_NOOP("HardwareSession", "Decks 1/3 and 2/4: do both controllers switch together?"),
+        QT_TRANSLATE_NOOP(
+            "HardwareSession",
+            "With Serato open, start the Live Monitor. Switch the XDJ-XZ's left deck to 3 (SHIFT twice), then "
+            "the DDJ-XP2's: the Decks line under the monitor must say both are on deck 3; do the same on the "
+            "right side (2 to 4), which hasn't been captured yet. Then, with both on decks 1 and 2, play each "
+            "macro whose name starts with \u201cTest deck\u201d from the Macros menu and note whether the "
+            "controller it names switches deck (and its lights): if one does, the app can switch every "
+            "controller from a single press.",
+        ),
+        "#550",
+        tool=TOOL_RECORD_SET,
+    ),
+    Check(
         "record-and-analyse",
         QT_TRANSLATE_NOOP("HardwareSession", "Record a set and analyse it"),
         QT_TRANSLATE_NOOP(

@@ -13,6 +13,7 @@
 - [Read the event log](#read-the-event-log)
 - [Spot conflicts live](#spot-conflicts-live)
 - [The whole app lights up](#the-whole-app-lights-up)
+- [Which deck each controller is on](#which-deck-each-controller-is-on)
 - [See what Serato sends back (LED feedback)](#see-what-serato-sends-back-led-feedback)
 - [Record a whole live set](#record-a-whole-live-set)
 - [Analyse a recorded set](#analyse-a-recorded-set)
@@ -117,6 +118,22 @@ For the controller each view is showing:
 | Hold a button down | A steady amber "held" highlight until you release it |
 | Turn a knob, move a fader | The knob rotates / the fader thumb moves, and stays where you left it |
 | Spin a jog wheel | The jog glyph turns (XDJ-XZ, DDJ-1000, DDJ-FLX10, DDJ-FLX4, DDJ-REV1, DDJ-REV5, DDJ-800, Hercules DJControl Inpulse 500) |
+
+## Which deck each controller is on
+
+With four decks and two controllers, each controller switches between decks
+1/3 and 2/4 on its own, and Serato follows each one. As soon as a controller
+switches, a **Decks** line under the monitor buttons says where each one
+stands, for example `Decks: DDJ-XP2 1 | 2 · XDJ-XZ 3 | 2`. A ⚠ line warns
+when two controllers play different decks on the same side, or when one
+moved to deck 3 or 4 while the other hasn't switched since the app started.
+
+It reads the messages the controllers send when they switch: CC 102 from the
+XDJ-XZ (SHIFT pressed twice, as its official MIDI list says) and Note 60 from
+the DDJ-XP2 (captured with Serato running). The app sends nothing: neither
+controller documents a message that switches its deck from outside. Whether
+one can be switched anyway is a check in **Tests → Hardware Scenarios**
+(issue #550).
 
 ## See what Serato sends back (LED feedback)
 

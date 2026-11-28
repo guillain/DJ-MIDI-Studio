@@ -35,6 +35,7 @@ from PySide6.QtWidgets import (
 )
 
 from djmidi import catalog, user_paths
+from djmidi.deck_layers import DeckLayers
 from djmidi.gui import help_texts
 from djmidi.gui.empty_state import EmptyState
 from djmidi.gui.help_button import help_row
@@ -190,6 +191,17 @@ class LiveMonitorView(QWidget):
             self.tr("Opens a recorded live set and shows which controls you used, how often and in which order.")
         )
         self._analyse_button.clicked.connect(self.choose_set_to_analyse)
+        # Which deck each controller side is on, and when two differ (golden rule).
+        self.deck_layers = DeckLayers()
+        self.decks_label = QLabel()
+        self.decks_label.setWordWrap(True)
+        self.decks_label.setToolTip(
+            self.tr(
+                "Each controller switches between decks 1/3 and 2/4 on its own, and Serato follows each one. "
+                "This line says where they stand and warns when two of them play different decks."
+            )
+        )
+        self.decks_label.hide()  # shown once a controller switched decks
         self._recording_label = QLabel()
         self._recording_label.setWordWrap(True)
         self._recording_label.hide()  # shown once there's something to say
@@ -219,6 +231,7 @@ class LiveMonitorView(QWidget):
         controls_layout.addWidget(save_button)
         controls_layout.addWidget(self._record_button)
         controls_layout.addWidget(self._recording_label)
+        controls_layout.addWidget(self.decks_label)
         controls_layout.addWidget(self._analyse_button)
         controls_layout.addWidget(self._sync_button)
         controls_layout.addStretch(1)
@@ -476,7 +489,15 @@ class LiveMonitorView(QWidget):
     def visible_rows(self) -> int:
         return sum(not self._log.isRowHidden(row) for row in range(self._log.rowCount()))
 
+    def _update_decks(self, event: MidiEvent) -> None:
+        if self.deck_layers.feed(
+            event.port, event.direction, event.event_type, event.channel, event.data1, event.data2
+        ):
+            self.decks_label.setText(self.deck_layers.summary(translator("DeckLayers")))
+            self.decks_label.show()
+
     def _append_event(self, event: MidiEvent) -> None:
+        self._update_decks(event)
         hits = catalog.lookup(event.channel, event.event_type, event.data1)
         if event.port:
             # catalog.lookup() is intentionally controller-agnostic because a
