@@ -605,7 +605,7 @@ a new file where you choose, exactly like the Playlists panel's exports.
 | --- | --- | --- |
 | Serato | **Import** → `Serato crate…` (`_Serato_/Subcrates/*.crate`) | **Export** → `Serato crate…` writes a new `.crate` where you choose; copy it into `_Serato_/Subcrates` yourself |
 | Traktor | **Import** → `Traktor NML…` (playlists of `collection.nml`) | **Export** → `Traktor playlist…` writes a new `.nml`; in Traktor, right-click `Playlists` → `Import Playlist` |
-| Rekordbox | **Import** → `rekordbox export…`: a USB `PIONEER/rekordbox/export.pdb`, or a rekordbox XML file (*File → Export Collection in xml format* in rekordbox; playlists in folders are named `Folder / Playlist`) | **Export** → `rekordbox XML…` writes a new `.xml`; in rekordbox, pick it under *File → Preferences → Bridge → Imported Library*, then import the playlist from the Bridge view |
+| Rekordbox | **Import** → `rekordbox export…`: rekordbox's own library `master.db` (the dialog opens in its folder when rekordbox is on this computer), a USB `PIONEER/rekordbox/export.pdb`, or a rekordbox XML file (*File → Export Collection in xml format* in rekordbox; playlists in folders are named `Folder / Playlist`) | **Export** → `rekordbox XML…` writes a new `.xml`; in rekordbox, pick it under *File → Preferences → Bridge → Imported Library*, then import the playlist from the Bridge view |
 
 Imported Serato crate names also help categorize tracks.
 
@@ -616,6 +616,13 @@ are left for rekordbox to analyse. rekordbox's own library is never
 written. rekordbox refuses two playlists with the same name in the same
 folder, so rename one first if needed. This export hasn't been tried in a
 running rekordbox yet.
+
+rekordbox's own library (`master.db`, rekordbox 6 and 7) is encrypted. The
+app copies it to a temporary folder, reads the copy with the open-source
+[pyrekordbox](https://github.com/dylanljones/pyrekordbox) and deletes the
+copy: your `master.db` is never opened or changed, even while rekordbox
+runs. Smart playlists hold rules, not tracks, and are skipped. If a newer
+rekordbox can't be read, export your playlists as rekordbox XML instead.
 
 ## Copy a playlist to a drive
 
@@ -702,8 +709,8 @@ software's own history:
 
 | Button | Result |
 | --- | --- |
-| `Load DJ history` | Reads Serato (`~/Music/_Serato_/History`), Traktor (`~/Music/_Traktor/History`) and the rekordbox player history of an export in `~/Music/PIONEER` when they exist |
-| `Load from folder…` | Reads another Serato `History`/`Sessions` folder, Traktor `History` folder or rekordbox export (a USB stick prepared by rekordbox: choose the stick, its `PIONEER` folder or `PIONEER/rekordbox`) |
+| `Load DJ history` | Reads Serato (`~/Music/_Serato_/History`), Traktor (`~/Music/_Traktor/History`) and rekordbox's own history (`master.db`, read from a copy), else the player history of an export in `~/Music/PIONEER`, when they exist |
+| `Load from folder…` | Reads another Serato `History`/`Sessions` folder, Traktor `History` folder, rekordbox's library folder (the one holding `master.db`) or rekordbox export (a USB stick prepared by rekordbox: choose the stick, its `PIONEER` folder or `PIONEER/rekordbox`) |
 | `Select never played` | Selects, in the table, every visible track no session played — ready for `New from selection` |
 
 Each session is listed newest first with its date and track count; open it
@@ -716,7 +723,9 @@ that was only ever loaded still counts as never played.
 
 rekordbox sessions (`HISTORY 001`, …) are the ones a CDJ/XDJ player recorded on
 the USB stick. rekordbox stores no play time or deck there, so those columns stay
-empty and such sessions are listed after the dated ones.
+empty and such sessions are listed after the dated ones. Sessions from
+rekordbox's own library (`master.db`) carry the time each track joined the
+history.
 
 The summary line gives the totals: sessions, plays, distinct tracks, and
 how many of your indexed tracks were never played. History files are only
