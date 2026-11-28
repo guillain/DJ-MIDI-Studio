@@ -185,8 +185,10 @@ tools (pandas, a notebook):
 | `live-….events.jsonl` | What the app saw: deck changes of each controller, deck warnings, macros played, controllers plugged in or out |
 | `live-….manifest.json` | What was plugged in, the app version, the mapping file (name and fingerprint), the time zone, and `wall_offset`: `t + wall_offset` is the clock time |
 
-To record from the moment the app opens, start it with
-`djmidi --record-live-set`.
+To record every set without thinking about it, tick **Record every live set
+from launch** in Preferences: recording starts when the app opens, or as
+soon as a controller is plugged in. Stopping it by hand keeps it stopped
+until the next launch. `djmidi --record-live-set` does the same once.
 
 ## Analyse a recorded set
 
