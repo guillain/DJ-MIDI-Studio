@@ -1,6 +1,6 @@
 [project]
 name = "djmidi"
-version = "0.48.305"
+version = "0.48.306"
 description = "DJ MIDI mapping visualizer, editor, and controller toolkit"
 license = "GPL-3.0-or-later"
 license-files = ["LICENSE"]
@@ -39,6 +39,10 @@ djmidi-send-midi = "djmidi.midi_send:main"
 [project.optional-dependencies]
 analysis = [
     "librosa>=0.10",
+]
+# rekordbox's own library (master.db, SQLCipher), read-only from a copy.
+rekordbox = [
+    "pyrekordbox>=0.5",
 ]
 
 [build-system]

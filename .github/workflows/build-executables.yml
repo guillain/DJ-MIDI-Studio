@@ -63,10 +63,11 @@ jobs:
         run: bash scripts/install_linux_gui_deps.sh
 
       - name: Install dependencies
+        # The 'rekordbox' extra (pyrekordbox): reading rekordbox's master.db ships everywhere.
         # The 'analysis' extra (librosa): BPM/key estimation ships in the executables.
         # librosa's llvmlite has no Intel macOS wheel for Python 3.14: the
         # Intel app ships without BPM/key estimation (optional extra).
-        run: uv sync --group dev ${{ matrix.os != 'macos-15-intel' && '--extra analysis' || '' }}
+        run: uv sync --group dev --extra rekordbox ${{ matrix.os != 'macos-15-intel' && '--extra analysis' || '' }}
 
       - name: Build executable
         shell: bash

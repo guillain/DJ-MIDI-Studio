@@ -51,7 +51,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
-from . import rekordbox_library
+from . import rekordbox_library, rekordbox_master
 from .serato_library import iter_chunks
 from .workspace import traktor_key_to_path
 
@@ -106,16 +106,32 @@ class TrackPlays:
 
 
 def default_history_dirs(music_dir: str | os.PathLike[str] | None = None) -> dict[str, Path]:
-    """The usual history folders under ``~/Music`` that actually exist."""
-    base = Path(music_dir) if music_dir is not None else Path.home() / "Music"
+    """The usual history folders that actually exist: under ``~/Music``, and
+    rekordbox's own library (master.db) beside it."""
+    base = Path(music_dir) if music_dir is not None else _dj_home() / "Music"
     candidates = {
         SOURCE_SERATO: base / "_Serato_" / "History" / "Sessions",
         SOURCE_TRAKTOR: base / "_Traktor" / "History",
     }
     found: dict[str, Path] = {source: path for source, path in candidates.items() if path.is_dir()}
-    if rekordbox_export(base) is not None:
+    master = rekordbox_master.default_master_db(base.parent)
+    if master.is_file():  # rekordbox's own library on this computer
+        found[SOURCE_REKORDBOX] = master.parent
+    elif rekordbox_export(base) is not None:
         found[SOURCE_REKORDBOX] = base
     return found
+
+
+def _dj_home() -> Path:
+    override = os.environ.get("DJMIDI_DJ_HOME")  # tests never read the real home
+    return Path(override) if override else Path.home()
+
+
+def rekordbox_master_db(folder: str | os.PathLike[str]) -> Path | None:
+    """rekordbox's own master.db: `folder` itself or the file inside it."""
+    path = Path(folder)
+    candidate = path if rekordbox_master.is_master_db(path) else path / rekordbox_master.MASTER_DB
+    return candidate if candidate.is_file() else None
 
 
 def rekordbox_export(folder: str | os.PathLike[str]) -> Path | None:
@@ -139,7 +155,7 @@ def detect_source(folder: str | os.PathLike[str]) -> str | None:
         return SOURCE_SERATO
     if any(p for p in path.glob("*.nml") if not p.name.startswith("._")):
         return SOURCE_TRAKTOR
-    if rekordbox_export(path) is not None:
+    if rekordbox_export(path) is not None or rekordbox_master_db(path) is not None:
         return SOURCE_REKORDBOX
     return None
 
@@ -307,7 +323,11 @@ def read_traktor_history(history_dir: str | os.PathLike[str]) -> list[HistorySes
 
 
 def read_rekordbox_history(folder: str | os.PathLike[str]) -> list[HistorySession]:
-    """The player history sessions of the rekordbox export under `folder`."""
+    """The history sessions of rekordbox's master.db in `folder` (read from a
+    copy), else of the rekordbox export under `folder`."""
+    master = rekordbox_master_db(folder)
+    if master is not None:
+        return read_rekordbox_master_history(master)
     pdb = rekordbox_export(folder)
     if pdb is None:
         return []
@@ -359,6 +379,35 @@ def _read_all(paths, reader) -> list[HistorySession]:
         if session.entries:
             sessions.append(session)
     return sessions
+
+
+def read_rekordbox_master_history(master: str | os.PathLike[str]) -> list[HistorySession]:
+    """rekordbox's own history (master.db): one session per day folder entry,
+    each track with the time rekordbox added it to the history."""
+    try:
+        library = rekordbox_master.read_library(master)
+    except (OSError, rekordbox_master.MasterDbError) as exc:
+        _LOGGER.warning("Skipping unreadable rekordbox library %s: %s", master, exc)
+        return []
+    result = []
+    for history in library.histories:
+        entries = []
+        for track_id, added_at in history.entries:
+            track = library.tracks[track_id]
+            entries.append(
+                PlayedEntry(
+                    path=track.path,
+                    played_at=added_at,
+                    source=SOURCE_REKORDBOX,
+                    session=history.name,
+                    title=track.title or None,
+                    artist=track.artist or None,
+                    duration=track.duration,
+                )
+            )
+        if entries:
+            result.append(HistorySession(SOURCE_REKORDBOX, history.name, entries))
+    return result
 
 
 def read_history(dirs: dict[str, str | os.PathLike[str]]) -> list[HistorySession]:

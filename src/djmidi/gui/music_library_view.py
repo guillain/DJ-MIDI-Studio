@@ -141,6 +141,7 @@ from djmidi.library import (
     health,
     history,
     organize,
+    rekordbox_master,
     relink,
     rename,
     set_prep,
@@ -168,6 +169,15 @@ _LOGGER = logging.getLogger(__name__)
 
 # The last "Rename files…" template, remembered in the library index.
 _RENAME_TEMPLATE_SETTING = "rename_template"
+
+
+def _rekordbox_start_folder() -> str:
+    """rekordbox's library folder when rekordbox is on this computer, so the
+    DJ only has to pick master.db."""
+    from djmidi.library import history
+
+    master = rekordbox_master.default_master_db(history._dj_home())
+    return str(master.parent) if master.is_file() else ""
 
 
 def trash_file(path: str) -> bool | str:
@@ -3781,9 +3791,16 @@ class MusicLibraryView(QWidget):
             playlists = reader(path)
         except Exception as exc:
             _LOGGER.exception("Playlist import failed: %s", path)
-            QMessageBox.warning(self, self.tr("Import failed"), f"{path}\n\n{exc}")
+            QMessageBox.warning(self, self.tr("Import failed"), f"{path}\n\n{self._read_error_text(exc)}")
             return
         self.import_playlists(playlists, source)
+
+    def _read_error_text(self, exc: Exception) -> str:
+        if isinstance(exc, rekordbox_master.MasterDbUnavailable):
+            return self.tr("This build can't open rekordbox's library (master.db): export your playlists as rekordbox XML instead.")
+        if isinstance(exc, rekordbox_master.MasterDbError):
+            return self.tr("rekordbox's library could not be read (a newer rekordbox may encrypt it differently): export your playlists as rekordbox XML instead.\n\n{details}").format(details=exc)
+        return str(exc)
 
     def _on_import_serato_clicked(self) -> None:
         paths, _ = QFileDialog.getOpenFileNames(
@@ -3809,8 +3826,8 @@ class MusicLibraryView(QWidget):
         path, _ = QFileDialog.getOpenFileName(
             self,
             self.tr("Import Rekordbox playlists"),
-            "",
-            self.tr("rekordbox XML or device export (*.xml export.pdb)"),
+            _rekordbox_start_folder(),
+            self.tr("rekordbox library, XML or device export (master.db *.xml export.pdb)"),
         )
         if path:
             self._import_with(workspace.read_rekordbox_any, path, workspace.SOURCE_REKORDBOX)
@@ -4025,25 +4042,26 @@ class MusicLibraryView(QWidget):
         """Issue #446: one playlist of a rekordbox XML file or device export."""
         self._compare_with_file(
             self.tr("Compare with rekordbox playlist"),
-            self.tr("rekordbox XML or device export (*.xml export.pdb)"),
+            self.tr("rekordbox library, XML or device export (master.db *.xml export.pdb)"),
             workspace.read_rekordbox_any,
             self.tr("rekordbox playlist"),
             self.tr("rekordbox “{name}”"),
+            _rekordbox_start_folder(),
         )
 
-    def _compare_with_file(self, title: str, file_filter: str, reader, picker_title: str, label: str) -> None:
+    def _compare_with_file(self, title: str, file_filter: str, reader, picker_title: str, label: str, start: str = "") -> None:
         playlist_id = self.selected_playlist_id()
         if playlist_id is None:
             self.status_label.setText(self.tr("Select a playlist to compare first."))
             return
-        path, _ = QFileDialog.getOpenFileName(self, title, "", file_filter)
+        path, _ = QFileDialog.getOpenFileName(self, title, start, file_filter)
         if not path:
             return
         try:
             playlists = reader(path)
         except Exception as exc:
             _LOGGER.exception("Playlist read failed: %s", path)
-            QMessageBox.warning(self, self.tr("Compare failed"), f"{path}\n\n{exc}")
+            QMessageBox.warning(self, self.tr("Compare failed"), f"{path}\n\n{self._read_error_text(exc)}")
             return
         if not playlists:
             QMessageBox.information(
@@ -4194,19 +4212,19 @@ class MusicLibraryView(QWidget):
         dirs = history.default_history_dirs()
         if not dirs:
             self.history_summary.setText(
-                self.tr("No Serato, Traktor or rekordbox history found in ~/Music. Use “Load from folder…”.")
+                self.tr("No Serato, Traktor or rekordbox history found on this computer. Use “Load from folder…”.")
             )
             return
         self.load_history(dirs)
 
     def _on_history_folder_clicked(self) -> None:
-        folder = QFileDialog.getExistingDirectory(self, self.tr("Choose a Serato or Traktor history folder, or a rekordbox USB export"))
+        folder = QFileDialog.getExistingDirectory(self, self.tr("Choose a Serato or Traktor history folder, rekordbox's library folder or a rekordbox USB export"))
         if not folder:
             return
         source = history.detect_source(folder)
         if source is None:
             QMessageBox.information(
-                self, self.tr("History"), self.tr("This folder holds no Serato .session file, Traktor history .nml file or rekordbox export (PIONEER/rekordbox/export.pdb).")
+                self, self.tr("History"), self.tr("This folder holds no Serato .session file, Traktor history .nml file, rekordbox library (master.db) or rekordbox export (PIONEER/rekordbox/export.pdb).")
             )
             return
         self.load_history({source: folder})

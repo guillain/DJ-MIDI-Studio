@@ -89,6 +89,15 @@ else
   echo "WARNING: librosa is not installed: the executable will have no BPM/key analysis (uv sync --extra analysis)" >&2
 fi
 
+# rekordbox's master.db (the optional 'rekordbox' extra: pyrekordbox and its
+# SQLCipher wheel), read-only from a copy, ships when it is installed.
+if uv run python -c "import pyrekordbox" >/dev/null 2>&1; then
+  ANALYSIS_ARGS+=(--collect-all pyrekordbox --collect-all sqlcipher3)
+  echo "==> rekordbox master.db reading (pyrekordbox) will be bundled"
+else
+  echo "WARNING: pyrekordbox is not installed: the executable will not read rekordbox's master.db (uv sync --extra rekordbox)" >&2
+fi
+
 if [[ "$BUILD_PY_PACKAGE" -eq 1 ]]; then
   echo "==> Building Python package (wheel + sdist)"
   uv build
