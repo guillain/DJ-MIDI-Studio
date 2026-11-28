@@ -22,6 +22,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
 SOURCES=(
+  src/djmidi/deck_layers.py
   src/djmidi/gui/remote_mix_dialog.py
   src/djmidi/gui/remote_mix_audio.py
   src/djmidi/gui/remote_mix_console.py

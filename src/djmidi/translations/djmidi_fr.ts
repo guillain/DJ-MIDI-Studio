@@ -2009,6 +2009,29 @@ Il reste une étape manuelle : ajoutez &apos;{slug}&apos; au bloc d&apos;imports
     </message>
 </context>
 <context>
+    <name>DeckLayers</name>
+    <message>
+        <source>left</source>
+        <translation>gauche</translation>
+    </message>
+    <message>
+        <source>right</source>
+        <translation>droit</translation>
+    </message>
+    <message>
+        <source>Decks: {controllers}</source>
+        <translation>Decks : {controllers}</translation>
+    </message>
+    <message>
+        <source>{first} is on deck {deck} ({side} side): is {second} on deck {deck} too? It hasn&apos;t switched since the app started.</source>
+        <translation>{first} est sur le deck {deck} (côté {side}) : {second} est-il aussi sur le deck {deck} ? Il n&apos;a pas changé de deck depuis le lancement de l&apos;app.</translation>
+    </message>
+    <message>
+        <source>⚠ {side} side: {first} is on deck {a}, {second} on deck {b}: switch one so both play the same deck.</source>
+        <translation>⚠ Côté {side} : {first} est sur le deck {a}, {second} sur le deck {b} : changez l&apos;un des deux pour qu&apos;ils jouent le même deck.</translation>
+    </message>
+</context>
+<context>
     <name>DjPlaylists</name>
     <message>
         <source>the kept copy is on another drive than the crate</source>
@@ -2934,6 +2957,14 @@ Il reste une étape manuelle : ajoutez &apos;{slug}&apos; au bloc d&apos;imports
     <message>
         <source>With Serato open and the controllers plugged in, press the pad of each macro (the macro list shows them) and watch Serato. Note any macro that does nothing or the wrong thing; a macro sent to the IAC bus needs Serato MIDI Learn first.</source>
         <translation>Serato ouvert et contrôleurs branchés, appuyez sur le pad de chaque macro (la liste des macros les montre) et regardez Serato. Notez toute macro qui ne fait rien ou pas la bonne chose ; une macro envoyée sur le bus IAC demande d&apos;abord MIDI Learn Serato.</translation>
+    </message>
+    <message>
+        <source>Decks 1/3 and 2/4: do both controllers switch together?</source>
+        <translation>Decks 1/3 et 2/4 : les deux contrôleurs changent-ils ensemble ?</translation>
+    </message>
+    <message>
+        <source>With Serato open, start the Live Monitor. Switch the XDJ-XZ&apos;s left deck to 3 (SHIFT twice), then the DDJ-XP2&apos;s: the Decks line under the monitor must say both are on deck 3; do the same on the right side (2 to 4), which hasn&apos;t been captured yet. Then, with both on decks 1 and 2, play each macro whose name starts with “Test deck” from the Macros menu and note whether the controller it names switches deck (and its lights): if one does, the app can switch every controller from a single press.</source>
+        <translation>Avec Serato ouvert, démarrez le Live Monitor. Passez le côté gauche de la XDJ-XZ sur le deck 3 (SHIFT deux fois), puis celui de la DDJ-XP2 : la ligne Decks sous le moniteur doit indiquer que les deux sont sur le deck 3 ; faites de même côté droit (2 vers 4), qui n&apos;a pas encore été capturé. Ensuite, les deux sur les decks 1 et 2, jouez depuis le menu Macros chaque macro dont le nom commence par « Test deck » et notez si le contrôleur qu&apos;elle nomme change de deck (et ses lumières) : si l&apos;un d&apos;eux change, l&apos;app pourra faire changer tous les contrôleurs d&apos;un seul appui.</translation>
     </message>
     <message>
         <source>Record a set and analyse it</source>
@@ -4433,6 +4464,10 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
     <message>
         <source>Opens a recorded live set and shows which controls you used, how often and in which order.</source>
         <translation>Ouvre un set enregistré et montre quels contrôles vous avez utilisés, combien de fois et dans quel ordre.</translation>
+    </message>
+    <message>
+        <source>Each controller switches between decks 1/3 and 2/4 on its own, and Serato follows each one. This line says where they stand and warns when two of them play different decks.</source>
+        <translation>Chaque contrôleur passe seul des decks 1/3 aux decks 2/4, et Serato suit chacun d&apos;eux. Cette ligne indique où ils en sont et prévient quand deux d&apos;entre eux jouent des decks différents.</translation>
     </message>
     <message>
         <source>Sync controllers</source>
