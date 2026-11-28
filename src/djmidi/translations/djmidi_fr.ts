@@ -2967,14 +2967,6 @@ Il reste une étape manuelle : ajoutez &apos;{slug}&apos; au bloc d&apos;imports
         <translation>Serato ouvert et contrôleurs branchés, appuyez sur le pad de chaque macro (la liste des macros les montre) et regardez Serato. Notez toute macro qui ne fait rien ou pas la bonne chose ; une macro envoyée sur le bus IAC demande d&apos;abord MIDI Learn Serato.</translation>
     </message>
     <message>
-        <source>Decks 1/3 and 2/4: do both controllers switch together?</source>
-        <translation>Decks 1/3 et 2/4 : les deux contrôleurs changent-ils ensemble ?</translation>
-    </message>
-    <message>
-        <source>With Serato open, start the Live Monitor. Switch the XDJ-XZ&apos;s left deck to 3 (SHIFT twice), then the DDJ-XP2&apos;s: the Decks line under the monitor must say both are on deck 3; do the same on the right side (2 to 4), which hasn&apos;t been captured yet. Then, with both on decks 1 and 2, play each macro whose name starts with “Test deck” from the Macros menu and note whether the controller it names switches deck (and its lights): if one does, the app can switch every controller from a single press.</source>
-        <translation>Avec Serato ouvert, démarrez le Live Monitor. Passez le côté gauche de la XDJ-XZ sur le deck 3 (SHIFT deux fois), puis celui de la DDJ-XP2 : la ligne Decks sous le moniteur doit indiquer que les deux sont sur le deck 3 ; faites de même côté droit (2 vers 4), qui n&apos;a pas encore été capturé. Ensuite, les deux sur les decks 1 et 2, jouez depuis le menu Macros chaque macro dont le nom commence par « Test deck » et notez si le contrôleur qu&apos;elle nomme change de deck (et ses lumières) : si l&apos;un d&apos;eux change, l&apos;app pourra faire changer tous les contrôleurs d&apos;un seul appui.</translation>
-    </message>
-    <message>
         <source>Record a set and analyse it</source>
         <translation>Enregistrer un set et l&apos;analyser</translation>
     </message>
@@ -2993,6 +2985,22 @@ Il reste une étape manuelle : ajoutez &apos;{slug}&apos; au bloc d&apos;imports
     <message>
         <source>In Traktor, import Exports/djmidi-import-test.nml from the app&apos;s workspace (Import Playlist). Note whether the playlist DJMIDI import test appears with its five tracks.</source>
         <translation>Dans Traktor, importez Exports/djmidi-import-test.nml depuis l&apos;espace de travail de l&apos;application (Import Playlist). Notez si la playlist DJMIDI import test apparaît avec ses cinq morceaux.</translation>
+    </message>
+    <message>
+        <source>Decks 1/3 and 2/4: does the deck warning show?</source>
+        <translation>Decks 1/3 et 2/4 : l’alerte de deck s’affiche-t-elle ?</translation>
+    </message>
+    <message>
+        <source>With Serato open and the Live Monitor running, switch only the XDJ-XZ&apos;s left deck to 3 (SHIFT twice): a big warning must show over Serato, saying the DDJ-XP2 is still on deck 1. Switch the DDJ-XP2 to deck 3 too: the warning must go. Do the same on the right side (2 and 4). Neither controller switches when sent its own messages (test of 2026-11-28), so the app warns instead.</source>
+        <translation>Serato ouvert et le Live Monitor lancé, passez seulement le deck gauche de la XDJ-XZ sur 3 (SHIFT deux fois) : une grande alerte doit s’afficher par-dessus Serato, indiquant que la DDJ-XP2 est toujours sur le deck 1. Passez aussi la DDJ-XP2 sur le deck 3 : l’alerte doit disparaître. Faites de même à droite (2 et 4). Aucune des deux manettes ne change de deck quand on lui renvoie ses propres messages (test du 2026-11-28) : l’app vous prévient donc à la place.</translation>
+    </message>
+    <message>
+        <source>What does Serato send to the controllers when a deck switches?</source>
+        <translation>Qu’envoie Serato aux manettes quand un deck change ?</translation>
+    </message>
+    <message>
+        <source>Install MIDI Monitor (free, snoize.com). In its window, under Spy on output to destinations, tick the XDJ-XZ and DDJ-XP2 outputs. With Serato open, switch the XDJ-XZ&apos;s left deck 1 to 3 and back, wait five seconds, then the DDJ-XP2&apos;s. Save the MIDI Monitor document (File, Save) and attach it to the issue: if Serato tells a controller which deck it is on, the app can tell the other one the same way.</source>
+        <translation>Installez MIDI Monitor (gratuit, snoize.com). Dans sa fenêtre, sous Spy on output to destinations, cochez les sorties XDJ-XZ et DDJ-XP2. Serato ouvert, passez le deck gauche de la XDJ-XZ de 1 à 3 puis revenez, attendez cinq secondes, puis faites de même sur la DDJ-XP2. Enregistrez le document MIDI Monitor (File, Save) et joignez-le au ticket : si Serato indique à une manette sur quel deck elle est, l’app pourra l’indiquer à l’autre de la même façon.</translation>
     </message>
     <message>
         <source>Nothing captured yet.</source>
@@ -9536,6 +9544,14 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>Automatically listen on every available MIDI input when a mapping is loaded, so By Channel/Deck/Controller reflect live controller presses without opening Live Monitor and clicking Start monitoring. Turn off to require that manual step.</source>
         <translation>Écoute automatiquement toutes les entrées MIDI disponibles au chargement d&apos;un mapping, pour que Par canal/platine/contrôleur reflètent les appuis sur le contrôleur sans ouvrir le Live Monitor ni cliquer sur Start monitoring. Désactivez pour garder cette étape manuelle.</translation>
+    </message>
+    <message>
+        <source>Record every live set from launch</source>
+        <translation>Enregistrer chaque set dès le lancement</translation>
+    </message>
+    <message>
+        <source>Start Record live set as soon as the app opens (or as soon as a controller is plugged in): every MIDI message, the tracks played and the deck changes, in Documents/DJ MIDI Studio/Logs. A red REC lamp shows while it records.</source>
+        <translation>Lance l’enregistrement du set dès l’ouverture de l’app (ou dès qu’une manette est branchée) : tous les messages MIDI, les morceaux joués et les changements de deck, dans Documents/DJ MIDI Studio/Logs. Un voyant rouge REC s’affiche pendant l’enregistrement.</translation>
     </message>
     <message>
         <source>Reopen my last mapping and Controller Setup draft at launch</source>

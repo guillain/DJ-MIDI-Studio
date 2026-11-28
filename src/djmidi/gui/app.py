@@ -160,8 +160,8 @@ def run(argv: list[str] | None = None) -> int:
         window.first_run_wizard_enabled = False
     window.show()
     timer.mark("window shown")
-    if arguments.record_live_set:
-        QTimer.singleShot(1500, window.live_monitor_view.start_recording)
+    if arguments.record_live_set or getattr(window.preferences, "record_live_sets", False) is True:
+        QTimer.singleShot(1500, window.start_auto_recording)
     # The first event-loop turn is when the shown window actually paints.
     QTimer.singleShot(0, lambda: log_startup_timing(timer))
     if arguments.startup_screenshot:

@@ -46,6 +46,8 @@ class PluginPreferences:
     # menu command). Off = the simple app testers asked for (2026-11-20).
     expert_mode: bool = False
     auto_start_live_monitor: bool = True
+    # Record every live set from launch ("record all", a dataset of each set).
+    record_live_sets: bool = False
     # Reopen the last mapping and Controller Setup draft at launch (issue #175).
     reopen_last_files: bool = True
     # Send every stored controller sync set once at launch (Record → auto-play).
@@ -117,6 +119,7 @@ class PluginPreferences:
                 "language": self.language,
                 "expert_mode": self.expert_mode,
                 "auto_start_live_monitor": self.auto_start_live_monitor,
+                "record_live_sets": self.record_live_sets,
                 "reopen_last_files": self.reopen_last_files,
                 "auto_sync_on_startup": self.auto_sync_on_startup,
                 "auto_sync_on_plug_in": self.auto_sync_on_plug_in,
@@ -180,6 +183,7 @@ class PluginPreferences:
             language=language,
             expert_mode=bool(raw.get("expert_mode", False)),
             auto_start_live_monitor=bool(raw.get("auto_start_live_monitor", True)),
+            record_live_sets=bool(raw.get("record_live_sets", False)),
             reopen_last_files=bool(raw.get("reopen_last_files", True)),
             auto_sync_on_startup=bool(raw.get("auto_sync_on_startup", True)),
             auto_sync_on_plug_in=bool(raw.get("auto_sync_on_plug_in", True)),

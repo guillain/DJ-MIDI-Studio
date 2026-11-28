@@ -264,18 +264,29 @@ CHECKS: tuple[Check, ...] = (
     ),
     Check(
         "deck-switch-together",
-        QT_TRANSLATE_NOOP("HardwareSession", "Decks 1/3 and 2/4: do both controllers switch together?"),
+        QT_TRANSLATE_NOOP("HardwareSession", "Decks 1/3 and 2/4: does the deck warning show?"),
         QT_TRANSLATE_NOOP(
             "HardwareSession",
-            "With Serato open, start the Live Monitor. Switch the XDJ-XZ's left deck to 3 (SHIFT twice), then "
-            "the DDJ-XP2's: the Decks line under the monitor must say both are on deck 3; do the same on the "
-            "right side (2 to 4), which hasn't been captured yet. Then, with both on decks 1 and 2, play each "
-            "macro whose name starts with \u201cTest deck\u201d from the Macros menu and note whether the "
-            "controller it names switches deck (and its lights): if one does, the app can switch every "
-            "controller from a single press.",
+            "With Serato open and the Live Monitor running, switch only the XDJ-XZ's left deck to 3 (SHIFT "
+            "twice): a big warning must show over Serato, saying the DDJ-XP2 is still on deck 1. Switch the "
+            "DDJ-XP2 to deck 3 too: the warning must go. Do the same on the right side (2 and 4). Neither "
+            "controller switches when sent its own messages (test of 2026-11-28), so the app warns instead.",
         ),
         "#550",
         tool=TOOL_RECORD_SET,
+    ),
+    Check(
+        "serato-output-spy",
+        QT_TRANSLATE_NOOP("HardwareSession", "What does Serato send to the controllers when a deck switches?"),
+        QT_TRANSLATE_NOOP(
+            "HardwareSession",
+            "Install MIDI Monitor (free, snoize.com). In its window, under Spy on output to destinations, tick "
+            "the XDJ-XZ and DDJ-XP2 outputs. With Serato open, switch the XDJ-XZ's left deck 1 to 3 and back, "
+            "wait five seconds, then the DDJ-XP2's. Save the MIDI Monitor document (File, Save) and attach it "
+            "to the issue: if Serato tells a controller which deck it is on, the app can tell the other one "
+            "the same way.",
+        ),
+        "#550",
     ),
     Check(
         "record-and-analyse",
