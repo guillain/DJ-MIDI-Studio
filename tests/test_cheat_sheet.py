@@ -19,16 +19,16 @@ def test_function_text_and_deck_label():
     assert cs.function_text("auto_loop_specific_length", "8") == "Auto loop · slot 8"
     # Unknown tags print raw.
     assert cs.function_text("cue_set", "2") == "cue_set · slot 2"
-    assert cs.function_text("censor", "(none)") == "censor"
-    assert cs.function_text("censor", "") == "censor"
+    assert cs.function_text("zoom_level_adjust", "(none)") == "zoom_level_adjust"
+    assert cs.function_text("zoom_level_adjust", "") == "zoom_level_adjust"
     assert cs.deck_label("0") == "D1"
     assert cs.deck_label("3") == "D4"
     assert cs.deck_label("(none)") == ""
 
 
 def test_format_functions_groups_deck_layers():
-    lines = [("D1", "censor"), ("D3", "censor"), ("D1", "cue"), ("", "browse")]
-    assert cs.format_functions(lines) == ["censor (D1, D3)", "cue (D1)", "browse"]
+    lines = [("D1", "zoom_level_adjust"), ("D3", "zoom_level_adjust"), ("D1", "cue"), ("", "browse")]
+    assert cs.format_functions(lines) == ["zoom_level_adjust (D1, D3)", "cue (D1)", "browse"]
     assert cs.format_functions([("D2", "x")], "SHIFT: ") == ["SHIFT: x (D2)"]
 
 
@@ -44,7 +44,7 @@ def test_function_index_ignores_output_elements():
         channel="1",
         event_type="Note On",
         control="5",
-        userios=[UserIO(event="output", mappings=[MappingElement(tag="censor", deck_id="0")])],
+        userios=[UserIO(event="output", mappings=[MappingElement(tag="zoom_level_adjust", deck_id="0")])],
     )
     assert cs.build_function_index(MidiConfig(controls=[output_only])) == {}
 

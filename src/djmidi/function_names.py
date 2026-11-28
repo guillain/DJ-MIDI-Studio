@@ -17,6 +17,10 @@ Serato's `codfather_*` functions do, so a slot stays a slot number ("Loop roll
 LED values (`on=127`, `on=20`, `selected=0`), which say nothing about which
 function an element is.
 
+Since 2026-11-28 the table also re-cases the tags of `serato_public_tags`
+(other DJs' Serato-saved mappings on GitHub, each tag confirmed twice, its
+sources kept): "load_track" reads "Load track", nothing more is inferred.
+
 Any other tag -- a Traktor command name, a tag from a file this table has
 never seen -- falls back to the raw tag unchanged, and every caller keeps the
 raw tag visible (tooltip, secondary text or the cheat sheet's glossary page),
@@ -28,6 +32,7 @@ Qt-free, like `function_search.py` and `mapping_diff.py`, which use it.
 from __future__ import annotations
 
 from djmidi.i18n import QT_TRANSLATE_NOOP, Translate, untranslated
+from djmidi.serato_public_tags import PUBLIC_TAGS
 
 # Raw Serato tag -> short label. Only tags seen in real exports belong here.
 FUNCTION_NAMES: dict[str, str] = {
@@ -45,6 +50,18 @@ FUNCTION_NAMES: dict[str, str] = {
     "sync": "Sync",
     "cue_point": "Hot cue",
 }
+
+
+
+def recased(tag: str) -> str:
+    """The tag's own words, re-cased: "sync_off" -> "Sync off"."""
+    return tag.replace("_", " ").capitalize()
+
+
+# Public Serato-saved files (issue #194): re-cased only, never overriding a
+# label above.
+for _tag in PUBLIC_TAGS:
+    FUNCTION_NAMES.setdefault(_tag, recased(_tag))
 
 _NO_SLOT = ("", "(none)")
 
