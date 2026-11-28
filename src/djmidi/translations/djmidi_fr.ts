@@ -8994,6 +8994,10 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <translation>Échec de l&apos;import</translation>
     </message>
     <message>
+        <source>This build can&apos;t open rekordbox&apos;s library (master.db): export your playlists as rekordbox XML instead.</source>
+        <translation>Cette version ne peut pas ouvrir la bibliothèque rekordbox (master.db) : exportez plutôt vos playlists en XML rekordbox.</translation>
+    </message>
+    <message>
         <source>Import Serato crates</source>
         <translation>Importer des crates Serato</translation>
     </message>
@@ -9012,6 +9016,10 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>Import Rekordbox playlists</source>
         <translation>Importer des playlists Rekordbox</translation>
+    </message>
+    <message>
+        <source>rekordbox library, XML or device export (master.db *.xml export.pdb)</source>
+        <translation>Bibliothèque rekordbox, XML ou export pour appareil (master.db *.xml export.pdb)</translation>
     </message>
     <message>
         <source>Exported {name}.</source>
@@ -9150,18 +9158,6 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <translation>Ce fichier ne contient aucune playlist.</translation>
     </message>
     <message>
-        <source>No Serato, Traktor or rekordbox history found in ~/Music. Use “Load from folder…”.</source>
-        <translation>Aucun historique Serato, Traktor ou rekordbox trouvé dans ~/Music. Utilisez « Charger depuis un dossier… ».</translation>
-    </message>
-    <message>
-        <source>Choose a Serato or Traktor history folder, or a rekordbox USB export</source>
-        <translation>Choisissez un dossier d&apos;historique Serato ou Traktor, ou un export USB rekordbox</translation>
-    </message>
-    <message>
-        <source>This folder holds no Serato .session file, Traktor history .nml file or rekordbox export (PIONEER/rekordbox/export.pdb).</source>
-        <translation>Ce dossier ne contient ni fichier .session Serato, ni historique .nml Traktor, ni export rekordbox (PIONEER/rekordbox/export.pdb).</translation>
-    </message>
-    <message>
         <source>Traktor playlist</source>
         <translation>Playlist Traktor</translation>
     </message>
@@ -9230,8 +9226,12 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <translation>{count} entrée(s) de playlist réparée(s) ; les fichiers modifiés sont sauvegardés dans Snapshots.</translation>
     </message>
     <message>
-        <source>rekordbox XML or device export (*.xml export.pdb)</source>
-        <translation>XML rekordbox ou export pour appareil (*.xml export.pdb)</translation>
+        <source>rekordbox&apos;s library could not be read (a newer rekordbox may encrypt it differently): export your playlists as rekordbox XML instead.
+
+{details}</source>
+        <translation>La bibliothèque rekordbox n’a pas pu être lue (une version plus récente de rekordbox la chiffre peut-être autrement) : exportez plutôt vos playlists en XML rekordbox.
+
+{details}</translation>
     </message>
     <message>
         <source>Compare with rekordbox playlist</source>
@@ -9292,6 +9292,18 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
     <message>
         <source>Could not read the history.</source>
         <translation>Impossible de lire l&apos;historique.</translation>
+    </message>
+    <message>
+        <source>No Serato, Traktor or rekordbox history found on this computer. Use “Load from folder…”.</source>
+        <translation>Aucun historique Serato, Traktor ou rekordbox trouvé sur cet ordinateur. Utilisez « Charger depuis un dossier… ».</translation>
+    </message>
+    <message>
+        <source>Choose a Serato or Traktor history folder, rekordbox&apos;s library folder or a rekordbox USB export</source>
+        <translation>Choisissez un dossier d’historique Serato ou Traktor, le dossier de la bibliothèque rekordbox ou un export USB rekordbox</translation>
+    </message>
+    <message>
+        <source>This folder holds no Serato .session file, Traktor history .nml file, rekordbox library (master.db) or rekordbox export (PIONEER/rekordbox/export.pdb).</source>
+        <translation>Ce dossier ne contient aucun fichier .session Serato, aucun fichier d’historique .nml Traktor, aucune bibliothèque rekordbox (master.db) ni aucun export rekordbox (PIONEER/rekordbox/export.pdb).</translation>
     </message>
     <message>
         <source>Loaded but not marked as played.</source>

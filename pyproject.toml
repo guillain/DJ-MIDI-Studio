@@ -40,6 +40,10 @@ djmidi-send-midi = "djmidi.midi_send:main"
 analysis = [
     "librosa>=0.10",
 ]
+# rekordbox's own library (master.db, SQLCipher), read-only from a copy.
+rekordbox = [
+    "pyrekordbox>=0.5",
+]
 
 [build-system]
 requires = ["uv_build>=0.12.3,<0.13.0"]

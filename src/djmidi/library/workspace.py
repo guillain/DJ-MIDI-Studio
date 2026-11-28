@@ -652,9 +652,14 @@ def read_rekordbox_xml_playlists(xml_path: str | os.PathLike[str]) -> dict[str, 
 
 
 def read_rekordbox_any(path: str | os.PathLike[str]) -> dict[str, list[str]]:
-    """A rekordbox XML file (``.xml``) or a device export (``export.pdb``)."""
+    """A rekordbox XML file (``.xml``), rekordbox's own library (``master.db``,
+    read from a copy) or a device export (``export.pdb``)."""
     if str(path).lower().endswith(".xml"):
         return read_rekordbox_xml_playlists(path)
+    from djmidi.library import rekordbox_master
+
+    if rekordbox_master.is_master_db(path):
+        return rekordbox_master.read_library(path).playlists
     return read_rekordbox_playlists(path)
 
 
