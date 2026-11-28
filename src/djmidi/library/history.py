@@ -53,7 +53,7 @@ from pathlib import Path
 
 from . import rekordbox_library, rekordbox_master
 from .serato_library import iter_chunks
-from .workspace import traktor_key_to_path
+from .workspace import rekordbox_device_root, traktor_key_to_path
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -117,7 +117,7 @@ def default_history_dirs(music_dir: str | os.PathLike[str] | None = None) -> dic
     master = rekordbox_master.default_master_db(base.parent)
     if master.is_file():  # rekordbox's own library on this computer
         found[SOURCE_REKORDBOX] = master.parent
-    elif rekordbox_export(base) is not None:
+    elif rekordbox_export(base) is not None or rekordbox_onelibrary(base) is not None:
         found[SOURCE_REKORDBOX] = base
     return found
 
@@ -148,6 +148,17 @@ def rekordbox_export(folder: str | os.PathLike[str]) -> Path | None:
     return None
 
 
+def rekordbox_onelibrary(folder: str | os.PathLike[str]) -> Path | None:
+    """The OneLibrary export (exportLibrary.db) under `folder`, found like
+    :func:`rekordbox_export`."""
+    path = Path(folder)
+    name = rekordbox_master.ONELIBRARY_DB
+    for candidate in (path / "PIONEER" / "rekordbox" / name, path / "rekordbox" / name, path / name):
+        if candidate.is_file() and candidate.parent.parent.name.upper() == "PIONEER":
+            return candidate
+    return None
+
+
 def detect_source(folder: str | os.PathLike[str]) -> str | None:
     """Which history format a user-chosen folder holds, if any."""
     path = Path(folder)
@@ -155,7 +166,7 @@ def detect_source(folder: str | os.PathLike[str]) -> str | None:
         return SOURCE_SERATO
     if any(p for p in path.glob("*.nml") if not p.name.startswith("._")):
         return SOURCE_TRAKTOR
-    if rekordbox_export(path) is not None or rekordbox_master_db(path) is not None:
+    if rekordbox_export(path) is not None or rekordbox_onelibrary(path) is not None or rekordbox_master_db(path) is not None:
         return SOURCE_REKORDBOX
     return None
 
@@ -330,7 +341,8 @@ def read_rekordbox_history(folder: str | os.PathLike[str]) -> list[HistorySessio
         return read_rekordbox_master_history(master)
     pdb = rekordbox_export(folder)
     if pdb is None:
-        return []
+        onelibrary = rekordbox_onelibrary(folder)
+        return [] if onelibrary is None else read_rekordbox_master_history(onelibrary)
     try:
         tracks = {track.id: track for track in rekordbox_library.parse_export(pdb)}
         sessions = rekordbox_library.parse_history(pdb)
@@ -383,12 +395,14 @@ def _read_all(paths, reader) -> list[HistorySession]:
 
 def read_rekordbox_master_history(master: str | os.PathLike[str]) -> list[HistorySession]:
     """rekordbox's own history (master.db): one session per day folder entry,
-    each track with the time rekordbox added it to the history."""
+    each track with the time rekordbox added it to the history. A OneLibrary
+    export (exportLibrary.db) works too: no time, paths on its device."""
     try:
         library = rekordbox_master.read_library(master)
     except (OSError, rekordbox_master.MasterDbError) as exc:
         _LOGGER.warning("Skipping unreadable rekordbox library %s: %s", master, exc)
         return []
+    root = rekordbox_device_root(master) if rekordbox_master.is_onelibrary(master) else None
     result = []
     for history in library.histories:
         entries = []
@@ -396,7 +410,7 @@ def read_rekordbox_master_history(master: str | os.PathLike[str]) -> list[Histor
             track = library.tracks[track_id]
             entries.append(
                 PlayedEntry(
-                    path=track.path,
+                    path=str(root / track.path.lstrip("/")) if root else track.path,
                     played_at=added_at,
                     source=SOURCE_REKORDBOX,
                     session=history.name,

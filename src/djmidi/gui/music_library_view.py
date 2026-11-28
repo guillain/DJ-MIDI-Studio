@@ -3827,7 +3827,7 @@ class MusicLibraryView(QWidget):
             self,
             self.tr("Import Rekordbox playlists"),
             _rekordbox_start_folder(),
-            self.tr("rekordbox library, XML or device export (master.db *.xml export.pdb)"),
+            self.tr("rekordbox library, XML or device export (master.db *.xml export.pdb exportLibrary.db)"),
         )
         if path:
             self._import_with(workspace.read_rekordbox_any, path, workspace.SOURCE_REKORDBOX)
@@ -4042,7 +4042,7 @@ class MusicLibraryView(QWidget):
         """Issue #446: one playlist of a rekordbox XML file or device export."""
         self._compare_with_file(
             self.tr("Compare with rekordbox playlist"),
-            self.tr("rekordbox library, XML or device export (master.db *.xml export.pdb)"),
+            self.tr("rekordbox library, XML or device export (master.db *.xml export.pdb exportLibrary.db)"),
             workspace.read_rekordbox_any,
             self.tr("rekordbox playlist"),
             self.tr("rekordbox “{name}”"),
