@@ -481,6 +481,7 @@ def test_unconfigured_clock_status_background_restyles_live_on_a_theme_switch():
     covered by the routing-poll timer (routing hasn't started yet) -- its
     semantic warning color must survive a live theme switch unchanged, but
     its background token must still update."""
+    theme.apply_theme(QApplication.instance(), "dark")  # whatever an earlier test left
     view = MidiRoutingView()
     view._clock_source.addItem("clock-in")
     view._clock_destination.addItem("clock-out")

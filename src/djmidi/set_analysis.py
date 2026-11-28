@@ -66,6 +66,8 @@ def _event_from_row(row: dict) -> SetEvent | None:
         port = str(row.get("port", row.get("p", "")))
         raw = row.get("bytes", row.get("b"))  # standalone recorders: raw MIDI bytes
         if raw is not None:
+            if row.get("dir", "in") != "in":
+                return None
             status, number, value = (list(raw) + [0, 0])[:3]
             high, channel = status & 0xF0, (status & 0x0F) + 1
             kind = {0x90: NOTE, 0xB0: CC, 0xE0: BEND}.get(high)

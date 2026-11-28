@@ -4650,6 +4650,10 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
         <translation>● Aufnahme: {count} Ereignis(se) in {file}</translation>
     </message>
     <message>
+        <source>{count} track(s) played</source>
+        <translation>{count} Track(s) gespielt</translation>
+    </message>
+    <message>
         <source>No MIDI events to save.</source>
         <translation>Keine MIDI-Ereignisse zu speichern.</translation>
     </message>
@@ -5572,6 +5576,30 @@ Eine rekordbox-CSV (rekordbox liefert eine pro unterstütztem Gerät) benennt ih
     <message>
         <source>Measure MIDI round-trip latency through a port or device that echoes what it receives</source>
         <translation>Die MIDI-Umlauflatenz über einen Port oder ein Gerät messen, das zurückschickt, was es empfängt</translation>
+    </message>
+    <message>
+        <source>REC set</source>
+        <translation>REC Set</translation>
+    </message>
+    <message>
+        <source>Recording the live set: every MIDI message and the tracks played. Click to see it.</source>
+        <translation>Das Live-Set wird aufgenommen: jede MIDI-Nachricht und die gespielten Tracks. Klicken Sie, um es zu sehen.</translation>
+    </message>
+    <message>
+        <source>REC setup</source>
+        <translation>REC Setup</translation>
+    </message>
+    <message>
+        <source>● Rec is recording the controllers&apos; setup: click ■ Stop to save it.</source>
+        <translation>● Rec nimmt das Setup der Controller auf: Klicken Sie auf ■ Stopp, um es zu speichern.</translation>
+    </message>
+    <message>
+        <source>REC mix</source>
+        <translation>REC Mix</translation>
+    </message>
+    <message>
+        <source>Mix Together is recording the mix. Click to see it.</source>
+        <translation>Mix Together nimmt den Mix auf. Klicken Sie, um ihn zu sehen.</translation>
     </message>
     <message>
         <source>Mix Together…</source>

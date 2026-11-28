@@ -4650,6 +4650,10 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
         <translation>● Enregistrement : {count} événement(s) dans {file}</translation>
     </message>
     <message>
+        <source>{count} track(s) played</source>
+        <translation>{count} morceau(x) joué(s)</translation>
+    </message>
+    <message>
         <source>No MIDI events to save.</source>
         <translation>Aucun événement MIDI à enregistrer.</translation>
     </message>
@@ -5778,6 +5782,30 @@ Un CSV rekordbox (rekordbox en fournit un par appareil pris en charge) nomme ses
     <message>
         <source>Sync scene: {scene}</source>
         <translation>Scène de synchro : {scene}</translation>
+    </message>
+    <message>
+        <source>REC set</source>
+        <translation>REC set</translation>
+    </message>
+    <message>
+        <source>Recording the live set: every MIDI message and the tracks played. Click to see it.</source>
+        <translation>Enregistrement du set en cours : tous les messages MIDI et les morceaux joués. Cliquez pour le voir.</translation>
+    </message>
+    <message>
+        <source>REC setup</source>
+        <translation>REC réglages</translation>
+    </message>
+    <message>
+        <source>● Rec is recording the controllers&apos; setup: click ■ Stop to save it.</source>
+        <translation>● Rec enregistre les réglages des manettes : cliquez sur ■ Arrêt pour les garder.</translation>
+    </message>
+    <message>
+        <source>REC mix</source>
+        <translation>REC mix</translation>
+    </message>
+    <message>
+        <source>Mix Together is recording the mix. Click to see it.</source>
+        <translation>Mix Together enregistre le mix. Cliquez pour le voir.</translation>
     </message>
     <message>
         <source>Supported mapping files (*.xml *.nml *.tsi *.csv);;All files (*)</source>

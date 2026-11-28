@@ -49,6 +49,11 @@ def build_argument_parser() -> argparse.ArgumentParser:
         help=argparse.SUPPRESS,  # CI: exit 0 when Mix Together's Opus and EQ work in this build, else 3
     )
     parser.add_argument(
+        "--record-live-set",
+        action="store_true",
+        help="start recording the live set (every MIDI message, the tracks played) as soon as the window opens",
+    )
+    parser.add_argument(
         "--startup-screenshot-delay-ms",
         type=int,
         default=STARTUP_SCREENSHOT_DELAY_MS,
@@ -155,6 +160,8 @@ def run(argv: list[str] | None = None) -> int:
         window.first_run_wizard_enabled = False
     window.show()
     timer.mark("window shown")
+    if arguments.record_live_set:
+        QTimer.singleShot(1500, window.live_monitor_view.start_recording)
     # The first event-loop turn is when the shown window actually paints.
     QTimer.singleShot(0, lambda: log_startup_timing(timer))
     if arguments.startup_screenshot:

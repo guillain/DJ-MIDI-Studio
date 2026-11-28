@@ -242,6 +242,9 @@ class MidiMonitor:
     def __init__(self) -> None:
         self._input_ports: dict[str, mido.ports.BaseInput] = {}
         self._virtual_port: mido.ports.BaseInput | None = None
+        # (port, direction, mido type, bytes, timestamp) for every message
+        # poll() doesn't convert (SysEx, clock, aftertouch, …): "record all".
+        self.raw_sink: Callable[[str, str, str, list[int], float], None] | None = None
 
     def open_input(self, name: str) -> None:
         if name in self._input_ports:
@@ -295,16 +298,16 @@ class MidiMonitor:
 
     def poll(self) -> list[MidiEvent]:
         events: list[MidiEvent] = []
-        for name, port in self._input_ports.items():
-            for msg in port.iter_pending():
-                event = mido_message_to_event(msg, "in", port=name)
-                if event is not None:
-                    events.append(event)
+        sources = [(name, port, "in") for name, port in self._input_ports.items()]
         if self._virtual_port is not None:
-            for msg in self._virtual_port.iter_pending():
-                event = mido_message_to_event(msg, "out", port=self.VIRTUAL_MONITOR_NAME)
+            sources.append((self.VIRTUAL_MONITOR_NAME, self._virtual_port, "out"))
+        for name, port, direction in sources:
+            for msg in port.iter_pending():
+                event = mido_message_to_event(msg, direction, port=name)
                 if event is not None:
                     events.append(event)
+                elif self.raw_sink is not None:
+                    self.raw_sink(name, direction, msg.type, msg.bytes(), time.monotonic())
         if events:
             _LOGGER.debug("MidiMonitor.poll: %d event(s) received", len(events))
         return events

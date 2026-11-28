@@ -377,6 +377,7 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
 
         self.live_monitor_view = LiveMonitorView(on_event=self._on_live_midi_event)
         self.live_monitor_view.deckAlertChanged.connect(self._on_deck_alert)
+        self.live_monitor_view.manifest_provider = self._live_set_manifest
         self._deck_alert_toast = None  # over every app while controllers differ (#550)
         self.live_monitor_view.syncRequested.connect(self._on_sync_controllers)
         self.live_monitor_view.batchStarted.connect(self._begin_live_batch)
@@ -1089,6 +1090,16 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         corner_layout = QHBoxLayout(self._menu_corner)
         corner_layout.setContentsMargins(0, 0, 0, 0)
         corner_layout.setSpacing(4)
+        # Studio-style lamps: ● REC + time while anything records, on every tab.
+        from djmidi.gui.on_air import OnAirLamps
+
+        self.on_air = OnAirLamps(self._menu_corner)
+        self.on_air.lampClicked.connect(self._on_air_lamp_clicked)
+        corner_layout.addWidget(self.on_air)
+        self._on_air_timer = QTimer(self)
+        self._on_air_timer.setInterval(1000)
+        self._on_air_timer.timeout.connect(self.refresh_on_air)
+        self._on_air_timer.start()
         corner_layout.addWidget(self._record_button)
         self._sync_scene_label = QLabel(self.tr("Scene:"))
         self._sync_scene_label.setToolTip(self._sync_scene_combo.toolTip())
@@ -2727,10 +2738,60 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         self.statusBar().showMessage(self.tr("{count} macro(s) saved").format(count=len(self.macros)), 5000)
         return True
 
+    def on_air_lamps(self) -> list:
+        """What records right now, one lamp each (polled every second)."""
+        import time
+
+        from djmidi.gui.on_air import Lamp
+
+        lamps = []
+        recorder = self.live_monitor_view._recorder
+        if recorder is not None and recorder.is_recording:
+            started = recorder.manifest.get("started")
+            since = time.monotonic() - (time.time() - started) if isinstance(started, float) else None
+            lamps.append(
+                Lamp("live_set", self.tr("REC set"), self.tr("Recording the live set: every MIDI message and the tracks played. Click to see it."), since)
+            )
+        if self._record_button.isChecked():
+            lamps.append(Lamp("setup", self.tr("REC setup"), self.tr("● Rec is recording the controllers' setup: click ■ Stop to save it.")))
+        dialog = getattr(self, "_remote_mix_dialog", None)
+        if dialog is not None and getattr(dialog.sound_panel, "recorder", None) is not None:
+            lamps.append(Lamp("mix", self.tr("REC mix"), self.tr("Mix Together is recording the mix. Click to see it.")))
+        return lamps
+
+    def refresh_on_air(self) -> None:
+        before = bool(self.on_air.keys)
+        lamps = self.on_air_lamps()
+        self.on_air.update_lamps(lamps)
+        stage = getattr(self, "_stage_window", None)
+        if stage is not None:
+            stage.on_air.update_lamps(lamps)
+        if bool(self.on_air.keys) != before:
+            self._relayout_menu_corner()
+
+    def _on_air_lamp_clicked(self, key: str) -> None:
+        if key == "live_set":
+            self._show_tool_dock("monitor")
+        elif key == "mix":
+            self._on_remote_mix_test()
+
+    def _live_set_manifest(self) -> dict[str, object]:
+        """The loaded mapping and scene, for a live set recording's manifest."""
+        import hashlib
+
+        manifest: dict[str, object] = {"sync_scene": self.preferences.active_sync_scene or ""}
+        path = getattr(self, "current_path", None)
+        if path and Path(path).is_file():
+            manifest["mapping_file"] = Path(path).name
+            manifest["mapping_sha256"] = hashlib.sha256(Path(path).read_bytes()).hexdigest()
+        manifest["macros"] = [macro.name for macro in self.macros]
+        return manifest
+
     def _play_macro(self, name: str) -> midi_macros.MacroResult | None:
         macro = next((macro for macro in self.macros if macro.name == name), None)
         if macro is None:
             return None
+        self.live_monitor_view.note_event("macro", name=name)
         return self._macro_player.play(self._macro_to_play(macro), list_output_ports())
 
     def _play_triggered_macros(self, event: MidiEvent) -> list[str]:
@@ -2745,6 +2806,7 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         if fired:
             ports = list_output_ports()
             for macro in fired:
+                self.live_monitor_view.note_event("macro", name=macro.name, triggered_by=[event.port, event.channel, event.data1])
                 self._macro_player.play(self._macro_to_play(macro), ports)
         return [macro.name for macro in fired]
 

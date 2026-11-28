@@ -133,6 +133,18 @@ class LiveMonitorView(QWidget):
         # Unlimited recording of a live set, streamed to Logs/ (the log above
         # keeps the last _MAX_ROWS events only).
         self._recorder: SessionRecorder | None = None
+        # "Record all": the DJ software's history, read while recording.
+        self._history_watcher = None
+        self._history_timer = QTimer(self)
+        self._history_timer.setInterval(5000)
+        self._history_timer.timeout.connect(self._poll_history)
+        # ... and every MIDI input plugged in while recording, from its first
+        # message (a controller's power-on handshake).
+        self._ports_timer = QTimer(self)
+        self._ports_timer.setInterval(500)
+        self._ports_timer.timeout.connect(self._open_new_inputs)
+        # extra manifest values from the main window (mapping file, …)
+        self.manifest_provider: Callable[[], dict[str, object]] | None = None
         # Set while the menu bar's ● Rec records (issue #307): Start/Stop and
         # the port choice are frozen, and an auto-start is deferred to unlock.
         self._lock_reason: str | None = None
@@ -500,8 +512,10 @@ class LiveMonitorView(QWidget):
             self.decks_label.setText(self.deck_layers.summary(translate))
             self.decks_label.show()
             alert = self.deck_layers.alert(translate)
+            self.note_event("deck", port=event.port, decks={k: dict(v) for k, v in self.deck_layers.decks.items()})
             if alert != self.deck_alert:
                 self.deck_alert = alert
+                self.note_event("deck_alert", text=self.deck_layers.alert())  # English, whatever the UI language
                 self.deckAlertChanged.emit(alert)
 
     def _append_event(self, event: MidiEvent) -> None:
@@ -611,20 +625,103 @@ class LiveMonitorView(QWidget):
                 return None
         recorder = SessionRecorder(user_paths.subfolder(user_paths.LOGS))
         try:
-            path = recorder.start()
+            path = recorder.start(self._recording_manifest())
         except OSError as exc:
             _LOGGER.exception("Failed to start the live set recording")
             self._show_recording_text(self.tr("Couldn't start recording: {error}").format(error=exc))
             return None
         self._recorder = recorder
+        self._monitor.raw_sink = recorder.record_raw
+        self._start_history_watch()
+        self._ports_timer.start()
         self._record_button.setText(self.tr("Stop recording"))
         self._update_recording_label()
         return path
+
+    def _recording_manifest(self) -> dict[str, object]:
+        """What was plugged in and running, for the dataset (plain values)."""
+        import platform
+        from datetime import datetime
+
+        from djmidi.update_check import current_version
+
+        manifest: dict[str, object] = {
+            "app_version": current_version(),
+            "system": f"{platform.system()} {platform.release()}",
+            "timezone": datetime.now().astimezone().tzname(),
+            "inputs": self._monitor.input_names,
+            "software_output_monitor": self._monitor._virtual_port is not None,
+        }
+        if self.manifest_provider is not None:
+            try:
+                manifest.update(self.manifest_provider())
+            except Exception:  # a manifest detail never blocks recording
+                _LOGGER.exception("Live set manifest details failed")
+        return manifest
+
+    def _start_history_watch(self) -> None:
+        from datetime import UTC, datetime
+
+        from djmidi.library import history
+        from djmidi.remote_mix.tracklist import HistoryWatcher, watchable_folder
+
+        folders = dict(
+            found for folder in history.default_history_dirs().values() if (found := watchable_folder(folder))
+        )
+        self._history_watcher = HistoryWatcher(folders, since=datetime.now(UTC)) if folders else None
+        if self._history_watcher is not None:
+            self._history_timer.start()
+
+    def _poll_history(self) -> None:
+        recorder, watcher = self._recorder, self._history_watcher
+        if recorder is None or watcher is None:
+            return
+        from djmidi.remote_mix.tracklist import entry_texts
+
+        for entry in watcher.poll():
+            title, artist = entry_texts(entry)
+            recorder.add_track(
+                entry.played_at.timestamp(), entry.source, title, artist, entry.path, entry.deck, entry.duration
+            )
+        self._update_recording_label()
+
+    def _open_new_inputs(self) -> None:
+        if self._recorder is None:
+            return
+        try:
+            names = list_input_ports()
+        except Exception:  # a port list failure never stops the recording
+            _LOGGER.exception("MIDI input list failed while recording")
+            return
+        opened = set(self._monitor.input_names)
+        for name in names:
+            if name in opened or name == MidiMonitor.VIRTUAL_MONITOR_NAME:
+                continue
+            try:
+                self._monitor.open_input(name)
+            except Exception:  # noqa: BLE001 -- a port that won't open is retried next time
+                _LOGGER.warning("Recording: MIDI input %r not opened", name)
+                continue
+            _LOGGER.info("Recording: new MIDI input %r", name)
+            self.note_event("port_added", port=name)
+        for name in opened - set(names):
+            self.note_event("port_gone", port=name)
+            self._monitor.close_input(name)
+
+    def note_event(self, kind: str, **data: object) -> None:
+        """Something worth keeping in the live set recording (a macro played, …)."""
+        if self._recorder is not None:
+            self._recorder.note(kind, **data)
 
     def stop_recording(self) -> Path | None:
         if not self.is_recording:
             return None
         recorder = self._recorder
+        self._poll_history()  # the last track
+        self._history_timer.stop()
+        self._ports_timer.stop()
+        self._history_watcher = None
+        self._monitor.raw_sink = None
         path = recorder.stop()
         self._recorder = None
         self._record_button.setText(self.tr("Record live set"))
@@ -662,9 +759,10 @@ class LiveMonitorView(QWidget):
 
     def _update_recording_label(self) -> None:
         recorder = self._recorder
-        self._show_recording_text(
-            self.tr("● Recording: {count} event(s) to {file}").format(count=recorder.count, file=recorder.path.name)
-        )
+        text = self.tr("● Recording: {count} event(s) to {file}").format(count=recorder.count, file=recorder.path.name)
+        if recorder.track_count:
+            text += " · " + self.tr("{count} track(s) played").format(count=recorder.track_count)
+        self._show_recording_text(text)
 
     def _clear_log(self) -> None:
         self._events.clear()

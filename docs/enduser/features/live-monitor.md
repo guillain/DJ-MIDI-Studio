@@ -165,6 +165,29 @@ direction, channel, type and values. It's written as you play, so a crash
 loses about a second at most. Keep it to look back at what you actually
 used during a set: which buttons, how often, which ones follow each other.
 
+While it records, a red **● REC set** lamp blinks in the top-right corner of
+the window with the time recorded, on every tab and in Stage Mode; click it
+to see the Live Monitor. The other recordings light their own lamp: **REC
+setup** while ● Rec records the controllers' setup, **REC mix** while Mix
+Together records the mix.
+
+Everything that goes through MIDI is kept, not only buttons and faders:
+SysEx, MIDI Clock, start/stop, aftertouch and program changes are written
+as their raw bytes. A controller switched on while recording is opened at
+once, so what it sends when it starts up is in the file too. Beside the
+recording, files with the same name make a dataset you can load in your own
+tools (pandas, a notebook):
+
+| File | What it holds |
+|---|---|
+| `live-….jsonl` | Every MIDI message, time `t` in seconds |
+| `live-….tracks.jsonl` | Each track Serato or Traktor's history shows played (title, artist, file, deck), read while you play, on the same clock |
+| `live-….events.jsonl` | What the app saw: deck changes of each controller, deck warnings, macros played, controllers plugged in or out |
+| `live-….manifest.json` | What was plugged in, the app version, the mapping file (name and fingerprint), the time zone, and `wall_offset`: `t + wall_offset` is the clock time |
+
+To record from the moment the app opens, start it with
+`djmidi --record-live-set`.
+
 ## Analyse a recorded set
 
 **Analyse a set…** opens a recording from the `Logs` folder and shows what
