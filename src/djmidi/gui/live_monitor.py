@@ -111,6 +111,8 @@ class _CheckBoxLabel(QLabel):
 
 class LiveMonitorView(QWidget):
     eventReceived = Signal(object)  # MidiEvent
+    # The short "controllers on different decks" warning, "" once they agree (#550).
+    deckAlertChanged = Signal(str)
     # Around every read's events (one MIDI poll), so views redraw once.
     batchStarted = Signal()
     batchFinished = Signal()
@@ -193,6 +195,7 @@ class LiveMonitorView(QWidget):
         self._analyse_button.clicked.connect(self.choose_set_to_analyse)
         # Which deck each controller side is on, and when two differ (golden rule).
         self.deck_layers = DeckLayers()
+        self.deck_alert = ""  # the short warning while two controllers differ
         self.decks_label = QLabel()
         self.decks_label.setWordWrap(True)
         self.decks_label.setToolTip(
@@ -493,8 +496,13 @@ class LiveMonitorView(QWidget):
         if self.deck_layers.feed(
             event.port, event.direction, event.event_type, event.channel, event.data1, event.data2
         ):
-            self.decks_label.setText(self.deck_layers.summary(translator("DeckLayers")))
+            translate = translator("DeckLayers")
+            self.decks_label.setText(self.deck_layers.summary(translate))
             self.decks_label.show()
+            alert = self.deck_layers.alert(translate)
+            if alert != self.deck_alert:
+                self.deck_alert = alert
+                self.deckAlertChanged.emit(alert)
 
     def _append_event(self, event: MidiEvent) -> None:
         self._update_decks(event)

@@ -49,8 +49,10 @@ class SignalToast(QFrame):
         layout.setContentsMargins(4, 4, 4, 4)
         layout.addWidget(self.label)
 
-    def show_text(self, text: str, style: str) -> None:
-        self.setStyleSheet(style)
+    def show_text(self, text: str, style: str | None = None) -> None:
+        """``style`` None keeps the current one."""
+        if style is not None:
+            self.setStyleSheet(style)
         self.label.setText(text)
         self.adjustSize()
         screen = QGuiApplication.primaryScreen()

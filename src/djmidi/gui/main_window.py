@@ -376,6 +376,8 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         self.controller_image_view.placeControlsRequested.connect(lambda name: self.open_geometry_editor(name))
 
         self.live_monitor_view = LiveMonitorView(on_event=self._on_live_midi_event)
+        self.live_monitor_view.deckAlertChanged.connect(self._on_deck_alert)
+        self._deck_alert_toast = None  # over every app while controllers differ (#550)
         self.live_monitor_view.syncRequested.connect(self._on_sync_controllers)
         self.live_monitor_view.batchStarted.connect(self._begin_live_batch)
         self.live_monitor_view.batchFinished.connect(self._end_live_batch)
@@ -2296,6 +2298,7 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
             )
             window.closed.connect(self._on_stage_window_closed)
             self._stage_window = window
+            window.set_deck_alert(self.live_monitor_view.deck_alert)
             window.showFullScreen()
             self.live_monitor_view.ensure_monitoring_started()
             self.statusBar().showMessage(self.tr("Stage mode on — press Esc to exit"))
@@ -2325,6 +2328,29 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
             self._stage_candidates_key = key
         tolerance = self.music_library_view.set_panel.tolerance_spin.value()
         return suggest_next_tracks(current, self._stage_candidates, set_paths, tolerance)
+
+    def _on_deck_alert(self, text: str) -> None:
+        """Two controllers play different decks (or agree again, text ""): a
+        big line in Stage Mode and a small window over every app, Serato
+        included, until they agree (#550)."""
+        if self._stage_window is not None:
+            self._stage_window.set_deck_alert(text)
+        if not text:
+            if self._deck_alert_toast is not None:
+                self._deck_alert_toast.hide()
+            return
+        from djmidi.gui import theme
+        from djmidi.gui.remote_mix_signals import SignalToast
+
+        if self._deck_alert_toast is None:
+            self._deck_alert_toast = SignalToast(self)
+        c = theme.colors()
+        self._deck_alert_toast.show_text(
+            text,
+            f"QFrame#remoteSignalToast {{ background: {c['panel_bg']}; border: 3px solid {c['accent']}; border-radius: 12px; }}"
+            f"QLabel#remoteSignal {{ font-size: 26px; font-weight: 700; color: {c['title']}; padding: 12px 20px; "
+            f"background: transparent; border: none; }}",
+        )
 
     def _on_stage_window_closed(self) -> None:
         window = self._stage_window
