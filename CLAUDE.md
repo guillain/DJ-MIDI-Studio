@@ -249,7 +249,8 @@ overrides.
   activity per 10 min; reads the standalone `bytes`/`b` formats too; faders/knobs named by Qt-free `continuous_controls.py`, official MIDI lists only) → `gui/set_analysis_dialog.py`.
 - Deck layers (#550, Qt-free `deck_layers.DeckLayers`): reads each controller's deck-switch message (XDJ-XZ CC 102,
   DDJ-XP2 Note 60, value 127 on the new deck's channel) → the Live Monitor's `decks_label` (where each side is, ⚠ when
-  two controllers differ). Sends nothing.
+  two controllers differ). Sends nothing. `DeckLayers.alert` → `LiveMonitorView.deckAlertChanged` →
+  `MainWindow._on_deck_alert`: `StageWindow.set_deck_alert` + a `SignalToast` over every app until they agree.
 - Live Monitor log filters (#447, Qt-free `live_filter.LogFilter`): port / direction / kind / hide jogs, applied
   with `setRowHidden` (the event is stored on each row's first item); display only, nothing else is filtered.
 - MIDI Learn (`midi_learn.py`): opens no port, rides the Live Monitor via `_ensure_learn_listening`.

@@ -128,12 +128,17 @@ stands, for example `Decks: DDJ-XP2 1 | 2 · XDJ-XZ 3 | 2`. A ⚠ line warns
 when two controllers play different decks on the same side, or when one
 moved to deck 3 or 4 while the other hasn't switched since the app started.
 
+While they differ, the warning also shows big in **Stage Mode** and in a
+small window at the top of the screen, over Serato and every other app
+(`⚠ DDJ-XP2 on deck 3 · XDJ-XZ on deck 1`). It goes away by itself as soon
+as both play the same deck again.
+
 It reads the messages the controllers send when they switch: CC 102 from the
 XDJ-XZ (SHIFT pressed twice, as its official MIDI list says) and Note 60 from
 the DDJ-XP2 (captured with Serato running). The app sends nothing: neither
-controller documents a message that switches its deck from outside. Whether
-one can be switched anyway is a check in **Tests → Hardware Scenarios**
-(issue #550).
+controller documents a message that switches its deck from outside, and
+neither switched when sent its own messages back (test of 2026-11-28,
+issue #550).
 
 ## See what Serato sends back (LED feedback)
 
