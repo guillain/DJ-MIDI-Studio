@@ -148,3 +148,10 @@ Start with the [Quickstart](docs/developer/setup/quickstart.md) and the
 Actions from annotated `v*` tags ([Build and release](docs/developer/cicd/build-and-release.md)).
 This project is developed with AI assistance under human review; see
 [AI-assisted development](docs/developer/agent/ai-assisted-development.md).
+
+## License
+
+DJ MIDI Studio is free software under the [GNU General Public License v3.0 or later](LICENSE). The release
+builds bundle Ableton Link through the GPLv3 `aalink` binding. Controller and DJ-software data come from
+official documents, real captures and real files; vendor material (Pioneer photos, rekordbox's built-in
+tables) is read on the DJ's machine or kept for personal reference, never relicensed.
