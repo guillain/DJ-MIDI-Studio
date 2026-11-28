@@ -124,8 +124,10 @@ fixed file path; use `tmp_path`.
   never turn that into an error or a "dedupe" suggestion. Views group copies (`gui/mapping_group.MappingGroup`)
   and edit them atomically.
 - `validator.find_deck_conflicts`: triggers binding two distinct functions on one deck (per condition layer).
-- Serato function names: only the four tags real exports contain are known (`function_names.py`, test-pinned);
-  Play/Cue/Sync tag names are unknown (#194) — never invent them.
+- Serato function names (`function_names.py`, test-pinned): the tags of our real exports and of the maintainer's
+  Serato 5.1 learn, plus `serato_public_tags.PUBLIC_TAGS` (other DJs' Serato-saved XML on GitHub, accepted as real
+  files on 2026-11-28; a tag needs a second author or the Serato-binary symbol list, sources kept, re-cased only).
+  Never invent a tag; the meaning of slots and `codfather_*` stays unconfirmed.
 
 ### Software plugins (`software/`)
 
@@ -277,7 +279,7 @@ The Atelier tab: scene designer (drafts per controller and scene, Save all / Sen
 plays `Scene.software_taps` — a tap per lit button — to a non-controller port, never falling back to the controller), Remap tab over MIDI
 Routing routes, Macros tab (clicks add steps; the scene's LED box hides). `gui/photo_picker.PhotoPicker` is the
 shared click state machine (SHIFT, pad mode per side). Real LED probing and the Pioneer colour table are still
-unverified on hardware; function assignment waits for Serato's tag names.
+unverified on hardware; function assignment can now use the known tags (`function_names`, #194).
 
 **Controller library** (#451): `atelier/captures.py` keeps the guided check's verdicts per controller
 (`Controllers/<slug>.captures.json`, one per check item *and* DJ software — a DDJ-XP2 sends other notes, and

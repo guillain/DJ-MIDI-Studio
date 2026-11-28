@@ -48,18 +48,18 @@ def test_retagging_every_copy_is_one_reassignment_not_ten(real_config):
     new = _copy(real_config)
     for element in _elements(new, "14", "65", "click"):
         assert element.tag == "codfather_st"
-        element.tag = "censor"
+        element.tag = "zoom_level_adjust"
     diff = diff_configs(real_config, new)
     assert [entry.kind for entry in diff.entries] == ["reassigned"]
     entry = diff.entries[0]
     assert entry.trigger == ("14", "Note On", "65")
     assert entry.event == "click"
     assert entry.old_functions == ("Codfather ST (deck 3, slot 1)",)
-    assert entry.new_functions == ("censor (deck 3, slot 1)",)
-    assert entry.summary() == "Codfather ST (deck 3, slot 1) -> censor (deck 3, slot 1)"
+    assert entry.new_functions == ("zoom_level_adjust (deck 3, slot 1)",)
+    assert entry.summary() == "Codfather ST (deck 3, slot 1) -> zoom_level_adjust (deck 3, slot 1)"
     # The raw tag stays available for the dialog's tooltip.
     assert entry.old_raw == ("codfather_st (deck 3, slot 1)",)
-    assert entry.raw_summary() == "codfather_st (deck 3, slot 1) -> censor (deck 3, slot 1)"
+    assert entry.raw_summary() == "codfather_st (deck 3, slot 1) -> zoom_level_adjust (deck 3, slot 1)"
 
 
 def test_dropping_one_duplicate_copy_is_a_count_change(real_config):
@@ -85,15 +85,15 @@ def test_removed_trigger_is_reported_once(real_config):
 def test_added_trigger_and_added_function(real_config):
     new = _copy(real_config)
     new.controls.append(
-        Control("16", "Note On", "1", [UserIO("click", [MappingElement("censor", "Default", "1", "0")])])
+        Control("16", "Note On", "1", [UserIO("click", [MappingElement("zoom_level_adjust", "Default", "1", "0")])])
     )
     first = _controls(new, "14", "65")[0]
     next(u for u in first.userios if u.event == "click").mappings.append(MappingElement("cue", "Default", "3"))
     diff = diff_configs(real_config, new)
     added = diff.by_kind("added")
     assert [(entry.trigger, entry.new_functions) for entry in added] == [
-        (("14", "Note On", "65"), ("cue (deck 3)",)),
-        (("16", "Note On", "1"), ("censor (deck 1, slot 0)",)),
+        (("14", "Note On", "65"), ("Cue (deck 3)",)),  # a public Serato tag (#194)
+        (("16", "Note On", "1"), ("zoom_level_adjust (deck 1, slot 0)",)),
     ]
     assert not diff.by_kind("reassigned")
 
@@ -146,8 +146,8 @@ def test_traktor_binding_position_is_not_a_difference():
 
 
 def test_function_label_names_non_default_deck_sets():
-    assert function_label(("censor", "Default", "1", None)) == "censor (deck 1)"
-    assert function_label(("censor", "Alt", None, "2")) == "censor (set Alt, slot 2)"
+    assert function_label(("zoom_level_adjust", "Default", "1", None)) == "zoom_level_adjust (deck 1)"
+    assert function_label(("zoom_level_adjust", "Alt", None, "2")) == "zoom_level_adjust (set Alt, slot 2)"
     assert function_label(("master", None, None, None)) == "master"
 
 

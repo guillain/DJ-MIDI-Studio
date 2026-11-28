@@ -13,6 +13,7 @@ from djmidi.function_names import (
     label_with_raw,
 )
 from djmidi.parser import parse_file, parse_string
+from djmidi.serato_public_tags import PUBLIC_TAGS, SOURCES
 
 DATA = Path(__file__).resolve().parents[1] / "data"
 
@@ -34,8 +35,22 @@ def test_every_tag_in_the_real_serato_exports_has_a_readable_name():
 
 
 def test_the_table_only_names_tags_seen_in_real_files():
-    # Nothing invented for a tag no real export carries.
-    assert FUNCTION_NAMES.keys() <= _real_tags()
+    # Nothing invented for a tag no real export carries (ours or the public
+    # Serato-saved files of serato_public_tags, each with its sources).
+    assert FUNCTION_NAMES.keys() <= _real_tags() | PUBLIC_TAGS.keys()
+
+
+def test_public_tags_are_confirmed_twice_and_keep_their_sources():
+    for tag, keys in PUBLIC_TAGS.items():
+        assert keys and all(key in SOURCES for key in keys), tag
+    for repository, _file, version, _licence in SOURCES.values():
+        assert repository.startswith("https://github.com/") and version  # saved by a Serato version
+    # Play / Cue / Sync, unknown until now (#194), each seen in two authors' files.
+    for tag in ("play", "cue", "sync"):
+        assert len({key.split(":")[0] for key in PUBLIC_TAGS[tag]}) >= 2
+    assert function_name("load_track") == "Load track"
+    assert function_name("sync_off") == "Sync off"
+    assert function_name("cue_point") == "Hot cue"  # the learned label wins
 
 
 @pytest.mark.parametrize(
@@ -53,10 +68,10 @@ def test_known_names(tag, name):
 
 
 def test_unknown_tags_fall_back_to_the_raw_tag():
-    assert not is_known("censor")  # no real file carries it yet
-    assert function_name("censor") == "censor"
+    assert not is_known("zoom_level_adjust")  # one public file only: not confirmed
+    assert function_name("zoom_level_adjust") == "zoom_level_adjust"
     assert function_name("Play/Pause") == "Play/Pause"  # a Traktor command name
-    assert label_with_raw("censor", "1") == "censor · slot 1"
+    assert label_with_raw("zoom_level_adjust", "1") == "zoom_level_adjust · slot 1"
 
 
 def test_slot_is_shown_as_a_slot_number_never_a_length():
