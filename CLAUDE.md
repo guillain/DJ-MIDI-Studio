@@ -312,7 +312,7 @@ surgical and logged. Qt-free modules; the tab is a thin view over `library/works
   behind the optional `analysis` extra, gap-filling only, user-confirmed), `waveform.py`.
 - Formats: `serato_library.py` (crates only, never `database V2`), `traktor_library.py` (`collection.nml`
   streamed with `iterparse`; standalone single-playlist `.nml` export), `rekordbox_library.py` (`export.pdb`,
-  hand-written from the crate-digger spec), `rekordbox_master.py` (rekordbox's own `master.db`: copied to a temp folder,
+  hand-written from the crate-digger spec), `rekordbox_master.py` (rekordbox's own `master.db` and USB OneLibrary `exportLibrary.db`, paths relative to the stick: copied to a temp folder,
   opened by the optional `rekordbox` extra = pyrekordbox/SQLCipher, plain SQL; playlists for Import/Compare, history;
   never the DJ's file; tests use a plain SQLite file with the real table names), `history.py` (Serato/Traktor play history, read-only), `rekordbox_xml.py` (a playlist as
   Pioneer's published rekordbox XML import format, #441; new file only, untested in a running rekordbox;
