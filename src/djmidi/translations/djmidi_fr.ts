@@ -9046,10 +9046,6 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <translation>Importer des playlists Rekordbox</translation>
     </message>
     <message>
-        <source>rekordbox library, XML or device export (master.db *.xml export.pdb)</source>
-        <translation>Bibliothèque rekordbox, XML ou export pour appareil (master.db *.xml export.pdb)</translation>
-    </message>
-    <message>
         <source>Exported {name}.</source>
         <translation>{name} exporté.</translation>
     </message>
@@ -9260,6 +9256,10 @@ Les playlists et les tags en cache suivent les nouveaux chemins et les anciennes
         <translation>La bibliothèque rekordbox n’a pas pu être lue (une version plus récente de rekordbox la chiffre peut-être autrement) : exportez plutôt vos playlists en XML rekordbox.
 
 {details}</translation>
+    </message>
+    <message>
+        <source>rekordbox library, XML or device export (master.db *.xml export.pdb exportLibrary.db)</source>
+        <translation>Bibliothèque rekordbox, XML ou export pour appareil (master.db *.xml export.pdb exportLibrary.db)</translation>
     </message>
     <message>
         <source>Compare with rekordbox playlist</source>
