@@ -378,6 +378,7 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         self.live_monitor_view = LiveMonitorView(on_event=self._on_live_midi_event)
         self.live_monitor_view.deckAlertChanged.connect(self._on_deck_alert)
         self.live_monitor_view.manifest_provider = self._live_set_manifest
+        self._auto_recording_done = False
         self._deck_alert_toast = None  # over every app while controllers differ (#550)
         self.live_monitor_view.syncRequested.connect(self._on_sync_controllers)
         self.live_monitor_view.batchStarted.connect(self._begin_live_batch)
@@ -2737,6 +2738,19 @@ class MainWindow(DockWindowsMixin, MappingViewsMixin, LiveMidiMixin, MappingFile
         self._ensure_macro_triggers_listening()
         self.statusBar().showMessage(self.tr("{count} macro(s) saved").format(count=len(self.macros)), 5000)
         return True
+
+    def start_auto_recording(self) -> bool:
+        """Starts recording the live set at launch (Preferences, or
+        --record-live-set); with no MIDI input yet, tries again every 3 s
+        until a controller is plugged in. Once per launch: a set stopped by
+        hand stays stopped."""
+        if self._auto_recording_done:
+            return True
+        if self.live_monitor_view.is_recording or self.live_monitor_view.start_recording() is not None:
+            self._auto_recording_done = True
+            return True
+        QTimer.singleShot(3000, self.start_auto_recording)
+        return False
 
     def on_air_lamps(self) -> list:
         """What records right now, one lamp each (polled every second)."""

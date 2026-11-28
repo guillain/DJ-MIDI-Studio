@@ -1,6 +1,6 @@
 [project]
 name = "djmidi"
-version = "0.48.308"
+version = "0.48.309"
 description = "DJ MIDI mapping visualizer, editor, and controller toolkit"
 license = "GPL-3.0-or-later"
 license-files = ["LICENSE"]

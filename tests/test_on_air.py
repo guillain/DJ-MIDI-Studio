@@ -49,3 +49,20 @@ def test_main_window_lights_a_lamp_per_recording(monkeypatch):
     window._record_button.setChecked(False)
     window.refresh_on_air()
     assert window.on_air.isHidden()
+
+
+def test_auto_recording_waits_for_a_controller_and_starts_once(monkeypatch):
+    from djmidi.plugins.preferences import PluginPreferences
+
+    preferences = PluginPreferences()
+    assert preferences.record_live_sets is False
+    preferences.record_live_sets = True
+    assert PluginPreferences.from_json(preferences.to_json()).record_live_sets is True
+    window = MainWindow()
+    results = [None, "path"]
+    monkeypatch.setattr(window.live_monitor_view, "start_recording", lambda: results.pop(0))
+    retries = []
+    monkeypatch.setattr("djmidi.gui.main_window.QTimer.singleShot", lambda ms, fn: retries.append(ms))
+    assert window.start_auto_recording() is False and retries == [3000]  # no controller yet
+    assert window.start_auto_recording() is True
+    assert window.start_auto_recording() is True and retries == [3000]  # once per launch

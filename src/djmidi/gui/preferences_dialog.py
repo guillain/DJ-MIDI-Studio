@@ -76,6 +76,16 @@ class PreferencesDialog(QDialog):
             )
         )
         self._auto_start_live_monitor = auto_start_live_monitor
+        record_live_sets = QCheckBox(self.tr("Record every live set from launch"))
+        record_live_sets.setChecked(preferences.record_live_sets)
+        record_live_sets.setToolTip(
+            self.tr(
+                "Start Record live set as soon as the app opens (or as soon as a controller is plugged in): every "
+                "MIDI message, the tracks played and the deck changes, in Documents/DJ MIDI Studio/Logs. A red "
+                "REC lamp shows while it records."
+            )
+        )
+        self._record_live_sets = record_live_sets
         reopen_last_files = QCheckBox(self.tr("Reopen my last mapping and Controller Setup draft at launch"))
         reopen_last_files.setChecked(preferences.reopen_last_files)
         reopen_last_files.setToolTip(
@@ -225,6 +235,7 @@ class PreferencesDialog(QDialog):
         launch_layout.addRow(reopen_last_files)
         launch_layout.addRow(auto_sync_on_startup)
         launch_layout.addRow(auto_start_live_monitor)
+        launch_layout.addRow(record_live_sets)
         launch_layout.addRow(check_for_updates)
         launch_layout.addRow(self.tr("Detection:"), detection)
 
@@ -464,6 +475,7 @@ class PreferencesDialog(QDialog):
         self._preferences.routing_enabled = self._routing.isChecked()
         self._preferences.trust_external_plugins = self._trust.isChecked()
         self._preferences.auto_start_live_monitor = self._auto_start_live_monitor.isChecked()
+        self._preferences.record_live_sets = self._record_live_sets.isChecked()
         self._preferences.reopen_last_files = self._reopen_last_files.isChecked()
         self._preferences.auto_sync_on_startup = self._auto_sync_on_startup.isChecked()
         self._preferences.auto_sync_on_plug_in = self._auto_sync_on_plug_in.isChecked()
