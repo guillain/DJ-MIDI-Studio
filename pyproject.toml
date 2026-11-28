@@ -1,7 +1,9 @@
 [project]
 name = "djmidi"
-version = "0.48.301"
+version = "0.48.302"
 description = "DJ MIDI mapping visualizer, editor, and controller toolkit"
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
 authors = [
     { name = "guillain", email = "guillain@gmail.com" }
 ]
