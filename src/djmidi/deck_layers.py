@@ -14,11 +14,10 @@ The messages, never guessed:
   CC 102 = 127 on the new deck's channel and 0 on the old one's.
 - **DDJ-XP2**: a real switch from deck 1 to 3 and back, with Serato running
   (2026-11-27), sent Note 60 = 127 on the new deck's channel and 0 on the old
-  one's. The right side (decks 2/4) wasn't captured yet; the same message on
-  channel 2 or 4 is read the same way.
+  one's; the right side (2/4) does the same on channels 2 and 4 (2026-11-28).
 
-Nothing is sent: a controller's deck layer can't be set over MIDI as far as
-its official documentation says.
+Nothing is sent: neither controller switched when sent its own messages back
+(test of 2026-11-28, #550), so the app warns instead (:meth:`DeckLayers.alert`).
 """
 
 from __future__ import annotations
@@ -45,6 +44,8 @@ _LINE = QT_TRANSLATE_NOOP("DeckLayers", "Decks: {controllers}")
 _UNSEEN = QT_TRANSLATE_NOOP(
     "DeckLayers", "{first} is on deck {deck} ({side} side): is {second} on deck {deck} too? It hasn't switched since the app started."
 )
+_ALERT = QT_TRANSLATE_NOOP("DeckLayers", "⚠ {first} on deck {a} · {second} on deck {b}")
+_ALERT_UNSEEN = QT_TRANSLATE_NOOP("DeckLayers", "⚠ {first} on deck {a} · {second} too?")
 _DIFFER = QT_TRANSLATE_NOOP(
     "DeckLayers", "⚠ {side} side: {first} is on deck {a}, {second} on deck {b}: switch one so both play the same deck."
 )
@@ -110,6 +111,15 @@ class DeckLayers:
                     if side not in self.decks.get(other, {}):
                         found.append((side, name, deck, other))
         return found
+
+    def alert(self, translate: Translate = untranslated) -> str:
+        """One short line for a big warning (Stage Mode, over other apps):
+        the first side where two controllers differ, "" when none does."""
+        for _side, first, a, second, b in self.differences():
+            return translate(_ALERT).format(first=first, a=a, second=second, b=b)
+        for _side, first, deck, second in self.unseen():
+            return translate(_ALERT_UNSEEN).format(first=first, a=deck, second=second)
+        return ""
 
     def summary(self, translate: Translate = untranslated) -> str:
         """One line per state: "" until a controller switched."""

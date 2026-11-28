@@ -2027,6 +2027,14 @@ Il reste une étape manuelle : ajoutez &apos;{slug}&apos; au bloc d&apos;imports
         <translation>{first} est sur le deck {deck} (côté {side}) : {second} est-il aussi sur le deck {deck} ? Il n&apos;a pas changé de deck depuis le lancement de l&apos;app.</translation>
     </message>
     <message>
+        <source>⚠ {first} on deck {a} · {second} on deck {b}</source>
+        <translation>⚠ {first} sur le deck {a} · {second} sur le deck {b}</translation>
+    </message>
+    <message>
+        <source>⚠ {first} on deck {a} · {second} too?</source>
+        <translation>⚠ {first} sur le deck {a} · {second} aussi ?</translation>
+    </message>
+    <message>
         <source>⚠ {side} side: {first} is on deck {a}, {second} on deck {b}: switch one so both play the same deck.</source>
         <translation>⚠ Côté {side} : {first} est sur le deck {a}, {second} sur le deck {b} : changez l&apos;un des deux pour qu&apos;ils jouent le même deck.</translation>
     </message>

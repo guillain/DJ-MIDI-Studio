@@ -2027,6 +2027,14 @@ Ein manueller Schritt bleibt: &apos;{slug}&apos; zum Import-Block in catalog/__i
         <translation>{first} ist auf Deck {deck} (Seite {side}): Ist {second} auch auf Deck {deck}? Er hat seit dem Start der App das Deck nicht gewechselt.</translation>
     </message>
     <message>
+        <source>⚠ {first} on deck {a} · {second} on deck {b}</source>
+        <translation>⚠ {first} auf Deck {a} · {second} auf Deck {b}</translation>
+    </message>
+    <message>
+        <source>⚠ {first} on deck {a} · {second} too?</source>
+        <translation>⚠ {first} auf Deck {a} · {second} auch?</translation>
+    </message>
+    <message>
         <source>⚠ {side} side: {first} is on deck {a}, {second} on deck {b}: switch one so both play the same deck.</source>
         <translation>⚠ Seite {side}: {first} ist auf Deck {a}, {second} auf Deck {b}: Wechseln Sie bei einem, damit beide dasselbe Deck spielen.</translation>
     </message>

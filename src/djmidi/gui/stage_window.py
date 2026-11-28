@@ -116,6 +116,14 @@ QWidget#stageWindow QLabel#stageNote {
     font-size: 20pt;
     font-weight: bold;
 }
+QWidget#stageWindow QLabel#stageDeckAlert {
+    color: $bg;
+    background: $bad;
+    font-size: 26pt;
+    font-weight: bold;
+    padding: 8px 16px;
+    border-radius: 8px;
+}
 QWidget#stageWindow QLabel#stageSuggestions {
     color: $muted;
     font-size: 15pt;
@@ -270,6 +278,13 @@ class StageWindow(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(16, 12, 16, 16)
         layout.addLayout(header)
+        # Controllers on different decks (#550): impossible to miss mid-mix.
+        self.deck_alert = QLabel()
+        self.deck_alert.setObjectName("stageDeckAlert")
+        self.deck_alert.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.deck_alert.setWordWrap(True)
+        self.deck_alert.hide()
+        layout.addWidget(self.deck_alert)
         layout.addLayout(body, 1)
 
         # A window shortcut rather than keyPressEvent: the emulator's combo
@@ -363,6 +378,11 @@ class StageWindow(QWidget):
         self._latest_label.setText(line)
         self._log_list.clear()
         self._log_list.addItems(self._log.lines())
+
+    def set_deck_alert(self, text: str) -> None:
+        """Shows the controllers-on-different-decks warning, hides it on ""."""
+        self.deck_alert.setText(text)
+        self.deck_alert.setVisible(bool(text))
 
     def log_lines(self) -> list[str]:
         return self._log.lines()

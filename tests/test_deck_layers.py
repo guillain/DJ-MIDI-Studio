@@ -49,3 +49,43 @@ def test_the_live_monitor_shows_the_decks_line():
         view._append_event(MidiEvent("in", channel, kind, data1, data2, 0.0, port))
     assert not view.decks_label.isHidden()
     assert "XDJ-XZ 3 | ?" in view.decks_label.text()
+
+
+# The right side, captured 2026-11-28 with Serato running.
+XP2_RIGHT_TO_4 = [("DDJ-XP2", "Note On", "4", "114", "127"), ("DDJ-XP2", "Note On", "2", "60", "0"),
+                  ("DDJ-XP2", "Note On", "4", "60", "127"), ("DDJ-XP2", "Note On", "4", "114", "0")]
+XZ_RIGHT_TO_4 = [("XDJ-XZ (1)", "Control Change", "2", "102", "0"), ("XDJ-XZ (1)", "Control Change", "4", "102", "127")]
+
+
+def test_the_right_side_and_the_short_alert():
+    layers = DeckLayers()
+    _feed(layers, [("DDJ-XP2", "Note On", "8", "68", "127")])
+    _feed(layers, XZ_RIGHT_TO_4)
+    assert layers.alert() == "⚠ XDJ-XZ on deck 4 · DDJ-XP2 too?"
+    _feed(layers, XP2_RIGHT_TO_4)
+    assert layers.decks == {"XDJ-XZ": {"right": 4}, "DDJ-XP2": {"right": 4}} and layers.alert() == ""
+    _feed(layers, XZ_TO_3)
+    _feed(layers, XP2_TO_3)
+    _feed(layers, XZ_TO_1)
+    assert layers.alert() == "⚠ DDJ-XP2 on deck 3 · XDJ-XZ on deck 1"
+
+
+def test_the_alert_reaches_stage_mode_and_a_window_over_other_apps(monkeypatch):
+    from djmidi.gui.main_window import MainWindow
+
+    window = MainWindow()
+    monitor = window.live_monitor_view
+    for port, kind, channel, data1, data2 in XZ_TO_3:
+        monitor._append_event(MidiEvent("in", channel, kind, data1, data2, 0.0, port))
+    monitor._append_event(MidiEvent("in", "8", "Note On", "68", "127", 0.0, "DDJ-XP2"))
+    for port, kind, channel, data1, data2 in XP2_TO_3[:3]:
+        monitor._append_event(MidiEvent("in", channel, kind, data1, data2, 0.0, port))
+    assert monitor.deck_alert == ""  # both on deck 3
+    for port, kind, channel, data1, data2 in XZ_TO_1:
+        monitor._append_event(MidiEvent("in", channel, kind, data1, data2, 0.0, port))
+    assert monitor.deck_alert == "⚠ DDJ-XP2 on deck 3 · XDJ-XZ on deck 1"
+    toast = window._deck_alert_toast
+    assert toast is not None and toast.isVisible() and toast.label.text() == monitor.deck_alert
+    for port, kind, channel, data1, data2 in [("DDJ-XP2", "Note On", "3", "60", "0"), ("DDJ-XP2", "Note On", "1", "60", "127")]:
+        monitor._append_event(MidiEvent("in", channel, kind, data1, data2, 0.0, port))
+    assert monitor.deck_alert == "" and not toast.isVisible()
