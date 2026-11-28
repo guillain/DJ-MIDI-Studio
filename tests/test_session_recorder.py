@@ -79,3 +79,97 @@ def test_no_input_means_no_recording(monkeypatch):
     view = LiveMonitorView()
     monkeypatch.setattr(live_monitor_mod, "list_input_ports", list)
     assert view.start_recording() is None and not view.is_recording
+
+
+# --- record all: every MIDI message, the tracks played, what the app saw ----
+
+import json
+
+import mido
+
+from djmidi.midi_io import MidiMonitor
+from djmidi.session_recorder import (
+    EVENTS_SUFFIX,
+    MANIFEST_SUFFIX,
+    TRACKS_SUFFIX,
+    companion,
+    read_rows,
+)
+from djmidi.set_analysis import load_set
+
+
+class _Port:
+    def __init__(self, messages):
+        self.messages = messages
+
+    def iter_pending(self):
+        yield from self.messages
+
+
+def test_every_other_midi_message_is_kept_as_raw_bytes(tmp_path):
+    monitor = MidiMonitor()
+    monitor._input_ports["XDJ-XZ (1)"] = _Port(
+        [mido.Message("sysex", data=[0, 64, 5]), mido.Message("clock"), mido.Message("note_on", note=60, velocity=127)]
+    )
+    raw = []
+    monitor.raw_sink = lambda *row: raw.append(row)
+    assert [e.data1 for e in monitor.poll()] == ["60"]
+    assert [(port, d, kind, data) for port, d, kind, data, _t in raw] == [
+        ("XDJ-XZ (1)", "in", "sysex", [240, 0, 64, 5, 247]),
+        ("XDJ-XZ (1)", "in", "clock", [248]),
+    ]
+    recorder = SessionRecorder(tmp_path)
+    path = recorder.start()
+    recorder.record_raw("XDJ-XZ (1)", "in", "sysex", [240, 0, 64, 5, 247], 12.5)
+    recorder.record(_event(27))
+    recorder.stop()
+    rows = list(read_recording(path))
+    assert rows[0] == {"t": 12.5, "port": "XDJ-XZ (1)", "dir": "in", "type": "sysex", "b": [240, 0, 64, 5, 247]}
+    assert [e.number for e in load_set(path)] == [27]  # the analysis skips what it doesn't read
+
+
+def test_manifest_tracks_and_app_events_share_one_clock(tmp_path):
+    clock = iter([100.0, 105.0])
+    recorder = SessionRecorder(tmp_path, clock=lambda: next(clock), wall=lambda: 1_800_000_000.0)
+    path = recorder.start({"inputs": ["DDJ-XP2"]})
+    recorder.add_track(1_800_000_030.0, "serato", "Alpha", "Artist", "/a.mp3", deck=1)
+    recorder.note("deck", port="XDJ-XZ (1)", decks={"XDJ-XZ": {"left": 3}})
+    recorder.stop()
+    manifest = json.loads(companion(path, MANIFEST_SUFFIX).read_text())
+    assert manifest["format"] == "djmidi-live-set/1" and manifest["inputs"] == ["DDJ-XP2"]
+    assert manifest["wall_offset"] == 1_800_000_000.0 - 100.0
+    assert (manifest["midi_events"], manifest["tracks"], manifest["app_events"]) == (0, 1, 1)
+    [track] = read_rows(companion(path, TRACKS_SUFFIX))
+    assert track["t"] == 130.0 and track["title"] == "Alpha" and track["deck"] == 1  # on the MIDI clock
+    [event] = read_rows(companion(path, EVENTS_SUFFIX))
+    assert event["kind"] == "deck" and event["t"] == 105.0
+
+
+def test_live_monitor_records_history_and_deck_changes(monkeypatch):
+    from djmidi.library import history
+
+    deck = MidiEvent("in", "3", "Control Change", "102", "127", 1000.0, "XDJ-XZ (1)")
+    view = _monitor(monkeypatch, [deck])
+    monkeypatch.setattr(history, "default_history_dirs", dict)
+    view.manifest_provider = lambda: {"mapping_file": "x.xml"}
+    path = view.start_recording()
+    view._poll()
+    played = history.PlayedEntry("/a.mp3", datetime.now(UTC), "serato", "s", title="Alpha", deck=2)
+
+    class _Watcher:
+        def __init__(self):
+            self.rows = [played]
+
+        def poll(self):
+            found, self.rows = self.rows, []
+            return found
+
+    view._history_watcher = _Watcher()
+    view._poll_history()
+    assert "1 track(s) played" in view._recording_label.text()
+    view.note_event("macro", name="Pad 5")
+    view.stop_recording()
+    assert json.loads(companion(path, MANIFEST_SUFFIX).read_text())["mapping_file"] == "x.xml"
+    assert [r["title"] for r in read_rows(companion(path, TRACKS_SUFFIX))] == ["Alpha"]
+    assert [r["kind"] for r in read_rows(companion(path, EVENTS_SUFFIX))] == ["deck", "macro"]
+    assert view._monitor.raw_sink is None

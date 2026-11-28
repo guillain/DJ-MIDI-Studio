@@ -195,6 +195,10 @@ class StageWindow(QWidget):
         header = QHBoxLayout()
         header.addWidget(title)
         header.addStretch(1)
+        from djmidi.gui.on_air import OnAirLamps
+
+        self.on_air = OnAirLamps(self)  # the same ● REC lamps as the main window
+        header.addWidget(self.on_air)
         header.addWidget(help_button(self, *help_texts.STAGE_MODE))
         header.addWidget(exit_button)
 
