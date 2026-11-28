@@ -245,6 +245,11 @@ overrides.
   `logging_config.enable_crash_log` + `gui/click_trail.py` (clicks on item views and shortcut keys, at DEBUG) leave traces of native crashes; `MainWindow.closeEvent` logs who closes the window (window system or code, with the Python stack) and `app.aboutToQuit` is logged.
 - **Record live set** (`session_recorder.SessionRecorder`): every polled event streamed to `Logs/live-*.jsonl`, no
   cap (the log keeps `_MAX_ROWS` = 500); starts monitoring every input if needed, stops with monitoring.
+  "Record all" dataset (`djmidi-live-set/1`): `MidiMonitor.raw_sink` → `record_raw` keeps every other message as bytes
+  (`"b"`), inputs plugged in while recording are opened (500 ms), companions `.manifest.json` / `.tracks.jsonl`
+  (`HistoryWatcher`, read-only) / `.events.jsonl` (`LiveMonitorView.note_event`: deck, deck_alert, macro, port) all on the
+  monotonic `t` (+ `wall_offset`). `djmidi --record-live-set` starts it at launch. Studio lamps: `gui/on_air.OnAirLamps`
+  (menu corner + Stage Mode), polled each second from `MainWindow.on_air_lamps` (live set, ● Rec, Mix Together recording).
   **Analyse a set…**: Qt-free `set_analysis` (presses per control, jogs via `gui/jog.py` tables, sequences ≤1.5 s,
   activity per 10 min; reads the standalone `bytes`/`b` formats too; faders/knobs named by Qt-free `continuous_controls.py`, official MIDI lists only) → `gui/set_analysis_dialog.py`.
 - Deck layers (#550, Qt-free `deck_layers.DeckLayers`): reads each controller's deck-switch message (XDJ-XZ CC 102,
