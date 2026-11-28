@@ -161,3 +161,60 @@ def test_the_library_view_explains_a_missing_component():
     text = view._read_error_text(rekordbox_master.MasterDbUnavailable("no module"))
     assert "rekordbox XML" in text
     assert view._read_error_text(ValueError("x")) == "x"
+
+
+# OneLibrary (exportLibrary.db): the column names of a real export written by rekordbox 7.
+_ONELIBRARY_SCHEMA = """
+CREATE TABLE content (content_id INTEGER, title VARCHAR, bpmx100 INTEGER, length INTEGER,
+    artist_id_artist INTEGER, path VARCHAR);
+CREATE TABLE artist (artist_id INTEGER, name VARCHAR, nameForSearch VARCHAR);
+CREATE TABLE playlist (playlist_id INTEGER, sequenceNo INTEGER, name VARCHAR, image_id INTEGER,
+    attribute INTEGER, playlist_id_parent INTEGER);
+CREATE TABLE playlist_content (playlist_id INTEGER, content_id INTEGER, sequenceNo INTEGER);
+CREATE TABLE history (history_id INTEGER, sequenceNo INTEGER, name VARCHAR, attribute INTEGER,
+    history_id_parent INTEGER);
+CREATE TABLE history_content (history_id INTEGER, content_id INTEGER, sequenceNo INTEGER);
+"""
+
+
+@pytest.fixture
+def usb(tmp_path):
+    root = tmp_path / "USB"
+    path = root / "PIONEER" / "rekordbox" / "exportLibrary.db"
+    path.parent.mkdir(parents=True)
+    con = sqlite3.connect(path)
+    con.executescript(_ONELIBRARY_SCHEMA)
+    con.executemany(
+        "INSERT INTO content VALUES (?,?,?,?,?,?)",
+        [(1, "Alpha", 17725, 368, 7, "/Contents/a.mp3"), (2, "Bravo", 0, 0, None, "/Contents/b.mp3")],
+    )
+    con.execute("INSERT INTO artist VALUES (7, 'Artist A', 'artist a')")
+    con.executemany(
+        "INSERT INTO playlist VALUES (?,?,?,?,?,?)",
+        [(10, 1, "Tek", 0, 1, 0), (11, 1, "Night", 0, 0, 10), (12, 2, "Solo", 0, 0, 0)],
+    )
+    con.executemany("INSERT INTO playlist_content VALUES (?,?,?)", [(11, 2, 2), (11, 1, 1), (12, 2, 1)])
+    con.executemany("INSERT INTO history VALUES (?,?,?,?,?)", [(20, 1, "HISTORY 001", 0, 0)])
+    con.executemany("INSERT INTO history_content VALUES (?,?,?)", [(20, 1, 1)])
+    con.commit()
+    con.close()
+    return root
+
+
+def test_onelibrary_export_is_read_from_a_copy(usb, monkeypatch):
+    monkeypatch.setattr(rekordbox_master, "_open_with_pyrekordbox", _sqlite)
+    export = usb / "PIONEER" / "rekordbox" / "exportLibrary.db"
+    before = export.read_bytes()
+    library = rekordbox_master.read_library(export)
+    assert library.tracks["1"].bpm == 177.25 and library.tracks["1"].artist == "Artist A"
+    # Paths are relative to the stick; the import puts them under it.
+    assert workspace.read_rekordbox_any(export) == {
+        "Tek / Night": [str(usb / "Contents" / "a.mp3"), str(usb / "Contents" / "b.mp3")],
+        "Solo": [str(usb / "Contents" / "b.mp3")],
+    }
+    assert export.read_bytes() == before
+    # A stick with only a OneLibrary export: its history, without times.
+    assert history.detect_source(usb) == history.SOURCE_REKORDBOX
+    [session] = history.read_history({history.SOURCE_REKORDBOX: usb})
+    assert session.name == "HISTORY 001"
+    assert [(e.path, e.played_at) for e in session.entries] == [(str(usb / "Contents" / "a.mp3"), None)]

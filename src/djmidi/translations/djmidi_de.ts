@@ -9018,10 +9018,6 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
         <translation>Rekordbox-Playlists importieren</translation>
     </message>
     <message>
-        <source>rekordbox library, XML or device export (master.db *.xml export.pdb)</source>
-        <translation>rekordbox-Bibliothek, XML oder Geräte-Export (master.db *.xml export.pdb)</translation>
-    </message>
-    <message>
         <source>Exported {name}.</source>
         <translation>{name} exportiert.</translation>
     </message>
@@ -9232,6 +9228,10 @@ Playlists und zwischengespeicherte Tags folgen den neuen Pfaden, und die veralte
         <translation>Die rekordbox-Bibliothek konnte nicht gelesen werden (eine neuere rekordbox-Version verschlüsselt sie vielleicht anders): Exportieren Sie Ihre Playlists stattdessen als rekordbox-XML.
 
 {details}</translation>
+    </message>
+    <message>
+        <source>rekordbox library, XML or device export (master.db *.xml export.pdb exportLibrary.db)</source>
+        <translation>rekordbox-Bibliothek, XML oder Geräte-Export (master.db *.xml export.pdb exportLibrary.db)</translation>
     </message>
     <message>
         <source>Compare with rekordbox playlist</source>

@@ -1,4 +1,5 @@
-"""rekordbox's own library (``master.db``, rekordbox 6 and 7), read-only.
+"""rekordbox's own library (``master.db``, rekordbox 6 and 7) and its
+OneLibrary device exports (``exportLibrary.db``), read-only.
 
 ``master.db`` is the collection rekordbox keeps on the computer: every
 track, playlist and history session. It is a SQLCipher-encrypted SQLite
@@ -29,9 +30,10 @@ from pathlib import Path
 from typing import Any
 
 MASTER_DB = "master.db"
+ONELIBRARY_DB = "exportLibrary.db"
 _COMPANIONS = ("-wal", "-shm")
 
-_FOLDER, _SMART = 1, 4
+_FOLDER = 1
 
 
 class MasterDbError(RuntimeError):
@@ -81,6 +83,12 @@ def is_master_db(path: str | os.PathLike[str]) -> bool:
     return Path(path).name.lower() == MASTER_DB
 
 
+def is_onelibrary(path: str | os.PathLike[str]) -> bool:
+    """A OneLibrary device export (formerly Device Library Plus), the newer
+    encrypted USB format next to export.pdb."""
+    return Path(path).name.lower() == ONELIBRARY_DB.lower()
+
+
 def available() -> bool:
     try:
         import pyrekordbox  # noqa: F401
@@ -91,10 +99,13 @@ def available() -> bool:
 
 def _open_with_pyrekordbox(path: Path) -> tuple[Any, Callable[[], None]]:
     try:
-        from pyrekordbox.masterdb import MasterDatabase
+        if is_onelibrary(path):
+            from pyrekordbox.onelibrary import OneLibrary as Database
+        else:
+            from pyrekordbox.masterdb import MasterDatabase as Database
     except ImportError as exc:
         raise MasterDbUnavailable(str(exc)) from exc
-    database = MasterDatabase(path=str(path))
+    database = Database(path=str(path))
     connection = database.engine.raw_connection()
 
     def close() -> None:
@@ -105,12 +116,14 @@ def _open_with_pyrekordbox(path: Path) -> tuple[Any, Callable[[], None]]:
 
 
 def read_library(path: str | os.PathLike[str], opener: Opener | None = None) -> MasterLibrary:
-    """Tracks, playlists and history of a master.db, read from a copy."""
+    """Tracks, playlists and history of a master.db or of a OneLibrary
+    export (exportLibrary.db), read from a copy. A OneLibrary export's track
+    paths stay relative to the device root, as rekordbox wrote them."""
     source = Path(path)
     if not source.is_file():
         raise MasterDbError(f"{source} not found")
     with tempfile.TemporaryDirectory(prefix="djmidi-rekordbox-") as folder:
-        copy = Path(folder) / MASTER_DB
+        copy = Path(folder) / (ONELIBRARY_DB if is_onelibrary(source) else MASTER_DB)
         shutil.copy2(source, copy)
         for suffix in _COMPANIONS:
             companion = source.with_name(source.name + suffix)
@@ -123,19 +136,42 @@ def read_library(path: str | os.PathLike[str], opener: Opener | None = None) -> 
         except Exception as exc:  # SQLCipher / SQLAlchemy errors: a wrong key or a damaged copy
             raise MasterDbError(str(exc)) from exc
         try:
-            return _read(connection.cursor())
+            return _read(connection.cursor(), _ONELIBRARY_SQL if is_onelibrary(source) else _MASTER_SQL)
         except Exception as exc:
             raise MasterDbError(str(exc)) from exc
         finally:
             close()
 
 
-def _read(cur: Any) -> MasterLibrary:
+# The queries per format; each returns the same columns. OneLibrary column
+# names come from a real exportLibrary.db written by rekordbox 7 (2026-11-28):
+# no deleted flag, no time in the history tables, ``attribute`` 0 = playlist,
+# 1 = folder (the only values seen; other kinds are skipped).
+_MASTER_SQL = {
+    "tracks": "SELECT c.ID, c.FolderPath, c.Title, a.Name, c.BPM, c.Length FROM djmdContent c "
+    "LEFT JOIN djmdArtist a ON a.ID = c.ArtistID WHERE COALESCE(c.rb_local_deleted, 0) = 0",
+    "playlists": "SELECT ID, Name, Attribute, ParentID FROM djmdPlaylist WHERE COALESCE(rb_local_deleted, 0) = 0 ORDER BY Seq",
+    "playlist_songs": "SELECT PlaylistID, ContentID, created_at FROM djmdSongPlaylist "
+    "WHERE COALESCE(rb_local_deleted, 0) = 0 ORDER BY PlaylistID, TrackNo",
+    "histories": "SELECT ID, Name, Attribute FROM djmdHistory WHERE COALESCE(rb_local_deleted, 0) = 0 ORDER BY DateCreated",
+    "history_songs": "SELECT HistoryID, ContentID, created_at FROM djmdSongHistory "
+    "WHERE COALESCE(rb_local_deleted, 0) = 0 ORDER BY HistoryID, TrackNo",
+    "playlist_kinds": (0,),
+}
+_ONELIBRARY_SQL = {
+    "tracks": "SELECT c.content_id, c.path, c.title, a.name, c.bpmx100, c.length FROM content c "
+    "LEFT JOIN artist a ON a.artist_id = c.artist_id_artist",
+    "playlists": "SELECT playlist_id, name, attribute, playlist_id_parent FROM playlist ORDER BY sequenceNo",
+    "playlist_songs": "SELECT playlist_id, content_id, NULL FROM playlist_content ORDER BY playlist_id, sequenceNo",
+    "histories": "SELECT history_id, name, attribute FROM history ORDER BY sequenceNo",
+    "history_songs": "SELECT history_id, content_id, NULL FROM history_content ORDER BY history_id, sequenceNo",
+    "playlist_kinds": (0,),
+}
+
+
+def _read(cur: Any, sql: dict[str, Any]) -> MasterLibrary:
     library = MasterLibrary()
-    cur.execute(
-        "SELECT c.ID, c.FolderPath, c.Title, a.Name, c.BPM, c.Length FROM djmdContent c "
-        "LEFT JOIN djmdArtist a ON a.ID = c.ArtistID WHERE COALESCE(c.rb_local_deleted, 0) = 0"
-    )
+    cur.execute(sql["tracks"])
     for track_id, folder_path, title, artist, bpm, length in cur.fetchall():
         if not folder_path:
             continue
@@ -148,13 +184,13 @@ def _read(cur: Any) -> MasterLibrary:
             duration=float(length) if length else None,
         )
 
-    cur.execute("SELECT ID, Name, Attribute, ParentID FROM djmdPlaylist WHERE COALESCE(rb_local_deleted, 0) = 0 ORDER BY Seq")
+    cur.execute(sql["playlists"])
     rows = [(str(i), name or "", attribute, str(parent)) for i, name, attribute, parent in cur.fetchall()]
     names = {i: name for i, name, _a, _p in rows}
     parents = {i: parent for i, _n, _a, parent in rows}
-    songs = _songs(cur, "djmdSongPlaylist", "PlaylistID")
+    songs = _songs(cur, sql["playlist_songs"])
     for playlist_id, name, attribute, _parent in rows:
-        if attribute in (_FOLDER, _SMART):
+        if attribute not in sql["playlist_kinds"]:  # folders, smart playlists
             continue
         full = name
         parent, seen = parents.get(playlist_id), {playlist_id}
@@ -164,9 +200,9 @@ def _read(cur: Any) -> MasterLibrary:
             parent = parents.get(parent)
         library.playlists[full] = [library.tracks[t].path for t, _at in songs.get(playlist_id, []) if t in library.tracks]
 
-    cur.execute("SELECT ID, Name, Attribute FROM djmdHistory WHERE COALESCE(rb_local_deleted, 0) = 0 ORDER BY DateCreated")
+    cur.execute(sql["histories"])
     history_rows = cur.fetchall()
-    history_songs = _songs(cur, "djmdSongHistory", "HistoryID")
+    history_songs = _songs(cur, sql["history_songs"])
     for history_id, name, attribute in history_rows:
         entries = history_songs.get(str(history_id), [])
         if attribute == _FOLDER or not entries:
@@ -175,11 +211,8 @@ def _read(cur: Any) -> MasterLibrary:
     return library
 
 
-def _songs(cur: Any, table: str, owner: str) -> dict[str, list[tuple[str, datetime | None]]]:
-    cur.execute(
-        f"SELECT {owner}, ContentID, created_at FROM {table} "
-        f"WHERE COALESCE(rb_local_deleted, 0) = 0 ORDER BY {owner}, TrackNo"
-    )
+def _songs(cur: Any, query: str) -> dict[str, list[tuple[str, datetime | None]]]:
+    cur.execute(query)
     found: dict[str, list[tuple[str, datetime | None]]] = {}
     for owner_id, content_id, created in cur.fetchall():
         found.setdefault(str(owner_id), []).append((str(content_id), parse_time(created)))
@@ -200,6 +233,7 @@ def parse_time(text: object) -> datetime | None:
 
 __all__ = [
     "MASTER_DB",
+    "ONELIBRARY_DB",
     "MasterDbError",
     "MasterDbUnavailable",
     "MasterHistory",
@@ -208,6 +242,7 @@ __all__ = [
     "available",
     "default_master_db",
     "is_master_db",
+    "is_onelibrary",
     "parse_time",
     "read_library",
 ]

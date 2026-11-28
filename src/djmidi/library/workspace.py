@@ -653,23 +653,35 @@ def read_rekordbox_xml_playlists(xml_path: str | os.PathLike[str]) -> dict[str, 
 
 def read_rekordbox_any(path: str | os.PathLike[str]) -> dict[str, list[str]]:
     """A rekordbox XML file (``.xml``), rekordbox's own library (``master.db``,
-    read from a copy) or a device export (``export.pdb``)."""
+    read from a copy) or a device export (``export.pdb``, or the newer
+    OneLibrary ``exportLibrary.db``, read from a copy)."""
     if str(path).lower().endswith(".xml"):
         return read_rekordbox_xml_playlists(path)
     from djmidi.library import rekordbox_master
 
     if rekordbox_master.is_master_db(path):
         return rekordbox_master.read_library(path).playlists
+    if rekordbox_master.is_onelibrary(path):
+        root = rekordbox_device_root(path)
+        playlists = rekordbox_master.read_library(path).playlists
+        return {name: [str(root / p.lstrip("/")) for p in paths] for name, paths in playlists.items()}
     return read_rekordbox_playlists(path)
+
+
+def rekordbox_device_root(export_path: str | os.PathLike[str]) -> Path:
+    """The folder holding ``PIONEER/`` for a file in ``PIONEER/rekordbox``:
+    device exports store track paths relative to it."""
+    root = Path(export_path).parent
+    if root.name.lower() == "rekordbox" and root.parent.name.upper() == "PIONEER":
+        root = root.parent.parent
+    return root
 
 
 def read_rekordbox_playlists(pdb_path: str | os.PathLike[str]) -> dict[str, list[str]]:
     """Playlists of a Rekordbox device export. Track paths in `export.pdb`
     are relative to the device root, i.e. the folder holding ``PIONEER/``."""
     pdb_path = Path(pdb_path)
-    device_root = pdb_path.parent
-    if device_root.name.lower() == "rekordbox" and device_root.parent.name.upper() == "PIONEER":
-        device_root = device_root.parent.parent
+    device_root = rekordbox_device_root(pdb_path)
     tracks = {track.id: track for track in parse_export(pdb_path)}
     playlists: dict[str, list[str]] = {}
     for playlist in parse_rekordbox_playlists(pdb_path):
